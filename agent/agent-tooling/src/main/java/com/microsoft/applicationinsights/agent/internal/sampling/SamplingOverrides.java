@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import com.microsoft.applicationinsights.agent.Exporter;
+import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SamplingOverrideAttribute;
@@ -81,7 +81,7 @@ class SamplingOverrides {
             this.decision = decision;
             this.samplingPercentage = samplingPercentage;
             this.overwriteExisting = overwriteExisting;
-            traceState = TraceState.builder().put(Exporter.SAMPLING_PERCENTAGE_TRACE_STATE, samplingPercentage).build();
+            traceState = TraceState.builder().put(TelemetryUtil.SAMPLING_PERCENTAGE_TRACE_STATE, samplingPercentage).build();
         }
 
         @Override
@@ -99,7 +99,7 @@ class SamplingOverrides {
             if (parentTraceState.isEmpty()) {
                 return traceState;
             }
-            String existingSamplingPercentage = parentTraceState.get(Exporter.SAMPLING_PERCENTAGE_TRACE_STATE);
+            String existingSamplingPercentage = parentTraceState.get(TelemetryUtil.SAMPLING_PERCENTAGE_TRACE_STATE);
             if (samplingPercentage.equals(existingSamplingPercentage)) {
                 return parentTraceState;
             }
@@ -107,7 +107,7 @@ class SamplingOverrides {
                 return parentTraceState;
             }
             return parentTraceState.toBuilder()
-                    .put(Exporter.SAMPLING_PERCENTAGE_TRACE_STATE, samplingPercentage)
+                    .put(TelemetryUtil.SAMPLING_PERCENTAGE_TRACE_STATE, samplingPercentage)
                     .build();
         }
     }

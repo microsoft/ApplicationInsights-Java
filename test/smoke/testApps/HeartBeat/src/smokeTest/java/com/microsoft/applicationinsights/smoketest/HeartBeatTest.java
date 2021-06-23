@@ -4,12 +4,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
-import javax.annotation.Nullable;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.MetricData;
@@ -34,10 +32,10 @@ public class HeartBeatTest extends AiSmokeTest {
     }
 
     private static Predicate<Envelope> getMetricPredicate(String name) {
-        Preconditions.checkNotNull(name, "name");
+        Objects.requireNonNull(name, "name");
         return new Predicate<Envelope>() {
             @Override
-            public boolean apply(@Nullable Envelope input) {
+            public boolean test(Envelope input) {
                 if(input == null){
                     return false;
                 }
@@ -49,5 +47,4 @@ public class HeartBeatTest extends AiSmokeTest {
             }
         };
     }
-
 }

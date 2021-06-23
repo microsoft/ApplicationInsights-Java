@@ -20,28 +20,10 @@
  */
 package com.microsoft.applicationinsights.agent.internal.instrumentation.sdk;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.lang.instrument.ClassFileTransformer;
-import java.net.MalformedURLException;
 import java.security.ProtectionDomain;
-import java.util.Date;
 
-import com.google.common.base.Charsets;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
-import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
-import com.microsoft.applicationinsights.telemetry.Duration;
-import com.microsoft.applicationinsights.telemetry.EventTelemetry;
-import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
-import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
-import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
-import com.microsoft.applicationinsights.telemetry.SeverityLevel;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
-import com.microsoft.applicationinsights.telemetry.TelemetryContext;
-import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import net.bytebuddy.jar.asm.ClassReader;
 import net.bytebuddy.jar.asm.ClassVisitor;
 import net.bytebuddy.jar.asm.ClassWriter;
@@ -93,10 +75,11 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
                                           @Nullable Class<?> classBeingRedefined,
                                           @Nullable ProtectionDomain protectionDomain, byte[] classfileBuffer) {
 
+        // NOTE: this is never called for the internal TelemetryClient because the internal TelemetryClient
+        // is initialized before this class file transformer is registered
         if (!unshadedClassName.equals(className)) {
             return null;
         }
-        // FIXME why isn't this being called for internal TelemetryClient (which is good, but why)?
 
         StatusFile.putValueAndWrite("SDKPresent", true);
         try {
@@ -133,6 +116,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             this.cw = cw;
         }
 
+        @Override
         public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
             if (name.equals("configuration") && descriptor.equals("L" + unshadedPrefix + "/TelemetryConfiguration;")) {
                 foundConfigurationField = true;
@@ -353,7 +337,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitEnd();
         }
 
-        private void overwriteFlushMethod(MethodVisitor mv) {
+        private static void overwriteFlushMethod(MethodVisitor mv) {
             mv.visitCode();
             mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "flush", "()V", false);
             mv.visitInsn(RETURN);
@@ -704,16 +688,18 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
     // DO NOT REMOVE
     // this is used during development for generating above bytecode
     //
-    // to run this, uncomment the ASMifier line below, and add this dependency to agent-tooling.gradle:
+    // to run this, uncomment the code below, and add these dependencies to agent-tooling.gradle:
+    //   implementation group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '2.6.3'
     //   implementation group: 'org.ow2.asm', name: 'asm-util', version: '9.1'
     //
-    public static void main(String[] args) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintStream stdout = System.out;
-        System.setOut(new PrintStream(baos, true));
-        // ASMifier.main(new String[]{TC.class.getName()});
+    /*
+    public static void main(String[] args) throws Exception {
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        java.io.PrintStream stdout = System.out;
+        System.setOut(new java.io.PrintStream(baos, true));
+        org.objectweb.asm.util.ASMifier.main(new String[]{TC.class.getName()});
         System.setOut(stdout);
-        String content = new String(baos.toByteArray(), Charsets.UTF_8);
+        String content = baos.toString("UTF-8");
         content = content.replace("\"com/microsoft/applicationinsights/telemetry", "unshadedPrefix + \"/telemetry");
         content = content.replace("com/microsoft/applicationinsights/telemetry", "\" + unshadedPrefix + \"/telemetry");
         content = content.replace("\"com/microsoft/applicationinsights/agent/internal/instrumentation/sdk" +
@@ -732,14 +718,14 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
     @SuppressWarnings("unused")
     public static class TC {
 
-        private TelemetryConfiguration configuration;
+        private com.microsoft.applicationinsights.TelemetryConfiguration configuration;
 
-        public TelemetryContext getContext() {
+        public com.microsoft.applicationinsights.telemetry.TelemetryContext getContext() {
             return null;
         }
 
         public void flush() {
-            BytecodeUtil.flush();
+            com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.flush();
         }
 
         public boolean isDisabled() {
@@ -750,16 +736,16 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
         // reported as an Aggregation instead of a Measurement
         // (this was changed to current behavior in https://github.com/microsoft/ApplicationInsights-Java/pull/717)
         public void trackMetric(String name, double value) {
-            track(new MetricTelemetry(name, value));
+            track(new com.microsoft.applicationinsights.telemetry.MetricTelemetry(name, value));
         }
 
-        public void track(Telemetry telemetry) {
+        public void track(com.microsoft.applicationinsights.telemetry.Telemetry telemetry) {
             if (isDisabled()) {
                 return;
             }
 
             if (telemetry.getTimestamp() == null) {
-                telemetry.setTimestamp(new Date());
+                telemetry.setTimestamp(new java.util.Date());
             }
 
             // intentionally not getting instrumentation key from TelemetryClient
@@ -769,91 +755,91 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             // while still allowing them to be overridden at Telemetry level
 
             // rationale: if setting something programmatically, then can un-set it programmatically
-            BytecodeUtil.copy(getContext().getTags(), telemetry.getContext().getTags(), "ai.cloud.");
-            BytecodeUtil.copy(getContext().getProperties(), telemetry.getContext().getProperties(), null);
+            com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.copy(getContext().getTags(), telemetry.getContext().getTags(), "ai.cloud.");
+            com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.copy(getContext().getProperties(), telemetry.getContext().getProperties(), null);
 
             // don't run telemetry initializers or telemetry processors
             // (otherwise confusing message to have different rules for 2.x SDK interop telemetry)
 
             try {
-                if (telemetry instanceof EventTelemetry) {
-                    agent$trackEventTelemetry((EventTelemetry) telemetry);
+                if (telemetry instanceof com.microsoft.applicationinsights.telemetry.EventTelemetry) {
+                    agent$trackEventTelemetry((com.microsoft.applicationinsights.telemetry.EventTelemetry) telemetry);
                 }
-                if (telemetry instanceof MetricTelemetry) {
-                    agent$trackMetricTelemetry((MetricTelemetry) telemetry);
+                if (telemetry instanceof com.microsoft.applicationinsights.telemetry.MetricTelemetry) {
+                    agent$trackMetricTelemetry((com.microsoft.applicationinsights.telemetry.MetricTelemetry) telemetry);
                 }
-                if (telemetry instanceof RemoteDependencyTelemetry) {
-                    agent$trackRemoteDependencyTelemetry((RemoteDependencyTelemetry) telemetry);
+                if (telemetry instanceof com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry) {
+                    agent$trackRemoteDependencyTelemetry((com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry) telemetry);
                 }
-                if (telemetry instanceof PageViewTelemetry) {
-                    agent$trackPageViewTelemetry((PageViewTelemetry) telemetry);
+                if (telemetry instanceof com.microsoft.applicationinsights.telemetry.PageViewTelemetry) {
+                    agent$trackPageViewTelemetry((com.microsoft.applicationinsights.telemetry.PageViewTelemetry) telemetry);
                 }
-                if (telemetry instanceof TraceTelemetry) {
-                    agent$trackTraceTelemetry((TraceTelemetry) telemetry);
+                if (telemetry instanceof com.microsoft.applicationinsights.telemetry.TraceTelemetry) {
+                    agent$trackTraceTelemetry((com.microsoft.applicationinsights.telemetry.TraceTelemetry) telemetry);
                 }
-                if (telemetry instanceof RequestTelemetry) {
-                    agent$trackRequestTelemetry((RequestTelemetry) telemetry);
+                if (telemetry instanceof com.microsoft.applicationinsights.telemetry.RequestTelemetry) {
+                    agent$trackRequestTelemetry((com.microsoft.applicationinsights.telemetry.RequestTelemetry) telemetry);
                 }
-                if (telemetry instanceof ExceptionTelemetry) {
-                    agent$trackExceptionTelemetry((ExceptionTelemetry) telemetry);
+                if (telemetry instanceof com.microsoft.applicationinsights.telemetry.ExceptionTelemetry) {
+                    agent$trackExceptionTelemetry((com.microsoft.applicationinsights.telemetry.ExceptionTelemetry) telemetry);
                 }
             } catch (Throwable t) {
-                BytecodeUtil.logErrorOnce(t);
+                com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.logErrorOnce(t);
             }
         }
 
-        private void agent$trackEventTelemetry(EventTelemetry t) {
-            BytecodeUtil.trackEvent(t.getTimestamp(), t.getName(), t.getProperties(), t.getContext().getTags(), t.getMetrics(),
+        private void agent$trackEventTelemetry(com.microsoft.applicationinsights.telemetry.EventTelemetry t) {
+            com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackEvent(t.getTimestamp(), t.getName(), t.getProperties(), t.getContext().getTags(), t.getMetrics(),
                     t.getContext().getInstrumentationKey());
         }
 
-        private void agent$trackMetricTelemetry(MetricTelemetry t) {
-            BytecodeUtil.trackMetric(t.getTimestamp(), t.getName(), t.getValue(), t.getCount(), t.getMin(), t.getMax(),
+        private void agent$trackMetricTelemetry(com.microsoft.applicationinsights.telemetry.MetricTelemetry t) {
+            com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackMetric(t.getTimestamp(), t.getName(), t.getValue(), t.getCount(), t.getMin(), t.getMax(),
                     t.getStandardDeviation(), t.getProperties(), t.getContext().getTags(),
                     t.getContext().getInstrumentationKey());
         }
 
-        private void agent$trackRemoteDependencyTelemetry(RemoteDependencyTelemetry t) {
-            BytecodeUtil.trackDependency(t.getTimestamp(), t.getName(), t.getId(), t.getResultCode(), agent$toMillis(t.getDuration()),
+        private void agent$trackRemoteDependencyTelemetry(com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry t) {
+            com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackDependency(t.getTimestamp(), t.getName(), t.getId(), t.getResultCode(), agent$toMillis(t.getDuration()),
                     t.getSuccess(), t.getCommandName(), t.getType(), t.getTarget(), t.getProperties(),
                     t.getContext().getTags(), t.getMetrics(), t.getContext().getInstrumentationKey());
         }
 
-        private void agent$trackPageViewTelemetry(PageViewTelemetry t) {
-            BytecodeUtil.trackPageView(t.getTimestamp(), t.getName(), t.getUri(), t.getDuration(), t.getProperties(),
+        private void agent$trackPageViewTelemetry(com.microsoft.applicationinsights.telemetry.PageViewTelemetry t) {
+            com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackPageView(t.getTimestamp(), t.getName(), t.getUri(), t.getDuration(), t.getProperties(),
                     t.getContext().getTags(), t.getMetrics(), t.getContext().getInstrumentationKey());
         }
 
-        private void agent$trackTraceTelemetry(TraceTelemetry t) {
-            SeverityLevel level = t.getSeverityLevel();
+        private void agent$trackTraceTelemetry(com.microsoft.applicationinsights.telemetry.TraceTelemetry t) {
+            com.microsoft.applicationinsights.telemetry.SeverityLevel level = t.getSeverityLevel();
             int severityLevel = level != null ? level.getValue() : -1;
-            BytecodeUtil.trackTrace(t.getTimestamp(), t.getMessage(), severityLevel, t.getProperties(), t.getContext().getTags(),
+            com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackTrace(t.getTimestamp(), t.getMessage(), severityLevel, t.getProperties(), t.getContext().getTags(),
                     t.getContext().getInstrumentationKey());
         }
 
-        private void agent$trackRequestTelemetry(RequestTelemetry t) {
+        private void agent$trackRequestTelemetry(com.microsoft.applicationinsights.telemetry.RequestTelemetry t) {
             try {
-                BytecodeUtil.trackRequest(t.getId(), t.getName(), t.getUrl(), t.getTimestamp(), agent$toMillis(t.getDuration()),
+                com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackRequest(t.getId(), t.getName(), t.getUrl(), t.getTimestamp(), agent$toMillis(t.getDuration()),
                         t.getResponseCode(), t.isSuccess(), t.getSource(), t.getProperties(), t.getContext().getTags(),
                         t.getMetrics(), t.getContext().getInstrumentationKey());
-            } catch (MalformedURLException e) {
-                BytecodeUtil.logErrorOnce(e);
+            } catch (java.net.MalformedURLException e) {
+                com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.logErrorOnce(e);
             }
         }
 
-        private void agent$trackExceptionTelemetry(ExceptionTelemetry t) {
-            BytecodeUtil.trackException(t.getTimestamp(), t.getException(), t.getProperties(), t.getContext().getTags(), t.getMetrics(),
+        private void agent$trackExceptionTelemetry(com.microsoft.applicationinsights.telemetry.ExceptionTelemetry t) {
+            com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackException(t.getTimestamp(), t.getException(), t.getProperties(), t.getContext().getTags(), t.getMetrics(),
                     t.getContext().getInstrumentationKey());
         }
 
         @Nullable
-        private Long agent$toMillis(Duration duration) {
+        private Long agent$toMillis(com.microsoft.applicationinsights.telemetry.Duration duration) {
             if (duration == null) {
                 return null;
             }
             // not calling duration.getTotalMilliseconds() since trackDependency was introduced in 0.9.3 but
             // getTotalMilliseconds() was not introduced until 0.9.4
-            return BytecodeUtil.getTotalMilliseconds(
+            return com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.getTotalMilliseconds(
                     duration.getDays(),
                     duration.getHours(),
                     duration.getMinutes(),
@@ -861,4 +847,5 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
                     duration.getMilliseconds());
         }
     }
+    */
 }

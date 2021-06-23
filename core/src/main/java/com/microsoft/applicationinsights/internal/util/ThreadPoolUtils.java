@@ -31,9 +31,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Created by gupele on 12/22/2014.
- */
 public final class ThreadPoolUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(ThreadPoolUtils.class);
@@ -78,7 +75,7 @@ public final class ThreadPoolUtils {
      * @param clazz The class holding the thread pool
      * @param instanceId The identifier of the instance of {@code clazz}
      */
-    public static ThreadFactory createDaemonThreadFactory(final Class<?> clazz, final int instanceId) {
+    public static ThreadFactory createDaemonThreadFactory(Class<?> clazz, int instanceId) {
         return createNamedDaemonThreadFactory(String.format("%s_%d", clazz.getSimpleName(), instanceId));
     }
 
@@ -86,17 +83,16 @@ public final class ThreadPoolUtils {
      * {@code poolName} will be appended with a hyphen and the unique name.
      * @param clazz The class holding the thread pool
      * @param uniqueId The identifier of the instance of {@code clazz}
-     * @return
      */
-    public static ThreadFactory createDaemonThreadFactory(final Class<?> clazz, final String uniqueId) {
+    public static ThreadFactory createDaemonThreadFactory(Class<?> clazz, String uniqueId) {
         return createNamedDaemonThreadFactory(String.format("%s_%s", clazz.getSimpleName(), uniqueId));
     }
 
-    public static ThreadFactory createDaemonThreadFactory(final Class<?> clazz) {
+    public static ThreadFactory createDaemonThreadFactory(Class<?> clazz) {
         return createNamedDaemonThreadFactory(clazz.getSimpleName());
     }
 
-    public static ThreadFactory createNamedDaemonThreadFactory(final String poolName) {
+    public static ThreadFactory createNamedDaemonThreadFactory(String poolName) {
         return new ThreadFactory(){
             private final AtomicInteger threadId = new AtomicInteger();
             @Override
@@ -108,4 +104,6 @@ public final class ThreadPoolUtils {
             }
         };
     }
+
+    private ThreadPoolUtils() {}
 }

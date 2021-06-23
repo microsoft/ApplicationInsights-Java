@@ -5,28 +5,25 @@ ext {
             opentelemetryInstrumentationAlpha: "1.3.0+ai.patch.1-alpha",
 
             // TODO sync bytebuddy version with version from io.opentelemetry.javaagent:javaagent-tooling
-            bytebuddy                        : "1.10.18",
+            bytebuddy                        : "1.11.2",
 
             slf4j                            : "1.7.30",
             logback                          : "1.2.3",
             logbackJson                      : "0.1.5",
 
-            checker                          : "3.12.0",
+            checker                          : "3.14.0",
 
             // TODO consolidate to just one json library
-            moshi                            : "1.9.3",
+            moshi                            : "1.11.0", // 1.12.0 and above use okio 2.x which pulls in kotlin libs
             gson                             : "2.8.2",
-
-            apacheHttpClient                 : "4.5.13",
 
             oshi                             : "5.6.0",
 
-            azureStorageBlob                 : "12.11.0-beta.3",
-            azureClientRuntime               : "2.1.1",
-            microsoftJfrStreaming            : "1.2.0",
+            azureCore                        : "1.17.0",
 
-            // TODO remove dependency on guava
-            guava                            : "30.1.1-jre",
+            azureStorageBlob                 : "12.12.0",
+            azureClientRuntime               : "2.1.1",
+            microsoftJfrStreaming            : "1.1.0",
 
             // TODO remove dependencies on apache commons
             commonsLang                      : "3.7",
@@ -34,11 +31,11 @@ ext {
             commonsText                      : "1.9",
             commonsCodec                     : "1.13",
 
-            // TODO update to JUnit 5
-            junit                            : "4.12",
-            mockito                          : "1.10.19",
-            hamcrest                         : "1.3",
-            systemRules                      : "1.19.0",
+            // testing dependencies
+
+            junit                            : "5.6.2",
+            assertj                          : "3.20.2",
+            mockito                          : "3.11.1",
             logcaptor                        : "2.5.0",
 
             aiLegacySdk                      : "2.6.0"

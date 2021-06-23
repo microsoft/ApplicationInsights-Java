@@ -21,29 +21,24 @@
 
 package com.microsoft.applicationinsights.internal.quickpulse;
 
-import java.io.IOException;
+import com.azure.core.http.HttpPipeline;
+import com.azure.core.http.HttpRequest;
+import com.azure.core.http.HttpResponse;
+
 import java.util.concurrent.ArrayBlockingQueue;
 
-import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-
-/**
- * Created by gupele on 12/12/2016.
- */
 final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
 
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
-    private final HttpClient httpClient;
+    private final HttpPipeline httpPipeline;
     private volatile QuickPulseHeaderInfo quickPulseHeaderInfo;
     private volatile boolean stopped = false;
     private long lastValidTransmission = 0;
 
-    private final ArrayBlockingQueue<HttpPost> sendQueue;
+    private final ArrayBlockingQueue<HttpRequest> sendQueue;
 
-    public DefaultQuickPulseDataSender(final HttpClient httpClient, final ArrayBlockingQueue<HttpPost> sendQueue) {
-        this.httpClient = httpClient;
+    public DefaultQuickPulseDataSender(HttpPipeline httpPipeline, ArrayBlockingQueue<HttpRequest> sendQueue) {
+        this.httpPipeline = httpPipeline;
         this.sendQueue = sendQueue;
     }
 
@@ -51,16 +46,22 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
     public void run() {
         try {
             while (!stopped) {
-                HttpPost post = sendQueue.take();
+                HttpRequest post;
+                try {
+                    post = sendQueue.take();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
                 if (quickPulseHeaderInfo.getQuickPulseStatus() != QuickPulseStatus.QP_IS_ON) {
                     continue;
                 }
 
-                final long sendTime = System.nanoTime();
+                long sendTime = System.nanoTime();
                 HttpResponse response = null;
                 try {
-                    response = httpClient.execute(post);
-                    if (networkHelper.isSuccess(response)) {
+                    response = httpPipeline.send(post).block();
+                    if (response != null && networkHelper.isSuccess(response)) {
                         QuickPulseHeaderInfo quickPulseHeaderInfo = networkHelper.getQuickPulseHeaderInfo(response);
                         switch (quickPulseHeaderInfo.getQuickPulseStatus()) {
                             case QP_IS_OFF:
@@ -72,16 +73,11 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
                             case ERROR:
                                 onPostError(sendTime);
                                 break;
-
-                            default:
-                                break;
                         }
                     }
-                } catch (IOException e) {
-                    onPostError(sendTime);
                 } finally {
                     if (response != null) {
-                        LazyHttpClient.dispose(response);
+                        response.close();
                     }
                 }
             }
@@ -122,7 +118,7 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
             return;
         }
 
-        final double timeFromLastValidTransmission = (sendTime - lastValidTransmission) / 1000000000.0;
+        double timeFromLastValidTransmission = (sendTime - lastValidTransmission) / 1000000000.0;
         if (timeFromLastValidTransmission >= 20.0) {
             quickPulseHeaderInfo = new QuickPulseHeaderInfo(QuickPulseStatus.ERROR);
         }

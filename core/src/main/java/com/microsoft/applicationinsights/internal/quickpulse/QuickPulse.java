@@ -27,19 +27,14 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Preconditions;
+import com.azure.core.http.HttpPipeline;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.DeviceInfo;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
+import com.azure.core.http.HttpRequest;
+import com.microsoft.applicationinsights.TelemetryClient;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
-
-/**
- * Created by gupele on 12/4/2016.
- */
 public enum QuickPulse {
     INSTANCE;
 
@@ -54,16 +49,15 @@ public enum QuickPulse {
     // can cause slowness during startup in some environments
     @Deprecated
     public void initialize() {
-        initialize(TelemetryConfiguration.getActive());
+        initialize(TelemetryClient.getActive());
     }
 
-    public void initialize(final TelemetryConfiguration configuration) {
-        Preconditions.checkNotNull(configuration);
-        final CountDownLatch latch = new CountDownLatch(1);
+    public void initialize(TelemetryClient telemetryClient) {
+        CountDownLatch latch = new CountDownLatch(1);
         Executors.newSingleThreadExecutor(ThreadPoolUtils.createDaemonThreadFactory(QuickPulse.class)).execute(new Runnable() {
             @Override
             public void run() {
-                initializeSync(latch, configuration);
+                initializeSync(latch, telemetryClient);
             }
         });
         // don't return until initialization thread has INSTANCE lock
@@ -74,7 +68,7 @@ public enum QuickPulse {
         }
     }
 
-    private void initializeSync(CountDownLatch latch, TelemetryConfiguration configuration) {
+    private void initializeSync(CountDownLatch latch, TelemetryClient telemetryClient) {
         if (initialized) {
             latch.countDown();
         } else {
@@ -82,14 +76,13 @@ public enum QuickPulse {
                 latch.countDown();
                 if (!initialized) {
                     initialized = true;
-                    final String quickPulseId = UUID.randomUUID().toString().replace("-", "");
-                    HttpClient httpClient = LazyHttpClient.getInstance();
-                    ArrayBlockingQueue<HttpPost> sendQueue = new ArrayBlockingQueue<>(256, true);
+                    String quickPulseId = UUID.randomUUID().toString().replace("-", "");
+                    HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(telemetryClient.getAadAuthentication());
+                    ArrayBlockingQueue<HttpRequest> sendQueue = new ArrayBlockingQueue<>(256, true);
 
-                    quickPulseDataSender = new DefaultQuickPulseDataSender(httpClient, sendQueue);
+                    quickPulseDataSender = new DefaultQuickPulseDataSender(httpPipeline, sendQueue);
 
-                    String instanceName = configuration.getRoleInstance();
-                    String roleName = configuration.getRoleName();
+                    String instanceName = telemetryClient.getRoleInstance();
                     String machineName = DeviceInfo.getHostName();
 
                     if (LocalStringsUtils.isNullOrEmpty(instanceName)) {
@@ -99,10 +92,10 @@ public enum QuickPulse {
                         instanceName = "Unknown host";
                     }
 
-                    final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpClient, configuration, machineName, instanceName, roleName, quickPulseId);
-                    final QuickPulseDataFetcher quickPulseDataFetcher = new DefaultQuickPulseDataFetcher(sendQueue, configuration, machineName, instanceName, roleName, quickPulseId);
+                    QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpPipeline, telemetryClient, machineName, instanceName, quickPulseId);
+                    QuickPulseDataFetcher quickPulseDataFetcher = new DefaultQuickPulseDataFetcher(sendQueue, telemetryClient, machineName, instanceName, quickPulseId);
 
-                    final QuickPulseCoordinatorInitData coordinatorInitData =
+                    QuickPulseCoordinatorInitData coordinatorInitData =
                             new QuickPulseCoordinatorInitDataBuilder()
                                     .withPingSender(quickPulsePingSender)
                                     .withDataFetcher(quickPulseDataFetcher)
@@ -119,7 +112,7 @@ public enum QuickPulse {
                     thread.setDaemon(true);
                     thread.start();
 
-                    QuickPulseDataCollector.INSTANCE.enable(configuration);
+                    QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
                 }
             }
         }

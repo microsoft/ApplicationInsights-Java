@@ -20,10 +20,23 @@
  */
 package com.microsoft.applicationinsights.internal.profiler;
 
+import java.util.Iterator;
+import java.util.ServiceLoader;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import com.azure.core.http.HttpPipeline;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MessageData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.microsoft.applicationinsights.FormattedTime;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-import com.microsoft.applicationinsights.extensibility.initializer.TelemetryObservers;
+import com.microsoft.applicationinsights.TelemetryObservers;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.applicationinsights.profileUploader.UploadCompleteHandler;
@@ -32,19 +45,8 @@ import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
 import com.microsoft.applicationinsights.profiler.config.AlertConfigParser;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
-import com.microsoft.applicationinsights.telemetry.EventTelemetry;
-import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Iterator;
-import java.util.ServiceLoader;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  * Service profiler main entry point, wires up:
@@ -65,21 +67,22 @@ public class ProfilerServiceInitializer {
                                                ServiceProfilerServiceConfig config,
                                                String machineName,
                                                String roleName,
-                                               String instrumentationKey,
-                                               TelemetryClient client,
+                                               TelemetryClient telemetryClient,
                                                String userAgent,
                                                GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
+
+        HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(telemetryClient.getAadAuthentication());
+
         initialize(
                 appIdSupplier,
                 processId,
                 config,
                 machineName,
                 roleName,
-                instrumentationKey,
-                client,
-                LazyHttpClient.getInstance(),
+                telemetryClient,
                 userAgent,
-                gcEventMonitorConfiguration
+                gcEventMonitorConfiguration,
+                httpPipeline
         );
     }
 
@@ -88,18 +91,17 @@ public class ProfilerServiceInitializer {
                                                ServiceProfilerServiceConfig config,
                                                String machineName,
                                                String roleName,
-                                               String instrumentationKey,
-                                               TelemetryClient client,
-                                               CloseableHttpClient httpClient,
+                                               TelemetryClient telemetryClient,
                                                String userAgent,
-                                               GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
+                                               GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration,
+                                               HttpPipeline httpPipeline) {
         if (!initialized && config.enabled()) {
             initialized = true;
             ProfilerServiceFactory factory = null;
 
             try {
                 factory = loadProfilerServiceFactory();
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 LOGGER.error("Failed to load profiler factory", e);
             }
 
@@ -116,17 +118,17 @@ public class ProfilerServiceInitializer {
                     ThreadPoolUtils.createDaemonThreadFactory(ProfilerServiceFactory.class, "ServiceProfilerAlertingService")
             );
 
-            AlertingSubsystem alerting = createAlertMonitor(alertServiceExecutorService, client, gcEventMonitorConfiguration);
+            AlertingSubsystem alerting = createAlertMonitor(alertServiceExecutorService, telemetryClient, gcEventMonitorConfiguration);
 
             Future<ProfilerService> future = factory.initialize(
                     appIdSupplier,
-                    sendServiceProfilerIndex(client),
+                    sendServiceProfilerIndex(telemetryClient),
                     updateAlertingConfig(alerting),
                     processId,
                     config,
                     machineName,
-                    instrumentationKey,
-                    httpClient,
+                    telemetryClient.getInstrumentationKey(),
+                    httpPipeline,
                     serviceProfilerExecutorService,
                     userAgent,
                     roleName
@@ -135,6 +137,8 @@ public class ProfilerServiceInitializer {
             serviceProfilerExecutorService.submit(() -> {
                 try {
                     profilerService = future.get();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                 } catch (Exception e) {
                     LOGGER.error("Unable to obtain JFR connection, this may indicate that your JVM does not have JFR enabled. JFR profiling system will shutdown", e);
                     alertServiceExecutorService.shutdown();
@@ -163,12 +167,20 @@ public class ProfilerServiceInitializer {
 
     static UploadCompleteHandler sendServiceProfilerIndex(TelemetryClient telemetryClient) {
         return done -> {
-            EventTelemetry event = new EventTelemetry("ServiceProfilerIndex");
-            event.getProperties().putAll(done.getServiceProfilerIndex().getProperties());
-            event.getMetrics().putAll(done.getServiceProfilerIndex().getMetrics());
-            telemetryClient.track(event);
+            TelemetryItem telemetry = new TelemetryItem();
+            TelemetryEventData data = new TelemetryEventData();
+            telemetryClient.initEventTelemetry(telemetry, data);
+
+            data.setName("ServiceProfilerIndex");
+            data.setProperties(done.getServiceProfilerIndex().getProperties());
+            data.setMeasurements(done.getServiceProfilerIndex().getMetrics());
+
+            telemetry.setTime(FormattedTime.fromNow());
+
+            telemetryClient.trackAsync(telemetry);
+
             // This is an event that the backend specifically looks for to track when a profile is complete
-            telemetryClient.track(new TraceTelemetry("StopProfiler succeeded."));
+            sendMessageTelemetry(telemetryClient, "StopProfiler succeeded.");
         };
     }
 
@@ -183,10 +195,21 @@ public class ProfilerServiceInitializer {
         return alert -> {
             if (profilerService != null) {
                 // This is an event that the backend specifically looks for to track when a profile is started
-                telemetryClient.track(new TraceTelemetry("StartProfiler triggered."));
+                sendMessageTelemetry(telemetryClient, "StartProfiler triggered.");
+
                 profilerService.getProfiler().accept(alert);
             }
         };
     }
 
+    private static void sendMessageTelemetry(TelemetryClient telemetryClient, String message) {
+        TelemetryItem telemetry = new TelemetryItem();
+        MessageData data = new MessageData();
+        telemetryClient.initMessageTelemetry(telemetry, data);
+        data.setMessage(message);
+        telemetry.setTime(FormattedTime.fromNow());
+        telemetryClient.trackAsync(telemetry);
+    }
+
+    private ProfilerServiceInitializer() {}
 }

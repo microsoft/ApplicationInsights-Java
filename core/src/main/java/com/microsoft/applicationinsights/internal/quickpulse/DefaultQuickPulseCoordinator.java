@@ -25,9 +25,6 @@ import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Created by gupele on 12/14/2016.
- */
 final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultQuickPulseCoordinator.class);
@@ -80,7 +77,7 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
 
     private long sendData() {
         dataFetcher.prepareQuickPulseDataForSend(qpsServiceRedirectedEndpoint);
-        final QuickPulseHeaderInfo currentQuickPulseHeaderInfo = dataSender.getQuickPulseHeaderInfo();
+        QuickPulseHeaderInfo currentQuickPulseHeaderInfo = dataSender.getQuickPulseHeaderInfo();
 
         this.handleReceivedHeaders(currentQuickPulseHeaderInfo);
 
@@ -95,13 +92,12 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
 
             case QP_IS_ON:
                 return waitBetweenPostsInMS;
-
-            default:
-                logger.error( "Critical error while sending QP data: unknown status, aborting");
-                QuickPulseDataCollector.INSTANCE.disable();
-                stopped = true;
-                return 0;
         }
+
+        logger.error( "Critical error while sending QP data: unknown status, aborting");
+        QuickPulseDataCollector.INSTANCE.disable();
+        stopped = true;
+        return 0;
     }
 
     private long ping() {
@@ -117,13 +113,12 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
                 return waitBetweenPostsInMS;
             case QP_IS_OFF:
                 return qpsServicePollingIntervalHintMillis > 0 ? qpsServicePollingIntervalHintMillis : waitBetweenPingsInMS;
-
-            default:
-                logger.error( "Critical error while ping QP: unknown status, aborting");
-                QuickPulseDataCollector.INSTANCE.disable();
-                stopped = true;
-                return 0;
         }
+
+        logger.error( "Critical error while ping QP: unknown status, aborting");
+        QuickPulseDataCollector.INSTANCE.disable();
+        stopped = true;
+        return 0;
     }
 
     private void handleReceivedHeaders(QuickPulseHeaderInfo currentQuickPulseHeaderInfo) {

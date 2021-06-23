@@ -21,16 +21,12 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 
 import java.util.Map;
 
 class CustomDimensions {
-
-    private static final CustomDimensions instance = new CustomDimensions();
 
     private volatile ResourceProvider resourceProvider;
     private volatile OperatingSystem operatingSystem;
@@ -39,11 +35,6 @@ class CustomDimensions {
     private final String runtimeVersion;
     private final String language;
     private final String sdkVersion;
-    private String customerIkey;
-
-    static CustomDimensions get() {
-        return instance;
-    }
 
     // visible for testing
     CustomDimensions() {
@@ -72,7 +63,6 @@ class CustomDimensions {
             operatingSystem = initOperatingSystem();
         }
 
-        customerIkey = TelemetryConfiguration.getActive().getInstrumentationKey();
         sdkVersion = qualifiedSdkVersion.substring(qualifiedSdkVersion.lastIndexOf(':') + 1);
         runtimeVersion = System.getProperty("java.version");
 
@@ -88,8 +78,6 @@ class CustomDimensions {
         return operatingSystem;
     }
 
-    public String getCustomerIkey() { return customerIkey; }
-
     public void setResourceProvider(ResourceProvider resourceProvider) {
         this.resourceProvider = resourceProvider;
     }
@@ -98,14 +86,10 @@ class CustomDimensions {
         this.operatingSystem = operatingSystem;
     }
 
-    void populateProperties(Map<String, String> properties) {
+    void populateProperties(Map<String, String> properties, String customerIkey) {
         properties.put("rp", resourceProvider.getValue());
         properties.put("os", operatingSystem.getValue());
         properties.put("attach", attachType);
-        // For Linux Consumption Plan, customer iKey needs to be updated here since it's lazily set.
-        if (Strings.isNullOrEmpty(customerIkey)) {
-            customerIkey = TelemetryConfiguration.getActive().getInstrumentationKey();
-        }
         properties.put("cikey", customerIkey);
         properties.put("runtimeVersion", runtimeVersion);
         properties.put("language", language);

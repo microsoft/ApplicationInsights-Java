@@ -1,9 +1,9 @@
-apply plugin: 'war'
+apply plugin: "war"
 
 dependencies {
-    implementation group: 'org.hsqldb', name: 'hsqldb', version: '2.5.1'
+    implementation "org.hsqldb:hsqldb:2.5.1"
 
-    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+    providedCompile "javax.servlet:javax.servlet-api:3.0.1"
 }
 
 sourceCompatibility = 1.8
@@ -14,8 +14,8 @@ compileSmokeTestJava.targetCompatibility = 1.8
 war {
     // this is done to remove the version from the archive file name
     // to make span name verification simpler
-    archiveFileName = project.name + '.war'
+    archiveFileName = project.name + ".war"
 }
 
 ext.testAppArtifactDir = war.destinationDirectory
-ext.testAppArtifactFilename = project.name + '.war'
+ext.testAppArtifactFilename = project.name + ".war"

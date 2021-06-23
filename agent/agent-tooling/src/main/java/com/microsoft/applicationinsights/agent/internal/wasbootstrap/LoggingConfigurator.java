@@ -229,10 +229,10 @@ public class LoggingConfigurator {
     }
 
     private void configureLoggingLevels() {
-        loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger("org.apache.http"));
         loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger("io.grpc.Context"));
         loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger("muzzleMatcher"));
         loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger("com.microsoft.applicationinsights"));
+        loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger("com.azure.monitor.opentelemetry.exporter"));
         loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger(ROOT_LOGGER_NAME));
     }
 

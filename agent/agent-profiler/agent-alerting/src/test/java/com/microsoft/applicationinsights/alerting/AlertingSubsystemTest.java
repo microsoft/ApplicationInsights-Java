@@ -33,11 +33,13 @@ import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.A
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
-import org.junit.*;
+import org.junit.jupiter.api.Test;
 
-public class AlertingSubsystemTest {
+import static org.assertj.core.api.Assertions.assertThat;
 
-    private AlertingSubsystem getAlertMonitor(Consumer<AlertBreach> consumer) {
+class AlertingSubsystemTest {
+
+    private static AlertingSubsystem getAlertMonitor(Consumer<AlertBreach> consumer) {
         AlertingSubsystem monitor = AlertingSubsystem.create(consumer, Executors.newSingleThreadExecutor());
 
         monitor.updateConfiguration(
@@ -52,7 +54,7 @@ public class AlertingSubsystemTest {
     }
 
     @Test
-    public void alertTriggerIsCalled() {
+    void alertTriggerIsCalled() {
 
         AtomicReference<AlertBreach> called = new AtomicReference<>();
         Consumer<AlertBreach> consumer = called::set;
@@ -65,12 +67,12 @@ public class AlertingSubsystemTest {
 
         service.awaitQueueFlush();
 
-        Assert.assertEquals(AlertMetricType.CPU, called.get().getType());
-        Assert.assertEquals(90.0, called.get().getAlertValue(), 0.01);
+        assertThat(called.get().getType()).isEqualTo(AlertMetricType.CPU);
+        assertThat(called.get().getAlertValue()).isEqualTo(90.0);
     }
 
     @Test
-    public void manualAlertWorks() {
+    void manualAlertWorks() {
         AtomicReference<AlertBreach> called = new AtomicReference<>();
         Consumer<AlertBreach> consumer = called::set;
 
@@ -85,11 +87,11 @@ public class AlertingSubsystemTest {
                 )
         );
 
-        Assert.assertEquals(AlertMetricType.MANUAL, called.get().getType());
+        assertThat(called.get().getType()).isEqualTo(AlertMetricType.MANUAL);
     }
 
     @Test
-    public void manualAlertDoesNotTriggerAfterExpired() {
+    void manualAlertDoesNotTriggerAfterExpired() {
         AtomicReference<AlertBreach> called = new AtomicReference<>();
         Consumer<AlertBreach> consumer = called::set;
 
@@ -104,6 +106,6 @@ public class AlertingSubsystemTest {
                 )
         );
 
-        Assert.assertNull(called.get());
+        assertThat(called.get()).isNull();
     }
 }

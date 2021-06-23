@@ -5,15 +5,13 @@ import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.profiler.config.AlertConfigParser;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.gcmonitor.GCCollectionEvent;
 import com.microsoft.gcmonitor.GCEventConsumer;
 import com.microsoft.gcmonitor.GcMonitorFactory;
 import com.microsoft.gcmonitor.MemoryManagement;
 import com.microsoft.gcmonitor.garbagecollectors.GarbageCollector;
 import com.microsoft.gcmonitor.memorypools.MemoryPool;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import javax.management.MBeanServerConnection;
@@ -26,19 +24,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class GcEventMonitorTest {
+import static org.assertj.core.api.Assertions.assertThat;
+
+class GcEventMonitorTest {
 
     @Test
-    public void endToEndAlertIsTriggered() throws ExecutionException, InterruptedException, TimeoutException {
+    void endToEndAlertIsTriggered() throws ExecutionException, InterruptedException, TimeoutException {
 
         CompletableFuture<AlertBreach> alertFuture = new CompletableFuture<>();
         AlertingSubsystem alertingSubsystem = getAlertingSubsystem(alertFuture);
-
-        TelemetryClient client = new TelemetryClient() {
-            @Override
-            public void track(Telemetry telemetry) {
-            }
-        };
 
         GcMonitorFactory factory = new GcMonitorFactory() {
             @Override
@@ -55,17 +49,17 @@ public class GcEventMonitorTest {
 
         GcEventMonitor.init(
                 alertingSubsystem,
-                client,
+                new TelemetryClient(),
                 Executors.newSingleThreadExecutor(),
                 new GcEventMonitor.GcEventMonitorConfiguration(GcReportingLevel.NONE),
                 factory);
 
         AlertBreach alert = alertFuture.get(10, TimeUnit.SECONDS);
 
-        Assert.assertEquals(90.0, alert.getAlertValue(), 0.01);
+        assertThat(alert.getAlertValue()).isEqualTo(90.0);
     }
 
-    private AlertingSubsystem getAlertingSubsystem(CompletableFuture<AlertBreach> alertFuture) {
+    private static AlertingSubsystem getAlertingSubsystem(CompletableFuture<AlertBreach> alertFuture) {
         AlertingSubsystem alertingSubsystem = AlertingSubsystem.create(alertFuture::complete, Executors.newSingleThreadExecutor());
 
         AlertingConfiguration config = AlertConfigParser.parse(
@@ -79,7 +73,7 @@ public class GcEventMonitorTest {
         return alertingSubsystem;
     }
 
-    private GCCollectionEvent mockGcEvent() {
+    private static GCCollectionEvent mockGcEvent() {
         GCCollectionEvent event = Mockito.mock(GCCollectionEvent.class);
         GarbageCollector collector = Mockito.mock(GarbageCollector.class);
         MemoryPool tenuredPool = Mockito.mock(MemoryPool.class);

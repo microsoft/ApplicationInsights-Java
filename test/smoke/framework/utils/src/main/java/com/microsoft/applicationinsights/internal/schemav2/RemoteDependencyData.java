@@ -34,11 +34,6 @@ import java.util.concurrent.ConcurrentMap;
 public class RemoteDependencyData extends Domain
 {
     /**
-     * Backing field for property Ver.
-     */
-    private static final int ver = 2;
-
-    /**
      * Backing field for property Name.
      */
     private String name;
@@ -93,7 +88,6 @@ public class RemoteDependencyData extends Domain
      */
     public RemoteDependencyData()
     {
-        this.InitializeFields();
     }
 
     /**
@@ -226,12 +220,5 @@ public class RemoteDependencyData extends Domain
             this.measurements = new ConcurrentHashMap<>();
         }
         return this.measurements;
-    }
-
-    /**
-     * Optionally initializes fields for the current context.
-     */
-    protected void InitializeFields() {
-
     }
 }

@@ -21,8 +21,9 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+import com.microsoft.applicationinsights.TelemetryUtil;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -33,10 +34,9 @@ class FeatureStatsbeat extends BaseStatsbeat {
 
     private final Set<Feature> featureList = new HashSet<>(64);
 
-    FeatureStatsbeat(TelemetryClient telemetryClient, long interval) {
-        super(telemetryClient, interval);
-
+    FeatureStatsbeat(CustomDimensions customDimensions) {
         // track java distribution
+        super(customDimensions);
         String javaVendor = System.getProperty("java.vendor");
         featureList.add(Feature.fromJavaVendor(javaVendor));
     }
@@ -49,9 +49,16 @@ class FeatureStatsbeat extends BaseStatsbeat {
     }
 
     @Override
-    protected void send() {
-        MetricTelemetry statsbeatTelemetry = createStatsbeatTelemetry(FEATURE_METRIC_NAME, 0);
-        statsbeatTelemetry.getProperties().put("feature", String.valueOf(getFeature()));
-        telemetryClient.track(statsbeatTelemetry);
+    protected void send(TelemetryClient telemetryClient) {
+        TelemetryItem statsbeatTelemetry = createStatsbeatTelemetry(telemetryClient, FEATURE_METRIC_NAME, 0);
+        TelemetryUtil.getProperties(statsbeatTelemetry.getData().getBaseData())
+                .put("feature", String.valueOf(getFeature()));
+        telemetryClient.trackAsync(statsbeatTelemetry);
+    }
+
+    void trackAadEnabled(boolean aadEnabled) {
+        if (aadEnabled) {
+            featureList.add(Feature.AAD);
+        }
     }
 }

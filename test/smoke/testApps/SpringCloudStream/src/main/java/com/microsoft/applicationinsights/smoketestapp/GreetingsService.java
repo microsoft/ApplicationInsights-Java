@@ -15,7 +15,7 @@ public class GreetingsService {
         this.greetingsStreams = greetingsStreams;
     }
 
-    public void sendGreeting(final Greetings greetings) {
+    public void sendGreeting(Greetings greetings) {
         MessageChannel messageChannel = greetingsStreams.outboundGreetings();
         messageChannel.send(MessageBuilder
                 .withPayload(greetings)

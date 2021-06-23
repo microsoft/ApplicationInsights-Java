@@ -9,146 +9,146 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.MatchType;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import org.junit.*;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class SamplingOverridesTest {
+class SamplingOverridesTest {
 
     @Test
-    public void shouldSampleByDefault() {
+    void shouldSampleByDefault() {
         // given
         List<SamplingOverride> overrides = new ArrayList<>();
         SamplingOverrides sampler = new SamplingOverrides(overrides);
         Attributes attributes = Attributes.empty();
 
         // expect
-        assertNull(sampler.getOverride(attributes));
+        assertThat(sampler.getOverride(attributes)).isNull();
     }
 
     @Test
-    public void shouldFilterStrictMatch() {
+    void shouldFilterStrictMatch() {
         // given
         List<SamplingOverride> overrides = singletonList(newOverride(0, newStrictAttribute("one", "1")));
         SamplingOverrides sampler = new SamplingOverrides(overrides);
         Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "1");
 
         // expect
-        assertEquals(0, sampler.getOverride(attributes).getPercentage(), 0);
+        assertThat(sampler.getOverride(attributes).getPercentage()).isEqualTo(0);
     }
 
     @Test
-    public void shouldNotFilterStrictMatch() {
+    void shouldNotFilterStrictMatch() {
         // given
         List<SamplingOverride> overrides = singletonList(newOverride(0, newStrictAttribute("one", "1")));
         SamplingOverrides sampler = new SamplingOverrides(overrides);
         Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "2");
 
         // expect
-        assertNull(sampler.getOverride(attributes));
+        assertThat(sampler.getOverride(attributes)).isNull();
     }
 
     @Test
-    public void shouldNotFilterMissingStrictMatch() {
+    void shouldNotFilterMissingStrictMatch() {
         // given
         List<SamplingOverride> overrides = singletonList(newOverride(0, newStrictAttribute("one", "1")));
         SamplingOverrides sampler = new SamplingOverrides(overrides);
         Attributes attributes = Attributes.of(AttributeKey.stringKey("two"), "1");
 
         // expect
-        assertNull(sampler.getOverride(attributes));
+        assertThat(sampler.getOverride(attributes)).isNull();
     }
 
     @Test
-    public void shouldFilterRegexpMatch() {
+    void shouldFilterRegexpMatch() {
         // given
         List<SamplingOverride> overrides = singletonList(newOverride(0, newRegexpAttribute("one", "1.*")));
         SamplingOverrides sampler = new SamplingOverrides(overrides);
         Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "11");
 
         // expect
-        assertEquals(0, sampler.getOverride(attributes).getPercentage(), 0);
+        assertThat(sampler.getOverride(attributes).getPercentage()).isEqualTo(0);
     }
 
     @Test
-    public void shouldNotFilterRegexpMatch() {
+    void shouldNotFilterRegexpMatch() {
         // given
         List<SamplingOverride> overrides = singletonList(newOverride(0, newRegexpAttribute("one", "1.*")));
         SamplingOverrides sampler = new SamplingOverrides(overrides);
         Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "22");
 
         // expect
-        assertNull(sampler.getOverride(attributes));
+        assertThat(sampler.getOverride(attributes)).isNull();
     }
 
     @Test
-    public void shouldNotFilterMissingRegexpMatch() {
+    void shouldNotFilterMissingRegexpMatch() {
         // given
         List<SamplingOverride> overrides = singletonList(newOverride(0, newRegexpAttribute("one", "1.*")));
         SamplingOverrides sampler = new SamplingOverrides(overrides);
         Attributes attributes = Attributes.of(AttributeKey.stringKey("two"), "11");
 
         // expect
-        assertNull(sampler.getOverride(attributes));
+        assertThat(sampler.getOverride(attributes)).isNull();
     }
 
     @Test
-    public void shouldFilterMultiAttributes() {
+    void shouldFilterMultiAttributes() {
         // given
         List<SamplingOverride> overrides = singletonList(newOverride(0, newStrictAttribute("one", "1"), newRegexpAttribute("two", "2.*")));
         SamplingOverrides sampler = new SamplingOverrides(overrides);
         Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "1", AttributeKey.stringKey("two"), "22");
 
         // expect
-        assertEquals(0, sampler.getOverride(attributes).getPercentage(), 0);
+        assertThat(sampler.getOverride(attributes).getPercentage()).isEqualTo(0);
     }
 
     @Test
-    public void shouldNotFilterMultiAttributes() {
+    void shouldNotFilterMultiAttributes() {
         // given
         List<SamplingOverride> overrides = singletonList(newOverride(0, newStrictAttribute("one", "1"), newRegexpAttribute("two", "2.*")));
         SamplingOverrides sampler = new SamplingOverrides(overrides);
         Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "2", AttributeKey.stringKey("two"), "22");
 
         // expect
-        assertNull(sampler.getOverride(attributes));
+        assertThat(sampler.getOverride(attributes)).isNull();
     }
 
     @Test
-    public void shouldFilterMultiConfigsBothMatch() {
+    void shouldFilterMultiConfigsBothMatch() {
         // given
         List<SamplingOverride> overrides = Arrays.asList(newOverride(0, newStrictAttribute("one", "1")), newOverride(0, newRegexpAttribute("two", "2.*")));
         SamplingOverrides sampler = new SamplingOverrides(overrides);
         Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "1", AttributeKey.stringKey("two"), "22");
 
         // expect
-        assertEquals(0, sampler.getOverride(attributes).getPercentage(), 0);
+        assertThat(sampler.getOverride(attributes).getPercentage()).isEqualTo(0);
     }
 
     @Test
-    public void shouldFilterMultiConfigsOneMatch() {
+    void shouldFilterMultiConfigsOneMatch() {
         // given
         List<SamplingOverride> overrides = Arrays.asList(newOverride(0, newStrictAttribute("one", "1")), newOverride(0, newRegexpAttribute("two", "2.*")));
         SamplingOverrides sampler = new SamplingOverrides(overrides);
         Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "2", AttributeKey.stringKey("two"), "22");
 
         // expect
-        assertEquals(0, sampler.getOverride(attributes).getPercentage(), 0);
+        assertThat(sampler.getOverride(attributes).getPercentage()).isEqualTo(0);
     }
 
     @Test
-    public void shouldNotFilterMultiConfigsNoMatch() {
+    void shouldNotFilterMultiConfigsNoMatch() {
         // given
         List<SamplingOverride> overrides = Arrays.asList(newOverride(0, newStrictAttribute("one", "1")), newOverride(0, newRegexpAttribute("two", "2.*")));
         SamplingOverrides sampler = new SamplingOverrides(overrides);
         Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "2", AttributeKey.stringKey("two"), "33");
 
         // expect
-        assertNull(sampler.getOverride(attributes));
+        assertThat(sampler.getOverride(attributes)).isNull();
     }
 
-    private SamplingOverride newOverride(double percentage, SamplingOverrideAttribute... attribute) {
+    private static SamplingOverride newOverride(float percentage, SamplingOverrideAttribute... attribute) {
         SamplingOverride override = new SamplingOverride();
         override.attributes = Arrays.asList(attribute);
         override.percentage = percentage;

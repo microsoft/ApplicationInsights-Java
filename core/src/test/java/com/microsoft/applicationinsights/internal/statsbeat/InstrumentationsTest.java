@@ -1,12 +1,11 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class InstrumentationsTest {
 
@@ -23,8 +22,8 @@ public class InstrumentationsTest {
     @Test
     public void testEncodeAndDecodeInstrumentations() {
         long longVal = Instrumentations.encode(instrumentations);
-        assertEquals(EXPECTED_INSTRUMENTATION, longVal);
+        assertThat(longVal).isEqualTo(EXPECTED_INSTRUMENTATION);
         Set<String> result = StatsbeatTestUtils.decodeInstrumentations(longVal);
-        assertEquals(instrumentations, result);
+        assertThat(result).isEqualTo(instrumentations);
     }
 }

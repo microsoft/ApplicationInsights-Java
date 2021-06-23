@@ -16,15 +16,11 @@ public class ContainerInfo {
         this.containerId = containerId;
         this.imageName = imageName;
     }
-    /**
-     * @return the containerId
-     */
+
     public String getContainerId() {
         return containerId;
     }
-    /**
-     * @return the imageName
-     */
+
     public String getImageName() {
         return imageName;
     }
@@ -50,12 +46,16 @@ public class ContainerInfo {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
 
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(obj instanceof ContainerInfo)) {
+            return false;
+        }
 
-        ContainerInfo that = (ContainerInfo) o;
+        ContainerInfo that = (ContainerInfo) obj;
 
         return new EqualsBuilder()
                 .append(getContainerId(), that.getContainerId())

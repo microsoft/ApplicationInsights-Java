@@ -7,16 +7,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.common.base.Stopwatch;
-import com.google.common.base.Strings;
 import org.hsqldb.jdbc.JDBCDriver;
+
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 @WebServlet("/*")
 public class JdbcTestServlet extends HttpServlet {
@@ -25,15 +24,20 @@ public class JdbcTestServlet extends HttpServlet {
     public void init() throws ServletException {
         try {
             setupHsqldb();
-            if (!Strings.isNullOrEmpty(System.getenv("MYSQL"))) setupMysql();
-            if (!Strings.isNullOrEmpty(System.getenv("POSTGRES"))) setupPostgres();
-            if (!Strings.isNullOrEmpty(System.getenv("SQLSERVER"))) setupSqlServer();
+            if (envVarExists("MYSQL")) setupMysql();
+            if (envVarExists("POSTGRES")) setupPostgres();
+            if (envVarExists("SQLSERVER")) setupSqlServer();
             // setupOracle();
         } catch (Exception e) {
             // surprisingly not all application servers seem to log init exceptions to stdout
             e.printStackTrace();
             throw new ServletException(e);
         }
+    }
+
+    private static boolean envVarExists(String name) {
+        String value = System.getenv(name);
+        return value != null && !value.isEmpty();
     }
 
     @Override
@@ -180,7 +184,11 @@ public class JdbcTestServlet extends HttpServlet {
 
     private void executeLargeStatement(Connection connection) throws SQLException {
         Statement statement = connection.createStatement();
-        String largeStr = " /*" + Strings.repeat("a", 2000) + "*/";
+        StringBuilder a2000 = new StringBuilder();
+        for (int i = 0; i < 2000; i++) {
+            a2000.append("a");
+        }
+        String largeStr = " /*" + a2000 + "*/";
         String query = "select * from abc" + largeStr;
         ResultSet rs = statement.executeQuery(query);
         while (rs.next()) {
@@ -211,25 +219,17 @@ public class JdbcTestServlet extends HttpServlet {
     }
 
     private static void setupHsqldb() throws Exception {
-        Connection connection = getConnection(new Callable<Connection>() {
-            @Override
-            public Connection call() throws Exception {
-                return getHsqldbConnection();
-            }
-        });
+        Connection connection = getConnection(JdbcTestServlet::getHsqldbConnection);
         setup(connection);
         connection.close();
     }
 
     private static void setupMysql() throws Exception {
         Class.forName("com.mysql.jdbc.Driver");
-        Connection connection = getConnection(new Callable<Connection>() {
-            @Override
-            public Connection call() throws Exception {
-                Connection connection = getMysqlConnection();
-                testConnection(connection, "select 1");
-                return connection;
-            }
+        Connection connection = getConnection(() -> {
+            Connection connection1 = getMysqlConnection();
+            testConnection(connection1, "select 1");
+            return connection1;
         });
         setup(connection);
         connection.close();
@@ -237,13 +237,10 @@ public class JdbcTestServlet extends HttpServlet {
 
     private static void setupPostgres() throws Exception {
         Class.forName("org.postgresql.Driver");
-        Connection connection = getConnection(new Callable<Connection>() {
-            @Override
-            public Connection call() throws Exception {
-                Connection connection = getPostgresConnection();
-                testConnection(connection, "select 1");
-                return connection;
-            }
+        Connection connection = getConnection(() -> {
+            Connection connection1 = getPostgresConnection();
+            testConnection(connection1, "select 1");
+            return connection1;
         });
         setup(connection);
         connection.close();
@@ -251,13 +248,10 @@ public class JdbcTestServlet extends HttpServlet {
 
     private static void setupSqlServer() throws Exception {
         Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-        Connection connection = getConnection(new Callable<Connection>() {
-            @Override
-            public Connection call() throws Exception {
-                Connection connection = getSqlServerConnection();
-                testConnection(connection, "select 1");
-                return connection;
-            }
+        Connection connection = getConnection(() -> {
+            Connection connection1 = getSqlServerConnection();
+            testConnection(connection1, "select 1");
+            return connection1;
         });
         setup(connection);
         connection.close();
@@ -265,13 +259,10 @@ public class JdbcTestServlet extends HttpServlet {
 
     private static void setupOracle() throws Exception {
         Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-        Connection connection = getConnection(new Callable<Connection>() {
-            @Override
-            public Connection call() throws Exception {
-                Connection connection = getOracleConnection();
-                testConnection(connection, "select 1 from dual");
-                return connection;
-            }
+        Connection connection = getConnection(() -> {
+            Connection connection1 = getOracleConnection();
+            testConnection(connection1, "select 1 from dual");
+            return connection1;
         });
         setup(connection);
         connection.close();
@@ -303,35 +294,29 @@ public class JdbcTestServlet extends HttpServlet {
 
     private static Connection getConnection(Callable<Connection> callable) throws Exception {
         Exception exception;
-        Stopwatch stopwatch = Stopwatch.createStarted();
+        long start = System.nanoTime();
         do {
             try {
                 return callable.call();
             } catch (Exception e) {
                 exception = e;
             }
-        } while (stopwatch.elapsed(TimeUnit.SECONDS) < 30);
+        } while (NANOSECONDS.toSeconds(System.nanoTime() - start) < 30);
         throw exception;
     }
 
     private static void testConnection(Connection connection, String sql) throws SQLException {
-        Statement statement = connection.createStatement();
-        try {
+        try (Statement statement = connection.createStatement()) {
             statement.execute(sql);
-        } finally {
-            statement.close();
         }
     }
 
     private static void setup(Connection connection) throws SQLException {
-        Statement statement = connection.createStatement();
-        try {
+        try (Statement statement = connection.createStatement()) {
             statement.execute("create table abc (xyz varchar(10))");
             statement.execute("insert into abc (xyz) values ('x')");
             statement.execute("insert into abc (xyz) values ('y')");
             statement.execute("insert into abc (xyz) values ('z')");
-        } finally {
-            statement.close();
         }
     }
 }

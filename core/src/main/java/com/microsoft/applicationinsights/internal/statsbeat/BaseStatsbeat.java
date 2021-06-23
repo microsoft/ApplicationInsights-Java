@@ -21,60 +21,46 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import com.google.common.base.Strings;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.microsoft.applicationinsights.FormattedTime;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.STATSBEAT_TELEMETRY_NAME;
+import java.util.HashMap;
+import java.util.Map;
 
 abstract class BaseStatsbeat {
 
-    private static final Logger logger = LoggerFactory.getLogger(BaseStatsbeat.class);
-    private static final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
+    private static final String STATSBEAT_TELEMETRY_NAME = "Statsbeat";
 
-    protected final TelemetryClient telemetryClient;
+    private final CustomDimensions customDimensions;
 
-    BaseStatsbeat(TelemetryClient telemetryClient, long interval) {
-        this.telemetryClient = telemetryClient;
-        scheduledExecutor.scheduleWithFixedDelay(new StatsbeatSender(), interval, interval, TimeUnit.SECONDS);
+    protected BaseStatsbeat(CustomDimensions customDimensions) {
+        this.customDimensions = customDimensions;
     }
 
-    protected abstract void send();
+    protected abstract void send(TelemetryClient telemetryClient);
 
-    protected MetricTelemetry createStatsbeatTelemetry(String name, double value) {
-        MetricTelemetry telemetry = new MetricTelemetry(name, value);
-        telemetry.setTelemetryName(STATSBEAT_TELEMETRY_NAME);
-        telemetry.getContext().setInstrumentationKey(TelemetryConfiguration.getActive().getStatsbeatInstrumentationKey());
-        CustomDimensions.get().populateProperties(telemetry.getProperties());
+    protected TelemetryItem createStatsbeatTelemetry(TelemetryClient telemetryClient, String name, double value) {
+        TelemetryItem telemetry = new TelemetryItem();
+        MetricsData data = new MetricsData();
+        MetricDataPoint point = new MetricDataPoint();
+        telemetryClient.initMetricTelemetry(telemetry, data, point);
+        // overwrite the default name (which is "Metric")
+        telemetry.setName(STATSBEAT_TELEMETRY_NAME);
+
+        point.setName(name);
+        point.setValue(value);
+        point.setDataPointType(DataPointType.MEASUREMENT);
+
+        telemetry.setInstrumentationKey(telemetryClient.getStatsbeatInstrumentationKey());
+        telemetry.setTime(FormattedTime.fromNow());
+
+        Map<String, String> properties = new HashMap<>();
+        customDimensions.populateProperties(properties, telemetryClient.getInstrumentationKey());
+        data.setProperties(properties);
         return telemetry;
-    }
-
-    /**
-     * Runnable which is responsible for calling the send method to transmit Statsbeat telemetry
-     */
-    private class StatsbeatSender implements Runnable {
-        @Override
-        public void run() {
-            try {
-                // For Linux Consumption Plan, connection string is lazily set.
-                // There is no need to send statsbeat when cikey is empty.
-                if (Strings.isNullOrEmpty(TelemetryConfiguration.getActive().getInstrumentationKey())) {
-                    return;
-                }
-                send();
-            }
-            catch (Exception e) {
-                logger.error("Error occurred while sending statsbeat", e);
-            }
-        }
     }
 }

@@ -26,8 +26,10 @@ package com.microsoft.applicationinsights.serviceprofilerapi.client.contract;
  *
  * <p>This class is intended for internal Java profiler use.
  */
-public class OsPlatforms {
+public final class OsPlatforms {
   public static final String WINDOWS = "Windows";
   public static final String OSX = "OSX";
   public static final String LINUX = "Linux";
+
+  private OsPlatforms() {}
 }

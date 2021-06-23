@@ -14,8 +14,6 @@ import org.slf4j.LoggerFactory;
  *   This class is a concrete implementation of {@link HeartBeatPayloadProviderInterface}
  *   It enables setting Web-apps Metadata to heartbeat payload.
  * </p>
- *
- * @author Dhaval Doshi
  */
 public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterface {
 
@@ -54,12 +52,12 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
 
   @Override
   public String getName() {
-    return this.name;
+    return name;
   }
 
   @Override
-  public Callable<Boolean> setDefaultPayload(final List<String> disableFields,
-      final HeartBeatProviderInterface provider) {
+  public Callable<Boolean> setDefaultPayload(List<String> disableFields,
+                                             HeartBeatProviderInterface provider) {
     return new Callable<Boolean>() {
 
       final Set<String> enabledProperties = MiscUtils.except(defaultFields, disableFields);
@@ -101,7 +99,7 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
                 break;
             }
           }
-          catch (Exception e) {
+          catch (RuntimeException e) {
             if (logger.isWarnEnabled()) {
               logger.warn("Failed to obtain heartbeat property", e);
             }
@@ -114,13 +112,11 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
 
   /**
    * Populates the default Fields with the properties
-   * @param defaultFields
    */
-  private void initializeDefaultFields(Set<String> defaultFields) {
+  private static void initializeDefaultFields(Set<String> defaultFields) {
     defaultFields.add(WEBSITE_SITE_NAME);
     defaultFields.add(WEBSITE_HOSTNAME);
     defaultFields.add(WEBSITE_HOME_STAMPNAME);
-
   }
 
   /**

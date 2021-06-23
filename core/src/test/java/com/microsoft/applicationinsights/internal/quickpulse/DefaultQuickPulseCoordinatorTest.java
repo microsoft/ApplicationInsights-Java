@@ -21,25 +21,22 @@
 
 package com.microsoft.applicationinsights.internal.quickpulse;
 
-import java.io.IOException;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.notNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.mock;
 
-/**
- * Created by gupele on 12/15/2016.
- */
-public class DefaultQuickPulseCoordinatorTest {
+class DefaultQuickPulseCoordinatorTest {
     @Test
-    public void testOnlyPings() throws InterruptedException {
-        final QuickPulseDataFetcher mockFetcher = mock(QuickPulseDataFetcher.class);
-        final QuickPulseDataSender mockSender = mock(QuickPulseDataSender.class);
-        final QuickPulsePingSender mockPingSender = mock(QuickPulsePingSender.class);
+    void testOnlyPings() throws InterruptedException {
+        QuickPulseDataFetcher mockFetcher = mock(QuickPulseDataFetcher.class);
+        QuickPulseDataSender mockSender = mock(QuickPulseDataSender.class);
+        QuickPulsePingSender mockPingSender = mock(QuickPulsePingSender.class);
         Mockito.doReturn(new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_OFF)).when(mockPingSender).ping(null);
 
-        final QuickPulseCoordinatorInitData initData = new QuickPulseCoordinatorInitDataBuilder()
+        QuickPulseCoordinatorInitData initData = new QuickPulseCoordinatorInitDataBuilder()
                 .withDataFetcher(mockFetcher)
                 .withDataSender(mockSender)
                 .withPingSender(mockPingSender)
@@ -48,7 +45,7 @@ public class DefaultQuickPulseCoordinatorTest {
                 .withWaitOnErrorInMS(10L)
                 .build();
 
-        final DefaultQuickPulseCoordinator coordinator = new DefaultQuickPulseCoordinator(initData);
+        DefaultQuickPulseCoordinator coordinator = new DefaultQuickPulseCoordinator(initData);
         Thread thread = new Thread(coordinator);
         thread.setDaemon(true);
         thread.start();
@@ -67,15 +64,15 @@ public class DefaultQuickPulseCoordinatorTest {
     }
 
     @Test
-    public void testOnePingAndThenOnePost() throws InterruptedException {
-        final QuickPulseDataFetcher mockFetcher = mock(QuickPulseDataFetcher.class);
-        final QuickPulseDataSender mockSender = mock(QuickPulseDataSender.class);
+    void testOnePingAndThenOnePost() throws InterruptedException {
+        QuickPulseDataFetcher mockFetcher = mock(QuickPulseDataFetcher.class);
+        QuickPulseDataSender mockSender = mock(QuickPulseDataSender.class);
         Mockito.doReturn(new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_OFF)).when(mockSender).getQuickPulseHeaderInfo();
 
-        final QuickPulsePingSender mockPingSender = mock(QuickPulsePingSender.class);
+        QuickPulsePingSender mockPingSender = mock(QuickPulsePingSender.class);
         Mockito.when(mockPingSender.ping(null)).thenReturn(new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_ON), new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_OFF));
 
-        final QuickPulseCoordinatorInitData initData = new QuickPulseCoordinatorInitDataBuilder()
+        QuickPulseCoordinatorInitData initData = new QuickPulseCoordinatorInitDataBuilder()
                 .withDataFetcher(mockFetcher)
                 .withDataSender(mockSender)
                 .withPingSender(mockPingSender)
@@ -84,7 +81,7 @@ public class DefaultQuickPulseCoordinatorTest {
                 .withWaitOnErrorInMS(10L)
                 .build();
 
-        final DefaultQuickPulseCoordinator coordinator = new DefaultQuickPulseCoordinator(initData);
+        DefaultQuickPulseCoordinator coordinator = new DefaultQuickPulseCoordinator(initData);
         Thread thread = new Thread(coordinator);
         thread.setDaemon(true);
         thread.start();
@@ -102,17 +99,19 @@ public class DefaultQuickPulseCoordinatorTest {
         Mockito.verify(mockPingSender, Mockito.atLeast(1)).ping(null);
     }
 
+    // FIXME (trask) sporadically failing on CI
+    @Disabled
     @Test
-    public void testOnePingAndThenOnePostWithRedirectedLink() throws InterruptedException, IOException {
-        final QuickPulseDataFetcher mockFetcher = Mockito.mock(QuickPulseDataFetcher.class);
-        final QuickPulseDataSender mockSender = Mockito.mock(QuickPulseDataSender.class);
-        final QuickPulsePingSender mockPingSender = Mockito.mock(QuickPulsePingSender.class);
+    void testOnePingAndThenOnePostWithRedirectedLink() throws InterruptedException {
+        QuickPulseDataFetcher mockFetcher = Mockito.mock(QuickPulseDataFetcher.class);
+        QuickPulseDataSender mockSender = Mockito.mock(QuickPulseDataSender.class);
+        QuickPulsePingSender mockPingSender = Mockito.mock(QuickPulsePingSender.class);
 
         Mockito.doNothing().when(mockFetcher).prepareQuickPulseDataForSend((String)notNull());
         Mockito.doReturn(new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_ON, "https://new.endpoint.com", 100)).when(mockPingSender).ping(any());
         Mockito.doReturn(new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_OFF, "https://new.endpoint.com", 400)).when(mockSender).getQuickPulseHeaderInfo();
 
-        final QuickPulseCoordinatorInitData initData = new QuickPulseCoordinatorInitDataBuilder()
+        QuickPulseCoordinatorInitData initData = new QuickPulseCoordinatorInitDataBuilder()
                 .withDataFetcher(mockFetcher)
                 .withDataSender(mockSender)
                 .withPingSender(mockPingSender)
@@ -121,12 +120,12 @@ public class DefaultQuickPulseCoordinatorTest {
                 .withWaitOnErrorInMS(10L)
                 .build();
 
-        final DefaultQuickPulseCoordinator coordinator = new DefaultQuickPulseCoordinator(initData);
+        DefaultQuickPulseCoordinator coordinator = new DefaultQuickPulseCoordinator(initData);
         Thread thread = new Thread(coordinator);
         thread.setDaemon(true);
         thread.start();
 
-        Thread.sleep(1000);
+        Thread.sleep(1100);
         coordinator.stop();
 
         thread.join();

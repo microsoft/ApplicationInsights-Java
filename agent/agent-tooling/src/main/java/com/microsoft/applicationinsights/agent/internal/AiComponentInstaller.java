@@ -21,29 +21,28 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
-import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.MetricFilter;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.*;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.MainEntryPoint;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.OpenTelemetryConfigurer;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.common.CommonUtils;
+import com.microsoft.applicationinsights.common.Strings;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
-import com.microsoft.applicationinsights.extensibility.initializer.ResourceAttributesContextInitializer;
-import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
+import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.config.AddTypeXmlElement;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.config.JmxXmlElement;
 import com.microsoft.applicationinsights.internal.config.ParamXmlElement;
-import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
 import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElement;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
 import com.microsoft.applicationinsights.internal.config.connection.InvalidConnectionStringException;
@@ -55,16 +54,17 @@ import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
 import io.opentelemetry.instrumentation.api.config.Config;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.javaagent.extension.AgentListener;
-import org.apache.http.HttpHost;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
-import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
@@ -107,7 +107,7 @@ public class AiComponentInstaller implements AgentListener {
         // Delay registering and starting AppId retrieval to later when the connection string becomes available
         // for Linux Consumption Plan.
         if (!"java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
-            AppIdSupplier.registerAndStartAppIdRetrieval();
+            AppIdSupplier.INSTANCE.registerAndStartAppIdRetrieval();
         }
     }
 
@@ -126,20 +126,24 @@ public class AiComponentInstaller implements AgentListener {
 
         Configuration config = MainEntryPoint.getConfiguration();
         if (!hasConnectionStringOrInstrumentationKey(config)) {
-            if (!("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME")))) {
+            if (!"java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
                 throw new FriendlyException("No connection string or instrumentation key provided",
                         "Please provide connection string or instrumentation key.");
             }
         }
         // Function to validate user provided processor configuration
         validateProcessorConfiguration(config);
-
-        // FIXME do something with config
-
-        // FIXME set doNotWeavePrefixes = "com.microsoft.applicationinsights.agent."
-
-        // FIXME set tryToLoadInBootstrapClassLoader = "com.microsoft.applicationinsights.agent."
-        // (maybe not though, this is only needed for classes in :agent:agent-bootstrap)
+        config.preview.authentication.validate();
+        //Inject authentication configuration
+        AadAuthentication aadAuthentication;
+        if(config.preview.authentication.enabled) {
+            // if enabled, then type must be non-null (validated above)
+            aadAuthentication = new AadAuthentication(config.preview.authentication.type,
+                    config.preview.authentication.clientId, config.preview.authentication.tenantId,
+                    config.preview.authentication.clientSecret, config.preview.authentication.authorityHost);
+        } else {
+            aadAuthentication = null;
+        }
 
         String jbossHome = System.getenv("JBOSS_HOME");
         if (!Strings.isNullOrEmpty(jbossHome)) {
@@ -151,37 +155,35 @@ public class AiComponentInstaller implements AgentListener {
         }
 
         if (config.proxy.host != null) {
-            LazyHttpClient.proxy = new HttpHost(config.proxy.host, config.proxy.port);
+            LazyHttpClient.proxyHost= config.proxy.host;
+            LazyHttpClient.proxyPortNumber = config.proxy.port;
         }
+
         AppIdSupplier appIdSupplier = AppIdSupplier.INSTANCE;
 
-        TelemetryConfiguration configuration = TelemetryConfiguration.getActiveWithoutInitializingConfig();
-        TelemetryConfigurationFactory.INSTANCE.initialize(configuration, buildXmlConfiguration(config));
-        configuration.getContextInitializers().add(new SdkVersionContextInitializer());
-        configuration.getContextInitializers().add(new ResourceAttributesContextInitializer(config.customDimensions));
-        configuration.setMetricFilters(config.preview.processors.stream()
+        List<MetricFilter> metricFilters = config.preview.processors.stream()
                 .filter(processor -> processor.type == Configuration.ProcessorType.METRIC_FILTER)
-                .map(Configuration.ProcessorConfig::toMetricFilter)
-                .collect(Collectors.toList()));
+                .map(ProcessorConfig::toMetricFilter)
+                .collect(Collectors.toList());
+
+        TelemetryClient telemetryClient = TelemetryClient.initActive(config.customDimensions, metricFilters,
+                aadAuthentication, buildXmlConfiguration(config));
 
         try {
-            ConnectionString.updateStatsbeatConnectionString(config.internal.statsbeat.instrumentationKey, config.internal.statsbeat.endpoint, configuration);
+            ConnectionString.updateStatsbeatConnectionString(config.internal.statsbeat.instrumentationKey, config.internal.statsbeat.endpoint, telemetryClient);
         } catch (InvalidConnectionStringException ex) {
             startupLogger.warn("Statsbeat endpoint is invalid. {}", ex.getMessage());
         }
 
         Global.setSamplingPercentage(config.sampling.percentage);
-        final TelemetryClient telemetryClient = new TelemetryClient();
         Global.setTelemetryClient(telemetryClient);
 
         ProfilerServiceInitializer.initialize(
                 appIdSupplier::get,
                 SystemInformation.INSTANCE.getProcessId(),
                 formServiceProfilerConfig(config.preview.profiler),
-                configuration.getRoleInstance(),
-                configuration.getRoleName(),
-                // TODO this will not work with Azure Spring Cloud updating connection string at runtime
-                configuration.getInstrumentationKey(),
+                config.role.instance,
+                config.role.name,
                 telemetryClient,
                 formApplicationInsightsUserAgent(),
                 formGcEventMonitorConfiguration(config.preview.gcEvents)
@@ -189,34 +191,20 @@ public class AiComponentInstaller implements AgentListener {
 
         // this is for Azure Function Linux consumption plan support.
         if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
-            AiLazyConfiguration.setAccessor(new LazyConfigurationAccessor());
+            AiLazyConfiguration.setAccessor(new LazyConfigurationAccessor(telemetryClient, appIdSupplier));
         }
 
         // this is currently used by Micrometer instrumentation in addition to 2.x SDK
         BytecodeUtil.setDelegate(new BytecodeUtilImpl());
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                startupLogger.debug("running shutdown hook");
-                try {
-                    telemetryClient.flush();
-                    telemetryClient.shutdown(5, SECONDS);
-                    startupLogger.debug("completed shutdown hook");
-                } catch (InterruptedException e) {
-                    startupLogger.debug("interrupted while flushing telemetry during shutdown");
-                } catch (Throwable t) {
-                    startupLogger.debug(t.getMessage(), t);
-                }
-            }
-        });
+        Runtime.getRuntime().addShutdownHook(new ShutdownHook(telemetryClient));
 
         RpConfiguration rpConfiguration = MainEntryPoint.getRpConfiguration();
         if (rpConfiguration != null) {
-            RpConfigurationPolling.startPolling(rpConfiguration, config);
+            RpConfigurationPolling.startPolling(rpConfiguration, config, telemetryClient);
         }
 
         // initialize StatsbeatModule
-        StatsbeatModule.initialize(telemetryClient, config.internal.statsbeat.intervalSeconds, config.internal.statsbeat.featureIntervalSeconds);
+        StatsbeatModule.get().start(telemetryClient, config.internal.statsbeat.intervalSeconds, config.internal.statsbeat.featureIntervalSeconds, config.preview.authentication.enabled);
     }
 
     private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(Configuration.GcEventConfiguration gcEvents) {
@@ -228,12 +216,11 @@ public class AiComponentInstaller implements AgentListener {
         String javaVersion = System.getProperty("java.version");
         String osName = System.getProperty("os.name");
         String arch = System.getProperty("os.arch");
-        String userName = "Microsoft-ApplicationInsights-Java-Profiler/" + aiVersion + "  (Java/" + javaVersion + "; " + osName + "; " + arch + ")";
-        return userName;
+        return "Microsoft-ApplicationInsights-Java-Profiler/" + aiVersion + "  (Java/" + javaVersion + "; " + osName + "; " + arch + ")";
     }
 
     private static ServiceProfilerServiceConfig formServiceProfilerConfig(ProfilerConfiguration configuration) {
-        URI serviceProfilerFrontEndPoint = TelemetryConfiguration.getActive().getEndpointProvider().getProfilerEndpoint();
+        URL serviceProfilerFrontEndPoint = TelemetryClient.getActive().getEndpointProvider().getProfilerEndpoint();
         return new ServiceProfilerServiceConfig(
                 configuration.configPollPeriodSeconds,
                 configuration.periodicRecordingDurationSeconds,
@@ -245,8 +232,10 @@ public class AiComponentInstaller implements AgentListener {
         );
     }
 
-    private static void validateProcessorConfiguration(Configuration config) throws FriendlyException {
-        if (config.preview == null || config.preview.processors == null) return;
+    private static void validateProcessorConfiguration(Configuration config) {
+        if (config.preview == null || config.preview.processors == null) {
+            return;
+        }
         for (ProcessorConfig processorConfig : config.preview.processors) {
             processorConfig.validate();
         }
@@ -319,9 +308,6 @@ public class AiComponentInstaller implements AgentListener {
 
         xmlConfiguration.getQuickPulse().setEnabled(config.preview.liveMetrics.enabled);
 
-        if (config.preview.developerMode) {
-            xmlConfiguration.getChannel().setDeveloperMode(true);
-        }
         return xmlConfiguration;
     }
 
@@ -330,5 +316,38 @@ public class AiComponentInstaller implements AgentListener {
         paramXml.setName(name);
         paramXml.setValue(value);
         return paramXml;
+    }
+
+    private static class ShutdownHook extends Thread {
+        private final TelemetryClient telemetryClient;
+
+        public ShutdownHook(TelemetryClient telemetryClient) {
+            this.telemetryClient = telemetryClient;
+        }
+
+        @Override
+        public void run() {
+            startupLogger.debug("running shutdown hook");
+            CompletableResultCode otelFlush = OpenTelemetryConfigurer.flush();
+            CompletableResultCode result = new CompletableResultCode();
+            otelFlush.whenComplete(() -> {
+                    CompletableResultCode batchingClientFlush = telemetryClient.flushChannelBatcher();
+                    batchingClientFlush.whenComplete(() -> {
+                        if (otelFlush.isSuccess() && batchingClientFlush.isSuccess()) {
+                            result.succeed();
+                        } else {
+                            result.fail();
+                        }
+                    });
+            });
+            result.join(5, SECONDS);
+            if (result.isSuccess()) {
+                startupLogger.debug("flushing telemetry on shutdown completed successfully");
+            } else if (Thread.interrupted()) {
+                startupLogger.debug("interrupted while flushing telemetry on shutdown");
+            } else {
+                startupLogger.debug("flushing telemetry on shutdown has taken more than 5 seconds, shutting down anyways...");
+            }
+        }
     }
 }

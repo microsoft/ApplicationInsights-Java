@@ -25,14 +25,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
-import java.util.List;
 import java.util.concurrent.Executors;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfigurationBuilder;
@@ -48,16 +46,23 @@ public class RpConfigurationPolling implements Runnable {
 
     private volatile RpConfiguration rpConfiguration;
     private final Configuration configuration;
+    private final TelemetryClient telemetryClient;
 
-    public static void startPolling(RpConfiguration rpConfiguration, Configuration configuration) {
-        Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(RpConfigurationPolling.class))
-                .scheduleWithFixedDelay(new RpConfigurationPolling(rpConfiguration, configuration), 60, 60, SECONDS);
+    public static void startPolling(RpConfiguration rpConfiguration, Configuration configuration,
+                                    TelemetryClient telemetryClient) {
+        Executors.newSingleThreadScheduledExecutor(
+                ThreadPoolUtils.createDaemonThreadFactory(RpConfigurationPolling.class))
+                .scheduleWithFixedDelay(
+                        new RpConfigurationPolling(rpConfiguration, configuration, telemetryClient),
+                        60, 60, SECONDS);
     }
 
     // visible for testing
-    RpConfigurationPolling(RpConfiguration rpConfiguration, Configuration configuration) {
+    RpConfigurationPolling(RpConfiguration rpConfiguration, Configuration configuration,
+                           TelemetryClient telemetryClient) {
         this.rpConfiguration = rpConfiguration;
         this.configuration = configuration;
+        this.telemetryClient = telemetryClient;
     }
 
     @Override
@@ -77,15 +82,15 @@ public class RpConfigurationPolling implements Runnable {
                 rpConfiguration.lastModifiedTime = fileTime.toMillis();
                 RpConfiguration newRpConfiguration = RpConfigurationBuilder.loadJsonConfigFile(rpConfiguration.configPath);
 
-                if (!newRpConfiguration.connectionString.equals(TelemetryConfiguration.getActive().getConnectionString())) {
+                if (!newRpConfiguration.connectionString.equals(telemetryClient.getConnectionString())) {
                     logger.debug("Connection string from the JSON config file is overriding the previously configured connection string.");
-                    TelemetryConfiguration.getActive().setConnectionString(newRpConfiguration.connectionString);
-                    AppIdSupplier.startAppIdRetrieval();
+                    telemetryClient.setConnectionString(newRpConfiguration.connectionString);
+                    AppIdSupplier.INSTANCE.startAppIdRetrieval();
                 }
 
                 if (newRpConfiguration.sampling.percentage != rpConfiguration.sampling.percentage) {
                     logger.debug("Updating sampling percentage from {} to {}", rpConfiguration.sampling.percentage, newRpConfiguration.sampling.percentage);
-                    double roundedSamplingPercentage = ConfigurationBuilder.roundToNearest(newRpConfiguration.sampling.percentage);
+                    float roundedSamplingPercentage = ConfigurationBuilder.roundToNearest(newRpConfiguration.sampling.percentage);
                     DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(roundedSamplingPercentage, configuration));
                     Global.setSamplingPercentage(roundedSamplingPercentage);
                     rpConfiguration.sampling.percentage = newRpConfiguration.sampling.percentage;

@@ -21,17 +21,16 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.microsoft.applicationinsights.internal.perfcounter.Constants.PROCESS_CPU_PC_METRIC_NAME;
+import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
 
 /**
  * The class supplies the cpu usage of the Java process the SDK is in.
- * <p>
- * Created by gupele on 3/3/2015.
  */
 final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
 
@@ -53,7 +52,7 @@ final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
             } catch (Throwable t2) {
                 // chomp
             }
-            throw new RuntimeException("Failed to create ProcessCpuPerformanceCounter", t);
+            throw new IllegalStateException("Failed to create ProcessCpuPerformanceCounter", t);
         }
     }
 
@@ -73,7 +72,7 @@ final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
         }
 
         logger.trace("Performance Counter: {}: {}", PROCESS_CPU_PC_METRIC_NAME, processCpuUsage);
-        MetricTelemetry telemetry = new MetricTelemetry(PROCESS_CPU_PC_METRIC_NAME, processCpuUsage);
-        telemetryClient.track(telemetry);
+        TelemetryItem telemetry = createMetricsTelemetry(telemetryClient, PROCESS_CPU_PC_METRIC_NAME, processCpuUsage);
+        telemetryClient.trackAsync(telemetry);
     }
 }

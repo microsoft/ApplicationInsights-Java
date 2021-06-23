@@ -36,4 +36,6 @@ public class TraceDataMatchers {
             }
         };
     }
+
+    private TraceDataMatchers() {}
 }

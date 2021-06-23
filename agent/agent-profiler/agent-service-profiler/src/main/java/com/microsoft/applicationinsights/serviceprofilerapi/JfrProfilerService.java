@@ -104,10 +104,7 @@ public class JfrProfilerService implements ProfilerService {
 
         initialised = true;
 
-        appIdSupplier.get();
-
         profileHandler = new JfrUploadService(serviceProfilerUploader, appIdSupplier, uploadCompleteObserver);
-
 
         serviceProfilerExecutorService.submit(() -> {
             try {
@@ -126,7 +123,7 @@ public class JfrProfilerService implements ProfilerService {
                                 config);
 
                 result.complete(this);
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 LOGGER.error("Failed to initialise alert service", e);
             } catch (Error e) {
                 LOGGER.error("Failed to initialise alert service", e);
@@ -166,6 +163,7 @@ public class JfrProfilerService implements ProfilerService {
         };
     }
 
+    @Override
     public Profiler getProfiler() {
         return profiler;
     }

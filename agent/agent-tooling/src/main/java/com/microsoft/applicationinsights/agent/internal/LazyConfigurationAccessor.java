@@ -21,13 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
-import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
-import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagator;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.LoggingConfigurator;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.LoggingLevelConfigurator;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
 import io.opentelemetry.instrumentation.api.config.Config;
@@ -40,14 +37,18 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
 
     private static final Logger logger = LoggerFactory.getLogger(LazyConfigurationAccessor.class);
 
-    @Override
-    public void lazyLoad() {
-        lazySetEnvVars();
+    private final TelemetryClient telemetryClient;
+    private final AppIdSupplier appIdSupplier;
+
+    public LazyConfigurationAccessor(TelemetryClient telemetryClient, AppIdSupplier appIdSupplier) {
+        this.telemetryClient = telemetryClient;
+        this.appIdSupplier = appIdSupplier;
     }
 
-    private void lazySetEnvVars() {
-        String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
-        String roleName = TelemetryConfiguration.getActive().getRoleName();
+    @Override
+    public void lazyLoad() {
+        String instrumentationKey = telemetryClient.getInstrumentationKey();
+        String roleName = telemetryClient.getRoleName();
         if (instrumentationKey != null && !instrumentationKey.isEmpty() && roleName != null && !roleName.isEmpty()) {
             return;
         }
@@ -66,7 +67,7 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
         setInstrumentationLoggingLevel(System.getenv("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL"));
     }
 
-    static void setConnectionString(String connectionString, String instrumentationKey) {
+    void setConnectionString(String connectionString, String instrumentationKey) {
         if (connectionString != null && !connectionString.isEmpty()) {
             setValue(connectionString);
         } else {
@@ -80,23 +81,21 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
         }
     }
 
-    private static void setValue(String value) {
-        if (!Strings.isNullOrEmpty(value)) {
-            TelemetryConfiguration.getActive().setConnectionString(value);
-            // now that we know the user has opted in to tracing, we need to init the propagator and sampler
-            DelegatingPropagator.getInstance().setUpStandardDelegate();
-            // TODO handle APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE
-            DelegatingSampler.getInstance().setAlwaysOnDelegate();
-            logger.info("Set connection string {} lazily for the Azure Function Consumption Plan.", value);
+    private void setValue(String value) {
+        telemetryClient.setConnectionString(value);
+        // now that we know the user has opted in to tracing, we need to init the propagator and sampler
+        DelegatingPropagator.getInstance().setUpStandardDelegate();
+        // TODO handle APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE
+        DelegatingSampler.getInstance().setAlwaysOnDelegate();
+        logger.info("Set connection string {} lazily for the Azure Function Consumption Plan.", value);
 
-            // register and start app id retrieval after the connection string becomes available.
-            AppIdSupplier.registerAndStartAppIdRetrieval();
-        }
+        // register and start app id retrieval after the connection string becomes available.
+        appIdSupplier.registerAndStartAppIdRetrieval();
     }
 
-    static void setWebsiteSiteName(String websiteSiteName) {
+    void setWebsiteSiteName(String websiteSiteName) {
         if (websiteSiteName != null && !websiteSiteName.isEmpty()) {
-            TelemetryConfiguration.getActive().setRoleName(websiteSiteName);
+            telemetryClient.setRoleName(websiteSiteName);
             logger.info("Set WEBSITE_SITE_NAME: {} lazily for the Azure Function Consumption Plan.", websiteSiteName);
         }
     }

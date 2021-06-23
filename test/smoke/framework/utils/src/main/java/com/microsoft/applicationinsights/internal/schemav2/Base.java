@@ -36,10 +36,7 @@ public class Base
     /**
      * Initializes a new instance of the Base class.
      */
-    public Base()
-    {
-        this.InitializeFields();
-    }
+    public Base() {}
 
     /**
      * Gets the BaseType property.
@@ -53,12 +50,5 @@ public class Base
      */
     public void setBaseType(String value) {
         this.baseType = value;
-    }
-
-    /**
-     * Optionally initializes fields for the current context.
-     */
-    protected void InitializeFields() {
-
     }
 }

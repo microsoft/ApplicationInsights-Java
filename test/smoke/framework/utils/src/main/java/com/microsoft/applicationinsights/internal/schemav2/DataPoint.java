@@ -23,10 +23,6 @@
 */
 package com.microsoft.applicationinsights.internal.schemav2;
 
-import com.google.common.base.Preconditions;
-
-import java.io.IOException;
-
 /**
  * Data contract class DataPoint.
  */
@@ -72,7 +68,6 @@ public class DataPoint
      */
     public DataPoint()
     {
-        this.InitializeFields();
     }
 
     /**
@@ -172,12 +167,5 @@ public class DataPoint
      */
     public void setStdDev(Double value) {
         this.stdDev = value;
-    }
-
-    /**
-     * Optionally initializes fields for the current context.
-     */
-    protected void InitializeFields() {
-
     }
 }

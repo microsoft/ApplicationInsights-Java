@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.serviceprofilerapi.client.contract;
 import com.squareup.moshi.Json;
 
 /**
- * (@code StampBlobUri) represents an address of an Azure Storage blob, where profiler trace files
+ * {@code StampBlobUri} represents an address of an Azure Storage blob, where profiler trace files
  * are stored.
  *
  * <p>This class is intended for internal Java profiler use.

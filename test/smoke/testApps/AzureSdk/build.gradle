@@ -1,4 +1,4 @@
-apply plugin: 'war'
+apply plugin: "war"
 
 tasks.withType(JavaCompile) {
     options.release.set(8)
@@ -7,17 +7,17 @@ tasks.withType(JavaCompile) {
 war {
     // this is done to remove the version from the archive file name
     // to make span name verification simpler
-    archiveFileName = project.name + '.war'
+    archiveFileName = project.name + ".war"
 }
 
 ext.testAppArtifactDir = war.destinationDirectory
-ext.testAppArtifactFilename = project.name + '.war'
+ext.testAppArtifactFilename = project.name + ".war"
 
 dependencies {
-    implementation (group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE') {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    implementation ("org.springframework.boot:spring-boot-starter-web:2.1.7.RELEASE") {
+        exclude group: "org.springframework.boot", module: "spring-boot-starter-tomcat"
     }
-    implementation group: "com.azure", name: "azure-core", version: "1.14.0"
+    implementation "com.azure:azure-core:1.14.0"
 
-    compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
+    compileOnly "javax.servlet:javax.servlet-api:3.0.1"
 }

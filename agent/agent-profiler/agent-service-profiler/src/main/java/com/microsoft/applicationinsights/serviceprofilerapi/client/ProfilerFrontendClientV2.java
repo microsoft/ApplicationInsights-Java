@@ -22,30 +22,20 @@
 package com.microsoft.applicationinsights.serviceprofilerapi.client;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.UnsupportedCharsetException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Date;
 import java.util.UUID;
 
+import com.azure.core.exception.HttpResponseException;
+import com.azure.core.http.*;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.TimestampContract;
 import com.squareup.moshi.Moshi.Builder;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
-import org.apache.http.client.HttpResponseException;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
 
 /**
  * Client for interacting with the Service Profiler API endpoint
@@ -63,203 +53,171 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
     public static final String FEATURE_VERSION = "1.0.0";
     public static final String API_FEATURE_VERSION = "2020-10-14-preview";
 
-    private final URI hostUrl;
+    private final URL hostUrl;
     private final String instrumentationKey;
-    private final CloseableHttpClient httpClient;
+    private final HttpPipeline httpPipeline;
     private final String userAgent;
 
-    private boolean closed;
-
-    public ProfilerFrontendClientV2(URI hostUrl, String instrumentationKey, CloseableHttpClient httpClient, String userAgent) {
+    public ProfilerFrontendClientV2(URL hostUrl, String instrumentationKey, HttpPipeline httpPipeline, String userAgent) {
         this.hostUrl = hostUrl;
         this.instrumentationKey = instrumentationKey;
-        this.httpClient = httpClient;
+        this.httpPipeline = httpPipeline;
         this.userAgent = userAgent;
-        closed = false;
     }
 
-    public ProfilerFrontendClientV2(URI hostUrl, String instrumentationKey, CloseableHttpClient httpClient) {
-        this(hostUrl, instrumentationKey, httpClient, null);
+    public ProfilerFrontendClientV2(URL hostUrl, String instrumentationKey, HttpPipeline httpPipeline) {
+        this(hostUrl, instrumentationKey, httpPipeline, null);
     }
 
     /**
      * Obtain permission to upload a profile to service profiler
      */
     @Override
-    public BlobAccessPass getUploadAccess(UUID profileId)
-            throws URISyntaxException, IOException, ClientClosedException {
-        assertNotClosed();
+    public BlobAccessPass getUploadAccess(UUID profileId) throws IOException {
+        URL requestUrl = uploadRequestUri(profileId);
+        LOGGER.debug("Etl upload access request: {}", requestUrl);
 
-        URI requestUri = uploadRequestUri(profileId);
-        LOGGER.debug("Etl upload access request: {}", requestUri.toString());
+        HttpResponse response = executePostWithRedirect(requestUrl).block();
+        if (response == null) {
+            // this shouldn't happen, the mono should complete with a response or a failure
+            throw new AssertionError("http response mono returned empty");
+        }
+        if (response.getStatusCode() >= 300) {
+            throw new HttpResponseException(response);
+        }
 
-        return this.executePostWithRedirect(
-                requestUri,
-                response -> {
-                    StatusLine statusLine = response.getStatusLine();
-                    HttpEntity entity = response.getEntity();
-
-                    if (statusLine.getStatusCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                        throw new HttpResponseException(
-                                statusLine.getStatusCode(), statusLine.getReasonPhrase());
-                    }
-
-                    if (entity != null) {
-                        Header[] locations = response.getHeaders("Location");
-                        if (locations != null && locations.length > 0) {
-                            return new BlobAccessPass(null, locations[0].getValue(), null);
-                        } else {
-                            return null;
-                        }
-                    }
-
-                    return null;
-                }, 0);
+        String location = response.getHeaderValue("Location");
+        if (location == null || location.isEmpty()) {
+            return null;
+        }
+        return new BlobAccessPass(null, location, null);
     }
 
-    /**
-     * Unfortunately need to implement POST redirect logic. I believe this is due to our httpclient suffering from:
-     * https://issues.apache.org/jira/browse/HTTPCLIENT-1680
-     */
-    public <T> T executePostWithRedirect(final URI requestUri,
-                                         final ResponseHandler<? extends T> responseHandler,
-                                         int redirectCount) throws IOException {
-        if (redirectCount > 50) {
-            throw new RuntimeException("Max redirects");
-        }
+    public Mono<HttpResponse> executePostWithRedirect(URL requestUrl) {
 
-        HttpPost request = new HttpPost(requestUri);
+        HttpRequest request = new HttpRequest(HttpMethod.POST, requestUrl);
         if (userAgent != null) {
-            request.setHeader(HttpHeaders.USER_AGENT, userAgent);
+            request.setHeader("User-Agent", userAgent);
         }
 
-        return httpClient
-                .execute(request, response -> {
-                    if (response.getStatusLine().getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY ||
-                            response.getStatusLine().getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY ||
-                            response.getStatusLine().getStatusCode() == HttpStatus.SC_TEMPORARY_REDIRECT) {
-
-                        Header[] locations = response.getHeaders("Location");
-                        if (locations != null && locations.length > 0) {
-                            String location = locations[0].getValue();
-                            try {
-                                return executePostWithRedirect(new URI(location), responseHandler, redirectCount + 1);
-                            } catch (URISyntaxException e) {
-                                throw new RuntimeException("Failed to parse URI", e);
-                            }
-                        } else {
-                            throw new RuntimeException("No Location provided on redirect");
-                        }
-                    } else {
-                        return responseHandler.handleResponse(response);
-                    }
-                });
+        return httpPipeline.send(request);
     }
 
     /**
      * Report to Service Profiler that the profile upload has been completed
      */
     @Override
-    public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag)
-            throws URISyntaxException, UnsupportedCharsetException, ClientClosedException, IOException {
+    public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag) throws IOException {
 
-        assertNotClosed();
+        URL requestUrl = uploadFinishedRequestUrl(profileId, etag);
 
-        URI requestUri = uploadFinishedRequestUri(profileId, etag);
+        HttpResponse response = executePostWithRedirect(requestUrl).block();
+        if (response == null) {
+            // this shouldn't happen, the mono should complete with a response or a failure
+            throw new AssertionError("http response mono returned empty");
+        }
 
-        return executePostWithRedirect(
-                requestUri,
-                response -> {
-                    if (response.getStatusLine().getStatusCode() != HttpStatus.SC_ACCEPTED &&
-                            response.getStatusLine().getStatusCode() != HttpStatus.SC_CREATED
-                    ) {
-                        LOGGER.error("Trace upload failed: {} {}", response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
-                        return null;
-                    } else {
-                        String responseData = EntityUtils.toString(response.getEntity());
+        int statusCode = response.getStatusCode();
+        if (statusCode != 201 && statusCode != 202) {
+            LOGGER.error("Trace upload failed: {}", statusCode);
+            return null;
+        }
 
-                        return new Builder()
-                                .build()
-                                .adapter(ArtifactAcceptedResponse.class)
-                                .fromJson(responseData);
-                    }
-                }, 0);
+        String json = response.getBodyAsString().block();
+        if (json == null) {
+            // this shouldn't happen, the mono should complete with a response or a failure
+            throw new AssertionError("response body mono returned empty");
+        }
+        return new Builder()
+                .build()
+                .adapter(ArtifactAcceptedResponse.class)
+                .fromJson(json);
     }
 
     /**
      * Obtain current settings that have been configured within the UI
      */
-    @Override public String getSettings(Date oldTimeStamp)
-            throws IOException, URISyntaxException, ClientClosedException {
-        assertNotClosed();
+    @Override
+    public String getSettings(Date oldTimeStamp) throws MalformedURLException {
 
-        URI requestUri = getSettingsPath(oldTimeStamp);
-        LOGGER.debug("Settings pull request: {}", requestUri.toString());
+        URL requestUrl = getSettingsPath(oldTimeStamp);
+        LOGGER.debug("Settings pull request: {}", requestUrl);
 
-        HttpGet request = new HttpGet(requestUri);
+        HttpRequest request = new HttpRequest(HttpMethod.GET, requestUrl);
 
-        return httpClient.execute(
-                request,
-                response -> {
-                    StatusLine statusLine = response.getStatusLine();
-                    HttpEntity entity = response.getEntity();
-                    if (statusLine.getStatusCode() >= 300) {
-                        throw new HttpResponseException(
-                                statusLine.getStatusCode(), statusLine.getReasonPhrase());
-                    }
-                    if (entity != null) {
-                        return EntityUtils.toString(entity);
-                    }
-                    return null;
-                });
-    }
-
-    public void close() throws IOException {
-        if (!closed) {
-            closed = true;
-            httpClient.close();
+        HttpResponse response = httpPipeline.send(request).block();
+        if (response == null) {
+            // this shouldn't happen, the mono should complete with a response or a failure
+            throw new AssertionError("http response mono returned empty");
         }
-    }
-
-    private void assertNotClosed() throws ClientClosedException {
-        if (closed) {
-            throw new ClientClosedException();
+        if (response.getStatusCode() >= 300) {
+            // FIXME (trask) does azure http client throw HttpResponseException already on >= 300 response above?
+            throw new HttpResponseException(response);
         }
+
+        return response.getBodyAsString().block();
     }
 
     // api/profileragent/v4/settings?ikey=xyz&featureVersion=1.0.0&oldTimestamp=123
-    private URI getSettingsPath(Date oldTimeStamp)
-            throws URISyntaxException {
-        return new URIBuilder(hostUrl)
-                .setPath(SETTINGS_PATH)
-                .addParameter(INSTRUMENTATION_KEY_PARAMETER, instrumentationKey)
-                .addParameter(
-                        OLD_TIMESTAMP_PARAMETER, TimestampContract.timestampToString(oldTimeStamp))
-                .addParameter(FEATURE_VERSION_PARAMETER, FEATURE_VERSION)
-                .build();
+    private URL getSettingsPath(Date oldTimeStamp) throws MalformedURLException {
+
+        String path = SETTINGS_PATH +
+                "?" +
+                INSTRUMENTATION_KEY_PARAMETER +
+                "=" +
+                instrumentationKey +
+                "&" +
+                OLD_TIMESTAMP_PARAMETER +
+                "=" +
+                TimestampContract.timestampToString(oldTimeStamp) +
+                "&" +
+                FEATURE_VERSION_PARAMETER +
+                "=" +
+                FEATURE_VERSION;
+
+        return new URL(hostUrl, path);
     }
 
-    //api/apps/{ikey}/artifactkinds/{artifactKind}/artifacts/{artifactId}?action=gettoken&extension={ext}&api-version=2020-10-14-preview
-    private URI uploadRequestUri(UUID profileId) throws URISyntaxException {
-        return getRequestBuilder(profileId)
-                .addParameter("action", "gettoken")
-                .build();
+    // api/apps/{ikey}/artifactkinds/{artifactKind}/artifacts/{artifactId}?action=gettoken&extension={ext}&api-version=2020-10-14-preview
+    private URL uploadRequestUri(UUID profileId) throws MalformedURLException {
+
+        StringBuilder path = new StringBuilder();
+        appendBasePath(path, profileId);
+        appendBaseQueryString(path);
+
+        path.append("&action=gettoken");
+
+        return new URL(hostUrl, path.toString());
     }
 
 
-    //api/apps/{ikey}/artifactkinds/{artifactKind}/artifacts/{artifactId}?action=commit&extension={ext}&etag={ETag}&api-version=2020-10-14-preview
-    private URI uploadFinishedRequestUri(UUID profileId, String etag) throws URISyntaxException {
-        return getRequestBuilder(profileId)
-                .addParameter("action", "commit")
-                .addParameter("etag", "\"" + etag + "\"")
-                .build();
+    // api/apps/{ikey}/artifactkinds/{artifactKind}/artifacts/{artifactId}?action=commit&extension={ext}&etag={ETag}&api-version=2020-10-14-preview
+    private URL uploadFinishedRequestUrl(UUID profileId, String etag) throws MalformedURLException {
+
+        StringBuilder path = new StringBuilder();
+        appendBasePath(path, profileId);
+        appendBaseQueryString(path);
+
+        path.append("&action=commit&etag=\"")
+                .append(etag)
+                .append("\"");
+
+        return new URL(hostUrl, path.toString());
     }
 
-    private URIBuilder getRequestBuilder(UUID profileId) throws URISyntaxException {
-        return new URIBuilder(hostUrl)
-                .setPath("api/apps/" + instrumentationKey + "/artifactkinds/profile/artifacts/" + profileId.toString())
-                .addParameter(INSTRUMENTATION_KEY_PARAMETER, instrumentationKey)
-                .addParameter("extension", "jfr")
-                .addParameter("api-version", API_FEATURE_VERSION);
+    private void appendBasePath(StringBuilder path, UUID profileId) {
+        path.append("api/apps/")
+                .append(instrumentationKey)
+                .append("/artifactkinds/profile/artifacts/")
+                .append(profileId);
+    }
+
+    private void appendBaseQueryString(StringBuilder path) {
+        path.append("?")
+                .append(INSTRUMENTATION_KEY_PARAMETER)
+                .append("=")
+                .append(instrumentationKey)
+                .append("&extension=jfr&api-version=")
+                .append(API_FEATURE_VERSION);
     }
 }

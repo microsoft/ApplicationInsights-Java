@@ -21,8 +21,8 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oshi.SystemInfo;
@@ -30,6 +30,8 @@ import oshi.hardware.CentralProcessor;
 import oshi.hardware.CentralProcessor.TickType;
 import oshi.software.os.OSProcess;
 import oshi.software.os.OperatingSystem;
+
+import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
 
 public class OshiPerformanceCounter implements PerformanceCounter {
 
@@ -105,8 +107,8 @@ public class OshiPerformanceCounter implements PerformanceCounter {
         return systemCpuLoadTicks[TickType.USER.getIndex()] + systemCpuLoadTicks[TickType.SYSTEM.getIndex()];
     }
 
-    private void send(TelemetryClient telemetryClient, double value, String metricName) {
-        MetricTelemetry telemetry = new MetricTelemetry(metricName, value);
-        telemetryClient.track(telemetry);
+    private static void send(TelemetryClient telemetryClient, double value, String metricName) {
+        TelemetryItem telemetry = createMetricsTelemetry(telemetryClient, metricName, value);
+        telemetryClient.trackAsync(telemetry);
     }
 }

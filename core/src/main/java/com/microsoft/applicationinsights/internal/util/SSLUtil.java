@@ -9,8 +9,7 @@ public class SSLUtil {
 
     public static FriendlyException newSSLFriendlyException(String url)  {
         return new FriendlyException(getSSLFriendlyExceptionBanner(url),
-                getSSLFriendlyExceptionMessage(),
-                getSSLFriendlyExceptionAction(url),
+                getSSLFriendlyExceptionAction(url), getSSLFriendlyExceptionMessage(),
                 getSSLFriendlyExceptionNote());
     }
 
@@ -53,4 +52,6 @@ public class SSLUtil {
     private static String getSSLFriendlyExceptionNote() {
         return "This message is only logged the first time it occurs after startup.";
     }
+
+    private SSLUtil() {}
 }

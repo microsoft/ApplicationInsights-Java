@@ -1,12 +1,8 @@
 package com.microsoft.applicationinsights.internal.util;
 
-import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Created by gupele on 5/10/2015.
- */
 public final class LimitsEnforcer {
 
     private static final Logger logger = LoggerFactory.getLogger(LimitsEnforcer.class);
@@ -45,36 +41,35 @@ public final class LimitsEnforcer {
     }
 
     public int normalizeValue(Integer value) {
+        currentValue = getValue(value);
+        return currentValue;
+    }
+
+    private int getValue(Integer value) {
         switch (type) {
             case DEFAULT_ON_ERROR:
                 if (value == null || value < minimum || value > maximum) {
                     logger.warn("'{}': bad value is replaced by the default: '{}'", propertyName, defaultValue);
-                    currentValue = defaultValue;
+                    return defaultValue;
                 } else {
-                    currentValue = value;
+                    return value;
                 }
-                break;
 
             case CLOSEST_LIMIT_ON_ERROR:
                 if (value == null) {
-                    currentValue = defaultValue;
                     logger.debug("'{}': null value is replaced with '{}'", propertyName, defaultValue);
+                    return defaultValue;
                 } else if (value < minimum) {
-                    currentValue = minimum;
                     logger.warn("'{}': value is under the minimum, therefore is replaced with '{}'", propertyName, minimum);
+                    return minimum;
                 } else if (value > maximum) {
-                    currentValue = maximum;
                     logger.warn("'{}': value is above the maximum, therefore is replaced with '{}'", propertyName, maximum);
+                    return maximum;
                 } else {
-                    currentValue = value;
+                    return value;
                 }
-                break;
-
-            default:
-                throw new IllegalStateException("Unknown type "+type);
         }
-
-        return currentValue;
+        throw new IllegalStateException("Unknown type "+type);
     }
 
     public int normalizeStringValue(String value) {
@@ -82,8 +77,12 @@ public final class LimitsEnforcer {
     }
 
     private LimitsEnforcer(Type type, int minimum, int maximum, int defaultValue, Integer currentValue, String propertyName) {
-        Preconditions.checkState(maximum >= minimum, "maximum must be >= than minimum");
-        Preconditions.checkState(defaultValue >= minimum && defaultValue <= maximum, "defaultValue must be: 'defaultValue >= minimum && defaultValue <= maximum");
+        if (maximum < minimum) {
+            throw new IllegalStateException("maximum must be >= than minimum");
+        }
+        if (defaultValue < minimum || defaultValue > maximum) {
+            throw new IllegalStateException("defaultValue must be: 'defaultValue >= minimum && defaultValue <= maximum");
+        }
 
         this.propertyName = propertyName;
 
@@ -100,10 +99,6 @@ public final class LimitsEnforcer {
 
     public static LimitsEnforcer createWithClosestLimitOnError(String propertyName, int minimum, int maximum, int defaultValue, Integer currentValue) {
         return new LimitsEnforcer(Type.CLOSEST_LIMIT_ON_ERROR, minimum, maximum, defaultValue, currentValue, propertyName);
-    }
-
-    public static LimitsEnforcer createWithClosestLimitOnError(int minimum, int maximum, int defaultValue, String propertyName, String currentValue) {
-        return new LimitsEnforcer(Type.CLOSEST_LIMIT_ON_ERROR, minimum, maximum, defaultValue, translate(propertyName, currentValue), propertyName);
     }
 
     private static Integer translate(String propertyName, String valueAsString) {

@@ -23,9 +23,6 @@ package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.junit.*;
-
-import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.UUID;
@@ -37,13 +34,21 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.IpaWarn;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model.IpaEtwEventBase;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model.IpaEtwEventErrorBase;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class EtwProviderTests {
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
+@SuppressWarnings("SystemOut")
+class EtwProviderTests {
     private static final String FOLDER_NAME = "EtwProviderTests";
     private static final File dllTempFolder = DllFileUtils.buildDllLocalPath(FOLDER_NAME);
 
-    @BeforeClass
-    public static void cleanTempFolder() {
+    @BeforeAll
+    static void cleanTempFolder() {
         if (dllTempFolder.exists()) {
             System.out.println("Cleaning temp folder: "+dllTempFolder.getAbsolutePath());
             for (File f : dllTempFolder.listFiles()) {
@@ -69,50 +74,48 @@ public class EtwProviderTests {
         String speriod = System.getProperty("ai.tests.etw.stats.period");
         long period = 2000; // default 2 seconds.
         if (speriod != null) {
-            try {
-                period = Long.parseLong(speriod);
-            } catch(Exception e) {
-                // ignore
-            }
+            period = Long.parseLong(speriod);
         }
         EVENT_STATS_TIMER_PERIOD_MILLISECONDS = period;
     }
 
-    private IpaVerbose createVerbose(String logger, String operation, String messageFormat, Object...messageArgs) {
+    private static IpaVerbose createVerbose(String logger, String operation, String messageFormat, Object...messageArgs) {
         IpaVerbose rval = new IpaVerbose(PROTOTYPE);
         rval.setLogger(logger);
+        rval.setOperation(operation);
         rval.setMessageFormat(messageFormat);
         rval.setMessageArgs(messageArgs);
         return rval;
     }
 
-    private IpaInfo createInfo(String logger, String operation, String messageFormat, Object...messageArgs) {
+    private static IpaInfo createInfo(String logger, String operation, String messageFormat, Object...messageArgs) {
         IpaInfo rval = new IpaInfo(PROTOTYPE);
         rval.setLogger(logger);
+        rval.setOperation(operation);
         rval.setMessageFormat(messageFormat);
         rval.setMessageArgs(messageArgs);
         return rval;
     }
 
-    private IpaError createError(String logger, String operation, Throwable throwable, String messageFormat, Object...messageArgs) {
+    private static IpaError createError(String logger, String operation, Throwable throwable, String messageFormat, Object...messageArgs) {
         IpaError rval = new IpaError(PROTOTYPE);
         populateEventWithException(rval, logger, operation, throwable, messageFormat, messageArgs);
         return rval;
     }
 
-    private IpaWarn createWarn(String logger, String operation, Throwable throwable, String messageFormat, Object...messageArgs) {
+    private static IpaWarn createWarn(String logger, String operation, Throwable throwable, String messageFormat, Object...messageArgs) {
         IpaWarn rval = new IpaWarn(PROTOTYPE);
         populateEventWithException(rval, logger, operation, throwable, messageFormat, messageArgs);
         return rval;
     }
 
-    private IpaCritical createCritical(String logger, String operation, Throwable throwable, String messageFormat, Object...messageArgs) {
+    private static IpaCritical createCritical(String logger, String operation, Throwable throwable, String messageFormat, Object...messageArgs) {
         IpaCritical rval = new IpaCritical(PROTOTYPE);
         populateEventWithException(rval, logger, operation, throwable, messageFormat, messageArgs);
         return rval;
     }
 
-    private void populateEventWithException(IpaEtwEventErrorBase event, String logger, String operation, Throwable throwable, String messageFormat, Object...messageArgs) {
+    private static void populateEventWithException(IpaEtwEventErrorBase event, String logger, String operation, Throwable throwable, String messageFormat, Object...messageArgs) {
         event.setLogger(logger);
         event.setOperation(operation);
         if (throwable != null) {
@@ -122,19 +125,19 @@ public class EtwProviderTests {
         event.setMessageArgs(messageArgs);
     }
 
-    @Before
-    public void checkOs() {
-        Assume.assumeTrue("Ignoring etw test. Not on windows", SystemUtils.IS_OS_WINDOWS);
-        Assume.assumeFalse("Ignoring etw test. skipWinNative=true", Boolean.parseBoolean(System.getProperty("skipWinNative")));
+    @BeforeEach
+    void checkOs() {
+        assumeTrue(SystemUtils.IS_OS_WINDOWS, "Ignoring etw test. Not on windows");
+        assumeFalse(Boolean.parseBoolean(System.getProperty("skipWinNative")), "Ignoring etw test. skipWinNative=true");
     }
 
     @Test
-    public void testDllExtracted() throws Exception {
+    void testDllExtracted() throws Exception {
         new EtwProvider(FOLDER_NAME); // Triggers DLL extraction
         String filename = EtwProvider.getDllFilenameForArch();
-        final File dllPath = new File(dllTempFolder, filename);
+        File dllPath = new File(dllTempFolder, filename);
         System.out.println("Checking for DLL: "+dllPath.getAbsolutePath());
-        assertTrue("Dll does not exist: "+dllPath.getAbsolutePath(), dllPath.exists());
+        assertThat(dllPath).exists();
 
         IpaVerbose everbose = createVerbose("test.verbose.logger", "testDllExtracted", "verbose test message %s", "hello, world!");
         IpaInfo einfo = createInfo("test.info.logger", "testDllExtracted", "test message %s", "hello!");
@@ -153,21 +156,21 @@ public class EtwProviderTests {
         ep.writeEvent(otherWarn);
     }
 
-    private void longTestCheck() {
-        Assume.assumeFalse("Long tests disabled", "true".equalsIgnoreCase(System.getProperty("ai.etw.tests.long.disabled")));
-        Assume.assumeTrue("Verbose output enabled. Skipping long tests.",
-            "release".equalsIgnoreCase(System.getProperty("ai.etw.native.build")) ||
-            !"true".equalsIgnoreCase(System.getProperty("ai.etw.native.verbose")));
+    private static void longTestCheck() {
+        assumeFalse("true".equalsIgnoreCase(System.getProperty("ai.etw.tests.long.disabled")), "Long tests disabled");
+        assumeTrue("release".equalsIgnoreCase(System.getProperty("ai.etw.native.build")) ||
+            !"true".equalsIgnoreCase(System.getProperty("ai.etw.native.verbose")),
+                "Verbose output enabled. Skipping long tests.");
     }
 
     @Test
-    public void testEventsOnLoop_50k() throws Exception {
+    void testEventsOnLoop_50k() throws Exception {
         longTestCheck();
         runLoopTest(50_000);
     }
 
     @Test
-    public void testEventsOnLoop_500k() throws Exception {
+    void testEventsOnLoop_500k() throws Exception {
         longTestCheck();
         runLoopTest(500_000);
     }
@@ -205,7 +208,7 @@ public class EtwProviderTests {
         }
     }
 
-    private void runLoopTest(int iterations) throws Exception {
+    private static void runLoopTest(int iterations) throws Exception {
         int verboseChance = 20;
         int warnChance = 10;
         int errorChance = 5;
@@ -215,8 +218,8 @@ public class EtwProviderTests {
         EventCounts totalEvents = new EventCounts();
         long printTimer = 0;
         EventCounts accumulator = new EventCounts();
-        System.out.println("START: totalEvents: "+totalEvents.sum()+totalEvents.toString());
-        System.out.println("       accumulator: "+accumulator.sum()+accumulator.toString());
+        System.out.println("START: totalEvents: "+totalEvents.sum()+ totalEvents);
+        System.out.println("       accumulator: "+accumulator.sum()+ accumulator);
         for (int i = 0; i < iterations; i++) {
             long start = System.currentTimeMillis();
             ep.writeEvent(createInfo("test.info", "testEventsOnLoop", "i=%d", i));
@@ -253,13 +256,13 @@ public class EtwProviderTests {
             printTimer += elapsedTime;
             if (printTimer >= EVENT_STATS_TIMER_PERIOD_MILLISECONDS) {
                 totalEvents.plus(accumulator);
-                System.out.println("Wrote " + accumulator.sum() + " events (" + totalEvents.sum() + ") "+accumulator.toString()+" in " + printTimer + "ms "+String.format("(avg=%.3fms)", ((double)printTimer/(double)accumulator.sum())));
+                System.out.println("Wrote " + accumulator.sum() + " events (" + totalEvents.sum() + ") "+ accumulator +" in " + printTimer + "ms "+String.format("(avg=%.3fms)", ((double)printTimer/(double)accumulator.sum())));
                 printTimer = 0;
                 accumulator.reset();
             }
         }
         totalEvents.plus(accumulator);
         long totalElapsedTime = System.currentTimeMillis()-methodStart;
-        System.out.println("FINAL STATS: wrote "+totalEvents.sum()+" events "+totalEvents.toString()+" in "+totalElapsedTime+"ms "+String.format("(avg=%.3fms)", ((double)totalElapsedTime/(double)totalEvents.sum())));
+        System.out.println("FINAL STATS: wrote "+totalEvents.sum()+" events "+ totalEvents +" in "+totalElapsedTime+"ms "+String.format("(avg=%.3fms)", ((double)totalElapsedTime/(double)totalEvents.sum())));
     }
 }

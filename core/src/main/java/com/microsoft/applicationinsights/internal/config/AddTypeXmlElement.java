@@ -25,9 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by gupele on 3/15/2015.
- */
 public class AddTypeXmlElement {
 
     private String type;

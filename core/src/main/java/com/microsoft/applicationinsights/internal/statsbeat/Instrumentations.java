@@ -117,4 +117,6 @@ class Instrumentations {
 
         return 0L;
     }
+
+    private Instrumentations() {}
 }

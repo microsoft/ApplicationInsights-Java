@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.google.common.base.Preconditions;
-
 /**
  * This class lets its users to define an interval of time
  * which can be defined in terms of days, hours, minutes, seconds and milliseconds.
@@ -52,11 +50,6 @@ public final class Duration {
      * @param milliseconds Milliseconds in range [0, 999].
      */
     public Duration(long days, int hours, int minutes, int seconds, int milliseconds) {
-        Preconditions.checkArgument(hours >= -23 && hours <= 23, "hours argument should be in the [-23, 23] range");
-        Preconditions.checkArgument(minutes >= -59 && minutes <= 59, "minutes argument should be in the [-59, 59] range");
-        Preconditions.checkArgument(seconds >= -59 && seconds <= 59, "seconds argument should be in the [-59, 59] range");
-        Preconditions.checkArgument(milliseconds >= 0 && milliseconds <= 999, "milliseconds argument should be in the [0, 999] range");
-
         this.days = days;
         this.hours = hours;
         this.minutes = minutes;
@@ -207,7 +200,7 @@ public final class Duration {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 89 * hash + (int)((days ^ (days >>> 32)));
+        hash = 89 * hash + (int) (days ^ (days >>> 32));
         hash = 89 * hash + hours;
         hash = 89 * hash + minutes;
         hash = 89 * hash + seconds;

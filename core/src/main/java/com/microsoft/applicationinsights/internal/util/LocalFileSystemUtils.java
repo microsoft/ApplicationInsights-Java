@@ -46,10 +46,10 @@ public class LocalFileSystemUtils {
      * for the current user.
      */
     public static File getTempDir() {
-        final String tempDirectory = System.getProperty("java.io.tmpdir");
-        final String currentUserName = determineCurrentUserName();
+        String tempDirectory = System.getProperty("java.io.tmpdir");
+        String currentUserName = determineCurrentUserName();
 
-        final File result = getTempDir(tempDirectory, currentUserName);
+        File result = getTempDir(tempDirectory, currentUserName);
         if (!result.isDirectory()) {
             // Noinspection ResultOfMethodCallIgnored
             result.mkdirs();
@@ -57,13 +57,13 @@ public class LocalFileSystemUtils {
         return result;
     }
 
-    static File getTempDir(final String initialValue, final String userName) {
+    static File getTempDir(String initialValue, String userName) {
         String tempDirectory = initialValue;
 
         // does it look shared?
         // TODO: this only catches the Linux case; I think a few system users on Windows might share c:\Windows\Temp
         if ("/tmp".contentEquals(tempDirectory)) {
-            final File candidate = new File(tempDirectory, userName);
+            File candidate = new File(tempDirectory, userName);
             tempDirectory = candidate.getAbsolutePath();
         }
 
@@ -82,7 +82,7 @@ public class LocalFileSystemUtils {
 
         if (LocalStringsUtils.isNullOrEmpty(userName)) {
             // Try some environment variables
-            for (final String candidate : CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES) {
+            for (String candidate : CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES) {
                 userName = System.getenv(candidate);
                 if (!LocalStringsUtils.isNullOrEmpty(userName)) {
                     break;
@@ -97,4 +97,6 @@ public class LocalFileSystemUtils {
 
         return userName;
     }
+
+    private LocalFileSystemUtils() {}
 }

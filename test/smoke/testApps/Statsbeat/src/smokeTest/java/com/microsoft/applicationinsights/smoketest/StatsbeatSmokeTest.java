@@ -5,15 +5,13 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
-import javax.annotation.Nullable;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.MetricData;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 @UseAgent("faststatsbeat")
@@ -76,17 +74,12 @@ public class StatsbeatSmokeTest extends AiSmokeTest {
     }
 
     private static Predicate<Envelope> getMetricPredicate(String name) {
-        Preconditions.checkNotNull(name, "name");
-        return new Predicate<Envelope>() {
-            @Override
-            public boolean apply(Envelope input) {
-                if(!input.getData().getBaseType().equals("MetricData")) {
-                    return false;
-                }
-                MetricData md = getBaseData(input);
-                return name.equals(md.getMetrics().get(0).getName());
+        return input -> {
+            if(!input.getData().getBaseType().equals("MetricData")) {
+                return false;
             }
+            MetricData md = getBaseData(input);
+            return name.equals(md.getMetrics().get(0).getName());
         };
     }
-
 }

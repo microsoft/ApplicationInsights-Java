@@ -7,11 +7,11 @@ public class SubscriptionIdFinder extends CachedDiagnosticsValueFinder {
 
     @Override
     protected String populateValue() {
-        final String envValue = System.getenv(WEBSITE_OWNER_NAME_ENV_VAR);
+        String envValue = System.getenv(WEBSITE_OWNER_NAME_ENV_VAR);
         if (envValue == null || envValue.isEmpty()) {
             return "unknown";
         }
-        final int index = envValue.indexOf('+');
+        int index = envValue.indexOf('+');
         if (index < 0) {
             return "unknown";
         }

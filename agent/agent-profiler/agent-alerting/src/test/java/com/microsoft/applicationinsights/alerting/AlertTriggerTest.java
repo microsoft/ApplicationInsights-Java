@@ -27,12 +27,14 @@ import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.analysis.AlertPipelineTrigger;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
-import org.junit.*;
+import org.junit.jupiter.api.Test;
 
-public class AlertTriggerTest {
+import static org.assertj.core.api.Assertions.assertThat;
+
+class AlertTriggerTest {
 
     @Test
-    public void underThresholdDataDoesNotTrigger() {
+    void underThresholdDataDoesNotTrigger() {
         AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1000);
         AtomicBoolean called = new AtomicBoolean(false);
         AlertPipelineTrigger trigger = getAlertTrigger(config, called);
@@ -40,11 +42,11 @@ public class AlertTriggerTest {
             trigger.accept(0.4);
         }
 
-        Assert.assertFalse(called.get());
+        assertThat(called.get()).isFalse();
     }
 
     @Test
-    public void overThresholdDataDoesTrigger() {
+    void overThresholdDataDoesTrigger() {
 
         AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1);
         AtomicBoolean called = new AtomicBoolean(false);
@@ -54,12 +56,12 @@ public class AlertTriggerTest {
             trigger.accept(0.51);
         }
 
-        Assert.assertTrue(called.get());
+        assertThat(called.get()).isTrue();
     }
 
 
     @Test
-    public void doesNotReTriggerDueToCooldown() {
+    void doesNotReTriggerDueToCooldown() {
         AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1000);
         AtomicBoolean called = new AtomicBoolean(false);
         AlertPipelineTrigger trigger = getAlertTrigger(config, called);
@@ -67,7 +69,7 @@ public class AlertTriggerTest {
         for (int i = 0; i < 100; i++) {
             trigger.accept(0.51);
         }
-        Assert.assertTrue(called.get());
+        assertThat(called.get()).isTrue();
         called.set(false);
 
         for (int i = 0; i < 100; i++) {
@@ -78,12 +80,12 @@ public class AlertTriggerTest {
             trigger.accept(0.51);
         }
 
-        Assert.assertFalse(called.get());
+        assertThat(called.get()).isFalse();
     }
 
 
     @Test
-    public void doesNotReTriggerAfterCooldown() throws InterruptedException {
+    void doesNotReTriggerAfterCooldown() throws InterruptedException {
         AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1);
         AtomicBoolean called = new AtomicBoolean(false);
         AlertPipelineTrigger trigger = getAlertTrigger(config, called);
@@ -91,7 +93,7 @@ public class AlertTriggerTest {
         for (int i = 0; i < 100; i++) {
             trigger.accept(0.51);
         }
-        Assert.assertTrue(called.get());
+        assertThat(called.get()).isTrue();
         called.set(false);
 
         Thread.sleep(2000);
@@ -104,13 +106,13 @@ public class AlertTriggerTest {
             trigger.accept(0.51);
         }
 
-        Assert.assertTrue(called.get());
+        assertThat(called.get()).isTrue();
     }
 
-    private AlertPipelineTrigger getAlertTrigger(AlertConfiguration config, AtomicBoolean called) {
+    private static AlertPipelineTrigger getAlertTrigger(AlertConfiguration config, AtomicBoolean called) {
         Consumer<AlertBreach> consumer = alert -> {
-            Assert.assertEquals(AlertMetricType.CPU, alert.getType());
-            Assert.assertEquals(config, alert.getAlertConfiguration());
+            assertThat(alert.getType()).isEqualTo(AlertMetricType.CPU);
+            assertThat(alert.getAlertConfiguration()).isEqualTo(config);
             called.set(true);
         };
 

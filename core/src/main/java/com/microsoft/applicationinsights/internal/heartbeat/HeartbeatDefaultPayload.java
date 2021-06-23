@@ -6,8 +6,6 @@ import java.util.concurrent.Callable;
 
 /**
  * Container for storing default payload and it's associated helpers.
- *
- * @author Dhaval Doshi
  */
 public class HeartbeatDefaultPayload {
 
@@ -28,8 +26,8 @@ public class HeartbeatDefaultPayload {
    * @param provider The HeartBeat provider
    * @return Callable to perform execution
    */
-  public static Callable<Boolean> populateDefaultPayload(final List<String> disabledFields, final List<String>
-      disabledProviders, final HeartBeatProviderInterface provider) {
+  public static Callable<Boolean> populateDefaultPayload(List<String> disabledFields, List<String>
+      disabledProviders, HeartBeatProviderInterface provider) {
     return new Callable<Boolean>() {
       @Override
       public Boolean call() throws Exception {
@@ -49,4 +47,5 @@ public class HeartbeatDefaultPayload {
     };
   }
 
+  private HeartbeatDefaultPayload() {}
 }

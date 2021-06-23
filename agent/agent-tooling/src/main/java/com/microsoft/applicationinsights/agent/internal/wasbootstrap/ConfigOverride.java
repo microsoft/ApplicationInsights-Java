@@ -68,4 +68,6 @@ class ConfigOverride {
 
         return new ConfigBuilder().readProperties(properties).build();
     }
+
+    private ConfigOverride() {}
 }

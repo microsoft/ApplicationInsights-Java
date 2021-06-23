@@ -1,8 +1,6 @@
-group = 'io.opentelemetry.javaagent'
-
 apply from: "$buildScriptsDir/common-java.gradle"
 
 dependencies {
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    implementation "org.slf4j:slf4j-api:${versions.slf4j}"
+    implementation "com.google.errorprone:error_prone_annotations:2.7.1"
 }

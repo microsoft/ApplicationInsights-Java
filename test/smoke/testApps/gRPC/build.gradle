@@ -1,22 +1,22 @@
 plugins {
-    id 'java'
-    id 'org.springframework.boot' version '2.1.7.RELEASE'
-    id 'com.google.protobuf' version '0.8.14'
+    id "java"
+    id "org.springframework.boot" version "2.1.7.RELEASE"
+    id "com.google.protobuf" version "0.8.14"
 }
 
 ext.testAppArtifactDir = jar.destinationDirectory
 ext.testAppArtifactFilename = jar.archiveFileName.get()
 
-def protobufVersion = '3.6.1'
-def grpcVersion = '1.16.1'
+def protobufVersion = "3.6.1"
+def grpcVersion = "1.16.1"
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:${protobufVersion}"
+        artifact = "com.google.protobuf:protoc:$protobufVersion"
     }
     plugins {
         grpc {
-            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+            artifact = "io.grpc:protoc-gen-grpc-java:$grpcVersion"
         }
     }
     generateProtoTasks {
@@ -28,12 +28,12 @@ protobuf {
 }
 
 dependencies {
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE'
+    implementation "org.springframework.boot:spring-boot-starter-web:2.1.7.RELEASE"
 
-    implementation group: 'io.grpc', name: 'grpc-core', version: grpcVersion
-    implementation group: 'io.grpc', name: 'grpc-netty', version: grpcVersion
-    implementation group: 'io.grpc', name: 'grpc-protobuf', version: grpcVersion
-    implementation group: 'io.grpc', name: 'grpc-stub', version: grpcVersion
+    implementation "io.grpc:grpc-core:$grpcVersion"
+    implementation "io.grpc:grpc-netty:$grpcVersion"
+    implementation "io.grpc:grpc-protobuf:$grpcVersion"
+    implementation "io.grpc:grpc-stub:$grpcVersion"
 }
 
 tasks.withType(JavaCompile) {

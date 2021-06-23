@@ -3,7 +3,6 @@ package com.microsoft.applicationinsights.smoketestapp;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -14,7 +13,8 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import com.google.common.base.Stopwatch;
+
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 @WebServlet("/*")
 public class CassandraTestServlet extends HttpServlet {
@@ -81,14 +81,14 @@ public class CassandraTestServlet extends HttpServlet {
 
     private static Session getCassandraSession(Callable<Session> callable) throws Exception {
         Exception exception;
-        Stopwatch stopwatch = Stopwatch.createStarted();
+        long start = System.nanoTime();
         do {
             try {
                 return callable.call();
             } catch (Exception e) {
                 exception = e;
             }
-        } while (stopwatch.elapsed(TimeUnit.SECONDS) < 30);
+        } while (NANOSECONDS.toSeconds(System.nanoTime() - start) < 30);
         throw exception;
     }
 
