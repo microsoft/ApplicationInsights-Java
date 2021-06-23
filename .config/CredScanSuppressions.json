@@ -1,0 +1,12 @@
+{
+  "tool": "Credential Scanner",
+  "suppressions": [
+    {
+      "file": [
+        "C:\\source\\otel\\testing-common\\src\\misc\\README.md",
+        "C:\\source\\otel\\testing-common\\src\\misc\\testing-keystore.p12"
+      ],
+      "_justification": "The secret is used only for testing."
+    }
+  ]
+}
