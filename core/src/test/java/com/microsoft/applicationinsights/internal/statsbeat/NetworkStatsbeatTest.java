@@ -16,7 +16,7 @@ public class NetworkStatsbeatTest {
 
     @BeforeEach
     public void init() {
-        networkStatsbeat = new NetworkStatsbeat();
+        networkStatsbeat = new NetworkStatsbeat(new CustomDimensions());
     }
 
     @Test

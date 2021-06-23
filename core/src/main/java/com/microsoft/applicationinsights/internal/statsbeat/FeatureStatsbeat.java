@@ -34,8 +34,9 @@ class FeatureStatsbeat extends BaseStatsbeat {
 
     private final Set<Feature> featureList = new HashSet<>(64);
 
-    FeatureStatsbeat() {
+    FeatureStatsbeat(CustomDimensions customDimensions) {
         // track java distribution
+        super(customDimensions);
         String javaVendor = System.getProperty("java.vendor");
         featureList.add(Feature.fromJavaVendor(javaVendor));
     }

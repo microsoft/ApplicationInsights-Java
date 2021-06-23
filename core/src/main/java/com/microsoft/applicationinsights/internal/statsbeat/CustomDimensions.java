@@ -28,8 +28,6 @@ import java.util.Map;
 
 class CustomDimensions {
 
-    private static final CustomDimensions instance = new CustomDimensions();
-
     private volatile ResourceProvider resourceProvider;
     private volatile OperatingSystem operatingSystem;
 
@@ -37,11 +35,6 @@ class CustomDimensions {
     private final String runtimeVersion;
     private final String language;
     private final String sdkVersion;
-
-    // FIXME (trask) review usages of the global, and inject where possible
-    static CustomDimensions get() {
-        return instance;
-    }
 
     // visible for testing
     CustomDimensions() {

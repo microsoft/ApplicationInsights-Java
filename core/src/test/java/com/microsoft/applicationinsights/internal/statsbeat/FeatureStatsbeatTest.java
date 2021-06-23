@@ -16,7 +16,7 @@ public class FeatureStatsbeatTest {
 
     @BeforeEach
     public void init() {
-        featureStatsbeat = new FeatureStatsbeat();
+        featureStatsbeat = new FeatureStatsbeat(new CustomDimensions());
         javaVendor = System.getProperty("java.vendor");
     }
 

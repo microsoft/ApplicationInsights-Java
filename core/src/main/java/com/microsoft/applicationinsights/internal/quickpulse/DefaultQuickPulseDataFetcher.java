@@ -50,13 +50,13 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         sdkVersion = getCurrentSdkVersion();
         StringBuilder sb = new StringBuilder();
 
-        // FIXME (trask) what about azure functions consumption plan where role name not available yet?
+        // FIXME (heya) what about azure functions consumption plan where role name not available yet?
         String roleName = telemetryClient.getRoleName();
 
         sb.append("[{");
         sb.append("\"Documents\":[],");
         sb.append("\"Instance\":\"").append(instanceName).append("\",");
-        // FIXME (trask) this seemed to be working when it was always null ikey here??
+        // TODO (trask) instrumentation key is also part of query string, is it needed in both places?
         sb.append("\"InstrumentationKey\":\"").append(telemetryClient.getInstrumentationKey()).append("\",");
         sb.append("\"InvariantVersion\":").append(QuickPulse.QP_INVARIANT_VERSION).append(",");
         sb.append("\"MachineName\":\"").append(machineName).append("\",");

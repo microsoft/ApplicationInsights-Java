@@ -29,7 +29,7 @@ public class AttachStatsbeatTest {
 
     @BeforeEach
     public void setup() {
-        attachStatsbeat = new AttachStatsbeat();
+        attachStatsbeat = new AttachStatsbeat(new CustomDimensions());
     }
 
     @Test

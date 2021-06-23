@@ -26,21 +26,24 @@ import com.azure.core.http.HttpPipelineNextPolicy;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.http.policy.HttpPipelinePolicy;
+import io.opentelemetry.instrumentation.api.caching.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 import java.net.HttpURLConnection;
+import java.net.URL;
 
-// This is a copy from Azure Monitor Open Telemetry Exporter SDK AzureMonitorRedirectPolicy
-public final class AzureMonitorRedirectPolicy implements HttpPipelinePolicy {
+// This is mostly a copy from Azure Monitor Open Telemetry Exporter SDK AzureMonitorRedirectPolicy
+public final class RedirectPolicy implements HttpPipelinePolicy {
 
     private static final int PERMANENT_REDIRECT_STATUS_CODE = 308;
     private static final int TEMP_REDIRECT_STATUS_CODE = 307;
     // Based on Stamp specific redirects design doc
     private static final int MAX_REDIRECT_RETRIES = 10;
-    private static final Logger logger = LoggerFactory.getLogger(AzureMonitorRedirectPolicy.class);
-    private volatile String redirectedEndpointUrl;
+    private static final Logger logger = LoggerFactory.getLogger(RedirectPolicy.class);
+
+    private final Cache<URL, String> redirectMappings = Cache.newBuilder().setMaximumSize(100).build();
 
     @Override
     public Mono<HttpResponse> process(HttpPipelineCallContext context, HttpPipelineNextPolicy next) {
@@ -56,16 +59,18 @@ public final class AzureMonitorRedirectPolicy implements HttpPipelinePolicy {
                                             HttpRequest originalHttpRequest,
                                             int retryCount) {
         // make sure the context is not modified during retry, except for the URL
-        context.setHttpRequest(originalHttpRequest.copy());
-        if (this.redirectedEndpointUrl != null) {
-            context.getHttpRequest().setUrl(this.redirectedEndpointUrl);
+        HttpRequest newHttpRequest = originalHttpRequest.copy();
+        String redirectLocation = redirectMappings.get(originalHttpRequest.getUrl());
+        if (redirectLocation != null) {
+            newHttpRequest.setUrl(redirectLocation);
         }
+        context.setHttpRequest(newHttpRequest);
         return next.clone().process()
                 .flatMap(httpResponse -> {
                     if (shouldRetryWithRedirect(httpResponse.getStatusCode(), retryCount)) {
                         String responseLocation = httpResponse.getHeaderValue("Location");
                         if (responseLocation != null) {
-                            this.redirectedEndpointUrl = responseLocation;
+                            redirectMappings.put(originalHttpRequest.getUrl(), responseLocation);
                             return attemptRetry(context, next, originalHttpRequest, retryCount + 1);
                         }
                     }
