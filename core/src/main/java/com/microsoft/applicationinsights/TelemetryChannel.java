@@ -151,31 +151,28 @@ public class TelemetryChannel {
         return result;
     }
 
-    // TODO (heya) this method name doesn't match what it does
     private static void parseResponseCode(int statusCode) {
         switch (statusCode) {
-            // TODO (trask) need constants for these
-            case 401:
-            case 403: {
+            case 401: // UNAUTHORIZED
+            case 403: // FORBIDDEN
                 logger.warn("Failed to send telemetry with status code:{}, please check your credentials", statusCode);
                 break;
-            }
-            case 408:
-            case 500:
-            case 503:
-            case BreezeStatusCode.CLIENT_SIDE_EXCEPTION:
-                // TODO exponential backoff and retry to a limit
-                // TODO (heya) track failure count via Statsbeat
-                StatsbeatModule.get().getNetworkStatsbeat().incrementRetryCount();
-                break;
-            case BreezeStatusCode.THROTTLED_OVER_EXTENDED_TIME:
-            case BreezeStatusCode.THROTTLED:
+            case 408: // REQUEST TIMEOUT
+            case 500: // INTERNAL SERVER ERROR
+            case 503: // SERVICE UNAVAILABLE
+            case 429: // TOO MANY REQUESTS
+            case 439: // Breeze-specific: THROTTLED OVER EXTENDED TIME
                 // TODO handle throttling
                 // TODO (heya) track throttling count via Statsbeat
                 StatsbeatModule.get().getNetworkStatsbeat().incrementThrottlingCount();
                 break;
-            case BreezeStatusCode.PARTIAL_SUCCESS:
+            case 206: // PARTIAL CONTENT, Breeze-specific: PARTIAL SUCCESS
                 // TODO handle partial success
+                break;
+            case 0: // client-side exception
+                // TODO exponential backoff and retry to a limit
+                // TODO (heya) track failure count via Statsbeat
+                StatsbeatModule.get().getNetworkStatsbeat().incrementRetryCount();
                 break;
             default:
                 // ok

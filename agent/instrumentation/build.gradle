@@ -21,7 +21,7 @@ configurations {
     implementation.exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api"
     implementation.exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-caching"
 
-    // TODO (trask) why is this included in azure-core?
+    // TODO (trask) Azure SDK: why is this included in azure-core?
     implementation.exclude group: "io.netty", module: "netty-tcnative-boringssl-static"
 
     implementation.exclude group: "com.fasterxml.jackson.dataformat", module: "jackson-dataformat-xml"
@@ -170,10 +170,10 @@ shadowJar {
     relocate "io.opentelemetry.extension.aws", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.aws"
     relocate "io.opentelemetry.extension.kotlin", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.kotlin"
 
-    // TODO (trask) is this needed?
     // this is for instrumentation on opentelemetry-api itself
     relocate "application.io.opentelemetry", "io.opentelemetry"
 
+    // this is for instrumentation on java.util.logging itself
     relocate "application.java.util.logging.Logger", "java.util.logging.Logger"
 }
 

@@ -39,7 +39,6 @@ public class IntegrationTests {
 
     private TelemetryChannel telemetryChannel;
     private LocalFileCache localFileCache;
-    private LocalFileWriter localFileWriter;
     private LocalFileLoader localFileLoader;
 
     @BeforeEach
@@ -51,9 +50,9 @@ public class IntegrationTests {
         when(mockedClient.send(mockedRequest)).thenReturn(Mono.just(mockedResponse));
         HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
         localFileCache = new LocalFileCache();
-        localFileWriter = new LocalFileWriter(localFileCache);
-        telemetryChannel = new TelemetryChannel(pipelineBuilder.build(), new URL("http://foo.bar"), localFileWriter);
-        localFileLoader = new LocalFileLoader(localFileCache, telemetryChannel);
+        telemetryChannel = new TelemetryChannel(pipelineBuilder.build(),
+                new URL("http://foo.bar"), new LocalFileWriter(localFileCache));
+        localFileLoader = new LocalFileLoader(localFileCache);
     }
 
     @AfterEach
@@ -68,7 +67,7 @@ public class IntegrationTests {
     }
 
     @Test
-    public void integrationTest() throws MalformedURLException, InterruptedException {
+    public void integrationTest() throws InterruptedException {
         List<TelemetryItem> telemetryItems = new ArrayList<>();
         telemetryItems.add(createMetricTelemetry("metric" + 1, 1));
 

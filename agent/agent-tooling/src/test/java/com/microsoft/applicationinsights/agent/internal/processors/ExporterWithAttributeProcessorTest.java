@@ -1205,7 +1205,6 @@ class ExporterWithAttributeProcessorTest {
         config.id = "actionExtract";
         ProcessorAction action = new ProcessorAction();
         action.key = "testKey";
-        // TODO (trask) why this capture group? [?&]
         String regex="^(?<httpProtocol>.*)://(?<httpDomain>.*)/(?<httpPath>.*)([?&])(?<httpQueryParams>.*)";
         Pattern pattern = Pattern.compile(regex);
         List<String> groupNames= ProcessorActionAdaptor.getGroupNames(regex);
@@ -1250,7 +1249,6 @@ class ExporterWithAttributeProcessorTest {
         config.id = "actionExtract";
         ProcessorAction action = new ProcessorAction();
         action.key = "testKey";
-        // TODO (trask) why this capture group? [?&]
         String regex="^(?<httpProtocol>.*)://(?<httpDomain>.*)/(?<httpPath>.*)([?&])(?<httpQueryParams>.*)";
         Pattern pattern = Pattern.compile(regex);
         List<String> groupNames= ProcessorActionAdaptor.getGroupNames(regex);

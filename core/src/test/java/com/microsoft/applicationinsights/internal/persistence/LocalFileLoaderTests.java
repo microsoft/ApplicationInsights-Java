@@ -2,7 +2,6 @@ package com.microsoft.applicationinsights.internal.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.applicationinsights.TelemetryChannel;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +19,6 @@ import static com.microsoft.applicationinsights.internal.persistence.Persistence
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 public class LocalFileLoaderTests {
 
@@ -50,8 +48,7 @@ public class LocalFileLoaderTests {
         LocalFileCache localFileCache = new LocalFileCache();
         localFileCache.addPersistedFilenameToMap(BYTE_BUFFERS_TEST_FILE);
 
-        // TODO (trask) separate sending to separate class from LocalFileLoader so don't need TelemetryChannel in these tests
-        LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, mock(TelemetryChannel.class));
+        LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache);
         String bytesString = readTelemetriesFromDiskToString(localFileLoader);
 
         String[] stringArray = bytesString.split("\n");
@@ -122,7 +119,7 @@ public class LocalFileLoaderTests {
         LocalFileWriter writer = new LocalFileWriter(cache);
         writer.writeToDisk(singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))));
 
-        LocalFileLoader loader = new LocalFileLoader(cache, mock(TelemetryChannel.class));
+        LocalFileLoader loader = new LocalFileLoader(cache);
         String bytesString = readTelemetriesFromDiskToString(loader);
         assertThat(bytesString).isEqualTo(text);
     }
@@ -146,7 +143,7 @@ public class LocalFileLoaderTests {
         writer.writeToDisk(singletonList(ByteBuffer.wrap(result)));
 
         // read gzipped byte[] from disk
-        LocalFileLoader loader = new LocalFileLoader(cache, mock(TelemetryChannel.class));
+        LocalFileLoader loader = new LocalFileLoader(cache);
         byte[] bytes = readTelemetriesFromDiskToBytes(loader);
 
         // ungzip

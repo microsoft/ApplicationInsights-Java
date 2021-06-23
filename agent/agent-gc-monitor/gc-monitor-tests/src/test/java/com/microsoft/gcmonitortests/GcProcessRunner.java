@@ -21,8 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-// TODO (trask) revisit these suppressions
-@SuppressWarnings({"SystemOut", "InterruptedExceptionSwallowed", "CatchAndPrintStackTrace", "UnusedException", "EmptyCatch"})
+@SuppressWarnings({"SystemOut", "CatchAndPrintStackTrace"})
 public class GcProcessRunner {
     private InputStream errorStream;
     private InputStream stdOut;
@@ -78,19 +77,17 @@ public class GcProcessRunner {
 
                 cdl.await(15, TimeUnit.SECONDS);
                 return events;
-            } catch (Exception e) {
-                try {
-                    if (process.exitValue() != 0) {
-                        if (errorStream.available() > 0) {
-                            String error = new String(errorStream.readAllBytes(), UTF_8);
-                            if (error.contains("Unrecognized VM option")) {
-                                throw new GCNotPresentException();
-                            }
-                            System.err.println(error);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (RuntimeException e) {
+                if (process.exitValue() != 0) {
+                    if (errorStream.available() > 0) {
+                        String error = new String(errorStream.readAllBytes(), UTF_8);
+                        if (error.contains("Unrecognized VM option")) {
+                            throw new GCNotPresentException();
                         }
-                        throw e;
+                        System.err.println(error);
                     }
-                } catch (IllegalThreadStateException e2) {
                     throw e;
                 }
             }
@@ -113,7 +110,8 @@ public class GcProcessRunner {
                 ServerSocket serverSocket = new ServerSocket(port);
                 serverSocket.close();
                 return port;
-            } catch (IOException e) {
+            } catch (IOException ignored) {
+                // loop and try again
             }
         }
         throw new IllegalStateException("Unable to find free port");

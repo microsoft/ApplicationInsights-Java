@@ -56,7 +56,7 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         sb.append("[{");
         sb.append("\"Documents\":[],");
         sb.append("\"Instance\":\"").append(instanceName).append("\",");
-        // TODO (trask) instrumentation key is also part of query string, is it needed in both places?
+        // TODO (trask) live metrics: instrumentation key is also part of query string, is it needed in both places?
         sb.append("\"InstrumentationKey\":\"").append(telemetryClient.getInstrumentationKey()).append("\",");
         sb.append("\"InvariantVersion\":").append(QuickPulse.QP_INVARIANT_VERSION).append(",");
         sb.append("\"MachineName\":\"").append(machineName).append("\",");

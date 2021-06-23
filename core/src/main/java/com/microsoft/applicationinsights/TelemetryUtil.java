@@ -129,7 +129,7 @@ public class TelemetryUtil {
                 + (stackFrame.getFileName() == null ? 0 : stackFrame.getFileName().length());
     }
 
-    // TODO (trask) can we move getProperties up to MonitorDomain, or if not, a common interface?
+    // TODO (trask) Azure SDK: can we move getProperties up to MonitorDomain, or if not, a common interface?
     public static Map<String, String> getProperties(MonitorDomain data) {
         if (data instanceof AvailabilityData) {
             AvailabilityData availabilityData = (AvailabilityData) data;
@@ -203,32 +203,6 @@ public class TelemetryUtil {
                 exceptionData.setProperties(properties);
             }
             return properties;
-        } else {
-            throw new IllegalArgumentException("Unexpected type: " + data.getClass().getName());
-        }
-    }
-
-    // FIXME (trask) why is this unused?
-    @SuppressWarnings("unused")
-    private static String getBaseType(MonitorDomain data) {
-        if (data instanceof AvailabilityData) {
-            return "AvailabilityData"; // TODO (trask) is this right?
-        } else if (data instanceof MessageData) {
-            return "MessageData";
-        } else if (data instanceof MetricsData) {
-            return "MetricData";
-        } else if (data instanceof PageViewData) {
-            return "PageViewData";
-        } else if (data instanceof PageViewPerfData) {
-            return "PageViewPerfData"; // TODO (trask) is this right?
-        } else if (data instanceof RemoteDependencyData) {
-            return "RemoteDependencyData";
-        } else if (data instanceof RequestData) {
-            return "RequestData";
-        } else if (data instanceof TelemetryEventData) { // TODO (trask) can we rename to EventData to match above?
-            return "EventData";
-        } else if (data instanceof TelemetryExceptionData) { // TODO (trask) can we rename to ExceptionData to match above?
-            return "ExceptionData";
         } else {
             throw new IllegalArgumentException("Unexpected type: " + data.getClass().getName());
         }

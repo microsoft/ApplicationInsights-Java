@@ -32,6 +32,7 @@ import com.microsoft.applicationinsights.internal.config.connection.EndpointProv
 import com.microsoft.applicationinsights.internal.config.connection.InvalidConnectionStringException;
 import com.microsoft.applicationinsights.internal.persistence.LocalFileCache;
 import com.microsoft.applicationinsights.internal.persistence.LocalFileLoader;
+import com.microsoft.applicationinsights.internal.persistence.LocalFileSender;
 import com.microsoft.applicationinsights.internal.persistence.LocalFileWriter;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
@@ -190,8 +191,8 @@ public class TelemetryClient {
         }
 
         if (telemetry.getTime() == null) {
-            // TODO (trask) remove this after confident no code paths hit this
-            throw new IllegalArgumentException("telemetry item is missing time");
+            // this is easy to forget when adding new telemetry
+            throw new AssertionError("telemetry item is missing time");
         }
 
         QuickPulseDataCollector.INSTANCE.add(telemetry);
@@ -213,9 +214,10 @@ public class TelemetryClient {
             synchronized (channelInitLock) {
                 if (channelBatcher == null) {
                     LocalFileCache localFileCache = new LocalFileCache();
+                    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache);
                     LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache);
                     TelemetryChannel channel = TelemetryChannel.create(endpointProvider.getIngestionEndpoint(), aadAuthentication, localFileWriter);
-                    LocalFileLoader.start(localFileCache, channel);
+                    LocalFileSender.start(localFileLoader, channel);
                     channelBatcher = BatchSpanProcessor.builder(channel).build();
                 }
             }
