@@ -50,17 +50,12 @@ dependencies {
   implementation "commons-io:commons-io:${versions.commonsIo}"
   implementation "org.apache.commons:commons-lang3:${versions.commonsLang}"
   implementation "org.apache.commons:commons-text:${versions.commonsText}"
+  // TODO (trask) this is probably still needed for above apache commons projects
+  implementation "org.slf4j:jcl-over-slf4j:${versions.slf4j}"
 
   implementation "org.checkerframework:checker-qual:${versions.checker}"
   implementation "com.google.code.findbugs:annotations:3.0.1"
 
-  // FIXME (trask) anything needed to do here?
-//  implementation(project(":core")) {
-//    // excluding commons-logging and replacing it with jcl-over-slf4j (below)
-//    // in order to pick up logging from apache http client
-//    exclude group: "commons-logging", module: "commons-logging"
-//  }
-  implementation "org.slf4j:jcl-over-slf4j:${versions.slf4j}"
   implementation "ch.qos.logback:logback-classic:${versions.logback}"
   implementation "ch.qos.logback.contrib:logback-json-classic:${versions.logbackJson}"
 
