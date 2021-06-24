@@ -18,27 +18,26 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model.IpaEtwEventBase;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model.IpaEtwEventErrorBase;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model.IpaEtwEventId;
 
-/**
- * JavaIpaCritical
- */
+/** JavaIpaCritical */
 public class IpaCritical extends IpaEtwEventErrorBase {
 
-    public IpaCritical() {
-        super();
-    }
+  public IpaCritical() {
+    super();
+  }
 
-    public IpaCritical(IpaEtwEventBase event) {
-        super(event);
-    }
+  public IpaCritical(IpaEtwEventBase event) {
+    super(event);
+  }
 
-    @Override
-    public IpaEtwEventId id() {
-        return IpaEtwEventId.CRITICAL;
-    }
+  @Override
+  public IpaEtwEventId id() {
+    return IpaEtwEventId.CRITICAL;
+  }
 }

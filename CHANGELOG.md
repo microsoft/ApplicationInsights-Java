@@ -133,16 +133,16 @@
 * Map service.version to application_Version(Resolves [#1392](https://github.com/microsoft/ApplicationInsights-Java/issues/1392))
 * This release also brings more interoperability with the 2.x SDK:
     - ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getProperties().put("key1", "val1")
-	- ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setName("new name")
-	- ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getUser().setId("uname")
+    - ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setName("new name")
+    - ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getUser().setId("uname")
 
 * Add thread details span processor
 * Add agent version number to startup message
 
 # Version 3.0.0 GA
 * Config changes
-	- Change json config file name from ApplicationInsights.json to applicationinsights.json
-	- Redesign json config structure ([Java Standalone Config](https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config))
+    - Change json config file name from ApplicationInsights.json to applicationinsights.json
+    - Redesign json config structure ([Java Standalone Config](https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config))
 * Send JMX metrics to CustomMetrics instead of PerformanceCounter ([Default Mettrics Captured by Java 3.0 Agent](https://github.com/microsoft/ApplicationInsights-Java/wiki/Default-Metrics-Captured-by-Java-3.0-Agent))
 * Telemetry processor for requests, dependencies, and traces
 * Attach custom dimensions to all telemetries
@@ -185,7 +185,7 @@
   ([#1254](https://github.com/microsoft/ApplicationInsights-Java/pull/1254))
 * Fix backoff condition so that retries will continue indefinitely
   ([#1253](https://github.com/microsoft/ApplicationInsights-Java/pull/1253))
-  
+
 # Version 3.0.0 Preview.5
 * Fix memory leak
 * Fix shutdown issue due to non-daemon thread
@@ -264,12 +264,12 @@ The classes and configuration elements which supported this solution have been r
 # Version 2.5.0-BETA.3
 - Fixed `HttpURLConnection` instrumentation was not capturing outgoing url
   ([#1025](https://github.com/microsoft/ApplicationInsights-Java/issues/1025))
-- Added agent logging capture threshold, configurable via `<Logging threshold="warn" />` 
+- Added agent logging capture threshold, configurable via `<Logging threshold="warn" />`
   in the `AI-Agent.xml`, with default threshold `warn`
   ([#1026](https://github.com/microsoft/ApplicationInsights-Java/issues/1026))
 - Fixed request telemetry displaying `200` response code for some failed requests
   ([#810](https://github.com/microsoft/ApplicationInsights-Java/issues/810))
-- Fixed GC performance counters not working 
+- Fixed GC performance counters not working
   ([#929](https://github.com/microsoft/ApplicationInsights-Java/issues/929))
 
 # Version 2.5.0-BETA.2

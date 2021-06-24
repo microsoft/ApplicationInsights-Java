@@ -18,14 +18,15 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.serviceprofilerapi.upload;
 
 public class UploadFailedException extends Exception {
-    public UploadFailedException(Exception cause) {
-        super(cause);
-    }
+  public UploadFailedException(Exception cause) {
+    super(cause);
+  }
 
-    public UploadFailedException(String message) {
-        super(message);
-    }
+  public UploadFailedException(String message) {
+    super(message);
+  }
 }

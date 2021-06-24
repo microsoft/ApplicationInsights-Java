@@ -28,114 +28,122 @@ import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampl
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.LoggingLevelConfigurator;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
 import io.opentelemetry.instrumentation.api.config.Config;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
 public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
 
-    private static final Logger logger = LoggerFactory.getLogger(LazyConfigurationAccessor.class);
+  private static final Logger logger = LoggerFactory.getLogger(LazyConfigurationAccessor.class);
 
-    private final TelemetryClient telemetryClient;
-    private final AppIdSupplier appIdSupplier;
+  private final TelemetryClient telemetryClient;
+  private final AppIdSupplier appIdSupplier;
 
-    public LazyConfigurationAccessor(TelemetryClient telemetryClient, AppIdSupplier appIdSupplier) {
-        this.telemetryClient = telemetryClient;
-        this.appIdSupplier = appIdSupplier;
+  public LazyConfigurationAccessor(TelemetryClient telemetryClient, AppIdSupplier appIdSupplier) {
+    this.telemetryClient = telemetryClient;
+    this.appIdSupplier = appIdSupplier;
+  }
+
+  @Override
+  public void lazyLoad() {
+    String instrumentationKey = telemetryClient.getInstrumentationKey();
+    String roleName = telemetryClient.getRoleName();
+    if (instrumentationKey != null
+        && !instrumentationKey.isEmpty()
+        && roleName != null
+        && !roleName.isEmpty()) {
+      return;
     }
 
-    @Override
-    public void lazyLoad() {
-        String instrumentationKey = telemetryClient.getInstrumentationKey();
-        String roleName = telemetryClient.getRoleName();
-        if (instrumentationKey != null && !instrumentationKey.isEmpty() && roleName != null && !roleName.isEmpty()) {
-            return;
-        }
-
-        boolean lazySetOptIn = Boolean.parseBoolean(System.getProperty("LazySetOptIn"));
-        String enableAgent = System.getenv("APPLICATIONINSIGHTS_ENABLE_AGENT");
-        logger.debug("lazySetOptIn: {}", lazySetOptIn);
-        logger.debug("APPLICATIONINSIGHTS_ENABLE_AGENT: {}", enableAgent);
-        if (!shouldSetConnectionString(lazySetOptIn, enableAgent)) {
-            return;
-        }
-
-        setConnectionString(System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"), System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY"));
-        setWebsiteSiteName(System.getenv("WEBSITE_SITE_NAME"));
-        setSelfDiagnosticsLevel(System.getenv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL"));
-        setInstrumentationLoggingLevel(System.getenv("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL"));
+    boolean lazySetOptIn = Boolean.parseBoolean(System.getProperty("LazySetOptIn"));
+    String enableAgent = System.getenv("APPLICATIONINSIGHTS_ENABLE_AGENT");
+    logger.debug("lazySetOptIn: {}", lazySetOptIn);
+    logger.debug("APPLICATIONINSIGHTS_ENABLE_AGENT: {}", enableAgent);
+    if (!shouldSetConnectionString(lazySetOptIn, enableAgent)) {
+      return;
     }
 
-    void setConnectionString(String connectionString, String instrumentationKey) {
-        if (connectionString != null && !connectionString.isEmpty()) {
-            setValue(connectionString);
-        } else {
-            // if the instrumentation key is neither null nor empty , we will create a default
-            // connection string based on the instrumentation key.
-            // this is to support Azure Functions that were created prior to the introduction of
-            // connection strings
-            if (instrumentationKey != null && !instrumentationKey.isEmpty()) {
-                setValue("InstrumentationKey=" + instrumentationKey);
-            }
-        }
-    }
+    setConnectionString(
+        System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"),
+        System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY"));
+    setWebsiteSiteName(System.getenv("WEBSITE_SITE_NAME"));
+    setSelfDiagnosticsLevel(System.getenv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL"));
+    setInstrumentationLoggingLevel(
+        System.getenv("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL"));
+  }
 
-    private void setValue(String value) {
-        telemetryClient.setConnectionString(value);
-        // now that we know the user has opted in to tracing, we need to init the propagator and sampler
-        DelegatingPropagator.getInstance().setUpStandardDelegate();
-        // TODO handle APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE
-        DelegatingSampler.getInstance().setAlwaysOnDelegate();
-        logger.info("Set connection string {} lazily for the Azure Function Consumption Plan.", value);
-
-        // register and start app id retrieval after the connection string becomes available.
-        appIdSupplier.registerAndStartAppIdRetrieval();
+  void setConnectionString(String connectionString, String instrumentationKey) {
+    if (connectionString != null && !connectionString.isEmpty()) {
+      setValue(connectionString);
+    } else {
+      // if the instrumentation key is neither null nor empty , we will create a default
+      // connection string based on the instrumentation key.
+      // this is to support Azure Functions that were created prior to the introduction of
+      // connection strings
+      if (instrumentationKey != null && !instrumentationKey.isEmpty()) {
+        setValue("InstrumentationKey=" + instrumentationKey);
+      }
     }
+  }
 
-    void setWebsiteSiteName(String websiteSiteName) {
-        if (websiteSiteName != null && !websiteSiteName.isEmpty()) {
-            telemetryClient.setRoleName(websiteSiteName);
-            logger.info("Set WEBSITE_SITE_NAME: {} lazily for the Azure Function Consumption Plan.", websiteSiteName);
-        }
-    }
+  private void setValue(String value) {
+    telemetryClient.setConnectionString(value);
+    // now that we know the user has opted in to tracing, we need to init the propagator and sampler
+    DelegatingPropagator.getInstance().setUpStandardDelegate();
+    // TODO handle APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE
+    DelegatingSampler.getInstance().setAlwaysOnDelegate();
+    logger.info("Set connection string {} lazily for the Azure Function Consumption Plan.", value);
 
-    static void setSelfDiagnosticsLevel(String loggingLevel) {
-        if (loggingLevel == null || !loggingLevel.isEmpty()) {
-            return;
-        }
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
-        List<ch.qos.logback.classic.Logger> loggerList = loggerContext.getLoggerList();
-        logger.info("setting APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL to {}", loggingLevel);
-        LoggingLevelConfigurator configurator;
-        try {
-            configurator = new LoggingLevelConfigurator(loggingLevel);
-        } catch (IllegalArgumentException exception) {
-            logger.warn("unexpected self-diagnostic level: {}", loggingLevel);
-            return;
-        }
-        loggerList.forEach(configurator::updateLoggerLevel);
-        logger.debug("self-diagnostics logging level has been updated.");
-    }
+    // register and start app id retrieval after the connection string becomes available.
+    appIdSupplier.registerAndStartAppIdRetrieval();
+  }
 
-    static boolean shouldSetConnectionString(boolean lazySetOptIn, String enableAgent) {
-        if (lazySetOptIn) {
-            // when LazySetOptIn is on, enable agent if APPLICATIONINSIGHTS_ENABLE_AGENT is null or true
-            if (enableAgent == null || Boolean.parseBoolean(enableAgent)) {
-                return true;
-            }
-        } else {
-            // when LazySetOptIn is off, enable agent if APPLICATIONINSIGHTS_ENABLE_AGENT is true
-            if (Boolean.parseBoolean(enableAgent)) {
-                return true;
-            }
-        }
-        return false;
+  void setWebsiteSiteName(String websiteSiteName) {
+    if (websiteSiteName != null && !websiteSiteName.isEmpty()) {
+      telemetryClient.setRoleName(websiteSiteName);
+      logger.info(
+          "Set WEBSITE_SITE_NAME: {} lazily for the Azure Function Consumption Plan.",
+          websiteSiteName);
     }
+  }
 
-    static void setInstrumentationLoggingLevel(String loggingLevel) {
-        if (loggingLevel != null && !loggingLevel.isEmpty()) {
-            Config.get().updateProperty("otel.experimental.log.capture.threshold", loggingLevel.toUpperCase());
-        }
+  static void setSelfDiagnosticsLevel(String loggingLevel) {
+    if (loggingLevel == null || !loggingLevel.isEmpty()) {
+      return;
     }
+    LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+    List<ch.qos.logback.classic.Logger> loggerList = loggerContext.getLoggerList();
+    logger.info("setting APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL to {}", loggingLevel);
+    LoggingLevelConfigurator configurator;
+    try {
+      configurator = new LoggingLevelConfigurator(loggingLevel);
+    } catch (IllegalArgumentException exception) {
+      logger.warn("unexpected self-diagnostic level: {}", loggingLevel);
+      return;
+    }
+    loggerList.forEach(configurator::updateLoggerLevel);
+    logger.debug("self-diagnostics logging level has been updated.");
+  }
+
+  static boolean shouldSetConnectionString(boolean lazySetOptIn, String enableAgent) {
+    if (lazySetOptIn) {
+      // when LazySetOptIn is on, enable agent if APPLICATIONINSIGHTS_ENABLE_AGENT is null or true
+      if (enableAgent == null || Boolean.parseBoolean(enableAgent)) {
+        return true;
+      }
+    } else {
+      // when LazySetOptIn is off, enable agent if APPLICATIONINSIGHTS_ENABLE_AGENT is true
+      if (Boolean.parseBoolean(enableAgent)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static void setInstrumentationLoggingLevel(String loggingLevel) {
+    if (loggingLevel != null && !loggingLevel.isEmpty()) {
+      Config.get()
+          .updateProperty("otel.experimental.log.capture.threshold", loggingLevel.toUpperCase());
+    }
+  }
 }

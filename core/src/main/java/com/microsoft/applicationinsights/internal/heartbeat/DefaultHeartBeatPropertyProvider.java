@@ -1,3 +1,24 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.microsoft.applicationinsights.internal.heartbeat;
 
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
@@ -6,37 +27,33 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ *
+ *
  * <h1>Base Heartbeat Property Provider</h1>
  *
- * <p>
- *   This class is a concrete implementation of {@link HeartBeatPayloadProviderInterface}
- *   It enables setting SDK Metadata to heartbeat payload.
- * </p>
+ * <p>This class is a concrete implementation of {@link HeartBeatPayloadProviderInterface} It
+ * enables setting SDK Metadata to heartbeat payload.
  */
 public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProviderInterface {
 
-  private static final Logger logger = LoggerFactory.getLogger(DefaultHeartBeatPropertyProvider.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(DefaultHeartBeatPropertyProvider.class);
 
-  /**
-   * Collection holding default properties for this default provider.
-   */
+  /** Collection holding default properties for this default provider. */
   private final Set<String> defaultFields;
 
   /**
    * Random GUID that would help in analysis when app has stopped and restarted. Each restart will
-   * have a new GUID. If the application is unstable and goes through frequent restarts this will help
-   * us identify instability in the analytics backend.
+   * have a new GUID. If the application is unstable and goes through frequent restarts this will
+   * help us identify instability in the analytics backend.
    */
   private static UUID uniqueProcessId;
 
-  /**
-   * Name of this provider.
-   */
+  /** Name of this provider. */
   private static final String name = "Default";
 
   private static final String JRE_VERSION = "jreVersion";
@@ -58,11 +75,12 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
   }
 
   @Override
-  public Callable<Boolean> setDefaultPayload(List<String> disableFields,
-                                             HeartBeatProviderInterface provider) {
+  public Callable<Boolean> setDefaultPayload(
+      List<String> disableFields, HeartBeatProviderInterface provider) {
     return new Callable<Boolean>() {
 
       final Set<String> enabledProperties = MiscUtils.except(defaultFields, disableFields);
+
       @Override
       public Boolean call() {
         boolean hasSetValues = false;
@@ -86,12 +104,11 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
                 hasSetValues = true;
                 break;
               default:
-                //We won't accept unknown properties in default providers.
+                // We won't accept unknown properties in default providers.
                 logger.trace("Encountered unknown default property");
                 break;
             }
-          }
-          catch (RuntimeException e) {
+          } catch (RuntimeException e) {
             if (logger.isWarnEnabled()) {
               logger.warn("Failed to obtain heartbeat property", e);
             }
@@ -104,6 +121,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
 
   /**
    * This method initializes the collection with Default Properties of this provider.
+   *
    * @param defaultFields collection to hold default properties.
    */
   private static void initializeDefaultFields(Set<String> defaultFields) {
@@ -115,6 +133,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
 
   /**
    * Gets the JDK version being used by the application
+   *
    * @return String representing JDK Version
    */
   private static String getJreVersion() {
@@ -123,8 +142,9 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
 
   /**
    * Returns the Application Insights SDK version user is using to instrument his application
-   * @return returns string prefixed with "java" representing the Application Insights Java
-   * SDK version.
+   *
+   * @return returns string prefixed with "java" representing the Application Insights Java SDK
+   *     version.
    */
   private static String getSdkVersion() {
     return PropertyHelper.getQualifiedSdkVersionString();
@@ -132,6 +152,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
 
   /**
    * Gets the OS version on which application is running.
+   *
    * @return String representing OS version
    */
   private static String getOsVersion() {
@@ -140,6 +161,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
 
   /**
    * Returns the Unique GUID for the application's current session.
+   *
    * @return String representing GUID for each running session
    */
   private static String getProcessSessionId() {

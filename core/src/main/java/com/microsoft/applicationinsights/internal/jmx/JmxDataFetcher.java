@@ -34,76 +34,77 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 import javax.management.openmbean.CompositeData;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * A utility class that knows how to fetch JMX data.
- */
+/** A utility class that knows how to fetch JMX data. */
 public class JmxDataFetcher {
 
-    private static final Logger logger = LoggerFactory.getLogger(JmxDataFetcher.class);
+  private static final Logger logger = LoggerFactory.getLogger(JmxDataFetcher.class);
 
-    /**
-     * Gets an object name and its attributes to fetch and will return the data.
-     *
-     * @param objectName The object name to search.
-     * @param attributes The attributes that 'belong' to the object name.
-     * @return A map that represent each attribute: the key is the displayed name for that attribute
-     * and the value is a list of values found
-     * @throws Exception In case the object name is not found.
-     */
-    public static Map<String, Collection<Object>> fetch(String objectName, Collection<JmxAttributeData> attributes)
-            throws Exception {
-        Map<String, Collection<Object>> result = new HashMap<>();
+  /**
+   * Gets an object name and its attributes to fetch and will return the data.
+   *
+   * @param objectName The object name to search.
+   * @param attributes The attributes that 'belong' to the object name.
+   * @return A map that represent each attribute: the key is the displayed name for that attribute
+   *     and the value is a list of values found
+   * @throws Exception In case the object name is not found.
+   */
+  public static Map<String, Collection<Object>> fetch(
+      String objectName, Collection<JmxAttributeData> attributes) throws Exception {
+    Map<String, Collection<Object>> result = new HashMap<>();
 
-        MBeanServer server = ManagementFactory.getPlatformMBeanServer();
-        Set<ObjectName> objects = server.queryNames(new ObjectName(objectName), null);
-        if (objects.isEmpty()) {
-            String errorMsg = String.format("Cannot find object name '%s'", objectName);
-            throw new IllegalArgumentException(errorMsg);
-        }
-
-        for (JmxAttributeData attribute : attributes) {
-            try {
-                Collection<Object> resultForAttribute = fetch(server, objects, attribute.attribute);
-                result.put(attribute.metricName, resultForAttribute);
-            } catch (Exception e) {
-                logger.warn("Failed to fetch JMX object '{}' with attribute '{}': ", objectName, attribute.attribute);
-                throw e;
-            }
-        }
-
-        return result;
+    MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+    Set<ObjectName> objects = server.queryNames(new ObjectName(objectName), null);
+    if (objects.isEmpty()) {
+      String errorMsg = String.format("Cannot find object name '%s'", objectName);
+      throw new IllegalArgumentException(errorMsg);
     }
 
-    private static Collection<Object> fetch(MBeanServer server, Set<ObjectName> objects, String attributeName)
-            throws AttributeNotFoundException, MBeanException, ReflectionException, InstanceNotFoundException {
-        ArrayList<Object> result = new ArrayList<>();
+    for (JmxAttributeData attribute : attributes) {
+      try {
+        Collection<Object> resultForAttribute = fetch(server, objects, attribute.attribute);
+        result.put(attribute.metricName, resultForAttribute);
+      } catch (Exception e) {
+        logger.warn(
+            "Failed to fetch JMX object '{}' with attribute '{}': ",
+            objectName,
+            attribute.attribute);
+        throw e;
+      }
+    }
 
-        String[] inners = attributeName.split("\\.");
+    return result;
+  }
 
-        for (ObjectName object : objects) {
+  private static Collection<Object> fetch(
+      MBeanServer server, Set<ObjectName> objects, String attributeName)
+      throws AttributeNotFoundException, MBeanException, ReflectionException,
+          InstanceNotFoundException {
+    ArrayList<Object> result = new ArrayList<>();
 
-            Object value;
+    String[] inners = attributeName.split("\\.");
 
-            if (inners.length == 1) {
-                value = server.getAttribute(object, attributeName);
-            } else {
-                value = server.getAttribute(object, inners[0]);
-                if (value != null) {
-                    value = ((CompositeData) value).get(inners[1]);
-                }
-            }
-            if (value != null) {
-                result.add(value);
-            }
+    for (ObjectName object : objects) {
+
+      Object value;
+
+      if (inners.length == 1) {
+        value = server.getAttribute(object, attributeName);
+      } else {
+        value = server.getAttribute(object, inners[0]);
+        if (value != null) {
+          value = ((CompositeData) value).get(inners[1]);
         }
-
-        return result;
+      }
+      if (value != null) {
+        result.add(value);
+      }
     }
 
-    private JmxDataFetcher() {
-    }
+    return result;
+  }
+
+  private JmxDataFetcher() {}
 }

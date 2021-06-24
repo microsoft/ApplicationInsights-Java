@@ -21,54 +21,54 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import java.lang.management.ManagementFactory;
-import javax.management.ObjectName;
+import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
+import static com.microsoft.applicationinsights.internal.perfcounter.Constants.TOTAL_MEMORY_PC_METRIC_NAME;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
+import java.lang.management.ManagementFactory;
+import javax.management.ObjectName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.microsoft.applicationinsights.internal.perfcounter.Constants.TOTAL_MEMORY_PC_METRIC_NAME;
-import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
-
-/**
- * The class supplies the memory usage in Mega Bytes of the Java process the SDK is in.
- */
+/** The class supplies the memory usage in Mega Bytes of the Java process the SDK is in. */
 final class FreeMemoryPerformanceCounter extends AbstractPerformanceCounter {
 
-    private static final Logger logger = LoggerFactory.getLogger(FreeMemoryPerformanceCounter.class);
+  private static final Logger logger = LoggerFactory.getLogger(FreeMemoryPerformanceCounter.class);
 
-    private ObjectName osBean;
+  private ObjectName osBean;
 
-    public FreeMemoryPerformanceCounter() {
+  public FreeMemoryPerformanceCounter() {}
+
+  @Override
+  public String getId() {
+    return Constants.TOTAL_MEMORY_PC_ID;
+  }
+
+  @Override
+  public void report(TelemetryClient telemetryClient) {
+    long freePhysicalMemorySize;
+    try {
+      freePhysicalMemorySize = getFreePhysicalMemorySize();
+    } catch (Exception e) {
+      logger.error("Error getting FreePhysicalMemorySize");
+      logger.trace("Error getting FreePhysicalMemorySize", e);
+      return;
     }
 
-    @Override
-    public String getId() {
-        return Constants.TOTAL_MEMORY_PC_ID;
-    }
+    logger.trace(
+        "Performance Counter: {}: {}", TOTAL_MEMORY_PC_METRIC_NAME, freePhysicalMemorySize);
+    TelemetryItem telemetry =
+        createMetricsTelemetry(
+            telemetryClient, TOTAL_MEMORY_PC_METRIC_NAME, freePhysicalMemorySize);
+    telemetryClient.trackAsync(telemetry);
+  }
 
-    @Override
-    public void report(TelemetryClient telemetryClient) {
-        long freePhysicalMemorySize;
-        try {
-            freePhysicalMemorySize = getFreePhysicalMemorySize();
-        } catch (Exception e) {
-            logger.error("Error getting FreePhysicalMemorySize");
-            logger.trace("Error getting FreePhysicalMemorySize", e);
-            return;
-        }
-
-        logger.trace("Performance Counter: {}: {}", TOTAL_MEMORY_PC_METRIC_NAME, freePhysicalMemorySize);
-        TelemetryItem telemetry = createMetricsTelemetry(telemetryClient, TOTAL_MEMORY_PC_METRIC_NAME, freePhysicalMemorySize);
-        telemetryClient.trackAsync(telemetry);
+  private long getFreePhysicalMemorySize() throws Exception {
+    if (osBean == null) {
+      osBean = ObjectName.getInstance(ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME);
     }
-
-    private long getFreePhysicalMemorySize() throws Exception {
-        if (osBean == null) {
-            osBean = ObjectName.getInstance(ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME);
-        }
-        return (Long) ManagementFactory.getPlatformMBeanServer().getAttribute(osBean, "FreePhysicalMemorySize");
-    }
+    return (Long)
+        ManagementFactory.getPlatformMBeanServer().getAttribute(osBean, "FreePhysicalMemorySize");
+  }
 }

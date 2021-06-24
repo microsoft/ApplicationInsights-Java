@@ -21,58 +21,57 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
+import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
+import static com.microsoft.applicationinsights.internal.perfcounter.Constants.PROCESS_CPU_PC_METRIC_NAME;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.microsoft.applicationinsights.internal.perfcounter.Constants.PROCESS_CPU_PC_METRIC_NAME;
-import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
-
-/**
- * The class supplies the cpu usage of the Java process the SDK is in.
- */
+/** The class supplies the cpu usage of the Java process the SDK is in. */
 final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
 
-    private static final Logger logger = LoggerFactory.getLogger(ProcessCpuPerformanceCounter.class);
+  private static final Logger logger = LoggerFactory.getLogger(ProcessCpuPerformanceCounter.class);
 
-    private CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator;
+  private CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator;
 
-    public ProcessCpuPerformanceCounter() {
-        try {
-            cpuPerformanceCounterCalculator = new CpuPerformanceCounterCalculator();
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-            try {
-                cpuPerformanceCounterCalculator = null;
-                logger.error("Failed to create ProcessCpuPerformanceCounter", t);
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-            throw new IllegalStateException("Failed to create ProcessCpuPerformanceCounter", t);
-        }
+  public ProcessCpuPerformanceCounter() {
+    try {
+      cpuPerformanceCounterCalculator = new CpuPerformanceCounterCalculator();
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+      try {
+        cpuPerformanceCounterCalculator = null;
+        logger.error("Failed to create ProcessCpuPerformanceCounter", t);
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      }
+      throw new IllegalStateException("Failed to create ProcessCpuPerformanceCounter", t);
+    }
+  }
+
+  @Override
+  public String getId() {
+    return Constants.PROCESS_CPU_PC_ID;
+  }
+
+  @Override
+  public void report(TelemetryClient telemetryClient) {
+    if (cpuPerformanceCounterCalculator == null) {
+      return;
+    }
+    Double processCpuUsage = cpuPerformanceCounterCalculator.getProcessCpuUsage();
+    if (processCpuUsage == null) {
+      return;
     }
 
-    @Override
-    public String getId() {
-        return Constants.PROCESS_CPU_PC_ID;
-    }
-
-    @Override
-    public void report(TelemetryClient telemetryClient) {
-        if (cpuPerformanceCounterCalculator == null) {
-            return;
-        }
-        Double processCpuUsage = cpuPerformanceCounterCalculator.getProcessCpuUsage();
-        if (processCpuUsage == null) {
-            return;
-        }
-
-        logger.trace("Performance Counter: {}: {}", PROCESS_CPU_PC_METRIC_NAME, processCpuUsage);
-        TelemetryItem telemetry = createMetricsTelemetry(telemetryClient, PROCESS_CPU_PC_METRIC_NAME, processCpuUsage);
-        telemetryClient.trackAsync(telemetry);
-    }
+    logger.trace("Performance Counter: {}: {}", PROCESS_CPU_PC_METRIC_NAME, processCpuUsage);
+    TelemetryItem telemetry =
+        createMetricsTelemetry(telemetryClient, PROCESS_CPU_PC_METRIC_NAME, processCpuUsage);
+    telemetryClient.trackAsync(telemetry);
+  }
 }

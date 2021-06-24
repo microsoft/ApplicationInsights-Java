@@ -26,42 +26,42 @@ import java.util.UUID;
 
 /**
  * {@code UploadContext} class represents parameters for trace file upload operation.
- * <p>
- * This class is intended for internal Java profiler use.
+ *
+ * <p>This class is intended for internal Java profiler use.
  */
 public class UploadContext {
-    private final UUID dataCube;
-    private final long sessionId;
-    private final File traceFile;
-    private final UUID profileId;
-    private final String machineName;
+  private final UUID dataCube;
+  private final long sessionId;
+  private final File traceFile;
+  private final UUID profileId;
+  private final String machineName;
 
-    public UploadContext(String machineName, UUID dataCube, long sessionId,
-                         File traceFile, UUID profileId) {
-        this.machineName = machineName;
-        this.dataCube = dataCube;
-        this.sessionId = sessionId;
-        this.traceFile = traceFile;
-        this.profileId = profileId;
-    }
+  public UploadContext(
+      String machineName, UUID dataCube, long sessionId, File traceFile, UUID profileId) {
+    this.machineName = machineName;
+    this.dataCube = dataCube;
+    this.sessionId = sessionId;
+    this.traceFile = traceFile;
+    this.profileId = profileId;
+  }
 
-    public String getMachineName() {
-        return machineName;
-    }
+  public String getMachineName() {
+    return machineName;
+  }
 
-    public File getTraceFile() {
-        return traceFile;
-    }
+  public File getTraceFile() {
+    return traceFile;
+  }
 
-    public long getSessionId() {
-        return sessionId;
-    }
+  public long getSessionId() {
+    return sessionId;
+  }
 
-    public UUID getDataCube() {
-        return dataCube;
-    }
+  public UUID getDataCube() {
+    return dataCube;
+  }
 
-    public UUID getProfileId() {
-        return profileId;
-    }
+  public UUID getProfileId() {
+    return profileId;
+  }
 }

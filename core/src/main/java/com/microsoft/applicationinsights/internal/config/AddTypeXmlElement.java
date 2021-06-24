@@ -27,29 +27,29 @@ import java.util.Map;
 
 public class AddTypeXmlElement {
 
-    private String type;
+  private String type;
 
-    private final ArrayList<ParamXmlElement> paramElements = new ArrayList<>();
+  private final ArrayList<ParamXmlElement> paramElements = new ArrayList<>();
 
-    public String getType() {
-        return type;
+  public String getType() {
+    return type;
+  }
+
+  public ArrayList<ParamXmlElement> getParameters() {
+    return paramElements;
+  }
+
+  public void setType(String type) {
+    this.type = type;
+  }
+
+  public Map<String, String> getData() {
+    Map<String, String> map = new HashMap<>();
+
+    for (ParamXmlElement element : getParameters()) {
+      map.put(element.getName(), element.getValue());
     }
 
-    public ArrayList<ParamXmlElement> getParameters() {
-        return paramElements;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public Map<String, String> getData() {
-        Map<String, String> map = new HashMap<>();
-
-        for (ParamXmlElement element : getParameters()) {
-            map.put(element.getName(), element.getValue());
-        }
-
-        return map;
-    }
+    return map;
+  }
 }

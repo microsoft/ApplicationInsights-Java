@@ -22,20 +22,17 @@
 package com.microsoft.applicationinsights.internal.util;
 
 import com.microsoft.applicationinsights.common.CommonUtils;
-
 import java.util.Locale;
 
-/**
- * A view into the context information specific to device information.
- */
+/** A view into the context information specific to device information. */
 public class DeviceInfo {
-    public static String getHostName() {
-        return CommonUtils.getHostName();
-    }
+  public static String getHostName() {
+    return CommonUtils.getHostName();
+  }
 
-    public static String getLocale() {
-        return Locale.getDefault().toLanguageTag();
-    }
+  public static String getLocale() {
+    return Locale.getDefault().toLanguageTag();
+  }
 
-    private DeviceInfo() {}
+  private DeviceInfo() {}
 }

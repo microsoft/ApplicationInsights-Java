@@ -21,65 +21,64 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter.jvm;
 
-import java.util.List;
-import java.lang.management.GarbageCollectorMXBean;
-import java.lang.management.ManagementFactory;
+import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
+import java.lang.management.GarbageCollectorMXBean;
+import java.lang.management.ManagementFactory;
+import java.util.List;
 
-import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
-
-/**
- * The class reports GC related data
- */
+/** The class reports GC related data */
 public final class GCPerformanceCounter implements PerformanceCounter {
-    public final static String NAME = "GC";
+  public static final String NAME = "GC";
 
-    private static final String GC_TOTAL_COUNT = "GC Total Count";
-    private static final String GC_TOTAL_TIME = "GC Total Time";
+  private static final String GC_TOTAL_COUNT = "GC Total Count";
+  private static final String GC_TOTAL_TIME = "GC Total Time";
 
-    private long currentTotalCount = 0;
-    private long currentTotalTime = 0;
+  private long currentTotalCount = 0;
+  private long currentTotalTime = 0;
 
-    @Override
-    public String getId() {
-        return "GCPerformanceCounter";
-    }
+  @Override
+  public String getId() {
+    return "GCPerformanceCounter";
+  }
 
-    @Override
-    public void report(TelemetryClient telemetryClient) {
-        synchronized (this) {
-            List<GarbageCollectorMXBean> gcs = ManagementFactory.getGarbageCollectorMXBeans();
-            if (gcs.isEmpty()) {
-                return;
-            }
+  @Override
+  public void report(TelemetryClient telemetryClient) {
+    synchronized (this) {
+      List<GarbageCollectorMXBean> gcs = ManagementFactory.getGarbageCollectorMXBeans();
+      if (gcs.isEmpty()) {
+        return;
+      }
 
-            long totalCollectionCount = 0;
-            long totalCollectionTime = 0;
-            for (GarbageCollectorMXBean gc : gcs) {
-                long gcCollectionCount = gc.getCollectionCount();
-                if (gcCollectionCount > 0) {
-                    totalCollectionCount += gcCollectionCount;
-                }
-
-                long gcCollectionTime = gc.getCollectionTime();
-                if (gcCollectionTime > 0) {
-                    totalCollectionTime += gcCollectionTime;
-                }
-            }
-
-            long countToReport = totalCollectionCount - currentTotalCount;
-            long timeToReport = totalCollectionTime - currentTotalTime;
-
-            currentTotalCount = totalCollectionCount;
-            currentTotalTime = totalCollectionTime;
-
-            TelemetryItem mtTotalCount = createMetricsTelemetry(telemetryClient, GC_TOTAL_COUNT, countToReport);
-            TelemetryItem mtTotalTime = createMetricsTelemetry(telemetryClient, GC_TOTAL_TIME, timeToReport);
-            telemetryClient.trackAsync(mtTotalCount);
-            telemetryClient.trackAsync(mtTotalTime);
+      long totalCollectionCount = 0;
+      long totalCollectionTime = 0;
+      for (GarbageCollectorMXBean gc : gcs) {
+        long gcCollectionCount = gc.getCollectionCount();
+        if (gcCollectionCount > 0) {
+          totalCollectionCount += gcCollectionCount;
         }
+
+        long gcCollectionTime = gc.getCollectionTime();
+        if (gcCollectionTime > 0) {
+          totalCollectionTime += gcCollectionTime;
+        }
+      }
+
+      long countToReport = totalCollectionCount - currentTotalCount;
+      long timeToReport = totalCollectionTime - currentTotalTime;
+
+      currentTotalCount = totalCollectionCount;
+      currentTotalTime = totalCollectionTime;
+
+      TelemetryItem mtTotalCount =
+          createMetricsTelemetry(telemetryClient, GC_TOTAL_COUNT, countToReport);
+      TelemetryItem mtTotalTime =
+          createMetricsTelemetry(telemetryClient, GC_TOTAL_TIME, timeToReport);
+      telemetryClient.trackAsync(mtTotalCount);
+      telemetryClient.trackAsync(mtTotalTime);
     }
+  }
 }

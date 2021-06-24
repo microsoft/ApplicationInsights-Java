@@ -22,5 +22,5 @@
 package com.microsoft.applicationinsights.internal.quickpulse;
 
 interface QuickPulseDataFetcher {
-    void prepareQuickPulseDataForSend(String redirectedEndpoint);
+  void prepareQuickPulseDataForSend(String redirectedEndpoint);
 }

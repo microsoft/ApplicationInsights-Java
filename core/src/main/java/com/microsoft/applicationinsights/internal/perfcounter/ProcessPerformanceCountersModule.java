@@ -21,12 +21,10 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-/**
- * The class will be used when the SDK needs to add the 'built-in' performance counters.
- */
+/** The class will be used when the SDK needs to add the 'built-in' performance counters. */
 public final class ProcessPerformanceCountersModule extends AbstractPerformanceCounterModule {
 
-    public ProcessPerformanceCountersModule() {
-        super(new ProcessBuiltInPerformanceCountersFactory());
-    }
+  public ProcessPerformanceCountersModule() {
+    super(new ProcessBuiltInPerformanceCountersFactory());
+  }
 }

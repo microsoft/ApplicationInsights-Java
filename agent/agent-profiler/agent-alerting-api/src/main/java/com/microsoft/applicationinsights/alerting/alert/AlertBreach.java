@@ -18,69 +18,73 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.alerting.alert;
 
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 
-/**
- * Represents a breach of an alert threshold
- */
+/** Represents a breach of an alert threshold */
 public class AlertBreach {
-    private final AlertMetricType type;
+  private final AlertMetricType type;
 
-    // Value of the telemetry at the time of the breach
-    private final double alertValue;
+  // Value of the telemetry at the time of the breach
+  private final double alertValue;
 
-    private final AlertConfiguration alertConfiguration;
+  private final AlertConfiguration alertConfiguration;
 
-    // CPU usage at the time of the breach
-    private final double cpuUsage;
+  // CPU usage at the time of the breach
+  private final double cpuUsage;
 
-    // MEMORY usage at the time of the breach
-    private final double memoryUsage;
+  // MEMORY usage at the time of the breach
+  private final double memoryUsage;
 
-    public AlertBreach(AlertMetricType type, double alertValue, AlertConfiguration alertConfiguration) {
-        this(type, alertValue, alertConfiguration, 0, 0);
-    }
+  public AlertBreach(
+      AlertMetricType type, double alertValue, AlertConfiguration alertConfiguration) {
+    this(type, alertValue, alertConfiguration, 0, 0);
+  }
 
-    public AlertBreach(AlertMetricType type, double alertValue, AlertConfiguration alertConfiguration, double cpuUsage, double memoryUsage) {
-        this.type = type;
-        this.alertValue = alertValue;
-        this.alertConfiguration = alertConfiguration;
-        this.cpuUsage = cpuUsage;
-        this.memoryUsage = memoryUsage;
+  public AlertBreach(
+      AlertMetricType type,
+      double alertValue,
+      AlertConfiguration alertConfiguration,
+      double cpuUsage,
+      double memoryUsage) {
+    this.type = type;
+    this.alertValue = alertValue;
+    this.alertConfiguration = alertConfiguration;
+    this.cpuUsage = cpuUsage;
+    this.memoryUsage = memoryUsage;
+  }
 
-    }
+  public AlertConfiguration getAlertConfiguration() {
+    return alertConfiguration;
+  }
 
-    public AlertConfiguration getAlertConfiguration() {
-        return alertConfiguration;
-    }
+  public double getAlertValue() {
+    return alertValue;
+  }
 
-    public double getAlertValue() {
-        return alertValue;
-    }
+  public AlertMetricType getType() {
+    return type;
+  }
 
-    public AlertMetricType getType() {
-        return type;
-    }
+  public AlertBreach withCpuMetric(double cpuUsage) {
+    return new AlertBreach(type, alertValue, alertConfiguration, cpuUsage, memoryUsage);
+  }
 
-    public AlertBreach withCpuMetric(double cpuUsage) {
-        return new AlertBreach(type, alertValue, alertConfiguration, cpuUsage, memoryUsage);
-    }
+  public AlertBreach withMemoryMetric(double memoryUsage) {
+    return new AlertBreach(type, alertValue, alertConfiguration, cpuUsage, memoryUsage);
+  }
 
-    public AlertBreach withMemoryMetric(double memoryUsage) {
-        return new AlertBreach(type, alertValue, alertConfiguration, cpuUsage, memoryUsage);
-    }
+  public String getTriggerName() {
+    return "JFR-" + type.name();
+  }
 
-    public String getTriggerName() {
-        return "JFR-" + type.name();
-    }
+  public double getCpuMetric() {
+    return cpuUsage;
+  }
 
-    public double getCpuMetric() {
-        return cpuUsage;
-    }
-
-    public double getMemoryUsage() {
-        return memoryUsage;
-    }
+  public double getMemoryUsage() {
+    return memoryUsage;
+  }
 }

@@ -18,8 +18,9 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.profileUploader;
 
 public interface UploadCompleteHandler {
-    void notify(UploadResult done);
+  void notify(UploadResult done);
 }

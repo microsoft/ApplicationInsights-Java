@@ -18,74 +18,73 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw;
 
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model.IpaEtwEventBase;
 import java.io.File;
 import java.io.IOException;
-
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model.IpaEtwEventBase;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class EtwProvider {
-    private static final String LIB_FILENAME_32_BIT = "applicationinsights-java-etw-provider-x86.dll";
-    private static final String LIB_FILENAME_64_BIT = "applicationinsights-java-etw-provider-x86-64.dll";
+  private static final String LIB_FILENAME_32_BIT = "applicationinsights-java-etw-provider-x86.dll";
+  private static final String LIB_FILENAME_64_BIT =
+      "applicationinsights-java-etw-provider-x86-64.dll";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EtwProvider.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(EtwProvider.class);
 
-    public EtwProvider(String sdkVersion) {
-        String osname = System.getProperty("os.name");
-        if (osname != null && osname.startsWith("Windows")) {
-            File dllPath = null;
-            try {
-                dllPath = loadLibrary(sdkVersion);
-                LOGGER.debug("EtwProvider initialized. Lib path={}", dllPath.getAbsolutePath());
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t) {
-                try {
-                    LOGGER.error("Error initializing EtwProvider", t);
-                    if (dllPath != null) {
-                        dllPath.deleteOnExit();
-                    }
-                } catch (ThreadDeath td) {
-                    throw td;
-                } catch (Throwable chomp) {
-                    // ignore
-                }
-            }
-        } else {
-            LoggerFactory.getLogger(EtwProvider.class).info("Non-Windows OS. Loading ETW library skipped.");
+  public EtwProvider(String sdkVersion) {
+    String osname = System.getProperty("os.name");
+    if (osname != null && osname.startsWith("Windows")) {
+      File dllPath = null;
+      try {
+        dllPath = loadLibrary(sdkVersion);
+        LOGGER.debug("EtwProvider initialized. Lib path={}", dllPath.getAbsolutePath());
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t) {
+        try {
+          LOGGER.error("Error initializing EtwProvider", t);
+          if (dllPath != null) {
+            dllPath.deleteOnExit();
+          }
+        } catch (ThreadDeath td) {
+          throw td;
+        } catch (Throwable chomp) {
+          // ignore
         }
-	}
+      }
+    } else {
+      LoggerFactory.getLogger(EtwProvider.class)
+          .info("Non-Windows OS. Loading ETW library skipped.");
+    }
+  }
 
-    private static File loadLibrary(String sdkVersion) throws IOException {
-        String fileName = getDllFilenameForArch();
+  private static File loadLibrary(String sdkVersion) throws IOException {
+    String fileName = getDllFilenameForArch();
 
-        File targetDir = DllFileUtils.buildDllLocalPath(sdkVersion);
-        File dllPath = new File(targetDir, fileName);
+    File targetDir = DllFileUtils.buildDllLocalPath(sdkVersion);
+    File dllPath = new File(targetDir, fileName);
 
-        if (!dllPath.exists()) {
-            DllFileUtils.extractToLocalFolder(dllPath, fileName);
-        }
-
-        System.load(dllPath.getAbsolutePath());
-
-        return dllPath;
+    if (!dllPath.exists()) {
+      DllFileUtils.extractToLocalFolder(dllPath, fileName);
     }
 
-    static String getDllFilenameForArch() {
-        String osarch = System.getProperty("os.arch");
-        boolean is32bit = osarch == null ? false : osarch.equalsIgnoreCase("x86");
-        return is32bit ? LIB_FILENAME_32_BIT : LIB_FILENAME_64_BIT;
-    }
+    System.load(dllPath.getAbsolutePath());
 
-    private native void cppWriteEvent(IpaEtwEventBase event) throws ApplicationInsightsEtwException;
+    return dllPath;
+  }
 
-    public void writeEvent(IpaEtwEventBase event) throws ApplicationInsightsEtwException {
-        cppWriteEvent(event);
-    }
+  static String getDllFilenameForArch() {
+    String osarch = System.getProperty("os.arch");
+    boolean is32bit = osarch == null ? false : osarch.equalsIgnoreCase("x86");
+    return is32bit ? LIB_FILENAME_32_BIT : LIB_FILENAME_64_BIT;
+  }
 
+  private native void cppWriteEvent(IpaEtwEventBase event) throws ApplicationInsightsEtwException;
 
+  public void writeEvent(IpaEtwEventBase event) throws ApplicationInsightsEtwException {
+    cppWriteEvent(event);
+  }
 }

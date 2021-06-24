@@ -25,38 +25,38 @@ import java.util.ArrayList;
 
 public class PerformanceCountersXmlElement {
 
-    private long collectionFrequencyInSec = 60;
+  private long collectionFrequencyInSec = 60;
 
-    private PerformanceCounterJvmSectionXmlElement jvmSection;
+  private PerformanceCounterJvmSectionXmlElement jvmSection;
 
-    private final JmxWrapperXmlElement jmxWrapper = new JmxWrapperXmlElement();
+  private final JmxWrapperXmlElement jmxWrapper = new JmxWrapperXmlElement();
 
-    public ArrayList<JmxXmlElement> getJmxXmlElements() {
-        return jmxWrapper.jmxXmlElements;
-    }
+  public ArrayList<JmxXmlElement> getJmxXmlElements() {
+    return jmxWrapper.jmxXmlElements;
+  }
 
-    public void setJmxXmlElements(ArrayList<JmxXmlElement> jmxXmlElements) {
-        jmxWrapper.jmxXmlElements = jmxXmlElements;
-    }
+  public void setJmxXmlElements(ArrayList<JmxXmlElement> jmxXmlElements) {
+    jmxWrapper.jmxXmlElements = jmxXmlElements;
+  }
 
-    public long getCollectionFrequencyInSec() {
-        return collectionFrequencyInSec;
-    }
+  public long getCollectionFrequencyInSec() {
+    return collectionFrequencyInSec;
+  }
 
-    public void setCollectionFrequencyInSec(long collectionFrequencyInSec) {
-        this.collectionFrequencyInSec = collectionFrequencyInSec;
-    }
+  public void setCollectionFrequencyInSec(long collectionFrequencyInSec) {
+    this.collectionFrequencyInSec = collectionFrequencyInSec;
+  }
 
-    public PerformanceCounterJvmSectionXmlElement getJvmSection() {
-        return jvmSection;
-    }
+  public PerformanceCounterJvmSectionXmlElement getJvmSection() {
+    return jvmSection;
+  }
 
-    public void setJvmSection(PerformanceCounterJvmSectionXmlElement jvmSection) {
-        this.jvmSection = jvmSection;
-    }
+  public void setJvmSection(PerformanceCounterJvmSectionXmlElement jvmSection) {
+    this.jvmSection = jvmSection;
+  }
 
-    public static class JmxWrapperXmlElement {
+  public static class JmxWrapperXmlElement {
 
-        private ArrayList<JmxXmlElement> jmxXmlElements;
-    }
+    private ArrayList<JmxXmlElement> jmxXmlElements;
+  }
 }

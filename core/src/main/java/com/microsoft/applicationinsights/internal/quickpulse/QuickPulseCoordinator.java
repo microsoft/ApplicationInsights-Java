@@ -21,5 +21,4 @@
 
 package com.microsoft.applicationinsights.internal.quickpulse;
 
-interface QuickPulseCoordinator {
-}
+interface QuickPulseCoordinator {}

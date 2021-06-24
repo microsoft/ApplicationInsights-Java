@@ -24,41 +24,39 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryUtil;
-
 import java.util.HashSet;
 import java.util.Set;
 
 class FeatureStatsbeat extends BaseStatsbeat {
 
-    private static final String FEATURE_METRIC_NAME = "Feature";
+  private static final String FEATURE_METRIC_NAME = "Feature";
 
-    private final Set<Feature> featureList = new HashSet<>(64);
+  private final Set<Feature> featureList = new HashSet<>(64);
 
-    FeatureStatsbeat(CustomDimensions customDimensions) {
-        // track java distribution
-        super(customDimensions);
-        String javaVendor = System.getProperty("java.vendor");
-        featureList.add(Feature.fromJavaVendor(javaVendor));
+  FeatureStatsbeat(CustomDimensions customDimensions) {
+    // track java distribution
+    super(customDimensions);
+    String javaVendor = System.getProperty("java.vendor");
+    featureList.add(Feature.fromJavaVendor(javaVendor));
+  }
+
+  /** @return a long that represents a list of features enabled. Each bitfield maps to a feature. */
+  long getFeature() {
+    return Feature.encode(featureList);
+  }
+
+  @Override
+  protected void send(TelemetryClient telemetryClient) {
+    TelemetryItem statsbeatTelemetry =
+        createStatsbeatTelemetry(telemetryClient, FEATURE_METRIC_NAME, 0);
+    TelemetryUtil.getProperties(statsbeatTelemetry.getData().getBaseData())
+        .put("feature", String.valueOf(getFeature()));
+    telemetryClient.trackAsync(statsbeatTelemetry);
+  }
+
+  void trackAadEnabled(boolean aadEnabled) {
+    if (aadEnabled) {
+      featureList.add(Feature.AAD);
     }
-
-    /**
-     * @return a long that represents a list of features enabled. Each bitfield maps to a feature.
-     */
-    long getFeature() {
-        return Feature.encode(featureList);
-    }
-
-    @Override
-    protected void send(TelemetryClient telemetryClient) {
-        TelemetryItem statsbeatTelemetry = createStatsbeatTelemetry(telemetryClient, FEATURE_METRIC_NAME, 0);
-        TelemetryUtil.getProperties(statsbeatTelemetry.getData().getBaseData())
-                .put("feature", String.valueOf(getFeature()));
-        telemetryClient.trackAsync(statsbeatTelemetry);
-    }
-
-    void trackAadEnabled(boolean aadEnabled) {
-        if (aadEnabled) {
-            featureList.add(Feature.AAD);
-        }
-    }
+  }
 }

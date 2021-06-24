@@ -23,89 +23,103 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StatsbeatModule {
 
-    private static final Logger logger = LoggerFactory.getLogger(BaseStatsbeat.class);
+  private static final Logger logger = LoggerFactory.getLogger(BaseStatsbeat.class);
 
-    private static final StatsbeatModule instance = new StatsbeatModule();
+  private static final StatsbeatModule instance = new StatsbeatModule();
 
-    private static final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
+  private static final ScheduledExecutorService scheduledExecutor =
+      Executors.newSingleThreadScheduledExecutor(
+          ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
 
-    private final CustomDimensions customDimensions;
+  private final CustomDimensions customDimensions;
 
-    private final NetworkStatsbeat networkStatsbeat;
-    private final AttachStatsbeat attachStatsbeat;
-    private final FeatureStatsbeat featureStatsbeat;
+  private final NetworkStatsbeat networkStatsbeat;
+  private final AttachStatsbeat attachStatsbeat;
+  private final FeatureStatsbeat featureStatsbeat;
 
-    private final AtomicBoolean started = new AtomicBoolean();
+  private final AtomicBoolean started = new AtomicBoolean();
 
-    private StatsbeatModule() {
-        customDimensions = new CustomDimensions();
-        networkStatsbeat = new NetworkStatsbeat(customDimensions);
-        attachStatsbeat = new AttachStatsbeat(customDimensions);
-        featureStatsbeat = new FeatureStatsbeat(customDimensions);
+  private StatsbeatModule() {
+    customDimensions = new CustomDimensions();
+    networkStatsbeat = new NetworkStatsbeat(customDimensions);
+    attachStatsbeat = new AttachStatsbeat(customDimensions);
+    featureStatsbeat = new FeatureStatsbeat(customDimensions);
+  }
+
+  public void start(
+      TelemetryClient telemetryClient, long interval, long featureInterval, boolean aadEnabled) {
+    if (started.getAndSet(true)) {
+      throw new IllegalStateException("initialize already called");
+    }
+    scheduledExecutor.scheduleWithFixedDelay(
+        new StatsbeatSender(networkStatsbeat, telemetryClient),
+        interval,
+        interval,
+        TimeUnit.SECONDS);
+    scheduledExecutor.scheduleWithFixedDelay(
+        new StatsbeatSender(attachStatsbeat, telemetryClient),
+        interval,
+        interval,
+        TimeUnit.SECONDS);
+    scheduledExecutor.scheduleWithFixedDelay(
+        new StatsbeatSender(featureStatsbeat, telemetryClient),
+        featureInterval,
+        featureInterval,
+        TimeUnit.SECONDS);
+
+    ResourceProvider rp = customDimensions.getResourceProvider();
+    // only turn on AzureMetadataService when the resource provider is VM or UNKNOWN.
+    // FIXME (heya) Need to figure out why AzureMetadataService is not reachable from a function app
+    // and it's not necessary to make this call.
+    if (rp == ResourceProvider.RP_VM || rp == ResourceProvider.UNKNOWN) {
+      // will only reach here the first time, after instance has been instantiated
+      new AzureMetadataService(attachStatsbeat, customDimensions).scheduleWithFixedDelay(interval);
     }
 
-    public void start(TelemetryClient telemetryClient, long interval, long featureInterval, boolean aadEnabled) {
-        if (started.getAndSet(true)) {
-            throw new IllegalStateException("initialize already called");
-        }
-        scheduledExecutor.scheduleWithFixedDelay(new StatsbeatSender(networkStatsbeat, telemetryClient), interval, interval, TimeUnit.SECONDS);
-        scheduledExecutor.scheduleWithFixedDelay(new StatsbeatSender(attachStatsbeat, telemetryClient), interval, interval, TimeUnit.SECONDS);
-        scheduledExecutor.scheduleWithFixedDelay(new StatsbeatSender(featureStatsbeat, telemetryClient), featureInterval, featureInterval, TimeUnit.SECONDS);
+    featureStatsbeat.trackAadEnabled(aadEnabled);
+  }
 
-        ResourceProvider rp = customDimensions.getResourceProvider();
-        // only turn on AzureMetadataService when the resource provider is VM or UNKNOWN.
-        // FIXME (heya) Need to figure out why AzureMetadataService is not reachable from a function app and it's not necessary to make this call.
-        if (rp == ResourceProvider.RP_VM || rp == ResourceProvider.UNKNOWN) {
-            // will only reach here the first time, after instance has been instantiated
-            new AzureMetadataService(attachStatsbeat, customDimensions).scheduleWithFixedDelay(interval);
-        }
+  public static StatsbeatModule get() {
+    return instance;
+  }
 
-        featureStatsbeat.trackAadEnabled(aadEnabled);
+  public NetworkStatsbeat getNetworkStatsbeat() {
+    return networkStatsbeat;
+  }
+
+  /** Runnable which is responsible for calling the send method to transmit Statsbeat telemetry */
+  private static class StatsbeatSender implements Runnable {
+
+    private final BaseStatsbeat statsbeat;
+    private final TelemetryClient telemetryClient;
+
+    private StatsbeatSender(BaseStatsbeat statsbeat, TelemetryClient telemetryClient) {
+      this.statsbeat = statsbeat;
+      this.telemetryClient = telemetryClient;
     }
 
-    public static StatsbeatModule get() {
-        return instance;
-    }
-
-    public NetworkStatsbeat getNetworkStatsbeat() { return networkStatsbeat; }
-
-    /**
-     * Runnable which is responsible for calling the send method to transmit Statsbeat telemetry
-     */
-    private static class StatsbeatSender implements Runnable {
-
-        private final BaseStatsbeat statsbeat;
-        private final TelemetryClient telemetryClient;
-
-        private StatsbeatSender(BaseStatsbeat statsbeat, TelemetryClient telemetryClient) {
-            this.statsbeat = statsbeat;
-            this.telemetryClient = telemetryClient;
+    @Override
+    public void run() {
+      try {
+        // For Linux Consumption Plan, connection string is lazily set.
+        // There is no need to send statsbeat when cikey is empty.
+        String customerIkey = telemetryClient.getInstrumentationKey();
+        if (customerIkey == null || customerIkey.isEmpty()) {
+          return;
         }
-
-        @Override
-        public void run() {
-            try {
-                // For Linux Consumption Plan, connection string is lazily set.
-                // There is no need to send statsbeat when cikey is empty.
-                String customerIkey = telemetryClient.getInstrumentationKey();
-                if (customerIkey == null || customerIkey.isEmpty()) {
-                    return;
-                }
-                statsbeat.send(telemetryClient);
-            }
-            catch (RuntimeException e) {
-                logger.error("Error occurred while sending statsbeat", e);
-            }
-        }
+        statsbeat.send(telemetryClient);
+      } catch (RuntimeException e) {
+        logger.error("Error occurred while sending statsbeat", e);
+      }
     }
+  }
 }

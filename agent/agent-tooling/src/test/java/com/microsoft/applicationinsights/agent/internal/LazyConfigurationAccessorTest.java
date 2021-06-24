@@ -21,173 +21,186 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
-import com.microsoft.applicationinsights.TelemetryClient;
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
+import com.microsoft.applicationinsights.TelemetryClient;
+import org.junit.jupiter.api.Test;
+
 class LazyConfigurationAccessorTest {
 
-    /*
-     * Lazily Set Connection String For Linux Consumption Plan:
-     *
-     *    Term      LazySetOptIn   ConnectionString      EnableAgent        LazySet
-     *    Preview   FALSE          VALID                 TRUE               Enabled
-     *                             VALID                 FALSE              Disabled
-     *                             VALID                 NULL               Disabled
-     *                             NULL                  TRUE/FALSE/NULL    Disabled
-     *    GA        TRUE           VALID                 TRUE               Enabled
-     *                             VALID                 FALSE              Disabled
-     *                             VALID                 NULL               Enabled
-     *                             NULL                  TRUE/FALSE/NULL    Disabled
-     */
-    private static final String CONNECTION_STRING = "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF";
+  /*
+   * Lazily Set Connection String For Linux Consumption Plan:
+   *
+   *    Term      LazySetOptIn   ConnectionString      EnableAgent        LazySet
+   *    Preview   FALSE          VALID                 TRUE               Enabled
+   *                             VALID                 FALSE              Disabled
+   *                             VALID                 NULL               Disabled
+   *                             NULL                  TRUE/FALSE/NULL    Disabled
+   *    GA        TRUE           VALID                 TRUE               Enabled
+   *                             VALID                 FALSE              Disabled
+   *                             VALID                 NULL               Enabled
+   *                             NULL                  TRUE/FALSE/NULL    Disabled
+   */
+  private static final String CONNECTION_STRING =
+      "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF";
 
-    private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
-    private static final String WEBSITE_SITE_NAME = "fake_site_name";
+  private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
+  private static final String WEBSITE_SITE_NAME = "fake_site_name";
 
-    @Test
-    //"LazySetOptIn is FALSE, ConnectionString is valid and EnableAgent is TRUE"
-    void enableLazySetWithLazySetOptInOffEnableAgentOn() {
-        assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
-    }
+  @Test
+  // "LazySetOptIn is FALSE, ConnectionString is valid and EnableAgent is TRUE"
+  void enableLazySetWithLazySetOptInOffEnableAgentOn() {
+    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
+  }
 
-    @Test
-    //"LazySetOptIn is FALSE, ConnectionString is valid and EnableAgent is FALSE"
-    void disableLazySetWithLazySetOptInOffEnableAgentOff() {
-        assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "false")).isFalse();
-    }
+  @Test
+  // "LazySetOptIn is FALSE, ConnectionString is valid and EnableAgent is FALSE"
+  void disableLazySetWithLazySetOptInOffEnableAgentOff() {
+    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "false")).isFalse();
+  }
 
-    @Test
-    //"LazySetOptIn is FALSE, ConnectionString is valid and EnableAgent is NULL"
-    void disableLazySetWithLazySetOptInOffEnableAgentNull() {
-        assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, null)).isFalse();
-    }
+  @Test
+  // "LazySetOptIn is FALSE, ConnectionString is valid and EnableAgent is NULL"
+  void disableLazySetWithLazySetOptInOffEnableAgentNull() {
+    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, null)).isFalse();
+  }
 
-    @Test
-    //"LazySetOptIn is FALSE, ConnectionString is NULL, InstrumentationKey is NULL, and EnableAgent is TRUE"
-    void disableLazySetWithLazySetOptInOffConnectionStringNullInstrumentationKeyNull() {
-        assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
+  @Test
+  // "LazySetOptIn is FALSE, ConnectionString is NULL, InstrumentationKey is NULL, and EnableAgent
+  // is TRUE"
+  void disableLazySetWithLazySetOptInOffConnectionStringNullInstrumentationKeyNull() {
+    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
 
-        // given
-        TelemetryClient telemetryClient = mock(TelemetryClient.class);
-        AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
-        LazyConfigurationAccessor lazyConfigurationAccessor = new LazyConfigurationAccessor(telemetryClient, appIdSupplier);
+    // given
+    TelemetryClient telemetryClient = mock(TelemetryClient.class);
+    AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
+    LazyConfigurationAccessor lazyConfigurationAccessor =
+        new LazyConfigurationAccessor(telemetryClient, appIdSupplier);
 
-        // when
-        lazyConfigurationAccessor.setConnectionString(null, null);
+    // when
+    lazyConfigurationAccessor.setConnectionString(null, null);
 
-        // then
-        verify(telemetryClient, never()).setConnectionString(anyString());
-    }
+    // then
+    verify(telemetryClient, never()).setConnectionString(anyString());
+  }
 
-    @Test
-    //"LazySetOptIn is FALSE, ConnectionString is valid, InstrumentationKey is NULL, and EnableAgent is TRUE"
-    void disableLazySetWithLazySetOptInOffConnectionStringNotNullInstrumentationKeyNull() {
-        assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
+  @Test
+  // "LazySetOptIn is FALSE, ConnectionString is valid, InstrumentationKey is NULL, and EnableAgent
+  // is TRUE"
+  void disableLazySetWithLazySetOptInOffConnectionStringNotNullInstrumentationKeyNull() {
+    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
 
-        // given
-        TelemetryClient telemetryClient = mock(TelemetryClient.class);
-        AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
-        LazyConfigurationAccessor lazyConfigurationAccessor = new LazyConfigurationAccessor(telemetryClient, appIdSupplier);
+    // given
+    TelemetryClient telemetryClient = mock(TelemetryClient.class);
+    AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
+    LazyConfigurationAccessor lazyConfigurationAccessor =
+        new LazyConfigurationAccessor(telemetryClient, appIdSupplier);
 
-        // when
-        lazyConfigurationAccessor.setConnectionString(CONNECTION_STRING, null);
+    // when
+    lazyConfigurationAccessor.setConnectionString(CONNECTION_STRING, null);
 
-        // then
-        verify(telemetryClient).setConnectionString(CONNECTION_STRING);
+    // then
+    verify(telemetryClient).setConnectionString(CONNECTION_STRING);
 
-        // when
-        lazyConfigurationAccessor.setWebsiteSiteName(WEBSITE_SITE_NAME);
+    // when
+    lazyConfigurationAccessor.setWebsiteSiteName(WEBSITE_SITE_NAME);
 
-        // then
-        verify(telemetryClient).setRoleName(WEBSITE_SITE_NAME);
-    }
+    // then
+    verify(telemetryClient).setRoleName(WEBSITE_SITE_NAME);
+  }
 
-    @Test
-    //"LazySetOptIn is FALSE, ConnectionString is NULL, InstrumentationKey is valid, and EnableAgent is TRUE")
-    void enableLazySetWithLazySetOptInOffConnectionStringNullInstrumentationKeyNotNull() {
-        assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
+  @Test
+  // "LazySetOptIn is FALSE, ConnectionString is NULL, InstrumentationKey is valid, and EnableAgent
+  // is TRUE")
+  void enableLazySetWithLazySetOptInOffConnectionStringNullInstrumentationKeyNotNull() {
+    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
 
-        // given
-        TelemetryClient telemetryClient = mock(TelemetryClient.class);
-        AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
-        LazyConfigurationAccessor lazyConfigurationAccessor = new LazyConfigurationAccessor(telemetryClient, appIdSupplier);
+    // given
+    TelemetryClient telemetryClient = mock(TelemetryClient.class);
+    AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
+    LazyConfigurationAccessor lazyConfigurationAccessor =
+        new LazyConfigurationAccessor(telemetryClient, appIdSupplier);
 
-        // when
-        lazyConfigurationAccessor.setConnectionString(null, INSTRUMENTATION_KEY);
+    // when
+    lazyConfigurationAccessor.setConnectionString(null, INSTRUMENTATION_KEY);
 
-        // then
-        verify(telemetryClient).setConnectionString("InstrumentationKey=" + INSTRUMENTATION_KEY);
-    }
+    // then
+    verify(telemetryClient).setConnectionString("InstrumentationKey=" + INSTRUMENTATION_KEY);
+  }
 
-    @Test
-    //"LazySetOptIn is TRUE, ConnectionString is valid and EnableAgent is TRUE"
-    void enableLazySetWithLazySetOptInOnEnableAgentOn() {
-        assertThat(LazyConfigurationAccessor.shouldSetConnectionString(true, "true")).isTrue();
-    }
+  @Test
+  // "LazySetOptIn is TRUE, ConnectionString is valid and EnableAgent is TRUE"
+  void enableLazySetWithLazySetOptInOnEnableAgentOn() {
+    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(true, "true")).isTrue();
+  }
 
-    @Test
-    //"LazySetOptIn is TRUE, ConnectionString is valid and EnableAgent is FALSE"
-    void disableLazySetWithLazySetOptInOnEnableAgentOff() {
-        assertThat(LazyConfigurationAccessor.shouldSetConnectionString(true, "false")).isFalse();
-    }
+  @Test
+  // "LazySetOptIn is TRUE, ConnectionString is valid and EnableAgent is FALSE"
+  void disableLazySetWithLazySetOptInOnEnableAgentOff() {
+    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(true, "false")).isFalse();
+  }
 
-    @Test
-    //"LazySetOptIn is TRUE, ConnectionString is valid and EnableAgent is NULL"
-    void enableLazySetWithLazySetOptInOnEnableAgentNull() {
-        assertThat(LazyConfigurationAccessor.shouldSetConnectionString(true, null)).isTrue();
-    }
+  @Test
+  // "LazySetOptIn is TRUE, ConnectionString is valid and EnableAgent is NULL"
+  void enableLazySetWithLazySetOptInOnEnableAgentNull() {
+    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(true, null)).isTrue();
+  }
 
-    @Test
-    //"LazySetOptIn is TRUE, ConnectionString is NULL, InstrumentationKey is NULL, and EnableAgent is TRUE"
-    void disableLazySetWithLazySetOptInOnConnectionStringNullAndInstrumentationKeyNull() {
-        assertThat(LazyConfigurationAccessor.shouldSetConnectionString(true, "true")).isTrue();
+  @Test
+  // "LazySetOptIn is TRUE, ConnectionString is NULL, InstrumentationKey is NULL, and EnableAgent is
+  // TRUE"
+  void disableLazySetWithLazySetOptInOnConnectionStringNullAndInstrumentationKeyNull() {
+    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(true, "true")).isTrue();
 
-        // given
-        TelemetryClient telemetryClient = mock(TelemetryClient.class);
-        AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
-        LazyConfigurationAccessor lazyConfigurationAccessor = new LazyConfigurationAccessor(telemetryClient, appIdSupplier);
+    // given
+    TelemetryClient telemetryClient = mock(TelemetryClient.class);
+    AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
+    LazyConfigurationAccessor lazyConfigurationAccessor =
+        new LazyConfigurationAccessor(telemetryClient, appIdSupplier);
 
-        // when
-        lazyConfigurationAccessor.setConnectionString(null, null);
+    // when
+    lazyConfigurationAccessor.setConnectionString(null, null);
 
-        // then
-        verify(telemetryClient, never()).setConnectionString(anyString());
-    }
+    // then
+    verify(telemetryClient, never()).setConnectionString(anyString());
+  }
 
-    @Test
-    //"LazySetOptIn is TRUE, ConnectionString is valid, InstrumentationKey is NULL, and EnableAgent is TRUE"
-    void enableLazySetWithLazySetOptInOnConnectionStringNotNullInstrumentationKeyNull() {
-        assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
+  @Test
+  // "LazySetOptIn is TRUE, ConnectionString is valid, InstrumentationKey is NULL, and EnableAgent
+  // is TRUE"
+  void enableLazySetWithLazySetOptInOnConnectionStringNotNullInstrumentationKeyNull() {
+    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
 
-        // given
-        TelemetryClient telemetryClient = mock(TelemetryClient.class);
-        AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
-        LazyConfigurationAccessor lazyConfigurationAccessor = new LazyConfigurationAccessor(telemetryClient, appIdSupplier);
+    // given
+    TelemetryClient telemetryClient = mock(TelemetryClient.class);
+    AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
+    LazyConfigurationAccessor lazyConfigurationAccessor =
+        new LazyConfigurationAccessor(telemetryClient, appIdSupplier);
 
-        // when
-        lazyConfigurationAccessor.setConnectionString(CONNECTION_STRING, null);
+    // when
+    lazyConfigurationAccessor.setConnectionString(CONNECTION_STRING, null);
 
-        // then
-        verify(telemetryClient).setConnectionString(CONNECTION_STRING);
-    }
+    // then
+    verify(telemetryClient).setConnectionString(CONNECTION_STRING);
+  }
 
-    @Test
-    //"LazySetOptIn is TRUE, ConnectionString is NULL, InstrumentationKey is valid, and EnableAgent is TRUE"
-    void enableLazySetWithLazySetOptInOnConnectionStringNullInstrumentationKeyNotNull() {
-        assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
+  @Test
+  // "LazySetOptIn is TRUE, ConnectionString is NULL, InstrumentationKey is valid, and EnableAgent
+  // is TRUE"
+  void enableLazySetWithLazySetOptInOnConnectionStringNullInstrumentationKeyNotNull() {
+    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
 
-        // given
-        TelemetryClient telemetryClient = mock(TelemetryClient.class);
-        AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
-        LazyConfigurationAccessor lazyConfigurationAccessor = new LazyConfigurationAccessor(telemetryClient, appIdSupplier);
+    // given
+    TelemetryClient telemetryClient = mock(TelemetryClient.class);
+    AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
+    LazyConfigurationAccessor lazyConfigurationAccessor =
+        new LazyConfigurationAccessor(telemetryClient, appIdSupplier);
 
-        // when
-        lazyConfigurationAccessor.setConnectionString(null, INSTRUMENTATION_KEY);
+    // when
+    lazyConfigurationAccessor.setConnectionString(null, INSTRUMENTATION_KEY);
 
-        // then
-        verify(telemetryClient).setConnectionString("InstrumentationKey=" + INSTRUMENTATION_KEY);
-    }
+    // then
+    verify(telemetryClient).setConnectionString("InstrumentationKey=" + INSTRUMENTATION_KEY);
+  }
 }

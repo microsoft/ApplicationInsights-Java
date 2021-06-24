@@ -21,59 +21,58 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter.jvm;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryUsage;
+import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
 
-import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
-
-/**
- * The class will create a metric telemetry for capturing the Jvm's heap memory usage
- */
+/** The class will create a metric telemetry for capturing the Jvm's heap memory usage */
 public class JvmHeapMemoryUsedPerformanceCounter implements PerformanceCounter {
 
-    public final static String NAME = "MemoryUsage";
+  public static final String NAME = "MemoryUsage";
 
-    public final static String HEAP_MEM_USED = "Heap Memory Used (MB)";
+  public static final String HEAP_MEM_USED = "Heap Memory Used (MB)";
 
-    public final static String HEAP_MEM_USED_PERCENTAGE = "% Of Max Heap Memory Used";
+  public static final String HEAP_MEM_USED_PERCENTAGE = "% Of Max Heap Memory Used";
 
-    private static final long Megabyte = 1024 * 1024;
+  private static final long Megabyte = 1024 * 1024;
 
-    private final MemoryMXBean memory;
+  private final MemoryMXBean memory;
 
-    public JvmHeapMemoryUsedPerformanceCounter() {
-        memory = ManagementFactory.getMemoryMXBean();
+  public JvmHeapMemoryUsedPerformanceCounter() {
+    memory = ManagementFactory.getMemoryMXBean();
+  }
+
+  @Override
+  public String getId() {
+    return "JvmHeapMemoryUsedPerformanceCounter";
+  }
+
+  @Override
+  public void report(TelemetryClient telemetryClient) {
+    if (memory == null) {
+      return;
     }
 
-    @Override
-    public String getId() {
-        return "JvmHeapMemoryUsedPerformanceCounter";
+    reportHeap(memory, telemetryClient);
+  }
+
+  private static void reportHeap(MemoryMXBean memory, TelemetryClient telemetryClient) {
+    MemoryUsage mhu = memory.getHeapMemoryUsage();
+    if (mhu != null) {
+      long currentHeapUsed = mhu.getUsed() / Megabyte;
+      TelemetryItem memoryHeapUsage =
+          createMetricsTelemetry(telemetryClient, HEAP_MEM_USED, currentHeapUsed);
+      telemetryClient.trackAsync(memoryHeapUsage);
+
+      float percentage = 100.0f * (((float) mhu.getUsed()) / ((float) mhu.getMax()));
+      TelemetryItem memoryHeapUsagePercentage =
+          createMetricsTelemetry(telemetryClient, HEAP_MEM_USED_PERCENTAGE, percentage);
+      telemetryClient.trackAsync(memoryHeapUsagePercentage);
     }
-
-    @Override
-    public void report(TelemetryClient telemetryClient) {
-        if (memory == null) {
-            return;
-        }
-
-        reportHeap(memory, telemetryClient);
-    }
-
-    private static void reportHeap(MemoryMXBean memory, TelemetryClient telemetryClient) {
-        MemoryUsage mhu = memory.getHeapMemoryUsage();
-        if (mhu != null) {
-            long currentHeapUsed = mhu.getUsed() / Megabyte;
-            TelemetryItem memoryHeapUsage = createMetricsTelemetry(telemetryClient, HEAP_MEM_USED, currentHeapUsed);
-            telemetryClient.trackAsync(memoryHeapUsage);
-
-            float percentage = 100.0f * (((float) mhu.getUsed()) / ((float) mhu.getMax()));
-            TelemetryItem memoryHeapUsagePercentage = createMetricsTelemetry(telemetryClient, HEAP_MEM_USED_PERCENTAGE, percentage);
-            telemetryClient.trackAsync(memoryHeapUsagePercentage);
-        }
-    }
+  }
 }

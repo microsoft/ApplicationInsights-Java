@@ -18,82 +18,86 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.profiler.config;
 
 import java.net.URL;
 
-/**
- * Configuration of the service profiler subsystem
- */
+/** Configuration of the service profiler subsystem */
 public class ServiceProfilerServiceConfig {
 
-    public static final int DEFAULT_CONFIG_POLL_PERIOD_IN_MS = 60000;
-    public static final int DEFAULT_PERIODIC_RECORDING_DURATION_IN_S = 120;
-    public static final int DEFAULT_PERIODIC_RECORDING_INTERVAL_IN_S = 60 * 60;
+  public static final int DEFAULT_CONFIG_POLL_PERIOD_IN_MS = 60000;
+  public static final int DEFAULT_PERIODIC_RECORDING_DURATION_IN_S = 120;
+  public static final int DEFAULT_PERIODIC_RECORDING_INTERVAL_IN_S = 60 * 60;
 
-    // duration between polls for configuration changes
-    private final int configPollPeriod;
+  // duration between polls for configuration changes
+  private final int configPollPeriod;
 
-    // default duration of periodic profiles
-    private final int periodicRecordingDuration;
+  // default duration of periodic profiles
+  private final int periodicRecordingDuration;
 
-    // default interval of periodic profiles
-    private final int periodicRecordingInterval;
+  // default interval of periodic profiles
+  private final int periodicRecordingInterval;
 
-    private final URL serviceProfilerFrontEndPoint;
+  private final URL serviceProfilerFrontEndPoint;
 
-    // Enable entire service profiler subsystem
-    private final boolean enabled;
+  // Enable entire service profiler subsystem
+  private final boolean enabled;
 
-    // Either an inbuilt profile as defined in ProfileTypes, or a path to a custom JFC file to use for memory profiling
-    private final String memoryTriggeredSettings;
+  // Either an inbuilt profile as defined in ProfileTypes, or a path to a custom JFC file to use for
+  // memory profiling
+  private final String memoryTriggeredSettings;
 
-    // Either an inbuilt profile as defined in ProfileTypes, or a path to a custom JFC file to use for cpu profiling
-    private final String cpuTriggeredSettings;
+  // Either an inbuilt profile as defined in ProfileTypes, or a path to a custom JFC file to use for
+  // cpu profiling
+  private final String cpuTriggeredSettings;
 
-    public ServiceProfilerServiceConfig(
-            int configPollPeriod,
-            int periodicRecordingDuration,
-            int periodicRecordingInterval,
-            URL serviceProfilerFrontEndPoint,
-            boolean enabled,
-            String memoryTriggeredSettings,
-            String cpuTriggeredSettings
-    ) {
-        this.configPollPeriod = configPollPeriod;
-        this.periodicRecordingDuration = periodicRecordingDuration;
-        this.periodicRecordingInterval = periodicRecordingInterval;
-        this.serviceProfilerFrontEndPoint = serviceProfilerFrontEndPoint;
-        this.enabled = enabled;
-        this.memoryTriggeredSettings = memoryTriggeredSettings;
-        this.cpuTriggeredSettings = cpuTriggeredSettings;
-    }
+  public ServiceProfilerServiceConfig(
+      int configPollPeriod,
+      int periodicRecordingDuration,
+      int periodicRecordingInterval,
+      URL serviceProfilerFrontEndPoint,
+      boolean enabled,
+      String memoryTriggeredSettings,
+      String cpuTriggeredSettings) {
+    this.configPollPeriod = configPollPeriod;
+    this.periodicRecordingDuration = periodicRecordingDuration;
+    this.periodicRecordingInterval = periodicRecordingInterval;
+    this.serviceProfilerFrontEndPoint = serviceProfilerFrontEndPoint;
+    this.enabled = enabled;
+    this.memoryTriggeredSettings = memoryTriggeredSettings;
+    this.cpuTriggeredSettings = cpuTriggeredSettings;
+  }
 
-    public int getConfigPollPeriod() {
-        return configPollPeriod != -1 ? configPollPeriod * 1000 : DEFAULT_CONFIG_POLL_PERIOD_IN_MS;
-    }
+  public int getConfigPollPeriod() {
+    return configPollPeriod != -1 ? configPollPeriod * 1000 : DEFAULT_CONFIG_POLL_PERIOD_IN_MS;
+  }
 
-    public long getPeriodicRecordingDuration() {
-        return periodicRecordingDuration != -1 ? periodicRecordingDuration : DEFAULT_PERIODIC_RECORDING_DURATION_IN_S;
-    }
+  public long getPeriodicRecordingDuration() {
+    return periodicRecordingDuration != -1
+        ? periodicRecordingDuration
+        : DEFAULT_PERIODIC_RECORDING_DURATION_IN_S;
+  }
 
-    public long getPeriodicRecordingInterval() {
-        return periodicRecordingInterval != -1 ? periodicRecordingInterval : DEFAULT_PERIODIC_RECORDING_INTERVAL_IN_S;
-    }
+  public long getPeriodicRecordingInterval() {
+    return periodicRecordingInterval != -1
+        ? periodicRecordingInterval
+        : DEFAULT_PERIODIC_RECORDING_INTERVAL_IN_S;
+  }
 
-    public URL getServiceProfilerFrontEndPoint() {
-        return serviceProfilerFrontEndPoint;
-    }
+  public URL getServiceProfilerFrontEndPoint() {
+    return serviceProfilerFrontEndPoint;
+  }
 
-    public boolean enabled() {
-        return enabled;
-    }
+  public boolean enabled() {
+    return enabled;
+  }
 
-    public String memoryTriggeredSettings() {
-        return memoryTriggeredSettings;
-    }
+  public String memoryTriggeredSettings() {
+    return memoryTriggeredSettings;
+  }
 
-    public String cpuTriggeredSettings() {
-        return cpuTriggeredSettings;
-    }
+  public String cpuTriggeredSettings() {
+    return cpuTriggeredSettings;
+  }
 }

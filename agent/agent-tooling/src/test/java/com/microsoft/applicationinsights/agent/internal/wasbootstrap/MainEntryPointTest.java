@@ -21,21 +21,27 @@
 
 package com.microsoft.applicationinsights.agent.internal.wasbootstrap;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 class MainEntryPointTest {
-    @Test
-    void getFriendlyExceptionTest() {
-        FriendlyException friendlyException = MainEntryPoint.getFriendlyException(new FriendlyException());
-        FriendlyException nonFriendlyException = MainEntryPoint.getFriendlyException(new IllegalArgumentException());
-        FriendlyException nestedFriendlyException = MainEntryPoint.getFriendlyException(new RuntimeException("Run time Exception",new FriendlyException()));
-        FriendlyException nestedNonFriendlyException = MainEntryPoint.getFriendlyException(new RuntimeException("Run time Exception",new IllegalArgumentException()));
-        assertThat(friendlyException).isNotNull();
-        assertThat(nonFriendlyException).isNull();
-        assertThat(nestedFriendlyException).isNotNull();
-        assertThat(nestedNonFriendlyException).isNull();
-    }
+  @Test
+  void getFriendlyExceptionTest() {
+    FriendlyException friendlyException =
+        MainEntryPoint.getFriendlyException(new FriendlyException());
+    FriendlyException nonFriendlyException =
+        MainEntryPoint.getFriendlyException(new IllegalArgumentException());
+    FriendlyException nestedFriendlyException =
+        MainEntryPoint.getFriendlyException(
+            new RuntimeException("Run time Exception", new FriendlyException()));
+    FriendlyException nestedNonFriendlyException =
+        MainEntryPoint.getFriendlyException(
+            new RuntimeException("Run time Exception", new IllegalArgumentException()));
+    assertThat(friendlyException).isNotNull();
+    assertThat(nonFriendlyException).isNull();
+    assertThat(nestedFriendlyException).isNotNull();
+    assertThat(nestedNonFriendlyException).isNull();
+  }
 }

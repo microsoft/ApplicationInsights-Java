@@ -1,160 +1,175 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.microsoft.gcmonitor.garbagecollectors;
 
 import com.google.errorprone.annotations.Immutable;
-
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 
-/**
- * Collection of all known GarbageCollectors
- */
+/** Collection of all known GarbageCollectors */
 public enum GarbageCollectors {
-    PS_MARK_SWEEP(PSMarkSweep.NAME, PSMarkSweep::new),
-    PS_SCAVENGE(PSScavenge.NAME, PSScavenge::new),
-    G1_OLD_GENERATION(G1OldGeneration.NAME, G1OldGeneration::new),
-    G1_YOUNG_GENERATION(G1YoungGeneration.NAME, G1YoungGeneration::new),
-    CONCURRENT_MARK_SWEEP(ConcurrentMarkSweep.NAME, ConcurrentMarkSweep::new),
-    PAR_NEW(ParNew.NAME, ParNew::new),
-    MARK_SWEEP_COMPACT(MarkSweepCompact.NAME, MarkSweepCompact::new),
-    COPY(Copy.NAME, Copy::new),
-    CODE_CACHE_MANAGER(CodeCacheManager.NAME, CodeCacheManager::new),
-    METASPACE_MANAGER(MetaspaceManager.NAME, MetaspaceManager::new),
-    SHENANDOAH_CYCLES(ShenandoahCycles.NAME, ShenandoahCycles::new),
-    SHENANDOAH_PAUSES(ShenandoahPauses.NAME, ShenandoahPauses::new),
-    Z_GC(ZGC.NAME, ZGC::new);
+  PS_MARK_SWEEP(PSMarkSweep.NAME, PSMarkSweep::new),
+  PS_SCAVENGE(PSScavenge.NAME, PSScavenge::new),
+  G1_OLD_GENERATION(G1OldGeneration.NAME, G1OldGeneration::new),
+  G1_YOUNG_GENERATION(G1YoungGeneration.NAME, G1YoungGeneration::new),
+  CONCURRENT_MARK_SWEEP(ConcurrentMarkSweep.NAME, ConcurrentMarkSweep::new),
+  PAR_NEW(ParNew.NAME, ParNew::new),
+  MARK_SWEEP_COMPACT(MarkSweepCompact.NAME, MarkSweepCompact::new),
+  COPY(Copy.NAME, Copy::new),
+  CODE_CACHE_MANAGER(CodeCacheManager.NAME, CodeCacheManager::new),
+  METASPACE_MANAGER(MetaspaceManager.NAME, MetaspaceManager::new),
+  SHENANDOAH_CYCLES(ShenandoahCycles.NAME, ShenandoahCycles::new),
+  SHENANDOAH_PAUSES(ShenandoahPauses.NAME, ShenandoahPauses::new),
+  Z_GC(ZGC.NAME, ZGC::new);
 
-    @Immutable
-    interface GarbageCollectorFactory extends Function<GarbageCollectorStats, GarbageCollector> {
+  @Immutable
+  interface GarbageCollectorFactory extends Function<GarbageCollectorStats, GarbageCollector> {}
+
+  final String name;
+  final GarbageCollectorFactory factoryFunction;
+
+  GarbageCollectors(String name, GarbageCollectorFactory factory) {
+    this.name = name;
+    this.factoryFunction = factory;
+  }
+
+  private static Optional<GarbageCollectors> findCollectorFor(String gcName) {
+    return Arrays.stream(GarbageCollectors.values())
+        .filter(collector -> collector.name.equals(gcName))
+        .findFirst();
+  }
+
+  /** Factory to instantiate a GarbageCollector based on its name */
+  public static GarbageCollector create(String name, GarbageCollectorStats proxy) {
+    Optional<GarbageCollectors> factory = GarbageCollectors.findCollectorFor(name);
+    if (factory.isPresent()) {
+      return factory.get().factoryFunction.apply(proxy);
+    } else {
+      throw new IllegalArgumentException("Could not find factory for " + name);
     }
+  }
 
-    final String name;
-    final GarbageCollectorFactory factoryFunction;
+  public static class PSMarkSweep extends GarbageCollector {
+    public static final String NAME = "PS MarkSweep";
 
-    GarbageCollectors(String name, GarbageCollectorFactory factory) {
-        this.name = name;
-        this.factoryFunction = factory;
+    public PSMarkSweep(GarbageCollectorStats proxy) {
+      super(proxy, NAME, true, true, false);
     }
+  }
 
-    private static Optional<GarbageCollectors> findCollectorFor(String gcName) {
-        return Arrays.stream(GarbageCollectors.values())
-                .filter(collector -> collector.name.equals(gcName))
-                .findFirst();
+  public static class PSScavenge extends GarbageCollector {
+    public static final String NAME = "PS Scavenge";
+
+    public PSScavenge(GarbageCollectorStats proxy) {
+      super(proxy, NAME, true, false, true);
     }
+  }
 
-    /**
-     * Factory to instantiate a GarbageCollector based on its name
-     */
-    public static GarbageCollector create(String name, GarbageCollectorStats proxy) {
-        Optional<GarbageCollectors> factory = GarbageCollectors.findCollectorFor(name);
-        if (factory.isPresent()) {
-            return factory.get().factoryFunction.apply(proxy);
-        } else {
-            throw new IllegalArgumentException("Could not find factory for " + name);
-        }
+  public static class G1OldGeneration extends GarbageCollector {
+    public static final String NAME = "G1 Old Generation";
+
+    public G1OldGeneration(GarbageCollectorStats proxy) {
+      super(proxy, NAME, true, true, false);
     }
+  }
 
-    public static class PSMarkSweep extends GarbageCollector {
-        public static final String NAME = "PS MarkSweep";
+  public static class G1YoungGeneration extends GarbageCollector {
+    public static final String NAME = "G1 Young Generation";
 
-        public PSMarkSweep(GarbageCollectorStats proxy) {
-            super(proxy, NAME, true, true, false);
-        }
+    public G1YoungGeneration(GarbageCollectorStats proxy) {
+      super(proxy, NAME, true, false, true);
     }
+  }
 
-    public static class PSScavenge extends GarbageCollector {
-        public static final String NAME = "PS Scavenge";
+  public static class ConcurrentMarkSweep extends GarbageCollector {
+    public static final String NAME = "ConcurrentMarkSweep";
 
-        public PSScavenge(GarbageCollectorStats proxy) {
-            super(proxy, NAME, true, false, true);
-        }
+    public ConcurrentMarkSweep(GarbageCollectorStats proxy) {
+      super(proxy, NAME, true, true, false);
     }
+  }
 
-    public static class G1OldGeneration extends GarbageCollector {
-        public static final String NAME = "G1 Old Generation";
+  public static class ParNew extends GarbageCollector {
+    public static final String NAME = "ParNew";
 
-        public G1OldGeneration(GarbageCollectorStats proxy) {
-            super(proxy, NAME, true, true, false);
-        }
+    public ParNew(GarbageCollectorStats proxy) {
+      super(proxy, NAME, true, false, true);
     }
+  }
 
-    public static class G1YoungGeneration extends GarbageCollector {
-        public static final String NAME = "G1 Young Generation";
+  public static class MarkSweepCompact extends GarbageCollector {
+    public static final String NAME = "MarkSweepCompact";
 
-        public G1YoungGeneration(GarbageCollectorStats proxy) {
-            super(proxy, NAME, true, false, true);
-        }
+    public MarkSweepCompact(GarbageCollectorStats proxy) {
+      super(proxy, NAME, true, true, false);
     }
+  }
 
-    public static class ConcurrentMarkSweep extends GarbageCollector {
-        public static final String NAME = "ConcurrentMarkSweep";
+  public static class Copy extends GarbageCollector {
+    public static final String NAME = "Copy";
 
-        public ConcurrentMarkSweep(GarbageCollectorStats proxy) {
-            super(proxy, NAME, true, true, false);
-        }
+    public Copy(GarbageCollectorStats proxy) {
+      super(proxy, NAME, true, false, true);
     }
+  }
 
-    public static class ParNew extends GarbageCollector {
-        public static final String NAME = "ParNew";
+  public static class CodeCacheManager extends GarbageCollector {
+    public static final String NAME = "CodeCacheManager";
 
-        public ParNew(GarbageCollectorStats proxy) {
-            super(proxy, NAME, true, false, true);
-        }
+    public CodeCacheManager(GarbageCollectorStats proxy) {
+      super(proxy, NAME, true, false, false);
     }
+  }
 
-    public static class MarkSweepCompact extends GarbageCollector {
-        public static final String NAME = "MarkSweepCompact";
+  public static class MetaspaceManager extends GarbageCollector {
+    public static final String NAME = "Metaspace Manager";
 
-        public MarkSweepCompact(GarbageCollectorStats proxy) {
-            super(proxy, NAME, true, true, false);
-        }
+    public MetaspaceManager(GarbageCollectorStats proxy) {
+      super(proxy, NAME, true, false, false);
     }
+  }
 
-    public static class Copy extends GarbageCollector {
-        public static final String NAME = "Copy";
+  public static class ShenandoahCycles extends GarbageCollector {
+    public static final String NAME = "Shenandoah Cycles";
 
-        public Copy(GarbageCollectorStats proxy) {
-            super(proxy, NAME, true, false, true);
-        }
+    public ShenandoahCycles(GarbageCollectorStats proxy) {
+      super(proxy, NAME, true, true, true);
     }
+  }
 
-    public static class CodeCacheManager extends GarbageCollector {
-        public static final String NAME = "CodeCacheManager";
+  public static class ShenandoahPauses extends GarbageCollector {
+    public static final String NAME = "Shenandoah Pauses";
 
-        public CodeCacheManager(GarbageCollectorStats proxy) {
-            super(proxy, NAME, true, false, false);
-        }
+    public ShenandoahPauses(GarbageCollectorStats proxy) {
+      super(proxy, NAME, true, true, true);
     }
+  }
 
-    public static class MetaspaceManager extends GarbageCollector {
-        public static final String NAME = "Metaspace Manager";
+  public static class ZGC extends GarbageCollector {
+    public static final String NAME = "ZGC";
 
-        public MetaspaceManager(GarbageCollectorStats proxy) {
-            super(proxy, NAME, true, false, false);
-        }
+    public ZGC(GarbageCollectorStats proxy) {
+      super(proxy, NAME, true, true, true);
     }
-
-    public static class ShenandoahCycles extends GarbageCollector {
-        public static final String NAME = "Shenandoah Cycles";
-
-        public ShenandoahCycles(GarbageCollectorStats proxy) {
-            super(proxy, NAME, true, true, true);
-        }
-    }
-
-    public static class ShenandoahPauses extends GarbageCollector {
-        public static final String NAME = "Shenandoah Pauses";
-
-        public ShenandoahPauses(GarbageCollectorStats proxy) {
-            super(proxy, NAME, true, true, true);
-        }
-    }
-
-    public static class ZGC extends GarbageCollector {
-        public static final String NAME = "ZGC";
-
-        public ZGC(GarbageCollectorStats proxy) {
-            super(proxy, NAME, true, true, true);
-        }
-    }
+  }
 }

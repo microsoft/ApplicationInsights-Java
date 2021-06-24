@@ -18,20 +18,21 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.agent.internal.instrumentation.sdk;
 
 public class UnshadedSdkPackageName {
 
-    // using constant here so that it will NOT get shaded
-    // IMPORTANT FOR THIS NOT TO BE FINAL (or private)
-    // OTHERWISE COMPILER COULD THEORETICALLY INLINE IT BELOW AND APPLY .substring(1)
-    // and then it WOULD be shaded
-    @SuppressWarnings("ConstantField")
-    static String ALMOST_PREFIX = "!com/microsoft/applicationinsights";
+  // using constant here so that it will NOT get shaded
+  // IMPORTANT FOR THIS NOT TO BE FINAL (or private)
+  // OTHERWISE COMPILER COULD THEORETICALLY INLINE IT BELOW AND APPLY .substring(1)
+  // and then it WOULD be shaded
+  @SuppressWarnings("ConstantField")
+  static String ALMOST_PREFIX = "!com/microsoft/applicationinsights";
 
-    public static String get() {
-        return ALMOST_PREFIX.substring(1);
-    }
+  public static String get() {
+    return ALMOST_PREFIX.substring(1);
+  }
 
-    private UnshadedSdkPackageName() {}
+  private UnshadedSdkPackageName() {}
 }

@@ -24,26 +24,25 @@ package com.microsoft.applicationinsights.internal.perfcounter;
 import java.util.ArrayList;
 import java.util.Collection;
 
-/**
- * The class will create the 'built-in'/default performance counters.
- */
+/** The class will create the 'built-in'/default performance counters. */
 final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCountersFactory {
 
-    /**
-     * Creates the {@link com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter} that are
-     * the 'built-in' performance counters of the process.
-     *
-     * Note: The method should not throw
-     *
-     * @return A collection of {@link com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter}
-     */
-    @Override
-    public Collection<PerformanceCounter> getPerformanceCounters() {
-        ArrayList<PerformanceCounter> performanceCounters = new ArrayList<>();
-        performanceCounters.add(new ProcessCpuPerformanceCounter());
-        performanceCounters.add(new ProcessMemoryPerformanceCounter());
-        performanceCounters.add(new FreeMemoryPerformanceCounter());
-        performanceCounters.add(new OshiPerformanceCounter()); // system cpu and process disk i/o
-        return performanceCounters;
-    }
+  /**
+   * Creates the {@link com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter}
+   * that are the 'built-in' performance counters of the process.
+   *
+   * <p>Note: The method should not throw
+   *
+   * @return A collection of {@link
+   *     com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter}
+   */
+  @Override
+  public Collection<PerformanceCounter> getPerformanceCounters() {
+    ArrayList<PerformanceCounter> performanceCounters = new ArrayList<>();
+    performanceCounters.add(new ProcessCpuPerformanceCounter());
+    performanceCounters.add(new ProcessMemoryPerformanceCounter());
+    performanceCounters.add(new FreeMemoryPerformanceCounter());
+    performanceCounters.add(new OshiPerformanceCounter()); // system cpu and process disk i/o
+    return performanceCounters;
+  }
 }

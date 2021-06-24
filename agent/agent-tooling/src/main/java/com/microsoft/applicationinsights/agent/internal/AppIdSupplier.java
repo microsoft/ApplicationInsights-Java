@@ -21,9 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
-import java.net.URL;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpRequest;
@@ -33,123 +31,128 @@ import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.ExceptionStats;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
+import java.net.URL;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 // note: app id is used by distributed trace headers and (soon) jfr profiling
 public class AppIdSupplier implements AiAppId.Supplier {
 
-    private static final Logger logger = LoggerFactory.getLogger(AppIdSupplier.class);
+  private static final Logger logger = LoggerFactory.getLogger(AppIdSupplier.class);
 
-    public static final AppIdSupplier INSTANCE = new AppIdSupplier();
+  public static final AppIdSupplier INSTANCE = new AppIdSupplier();
 
-    private final ScheduledExecutorService scheduledExecutor =
-            Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(AppIdSupplier.class));
+  private final ScheduledExecutorService scheduledExecutor =
+      Executors.newSingleThreadScheduledExecutor(
+          ThreadPoolUtils.createDaemonThreadFactory(AppIdSupplier.class));
 
-    private final ExceptionStats exceptionStats = new ExceptionStats(GetAppIdTask.class, "unable to retrieve appId");
+  private final ExceptionStats exceptionStats =
+      new ExceptionStats(GetAppIdTask.class, "unable to retrieve appId");
 
-    // guarded by taskLock
-    private GetAppIdTask task;
-    private final Object taskLock = new Object();
+  // guarded by taskLock
+  private GetAppIdTask task;
+  private final Object taskLock = new Object();
 
-    private volatile String appId;
+  private volatile String appId;
 
-    public void registerAndStartAppIdRetrieval() {
-        AiAppId.setSupplier(this);
-        startAppIdRetrieval();
+  public void registerAndStartAppIdRetrieval() {
+    AiAppId.setSupplier(this);
+    startAppIdRetrieval();
+  }
+
+  public void startAppIdRetrieval() {
+    TelemetryClient telemetryClient = TelemetryClient.getActive();
+    String instrumentationKey = telemetryClient.getInstrumentationKey();
+    GetAppIdTask newTask =
+        new GetAppIdTask(
+            telemetryClient.getEndpointProvider().getAppIdEndpointUrl(instrumentationKey));
+    synchronized (taskLock) {
+      appId = null;
+      if (task != null) {
+        // in case prior task is still running (can be called multiple times from JsonConfigPolling)
+        task.cancelled = true;
+      }
+      task = newTask;
+    }
+    scheduledExecutor.submit(newTask);
+  }
+
+  @Override
+  public String get() {
+    String instrumentationKey = TelemetryClient.getActive().getInstrumentationKey();
+    if (instrumentationKey == null) {
+      // this is possible in Azure Function consumption plan prior to "specialization"
+      return "";
     }
 
-    public void startAppIdRetrieval() {
-        TelemetryClient telemetryClient = TelemetryClient.getActive();
-        String instrumentationKey = telemetryClient.getInstrumentationKey();
-        GetAppIdTask newTask = new GetAppIdTask(telemetryClient.getEndpointProvider().getAppIdEndpointUrl(instrumentationKey));
-        synchronized (taskLock) {
-            appId = null;
-            if (task != null) {
-                // in case prior task is still running (can be called multiple times from JsonConfigPolling)
-                task.cancelled = true;
-            }
-            task = newTask;
-        }
-        scheduledExecutor.submit(newTask);
+    // it's possible the appId returned is null (e.g. async task is still pending or has failed). In
+    // this case, just
+    // return and let the next request resolve the ikey.
+    if (appId == null) {
+      logger.debug("appId has not been retrieved yet (e.g. task may be pending or failed)");
+      return "";
+    }
+    return appId;
+  }
+
+  private class GetAppIdTask implements Runnable {
+
+    private final URL url;
+
+    // 1, 2, 4, 8, 16, 32, 60 (max)
+    private volatile long backoffSeconds = 1;
+
+    private volatile boolean cancelled;
+
+    private GetAppIdTask(URL url) {
+      this.url = url;
     }
 
     @Override
-    public String get() {
-        String instrumentationKey = TelemetryClient.getActive().getInstrumentationKey();
-        if (instrumentationKey == null) {
-            // this is possible in Azure Function consumption plan prior to "specialization"
-            return "";
-        }
+    public void run() {
+      if (cancelled) {
+        return;
+      }
 
-        //it's possible the appId returned is null (e.g. async task is still pending or has failed). In this case, just
-        //return and let the next request resolve the ikey.
-        if (appId == null) {
-            logger.debug("appId has not been retrieved yet (e.g. task may be pending or failed)");
-            return "";
-        }
-        return appId;
+      HttpRequest request = new HttpRequest(HttpMethod.GET, url);
+      HttpResponse response;
+      try {
+        response = LazyHttpClient.getInstance().send(request).block();
+      } catch (RuntimeException e) {
+        // TODO handle Friendly SSL exception
+        logger.debug(e.getMessage(), e);
+        backOff("exception sending request to " + url, e);
+        return;
+      }
+
+      if (response == null) {
+        // this shouldn't happen, the mono should complete with a response or a failure
+        throw new AssertionError("http response mono returned empty");
+      }
+
+      String body = response.getBodyAsString().block();
+      int statusCode = response.getStatusCode();
+      if (statusCode != 200) {
+        backOff("received " + statusCode + " from " + url + "\nfull response:\n" + body, null);
+        return;
+      }
+
+      // check for case when breeze returns invalid value
+      if (body == null || body.isEmpty()) {
+        backOff("received empty body from " + url, null);
+        return;
+      }
+
+      logger.debug("appId retrieved: {}", body);
+      appId = body;
     }
 
-    private class GetAppIdTask implements Runnable {
-
-        private final URL url;
-
-        // 1, 2, 4, 8, 16, 32, 60 (max)
-        private volatile long backoffSeconds = 1;
-
-        private volatile boolean cancelled;
-
-        private GetAppIdTask(URL url) {
-            this.url = url;
-        }
-
-        @Override
-        public void run() {
-            if (cancelled) {
-                return;
-            }
-
-            HttpRequest request = new HttpRequest(HttpMethod.GET, url);
-            HttpResponse response;
-            try {
-                response = LazyHttpClient.getInstance().send(request).block();
-            } catch (RuntimeException e) {
-                // TODO handle Friendly SSL exception
-                logger.debug(e.getMessage(), e);
-                backOff("exception sending request to " + url, e);
-                return;
-            }
-
-            if (response == null) {
-                // this shouldn't happen, the mono should complete with a response or a failure
-                throw new AssertionError("http response mono returned empty");
-            }
-
-            String body = response.getBodyAsString().block();
-            int statusCode = response.getStatusCode();
-            if (statusCode != 200) {
-                backOff("received " + statusCode + " from " + url
-                        + "\nfull response:\n" + body, null);
-                return;
-            }
-            
-            // check for case when breeze returns invalid value
-            if (body == null || body.isEmpty()) {
-                backOff("received empty body from " + url, null);
-                return;
-            }
-
-            logger.debug("appId retrieved: {}", body);
-            appId = body;
-        }
-
-        private void backOff(String warningMessage, Exception exception) {
-            exceptionStats.recordFailure(warningMessage, exception);
-            scheduledExecutor.schedule(this, backoffSeconds, SECONDS);
-            backoffSeconds = Math.min(backoffSeconds * 2, 60);
-        }
+    private void backOff(String warningMessage, Exception exception) {
+      exceptionStats.recordFailure(warningMessage, exception);
+      scheduledExecutor.schedule(this, backoffSeconds, SECONDS);
+      backoffSeconds = Math.min(backoffSeconds * 2, 60);
     }
+  }
 }

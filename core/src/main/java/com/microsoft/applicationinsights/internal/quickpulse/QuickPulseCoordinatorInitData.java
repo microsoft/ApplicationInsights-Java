@@ -22,25 +22,25 @@
 package com.microsoft.applicationinsights.internal.quickpulse;
 
 final class QuickPulseCoordinatorInitData {
-    public final QuickPulsePingSender pingSender;
-    public final QuickPulseDataFetcher dataFetcher;
-    public final QuickPulseDataSender dataSender;
-    public final long waitBetweenPingsInMS;
-    public final long waitBetweenPostsInMS;
-    public final long waitOnErrorInMS;
+  public final QuickPulsePingSender pingSender;
+  public final QuickPulseDataFetcher dataFetcher;
+  public final QuickPulseDataSender dataSender;
+  public final long waitBetweenPingsInMS;
+  public final long waitBetweenPostsInMS;
+  public final long waitOnErrorInMS;
 
-    public QuickPulseCoordinatorInitData(
-            QuickPulsePingSender pingSender,
-            QuickPulseDataFetcher dataFetcher,
-            QuickPulseDataSender dataSender,
-            long waitBetweenPingsInMS,
-            long waitBetweenPostsInMS,
-            long waitOnErrorInMS) {
-        this.pingSender = pingSender;
-        this.dataFetcher = dataFetcher;
-        this.dataSender = dataSender;
-        this.waitBetweenPingsInMS = waitBetweenPingsInMS;
-        this.waitBetweenPostsInMS = waitBetweenPostsInMS;
-        this.waitOnErrorInMS = waitOnErrorInMS;
-    }
+  public QuickPulseCoordinatorInitData(
+      QuickPulsePingSender pingSender,
+      QuickPulseDataFetcher dataFetcher,
+      QuickPulseDataSender dataSender,
+      long waitBetweenPingsInMS,
+      long waitBetweenPostsInMS,
+      long waitOnErrorInMS) {
+    this.pingSender = pingSender;
+    this.dataFetcher = dataFetcher;
+    this.dataSender = dataSender;
+    this.waitBetweenPingsInMS = waitBetweenPingsInMS;
+    this.waitBetweenPostsInMS = waitBetweenPostsInMS;
+    this.waitOnErrorInMS = waitOnErrorInMS;
+  }
 }

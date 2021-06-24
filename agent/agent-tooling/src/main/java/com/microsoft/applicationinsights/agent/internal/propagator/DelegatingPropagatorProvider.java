@@ -26,15 +26,15 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
 
 public class DelegatingPropagatorProvider implements ConfigurablePropagatorProvider {
 
-    public static final String NAME = "lazyinit";
+  public static final String NAME = "lazyinit";
 
-    @Override
-    public TextMapPropagator getPropagator() {
-        return DelegatingPropagator.getInstance();
-    }
+  @Override
+  public TextMapPropagator getPropagator() {
+    return DelegatingPropagator.getInstance();
+  }
 
-    @Override
-    public String getName() {
-        return NAME;
-    }
+  @Override
+  public String getName() {
+    return NAME;
+  }
 }

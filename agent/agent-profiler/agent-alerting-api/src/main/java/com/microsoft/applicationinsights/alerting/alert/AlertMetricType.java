@@ -18,11 +18,12 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.alerting.alert;
 
 public enum AlertMetricType {
-    CPU,
-    MEMORY,
-    PERIODIC,
-    MANUAL
+  CPU,
+  MEMORY,
+  PERIODIC,
+  MANUAL
 }

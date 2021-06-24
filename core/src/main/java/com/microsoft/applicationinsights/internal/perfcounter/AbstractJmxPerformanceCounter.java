@@ -21,83 +21,83 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import java.util.Collection;
-import java.util.Map;
-
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.jmx.JmxDataFetcher;
+import java.util.Collection;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The class is a base class for JMX performance counters.
- * It knows how to fetch the needed information from JMX and then relies on its derived classes to send the data.
+ * The class is a base class for JMX performance counters. It knows how to fetch the needed
+ * information from JMX and then relies on its derived classes to send the data.
  */
 public abstract class AbstractJmxPerformanceCounter implements PerformanceCounter {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractJmxPerformanceCounter.class);
+  private static final Logger logger = LoggerFactory.getLogger(AbstractJmxPerformanceCounter.class);
 
-    private final String id;
-    private final String objectName;
-    private final Collection<JmxAttributeData> attributes;
-    private boolean alreadyLogged = false;
+  private final String id;
+  private final String objectName;
+  private final Collection<JmxAttributeData> attributes;
+  private boolean alreadyLogged = false;
 
-    @Override
-    public String getId() {
-        return id;
-    }
+  @Override
+  public String getId() {
+    return id;
+  }
 
-    /**
-     * The main method. The method will fetch the data and send it.
-     * The method will not do anything if there was a major problem accessing the needed counter.
-     * @param telemetryClient The telemetry client to send events.
-     */
-    @Override
-    public synchronized void report(TelemetryClient telemetryClient) {
-        try {
-            Map<String, Collection<Object>> result =
-                    JmxDataFetcher.fetch(objectName, attributes);
+  /**
+   * The main method. The method will fetch the data and send it. The method will not do anything if
+   * there was a major problem accessing the needed counter.
+   *
+   * @param telemetryClient The telemetry client to send events.
+   */
+  @Override
+  public synchronized void report(TelemetryClient telemetryClient) {
+    try {
+      Map<String, Collection<Object>> result = JmxDataFetcher.fetch(objectName, attributes);
 
-            for (Map.Entry<String, Collection<Object>> displayAndValues : result.entrySet()) {
-                boolean ok = true;
-                double value = 0.0;
-                for (Object obj : displayAndValues.getValue()) {
-                    try {
-                        if (obj instanceof Boolean) {
-                            value = ((Boolean) obj).booleanValue() ? 1 : 0;
-                        } else {
-                            value += Double.parseDouble(String.valueOf(obj));
-                        }
-                    } catch (RuntimeException e) {
-                        ok = false;
-                        break;
-                    }
-                }
-
-                if (ok) {
-                    try {
-                        send(telemetryClient, displayAndValues.getKey(), value);
-                    } catch (RuntimeException e) {
-                        logger.error("Error while sending JMX data: '{}'", e.toString());
-                        logger.trace("Error while sending JMX data", e);
-                    }
-                }
+      for (Map.Entry<String, Collection<Object>> displayAndValues : result.entrySet()) {
+        boolean ok = true;
+        double value = 0.0;
+        for (Object obj : displayAndValues.getValue()) {
+          try {
+            if (obj instanceof Boolean) {
+              value = ((Boolean) obj).booleanValue() ? 1 : 0;
+            } else {
+              value += Double.parseDouble(String.valueOf(obj));
             }
-        } catch (Exception e) {
-            if (!alreadyLogged) {
-                logger.error("Error while fetching JMX data: '{}'", e.toString());
-                logger.trace("Error while fetching JMX data", e);
-                alreadyLogged = true;
-            }
+          } catch (RuntimeException e) {
+            ok = false;
+            break;
+          }
         }
-    }
 
-    protected AbstractJmxPerformanceCounter(String id, String objectName, Collection<JmxAttributeData> attributes) {
-        this.id = id;
-        this.objectName = objectName;
-        this.attributes = attributes;
+        if (ok) {
+          try {
+            send(telemetryClient, displayAndValues.getKey(), value);
+          } catch (RuntimeException e) {
+            logger.error("Error while sending JMX data: '{}'", e.toString());
+            logger.trace("Error while sending JMX data", e);
+          }
+        }
+      }
+    } catch (Exception e) {
+      if (!alreadyLogged) {
+        logger.error("Error while fetching JMX data: '{}'", e.toString());
+        logger.trace("Error while fetching JMX data", e);
+        alreadyLogged = true;
+      }
     }
+  }
 
-    protected abstract void send(TelemetryClient telemetryClient, String displayName, double value);
+  protected AbstractJmxPerformanceCounter(
+      String id, String objectName, Collection<JmxAttributeData> attributes) {
+    this.id = id;
+    this.objectName = objectName;
+    this.attributes = attributes;
+  }
+
+  protected abstract void send(TelemetryClient telemetryClient, String displayName, double value);
 }

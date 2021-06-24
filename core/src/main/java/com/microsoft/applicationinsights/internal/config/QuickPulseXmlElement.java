@@ -23,13 +23,13 @@ package com.microsoft.applicationinsights.internal.config;
 
 public class QuickPulseXmlElement {
 
-    private boolean enabled = true;
+  private boolean enabled = true;
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+  }
 
-    public boolean isEnabled() {
-        return enabled;
-    }
+  public boolean isEnabled() {
+    return enabled;
+  }
 }

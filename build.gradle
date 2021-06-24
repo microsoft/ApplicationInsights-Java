@@ -49,17 +49,16 @@ ext {
     }
 }
 
-// TODO (trask) enable and format everything!
-//spotless {
-//    // this formatting is applied at the root level, as some of these files are not in a submodules
-//    // and would be missed otherwise
-//    format 'misc', {
-//        target '.gitignore', '*.md', 'docs/**/*.md'
-//        indentWithSpaces()
-//        trimTrailingWhitespace()
-//        endWithNewline()
-//    }
-//}
+spotless {
+    // this formatting is applied at the root level, as some of these files are not in a submodules
+    // and would be missed otherwise
+    format 'misc', {
+        target '.gitignore', '*.md', 'docs/**/*.md'
+        indentWithSpaces()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
 
 allprojects {
     if (!it.path.startsWith(":test")) {

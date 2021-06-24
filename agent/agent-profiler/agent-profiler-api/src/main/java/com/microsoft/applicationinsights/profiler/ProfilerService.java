@@ -18,11 +18,10 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.profiler;
 
-/**
- * Definition of a service that gives access to a profiler
- */
+/** Definition of a service that gives access to a profiler */
 public interface ProfilerService {
-    Profiler getProfiler();
+  Profiler getProfiler();
 }

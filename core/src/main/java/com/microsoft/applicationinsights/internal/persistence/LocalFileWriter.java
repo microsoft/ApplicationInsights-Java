@@ -1,7 +1,28 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.microsoft.applicationinsights.internal.persistence;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.DEFAULT_FOLDER;
+import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.PERMANENT_FILE_EXTENSION;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -9,67 +30,67 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.DEFAULT_FOLDER;
-import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.PERMANENT_FILE_EXTENSION;
-
-/**
- * This class manages writing a list of {@link ByteBuffer} to the file system.
- */
+/** This class manages writing a list of {@link ByteBuffer} to the file system. */
 public final class LocalFileWriter {
 
-    private static final Logger logger = LoggerFactory.getLogger(LocalFileWriter.class);
+  private static final Logger logger = LoggerFactory.getLogger(LocalFileWriter.class);
 
-    private final LocalFileCache localFileCache;
+  private final LocalFileCache localFileCache;
 
-    public LocalFileWriter(LocalFileCache localFileCache) {
-        if (!DEFAULT_FOLDER.exists()) {
-            DEFAULT_FOLDER.mkdir();
-        }
-
-        if (!DEFAULT_FOLDER.exists() || !DEFAULT_FOLDER.canRead() || !DEFAULT_FOLDER.canWrite()) {
-            throw new IllegalArgumentException(DEFAULT_FOLDER + " must exist and have read and write permissions.");
-        }
-
-        this.localFileCache = localFileCache;
+  public LocalFileWriter(LocalFileCache localFileCache) {
+    if (!DEFAULT_FOLDER.exists()) {
+      DEFAULT_FOLDER.mkdir();
     }
 
-    public boolean writeToDisk(List<ByteBuffer> buffers) {
-        if (!PersistenceHelper.maxFileSizeExceeded()) {
-            return false;
-        }
-
-        File tempFile = PersistenceHelper.createTempFile();
-        if (tempFile == null) {
-            return false;
-        }
-
-        if (!write(tempFile, buffers)) {
-            return false;
-        }
-
-        File permanentFile = PersistenceHelper.renameFileExtension(tempFile.getName(), PERMANENT_FILE_EXTENSION);
-        if (permanentFile == null) {
-            return false;
-        }
-
-        localFileCache.addPersistedFilenameToMap(permanentFile.getName());
-
-        logger.info("List<ByteBuffers> has been persisted to file and will be sent when the network becomes available.");
-        // TODO (heya) track data persistence success via Statsbeat
-        return true;
+    if (!DEFAULT_FOLDER.exists() || !DEFAULT_FOLDER.canRead() || !DEFAULT_FOLDER.canWrite()) {
+      throw new IllegalArgumentException(
+          DEFAULT_FOLDER + " must exist and have read and write permissions.");
     }
 
-    private static boolean write(File file, List<ByteBuffer> buffers) {
-        try (FileChannel channel = new FileOutputStream(file).getChannel()) {
-            for (ByteBuffer byteBuffer : buffers) {
-                channel.write(byteBuffer);
-            }
-            return true;
-        } catch (IOException ex) {
-            // TODO (heya) track IO write failure via Statsbeat
-            logger.error("Fail to write to file.", ex);
-            return false;
-        }
+    this.localFileCache = localFileCache;
+  }
+
+  public boolean writeToDisk(List<ByteBuffer> buffers) {
+    if (!PersistenceHelper.maxFileSizeExceeded()) {
+      return false;
     }
+
+    File tempFile = PersistenceHelper.createTempFile();
+    if (tempFile == null) {
+      return false;
+    }
+
+    if (!write(tempFile, buffers)) {
+      return false;
+    }
+
+    File permanentFile =
+        PersistenceHelper.renameFileExtension(tempFile.getName(), PERMANENT_FILE_EXTENSION);
+    if (permanentFile == null) {
+      return false;
+    }
+
+    localFileCache.addPersistedFilenameToMap(permanentFile.getName());
+
+    logger.info(
+        "List<ByteBuffers> has been persisted to file and will be sent when the network becomes available.");
+    // TODO (heya) track data persistence success via Statsbeat
+    return true;
+  }
+
+  private static boolean write(File file, List<ByteBuffer> buffers) {
+    try (FileChannel channel = new FileOutputStream(file).getChannel()) {
+      for (ByteBuffer byteBuffer : buffers) {
+        channel.write(byteBuffer);
+      }
+      return true;
+    } catch (IOException ex) {
+      // TODO (heya) track IO write failure via Statsbeat
+      logger.error("Fail to write to file.", ex);
+      return false;
+    }
+  }
 }

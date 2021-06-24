@@ -18,65 +18,67 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.internal.profiler;
 
-import java.util.concurrent.ExecutorService;
-import java.util.function.Consumer;
+import static com.microsoft.applicationinsights.internal.perfcounter.Constants.TOTAL_CPU_PC_METRIC_NAME;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.TelemetryObservers;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
-import com.microsoft.applicationinsights.TelemetryObservers;
+import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 
-import static com.microsoft.applicationinsights.internal.perfcounter.Constants.TOTAL_CPU_PC_METRIC_NAME;
-
-/**
- * Creates AlertMonitor and wires it up to observe telemetry.
- */
+/** Creates AlertMonitor and wires it up to observe telemetry. */
 public class AlertingServiceFactory {
-    public static AlertingSubsystem create(
-            Consumer<AlertBreach> alertAction,
-            TelemetryObservers telemetryObservers,
-            TelemetryClient telemetryClient,
-            ExecutorService executorService,
-            GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
-        AlertingSubsystem alertingSubsystem = AlertingSubsystem.create(alertAction, executorService);
+  public static AlertingSubsystem create(
+      Consumer<AlertBreach> alertAction,
+      TelemetryObservers telemetryObservers,
+      TelemetryClient telemetryClient,
+      ExecutorService executorService,
+      GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
+    AlertingSubsystem alertingSubsystem = AlertingSubsystem.create(alertAction, executorService);
 
-        addObserver(alertingSubsystem, telemetryObservers);
+    addObserver(alertingSubsystem, telemetryObservers);
 
-        monitorGcActivity(alertingSubsystem, telemetryClient, executorService, gcEventMonitorConfiguration);
-        return alertingSubsystem;
-    }
+    monitorGcActivity(
+        alertingSubsystem, telemetryClient, executorService, gcEventMonitorConfiguration);
+    return alertingSubsystem;
+  }
 
-    private static void monitorGcActivity(
-            AlertingSubsystem alertingSubsystem,
-            TelemetryClient telemetryClient,
-            ExecutorService executorService,
-            GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
-        GcEventMonitor.init(alertingSubsystem, telemetryClient, executorService, gcEventMonitorConfiguration);
-    }
+  private static void monitorGcActivity(
+      AlertingSubsystem alertingSubsystem,
+      TelemetryClient telemetryClient,
+      ExecutorService executorService,
+      GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
+    GcEventMonitor.init(
+        alertingSubsystem, telemetryClient, executorService, gcEventMonitorConfiguration);
+  }
 
-    private static void addObserver(AlertingSubsystem alertingSubsystem, TelemetryObservers telemetryObservers) {
-        telemetryObservers.addObserver(telemetry -> {
-            MonitorDomain data = telemetry.getData().getBaseData();
-            if (!(data instanceof MetricsData)) {
-                return;
-            }
-            MetricDataPoint point = ((MetricsData) data).getMetrics().get(0);
-            AlertMetricType alertMetricType = null;
-            if (point.getName().equals(TOTAL_CPU_PC_METRIC_NAME)) {
-                alertMetricType = AlertMetricType.CPU;
-            }
+  private static void addObserver(
+      AlertingSubsystem alertingSubsystem, TelemetryObservers telemetryObservers) {
+    telemetryObservers.addObserver(
+        telemetry -> {
+          MonitorDomain data = telemetry.getData().getBaseData();
+          if (!(data instanceof MetricsData)) {
+            return;
+          }
+          MetricDataPoint point = ((MetricsData) data).getMetrics().get(0);
+          AlertMetricType alertMetricType = null;
+          if (point.getName().equals(TOTAL_CPU_PC_METRIC_NAME)) {
+            alertMetricType = AlertMetricType.CPU;
+          }
 
-            if (alertMetricType != null) {
-                alertingSubsystem.track(alertMetricType, point.getValue());
-            }
+          if (alertMetricType != null) {
+            alertingSubsystem.track(alertMetricType, point.getValue());
+          }
         });
-    }
+  }
 
-    private AlertingServiceFactory() {}
+  private AlertingServiceFactory() {}
 }

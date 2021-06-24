@@ -23,58 +23,58 @@ package com.microsoft.applicationinsights.internal.config;
 
 public class ApplicationInsightsXmlConfiguration {
 
-    private String connectionString;
+  private String connectionString;
 
-    private String roleName;
+  private String roleName;
 
-    private String roleInstance;
+  private String roleInstance;
 
-    private TelemetryModulesXmlElement modules;
+  private TelemetryModulesXmlElement modules;
 
-    private final PerformanceCountersXmlElement performance = new PerformanceCountersXmlElement();
+  private final PerformanceCountersXmlElement performance = new PerformanceCountersXmlElement();
 
-    private QuickPulseXmlElement quickPulse;
+  private QuickPulseXmlElement quickPulse;
 
-    public String getConnectionString() {
-        return connectionString;
+  public String getConnectionString() {
+    return connectionString;
+  }
+
+  public void setConnectionString(String connectionString) {
+    this.connectionString = connectionString;
+  }
+
+  public String getRoleName() {
+    return roleName;
+  }
+
+  public void setRoleName(String roleName) {
+    this.roleName = roleName;
+  }
+
+  public String getRoleInstance() {
+    return roleInstance;
+  }
+
+  public void setRoleInstance(String roleInstance) {
+    this.roleInstance = roleInstance;
+  }
+
+  public QuickPulseXmlElement getQuickPulse() {
+    if (quickPulse == null) {
+      quickPulse = new QuickPulseXmlElement();
     }
+    return quickPulse;
+  }
 
-    public void setConnectionString(String connectionString) {
-        this.connectionString = connectionString;
-    }
+  public TelemetryModulesXmlElement getModules() {
+    return modules;
+  }
 
-    public String getRoleName() {
-        return roleName;
-    }
+  public void setModules(TelemetryModulesXmlElement modules) {
+    this.modules = modules;
+  }
 
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
-    }
-
-    public String getRoleInstance() {
-        return roleInstance;
-    }
-
-    public void setRoleInstance(String roleInstance) {
-        this.roleInstance = roleInstance;
-    }
-
-    public QuickPulseXmlElement getQuickPulse() {
-        if (quickPulse == null) {
-            quickPulse = new QuickPulseXmlElement();
-        }
-        return quickPulse;
-    }
-
-    public TelemetryModulesXmlElement getModules() {
-        return modules;
-    }
-
-    public void setModules(TelemetryModulesXmlElement modules) {
-        this.modules = modules;
-    }
-
-    public PerformanceCountersXmlElement getPerformance() {
-        return performance;
-    }
+  public PerformanceCountersXmlElement getPerformance() {
+    return performance;
+  }
 }

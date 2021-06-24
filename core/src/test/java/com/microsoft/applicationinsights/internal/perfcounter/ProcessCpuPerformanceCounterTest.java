@@ -21,14 +21,14 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.jupiter.api.Test;
+
 class ProcessCpuPerformanceCounterTest {
-    @Test
-    void testGetId() {
-        ProcessCpuPerformanceCounter pc = new ProcessCpuPerformanceCounter();
-        assertThat(pc.getId()).isEqualTo(Constants.PROCESS_CPU_PC_ID);
-    }
+  @Test
+  void testGetId() {
+    ProcessCpuPerformanceCounter pc = new ProcessCpuPerformanceCounter();
+    assertThat(pc.getId()).isEqualTo(Constants.PROCESS_CPU_PC_ID);
+  }
 }

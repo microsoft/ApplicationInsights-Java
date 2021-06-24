@@ -18,35 +18,37 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.agent;
 
+import io.opentelemetry.javaagent.OpenTelemetryAgent;
 import java.lang.instrument.Instrumentation;
 
-import io.opentelemetry.javaagent.OpenTelemetryAgent;
-
-// IMPORTANT!! If this class is renamed, be sure to add the previous name to DuplicateAgentClassFileTransformer
-// so that previous versions will be suppressed (current versions with the same class name are suppressed
+// IMPORTANT!! If this class is renamed, be sure to add the previous name to
+// DuplicateAgentClassFileTransformer
+// so that previous versions will be suppressed (current versions with the same class name are
+// suppressed
 // below via the alreadyLoaded flag
 public class Agent {
 
-    // this is to prevent the agent from loading and instrumenting everything twice
-    // (leading to unpredictable results) when -javaagent:applicationinsights-agent.jar
-    // appears multiple times on the command line
-    private static volatile boolean alreadyLoaded;
+  // this is to prevent the agent from loading and instrumenting everything twice
+  // (leading to unpredictable results) when -javaagent:applicationinsights-agent.jar
+  // appears multiple times on the command line
+  private static volatile boolean alreadyLoaded;
 
-    public static void premain(String agentArgs, Instrumentation inst) {
-        if (alreadyLoaded) {
-            return;
-        }
-        OpenTelemetryAgent.premain(agentArgs, inst);
-        alreadyLoaded = true;
+  public static void premain(String agentArgs, Instrumentation inst) {
+    if (alreadyLoaded) {
+      return;
     }
+    OpenTelemetryAgent.premain(agentArgs, inst);
+    alreadyLoaded = true;
+  }
 
-    // this is provided only for dynamic attach in the first line of main
-    // there are many problematic edge cases around dynamic attach any later than that
-    public static void agentmain(String agentArgs, Instrumentation inst) {
-        premain(agentArgs, inst);
-    }
+  // this is provided only for dynamic attach in the first line of main
+  // there are many problematic edge cases around dynamic attach any later than that
+  public static void agentmain(String agentArgs, Instrumentation inst) {
+    premain(agentArgs, inst);
+  }
 
-    private Agent() {}
+  private Agent() {}
 }

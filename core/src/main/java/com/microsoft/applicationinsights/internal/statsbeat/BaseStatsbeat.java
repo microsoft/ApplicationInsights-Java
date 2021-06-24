@@ -27,40 +27,40 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsDat
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.FormattedTime;
 import com.microsoft.applicationinsights.TelemetryClient;
-
 import java.util.HashMap;
 import java.util.Map;
 
 abstract class BaseStatsbeat {
 
-    private static final String STATSBEAT_TELEMETRY_NAME = "Statsbeat";
+  private static final String STATSBEAT_TELEMETRY_NAME = "Statsbeat";
 
-    private final CustomDimensions customDimensions;
+  private final CustomDimensions customDimensions;
 
-    protected BaseStatsbeat(CustomDimensions customDimensions) {
-        this.customDimensions = customDimensions;
-    }
+  protected BaseStatsbeat(CustomDimensions customDimensions) {
+    this.customDimensions = customDimensions;
+  }
 
-    protected abstract void send(TelemetryClient telemetryClient);
+  protected abstract void send(TelemetryClient telemetryClient);
 
-    protected TelemetryItem createStatsbeatTelemetry(TelemetryClient telemetryClient, String name, double value) {
-        TelemetryItem telemetry = new TelemetryItem();
-        MetricsData data = new MetricsData();
-        MetricDataPoint point = new MetricDataPoint();
-        telemetryClient.initMetricTelemetry(telemetry, data, point);
-        // overwrite the default name (which is "Metric")
-        telemetry.setName(STATSBEAT_TELEMETRY_NAME);
+  protected TelemetryItem createStatsbeatTelemetry(
+      TelemetryClient telemetryClient, String name, double value) {
+    TelemetryItem telemetry = new TelemetryItem();
+    MetricsData data = new MetricsData();
+    MetricDataPoint point = new MetricDataPoint();
+    telemetryClient.initMetricTelemetry(telemetry, data, point);
+    // overwrite the default name (which is "Metric")
+    telemetry.setName(STATSBEAT_TELEMETRY_NAME);
 
-        point.setName(name);
-        point.setValue(value);
-        point.setDataPointType(DataPointType.MEASUREMENT);
+    point.setName(name);
+    point.setValue(value);
+    point.setDataPointType(DataPointType.MEASUREMENT);
 
-        telemetry.setInstrumentationKey(telemetryClient.getStatsbeatInstrumentationKey());
-        telemetry.setTime(FormattedTime.fromNow());
+    telemetry.setInstrumentationKey(telemetryClient.getStatsbeatInstrumentationKey());
+    telemetry.setTime(FormattedTime.fromNow());
 
-        Map<String, String> properties = new HashMap<>();
-        customDimensions.populateProperties(properties, telemetryClient.getInstrumentationKey());
-        data.setProperties(properties);
-        return telemetry;
-    }
+    Map<String, String> properties = new HashMap<>();
+    customDimensions.populateProperties(properties, telemetryClient.getInstrumentationKey());
+    data.setProperties(properties);
+    return telemetry;
+  }
 }

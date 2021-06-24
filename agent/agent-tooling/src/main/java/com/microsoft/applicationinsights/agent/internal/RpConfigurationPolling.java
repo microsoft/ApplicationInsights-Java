@@ -21,11 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
-import java.util.concurrent.Executors;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
@@ -35,70 +31,87 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfigurationBuilder;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
+import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-
 public class RpConfigurationPolling implements Runnable {
 
-    private static final Logger logger = LoggerFactory.getLogger(RpConfigurationPolling.class);
+  private static final Logger logger = LoggerFactory.getLogger(RpConfigurationPolling.class);
 
-    private volatile RpConfiguration rpConfiguration;
-    private final Configuration configuration;
-    private final TelemetryClient telemetryClient;
+  private volatile RpConfiguration rpConfiguration;
+  private final Configuration configuration;
+  private final TelemetryClient telemetryClient;
 
-    public static void startPolling(RpConfiguration rpConfiguration, Configuration configuration,
-                                    TelemetryClient telemetryClient) {
-        Executors.newSingleThreadScheduledExecutor(
-                ThreadPoolUtils.createDaemonThreadFactory(RpConfigurationPolling.class))
-                .scheduleWithFixedDelay(
-                        new RpConfigurationPolling(rpConfiguration, configuration, telemetryClient),
-                        60, 60, SECONDS);
+  public static void startPolling(
+      RpConfiguration rpConfiguration,
+      Configuration configuration,
+      TelemetryClient telemetryClient) {
+    Executors.newSingleThreadScheduledExecutor(
+            ThreadPoolUtils.createDaemonThreadFactory(RpConfigurationPolling.class))
+        .scheduleWithFixedDelay(
+            new RpConfigurationPolling(rpConfiguration, configuration, telemetryClient),
+            60,
+            60,
+            SECONDS);
+  }
+
+  // visible for testing
+  RpConfigurationPolling(
+      RpConfiguration rpConfiguration,
+      Configuration configuration,
+      TelemetryClient telemetryClient) {
+    this.rpConfiguration = rpConfiguration;
+    this.configuration = configuration;
+    this.telemetryClient = telemetryClient;
+  }
+
+  @Override
+  public void run() {
+    if (rpConfiguration.configPath == null) {
+      logger.warn("rp configuration path is null");
+      return;
     }
-
-    // visible for testing
-    RpConfigurationPolling(RpConfiguration rpConfiguration, Configuration configuration,
-                           TelemetryClient telemetryClient) {
-        this.rpConfiguration = rpConfiguration;
-        this.configuration = configuration;
-        this.telemetryClient = telemetryClient;
+    if (!Files.exists(rpConfiguration.configPath)) {
+      logger.warn("rp configuration path doesn't exist: {}", rpConfiguration.configPath);
+      return;
     }
+    try {
+      BasicFileAttributes attributes =
+          Files.readAttributes(rpConfiguration.configPath, BasicFileAttributes.class);
+      FileTime fileTime = attributes.lastModifiedTime();
+      if (rpConfiguration.lastModifiedTime != fileTime.toMillis()) {
+        rpConfiguration.lastModifiedTime = fileTime.toMillis();
+        RpConfiguration newRpConfiguration =
+            RpConfigurationBuilder.loadJsonConfigFile(rpConfiguration.configPath);
 
-    @Override
-    public void run() {
-        if (rpConfiguration.configPath == null) {
-            logger.warn("rp configuration path is null");
-            return;
+        if (!newRpConfiguration.connectionString.equals(telemetryClient.getConnectionString())) {
+          logger.debug(
+              "Connection string from the JSON config file is overriding the previously configured connection string.");
+          telemetryClient.setConnectionString(newRpConfiguration.connectionString);
+          AppIdSupplier.INSTANCE.startAppIdRetrieval();
         }
-        if (!Files.exists(rpConfiguration.configPath)) {
-            logger.warn("rp configuration path doesn't exist: {}", rpConfiguration.configPath);
-            return;
-        }
-        try {
-            BasicFileAttributes attributes = Files.readAttributes(rpConfiguration.configPath, BasicFileAttributes.class);
-            FileTime fileTime = attributes.lastModifiedTime();
-            if (rpConfiguration.lastModifiedTime != fileTime.toMillis()) {
-                rpConfiguration.lastModifiedTime = fileTime.toMillis();
-                RpConfiguration newRpConfiguration = RpConfigurationBuilder.loadJsonConfigFile(rpConfiguration.configPath);
 
-                if (!newRpConfiguration.connectionString.equals(telemetryClient.getConnectionString())) {
-                    logger.debug("Connection string from the JSON config file is overriding the previously configured connection string.");
-                    telemetryClient.setConnectionString(newRpConfiguration.connectionString);
-                    AppIdSupplier.INSTANCE.startAppIdRetrieval();
-                }
-
-                if (newRpConfiguration.sampling.percentage != rpConfiguration.sampling.percentage) {
-                    logger.debug("Updating sampling percentage from {} to {}", rpConfiguration.sampling.percentage, newRpConfiguration.sampling.percentage);
-                    float roundedSamplingPercentage = ConfigurationBuilder.roundToNearest(newRpConfiguration.sampling.percentage);
-                    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(roundedSamplingPercentage, configuration));
-                    Global.setSamplingPercentage(roundedSamplingPercentage);
-                    rpConfiguration.sampling.percentage = newRpConfiguration.sampling.percentage;
-                }
-                rpConfiguration = newRpConfiguration;
-            }
-        } catch (IOException e) {
-            logger.error("Error occurred when polling json config file: {}", e.getMessage(), e);
+        if (newRpConfiguration.sampling.percentage != rpConfiguration.sampling.percentage) {
+          logger.debug(
+              "Updating sampling percentage from {} to {}",
+              rpConfiguration.sampling.percentage,
+              newRpConfiguration.sampling.percentage);
+          float roundedSamplingPercentage =
+              ConfigurationBuilder.roundToNearest(newRpConfiguration.sampling.percentage);
+          DelegatingSampler.getInstance()
+              .setDelegate(Samplers.getSampler(roundedSamplingPercentage, configuration));
+          Global.setSamplingPercentage(roundedSamplingPercentage);
+          rpConfiguration.sampling.percentage = newRpConfiguration.sampling.percentage;
         }
+        rpConfiguration = newRpConfiguration;
+      }
+    } catch (IOException e) {
+      logger.error("Error occurred when polling json config file: {}", e.getMessage(), e);
     }
+  }
 }

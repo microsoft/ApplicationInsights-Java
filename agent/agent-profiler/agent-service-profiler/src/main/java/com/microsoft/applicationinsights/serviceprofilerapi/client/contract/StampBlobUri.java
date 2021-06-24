@@ -30,14 +30,14 @@ import com.squareup.moshi.Json;
  * <p>This class is intended for internal Java profiler use.
  */
 public class StampBlobUri {
-    @Json(name = "blobUri")
-    private final String blobUri;
+  @Json(name = "blobUri")
+  private final String blobUri;
 
-    public StampBlobUri(String blobUri) {
-        this.blobUri = blobUri;
-    }
+  public StampBlobUri(String blobUri) {
+    this.blobUri = blobUri;
+  }
 
-    public String getBlobUri() {
-        return blobUri;
-    }
+  public String getBlobUri() {
+    return blobUri;
+  }
 }

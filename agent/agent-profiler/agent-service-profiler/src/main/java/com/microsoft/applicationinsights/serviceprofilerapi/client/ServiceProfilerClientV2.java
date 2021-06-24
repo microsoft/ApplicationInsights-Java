@@ -18,23 +18,22 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.serviceprofilerapi.client;
 
+import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
+import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.UUID;
 
-import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
-
-/**
- * Client that can interact with the Service Profiler endpoint
- */
+/** Client that can interact with the Service Profiler endpoint */
 public interface ServiceProfilerClientV2 {
-    BlobAccessPass getUploadAccess(UUID profileId) throws URISyntaxException, IOException;
+  BlobAccessPass getUploadAccess(UUID profileId) throws URISyntaxException, IOException;
 
-    ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag) throws URISyntaxException, IOException;
+  ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag)
+      throws URISyntaxException, IOException;
 
-    String getSettings(Date oldTimeStamp) throws IOException, URISyntaxException;
+  String getSettings(Date oldTimeStamp) throws IOException, URISyntaxException;
 }

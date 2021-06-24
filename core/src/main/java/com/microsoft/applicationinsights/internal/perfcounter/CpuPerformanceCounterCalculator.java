@@ -21,61 +21,68 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class CpuPerformanceCounterCalculator {
 
-    private static final Logger logger = LoggerFactory.getLogger(CpuPerformanceCounterCalculator.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(CpuPerformanceCounterCalculator.class);
 
-    private final int numberOfCpus;
+  private final int numberOfCpus;
 
-    private long prevUpTime;
-    private long prevProcessCpuTime;
+  private long prevUpTime;
+  private long prevProcessCpuTime;
 
-    private ObjectName osBean;
+  private ObjectName osBean;
 
-    public CpuPerformanceCounterCalculator() {
-        OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
-        numberOfCpus = operatingSystemMXBean.getAvailableProcessors();
+  public CpuPerformanceCounterCalculator() {
+    OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
+    numberOfCpus = operatingSystemMXBean.getAvailableProcessors();
+  }
 
+  public Double getProcessCpuUsage() {
+    Double processCpuUsage = null;
+    try {
+      RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+
+      long upTime = runtimeMXBean.getUptime();
+      long processCpuTime = getProcessCpuTime();
+
+      if (prevUpTime > 0L && upTime > prevUpTime) {
+        long elapsedCpu = processCpuTime - prevProcessCpuTime;
+        long elapsedTime = upTime - prevUpTime;
+        processCpuUsage =
+            Math.min(
+                99.999,
+                elapsedCpu
+                    / (elapsedTime
+                        * 10_000.0
+                        * numberOfCpus)); // if this looks weird, here's another way to write it:
+        // (elapsedCpu / 1000000.0) / elapsedTime / numberOfCpus *
+        // 100.0
+      }
+      prevUpTime = upTime;
+      prevProcessCpuTime = processCpuTime;
+    } catch (Exception e) {
+      processCpuUsage = null;
+      logger.error("Error in getProcessCPUUsage");
+      logger.trace("Error in getProcessCPUUsage", e);
     }
 
-    public Double getProcessCpuUsage() {
-        Double processCpuUsage = null;
-        try {
-            RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+    return processCpuUsage;
+  }
 
-            long upTime = runtimeMXBean.getUptime();
-            long processCpuTime = getProcessCpuTime();
-
-            if (prevUpTime > 0L && upTime > prevUpTime) {
-                long elapsedCpu = processCpuTime - prevProcessCpuTime;
-                long elapsedTime = upTime - prevUpTime;
-                processCpuUsage = Math.min(99.999, elapsedCpu / (elapsedTime * 10_000.0 * numberOfCpus)); // if this looks weird, here's another way to write it: (elapsedCpu / 1000000.0) / elapsedTime / numberOfCpus * 100.0
-            }
-            prevUpTime = upTime;
-            prevProcessCpuTime = processCpuTime;
-        } catch (Exception e) {
-            processCpuUsage = null;
-            logger.error("Error in getProcessCPUUsage");
-            logger.trace("Error in getProcessCPUUsage", e);
-        }
-
-        return processCpuUsage;
+  private long getProcessCpuTime() throws Exception {
+    MBeanServer bsvr = ManagementFactory.getPlatformMBeanServer();
+    if (osBean == null) {
+      osBean = ObjectName.getInstance(ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME);
     }
-
-    private long getProcessCpuTime() throws Exception {
-        MBeanServer bsvr = ManagementFactory.getPlatformMBeanServer();
-        if (osBean == null) {
-            osBean = ObjectName.getInstance(ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME);
-        }
-        return (Long) bsvr.getAttribute(osBean, "ProcessCpuTime");
-    }
+    return (Long) bsvr.getAttribute(osBean, "ProcessCpuTime");
+  }
 }

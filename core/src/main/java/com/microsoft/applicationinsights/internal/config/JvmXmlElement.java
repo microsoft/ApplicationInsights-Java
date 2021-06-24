@@ -23,23 +23,23 @@ package com.microsoft.applicationinsights.internal.config;
 
 public class JvmXmlElement {
 
-    private String name;
+  private String name;
 
-    private boolean enabled = true;
+  private boolean enabled = true;
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public boolean isEnabled() {
-        return enabled;
-    }
+  public boolean isEnabled() {
+    return enabled;
+  }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+  }
 }

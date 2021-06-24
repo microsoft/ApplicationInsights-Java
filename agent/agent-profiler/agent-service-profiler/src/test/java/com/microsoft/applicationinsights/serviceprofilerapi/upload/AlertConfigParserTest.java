@@ -18,7 +18,10 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.serviceprofilerapi.upload;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
@@ -30,37 +33,39 @@ import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
 import com.microsoft.applicationinsights.profiler.config.AlertConfigParser;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 class AlertConfigParserTest {
 
-    @Test
-    void nullsInConfigAreHandled() {
+  @Test
+  void nullsInConfigAreHandled() {
 
-        AlertingConfiguration config = AlertConfigParser.parse(
-                null,
-                null,
-                null,
-                null
-        );
-        assertThat(config.getCpuAlert().isEnabled()).isFalse();
-        assertThat(config.getCollectionPlanConfiguration().isSingle()).isFalse();
-        assertThat(config.getMemoryAlert().isEnabled()).isFalse();
-        assertThat(config.getDefaultConfiguration().getSamplingEnabled()).isFalse();
-    }
+    AlertingConfiguration config = AlertConfigParser.parse(null, null, null, null);
+    assertThat(config.getCpuAlert().isEnabled()).isFalse();
+    assertThat(config.getCollectionPlanConfiguration().isSingle()).isFalse();
+    assertThat(config.getMemoryAlert().isEnabled()).isFalse();
+    assertThat(config.getDefaultConfiguration().getSamplingEnabled()).isFalse();
+  }
 
-    @Test
-    void saneDataIsParsed() {
-        AlertingConfiguration config = AlertConfigParser.parse(
-                "--cpu-trigger-enabled true --cpu-threshold 80 --cpu-trigger-profilingDuration 30 --cpu-trigger-cooldown 14400",
-                "--memory-trigger-enabled true --memory-threshold 20 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400",
-                "--sampling-enabled true --sampling-rate 5 --sampling-profiling-duration 120",
-                "--single --mode immediate --immediate-profiling-duration 120  --expiration 5249157885138288517 --settings-moniker a-settings-moniker"
-        );
+  @Test
+  void saneDataIsParsed() {
+    AlertingConfiguration config =
+        AlertConfigParser.parse(
+            "--cpu-trigger-enabled true --cpu-threshold 80 --cpu-trigger-profilingDuration 30 --cpu-trigger-cooldown 14400",
+            "--memory-trigger-enabled true --memory-threshold 20 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400",
+            "--sampling-enabled true --sampling-rate 5 --sampling-profiling-duration 120",
+            "--single --mode immediate --immediate-profiling-duration 120  --expiration 5249157885138288517 --settings-moniker a-settings-moniker");
 
-        assertThat(config.getCpuAlert()).isEqualTo(new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400));
-        assertThat(config.getMemoryAlert()).isEqualTo(new AlertConfiguration(AlertMetricType.CPU, true, 20, 120, 14400));
-        assertThat(config.getDefaultConfiguration()).isEqualTo(new DefaultConfiguration(true, 5, 120));
-        assertThat(config.getCollectionPlanConfiguration()).isEqualTo(new CollectionPlanConfiguration(true, EngineMode.immediate, CollectionPlanConfigurationBuilder.parseBinaryDate(5249157885138288517L), 120, "a-settings-moniker"));
-    }
+    assertThat(config.getCpuAlert())
+        .isEqualTo(new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400));
+    assertThat(config.getMemoryAlert())
+        .isEqualTo(new AlertConfiguration(AlertMetricType.CPU, true, 20, 120, 14400));
+    assertThat(config.getDefaultConfiguration()).isEqualTo(new DefaultConfiguration(true, 5, 120));
+    assertThat(config.getCollectionPlanConfiguration())
+        .isEqualTo(
+            new CollectionPlanConfiguration(
+                true,
+                EngineMode.immediate,
+                CollectionPlanConfigurationBuilder.parseBinaryDate(5249157885138288517L),
+                120,
+                "a-settings-moniker"));
+  }
 }

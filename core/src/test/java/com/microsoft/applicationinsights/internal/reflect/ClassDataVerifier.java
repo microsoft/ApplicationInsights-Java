@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.internal.reflect;
 
 public interface ClassDataVerifier {
-    boolean verifyClassExists(String className);
+  boolean verifyClassExists(String className);
 
-    boolean verifyMethodExists(Class<?> clazz, String methodName, Class<?>... parameterTypes);
+  boolean verifyMethodExists(Class<?> clazz, String methodName, Class<?>... parameterTypes);
 }

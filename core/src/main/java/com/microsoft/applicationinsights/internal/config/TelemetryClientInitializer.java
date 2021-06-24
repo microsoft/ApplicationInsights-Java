@@ -21,307 +21,318 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import com.microsoft.applicationinsights.common.Strings;
-import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Set;
-
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.common.Strings;
 import com.microsoft.applicationinsights.extensibility.*;
+import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.perfcounter.JmxMetricPerformanceCounter;
 import com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule;
-import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterContainer;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterConfigurationAware;
-
+import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterContainer;
 import com.microsoft.applicationinsights.internal.perfcounter.ProcessPerformanceCountersModule;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Initializer class for telemetry client instances.
- */
+/** Initializer class for telemetry client instances. */
 public enum TelemetryClientInitializer {
-    INSTANCE;
+  INSTANCE;
 
-    private static final Logger logger = LoggerFactory.getLogger(TelemetryClientInitializer.class);
+  private static final Logger logger = LoggerFactory.getLogger(TelemetryClientInitializer.class);
 
-    private static final Set<String> defaultPerformaceModuleClassNames = new HashSet<>();
+  private static final Set<String> defaultPerformaceModuleClassNames = new HashSet<>();
 
-    static {
-        addDefaultPerfModuleClassName(ProcessPerformanceCountersModule.class.getCanonicalName());
-        addDefaultPerfModuleClassName(JvmPerformanceCountersModule.class.getCanonicalName());
+  static {
+    addDefaultPerfModuleClassName(ProcessPerformanceCountersModule.class.getCanonicalName());
+    addDefaultPerfModuleClassName(JvmPerformanceCountersModule.class.getCanonicalName());
+  }
+
+  public static synchronized void addDefaultPerfModuleClassName(String name) {
+    defaultPerformaceModuleClassNames.add(name);
+  }
+
+  TelemetryClientInitializer() {}
+
+  /**
+   * Currently we do the following:
+   *
+   * <p>Set Instrumentation Key Set Developer Mode (default false) Set Channel Set Tracking Disabled
+   * Mode (default false) Set Context Initializers where they should be written with full package
+   * name Set Telemetry Initializers where they should be written with full package name
+   *
+   * @param telemetryClient The configuration that will be populated
+   */
+  public void initialize(
+      TelemetryClient telemetryClient,
+      ApplicationInsightsXmlConfiguration applicationInsightsConfig) {
+
+    setConnectionString(applicationInsightsConfig, telemetryClient);
+    setRoleName(applicationInsightsConfig, telemetryClient);
+    setRoleInstance(applicationInsightsConfig, telemetryClient);
+
+    setTelemetryModules(applicationInsightsConfig, telemetryClient);
+
+    setQuickPulse(applicationInsightsConfig, telemetryClient);
+
+    initializeComponents(telemetryClient);
+  }
+
+  private static void setQuickPulse(
+      ApplicationInsightsXmlConfiguration appConfiguration, TelemetryClient telemetryClient) {
+    if (isQuickPulseEnabledInConfiguration(appConfiguration)) {
+      logger.trace("Initializing QuickPulse...");
+      QuickPulse.INSTANCE.initialize(telemetryClient);
+    }
+  }
+
+  private static boolean isQuickPulseEnabledInConfiguration(
+      ApplicationInsightsXmlConfiguration appConfiguration) {
+    QuickPulseXmlElement quickPulseXmlElement = appConfiguration.getQuickPulse();
+    return quickPulseXmlElement.isEnabled();
+  }
+
+  /**
+   * Sets the configuration data of Modules Initializers in configuration class.
+   *
+   * @param appConfiguration The configuration data.
+   * @param telemetryClient The configuration class.
+   */
+  private static void setTelemetryModules(
+      ApplicationInsightsXmlConfiguration appConfiguration, TelemetryClient telemetryClient) {
+    TelemetryModulesXmlElement configurationModules = appConfiguration.getModules();
+    List<TelemetryModule> modules = telemetryClient.getTelemetryModules();
+
+    if (configurationModules != null) {
+      ReflectionUtils.loadComponents(
+          TelemetryModule.class, modules, configurationModules.getAdds());
     }
 
-    public static synchronized void addDefaultPerfModuleClassName(String name) {
-        defaultPerformaceModuleClassNames.add(name);
+    // if heartbeat module is not loaded, load heartbeat module
+    if (!isHeartBeatModuleAdded(modules)) {
+      addHeartBeatModule(telemetryClient);
     }
 
-    TelemetryClientInitializer() {
+    List<TelemetryModule> pcModules = getPerformanceModules(appConfiguration.getPerformance());
+
+    modules.addAll(pcModules);
+  }
+
+  private static void setConnectionString(
+      ApplicationInsightsXmlConfiguration configXml, TelemetryClient telemetryClient) {
+
+    String connectionString = configXml.getConnectionString();
+
+    if (connectionString != null) {
+      telemetryClient.setConnectionString(connectionString);
     }
+  }
 
-    /**
-     * Currently we do the following:
-     *
-     * Set Instrumentation Key
-     * Set Developer Mode (default false)
-     * Set Channel
-     * Set Tracking Disabled Mode (default false)
-     * Set Context Initializers where they should be written with full package name
-     * Set Telemetry Initializers where they should be written with full package name
-     * @param telemetryClient The configuration that will be populated
-     */
-    public void initialize(TelemetryClient telemetryClient,
-                           ApplicationInsightsXmlConfiguration applicationInsightsConfig) {
+  private static void setRoleName(
+      ApplicationInsightsXmlConfiguration userConfiguration, TelemetryClient telemetryClient) {
+    try {
+      String roleName;
 
-        setConnectionString(applicationInsightsConfig, telemetryClient);
-        setRoleName(applicationInsightsConfig, telemetryClient);
-        setRoleInstance(applicationInsightsConfig, telemetryClient);
-
-        setTelemetryModules(applicationInsightsConfig, telemetryClient);
-
-        setQuickPulse(applicationInsightsConfig, telemetryClient);
-
-        initializeComponents(telemetryClient);
-    }
-
-    private static void setQuickPulse(ApplicationInsightsXmlConfiguration appConfiguration, TelemetryClient telemetryClient) {
-        if (isQuickPulseEnabledInConfiguration(appConfiguration)) {
-            logger.trace("Initializing QuickPulse...");
-            QuickPulse.INSTANCE.initialize(telemetryClient);
+      // try to find the role name in ApplicationInsights.xml
+      if (userConfiguration != null) {
+        roleName = userConfiguration.getRoleName();
+        if (roleName == null) {
+          return;
         }
-    }
 
-    private static boolean isQuickPulseEnabledInConfiguration(ApplicationInsightsXmlConfiguration appConfiguration) {
-        QuickPulseXmlElement quickPulseXmlElement = appConfiguration.getQuickPulse();
-        return quickPulseXmlElement.isEnabled();
-    }
-
-    /**
-     * Sets the configuration data of Modules Initializers in configuration class.
-     * @param appConfiguration The configuration data.
-     * @param telemetryClient The configuration class.
-     */
-    private static void setTelemetryModules(ApplicationInsightsXmlConfiguration appConfiguration, TelemetryClient telemetryClient) {
-        TelemetryModulesXmlElement configurationModules = appConfiguration.getModules();
-        List<TelemetryModule> modules = telemetryClient.getTelemetryModules();
-
-        if (configurationModules != null) {
-            ReflectionUtils.loadComponents(TelemetryModule.class, modules, configurationModules.getAdds());
+        roleName = roleName.trim();
+        if (roleName.length() == 0) {
+          return;
         }
 
-        //if heartbeat module is not loaded, load heartbeat module
-        if (!isHeartBeatModuleAdded(modules)) {
-            addHeartBeatModule(telemetryClient);
+        telemetryClient.setRoleName(roleName);
+      }
+    } catch (RuntimeException e) {
+      logger.error("Failed to set role name: '{}'", e.toString());
+    }
+  }
+
+  private static void setRoleInstance(
+      ApplicationInsightsXmlConfiguration userConfiguration, TelemetryClient telemetryClient) {
+    try {
+      String roleInstance;
+
+      // try to find the role instance in ApplicationInsights.xml
+      if (userConfiguration != null) {
+        roleInstance = userConfiguration.getRoleInstance();
+        if (roleInstance == null) {
+          return;
         }
 
-        List<TelemetryModule> pcModules = getPerformanceModules(appConfiguration.getPerformance());
-
-        modules.addAll(pcModules);
-    }
-
-    private static void setConnectionString(ApplicationInsightsXmlConfiguration configXml, TelemetryClient telemetryClient) {
-
-        String connectionString = configXml.getConnectionString();
-
-        if (connectionString != null) {
-            telemetryClient.setConnectionString(connectionString);
+        roleInstance = roleInstance.trim();
+        if (roleInstance.length() == 0) {
+          return;
         }
+
+        telemetryClient.setRoleInstance(roleInstance);
+      }
+    } catch (RuntimeException e) {
+      logger.error("Failed to set role instance: '{}'", e.toString());
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private static List<TelemetryModule> getPerformanceModules(
+      PerformanceCountersXmlElement performanceConfigurationData) {
+    PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(
+        performanceConfigurationData.getCollectionFrequencyInSec());
+
+    ArrayList<TelemetryModule> modules = new ArrayList<>();
+
+    List<String> performanceModuleNames = new ArrayList<>();
+    if (performanceModuleNames.size() == 0) {
+      // Only a workaround for JBoss web servers.
+      // Will be removed once the issue will be investigated and fixed.
+      logger.trace("Default performance counters will be automatically loaded.");
+      performanceModuleNames.addAll(getDefaultPerformanceModulesNames());
     }
 
-    private static void setRoleName(ApplicationInsightsXmlConfiguration userConfiguration,
-                             TelemetryClient telemetryClient) {
+    for (String performanceModuleName : performanceModuleNames) {
+      TelemetryModule module =
+          ReflectionUtils.createInstance(performanceModuleName, TelemetryModule.class);
+      if (module != null) {
+        if (module instanceof PerformanceCounterConfigurationAware) {
+          PerformanceCounterConfigurationAware awareModule =
+              (PerformanceCounterConfigurationAware) module;
+          try {
+            awareModule.addConfigurationData(performanceConfigurationData);
+          } catch (RuntimeException e) {
+            logger.error(
+                "Failed to add configuration data to performance module: '{}'", e.toString());
+          }
+        }
+        modules.add(module);
+      } else {
+        logger.error("Failed to create performance module: '{}'", performanceModuleName);
+      }
+    }
+
+    loadCustomJmxPCs(performanceConfigurationData.getJmxXmlElements());
+
+    return modules;
+  }
+
+  /**
+   * This method is only a workaround until the failure to load PCs in JBoss web servers will be
+   * solved.
+   */
+  private static Set<String> getDefaultPerformanceModulesNames() {
+    return defaultPerformaceModuleClassNames;
+  }
+
+  /**
+   * The method will load the Jmx performance counters requested by the user to the system: 1. Build
+   * a map where the key is the Jmx object name and the value is a list of requested attributes. 2.
+   * Go through all the requested Jmx counters: a. If the object name is not in the map, add it with
+   * an empty list Else get the list b. Add the attribute to the list. 3. Go through the map For
+   * every entry (object name and attributes) Build a {@link JmxMetricPerformanceCounter} Register
+   * the Performance Counter in the {@link PerformanceCounterContainer}
+   */
+  private static void loadCustomJmxPCs(ArrayList<JmxXmlElement> jmxXmlElements) {
+    try {
+      if (jmxXmlElements == null) {
+        return;
+      }
+
+      HashMap<String, Collection<JmxAttributeData>> data = new HashMap<>();
+
+      // Build a map of object name to its requested attributes
+      for (JmxXmlElement jmxElement : jmxXmlElements) {
+        Collection<JmxAttributeData> collection = data.get(jmxElement.getObjectName());
+        if (collection == null) {
+          collection = new ArrayList<>();
+          data.put(jmxElement.getObjectName(), collection);
+        }
+
+        if (Strings.isNullOrEmpty(jmxElement.getObjectName())) {
+          logger.error("JMX object name is empty, will be ignored");
+          continue;
+        }
+
+        if (Strings.isNullOrEmpty(jmxElement.getAttribute())) {
+          logger.error(
+              "JMX attribute is empty for '{}', will be ignored", jmxElement.getObjectName());
+          continue;
+        }
+
+        if (Strings.isNullOrEmpty(jmxElement.getName())) {
+          logger.error("JMX name is empty for '{}', will be ignored", jmxElement.getObjectName());
+          continue;
+        }
+
+        collection.add(new JmxAttributeData(jmxElement.getName(), jmxElement.getAttribute()));
+      }
+
+      // Register each entry in the performance container
+      for (Map.Entry<String, Collection<JmxAttributeData>> entry : data.entrySet()) {
         try {
-            String roleName;
-
-            // try to find the role name in ApplicationInsights.xml
-            if (userConfiguration != null) {
-                roleName = userConfiguration.getRoleName();
-                if (roleName == null) {
-                    return;
-                }
-
-                roleName = roleName.trim();
-                if (roleName.length() == 0) {
-                    return;
-                }
-
-                telemetryClient.setRoleName(roleName);
-            }
+          if (PerformanceCounterContainer.INSTANCE.register(
+              new JmxMetricPerformanceCounter(entry.getKey(), entry.getKey(), entry.getValue()))) {
+            logger.trace("Registered JMX performance counter '{}'", entry.getKey());
+          } else {
+            logger.trace("Failed to register JMX performance counter '{}'", entry.getKey());
+          }
         } catch (RuntimeException e) {
-            logger.error("Failed to set role name: '{}'", e.toString());
+          logger.error(
+              "Failed to register JMX performance counter '{}': '{}'",
+              entry.getKey(),
+              e.toString());
         }
+      }
+    } catch (RuntimeException e) {
+      logger.error("Failed to register JMX performance counters: '{}'", e.toString());
     }
+  }
 
-    private static void setRoleInstance(ApplicationInsightsXmlConfiguration userConfiguration,
-                             TelemetryClient telemetryClient) {
-        try {
-            String roleInstance;
+  private static void initializeComponents(TelemetryClient telemetryClient) {
+    List<TelemetryModule> telemetryModules = telemetryClient.getTelemetryModules();
 
-            // try to find the role instance in ApplicationInsights.xml
-            if (userConfiguration != null) {
-                roleInstance = userConfiguration.getRoleInstance();
-                if (roleInstance == null) {
-                    return;
-                }
-
-                roleInstance = roleInstance.trim();
-                if (roleInstance.length() == 0) {
-                    return;
-                }
-
-                telemetryClient.setRoleInstance(roleInstance);
-            }
-        } catch (RuntimeException e) {
-            logger.error("Failed to set role instance: '{}'", e.toString());
-        }
+    for (TelemetryModule module : telemetryModules) {
+      try {
+        module.initialize(telemetryClient);
+      } catch (RuntimeException e) {
+        logger.error(
+            "Failed to initialized telemetry module "
+                + module.getClass().getSimpleName()
+                + ". Exception");
+      }
     }
+  }
 
-    @SuppressWarnings("unchecked")
-    private static List<TelemetryModule> getPerformanceModules(PerformanceCountersXmlElement performanceConfigurationData) {
-        PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(performanceConfigurationData.getCollectionFrequencyInSec());
+  /**
+   * Adds heartbeat module with default configuration
+   *
+   * @param telemetryClient telemetry client instance
+   */
+  private static void addHeartBeatModule(TelemetryClient telemetryClient) {
+    HeartBeatModule module = new HeartBeatModule(new HashMap<>());
+    telemetryClient.getTelemetryModules().add(module);
+  }
 
-        ArrayList<TelemetryModule> modules = new ArrayList<>();
-
-        List<String> performanceModuleNames = new ArrayList<>();
-        if (performanceModuleNames.size() == 0) {
-            // Only a workaround for JBoss web servers.
-            // Will be removed once the issue will be investigated and fixed.
-            logger.trace("Default performance counters will be automatically loaded.");
-            performanceModuleNames.addAll(getDefaultPerformanceModulesNames());
-        }
-
-        for (String performanceModuleName : performanceModuleNames) {
-            TelemetryModule module = ReflectionUtils.createInstance(performanceModuleName, TelemetryModule.class);
-            if (module != null) {
-                if (module instanceof PerformanceCounterConfigurationAware) {
-                    PerformanceCounterConfigurationAware awareModule = (PerformanceCounterConfigurationAware)module;
-                    try {
-                        awareModule.addConfigurationData(performanceConfigurationData);
-                    } catch (RuntimeException e) {
-                        logger.error("Failed to add configuration data to performance module: '{}'", e.toString());
-                    }
-                }
-                modules.add(module);
-            } else {
-                logger.error("Failed to create performance module: '{}'", performanceModuleName);
-            }
-        }
-
-        loadCustomJmxPCs(performanceConfigurationData.getJmxXmlElements());
-
-        return modules;
+  /**
+   * Checks if heartbeat module is present
+   *
+   * @param module List of modules in current TelemetryClient instance
+   * @return true if heartbeat module is present
+   */
+  private static boolean isHeartBeatModuleAdded(List<TelemetryModule> module) {
+    for (TelemetryModule mod : module) {
+      if (mod instanceof HeartBeatModule) {
+        return true;
+      }
     }
-
-    /**
-     * This method is only a workaround until the failure to load PCs in JBoss web servers will be solved.
-     */
-    private static Set<String> getDefaultPerformanceModulesNames() {
-        return defaultPerformaceModuleClassNames;
-    }
-
-    /**
-     * The method will load the Jmx performance counters requested by the user to the system:
-     * 1. Build a map where the key is the Jmx object name and the value is a list of requested attributes.
-     * 2. Go through all the requested Jmx counters:
-     *      a. If the object name is not in the map, add it with an empty list
-     *         Else get the list
-     *      b. Add the attribute to the list.
-     *  3. Go through the map
-     *      For every entry (object name and attributes)
-     *          Build a {@link JmxMetricPerformanceCounter}
-     *          Register the Performance Counter in the {@link PerformanceCounterContainer}
-     */
-    private static void loadCustomJmxPCs(ArrayList<JmxXmlElement> jmxXmlElements) {
-        try {
-            if (jmxXmlElements == null) {
-                return;
-            }
-
-            HashMap<String, Collection<JmxAttributeData>> data = new HashMap<>();
-
-            // Build a map of object name to its requested attributes
-            for (JmxXmlElement jmxElement : jmxXmlElements) {
-                Collection<JmxAttributeData> collection = data.get(jmxElement.getObjectName());
-                if (collection == null) {
-                    collection = new ArrayList<>();
-                    data.put(jmxElement.getObjectName(), collection);
-                }
-
-                if (Strings.isNullOrEmpty(jmxElement.getObjectName())) {
-                    logger.error("JMX object name is empty, will be ignored");
-                    continue;
-                }
-
-                if (Strings.isNullOrEmpty(jmxElement.getAttribute())) {
-                    logger.error("JMX attribute is empty for '{}', will be ignored", jmxElement.getObjectName());
-                    continue;
-                }
-
-                if (Strings.isNullOrEmpty(jmxElement.getName())) {
-                    logger.error("JMX name is empty for '{}', will be ignored", jmxElement.getObjectName());
-                    continue;
-                }
-
-                collection.add(new JmxAttributeData(jmxElement.getName(), jmxElement.getAttribute()));
-            }
-
-            // Register each entry in the performance container
-            for (Map.Entry<String, Collection<JmxAttributeData>> entry : data.entrySet()) {
-                try {
-                    if (PerformanceCounterContainer.INSTANCE.register(new JmxMetricPerformanceCounter(entry.getKey(), entry.getKey(), entry.getValue()))) {
-                        logger.trace("Registered JMX performance counter '{}'", entry.getKey());
-                    } else {
-                        logger.trace("Failed to register JMX performance counter '{}'", entry.getKey());
-                    }
-                } catch (RuntimeException e) {
-                    logger.error("Failed to register JMX performance counter '{}': '{}'", entry.getKey(), e.toString());
-                }
-            }
-        } catch (RuntimeException e) {
-            logger.error("Failed to register JMX performance counters: '{}'", e.toString());
-        }
-    }
-
-    private static void initializeComponents(TelemetryClient telemetryClient) {
-        List<TelemetryModule> telemetryModules = telemetryClient.getTelemetryModules();
-
-        for (TelemetryModule module : telemetryModules) {
-            try {
-                module.initialize(telemetryClient);
-            } catch (RuntimeException e) {
-                logger.error(
-                        "Failed to initialized telemetry module " + module.getClass().getSimpleName() + ". Exception");
-            }
-        }
-    }
-
-    /**
-     * Adds heartbeat module with default configuration
-     * @param telemetryClient telemetry client instance
-     */
-    private static void addHeartBeatModule(TelemetryClient telemetryClient) {
-        HeartBeatModule module = new HeartBeatModule(new HashMap<>());
-        telemetryClient.getTelemetryModules().add(module);
-    }
-
-    /**
-     * Checks if heartbeat module is present
-     * @param module List of modules in current TelemetryClient instance
-     * @return true if heartbeat module is present
-     */
-    private static boolean isHeartBeatModuleAdded(List<TelemetryModule> module) {
-        for (TelemetryModule mod : module) {
-            if (mod instanceof HeartBeatModule) {
-                return true;
-            }
-        }
-        return false;
-    }
+    return false;
+  }
 }

@@ -26,26 +26,26 @@ import io.opentelemetry.sdk.extension.incubator.trace.data.DelegatingSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 
 public class MySpanData extends DelegatingSpanData {
-    private final Attributes attributes;
-    private final String spanName;
+  private final Attributes attributes;
+  private final String spanName;
 
-    public MySpanData(SpanData delegate, Attributes attributes) {
-        this(delegate, attributes, delegate.getName());
-    }
+  public MySpanData(SpanData delegate, Attributes attributes) {
+    this(delegate, attributes, delegate.getName());
+  }
 
-    public MySpanData(SpanData delegate, Attributes attributes, String spanName) {
-        super(delegate);
-        this.attributes = attributes;
-        this.spanName = spanName;
-    }
+  public MySpanData(SpanData delegate, Attributes attributes, String spanName) {
+    super(delegate);
+    this.attributes = attributes;
+    this.spanName = spanName;
+  }
 
-    @Override
-    public String getName() {
-        return spanName;
-    }
+  @Override
+  public String getName() {
+    return spanName;
+  }
 
-    @Override
-    public Attributes getAttributes() {
-        return attributes;
-    }
+  @Override
+  public Attributes getAttributes() {
+    return attributes;
+  }
 }

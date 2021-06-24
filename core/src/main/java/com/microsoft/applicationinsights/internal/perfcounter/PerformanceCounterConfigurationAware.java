@@ -23,9 +23,7 @@ package com.microsoft.applicationinsights.internal.perfcounter;
 
 import com.microsoft.applicationinsights.internal.config.PerformanceCountersXmlElement;
 
-/**
- * This class should by performance modules who wish to work with the configuration data.
- */
+/** This class should by performance modules who wish to work with the configuration data. */
 public interface PerformanceCounterConfigurationAware {
-    void addConfigurationData(PerformanceCountersXmlElement configuration);
+  void addConfigurationData(PerformanceCountersXmlElement configuration);
 }

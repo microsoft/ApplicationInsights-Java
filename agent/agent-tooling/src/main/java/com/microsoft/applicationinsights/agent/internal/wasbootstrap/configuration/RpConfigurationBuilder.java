@@ -21,61 +21,65 @@
 
 package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration;
 
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
 import okio.Buffer;
 
 public class RpConfigurationBuilder {
 
-    private static final String APPLICATIONINSIGHTS_RP_CONFIGURATION_FILE = "APPLICATIONINSIGHTS_RP_CONFIGURATION_FILE";
+  private static final String APPLICATIONINSIGHTS_RP_CONFIGURATION_FILE =
+      "APPLICATIONINSIGHTS_RP_CONFIGURATION_FILE";
 
-    public static RpConfiguration create(Path agentJarPath) throws IOException {
-        Path configPath;
-        String configPathString = ConfigurationBuilder.getEnvVar(APPLICATIONINSIGHTS_RP_CONFIGURATION_FILE);
+  public static RpConfiguration create(Path agentJarPath) throws IOException {
+    Path configPath;
+    String configPathString =
+        ConfigurationBuilder.getEnvVar(APPLICATIONINSIGHTS_RP_CONFIGURATION_FILE);
 
-        if (configPathString != null) {
-            configPath = new File(configPathString).toPath();
-        } else {
-            configPath = agentJarPath.resolveSibling("applicationinsights-rp.json");
-        }
-
-        if (Files.exists(configPath)) {
-            return loadJsonConfigFile(configPath);
-        }
-        return null;
+    if (configPathString != null) {
+      configPath = new File(configPathString).toPath();
+    } else {
+      configPath = agentJarPath.resolveSibling("applicationinsights-rp.json");
     }
 
-    public static RpConfiguration loadJsonConfigFile(Path configPath) throws IOException{
-        if (!Files.exists(configPath)) {
-            throw new IllegalStateException("rp config file does not exist: " + configPath);
-        }
+    if (Files.exists(configPath)) {
+      return loadJsonConfigFile(configPath);
+    }
+    return null;
+  }
 
-        BasicFileAttributes attributes = Files.readAttributes(configPath, BasicFileAttributes.class);
-        // important to read last modified before reading the file, to prevent possible race condition
-        // where file is updated after reading it but before reading last modified, and then since
-        // last modified doesn't change after that, the new updated file will not be read afterwards
-        long lastModifiedTime = attributes.lastModifiedTime().toMillis();
-        RpConfiguration configuration = getConfigurationFromConfigFile(configPath);
-        configuration.configPath = configPath;
-        configuration.lastModifiedTime = lastModifiedTime;
-        return configuration;
+  public static RpConfiguration loadJsonConfigFile(Path configPath) throws IOException {
+    if (!Files.exists(configPath)) {
+      throw new IllegalStateException("rp config file does not exist: " + configPath);
     }
 
-    private static RpConfiguration getConfigurationFromConfigFile(Path configPath) throws IOException {
-        try (InputStream in = Files.newInputStream(configPath)) {
-            Buffer buffer = new Buffer();
-            buffer.readFrom(in);
-            Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
-            JsonAdapter<RpConfiguration> jsonAdapter = moshi.adapter(RpConfiguration.class).failOnUnknown();
-            return jsonAdapter.fromJson(buffer);
-        }
-    }
+    BasicFileAttributes attributes = Files.readAttributes(configPath, BasicFileAttributes.class);
+    // important to read last modified before reading the file, to prevent possible race condition
+    // where file is updated after reading it but before reading last modified, and then since
+    // last modified doesn't change after that, the new updated file will not be read afterwards
+    long lastModifiedTime = attributes.lastModifiedTime().toMillis();
+    RpConfiguration configuration = getConfigurationFromConfigFile(configPath);
+    configuration.configPath = configPath;
+    configuration.lastModifiedTime = lastModifiedTime;
+    return configuration;
+  }
 
-    private RpConfigurationBuilder() {}
+  private static RpConfiguration getConfigurationFromConfigFile(Path configPath)
+      throws IOException {
+    try (InputStream in = Files.newInputStream(configPath)) {
+      Buffer buffer = new Buffer();
+      buffer.readFrom(in);
+      Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
+      JsonAdapter<RpConfiguration> jsonAdapter =
+          moshi.adapter(RpConfiguration.class).failOnUnknown();
+      return jsonAdapter.fromJson(buffer);
+    }
+  }
+
+  private RpConfigurationBuilder() {}
 }

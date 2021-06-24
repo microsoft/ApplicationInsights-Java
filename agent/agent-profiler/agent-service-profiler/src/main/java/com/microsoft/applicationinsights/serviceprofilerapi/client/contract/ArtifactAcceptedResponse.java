@@ -18,48 +18,47 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.serviceprofilerapi.client.contract;
 
 import com.squareup.moshi.Json;
 
-/**
- * Result of uploading an artifact to service profiler
- */
+/** Result of uploading an artifact to service profiler */
 public class ArtifactAcceptedResponse {
 
-    @Json(name = "acceptedTime")
-    private final String acceptedTime;
+  @Json(name = "acceptedTime")
+  private final String acceptedTime;
 
-    @Json(name = "blobUri")
-    private final String blobUri;
+  @Json(name = "blobUri")
+  private final String blobUri;
 
-    @Json(name = "correlationId")
-    private final String correlationId;
+  @Json(name = "correlationId")
+  private final String correlationId;
 
-    @Json(name = "stampId")
-    private final String stampId;
+  @Json(name = "stampId")
+  private final String stampId;
 
+  public ArtifactAcceptedResponse(
+      String acceptedTime, String blobUri, String correlationId, String stampId) {
+    this.acceptedTime = acceptedTime;
+    this.blobUri = blobUri;
+    this.correlationId = correlationId;
+    this.stampId = stampId;
+  }
 
-    public ArtifactAcceptedResponse(String acceptedTime, String blobUri, String correlationId, String stampId) {
-        this.acceptedTime = acceptedTime;
-        this.blobUri = blobUri;
-        this.correlationId = correlationId;
-        this.stampId = stampId;
-    }
+  public String getAcceptedTime() {
+    return acceptedTime;
+  }
 
-    public String getAcceptedTime() {
-        return acceptedTime;
-    }
+  public String getStampId() {
+    return stampId;
+  }
 
-    public String getStampId() {
-        return stampId;
-    }
+  public String getCorrelationId() {
+    return correlationId;
+  }
 
-    public String getCorrelationId() {
-        return correlationId;
-    }
-
-    public String getBlobUri() {
-        return blobUri;
-    }
+  public String getBlobUri() {
+    return blobUri;
+  }
 }

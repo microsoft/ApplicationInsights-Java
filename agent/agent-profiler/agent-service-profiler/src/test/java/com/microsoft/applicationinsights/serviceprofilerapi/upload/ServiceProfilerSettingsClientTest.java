@@ -18,31 +18,32 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.serviceprofilerapi.upload;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerSettingsClient;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 class ServiceProfilerSettingsClientTest {
 
-    @Test
-    void badServiceResponseDoesNotProvideReturn() throws IOException, URISyntaxException {
-        ServiceProfilerClientV2 serviceProfilerClient = Mockito.mock(ServiceProfilerClientV2.class);
+  @Test
+  void badServiceResponseDoesNotProvideReturn() throws IOException, URISyntaxException {
+    ServiceProfilerClientV2 serviceProfilerClient = Mockito.mock(ServiceProfilerClientV2.class);
 
-        Mockito.when(serviceProfilerClient.getSettings(Mockito.any())).thenReturn("");
+    Mockito.when(serviceProfilerClient.getSettings(Mockito.any())).thenReturn("");
 
-        ServiceProfilerSettingsClient settingsClient = new ServiceProfilerSettingsClient(serviceProfilerClient);
-        Mono<ProfilerConfiguration> result = settingsClient.pullSettings();
+    ServiceProfilerSettingsClient settingsClient =
+        new ServiceProfilerSettingsClient(serviceProfilerClient);
+    Mono<ProfilerConfiguration> result = settingsClient.pullSettings();
 
-        assertThatThrownBy(result::block).isInstanceOf(Exception.class);
-    }
+    assertThatThrownBy(result::block).isInstanceOf(Exception.class);
+  }
 }

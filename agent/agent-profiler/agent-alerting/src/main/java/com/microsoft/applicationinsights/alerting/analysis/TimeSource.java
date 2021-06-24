@@ -18,19 +18,20 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.alerting.analysis;
 
 import java.time.ZonedDateTime;
 
-/**
- * Source of time that may be overridden for tests
- */
+/** Source of time that may be overridden for tests */
 public abstract class TimeSource {
-    public abstract ZonedDateTime getNow();
+  public abstract ZonedDateTime getNow();
 
-    public static final TimeSource DEFAULT = new TimeSource() {
-        @Override public ZonedDateTime getNow() {
-            return ZonedDateTime.now();
+  public static final TimeSource DEFAULT =
+      new TimeSource() {
+        @Override
+        public ZonedDateTime getNow() {
+          return ZonedDateTime.now();
         }
-    };
+      };
 }

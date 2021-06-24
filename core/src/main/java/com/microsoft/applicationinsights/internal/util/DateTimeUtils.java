@@ -27,30 +27,31 @@ import java.util.Date;
 
 public class DateTimeUtils {
 
-    private static final String ROUND_TRIP_DATE_FORMAT = "yyyy-MM-dd'T'HH";
+  private static final String ROUND_TRIP_DATE_FORMAT = "yyyy-MM-dd'T'HH";
 
-    private DateTimeUtils() {
-    }
+  private DateTimeUtils() {}
 
-    /**
-     * Parses the given round-trip date string (e.g. '2015-05-26T07') into Date object.
-     * @param roundTripString The string to parse.
-     * @return Date represents the string.
-     * @throws java.text.ParseException Thrown when failed to parse the given string.
-     */
-    public static Date parseRoundTripDateString(String roundTripString) throws ParseException {
-        SimpleDateFormat roundTripDateFormat = new SimpleDateFormat(ROUND_TRIP_DATE_FORMAT);
+  /**
+   * Parses the given round-trip date string (e.g. '2015-05-26T07') into Date object.
+   *
+   * @param roundTripString The string to parse.
+   * @return Date represents the string.
+   * @throws java.text.ParseException Thrown when failed to parse the given string.
+   */
+  public static Date parseRoundTripDateString(String roundTripString) throws ParseException {
+    SimpleDateFormat roundTripDateFormat = new SimpleDateFormat(ROUND_TRIP_DATE_FORMAT);
 
-        return roundTripDateFormat.parse(roundTripString);
-    }
+    return roundTripDateFormat.parse(roundTripString);
+  }
 
-    /**
-     * Formats the given date as round-trip date string
-     * @param date Round-trip date string
-     * @return Round-trip date string
-     */
-    public static String formatAsRoundTripDate(Date date) {
-        SimpleDateFormat roundTripDateFormat = new SimpleDateFormat(ROUND_TRIP_DATE_FORMAT);
-        return roundTripDateFormat.format(date);
-    }
+  /**
+   * Formats the given date as round-trip date string
+   *
+   * @param date Round-trip date string
+   * @return Round-trip date string
+   */
+  public static String formatAsRoundTripDate(Date date) {
+    SimpleDateFormat roundTripDateFormat = new SimpleDateFormat(ROUND_TRIP_DATE_FORMAT);
+    return roundTripDateFormat.format(date);
+  }
 }

@@ -18,49 +18,52 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.alerting.config;
 
 import java.util.Objects;
 
 public class DefaultConfiguration {
 
-    private final boolean samplingEnabled;
-    private final double samplingRate;
-    private final long samplingProfileDuration;
+  private final boolean samplingEnabled;
+  private final double samplingRate;
+  private final long samplingProfileDuration;
 
-    public DefaultConfiguration(boolean samplingEnabled, double samplingRate, long samplingProfileDuration) {
-        this.samplingEnabled = samplingEnabled;
-        this.samplingRate = samplingRate;
-        this.samplingProfileDuration = samplingProfileDuration;
-    }
+  public DefaultConfiguration(
+      boolean samplingEnabled, double samplingRate, long samplingProfileDuration) {
+    this.samplingEnabled = samplingEnabled;
+    this.samplingRate = samplingRate;
+    this.samplingProfileDuration = samplingProfileDuration;
+  }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        if (!(obj instanceof DefaultConfiguration)) {
-            return false;
-        }
-        DefaultConfiguration that = (DefaultConfiguration) obj;
-        return samplingEnabled == that.samplingEnabled &&
-                samplingRate == that.samplingRate &&
-                samplingProfileDuration == that.samplingProfileDuration;
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
+      return true;
     }
+    if (!(obj instanceof DefaultConfiguration)) {
+      return false;
+    }
+    DefaultConfiguration that = (DefaultConfiguration) obj;
+    return samplingEnabled == that.samplingEnabled
+        && samplingRate == that.samplingRate
+        && samplingProfileDuration == that.samplingProfileDuration;
+  }
 
-    @Override public int hashCode() {
-        return Objects.hash(samplingEnabled, samplingRate, samplingProfileDuration);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(samplingEnabled, samplingRate, samplingProfileDuration);
+  }
 
-    public double getSamplingRate() {
-        return samplingRate;
-    }
+  public double getSamplingRate() {
+    return samplingRate;
+  }
 
-    public long getSamplingProfileDuration() {
-        return samplingProfileDuration;
-    }
+  public long getSamplingProfileDuration() {
+    return samplingProfileDuration;
+  }
 
-    public boolean getSamplingEnabled() {
-        return samplingEnabled;
-    }
+  public boolean getSamplingEnabled() {
+    return samplingEnabled;
+  }
 }

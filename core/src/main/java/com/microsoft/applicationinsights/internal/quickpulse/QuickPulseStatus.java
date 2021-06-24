@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.internal.quickpulse;
 
 enum QuickPulseStatus {
-    ERROR,
-    QP_IS_OFF,
-    QP_IS_ON
+  ERROR,
+  QP_IS_OFF,
+  QP_IS_ON
 }

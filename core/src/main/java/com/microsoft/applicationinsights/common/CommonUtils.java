@@ -31,8 +31,9 @@ public class CommonUtils {
   private static final Logger logger = LoggerFactory.getLogger(CommonUtils.class);
 
   /**
-   * Returns the hostname using {@link InetAddress#getHostName()} on {@link InetAddress#getLocalHost()}.
-   * If an error is encountered, the error is logged and it returns null.
+   * Returns the hostname using {@link InetAddress#getHostName()} on {@link
+   * InetAddress#getLocalHost()}. If an error is encountered, the error is logged and it returns
+   * null.
    *
    * @return the local hostname, or null
    */
