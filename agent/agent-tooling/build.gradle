@@ -48,11 +48,12 @@ dependencies {
   implementation "org.checkerframework:checker-qual:${versions.checker}"
   implementation "com.google.code.findbugs:annotations:3.0.1"
 
-  implementation(project(":core")) {
-    // excluding commons-logging and replacing it with jcl-over-slf4j (below)
-    // in order to pick up logging from apache http client
-    exclude group: "commons-logging", module: "commons-logging"
-  }
+  // FIXME (trask) anything needed to do here?
+//  implementation(project(":core")) {
+//    // excluding commons-logging and replacing it with jcl-over-slf4j (below)
+//    // in order to pick up logging from apache http client
+//    exclude group: "commons-logging", module: "commons-logging"
+//  }
   implementation "org.slf4j:jcl-over-slf4j:${versions.slf4j}"
   implementation "ch.qos.logback:logback-classic:${versions.logback}"
   implementation "ch.qos.logback.contrib:logback-json-classic:${versions.logbackJson}"
@@ -78,4 +79,57 @@ dependencies {
   testImplementation "org.assertj:assertj-core:${versions.assertj}"
   testImplementation "org.mockito:mockito-core:${versions.mockito}"
   testImplementation "uk.org.webcompere:system-stubs-jupiter:1.1.0"
+
+  // TODO (trask) merge below from core up into above
+
+  implementation project(":agent:agent-profiler:agent-profiler-api")
+  implementation project(":agent:agent-profiler:agent-alerting-api")
+  implementation project(":agent:agent-profiler:agent-alerting")
+  implementation project(":agent:agent-gc-monitor:gc-monitor-api")
+  implementation "commons-io:commons-io:${versions.commonsIo}"
+  implementation "org.apache.commons:commons-lang3:${versions.commonsLang}"
+  implementation "org.apache.commons:commons-text:${versions.commonsText}"
+  implementation "com.squareup.moshi:moshi:${versions.moshi}"
+  implementation "com.google.code.gson:gson:${versions.gson}"
+  implementation "com.github.oshi:oshi-core:${versions.oshi}"
+  implementation "org.slf4j:slf4j-api:${versions.slf4j}"
+
+  implementation "com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.4"
+  implementation("com.azure:azure-identity:1.2.4") {
+    // "This dependency can be excluded if IntelliJ Credential is not being used for authentication
+    //  via `IntelliJCredential` or `DefaultAzureCredential`"
+    // NOTE this exclusion saves 6.5 mb !!!!
+    exclude group: "org.linguafranca.pwdb", module: "KeePassJava2"
+  }
+  implementation "com.azure:azure-core:${versions.azureCore}"
+
+  implementation "io.opentelemetry:opentelemetry-api:${versions.opentelemetry}"
+  implementation "org.jctools:jctools-core:3.3.0"
+
+  // to use the cache from opentelemetry javaagent
+  implementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-caching:${versions.opentelemetryInstrumentationAlpha}"
+
+  testImplementation "com.google.code.gson:gson:${versions.gson}"
+  testImplementation "io.github.hakky54:logcaptor:${versions.logcaptor}"
+
+  testImplementation project(":agent:agent-profiler:agent-service-profiler")
+  testImplementation "com.microsoft.jfr:jfr-streaming:${versions.microsoftJfrStreaming}"
+  testImplementation "com.azure:azure-storage-blob:${versions.azureStorageBlob}"
 }
+
+def sdkVersionFileDir = "$project.buildDir/src/generated/main/resources"
+
+sourceSets {
+  main {
+    resources {
+      srcDir sdkVersionFileDir
+    }
+  }
+}
+
+task generateVersionProperties(type: com.microsoft.applicationinsights.build.tasks.PropsFileGen) {
+  targetFile = new File(sdkVersionFileDir, "sdk-version.properties")
+  property "version", project.version
+}
+
+processResources.dependsOn generateVersionProperties

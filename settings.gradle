@@ -50,8 +50,6 @@ include ':etw:java'
 // TODO (trask) ETW: is this really needed? if so, need to restore devtest configuration
 //include ':etw:etw-testapp'
 
-include ':core'
-
 include ':agent:agent-gc-monitor:gc-monitor-api'
 include ':agent:agent-gc-monitor:gc-monitor-core'
 include ':agent:agent-gc-monitor:gc-monitor-tests'

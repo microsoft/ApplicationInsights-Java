@@ -27,7 +27,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import com.microsoft.applicationinsights.internal.TelemetryClient;
+import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
 import org.junit.jupiter.api.Test;
 
 class LazyConfigurationAccessorTest {

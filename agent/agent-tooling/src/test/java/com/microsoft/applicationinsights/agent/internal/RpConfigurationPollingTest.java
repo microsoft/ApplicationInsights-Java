@@ -27,8 +27,8 @@ import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampl
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
-import com.microsoft.applicationinsights.internal.TelemetryClient;
-import com.microsoft.applicationinsights.internal.TelemetryUtil;
+import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
+import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryUtil;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;

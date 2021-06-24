@@ -25,7 +25,7 @@ import ch.qos.logback.classic.LoggerContext;
 import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagator;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.LoggingLevelConfigurator;
-import com.microsoft.applicationinsights.internal.TelemetryClient;
+import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
 import io.opentelemetry.instrumentation.api.config.Config;
 import java.util.List;

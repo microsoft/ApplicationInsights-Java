@@ -9,6 +9,7 @@ pushd %~dp0..
 set PROJECT_ROOT=%CD%
 
 :: Update this to the tasks you want to run
+// FIXME (trask) core is gone now!
 set GRADLE_TASKS=:core:generateVersionProperties
 :: Add any additonal options
 set GRADLE_OPTIONS=--info

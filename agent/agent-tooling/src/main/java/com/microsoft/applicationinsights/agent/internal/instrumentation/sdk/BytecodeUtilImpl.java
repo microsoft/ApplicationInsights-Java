@@ -36,11 +36,11 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryI
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
 import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingScoreGeneratorV2;
-import com.microsoft.applicationinsights.internal.FormattedDuration;
-import com.microsoft.applicationinsights.internal.FormattedTime;
-import com.microsoft.applicationinsights.internal.TelemetryClient;
-import com.microsoft.applicationinsights.internal.TelemetryUtil;
-import com.microsoft.applicationinsights.internal.common.Strings;
+import com.microsoft.applicationinsights.agent.internal.wascore.FormattedDuration;
+import com.microsoft.applicationinsights.agent.internal.wascore.FormattedTime;
+import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
+import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryUtil;
+import com.microsoft.applicationinsights.agent.internal.wascore.common.Strings;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import java.net.URI;

@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurat
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ExtractAttribute;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorAction;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorActionJson;
-import com.microsoft.applicationinsights.internal.common.FriendlyException;
+import com.microsoft.applicationinsights.agent.internal.wascore.common.FriendlyException;
 import com.squareup.moshi.FromJson;
 import com.squareup.moshi.ToJson;
 import java.util.ArrayList;
