@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
 import com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
@@ -114,29 +113,6 @@ public final class ReflectionUtils {
       logger.error("Failed to create {}", className, e);
     }
 
-    return null;
-  }
-
-  static <T> T createConfiguredInstance(
-      String className,
-      Class<T> interfaceClass,
-      TelemetryClient telemetryClient,
-      Map<String, String> componentConfig) {
-    try {
-      if (LocalStringsUtils.isNullOrEmpty(className)) {
-        return null;
-      }
-      Class<?> clazz = builtInMap.get(className);
-      if (clazz == null) {
-        clazz = Class.forName(className).asSubclass(interfaceClass);
-      } else {
-        clazz = clazz.asSubclass(interfaceClass);
-      }
-      Constructor<?> clazzConstructor = clazz.getConstructor(TelemetryClient.class, Map.class);
-      return (T) clazzConstructor.newInstance(telemetryClient, componentConfig);
-    } catch (Exception e) {
-      logger.error("Failed to instantiate {}", className, e);
-    }
     return null;
   }
 

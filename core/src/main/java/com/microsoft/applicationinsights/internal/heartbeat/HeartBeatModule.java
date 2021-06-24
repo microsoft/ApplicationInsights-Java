@@ -51,11 +51,6 @@ public class HeartBeatModule implements TelemetryModule {
   /** Flag to seek if module is initialized. */
   private static volatile boolean isInitialized = false;
 
-  /** Default constructor to initialize the default heartbeat configuration. */
-  public HeartBeatModule() {
-    heartBeatProviderInterface = new HeartBeatProvider();
-  }
-
   /**
    * Initializes the heartbeat configuration based on connfiguration properties specified in
    * ApplicationInsights.xml file.

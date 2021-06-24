@@ -68,7 +68,7 @@ public enum PerformanceCounterContainer {
 
   private volatile boolean initialized = false;
 
-  private long startCollectingDelayInMillis = START_COLLECTING_DELAY_IN_MILLIS;
+  private final long startCollectingDelayInMillis = START_COLLECTING_DELAY_IN_MILLIS;
   private long collectionFrequencyInMillis = DEFAULT_COLLECTION_FREQUENCY_IN_SEC * 1000;
 
   private ScheduledThreadPoolExecutor threads;
@@ -98,60 +98,6 @@ public enum PerformanceCounterContainer {
   }
 
   /**
-   * Un-registers a performance counter.
-   *
-   * @param performanceCounter The Performance Counter.
-   */
-  public void unregister(PerformanceCounter performanceCounter) {
-    unregister(performanceCounter.getId());
-  }
-
-  /**
-   * Un-registers a performance counter by its id.
-   *
-   * @param id The Performance Counter's id.
-   */
-  public void unregister(String id) {
-    logger.trace("Un-registering PC '{}'", id);
-    performanceCounters.remove(id);
-  }
-
-  /**
-   * Gets the timeout in milliseconds that the container will wait before the first collection of
-   * Performance Counters.
-   *
-   * @return The first timeout in milliseconds.
-   */
-  public long getStartCollectingDelayInMillis() {
-    return startCollectingDelayInMillis;
-  }
-
-  /**
-   * Gets the timeout in milliseconds that the container will wait between collections of
-   * Performance Counters.
-   *
-   * @return The timeout between collections.
-   */
-  public long getCollectionFrequencyInSec() {
-    return collectionFrequencyInMillis / 1000;
-  }
-
-  /**
-   * Stopping the collection of performance data.
-   *
-   * @param timeout The timeout to wait for the stop to happen.
-   * @param timeUnit The time unit to use when waiting for the stop to happen.
-   */
-  public synchronized void stop(long timeout, TimeUnit timeUnit) {
-    if (!initialized) {
-      return;
-    }
-
-    ThreadPoolUtils.stop(threads, timeout, timeUnit);
-    initialized = false;
-  }
-
-  /**
    * Sets the timeout to wait between collection of Performance Counters.
    *
    * <p>The number must be a positive number
@@ -174,34 +120,6 @@ public enum PerformanceCounterContainer {
     }
 
     this.collectionFrequencyInMillis = collectionFrequencyInSec * 1000;
-  }
-
-  /**
-   * Sets the timeout to wait before the first reporting.
-   *
-   * <p>The number must be a positive number
-   *
-   * <p>Note that the method will be effective if called before the first call to the 'register'
-   * method.
-   *
-   * @param startCollectingDelayInMillis Timeout to wait before the first collection of performance
-   *     counters in milliseconds.
-   */
-  void setStartCollectingDelayInMillis(long startCollectingDelayInMillis) {
-    if (startCollectingDelayInMillis < START_DEFAULT_MIN_DELAY_IN_MILLIS) {
-      logger.error(
-          "Start Collecting Delay: illegal value '{}'. The minimum value, '{}', is used instead.",
-          startCollectingDelayInMillis,
-          START_DEFAULT_MIN_DELAY_IN_MILLIS);
-
-      startCollectingDelayInMillis = START_DEFAULT_MIN_DELAY_IN_MILLIS;
-    }
-
-    this.startCollectingDelayInMillis = startCollectingDelayInMillis;
-  }
-
-  void clear() {
-    performanceCounters.clear();
   }
 
   /**

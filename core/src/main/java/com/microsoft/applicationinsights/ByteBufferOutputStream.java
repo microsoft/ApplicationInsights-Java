@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -42,13 +41,13 @@ class ByteBufferOutputStream extends OutputStream {
   }
 
   @Override
-  public void write(int b) throws IOException {
+  public void write(int b) {
     ensureSomeCapacity();
     current.put((byte) b);
   }
 
   @Override
-  public void write(byte[] bytes, int off, int len) throws IOException {
+  public void write(byte[] bytes, int off, int len) {
     ensureSomeCapacity();
     int numBytesWritten = Math.min(current.remaining(), len);
     current.put(bytes, off, numBytesWritten);

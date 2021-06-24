@@ -22,8 +22,6 @@
 package com.microsoft.applicationinsights.internal.util;
 
 import com.microsoft.applicationinsights.common.Strings;
-import java.text.ParseException;
-import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -60,46 +58,6 @@ public class MapUtil {
           target.put(key, entry.getValue());
         }
       }
-    }
-  }
-
-  public static <K, V> V getValueOrNull(Map<K, V> map, K key) {
-    return map.containsKey(key) ? map.get(key) : null;
-  }
-
-  public static Boolean getBoolValueOrNull(Map<String, String> map, String key) {
-    return map.containsKey(key) ? Boolean.valueOf(map.get(key)) : null;
-  }
-
-  public static Date getDateValueOrNull(Map<String, String> map, String key) {
-    try {
-      return map.containsKey(key) ? LocalStringsUtils.getDateFormatter().parse(map.get(key)) : null;
-    } catch (ParseException pe) {
-      return null;
-    }
-  }
-
-  public static void setStringValueOrRemove(Map<String, String> map, String key, String value) {
-    if (Strings.isNullOrEmpty(value)) {
-      map.remove(key);
-    } else {
-      map.put(key, value);
-    }
-  }
-
-  public static void setBoolValueOrRemove(Map<String, String> map, String key, Boolean value) {
-    if (value == null) {
-      map.remove(key);
-    } else {
-      map.put(key, value ? "true" : "false");
-    }
-  }
-
-  public static void setDateValueOrRemove(Map<String, String> map, String key, Date value) {
-    if (value == null) {
-      map.remove(key);
-    } else {
-      map.put(key, LocalStringsUtils.getDateFormatter().format(value));
     }
   }
 

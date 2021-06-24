@@ -32,17 +32,12 @@ import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 public enum QuickPulse {
   INSTANCE;
 
   public static final int QP_INVARIANT_VERSION = 1;
   private volatile boolean initialized = false;
-  private Thread thread;
-  private Thread senderThread;
-  private QuickPulseCoordinator coordinator;
-  private QuickPulseDataSender quickPulseDataSender;
 
   // initialization is performed in the background because initializing the random seed (via
   // UUID.randomUUID()) below
@@ -55,13 +50,7 @@ public enum QuickPulse {
   public void initialize(TelemetryClient telemetryClient) {
     CountDownLatch latch = new CountDownLatch(1);
     Executors.newSingleThreadExecutor(ThreadPoolUtils.createDaemonThreadFactory(QuickPulse.class))
-        .execute(
-            new Runnable() {
-              @Override
-              public void run() {
-                initializeSync(latch, telemetryClient);
-              }
-            });
+        .execute(() -> initializeSync(latch, telemetryClient));
     // don't return until initialization thread has INSTANCE lock
     try {
       latch.await();
@@ -83,7 +72,8 @@ public enum QuickPulse {
               LazyHttpClient.newHttpPipeLine(telemetryClient.getAadAuthentication());
           ArrayBlockingQueue<HttpRequest> sendQueue = new ArrayBlockingQueue<>(256, true);
 
-          quickPulseDataSender = new QuickPulseDataSender(httpPipeline, sendQueue);
+          QuickPulseDataSender quickPulseDataSender =
+              new QuickPulseDataSender(httpPipeline, sendQueue);
 
           String instanceName = telemetryClient.getRoleInstance();
           String machineName = DeviceInfo.getHostName();
@@ -109,51 +99,20 @@ public enum QuickPulse {
                   .withDataSender(quickPulseDataSender)
                   .build();
 
-          coordinator = new QuickPulseCoordinator(coordinatorInitData);
+          QuickPulseCoordinator coordinator = new QuickPulseCoordinator(coordinatorInitData);
 
-          senderThread =
+          Thread senderThread =
               new Thread(quickPulseDataSender, QuickPulseDataSender.class.getSimpleName());
           senderThread.setDaemon(true);
           senderThread.start();
 
-          thread = new Thread(coordinator, QuickPulseCoordinator.class.getSimpleName());
+          Thread thread = new Thread(coordinator, QuickPulseCoordinator.class.getSimpleName());
           thread.setDaemon(true);
           thread.start();
 
           QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
         }
       }
-    }
-  }
-
-  /**
-   * Stopping the collection of performance data.
-   *
-   * @param timeout The timeout to wait for the stop to happen.
-   * @param timeUnit The time unit to use when waiting for the stop to happen.
-   */
-  public synchronized void stop(long timeout, TimeUnit timeUnit) {
-    if (!initialized) {
-      return;
-    }
-
-    coordinator.stop();
-    quickPulseDataSender.stop();
-
-    thread.interrupt();
-    senderThread.interrupt();
-    initialized = false;
-
-    try {
-      thread.join();
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
-
-    try {
-      senderThread.join();
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
     }
   }
 }

@@ -194,7 +194,6 @@ public class ConnectionString {
   public static class Keywords {
     private Keywords() {}
 
-    public static final String AUTHORIZATION = "Authorization";
     public static final String INSTRUMENTATION_KEY = "InstrumentationKey";
     public static final String ENDPOINT_SUFFIX = "EndpointSuffix";
     public static final String INGESTION_ENDPOINT = "IngestionEndpoint";

@@ -79,6 +79,7 @@ public class SslOptionsUtil {
    * @throws NoSupportedProtocolsException If the defaults are to be used and none of the defaults
    *     are supported by this JVM
    */
+  // FIXME (trask) do we need to hook this into new Azure Http Client?
   public static String[] getAllowedProtocols() {
     String rawProp = System.getProperty(APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY);
     if (rawProp == null) {
