@@ -35,40 +35,42 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
-class DefaultQuickPulsePingSenderTests {
+class QuickPulseDataFetcherTests {
 
   @Test
-  void endpointIsFormattedCorrectlyWhenUsingConnectionString() throws URISyntaxException {
-    TelemetryClient telemetryClient = new TelemetryClient();
-    telemetryClient.setConnectionString("InstrumentationKey=testing-123");
-    DefaultQuickPulsePingSender defaultQuickPulsePingSender =
-        new DefaultQuickPulsePingSender(null, telemetryClient, null, null, null);
-    String quickPulseEndpoint = defaultQuickPulsePingSender.getQuickPulseEndpoint();
-    String endpointUrl = defaultQuickPulsePingSender.getQuickPulsePingUri(quickPulseEndpoint);
-    URI uri = new URI(endpointUrl);
-    assertThat(uri).isNotNull();
-    assertThat(endpointUrl).endsWith("/ping?ikey=testing-123");
-    assertThat(endpointUrl)
-        .isEqualTo(
-            "https://rt.services.visualstudio.com/QuickPulseService.svc/ping?ikey=testing-123");
+  void testGetCurrentSdkVersion() {
+    QuickPulseDataFetcher dataFetcher =
+        new QuickPulseDataFetcher(null, new TelemetryClient(), null, null, null);
+    String sdkVersion = dataFetcher.getCurrentSdkVersion();
+    assertThat(sdkVersion).isNotNull();
+    assertThat(sdkVersion).isNotEqualTo("java:unknown");
   }
 
   @Test
-  void endpointIsFormattedCorrectlyWhenUsingInstrumentationKey() throws URISyntaxException {
+  void endpointIsFormattedCorrectlyWhenUsingConfig() throws URISyntaxException {
     TelemetryClient telemetryClient = new TelemetryClient();
-    telemetryClient.setInstrumentationKey("A-test-instrumentation-key");
-    DefaultQuickPulsePingSender defaultQuickPulsePingSender =
-        new DefaultQuickPulsePingSender(null, telemetryClient, null, null, null);
-    String quickPulseEndpoint = defaultQuickPulsePingSender.getQuickPulseEndpoint();
-    String endpointUrl = defaultQuickPulsePingSender.getQuickPulsePingUri(quickPulseEndpoint);
+    telemetryClient.setConnectionString("InstrumentationKey=testing-123");
+    QuickPulseDataFetcher quickPulseDataFetcher =
+        new QuickPulseDataFetcher(null, telemetryClient, null, null, null);
+    String quickPulseEndpoint = quickPulseDataFetcher.getQuickPulseEndpoint();
+    String endpointUrl = quickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);
     URI uri = new URI(endpointUrl);
     assertThat(uri).isNotNull();
     assertThat(endpointUrl)
-        .endsWith(
-            "/ping?ikey=A-test-instrumentation-key"); // from resources/ApplicationInsights.xml
-    assertThat(endpointUrl)
         .isEqualTo(
-            "https://rt.services.visualstudio.com/QuickPulseService.svc/ping?ikey=A-test-instrumentation-key");
+            "https://rt.services.visualstudio.com/QuickPulseService.svc/post?ikey=testing-123");
+  }
+
+  @Test
+  void endpointIsFormattedCorrectlyWhenConfigIsNull() throws URISyntaxException {
+    QuickPulseDataFetcher quickPulseDataFetcher =
+        new QuickPulseDataFetcher(null, new TelemetryClient(), null, null, null);
+    String quickPulseEndpoint = quickPulseDataFetcher.getQuickPulseEndpoint();
+    String endpointUrl = quickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);
+    URI uri = new URI(endpointUrl);
+    assertThat(uri).isNotNull();
+    assertThat(endpointUrl)
+        .isEqualTo("https://rt.services.visualstudio.com/QuickPulseService.svc/post?ikey=null");
   }
 
   @Test
@@ -83,8 +85,9 @@ class DefaultQuickPulsePingSenderTests {
             .httpClient(request -> Mono.just(new MockHttpResponse(request, 200, httpHeaders)))
             .build();
     QuickPulsePingSender quickPulsePingSender =
-        new DefaultQuickPulsePingSender(
+        new QuickPulsePingSender(
             httpPipeline, new TelemetryClient(), "machine1", "instance1", "qpid123");
+
     QuickPulseHeaderInfo quickPulseHeaderInfo = quickPulsePingSender.ping(null);
     assertThat(QuickPulseStatus.QP_IS_ON).isEqualTo(quickPulseHeaderInfo.getQuickPulseStatus());
     assertThat(1000).isEqualTo(quickPulseHeaderInfo.getQpsServicePollingInterval());

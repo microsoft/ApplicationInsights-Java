@@ -35,42 +35,40 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
-class DefaultQuickPulseDataFetcherTests {
+class QuickPulsePingSenderTests {
 
   @Test
-  void testGetCurrentSdkVersion() {
-    DefaultQuickPulseDataFetcher dataFetcher =
-        new DefaultQuickPulseDataFetcher(null, new TelemetryClient(), null, null, null);
-    String sdkVersion = dataFetcher.getCurrentSdkVersion();
-    assertThat(sdkVersion).isNotNull();
-    assertThat(sdkVersion).isNotEqualTo("java:unknown");
-  }
-
-  @Test
-  void endpointIsFormattedCorrectlyWhenUsingConfig() throws URISyntaxException {
+  void endpointIsFormattedCorrectlyWhenUsingConnectionString() throws URISyntaxException {
     TelemetryClient telemetryClient = new TelemetryClient();
     telemetryClient.setConnectionString("InstrumentationKey=testing-123");
-    DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher =
-        new DefaultQuickPulseDataFetcher(null, telemetryClient, null, null, null);
-    String quickPulseEndpoint = defaultQuickPulseDataFetcher.getQuickPulseEndpoint();
-    String endpointUrl = defaultQuickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);
+    QuickPulsePingSender quickPulsePingSender =
+        new QuickPulsePingSender(null, telemetryClient, null, null, null);
+    String quickPulseEndpoint = quickPulsePingSender.getQuickPulseEndpoint();
+    String endpointUrl = quickPulsePingSender.getQuickPulsePingUri(quickPulseEndpoint);
     URI uri = new URI(endpointUrl);
     assertThat(uri).isNotNull();
+    assertThat(endpointUrl).endsWith("/ping?ikey=testing-123");
     assertThat(endpointUrl)
         .isEqualTo(
-            "https://rt.services.visualstudio.com/QuickPulseService.svc/post?ikey=testing-123");
+            "https://rt.services.visualstudio.com/QuickPulseService.svc/ping?ikey=testing-123");
   }
 
   @Test
-  void endpointIsFormattedCorrectlyWhenConfigIsNull() throws URISyntaxException {
-    DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher =
-        new DefaultQuickPulseDataFetcher(null, new TelemetryClient(), null, null, null);
-    String quickPulseEndpoint = defaultQuickPulseDataFetcher.getQuickPulseEndpoint();
-    String endpointUrl = defaultQuickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);
+  void endpointIsFormattedCorrectlyWhenUsingInstrumentationKey() throws URISyntaxException {
+    TelemetryClient telemetryClient = new TelemetryClient();
+    telemetryClient.setInstrumentationKey("A-test-instrumentation-key");
+    QuickPulsePingSender quickPulsePingSender =
+        new QuickPulsePingSender(null, telemetryClient, null, null, null);
+    String quickPulseEndpoint = quickPulsePingSender.getQuickPulseEndpoint();
+    String endpointUrl = quickPulsePingSender.getQuickPulsePingUri(quickPulseEndpoint);
     URI uri = new URI(endpointUrl);
     assertThat(uri).isNotNull();
     assertThat(endpointUrl)
-        .isEqualTo("https://rt.services.visualstudio.com/QuickPulseService.svc/post?ikey=null");
+        .endsWith(
+            "/ping?ikey=A-test-instrumentation-key"); // from resources/ApplicationInsights.xml
+    assertThat(endpointUrl)
+        .isEqualTo(
+            "https://rt.services.visualstudio.com/QuickPulseService.svc/ping?ikey=A-test-instrumentation-key");
   }
 
   @Test
@@ -85,9 +83,8 @@ class DefaultQuickPulseDataFetcherTests {
             .httpClient(request -> Mono.just(new MockHttpResponse(request, 200, httpHeaders)))
             .build();
     QuickPulsePingSender quickPulsePingSender =
-        new DefaultQuickPulsePingSender(
+        new QuickPulsePingSender(
             httpPipeline, new TelemetryClient(), "machine1", "instance1", "qpid123");
-
     QuickPulseHeaderInfo quickPulseHeaderInfo = quickPulsePingSender.ping(null);
     assertThat(QuickPulseStatus.QP_IS_ON).isEqualTo(quickPulseHeaderInfo.getQuickPulseStatus());
     assertThat(1000).isEqualTo(quickPulseHeaderInfo.getQpsServicePollingInterval());

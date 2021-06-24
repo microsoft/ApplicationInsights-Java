@@ -41,7 +41,7 @@ public enum QuickPulse {
   private volatile boolean initialized = false;
   private Thread thread;
   private Thread senderThread;
-  private DefaultQuickPulseCoordinator coordinator;
+  private QuickPulseCoordinator coordinator;
   private QuickPulseDataSender quickPulseDataSender;
 
   // initialization is performed in the background because initializing the random seed (via
@@ -83,7 +83,7 @@ public enum QuickPulse {
               LazyHttpClient.newHttpPipeLine(telemetryClient.getAadAuthentication());
           ArrayBlockingQueue<HttpRequest> sendQueue = new ArrayBlockingQueue<>(256, true);
 
-          quickPulseDataSender = new DefaultQuickPulseDataSender(httpPipeline, sendQueue);
+          quickPulseDataSender = new QuickPulseDataSender(httpPipeline, sendQueue);
 
           String instanceName = telemetryClient.getRoleInstance();
           String machineName = DeviceInfo.getHostName();
@@ -96,10 +96,10 @@ public enum QuickPulse {
           }
 
           QuickPulsePingSender quickPulsePingSender =
-              new DefaultQuickPulsePingSender(
+              new QuickPulsePingSender(
                   httpPipeline, telemetryClient, machineName, instanceName, quickPulseId);
           QuickPulseDataFetcher quickPulseDataFetcher =
-              new DefaultQuickPulseDataFetcher(
+              new QuickPulseDataFetcher(
                   sendQueue, telemetryClient, machineName, instanceName, quickPulseId);
 
           QuickPulseCoordinatorInitData coordinatorInitData =
@@ -109,14 +109,14 @@ public enum QuickPulse {
                   .withDataSender(quickPulseDataSender)
                   .build();
 
-          coordinator = new DefaultQuickPulseCoordinator(coordinatorInitData);
+          coordinator = new QuickPulseCoordinator(coordinatorInitData);
 
           senderThread =
               new Thread(quickPulseDataSender, QuickPulseDataSender.class.getSimpleName());
           senderThread.setDaemon(true);
           senderThread.start();
 
-          thread = new Thread(coordinator, DefaultQuickPulseCoordinator.class.getSimpleName());
+          thread = new Thread(coordinator, QuickPulseCoordinator.class.getSimpleName());
           thread.setDaemon(true);
           thread.start();
 

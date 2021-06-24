@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class DefaultQuickPulseCoordinatorTest {
+class QuickPulseCoordinatorTest {
   @Test
   void testOnlyPings() throws InterruptedException {
     QuickPulseDataFetcher mockFetcher = mock(QuickPulseDataFetcher.class);
@@ -49,7 +49,7 @@ class DefaultQuickPulseCoordinatorTest {
             .withWaitOnErrorInMillis(10L)
             .build();
 
-    DefaultQuickPulseCoordinator coordinator = new DefaultQuickPulseCoordinator(initData);
+    QuickPulseCoordinator coordinator = new QuickPulseCoordinator(initData);
     Thread thread = new Thread(coordinator);
     thread.setDaemon(true);
     thread.start();
@@ -91,7 +91,7 @@ class DefaultQuickPulseCoordinatorTest {
             .withWaitOnErrorInMillis(10L)
             .build();
 
-    DefaultQuickPulseCoordinator coordinator = new DefaultQuickPulseCoordinator(initData);
+    QuickPulseCoordinator coordinator = new QuickPulseCoordinator(initData);
     Thread thread = new Thread(coordinator);
     thread.setDaemon(true);
     thread.start();
@@ -117,7 +117,7 @@ class DefaultQuickPulseCoordinatorTest {
     QuickPulseDataSender mockSender = Mockito.mock(QuickPulseDataSender.class);
     QuickPulsePingSender mockPingSender = Mockito.mock(QuickPulsePingSender.class);
 
-    Mockito.doNothing().when(mockFetcher).prepareQuickPulseDataForSend((String) notNull());
+    Mockito.doNothing().when(mockFetcher).prepareQuickPulseDataForSend(notNull());
     Mockito.doReturn(
             new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_ON, "https://new.endpoint.com", 100))
         .when(mockPingSender)
@@ -137,7 +137,7 @@ class DefaultQuickPulseCoordinatorTest {
             .withWaitOnErrorInMillis(10L)
             .build();
 
-    DefaultQuickPulseCoordinator coordinator = new DefaultQuickPulseCoordinator(initData);
+    QuickPulseCoordinator coordinator = new QuickPulseCoordinator(initData);
     Thread thread = new Thread(coordinator);
     thread.setDaemon(true);
     thread.start();
