@@ -63,15 +63,7 @@ public class FeatureStatsbeatTest {
 
   @Test
   public void testCassandraDisable() {
-    featureStatsbeat.trackInstrumentationOff(
-        false,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true);
+    featureStatsbeat.trackInstrumentationOff(false, true, true, true, true, true, true, true);
 
     features.add(Feature.Cassandra_OFF);
     assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));
@@ -79,15 +71,7 @@ public class FeatureStatsbeatTest {
 
   @Test
   public void testJdbcDisable() {
-    featureStatsbeat.trackInstrumentationOff(
-        true,
-        false,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true);
+    featureStatsbeat.trackInstrumentationOff(true, false, true, true, true, true, true, true);
 
     features.add(Feature.JDBC_OFF);
     assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));
@@ -95,15 +79,7 @@ public class FeatureStatsbeatTest {
 
   @Test
   public void testJmsDisable() {
-    featureStatsbeat.trackInstrumentationOff(
-        true,
-        true,
-        false,
-        true,
-        true,
-        true,
-        true,
-        true);
+    featureStatsbeat.trackInstrumentationOff(true, true, false, true, true, true, true, true);
 
     features.add(Feature.JMS_OFF);
     assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));
@@ -111,15 +87,7 @@ public class FeatureStatsbeatTest {
 
   @Test
   public void testKafkaDisable() {
-    featureStatsbeat.trackInstrumentationOff(
-        true,
-        true,
-        true,
-        false,
-        true,
-        true,
-        true,
-        true);
+    featureStatsbeat.trackInstrumentationOff(true, true, true, false, true, true, true, true);
 
     features.add(Feature.KAFKA_OFF);
     assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));
@@ -127,15 +95,7 @@ public class FeatureStatsbeatTest {
 
   @Test
   public void testMicrometerDisable() {
-    featureStatsbeat.trackInstrumentationOff(
-        true,
-        true,
-        true,
-        true,
-        false,
-        true,
-        true,
-        true);
+    featureStatsbeat.trackInstrumentationOff(true, true, true, true, false, true, true, true);
 
     features.add(Feature.MICROMETER_OFF);
     assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));
@@ -143,15 +103,7 @@ public class FeatureStatsbeatTest {
 
   @Test
   public void testMongoDisable() {
-    featureStatsbeat.trackInstrumentationOff(
-        true,
-        true,
-        true,
-        true,
-        true,
-        false,
-        true,
-        true);
+    featureStatsbeat.trackInstrumentationOff(true, true, true, true, true, false, true, true);
 
     features.add(Feature.MONGO_OFF);
     assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));
@@ -159,15 +111,7 @@ public class FeatureStatsbeatTest {
 
   @Test
   public void testRedisDisable() {
-    featureStatsbeat.trackInstrumentationOff(
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        false,
-        true);
+    featureStatsbeat.trackInstrumentationOff(true, true, true, true, true, true, false, true);
 
     features.add(Feature.REDIS_OFF);
     assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));
@@ -175,15 +119,7 @@ public class FeatureStatsbeatTest {
 
   @Test
   public void testSpringSchedulingDisable() {
-    featureStatsbeat.trackInstrumentationOff(
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        false);
+    featureStatsbeat.trackInstrumentationOff(true, true, true, true, true, true, true, false);
 
     features.add(Feature.SPRING_SCHEDULING_OFF);
     assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));
