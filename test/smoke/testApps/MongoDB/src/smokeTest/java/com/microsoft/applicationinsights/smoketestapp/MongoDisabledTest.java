@@ -1,6 +1,27 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.microsoft.applicationinsights.smoketestapp;
 
-import java.util.List;
+import static org.junit.Assert.*;
 
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
@@ -10,33 +31,31 @@ import com.microsoft.applicationinsights.smoketest.DependencyContainer;
 import com.microsoft.applicationinsights.smoketest.TargetUri;
 import com.microsoft.applicationinsights.smoketest.UseAgent;
 import com.microsoft.applicationinsights.smoketest.WithDependencyContainers;
+import java.util.List;
 import org.junit.*;
-
-import static org.junit.Assert.*;
 
 @UseAgent("disabled_mongo")
 @WithDependencyContainers(
-        @DependencyContainer(
-                value = "mongo:4",
-                portMapping = "27017",
-                hostnameEnvironmentVariable = "MONGO")
-)
+    @DependencyContainer(
+        value = "mongo:4",
+        portMapping = "27017",
+        hostnameEnvironmentVariable = "MONGO"))
 public class MongoDisabledTest extends AiSmokeTest {
 
-    @Test
-    @TargetUri("/mongo")
-    public void mongo() throws Exception {
-        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        Envelope rdEnvelope = rdList.get(0);
-        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+  @Test
+  @TargetUri("/mongo")
+  public void mongo() throws Exception {
+    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    Envelope rdEnvelope = rdList.get(0);
+    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-        assertEquals("GET /MongoDB/*", rd.getName());
-        assertEquals("200", rd.getResponseCode());
-        assertTrue(rd.getProperties().isEmpty());
-        assertTrue(rd.getSuccess());
+    assertEquals("GET /MongoDB/*", rd.getName());
+    assertEquals("200", rd.getResponseCode());
+    assertTrue(rd.getProperties().isEmpty());
+    assertTrue(rd.getSuccess());
 
-        // sleep a bit and make sure no mongo dependencies are reported
-        Thread.sleep(5000);
-        assertEquals(0, mockedIngestion.getCountForType("RemoteDependencyData"));
-    }
+    // sleep a bit and make sure no mongo dependencies are reported
+    Thread.sleep(5000);
+    assertEquals(0, mockedIngestion.getCountForType("RemoteDependencyData"));
+  }
 }
