@@ -38,11 +38,10 @@ enum Feature {
   JDBC_OFF(8),
   JMS_OFF(9),
   KAFKA_OFF(10),
-  LOGGING_OFF(11),
-  MICROMETER_OFF(12),
-  MONGO_OFF(13),
-  REDIS_OFF(14),
-  SPRING_SCHEDULING_OFF(15);
+  MICROMETER_OFF(11),
+  MONGO_OFF(12),
+  REDIS_OFF(13),
+  SPRING_SCHEDULING_OFF(14);
 
   private static final Map<String, Feature> features;
 
@@ -66,7 +65,6 @@ enum Feature {
     features.put("JDBC OFF", Feature.JDBC_OFF);
     features.put("JMS OFF", Feature.JMS_OFF);
     features.put("KAFKA OFF", Feature.KAFKA_OFF);
-    features.put("LOGGING OFF", Feature.LOGGING_OFF);
     features.put("MICROMETER OFF", Feature.MICROMETER_OFF);
     features.put("MONGO OFF", Feature.MONGO_OFF);
     features.put("REDIS OFF", Feature.REDIS_OFF);

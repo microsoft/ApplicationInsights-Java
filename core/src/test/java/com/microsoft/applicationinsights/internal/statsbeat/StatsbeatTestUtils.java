@@ -105,11 +105,10 @@ public final class StatsbeatTestUtils {
     FEATURE_MAP_DECODING.put(8, Feature.JDBC_OFF);
     FEATURE_MAP_DECODING.put(9, Feature.JMS_OFF);
     FEATURE_MAP_DECODING.put(10, Feature.KAFKA_OFF);
-    FEATURE_MAP_DECODING.put(11, Feature.LOGGING_OFF);
-    FEATURE_MAP_DECODING.put(12, Feature.MICROMETER_OFF);
-    FEATURE_MAP_DECODING.put(13, Feature.MONGO_OFF);
-    FEATURE_MAP_DECODING.put(14, Feature.REDIS_OFF);
-    FEATURE_MAP_DECODING.put(15, Feature.SPRING_SCHEDULING_OFF);
+    FEATURE_MAP_DECODING.put(11, Feature.MICROMETER_OFF);
+    FEATURE_MAP_DECODING.put(12, Feature.MONGO_OFF);
+    FEATURE_MAP_DECODING.put(13, Feature.REDIS_OFF);
+    FEATURE_MAP_DECODING.put(14, Feature.SPRING_SCHEDULING_OFF);
   }
 
   static Set<String> decodeInstrumentations(long number) {
