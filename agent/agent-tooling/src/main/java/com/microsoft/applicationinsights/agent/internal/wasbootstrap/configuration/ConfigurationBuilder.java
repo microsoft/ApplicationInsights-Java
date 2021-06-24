@@ -25,6 +25,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Diagnostics
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.agent.internal.wascore.authentication.AuthenticationType;
+import com.microsoft.applicationinsights.agent.internal.wascore.common.CommonUtils;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.ConnectionString;
 import com.squareup.moshi.JsonAdapter;
@@ -130,6 +131,11 @@ public class ConfigurationBuilder {
     // currently applicationinsights-rp.json is only used by Azure Spring Cloud
     if (rpConfiguration != null) {
       overlayRpConfiguration(config, rpConfiguration);
+    }
+    // only set role instance to host name as a last resort
+    if (config.role.instance == null) {
+      String hostname = CommonUtils.getHostName();
+      config.role.instance = hostname == null ? "unknown" : hostname;
     }
     return config;
   }

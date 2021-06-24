@@ -21,15 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.wascore.perfcounter;
 
-import com.microsoft.applicationinsights.agent.internal.wascore.config.JvmXmlElement;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.PerformanceCounterJvmSectionXmlElement;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.PerformanceCountersXmlElement;
-import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.jvm.DeadLockDetectorPerformanceCounter;
-import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.jvm.GcPerformanceCounter;
-import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter;
-import java.util.HashMap;
-import java.util.HashSet;
-
 /**
  * The class loads the relevant Jvm PCs.
  *
@@ -65,49 +56,9 @@ import java.util.HashSet;
  * </PerformanceCounters>
  * }</pre>
  */
-public final class JvmPerformanceCountersModule extends AbstractPerformanceCounterModule
-    implements PerformanceCounterConfigurationAware {
+public final class JvmPerformanceCountersModule extends AbstractPerformanceCounterModule {
 
-  private static final String[] JVM_PERF_COUNTER_NAMES = {
-    DeadLockDetectorPerformanceCounter.NAME,
-    JvmHeapMemoryUsedPerformanceCounter.NAME,
-    GcPerformanceCounter.NAME
-  };
-
-  public JvmPerformanceCountersModule() throws Exception {
-    this(new JvmPerformanceCountersFactory());
-  }
-
-  public JvmPerformanceCountersModule(PerformanceCountersFactory factory) throws Exception {
-    super(factory);
-
-    if (!(factory instanceof JvmPerformanceCountersFactory)) {
-      throw new Exception("Factory must implement windows capabilities.");
-    }
-  }
-
-  @Override
-  public void addConfigurationData(PerformanceCountersXmlElement configuration) {
-    JvmPerformanceCountersFactory f = (JvmPerformanceCountersFactory) factory;
-    PerformanceCounterJvmSectionXmlElement jvmSection = configuration.getJvmSection();
-    if (jvmSection == null) {
-      return;
-    }
-
-    if (!jvmSection.isEnabled()) {
-      f.setIsEnabled(false);
-      return;
-    }
-
-    HashMap<String, JvmXmlElement> jvmPerfCountersMap = jvmSection.getJvmXmlElementsMap();
-    HashSet<String> disabledJvmPerfCounters = new HashSet<>();
-
-    for (String jvmPcName : JVM_PERF_COUNTER_NAMES) {
-      JvmXmlElement pc = jvmPerfCountersMap.get(jvmPcName);
-      if (pc != null && !pc.isEnabled()) {
-        disabledJvmPerfCounters.add(jvmPcName);
-      }
-    }
-    f.setDisabledJvmPerfCounters(disabledJvmPerfCounters);
+  public JvmPerformanceCountersModule() {
+    super(new JvmPerformanceCountersFactory());
   }
 }

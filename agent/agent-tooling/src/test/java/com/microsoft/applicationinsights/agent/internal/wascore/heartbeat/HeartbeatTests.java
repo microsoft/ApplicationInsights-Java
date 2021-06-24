@@ -25,15 +25,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryModule;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.ApplicationInsightsXmlConfiguration;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.TelemetryClientInitializer;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,20 +41,20 @@ class HeartbeatTests {
 
   @Test
   void initializeHeartBeatModuleDoesNotThrow() {
-    HeartBeatModule module = new HeartBeatModule(new HashMap<>());
+    HeartBeatModule module = new HeartBeatModule();
     module.initialize(null);
   }
 
   @Test
   void initializeHeartBeatTwiceDoesNotFail() {
-    HeartBeatModule module = new HeartBeatModule(new HashMap<>());
+    HeartBeatModule module = new HeartBeatModule();
     module.initialize(null);
     module.initialize(null);
   }
 
   @Test
   void initializeHeartBeatDefaultsAreSetCorrectly() {
-    HeartBeatModule module = new HeartBeatModule(new HashMap<>());
+    HeartBeatModule module = new HeartBeatModule();
     module.initialize(null);
 
     assertThat(
@@ -72,20 +67,18 @@ class HeartbeatTests {
 
   @Test
   void initializeHeartBeatWithNonDefaultIntervalSetsCorrectly() {
-    Map<String, String> dummyPropertiesMap = new HashMap<>();
     long heartBeatInterval = 45;
-    dummyPropertiesMap.put("HeartBeatInterval", String.valueOf(heartBeatInterval));
-    HeartBeatModule module = new HeartBeatModule(dummyPropertiesMap);
+    HeartBeatModule module = new HeartBeatModule();
+    module.setHeartBeatInterval(heartBeatInterval);
     module.initialize(null);
     assertThat(module.getHeartBeatInterval()).isEqualTo(heartBeatInterval);
   }
 
   @Test
   void initializeHeatBeatWithValueLessThanMinimumSetsToMinimum() {
-    Map<String, String> dummyPropertiesMap = new HashMap<>();
     long heartBeatInterval = 0;
-    dummyPropertiesMap.put("HeartBeatInterval", String.valueOf(heartBeatInterval));
-    HeartBeatModule module = new HeartBeatModule(dummyPropertiesMap);
+    HeartBeatModule module = new HeartBeatModule();
+    module.setHeartBeatInterval(heartBeatInterval);
     module.initialize(null);
     assertThat(module.getHeartBeatInterval()).isNotEqualTo(heartBeatInterval);
     assertThat(module.getHeartBeatInterval())
@@ -94,7 +87,7 @@ class HeartbeatTests {
 
   @Test
   void canExtendHeartBeatPayload() throws Exception {
-    HeartBeatModule module = new HeartBeatModule(new HashMap<>());
+    HeartBeatModule module = new HeartBeatModule();
     module.initialize(new TelemetryClient());
 
     Field field = module.getClass().getDeclaredField("heartBeatProviderInterface");
@@ -104,44 +97,8 @@ class HeartbeatTests {
   }
 
   @Test
-  void heartBeatIsEnabledByDefault() {
-    TelemetryClient telemetryClient = new TelemetryClient();
-    TelemetryClientInitializer.INSTANCE.initialize(
-        telemetryClient, new ApplicationInsightsXmlConfiguration());
-    List<TelemetryModule> modules = telemetryClient.getTelemetryModules();
-    boolean hasHeartBeatModule = false;
-    HeartBeatModule hbm = null;
-    for (TelemetryModule m : modules) {
-      if (m instanceof HeartBeatModule) {
-        hasHeartBeatModule = true;
-        hbm = (HeartBeatModule) m;
-        break;
-      }
-    }
-    assertThat(hasHeartBeatModule).isTrue();
-    assertThat(hbm).isNotNull();
-    assertThat(hbm.isHeartBeatEnabled()).isTrue();
-  }
-
-  @Test
-  void canDisableHeartBeatPriorToInitialize() throws Exception {
-    Map<String, String> dummyPropertyMap = new HashMap<>();
-    dummyPropertyMap.put("isHeartBeatEnabled", "false");
-    HeartBeatModule module = new HeartBeatModule(dummyPropertyMap);
-    TelemetryClient telemetryClient = new TelemetryClient();
-    telemetryClient.getTelemetryModules().add(module);
-    module.initialize(telemetryClient);
-    assertThat(module.isHeartBeatEnabled()).isFalse();
-
-    Field field = module.getClass().getDeclaredField("heartBeatProviderInterface");
-    field.setAccessible(true);
-    HeartBeatProviderInterface hbi = (HeartBeatProviderInterface) field.get(module);
-    assertThat(hbi.isHeartBeatEnabled()).isFalse();
-  }
-
-  @Test
   void canDisableHeartBeatPropertyProviderPriorToInitialize() throws Exception {
-    HeartBeatModule module = new HeartBeatModule(new HashMap<>());
+    HeartBeatModule module = new HeartBeatModule();
     module.setExcludedHeartBeatPropertiesProvider(Arrays.asList("Base", "webapps"));
 
     Field field = module.getClass().getDeclaredField("heartBeatProviderInterface");
@@ -293,17 +250,5 @@ class HeartbeatTests {
     base.setDefaultPayload(new ArrayList<>(), provider).call();
     MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
     assertThat(t.getProperties().containsKey("testKey")).isFalse();
-  }
-
-  @Test
-  void configurationParsingWorksAsExpectedWhenMultipleParamsArePassed()
-      throws InterruptedException {
-    Map<String, String> dummyPropertiesMap = new HashMap<>();
-    dummyPropertiesMap.put("ExcludedHeartBeatPropertiesProvider", "Base;webapps");
-    HeartBeatModule module = new HeartBeatModule(dummyPropertiesMap);
-    module.initialize(null);
-    Thread.sleep(100);
-    assertThat(module.getExcludedHeartBeatPropertiesProvider().contains("Base")).isTrue();
-    assertThat(module.getExcludedHeartBeatPropertiesProvider().contains("webapps")).isTrue();
   }
 }

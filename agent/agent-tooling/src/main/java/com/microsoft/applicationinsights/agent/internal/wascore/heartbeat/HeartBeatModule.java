@@ -23,10 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.wascore.heartbeat;
 
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryModule;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,64 +48,8 @@ public class HeartBeatModule implements TelemetryModule {
   /** Flag to seek if module is initialized. */
   private static volatile boolean isInitialized = false;
 
-  /**
-   * Initializes the heartbeat configuration based on connfiguration properties specified in
-   * ApplicationInsights.xml file.
-   *
-   * @param properties Map of properties
-   */
-  public HeartBeatModule(Map<String, String> properties) {
-
+  public HeartBeatModule() {
     heartBeatProviderInterface = new HeartBeatProvider();
-
-    if (properties != null) {
-      for (Map.Entry<String, String> entry : properties.entrySet()) {
-        switch (entry.getKey()) {
-          case "HeartBeatInterval":
-            try {
-              setHeartBeatInterval(Long.parseLong(entry.getValue()));
-            } catch (RuntimeException e) {
-              if (logger.isTraceEnabled()) {
-                logger.trace("Exception while adding Heartbeat interval", e);
-              }
-            }
-            break;
-          case "isHeartBeatEnabled":
-            try {
-              setHeartBeatEnabled(Boolean.parseBoolean(entry.getValue()));
-            } catch (RuntimeException e) {
-              if (logger.isTraceEnabled()) {
-                logger.trace("Exception while adding enabling/disabling heartbeat", e);
-              }
-            }
-            break;
-          case "ExcludedHeartBeatPropertiesProvider":
-            try {
-              List<String> excludedHeartBeatPropertiesProviderList =
-                  parseStringToList(entry.getValue());
-              setExcludedHeartBeatPropertiesProvider(excludedHeartBeatPropertiesProviderList);
-            } catch (RuntimeException e) {
-              if (logger.isTraceEnabled()) {
-                logger.trace("Exception while adding Excluded Heartbeat providers", e);
-              }
-            }
-            break;
-          case "ExcludedHeartBeatProperties":
-            try {
-              List<String> excludedHeartBeatPropertiesList = parseStringToList(entry.getValue());
-              setExcludedHeartBeatProperties(excludedHeartBeatPropertiesList);
-            } catch (RuntimeException e) {
-              if (logger.isTraceEnabled()) {
-                logger.trace("Exception while adding excluded heartbeat properties", e);
-              }
-            }
-            break;
-          default:
-            logger.trace("Encountered unknown parameter, no action will be performed");
-            break;
-        }
-      }
-    }
   }
 
   /**
@@ -135,24 +76,6 @@ public class HeartBeatModule implements TelemetryModule {
   }
 
   /**
-   * Sets the list of excluded heartbeat properties.
-   *
-   * @param excludedHeartBeatProperties List of heartbeat properties to exclude
-   */
-  public void setExcludedHeartBeatProperties(List<String> excludedHeartBeatProperties) {
-    this.heartBeatProviderInterface.setExcludedHeartBeatProperties(excludedHeartBeatProperties);
-  }
-
-  /**
-   * Gets list of excluded heartbeat properties provider.
-   *
-   * @return list of excluded heartbeat properties provider.
-   */
-  public List<String> getExcludedHeartBeatPropertiesProvider() {
-    return heartBeatProviderInterface.getExcludedHeartBeatPropertyProviders();
-  }
-
-  /**
    * Sets list of excluded heartbeat properties provider.
    *
    * @param excludedHeartBeatPropertiesProvider list of excluded heartbeat properties provider to be
@@ -173,15 +96,6 @@ public class HeartBeatModule implements TelemetryModule {
     return this.heartBeatProviderInterface.isHeartBeatEnabled();
   }
 
-  /**
-   * Sets the state of heartbeat module.
-   *
-   * @param heartBeatEnabled boolean true / false
-   */
-  public void setHeartBeatEnabled(boolean heartBeatEnabled) {
-    this.heartBeatProviderInterface.setHeartBeatEnabled(heartBeatEnabled);
-  }
-
   @Override
   public void initialize(TelemetryClient telemetryClient) {
     if (!isInitialized && isHeartBeatEnabled()) {
@@ -193,18 +107,5 @@ public class HeartBeatModule implements TelemetryModule {
         }
       }
     }
-  }
-
-  /**
-   * Parses the input parameter value separated by ; into List.
-   *
-   * @param value ; seperated value string
-   * @return List representing individual values
-   */
-  private static List<String> parseStringToList(String value) {
-    if (value == null || value.length() == 0) {
-      return new ArrayList<>();
-    }
-    return Arrays.asList(value.split(";"));
   }
 }

@@ -36,9 +36,9 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestDat
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wascore.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.agent.internal.wascore.config.TelemetryClientInitializer;
 import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.EndpointProvider;
@@ -57,7 +57,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 import org.apache.commons.text.StringSubstitutor;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -106,8 +105,6 @@ public class TelemetryClient {
   private final List<MetricFilter> metricFilters;
 
   private final @Nullable AadAuthentication aadAuthentication;
-
-  private final List<TelemetryModule> telemetryModules = new CopyOnWriteArrayList<>();
 
   private final Object channelInitLock = new Object();
   private volatile @Nullable BatchSpanProcessor channelBatcher;
@@ -171,7 +168,7 @@ public class TelemetryClient {
       Map<String, String> customDimensions,
       List<MetricFilter> metricFilters,
       AadAuthentication aadAuthentication,
-      ApplicationInsightsXmlConfiguration applicationInsightsConfig) {
+      Configuration configuration) {
     if (active != null) {
       throw new IllegalStateException("Already initialized");
     }
@@ -180,7 +177,7 @@ public class TelemetryClient {
         if (active == null) {
           TelemetryClient active =
               new TelemetryClient(customDimensions, metricFilters, aadAuthentication);
-          TelemetryClientInitializer.INSTANCE.initialize(active, applicationInsightsConfig);
+          TelemetryClientInitializer.INSTANCE.initialize(active, configuration);
           TelemetryClient.active = active;
         }
       }
@@ -251,10 +248,6 @@ public class TelemetryClient {
       }
     }
     return channelBatcher;
-  }
-
-  public List<TelemetryModule> getTelemetryModules() {
-    return telemetryModules;
   }
 
   /** Gets or sets the default instrumentation key for the application. */
