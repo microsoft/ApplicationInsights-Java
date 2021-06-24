@@ -52,7 +52,7 @@ enum Feature {
     features.put(
         "Red Hat, Inc.",
         Feature.JAVA_VENDOR_REDHAT); // https://developers.redhat.com/products/openjdk/download/
-    features.put("AAD_ENABLE", Feature.AAD);
+    features.put("AAD", Feature.AAD);
   }
 
   private final int bitmapIndex;
