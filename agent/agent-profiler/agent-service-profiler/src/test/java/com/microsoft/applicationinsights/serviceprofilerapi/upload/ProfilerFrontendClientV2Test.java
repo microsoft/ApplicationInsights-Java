@@ -23,7 +23,10 @@ package com.microsoft.applicationinsights.serviceprofilerapi.upload;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.azure.core.http.*;
+import com.azure.core.http.HttpMethod;
+import com.azure.core.http.HttpPipeline;
+import com.azure.core.http.HttpPipelineBuilder;
+import com.azure.core.http.HttpRequest;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFrontendClientV2;
 import java.io.IOException;
 import java.net.URL;

@@ -21,7 +21,9 @@
 
 package com.microsoft.applicationinsights.agent.internal.processors;
 
-import static com.microsoft.applicationinsights.agent.internal.processors.ProcessorUtil.*;
+import static com.microsoft.applicationinsights.agent.internal.processors.ProcessorUtil.applyRule;
+import static com.microsoft.applicationinsights.agent.internal.processors.ProcessorUtil.getGroupNamesList;
+import static com.microsoft.applicationinsights.agent.internal.processors.ProcessorUtil.spanHasAllFromAttributeKeys;
 
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
 import io.opentelemetry.api.common.AttributeKey;

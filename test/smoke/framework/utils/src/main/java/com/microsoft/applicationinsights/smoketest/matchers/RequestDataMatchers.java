@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.smoketest.matchers;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
 
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.telemetry.Duration;
