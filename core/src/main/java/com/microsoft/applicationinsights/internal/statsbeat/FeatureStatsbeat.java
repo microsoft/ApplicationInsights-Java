@@ -60,7 +60,15 @@ class FeatureStatsbeat extends BaseStatsbeat {
     }
   }
 
-  void trackInstrumentationOff(boolean cassandraEnabled, boolean jdbcEnabled, boolean jmsEnabled, boolean kafkaEnabled, boolean micrometerEnabled, boolean mongoEnabled, boolean redisEnabled, boolean springSchedulingEnabled) {
+  void trackInstrumentationOff(
+      boolean cassandraEnabled,
+      boolean jdbcEnabled,
+      boolean jmsEnabled,
+      boolean kafkaEnabled,
+      boolean micrometerEnabled,
+      boolean mongoEnabled,
+      boolean redisEnabled,
+      boolean springSchedulingEnabled) {
     if (!cassandraEnabled) {
       featureList.add(Feature.Cassandra_OFF);
     }
