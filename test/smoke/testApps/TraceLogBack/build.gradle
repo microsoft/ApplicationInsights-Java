@@ -5,9 +5,9 @@ plugins {
 apply from: "$buildScriptsDir/smoke-tests.gradle"
 
 war {
-    // this is done to remove the version from the archive file name
-    // to make span name verification simpler
-    archiveFileName = project.name + ".war"
+  // this is done to remove the version from the archive file name
+  // to make span name verification simpler
+  archiveFileName = project.name + ".war"
 }
 
 ext.testAppArtifactDir = war.destinationDirectory

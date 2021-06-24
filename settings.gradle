@@ -20,30 +20,31 @@
  */
 
 plugins {
-    id 'com.gradle.enterprise' version '3.5'
+  id 'com.gradle.enterprise' version '3.5'
 }
 
 def isCI = System.getenv("CI") != null
 gradleEnterprise {
-    buildScan {
-        termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-        termsOfServiceAgree = 'yes'
+  buildScan {
+    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree = 'yes'
 
-        if (isCI) {
-            publishAlways()
-            tag 'CI'
-        }
+    if (isCI) {
+      publishAlways()
+      tag 'CI'
     }
+  }
 }
 
 rootProject.name = 'applicationinsights-java'
 
 import org.apache.tools.ant.taskdefs.condition.Os
+
 def buildNative = !(System.properties['skipWinNative'] ?: 'false').toBoolean() && Os.isFamily(Os.FAMILY_WINDOWS);
 if (buildNative) {
-    include ':etw:native'
+  include ':etw:native'
 } else {
-    logger.quiet "Skipping build of :etw:native because skipWinNative=true. EtwAppender/EtwProvider will not work because library is missing"
+  logger.quiet "Skipping build of :etw:native because skipWinNative=true. EtwAppender/EtwProvider will not work because library is missing"
 }
 include ':etw:java'
 // TODO (trask) ETW: is this really needed? if so, need to restore devtest configuration

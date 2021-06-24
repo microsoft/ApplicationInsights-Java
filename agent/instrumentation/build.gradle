@@ -1,112 +1,112 @@
 plugins {
-    id "com.github.johnrengelman.shadow"
+  id "com.github.johnrengelman.shadow"
 }
 
 apply from: "$buildScriptsDir/common-java.gradle"
 
 repositories {
-    // maven local is needed for locally built otel fork
-    mavenLocal()
+  // maven local is needed for locally built otel fork
+  mavenLocal()
 }
 
 configurations {
-    // exclude bootstrap dependencies from shadowJar
-    implementation.exclude group: "org.slf4j"
-    implementation.exclude group: "io.opentelemetry", module: "opentelemetry-api"
-    implementation.exclude group: "io.opentelemetry", module: "opentelemetry-api-metrics"
-    implementation.exclude group: "io.opentelemetry", module: "opentelemetry-context"
-    implementation.exclude group: "io.opentelemetry", module: "opentelemetry-context-prop"
-    implementation.exclude group: "io.opentelemetry", module: "opentelemetry-semconv"
+  // exclude bootstrap dependencies from shadowJar
+  implementation.exclude group: "org.slf4j"
+  implementation.exclude group: "io.opentelemetry", module: "opentelemetry-api"
+  implementation.exclude group: "io.opentelemetry", module: "opentelemetry-api-metrics"
+  implementation.exclude group: "io.opentelemetry", module: "opentelemetry-context"
+  implementation.exclude group: "io.opentelemetry", module: "opentelemetry-context-prop"
+  implementation.exclude group: "io.opentelemetry", module: "opentelemetry-semconv"
 
-    implementation.exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api"
-    implementation.exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-caching"
+  implementation.exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api"
+  implementation.exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-caching"
 
-    // TODO (trask) Azure SDK: why is this included in azure-core?
-    implementation.exclude group: "io.netty", module: "netty-tcnative-boringssl-static"
+  // TODO (trask) Azure SDK: why is this included in azure-core?
+  implementation.exclude group: "io.netty", module: "netty-tcnative-boringssl-static"
 
-    implementation.exclude group: "com.fasterxml.jackson.dataformat", module: "jackson-dataformat-xml"
+  implementation.exclude group: "com.fasterxml.jackson.dataformat", module: "jackson-dataformat-xml"
 
-    // this is pulled in via azure-core-http-netty ==> reactor-netty
-    implementation.exclude group: "io.projectreactor.netty", module: "reactor-netty-http-brave"
+  // this is pulled in via azure-core-http-netty ==> reactor-netty
+  implementation.exclude group: "io.projectreactor.netty", module: "reactor-netty-http-brave"
 }
 
 dependencies {
-    implementation(project(":agent:agent-tooling")) {
-        // exclude bootstrap dependencies from shadowJar
+  implementation(project(":agent:agent-tooling")) {
+    // exclude bootstrap dependencies from shadowJar
 
-        exclude group: "io.opentelemetry.javaagent", module: "opentelemetry-javaagent-bootstrap"
-        exclude group: "io.opentelemetry.javaagent", module: "opentelemetry-javaagent-api"
+    exclude group: "io.opentelemetry.javaagent", module: "opentelemetry-javaagent-bootstrap"
+    exclude group: "io.opentelemetry.javaagent", module: "opentelemetry-javaagent-api"
 
-        exclude group: "io.opentelemetry", module: "opentelemetry-context"
-        exclude group: "io.opentelemetry", module: "opentelemetry-context-prop"
+    exclude group: "io.opentelemetry", module: "opentelemetry-context"
+    exclude group: "io.opentelemetry", module: "opentelemetry-context-prop"
 
-        exclude group: "ch.qos.logback", module: "logback-classic"
-        exclude group: "ch.qos.logback", module: "logback-core"
-    }
+    exclude group: "ch.qos.logback", module: "logback-classic"
+    exclude group: "ch.qos.logback", module: "logback-core"
+  }
 
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpasyncclient-4.1:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpclient-2.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpclient-4.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpclient-5.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-applicationinsights-web-2.3:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-azure-functions:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-azure-core-1.14:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-cassandra-3.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-cassandra-4.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-executors:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.6:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-http-url-connection:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-class-loader:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-eclipse-osgi-3.6:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-proxy:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-url-class-loader:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-http-client:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging-spans:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-1.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-2.0-jersey-2.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-2.0-resteasy-3.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-2.0-resteasy-3.1:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-2.0-common:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxws-2.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxws-2.0-axis2-1.6:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxws-2.0-cxf-3.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxws-2.0-metro-2.2:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jdbc:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jedis-1.4:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jedis-3.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jetty-8.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jms-1.1:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-kafka-clients-0.11:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-kafka-streams-0.11:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-kotlinx-coroutines:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-lettuce-4.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-lettuce-5.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-lettuce-5.1:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-lettuce-common:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-spans-1.2:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-spans-2.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-spans-1.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-micrometer-1.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-mongo-3.1:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-mongo-3.7:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-mongo-4.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-mongo-async-3.3:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-okhttp-3.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-opentelemetry-annotations-1.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-opentelemetry-api-1.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-rabbitmq-2.7:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-reactor-3.1:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-reactor-netty-0.9:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-reactor-netty-1.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-2.2:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spring-scheduling-3.1:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spring-webmvc-3.1:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spring-webflux-5.0:${versions.opentelemetryInstrumentationAlpha}"
-    implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-tomcat-7.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpasyncclient-4.1:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpclient-2.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpclient-4.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpclient-5.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-applicationinsights-web-2.3:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-azure-functions:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-azure-core-1.14:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-cassandra-3.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-cassandra-4.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-executors:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.6:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-http-url-connection:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-class-loader:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-eclipse-osgi-3.6:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-proxy:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-url-class-loader:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-http-client:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging-spans:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-1.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-2.0-jersey-2.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-2.0-resteasy-3.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-2.0-resteasy-3.1:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-2.0-common:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxws-2.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxws-2.0-axis2-1.6:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxws-2.0-cxf-3.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxws-2.0-metro-2.2:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jdbc:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jedis-1.4:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jedis-3.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jetty-8.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jms-1.1:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-kafka-clients-0.11:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-kafka-streams-0.11:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-kotlinx-coroutines:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-lettuce-4.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-lettuce-5.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-lettuce-5.1:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-lettuce-common:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-spans-1.2:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-spans-2.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-spans-1.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-micrometer-1.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-mongo-3.1:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-mongo-3.7:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-mongo-4.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-mongo-async-3.3:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-okhttp-3.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-opentelemetry-annotations-1.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-opentelemetry-api-1.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-rabbitmq-2.7:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-reactor-3.1:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-reactor-netty-0.9:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-reactor-netty-1.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-2.2:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spring-scheduling-3.1:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spring-webmvc-3.1:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spring-webflux-5.0:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-tomcat-7.0:${versions.opentelemetryInstrumentationAlpha}"
 }
 
 // need to perform shading in two steps in order to avoid shading java.util.logging.Logger
@@ -122,61 +122,61 @@ dependencies {
 // but it is needed for agent-tooling, which use logback to update levels dynamically in LazyConfigurationAccessor)
 task shadowJarStep1(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
 
-    archiveClassifier.set("step1")
-    destinationDirectory = file("${project.buildDir}/step1")
+  archiveClassifier.set("step1")
+  destinationDirectory = file("${project.buildDir}/step1")
 
-    configurations = [project.configurations.runtimeClasspath]
+  configurations = [project.configurations.runtimeClasspath]
 
-    dependencies {
-        exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging-spans"))
-        exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-spans-1.0"))
-    }
+  dependencies {
+    exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging-spans"))
+    exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-spans-1.0"))
+  }
 
-    // rewrite dependencies calling Logger.getLogger
-    relocate "java.util.logging.Logger", "io.opentelemetry.javaagent.bootstrap.PatchLogger"
+  // rewrite dependencies calling Logger.getLogger
+  relocate "java.util.logging.Logger", "io.opentelemetry.javaagent.bootstrap.PatchLogger"
 
-    relocate "ch.qos.logback", "com.microsoft.applicationinsights.agent.shadow.ch.qos.logback"
+  relocate "ch.qos.logback", "com.microsoft.applicationinsights.agent.shadow.ch.qos.logback"
 }
 
 
 shadowJar {
 
-    dependsOn shadowJarStep1
+  dependsOn shadowJarStep1
 
-    archiveClassifier.set("")
+  archiveClassifier.set("")
 
-    from {
-        zipTree(shadowJarStep1.archiveFile)
-    }
+  from {
+    zipTree(shadowJarStep1.archiveFile)
+  }
 
-    mergeServiceFiles()
+  mergeServiceFiles()
 
-    exclude "**/module-info.class"
+  exclude "**/module-info.class"
 
-    // Prevents conflict with other SLF4J instances. Important for premain.
-    relocate "org.slf4j", "io.opentelemetry.javaagent.slf4j"
+  // Prevents conflict with other SLF4J instances. Important for premain.
+  relocate "org.slf4j", "io.opentelemetry.javaagent.slf4j"
 
-    // rewrite library instrumentation dependencies
-    relocate "io.opentelemetry.instrumentation", "io.opentelemetry.javaagent.shaded.instrumentation"
+  // rewrite library instrumentation dependencies
+  relocate "io.opentelemetry.instrumentation", "io.opentelemetry.javaagent.shaded.instrumentation"
 
-    // relocate OpenTelemetry API usage
-    relocate "io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api"
-    relocate "io.opentelemetry.semconv", "io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv"
-    relocate "io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context"
+  // relocate OpenTelemetry API usage
+  relocate "io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api"
+  relocate "io.opentelemetry.semconv", "io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv"
+  relocate "io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context"
 
-    // relocate the OpenTelemetry extensions that are used by instrumentation modules
-    // these extensions live in the AgentClassLoader, and are injected into the user"s class loader
-    // by the instrumentation modules that use them
-    relocate "io.opentelemetry.extension.aws", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.aws"
-    relocate "io.opentelemetry.extension.kotlin", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.kotlin"
+  // relocate the OpenTelemetry extensions that are used by instrumentation modules
+  // these extensions live in the AgentClassLoader, and are injected into the user"s class loader
+  // by the instrumentation modules that use them
+  relocate "io.opentelemetry.extension.aws", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.aws"
+  relocate "io.opentelemetry.extension.kotlin", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.kotlin"
 
-    // this is for instrumentation on opentelemetry-api itself
-    relocate "application.io.opentelemetry", "io.opentelemetry"
+  // this is for instrumentation on opentelemetry-api itself
+  relocate "application.io.opentelemetry", "io.opentelemetry"
 
-    // this is for instrumentation on java.util.logging itself
-    relocate "application.java.util.logging.Logger", "java.util.logging.Logger"
+  // this is for instrumentation on java.util.logging itself
+  relocate "application.java.util.logging.Logger", "java.util.logging.Logger"
 }
 
 artifacts {
-    archives shadowJar
+  archives shadowJar
 }

@@ -22,12 +22,13 @@
 apply plugin: "signing"
 
 task gpgSign(type: Sign) {
-    assert (dirToSign && !dirToSign.isEmpty() && new File(dirToSign).exists())
-    logger.info("[gpgSign] Directory for gpg signing files set to $dirToSign")
+  assert (dirToSign && !dirToSign.isEmpty() && new File(dirToSign).exists())
+  logger.info("[gpgSign] Directory for gpg signing files set to $dirToSign")
 
-    fileTree(dir: dirToSign).files.each {
-        f -> sign f
-        logger.info("[gpgSign] File $f added for gpg signing")
-    }
+  fileTree(dir: dirToSign).files.each {
+    f ->
+      sign f
+      logger.info("[gpgSign] File $f added for gpg signing")
+  }
 }
 
