@@ -23,9 +23,9 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertTrue;
 
-import com.microsoft.applicationinsights.internal.schemav2.Data;
-import com.microsoft.applicationinsights.internal.schemav2.Envelope;
-import com.microsoft.applicationinsights.internal.schemav2.RequestData;
+import com.microsoft.applicationinsights.smoketest.schemav2.Data;
+import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
 import org.junit.Test;
 

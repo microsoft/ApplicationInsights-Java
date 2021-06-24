@@ -25,12 +25,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import com.microsoft.applicationinsights.internal.schemav2.Data;
-import com.microsoft.applicationinsights.internal.schemav2.Envelope;
-import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
-import com.microsoft.applicationinsights.internal.schemav2.MessageData;
-import com.microsoft.applicationinsights.internal.schemav2.RequestData;
-import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
+import com.microsoft.applicationinsights.smoketest.schemav2.Data;
+import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionData;
+import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
+import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
+import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import java.util.Comparator;
 import java.util.List;
 import org.junit.Test;

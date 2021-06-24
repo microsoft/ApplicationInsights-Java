@@ -29,12 +29,12 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import com.microsoft.applicationinsights.internal.schemav2.Data;
-import com.microsoft.applicationinsights.internal.schemav2.Envelope;
-import com.microsoft.applicationinsights.internal.schemav2.EventData;
-import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
-import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
-import com.microsoft.applicationinsights.internal.schemav2.RequestData;
+import com.microsoft.applicationinsights.smoketest.schemav2.Data;
+import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.EventData;
+import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionData;
+import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
+import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;

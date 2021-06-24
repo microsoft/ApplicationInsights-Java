@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.telemetry;
+package com.microsoft.applicationinsights.smoketest.telemetry;
 
 /**
  * This class lets its users to define an interval of time which can be defined in terms of days,

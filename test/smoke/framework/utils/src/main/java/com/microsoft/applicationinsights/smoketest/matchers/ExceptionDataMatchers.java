@@ -25,9 +25,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 
-import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
-import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
-import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
+import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionData;
+import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionDetails;
+import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import java.util.List;
 import java.util.Map;
 import org.hamcrest.FeatureMatcher;

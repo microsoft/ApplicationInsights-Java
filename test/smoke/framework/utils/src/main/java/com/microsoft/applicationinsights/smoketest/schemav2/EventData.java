@@ -19,38 +19,48 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.schemav2;
+package com.microsoft.applicationinsights.smoketest.schemav2;
 
-import com.microsoft.applicationinsights.telemetry.Duration;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-/** Data contract class PageViewData. */
-public class PageViewData extends EventData {
-  /** Backing field for property Url. */
-  private String url;
+/** Data contract class EventData. */
+public class EventData extends Domain {
+  /** Backing field for property Name. */
+  private String name;
 
-  /** Backing field for property Duration. */
-  private Duration duration = new Duration(0);
+  /** Backing field for property Properties. */
+  private ConcurrentMap<String, String> properties;
 
-  /** Initializes a new instance of the PageViewData class. */
-  public PageViewData() {}
+  /** Backing field for property Measurements. */
+  private ConcurrentMap<String, Double> measurements;
 
-  /** Gets the Url property. */
-  public String getUrl() {
-    return this.url;
+  /** Initializes a new instance of the EventData class. */
+  public EventData() {}
+
+  /** Gets the Name property. */
+  public String getName() {
+    return this.name;
   }
 
-  /** Sets the Url property. */
-  public void setUrl(String value) {
-    this.url = value;
+  /** Sets the Name property. */
+  public void setName(String value) {
+    this.name = value;
   }
 
-  /** Gets the Duration property. */
-  public Duration getDuration() {
-    return this.duration;
+  /** Gets the Properties property. */
+  public ConcurrentMap<String, String> getProperties() {
+    if (this.properties == null) {
+      this.properties = new ConcurrentHashMap<>();
+    }
+    return this.properties;
   }
 
-  /** Sets the Duration property. */
-  public void setDuration(Duration value) {
-    this.duration = value;
+  /** Gets the Measurements property. */
+  public ConcurrentMap<String, Double> getMeasurements() {
+    if (this.measurements == null) {
+      this.measurements = new ConcurrentHashMap<>();
+    }
+    return this.measurements;
   }
 }

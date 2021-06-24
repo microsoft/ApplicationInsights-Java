@@ -19,9 +19,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.schemav2;
+package com.microsoft.applicationinsights.smoketest.schemav2;
 
-import com.microsoft.applicationinsights.telemetry.Duration;
+import com.microsoft.applicationinsights.smoketest.telemetry.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 

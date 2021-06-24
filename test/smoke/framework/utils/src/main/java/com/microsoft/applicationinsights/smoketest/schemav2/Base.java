@@ -19,23 +19,23 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.schemav2;
+package com.microsoft.applicationinsights.smoketest.schemav2;
 
-/** Data contract class Data. */
-public class Data<T extends Domain> extends Base {
-  /** Backing field for property BaseData. */
-  private T baseData;
+/** Data contract class Base. */
+public class Base {
+  /** Backing field for property BaseType. */
+  private String baseType;
 
-  /** Initializes a new instance of the Data{TDomain} class. */
-  public Data() {}
+  /** Initializes a new instance of the Base class. */
+  public Base() {}
 
-  /** Gets the BaseData property. */
-  public T getBaseData() {
-    return this.baseData;
+  /** Gets the BaseType property. */
+  public String getBaseType() {
+    return this.baseType;
   }
 
-  /** Sets the BaseData property. */
-  public void setBaseData(T value) {
-    this.baseData = value;
+  /** Sets the BaseType property. */
+  public void setBaseType(String value) {
+    this.baseType = value;
   }
 }

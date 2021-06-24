@@ -19,20 +19,23 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.schemav2;
+package com.microsoft.applicationinsights.smoketest.schemav2;
 
-/** Enum DataPointType. */
-public enum DataPointType {
-  Measurement(0),
-  Aggregation(1);
+/** Data contract class Data. */
+public class Data<T extends Domain> extends Base {
+  /** Backing field for property BaseData. */
+  private T baseData;
 
-  private final int id;
+  /** Initializes a new instance of the Data{TDomain} class. */
+  public Data() {}
 
-  public int getValue() {
-    return id;
+  /** Gets the BaseData property. */
+  public T getBaseData() {
+    return this.baseData;
   }
 
-  DataPointType(int id) {
-    this.id = id;
+  /** Sets the BaseData property. */
+  public void setBaseData(T value) {
+    this.baseData = value;
   }
 }

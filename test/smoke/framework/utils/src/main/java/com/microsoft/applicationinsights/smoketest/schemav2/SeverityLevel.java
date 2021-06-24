@@ -19,10 +19,23 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.schemav2;
+package com.microsoft.applicationinsights.smoketest.schemav2;
 
-/** Data contract class Domain. */
-public class Domain {
-  /** Initializes a new instance of the Domain class. */
-  public Domain() {}
+/** Enum SeverityLevel. */
+public enum SeverityLevel {
+  Verbose(0),
+  Information(1),
+  Warning(2),
+  Error(3),
+  Critical(4);
+
+  private final int id;
+
+  public int getValue() {
+    return id;
+  }
+
+  SeverityLevel(int id) {
+    this.id = id;
+  }
 }

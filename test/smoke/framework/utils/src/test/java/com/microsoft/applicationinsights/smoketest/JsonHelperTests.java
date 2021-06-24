@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.microsoft.applicationinsights.telemetry.Duration;
+import com.microsoft.applicationinsights.smoketest.telemetry.Duration;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("SystemOut")

@@ -19,37 +19,51 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.schemav2;
+package com.microsoft.applicationinsights.smoketest.schemav2;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+/** Data contract class StackFrame. */
+@SuppressWarnings("unused")
+public class StackFrame {
+  /** Backing field for property Level. */
+  private int level;
 
-/** Data contract class MetricData. */
-public class MetricData extends Domain {
-  /** Backing field for property Metrics. */
-  private List<DataPoint> metrics;
+  /** Backing field for property Method. */
+  private String method;
 
-  /** Backing field for property Properties. */
-  private ConcurrentMap<String, String> properties;
+  /** Backing field for property Assembly. */
+  private String assembly;
 
-  /** Initializes a new instance of the MetricData class. */
-  public MetricData() {}
+  /** Backing field for property FileName. */
+  private String fileName;
 
-  /** Gets the Metrics property. */
-  public List<DataPoint> getMetrics() {
-    if (this.metrics == null) {
-      this.metrics = new ArrayList<>();
-    }
-    return this.metrics;
+  /** Backing field for property Line. */
+  private int line;
+
+  /** Initializes a new instance of the StackFrame class. */
+  public StackFrame() {}
+
+  /** Sets the Level property. */
+  public void setLevel(int value) {
+    this.level = value;
   }
 
-  /** Gets the Properties property. */
-  public ConcurrentMap<String, String> getProperties() {
-    if (this.properties == null) {
-      this.properties = new ConcurrentHashMap<>();
-    }
-    return this.properties;
+  /** Sets the Method property. */
+  public void setMethod(String value) {
+    this.method = value;
+  }
+
+  /** Sets the Assembly property. */
+  public void setAssembly(String value) {
+    this.assembly = value;
+  }
+
+  /** Sets the FileName property. */
+  public void setFileName(String value) {
+    this.fileName = value;
+  }
+
+  /** Sets the Line property. */
+  public void setLine(int value) {
+    this.line = value;
   }
 }

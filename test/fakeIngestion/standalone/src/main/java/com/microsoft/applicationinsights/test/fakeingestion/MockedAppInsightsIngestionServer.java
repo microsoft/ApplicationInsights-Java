@@ -21,10 +21,10 @@
 
 package com.microsoft.applicationinsights.test.fakeingestion;
 
-import com.microsoft.applicationinsights.internal.schemav2.Data;
-import com.microsoft.applicationinsights.internal.schemav2.Domain;
-import com.microsoft.applicationinsights.internal.schemav2.Envelope;
-import com.microsoft.applicationinsights.internal.schemav2.MessageData;
+import com.microsoft.applicationinsights.smoketest.schemav2.Data;
+import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
+import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

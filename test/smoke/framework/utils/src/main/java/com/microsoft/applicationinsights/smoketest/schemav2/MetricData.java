@@ -19,23 +19,37 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.schemav2;
+package com.microsoft.applicationinsights.smoketest.schemav2;
 
-/** Enum SeverityLevel. */
-public enum SeverityLevel {
-  Verbose(0),
-  Information(1),
-  Warning(2),
-  Error(3),
-  Critical(4);
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-  private final int id;
+/** Data contract class MetricData. */
+public class MetricData extends Domain {
+  /** Backing field for property Metrics. */
+  private List<DataPoint> metrics;
 
-  public int getValue() {
-    return id;
+  /** Backing field for property Properties. */
+  private ConcurrentMap<String, String> properties;
+
+  /** Initializes a new instance of the MetricData class. */
+  public MetricData() {}
+
+  /** Gets the Metrics property. */
+  public List<DataPoint> getMetrics() {
+    if (this.metrics == null) {
+      this.metrics = new ArrayList<>();
+    }
+    return this.metrics;
   }
 
-  SeverityLevel(int id) {
-    this.id = id;
+  /** Gets the Properties property. */
+  public ConcurrentMap<String, String> getProperties() {
+    if (this.properties == null) {
+      this.properties = new ConcurrentHashMap<>();
+    }
+    return this.properties;
   }
 }

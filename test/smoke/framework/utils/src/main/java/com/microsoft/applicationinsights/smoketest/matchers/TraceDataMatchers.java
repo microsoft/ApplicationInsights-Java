@@ -24,8 +24,8 @@ package com.microsoft.applicationinsights.smoketest.matchers;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 
-import com.microsoft.applicationinsights.internal.schemav2.MessageData;
-import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
+import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
+import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import java.util.Map;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;

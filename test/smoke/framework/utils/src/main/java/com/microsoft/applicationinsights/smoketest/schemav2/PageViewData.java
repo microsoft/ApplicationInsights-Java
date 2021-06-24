@@ -19,51 +19,38 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.schemav2;
+package com.microsoft.applicationinsights.smoketest.schemav2;
 
-/** Data contract class StackFrame. */
-@SuppressWarnings("unused")
-public class StackFrame {
-  /** Backing field for property Level. */
-  private int level;
+import com.microsoft.applicationinsights.smoketest.telemetry.Duration;
 
-  /** Backing field for property Method. */
-  private String method;
+/** Data contract class PageViewData. */
+public class PageViewData extends EventData {
+  /** Backing field for property Url. */
+  private String url;
 
-  /** Backing field for property Assembly. */
-  private String assembly;
+  /** Backing field for property Duration. */
+  private Duration duration = new Duration(0);
 
-  /** Backing field for property FileName. */
-  private String fileName;
+  /** Initializes a new instance of the PageViewData class. */
+  public PageViewData() {}
 
-  /** Backing field for property Line. */
-  private int line;
-
-  /** Initializes a new instance of the StackFrame class. */
-  public StackFrame() {}
-
-  /** Sets the Level property. */
-  public void setLevel(int value) {
-    this.level = value;
+  /** Gets the Url property. */
+  public String getUrl() {
+    return this.url;
   }
 
-  /** Sets the Method property. */
-  public void setMethod(String value) {
-    this.method = value;
+  /** Sets the Url property. */
+  public void setUrl(String value) {
+    this.url = value;
   }
 
-  /** Sets the Assembly property. */
-  public void setAssembly(String value) {
-    this.assembly = value;
+  /** Gets the Duration property. */
+  public Duration getDuration() {
+    return this.duration;
   }
 
-  /** Sets the FileName property. */
-  public void setFileName(String value) {
-    this.fileName = value;
-  }
-
-  /** Sets the Line property. */
-  public void setLine(int value) {
-    this.line = value;
+  /** Sets the Duration property. */
+  public void setDuration(Duration value) {
+    this.duration = value;
   }
 }

@@ -19,31 +19,20 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.smoketest;
+package com.microsoft.applicationinsights.smoketest.schemav2;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+/** Enum DataPointType. */
+public enum DataPointType {
+  Measurement(0),
+  Aggregation(1);
 
-import com.microsoft.applicationinsights.smoketest.schemav2.Data;
-import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
-import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
-import java.util.List;
-import org.junit.Test;
+  private final int id;
 
-public class SpringBootAttachInMainTest extends AiSmokeTest {
+  public int getValue() {
+    return id;
+  }
 
-  @Test
-  @TargetUri("/test")
-  public void doMostBasicTest() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-
-    Envelope rdEnvelope = rdList.get(0);
-
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-
-    assertEquals("GET /test", rd.getName());
-    assertEquals("200", rd.getResponseCode());
-    assertTrue(rd.getProperties().isEmpty());
-    assertTrue(rd.getSuccess());
+  DataPointType(int id) {
+    this.id = id;
   }
 }
