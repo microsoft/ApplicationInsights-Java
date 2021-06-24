@@ -33,7 +33,16 @@ enum Feature {
   JAVA_VENDOR_ADOPT_OPENJDK(3),
   JAVA_VENDOR_REDHAT(4),
   JAVA_VENDOR_OTHER(5),
-  AAD(6);
+  AAD(6),
+  Cassandra_OFF(7),
+  JDBC_OFF(8),
+  JMS_OFF(9),
+  KAFKA_OFF(10),
+  LOGGING_OFF(11),
+  MICROMETER_OFF(12),
+  MONGO_OFF(13),
+  REDIS_OFF(14),
+  SPRING_SCHEDULING_OFF(15);
 
   private static final Map<String, Feature> features;
 
@@ -53,6 +62,15 @@ enum Feature {
         "Red Hat, Inc.",
         Feature.JAVA_VENDOR_REDHAT); // https://developers.redhat.com/products/openjdk/download/
     features.put("AAD", Feature.AAD);
+    features.put("CASSANDRA OFF", Feature.Cassandra_OFF);
+    features.put("JDBC OFF", Feature.JDBC_OFF);
+    features.put("JMS OFF", Feature.JMS_OFF);
+    features.put("KAFKA OFF", Feature.KAFKA_OFF);
+    features.put("LOGGING OFF", Feature.LOGGING_OFF);
+    features.put("MICROMETER OFF", Feature.MICROMETER_OFF);
+    features.put("MONGO OFF", Feature.MONGO_OFF);
+    features.put("REDIS OFF", Feature.REDIS_OFF);
+    features.put("SPRING SCHEDULING OFF", Feature.SPRING_SCHEDULING_OFF);
   }
 
   private final int bitmapIndex;
