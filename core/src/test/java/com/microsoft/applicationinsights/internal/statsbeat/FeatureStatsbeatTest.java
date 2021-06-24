@@ -48,7 +48,7 @@ public class FeatureStatsbeatTest {
 
   @Test
   public void testAadEnable() {
-    featureStatsbeat.trackAadEnabled(true);
+    featureStatsbeat.trackAadOn(true);
     Set<Feature> features = new HashSet<>();
     features.add(Feature.fromJavaVendor(javaVendor));
     features.add(Feature.AAD);
@@ -57,7 +57,7 @@ public class FeatureStatsbeatTest {
 
   @Test
   public void testAadDisable() {
-    featureStatsbeat.trackAadEnabled(false);
+    featureStatsbeat.trackAadOn(false);
     Set<Feature> features = new HashSet<>();
     features.add(Feature.fromJavaVendor(javaVendor));
     assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));

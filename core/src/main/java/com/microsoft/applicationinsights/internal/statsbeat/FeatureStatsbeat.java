@@ -54,9 +54,43 @@ class FeatureStatsbeat extends BaseStatsbeat {
     telemetryClient.trackAsync(statsbeatTelemetry);
   }
 
-  void trackAadEnabled(boolean aadEnabled) {
+  void trackAadOn(boolean aadEnabled) {
     if (aadEnabled) {
       featureList.add(Feature.AAD);
+    }
+  }
+
+  void trackInstrumentationOff(boolean cassandraEnabled, boolean jdbcEnabled, boolean jmsEnabled, boolean kafkaEnabled, boolean micrometerEnabled, boolean mongoEnabled, boolean redisEnabled, boolean springSchedulingEnabled) {
+    if (!cassandraEnabled) {
+      featureList.add(Feature.Cassandra_OFF);
+    }
+
+    if (!jdbcEnabled) {
+      featureList.add(Feature.JDBC_OFF);
+    }
+
+    if (!jmsEnabled) {
+      featureList.add(Feature.JMS_OFF);
+    }
+
+    if (!kafkaEnabled) {
+      featureList.add(Feature.KAFKA_OFF);
+    }
+
+    if (!micrometerEnabled) {
+      featureList.add(Feature.MICROMETER_OFF);
+    }
+
+    if (!mongoEnabled) {
+      featureList.add(Feature.MONGO_OFF);
+    }
+
+    if (!redisEnabled) {
+      featureList.add(Feature.REDIS_OFF);
+    }
+
+    if (!springSchedulingEnabled) {
+      featureList.add(Feature.SPRING_SCHEDULING_OFF);
     }
   }
 }

@@ -233,7 +233,15 @@ public class AiComponentInstaller implements AgentListener {
             telemetryClient,
             config.internal.statsbeat.intervalSeconds,
             config.internal.statsbeat.featureIntervalSeconds,
-            config.preview.authentication.enabled);
+            config.preview.authentication.enabled,
+            config.instrumentation.cassandra.enabled,
+            config.instrumentation.jdbc.enabled,
+            config.instrumentation.jms.enabled,
+            config.instrumentation.kafka.enabled,
+            config.instrumentation.micrometer.enabled,
+            config.instrumentation.mongo.enabled,
+            config.instrumentation.redis.enabled,
+            config.instrumentation.springScheduling.enabled);
   }
 
   private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(
