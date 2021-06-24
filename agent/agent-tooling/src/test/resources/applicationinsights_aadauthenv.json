@@ -1,10 +1,10 @@
 {
   "connectionString": "InstrumentationKey=00000000-0000-0000-0000-000000000000",
-  "preview" : {
-    "authentication" : {
+  "preview": {
+    "authentication": {
       "enabled": false,
       "type": "CLIENTSECRET",
-      "clientId" : "123xyz",
+      "clientId": "123xyz",
       "tenantId": "tenant123",
       "clientSecret": "clientsecret123",
       "authorityHost": "https://test.com/microsoft/"

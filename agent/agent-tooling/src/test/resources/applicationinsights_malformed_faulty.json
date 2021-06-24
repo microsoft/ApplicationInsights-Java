@@ -44,7 +44,8 @@
     "intervalSeconds": 60
   },
   "httpProxy": {
-    "host": "myproxy"..,
+    "host": "myproxy"
+    ..,
     "port": 8080
   },
   "selfDiagnostics": {
