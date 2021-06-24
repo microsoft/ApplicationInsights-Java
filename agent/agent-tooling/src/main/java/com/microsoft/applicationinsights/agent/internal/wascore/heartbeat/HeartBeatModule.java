@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.agent.internal.wascore.heartbeat;
 
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryModule;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * ApplicationInsights SDK boots up. It is used to transmit diagnostic heartbeats to Application
  * Insights backend.
  */
-public class HeartBeatModule implements TelemetryModule {
+public class HeartBeatModule {
 
   private static final Logger logger = LoggerFactory.getLogger(HeartBeatModule.class);
 
@@ -96,7 +95,6 @@ public class HeartBeatModule implements TelemetryModule {
     return this.heartBeatProviderInterface.isHeartBeatEnabled();
   }
 
-  @Override
   public void initialize(TelemetryClient telemetryClient) {
     if (!isInitialized && isHeartBeatEnabled()) {
       synchronized (lock) {

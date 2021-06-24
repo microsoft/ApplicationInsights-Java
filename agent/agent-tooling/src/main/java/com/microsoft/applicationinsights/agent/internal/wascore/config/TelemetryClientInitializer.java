@@ -28,10 +28,15 @@ import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.wascore.heartbeat.HeartBeatModule;
 import com.microsoft.applicationinsights.agent.internal.wascore.jmx.JmxAttributeData;
+import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.FreeMemoryPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.JmxMetricPerformanceCounter;
-import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.JvmPerformanceCountersModule;
+import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.OshiPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.PerformanceCounterContainer;
-import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.ProcessPerformanceCountersModule;
+import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.ProcessCpuPerformanceCounter;
+import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.ProcessMemoryPerformanceCounter;
+import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.jvm.DeadLockDetectorPerformanceCounter;
+import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.jvm.GcPerformanceCounter;
+import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.wascore.quickpulse.QuickPulse;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,9 +67,16 @@ public enum TelemetryClientInitializer {
 
     loadCustomJmxPerfCounters(configuration.jmxMetrics);
 
-    // FIXME (trask) double check that these are needed (and not duplicates)
-    new ProcessPerformanceCountersModule().initialize(telemetryClient);
-    new JvmPerformanceCountersModule().initialize(telemetryClient);
+    PerformanceCounterContainer.INSTANCE.register(new ProcessCpuPerformanceCounter());
+    PerformanceCounterContainer.INSTANCE.register(new ProcessMemoryPerformanceCounter());
+    PerformanceCounterContainer.INSTANCE.register(new FreeMemoryPerformanceCounter());
+
+    // system cpu and process disk i/o
+    PerformanceCounterContainer.INSTANCE.register(new OshiPerformanceCounter());
+
+    PerformanceCounterContainer.INSTANCE.register(new DeadLockDetectorPerformanceCounter());
+    PerformanceCounterContainer.INSTANCE.register(new JvmHeapMemoryUsedPerformanceCounter());
+    PerformanceCounterContainer.INSTANCE.register(new GcPerformanceCounter());
 
     setQuickPulse(configuration, telemetryClient);
   }

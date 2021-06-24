@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** The class supplies the memory usage in Mega Bytes of the Java process the SDK is in. */
-final class ProcessMemoryPerformanceCounter extends AbstractPerformanceCounter {
+public class ProcessMemoryPerformanceCounter extends AbstractPerformanceCounter {
 
   private static final Logger logger =
       LoggerFactory.getLogger(ProcessMemoryPerformanceCounter.class);
