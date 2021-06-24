@@ -37,7 +37,8 @@ public class Envelope {
   private double sampleRate = 100.0;
 
   /** Backing field for property IKey. */
-  private String ikey;
+  @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
+  private String iKey;
 
   /** Backing field for property Tags. */
   private ConcurrentMap<String, String> tags;
@@ -67,13 +68,13 @@ public class Envelope {
   // used by smoke tests
   @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
   public String getIKey() {
-    return this.ikey;
+    return this.iKey;
   }
 
   /** Sets the IKey property. */
   @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
   public void setIKey(String value) {
-    this.ikey = value;
+    this.iKey = value;
   }
 
   /** Gets the Tags property. */
