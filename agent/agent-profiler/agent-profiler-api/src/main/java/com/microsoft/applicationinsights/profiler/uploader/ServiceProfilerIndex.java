@@ -19,13 +19,13 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.profileUploader;
+package com.microsoft.applicationinsights.profiler.uploader;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-/** Metadata used by service profiler */
+/** Metadata used by service profiler. */
 public class ServiceProfilerIndex {
   public static final String SERVICE_PROFILER_SOURCE_PROPERTY_NAME = "Source";
   public static final String SERVICE_PROFILER_FILEID_PROPERTY_NAME = "FileId";

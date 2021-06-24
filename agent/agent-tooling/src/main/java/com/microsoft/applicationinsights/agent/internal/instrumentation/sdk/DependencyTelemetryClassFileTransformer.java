@@ -184,7 +184,7 @@ public class DependencyTelemetryClassFileTransformer implements ClassFileTransfo
   //   compile group: 'org.ow2.asm', name: 'asm-util', version: '9.1'
   //
   public static void main(String[] args) {
-    // ASMifier.main(new String[]{RDT.class.getName()});
+    // ASMifier.main(new String[]{Rdt.class.getName()});
   }
 
   // DO NOT REMOVE

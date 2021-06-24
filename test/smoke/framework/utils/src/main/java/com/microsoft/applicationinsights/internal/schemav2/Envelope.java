@@ -37,7 +37,7 @@ public class Envelope {
   private double sampleRate = 100.0;
 
   /** Backing field for property IKey. */
-  private String iKey;
+  private String ikey;
 
   /** Backing field for property Tags. */
   private ConcurrentMap<String, String> tags;
@@ -66,12 +66,12 @@ public class Envelope {
   /** Gets the IKey property. */
   // used by smoke tests
   public String getIKey() {
-    return this.iKey;
+    return this.ikey;
   }
 
   /** Sets the IKey property. */
   public void setIKey(String value) {
-    this.iKey = value;
+    this.ikey = value;
   }
 
   /** Gets the Tags property. */

@@ -21,12 +21,12 @@
 
 package com.microsoft.applicationinsights.serviceprofilerapi;
 
-import com.microsoft.applicationinsights.profileUploader.UploadCompleteHandler;
 import com.microsoft.applicationinsights.profiler.ProfileHandler;
 import com.microsoft.applicationinsights.profiler.Profiler;
 import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
 import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
+import com.microsoft.applicationinsights.profiler.uploader.UploadCompleteHandler;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerConfigMonitorService;
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrUploadService;

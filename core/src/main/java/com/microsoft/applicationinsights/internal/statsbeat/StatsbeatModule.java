@@ -96,7 +96,7 @@ public class StatsbeatModule {
     return networkStatsbeat;
   }
 
-  /** Runnable which is responsible for calling the send method to transmit Statsbeat telemetry */
+  /** Runnable which is responsible for calling the send method to transmit Statsbeat telemetry. */
   private static class StatsbeatSender implements Runnable {
 
     private final BaseStatsbeat statsbeat;

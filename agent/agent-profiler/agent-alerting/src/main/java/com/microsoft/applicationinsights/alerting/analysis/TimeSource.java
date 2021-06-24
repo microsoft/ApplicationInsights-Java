@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.alerting.analysis;
 
 import java.time.ZonedDateTime;
 
-/** Source of time that may be overridden for tests */
+/** Source of time that may be overridden for tests. */
 public abstract class TimeSource {
   public abstract ZonedDateTime getNow();
 

@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.profiler;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import java.io.File;
 
-/** Handler that can process a generated profile file */
+/** Handler that can process a generated profile file. */
 public interface ProfileHandler {
   void receive(AlertBreach alertBreach, long toEpochMilli, File file);
 }

@@ -37,11 +37,11 @@ import java.util.List;
 import org.junit.Test;
 
 @UseAgent("logging")
-public class TraceLog4j1_2Test extends AiSmokeTest {
+public class TraceLog4j12Test extends AiSmokeTest {
 
   @Test
-  @TargetUri("/traceLog4j1_2")
-  public void testTraceLog4j1_2() throws Exception {
+  @TargetUri("/traceLog4j12")
+  public void testTraceLog4j12() throws Exception {
     List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
     List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(3);
 
@@ -81,9 +81,9 @@ public class TraceLog4j1_2Test extends AiSmokeTest {
     assertEquals("smoketestapp", md3.getProperties().get("LoggerName"));
     assertEquals(3, md2.getProperties().size());
 
-    assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /TraceLog4j1_2/traceLog4j1_2");
-    assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /TraceLog4j1_2/traceLog4j1_2");
-    assertParentChild(rd, rdEnvelope, mdEnvelope3, "GET /TraceLog4j1_2/traceLog4j1_2");
+    assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /TraceLog4j1_2/traceLog4j12");
+    assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /TraceLog4j1_2/traceLog4j12");
+    assertParentChild(rd, rdEnvelope, mdEnvelope3, "GET /TraceLog4j1_2/traceLog4j12");
   }
 
   @Test

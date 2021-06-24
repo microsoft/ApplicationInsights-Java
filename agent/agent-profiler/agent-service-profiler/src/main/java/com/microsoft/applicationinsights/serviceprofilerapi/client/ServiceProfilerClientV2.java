@@ -28,7 +28,7 @@ import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.UUID;
 
-/** Client that can interact with the Service Profiler endpoint */
+/** Client that can interact with the Service Profiler endpoint. */
 public interface ServiceProfilerClientV2 {
   BlobAccessPass getUploadAccess(UUID profileId) throws URISyntaxException, IOException;
 

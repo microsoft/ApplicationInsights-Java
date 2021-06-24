@@ -22,11 +22,11 @@
 package com.microsoft.applicationinsights.serviceprofilerapi;
 
 import com.azure.core.http.HttpPipeline;
-import com.microsoft.applicationinsights.profileUploader.UploadCompleteHandler;
 import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
 import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
+import com.microsoft.applicationinsights.profiler.uploader.UploadCompleteHandler;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFrontendClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler;

@@ -166,9 +166,7 @@ public class TelemetryUtil {
     return exceptionDetails;
   }
 
-  /***
-   * @return the stack frame length for only the strings in the stack frame.
-   */
+  /** Returns the stack frame length for only the strings in the stack frame. */
   // this is the same logic used to limit length on the Breeze side
   private static int getStackFrameLength(StackFrame stackFrame) {
     return (stackFrame.getMethod() == null ? 0 : stackFrame.getMethod().length())

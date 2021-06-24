@@ -20,6 +20,7 @@
  */
 
 package com.microsoft.applicationinsights.internal.schemav2;
+
 /** Enum SeverityLevel. */
 public enum SeverityLevel {
   Verbose(0),

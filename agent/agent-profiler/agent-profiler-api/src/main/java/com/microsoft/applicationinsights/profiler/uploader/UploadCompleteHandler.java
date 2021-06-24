@@ -19,17 +19,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.profileUploader;
+package com.microsoft.applicationinsights.profiler.uploader;
 
-/** Represents the metadata produced as a result of having uploaded a profile */
-public class UploadResult {
-  private final ServiceProfilerIndex serviceProfilerIndex;
-
-  public UploadResult(ServiceProfilerIndex serviceProfilerIndex) {
-    this.serviceProfilerIndex = serviceProfilerIndex;
-  }
-
-  public ServiceProfilerIndex getServiceProfilerIndex() {
-    return serviceProfilerIndex;
-  }
+public interface UploadCompleteHandler {
+  void notify(UploadResult done);
 }

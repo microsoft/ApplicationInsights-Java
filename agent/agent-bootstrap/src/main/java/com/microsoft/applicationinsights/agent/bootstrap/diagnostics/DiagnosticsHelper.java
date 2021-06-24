@@ -27,7 +27,7 @@ import java.nio.file.Path;
 public class DiagnosticsHelper {
   private DiagnosticsHelper() {}
 
-  /** Default: "" (meaning diagnostics file output is disabled) */
+  // Default is "" (meaning diagnostics file output is disabled)
   public static final String APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY =
       "APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY";
 

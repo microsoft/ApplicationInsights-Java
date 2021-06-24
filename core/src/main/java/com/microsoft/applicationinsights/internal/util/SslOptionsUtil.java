@@ -30,11 +30,11 @@ import javax.net.ssl.SSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SSLOptionsUtil {
+public class SslOptionsUtil {
 
-  private static final Logger logger = LoggerFactory.getLogger(SSLOptionsUtil.class);
+  private static final Logger logger = LoggerFactory.getLogger(SslOptionsUtil.class);
 
-  private SSLOptionsUtil() {}
+  private SslOptionsUtil() {}
 
   public static final String APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY =
       "applicationinsights.ssl.protocols";

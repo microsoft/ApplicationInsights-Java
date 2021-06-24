@@ -116,7 +116,6 @@ public class StatusFile {
     thread.setDaemon(true);
     return thread;
   }
-  ;
 
   // visible for testing
   static String initLogDir() {
@@ -307,9 +306,9 @@ public class StatusFile {
       if (pid != null) {
         uniqueId = pid.toString();
       } else {
-        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-        if (runtimeMXBean != null) {
-          uniqueId = String.valueOf(Math.abs(runtimeMXBean.getStartTime()));
+        RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
+        if (runtimeMxBean != null) {
+          uniqueId = String.valueOf(Math.abs(runtimeMxBean.getStartTime()));
         } else {
           uniqueId = UUID.randomUUID().toString().replace("-", "");
         }

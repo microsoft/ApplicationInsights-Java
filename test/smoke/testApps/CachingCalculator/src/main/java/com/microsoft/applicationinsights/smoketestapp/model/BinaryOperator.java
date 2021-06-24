@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.smoketestapp.model;
 
 public enum BinaryOperator {
   ADDITION("plus", "+"),
-  SUBTRACTION("minus", "\u2212");
+  SUBTRACTION("minus", "-");
 
   private final String verb;
   private final String symbol;
@@ -48,8 +48,7 @@ public enum BinaryOperator {
       case SUBTRACTION:
         return leftOperand - rightOperand;
       default:
-        throw new UnsupportedOperationException(
-            this.toString() + " compute is not yet implemented");
+        throw new UnsupportedOperationException(this + " compute is not yet implemented");
     }
   }
 

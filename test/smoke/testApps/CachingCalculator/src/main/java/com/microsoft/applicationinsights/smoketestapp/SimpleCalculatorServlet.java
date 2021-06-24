@@ -45,13 +45,16 @@ public class SimpleCalculatorServlet extends HttpServlet {
   public SimpleCalculatorServlet() {
     try {
       String redisHostname = System.getenv("REDIS");
-      if (redisHostname != null) redis = new Jedis(redisHostname, 6379);
+      if (redisHostname != null) {
+        redis = new Jedis(redisHostname, 6379);
+      }
     } catch (Exception e) {
       System.err.println("Error with redis in servlet");
       e.printStackTrace();
     }
   }
 
+  @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
       throws IOException {
     BinaryCalculation bc;
@@ -76,10 +79,6 @@ public class SimpleCalculatorServlet extends HttpServlet {
     new TelemetryClient().trackMetric("TimeToRespond", 111222333);
   }
 
-  /**
-   * @param parameterMap
-   * @return null if parameterMap is empty
-   */
   private BinaryCalculation readParameters(Map<String, String[]> parameterMap)
       throws CalculatorParameterException {
     if (parameterMap == null) {

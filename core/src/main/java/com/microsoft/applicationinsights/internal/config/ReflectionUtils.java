@@ -33,7 +33,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Utililty methods for dealing with reflection */
+/** Utililty methods for dealing with reflection. */
 public final class ReflectionUtils {
 
   private static final Logger logger = LoggerFactory.getLogger(ReflectionUtils.class);

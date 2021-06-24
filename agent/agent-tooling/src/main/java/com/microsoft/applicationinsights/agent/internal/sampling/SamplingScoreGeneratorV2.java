@@ -51,7 +51,7 @@ public class SamplingScoreGeneratorV2 {
     return samplingScore * 100.0; // always < 100.0
   }
 
-  /** @return [0, Integer.MAX_VALUE) */
+  /** Returns value in [0, Integer.MAX_VALUE). */
   static int getSamplingHashCode(String operationId) {
     if (StringUtils.isEmpty(operationId)) {
       return 0;

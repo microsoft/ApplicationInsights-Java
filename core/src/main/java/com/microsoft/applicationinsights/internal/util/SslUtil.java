@@ -25,19 +25,19 @@ import com.microsoft.applicationinsights.exceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.Defaults;
 import java.io.File;
 
-public class SSLUtil {
+public class SslUtil {
 
-  public static FriendlyException newSSLFriendlyException(String url) {
+  public static FriendlyException newSslFriendlyException(String url) {
     return new FriendlyException(
-        getSSLFriendlyExceptionBanner(url),
-        getSSLFriendlyExceptionAction(url),
-        getSSLFriendlyExceptionMessage(),
-        getSSLFriendlyExceptionNote());
+        getSslFriendlyExceptionBanner(url),
+        getSslFriendlyExceptionAction(url),
+        getSslFriendlyExceptionMessage(),
+        getSslFriendlyExceptionNote());
   }
 
   private static String getJavaCacertsPath() {
-    String JAVA_HOME = System.getProperty("java.home");
-    return new File(JAVA_HOME, "lib/security/cacerts").getPath();
+    String javaHome = System.getProperty("java.home");
+    return new File(javaHome, "lib/security/cacerts").getPath();
   }
 
   private static String getCustomJavaKeystorePath() {
@@ -48,18 +48,18 @@ public class SSLUtil {
     return null;
   }
 
-  private static String getSSLFriendlyExceptionBanner(String url) {
+  private static String getSslFriendlyExceptionBanner(String url) {
     if (url.equals(Defaults.LIVE_ENDPOINT)) {
       return "ApplicationInsights Java Agent failed to connect to Live metric end point.";
     }
     return "ApplicationInsights Java Agent failed to send telemetry data.";
   }
 
-  private static String getSSLFriendlyExceptionMessage() {
+  private static String getSslFriendlyExceptionMessage() {
     return "Unable to find valid certification path to requested target.";
   }
 
-  private static String getSSLFriendlyExceptionAction(String url) {
+  private static String getSslFriendlyExceptionAction(String url) {
     String customJavaKeyStorePath = getCustomJavaKeystorePath();
     if (customJavaKeyStorePath != null) {
       return "Please import the SSL certificate from "
@@ -77,9 +77,9 @@ public class SSLUtil {
         + "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450";
   }
 
-  private static String getSSLFriendlyExceptionNote() {
+  private static String getSslFriendlyExceptionNote() {
     return "This message is only logged the first time it occurs after startup.";
   }
 
-  private SSLUtil() {}
+  private SslUtil() {}
 }
