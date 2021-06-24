@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.profiler;
 
-/** A service that is able to apply profiler configuration parameters */
+/** A service that is able to apply profiler configuration parameters. */
 public interface ProfilerConfigurationHandler {
   void updateConfiguration(ProfilerConfiguration newConfig);
 }

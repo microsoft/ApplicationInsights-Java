@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
  *
  * <h3>Usage example</h3>
  *
- * Here is a class that uses PeriodicTaskManager to execute {@link PeriodicRunnableTask}
+ * <p>Here is a class that uses PeriodicTaskManager to execute {@link PeriodicRunnableTask}
  *
  * <pre>{@code
  * import com.microsoft.applicationinsights.internal.util.PeriodicTaskPool;
@@ -70,7 +70,7 @@ public class PeriodicTaskPool {
   /** A Map which stores the currently active PeriodicTasks and it's associate future. */
   private final Map<PeriodicRunnableTask, ScheduledFuture<?>> periodicTaskMap;
 
-  /** The executor service which is responsible for running the tasks */
+  /** The executor service which is responsible for running the tasks. */
   private final ScheduledExecutorService periodicTaskService;
 
   public PeriodicTaskPool(int poolSize, String poolName) {
@@ -87,7 +87,7 @@ public class PeriodicTaskPool {
   }
 
   /**
-   * Executes a {@link PeriodicRunnableTask}
+   * Executes a {@link PeriodicRunnableTask}.
    *
    * @param task PeriodicRunnableTask
    * @return ScheduledFuture associated with the scheduled task.
@@ -153,7 +153,7 @@ public class PeriodicTaskPool {
 
   /**
    * A Class that holds the instance of {@link Runnable} command along with it's unique taskId,
-   * initial delay, repetition period and TimeUnit of repetition period
+   * initial delay, repetition period and TimeUnit of repetition period.
    */
   public static final class PeriodicRunnableTask {
     private final Runnable command;
@@ -173,7 +173,7 @@ public class PeriodicTaskPool {
     }
 
     /**
-     * Creates a PeriodicRunnableTask
+     * Creates a PeriodicRunnableTask.
      *
      * @param command The Runnable to execute
      * @param initialDelay initial delay before running task for the first time.
@@ -276,7 +276,7 @@ public class PeriodicTaskPool {
     }
   }
 
-  /* Visible for Testing */
+  // visible for testing
   ScheduledFuture<?> getTask(PeriodicRunnableTask task) {
     return periodicTaskMap.get(task);
   }

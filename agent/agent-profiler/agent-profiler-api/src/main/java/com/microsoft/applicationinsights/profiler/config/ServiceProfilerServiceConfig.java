@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.profiler.config;
 
 import java.net.URL;
 
-/** Configuration of the service profiler subsystem */
+/** Configuration of the service profiler subsystem. */
 public class ServiceProfilerServiceConfig {
 
   public static final int DEFAULT_CONFIG_POLL_PERIOD_IN_MS = 60000;

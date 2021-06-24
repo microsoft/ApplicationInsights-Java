@@ -21,7 +21,7 @@
 
 package com.microsoft.gcmonitor.collectors;
 
-import com.microsoft.gcmonitor.GCEventConsumer;
+import com.microsoft.gcmonitor.GcEventConsumer;
 import com.microsoft.gcmonitor.MemoryManagement;
 import com.microsoft.gcmonitor.UnableToMonitorMemoryException;
 import com.microsoft.gcmonitor.garbagecollectors.GarbageCollector;
@@ -38,7 +38,7 @@ import javax.management.Notification;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
 
-/** Implementation of a GarbageCollectorStats that provides access to the stats via a MxBean */
+/** Implementation of a GarbageCollectorStats that provides access to the stats via a MxBean. */
 public class JmxGarbageCollectorStats implements GarbageCollectorStats {
 
   private final List<MemoryPool> managedPools;
@@ -47,7 +47,7 @@ public class JmxGarbageCollectorStats implements GarbageCollectorStats {
 
   private final GarbageCollectorMXBean mxbean;
   private final ObjectName name;
-  private final GCEventConsumer observer;
+  private final GcEventConsumer observer;
   private final MemoryManagement memoryManagement;
   private final GarbageCollector garbageCollector;
 
@@ -55,7 +55,7 @@ public class JmxGarbageCollectorStats implements GarbageCollectorStats {
       MemoryManagement memoryManagement,
       MBeanServerConnection connection,
       ObjectName name,
-      GCEventConsumer observer)
+      GcEventConsumer observer)
       throws UnableToMonitorMemoryException {
     try {
       mxbean = JMX.newMXBeanProxy(connection, name, GarbageCollectorMXBean.class);
@@ -104,8 +104,8 @@ public class JmxGarbageCollectorStats implements GarbageCollectorStats {
           countCounter.newValue(mxbean.getCollectionCount());
           timeCounter.newValue(mxbean.getCollectionTime());
 
-          GCCollectionSample cs =
-              new GCCollectionSample(
+          GcCollectionSample cs =
+              new GcCollectionSample(
                   this.garbageCollector,
                   (CompositeData) data.get("gcInfo"),
                   (String) data.get("gcCause"),

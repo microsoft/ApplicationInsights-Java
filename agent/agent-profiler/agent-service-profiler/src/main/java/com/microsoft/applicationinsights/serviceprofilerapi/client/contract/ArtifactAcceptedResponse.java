@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.serviceprofilerapi.client.contract;
 
 import com.squareup.moshi.Json;
 
-/** Result of uploading an artifact to service profiler */
+/** Result of uploading an artifact to service profiler. */
 public class ArtifactAcceptedResponse {
 
   @Json(name = "acceptedTime")

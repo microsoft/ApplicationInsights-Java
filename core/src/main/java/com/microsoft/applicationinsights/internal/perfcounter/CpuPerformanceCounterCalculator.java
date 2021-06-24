@@ -42,16 +42,16 @@ public final class CpuPerformanceCounterCalculator {
   private ObjectName osBean;
 
   public CpuPerformanceCounterCalculator() {
-    OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
-    numberOfCpus = operatingSystemMXBean.getAvailableProcessors();
+    OperatingSystemMXBean operatingSystemMxBean = ManagementFactory.getOperatingSystemMXBean();
+    numberOfCpus = operatingSystemMxBean.getAvailableProcessors();
   }
 
   public Double getProcessCpuUsage() {
     Double processCpuUsage = null;
     try {
-      RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+      RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
 
-      long upTime = runtimeMXBean.getUptime();
+      long upTime = runtimeMxBean.getUptime();
       long processCpuTime = getProcessCpuTime();
 
       if (prevUpTime > 0L && upTime > prevUpTime) {

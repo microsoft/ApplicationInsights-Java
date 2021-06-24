@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.profiler;
 
-/** Definition of a service that gives access to a profiler */
+/** Definition of a service that gives access to a profiler. */
 public interface ProfilerService {
   Profiler getProfiler();
 }

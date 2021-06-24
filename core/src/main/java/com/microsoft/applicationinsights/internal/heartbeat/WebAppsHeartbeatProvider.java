@@ -41,13 +41,13 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
 
   private static final Logger logger = LoggerFactory.getLogger(WebAppsHeartbeatProvider.class);
 
-  /** Name of the provider */
+  /** Name of the provider. */
   private static final String name = "webapps";
 
   /** Collection holding default properties for this default provider. */
   private final Set<String> defaultFields;
 
-  /** Map for storing environment variables */
+  /** Map for storing environment variables. */
   private Map<String, String> environmentMap;
 
   private static final String WEBSITE_SITE_NAME = "appSrv_SiteName";
@@ -56,7 +56,7 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
 
   private static final String WEBSITE_HOME_STAMPNAME = "appSrv_wsStamp";
 
-  /** Constructor that initializes fields and load environment variables */
+  /** Constructor that initializes fields and load environment variables. */
   public WebAppsHeartbeatProvider() {
     defaultFields = new HashSet<>();
     environmentMap = System.getenv();
@@ -123,36 +123,24 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
     };
   }
 
-  /** Populates the default Fields with the properties */
+  /** Populates the default Fields with the properties. */
   private static void initializeDefaultFields(Set<String> defaultFields) {
     defaultFields.add(WEBSITE_SITE_NAME);
     defaultFields.add(WEBSITE_HOSTNAME);
     defaultFields.add(WEBSITE_HOME_STAMPNAME);
   }
 
-  /**
-   * Returns the name of the website by reading environment variable
-   *
-   * @return website name
-   */
+  /** Returns the name of the website by reading environment variable. */
   private String getWebsiteSiteName() {
     return environmentMap.get("WEBSITE_SITE_NAME");
   }
 
-  /**
-   * Returns the website host name by reading environment variable
-   *
-   * @return WebSite Host Name
-   */
+  /** Returns the website host name by reading environment variable. */
   private String getWebsiteHostName() {
     return environmentMap.get("WEBSITE_HOSTNAME");
   }
 
-  /**
-   * Returns the website home stamp name by reading environment variable
-   *
-   * @return website stamp host name
-   */
+  /** Returns the website home stamp name by reading environment variable. */
   private String getWebsiteHomeStampName() {
     return environmentMap.get("WEBSITE_HOME_STAMPNAME");
   }

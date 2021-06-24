@@ -32,18 +32,18 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
-import com.microsoft.applicationinsights.internal.schemav2.Base;
-import com.microsoft.applicationinsights.internal.schemav2.Data;
-import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
-import com.microsoft.applicationinsights.internal.schemav2.Domain;
-import com.microsoft.applicationinsights.internal.schemav2.EventData;
-import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
-import com.microsoft.applicationinsights.internal.schemav2.MessageData;
-import com.microsoft.applicationinsights.internal.schemav2.MetricData;
-import com.microsoft.applicationinsights.internal.schemav2.PageViewData;
-import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
-import com.microsoft.applicationinsights.internal.schemav2.RequestData;
-import com.microsoft.applicationinsights.telemetry.Duration;
+import com.microsoft.applicationinsights.smoketest.schemav2.Base;
+import com.microsoft.applicationinsights.smoketest.schemav2.Data;
+import com.microsoft.applicationinsights.smoketest.schemav2.DataPointType;
+import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
+import com.microsoft.applicationinsights.smoketest.schemav2.EventData;
+import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionData;
+import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
+import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
+import com.microsoft.applicationinsights.smoketest.schemav2.PageViewData;
+import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
+import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
+import com.microsoft.applicationinsights.smoketest.telemetry.Duration;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -138,9 +138,9 @@ public class JsonHelper {
     public DataPointType deserialize(
         JsonElement json, Type typeOfT, JsonDeserializationContext context) {
       String id = json.getAsString();
+      // FIXME (trask) breeze question: this used to be mapped from int (0/1), is it really
+      //  correct to map to string now?
       switch (id) {
-          // FIXME (trask) breeze question: this used to be mapped from int (0/1), is it really
-          // correct to map to string now?
         case "Measurement":
           return DataPointType.Measurement;
         case "Aggregation":

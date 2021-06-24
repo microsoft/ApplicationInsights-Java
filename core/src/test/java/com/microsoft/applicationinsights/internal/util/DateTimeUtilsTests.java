@@ -46,7 +46,7 @@ class DateTimeUtilsTests {
   }
 
   @Test
-  void testParseRoundTripDateStringFullUTC() throws ParseException {
+  void testParseRoundTripDateStringFullUtc() throws ParseException {
     final String dateStr = "2015-05-26T07:00:14.123145152Z";
     String reversedDateStr = parseRoundTripDateString(dateStr);
 

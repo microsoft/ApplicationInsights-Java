@@ -30,7 +30,7 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorIncludeExclude;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorType;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ToAttributeConfig;
-import com.microsoft.applicationinsights.customExceptions.FriendlyException;
+import com.microsoft.applicationinsights.exceptions.FriendlyException;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -85,7 +85,7 @@ class ExporterWithSpanProcessorTest {
   }
 
   @Test
-  void SimpleRenameSpanTest() {
+  void simpleRenameSpanTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
@@ -117,7 +117,7 @@ class ExporterWithSpanProcessorTest {
   }
 
   @Test
-  void SimpleRenameSpanWithSeparatorTest() {
+  void simpleRenameSpanWithSeparatorTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
@@ -150,7 +150,7 @@ class ExporterWithSpanProcessorTest {
   }
 
   @Test
-  void SimpleRenameSpanWithMissingKeysTest() {
+  void simpleRenameSpanWithMissingKeysTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
@@ -182,7 +182,7 @@ class ExporterWithSpanProcessorTest {
   }
 
   @Test
-  void RenameSpanWithIncludeTest() {
+  void renameSpanWithIncludeTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
@@ -254,7 +254,7 @@ class ExporterWithSpanProcessorTest {
   }
 
   @Test
-  void InvalidRegexInRulesTest() {
+  void invalidRegexInRulesTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
@@ -270,7 +270,7 @@ class ExporterWithSpanProcessorTest {
   }
 
   @Test
-  void SimpleToAttributesTest() {
+  void simpleToAttributesTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
@@ -313,7 +313,7 @@ class ExporterWithSpanProcessorTest {
   }
 
   @Test
-  void MultiRuleToAttributesTest() {
+  void multiRuleToAttributesTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
@@ -346,12 +346,12 @@ class ExporterWithSpanProcessorTest {
             .setAttribute("password", "234")
             .startSpan();
 
-    SpanData spanAData = ((ReadableSpan) spanA).toSpanData();
-    SpanData spanBData = ((ReadableSpan) spanB).toSpanData();
+    SpanData spanDataA = ((ReadableSpan) spanA).toSpanData();
+    SpanData spanDataB = ((ReadableSpan) spanB).toSpanData();
 
     List<SpanData> spans = new ArrayList<>();
-    spans.add(spanAData);
-    spans.add(spanBData);
+    spans.add(spanDataA);
+    spans.add(spanDataB);
     exampleExporter.export(spans);
 
     // verify that resulting spans are filtered in the way we want
@@ -388,7 +388,7 @@ class ExporterWithSpanProcessorTest {
   }
 
   @Test
-  void ExtractAttributesWithIncludeExcludeTest() {
+  void extractAttributesWithIncludeExcludeTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
@@ -476,7 +476,7 @@ class ExporterWithSpanProcessorTest {
   }
 
   @Test
-  void SimpleRenameSpanTestWithLogProcessor() {
+  void simpleRenameSpanTestWithLogProcessor() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;

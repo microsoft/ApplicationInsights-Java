@@ -51,8 +51,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Manages connecting JFR interaction: - Instantiates FlightRecorder subsystem - Creates profiles on
- * demand
+ * Manages connecting JFR interaction.
+ *
+ * <ul>
+ *   <li>Instantiates FlightRecorder subsystem
+ *   <li>Creates profiles on demand
+ * </ul>
  */
 public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
   private static final Logger LOGGER = LoggerFactory.getLogger(JfrProfiler.class);
@@ -147,8 +151,8 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
 
     try {
       // connect to mbeans
-      MBeanServerConnection mBeanServer = ManagementFactory.getPlatformMBeanServer();
-      flightRecorderConnection = FlightRecorderConnection.connect(mBeanServer);
+      MBeanServerConnection mbeanServer = ManagementFactory.getPlatformMBeanServer();
+      flightRecorderConnection = FlightRecorderConnection.connect(mbeanServer);
     } catch (Exception e) {
       LOGGER.error("Failed to connect to mbean", e);
       return false;
@@ -157,7 +161,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
     return true;
   }
 
-  /** Apply new configuration settings obtained from Service Profiler */
+  /** Apply new configuration settings obtained from Service Profiler. */
   @Override
   public void updateConfiguration(ProfilerConfiguration newConfig) {
     LOGGER.debug("Received config {}", newConfig.getLastModified());
@@ -196,7 +200,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
     }
   }
 
-  /** Perform a profile and notify the handler */
+  /** Perform a profile and notify the handler. */
   protected void executeProfile(
       AlertMetricType alertType, Duration duration, Consumer<Recording> handler) {
 
@@ -231,7 +235,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
     }
   }
 
-  /** When a profile has been created, upload it to service profiler */
+  /** When a profile has been created, upload it to service profiler. */
   protected Consumer<Recording> uploadNewRecording(
       AlertBreach alertBreach, Instant recordingStart) {
     return recording -> {
@@ -283,7 +287,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
     }
   }
 
-  /** Dump JFR profile to file */
+  /** Dump JFR profile to file. */
   protected File createJfrFile(Recording recording, Instant recordingStart, Instant recordingEnd)
       throws IOException {
     try {
@@ -301,28 +305,28 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
     }
   }
 
-  /** Action to be performed on a CPU breach */
+  /** Action to be performed on a CPU breach. */
   public void performCpuProfile(AlertBreach alertBreach) {
     LOGGER.info("Received CPU alert, profiling");
     profileAndUpload(
         alertBreach, Duration.ofSeconds(alertBreach.getAlertConfiguration().getProfileDuration()));
   }
 
-  /** Action to be performed on a MEMORY breach */
+  /** Action to be performed on a MEMORY breach. */
   public void performMemoryProfile(AlertBreach alertBreach) {
     LOGGER.info("Received Memory alert, profiling");
     profileAndUpload(
         alertBreach, Duration.ofSeconds(alertBreach.getAlertConfiguration().getProfileDuration()));
   }
 
-  /** Action to be performed on a MANUAL profile request */
+  /** Action to be performed on a MANUAL profile request. */
   public void performManualProfile(AlertBreach alertBreach) {
     LOGGER.info("Received manual alert, profiling");
     profileAndUpload(
         alertBreach, Duration.ofSeconds(alertBreach.getAlertConfiguration().getProfileDuration()));
   }
 
-  /** Action to be performed on a periodic profile request */
+  /** Action to be performed on a periodic profile request. */
   public void performPeriodicProfile() {
     LOGGER.info("Received periodic profile request");
     profileAndUpload(
@@ -330,7 +334,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
         Duration.ofSeconds(periodicConfig.getProfileDuration()));
   }
 
-  /** Dispatch alert breach event to handler] */
+  /** Dispatch alert breach event to handler. */
   @Override
   public void accept(AlertBreach alertBreach) {
     switch (alertBreach.getType()) {

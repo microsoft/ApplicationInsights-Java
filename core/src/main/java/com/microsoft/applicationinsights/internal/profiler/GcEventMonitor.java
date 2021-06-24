@@ -27,8 +27,8 @@ import com.microsoft.applicationinsights.FormattedTime;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
-import com.microsoft.gcmonitor.GCCollectionEvent;
-import com.microsoft.gcmonitor.GCEventConsumer;
+import com.microsoft.gcmonitor.GcCollectionEvent;
+import com.microsoft.gcmonitor.GcEventConsumer;
 import com.microsoft.gcmonitor.GcMonitorFactory;
 import com.microsoft.gcmonitor.UnableToMonitorMemoryException;
 import com.microsoft.gcmonitor.memorypools.MemoryPool;
@@ -64,7 +64,7 @@ public class GcEventMonitor {
     }
   }
 
-  /** Initialise GC monitoring */
+  /** Initialise GC monitoring. */
   public static void init(
       AlertingSubsystem alertingSubsystem,
       TelemetryClient telemetryClient,
@@ -98,8 +98,8 @@ public class GcEventMonitor {
     }
   }
 
-  /** Consumer of a GC event */
-  private static GCEventConsumer process(
+  /** Consumer of a GC event. */
+  private static GcEventConsumer process(
       AlertingSubsystem alertingSubsystem,
       TelemetryClient telemetryClient,
       GcEventMonitorConfiguration gcEventMonitorConfiguration) {
@@ -109,9 +109,9 @@ public class GcEventMonitor {
     };
   }
 
-  /** Calculate the tenured fill percentage and forward the data to the alerting subsystem */
+  /** Calculate the tenured fill percentage and forward the data to the alerting subsystem. */
   private static void sendTenuredFillPercentageToAlerting(
-      AlertingSubsystem alertingSubsystem, GCCollectionEvent event) {
+      AlertingSubsystem alertingSubsystem, GcCollectionEvent event) {
     if (event.getCollector().isTenuredCollector()) {
       Optional<MemoryPool> tenuredPool = event.getTenuredPool();
       if (tenuredPool.isPresent()) {
@@ -126,11 +126,11 @@ public class GcEventMonitor {
     }
   }
 
-  /** If gc reporting is enabled, send gc event to Application Insights */
+  /** If gc reporting is enabled, send gc event to Application Insights. */
   private static void emitGcEvent(
       TelemetryClient telemetryClient,
       GcEventMonitorConfiguration gcEventMonitorConfiguration,
-      GCCollectionEvent event) {
+      GcCollectionEvent event) {
     boolean reportEvent = gcEventMonitorConfiguration.reportingLevel == GcReportingLevel.ALL;
     reportEvent |=
         gcEventMonitorConfiguration.reportingLevel == GcReportingLevel.TENURED_ONLY

@@ -34,9 +34,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Contains a pipeline that receives telemetry, feeds it into the analysis pipeline (starting at the
- * rolling average)
+ * rolling average).
  */
-public class AlertPipeline implements AlertPipelineMXBean {
+public class AlertPipeline implements AlertPipelineMxBean {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AlertPipeline.class);
   private static final String JMX_KEY = "com.microsoft:type=AI-alert,name=";
@@ -61,13 +61,13 @@ public class AlertPipeline implements AlertPipelineMXBean {
       AlertConfiguration alertConfiguration,
       Consumer<AlertBreach> alertObserver) {
     AlertPipeline trigger = new AlertPipeline(rollingAverage, alertObserver, alertConfiguration);
-    trigger.registerMBean();
+    trigger.registerMbean();
 
     trigger.setAlertTrigger(rollingAverage, alertConfiguration, alertObserver);
     return trigger;
   }
 
-  private void registerMBean() {
+  private void registerMbean() {
     try {
       ObjectName objectName = new ObjectName(JMX_KEY + alertConfiguration.getType().name());
 

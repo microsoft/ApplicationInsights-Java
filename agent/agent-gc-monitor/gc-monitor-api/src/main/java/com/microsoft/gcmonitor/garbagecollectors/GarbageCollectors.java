@@ -26,10 +26,10 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 
-/** Collection of all known GarbageCollectors */
+/** Collection of all known GarbageCollectors. */
 public enum GarbageCollectors {
-  PS_MARK_SWEEP(PSMarkSweep.NAME, PSMarkSweep::new),
-  PS_SCAVENGE(PSScavenge.NAME, PSScavenge::new),
+  PS_MARK_SWEEP(PsMarkSweep.NAME, PsMarkSweep::new),
+  PS_SCAVENGE(PsScavenge.NAME, PsScavenge::new),
   G1_OLD_GENERATION(G1OldGeneration.NAME, G1OldGeneration::new),
   G1_YOUNG_GENERATION(G1YoungGeneration.NAME, G1YoungGeneration::new),
   CONCURRENT_MARK_SWEEP(ConcurrentMarkSweep.NAME, ConcurrentMarkSweep::new),
@@ -40,7 +40,7 @@ public enum GarbageCollectors {
   METASPACE_MANAGER(MetaspaceManager.NAME, MetaspaceManager::new),
   SHENANDOAH_CYCLES(ShenandoahCycles.NAME, ShenandoahCycles::new),
   SHENANDOAH_PAUSES(ShenandoahPauses.NAME, ShenandoahPauses::new),
-  Z_GC(ZGC.NAME, ZGC::new);
+  Z_GC(Zgc.NAME, Zgc::new);
 
   @Immutable
   interface GarbageCollectorFactory extends Function<GarbageCollectorStats, GarbageCollector> {}
@@ -59,7 +59,7 @@ public enum GarbageCollectors {
         .findFirst();
   }
 
-  /** Factory to instantiate a GarbageCollector based on its name */
+  /** Factory to instantiate a GarbageCollector based on its name. */
   public static GarbageCollector create(String name, GarbageCollectorStats proxy) {
     Optional<GarbageCollectors> factory = GarbageCollectors.findCollectorFor(name);
     if (factory.isPresent()) {
@@ -69,18 +69,18 @@ public enum GarbageCollectors {
     }
   }
 
-  public static class PSMarkSweep extends GarbageCollector {
+  public static class PsMarkSweep extends GarbageCollector {
     public static final String NAME = "PS MarkSweep";
 
-    public PSMarkSweep(GarbageCollectorStats proxy) {
+    public PsMarkSweep(GarbageCollectorStats proxy) {
       super(proxy, NAME, true, true, false);
     }
   }
 
-  public static class PSScavenge extends GarbageCollector {
+  public static class PsScavenge extends GarbageCollector {
     public static final String NAME = "PS Scavenge";
 
-    public PSScavenge(GarbageCollectorStats proxy) {
+    public PsScavenge(GarbageCollectorStats proxy) {
       super(proxy, NAME, true, false, true);
     }
   }
@@ -165,10 +165,10 @@ public enum GarbageCollectors {
     }
   }
 
-  public static class ZGC extends GarbageCollector {
+  public static class Zgc extends GarbageCollector {
     public static final String NAME = "ZGC";
 
-    public ZGC(GarbageCollectorStats proxy) {
+    public Zgc(GarbageCollectorStats proxy) {
       super(proxy, NAME, true, true, true);
     }
   }

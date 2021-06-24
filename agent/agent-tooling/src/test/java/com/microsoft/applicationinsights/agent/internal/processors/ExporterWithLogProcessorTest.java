@@ -28,7 +28,7 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorType;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ToAttributeConfig;
-import com.microsoft.applicationinsights.customExceptions.FriendlyException;
+import com.microsoft.applicationinsights.exceptions.FriendlyException;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -83,7 +83,7 @@ class ExporterWithLogProcessorTest {
   }
 
   @Test
-  void SimpleRenameLogMessageTest() {
+  void simpleRenameLogMessageTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.LOG;
@@ -116,7 +116,7 @@ class ExporterWithLogProcessorTest {
   }
 
   @Test
-  void SimpleRenameLogWithSeparatorTest() {
+  void simpleRenameLogWithSeparatorTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.LOG;
@@ -150,7 +150,7 @@ class ExporterWithLogProcessorTest {
   }
 
   @Test
-  void SimpleRenameLogWithMissingKeysTest() {
+  void simpleRenameLogWithMissingKeysTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.LOG;
@@ -183,7 +183,7 @@ class ExporterWithLogProcessorTest {
   }
 
   @Test
-  void InvalidRegexInRulesTest() {
+  void invalidRegexInRulesTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.LOG;
@@ -199,7 +199,7 @@ class ExporterWithLogProcessorTest {
   }
 
   @Test
-  void SimpleToAttributesTest() {
+  void simpleToAttributesTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.LOG;
@@ -243,7 +243,7 @@ class ExporterWithLogProcessorTest {
   }
 
   @Test
-  void MultiRuleToAttributesTest() {
+  void multiRuleToAttributesTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.LOG;
@@ -278,12 +278,12 @@ class ExporterWithLogProcessorTest {
             .setAttribute("applicationinsights.internal.log", true)
             .startSpan();
 
-    SpanData spanAData = ((ReadableSpan) spanA).toSpanData();
-    SpanData spanBData = ((ReadableSpan) spanB).toSpanData();
+    SpanData spanDataA = ((ReadableSpan) spanA).toSpanData();
+    SpanData spanDataB = ((ReadableSpan) spanB).toSpanData();
 
     List<SpanData> spans = new ArrayList<>();
-    spans.add(spanAData);
-    spans.add(spanBData);
+    spans.add(spanDataA);
+    spans.add(spanDataB);
     exampleExporter.export(spans);
 
     // verify that resulting spans are filtered in the way we want
@@ -320,7 +320,7 @@ class ExporterWithLogProcessorTest {
   }
 
   @Test
-  void SimpleRenameLogTestWithSpanProcessor() {
+  void simpleRenameLogTestWithSpanProcessor() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.LOG;

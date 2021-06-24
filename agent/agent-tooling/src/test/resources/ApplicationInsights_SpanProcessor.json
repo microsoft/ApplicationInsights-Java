@@ -1,140 +1,140 @@
 {
-    "connectionString": "InstrumentationKey=00000000-0000-0000-0000-000000000000",
-    "preview": {
-      "processors": [
-        {
-          "type": "attribute",
-          "actions": [
+  "connectionString": "InstrumentationKey=00000000-0000-0000-0000-000000000000",
+  "preview": {
+    "processors": [
+      {
+        "type": "attribute",
+        "actions": [
+          {
+            "key": "attribute1",
+            "value": "123",
+            "action": "insert"
+          },
+          {
+            "key": "string key",
+            "fromAttribute": "anotherKey",
+            "action": "insert"
+          }
+        ],
+        "id": "attributes/insert"
+      },
+      {
+        "type": "attribute",
+        "actions": [
+          {
+            "key": "boo",
+            "fromAttribute": "foo",
+            "action": "update"
+          },
+          {
+            "key": "db.secret",
+            "value": "redacted",
+            "action": "update"
+          }
+        ],
+        "id": "attributes/update"
+      },
+      {
+        "type": "attribute",
+        "include": {
+          "matchType": "strict",
+          "spanNames": [
+            "svcA",
+            "svcB"
+          ]
+        },
+        "exclude": {
+          "matchType": "strict",
+          "attributes": [
             {
-              "key": "attribute1",
-              "value": "123",
-              "action": "insert"
-            },
-            {
-              "key": "string key",
-              "fromAttribute": "anotherKey",
-              "action": "insert"
+              "key": "redact_trace",
+              "value": "false"
             }
+          ]
+        },
+        "actions": [
+          {
+            "key": "credit_card",
+            "action": "delete"
+          },
+          {
+            "key": "duplicate_key",
+            "action": "delete"
+          }
+        ],
+        "id": "attributes/selectiveProcessing"
+      },
+      {
+        "type": "log",
+        "body": {
+          "fromAttributes": [
+            "loggerName"
           ],
-          "id": "attributes/insert"
+          "separator": "::"
         },
-        {
-          "type": "attribute",
-          "actions": [
-            {
-              "key": "boo",
-              "fromAttribute": "foo",
-              "action": "update"
-            },
-            {
-              "key": "db.secret",
-              "value": "redacted",
-              "action": "update"
-            }
+        "id": "log/updateName"
+      },
+      {
+        "type": "log",
+        "body": {
+          "toAttributes": {
+            "rules": [
+              "^/api/v1/document/(?<documentId>.*)/update$"
+            ]
+          }
+        },
+        "id": "log/extractAttributes"
+      },
+      {
+        "type": "span",
+        "include": {
+          "matchType": "regexp",
+          "spanNames": [
+            ".*password.*"
+          ]
+        },
+        "name": {
+          "fromAttributes": [
+            "loggerName"
           ],
-          "id": "attributes/update"
+          "separator": "::"
         },
-        {
-          "type": "attribute",
-          "include": {
-            "matchType": "strict",
-            "spanNames": [
-              "svcA",
-              "svcB"
+        "id": "span/updateName"
+      },
+      {
+        "type": "span",
+        "name": {
+          "toAttributes": {
+            "rules": [
+              "^/api/v1/document/(?<documentId>.*)/update$"
             ]
-          },
-          "exclude": {
-            "matchType": "strict",
-            "attributes": [
-              {
-                "key": "redact_trace",
-                "value": "false"
-              }
-            ]
-          },
-          "actions": [
-            {
-              "key": "credit_card",
-              "action": "delete"
-            },
-            {
-              "key": "duplicate_key",
-              "action": "delete"
-            }
-          ],
-          "id": "attributes/selectiveProcessing"
+          }
         },
-        {
-          "type": "log",
-          "body": {
-            "fromAttributes": [
-              "loggerName"
-            ],
-            "separator": "::"
-          },
-          "id": "log/updateName"
+        "id": "span/extractAttributes"
+      },
+      {
+        "type": "attribute",
+        "actions": [
+          {
+            "key": "http.url",
+            "pattern": "^(?<httpProtocol>.*):\\/\\/(?<httpDomain>.*)\\/(?<httpPath>.*)(\\?|\\&)(?<httpQueryParams>.*)",
+            "action": "extract"
+          }
+        ],
+        "id": "attributes/extract"
+      },
+      {
+        "type": "metric-filter",
+        "exclude": {
+          "matchType": "strict",
+          "metricNames": [
+            "a_test_metric",
+            "another_test_metric"
+          ]
         },
-        {
-          "type": "log",
-          "body": {
-            "toAttributes": {
-              "rules": [
-                "^/api/v1/document/(?<documentId>.*)/update$"
-              ]
-            }
-          },
-          "id": "log/extractAttributes"
-        },
-        {
-          "type": "span",
-          "include":{
-            "matchType":"regexp",
-            "spanNames":[
-              ".*password.*"
-            ]
-          },
-          "name": {
-            "fromAttributes": [
-              "loggerName"
-            ],
-            "separator": "::"
-          },
-          "id": "span/updateName"
-        },
-        {
-          "type": "span",
-          "name": {
-            "toAttributes": {
-              "rules": [
-                "^/api/v1/document/(?<documentId>.*)/update$"
-              ]
-            }
-          },
-          "id": "span/extractAttributes"
-        },
-        {
-          "type": "attribute",
-          "actions": [
-            {
-              "key": "http.url",
-              "pattern": "^(?<httpProtocol>.*):\\/\\/(?<httpDomain>.*)\\/(?<httpPath>.*)(\\?|\\&)(?<httpQueryParams>.*)",
-              "action": "extract"
-            }
-          ],
-          "id": "attributes/extract"
-        },
-        {
-          "type": "metric-filter",
-          "exclude": {
-            "matchType": "strict",
-            "metricNames": [
-              "a_test_metric",
-              "another_test_metric"
-            ]
-          },
-          "id": "metric-filter/exclude-two-metrics"
-        }
-      ]
-    }
+        "id": "metric-filter/exclude-two-metrics"
+      }
+    ]
   }
+}
 

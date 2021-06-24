@@ -21,7 +21,15 @@
 
 package com.microsoft.applicationinsights.agent.internal.wasbootstrap;
 
-import static net.bytebuddy.jar.asm.Opcodes.*;
+import static net.bytebuddy.jar.asm.Opcodes.ARETURN;
+import static net.bytebuddy.jar.asm.Opcodes.ASM7;
+import static net.bytebuddy.jar.asm.Opcodes.ATHROW;
+import static net.bytebuddy.jar.asm.Opcodes.DRETURN;
+import static net.bytebuddy.jar.asm.Opcodes.FRETURN;
+import static net.bytebuddy.jar.asm.Opcodes.INVOKESTATIC;
+import static net.bytebuddy.jar.asm.Opcodes.IRETURN;
+import static net.bytebuddy.jar.asm.Opcodes.LRETURN;
+import static net.bytebuddy.jar.asm.Opcodes.RETURN;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;

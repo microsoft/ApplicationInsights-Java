@@ -22,7 +22,9 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Charsets;
@@ -30,10 +32,6 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.io.Resources;
-import com.microsoft.applicationinsights.internal.schemav2.Data;
-import com.microsoft.applicationinsights.internal.schemav2.Domain;
-import com.microsoft.applicationinsights.internal.schemav2.Envelope;
-import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.docker.AiDockerClient;
 import com.microsoft.applicationinsights.smoketest.docker.ContainerInfo;
 import com.microsoft.applicationinsights.smoketest.exceptions.SmokeTestException;
@@ -41,6 +39,10 @@ import com.microsoft.applicationinsights.smoketest.exceptions.TimeoutException;
 import com.microsoft.applicationinsights.smoketest.fixtures.AfterWithParams;
 import com.microsoft.applicationinsights.smoketest.fixtures.BeforeWithParams;
 import com.microsoft.applicationinsights.smoketest.fixtures.ParameterizedRunnerWithFixturesFactory;
+import com.microsoft.applicationinsights.smoketest.schemav2.Data;
+import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
+import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServer;
 import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServlet;
 import java.io.File;
@@ -64,7 +66,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
@@ -88,13 +95,13 @@ public abstract class AiSmokeTest {
         Resources.readLines(Resources.getResource("appServers.txt"), Charsets.UTF_8);
     System.out.println("Target appservers=" + Arrays.toString(appServers.toArray()));
     String os = System.getProperty("applicationinsights.smoketest.os", "linux");
-    URL jreExcludesURL =
+    URL jreExcludesUrl =
         Thread.currentThread().getContextClassLoader().getResource("jre.excludes.txt");
     List<String> jreExcludes;
-    if (jreExcludesURL == null) {
+    if (jreExcludesUrl == null) {
       jreExcludes = new ArrayList<>();
     } else {
-      jreExcludes = Resources.readLines(jreExcludesURL, Charsets.UTF_8);
+      jreExcludes = Resources.readLines(jreExcludesUrl, Charsets.UTF_8);
     }
     Multimap<String, String> appServers2jres = HashMultimap.create();
     for (String appServer : appServers) {
@@ -811,9 +818,9 @@ public abstract class AiSmokeTest {
       try {
         TimeUnit.MILLISECONDS.sleep(250);
         rval = HttpHelper.getResponseCodeEnsuringSampled(url);
-      } catch (InterruptedException ie) {
-        throw ie;
-      } catch (Exception e) {
+      } catch (InterruptedException e) {
+        throw e;
+      } catch (Exception ignored) {
       }
     } while (rval == 404);
     assertEquals(200, rval);

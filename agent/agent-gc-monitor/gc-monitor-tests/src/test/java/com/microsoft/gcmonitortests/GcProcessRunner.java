@@ -23,8 +23,8 @@ package com.microsoft.gcmonitortests;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import com.microsoft.gcmonitor.GCCollectionEvent;
-import com.microsoft.gcmonitor.JMXMemoryManagement;
+import com.microsoft.gcmonitor.GcCollectionEvent;
+import com.microsoft.gcmonitor.JmxMemoryManagement;
 import com.microsoft.gcmonitor.UnableToMonitorMemoryException;
 import java.io.File;
 import java.io.IOException;
@@ -56,10 +56,10 @@ public class GcProcessRunner {
     this.heapSizeInMb = heapSizeInMb;
   }
 
-  /** Run the GcEventGenerator process and collect gc events */
-  public List<GCCollectionEvent> getGcCollectionEvents()
+  /** Run the GcEventGenerator process and collect gc events. */
+  public List<GcCollectionEvent> getGcCollectionEvents()
       throws IOException, UnableToMonitorMemoryException, InterruptedException,
-          GCNotPresentException {
+          GcNotPresentException {
     int port = getRandomPort();
     Process process = startGcProcess(port, gcArg, heapSizeInMb);
 
@@ -67,7 +67,7 @@ public class GcProcessRunner {
       try {
         awaitStdOut("Hit return to start");
 
-        List<GCCollectionEvent> events = new ArrayList<>();
+        List<GcCollectionEvent> events = new ArrayList<>();
         CountDownLatch cdl = new CountDownLatch(1);
 
         // Use watchdog timer to ensure process is shutdown at the end
@@ -80,14 +80,14 @@ public class GcProcessRunner {
                     // Prompt gc event generator to start
                     awaitStdOut("Hit return to exit");
                     sendMessage("Ending");
-                  } catch (IOException | InterruptedException | GCNotPresentException e) {
+                  } catch (IOException | InterruptedException | GcNotPresentException e) {
                     e.printStackTrace();
                   }
                   cdl.countDown();
                 },
                 2000);
 
-        JMXMemoryManagement.create(
+        JmxMemoryManagement.create(
             getConnector(port),
             Executors.newSingleThreadExecutor(),
             event -> {
@@ -107,7 +107,7 @@ public class GcProcessRunner {
           if (errorStream.available() > 0) {
             String error = new String(errorStream.readAllBytes(), UTF_8);
             if (error.contains("Unrecognized VM option")) {
-              throw new GCNotPresentException();
+              throw new GcNotPresentException();
             }
             System.err.println(error);
           }
@@ -163,14 +163,14 @@ public class GcProcessRunner {
 
   /** Wait for process to emit a string from stdout. Waits up to 10 seconds. */
   private void awaitStdOut(String waitFor)
-      throws IOException, InterruptedException, GCNotPresentException {
+      throws IOException, InterruptedException, GcNotPresentException {
     for (int i = 0; i < 100; i++) {
 
       if (!process.isAlive()) {
         if (errorStream.available() > 0) {
           String error = new String(errorStream.readAllBytes(), UTF_8);
           if (error.contains("Unrecognized VM option")) {
-            throw new GCNotPresentException();
+            throw new GcNotPresentException();
           }
           System.err.println(error);
         }
@@ -188,7 +188,7 @@ public class GcProcessRunner {
     }
   }
 
-  /** Forks a process running the GC event generator */
+  /** Forks a process running the GC event generator. */
   private Process startGcProcess(int port, String gcArg, int heapSizeInMb)
       throws IOException, InterruptedException {
     String javaCommand = detectJava();

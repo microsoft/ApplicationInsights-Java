@@ -19,9 +19,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 plugins {
-    id "cpp-library"
-    id "cpp-unit-test"
-    id "visual-studio"
+  id "cpp-library"
+  id "cpp-unit-test"
+  id "visual-studio"
 }
 
 //def javaIncludeDir = new File(System.env."JAVA_HOME", "include")
@@ -30,31 +30,31 @@ def programFilesX86 = System.env."ProgramFiles(x86)" ?: "C:/Program Files (x86)"
 // TraceLoggingProvider.h in Windows 10 SDK
 def winSdkDir = "$programFilesX86/Windows Kits/10"
 if (System.env.APPINSIGHTS_WIN10_SDK_PATH) {
-    winSdkDir = System.env.APPINSIGHTS_WIN10_SDK_PATH
-    logger.info "Windows SDK path set with environment variable, APPINSIGHTS_WIN10_SDK_PATH"
+  winSdkDir = System.env.APPINSIGHTS_WIN10_SDK_PATH
+  logger.info "Windows SDK path set with environment variable, APPINSIGHTS_WIN10_SDK_PATH"
 }
 def vsToolsDir = "$programFilesX86/Microsoft Visual Studio 14.0"
 if (System.env.APPINSIGHTS_VS_PATH) {
-    vsToolsDir = System.env.APPINSIGHTS_VS_PATH
-    logger.info "Visual Studio Build Tools path set with environment variable, APPINSIGHTS_VS_PATH"
+  vsToolsDir = System.env.APPINSIGHTS_VS_PATH
+  logger.info "Visual Studio Build Tools path set with environment variable, APPINSIGHTS_VS_PATH"
 }
 
 logger.info "Windows SDK:  $winSdkDir"
 logger.info "Visual Studio Build Tools: $vsToolsDir"
 
-toolChains.withType(VisualCpp).configureEach  {
-    it.installDir vsToolsDir
-    it.windowsSdkDir winSdkDir
+toolChains.withType(VisualCpp).configureEach {
+  it.installDir vsToolsDir
+  it.windowsSdkDir winSdkDir
 }
 
 ext {
-    headersDir = "$projectDir/src/main/headers"
+  headersDir = "$projectDir/src/main/headers"
 }
 library {
-    baseName = "applicationinsights-java-etw-provider"
-    linkage = [ Linkage.SHARED ]
-    targetMachines = [ machines.windows.x86, machines.windows.x86_64 ]
-    privateHeaders.from file(headersDir)
+  baseName = "applicationinsights-java-etw-provider"
+  linkage = [Linkage.SHARED]
+  targetMachines = [machines.windows.x86, machines.windows.x86_64]
+  privateHeaders.from file(headersDir)
 }
 
 
@@ -63,27 +63,27 @@ logger.info "$NATIVE_VERBOSE_OUTPUT_PROPERTY = ${project.properties[NATIVE_VERBO
 
 // NOTE: these options apply to Visual Studio Build Tools (cl.exe)
 tasks.withType(CppCompile).configureEach {
-    includes file("${System.env.JAVA_HOME}/include")
-    includes file("${System.env.JAVA_HOME}/include/win32")
+  includes file("${System.env.JAVA_HOME}/include")
+  includes file("${System.env.JAVA_HOME}/include/win32")
 
-    compilerArgs.add "/W4"
-    compilerArgs.add "/EHsc"
-    compilerArgs.add "/sdl"
-    compilerArgs.add "/std:c++14"
+  compilerArgs.add "/W4"
+  compilerArgs.add "/EHsc"
+  compilerArgs.add "/sdl"
+  compilerArgs.add "/std:c++14"
 
-    if (project.hasProperty(NATIVE_BUILD_VARIANT_PROPERTY) && "release".equalsIgnoreCase(project.properties[NATIVE_BUILD_VARIANT_PROPERTY])) {
-        logger.info "Configuring ${it} for release build"
-        macros.put("NDEBUG", null)
-        compilerArgs.add "/O2" // optimize for speed
-        compilerArgs.add "/MD" // multithreaded
-    } else {
-        logger.info "Configuring ${it} for debug build"
-        compilerArgs.add "/MDd" // multithreaded, debug mode
-        if (project.hasProperty(NATIVE_VERBOSE_OUTPUT_PROPERTY) && "true".equalsIgnoreCase(project.properties[NATIVE_VERBOSE_OUTPUT_PROPERTY])) {
-            logger.info "Verbose output enabled"
-            macros.put("AIETW_VERBOSE", null)
-        }
+  if (project.hasProperty(NATIVE_BUILD_VARIANT_PROPERTY) && "release".equalsIgnoreCase(project.properties[NATIVE_BUILD_VARIANT_PROPERTY])) {
+    logger.info "Configuring ${it} for release build"
+    macros.put("NDEBUG", null)
+    compilerArgs.add "/O2" // optimize for speed
+    compilerArgs.add "/MD" // multithreaded
+  } else {
+    logger.info "Configuring ${it} for debug build"
+    compilerArgs.add "/MDd" // multithreaded, debug mode
+    if (project.hasProperty(NATIVE_VERBOSE_OUTPUT_PROPERTY) && "true".equalsIgnoreCase(project.properties[NATIVE_VERBOSE_OUTPUT_PROPERTY])) {
+      logger.info "Verbose output enabled"
+      macros.put("AIETW_VERBOSE", null)
     }
+  }
 }
 
 // NOTE: these options apply to Visual Studio Build Tools (link.exe)
@@ -92,28 +92,29 @@ tasks.withType(LinkSharedLibrary).configureEach {
 }
 
 import org.apache.tools.ant.taskdefs.condition.Os
+
 if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-    project.afterEvaluate {
-        ["Release", "Debug"].each { v ->
-            def ppBothArchTask = tasks.register("preprocess$v") {
-                description = "Runs preprocessor for $v variant, all architectures"
-            }
-            ["X86", "X86-64"].each { a ->
-                def dllFilename = "${project.library.baseName.get()}-${a.toLowerCase()}.dll"
-                tasks.named("link$v$a").configure {
-                    linkedFile = file("${linkedFile.asFile.get().parent}/$dllFilename")
-                }
-                def ppArchTask = tasks.register("preprocess$v$a", CppCompile) {
-                    description = "Runs preprocessor for $v variant, for $a architecture"
-                    compilerArgs.add "/P"
-                }
-                ppBothArchTask.configure {
-                    dependsOn ppArchTask
-                }
-                tasks.named("compile$v${a}Cpp").configure {
-                    macros.put("DLL_FILENAME", dllFilename.toString())
-                }
-            }
+  project.afterEvaluate {
+    ["Release", "Debug"].each { v ->
+      def ppBothArchTask = tasks.register("preprocess$v") {
+        description = "Runs preprocessor for $v variant, all architectures"
+      }
+      ["X86", "X86-64"].each { a ->
+        def dllFilename = "${project.library.baseName.get()}-${a.toLowerCase()}.dll"
+        tasks.named("link$v$a").configure {
+          linkedFile = file("${linkedFile.asFile.get().parent}/$dllFilename")
         }
+        def ppArchTask = tasks.register("preprocess$v$a", CppCompile) {
+          description = "Runs preprocessor for $v variant, for $a architecture"
+          compilerArgs.add "/P"
+        }
+        ppBothArchTask.configure {
+          dependsOn ppArchTask
+        }
+        tasks.named("compile$v${a}Cpp").configure {
+          macros.put("DLL_FILENAME", dllFilename.toString())
+        }
+      }
     }
+  }
 }

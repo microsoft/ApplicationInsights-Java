@@ -23,7 +23,12 @@ package com.microsoft.applicationinsights.internal.perfcounter.jvm;
 
 import static java.lang.Math.min;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MessageData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.FormattedTime;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
@@ -38,8 +43,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The class uses the JVM ThreadMXBean to detect threads dead locks A metric with value 0 is sent
- * when there are no blocked threads, otherwise the number of detected blocked threads is sent with
- * a dimension that holds information like thread id and minimal stack traces as trace telemetries
+ * when there are no blocked threads.
+ *
+ * <p>Otherwise the number of detected blocked threads is sent with a dimension that holds
+ * information like thread id and minimal stack traces as trace telemetries.
  */
 public final class DeadLockDetectorPerformanceCounter implements PerformanceCounter {
 

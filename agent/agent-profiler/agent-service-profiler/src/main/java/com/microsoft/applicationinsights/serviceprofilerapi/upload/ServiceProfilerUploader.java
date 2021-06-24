@@ -29,8 +29,8 @@ import com.azure.storage.blob.models.BlobHttpHeaders;
 import com.azure.storage.blob.models.BlockBlobItem;
 import com.azure.storage.blob.models.ParallelTransferOptions;
 import com.azure.storage.blob.options.BlobUploadFromFileOptions;
-import com.microsoft.applicationinsights.profileUploader.ServiceProfilerIndex;
-import com.microsoft.applicationinsights.profileUploader.UploadResult;
+import com.microsoft.applicationinsights.profiler.uploader.ServiceProfilerIndex;
+import com.microsoft.applicationinsights.profiler.uploader.UploadResult;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
@@ -60,7 +60,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
-/** Uploads profiles to the service profiler endpoint */
+/** Uploads profiles to the service profiler endpoint. */
 public class ServiceProfilerUploader {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServiceProfilerUploader.class);
   private static final Random RANDOM = new Random();
@@ -85,7 +85,7 @@ public class ServiceProfilerUploader {
     this.roleName = roleName;
   }
 
-  /** Upload a given JFR file and return associated metadata of the uploaded profile */
+  /** Upload a given JFR file and return associated metadata of the uploaded profile. */
   public Mono<UploadResult> uploadJfrFile(
       String triggerName, long timestamp, File file, double cpuUsage, double memoryUsage) {
     String appId = appIdSupplier.get();
@@ -113,7 +113,7 @@ public class ServiceProfilerUploader {
                       UUID.fromString(appId),
                       formattedTimestamp,
                       uploadContext.getMachineName(),
-                      OsPlatformProvider.getOSPlatformDescription(),
+                      OsPlatformProvider.getOsPlatformDescription(),
                       processId,
                       "Profile",
                       profileId.toString(),
@@ -129,7 +129,7 @@ public class ServiceProfilerUploader {
     return Base64.getEncoder().encodeToString(bytes);
   }
 
-  /** Upload profile to service profiler */
+  /** Upload profile to service profiler. */
   public Mono<UploadFinishArgs> uploadTrace(UploadContext uploadContext) {
 
     File zippedTraceFile = null;
@@ -170,7 +170,7 @@ public class ServiceProfilerUploader {
             });
   }
 
-  /** Upload the given file to a blob storage defined by a sas link */
+  /** Upload the given file to a blob storage defined by a sas link. */
   private Mono<Response<BlockBlobItem>> uploadToSasLink(
       BlobAccessPass uploadPass, UploadContext uploadContext, File file)
       throws MalformedURLException {
@@ -195,7 +195,7 @@ public class ServiceProfilerUploader {
     }
   }
 
-  /** Report the success of an upload or throw an exception */
+  /** Report the success of an upload or throw an exception. */
   protected UploadFinishArgs reportUploadComplete(UUID profileId, Response<BlockBlobItem> response)
       throws UploadFailedException {
     int statusCode = response.getStatusCode();
@@ -235,7 +235,7 @@ public class ServiceProfilerUploader {
         TimestampContract.timestampToString(uploadContext.getSessionId()));
     metadata.put(BlobMetadataConstants.PROGRAMMING_LANGUAGE_META_NAME, "Java");
     metadata.put(
-        BlobMetadataConstants.OS_PLATFORM_META_NAME, OsPlatformProvider.getOSPlatformDescription());
+        BlobMetadataConstants.OS_PLATFORM_META_NAME, OsPlatformProvider.getOsPlatformDescription());
     metadata.put(BlobMetadataConstants.TRACE_FILE_FORMAT_META_NAME, "jfr");
 
     if (roleName != null && !roleName.isEmpty()) {
@@ -251,7 +251,7 @@ public class ServiceProfilerUploader {
             new ParallelTransferOptions().setBlockSizeLong(UPLOAD_BLOCK_LENGTH));
   }
 
-  /** Zip up profile */
+  /** Zip up profile. */
   private static File createZippedTraceFile(UploadContext uploadContext) throws IOException {
     File traceFile = uploadContext.getTraceFile();
     LOGGER.debug("Trace file: {}", traceFile.toString());

@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.OptionalDouble;
 import java.util.function.Consumer;
 
-/** Applies a time window to data and calculates a mean of the data during that window */
+/** Applies a time window to data and calculates a mean of the data during that window. */
 public class RollingAverage {
 
   private final long windowLengthInSec;

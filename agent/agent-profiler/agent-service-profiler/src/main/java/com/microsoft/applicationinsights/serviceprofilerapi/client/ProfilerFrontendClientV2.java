@@ -22,7 +22,10 @@
 package com.microsoft.applicationinsights.serviceprofilerapi.client;
 
 import com.azure.core.exception.HttpResponseException;
-import com.azure.core.http.*;
+import com.azure.core.http.HttpMethod;
+import com.azure.core.http.HttpPipeline;
+import com.azure.core.http.HttpRequest;
+import com.azure.core.http.HttpResponse;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.TimestampContract;
@@ -36,7 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
-/** Client for interacting with the Service Profiler API endpoint */
+/** Client for interacting with the Service Profiler API endpoint. */
 public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
   private static final Logger LOGGER = LoggerFactory.getLogger(ProfilerFrontendClientV2.class);
 
@@ -68,7 +71,7 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
     this(hostUrl, instrumentationKey, httpPipeline, null);
   }
 
-  /** Obtain permission to upload a profile to service profiler */
+  /** Obtain permission to upload a profile to service profiler. */
   @Override
   public BlobAccessPass getUploadAccess(UUID profileId) throws IOException {
     URL requestUrl = uploadRequestUri(profileId);
@@ -100,7 +103,7 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
     return httpPipeline.send(request);
   }
 
-  /** Report to Service Profiler that the profile upload has been completed */
+  /** Report to Service Profiler that the profile upload has been completed. */
   @Override
   public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag)
       throws IOException {
@@ -127,7 +130,7 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
     return new Builder().build().adapter(ArtifactAcceptedResponse.class).fromJson(json);
   }
 
-  /** Obtain current settings that have been configured within the UI */
+  /** Obtain current settings that have been configured within the UI. */
   @Override
   public String getSettings(Date oldTimeStamp) throws MalformedURLException {
 

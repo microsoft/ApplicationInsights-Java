@@ -81,12 +81,9 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
     }
   }
 
-  /**
-   * Get SDK Version from properties
-   *
-   * @return current SDK version
-   */
-  /* Visible for testing */ String getCurrentSdkVersion() {
+  /** Returns SDK Version from properties. */
+  // visible for testing
+  String getCurrentSdkVersion() {
     return PropertyHelper.getQualifiedSdkVersionString();
   }
 

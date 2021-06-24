@@ -44,9 +44,9 @@ class DefaultQuickPulseCoordinatorTest {
             .withDataFetcher(mockFetcher)
             .withDataSender(mockSender)
             .withPingSender(mockPingSender)
-            .withWaitBetweenPingsInMS(10L)
-            .withWaitBetweenPostsInMS(10L)
-            .withWaitOnErrorInMS(10L)
+            .withWaitBetweenPingsInMillis(10L)
+            .withWaitBetweenPostsInMillis(10L)
+            .withWaitOnErrorInMillis(10L)
             .build();
 
     DefaultQuickPulseCoordinator coordinator = new DefaultQuickPulseCoordinator(initData);
@@ -86,9 +86,9 @@ class DefaultQuickPulseCoordinatorTest {
             .withDataFetcher(mockFetcher)
             .withDataSender(mockSender)
             .withPingSender(mockPingSender)
-            .withWaitBetweenPingsInMS(10L)
-            .withWaitBetweenPostsInMS(10L)
-            .withWaitOnErrorInMS(10L)
+            .withWaitBetweenPingsInMillis(10L)
+            .withWaitBetweenPostsInMillis(10L)
+            .withWaitOnErrorInMillis(10L)
             .build();
 
     DefaultQuickPulseCoordinator coordinator = new DefaultQuickPulseCoordinator(initData);
@@ -132,9 +132,9 @@ class DefaultQuickPulseCoordinatorTest {
             .withDataFetcher(mockFetcher)
             .withDataSender(mockSender)
             .withPingSender(mockPingSender)
-            .withWaitBetweenPingsInMS(10L)
-            .withWaitBetweenPostsInMS(10L)
-            .withWaitOnErrorInMS(10L)
+            .withWaitBetweenPingsInMillis(10L)
+            .withWaitBetweenPostsInMillis(10L)
+            .withWaitOnErrorInMillis(10L)
             .build();
 
     DefaultQuickPulseCoordinator coordinator = new DefaultQuickPulseCoordinator(initData);

@@ -23,7 +23,9 @@ package com.microsoft.applicationinsights.internal.quickpulse;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.azure.core.http.*;
+import com.azure.core.http.HttpHeaders;
+import com.azure.core.http.HttpPipeline;
+import com.azure.core.http.HttpPipelineBuilder;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.util.MockHttpResponse;
 import java.net.URI;

@@ -32,12 +32,12 @@ import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
-import com.microsoft.applicationinsights.profileUploader.UploadCompleteHandler;
 import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
 import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
 import com.microsoft.applicationinsights.profiler.config.AlertConfigParser;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
+import com.microsoft.applicationinsights.profiler.uploader.UploadCompleteHandler;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 import java.util.concurrent.Executors;
@@ -49,8 +49,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Service profiler main entry point, wires up: - Alerting telemetry monitor subsystem - JFR
- * Profiling service - JFR Uploader service
+ * Service profiler main entry point, wires up the items below.
+ *
+ * <ul>
+ *   <li>Alerting telemetry monitor subsystem
+ *   <li>JFR Profiling service
+ *   <li>JFR Uploader service
+ * </ul>
  */
 public class ProfilerServiceInitializer {
 

@@ -21,131 +21,117 @@
 
 // region Shared java configuration
 
-import org.gradle.api.tasks.testing.logging.TestLogEvent;
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat;
+
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 apply plugin: "java"
 apply plugin: "jacoco"
 apply plugin: "checkstyle"
 apply plugin: "org.owasp.dependencycheck"
 apply plugin: "net.ltgt.errorprone"
-apply plugin: "com.diffplug.spotless"
 
-spotless {
-    java {
-        googleJavaFormat("1.10.0")
-        licenseHeaderFile(rootProject.file("gradle/enforcement/spotless.license.java"), "(package|import|public|// Includes work from:)")
-        target("src/**/*.java")
-    }
-    format("misc") {
-        // not using "**/..." to help keep spotless fast
-        target(".gitignore", "*.md", "src/**/*.md", "*.sh", "src/**/*.properties")
-        indentWithSpaces()
-        trimTrailingWhitespace()
-        endWithNewline()
-    }
-}
+apply from: "$buildScriptsDir/spotless.gradle"
 
 checkstyle {
-    configFile = rootProject.file("gradle/enforcement/checkstyle.xml")
-    // this version should match the version of google_checks.xml used as basis for above configuration
-    toolVersion = "8.37"
-    // TODO (trask) enable after applying spotless
-    // maxWarnings = 0
+  configFile = rootProject.file("gradle/enforcement/checkstyle.xml")
+  // this version should match the version of google_checks.xml used as basis for above configuration
+  toolVersion = "8.37"
+  maxWarnings = 0
 }
 
 tasks.withType(JavaCompile) {
-    options.release.set(8)
-    options.compilerArgs.add("-Werror")
+  options.release.set(8)
+  options.compilerArgs.add("-Werror")
 }
 
 tasks.withType(Checkstyle) {
-    reports {
-        xml.enabled true
-        html.enabled !isBuildServer
-    }
+  reports {
+    xml.enabled true
+    html.enabled !isBuildServer
+  }
 }
 
 dependencyCheck {
-    def supFile = "${project.projectDir}/dependency-check-suppressions.xml"
-    if (file(supFile).exists() && !Project.hasProperty("dependencyCheck.suppressions.skip")) {
-        suppressionFiles += supFile
-    }
-    outputDirectory = "${project.buildDir}/reports/dependency-check"
-    formats = ["HTML", "JUNIT"]
-    skipConfigurations = ["mavenDeployer", "findbugs", "checkstyle"]
-    cveValidForHours = 1
-    failBuildOnCVSS = 0
+  def supFile = "${project.projectDir}/dependency-check-suppressions.xml"
+  if (file(supFile).exists() && !Project.hasProperty("dependencyCheck.suppressions.skip")) {
+    suppressionFiles += supFile
+  }
+  outputDirectory = "${project.buildDir}/reports/dependency-check"
+  formats = ["HTML", "JUNIT"]
+  skipConfigurations = ["mavenDeployer", "findbugs", "checkstyle"]
+  cveValidForHours = 1
+  failBuildOnCVSS = 0
 }
 
 jacoco {
-    toolVersion = "0.8.2"
+  toolVersion = "0.8.2"
 }
 
 jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.enabled true
-    }
+  reports {
+    xml.enabled true
+    html.enabled true
+  }
 }
 
 repositories {
-    mavenCentral()
+  mavenCentral()
 }
 
 task collectTestResults {
-    doLast {
-        copy {
-            from testResultsDir
-            into new File(rootProjectBuildDir, "$remoteTestResultsDirName/$project.name")
-        }
-        copy {
-            from testReportDir
-            into new File(rootProjectBuildDir, "$remoteTestReportDirName/$project.name")
-        }
+  doLast {
+    copy {
+      from testResultsDir
+      into new File(rootProjectBuildDir, "$remoteTestResultsDirName/$project.name")
     }
+    copy {
+      from testReportDir
+      into new File(rootProjectBuildDir, "$remoteTestReportDirName/$project.name")
+    }
+  }
 }
 
 task testAndCollect {
-    dependsOn test
-    finalizedBy collectTestResults
+  dependsOn test
+  finalizedBy collectTestResults
 }
 
 tasks.withType(Test).configureEach {
-    useJUnitPlatform()
+  useJUnitPlatform()
 }
 
 tasks.withType(Test) {
-    testLogging {
-        afterSuite { desc, result ->
-            if (!desc.parent) { // only print when the top-level test suite completes
-                logger.lifecycle("${desc.name} complete. Ran ${result.testCount} tests. ${result.failedTestCount} failed, ${result.skippedTestCount} skipped.")
-            }
-        }
-
-        info {
-            events  TestLogEvent.FAILED,
-                    TestLogEvent.PASSED,
-                    TestLogEvent.SKIPPED,
-                    TestLogEvent.STANDARD_ERROR
-
-            exceptionFormat TestExceptionFormat.FULL
-            showExceptions true
-            showCauses true
-            showStackTraces true
-        }
-
-        debug {
-            events = info.events
-            events << TestLogEvent.STARTED
-            events << TestLogEvent.STANDARD_OUT
-
-            exceptionFormat = info.exceptionFormat
-            showExceptions = info.showExceptions
-            showCauses = info.showCauses
-            showStackTraces = info.showStackTraces
-        }
+  testLogging {
+    afterSuite { desc, result ->
+      if (!desc.parent) { // only print when the top-level test suite completes
+        logger.lifecycle("${desc.name} complete. Ran ${result.testCount} tests. ${result.failedTestCount} failed, ${result.skippedTestCount} skipped.")
+      }
     }
+
+    info {
+      events TestLogEvent.FAILED,
+        TestLogEvent.PASSED,
+        TestLogEvent.SKIPPED,
+        TestLogEvent.STANDARD_ERROR
+
+      exceptionFormat TestExceptionFormat.FULL
+      showExceptions true
+      showCauses true
+      showStackTraces true
+    }
+
+    debug {
+      events = info.events
+      events << TestLogEvent.STARTED
+      events << TestLogEvent.STANDARD_OUT
+
+      exceptionFormat = info.exceptionFormat
+      showExceptions = info.showExceptions
+      showCauses = info.showCauses
+      showStackTraces = info.showStackTraces
+    }
+  }
 }
 
 

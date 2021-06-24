@@ -21,7 +21,9 @@
 
 package com.microsoft.applicationinsights.agent.internal.instrumentation.sdk;
 
-import static net.bytebuddy.jar.asm.Opcodes.*;
+import static net.bytebuddy.jar.asm.Opcodes.ASM7;
+import static net.bytebuddy.jar.asm.Opcodes.ICONST_1;
+import static net.bytebuddy.jar.asm.Opcodes.IRETURN;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;

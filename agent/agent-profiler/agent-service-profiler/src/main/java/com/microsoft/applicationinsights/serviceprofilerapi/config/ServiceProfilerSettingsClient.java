@@ -32,7 +32,7 @@ import java.util.Calendar;
 import java.util.Date;
 import reactor.core.publisher.Mono;
 
-/** Client that pulls setting from the service profiler endpoint and emits them if changed */
+/** Client that pulls setting from the service profiler endpoint and emits them if changed. */
 public class ServiceProfilerSettingsClient {
   private final ServiceProfilerClientV2 serviceProfilerClient;
   private Date lastModified;

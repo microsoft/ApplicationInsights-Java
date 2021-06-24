@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 
 class SystemInformationTest {
   @Test
-  void testOS() {
+  void testOs() {
     assertThat(
             SystemUtils.IS_OS_WINDOWS
                 ? SystemInformation.INSTANCE.isWindows()

@@ -21,11 +21,28 @@
 
 package com.microsoft.applicationinsights;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.AvailabilityData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MessageData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.PageViewData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.PageViewPerfData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDependencyData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.StackFrame;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionDetails;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.common.Strings;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.instrumentation.api.caching.Cache;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,9 +166,7 @@ public class TelemetryUtil {
     return exceptionDetails;
   }
 
-  /***
-   * @return the stack frame length for only the strings in the stack frame.
-   */
+  /** Returns the stack frame length for only the strings in the stack frame. */
   // this is the same logic used to limit length on the Breeze side
   private static int getStackFrameLength(StackFrame stackFrame) {
     return (stackFrame.getMethod() == null ? 0 : stackFrame.getMethod().length())

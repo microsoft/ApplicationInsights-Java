@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Monitors the Service Profiler endpoint for changes to configuration */
+/** Monitors the Service Profiler endpoint for changes to configuration. */
 public class ServiceProfilerConfigMonitorService {
   private static final Logger LOGGER =
       LoggerFactory.getLogger(ServiceProfilerConfigMonitorService.class);

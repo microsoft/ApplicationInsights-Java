@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.alerting.config;
 import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
 import java.util.Objects;
 
-/** Contains the overall configuration of the entire alerting subsystem */
+/** Contains the overall configuration of the entire alerting subsystem. */
 public class AlertingConfiguration {
 
   // Alert configuration for CPU telemetry
@@ -86,7 +86,7 @@ public class AlertingConfiguration {
     return Objects.hash(cpuAlert, memoryAlert, defaultConfiguration, collectionPlanConfiguration);
   }
 
-  /** Alert configuration for a given telemetry type */
+  /** Alert configuration for a given telemetry type. */
   public static class AlertConfiguration {
 
     private final AlertMetricType type;

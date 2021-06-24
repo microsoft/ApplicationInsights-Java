@@ -48,7 +48,7 @@ public final class ThreadPoolUtils {
   }
 
   /**
-   * This method is used to shutdown ExecutorService
+   * This method is used to shutdown ExecutorService.
    *
    * @param executorService The instance of ExecutorService to shutdown
    * @param timeout Max time to wait

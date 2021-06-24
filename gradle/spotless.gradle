@@ -1,0 +1,16 @@
+apply plugin: "com.diffplug.spotless"
+
+spotless {
+  java {
+    googleJavaFormat("1.10.0")
+    licenseHeaderFile(rootProject.file("gradle/enforcement/spotless.license.java"), "(package|import|public|// Includes work from:)")
+    target("src/**/*.java")
+  }
+  format("misc") {
+    // not using "**/..." to help keep spotless fast
+    target(".gitignore", "*.md", "src/**/*.md", "*.sh", "src/**/*.properties")
+    indentWithSpaces()
+    trimTrailingWhitespace()
+    endWithNewline()
+  }
+}

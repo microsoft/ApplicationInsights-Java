@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.internal.perfcounter;
 
 import com.microsoft.applicationinsights.internal.perfcounter.jvm.DeadLockDetectorPerformanceCounter;
-import com.microsoft.applicationinsights.internal.perfcounter.jvm.GCPerformanceCounter;
+import com.microsoft.applicationinsights.internal.perfcounter.jvm.GcPerformanceCounter;
 import com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,14 +32,14 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The class will create dedicated Jvm performance counters, unless disabled by user in the
- * configuration file
+ * configuration file.
  */
 public class JvmPerformanceCountersFactory implements PerformanceCountersFactory {
 
   private static final Logger logger = LoggerFactory.getLogger(JvmPerformanceCountersFactory.class);
 
   private boolean isEnabled = true;
-  private HashSet<String> disabledJvmPCs = new HashSet<>();
+  private HashSet<String> disabledJvmPerfCounters = new HashSet<>();
 
   @Override
   public Collection<PerformanceCounter> getPerformanceCounters() {
@@ -47,7 +47,7 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
     if (isEnabled) {
       addDeadLockDetector(pcs);
       addJvmMemoryPerformanceCounter(pcs);
-      addGCPerformanceCounter(pcs);
+      addGcPerformanceCounter(pcs);
     } else {
       logger.trace("JvmPerformanceCountersFactory is disabled");
     }
@@ -56,7 +56,7 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
 
   private void addDeadLockDetector(ArrayList<PerformanceCounter> pcs) {
     try {
-      if (disabledJvmPCs.contains(DeadLockDetectorPerformanceCounter.NAME)) {
+      if (disabledJvmPerfCounters.contains(DeadLockDetectorPerformanceCounter.NAME)) {
         logger.trace("DeadLockDetectorPerformanceCounter is disabled");
         return;
       }
@@ -83,7 +83,7 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
 
   private void addJvmMemoryPerformanceCounter(ArrayList<PerformanceCounter> pcs) {
     try {
-      if (disabledJvmPCs.contains(JvmHeapMemoryUsedPerformanceCounter.NAME)) {
+      if (disabledJvmPerfCounters.contains(JvmHeapMemoryUsedPerformanceCounter.NAME)) {
         logger.trace("JvmHeapMemoryUsedPerformanceCounter is disabled");
         return;
       }
@@ -103,13 +103,13 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
     }
   }
 
-  private void addGCPerformanceCounter(ArrayList<PerformanceCounter> pcs) {
+  private void addGcPerformanceCounter(ArrayList<PerformanceCounter> pcs) {
     try {
-      if (disabledJvmPCs.contains(GCPerformanceCounter.NAME)) {
+      if (disabledJvmPerfCounters.contains(GcPerformanceCounter.NAME)) {
         return;
       }
 
-      GCPerformanceCounter mpc = new GCPerformanceCounter();
+      GcPerformanceCounter mpc = new GcPerformanceCounter();
       pcs.add(mpc);
     } catch (ThreadDeath td) {
       throw td;
@@ -128,7 +128,7 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
     this.isEnabled = isEnabled;
   }
 
-  public void setDisabledJvmPCs(HashSet<String> disabledJvmPCs) {
-    this.disabledJvmPCs = disabledJvmPCs;
+  public void setDisabledJvmPerfCounters(HashSet<String> disabledJvmPerfCounters) {
+    this.disabledJvmPerfCounters = disabledJvmPerfCounters;
   }
 }

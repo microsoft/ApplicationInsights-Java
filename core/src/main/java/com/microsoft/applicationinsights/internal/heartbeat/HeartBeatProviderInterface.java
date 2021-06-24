@@ -77,11 +77,7 @@ public interface HeartBeatProviderInterface {
    */
   void setHeartBeatEnabled(boolean isEnabled);
 
-  /**
-   * This returns the list of Excluded Heart Beat Providers
-   *
-   * @return list of excluded heartbeat providers
-   */
+  /** Returns the list of Excluded Heart Beat Providers. */
   List<String> getExcludedHeartBeatPropertyProviders();
 
   /**

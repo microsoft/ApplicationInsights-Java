@@ -69,7 +69,7 @@ public enum PerformanceCounterContainer {
   private volatile boolean initialized = false;
 
   private long startCollectingDelayInMillis = START_COLLECTING_DELAY_IN_MILLIS;
-  private long collectionFrequencyInMS = DEFAULT_COLLECTION_FREQUENCY_IN_SEC * 1000;
+  private long collectionFrequencyInMillis = DEFAULT_COLLECTION_FREQUENCY_IN_SEC * 1000;
 
   private ScheduledThreadPoolExecutor threads;
 
@@ -133,7 +133,7 @@ public enum PerformanceCounterContainer {
    * @return The timeout between collections.
    */
   public long getCollectionFrequencyInSec() {
-    return collectionFrequencyInMS / 1000;
+    return collectionFrequencyInMillis / 1000;
   }
 
   /**
@@ -173,7 +173,7 @@ public enum PerformanceCounterContainer {
       collectionFrequencyInSec = MIN_COLLECTION_FREQUENCY_IN_SEC;
     }
 
-    this.collectionFrequencyInMS = collectionFrequencyInSec * 1000;
+    this.collectionFrequencyInMillis = collectionFrequencyInSec * 1000;
   }
 
   /**
@@ -252,7 +252,7 @@ public enum PerformanceCounterContainer {
           }
         },
         startCollectingDelayInMillis,
-        collectionFrequencyInMS,
+        collectionFrequencyInMillis,
         TimeUnit.MILLISECONDS);
   }
 

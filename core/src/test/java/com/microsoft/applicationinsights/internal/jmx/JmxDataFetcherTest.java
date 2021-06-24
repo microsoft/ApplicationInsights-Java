@@ -29,12 +29,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import javax.management.*;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 import org.junit.jupiter.api.Test;
 
 class JmxDataFetcherTest {
 
-  @SuppressWarnings("unused")
+  @SuppressWarnings({"unused", "checkstyle:AbbreviationAsWordInName"})
   public interface StubMXBean {
     int getIntSample();
 
@@ -45,29 +46,29 @@ class JmxDataFetcherTest {
 
   @SuppressWarnings("unused")
   public static class TestStub implements StubMXBean {
-    public int i;
-    public double d;
-    public long l;
+    public int intSample;
+    public double doubleSample;
+    public long longSample;
 
-    public TestStub(int i, double d, long l) {
-      this.i = i;
-      this.d = d;
-      this.l = l;
+    public TestStub(int intSample, double doubleSample, long longSample) {
+      this.intSample = intSample;
+      this.doubleSample = doubleSample;
+      this.longSample = longSample;
     }
 
     @Override
     public int getIntSample() {
-      return i;
+      return intSample;
     }
 
     @Override
     public double getDoubleSample() {
-      return d;
+      return doubleSample;
     }
 
     @Override
     public long getLongSample() {
-      return l;
+      return longSample;
     }
   }
 
@@ -113,9 +114,9 @@ class JmxDataFetcherTest {
 
     performTest(attributes, 1.0, 2.0, 3.0);
 
-    testStub.i = 1000;
-    testStub.d = 2000.0;
-    testStub.l = 3000L;
+    testStub.intSample = 1000;
+    testStub.doubleSample = 2000.0;
+    testStub.longSample = 3000L;
 
     performTest(attributes, 1000.0, 2000.0, 3000.0);
   }

@@ -131,39 +131,22 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
     defaultFields.add(PROCESS_SESSION_ID);
   }
 
-  /**
-   * Gets the JDK version being used by the application
-   *
-   * @return String representing JDK Version
-   */
+  /** Returns the JDK version being used by the application. */
   private static String getJreVersion() {
     return System.getProperty("java.version");
   }
 
-  /**
-   * Returns the Application Insights SDK version user is using to instrument his application
-   *
-   * @return returns string prefixed with "java" representing the Application Insights Java SDK
-   *     version.
-   */
+  /** Returns the Application Insights SDK version user is using to instrument his application. */
   private static String getSdkVersion() {
     return PropertyHelper.getQualifiedSdkVersionString();
   }
 
-  /**
-   * Gets the OS version on which application is running.
-   *
-   * @return String representing OS version
-   */
+  /** Returns the OS version on which application is running. */
   private static String getOsVersion() {
     return System.getProperty("os.name");
   }
 
-  /**
-   * Returns the Unique GUID for the application's current session.
-   *
-   * @return String representing GUID for each running session
-   */
+  /** Returns the Unique GUID for the application's current session. */
   private static String getProcessSessionId() {
     if (uniqueProcessId == null) {
       uniqueProcessId = UUID.randomUUID();

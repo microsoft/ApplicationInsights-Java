@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.internal.config;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.common.Strings;
-import com.microsoft.applicationinsights.extensibility.*;
+import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.perfcounter.JmxMetricPerformanceCounter;
@@ -61,15 +61,6 @@ public enum TelemetryClientInitializer {
 
   TelemetryClientInitializer() {}
 
-  /**
-   * Currently we do the following:
-   *
-   * <p>Set Instrumentation Key Set Developer Mode (default false) Set Channel Set Tracking Disabled
-   * Mode (default false) Set Context Initializers where they should be written with full package
-   * name Set Telemetry Initializers where they should be written with full package name
-   *
-   * @param telemetryClient The configuration that will be populated
-   */
   public void initialize(
       TelemetryClient telemetryClient,
       ApplicationInsightsXmlConfiguration applicationInsightsConfig) {
@@ -219,7 +210,7 @@ public enum TelemetryClientInitializer {
       }
     }
 
-    loadCustomJmxPCs(performanceConfigurationData.getJmxXmlElements());
+    loadCustomJmxPerfCounters(performanceConfigurationData.getJmxXmlElements());
 
     return modules;
   }
@@ -240,7 +231,7 @@ public enum TelemetryClientInitializer {
    * every entry (object name and attributes) Build a {@link JmxMetricPerformanceCounter} Register
    * the Performance Counter in the {@link PerformanceCounterContainer}
    */
-  private static void loadCustomJmxPCs(ArrayList<JmxXmlElement> jmxXmlElements) {
+  private static void loadCustomJmxPerfCounters(ArrayList<JmxXmlElement> jmxXmlElements) {
     try {
       if (jmxXmlElements == null) {
         return;
@@ -312,7 +303,7 @@ public enum TelemetryClientInitializer {
   }
 
   /**
-   * Adds heartbeat module with default configuration
+   * Adds heartbeat module with default configuration.
    *
    * @param telemetryClient telemetry client instance
    */
@@ -322,7 +313,7 @@ public enum TelemetryClientInitializer {
   }
 
   /**
-   * Checks if heartbeat module is present
+   * Checks if heartbeat module is present.
    *
    * @param module List of modules in current TelemetryClient instance
    * @return true if heartbeat module is present

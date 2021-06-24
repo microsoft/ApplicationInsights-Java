@@ -1,14 +1,14 @@
 apply from: "$buildScriptsDir/common-java.gradle"
 
 dependencies {
-    testImplementation project(":agent:agent-gc-monitor:gc-monitor-core")
-    testImplementation project(":agent:agent-gc-monitor:gc-monitor-api")
+  testImplementation project(":agent:agent-gc-monitor:gc-monitor-core")
+  testImplementation project(":agent:agent-gc-monitor:gc-monitor-api")
 
-    testImplementation platform("org.junit:junit-bom:${versions.junit}")
-    testImplementation "org.junit.jupiter:junit-jupiter"
-    testImplementation "org.assertj:assertj-core:${versions.assertj}"
+  testImplementation platform("org.junit:junit-bom:${versions.junit}")
+  testImplementation "org.junit.jupiter:junit-jupiter"
+  testImplementation "org.assertj:assertj-core:${versions.assertj}"
 }
 
 tasks.withType(JavaCompile) {
-    options.release.set(11)
+  options.release.set(11)
 }

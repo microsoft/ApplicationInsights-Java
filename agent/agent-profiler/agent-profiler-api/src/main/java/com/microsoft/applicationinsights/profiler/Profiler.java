@@ -27,7 +27,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 import javax.management.InstanceNotFoundException;
 
-/** A service that is able to perform a profile and pass the results to to profileHandler */
+/** A service that is able to perform a profile and pass the results to to profileHandler. */
 public interface Profiler extends ProfilerConfigurationHandler, Consumer<AlertBreach> {
   boolean initialize(
       ProfileHandler profileHandler, ScheduledExecutorService scheduledExecutorService)

@@ -28,8 +28,8 @@ import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.profiler.config.AlertConfigParser;
-import com.microsoft.gcmonitor.GCCollectionEvent;
-import com.microsoft.gcmonitor.GCEventConsumer;
+import com.microsoft.gcmonitor.GcCollectionEvent;
+import com.microsoft.gcmonitor.GcEventConsumer;
 import com.microsoft.gcmonitor.GcMonitorFactory;
 import com.microsoft.gcmonitor.MemoryManagement;
 import com.microsoft.gcmonitor.garbagecollectors.GarbageCollector;
@@ -59,7 +59,7 @@ class GcEventMonitorTest {
         new GcMonitorFactory() {
           @Override
           public MemoryManagement monitorSelf(
-              ExecutorService executorService, GCEventConsumer consumer) {
+              ExecutorService executorService, GcEventConsumer consumer) {
             consumer.accept(mockGcEvent());
             return null;
           }
@@ -68,7 +68,7 @@ class GcEventMonitorTest {
           public MemoryManagement monitor(
               MBeanServerConnection connection,
               ExecutorService executorService,
-              GCEventConsumer consumer) {
+              GcEventConsumer consumer) {
             return null;
           }
         };
@@ -101,8 +101,8 @@ class GcEventMonitorTest {
     return alertingSubsystem;
   }
 
-  private static GCCollectionEvent mockGcEvent() {
-    GCCollectionEvent event = Mockito.mock(GCCollectionEvent.class);
+  private static GcCollectionEvent mockGcEvent() {
+    GcCollectionEvent event = Mockito.mock(GcCollectionEvent.class);
     GarbageCollector collector = Mockito.mock(GarbageCollector.class);
     MemoryPool tenuredPool = Mockito.mock(MemoryPool.class);
     Mockito.when(collector.isTenuredCollector()).thenReturn(true);

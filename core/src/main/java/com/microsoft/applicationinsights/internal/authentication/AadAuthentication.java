@@ -56,9 +56,9 @@ public class AadAuthentication {
   public HttpPipelinePolicy getAuthenticationPolicy() {
     switch (authenticationType) {
       case UAMI:
-        return getAuthenticationPolicyWithUAMI();
+        return getAuthenticationPolicyWithUami();
       case SAMI:
-        return getAuthenticationPolicyWithSAMI();
+        return getAuthenticationPolicyWithSami();
       case VSCODE:
         return getAuthenticationPolicyWithVsCode();
       case CLIENTSECRET:
@@ -68,7 +68,7 @@ public class AadAuthentication {
         "Invalid Authentication Type used in AAD Authentication: " + authenticationType);
   }
 
-  private HttpPipelinePolicy getAuthenticationPolicyWithUAMI() {
+  private HttpPipelinePolicy getAuthenticationPolicyWithUami() {
     ManagedIdentityCredentialBuilder managedIdentityCredential =
         new ManagedIdentityCredentialBuilder().clientId(clientId);
     return new BearerTokenAuthenticationPolicy(
@@ -95,7 +95,7 @@ public class AadAuthentication {
         visualStudioCodeCredential, APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE);
   }
 
-  private static HttpPipelinePolicy getAuthenticationPolicyWithSAMI() {
+  private static HttpPipelinePolicy getAuthenticationPolicyWithSami() {
     ManagedIdentityCredential managedIdentityCredential =
         new ManagedIdentityCredentialBuilder().build();
     return new BearerTokenAuthenticationPolicy(

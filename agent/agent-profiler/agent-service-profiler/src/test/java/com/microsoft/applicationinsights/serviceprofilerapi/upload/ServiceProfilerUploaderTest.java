@@ -25,7 +25,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.azure.storage.blob.options.BlobUploadFromFileOptions;
-import com.microsoft.applicationinsights.profileUploader.ServiceProfilerIndex;
+import com.microsoft.applicationinsights.profiler.uploader.ServiceProfilerIndex;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
@@ -136,7 +136,7 @@ class ServiceProfilerUploaderTest {
   }
 
   @Test
-  void uploadWithoutAFileThrows() {
+  void uploadWithoutFileThrows() {
 
     ServiceProfilerClientV2 serviceProfilerClient = stubServiceProfilerClient();
 

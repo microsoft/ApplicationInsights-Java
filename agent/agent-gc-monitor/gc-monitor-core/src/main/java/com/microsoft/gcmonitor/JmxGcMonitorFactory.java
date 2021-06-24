@@ -28,16 +28,16 @@ import javax.management.MBeanServerConnection;
 public class JmxGcMonitorFactory implements GcMonitorFactory {
 
   @Override
-  public MemoryManagement monitorSelf(ExecutorService executorService, GCEventConsumer consumer)
+  public MemoryManagement monitorSelf(ExecutorService executorService, GcEventConsumer consumer)
       throws UnableToMonitorMemoryException {
     return monitor(ManagementFactory.getPlatformMBeanServer(), executorService, consumer);
   }
 
   @Override
   public MemoryManagement monitor(
-      MBeanServerConnection connection, ExecutorService executorService, GCEventConsumer consumer)
+      MBeanServerConnection connection, ExecutorService executorService, GcEventConsumer consumer)
       throws UnableToMonitorMemoryException {
-    return new JMXMemoryManagement()
+    return new JmxMemoryManagement()
         .init(connection, consumer)
         .monitorMxBeans(connection, executorService);
   }

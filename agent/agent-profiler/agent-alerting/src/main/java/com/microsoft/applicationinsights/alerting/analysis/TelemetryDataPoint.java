@@ -25,7 +25,7 @@ import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
-/** Individual sample of telemetry data */
+/** Individual sample of telemetry data. */
 public class TelemetryDataPoint implements Comparable<TelemetryDataPoint> {
   private final AlertMetricType type;
   private final ZonedDateTime time;
@@ -45,7 +45,7 @@ public class TelemetryDataPoint implements Comparable<TelemetryDataPoint> {
     return time;
   }
 
-  /** Sort first by timestamp, then value, then type */
+  /** Sort first by timestamp, then value, then type. */
   @Override
   public int compareTo(TelemetryDataPoint telemetryDataPoint) {
     if (!time.equals(telemetryDataPoint.time)) {

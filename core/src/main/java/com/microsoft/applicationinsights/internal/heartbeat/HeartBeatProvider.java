@@ -21,7 +21,11 @@
 
 package com.microsoft.applicationinsights.internal.heartbeat;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.FormattedTime;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
@@ -50,31 +54,31 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
   /** The name of the heartbeat metric. */
   private static final String HEARTBEAT_SYNTHETIC_METRIC_NAME = "HeartbeatState";
 
-  /** The list of disabled properties */
+  /** The list of disabled properties. */
   private List<String> disableDefaultProperties = new ArrayList<>();
 
-  /** List of disabled heartbeat providers */
+  /** List of disabled heartbeat providers. */
   private List<String> disabledHeartBeatPropertiesProviders = new ArrayList<>();
 
-  /** The counter for heartbeat sent to portal */
+  /** The counter for heartbeat sent to portal. */
   private long heartbeatsSent;
 
-  /** Map to hold heartbeat properties */
+  /** Map to hold heartbeat properties. */
   private final ConcurrentMap<String, HeartBeatPropertyPayload> heartbeatProperties;
 
-  /** Interval at which heartbeat would be sent */
+  /** Interval at which heartbeat would be sent. */
   private long interval;
 
   /** Telemetry client instance used to send heartbeat. */
   private TelemetryClient telemetryClient;
 
-  /** ThreadPool used for adding properties to concurrent dictionary */
+  /** ThreadPool used for adding properties to concurrent dictionary. */
   private final ExecutorService propertyUpdateService;
 
-  /** Threadpool used to send data heartbeat telemetry */
+  /** Threadpool used to send data heartbeat telemetry. */
   private final ScheduledExecutorService heartBeatSenderService;
 
-  /** Heartbeat enabled state */
+  /** Heartbeat enabled state. */
   private volatile boolean isEnabled;
 
   public HeartBeatProvider() {

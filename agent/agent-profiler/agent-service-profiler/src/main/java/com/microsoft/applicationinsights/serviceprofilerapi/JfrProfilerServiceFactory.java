@@ -22,11 +22,11 @@
 package com.microsoft.applicationinsights.serviceprofilerapi;
 
 import com.azure.core.http.HttpPipeline;
-import com.microsoft.applicationinsights.profileUploader.UploadCompleteHandler;
 import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
 import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
+import com.microsoft.applicationinsights.profiler.uploader.UploadCompleteHandler;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFrontendClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler;
@@ -38,7 +38,7 @@ import java.util.function.Supplier;
 
 /**
  * Default ProfilerService factory loaded by a service loader, produces a Profiler Service based on
- * JFR
+ * JFR.
  */
 public class JfrProfilerServiceFactory implements ProfilerServiceFactory {
   // Singleton instance that holds the one and only service of the ServiceProfiler subsystem

@@ -1,106 +1,131 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.microsoft.applicationinsights.smoketest;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
+import com.microsoft.applicationinsights.smoketest.schemav2.Data;
+import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionData;
+import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
+import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
+import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import java.util.Comparator;
 import java.util.List;
-
-import com.microsoft.applicationinsights.internal.schemav2.Data;
-import com.microsoft.applicationinsights.internal.schemav2.Envelope;
-import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
-import com.microsoft.applicationinsights.internal.schemav2.MessageData;
-import com.microsoft.applicationinsights.internal.schemav2.RequestData;
-import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
-import org.junit.*;
-
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 @UseAgent("logging")
 public class TraceLogBackTest extends AiSmokeTest {
 
-    @Test
-    @TargetUri("/traceLogBack")
-    public void testTraceLogBack() throws Exception {
-        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(2);
+  @Test
+  @TargetUri("/traceLogBack")
+  public void testTraceLogBack() throws Exception {
+    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(2);
 
-        Envelope rdEnvelope = rdList.get(0);
-        Envelope mdEnvelope1 = mdList.get(0);
-        Envelope mdEnvelope2 = mdList.get(1);
+    Envelope rdEnvelope = rdList.get(0);
+    Envelope mdEnvelope1 = mdList.get(0);
+    Envelope mdEnvelope2 = mdList.get(1);
 
-        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-        List<MessageData> logs = mockedIngestion.getMessageDataInRequest();
-        logs.sort(Comparator.comparing(MessageData::getSeverityLevel));
+    List<MessageData> logs = mockedIngestion.getMessageDataInRequest();
+    logs.sort(Comparator.comparing(MessageData::getSeverityLevel));
 
-        MessageData md1 = logs.get(0);
-        MessageData md2 = logs.get(1);
+    MessageData md1 = logs.get(0);
+    MessageData md2 = logs.get(1);
 
-        assertEquals("This is logback warn.", md1.getMessage());
-        assertEquals(SeverityLevel.Warning, md1.getSeverityLevel());
-        assertEquals("Logger", md1.getProperties().get("SourceType"));
-        assertEquals("WARN", md1.getProperties().get("LoggingLevel"));
-        assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
-        // TODO add MDC instrumentation for jboss logging
-        if (currentImageName.contains("wildfly")) {
-            assertEquals(3, md1.getProperties().size());
-        } else {
-            assertEquals("MDC value", md1.getProperties().get("MDC key"));
-            assertEquals(4, md1.getProperties().size());
-        }
-
-        assertEquals("This is logback error.", md2.getMessage());
-        assertEquals(SeverityLevel.Error, md2.getSeverityLevel());
-        assertEquals("Logger", md2.getProperties().get("SourceType"));
-        assertEquals("ERROR", md2.getProperties().get("LoggingLevel"));
-        assertEquals("smoketestapp", md2.getProperties().get("LoggerName"));
-        assertEquals(3, md2.getProperties().size());
-
-        assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /TraceLogBackUsingAgent/traceLogBack");
-        assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /TraceLogBackUsingAgent/traceLogBack");
+    assertEquals("This is logback warn.", md1.getMessage());
+    assertEquals(SeverityLevel.Warning, md1.getSeverityLevel());
+    assertEquals("Logger", md1.getProperties().get("SourceType"));
+    assertEquals("WARN", md1.getProperties().get("LoggingLevel"));
+    assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
+    // TODO add MDC instrumentation for jboss logging
+    if (currentImageName.contains("wildfly")) {
+      assertEquals(3, md1.getProperties().size());
+    } else {
+      assertEquals("MDC value", md1.getProperties().get("MDC key"));
+      assertEquals(4, md1.getProperties().size());
     }
 
-    @Test
-    @TargetUri("traceLogBackWithException")
-    public void testTraceLogBackWithExeption() throws Exception {
-        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    assertEquals("This is logback error.", md2.getMessage());
+    assertEquals(SeverityLevel.Error, md2.getSeverityLevel());
+    assertEquals("Logger", md2.getProperties().get("SourceType"));
+    assertEquals("ERROR", md2.getProperties().get("LoggingLevel"));
+    assertEquals("smoketestapp", md2.getProperties().get("LoggerName"));
+    assertEquals(3, md2.getProperties().size());
 
-        Envelope rdEnvelope = rdList.get(0);
-        String operationId = rdEnvelope.getTags().get("ai.operation.id");
-        List<Envelope> edList = mockedIngestion.waitForItemsInOperation("ExceptionData", 1, operationId);
-        assertEquals(0, mockedIngestion.getCountForType("EventData"));
+    assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /TraceLogBackUsingAgent/traceLogBack");
+    assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /TraceLogBackUsingAgent/traceLogBack");
+  }
 
-        Envelope edEnvelope = edList.get(0);
+  @Test
+  @TargetUri("traceLogBackWithException")
+  public void testTraceLogBackWithExeption() throws Exception {
+    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
 
-        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-        ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();
+    Envelope rdEnvelope = rdList.get(0);
+    String operationId = rdEnvelope.getTags().get("ai.operation.id");
+    List<Envelope> edList =
+        mockedIngestion.waitForItemsInOperation("ExceptionData", 1, operationId);
+    assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
-        assertEquals("Fake Exception", ed.getExceptions().get(0).getMessage());
-        assertEquals(SeverityLevel.Error, ed.getSeverityLevel());
-        assertEquals("This is an exception!", ed.getProperties().get("Logger Message"));
-        assertEquals("Logger", ed.getProperties().get("SourceType"));
-        assertEquals("ERROR", ed.getProperties().get("LoggingLevel"));
-        assertEquals("smoketestapp", ed.getProperties().get("LoggerName"));
-        // TODO add MDC instrumentation for jboss logging
-        if (currentImageName.contains("wildfly")) {
-            assertEquals(4, ed.getProperties().size());
-        } else {
-            assertEquals("MDC value", ed.getProperties().get("MDC key"));
-            assertEquals(5, ed.getProperties().size());
-        }
+    Envelope edEnvelope = edList.get(0);
 
-        assertParentChild(rd, rdEnvelope, edEnvelope, "GET /TraceLogBackUsingAgent/traceLogBackWithException");
+    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+    ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();
+
+    assertEquals("Fake Exception", ed.getExceptions().get(0).getMessage());
+    assertEquals(SeverityLevel.Error, ed.getSeverityLevel());
+    assertEquals("This is an exception!", ed.getProperties().get("Logger Message"));
+    assertEquals("Logger", ed.getProperties().get("SourceType"));
+    assertEquals("ERROR", ed.getProperties().get("LoggingLevel"));
+    assertEquals("smoketestapp", ed.getProperties().get("LoggerName"));
+    // TODO add MDC instrumentation for jboss logging
+    if (currentImageName.contains("wildfly")) {
+      assertEquals(4, ed.getProperties().size());
+    } else {
+      assertEquals("MDC value", ed.getProperties().get("MDC key"));
+      assertEquals(5, ed.getProperties().size());
     }
 
-    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {
-        String operationId = rdEnvelope.getTags().get("ai.operation.id");
-        assertNotNull(operationId);
-        assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
+    assertParentChild(
+        rd, rdEnvelope, edEnvelope, "GET /TraceLogBackUsingAgent/traceLogBackWithException");
+  }
 
-        String operationParentId = rdEnvelope.getTags().get("ai.operation.parentId");
-        assertNull(operationParentId);
+  private static void assertParentChild(
+      RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {
+    String operationId = rdEnvelope.getTags().get("ai.operation.id");
+    assertNotNull(operationId);
+    assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
 
-        assertEquals(rd.getId(), childEnvelope.getTags().get("ai.operation.parentId"));
+    String operationParentId = rdEnvelope.getTags().get("ai.operation.parentId");
+    assertNull(operationParentId);
 
-        assertEquals(operationName, rdEnvelope.getTags().get("ai.operation.name"));
-        assertNull(childEnvelope.getTags().get("ai.operation.name"));
-    }
+    assertEquals(rd.getId(), childEnvelope.getTags().get("ai.operation.parentId"));
+
+    assertEquals(operationName, rdEnvelope.getTags().get("ai.operation.name"));
+    assertNull(childEnvelope.getTags().get("ai.operation.name"));
+  }
 }

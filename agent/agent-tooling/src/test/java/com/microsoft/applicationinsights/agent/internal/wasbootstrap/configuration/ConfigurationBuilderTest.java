@@ -25,7 +25,7 @@ import static com.microsoft.applicationinsights.agent.internal.wasbootstrap.conf
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.microsoft.applicationinsights.customExceptions.FriendlyException;
+import com.microsoft.applicationinsights.exceptions.FriendlyException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;

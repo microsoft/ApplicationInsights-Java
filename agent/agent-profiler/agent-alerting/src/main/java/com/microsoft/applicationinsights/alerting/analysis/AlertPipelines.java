@@ -31,7 +31,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Contains analysis pipelines for all metric types */
+/** Contains analysis pipelines for all metric types. */
 public class AlertPipelines {
   private static final Logger LOGGER = LoggerFactory.getLogger(AlertPipelines.class);
 
@@ -68,7 +68,7 @@ public class AlertPipelines {
         "Set alert configuration for {}: {}", newAlertConfig.getType(), newAlertConfig.toString());
   }
 
-  /** Ensure that alerts contain the required metrics and notify upstream handler */
+  /** Ensure that alerts contain the required metrics and notify upstream handler. */
   private void dispatchAlert(AlertBreach alert) {
     alertHandler.accept(addMetricData(alert));
   }
@@ -91,7 +91,7 @@ public class AlertPipelines {
     return alert;
   }
 
-  /** Route telemetry to the appropriate pipeline */
+  /** Route telemetry to the appropriate pipeline. */
   public void process(TelemetryDataPoint telemetryDataPoint) {
     AlertPipeline pipeline = alertPipelines.get(telemetryDataPoint.getType());
     if (pipeline != null) {

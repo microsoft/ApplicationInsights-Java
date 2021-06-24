@@ -22,16 +22,16 @@
 package com.microsoft.applicationinsights.serviceprofilerapi.profiler;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-import com.microsoft.applicationinsights.profileUploader.UploadCompleteHandler;
-import com.microsoft.applicationinsights.profileUploader.UploadResult;
 import com.microsoft.applicationinsights.profiler.ProfileHandler;
+import com.microsoft.applicationinsights.profiler.uploader.UploadCompleteHandler;
+import com.microsoft.applicationinsights.profiler.uploader.UploadResult;
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
 import java.io.File;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Receives notifications of new profiles and uploads them to Service Profiler */
+/** Receives notifications of new profiles and uploads them to Service Profiler. */
 public class JfrUploadService implements ProfileHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(JfrUploadService.class);
 

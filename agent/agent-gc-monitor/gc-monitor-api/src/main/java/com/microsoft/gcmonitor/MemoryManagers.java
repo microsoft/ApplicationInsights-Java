@@ -35,16 +35,16 @@ import java.util.stream.Collectors;
  */
 public enum MemoryManagers {
   ParallelScavenge(
-      GarbageCollectors.PSMarkSweep.class,
-      GarbageCollectors.PSScavenge.class,
-      MemoryPools.PSOldGen.class,
-      GarbageCollectors.PSMarkSweep.class,
-      GarbageCollectors.PSScavenge.class),
+      GarbageCollectors.PsMarkSweep.class,
+      GarbageCollectors.PsScavenge.class,
+      MemoryPools.PsOldGen.class,
+      GarbageCollectors.PsMarkSweep.class,
+      GarbageCollectors.PsScavenge.class),
 
   ConcurrentMarkSweep(
       GarbageCollectors.ConcurrentMarkSweep.class,
       GarbageCollectors.ParNew.class,
-      MemoryPools.CMSOldGen.class,
+      MemoryPools.CmsOldGen.class,
       GarbageCollectors.ConcurrentMarkSweep.class,
       GarbageCollectors.ParNew.class),
 
@@ -70,10 +70,10 @@ public enum MemoryManagers {
       GarbageCollectors.ShenandoahPauses.class),
 
   ZGC(
-      GarbageCollectors.ZGC.class,
-      GarbageCollectors.ZGC.class,
+      GarbageCollectors.Zgc.class,
+      GarbageCollectors.Zgc.class,
       MemoryPools.ZHeap.class,
-      GarbageCollectors.ZGC.class);
+      GarbageCollectors.Zgc.class);
 
   private final Class<? extends GarbageCollector>[] managers;
   // TODO (johnoliver) can these be removed?

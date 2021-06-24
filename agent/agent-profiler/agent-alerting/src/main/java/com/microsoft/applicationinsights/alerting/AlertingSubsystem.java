@@ -103,7 +103,7 @@ public class AlertingSubsystem {
     return alertingSubsystem;
   }
 
-  /** Create alerting pipelines with default configuration */
+  /** Create alerting pipelines with default configuration. */
   public void initialize(AlertingConfiguration alertConfig) {
 
     updateConfiguration(alertConfig);
@@ -130,14 +130,14 @@ public class AlertingSubsystem {
         });
   }
 
-  /** Add telemetry to alert processing pipeline */
+  /** Add telemetry to alert processing pipeline. */
   public void track(AlertMetricType type, Number value) {
     if (type != null && value != null) {
       workQueue.add(new TelemetryDataPoint(type, timeSource.getNow(), value.doubleValue()));
     }
   }
 
-  /** Block until work queue is empty */
+  /** Block until work queue is empty. */
   public void awaitQueueFlush() {
     while (workQueue.size() > 0) {
       synchronized (monitor) {
@@ -152,7 +152,7 @@ public class AlertingSubsystem {
     }
   }
 
-  /** Deliver data to pipelines */
+  /** Deliver data to pipelines. */
   public void process(TelemetryDataPoint telemetryDataPoint) {
     if (telemetryDataPoint == null) {
       return;
@@ -162,7 +162,7 @@ public class AlertingSubsystem {
     alertPipelines.process(telemetryDataPoint);
   }
 
-  /** Apply given configuration to the alerting pipelines */
+  /** Apply given configuration to the alerting pipelines. */
   public void updateConfiguration(AlertingConfiguration alertingConfig) {
     if (this.alertConfig == null || !this.alertConfig.equals(alertingConfig)) {
       AlertConfiguration oldCpuConfig =
@@ -178,7 +178,7 @@ public class AlertingSubsystem {
     }
   }
 
-  /** If the config has changed update the pipeline */
+  /** If the config has changed update the pipeline. */
   private void updatePipelineConfig(
       AlertConfiguration newAlertConfig, AlertConfiguration oldAlertConfig) {
     if (oldAlertConfig == null || !oldAlertConfig.equals(newAlertConfig)) {
@@ -186,7 +186,7 @@ public class AlertingSubsystem {
     }
   }
 
-  /** Determine if a manual alert has been requested */
+  /** Determine if a manual alert has been requested. */
   private void evaluateManualTrigger(AlertingConfiguration alertConfig) {
     CollectionPlanConfiguration config = alertConfig.getCollectionPlanConfiguration();
 

@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.internal.jmx;
 
 /**
  * Represents JMX data of an Attribute The display name The name of the attribute The type of the
- * attribute
+ * attribute.
  */
 public final class JmxAttributeData {
   public final String metricName;

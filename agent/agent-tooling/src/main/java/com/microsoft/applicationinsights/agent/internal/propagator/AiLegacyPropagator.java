@@ -22,7 +22,12 @@
 package com.microsoft.applicationinsights.agent.internal.propagator;
 
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.LegacyHeaderSpanProcessor.LegacyIds;
-import io.opentelemetry.api.trace.*;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;

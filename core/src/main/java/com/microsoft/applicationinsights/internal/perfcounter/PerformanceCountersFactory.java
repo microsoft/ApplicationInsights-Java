@@ -29,7 +29,7 @@ import java.util.Collection;
  */
 public interface PerformanceCountersFactory {
   /**
-   * Creates the {@link com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter}
+   * Creates the {@link com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter}.
    *
    * <p>Note: The method should not throw
    *

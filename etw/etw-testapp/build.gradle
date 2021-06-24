@@ -1,25 +1,18 @@
-
-buildscript {
-    dependencies {
-        classpath "org.springframework.boot:spring-boot-gradle-plugin:2.1.7.RELEASE"
-    }
+plugins {
+  id "org.springframework.boot" version "2.1.7.RELEASE"
+  id "war"
 }
 
-apply plugin: "war"
-apply plugin: "org.springframework.boot"
+apply from: "$buildScriptsDir/common-java.gradle"
 
 dependencies {
-    compileOnly "javax.servlet:javax.servlet-api:3.0.1"
-    // TODO (trask) ETW: is this project really needed? if so, need to restore devtest configuration
-    // compileOnly project(path:":agent:agent", configuration:"devtest")
-    compileOnly project(path:":agent:agent")
+  compileOnly "javax.servlet:javax.servlet-api:3.0.1"
+  // TODO (trask) ETW: is this project really needed? if so, need to restore devtest configuration
+  // compileOnly project(path:":agent:agent", configuration:"devtest")
+  compileOnly project(path: ":agent:agent")
 
-    implementation ("org.springframework.boot:spring-boot-starter-web:2.1.7.RELEASE") {
-        exclude group: "org.springframework.boot", module: "spring-boot-starter-tomcat"
-    }
-    implementation "org.apache.commons:commons-lang3:${versions.commonsLang}"
-}
-
-tasks.withType(JavaCompile) {
-    options.release.set(8)
+  implementation("org.springframework.boot:spring-boot-starter-web:2.1.7.RELEASE") {
+    exclude group: "org.springframework.boot", module: "spring-boot-starter-tomcat"
+  }
+  implementation "org.apache.commons:commons-lang3:${versions.commonsLang}"
 }
