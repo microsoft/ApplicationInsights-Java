@@ -37,7 +37,7 @@ public class Envelope {
   private double sampleRate = 100.0;
 
   /** Backing field for property IKey. */
-  @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
+  @SuppressWarnings("checkstyle:MemberName")
   private String iKey;
 
   /** Backing field for property Tags. */
@@ -59,9 +59,17 @@ public class Envelope {
     this.time = value;
   }
 
+  public String getTime() {
+    return time;
+  }
+
   /** Sets the SampleRate property. */
   public void setSampleRate(double value) {
     this.sampleRate = value;
+  }
+
+  public double getSampleRate() {
+    return sampleRate;
   }
 
   /** Gets the IKey property. */
