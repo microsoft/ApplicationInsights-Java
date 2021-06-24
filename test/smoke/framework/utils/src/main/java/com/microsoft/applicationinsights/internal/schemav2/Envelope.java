@@ -65,11 +65,13 @@ public class Envelope {
 
   /** Gets the IKey property. */
   // used by smoke tests
+  @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
   public String getIKey() {
     return this.ikey;
   }
 
   /** Sets the IKey property. */
+  @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
   public void setIKey(String value) {
     this.ikey = value;
   }

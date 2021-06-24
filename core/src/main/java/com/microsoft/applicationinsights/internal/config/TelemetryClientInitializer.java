@@ -210,7 +210,7 @@ public enum TelemetryClientInitializer {
       }
     }
 
-    loadCustomJmxPCs(performanceConfigurationData.getJmxXmlElements());
+    loadCustomJmxPerfCounters(performanceConfigurationData.getJmxXmlElements());
 
     return modules;
   }
@@ -231,7 +231,7 @@ public enum TelemetryClientInitializer {
    * every entry (object name and attributes) Build a {@link JmxMetricPerformanceCounter} Register
    * the Performance Counter in the {@link PerformanceCounterContainer}
    */
-  private static void loadCustomJmxPCs(ArrayList<JmxXmlElement> jmxXmlElements) {
+  private static void loadCustomJmxPerfCounters(ArrayList<JmxXmlElement> jmxXmlElements) {
     try {
       if (jmxXmlElements == null) {
         return;

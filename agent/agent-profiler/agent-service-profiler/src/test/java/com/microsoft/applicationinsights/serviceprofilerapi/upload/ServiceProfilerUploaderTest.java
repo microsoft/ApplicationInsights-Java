@@ -136,7 +136,7 @@ class ServiceProfilerUploaderTest {
   }
 
   @Test
-  void uploadWithoutAFileThrows() {
+  void uploadWithoutFileThrows() {
 
     ServiceProfilerClientV2 serviceProfilerClient = stubServiceProfilerClient();
 

@@ -346,12 +346,12 @@ class ExporterWithSpanProcessorTest {
             .setAttribute("password", "234")
             .startSpan();
 
-    SpanData spanAData = ((ReadableSpan) spanA).toSpanData();
-    SpanData spanBData = ((ReadableSpan) spanB).toSpanData();
+    SpanData spanDataA = ((ReadableSpan) spanA).toSpanData();
+    SpanData spanDataB = ((ReadableSpan) spanB).toSpanData();
 
     List<SpanData> spans = new ArrayList<>();
-    spans.add(spanAData);
-    spans.add(spanBData);
+    spans.add(spanDataA);
+    spans.add(spanDataB);
     exampleExporter.export(spans);
 
     // verify that resulting spans are filtered in the way we want

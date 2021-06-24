@@ -22,29 +22,31 @@
 package com.microsoft.applicationinsights.internal.quickpulse;
 
 final class QuickPulseCoordinatorInitDataBuilder {
-  private static final long DEFAULT_WAIT_BETWEEN_PING_IN_MS = 5000;
-  private static final long DEFAULT_WAIT_BETWEEN_POSTS_IN_MS = 1000;
-  private static final long DEFAULT_WAIT_BETWEEN_PINGS_AFTER_ERROR_IN_MS = 60000;
+  private static final long DEFAULT_WAIT_BETWEEN_PING_IN_MILLIS = 5000;
+  private static final long DEFAULT_WAIT_BETWEEN_POSTS_IN_MILLIS = 1000;
+  private static final long DEFAULT_WAIT_BETWEEN_PINGS_AFTER_ERROR_IN_MILLIS = 60000;
 
   private QuickPulsePingSender pingSender;
   private QuickPulseDataSender dataSender;
   private QuickPulseDataFetcher dataFetcher;
-  private long waitBetweenPingsInMS = DEFAULT_WAIT_BETWEEN_PING_IN_MS;
-  private long waitBetweenPostsInMS = DEFAULT_WAIT_BETWEEN_POSTS_IN_MS;
-  private long waitOnErrorInMS = DEFAULT_WAIT_BETWEEN_PINGS_AFTER_ERROR_IN_MS;
+  private long waitBetweenPingsInMillis = DEFAULT_WAIT_BETWEEN_PING_IN_MILLIS;
+  private long waitBetweenPostsInMillis = DEFAULT_WAIT_BETWEEN_POSTS_IN_MILLIS;
+  private long waitOnErrorInMillis = DEFAULT_WAIT_BETWEEN_PINGS_AFTER_ERROR_IN_MILLIS;
 
-  public QuickPulseCoordinatorInitDataBuilder withWaitBetweenPingsInMS(long waitBetweenPingsInMS) {
-    this.waitBetweenPingsInMS = waitBetweenPingsInMS;
+  public QuickPulseCoordinatorInitDataBuilder withWaitBetweenPingsInMillis(
+      long waitBetweenPingsInMillis) {
+    this.waitBetweenPingsInMillis = waitBetweenPingsInMillis;
     return this;
   }
 
-  public QuickPulseCoordinatorInitDataBuilder withWaitBetweenPostsInMS(long waitBetweenPostsInMS) {
-    this.waitBetweenPostsInMS = waitBetweenPostsInMS;
+  public QuickPulseCoordinatorInitDataBuilder withWaitBetweenPostsInMillis(
+      long waitBetweenPostsInMillis) {
+    this.waitBetweenPostsInMillis = waitBetweenPostsInMillis;
     return this;
   }
 
-  public QuickPulseCoordinatorInitDataBuilder withWaitOnErrorInMS(long waitOnErrorInMS) {
-    this.waitOnErrorInMS = waitOnErrorInMS;
+  public QuickPulseCoordinatorInitDataBuilder withWaitOnErrorInMillis(long waitOnErrorInMillis) {
+    this.waitOnErrorInMillis = waitOnErrorInMillis;
     return this;
   }
 
@@ -78,8 +80,8 @@ final class QuickPulseCoordinatorInitDataBuilder {
         pingSender,
         dataFetcher,
         dataSender,
-        waitBetweenPingsInMS,
-        waitBetweenPostsInMS,
-        waitOnErrorInMS);
+        waitBetweenPingsInMillis,
+        waitBetweenPostsInMillis,
+        waitOnErrorInMillis);
   }
 }

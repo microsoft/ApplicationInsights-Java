@@ -61,13 +61,13 @@ public class AlertPipeline implements AlertPipelineMxBean {
       AlertConfiguration alertConfiguration,
       Consumer<AlertBreach> alertObserver) {
     AlertPipeline trigger = new AlertPipeline(rollingAverage, alertObserver, alertConfiguration);
-    trigger.registerMBean();
+    trigger.registerMbean();
 
     trigger.setAlertTrigger(rollingAverage, alertConfiguration, alertObserver);
     return trigger;
   }
 
-  private void registerMBean() {
+  private void registerMbean() {
     try {
       ObjectName objectName = new ObjectName(JMX_KEY + alertConfiguration.getType().name());
 

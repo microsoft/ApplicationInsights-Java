@@ -316,6 +316,7 @@ public enum MemoryPools {
     }
   }
 
+  @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
   public static class ZHeap extends MemoryPool {
     public static final String POOL_NAME = "ZHeap";
 

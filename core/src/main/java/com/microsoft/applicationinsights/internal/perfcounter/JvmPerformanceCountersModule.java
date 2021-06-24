@@ -68,7 +68,7 @@ import java.util.HashSet;
 public final class JvmPerformanceCountersModule extends AbstractPerformanceCounterModule
     implements PerformanceCounterConfigurationAware {
 
-  private static final String[] JvmPCNames = {
+  private static final String[] JVM_PERF_COUNTER_NAMES = {
     DeadLockDetectorPerformanceCounter.NAME,
     JvmHeapMemoryUsedPerformanceCounter.NAME,
     GcPerformanceCounter.NAME
@@ -99,15 +99,15 @@ public final class JvmPerformanceCountersModule extends AbstractPerformanceCount
       return;
     }
 
-    HashMap<String, JvmXmlElement> jvmPcsMap = jvmSection.getJvmXmlElementsMap();
-    HashSet<String> disabledJvmPCs = new HashSet<>();
+    HashMap<String, JvmXmlElement> jvmPerfCountersMap = jvmSection.getJvmXmlElementsMap();
+    HashSet<String> disabledJvmPerfCounters = new HashSet<>();
 
-    for (String jvmPcName : JvmPCNames) {
-      JvmXmlElement pc = jvmPcsMap.get(jvmPcName);
+    for (String jvmPcName : JVM_PERF_COUNTER_NAMES) {
+      JvmXmlElement pc = jvmPerfCountersMap.get(jvmPcName);
       if (pc != null && !pc.isEnabled()) {
-        disabledJvmPCs.add(jvmPcName);
+        disabledJvmPerfCounters.add(jvmPcName);
       }
     }
-    f.setDisabledJvmPCs(disabledJvmPCs);
+    f.setDisabledJvmPerfCounters(disabledJvmPerfCounters);
   }
 }

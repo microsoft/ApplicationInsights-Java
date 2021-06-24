@@ -55,7 +55,7 @@ public class DelegatingPropagator implements TextMapPropagator {
     // headers are present
     delegate =
         TextMapPropagator.composite(
-            AiLegacyPropagator.getInstance(), new ModifiedW3CTraceContextPropagator());
+            AiLegacyPropagator.getInstance(), new ModifiedW3cTraceContextPropagator());
   }
 
   @Override
@@ -73,7 +73,7 @@ public class DelegatingPropagator implements TextMapPropagator {
     return delegate.extract(context, carrier, getter);
   }
 
-  private static class ModifiedW3CTraceContextPropagator implements TextMapPropagator {
+  private static class ModifiedW3cTraceContextPropagator implements TextMapPropagator {
 
     private final TextMapPropagator delegate = W3CTraceContextPropagator.getInstance();
 
