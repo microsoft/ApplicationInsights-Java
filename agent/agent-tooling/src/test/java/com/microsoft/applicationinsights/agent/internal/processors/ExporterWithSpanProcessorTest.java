@@ -85,7 +85,7 @@ class ExporterWithSpanProcessorTest {
   }
 
   @Test
-  void SimpleRenameSpanTest() {
+  void simpleRenameSpanTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
@@ -117,7 +117,7 @@ class ExporterWithSpanProcessorTest {
   }
 
   @Test
-  void SimpleRenameSpanWithSeparatorTest() {
+  void simpleRenameSpanWithSeparatorTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
@@ -150,7 +150,7 @@ class ExporterWithSpanProcessorTest {
   }
 
   @Test
-  void SimpleRenameSpanWithMissingKeysTest() {
+  void simpleRenameSpanWithMissingKeysTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
@@ -182,7 +182,7 @@ class ExporterWithSpanProcessorTest {
   }
 
   @Test
-  void RenameSpanWithIncludeTest() {
+  void renameSpanWithIncludeTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
@@ -254,7 +254,7 @@ class ExporterWithSpanProcessorTest {
   }
 
   @Test
-  void InvalidRegexInRulesTest() {
+  void invalidRegexInRulesTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
@@ -270,7 +270,7 @@ class ExporterWithSpanProcessorTest {
   }
 
   @Test
-  void SimpleToAttributesTest() {
+  void simpleToAttributesTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
@@ -313,7 +313,7 @@ class ExporterWithSpanProcessorTest {
   }
 
   @Test
-  void MultiRuleToAttributesTest() {
+  void multiRuleToAttributesTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
@@ -388,7 +388,7 @@ class ExporterWithSpanProcessorTest {
   }
 
   @Test
-  void ExtractAttributesWithIncludeExcludeTest() {
+  void extractAttributesWithIncludeExcludeTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
@@ -476,7 +476,7 @@ class ExporterWithSpanProcessorTest {
   }
 
   @Test
-  void SimpleRenameSpanTestWithLogProcessor() {
+  void simpleRenameSpanTestWithLogProcessor() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;

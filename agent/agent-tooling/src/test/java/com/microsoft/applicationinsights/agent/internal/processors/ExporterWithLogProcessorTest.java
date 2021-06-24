@@ -83,7 +83,7 @@ class ExporterWithLogProcessorTest {
   }
 
   @Test
-  void SimpleRenameLogMessageTest() {
+  void simpleRenameLogMessageTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.LOG;
@@ -116,7 +116,7 @@ class ExporterWithLogProcessorTest {
   }
 
   @Test
-  void SimpleRenameLogWithSeparatorTest() {
+  void simpleRenameLogWithSeparatorTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.LOG;
@@ -150,7 +150,7 @@ class ExporterWithLogProcessorTest {
   }
 
   @Test
-  void SimpleRenameLogWithMissingKeysTest() {
+  void simpleRenameLogWithMissingKeysTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.LOG;
@@ -183,7 +183,7 @@ class ExporterWithLogProcessorTest {
   }
 
   @Test
-  void InvalidRegexInRulesTest() {
+  void invalidRegexInRulesTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.LOG;
@@ -199,7 +199,7 @@ class ExporterWithLogProcessorTest {
   }
 
   @Test
-  void SimpleToAttributesTest() {
+  void simpleToAttributesTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.LOG;
@@ -243,7 +243,7 @@ class ExporterWithLogProcessorTest {
   }
 
   @Test
-  void MultiRuleToAttributesTest() {
+  void multiRuleToAttributesTest() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.LOG;
@@ -320,7 +320,7 @@ class ExporterWithLogProcessorTest {
   }
 
   @Test
-  void SimpleRenameLogTestWithSpanProcessor() {
+  void simpleRenameLogTestWithSpanProcessor() {
     MockExporter mockExporter = new MockExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.LOG;

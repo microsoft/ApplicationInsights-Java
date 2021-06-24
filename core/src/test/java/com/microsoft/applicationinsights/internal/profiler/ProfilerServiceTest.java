@@ -111,7 +111,7 @@ class ProfilerServiceTest {
     Supplier<String> appIdSupplier = () -> appId;
 
     ServiceProfilerUploader serviceProfilerUploader =
-        getServiceProfilerJFRUpload(clientV2, appIdSupplier);
+        getServiceProfilerJfrUpload(clientV2, appIdSupplier);
 
     JfrProfiler jfrProfiler = getJfrDaemon(profileInvoked);
 
@@ -226,7 +226,7 @@ class ProfilerServiceTest {
     };
   }
 
-  private ServiceProfilerUploader getServiceProfilerJFRUpload(
+  private ServiceProfilerUploader getServiceProfilerJfrUpload(
       ServiceProfilerClientV2 clientV2, Supplier<String> appIdSupplier) {
     return new ServiceProfilerUploader(
         clientV2, machineName, processId, appIdSupplier, "a-role-name") {

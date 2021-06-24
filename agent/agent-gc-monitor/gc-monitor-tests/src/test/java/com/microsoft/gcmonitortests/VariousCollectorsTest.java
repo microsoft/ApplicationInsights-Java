@@ -43,7 +43,7 @@ class VariousCollectorsTest {
           new GcProcessRunner("-XX:+UseConcMarkSweepGC", 50).getGcCollectionEvents();
 
       assetGcsArePresent(events);
-    } catch (GCNotPresentException e) {
+    } catch (GcNotPresentException e) {
       // CMS deprecated
     }
   }
@@ -57,7 +57,7 @@ class VariousCollectorsTest {
   @Test
   void testParallel()
       throws IOException, UnableToMonitorMemoryException, InterruptedException,
-          GCNotPresentException {
+          GcNotPresentException {
     List<GcCollectionEvent> events =
         new GcProcessRunner("-XX:+UseParallelGC", 70).getGcCollectionEvents();
 
@@ -69,7 +69,7 @@ class VariousCollectorsTest {
   @Test
   void testG1()
       throws IOException, UnableToMonitorMemoryException, InterruptedException,
-          GCNotPresentException {
+          GcNotPresentException {
     List<GcCollectionEvent> events =
         new GcProcessRunner("-XX:+UseG1GC", 50).getGcCollectionEvents();
 
@@ -82,7 +82,7 @@ class VariousCollectorsTest {
       List<GcCollectionEvent> events =
           new GcProcessRunner("-XX:+UseSerialGC", 50).getGcCollectionEvents();
       assetGcsArePresent(events);
-    } catch (GCNotPresentException e) {
+    } catch (GcNotPresentException e) {
       // to be expected for some time
     }
   }
@@ -96,7 +96,7 @@ class VariousCollectorsTest {
           new GcProcessRunner("-XX:+UseShenandoahGC", 50).getGcCollectionEvents();
 
       assetGcsArePresent(events);
-    } catch (GCNotPresentException e) {
+    } catch (GcNotPresentException e) {
       // to be expected for some time
     }
   }
@@ -109,7 +109,7 @@ class VariousCollectorsTest {
       List<GcCollectionEvent> events =
           new GcProcessRunner("-XX:+UseZGC", 200).getGcCollectionEvents();
       assetGcsArePresent(events);
-    } catch (GCNotPresentException e) {
+    } catch (GcNotPresentException e) {
       // to be expected for some time
     }
   }

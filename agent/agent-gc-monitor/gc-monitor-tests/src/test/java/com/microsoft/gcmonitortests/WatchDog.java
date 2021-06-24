@@ -26,7 +26,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-/** Watchdog timer, unless reset before the timeout, will invoke the onComplete method */
+/** Watchdog timer, unless reset before the timeout, will invoke the onComplete method. */
 public class WatchDog {
   private final ScheduledExecutorService executor;
   private final Runnable onComplete;

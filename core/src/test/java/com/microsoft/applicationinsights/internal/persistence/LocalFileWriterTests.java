@@ -62,7 +62,7 @@ public class LocalFileWriterTests {
       InputStream in = Files.newInputStream(path);
       BufferedSource source = Okio.buffer(Okio.source(in));
       buffer = ByteBuffer.wrap(source.readByteArray());
-    } catch (IOException ignore) {
+    } catch (IOException ignored) {
     }
   }
 
