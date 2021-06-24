@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
  * <p>Here is a class that uses PeriodicTaskManager to execute {@link PeriodicRunnableTask}
  *
  * <pre>{@code
- * import com.microsoft.applicationinsights.internal.util.PeriodicTaskPool;
+ * import com.microsoft.applicationinsights.agent.internal.wascore.util.PeriodicTaskPool;
  * public class BeeperControl {
  *     public void beepForHour() {
  *        final Runnable beeper = new Runnable() {

@@ -98,7 +98,7 @@ class DllFileUtils {
   private static final List<String> CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES =
       Collections.unmodifiableList(Arrays.asList("USER", "LOGNAME", "USERNAME"));
 
-  /** From com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils */
+  /** From com.microsoft.applicationinsights.agent.internal.wascore.util.LocalFileSystemUtils */
   private static File getTempDir() {
     String tempDirectory = System.getProperty("java.io.tmpdir");
     String currentUserName = determineCurrentUserName();
@@ -111,7 +111,7 @@ class DllFileUtils {
     return result;
   }
 
-  /** From com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils */
+  /** From com.microsoft.applicationinsights.agent.internal.wascore.util.LocalFileSystemUtils */
   private static File getTempDir(String initialValue, String userName) {
     String tempDirectory = initialValue;
 
@@ -126,7 +126,7 @@ class DllFileUtils {
     return new File(tempDirectory);
   }
 
-  /** From com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils */
+  /** From com.microsoft.applicationinsights.agent.internal.wascore.util.LocalFileSystemUtils */
   private static String determineCurrentUserName() {
     String userName;
     // Start with the value of the "user.name" property

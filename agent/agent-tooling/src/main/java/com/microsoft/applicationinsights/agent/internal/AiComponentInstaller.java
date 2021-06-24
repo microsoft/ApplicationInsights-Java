@@ -323,7 +323,7 @@ public class AiComponentInstaller implements AgentListener {
 
     // configure heartbeat module
     AddTypeXmlElement heartbeatModule = new AddTypeXmlElement();
-    heartbeatModule.setType("com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule");
+    heartbeatModule.setType("com.microsoft.applicationinsights.agent.internal.wascore.heartbeat");
     // do not allow interval longer than 15 minutes, since we use the heartbeat data for usage
     // telemetry
     long intervalSeconds = Math.min(config.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
