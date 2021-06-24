@@ -24,12 +24,12 @@ package com.microsoft.gcmonitor;
 import java.util.concurrent.ExecutorService;
 import javax.management.MBeanServerConnection;
 
-/** Service loader interface */
+/** Service loader interface. */
 public interface GcMonitorFactory {
-  MemoryManagement monitorSelf(ExecutorService executorService, GCEventConsumer consumer)
+  MemoryManagement monitorSelf(ExecutorService executorService, GcEventConsumer consumer)
       throws UnableToMonitorMemoryException;
 
   MemoryManagement monitor(
-      MBeanServerConnection connection, ExecutorService executorService, GCEventConsumer consumer)
+      MBeanServerConnection connection, ExecutorService executorService, GcEventConsumer consumer)
       throws UnableToMonitorMemoryException;
 }

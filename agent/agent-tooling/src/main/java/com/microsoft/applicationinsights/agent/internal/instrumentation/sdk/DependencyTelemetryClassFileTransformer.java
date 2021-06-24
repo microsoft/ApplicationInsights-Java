@@ -190,13 +190,13 @@ public class DependencyTelemetryClassFileTransformer implements ClassFileTransfo
   // DO NOT REMOVE
   // this is used during development for generating above bytecode
   @SuppressWarnings("unused")
-  public static class RDT {
+  public static class Rdt {
 
     public String getResultCode() {
       return null;
     }
 
-    public Map getMetrics() {
+    public Map<?, ?> getMetrics() {
       return Collections.emptyMap();
     }
 

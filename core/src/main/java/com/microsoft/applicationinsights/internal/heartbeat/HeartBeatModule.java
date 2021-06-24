@@ -48,7 +48,7 @@ public class HeartBeatModule implements TelemetryModule {
 
   private static final Object lock = new Object();
 
-  /** Flag to seek if module is initialized */
+  /** Flag to seek if module is initialized. */
   private static volatile boolean isInitialized = false;
 
   /** Default constructor to initialize the default heartbeat configuration. */
@@ -134,17 +134,13 @@ public class HeartBeatModule implements TelemetryModule {
     this.heartBeatProviderInterface.setHeartBeatInterval(heartBeatInterval);
   }
 
-  /**
-   * Returns list of excluded heartbeat properties from payload
-   *
-   * @return list of excluded heartbeat properties.
-   */
+  /** Returns list of excluded heartbeat properties from payload. */
   public List<String> getExcludedHeartBeatProperties() {
     return heartBeatProviderInterface.getExcludedHeartBeatProperties();
   }
 
   /**
-   * Sets the list of excluded heartbeat properties
+   * Sets the list of excluded heartbeat properties.
    *
    * @param excludedHeartBeatProperties List of heartbeat properties to exclude
    */
@@ -174,7 +170,7 @@ public class HeartBeatModule implements TelemetryModule {
   }
 
   /**
-   * Gets the current state of heartbeat
+   * Gets the current state of heartbeat.
    *
    * @return true if enabled
    */
@@ -183,7 +179,7 @@ public class HeartBeatModule implements TelemetryModule {
   }
 
   /**
-   * Sets the state of heartbeat module
+   * Sets the state of heartbeat module.
    *
    * @param heartBeatEnabled boolean true / false
    */

@@ -138,9 +138,9 @@ public class JsonHelper {
     public DataPointType deserialize(
         JsonElement json, Type typeOfT, JsonDeserializationContext context) {
       String id = json.getAsString();
+      // FIXME (trask) breeze question: this used to be mapped from int (0/1), is it really
+      //  correct to map to string now?
       switch (id) {
-          // FIXME (trask) breeze question: this used to be mapped from int (0/1), is it really
-          // correct to map to string now?
         case "Measurement":
           return DataPointType.Measurement;
         case "Aggregation":

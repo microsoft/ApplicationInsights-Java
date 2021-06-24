@@ -39,12 +39,12 @@ public enum MemoryPools {
   CODE_HEAP_PROFILED_NMETHODS(CodeHeapProfiledNmethods.POOL_NAME, CodeHeapProfiledNmethods::new),
   CODE_HEAP_NON_PROFILED_NMETHODS(
       CodeHeapNonProfiledNmethods.POOL_NAME, CodeHeapNonProfiledNmethods::new),
-  PS_EDEN_SPACE(PSEdenSpace.POOL_NAME, PSEdenSpace::new),
-  PS_OLD_GEN(PSOldGen.POOL_NAME, PSOldGen::new),
-  PS_PERM_GEN(PSPermGen.POOL_NAME, PSPermGen::new),
-  PS_SURVIVOR_SPACE(PSSurvivorSpace.POOL_NAME, PSSurvivorSpace::new),
-  CMS_OLD_GEN(CMSOldGen.POOL_NAME, CMSOldGen::new),
-  CMS_PERM_GEN(CMSPermGen.POOL_NAME, CMSPermGen::new),
+  PS_EDEN_SPACE(PsEdenSpace.POOL_NAME, PsEdenSpace::new),
+  PS_OLD_GEN(PsOldGen.POOL_NAME, PsOldGen::new),
+  PS_PERM_GEN(PsPermGen.POOL_NAME, PsPermGen::new),
+  PS_SURVIVOR_SPACE(PsSurvivorSpace.POOL_NAME, PsSurvivorSpace::new),
+  CMS_OLD_GEN(CmsOldGen.POOL_NAME, CmsOldGen::new),
+  CMS_PERM_GEN(CmsPermGen.POOL_NAME, CmsPermGen::new),
   PAR_EDEN_SPACE(ParEdenSpace.POOL_NAME, ParEdenSpace::new),
   PAR_SURVIVOR_SPACE(ParSurvivorSpace.POOL_NAME, ParSurvivorSpace::new),
   G1_EDEN(G1Eden.POOL_NAME, G1Eden::new),
@@ -132,50 +132,50 @@ public enum MemoryPools {
     }
   }
 
-  public static class PSEdenSpace extends MemoryPool {
+  public static class PsEdenSpace extends MemoryPool {
     public static final String POOL_NAME = "PS Eden Space";
 
-    public PSEdenSpace(Set<GarbageCollector> managers) {
+    public PsEdenSpace(Set<GarbageCollector> managers) {
       super(POOL_NAME, managers, true, false, true);
     }
   }
 
-  public static class PSOldGen extends MemoryPool {
+  public static class PsOldGen extends MemoryPool {
     public static final String POOL_NAME = "PS Old Gen";
 
-    public PSOldGen(Set<GarbageCollector> managers) {
+    public PsOldGen(Set<GarbageCollector> managers) {
       super(POOL_NAME, managers, true, true, false);
     }
   }
 
-  public static class PSPermGen extends MemoryPool {
+  public static class PsPermGen extends MemoryPool {
     public static final String POOL_NAME = "PS Perm Gen";
 
-    public PSPermGen(Set<GarbageCollector> managers) {
+    public PsPermGen(Set<GarbageCollector> managers) {
       super(POOL_NAME, managers, true, false, false);
     }
   }
 
-  public static class PSSurvivorSpace extends MemoryPool {
+  public static class PsSurvivorSpace extends MemoryPool {
     public static final String POOL_NAME = "PS Survivor Space";
 
-    public PSSurvivorSpace(Set<GarbageCollector> managers) {
+    public PsSurvivorSpace(Set<GarbageCollector> managers) {
       super(POOL_NAME, managers, true, false, true);
     }
   }
 
-  public static class CMSOldGen extends MemoryPool {
+  public static class CmsOldGen extends MemoryPool {
     public static final String POOL_NAME = "CMS Old Gen";
 
-    public CMSOldGen(Set<GarbageCollector> managers) {
+    public CmsOldGen(Set<GarbageCollector> managers) {
       super(POOL_NAME, managers, true, true, false);
     }
   }
 
-  public static class CMSPermGen extends MemoryPool {
+  public static class CmsPermGen extends MemoryPool {
     public static final String POOL_NAME = "CMS Perm Gen";
 
-    public CMSPermGen(Set<GarbageCollector> managers) {
+    public CmsPermGen(Set<GarbageCollector> managers) {
       super(POOL_NAME, managers, true, false, false);
     }
   }

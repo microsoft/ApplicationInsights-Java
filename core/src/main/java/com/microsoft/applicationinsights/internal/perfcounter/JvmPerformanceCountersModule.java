@@ -25,13 +25,13 @@ import com.microsoft.applicationinsights.internal.config.JvmXmlElement;
 import com.microsoft.applicationinsights.internal.config.PerformanceCounterJvmSectionXmlElement;
 import com.microsoft.applicationinsights.internal.config.PerformanceCountersXmlElement;
 import com.microsoft.applicationinsights.internal.perfcounter.jvm.DeadLockDetectorPerformanceCounter;
-import com.microsoft.applicationinsights.internal.perfcounter.jvm.GCPerformanceCounter;
+import com.microsoft.applicationinsights.internal.perfcounter.jvm.GcPerformanceCounter;
 import com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter;
 import java.util.HashMap;
 import java.util.HashSet;
 
 /**
- * The class loads the relevant Jvm PCs
+ * The class loads the relevant Jvm PCs.
  *
  * <p>By default the class will create all the JVM PC
  *
@@ -44,7 +44,8 @@ import java.util.HashSet;
  * </PerformanceCounters>
  * }</pre>
  *
- * All Jvm PCs can be disabled like this, without disabling the other built in performance counters:
+ * <p>All Jvm PCs can be disabled like this, without disabling the other built in performance
+ * counters:
  *
  * <pre>{@code
  * <PerformanceCounters>
@@ -54,7 +55,7 @@ import java.util.HashSet;
  * </PerformanceCounters>
  * }</pre>
  *
- * A specific Jvm counter can be disabled like this:
+ * <p>A specific Jvm counter can be disabled like this:
  *
  * <pre>{@code
  * <PerformanceCounters>
@@ -70,7 +71,7 @@ public final class JvmPerformanceCountersModule extends AbstractPerformanceCount
   private static final String[] JvmPCNames = {
     DeadLockDetectorPerformanceCounter.NAME,
     JvmHeapMemoryUsedPerformanceCounter.NAME,
-    GCPerformanceCounter.NAME
+    GcPerformanceCounter.NAME
   };
 
   public JvmPerformanceCountersModule() throws Exception {

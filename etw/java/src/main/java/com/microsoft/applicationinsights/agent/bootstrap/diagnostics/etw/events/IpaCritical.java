@@ -25,7 +25,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model.IpaEtwEventErrorBase;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model.IpaEtwEventId;
 
-/** JavaIpaCritical */
+/** JavaIpaCritical. */
 public class IpaCritical extends IpaEtwEventErrorBase {
 
   public IpaCritical() {

@@ -222,8 +222,8 @@ public class HttpClientSmokeTest extends AiSmokeTest {
   }
 
   @Test
-  @TargetUri("/httpURLConnection")
-  public void testHttpURLConnection() throws Exception {
+  @TargetUri("/httpUrlConnection")
+  public void testHttpUrlConnection() throws Exception {
     List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);

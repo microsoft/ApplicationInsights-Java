@@ -21,7 +21,7 @@
 
 package com.microsoft.gcmonitor.collectors;
 
-import com.microsoft.gcmonitor.GCCollectionEvent;
+import com.microsoft.gcmonitor.GcCollectionEvent;
 import com.microsoft.gcmonitor.MemoryManagement;
 import com.microsoft.gcmonitor.garbagecollectors.GarbageCollector;
 import com.microsoft.gcmonitor.memorypools.MemoryPool;
@@ -37,9 +37,9 @@ import javax.management.openmbean.CompositeData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Implementation of a single GCCollectionEvent formed from data from an MxBean */
-class GCCollectionSample implements GCCollectionEvent {
-  private static final Logger LOGGER = LoggerFactory.getLogger(GCCollectionSample.class);
+/** Implementation of a single GCCollectionEvent formed from data from an MxBean. */
+class GcCollectionSample implements GcCollectionEvent {
+  private static final Logger LOGGER = LoggerFactory.getLogger(GcCollectionSample.class);
 
   private static final String ID = "id";
 
@@ -60,7 +60,7 @@ class GCCollectionSample implements GCCollectionEvent {
   private final Map<MemoryPool, MemoryUsage> memoryUsageBeforeGc;
   private final Map<MemoryPool, MemoryUsage> memoryUsageAfterGc;
 
-  public GCCollectionSample(
+  public GcCollectionSample(
       GarbageCollector collector,
       CompositeData collectionData,
       String gcCause,

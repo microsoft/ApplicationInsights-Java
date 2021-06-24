@@ -589,11 +589,10 @@ public class Exporter implements SpanExporter {
   }
 
   private static int getDefaultPortForDbSystem(String dbSystem) {
+    // jdbc default ports are from
+    // io.opentelemetry.javaagent.instrumentation.jdbc.JdbcConnectionUrlParser
+    // TODO make the ports constants (at least in JdbcConnectionUrlParser) so they can be used here
     switch (dbSystem) {
-        // jdbc default ports are from
-        // io.opentelemetry.javaagent.instrumentation.jdbc.JdbcConnectionUrlParser
-        // TODO make these ports constants (at least in JdbcConnectionUrlParser) so they can be used
-        // here
       case SemanticAttributes.DbSystemValues.MONGODB:
         return 27017;
       case SemanticAttributes.DbSystemValues.CASSANDRA:

@@ -48,7 +48,7 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.common.Strings;
-import com.microsoft.applicationinsights.customExceptions.FriendlyException;
+import com.microsoft.applicationinsights.exceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.config.AddTypeXmlElement;

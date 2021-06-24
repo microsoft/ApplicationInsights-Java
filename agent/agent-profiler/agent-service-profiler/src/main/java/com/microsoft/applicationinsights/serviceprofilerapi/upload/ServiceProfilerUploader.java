@@ -113,7 +113,7 @@ public class ServiceProfilerUploader {
                       UUID.fromString(appId),
                       formattedTimestamp,
                       uploadContext.getMachineName(),
-                      OsPlatformProvider.getOSPlatformDescription(),
+                      OsPlatformProvider.getOsPlatformDescription(),
                       processId,
                       "Profile",
                       profileId.toString(),
@@ -235,7 +235,7 @@ public class ServiceProfilerUploader {
         TimestampContract.timestampToString(uploadContext.getSessionId()));
     metadata.put(BlobMetadataConstants.PROGRAMMING_LANGUAGE_META_NAME, "Java");
     metadata.put(
-        BlobMetadataConstants.OS_PLATFORM_META_NAME, OsPlatformProvider.getOSPlatformDescription());
+        BlobMetadataConstants.OS_PLATFORM_META_NAME, OsPlatformProvider.getOsPlatformDescription());
     metadata.put(BlobMetadataConstants.TRACE_FILE_FORMAT_META_NAME, "jfr");
 
     if (roleName != null && !roleName.isEmpty()) {

@@ -20,6 +20,7 @@
  */
 
 package com.microsoft.applicationinsights.internal.schemav2;
+
 /** Enum DataPointType. */
 public enum DataPointType {
   Measurement(0),

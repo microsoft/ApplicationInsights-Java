@@ -42,9 +42,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * JFR Service Profiler main entry point, wires up: - Configuration polling - Notifying upstream
- * consumers (such as the alerting subsystem) of configuration updates - JFR Profiling service - JFR
- * Uploader service
+ * JFR Service Profiler main entry point, wires up the items below.
+ *
+ * <ul>
+ *   <li>Configuration polling
+ *   <li>Notifying upstream
+ *   <li>consumers (such as the alerting subsystem) of configuration updates
+ *   <li>JFR Profiling service
+ *   <li>JFR Uploader service
+ * </ul>
  */
 public class JfrProfilerService implements ProfilerService {
 

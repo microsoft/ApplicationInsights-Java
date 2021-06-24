@@ -19,29 +19,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.alerting.analysis;
+package com.microsoft.gcmonitor;
 
-public interface AlertPipelineMXBean {
+import java.util.function.Consumer;
 
-  // Attributes
-  long getCoolDown();
-
-  long getRollingAverageWindow();
-
-  long getProfilerDuration();
-
-  float getThreshold();
-
-  double getCurrentAverage();
-
-  boolean getEnabled();
-
-  boolean isOffCooldown();
-
-  String getLastAlertTime();
-
-  // Operations
-  // - no operations currently implemented
-  // Notifications
-  // - no notifications currently implemented
-}
+public interface GcEventConsumer extends Consumer<GcCollectionEvent> {}

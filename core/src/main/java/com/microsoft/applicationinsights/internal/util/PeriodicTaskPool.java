@@ -276,7 +276,7 @@ public class PeriodicTaskPool {
     }
   }
 
-  /* Visible for Testing */
+  // visible for testing
   ScheduledFuture<?> getTask(PeriodicRunnableTask task) {
     return periodicTaskMap.get(task);
   }

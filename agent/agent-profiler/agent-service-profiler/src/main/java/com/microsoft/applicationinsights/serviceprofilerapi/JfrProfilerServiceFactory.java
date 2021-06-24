@@ -38,7 +38,7 @@ import java.util.function.Supplier;
 
 /**
  * Default ProfilerService factory loaded by a service loader, produces a Profiler Service based on
- * JFR
+ * JFR.
  */
 public class JfrProfilerServiceFactory implements ProfilerServiceFactory {
   // Singleton instance that holds the one and only service of the ServiceProfiler subsystem

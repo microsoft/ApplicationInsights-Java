@@ -33,17 +33,13 @@ public class HeartBeatPropertyPayload {
   /** Is this healthy property or not. */
   private boolean isHealthy = false;
 
-  /**
-   * Returns the payload value
-   *
-   * @return String value of payload property
-   */
+  /** Returns the payload value. */
   String getPayloadValue() {
     return payloadValue;
   }
 
   /**
-   * This is used to set the payload
+   * This is used to set the payload.
    *
    * @param payloadValue value of the property
    */
@@ -53,11 +49,7 @@ public class HeartBeatPropertyPayload {
     }
   }
 
-  /**
-   * Gets the value of payload is healthy
-   *
-   * @return returns true of payload value is healthy.
-   */
+  /** Returns the value of payload is healthy. */
   public boolean isHealthy() {
     return isHealthy;
   }

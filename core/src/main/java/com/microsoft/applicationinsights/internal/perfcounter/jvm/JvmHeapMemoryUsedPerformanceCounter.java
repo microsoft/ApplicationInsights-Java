@@ -30,7 +30,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 
-/** The class will create a metric telemetry for capturing the Jvm's heap memory usage */
+/** The class will create a metric telemetry for capturing the Jvm's heap memory usage. */
 public class JvmHeapMemoryUsedPerformanceCounter implements PerformanceCounter {
 
   public static final String NAME = "MemoryUsage";

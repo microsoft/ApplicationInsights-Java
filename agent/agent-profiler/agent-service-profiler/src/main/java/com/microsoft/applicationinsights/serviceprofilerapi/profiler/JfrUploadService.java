@@ -31,7 +31,7 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Receives notifications of new profiles and uploads them to Service Profiler */
+/** Receives notifications of new profiles and uploads them to Service Profiler. */
 public class JfrUploadService implements ProfileHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(JfrUploadService.class);
 

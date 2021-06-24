@@ -87,8 +87,8 @@ public class HttpClientTestServlet extends HttpServlet {
       return okHttp2();
     } else if (pathInfo.equals("/springWebClient")) {
       return springWebClient();
-    } else if (pathInfo.equals("/httpURLConnection")) {
-      return httpURLConnection();
+    } else if (pathInfo.equals("/httpUrlConnection")) {
+      return httpUrlConnection();
     } else {
       throw new ServletException("Unexpected url: " + pathInfo);
     }
@@ -163,7 +163,7 @@ public class HttpClientTestServlet extends HttpServlet {
         .value();
   }
 
-  private int httpURLConnection() throws IOException {
+  private int httpUrlConnection() throws IOException {
     URL obj = new URL("https://www.bing.com/search?q=spaces%20test");
     HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
     // calling getContentType() first, since this triggered a bug previously in the instrumentation
@@ -172,13 +172,13 @@ public class HttpClientTestServlet extends HttpServlet {
     InputStream content = connection.getInputStream();
     // drain the content
     byte[] buffer = new byte[1024];
-    int nRead;
-    while ((nRead = content.read(buffer)) != -1) {}
+    while (content.read(buffer) != -1) {}
     content.close();
     return connection.getResponseCode();
   }
 
   public static class PermitAllCookiesSpec extends CookieSpecBase {
+    @Override
     public void validate(String host, int port, String path, boolean secure, Cookie cookie) {}
   }
 }

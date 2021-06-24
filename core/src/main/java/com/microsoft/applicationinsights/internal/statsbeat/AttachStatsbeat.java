@@ -59,7 +59,7 @@ class AttachStatsbeat extends BaseStatsbeat {
     telemetryClient.trackAsync(statsbeatTelemetry);
   }
 
-  /** @return the unique identifier of the resource provider. */
+  /** Returns the unique identifier of the resource provider. */
   String getResourceProviderId() {
     return resourceProviderId;
   }

@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.internal.perfcounter;
 
 import com.microsoft.applicationinsights.internal.perfcounter.jvm.DeadLockDetectorPerformanceCounter;
-import com.microsoft.applicationinsights.internal.perfcounter.jvm.GCPerformanceCounter;
+import com.microsoft.applicationinsights.internal.perfcounter.jvm.GcPerformanceCounter;
 import com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The class will create dedicated Jvm performance counters, unless disabled by user in the
- * configuration file
+ * configuration file.
  */
 public class JvmPerformanceCountersFactory implements PerformanceCountersFactory {
 
@@ -47,7 +47,7 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
     if (isEnabled) {
       addDeadLockDetector(pcs);
       addJvmMemoryPerformanceCounter(pcs);
-      addGCPerformanceCounter(pcs);
+      addGcPerformanceCounter(pcs);
     } else {
       logger.trace("JvmPerformanceCountersFactory is disabled");
     }
@@ -103,13 +103,13 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
     }
   }
 
-  private void addGCPerformanceCounter(ArrayList<PerformanceCounter> pcs) {
+  private void addGcPerformanceCounter(ArrayList<PerformanceCounter> pcs) {
     try {
-      if (disabledJvmPCs.contains(GCPerformanceCounter.NAME)) {
+      if (disabledJvmPCs.contains(GcPerformanceCounter.NAME)) {
         return;
       }
 
-      GCPerformanceCounter mpc = new GCPerformanceCounter();
+      GcPerformanceCounter mpc = new GcPerformanceCounter();
       pcs.add(mpc);
     } catch (ThreadDeath td) {
       throw td;

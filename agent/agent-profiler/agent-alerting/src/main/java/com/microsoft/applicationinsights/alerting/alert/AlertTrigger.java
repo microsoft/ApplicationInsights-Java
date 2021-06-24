@@ -26,8 +26,13 @@ import java.time.ZonedDateTime;
 import java.util.function.Consumer;
 
 /**
- * Observes a stream of data, and calls a downstream alert action if the following conditions are
- * met: - data moves above given threshold - alert is not in a cooldown period - alert is enabled
+ * Observes a stream of data, and calls a downstream alert action if the below conditions are met.
+ *
+ * <ul>
+ *   <li>data moves above given threshold
+ *   <li>alert is not in a cooldown period
+ *   <li>alert is enabled
+ * </ul>
  */
 public class AlertTrigger implements Consumer<Double> {
 

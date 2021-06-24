@@ -40,7 +40,7 @@ class FeatureStatsbeat extends BaseStatsbeat {
     featureList.add(Feature.fromJavaVendor(javaVendor));
   }
 
-  /** @return a long that represents a list of features enabled. Each bitfield maps to a feature. */
+  /** Returns a long that represents a list of features enabled. Each bitfield maps to a feature. */
   long getFeature() {
     return Feature.encode(featureList);
   }

@@ -36,7 +36,7 @@ import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
 
-/** Parses the configuration from the service profiler endpoint */
+/** Parses the configuration from the service profiler endpoint. */
 public class AlertConfigParser {
 
   public static AlertingConfiguration parse(

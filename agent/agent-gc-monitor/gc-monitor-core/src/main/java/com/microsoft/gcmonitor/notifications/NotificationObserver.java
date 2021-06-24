@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Provides an execution context for the observers to receive notifications off of the original
- * thread
+ * thread.
  */
 public class NotificationObserver implements NotificationListener {
   private static final Logger LOGGER = LoggerFactory.getLogger(NotificationObserver.class);
@@ -54,7 +54,7 @@ public class NotificationObserver implements NotificationListener {
     }
   }
 
-  /** Enqueue notification to be executed */
+  /** Enqueue notification to be executed. */
   @Override
   public void handleNotification(Notification notification, Object handback) {
     try {
@@ -68,7 +68,7 @@ public class NotificationObserver implements NotificationListener {
     }
   }
 
-  /** Start event loop that monitors for new notifications and processes them */
+  /** Start event loop that monitors for new notifications and processes them. */
   public void watchGcNotificationEvents() {
     executorService.submit(
         () -> {

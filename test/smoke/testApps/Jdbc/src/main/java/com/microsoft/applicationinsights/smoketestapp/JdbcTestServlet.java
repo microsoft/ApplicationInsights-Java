@@ -44,9 +44,15 @@ public class JdbcTestServlet extends HttpServlet {
   public void init() throws ServletException {
     try {
       setupHsqldb();
-      if (envVarExists("MYSQL")) setupMysql();
-      if (envVarExists("POSTGRES")) setupPostgres();
-      if (envVarExists("SQLSERVER")) setupSqlServer();
+      if (envVarExists("MYSQL")) {
+        setupMysql();
+      }
+      if (envVarExists("POSTGRES")) {
+        setupPostgres();
+      }
+      if (envVarExists("SQLSERVER")) {
+        setupSqlServer();
+      }
       // setupOracle();
     } catch (Exception e) {
       // surprisingly not all application servers seem to log init exceptions to stdout

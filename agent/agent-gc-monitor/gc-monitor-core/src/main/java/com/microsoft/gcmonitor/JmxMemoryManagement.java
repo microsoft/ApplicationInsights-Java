@@ -46,8 +46,8 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
-/** Implementation of MemoryManagement with MxBean as the source of data */
-public class JMXMemoryManagement implements MemoryManagement {
+/** Implementation of MemoryManagement with MxBean as the source of data. */
+public class JmxMemoryManagement implements MemoryManagement {
 
   private static final String POOL_MXBEANS = "java.lang:type=MemoryPool,name=*";
   private static final String COLLECTOR_MXBEANS = "java.lang:type=GarbageCollector,name=*";
@@ -57,15 +57,15 @@ public class JMXMemoryManagement implements MemoryManagement {
   private RuntimeMXBean runtimeBean;
   private MemoryManagers collectorGroup;
 
-  public static JMXMemoryManagement create(
-      MBeanServerConnection connection, ExecutorService executorService, GCEventConsumer consumer)
+  public static JmxMemoryManagement create(
+      MBeanServerConnection connection, ExecutorService executorService, GcEventConsumer consumer)
       throws UnableToMonitorMemoryException {
-    return new JMXMemoryManagement()
+    return new JmxMemoryManagement()
         .init(connection, consumer)
         .monitorMxBeans(connection, executorService);
   }
 
-  protected JMXMemoryManagement init(MBeanServerConnection connection, GCEventConsumer consumer)
+  protected JmxMemoryManagement init(MBeanServerConnection connection, GcEventConsumer consumer)
       throws UnableToMonitorMemoryException {
     runtimeBean = initRuntime(connection);
     collectors = initCollectors(connection, consumer);
@@ -95,7 +95,7 @@ public class JMXMemoryManagement implements MemoryManagement {
     }
   }
 
-  protected JMXMemoryManagement monitorMxBeans(
+  protected JmxMemoryManagement monitorMxBeans(
       MBeanServerConnection connection, ExecutorService executorService)
       throws UnableToMonitorMemoryException {
     NotificationObserver observer = new NotificationObserver(executorService);
@@ -117,14 +117,14 @@ public class JMXMemoryManagement implements MemoryManagement {
   }
 
   private Set<JmxGarbageCollectorStats> initCollectors(
-      MBeanServerConnection connection, GCEventConsumer consumer)
+      MBeanServerConnection connection, GcEventConsumer consumer)
       throws UnableToMonitorMemoryException {
     return getEntityFromMbeanServer(
         COLLECTOR_MXBEANS, connection, name -> getJmxGarbageCollector(connection, consumer, name));
   }
 
   public JmxGarbageCollectorStats getJmxGarbageCollector(
-      MBeanServerConnection connection, GCEventConsumer consumer, ObjectName name)
+      MBeanServerConnection connection, GcEventConsumer consumer, ObjectName name)
       throws UnableToMonitorMemoryException {
     return new JmxGarbageCollectorStats(this, connection, name, consumer);
   }

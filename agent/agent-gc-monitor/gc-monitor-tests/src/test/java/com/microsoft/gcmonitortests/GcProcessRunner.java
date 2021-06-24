@@ -23,8 +23,8 @@ package com.microsoft.gcmonitortests;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import com.microsoft.gcmonitor.GCCollectionEvent;
-import com.microsoft.gcmonitor.JMXMemoryManagement;
+import com.microsoft.gcmonitor.GcCollectionEvent;
+import com.microsoft.gcmonitor.JmxMemoryManagement;
 import com.microsoft.gcmonitor.UnableToMonitorMemoryException;
 import java.io.File;
 import java.io.IOException;
@@ -57,7 +57,7 @@ public class GcProcessRunner {
   }
 
   /** Run the GcEventGenerator process and collect gc events */
-  public List<GCCollectionEvent> getGcCollectionEvents()
+  public List<GcCollectionEvent> getGcCollectionEvents()
       throws IOException, UnableToMonitorMemoryException, InterruptedException,
           GCNotPresentException {
     int port = getRandomPort();
@@ -67,7 +67,7 @@ public class GcProcessRunner {
       try {
         awaitStdOut("Hit return to start");
 
-        List<GCCollectionEvent> events = new ArrayList<>();
+        List<GcCollectionEvent> events = new ArrayList<>();
         CountDownLatch cdl = new CountDownLatch(1);
 
         // Use watchdog timer to ensure process is shutdown at the end
@@ -87,7 +87,7 @@ public class GcProcessRunner {
                 },
                 2000);
 
-        JMXMemoryManagement.create(
+        JmxMemoryManagement.create(
             getConnector(port),
             Executors.newSingleThreadExecutor(),
             event -> {

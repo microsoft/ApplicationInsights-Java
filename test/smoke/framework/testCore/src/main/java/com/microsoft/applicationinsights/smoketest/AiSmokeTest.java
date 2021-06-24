@@ -95,13 +95,13 @@ public abstract class AiSmokeTest {
         Resources.readLines(Resources.getResource("appServers.txt"), Charsets.UTF_8);
     System.out.println("Target appservers=" + Arrays.toString(appServers.toArray()));
     String os = System.getProperty("applicationinsights.smoketest.os", "linux");
-    URL jreExcludesURL =
+    URL jreExcludesUrl =
         Thread.currentThread().getContextClassLoader().getResource("jre.excludes.txt");
     List<String> jreExcludes;
-    if (jreExcludesURL == null) {
+    if (jreExcludesUrl == null) {
       jreExcludes = new ArrayList<>();
     } else {
-      jreExcludes = Resources.readLines(jreExcludesURL, Charsets.UTF_8);
+      jreExcludes = Resources.readLines(jreExcludesUrl, Charsets.UTF_8);
     }
     Multimap<String, String> appServers2jres = HashMultimap.create();
     for (String appServer : appServers) {
@@ -818,9 +818,9 @@ public abstract class AiSmokeTest {
       try {
         TimeUnit.MILLISECONDS.sleep(250);
         rval = HttpHelper.getResponseCodeEnsuringSampled(url);
-      } catch (InterruptedException ie) {
-        throw ie;
-      } catch (Exception e) {
+      } catch (InterruptedException e) {
+        throw e;
+      } catch (Exception ignored) {
       }
     } while (rval == 404);
     assertEquals(200, rval);

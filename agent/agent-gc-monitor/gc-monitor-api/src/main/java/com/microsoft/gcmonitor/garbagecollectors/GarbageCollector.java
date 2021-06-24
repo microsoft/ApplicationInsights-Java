@@ -21,7 +21,7 @@
 
 package com.microsoft.gcmonitor.garbagecollectors;
 
-/** Represents a garbage collector that manages some area of memory */
+/** Represents a garbage collector that manages some area of memory. */
 public class GarbageCollector implements GarbageCollectorStats {
 
   private final boolean managesHeap;
@@ -45,13 +45,13 @@ public class GarbageCollector implements GarbageCollectorStats {
     this.youngCollector = youngCollector;
   }
 
-  /** The number of collections that have occurred for this collector */
+  /** The number of collections that have occurred for this collector. */
   @Override
   public long getCollectionCount() {
     return proxy.getCollectionCount();
   }
 
-  /** The cumulative amount of time this collector has spent executing */
+  /** The cumulative amount of time this collector has spent executing. */
   @Override
   public long getCollectionTime() {
     return proxy.getCollectionTime();
@@ -62,17 +62,17 @@ public class GarbageCollector implements GarbageCollectorStats {
     return managesHeap;
   }
 
-  /** The collector name */
+  /** The collector name. */
   public String getName() {
     return name;
   }
 
-  /** If this collector manages the tenured generation */
+  /** If this collector manages the tenured generation. */
   public boolean isTenuredCollector() {
     return tenuredCollector;
   }
 
-  /** If this collector manages the young generation */
+  /** If this collector manages the young generation. */
   public boolean isYoungCollector() {
     return youngCollector;
   }

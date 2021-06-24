@@ -25,7 +25,7 @@ import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.customExceptions.FriendlyException;
+import com.microsoft.applicationinsights.exceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;

@@ -45,7 +45,7 @@ public class DateTimeUtils {
   }
 
   /**
-   * Formats the given date as round-trip date string
+   * Formats the given date as round-trip date string.
    *
    * @param date Round-trip date string
    * @return Round-trip date string

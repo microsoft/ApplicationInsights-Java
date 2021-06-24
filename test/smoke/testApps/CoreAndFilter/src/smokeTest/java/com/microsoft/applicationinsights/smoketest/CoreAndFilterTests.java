@@ -391,7 +391,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
   @Test
   @TargetUri("/doPageView.jsp")
-  public void testTrackPageView_JSP() throws Exception {
+  public void testTrackPageViewJsp() throws Exception {
     List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
@@ -476,13 +476,13 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
     assertFalse(rd.getSuccess());
 
-    ExceptionDetails eDetails = getExceptionDetails(ed);
-    assertEquals("This is a auto thrown exception !", eDetails.getMessage());
+    ExceptionDetails details = getExceptionDetails(ed);
+    assertEquals("This is a auto thrown exception !", details.getMessage());
   }
 
   @Test
   @TargetUri("/index.jsp")
-  public void testRequestJSP() throws Exception {
+  public void testRequestJsp() throws Exception {
     mockedIngestion.waitForItems("RequestData", 1);
   }
 

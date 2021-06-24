@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 public final class OsPlatformProvider {
   private static final Logger LOGGER = LoggerFactory.getLogger(OsPlatformProvider.class.getName());
 
-  public static String getOSPlatformDescription() {
+  public static String getOsPlatformDescription() {
     if (isWindows()) {
       return OsPlatforms.WINDOWS;
     } else if (isLinux()) {

@@ -25,7 +25,7 @@ import com.microsoft.gcmonitor.garbagecollectors.GarbageCollector;
 import java.util.Collections;
 import java.util.Set;
 
-/** Representation of a JVM memory pool */
+/** Representation of a JVM memory pool. */
 public abstract class MemoryPool {
 
   private final String name;
@@ -47,27 +47,27 @@ public abstract class MemoryPool {
     this.youngPool = youngPool;
   }
 
-  /** The name of the memory pool */
+  /** The name of the memory pool. */
   public String getName() {
     return name;
   }
 
-  /** Determines if this memory pool is managed by the given collector */
+  /** Determines if this memory pool is managed by the given collector. */
   public boolean isManagedBy(GarbageCollector collector) {
     return garbageCollectors.contains(collector);
   }
 
-  /** If this collector manages the JVMs heap */
+  /** If this collector manages the JVMs heap. */
   public boolean isHeap() {
     return heap;
   }
 
-  /** If this is the JVMs tenured pool */
+  /** If this is the JVMs tenured pool. */
   public boolean isTenuredPool() {
     return tenuredPool;
   }
 
-  /** If this pool is part of the young generation */
+  /** If this pool is part of the young generation. */
   public boolean isYoungPool() {
     return youngPool;
   }

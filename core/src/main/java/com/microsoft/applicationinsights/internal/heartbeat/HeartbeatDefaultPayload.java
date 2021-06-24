@@ -28,7 +28,7 @@ import java.util.concurrent.Callable;
 /** Container for storing default payload and it's associated helpers. */
 public class HeartbeatDefaultPayload {
 
-  /** List of default payloads which would be added */
+  /** List of default payloads which would be added. */
   private static final List<HeartBeatPayloadProviderInterface> defaultPayloadProviders =
       new ArrayList<>();
 
