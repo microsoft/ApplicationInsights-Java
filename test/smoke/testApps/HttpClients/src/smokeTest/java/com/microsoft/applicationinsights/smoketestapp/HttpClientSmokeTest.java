@@ -21,7 +21,10 @@
 
 package com.microsoft.applicationinsights.smoketestapp;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
@@ -31,7 +34,8 @@ import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
 import com.microsoft.applicationinsights.smoketest.TargetUri;
 import com.microsoft.applicationinsights.smoketest.UseAgent;
 import java.util.List;
-import org.junit.*;
+import org.junit.Ignore;
+import org.junit.Test;
 
 @UseAgent
 public class HttpClientSmokeTest extends AiSmokeTest {

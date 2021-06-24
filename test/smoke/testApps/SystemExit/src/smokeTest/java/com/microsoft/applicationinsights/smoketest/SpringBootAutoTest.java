@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.smoketest;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.MessageData;
 import java.util.concurrent.TimeUnit;
-import org.junit.*;
+import org.junit.Test;
 
 @UseAgent
 public class SpringBootAutoTest extends AiSmokeTest {

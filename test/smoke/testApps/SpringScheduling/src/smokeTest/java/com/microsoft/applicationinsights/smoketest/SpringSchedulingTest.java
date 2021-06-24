@@ -26,7 +26,7 @@ import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
-import org.junit.*;
+import org.junit.Test;
 
 @UseAgent
 public class SpringSchedulingTest extends AiSmokeTest {

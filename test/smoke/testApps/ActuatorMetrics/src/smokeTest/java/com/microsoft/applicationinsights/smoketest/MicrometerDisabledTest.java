@@ -21,9 +21,9 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import org.junit.*;
+import org.junit.Test;
 
 @UseAgent("disabled_micrometer")
 public class MicrometerDisabledTest extends AiSmokeTest {
