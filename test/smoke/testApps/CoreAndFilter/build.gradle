@@ -1,14 +1,8 @@
-apply plugin: "war"
-
-dependencies {
-    implementation "com.microsoft.azure:applicationinsights-web:2.2.0" // 0.9.3 is the oldest version with trackDependency()
-                                                                       // 2.2.0 is the oldest version with CloudContext
-    testImplementation aiCoreJar // the test code (not the app under test) needs a modern core jar (well, at least 1.0.8)
-
-    compileOnly "javax.servlet:javax.servlet-api:3.0.1"
-
-    providedRuntime "mysql:mysql-connector-java:5.1.44"
+plugins {
+  id "war"
 }
+
+apply from: "$buildScriptsDir/smoke-tests.gradle"
 
 war {
     // this is done to remove the version from the archive file name
@@ -19,6 +13,12 @@ war {
 ext.testAppArtifactDir = war.destinationDirectory
 ext.testAppArtifactFilename = project.name + ".war"
 
-tasks.withType(JavaCompile) {
-    options.release.set(8)
+dependencies {
+  implementation "com.microsoft.azure:applicationinsights-web:2.2.0" // 0.9.3 is the oldest version with trackDependency()
+  // 2.2.0 is the oldest version with CloudContext
+  testImplementation aiCoreJar // the test code (not the app under test) needs a modern core jar (well, at least 1.0.8)
+
+  compileOnly "javax.servlet:javax.servlet-api:3.0.1"
+
+  providedRuntime "mysql:mysql-connector-java:5.1.44"
 }

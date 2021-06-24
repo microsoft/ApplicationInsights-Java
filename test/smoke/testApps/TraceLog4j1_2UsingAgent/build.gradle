@@ -1,16 +1,8 @@
-apply plugin: "war"
-
-dependencies {
-    implementation aiWebAutoJar
-
-    compileOnly "javax.servlet:javax.servlet-api:3.0.1"
-
-    implementation "log4j:log4j:1.2.17"
+plugins {
+  id "war"
 }
 
-tasks.withType(JavaCompile) {
-    options.release.set(8)
-}
+apply from: "$buildScriptsDir/smoke-tests.gradle"
 
 war {
     // this is done to remove the version from the archive file name
@@ -20,3 +12,11 @@ war {
 
 ext.testAppArtifactDir = war.destinationDirectory
 ext.testAppArtifactFilename = project.name + ".war"
+
+dependencies {
+  implementation aiWebAutoJar
+
+  compileOnly "javax.servlet:javax.servlet-api:3.0.1"
+
+  implementation "log4j:log4j:1.2.17"
+}

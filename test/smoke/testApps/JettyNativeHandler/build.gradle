@@ -1,7 +1,8 @@
 plugins {
-    id "java"
-    id "org.springframework.boot" version "2.1.7.RELEASE"
+  id "org.springframework.boot" version "2.1.7.RELEASE"
 }
+
+apply from: "$buildScriptsDir/smoke-tests.gradle"
 
 ext.testAppArtifactDir = jar.destinationDirectory
 ext.testAppArtifactFilename = jar.archiveFileName.get()
@@ -11,8 +12,4 @@ dependencies {
 
     // needs to be same version used in fakeIngestion server
     implementation "org.eclipse.jetty:jetty-server:9.4.7.v20170914"
-}
-
-tasks.withType(JavaCompile) {
-    options.release.set(8)
 }

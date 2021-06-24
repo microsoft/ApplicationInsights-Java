@@ -1,7 +1,8 @@
 plugins {
-    id "java"
-    id "org.springframework.boot" version "2.1.7.RELEASE"
+  id "org.springframework.boot" version "2.1.7.RELEASE"
 }
+
+apply from: "$buildScriptsDir/smoke-tests.gradle"
 
 ext.testAppArtifactDir = jar.destinationDirectory
 ext.testAppArtifactFilename = jar.archiveFileName.get()
@@ -12,8 +13,4 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-databind:2.10.0"
 
     implementation "org.apache.httpcomponents:httpclient:4.5.13"
-}
-
-tasks.withType(JavaCompile) {
-    options.release.set(8)
 }

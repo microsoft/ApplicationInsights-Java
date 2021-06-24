@@ -1,8 +1,9 @@
 plugins {
-    id "java"
-    id "org.springframework.boot" version "2.1.7.RELEASE"
-    id "com.google.protobuf" version "0.8.14"
+  id "org.springframework.boot" version "2.1.7.RELEASE"
+  id "com.google.protobuf" version "0.8.14"
 }
+
+apply from: "$buildScriptsDir/smoke-tests.gradle"
 
 ext.testAppArtifactDir = jar.destinationDirectory
 ext.testAppArtifactFilename = jar.archiveFileName.get()
@@ -34,8 +35,4 @@ dependencies {
     implementation "io.grpc:grpc-netty:$grpcVersion"
     implementation "io.grpc:grpc-protobuf:$grpcVersion"
     implementation "io.grpc:grpc-stub:$grpcVersion"
-}
-
-tasks.withType(JavaCompile) {
-    options.release.set(8)
 }

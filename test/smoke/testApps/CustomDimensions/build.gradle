@@ -1,4 +1,8 @@
-apply plugin: "war"
+plugins {
+  id "war"
+}
+
+apply from: "$buildScriptsDir/smoke-tests.gradle"
 
 war {
     // this is done to remove the version from the archive file name
@@ -18,8 +22,4 @@ dependencies {
     implementation "org.reactivestreams:reactive-streams:1.0.3"
 
     compileOnly "javax.servlet:javax.servlet-api:3.0.1"
-}
-
-tasks.withType(JavaCompile) {
-    options.release.set(8)
 }

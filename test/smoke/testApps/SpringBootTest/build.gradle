@@ -1,15 +1,9 @@
-apply plugin: "war"
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.springframework.boot:spring-boot-gradle-plugin:2.1.7.RELEASE"
-    }
+plugins {
+  id "org.springframework.boot" version "2.1.7.RELEASE"
+  id "war"
 }
 
-apply plugin: "org.springframework.boot"
+apply from: "$buildScriptsDir/smoke-tests.gradle"
 
 dependencies {
     implementation springBootStarterJar
@@ -36,7 +30,3 @@ bootWar {
 
 ext.testAppArtifactDir = war.destinationDirectory
 ext.testAppArtifactFilename = project.name + ".war"
-
-tasks.withType(JavaCompile) {
-    options.release.set(8)
-}

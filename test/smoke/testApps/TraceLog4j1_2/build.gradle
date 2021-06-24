@@ -1,17 +1,8 @@
-apply plugin: "war"
-
-dependencies {
-    implementation aiWebJar
-    implementation("com.microsoft.azure:applicationinsights-logging-log4j1_2:${versions.aiLegacySdk}") {
-        // applicationinsights-core is embedded in applicationinsights-web
-        // and duplicate class files produces lots of warning messages on jetty
-        exclude group: "com.microsoft.azure", module: "applicationinsights-core"
-    }
-
-    compileOnly "javax.servlet:javax.servlet-api:3.0.1"
-
-    implementation "log4j:log4j:1.2.17"
+plugins {
+  id "war"
 }
+
+apply from: "$buildScriptsDir/smoke-tests.gradle"
 
 war {
     // this is done to remove the version from the archive file name
@@ -22,6 +13,15 @@ war {
 ext.testAppArtifactDir = war.destinationDirectory
 ext.testAppArtifactFilename = project.name + ".war"
 
-tasks.withType(JavaCompile) {
-    options.release.set(8)
+dependencies {
+  implementation aiWebJar
+  implementation("com.microsoft.azure:applicationinsights-logging-log4j1_2:${versions.aiLegacySdk}") {
+    // applicationinsights-core is embedded in applicationinsights-web
+    // and duplicate class files produces lots of warning messages on jetty
+    exclude group: "com.microsoft.azure", module: "applicationinsights-core"
+  }
+
+  compileOnly "javax.servlet:javax.servlet-api:3.0.1"
+
+  implementation "log4j:log4j:1.2.17"
 }
