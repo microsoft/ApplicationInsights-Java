@@ -33,6 +33,13 @@ sourceSets {
 
 import com.microsoft.applicationinsights.build.tasks.PropsFileGen
 
+archivesBaseName = "applicationinsights-core"
+
+repositories {
+  // maven local is needed for locally built otel fork
+  mavenLocal()
+}
+
 configurations {
   forTheDLL { transitive = false }
 }

@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent;
+package com.microsoft.applicationinsights.agent.internal.exporter;
 
 import static java.util.Collections.singletonList;
 

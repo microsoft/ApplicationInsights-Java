@@ -59,8 +59,6 @@ dependencies {
 
   implementation project(":agent:agent-profiler:agent-profiler-api")
 
-  implementation project(":agent:exporter")
-
   implementation "com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.4"
   implementation "com.azure:azure-core:${versions.azureCore}"
 

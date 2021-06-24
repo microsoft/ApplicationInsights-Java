@@ -21,8 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.wasbootstrap;
 
-import com.microsoft.applicationinsights.agent.Exporter;
 import com.microsoft.applicationinsights.agent.internal.Global;
+import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithLogProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;

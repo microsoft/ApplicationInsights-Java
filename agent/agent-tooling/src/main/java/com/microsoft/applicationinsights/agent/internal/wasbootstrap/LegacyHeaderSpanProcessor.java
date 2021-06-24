@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.wasbootstrap;
 
-import com.microsoft.applicationinsights.agent.Exporter;
+import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
