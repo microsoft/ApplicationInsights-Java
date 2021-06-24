@@ -57,7 +57,6 @@ public enum PerformanceCounterContainer {
 
   // By default the container will wait 2 minutes before the collection of performance data.
   private static final long START_COLLECTING_DELAY_IN_MILLIS = 60000;
-  private static final long START_DEFAULT_MIN_DELAY_IN_MILLIS = 20000;
 
   // By default the container will collect performance data every 1 minute.
   public static final long DEFAULT_COLLECTION_FREQUENCY_IN_SEC = 60;
@@ -68,7 +67,6 @@ public enum PerformanceCounterContainer {
 
   private volatile boolean initialized = false;
 
-  private final long startCollectingDelayInMillis = START_COLLECTING_DELAY_IN_MILLIS;
   private long collectionFrequencyInMillis = DEFAULT_COLLECTION_FREQUENCY_IN_SEC * 1000;
 
   private ScheduledThreadPoolExecutor threads;
@@ -168,7 +166,7 @@ public enum PerformanceCounterContainer {
             }
           }
         },
-        startCollectingDelayInMillis,
+        START_COLLECTING_DELAY_IN_MILLIS,
         collectionFrequencyInMillis,
         TimeUnit.MILLISECONDS);
   }
