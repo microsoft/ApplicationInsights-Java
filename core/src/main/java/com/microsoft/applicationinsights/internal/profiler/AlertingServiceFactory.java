@@ -26,11 +26,11 @@ import static com.microsoft.applicationinsights.internal.perfcounter.Constants.T
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
-import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryObservers;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
+import com.microsoft.applicationinsights.internal.TelemetryClient;
+import com.microsoft.applicationinsights.internal.TelemetryObservers;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 

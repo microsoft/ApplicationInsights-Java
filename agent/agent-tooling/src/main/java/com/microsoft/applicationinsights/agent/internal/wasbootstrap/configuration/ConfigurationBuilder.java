@@ -24,8 +24,8 @@ package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurat
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SamplingOverride;
-import com.microsoft.applicationinsights.exceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.authentication.AuthenticationType;
+import com.microsoft.applicationinsights.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonDataException;

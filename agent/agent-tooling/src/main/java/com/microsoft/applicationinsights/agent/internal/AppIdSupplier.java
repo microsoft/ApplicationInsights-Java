@@ -26,7 +26,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
-import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.TelemetryClient;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.ExceptionStats;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;

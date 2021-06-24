@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights;
+package com.microsoft.applicationinsights.internal;
 
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpPipeline;

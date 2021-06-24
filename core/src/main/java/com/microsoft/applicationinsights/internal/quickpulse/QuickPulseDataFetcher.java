@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.internal.quickpulse;
 
 import com.azure.core.http.HttpRequest;
-import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.TelemetryClient;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import java.util.Date;

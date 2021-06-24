@@ -21,9 +21,9 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.common.Strings;
-import com.microsoft.applicationinsights.extensibility.TelemetryModule;
+import com.microsoft.applicationinsights.internal.TelemetryClient;
+import com.microsoft.applicationinsights.internal.TelemetryModule;
+import com.microsoft.applicationinsights.internal.common.Strings;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.perfcounter.JmxMetricPerformanceCounter;

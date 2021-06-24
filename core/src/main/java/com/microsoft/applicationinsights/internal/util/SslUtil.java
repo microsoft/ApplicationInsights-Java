@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
-import com.microsoft.applicationinsights.exceptions.FriendlyException;
+import com.microsoft.applicationinsights.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.Defaults;
 import java.io.File;
 

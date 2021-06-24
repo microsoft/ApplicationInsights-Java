@@ -23,10 +23,10 @@ package com.microsoft.applicationinsights.internal.profiler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
+import com.microsoft.applicationinsights.internal.TelemetryClient;
 import com.microsoft.applicationinsights.profiler.config.AlertConfigParser;
 import com.microsoft.gcmonitor.GcCollectionEvent;
 import com.microsoft.gcmonitor.GcEventConsumer;

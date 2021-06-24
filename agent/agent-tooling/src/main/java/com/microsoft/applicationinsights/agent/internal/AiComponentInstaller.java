@@ -24,8 +24,6 @@ package com.microsoft.applicationinsights.agent.internal;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import com.microsoft.applicationinsights.MetricFilter;
-import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
@@ -46,11 +44,13 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
-import com.microsoft.applicationinsights.common.CommonUtils;
-import com.microsoft.applicationinsights.common.Strings;
-import com.microsoft.applicationinsights.exceptions.FriendlyException;
+import com.microsoft.applicationinsights.internal.MetricFilter;
+import com.microsoft.applicationinsights.internal.TelemetryClient;
 import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
+import com.microsoft.applicationinsights.internal.common.CommonUtils;
+import com.microsoft.applicationinsights.internal.common.FriendlyException;
+import com.microsoft.applicationinsights.internal.common.Strings;
 import com.microsoft.applicationinsights.internal.config.AddTypeXmlElement;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.config.JmxXmlElement;

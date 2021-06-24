@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights;
+package com.microsoft.applicationinsights.internal;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.AvailabilityData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
@@ -36,7 +36,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryE
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionDetails;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.microsoft.applicationinsights.common.Strings;
+import com.microsoft.applicationinsights.internal.common.Strings;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.instrumentation.api.caching.Cache;
 import java.util.ArrayList;

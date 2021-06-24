@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights;
+package com.microsoft.applicationinsights.internal;
 
 import java.util.ArrayList;
 import java.util.Collections;

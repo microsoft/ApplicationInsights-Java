@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.heartbeat;
 
-import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.TelemetryClient;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 

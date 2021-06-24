@@ -21,10 +21,10 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
+import static com.microsoft.applicationinsights.internal.TelemetryUtil.createMetricsTelemetry;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.TelemetryClient;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import java.util.Collection;
 import org.slf4j.Logger;

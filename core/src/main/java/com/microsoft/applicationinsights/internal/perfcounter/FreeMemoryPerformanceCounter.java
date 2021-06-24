@@ -21,11 +21,11 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
+import static com.microsoft.applicationinsights.internal.TelemetryUtil.createMetricsTelemetry;
 import static com.microsoft.applicationinsights.internal.perfcounter.Constants.TOTAL_MEMORY_PC_METRIC_NAME;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.TelemetryClient;
 import java.lang.management.ManagementFactory;
 import javax.management.ObjectName;
 import org.slf4j.Logger;

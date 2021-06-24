@@ -31,11 +31,11 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryE
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionDetails;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.microsoft.applicationinsights.FormattedDuration;
-import com.microsoft.applicationinsights.FormattedTime;
-import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryUtil;
-import com.microsoft.applicationinsights.common.Strings;
+import com.microsoft.applicationinsights.internal.FormattedDuration;
+import com.microsoft.applicationinsights.internal.FormattedTime;
+import com.microsoft.applicationinsights.internal.TelemetryClient;
+import com.microsoft.applicationinsights.internal.TelemetryUtil;
+import com.microsoft.applicationinsights.internal.common.Strings;
 import com.microsoft.applicationinsights.internal.statsbeat.StatsbeatModule;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;

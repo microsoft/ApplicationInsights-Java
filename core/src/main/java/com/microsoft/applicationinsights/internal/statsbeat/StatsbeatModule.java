@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.TelemetryClient;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

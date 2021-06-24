@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.exceptions;
+package com.microsoft.applicationinsights.internal.common;
 
 public class FriendlyException extends RuntimeException {
   public FriendlyException() {

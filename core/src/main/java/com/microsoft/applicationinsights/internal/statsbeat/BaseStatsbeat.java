@@ -25,8 +25,8 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointT
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.microsoft.applicationinsights.FormattedTime;
-import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.FormattedTime;
+import com.microsoft.applicationinsights.internal.TelemetryClient;
 import java.util.HashMap;
 import java.util.Map;
 

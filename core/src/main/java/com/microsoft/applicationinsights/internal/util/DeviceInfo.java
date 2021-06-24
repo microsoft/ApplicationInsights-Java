@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
-import com.microsoft.applicationinsights.common.CommonUtils;
+import com.microsoft.applicationinsights.internal.common.CommonUtils;
 import java.util.Locale;
 
 /** A view into the context information specific to device information. */

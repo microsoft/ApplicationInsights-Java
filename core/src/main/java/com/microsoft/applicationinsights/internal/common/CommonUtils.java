@@ -19,17 +19,33 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.extensibility;
+package com.microsoft.applicationinsights.internal.common;
 
-import com.microsoft.applicationinsights.TelemetryClient;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/** Interface for telemetry modules. */
-public interface TelemetryModule {
+public class CommonUtils {
+
+  private static final Logger logger = LoggerFactory.getLogger(CommonUtils.class);
 
   /**
-   * Initializes the telemetry module.
+   * Returns the hostname using {@link InetAddress#getHostName()} on {@link
+   * InetAddress#getLocalHost()}. If an error is encountered, the error is logged and it returns
+   * null.
    *
-   * @param telemetryClient The telemetry client to used to initialize the module.
+   * @return the local hostname, or null
    */
-  void initialize(TelemetryClient telemetryClient);
+  public static String getHostName() {
+    try {
+      InetAddress addr = InetAddress.getLocalHost();
+      return addr.getHostName();
+    } catch (UnknownHostException ex) {
+      logger.warn("Error resolving hostname", ex);
+      return null;
+    }
+  }
+
+  private CommonUtils() {}
 }

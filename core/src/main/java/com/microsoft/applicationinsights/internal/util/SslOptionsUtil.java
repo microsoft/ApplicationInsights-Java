@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
-import com.microsoft.applicationinsights.common.Strings;
+import com.microsoft.applicationinsights.internal.common.Strings;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;

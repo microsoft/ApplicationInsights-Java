@@ -19,36 +19,52 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights;
+package com.microsoft.applicationinsights.internal;
 
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
+class ByteBufferOutputStream extends OutputStream {
 
-public class FormattedTime {
+  private final AppInsightsByteBufferPool byteBufferPool;
 
-  public static String fromNow() {
-    return fromEpochMillis(System.currentTimeMillis());
+  private final List<ByteBuffer> byteBuffers = new ArrayList<>();
+
+  private ByteBuffer current;
+
+  ByteBufferOutputStream(AppInsightsByteBufferPool byteBufferPool) {
+    this.byteBufferPool = byteBufferPool;
+    current = byteBufferPool.remove();
+    byteBuffers.add(current);
   }
 
-  public static String fromDate(Date date) {
-    return fromEpochMillis(date.getTime());
+  @Override
+  public void write(int b) {
+    ensureSomeCapacity();
+    current.put((byte) b);
   }
 
-  public static String fromEpochNanos(long epochNanos) {
-    return Instant.ofEpochMilli(NANOSECONDS.toMillis(epochNanos))
-        .atOffset(ZoneOffset.UTC)
-        .format(DateTimeFormatter.ISO_DATE_TIME);
+  @Override
+  public void write(byte[] bytes, int off, int len) {
+    ensureSomeCapacity();
+    int numBytesWritten = Math.min(current.remaining(), len);
+    current.put(bytes, off, numBytesWritten);
+    if (numBytesWritten < len) {
+      write(bytes, off + numBytesWritten, len - numBytesWritten);
+    }
   }
 
-  public static String fromEpochMillis(long epochMillis) {
-    return Instant.ofEpochMilli(epochMillis)
-        .atOffset(ZoneOffset.UTC)
-        .format(DateTimeFormatter.ISO_DATE_TIME);
+  void ensureSomeCapacity() {
+    if (current.remaining() > 0) {
+      return;
+    }
+    current = byteBufferPool.remove();
+    byteBuffers.add(current);
   }
 
-  private FormattedTime() {}
+  List<ByteBuffer> getByteBuffers() {
+    return byteBuffers;
+  }
 }

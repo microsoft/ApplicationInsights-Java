@@ -19,52 +19,33 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights;
+package com.microsoft.applicationinsights.internal;
 
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
 
-class ByteBufferOutputStream extends OutputStream {
+class AppInsightsByteBufferPool {
 
-  private final AppInsightsByteBufferPool byteBufferPool;
+  private static final int BYTE_BUFFER_SIZE = 65536;
+  private static final int MAX_RETAINED = 10;
 
-  private final List<ByteBuffer> byteBuffers = new ArrayList<>();
+  private final Queue<ByteBuffer> queue = new ArrayBlockingQueue<>(MAX_RETAINED);
 
-  private ByteBuffer current;
-
-  ByteBufferOutputStream(AppInsightsByteBufferPool byteBufferPool) {
-    this.byteBufferPool = byteBufferPool;
-    current = byteBufferPool.remove();
-    byteBuffers.add(current);
-  }
-
-  @Override
-  public void write(int b) {
-    ensureSomeCapacity();
-    current.put((byte) b);
-  }
-
-  @Override
-  public void write(byte[] bytes, int off, int len) {
-    ensureSomeCapacity();
-    int numBytesWritten = Math.min(current.remaining(), len);
-    current.put(bytes, off, numBytesWritten);
-    if (numBytesWritten < len) {
-      write(bytes, off + numBytesWritten, len - numBytesWritten);
+  ByteBuffer remove() {
+    ByteBuffer byteBuffer = queue.poll();
+    if (byteBuffer != null) {
+      byteBuffer.clear();
+      return byteBuffer;
     }
+    return ByteBuffer.allocate(BYTE_BUFFER_SIZE);
   }
 
-  void ensureSomeCapacity() {
-    if (current.remaining() > 0) {
-      return;
+  void offer(List<ByteBuffer> byteBuffers) {
+    // TODO(trask) batch offer?
+    for (ByteBuffer byteBuffer : byteBuffers) {
+      queue.offer(byteBuffer);
     }
-    current = byteBufferPool.remove();
-    byteBuffers.add(current);
-  }
-
-  List<ByteBuffer> getByteBuffers() {
-    return byteBuffers;
   }
 }

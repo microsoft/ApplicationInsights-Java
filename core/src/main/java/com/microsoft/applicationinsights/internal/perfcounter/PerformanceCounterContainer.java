@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.TelemetryClient;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -125,8 +125,7 @@ public enum PerformanceCounterContainer {
   /**
    * A private method that is called only when the container needs to start collecting performance
    * counters data. The method will schedule a callback to be called, it will initialize a {@link
-   * com.microsoft.applicationinsights.TelemetryClient} that the Performance Counters will use to
-   * report their data
+   * TelemetryClient} that the Performance Counters will use to report their data
    */
   private void initialize() {
     if (!initialized) {

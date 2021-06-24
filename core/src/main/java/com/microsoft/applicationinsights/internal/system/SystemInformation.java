@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.system;
 
-import com.microsoft.applicationinsights.common.Strings;
+import com.microsoft.applicationinsights.internal.common.Strings;
 import java.lang.management.ManagementFactory;
 import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;

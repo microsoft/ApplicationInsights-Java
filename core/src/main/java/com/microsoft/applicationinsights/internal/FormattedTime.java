@@ -19,33 +19,36 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.common;
+package com.microsoft.applicationinsights.internal;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
-public class CommonUtils {
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
-  private static final Logger logger = LoggerFactory.getLogger(CommonUtils.class);
+public class FormattedTime {
 
-  /**
-   * Returns the hostname using {@link InetAddress#getHostName()} on {@link
-   * InetAddress#getLocalHost()}. If an error is encountered, the error is logged and it returns
-   * null.
-   *
-   * @return the local hostname, or null
-   */
-  public static String getHostName() {
-    try {
-      InetAddress addr = InetAddress.getLocalHost();
-      return addr.getHostName();
-    } catch (UnknownHostException ex) {
-      logger.warn("Error resolving hostname", ex);
-      return null;
-    }
+  public static String fromNow() {
+    return fromEpochMillis(System.currentTimeMillis());
   }
 
-  private CommonUtils() {}
+  public static String fromDate(Date date) {
+    return fromEpochMillis(date.getTime());
+  }
+
+  public static String fromEpochNanos(long epochNanos) {
+    return Instant.ofEpochMilli(NANOSECONDS.toMillis(epochNanos))
+        .atOffset(ZoneOffset.UTC)
+        .format(DateTimeFormatter.ISO_DATE_TIME);
+  }
+
+  public static String fromEpochMillis(long epochMillis) {
+    return Instant.ofEpochMilli(epochMillis)
+        .atOffset(ZoneOffset.UTC)
+        .format(DateTimeFormatter.ISO_DATE_TIME);
+  }
+
+  private FormattedTime() {}
 }

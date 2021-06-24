@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.persistence;
 
-import com.microsoft.applicationinsights.TelemetryChannel;
+import com.microsoft.applicationinsights.internal.TelemetryChannel;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Executors;

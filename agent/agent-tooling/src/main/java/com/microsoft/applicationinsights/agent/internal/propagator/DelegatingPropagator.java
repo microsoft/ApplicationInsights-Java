@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.propagator;
 
-import com.microsoft.applicationinsights.TelemetryUtil;
+import com.microsoft.applicationinsights.internal.TelemetryUtil;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;

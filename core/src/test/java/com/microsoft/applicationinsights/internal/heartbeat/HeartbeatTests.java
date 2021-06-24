@@ -24,8 +24,8 @@ package com.microsoft.applicationinsights.internal.heartbeat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
-import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.extensibility.TelemetryModule;
+import com.microsoft.applicationinsights.internal.TelemetryClient;
+import com.microsoft.applicationinsights.internal.TelemetryModule;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.config.TelemetryClientInitializer;
 import java.lang.reflect.Field;

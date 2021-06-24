@@ -21,13 +21,13 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.TelemetryClient;
 
 /**
  * PerformanceCounter interface.
  *
  * <p>Every concrete class should have a unique id and it should be able to collect data send that
- * data using a {@link com.microsoft.applicationinsights.TelemetryClient}
+ * data using a {@link TelemetryClient}
  */
 public interface PerformanceCounter {
 

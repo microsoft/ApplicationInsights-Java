@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
-import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.TelemetryClient;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Global {

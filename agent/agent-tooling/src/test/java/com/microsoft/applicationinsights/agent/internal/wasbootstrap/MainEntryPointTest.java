@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.wasbootstrap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.microsoft.applicationinsights.exceptions.FriendlyException;
+import com.microsoft.applicationinsights.internal.common.FriendlyException;
 import org.junit.jupiter.api.Test;
 
 class MainEntryPointTest {

@@ -19,33 +19,23 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights;
+package com.microsoft.applicationinsights.internal;
 
-import java.nio.ByteBuffer;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 
-class AppInsightsByteBufferPool {
+public enum TelemetryObservers {
+  INSTANCE;
 
-  private static final int BYTE_BUFFER_SIZE = 65536;
-  private static final int MAX_RETAINED = 10;
+  private final List<Consumer<TelemetryItem>> observers = new CopyOnWriteArrayList<>();
 
-  private final Queue<ByteBuffer> queue = new ArrayBlockingQueue<>(MAX_RETAINED);
-
-  ByteBuffer remove() {
-    ByteBuffer byteBuffer = queue.poll();
-    if (byteBuffer != null) {
-      byteBuffer.clear();
-      return byteBuffer;
-    }
-    return ByteBuffer.allocate(BYTE_BUFFER_SIZE);
+  public void addObserver(Consumer<TelemetryItem> observer) {
+    observers.add(observer);
   }
 
-  void offer(List<ByteBuffer> byteBuffers) {
-    // TODO(trask) batch offer?
-    for (ByteBuffer byteBuffer : byteBuffers) {
-      queue.offer(byteBuffer);
-    }
+  public List<Consumer<TelemetryItem>> getObservers() {
+    return observers;
   }
 }

@@ -19,23 +19,15 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights;
+package com.microsoft.applicationinsights.internal;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Consumer;
+/** Interface for telemetry modules. */
+public interface TelemetryModule {
 
-public enum TelemetryObservers {
-  INSTANCE;
-
-  private final List<Consumer<TelemetryItem>> observers = new CopyOnWriteArrayList<>();
-
-  public void addObserver(Consumer<TelemetryItem> observer) {
-    observers.add(observer);
-  }
-
-  public List<Consumer<TelemetryItem>> getObservers() {
-    return observers;
-  }
+  /**
+   * Initializes the telemetry module.
+   *
+   * @param telemetryClient The telemetry client to used to initialize the module.
+   */
+  void initialize(TelemetryClient telemetryClient);
 }

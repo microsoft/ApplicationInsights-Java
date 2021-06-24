@@ -21,16 +21,16 @@
 
 package com.microsoft.applicationinsights.internal.quickpulse;
 
-import static com.microsoft.applicationinsights.TelemetryUtil.getExceptions;
+import static com.microsoft.applicationinsights.internal.TelemetryUtil.getExceptions;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDependencyData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.microsoft.applicationinsights.FormattedDuration;
-import com.microsoft.applicationinsights.FormattedTime;
-import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.FormattedDuration;
+import com.microsoft.applicationinsights.internal.FormattedTime;
+import com.microsoft.applicationinsights.internal.TelemetryClient;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.CountAndDuration;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.Counters;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.FinalCounters;

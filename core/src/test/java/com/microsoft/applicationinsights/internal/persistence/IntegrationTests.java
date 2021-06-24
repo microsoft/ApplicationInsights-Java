@@ -36,7 +36,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricData
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorBase;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.microsoft.applicationinsights.TelemetryChannel;
+import com.microsoft.applicationinsights.internal.TelemetryChannel;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.File;
 import java.net.MalformedURLException;

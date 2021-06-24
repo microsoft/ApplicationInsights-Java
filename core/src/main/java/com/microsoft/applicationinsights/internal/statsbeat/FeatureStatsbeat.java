@@ -22,8 +22,8 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryUtil;
+import com.microsoft.applicationinsights.internal.TelemetryClient;
+import com.microsoft.applicationinsights.internal.TelemetryUtil;
 import java.util.HashSet;
 import java.util.Set;
 

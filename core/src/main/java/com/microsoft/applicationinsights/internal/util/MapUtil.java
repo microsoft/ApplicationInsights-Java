@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
-import com.microsoft.applicationinsights.common.Strings;
+import com.microsoft.applicationinsights.internal.common.Strings;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
