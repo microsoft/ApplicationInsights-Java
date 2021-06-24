@@ -32,6 +32,9 @@ repositories {
 
 dependencies {
   implementation project(":agent:agent-profiler:agent-service-profiler")
+  implementation project(":agent:agent-profiler:agent-alerting-api")
+  implementation project(":agent:agent-profiler:agent-alerting")
+  implementation project(":agent:agent-gc-monitor:gc-monitor-api")
   implementation project(":agent:agent-gc-monitor:gc-monitor-core")
 
   // not using gson because it has dependency on java.sql.*, which is not available in Java 9+ bootstrap class loader
@@ -44,6 +47,9 @@ dependencies {
 
   implementation "commons-codec:commons-codec:${versions.commonsCodec}"
   implementation "org.apache.commons:commons-lang3:${versions.commonsLang}"
+  implementation "commons-io:commons-io:${versions.commonsIo}"
+  implementation "org.apache.commons:commons-lang3:${versions.commonsLang}"
+  implementation "org.apache.commons:commons-text:${versions.commonsText}"
 
   implementation "org.checkerframework:checker-qual:${versions.checker}"
   implementation "com.google.code.findbugs:annotations:3.0.1"
@@ -62,11 +68,24 @@ dependencies {
 
   implementation "com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.4"
   implementation "com.azure:azure-core:${versions.azureCore}"
+  implementation("com.azure:azure-identity:1.2.4") {
+    // "This dependency can be excluded if IntelliJ Credential is not being used for authentication
+    //  via `IntelliJCredential` or `DefaultAzureCredential`"
+    // NOTE this exclusion saves 6.5 mb !!!!
+    exclude group: "org.linguafranca.pwdb", module: "KeePassJava2"
+  }
 
   implementation "io.opentelemetry:opentelemetry-sdk-extension-tracing-incubator:${versions.opentelemetryAlpha}"
   implementation "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions.opentelemetryAlpha}"
 
-  implementation "org.apache.commons:commons-text:${versions.commonsText}"
+  implementation "com.github.oshi:oshi-core:${versions.oshi}"
+  implementation "org.slf4j:slf4j-api:${versions.slf4j}"
+
+  implementation "io.opentelemetry:opentelemetry-api:${versions.opentelemetry}"
+  implementation "org.jctools:jctools-core:3.3.0"
+
+  // to use the cache from opentelemetry javaagent
+  implementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-caching:${versions.opentelemetryInstrumentationAlpha}"
 
   compileOnly project(":agent:agent-bootstrap")
   compileOnly "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions.opentelemetryInstrumentationAlpha}"
@@ -79,40 +98,8 @@ dependencies {
   testImplementation "org.assertj:assertj-core:${versions.assertj}"
   testImplementation "org.mockito:mockito-core:${versions.mockito}"
   testImplementation "uk.org.webcompere:system-stubs-jupiter:1.1.0"
-
-  // TODO (trask) merge below from core up into above
-
-  implementation project(":agent:agent-profiler:agent-profiler-api")
-  implementation project(":agent:agent-profiler:agent-alerting-api")
-  implementation project(":agent:agent-profiler:agent-alerting")
-  implementation project(":agent:agent-gc-monitor:gc-monitor-api")
-  implementation "commons-io:commons-io:${versions.commonsIo}"
-  implementation "org.apache.commons:commons-lang3:${versions.commonsLang}"
-  implementation "org.apache.commons:commons-text:${versions.commonsText}"
-  implementation "com.squareup.moshi:moshi:${versions.moshi}"
-  implementation "com.google.code.gson:gson:${versions.gson}"
-  implementation "com.github.oshi:oshi-core:${versions.oshi}"
-  implementation "org.slf4j:slf4j-api:${versions.slf4j}"
-
-  implementation "com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.4"
-  implementation("com.azure:azure-identity:1.2.4") {
-    // "This dependency can be excluded if IntelliJ Credential is not being used for authentication
-    //  via `IntelliJCredential` or `DefaultAzureCredential`"
-    // NOTE this exclusion saves 6.5 mb !!!!
-    exclude group: "org.linguafranca.pwdb", module: "KeePassJava2"
-  }
-  implementation "com.azure:azure-core:${versions.azureCore}"
-
-  implementation "io.opentelemetry:opentelemetry-api:${versions.opentelemetry}"
-  implementation "org.jctools:jctools-core:3.3.0"
-
-  // to use the cache from opentelemetry javaagent
-  implementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-caching:${versions.opentelemetryInstrumentationAlpha}"
-
-  testImplementation "com.google.code.gson:gson:${versions.gson}"
   testImplementation "io.github.hakky54:logcaptor:${versions.logcaptor}"
 
-  testImplementation project(":agent:agent-profiler:agent-service-profiler")
   testImplementation "com.microsoft.jfr:jfr-streaming:${versions.microsoftJfrStreaming}"
   testImplementation "com.azure:azure-storage-blob:${versions.azureStorageBlob}"
 }

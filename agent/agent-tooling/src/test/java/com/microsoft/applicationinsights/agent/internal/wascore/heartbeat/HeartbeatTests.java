@@ -24,10 +24,10 @@ package com.microsoft.applicationinsights.agent.internal.wascore.heartbeat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.ApplicationInsightsXmlConfiguration;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.TelemetryClientInitializer;
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryModule;
+import com.microsoft.applicationinsights.agent.internal.wascore.config.ApplicationInsightsXmlConfiguration;
+import com.microsoft.applicationinsights.agent.internal.wascore.config.TelemetryClientInitializer;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -23,11 +23,11 @@ package com.microsoft.applicationinsights.agent.internal.wascore.profiler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.profiler.config.AlertConfigParser;
-import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
 import com.microsoft.gcmonitor.GcCollectionEvent;
 import com.microsoft.gcmonitor.GcEventConsumer;
 import com.microsoft.gcmonitor.GcMonitorFactory;
