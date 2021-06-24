@@ -34,14 +34,14 @@ enum Feature {
   JAVA_VENDOR_REDHAT(4),
   JAVA_VENDOR_OTHER(5),
   AAD(6),
-  Cassandra_OFF(7),
-  JDBC_OFF(8),
-  JMS_OFF(9),
-  KAFKA_OFF(10),
-  MICROMETER_OFF(11),
-  MONGO_OFF(12),
-  REDIS_OFF(13),
-  SPRING_SCHEDULING_OFF(14);
+  Cassandra_DISABLED(7),
+  JDBC_DISABLED(8),
+  JMS_DISABLED(9),
+  KAFKA_DISABLED(10),
+  MICROMETER_DISABLED(11),
+  MONGO_DISABLED(12),
+  REDIS_DISABLED(13),
+  SPRING_SCHEDULING_DISABLED(14);
 
   private static final Map<String, Feature> features;
 
@@ -61,14 +61,14 @@ enum Feature {
         "Red Hat, Inc.",
         Feature.JAVA_VENDOR_REDHAT); // https://developers.redhat.com/products/openjdk/download/
     features.put("AAD", Feature.AAD);
-    features.put("CASSANDRA OFF", Feature.Cassandra_OFF);
-    features.put("JDBC OFF", Feature.JDBC_OFF);
-    features.put("JMS OFF", Feature.JMS_OFF);
-    features.put("KAFKA OFF", Feature.KAFKA_OFF);
-    features.put("MICROMETER OFF", Feature.MICROMETER_OFF);
-    features.put("MONGO OFF", Feature.MONGO_OFF);
-    features.put("REDIS OFF", Feature.REDIS_OFF);
-    features.put("SPRING SCHEDULING OFF", Feature.SPRING_SCHEDULING_OFF);
+    features.put("CASSANDRA OFF", Feature.Cassandra_DISABLED);
+    features.put("JDBC OFF", Feature.JDBC_DISABLED);
+    features.put("JMS OFF", Feature.JMS_DISABLED);
+    features.put("KAFKA OFF", Feature.KAFKA_DISABLED);
+    features.put("MICROMETER OFF", Feature.MICROMETER_DISABLED);
+    features.put("MONGO OFF", Feature.MONGO_DISABLED);
+    features.put("REDIS OFF", Feature.REDIS_DISABLED);
+    features.put("SPRING SCHEDULING OFF", Feature.SPRING_SCHEDULING_DISABLED);
   }
 
   private final int bitmapIndex;

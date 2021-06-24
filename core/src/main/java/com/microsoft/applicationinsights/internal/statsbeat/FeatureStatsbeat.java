@@ -54,13 +54,13 @@ class FeatureStatsbeat extends BaseStatsbeat {
     telemetryClient.trackAsync(statsbeatTelemetry);
   }
 
-  void trackAadOn(boolean aadEnabled) {
+  void trackAadEnabled(boolean aadEnabled) {
     if (aadEnabled) {
       featureList.add(Feature.AAD);
     }
   }
 
-  void trackInstrumentationOff(
+  void trackDisabledInstrumentations(
       boolean cassandraEnabled,
       boolean jdbcEnabled,
       boolean jmsEnabled,
@@ -70,35 +70,35 @@ class FeatureStatsbeat extends BaseStatsbeat {
       boolean redisEnabled,
       boolean springSchedulingEnabled) {
     if (!cassandraEnabled) {
-      featureList.add(Feature.Cassandra_OFF);
+      featureList.add(Feature.Cassandra_DISABLED);
     }
 
     if (!jdbcEnabled) {
-      featureList.add(Feature.JDBC_OFF);
+      featureList.add(Feature.JDBC_DISABLED);
     }
 
     if (!jmsEnabled) {
-      featureList.add(Feature.JMS_OFF);
+      featureList.add(Feature.JMS_DISABLED);
     }
 
     if (!kafkaEnabled) {
-      featureList.add(Feature.KAFKA_OFF);
+      featureList.add(Feature.KAFKA_DISABLED);
     }
 
     if (!micrometerEnabled) {
-      featureList.add(Feature.MICROMETER_OFF);
+      featureList.add(Feature.MICROMETER_DISABLED);
     }
 
     if (!mongoEnabled) {
-      featureList.add(Feature.MONGO_OFF);
+      featureList.add(Feature.MONGO_DISABLED);
     }
 
     if (!redisEnabled) {
-      featureList.add(Feature.REDIS_OFF);
+      featureList.add(Feature.REDIS_DISABLED);
     }
 
     if (!springSchedulingEnabled) {
-      featureList.add(Feature.SPRING_SCHEDULING_OFF);
+      featureList.add(Feature.SPRING_SCHEDULING_DISABLED);
     }
   }
 }

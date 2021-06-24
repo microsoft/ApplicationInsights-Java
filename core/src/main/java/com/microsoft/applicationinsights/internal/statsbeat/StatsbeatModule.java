@@ -96,8 +96,8 @@ public class StatsbeatModule {
       new AzureMetadataService(attachStatsbeat, customDimensions).scheduleWithFixedDelay(interval);
     }
 
-    featureStatsbeat.trackAadOn(aadEnabled);
-    featureStatsbeat.trackInstrumentationOff(
+    featureStatsbeat.trackAadEnabled(aadEnabled);
+    featureStatsbeat.trackDisabledInstrumentations(
         cassandraEnabled,
         jdbcEnabled,
         jmsEnabled,
