@@ -24,8 +24,6 @@ configurations {
   // TODO (trask) Azure SDK: why is this included in azure-core?
   implementation.exclude group: "io.netty", module: "netty-tcnative-boringssl-static"
 
-  implementation.exclude group: "com.fasterxml.jackson.dataformat", module: "jackson-dataformat-xml"
-
   // this is pulled in via azure-core-http-netty ==> reactor-netty
   implementation.exclude group: "io.projectreactor.netty", module: "reactor-netty-http-brave"
 }

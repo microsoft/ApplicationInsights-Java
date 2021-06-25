@@ -25,7 +25,7 @@ import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.wascore.common.FriendlyException;
+import com.microsoft.applicationinsights.agent.internal.wascore.util.ExceptionStats;
 import com.microsoft.applicationinsights.agent.internal.wascore.util.LocalStringsUtils;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,6 +45,8 @@ class QuickPulsePingSender {
   private final String quickPulseId;
   private long lastValidTransmission = 0;
   private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
+  private final ExceptionStats exceptionStats =
+      new ExceptionStats(QuickPulsePingSender.class, "Live metrics endpoint ping failed");
 
   public QuickPulsePingSender(
       HttpPipeline httpPipeline,
@@ -100,16 +102,16 @@ class QuickPulsePingSender {
           case QP_IS_OFF:
           case QP_IS_ON:
             lastValidTransmission = sendTime;
+            exceptionStats.recordSuccess();
             return quickPulseHeaderInfo;
 
           default:
             break;
         }
       }
-    } catch (FriendlyException e) {
-      if (!friendlyExceptionThrown.getAndSet(true)) {
-        logger.error(e.getMessage());
-      }
+    } catch (Throwable t) {
+      exceptionStats.recordFailure(t.getMessage(), t);
+      // ExceptionUtil.parseError(t, getQuickPulseEndpoint(), friendlyExceptionThrown, logger);
     } finally {
       if (response != null) {
         response.close();

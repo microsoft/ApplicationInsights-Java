@@ -34,6 +34,7 @@ import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import java.net.URL;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +57,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
   private final Object taskLock = new Object();
 
   private volatile String appId;
+  private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
   public void registerAndStartAppIdRetrieval() {
     AiAppId.setSupplier(this);
@@ -120,10 +122,10 @@ public class AppIdSupplier implements AiAppId.Supplier {
       HttpResponse response;
       try {
         response = LazyHttpClient.getInstance().send(request).block();
-      } catch (RuntimeException e) {
-        // TODO handle Friendly SSL exception
-        logger.debug(e.getMessage(), e);
-        backOff("exception sending request to " + url, e);
+      } catch (Throwable t) {
+        // logger.debug(e.getMessage(), e);
+        // ExceptionUtil.parseError(t, url.toString(), friendlyExceptionThrown, logger);
+        backOff("exception sending request to " + url, t);
         return;
       }
 
@@ -146,10 +148,11 @@ public class AppIdSupplier implements AiAppId.Supplier {
       }
 
       logger.debug("appId retrieved: {}", body);
+      exceptionStats.recordSuccess();
       appId = body;
     }
 
-    private void backOff(String warningMessage, Exception exception) {
+    private void backOff(String warningMessage, Throwable exception) {
       exceptionStats.recordFailure(warningMessage, exception);
       scheduledExecutor.schedule(this, backoffSeconds, SECONDS);
       backoffSeconds = Math.min(backoffSeconds * 2, 60);

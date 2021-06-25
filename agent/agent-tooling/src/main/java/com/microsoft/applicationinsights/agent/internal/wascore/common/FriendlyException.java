@@ -58,7 +58,7 @@ public class FriendlyException extends RuntimeException {
   }
 
   // TODO consolidate with method below
-  private static String populateFriendlyMessage(String description, String action) {
+  public static String populateFriendlyMessage(String description, String action) {
     return new StringBuilder()
         .append(System.lineSeparator())
         .append("Description:")
@@ -73,7 +73,7 @@ public class FriendlyException extends RuntimeException {
         .toString();
   }
 
-  private static String populateFriendlyMessage(
+  public static String populateFriendlyMessage(
       String description, String action, String banner, String note) {
     StringBuilder messageBuilder = new StringBuilder();
     messageBuilder.append(System.lineSeparator());
