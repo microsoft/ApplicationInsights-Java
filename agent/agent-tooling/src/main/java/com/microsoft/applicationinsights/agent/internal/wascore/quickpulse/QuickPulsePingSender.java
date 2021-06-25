@@ -26,6 +26,7 @@ import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.wascore.util.ExceptionStats;
+import com.microsoft.applicationinsights.agent.internal.wascore.util.ExceptionUtil;
 import com.microsoft.applicationinsights.agent.internal.wascore.util.LocalStringsUtils;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -111,7 +112,7 @@ class QuickPulsePingSender {
       }
     } catch (Throwable t) {
       exceptionStats.recordFailure(t.getMessage(), t);
-      // ExceptionUtil.parseError(t, getQuickPulseEndpoint(), friendlyExceptionThrown, logger);
+      ExceptionUtil.parseError(t, getQuickPulseEndpoint(), friendlyExceptionThrown, logger);
     } finally {
       if (response != null) {
         response.close();

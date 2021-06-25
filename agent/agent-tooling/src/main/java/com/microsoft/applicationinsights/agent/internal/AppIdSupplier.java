@@ -29,6 +29,7 @@ import com.azure.core.http.HttpResponse;
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.wascore.util.ExceptionStats;
+import com.microsoft.applicationinsights.agent.internal.wascore.util.ExceptionUtil;
 import com.microsoft.applicationinsights.agent.internal.wascore.util.ThreadPoolUtils;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import java.net.URL;
@@ -124,7 +125,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
         response = LazyHttpClient.getInstance().send(request).block();
       } catch (Throwable t) {
         // logger.debug(e.getMessage(), e);
-        // ExceptionUtil.parseError(t, url.toString(), friendlyExceptionThrown, logger);
+        ExceptionUtil.parseError(t, url.toString(), friendlyExceptionThrown, logger);
         backOff("exception sending request to " + url, t);
         return;
       }

@@ -34,6 +34,7 @@ import com.microsoft.applicationinsights.agent.internal.wascore.common.LazyHttpC
 import com.microsoft.applicationinsights.agent.internal.wascore.persistence.LocalFileWriter;
 import com.microsoft.applicationinsights.agent.internal.wascore.statsbeat.StatsbeatModule;
 import com.microsoft.applicationinsights.agent.internal.wascore.util.ExceptionStats;
+import com.microsoft.applicationinsights.agent.internal.wascore.util.ExceptionUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.IOException;
 import java.net.URL;
@@ -171,8 +172,8 @@ public class TelemetryChannel {
             },
             error -> {
               StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
-              // ExceptionUtil.parseError(
-              //     error, endpoint.toString(), friendlySslExceptionThrown, logger);
+              ExceptionUtil.parseError(
+                  error, endpoint.toString(), friendlySslExceptionThrown, logger);
               writeToDiskOnFailure(byteBuffers, finalByteBuffers);
               result.fail();
             },
