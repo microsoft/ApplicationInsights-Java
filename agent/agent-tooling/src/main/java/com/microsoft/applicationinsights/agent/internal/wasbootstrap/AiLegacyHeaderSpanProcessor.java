@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.wasbootstrap;
 
 import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
@@ -31,15 +32,15 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-// FIXME (trask) hook up to tracer provider
-public class LegacyHeaderSpanProcessor implements SpanProcessor {
+public class AiLegacyHeaderSpanProcessor implements SpanProcessor {
 
   @Override
   public void onStart(Context parentContext, ReadWriteSpan span) {
     LegacyIds legacyIds = LegacyIds.fromContext(parentContext);
-    // need to check that it's the same span context that was extracted
-    // in order to avoid adding these attributes to downstream dependencies also
-    if (legacyIds != null && legacyIds.spanContext.equals(span.getSpanContext())) {
+    // need to check that the parent span is the same as the span context extracted from
+    // AiLegacyPropagator, because only want to add these properties to the request span
+    if (legacyIds != null
+        && legacyIds.spanContext.equals(Span.fromContext(parentContext).getSpanContext())) {
       span.setAttribute(Exporter.AI_LEGACY_PARENT_ID_KEY, legacyIds.legacyParentId);
       if (legacyIds.legacyRootId != null) {
         span.setAttribute(Exporter.AI_LEGACY_ROOT_ID_KEY, legacyIds.legacyRootId);
