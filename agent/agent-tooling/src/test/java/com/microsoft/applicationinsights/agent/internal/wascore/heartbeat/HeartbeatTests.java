@@ -26,11 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.junit.jupiter.api.Test;
@@ -50,19 +46,6 @@ class HeartbeatTests {
     HeartBeatModule module = new HeartBeatModule();
     module.initialize(null);
     module.initialize(null);
-  }
-
-  @Test
-  void initializeHeartBeatDefaultsAreSetCorrectly() {
-    HeartBeatModule module = new HeartBeatModule();
-    module.initialize(null);
-
-    assertThat(
-            module.getExcludedHeartBeatProperties() == null
-                || module.getExcludedHeartBeatProperties().size() == 0)
-        .isTrue();
-    assertThat(module.getHeartBeatInterval())
-        .isEqualTo(HeartBeatProvider.DEFAULT_HEARTBEAT_INTERVAL);
   }
 
   @Test
@@ -94,49 +77,6 @@ class HeartbeatTests {
     field.setAccessible(true);
     HeartBeatProvider hbi = (HeartBeatProvider) field.get(module);
     assertThat(hbi.addHeartBeatProperty("test01", "This is value", true)).isTrue();
-  }
-
-  @Test
-  void canDisableHeartBeatPropertyProviderPriorToInitialize() throws Exception {
-    HeartBeatModule module = new HeartBeatModule();
-    module.setExcludedHeartBeatPropertiesProvider(Arrays.asList("Base", "webapps"));
-
-    Field field = module.getClass().getDeclaredField("heartBeatProvider");
-    field.setAccessible(true);
-    HeartBeatProvider hbi = (HeartBeatProvider) field.get(module);
-    assertThat(hbi.getExcludedHeartBeatPropertyProviders().contains("Base")).isTrue();
-    assertThat(hbi.getExcludedHeartBeatPropertyProviders().contains("webapps")).isTrue();
-    module.initialize(new TelemetryClient());
-
-    assertThat(hbi.getExcludedHeartBeatPropertyProviders().contains("Base")).isTrue();
-    assertThat(hbi.getExcludedHeartBeatPropertyProviders().contains("webapps")).isTrue();
-  }
-
-  @Test
-  void defaultHeartbeatPropertyProviderSendsNoFieldWhenDisabled() throws Exception {
-    HeartBeatProvider mockProvider = Mockito.mock(HeartBeatProvider.class);
-    ConcurrentMap<String, String> props = new ConcurrentHashMap<>();
-    Mockito.when(
-            mockProvider.addHeartBeatProperty(
-                Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean()))
-        .then(
-            (Answer<Boolean>)
-                invocation -> {
-                  props.put(
-                      invocation.getArgument(0, String.class),
-                      invocation.getArgument(1, String.class));
-                  return true;
-                });
-
-    List<String> disabledProviders = new ArrayList<>();
-    disabledProviders.add("Default");
-    disabledProviders.add("webapps");
-    Callable<Boolean> callable =
-        HeartbeatDefaultPayload.populateDefaultPayload(
-            new ArrayList<>(), disabledProviders, mockProvider);
-
-    callable.call();
-    assertThat(props.size()).isEqualTo(0);
   }
 
   @Test
@@ -211,9 +151,7 @@ class HeartbeatTests {
                 });
     DefaultHeartBeatPropertyProvider defaultProvider = new DefaultHeartBeatPropertyProvider();
 
-    HeartbeatDefaultPayload.populateDefaultPayload(
-            new ArrayList<>(), new ArrayList<>(), mockProvider)
-        .call();
+    HeartbeatDefaultPayload.populateDefaultPayload(mockProvider).call();
     Field field = defaultProvider.getClass().getDeclaredField("defaultFields");
     field.setAccessible(true);
     Set<String> defaultFields = (Set<String>) field.get(defaultProvider);
@@ -247,7 +185,7 @@ class HeartbeatTests {
     HeartBeatProvider provider = new HeartBeatProvider();
     provider.initialize(new TelemetryClient());
 
-    base.setDefaultPayload(new ArrayList<>(), provider).call();
+    base.setDefaultPayload(provider).call();
     MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
     assertThat(t.getProperties().containsKey("testKey")).isFalse();
   }

@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.wascore.heartbeat;
 
-import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
@@ -47,9 +46,8 @@ public interface HeartBeatPayloadProviderInterface {
   /**
    * Returns a callable which can be executed to set the payload based on the parameters.
    *
-   * @param disableFields List of Properties to be excluded from payload
    * @param provider The current heartbeat provider
    * @return Callable which can be executed to add the payload
    */
-  Callable<Boolean> setDefaultPayload(List<String> disableFields, HeartBeatProvider provider);
+  Callable<Boolean> setDefaultPayload(HeartBeatProvider provider);
 }

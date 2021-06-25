@@ -22,9 +22,6 @@
 package com.microsoft.applicationinsights.agent.internal.wascore.heartbeat;
 
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
-import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -37,15 +34,8 @@ import org.slf4j.LoggerFactory;
  */
 public class HeartBeatModule {
 
-  private static final Logger logger = LoggerFactory.getLogger(HeartBeatModule.class);
-
   /** Interface object holding concrete implementation of heartbeat provider. */
   private final HeartBeatProvider heartBeatProvider;
-
-  private static final Object lock = new Object();
-
-  /** Flag to seek if module is initialized. */
-  private static volatile boolean isInitialized = false;
 
   public HeartBeatModule() {
     heartBeatProvider = new HeartBeatProvider();
@@ -69,41 +59,7 @@ public class HeartBeatModule {
     this.heartBeatProvider.setHeartBeatInterval(heartBeatInterval);
   }
 
-  /** Returns list of excluded heartbeat properties from payload. */
-  public List<String> getExcludedHeartBeatProperties() {
-    return heartBeatProvider.getExcludedHeartBeatProperties();
-  }
-
-  /**
-   * Sets list of excluded heartbeat properties provider.
-   *
-   * @param excludedHeartBeatPropertiesProvider list of excluded heartbeat properties provider to be
-   *     excluded.
-   */
-  public void setExcludedHeartBeatPropertiesProvider(
-      List<String> excludedHeartBeatPropertiesProvider) {
-    this.heartBeatProvider.setExcludedHeartBeatPropertyProviders(
-        excludedHeartBeatPropertiesProvider);
-  }
-
-  /**
-   * Gets the current state of heartbeat.
-   *
-   * @return true if enabled
-   */
-  public boolean isHeartBeatEnabled() {
-    return this.heartBeatProvider.isHeartBeatEnabled();
-  }
-
   public void initialize(TelemetryClient telemetryClient) {
-    if (!isInitialized && isHeartBeatEnabled()) {
-      synchronized (lock) {
-        if (!isInitialized && isHeartBeatEnabled()) {
-          this.heartBeatProvider.initialize(telemetryClient);
-          logger.debug("heartbeat is enabled");
-          isInitialized = true;
-        }
-      }
-    }
+    heartBeatProvider.initialize(telemetryClient);
   }
 }

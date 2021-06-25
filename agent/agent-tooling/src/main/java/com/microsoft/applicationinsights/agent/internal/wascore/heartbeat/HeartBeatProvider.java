@@ -60,10 +60,7 @@ public class HeartBeatProvider {
   private static final String HEARTBEAT_SYNTHETIC_METRIC_NAME = "HeartbeatState";
 
   /** The list of disabled properties. */
-  private List<String> disableDefaultProperties = new ArrayList<>();
-
-  /** List of disabled heartbeat providers. */
-  private List<String> disabledHeartBeatPropertiesProviders = new ArrayList<>();
+  private final List<String> disableDefaultProperties = new ArrayList<>();
 
   /** The counter for heartbeat sent to portal. */
   private long heartbeatsSent;
@@ -84,7 +81,7 @@ public class HeartBeatProvider {
   private final ScheduledExecutorService heartBeatSenderService;
 
   /** Heartbeat enabled state. */
-  private volatile boolean isEnabled;
+  private final boolean isEnabled;
 
   public HeartBeatProvider() {
     this.interval = DEFAULT_HEARTBEAT_INTERVAL;
@@ -109,9 +106,7 @@ public class HeartBeatProvider {
 
       // Submit task to set properties to dictionary using separate thread. we do not wait for the
       // results to come out as some I/O bound properties may take time.
-      propertyUpdateService.submit(
-          HeartbeatDefaultPayload.populateDefaultPayload(
-              getExcludedHeartBeatProperties(), getExcludedHeartBeatPropertyProviders(), this));
+      propertyUpdateService.submit(HeartbeatDefaultPayload.populateDefaultPayload(this));
 
       heartBeatSenderService.scheduleAtFixedRate(this::send, interval, interval, TimeUnit.SECONDS);
     }
@@ -140,23 +135,6 @@ public class HeartBeatProvider {
     return isAdded;
   }
 
-  public boolean isHeartBeatEnabled() {
-    return isEnabled;
-  }
-
-  public void setHeartBeatEnabled(boolean isEnabled) {
-    this.isEnabled = isEnabled;
-  }
-
-  public List<String> getExcludedHeartBeatPropertyProviders() {
-    return this.disabledHeartBeatPropertiesProviders;
-  }
-
-  public void setExcludedHeartBeatPropertyProviders(
-      List<String> excludedHeartBeatPropertyProviders) {
-    this.disabledHeartBeatPropertiesProviders = excludedHeartBeatPropertyProviders;
-  }
-
   public long getHeartBeatInterval() {
     return this.interval;
   }
@@ -168,10 +146,6 @@ public class HeartBeatProvider {
 
   public List<String> getExcludedHeartBeatProperties() {
     return this.disableDefaultProperties;
-  }
-
-  public void setExcludedHeartBeatProperties(List<String> excludedHeartBeatProperties) {
-    this.disableDefaultProperties = excludedHeartBeatProperties;
   }
 
   /** Send the heartbeat item synchronously to application insights backend. */
