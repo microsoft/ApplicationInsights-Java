@@ -1,5 +1,5 @@
 # To generate a custom version with "M.m.p.yyyymmdd<build_count_of_day>"
-$path = "core\build\src\generated\main\resources\sdk-version.properties"
+$path = "agent\agent-tooling\build\src\generated\main\resources\sdk-version.properties"
 if (-Not (Test-Path -Path $path -PathType Leaf)) {
     Write-Error -Message "'$path' does not exist" -Category ObjectNotFound
     exit 2

@@ -23,14 +23,14 @@ package com.microsoft.applicationinsights.agent.internal;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfigurationBuilder;
-import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
+import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
+import com.microsoft.applicationinsights.agent.internal.wascore.util.ThreadPoolUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;

@@ -24,13 +24,13 @@ package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurat
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
-import com.microsoft.applicationinsights.MetricFilter;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
-import com.microsoft.applicationinsights.exceptions.FriendlyException;
-import com.microsoft.applicationinsights.internal.authentication.AuthenticationType;
-import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
-import com.microsoft.applicationinsights.internal.profiler.GcReportingLevel;
+import com.microsoft.applicationinsights.agent.internal.wascore.MetricFilter;
+import com.microsoft.applicationinsights.agent.internal.wascore.authentication.AuthenticationType;
+import com.microsoft.applicationinsights.agent.internal.wascore.common.FriendlyException;
+import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.ConnectionString;
+import com.microsoft.applicationinsights.agent.internal.wascore.profiler.GcReportingLevel;
 import com.squareup.moshi.Json;
 import java.util.ArrayList;
 import java.util.HashMap;

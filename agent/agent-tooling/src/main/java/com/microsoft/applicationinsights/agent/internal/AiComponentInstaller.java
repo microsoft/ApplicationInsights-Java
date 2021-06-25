@@ -24,8 +24,6 @@ package com.microsoft.applicationinsights.agent.internal;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import com.microsoft.applicationinsights.MetricFilter;
-import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
@@ -46,23 +44,25 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
-import com.microsoft.applicationinsights.common.CommonUtils;
-import com.microsoft.applicationinsights.common.Strings;
-import com.microsoft.applicationinsights.exceptions.FriendlyException;
-import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
-import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
-import com.microsoft.applicationinsights.internal.config.AddTypeXmlElement;
-import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
-import com.microsoft.applicationinsights.internal.config.JmxXmlElement;
-import com.microsoft.applicationinsights.internal.config.ParamXmlElement;
-import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElement;
-import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
-import com.microsoft.applicationinsights.internal.config.connection.InvalidConnectionStringException;
-import com.microsoft.applicationinsights.internal.profiler.GcEventMonitor;
-import com.microsoft.applicationinsights.internal.profiler.ProfilerServiceInitializer;
-import com.microsoft.applicationinsights.internal.statsbeat.StatsbeatModule;
-import com.microsoft.applicationinsights.internal.system.SystemInformation;
-import com.microsoft.applicationinsights.internal.util.PropertyHelper;
+import com.microsoft.applicationinsights.agent.internal.wascore.MetricFilter;
+import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
+import com.microsoft.applicationinsights.agent.internal.wascore.authentication.AadAuthentication;
+import com.microsoft.applicationinsights.agent.internal.wascore.common.CommonUtils;
+import com.microsoft.applicationinsights.agent.internal.wascore.common.FriendlyException;
+import com.microsoft.applicationinsights.agent.internal.wascore.common.LazyHttpClient;
+import com.microsoft.applicationinsights.agent.internal.wascore.common.Strings;
+import com.microsoft.applicationinsights.agent.internal.wascore.config.AddTypeXmlElement;
+import com.microsoft.applicationinsights.agent.internal.wascore.config.ApplicationInsightsXmlConfiguration;
+import com.microsoft.applicationinsights.agent.internal.wascore.config.JmxXmlElement;
+import com.microsoft.applicationinsights.agent.internal.wascore.config.ParamXmlElement;
+import com.microsoft.applicationinsights.agent.internal.wascore.config.TelemetryModulesXmlElement;
+import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.ConnectionString;
+import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.InvalidConnectionStringException;
+import com.microsoft.applicationinsights.agent.internal.wascore.profiler.GcEventMonitor;
+import com.microsoft.applicationinsights.agent.internal.wascore.profiler.ProfilerServiceInitializer;
+import com.microsoft.applicationinsights.agent.internal.wascore.statsbeat.StatsbeatModule;
+import com.microsoft.applicationinsights.agent.internal.wascore.system.SystemInformation;
+import com.microsoft.applicationinsights.agent.internal.wascore.util.PropertyHelper;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
 import io.opentelemetry.instrumentation.api.config.Config;
@@ -331,7 +331,8 @@ public class AiComponentInstaller implements AgentListener {
 
     // configure heartbeat module
     AddTypeXmlElement heartbeatModule = new AddTypeXmlElement();
-    heartbeatModule.setType("com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule");
+    heartbeatModule.setType(
+        "com.microsoft.applicationinsights.agent.internal.wascore.heartbeat.HeartBeatModule");
     // do not allow interval longer than 15 minutes, since we use the heartbeat data for usage
     // telemetry
     long intervalSeconds = Math.min(config.heartbeat.intervalSeconds, MINUTES.toSeconds(15));

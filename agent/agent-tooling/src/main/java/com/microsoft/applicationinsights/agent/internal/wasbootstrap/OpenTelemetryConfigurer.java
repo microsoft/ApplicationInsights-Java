@@ -21,9 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.wasbootstrap;
 
-import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.agent.Exporter;
 import com.microsoft.applicationinsights.agent.internal.Global;
+import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithLogProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
@@ -32,6 +31,7 @@ import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampl
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
+import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.opentelemetry.sdk.autoconfigure.spi.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.common.CompletableResultCode;

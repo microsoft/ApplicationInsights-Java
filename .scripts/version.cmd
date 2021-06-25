@@ -9,7 +9,7 @@ pushd %~dp0..
 set PROJECT_ROOT=%CD%
 
 :: Update this to the tasks you want to run
-set GRADLE_TASKS=:core:generateVersionProperties
+set GRADLE_TASKS=:agent:agent-tooling:generateVersionProperties
 :: Add any additonal options
 set GRADLE_OPTIONS=--info
 set GRADLE_CMD=gradlew.bat %GRADLE_TASKS% %GRADLE_OPTIONS%

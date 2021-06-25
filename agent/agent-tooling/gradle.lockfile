@@ -24,7 +24,6 @@ com.github.oshi:oshi-core:5.6.0=runtimeClasspath
 com.github.stephenc.jcip:jcip-annotations:1.0-1=runtimeClasspath
 com.google.code.findbugs:annotations:3.0.1=runtimeClasspath
 com.google.code.findbugs:jsr305:3.0.1=runtimeClasspath
-com.google.code.gson:gson:2.8.2=runtimeClasspath
 com.google.errorprone:error_prone_annotations:2.7.1=runtimeClasspath
 com.microsoft.azure:msal4j-persistence-extension:1.1.0=runtimeClasspath
 com.microsoft.azure:msal4j:1.9.1=runtimeClasspath
