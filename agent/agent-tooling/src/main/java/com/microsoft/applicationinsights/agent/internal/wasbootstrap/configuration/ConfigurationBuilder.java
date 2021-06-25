@@ -24,8 +24,8 @@ package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurat
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SamplingOverride;
-import com.microsoft.applicationinsights.agent.internal.wascore.common.CommonUtils;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.FriendlyException;
+import com.microsoft.applicationinsights.agent.internal.wascore.common.HostName;
 import com.microsoft.applicationinsights.agent.internal.wascore.connection.ConnectionString;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonDataException;
@@ -133,7 +133,7 @@ public class ConfigurationBuilder {
     }
     // only set role instance to host name as a last resort
     if (config.role.instance == null) {
-      String hostname = CommonUtils.getHostName();
+      String hostname = HostName.get();
       config.role.instance = hostname == null ? "unknown" : hostname;
     }
     return config;

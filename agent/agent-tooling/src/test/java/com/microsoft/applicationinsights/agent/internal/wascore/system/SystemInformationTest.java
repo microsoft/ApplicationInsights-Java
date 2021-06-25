@@ -32,13 +32,13 @@ class SystemInformationTest {
   void testOs() {
     assertThat(
             SystemUtils.IS_OS_WINDOWS
-                ? SystemInformation.INSTANCE.isWindows()
-                : SystemInformation.INSTANCE.isUnix())
+                ? SystemInformation.isWindows()
+                : SystemInformation.isUnix())
         .isTrue();
   }
 
   @Test
   void testProcessId() {
-    Integer.parseInt(SystemInformation.INSTANCE.getProcessId());
+    Integer.parseInt(SystemInformation.getProcessId());
   }
 }

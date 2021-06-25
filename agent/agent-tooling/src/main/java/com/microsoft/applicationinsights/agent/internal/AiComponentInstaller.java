@@ -179,7 +179,7 @@ public class AiComponentInstaller implements AgentListener {
 
     ProfilerServiceInitializer.initialize(
         appIdSupplier::get,
-        SystemInformation.INSTANCE.getProcessId(),
+        SystemInformation.getProcessId(),
         formServiceProfilerConfig(config.preview.profiler),
         config.role.instance,
         config.role.name,
@@ -270,9 +270,9 @@ public class AiComponentInstaller implements AgentListener {
     }
     StringBuilder sdkNamePrefix = new StringBuilder(4);
     sdkNamePrefix.append(DiagnosticsHelper.rpIntegrationChar());
-    if (SystemInformation.INSTANCE.isWindows()) {
+    if (SystemInformation.isWindows()) {
       sdkNamePrefix.append("w");
-    } else if (SystemInformation.INSTANCE.isUnix()) {
+    } else if (SystemInformation.isUnix()) {
       sdkNamePrefix.append("l");
     } else {
       startupLogger.warn("could not detect os: {}", System.getProperty("os.name"));

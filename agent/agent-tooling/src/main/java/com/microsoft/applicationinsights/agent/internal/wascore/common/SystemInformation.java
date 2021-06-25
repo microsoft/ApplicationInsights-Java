@@ -26,29 +26,23 @@ import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public enum SystemInformation {
-  INSTANCE;
+public class SystemInformation {
 
-  // if logger is a static member of SystemInformation, it won't be initialized prior to INSTANCE
-  // construction
-  // and will then be null in initializeProcessId() below
-  private static class SystemInfoLogger {
-    private static final Logger logger = LoggerFactory.getLogger(SystemInformation.class);
-  }
+  private static final Logger logger = LoggerFactory.getLogger(SystemInformation.class);
 
   private static final String DEFAULT_PROCESS_NAME = "Java_Process";
 
-  private final String processId = initializeProcessId();
+  private static final String processId = initializeProcessId();
 
-  public String getProcessId() {
+  public static String getProcessId() {
     return processId;
   }
 
-  public boolean isWindows() {
+  public static boolean isWindows() {
     return SystemUtils.IS_OS_WINDOWS;
   }
 
-  public boolean isUnix() {
+  public static boolean isUnix() {
     return SystemUtils.IS_OS_UNIX;
   }
 
@@ -64,16 +58,16 @@ public enum SystemInformation {
         String processIdAsString = rawName.substring(0, i);
         try {
           Integer.parseInt(processIdAsString);
-          SystemInfoLogger.logger.debug("Current PID: " + processIdAsString);
+          logger.debug("Current PID: " + processIdAsString);
           return processIdAsString;
         } catch (RuntimeException e) {
-          SystemInfoLogger.logger.error("Failed to fetch process id: '{}'", e.toString());
-          SystemInfoLogger.logger.error("Failed to parse PID as number: '{}'", e.toString());
-          SystemInfoLogger.logger.debug(e.getMessage(), e);
+          logger.error("Failed to fetch process id: '{}'", e.toString());
+          logger.error("Failed to parse PID as number: '{}'", e.toString());
+          logger.debug(e.getMessage(), e);
         }
       }
     }
-    SystemInfoLogger.logger.error("Could not extract PID from runtime name: '" + rawName + "'");
+    logger.error("Could not extract PID from runtime name: '" + rawName + "'");
     // Default
     return DEFAULT_PROCESS_NAME;
   }

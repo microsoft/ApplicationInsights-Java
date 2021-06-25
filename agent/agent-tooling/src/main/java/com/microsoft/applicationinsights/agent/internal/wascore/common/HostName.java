@@ -19,20 +19,33 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.wascore.util;
+package com.microsoft.applicationinsights.agent.internal.wascore.common;
 
-import com.microsoft.applicationinsights.agent.internal.wascore.common.CommonUtils;
-import java.util.Locale;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/** A view into the context information specific to device information. */
-public class DeviceInfo {
-  public static String getHostName() {
-    return CommonUtils.getHostName();
+public class HostName {
+
+  private static final Logger logger = LoggerFactory.getLogger(HostName.class);
+
+  /**
+   * Returns the hostname using {@link InetAddress#getHostName()} on {@link
+   * InetAddress#getLocalHost()}. If an error is encountered, the error is logged and it returns
+   * null.
+   *
+   * @return the local hostname, or null
+   */
+  public static String get() {
+    try {
+      InetAddress addr = InetAddress.getLocalHost();
+      return addr.getHostName();
+    } catch (UnknownHostException ex) {
+      logger.warn("Error resolving hostname", ex);
+      return null;
+    }
   }
 
-  public static String getLocale() {
-    return Locale.getDefault().toLanguageTag();
-  }
-
-  private DeviceInfo() {}
+  private HostName() {}
 }

@@ -96,9 +96,9 @@ class CustomDimensions {
   }
 
   private static OperatingSystem initOperatingSystem() {
-    if (SystemInformation.INSTANCE.isWindows()) {
+    if (SystemInformation.isWindows()) {
       return OperatingSystem.OS_WINDOWS;
-    } else if (SystemInformation.INSTANCE.isUnix()) {
+    } else if (SystemInformation.isUnix()) {
       return OperatingSystem.OS_LINUX;
     } else {
       return OperatingSystem.OS_UNKNOWN;

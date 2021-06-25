@@ -43,9 +43,9 @@ public class CustomDimensionsTest {
     CustomDimensions customDimensions = new CustomDimensions();
 
     OperatingSystem os = OperatingSystem.OS_UNKNOWN;
-    if (SystemInformation.INSTANCE.isWindows()) {
+    if (SystemInformation.isWindows()) {
       os = OperatingSystem.OS_WINDOWS;
-    } else if (SystemInformation.INSTANCE.isUnix()) {
+    } else if (SystemInformation.isUnix()) {
       os = OperatingSystem.OS_LINUX;
     }
     assertThat(customDimensions.getOperatingSystem()).isEqualTo(os);
