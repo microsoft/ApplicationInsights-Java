@@ -2,7 +2,6 @@
 
 # Version 3.2.0-BETA.2
 * Lots of internal clean up.
-* Enable profiler by default.
 * Reduce binary size.
 
 # Version 3.2.0-BETA
