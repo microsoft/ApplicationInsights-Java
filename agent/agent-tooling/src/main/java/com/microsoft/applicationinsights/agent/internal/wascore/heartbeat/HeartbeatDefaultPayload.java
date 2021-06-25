@@ -46,9 +46,7 @@ public class HeartbeatDefaultPayload {
    * @return Callable to perform execution
    */
   public static Callable<Boolean> populateDefaultPayload(
-      List<String> disabledFields,
-      List<String> disabledProviders,
-      HeartBeatProviderInterface provider) {
+      List<String> disabledFields, List<String> disabledProviders, HeartBeatProvider provider) {
     return new Callable<Boolean>() {
       @Override
       public Boolean call() throws Exception {

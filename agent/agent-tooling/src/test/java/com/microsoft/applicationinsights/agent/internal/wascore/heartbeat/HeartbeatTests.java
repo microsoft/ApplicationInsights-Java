@@ -62,7 +62,7 @@ class HeartbeatTests {
                 || module.getExcludedHeartBeatProperties().size() == 0)
         .isTrue();
     assertThat(module.getHeartBeatInterval())
-        .isEqualTo(HeartBeatProviderInterface.DEFAULT_HEARTBEAT_INTERVAL);
+        .isEqualTo(HeartBeatProvider.DEFAULT_HEARTBEAT_INTERVAL);
   }
 
   @Test
@@ -82,7 +82,7 @@ class HeartbeatTests {
     module.initialize(null);
     assertThat(module.getHeartBeatInterval()).isNotEqualTo(heartBeatInterval);
     assertThat(module.getHeartBeatInterval())
-        .isEqualTo(HeartBeatProviderInterface.MINIMUM_HEARTBEAT_INTERVAL);
+        .isEqualTo(HeartBeatProvider.MINIMUM_HEARTBEAT_INTERVAL);
   }
 
   @Test
@@ -90,9 +90,9 @@ class HeartbeatTests {
     HeartBeatModule module = new HeartBeatModule();
     module.initialize(new TelemetryClient());
 
-    Field field = module.getClass().getDeclaredField("heartBeatProviderInterface");
+    Field field = module.getClass().getDeclaredField("heartBeatProvider");
     field.setAccessible(true);
-    HeartBeatProviderInterface hbi = (HeartBeatProviderInterface) field.get(module);
+    HeartBeatProvider hbi = (HeartBeatProvider) field.get(module);
     assertThat(hbi.addHeartBeatProperty("test01", "This is value", true)).isTrue();
   }
 
@@ -101,9 +101,9 @@ class HeartbeatTests {
     HeartBeatModule module = new HeartBeatModule();
     module.setExcludedHeartBeatPropertiesProvider(Arrays.asList("Base", "webapps"));
 
-    Field field = module.getClass().getDeclaredField("heartBeatProviderInterface");
+    Field field = module.getClass().getDeclaredField("heartBeatProvider");
     field.setAccessible(true);
-    HeartBeatProviderInterface hbi = (HeartBeatProviderInterface) field.get(module);
+    HeartBeatProvider hbi = (HeartBeatProvider) field.get(module);
     assertThat(hbi.getExcludedHeartBeatPropertyProviders().contains("Base")).isTrue();
     assertThat(hbi.getExcludedHeartBeatPropertyProviders().contains("webapps")).isTrue();
     module.initialize(new TelemetryClient());
@@ -114,7 +114,7 @@ class HeartbeatTests {
 
   @Test
   void defaultHeartbeatPropertyProviderSendsNoFieldWhenDisabled() throws Exception {
-    HeartBeatProviderInterface mockProvider = Mockito.mock(HeartBeatProviderInterface.class);
+    HeartBeatProvider mockProvider = Mockito.mock(HeartBeatProvider.class);
     ConcurrentMap<String, String> props = new ConcurrentHashMap<>();
     Mockito.when(
             mockProvider.addHeartBeatProperty(
@@ -196,7 +196,7 @@ class HeartbeatTests {
 
   @Test
   void sentHeartbeatContainsExpectedDefaultFields() throws Exception {
-    HeartBeatProviderInterface mockProvider = Mockito.mock(HeartBeatProviderInterface.class);
+    HeartBeatProvider mockProvider = Mockito.mock(HeartBeatProvider.class);
     ConcurrentMap<String, String> props = new ConcurrentHashMap<>();
     Mockito.when(
             mockProvider.addHeartBeatProperty(

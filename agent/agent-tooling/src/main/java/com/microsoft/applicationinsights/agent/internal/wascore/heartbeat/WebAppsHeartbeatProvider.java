@@ -70,7 +70,7 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
 
   @Override
   public Callable<Boolean> setDefaultPayload(
-      List<String> disableFields, HeartBeatProviderInterface provider) {
+      List<String> disableFields, HeartBeatProvider provider) {
     return new Callable<Boolean>() {
 
       final Set<String> enabledProperties = MiscUtils.except(defaultFields, disableFields);

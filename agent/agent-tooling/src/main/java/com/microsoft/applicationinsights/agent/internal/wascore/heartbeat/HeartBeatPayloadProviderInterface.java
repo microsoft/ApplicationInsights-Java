@@ -51,6 +51,5 @@ public interface HeartBeatPayloadProviderInterface {
    * @param provider The current heartbeat provider
    * @return Callable which can be executed to add the payload
    */
-  Callable<Boolean> setDefaultPayload(
-      List<String> disableFields, HeartBeatProviderInterface provider);
+  Callable<Boolean> setDefaultPayload(List<String> disableFields, HeartBeatProvider provider);
 }

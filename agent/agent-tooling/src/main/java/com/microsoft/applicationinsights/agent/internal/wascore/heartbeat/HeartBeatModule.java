@@ -40,7 +40,7 @@ public class HeartBeatModule {
   private static final Logger logger = LoggerFactory.getLogger(HeartBeatModule.class);
 
   /** Interface object holding concrete implementation of heartbeat provider. */
-  private final HeartBeatProviderInterface heartBeatProviderInterface;
+  private final HeartBeatProvider heartBeatProvider;
 
   private static final Object lock = new Object();
 
@@ -48,7 +48,7 @@ public class HeartBeatModule {
   private static volatile boolean isInitialized = false;
 
   public HeartBeatModule() {
-    heartBeatProviderInterface = new HeartBeatProvider();
+    heartBeatProvider = new HeartBeatProvider();
   }
 
   /**
@@ -57,7 +57,7 @@ public class HeartBeatModule {
    * @return heartbeat interval in seconds.
    */
   public long getHeartBeatInterval() {
-    return this.heartBeatProviderInterface.getHeartBeatInterval();
+    return this.heartBeatProvider.getHeartBeatInterval();
   }
 
   /**
@@ -66,12 +66,12 @@ public class HeartBeatModule {
    * @param heartBeatInterval Heartbeat interval to set in seconds.
    */
   public void setHeartBeatInterval(long heartBeatInterval) {
-    this.heartBeatProviderInterface.setHeartBeatInterval(heartBeatInterval);
+    this.heartBeatProvider.setHeartBeatInterval(heartBeatInterval);
   }
 
   /** Returns list of excluded heartbeat properties from payload. */
   public List<String> getExcludedHeartBeatProperties() {
-    return heartBeatProviderInterface.getExcludedHeartBeatProperties();
+    return heartBeatProvider.getExcludedHeartBeatProperties();
   }
 
   /**
@@ -82,7 +82,7 @@ public class HeartBeatModule {
    */
   public void setExcludedHeartBeatPropertiesProvider(
       List<String> excludedHeartBeatPropertiesProvider) {
-    this.heartBeatProviderInterface.setExcludedHeartBeatPropertyProviders(
+    this.heartBeatProvider.setExcludedHeartBeatPropertyProviders(
         excludedHeartBeatPropertiesProvider);
   }
 
@@ -92,14 +92,14 @@ public class HeartBeatModule {
    * @return true if enabled
    */
   public boolean isHeartBeatEnabled() {
-    return this.heartBeatProviderInterface.isHeartBeatEnabled();
+    return this.heartBeatProvider.isHeartBeatEnabled();
   }
 
   public void initialize(TelemetryClient telemetryClient) {
     if (!isInitialized && isHeartBeatEnabled()) {
       synchronized (lock) {
         if (!isInitialized && isHeartBeatEnabled()) {
-          this.heartBeatProviderInterface.initialize(telemetryClient);
+          this.heartBeatProvider.initialize(telemetryClient);
           logger.debug("heartbeat is enabled");
           isInitialized = true;
         }
