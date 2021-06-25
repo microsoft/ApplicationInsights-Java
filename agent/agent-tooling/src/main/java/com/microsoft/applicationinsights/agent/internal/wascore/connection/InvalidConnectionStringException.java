@@ -19,19 +19,15 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.wascore.config;
+package com.microsoft.applicationinsights.agent.internal.wascore.connection;
 
-import java.util.ArrayList;
+public class InvalidConnectionStringException extends Exception {
 
-public class TelemetryModulesXmlElement {
-
-  private ArrayList<AddTypeXmlElement> adds;
-
-  public ArrayList<AddTypeXmlElement> getAdds() {
-    return adds;
+  InvalidConnectionStringException(String message) {
+    super(message);
   }
 
-  public void setAdds(ArrayList<AddTypeXmlElement> adds) {
-    this.adds = adds;
+  InvalidConnectionStringException(String message, Throwable cause) {
+    super(message, cause);
   }
 }

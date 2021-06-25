@@ -26,10 +26,8 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
-import com.microsoft.applicationinsights.agent.internal.wascore.MetricFilter;
-import com.microsoft.applicationinsights.agent.internal.wascore.authentication.AuthenticationType;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.FriendlyException;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.ConnectionString;
+import com.microsoft.applicationinsights.agent.internal.wascore.connection.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.wascore.profiler.GcReportingLevel;
 import com.squareup.moshi.Json;
 import java.util.ArrayList;
@@ -66,23 +64,9 @@ public class Configuration {
 
   public enum MatchType {
     @Json(name = "strict")
-    STRICT {
-      @Override
-      MetricFilter.MatchType toCore() {
-        return MetricFilter.MatchType.STRICT;
-      }
-    },
+    STRICT,
     @Json(name = "regexp")
-    REGEXP {
-      @Override
-      MetricFilter.MatchType toCore() {
-        return MetricFilter.MatchType.REGEXP;
-      }
-    };
-
-    // TODO (trask) this could be revisited in the future once core goes away
-    // need a different MetricFilter in this case because it lives in core
-    abstract MetricFilter.MatchType toCore();
+    REGEXP
   }
 
   public enum ProcessorActionType {
@@ -486,12 +470,6 @@ public class Configuration {
               + type
               + " processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
     }
-
-    // TODO (trask) this could be revisited in the future once core goes away
-    // need a different MetricFilter in this case because it lives in core
-    public MetricFilter toMetricFilter() {
-      return new MetricFilter(exclude.toCore());
-    }
   }
 
   public static class NameConfig {
@@ -705,12 +683,6 @@ public class Configuration {
               + type
               + " processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
     }
-
-    // TODO (trask) this could be revisited in the future once core goes away
-    // need a different MetricFilter in this case because it lives in core
-    public MetricFilter.IncludeExclude toCore() {
-      return new MetricFilter.IncludeExclude(matchType.toCore(), metricNames);
-    }
   }
 
   private static void validateRegex(String value, ProcessorType processorType) {
@@ -912,5 +884,12 @@ public class Configuration {
         }
       }
     }
+  }
+
+  public enum AuthenticationType {
+    UAMI,
+    SAMI,
+    VSCODE,
+    CLIENTSECRET
   }
 }

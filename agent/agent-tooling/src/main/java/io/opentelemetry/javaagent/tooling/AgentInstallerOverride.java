@@ -25,6 +25,7 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.MainEntryPo
 import java.io.File;
 import java.lang.instrument.Instrumentation;
 
+@SuppressWarnings("unused")
 public class AgentInstallerOverride {
 
   public static void installBytebuddyAgent(Instrumentation inst, File javaagentFile) {

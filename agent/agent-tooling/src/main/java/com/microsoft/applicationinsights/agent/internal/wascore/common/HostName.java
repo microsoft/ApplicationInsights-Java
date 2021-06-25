@@ -19,21 +19,33 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.wascore.perfcounter;
+package com.microsoft.applicationinsights.agent.internal.wascore.common;
 
-import java.util.Collection;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * Defines the interface that concrete factories should follow. The major method is the one that
- * will be able create the needed Performance Counters.
- */
-public interface PerformanceCountersFactory {
+public class HostName {
+
+  private static final Logger logger = LoggerFactory.getLogger(HostName.class);
+
   /**
-   * Creates the {@link PerformanceCounter}.
+   * Returns the hostname using {@link InetAddress#getHostName()} on {@link
+   * InetAddress#getLocalHost()}. If an error is encountered, the error is logged and it returns
+   * null.
    *
-   * <p>Note: The method should not throw
-   *
-   * @return A collection of {@link PerformanceCounter}
+   * @return the local hostname, or null
    */
-  Collection<PerformanceCounter> getPerformanceCounters();
+  public static String get() {
+    try {
+      InetAddress addr = InetAddress.getLocalHost();
+      return addr.getHostName();
+    } catch (UnknownHostException ex) {
+      logger.warn("Error resolving hostname", ex);
+      return null;
+    }
+  }
+
+  private HostName() {}
 }

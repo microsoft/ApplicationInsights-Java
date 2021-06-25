@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.wascore.config.connection;
+package com.microsoft.applicationinsights.agent.internal.wascore.connection;
 
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.Strings;

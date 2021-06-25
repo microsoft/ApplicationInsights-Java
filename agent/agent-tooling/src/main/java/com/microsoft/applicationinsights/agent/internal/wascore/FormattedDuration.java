@@ -58,8 +58,7 @@ public class FormattedDuration {
     remainingNanos = remainingNanos % NANOSECONDS_PER_SECOND;
 
     // TODO (trask) optimization: even better than reusing string builder would be to write this
-    // directly to json stream
-    //  during json serialization
+    //  directly to json stream during json serialization
     StringBuilder sb = reusableStringBuilder.get();
     sb.setLength(0);
 
@@ -85,8 +84,7 @@ public class FormattedDuration {
     remainingMillis = remainingMillis % MILLISECONDS_PER_SECOND;
 
     // TODO (trask) optimization: even better than reusing string builder would be to write this
-    // directly to json stream
-    //  during json serialization
+    //  directly to json stream during json serialization
     StringBuilder sb = reusableStringBuilder.get();
     sb.setLength(0);
 

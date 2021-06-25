@@ -26,7 +26,7 @@ import com.azure.core.http.HttpHeaders;
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
-import com.microsoft.applicationinsights.agent.internal.wascore.util.LocalStringsUtils;
+import com.microsoft.applicationinsights.agent.internal.wascore.common.Strings;
 import java.util.Date;
 
 final class QuickPulseNetworkHelper {
@@ -89,7 +89,7 @@ final class QuickPulseNetworkHelper {
         }
       } else if (QPS_SERVICE_POLLING_INTERVAL_HINT.equalsIgnoreCase(header.getName())) {
         String servicePollingIntervalHintHeaderValue = header.getValue();
-        if (!LocalStringsUtils.isNullOrEmpty(servicePollingIntervalHintHeaderValue)) {
+        if (!Strings.isNullOrEmpty(servicePollingIntervalHintHeaderValue)) {
           servicePollingIntervalHint = Long.parseLong(servicePollingIntervalHintHeaderValue);
         }
       } else if (QPS_SERVICE_ENDPOINT_REDIRECT.equalsIgnoreCase(header.getName())) {

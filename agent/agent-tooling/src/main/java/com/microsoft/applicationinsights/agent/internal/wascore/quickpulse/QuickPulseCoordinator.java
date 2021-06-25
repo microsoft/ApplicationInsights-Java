@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.wascore.quickpulse;
 
-import com.microsoft.applicationinsights.agent.internal.wascore.util.LocalStringsUtils;
+import com.microsoft.applicationinsights.agent.internal.wascore.common.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,7 +127,7 @@ final class QuickPulseCoordinator implements Runnable {
 
   private void handleReceivedHeaders(QuickPulseHeaderInfo currentQuickPulseHeaderInfo) {
     String redirectLink = currentQuickPulseHeaderInfo.getQpsServiceEndpointRedirect();
-    if (!LocalStringsUtils.isNullOrEmpty(redirectLink)) {
+    if (!Strings.isNullOrEmpty(redirectLink)) {
       qpsServiceRedirectedEndpoint = redirectLink;
     }
 

@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agent.internal.wascore.heartbeat;
 
 import com.microsoft.applicationinsights.agent.internal.wascore.util.PropertyHelper;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -53,9 +52,6 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
    */
   private static UUID uniqueProcessId;
 
-  /** Name of this provider. */
-  private static final String name = "Default";
-
   private static final String JRE_VERSION = "jreVersion";
 
   private static final String SDK_VERSION = "sdkVersion";
@@ -70,16 +66,10 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
   }
 
   @Override
-  public String getName() {
-    return name;
-  }
-
-  @Override
-  public Callable<Boolean> setDefaultPayload(
-      List<String> disableFields, HeartBeatProviderInterface provider) {
+  public Callable<Boolean> setDefaultPayload(HeartBeatProvider provider) {
     return new Callable<Boolean>() {
 
-      final Set<String> enabledProperties = MiscUtils.except(defaultFields, disableFields);
+      final Set<String> enabledProperties = defaultFields;
 
       @Override
       public Boolean call() {

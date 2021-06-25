@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.wascore.statsbeat;
 
-import com.microsoft.applicationinsights.agent.internal.wascore.system.SystemInformation;
+import com.microsoft.applicationinsights.agent.internal.wascore.common.SystemInformation;
 import com.microsoft.applicationinsights.agent.internal.wascore.util.PropertyHelper;
 import java.util.Map;
 
@@ -96,9 +96,9 @@ class CustomDimensions {
   }
 
   private static OperatingSystem initOperatingSystem() {
-    if (SystemInformation.INSTANCE.isWindows()) {
+    if (SystemInformation.isWindows()) {
       return OperatingSystem.OS_WINDOWS;
-    } else if (SystemInformation.INSTANCE.isUnix()) {
+    } else if (SystemInformation.isUnix()) {
       return OperatingSystem.OS_LINUX;
     } else {
       return OperatingSystem.OS_UNKNOWN;

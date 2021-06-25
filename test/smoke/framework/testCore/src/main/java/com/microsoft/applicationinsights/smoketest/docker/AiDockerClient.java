@@ -108,7 +108,6 @@ public class AiDockerClient {
       cmd.addAll(Arrays.asList("-p", "5005:5005"));
     }
     if (!Strings.isNullOrEmpty(network)) {
-      // TODO assert the network exists
       cmd.add("--network");
       cmd.add(network);
     }

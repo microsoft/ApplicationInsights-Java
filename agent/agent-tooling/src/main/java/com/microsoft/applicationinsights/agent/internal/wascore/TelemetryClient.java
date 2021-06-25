@@ -36,13 +36,11 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestDat
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.wascore.authentication.AadAuthentication;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.ApplicationInsightsXmlConfiguration;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.TelemetryClientInitializer;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.ConnectionString;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.EndpointProvider;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.InvalidConnectionStringException;
+import com.microsoft.applicationinsights.agent.internal.wascore.connection.ConnectionString;
+import com.microsoft.applicationinsights.agent.internal.wascore.connection.EndpointProvider;
+import com.microsoft.applicationinsights.agent.internal.wascore.connection.InvalidConnectionStringException;
 import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.Constants;
 import com.microsoft.applicationinsights.agent.internal.wascore.persistence.LocalFileCache;
 import com.microsoft.applicationinsights.agent.internal.wascore.persistence.LocalFileLoader;
@@ -57,7 +55,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 import org.apache.commons.text.StringSubstitutor;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -105,9 +102,7 @@ public class TelemetryClient {
 
   private final List<MetricFilter> metricFilters;
 
-  private final @Nullable AadAuthentication aadAuthentication;
-
-  private final List<TelemetryModule> telemetryModules = new CopyOnWriteArrayList<>();
+  private final Configuration.AadAuthentication aadAuthentication;
 
   private final Object channelInitLock = new Object();
   private volatile @Nullable BatchSpanProcessor channelBatcher;
@@ -120,7 +115,7 @@ public class TelemetryClient {
   public TelemetryClient(
       Map<String, String> customDimensions,
       List<MetricFilter> metricFilters,
-      AadAuthentication aadAuthentication) {
+      Configuration.AadAuthentication aadAuthentication) {
     StringSubstitutor substitutor = new StringSubstitutor(System.getenv());
     Map<String, String> globalProperties = new HashMap<>();
     Map<String, String> globalTags = new HashMap<>();
@@ -170,8 +165,8 @@ public class TelemetryClient {
   public static TelemetryClient initActive(
       Map<String, String> customDimensions,
       List<MetricFilter> metricFilters,
-      AadAuthentication aadAuthentication,
-      ApplicationInsightsXmlConfiguration applicationInsightsConfig) {
+      Configuration.AadAuthentication aadAuthentication,
+      Configuration configuration) {
     if (active != null) {
       throw new IllegalStateException("Already initialized");
     }
@@ -180,7 +175,7 @@ public class TelemetryClient {
         if (active == null) {
           TelemetryClient active =
               new TelemetryClient(customDimensions, metricFilters, aadAuthentication);
-          TelemetryClientInitializer.INSTANCE.initialize(active, applicationInsightsConfig);
+          TelemetryClientInitializer.initialize(active, configuration);
           TelemetryClient.active = active;
         }
       }
@@ -253,10 +248,6 @@ public class TelemetryClient {
     return channelBatcher;
   }
 
-  public List<TelemetryModule> getTelemetryModules() {
-    return telemetryModules;
-  }
-
   /** Gets or sets the default instrumentation key for the application. */
   public String getInstrumentationKey() {
     return instrumentationKey;
@@ -316,7 +307,7 @@ public class TelemetryClient {
     return endpointProvider;
   }
 
-  public @Nullable AadAuthentication getAadAuthentication() {
+  public Configuration.AadAuthentication getAadAuthentication() {
     return aadAuthentication;
   }
 
@@ -376,7 +367,7 @@ public class TelemetryClient {
   // telemetry tags will be non-null after this call
   // data properties may or may not be non-null after this call
   // FIXME (trask) azure sdk exporter: rename MetricsData to MetricData to match the telemetryName
-  // and baseType?
+  //  and baseType?
   public void initMetricTelemetry(
       TelemetryItem telemetry, MetricsData data, MetricDataPoint point) {
     if (telemetry.getTags() != null) {
