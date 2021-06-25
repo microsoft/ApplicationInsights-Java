@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.wascore.persistence;
 
-import com.microsoft.applicationinsights.internal.util.ExceptionStats;
+import com.microsoft.applicationinsights.agent.internal.wascore.util.ExceptionStats;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
