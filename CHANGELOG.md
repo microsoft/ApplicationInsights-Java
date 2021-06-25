@@ -2,7 +2,7 @@
 
 # Version 3.2.0-BETA.2
 * Lots of internal clean up.
-* Reduce binary size.
+* Reduce binary size from 3.2.0-BETA
 
 # Version 3.2.0-BETA
 * Support Azure Active Directory Authentication.
