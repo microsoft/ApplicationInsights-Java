@@ -1,5 +1,15 @@
 # CHANGELOG
 
+# Version 3.2.0-BETA.2
+* There were lots of refactorings.
+* Enable profiler by default.
+* Reduce binary size.
+
+# Version 3.2.0-BETA
+* Support Azure Active Directory Authentication.
+* Support Stamp Specific redirects.
+* Use v2.1/track endpoint to send telemetry instead of v2/track.
+
 # Version 3.1.1
 * Fix 2.x interop of timestamps [#1726](https://github.com/microsoft/ApplicationInsights-Java/pull/1726).
 * Add metric filtering to telemetry processor [#1728](https://github.com/microsoft/ApplicationInsights-Java/pull/1728).
