@@ -158,7 +158,7 @@ public class AiComponentInstaller implements AgentListener {
     List<MetricFilter> metricFilters =
         config.preview.processors.stream()
             .filter(processor -> processor.type == Configuration.ProcessorType.METRIC_FILTER)
-            .map(ProcessorConfig::toMetricFilter)
+            .map(MetricFilter::new)
             .collect(Collectors.toList());
 
     TelemetryClient telemetryClient =

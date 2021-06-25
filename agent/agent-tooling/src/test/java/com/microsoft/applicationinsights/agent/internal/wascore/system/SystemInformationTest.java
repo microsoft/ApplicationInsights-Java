@@ -31,9 +31,7 @@ class SystemInformationTest {
   @Test
   void testOs() {
     assertThat(
-            SystemUtils.IS_OS_WINDOWS
-                ? SystemInformation.isWindows()
-                : SystemInformation.isUnix())
+            SystemUtils.IS_OS_WINDOWS ? SystemInformation.isWindows() : SystemInformation.isUnix())
         .isTrue();
   }
 

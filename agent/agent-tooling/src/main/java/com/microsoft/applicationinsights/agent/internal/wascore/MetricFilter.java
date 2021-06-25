@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.wascore;
 
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -38,8 +39,8 @@ public class MetricFilter {
   // we may revisit include in the future after metrics are stabilized if there is customer need
   public final IncludeExclude exclude;
 
-  public MetricFilter(IncludeExclude exclude) {
-    this.exclude = exclude;
+  public MetricFilter(Configuration.ProcessorConfig metricFilterConfiguration) {
+    this.exclude = new IncludeExclude(metricFilterConfiguration.exclude);
   }
 
   boolean matches(String metricName) {
@@ -47,21 +48,21 @@ public class MetricFilter {
   }
 
   public static class IncludeExclude {
-    public final MatchType matchType;
+    public final Configuration.MatchType matchType;
     public final Set<String> metricNames;
     public final List<Pattern> metricNamePatterns;
 
-    public IncludeExclude(MatchType matchType, List<String> metricNames) {
-      this.matchType = matchType;
+    public IncludeExclude(Configuration.ProcessorIncludeExclude includeExcludeConfiguration) {
+      this.matchType = includeExcludeConfiguration.matchType;
       switch (matchType) {
         case STRICT:
-          this.metricNames = new HashSet<>(metricNames);
+          this.metricNames = new HashSet<>(includeExcludeConfiguration.metricNames);
           this.metricNamePatterns = Collections.emptyList();
           break;
         case REGEXP:
           this.metricNames = Collections.emptySet();
           this.metricNamePatterns = new ArrayList<>();
-          for (String metricName : metricNames) {
+          for (String metricName : includeExcludeConfiguration.metricNames) {
             // these patterns have already been validated in
             // Configuration.MetricFilterConfig.validate()
             this.metricNamePatterns.add(Pattern.compile(metricName));
@@ -86,10 +87,5 @@ public class MetricFilter {
       }
       throw new AssertionError("Unexpected match type: " + matchType);
     }
-  }
-
-  public enum MatchType {
-    STRICT,
-    REGEXP
   }
 }

@@ -367,7 +367,7 @@ public class TelemetryClient {
   // telemetry tags will be non-null after this call
   // data properties may or may not be non-null after this call
   // FIXME (trask) azure sdk exporter: rename MetricsData to MetricData to match the telemetryName
-  // and baseType?
+  //  and baseType?
   public void initMetricTelemetry(
       TelemetryItem telemetry, MetricsData data, MetricDataPoint point) {
     if (telemetry.getTags() != null) {
