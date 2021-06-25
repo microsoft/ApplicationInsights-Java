@@ -153,7 +153,6 @@ public abstract class AiSmokeTest {
   private static final short BASE_PORT_NUMBER = 28080;
   private static final String TEST_CONFIG_FILENAME = "testInfo.properties";
 
-  // TODO make this dependent on container mode
   private static final AiDockerClient docker = AiDockerClient.createLinuxClient();
 
   protected static void stopContainer(ContainerInfo info) throws Exception {
@@ -755,7 +754,6 @@ public abstract class AiSmokeTest {
       return;
     }
 
-    // TODO depdency containers can be stopped in parallel
     System.out.printf("Stopping %d containers...", allContainers.size());
     List<ContainerInfo> failedToStop = new ArrayList<>();
     while (!allContainers.isEmpty()) {

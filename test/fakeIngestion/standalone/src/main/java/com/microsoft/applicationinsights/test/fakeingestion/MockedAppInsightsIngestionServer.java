@@ -53,7 +53,7 @@ public class MockedAppInsightsIngestionServer {
   }
 
   public int getPort() {
-    return DEFAULT_PORT; // TODO this could be configurable
+    return DEFAULT_PORT;
   }
 
   @SuppressWarnings("SystemOut")
