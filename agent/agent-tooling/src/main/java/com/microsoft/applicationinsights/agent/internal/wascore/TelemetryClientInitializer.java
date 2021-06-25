@@ -37,6 +37,8 @@ import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.jvm.
 import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.jvm.GcPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.wascore.quickpulse.QuickPulse;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -70,7 +72,10 @@ public class TelemetryClientInitializer {
     // system cpu and process disk i/o
     PerformanceCounterContainer.INSTANCE.register(new OshiPerformanceCounter());
 
-    PerformanceCounterContainer.INSTANCE.register(new DeadLockDetectorPerformanceCounter());
+    ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
+    if (threadBean.isSynchronizerUsageSupported()) {
+      PerformanceCounterContainer.INSTANCE.register(new DeadLockDetectorPerformanceCounter());
+    }
     PerformanceCounterContainer.INSTANCE.register(new JvmHeapMemoryUsedPerformanceCounter());
     PerformanceCounterContainer.INSTANCE.register(new GcPerformanceCounter());
 

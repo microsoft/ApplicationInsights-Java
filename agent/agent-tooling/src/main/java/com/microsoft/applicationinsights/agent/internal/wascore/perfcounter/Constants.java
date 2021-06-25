@@ -44,7 +44,5 @@ public final class Constants {
   public static final String PROCESS_IO_PC_METRIC_NAME =
       "\\Process(??APP_WIN32_PROC??)\\IO Data Bytes/sec";
 
-  public static final String PROCESS_CATEGORY = "Process";
-
   private Constants() {}
 }

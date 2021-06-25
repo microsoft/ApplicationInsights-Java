@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** The class supplies the cpu usage of the Java process the SDK is in. */
-public class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
+public class ProcessCpuPerformanceCounter implements PerformanceCounter {
 
   private static final Logger logger = LoggerFactory.getLogger(ProcessCpuPerformanceCounter.class);
 

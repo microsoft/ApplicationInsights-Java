@@ -53,8 +53,6 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
   private static final Logger logger =
       LoggerFactory.getLogger(DeadLockDetectorPerformanceCounter.class);
 
-  public static final String NAME = "ThreadDeadLockDetector";
-
   private static final String INDENT = "    ";
   private static final String SEPERATOR = " | ";
   private static final String METRIC_NAME = "Suspected Deadlocked Threads";
@@ -64,11 +62,6 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
 
   public DeadLockDetectorPerformanceCounter() {
     threadBean = ManagementFactory.getThreadMXBean();
-  }
-
-  public boolean isSupported() {
-    ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
-    return threadBean.isSynchronizerUsageSupported();
   }
 
   @Override

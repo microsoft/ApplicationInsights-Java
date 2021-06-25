@@ -31,7 +31,6 @@ import java.util.List;
 
 /** The class reports GC related data. */
 public final class GcPerformanceCounter implements PerformanceCounter {
-  public static final String NAME = "GC";
 
   private static final String GC_TOTAL_COUNT = "GC Total Count";
   private static final String GC_TOTAL_TIME = "GC Total Time";
