@@ -56,7 +56,18 @@ public class StatsbeatModule {
   }
 
   public void start(
-      TelemetryClient telemetryClient, long interval, long featureInterval, boolean aadEnabled) {
+      TelemetryClient telemetryClient,
+      long interval,
+      long featureInterval,
+      boolean aadEnabled,
+      boolean cassandraEnabled,
+      boolean jdbcEnabled,
+      boolean jmsEnabled,
+      boolean kafkaEnabled,
+      boolean micrometerEnabled,
+      boolean mongoEnabled,
+      boolean redisEnabled,
+      boolean springSchedulingEnabled) {
     if (started.getAndSet(true)) {
       throw new IllegalStateException("initialize already called");
     }
@@ -86,6 +97,15 @@ public class StatsbeatModule {
     }
 
     featureStatsbeat.trackAadEnabled(aadEnabled);
+    featureStatsbeat.trackDisabledInstrumentations(
+        cassandraEnabled,
+        jdbcEnabled,
+        jmsEnabled,
+        kafkaEnabled,
+        micrometerEnabled,
+        mongoEnabled,
+        redisEnabled,
+        springSchedulingEnabled);
   }
 
   public static StatsbeatModule get() {

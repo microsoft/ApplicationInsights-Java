@@ -59,4 +59,46 @@ class FeatureStatsbeat extends BaseStatsbeat {
       featureList.add(Feature.AAD);
     }
   }
+
+  void trackDisabledInstrumentations(
+      boolean cassandraEnabled,
+      boolean jdbcEnabled,
+      boolean jmsEnabled,
+      boolean kafkaEnabled,
+      boolean micrometerEnabled,
+      boolean mongoEnabled,
+      boolean redisEnabled,
+      boolean springSchedulingEnabled) {
+    if (!cassandraEnabled) {
+      featureList.add(Feature.Cassandra_DISABLED);
+    }
+
+    if (!jdbcEnabled) {
+      featureList.add(Feature.JDBC_DISABLED);
+    }
+
+    if (!jmsEnabled) {
+      featureList.add(Feature.JMS_DISABLED);
+    }
+
+    if (!kafkaEnabled) {
+      featureList.add(Feature.KAFKA_DISABLED);
+    }
+
+    if (!micrometerEnabled) {
+      featureList.add(Feature.MICROMETER_DISABLED);
+    }
+
+    if (!mongoEnabled) {
+      featureList.add(Feature.MONGO_DISABLED);
+    }
+
+    if (!redisEnabled) {
+      featureList.add(Feature.REDIS_DISABLED);
+    }
+
+    if (!springSchedulingEnabled) {
+      featureList.add(Feature.SPRING_SCHEDULING_DISABLED);
+    }
+  }
 }

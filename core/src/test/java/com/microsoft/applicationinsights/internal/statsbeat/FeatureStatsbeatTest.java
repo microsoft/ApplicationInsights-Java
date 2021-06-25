@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,25 +31,25 @@ import org.junit.jupiter.api.Test;
 public class FeatureStatsbeatTest {
 
   private FeatureStatsbeat featureStatsbeat;
-  private String javaVendor;
+  private Set<Feature> features;
 
   @BeforeEach
   public void init() {
     featureStatsbeat = new FeatureStatsbeat(new CustomDimensions());
-    javaVendor = System.getProperty("java.vendor");
+    String javaVendor = System.getProperty("java.vendor");
+    features = new HashSet<>();
+    features.add(Feature.fromJavaVendor(javaVendor));
   }
 
   @Test
   public void testFeatureList() {
-    Set<Feature> features = Collections.singleton(Feature.fromJavaVendor(javaVendor));
     assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));
   }
 
   @Test
   public void testAadEnable() {
     featureStatsbeat.trackAadEnabled(true);
-    Set<Feature> features = new HashSet<>();
-    features.add(Feature.fromJavaVendor(javaVendor));
+
     features.add(Feature.AAD);
     assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));
   }
@@ -58,8 +57,71 @@ public class FeatureStatsbeatTest {
   @Test
   public void testAadDisable() {
     featureStatsbeat.trackAadEnabled(false);
-    Set<Feature> features = new HashSet<>();
-    features.add(Feature.fromJavaVendor(javaVendor));
+
+    assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));
+  }
+
+  @Test
+  public void testCassandraDisable() {
+    featureStatsbeat.trackDisabledInstrumentations(false, true, true, true, true, true, true, true);
+
+    features.add(Feature.Cassandra_DISABLED);
+    assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));
+  }
+
+  @Test
+  public void testJdbcDisable() {
+    featureStatsbeat.trackDisabledInstrumentations(true, false, true, true, true, true, true, true);
+
+    features.add(Feature.JDBC_DISABLED);
+    assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));
+  }
+
+  @Test
+  public void testJmsDisable() {
+    featureStatsbeat.trackDisabledInstrumentations(true, true, false, true, true, true, true, true);
+
+    features.add(Feature.JMS_DISABLED);
+    assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));
+  }
+
+  @Test
+  public void testKafkaDisable() {
+    featureStatsbeat.trackDisabledInstrumentations(true, true, true, false, true, true, true, true);
+
+    features.add(Feature.KAFKA_DISABLED);
+    assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));
+  }
+
+  @Test
+  public void testMicrometerDisable() {
+    featureStatsbeat.trackDisabledInstrumentations(true, true, true, true, false, true, true, true);
+
+    features.add(Feature.MICROMETER_DISABLED);
+    assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));
+  }
+
+  @Test
+  public void testMongoDisable() {
+    featureStatsbeat.trackDisabledInstrumentations(true, true, true, true, true, false, true, true);
+
+    features.add(Feature.MONGO_DISABLED);
+    assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));
+  }
+
+  @Test
+  public void testRedisDisable() {
+    featureStatsbeat.trackDisabledInstrumentations(true, true, true, true, true, true, false, true);
+
+    features.add(Feature.REDIS_DISABLED);
+    assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));
+  }
+
+  @Test
+  public void testSpringSchedulingDisable() {
+    featureStatsbeat.trackDisabledInstrumentations(true, true, true, true, true, true, true, false);
+
+    features.add(Feature.SPRING_SCHEDULING_DISABLED);
     assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));
   }
 }
