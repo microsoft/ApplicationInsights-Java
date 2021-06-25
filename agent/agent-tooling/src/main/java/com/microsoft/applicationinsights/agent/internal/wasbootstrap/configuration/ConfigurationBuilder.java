@@ -527,7 +527,7 @@ public class ConfigurationBuilder {
             "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
       } catch (Exception e) {
         throw new ConfigurationException(
-            "Error parsing configuration from file: " + configPath.toAbsolutePath().toString(), e);
+            "Error parsing configuration from file: " + configPath.toAbsolutePath(), e);
       }
     }
   }
@@ -577,8 +577,7 @@ public class ConfigurationBuilder {
   }
 
   static String getJsonEncodingExceptionMessageForFile(Path configPath, String message) {
-    return getJsonEncodingExceptionMessage(
-        "file " + configPath.toAbsolutePath().toString(), message);
+    return getJsonEncodingExceptionMessage("file " + configPath.toAbsolutePath(), message);
   }
 
   static String getJsonEncodingExceptionMessageForEnvVar(String message) {

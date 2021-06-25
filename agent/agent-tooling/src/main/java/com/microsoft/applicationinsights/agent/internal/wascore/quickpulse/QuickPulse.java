@@ -25,8 +25,8 @@ import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.LazyHttpClient;
+import com.microsoft.applicationinsights.agent.internal.wascore.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.wascore.util.DeviceInfo;
-import com.microsoft.applicationinsights.agent.internal.wascore.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.agent.internal.wascore.util.ThreadPoolUtils;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -78,10 +78,10 @@ public enum QuickPulse {
           String instanceName = telemetryClient.getRoleInstance();
           String machineName = DeviceInfo.getHostName();
 
-          if (LocalStringsUtils.isNullOrEmpty(instanceName)) {
+          if (Strings.isNullOrEmpty(instanceName)) {
             instanceName = machineName;
           }
-          if (LocalStringsUtils.isNullOrEmpty(instanceName)) {
+          if (Strings.isNullOrEmpty(instanceName)) {
             instanceName = "Unknown host";
           }
 

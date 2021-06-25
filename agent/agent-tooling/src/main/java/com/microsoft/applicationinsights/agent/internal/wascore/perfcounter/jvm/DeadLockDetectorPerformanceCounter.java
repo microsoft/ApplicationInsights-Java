@@ -32,12 +32,12 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryI
 import com.microsoft.applicationinsights.agent.internal.wascore.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.PerformanceCounter;
-import com.microsoft.applicationinsights.agent.internal.wascore.util.LocalStringsUtils;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,7 +96,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
       }
 
       if (!blockedThreads.isEmpty()) {
-        String uuid = LocalStringsUtils.generateRandomIntegerId();
+        String uuid = generateRandomIntegerId();
 
         data.getMetrics().get(0).setValue(blockedThreads.size());
         telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), uuid);
@@ -172,5 +172,11 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
           .append(" Id=")
           .append(ti.getLockOwnerId());
     }
+  }
+
+  private static String generateRandomIntegerId() {
+    // avoid using Math.abs(rand.nextLong()) because Math.abs(Long.MIN_VALUE) is negative
+    long rand = ThreadLocalRandom.current().nextLong(Long.MAX_VALUE);
+    return String.valueOf(rand);
   }
 }
