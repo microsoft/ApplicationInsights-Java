@@ -19,18 +19,15 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.wascore.jmx;
+package com.microsoft.applicationinsights.agent.internal.wascore.connection;
 
-/**
- * Represents JMX data of an Attribute The display name The name of the attribute The type of the
- * attribute.
- */
-public final class JmxAttributeData {
-  public final String metricName;
-  public final String attribute;
+public class InvalidConnectionStringException extends Exception {
 
-  public JmxAttributeData(String metricName, String attribute) {
-    this.attribute = attribute;
-    this.metricName = metricName;
+  InvalidConnectionStringException(String message) {
+    super(message);
+  }
+
+  InvalidConnectionStringException(String message, Throwable cause) {
+    super(message, cause);
   }
 }

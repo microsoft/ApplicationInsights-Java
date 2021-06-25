@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.wascore.statsbeat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.microsoft.applicationinsights.agent.internal.wascore.system.SystemInformation;
+import com.microsoft.applicationinsights.agent.internal.wascore.common.SystemInformation;
 import com.microsoft.applicationinsights.agent.internal.wascore.util.PropertyHelper;
 import java.util.HashMap;
 import java.util.Map;

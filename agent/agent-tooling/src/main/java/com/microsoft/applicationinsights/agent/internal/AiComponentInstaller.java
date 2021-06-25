@@ -48,12 +48,12 @@ import com.microsoft.applicationinsights.agent.internal.wascore.authentication.A
 import com.microsoft.applicationinsights.agent.internal.wascore.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.ConnectionString;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.InvalidConnectionStringException;
+import com.microsoft.applicationinsights.agent.internal.wascore.common.SystemInformation;
+import com.microsoft.applicationinsights.agent.internal.wascore.connection.ConnectionString;
+import com.microsoft.applicationinsights.agent.internal.wascore.connection.InvalidConnectionStringException;
 import com.microsoft.applicationinsights.agent.internal.wascore.profiler.GcEventMonitor;
 import com.microsoft.applicationinsights.agent.internal.wascore.profiler.ProfilerServiceInitializer;
 import com.microsoft.applicationinsights.agent.internal.wascore.statsbeat.StatsbeatModule;
-import com.microsoft.applicationinsights.agent.internal.wascore.system.SystemInformation;
 import com.microsoft.applicationinsights.agent.internal.wascore.util.PropertyHelper;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;

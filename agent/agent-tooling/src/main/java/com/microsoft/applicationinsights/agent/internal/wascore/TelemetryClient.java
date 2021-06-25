@@ -39,10 +39,9 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryI
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wascore.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.TelemetryClientInitializer;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.ConnectionString;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.EndpointProvider;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.InvalidConnectionStringException;
+import com.microsoft.applicationinsights.agent.internal.wascore.connection.ConnectionString;
+import com.microsoft.applicationinsights.agent.internal.wascore.connection.EndpointProvider;
+import com.microsoft.applicationinsights.agent.internal.wascore.connection.InvalidConnectionStringException;
 import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.Constants;
 import com.microsoft.applicationinsights.agent.internal.wascore.persistence.LocalFileCache;
 import com.microsoft.applicationinsights.agent.internal.wascore.persistence.LocalFileLoader;
@@ -177,7 +176,7 @@ public class TelemetryClient {
         if (active == null) {
           TelemetryClient active =
               new TelemetryClient(customDimensions, metricFilters, aadAuthentication);
-          TelemetryClientInitializer.INSTANCE.initialize(active, configuration);
+          TelemetryClientInitializer.initialize(active, configuration);
           TelemetryClient.active = active;
         }
       }

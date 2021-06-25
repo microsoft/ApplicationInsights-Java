@@ -19,21 +19,20 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.wascore.config;
+package com.microsoft.applicationinsights.agent.internal.wascore;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.wascore.heartbeat.HeartBeatModule;
-import com.microsoft.applicationinsights.agent.internal.wascore.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.FreeMemoryPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.JmxMetricPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.OshiPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.PerformanceCounterContainer;
 import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.ProcessCpuPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.ProcessMemoryPerformanceCounter;
+import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.jvm.DeadLockDetectorPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.jvm.GcPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter;
@@ -47,14 +46,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Initializer class for telemetry client instances. */
-public enum TelemetryClientInitializer {
-  INSTANCE;
+public class TelemetryClientInitializer {
 
   private static final Logger logger = LoggerFactory.getLogger(TelemetryClientInitializer.class);
 
-  TelemetryClientInitializer() {}
-
-  public void initialize(TelemetryClient telemetryClient, Configuration configuration) {
+  public static void initialize(TelemetryClient telemetryClient, Configuration configuration) {
 
     setConnectionString(configuration, telemetryClient);
     setRoleName(configuration, telemetryClient);
@@ -222,4 +218,6 @@ public enum TelemetryClientInitializer {
 
     module.initialize(telemetryClient);
   }
+
+  private TelemetryClientInitializer() {}
 }

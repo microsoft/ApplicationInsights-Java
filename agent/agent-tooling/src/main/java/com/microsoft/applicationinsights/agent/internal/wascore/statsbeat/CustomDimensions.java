@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.wascore.statsbeat;
 
-import com.microsoft.applicationinsights.agent.internal.wascore.system.SystemInformation;
+import com.microsoft.applicationinsights.agent.internal.wascore.common.SystemInformation;
 import com.microsoft.applicationinsights.agent.internal.wascore.util.PropertyHelper;
 import java.util.Map;
 

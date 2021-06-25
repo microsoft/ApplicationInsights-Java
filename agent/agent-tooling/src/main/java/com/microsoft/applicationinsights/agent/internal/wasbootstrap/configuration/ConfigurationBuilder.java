@@ -27,7 +27,7 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.agent.internal.wascore.authentication.AuthenticationType;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.CommonUtils;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.FriendlyException;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.ConnectionString;
+import com.microsoft.applicationinsights.agent.internal.wascore.connection.ConnectionString;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonDataException;
 import com.squareup.moshi.JsonEncodingException;

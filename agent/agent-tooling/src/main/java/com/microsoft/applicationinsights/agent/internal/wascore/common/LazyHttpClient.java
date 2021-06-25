@@ -34,7 +34,6 @@ import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.core.http.policy.RetryPolicy;
 import com.azure.core.util.Context;
 import com.microsoft.applicationinsights.agent.internal.wascore.authentication.AadAuthentication;
-import com.microsoft.applicationinsights.agent.internal.wascore.authentication.RedirectPolicy;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;

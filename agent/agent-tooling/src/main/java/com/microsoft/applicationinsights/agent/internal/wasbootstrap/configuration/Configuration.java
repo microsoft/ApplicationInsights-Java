@@ -29,7 +29,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.Stat
 import com.microsoft.applicationinsights.agent.internal.wascore.MetricFilter;
 import com.microsoft.applicationinsights.agent.internal.wascore.authentication.AuthenticationType;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.FriendlyException;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.ConnectionString;
+import com.microsoft.applicationinsights.agent.internal.wascore.connection.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.wascore.profiler.GcReportingLevel;
 import com.squareup.moshi.Json;
 import java.util.ArrayList;

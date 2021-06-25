@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.wascore.system;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.microsoft.applicationinsights.agent.internal.wascore.common.SystemInformation;
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.Test;
 

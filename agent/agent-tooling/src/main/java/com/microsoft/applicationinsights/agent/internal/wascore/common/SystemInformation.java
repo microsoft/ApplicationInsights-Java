@@ -19,9 +19,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.wascore.system;
+package com.microsoft.applicationinsights.agent.internal.wascore.common;
 
-import com.microsoft.applicationinsights.agent.internal.wascore.common.Strings;
 import java.lang.management.ManagementFactory;
 import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
