@@ -1,7 +1,7 @@
 # CHANGELOG
 
 # Version 3.2.0-BETA.2
-* There were lots of refactorings.
+* Lots of internal clean up.
 * Enable profiler by default.
 * Reduce binary size.
 
