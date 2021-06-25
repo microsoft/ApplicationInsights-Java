@@ -40,9 +40,6 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
 
   private static final Logger logger = LoggerFactory.getLogger(WebAppsHeartbeatProvider.class);
 
-  /** Name of the provider. */
-  private static final String name = "webapps";
-
   /** Collection holding default properties for this default provider. */
   private final Set<String> defaultFields;
 
@@ -60,11 +57,6 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
     defaultFields = new HashSet<>();
     environmentMap = System.getenv();
     initializeDefaultFields(defaultFields);
-  }
-
-  @Override
-  public String getName() {
-    return name;
   }
 
   @Override

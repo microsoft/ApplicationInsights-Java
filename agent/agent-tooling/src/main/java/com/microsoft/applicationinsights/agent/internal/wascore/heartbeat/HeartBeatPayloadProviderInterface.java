@@ -37,13 +37,6 @@ import java.util.concurrent.Callable;
 public interface HeartBeatPayloadProviderInterface {
 
   /**
-   * Returns the name of the heartbeat provider.
-   *
-   * @return Name of the heartbeat provider
-   */
-  String getName();
-
-  /**
    * Returns a callable which can be executed to set the payload based on the parameters.
    *
    * @param provider The current heartbeat provider

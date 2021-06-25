@@ -32,7 +32,6 @@ import static net.bytebuddy.jar.asm.Opcodes.LRETURN;
 import static net.bytebuddy.jar.asm.Opcodes.RETURN;
 
 import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 import net.bytebuddy.jar.asm.ClassReader;
 import net.bytebuddy.jar.asm.ClassVisitor;
@@ -48,8 +47,7 @@ public class JarVerifierClassFileTransformer implements ClassFileTransformer {
       String className,
       Class<?> classBeingRedefined,
       ProtectionDomain protectionDomain,
-      byte[] classfileBuffer)
-      throws IllegalClassFormatException {
+      byte[] classfileBuffer) {
     if (!className.equals("java/util/jar/JarVerifier")) {
       return null;
     }

@@ -31,7 +31,6 @@ class QuickPulseDataSender implements Runnable {
   private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
   private final HttpPipeline httpPipeline;
   private volatile QuickPulseHeaderInfo quickPulseHeaderInfo;
-  private volatile boolean stopped = false;
   private long lastValidTransmission = 0;
 
   private final ArrayBlockingQueue<HttpRequest> sendQueue;
@@ -44,78 +43,48 @@ class QuickPulseDataSender implements Runnable {
 
   @Override
   public void run() {
-    try {
-      while (!stopped) {
-        HttpRequest post;
-        try {
-          post = sendQueue.take();
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          return;
-        }
-        if (quickPulseHeaderInfo.getQuickPulseStatus() != QuickPulseStatus.QP_IS_ON) {
-          continue;
-        }
-
-        long sendTime = System.nanoTime();
-        HttpResponse response = null;
-        try {
-          response = httpPipeline.send(post).block();
-          if (response != null && networkHelper.isSuccess(response)) {
-            QuickPulseHeaderInfo quickPulseHeaderInfo =
-                networkHelper.getQuickPulseHeaderInfo(response);
-            switch (quickPulseHeaderInfo.getQuickPulseStatus()) {
-              case QP_IS_OFF:
-              case QP_IS_ON:
-                lastValidTransmission = sendTime;
-                this.quickPulseHeaderInfo = quickPulseHeaderInfo;
-                break;
-
-              case ERROR:
-                onPostError(sendTime);
-                break;
-            }
-          }
-        } finally {
-          if (response != null) {
-            response.close();
-          }
-        }
-      }
-    } catch (ThreadDeath td) {
-      throw td;
-    } catch (Throwable t) {
+    while (true) {
+      HttpRequest post;
       try {
-        stopped = true;
-        quickPulseHeaderInfo = new QuickPulseHeaderInfo(QuickPulseStatus.ERROR);
-      } catch (ThreadDeath td) {
-        throw td;
-      } catch (Throwable t2) {
-        // chomp
+        post = sendQueue.take();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        return;
+      }
+      if (quickPulseHeaderInfo.getQuickPulseStatus() != QuickPulseStatus.QP_IS_ON) {
+        continue;
+      }
+
+      long sendTime = System.nanoTime();
+      try (HttpResponse response = httpPipeline.send(post).block()) {
+        if (response != null && networkHelper.isSuccess(response)) {
+          QuickPulseHeaderInfo quickPulseHeaderInfo =
+              networkHelper.getQuickPulseHeaderInfo(response);
+          switch (quickPulseHeaderInfo.getQuickPulseStatus()) {
+            case QP_IS_OFF:
+            case QP_IS_ON:
+              lastValidTransmission = sendTime;
+              this.quickPulseHeaderInfo = quickPulseHeaderInfo;
+              break;
+
+            case ERROR:
+              onPostError(sendTime);
+              break;
+          }
+        }
       }
     }
   }
 
   public void startSending() {
-    if (!stopped) {
-      quickPulseHeaderInfo = new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_ON);
-    }
+    quickPulseHeaderInfo = new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_ON);
   }
 
   public QuickPulseHeaderInfo getQuickPulseHeaderInfo() {
     return quickPulseHeaderInfo;
   }
 
-  public void stop() {
-    stopped = true;
-    quickPulseHeaderInfo = new QuickPulseHeaderInfo(QuickPulseStatus.ERROR);
-  }
-
   private void onPostError(long sendTime) {
-    if (stopped) {
-      return;
-    }
-
     double timeFromLastValidTransmission = (sendTime - lastValidTransmission) / 1000000000.0;
     if (timeFromLastValidTransmission >= 20.0) {
       quickPulseHeaderInfo = new QuickPulseHeaderInfo(QuickPulseStatus.ERROR);

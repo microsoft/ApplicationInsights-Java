@@ -93,6 +93,8 @@ public class ProcessorUtil {
 
   // fromAttributes represents the attribute keys to pull the values from to generate the new span
   // name.
+  // TODO (kryalama) this looks unused, but also there are similar methods under SpanProcessor and
+  //  LogProcessor
   public static SpanData processFromAttributes(
       SpanData span, List<AttributeKey<?>> fromAttributes, String separator) {
     if (spanHasAllFromAttributeKeys(span, fromAttributes)) {
@@ -113,6 +115,8 @@ public class ProcessorUtil {
 
   // The following function extracts attributes from span name and replaces extracted parts with
   // attribute names
+  // TODO (kryalama) this looks unused, but also there are similar methods under SpanProcessor and
+  //  LogProcessor
   public static SpanData processToAttributes(
       SpanData span, List<Pattern> toAttributeRulePatterns, List<List<String>> groupNames) {
     if (toAttributeRulePatterns.isEmpty()) {

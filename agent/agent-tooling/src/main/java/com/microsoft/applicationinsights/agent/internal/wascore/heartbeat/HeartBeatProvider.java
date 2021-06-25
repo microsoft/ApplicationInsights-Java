@@ -29,9 +29,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryI
 import com.microsoft.applicationinsights.agent.internal.wascore.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.wascore.util.ThreadPoolUtils;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -58,9 +56,6 @@ public class HeartBeatProvider {
 
   /** The name of the heartbeat metric. */
   private static final String HEARTBEAT_SYNTHETIC_METRIC_NAME = "HeartbeatState";
-
-  /** The list of disabled properties. */
-  private final List<String> disableDefaultProperties = new ArrayList<>();
 
   /** The counter for heartbeat sent to portal. */
   private long heartbeatsSent;
@@ -142,10 +137,6 @@ public class HeartBeatProvider {
   public void setHeartBeatInterval(long timeUnit) {
     // user set time unit in seconds
     this.interval = Math.max(timeUnit, MINIMUM_HEARTBEAT_INTERVAL);
-  }
-
-  public List<String> getExcludedHeartBeatProperties() {
-    return this.disableDefaultProperties;
   }
 
   /** Send the heartbeat item synchronously to application insights backend. */

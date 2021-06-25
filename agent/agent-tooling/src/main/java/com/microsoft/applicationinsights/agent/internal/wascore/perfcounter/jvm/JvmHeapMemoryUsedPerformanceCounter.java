@@ -32,8 +32,6 @@ import java.lang.management.MemoryUsage;
 /** The class will create a metric telemetry for capturing the Jvm's heap memory usage. */
 public class JvmHeapMemoryUsedPerformanceCounter implements PerformanceCounter {
 
-  public static final String NAME = "MemoryUsage";
-
   public static final String HEAP_MEM_USED = "Heap Memory Used (MB)";
 
   public static final String HEAP_MEM_USED_PERCENTAGE = "% Of Max Heap Memory Used";

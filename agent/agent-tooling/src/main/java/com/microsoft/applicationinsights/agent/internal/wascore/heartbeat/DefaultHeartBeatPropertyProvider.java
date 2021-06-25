@@ -52,9 +52,6 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
    */
   private static UUID uniqueProcessId;
 
-  /** Name of this provider. */
-  private static final String name = "Default";
-
   private static final String JRE_VERSION = "jreVersion";
 
   private static final String SDK_VERSION = "sdkVersion";
@@ -66,11 +63,6 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
   public DefaultHeartBeatPropertyProvider() {
     defaultFields = new HashSet<>();
     initializeDefaultFields(defaultFields);
-  }
-
-  @Override
-  public String getName() {
-    return name;
   }
 
   @Override

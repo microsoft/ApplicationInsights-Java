@@ -31,6 +31,7 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+// FIXME (trask) hook up to tracer provider
 public class LegacyHeaderSpanProcessor implements SpanProcessor {
 
   @Override
