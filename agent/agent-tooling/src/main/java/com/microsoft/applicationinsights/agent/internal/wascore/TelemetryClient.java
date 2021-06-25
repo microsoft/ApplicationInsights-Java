@@ -37,7 +37,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryE
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.wascore.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.wascore.connection.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.wascore.connection.EndpointProvider;
@@ -103,7 +102,7 @@ public class TelemetryClient {
 
   private final List<MetricFilter> metricFilters;
 
-  private final @Nullable AadAuthentication aadAuthentication;
+  private final Configuration.AadAuthentication aadAuthentication;
 
   private final Object channelInitLock = new Object();
   private volatile @Nullable BatchSpanProcessor channelBatcher;
@@ -116,7 +115,7 @@ public class TelemetryClient {
   public TelemetryClient(
       Map<String, String> customDimensions,
       List<MetricFilter> metricFilters,
-      AadAuthentication aadAuthentication) {
+      Configuration.AadAuthentication aadAuthentication) {
     StringSubstitutor substitutor = new StringSubstitutor(System.getenv());
     Map<String, String> globalProperties = new HashMap<>();
     Map<String, String> globalTags = new HashMap<>();
@@ -166,7 +165,7 @@ public class TelemetryClient {
   public static TelemetryClient initActive(
       Map<String, String> customDimensions,
       List<MetricFilter> metricFilters,
-      AadAuthentication aadAuthentication,
+      Configuration.AadAuthentication aadAuthentication,
       Configuration configuration) {
     if (active != null) {
       throw new IllegalStateException("Already initialized");
@@ -308,7 +307,7 @@ public class TelemetryClient {
     return endpointProvider;
   }
 
-  public @Nullable AadAuthentication getAadAuthentication() {
+  public Configuration.AadAuthentication getAadAuthentication() {
     return aadAuthentication;
   }
 

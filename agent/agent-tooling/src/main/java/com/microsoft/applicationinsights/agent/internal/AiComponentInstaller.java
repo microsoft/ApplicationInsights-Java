@@ -44,7 +44,6 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.agent.internal.wascore.MetricFilter;
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.wascore.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.Strings;
@@ -133,23 +132,11 @@ public class AiComponentInstaller implements AgentListener {
             "Please provide connection string or instrumentation key.");
       }
     }
+    // TODO (trask) should configuration validation be performed earlier?
     // Function to validate user provided processor configuration
     validateProcessorConfiguration(config);
+    // validate authentication configuration
     config.preview.authentication.validate();
-    // Inject authentication configuration
-    AadAuthentication aadAuthentication;
-    if (config.preview.authentication.enabled) {
-      // if enabled, then type must be non-null (validated above)
-      aadAuthentication =
-          new AadAuthentication(
-              config.preview.authentication.type,
-              config.preview.authentication.clientId,
-              config.preview.authentication.tenantId,
-              config.preview.authentication.clientSecret,
-              config.preview.authentication.authorityHost);
-    } else {
-      aadAuthentication = null;
-    }
 
     String jbossHome = System.getenv("JBOSS_HOME");
     if (!Strings.isNullOrEmpty(jbossHome)) {
@@ -176,7 +163,7 @@ public class AiComponentInstaller implements AgentListener {
 
     TelemetryClient telemetryClient =
         TelemetryClient.initActive(
-            config.customDimensions, metricFilters, aadAuthentication, config);
+            config.customDimensions, metricFilters, config.preview.authentication, config);
 
     try {
       ConnectionString.updateStatsbeatConnectionString(

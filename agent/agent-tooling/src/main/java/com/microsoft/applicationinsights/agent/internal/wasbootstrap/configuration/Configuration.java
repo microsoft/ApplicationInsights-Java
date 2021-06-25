@@ -27,7 +27,6 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.agent.internal.wascore.MetricFilter;
-import com.microsoft.applicationinsights.agent.internal.wascore.authentication.AuthenticationType;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.wascore.connection.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.wascore.profiler.GcReportingLevel;
@@ -912,5 +911,12 @@ public class Configuration {
         }
       }
     }
+  }
+
+  public enum AuthenticationType {
+    UAMI,
+    SAMI,
+    VSCODE,
+    CLIENTSECRET
   }
 }
