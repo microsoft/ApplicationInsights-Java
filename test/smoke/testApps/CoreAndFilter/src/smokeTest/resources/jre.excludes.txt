@@ -1,2 +1,2 @@
 azul/zulu-openjdk:11
-azul/zulu-openjdk:15
+azul/zulu-openjdk:16
