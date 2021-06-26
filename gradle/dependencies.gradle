@@ -1,10 +1,9 @@
 ext {
   versions = [
+    // IMPORTANT when updating opentelemetry version, be sure to update bytebuddy version accordingly
     opentelemetry                    : "1.3.0",
     opentelemetryAlpha               : "1.3.0-alpha",
     opentelemetryInstrumentationAlpha: "1.3.0+ai.patch.1-alpha",
-
-    // TODO sync bytebuddy version with version from io.opentelemetry.javaagent:javaagent-tooling
     bytebuddy                        : "1.11.2",
 
     slf4j                            : "1.7.30",
