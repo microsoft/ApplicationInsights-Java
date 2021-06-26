@@ -15,7 +15,7 @@ versioning:
 # excluding our source code from being scanned for code sign validation
 signing_options:
   profile: 'none'
-  codesign_validation_glob_pattern: '-:regex|\.(ps1|cmd|psm1)$;-|.gdn\\**'
+  codesign_validation_glob_pattern: '-:regex|\.(dll|exe|ps1|cmd|psm1)$;-|.gdn\\**'
 static_analysis_options:
   policheck_options:
     disable_tool_scan: false
