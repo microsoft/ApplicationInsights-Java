@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.perfcounter.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import java.util.Collection;

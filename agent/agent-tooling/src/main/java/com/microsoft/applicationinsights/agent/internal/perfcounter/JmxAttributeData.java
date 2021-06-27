@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.perfcounter.jmx;
+package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
 /**
  * Represents JMX data of an Attribute The display name The name of the attribute The type of the

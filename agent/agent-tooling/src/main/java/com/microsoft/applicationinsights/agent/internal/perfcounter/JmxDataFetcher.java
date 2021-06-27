@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.perfcounter.jmx;
+package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
