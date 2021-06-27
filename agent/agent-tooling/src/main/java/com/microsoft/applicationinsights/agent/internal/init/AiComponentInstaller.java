@@ -26,7 +26,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
-import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
@@ -174,8 +173,7 @@ public class AiComponentInstaller implements AgentListener {
       startupLogger.warn("Statsbeat endpoint is invalid. {}", ex.getMessage());
     }
 
-    Global.setSamplingPercentage(config.sampling.percentage);
-    Global.setTelemetryClient(telemetryClient);
+    BytecodeUtilImpl.samplingPercentage = config.sampling.percentage;
 
     ProfilerServiceInitializer.initialize(
         appIdSupplier::get,

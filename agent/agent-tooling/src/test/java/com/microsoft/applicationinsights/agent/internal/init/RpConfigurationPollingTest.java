@@ -23,9 +23,9 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
+import com.microsoft.applicationinsights.agent.internal.legacysdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -80,12 +80,12 @@ class RpConfigurationPollingTest {
 
     TelemetryClient telemetryClient = new TelemetryClient();
     telemetryClient.setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
-    Global.setSamplingPercentage(100);
+    BytecodeUtilImpl.samplingPercentage = 100;
 
     // pre-check
     assertThat(telemetryClient.getInstrumentationKey())
         .isEqualTo("00000000-0000-0000-0000-000000000000");
-    assertThat(Global.getSamplingPercentage()).isEqualTo(100);
+    assertThat(BytecodeUtilImpl.samplingPercentage).isEqualTo(100);
     assertThat(getCurrentSamplingPercentage()).isEqualTo(100);
 
     // when
@@ -94,7 +94,7 @@ class RpConfigurationPollingTest {
     // then
     assertThat(telemetryClient.getInstrumentationKey())
         .isEqualTo("00000000-0000-0000-0000-000000000000");
-    assertThat(Global.getSamplingPercentage()).isEqualTo(10);
+    assertThat(BytecodeUtilImpl.samplingPercentage).isEqualTo(10);
     assertThat(getCurrentSamplingPercentage()).isEqualTo(10);
   }
 
@@ -111,7 +111,7 @@ class RpConfigurationPollingTest {
 
     TelemetryClient telemetryClient = new TelemetryClient();
     telemetryClient.setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
-    Global.setSamplingPercentage(100);
+    BytecodeUtilImpl.samplingPercentage = 100;
 
     envVars.set(
         "APPLICATIONINSIGHTS_CONNECTION_STRING",
@@ -121,7 +121,7 @@ class RpConfigurationPollingTest {
     // pre-check
     assertThat(telemetryClient.getInstrumentationKey())
         .isEqualTo("00000000-0000-0000-0000-000000000000");
-    assertThat(Global.getSamplingPercentage()).isEqualTo(100);
+    assertThat(BytecodeUtilImpl.samplingPercentage).isEqualTo(100);
     assertThat(getCurrentSamplingPercentage()).isEqualTo(100);
 
     // when
@@ -130,7 +130,7 @@ class RpConfigurationPollingTest {
     // then
     assertThat(telemetryClient.getInstrumentationKey())
         .isEqualTo("00000000-0000-0000-0000-000000000000");
-    assertThat(Global.getSamplingPercentage()).isEqualTo(10);
+    assertThat(BytecodeUtilImpl.samplingPercentage).isEqualTo(10);
     assertThat(getCurrentSamplingPercentage()).isEqualTo(10);
   }
 

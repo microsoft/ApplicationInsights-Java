@@ -34,7 +34,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryE
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
-import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingScoreGeneratorV2;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedDuration;
@@ -58,6 +57,8 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
   private static final Logger logger = LoggerFactory.getLogger(BytecodeUtilImpl.class);
 
   private static final AtomicBoolean alreadyLoggedError = new AtomicBoolean();
+
+  public static volatile float samplingPercentage = 100;
 
   @Override
   public void trackEvent(
@@ -421,9 +422,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
   @Override
   public void flush() {
-    // this is not null because sdk instrumentation is not added until Global.setTelemetryClient()
+    // this is not null because sdk instrumentation is not added until TelemetryClient.setActive()
     // is called
-    Global.getTelemetryClient().flushChannelBatcher();
+    TelemetryClient.getActive().flushChannelBatcher();
   }
 
   @Override
@@ -451,10 +452,10 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       }
       samplingPercentage =
           TelemetryUtil.getSamplingPercentage(
-              context.getTraceState(), Global.getSamplingPercentage(), false);
+              context.getTraceState(), BytecodeUtilImpl.samplingPercentage, false);
     } else {
       // sampling is done using the configured sampling percentage
-      samplingPercentage = Global.getSamplingPercentage();
+      samplingPercentage = BytecodeUtilImpl.samplingPercentage;
       if (!sample(telemetry, samplingPercentage)) {
         // sampled out
         return;
@@ -465,9 +466,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     if (samplingPercentage != 100) {
       telemetry.setSampleRate(samplingPercentage);
     }
-    // this is not null because sdk instrumentation is not added until Global.setTelemetryClient()
+    // this is not null because sdk instrumentation is not added until TelemetryClient.setActive()
     // is called
-    Global.getTelemetryClient().trackAsync(telemetry);
+    TelemetryClient.getActive().trackAsync(telemetry);
   }
 
   private static boolean sample(TelemetryItem telemetry, double samplingPercentage) {

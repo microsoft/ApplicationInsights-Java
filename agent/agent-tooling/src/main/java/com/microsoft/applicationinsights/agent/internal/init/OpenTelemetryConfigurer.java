@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
@@ -57,7 +56,7 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
       value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
       justification = "this method is only called once during initialization")
   public void configure(SdkTracerProviderBuilder tracerProvider) {
-    TelemetryClient telemetryClient = Global.getTelemetryClient();
+    TelemetryClient telemetryClient = TelemetryClient.getActive();
     if (telemetryClient == null) {
       // agent failed during startup
       return;

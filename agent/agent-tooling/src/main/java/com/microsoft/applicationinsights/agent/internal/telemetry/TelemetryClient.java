@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.text.StringSubstitutor;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class TelemetryClient {
@@ -66,14 +67,14 @@ public class TelemetryClient {
   private static final String REMOTE_DEPENDENCY_TELEMETRY_NAME = "RemoteDependency";
   private static final String REQUEST_TELEMETRY_NAME = "Request";
 
-  private static volatile TelemetryClient active;
+  private static volatile @MonotonicNonNull TelemetryClient active;
 
   private final Set<String> nonFilterableMetricNames = new HashSet<>();
 
-  private volatile String instrumentationKey;
-  private volatile String roleName;
-  private volatile String roleInstance;
-  private volatile String statsbeatInstrumentationKey;
+  private volatile @MonotonicNonNull String instrumentationKey;
+  private volatile @MonotonicNonNull String roleName;
+  private volatile @MonotonicNonNull String roleInstance;
+  private volatile @MonotonicNonNull String statsbeatInstrumentationKey;
 
   private final EndpointProvider endpointProvider = new EndpointProvider();
 
@@ -91,7 +92,7 @@ public class TelemetryClient {
   private final Configuration.AadAuthentication aadAuthentication;
 
   private final Object channelInitLock = new Object();
-  private volatile @Nullable BatchSpanProcessor channelBatcher;
+  private volatile @MonotonicNonNull BatchSpanProcessor channelBatcher;
 
   // only used by tests
   public TelemetryClient() {
@@ -125,13 +126,6 @@ public class TelemetryClient {
     this.aadAuthentication = aadAuthentication;
   }
 
-  /**
-   * Gets the active {@link TelemetryClient} instance loaded from the ApplicationInsights.xml file.
-   * If the configuration file does not exist, the active configuration instance is initialized with
-   * minimum defaults needed to send telemetry to Application Insights.
-   *
-   * @return The 'Active' instance
-   */
   public static TelemetryClient getActive() {
     if (active == null) {
       throw new IllegalStateException("agent was not initialized");

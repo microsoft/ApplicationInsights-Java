@@ -23,12 +23,12 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfigurationBuilder;
+import com.microsoft.applicationinsights.agent.internal.legacysdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -106,7 +106,7 @@ public class RpConfigurationPolling implements Runnable {
               ConfigurationBuilder.roundToNearest(newRpConfiguration.sampling.percentage);
           DelegatingSampler.getInstance()
               .setDelegate(Samplers.getSampler(roundedSamplingPercentage, configuration));
-          Global.setSamplingPercentage(roundedSamplingPercentage);
+          BytecodeUtilImpl.samplingPercentage = roundedSamplingPercentage;
           rpConfiguration.sampling.percentage = newRpConfiguration.sampling.percentage;
         }
         rpConfiguration = newRpConfiguration;
