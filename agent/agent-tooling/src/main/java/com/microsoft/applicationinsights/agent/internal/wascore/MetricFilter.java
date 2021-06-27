@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.wascore;
 
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;

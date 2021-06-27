@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.wascore;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.wascore.heartbeat.HeartBeatModule;
 import com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.FreeMemoryPerformanceCounter;

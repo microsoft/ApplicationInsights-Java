@@ -21,9 +21,9 @@
 
 package com.microsoft.applicationinsights.agent.internal.processors;
 
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.MatchType;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorAttribute;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorIncludeExclude;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.MatchType;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorAttribute;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorIncludeExclude;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;

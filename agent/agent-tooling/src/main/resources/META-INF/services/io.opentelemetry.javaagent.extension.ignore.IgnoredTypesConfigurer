@@ -1,1 +1,1 @@
-com.microsoft.applicationinsights.agent.internal.wasbootstrap.AiIgnoreMatcherProvider
+com.microsoft.applicationinsights.agent.internal.init.AiIgnoreMatcherProvider

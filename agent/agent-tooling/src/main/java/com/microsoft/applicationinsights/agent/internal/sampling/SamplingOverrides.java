@@ -21,9 +21,9 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.MatchType;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SamplingOverride;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SamplingOverrideAttribute;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.MatchType;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverrideAttribute;
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryUtil;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;

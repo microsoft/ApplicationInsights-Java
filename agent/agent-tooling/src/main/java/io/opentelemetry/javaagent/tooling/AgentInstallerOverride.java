@@ -21,7 +21,7 @@
 
 package io.opentelemetry.javaagent.tooling;
 
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.MainEntryPoint;
+import com.microsoft.applicationinsights.agent.internal.init.MainEntryPoint;
 import java.io.File;
 import java.lang.instrument.Instrumentation;
 
