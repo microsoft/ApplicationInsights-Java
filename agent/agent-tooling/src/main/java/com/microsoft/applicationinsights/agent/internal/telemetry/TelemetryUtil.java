@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.wascore;
+package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.AvailabilityData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;

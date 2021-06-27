@@ -21,19 +21,19 @@
 
 package com.microsoft.applicationinsights.agent.internal.quickpulse;
 
-import static com.microsoft.applicationinsights.agent.internal.wascore.TelemetryUtil.getExceptions;
+import static com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil.getExceptions;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDependencyData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.wascore.FormattedDuration;
-import com.microsoft.applicationinsights.agent.internal.wascore.FormattedTime;
-import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector.CountAndDuration;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector.Counters;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector.FinalCounters;
+import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedDuration;
+import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.time.Duration;
 import java.util.Date;
 import org.junit.jupiter.api.AfterEach;

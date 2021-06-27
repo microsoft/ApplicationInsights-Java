@@ -22,9 +22,9 @@
 package com.microsoft.applicationinsights.agent.internal.quickpulse;
 
 import com.azure.core.http.HttpRequest;
-import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
 import org.slf4j.Logger;

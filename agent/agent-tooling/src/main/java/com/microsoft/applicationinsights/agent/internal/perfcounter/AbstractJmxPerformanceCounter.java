@@ -21,9 +21,9 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.jmx.JmxDataFetcher;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.Collection;
 import java.util.Map;
 import org.slf4j.Logger;

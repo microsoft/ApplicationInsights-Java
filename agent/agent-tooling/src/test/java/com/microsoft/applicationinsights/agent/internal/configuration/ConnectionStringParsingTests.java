@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.ConnectionString.Defaults;
 import com.microsoft.applicationinsights.agent.internal.configuration.ConnectionString.EndpointPrefixes;
-import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.UUID;

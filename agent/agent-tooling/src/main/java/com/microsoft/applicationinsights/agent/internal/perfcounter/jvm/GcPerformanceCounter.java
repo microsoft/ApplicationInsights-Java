@@ -22,9 +22,9 @@
 package com.microsoft.applicationinsights.agent.internal.perfcounter.jvm;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryUtil;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.PerformanceCounter;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.util.List;

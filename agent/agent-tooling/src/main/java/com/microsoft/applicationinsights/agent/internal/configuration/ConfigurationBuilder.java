@@ -22,10 +22,10 @@
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.JmxMetric;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.common.HostName;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.JmxMetric;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonDataException;
 import com.squareup.moshi.JsonEncodingException;

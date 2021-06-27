@@ -27,7 +27,7 @@ import com.azure.core.http.HttpHeaders;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpPipelineBuilder;
 import com.microsoft.applicationinsights.agent.internal.MockHttpResponse;
-import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;

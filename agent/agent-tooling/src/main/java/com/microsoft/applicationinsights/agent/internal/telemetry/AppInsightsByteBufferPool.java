@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.wascore;
+package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import java.nio.ByteBuffer;
 import java.util.List;

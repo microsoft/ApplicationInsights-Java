@@ -21,8 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
-import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryChannel;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryChannel;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

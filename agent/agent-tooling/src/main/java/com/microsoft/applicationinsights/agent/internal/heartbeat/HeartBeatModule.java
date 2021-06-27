@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.heartbeat;
 
-import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 
 /**
  *

@@ -21,8 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
-import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;

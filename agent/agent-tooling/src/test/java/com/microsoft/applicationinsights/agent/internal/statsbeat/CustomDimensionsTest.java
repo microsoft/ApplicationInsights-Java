@@ -23,8 +23,8 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
+import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;

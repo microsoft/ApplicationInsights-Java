@@ -21,10 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
+import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ExtractAttribute;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorAction;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorActionJson;
-import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.squareup.moshi.FromJson;
 import com.squareup.moshi.ToJson;
 import java.util.ArrayList;
