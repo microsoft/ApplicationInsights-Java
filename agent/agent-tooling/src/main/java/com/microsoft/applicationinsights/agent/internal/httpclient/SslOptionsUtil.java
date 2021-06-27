@@ -19,8 +19,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.common;
+package com.microsoft.applicationinsights.agent.internal.httpclient;
 
+import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;

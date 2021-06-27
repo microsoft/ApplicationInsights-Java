@@ -19,13 +19,16 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.configuration;
+package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
-import com.microsoft.applicationinsights.agent.internal.init.AppIdSupplier;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
+import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
+import com.microsoft.applicationinsights.agent.internal.configuration.RpConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -87,7 +90,7 @@ public class RpConfigurationPolling implements Runnable {
         RpConfiguration newRpConfiguration =
             RpConfigurationBuilder.loadJsonConfigFile(rpConfiguration.configPath);
 
-        if (!newRpConfiguration.connectionString.equals(telemetryClient.getConnectionString())) {
+        if (!newRpConfiguration.connectionString.equals(rpConfiguration.connectionString)) {
           logger.debug(
               "Connection string from the JSON config file is overriding the previously configured connection string.");
           telemetryClient.setConnectionString(newRpConfiguration.connectionString);

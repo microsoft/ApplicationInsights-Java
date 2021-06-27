@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.alerting.analysis;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
+import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 import java.util.HashMap;
 import java.util.Map;

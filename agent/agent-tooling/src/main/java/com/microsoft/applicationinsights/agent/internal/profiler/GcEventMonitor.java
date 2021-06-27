@@ -23,10 +23,11 @@ package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
-import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
+import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.gcmonitor.GcCollectionEvent;
 import com.microsoft.gcmonitor.GcEventConsumer;
 import com.microsoft.gcmonitor.GcMonitorFactory;

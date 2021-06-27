@@ -27,7 +27,6 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
-import com.microsoft.applicationinsights.agent.internal.profiler.GcReportingLevel;
 import com.squareup.moshi.Json;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -191,7 +190,7 @@ public class Configuration {
     public String instrumentationKey =
         "c4a29126-a7cb-47e5-b348-11414998b11e"; // workspace-aistatsbeat
     public String endpoint =
-        ConnectionString.Defaults.INGESTION_ENDPOINT; // this supports the government cloud
+        DefaultEndpoints.INGESTION_ENDPOINT; // this supports the government cloud
     public long intervalSeconds = MINUTES.toSeconds(15); // default to 15 minutes
     public long featureIntervalSeconds = DAYS.toSeconds(1); // default to daily
   }

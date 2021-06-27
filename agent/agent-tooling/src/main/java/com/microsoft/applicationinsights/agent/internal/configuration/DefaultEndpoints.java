@@ -19,34 +19,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.common;
+package com.microsoft.applicationinsights.agent.internal.configuration;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.checkerframework.checker.nullness.qual.Nullable;
+public class DefaultEndpoints {
 
-public final class Strings {
+  public static final String INGESTION_ENDPOINT = "https://dc.services.visualstudio.com";
+  public static final String LIVE_ENDPOINT = "https://rt.services.visualstudio.com";
+  public static final String PROFILER_ENDPOINT = "https://agent.azureserviceprofiler.net";
+  public static final String SNAPSHOT_ENDPOINT = "https://agent.azureserviceprofiler.net";
 
-  public static boolean isNullOrEmpty(@Nullable String string) {
-    return string == null || string.isEmpty();
-  }
-
-  public static Map<String, String> splitToMap(String str) {
-    Map<String, String> map = new HashMap<>();
-    for (String part : str.split(";")) {
-      if (part.trim().isEmpty()) {
-        continue;
-      }
-      int index = part.indexOf('=');
-      if (index == -1) {
-        throw new IllegalArgumentException();
-      }
-      String key = part.substring(0, index);
-      String value = part.substring(index + 1);
-      map.put(key, value);
-    }
-    return map;
-  }
-
-  private Strings() {}
+  private DefaultEndpoints() {}
 }

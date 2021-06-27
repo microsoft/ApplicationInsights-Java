@@ -29,8 +29,8 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryI
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.applicationinsights.agent.internal.common.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import io.opentelemetry.sdk.common.CompletableResultCode;

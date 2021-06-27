@@ -19,10 +19,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.common;
+package com.microsoft.applicationinsights.alerting.config;
 
-public class NoSupportedProtocolsException extends RuntimeException {
-  public NoSupportedProtocolsException(String message) {
-    super(message);
-  }
+public enum AlertMetricType {
+  CPU,
+  MEMORY,
+  PERIODIC,
+  MANUAL
 }

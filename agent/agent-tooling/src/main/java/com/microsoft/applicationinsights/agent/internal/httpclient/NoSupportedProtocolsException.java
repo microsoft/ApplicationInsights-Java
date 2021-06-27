@@ -19,10 +19,10 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.profiler;
+package com.microsoft.applicationinsights.agent.internal.httpclient;
 
-public enum GcReportingLevel {
-  NONE,
-  TENURED_ONLY,
-  ALL
+public class NoSupportedProtocolsException extends RuntimeException {
+  public NoSupportedProtocolsException(String message) {
+    super(message);
+  }
 }

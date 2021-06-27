@@ -19,8 +19,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.configuration;
+package com.microsoft.applicationinsights.agent.internal.telemetry;
 
+import com.microsoft.applicationinsights.agent.internal.configuration.DefaultEndpoints;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -44,11 +45,11 @@ public class EndpointProvider {
 
   public EndpointProvider() {
     try {
-      ingestionEndpoint = new URL(ConnectionString.Defaults.INGESTION_ENDPOINT);
+      ingestionEndpoint = new URL(DefaultEndpoints.INGESTION_ENDPOINT);
       ingestionEndpointUrl = buildIngestionUrl(ingestionEndpoint);
-      liveEndpointUrl = buildLiveUri(new URL(ConnectionString.Defaults.LIVE_ENDPOINT));
-      profilerEndpoint = new URL(ConnectionString.Defaults.PROFILER_ENDPOINT);
-      snapshotEndpoint = new URL(ConnectionString.Defaults.SNAPSHOT_ENDPOINT);
+      liveEndpointUrl = buildLiveUri(new URL(DefaultEndpoints.LIVE_ENDPOINT));
+      profilerEndpoint = new URL(DefaultEndpoints.PROFILER_ENDPOINT);
+      snapshotEndpoint = new URL(DefaultEndpoints.SNAPSHOT_ENDPOINT);
       statsbeatEndpointUrl = ingestionEndpointUrl;
     } catch (MalformedURLException e) {
       throw new IllegalStateException("ConnectionString.Defaults are invalid", e);

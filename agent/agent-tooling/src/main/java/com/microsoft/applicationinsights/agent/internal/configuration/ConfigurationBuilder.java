@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.configuration;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.common.HostName;
+import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import com.squareup.moshi.JsonAdapter;
@@ -151,7 +152,7 @@ public class ConfigurationBuilder {
     if (aadAuthString != null) {
       Map<String, String> keyValueMap;
       try {
-        keyValueMap = ConnectionString.splitToMap(aadAuthString);
+        keyValueMap = Strings.splitToMap(aadAuthString);
       } catch (IllegalArgumentException e) {
         throw new IllegalStateException(
             "Unable to parse APPLICATIONINSIGHTS_AUTHENTICATION_STRING environment variable: "

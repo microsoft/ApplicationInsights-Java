@@ -21,13 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
-public class InvalidConnectionStringException extends Exception {
-
-  InvalidConnectionStringException(String message) {
-    super(message);
-  }
-
-  InvalidConnectionStringException(String message, Throwable cause) {
-    super(message, cause);
-  }
+public enum GcReportingLevel {
+  NONE,
+  TENURED_ONLY,
+  ALL
 }

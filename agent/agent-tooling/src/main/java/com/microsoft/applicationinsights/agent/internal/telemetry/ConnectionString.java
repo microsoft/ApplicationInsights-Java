@@ -19,13 +19,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.configuration;
+package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import org.apache.commons.lang3.StringUtils;
@@ -74,29 +72,12 @@ public class ConnectionString {
     Map<String, String> kvps;
     try {
       kvps = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-      kvps.putAll(splitToMap(connectionString));
+      kvps.putAll(Strings.splitToMap(connectionString));
     } catch (IllegalArgumentException e) {
       throw new InvalidConnectionStringException("Could not parse connection string.", e);
     }
 
     return kvps;
-  }
-
-  public static Map<String, String> splitToMap(String str) {
-    Map<String, String> map = new HashMap<>();
-    for (String part : str.split(";")) {
-      if (part.trim().isEmpty()) {
-        continue;
-      }
-      int index = part.indexOf('=');
-      if (index == -1) {
-        throw new IllegalArgumentException();
-      }
-      String key = part.substring(0, index);
-      String value = part.substring(index + 1);
-      map.put(key, value);
-    }
-    return map;
   }
 
   private static void mapToConnectionConfiguration(
@@ -191,15 +172,16 @@ public class ConnectionString {
   }
 
   /** All tokens are lowercase. Parsing should be case insensitive. */
-  public static class Keywords {
+  // visible for testing
+  static class Keywords {
     private Keywords() {}
 
-    public static final String INSTRUMENTATION_KEY = "InstrumentationKey";
-    public static final String ENDPOINT_SUFFIX = "EndpointSuffix";
-    public static final String INGESTION_ENDPOINT = "IngestionEndpoint";
-    public static final String LIVE_ENDPOINT = "LiveEndpoint";
-    public static final String PROFILER_ENDPOINT = "ProfilerEndpoint";
-    public static final String SNAPSHOT_ENDPOINT = "SnapshotEndpoint";
+    static final String INSTRUMENTATION_KEY = "InstrumentationKey";
+    static final String ENDPOINT_SUFFIX = "EndpointSuffix";
+    static final String INGESTION_ENDPOINT = "IngestionEndpoint";
+    static final String LIVE_ENDPOINT = "LiveEndpoint";
+    static final String PROFILER_ENDPOINT = "ProfilerEndpoint";
+    static final String SNAPSHOT_ENDPOINT = "SnapshotEndpoint";
   }
 
   // visible for testing
@@ -210,14 +192,5 @@ public class ConnectionString {
     static final String LIVE_ENDPOINT_PREFIX = "live";
     static final String PROFILER_ENDPOINT_PREFIX = "profiler";
     static final String SNAPSHOT_ENDPOINT_PREFIX = "snapshot";
-  }
-
-  public static class Defaults {
-    private Defaults() {}
-
-    public static final String INGESTION_ENDPOINT = "https://dc.services.visualstudio.com";
-    public static final String LIVE_ENDPOINT = "https://rt.services.visualstudio.com";
-    public static final String PROFILER_ENDPOINT = "https://agent.azureserviceprofiler.net";
-    public static final String SNAPSHOT_ENDPOINT = "https://agent.azureserviceprofiler.net";
   }
 }

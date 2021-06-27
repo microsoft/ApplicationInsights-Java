@@ -30,7 +30,7 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
+import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 

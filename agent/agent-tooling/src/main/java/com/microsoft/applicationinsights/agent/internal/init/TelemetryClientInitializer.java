@@ -19,13 +19,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.telemetry;
+package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.heartbeat.HeartBeatModule;
+import com.microsoft.applicationinsights.agent.internal.perfcounter.Constants;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.FreeMemoryPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.JmxMetricPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.OshiPerformanceCounter;
@@ -37,6 +38,7 @@ import com.microsoft.applicationinsights.agent.internal.perfcounter.jvm.DeadLock
 import com.microsoft.applicationinsights.agent.internal.perfcounter.jvm.GcPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulse;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
@@ -78,6 +80,13 @@ public class TelemetryClientInitializer {
     }
     PerformanceCounterContainer.INSTANCE.register(new JvmHeapMemoryUsedPerformanceCounter());
     PerformanceCounterContainer.INSTANCE.register(new GcPerformanceCounter());
+
+    telemetryClient.addNonFilterableMetricNames(
+        Constants.TOTAL_CPU_PC_METRIC_NAME,
+        Constants.PROCESS_CPU_PC_METRIC_NAME,
+        Constants.PROCESS_MEM_PC_METRICS_NAME,
+        Constants.TOTAL_MEMORY_PC_METRIC_NAME,
+        Constants.PROCESS_IO_PC_METRIC_NAME);
 
     setQuickPulse(configuration, telemetryClient);
   }

@@ -19,9 +19,10 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.common;
+package com.microsoft.applicationinsights.agent.internal.httpclient;
 
-import com.microsoft.applicationinsights.agent.internal.configuration.ConnectionString.Defaults;
+import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
+import com.microsoft.applicationinsights.agent.internal.configuration.DefaultEndpoints;
 import java.io.File;
 
 public class SslUtil {
@@ -48,7 +49,7 @@ public class SslUtil {
   }
 
   private static String getSslFriendlyExceptionBanner(String url) {
-    if (url.equals(Defaults.LIVE_ENDPOINT)) {
+    if (url.equals(DefaultEndpoints.LIVE_ENDPOINT)) {
       return "ApplicationInsights Java Agent failed to connect to Live metric end point.";
     }
     return "ApplicationInsights Java Agent failed to send telemetry data.";

@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.alerting.config;
 
-import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
 import java.util.Objects;
 
 /** Contains the overall configuration of the entire alerting subsystem. */

@@ -28,17 +28,14 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Diagnostics
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
-import com.microsoft.applicationinsights.agent.internal.common.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProfilerConfiguration;
-import com.microsoft.applicationinsights.agent.internal.configuration.ConnectionString;
-import com.microsoft.applicationinsights.agent.internal.configuration.InvalidConnectionStringException;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
-import com.microsoft.applicationinsights.agent.internal.configuration.RpConfigurationPolling;
+import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.legacysdk.ApplicationInsightsAppenderClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.legacysdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.legacysdk.DependencyTelemetryClassFileTransformer;
@@ -52,6 +49,8 @@ import com.microsoft.applicationinsights.agent.internal.legacysdk.WebRequestTrac
 import com.microsoft.applicationinsights.agent.internal.profiler.GcEventMonitor;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilerServiceInitializer;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
+import com.microsoft.applicationinsights.agent.internal.telemetry.ConnectionString;
+import com.microsoft.applicationinsights.agent.internal.telemetry.InvalidConnectionStringException;
 import com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
@@ -162,8 +161,9 @@ public class AiComponentInstaller implements AgentListener {
             .collect(Collectors.toList());
 
     TelemetryClient telemetryClient =
-        TelemetryClient.initActive(
-            config.customDimensions, metricFilters, config.preview.authentication, config);
+        new TelemetryClient(config.customDimensions, metricFilters, config.preview.authentication);
+    TelemetryClientInitializer.initialize(telemetryClient, config);
+    TelemetryClient.setActive(telemetryClient);
 
     try {
       ConnectionString.updateStatsbeatConnectionString(

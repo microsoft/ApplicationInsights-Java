@@ -39,14 +39,10 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryI
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.configuration.ConnectionString;
-import com.microsoft.applicationinsights.agent.internal.configuration.EndpointProvider;
-import com.microsoft.applicationinsights.agent.internal.configuration.InvalidConnectionStringException;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileCache;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileLoader;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileSender;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
-import com.microsoft.applicationinsights.agent.internal.perfcounter.Constants;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.ArrayList;
@@ -70,21 +66,11 @@ public class TelemetryClient {
   private static final String REMOTE_DEPENDENCY_TELEMETRY_NAME = "RemoteDependency";
   private static final String REQUEST_TELEMETRY_NAME = "Request";
 
-  // Synchronization for instance initialization
-  private static final Object s_lock = new Object();
   private static volatile TelemetryClient active;
 
-  private static final Set<String> BUILT_IN_METRIC_NAMES =
-      new HashSet<>(
-          asList(
-              Constants.TOTAL_CPU_PC_METRIC_NAME,
-              Constants.PROCESS_CPU_PC_METRIC_NAME,
-              Constants.PROCESS_MEM_PC_METRICS_NAME,
-              Constants.TOTAL_MEMORY_PC_METRIC_NAME,
-              Constants.PROCESS_IO_PC_METRIC_NAME));
+  private final Set<String> nonFilterableMetricNames = new HashSet<>();
 
   private volatile String instrumentationKey;
-  private volatile String connectionString;
   private volatile String roleName;
   private volatile String roleInstance;
   private volatile String statsbeatInstrumentationKey;
@@ -154,33 +140,11 @@ public class TelemetryClient {
     return active;
   }
 
-  /**
-   * This method provides the new instance of TelmetryConfiguration without loading the
-   * configuration from configuration file. This will just give a plain bare bone instance.
-   * Typically used when performing configuration programatically by creating beans, using @Beans
-   * tags. This is a common scenario in SpringBoot.
-   *
-   * @return {@link TelemetryClient}
-   */
-  public static TelemetryClient initActive(
-      Map<String, String> customDimensions,
-      List<MetricFilter> metricFilters,
-      Configuration.AadAuthentication aadAuthentication,
-      Configuration configuration) {
+  public static void setActive(TelemetryClient telemetryClient) {
     if (active != null) {
       throw new IllegalStateException("Already initialized");
     }
-    if (active == null) {
-      synchronized (s_lock) {
-        if (active == null) {
-          TelemetryClient active =
-              new TelemetryClient(customDimensions, metricFilters, aadAuthentication);
-          TelemetryClientInitializer.initialize(active, configuration);
-          TelemetryClient.active = active;
-        }
-      }
-    }
-    return active;
+    TelemetryClient.active = telemetryClient;
   }
 
   public void trackAsync(TelemetryItem telemetry) {
@@ -193,7 +157,7 @@ public class TelemetryClient {
               .filter(
                   point -> {
                     String metricName = point.getName();
-                    if (BUILT_IN_METRIC_NAMES.contains(metricName)) {
+                    if (nonFilterableMetricNames.contains(metricName)) {
                       return true;
                     }
                     for (MetricFilter metricFilter : metricFilters) {
@@ -290,17 +254,12 @@ public class TelemetryClient {
     globalTags.put(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), roleInstance);
   }
 
-  public String getConnectionString() {
-    return connectionString;
-  }
-
   public void setConnectionString(String connectionString) {
     try {
       ConnectionString.parseInto(connectionString, this);
     } catch (InvalidConnectionStringException e) {
       throw new IllegalArgumentException("Invalid connection string", e);
     }
-    this.connectionString = connectionString;
   }
 
   public EndpointProvider getEndpointProvider() {
@@ -309,6 +268,10 @@ public class TelemetryClient {
 
   public Configuration.AadAuthentication getAadAuthentication() {
     return aadAuthentication;
+  }
+
+  public void addNonFilterableMetricNames(String... metricNames) {
+    nonFilterableMetricNames.addAll(asList(metricNames));
   }
 
   // must be called before setting any telemetry tags or data properties

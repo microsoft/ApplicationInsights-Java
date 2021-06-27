@@ -19,11 +19,15 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.alerting.alert;
+package com.microsoft.applicationinsights.agent.internal.telemetry;
 
-public enum AlertMetricType {
-  CPU,
-  MEMORY,
-  PERIODIC,
-  MANUAL
+public class InvalidConnectionStringException extends Exception {
+
+  InvalidConnectionStringException(String message) {
+    super(message);
+  }
+
+  InvalidConnectionStringException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

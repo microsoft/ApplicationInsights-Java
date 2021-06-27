@@ -19,14 +19,13 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.configuration;
+package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.microsoft.applicationinsights.agent.internal.configuration.ConnectionString.Defaults;
-import com.microsoft.applicationinsights.agent.internal.configuration.ConnectionString.EndpointPrefixes;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import com.microsoft.applicationinsights.agent.internal.configuration.DefaultEndpoints;
+import com.microsoft.applicationinsights.agent.internal.telemetry.ConnectionString.EndpointPrefixes;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.UUID;
@@ -45,12 +44,13 @@ class ConnectionStringParsingTests {
     ConnectionString.parseInto(cs, telemetryClient);
     assertThat(telemetryClient.getInstrumentationKey()).isEqualTo(ikey);
     assertThat(telemetryClient.getEndpointProvider().getIngestionEndpoint())
-        .isEqualTo(new URL(Defaults.INGESTION_ENDPOINT));
+        .isEqualTo(new URL(DefaultEndpoints.INGESTION_ENDPOINT));
     assertThat(telemetryClient.getEndpointProvider().getIngestionEndpointUrl())
         .isEqualTo(
-            new URL(Defaults.INGESTION_ENDPOINT + "/" + EndpointProvider.INGESTION_URL_PATH));
+            new URL(
+                DefaultEndpoints.INGESTION_ENDPOINT + "/" + EndpointProvider.INGESTION_URL_PATH));
     assertThat(telemetryClient.getEndpointProvider().getLiveEndpointUrl())
-        .isEqualTo(new URL(Defaults.LIVE_ENDPOINT + "/" + EndpointProvider.LIVE_URL_PATH));
+        .isEqualTo(new URL(DefaultEndpoints.LIVE_ENDPOINT + "/" + EndpointProvider.LIVE_URL_PATH));
   }
 
   @Test // this test does not use this.config
@@ -293,11 +293,11 @@ class ConnectionStringParsingTests {
   void emptyKeyIsIgnored() throws MalformedURLException, InvalidConnectionStringException {
     final String ikey = "fake-ikey";
     final String cs = "InstrumentationKey=" + ikey + ";=1234";
-    URL expectedIngestionEndpoint = new URL(Defaults.INGESTION_ENDPOINT);
+    URL expectedIngestionEndpoint = new URL(DefaultEndpoints.INGESTION_ENDPOINT);
     URL expectedIngestionEndpointUrl =
-        new URL(Defaults.INGESTION_ENDPOINT + "/" + EndpointProvider.INGESTION_URL_PATH);
+        new URL(DefaultEndpoints.INGESTION_ENDPOINT + "/" + EndpointProvider.INGESTION_URL_PATH);
     URL expectedLiveEndpoint =
-        new URL(Defaults.LIVE_ENDPOINT + "/" + EndpointProvider.LIVE_URL_PATH);
+        new URL(DefaultEndpoints.LIVE_ENDPOINT + "/" + EndpointProvider.LIVE_URL_PATH);
     ConnectionString.parseInto(cs, telemetryClient);
     assertThat(telemetryClient.getInstrumentationKey()).isEqualTo(ikey);
     assertThat(telemetryClient.getEndpointProvider().getIngestionEndpoint())
@@ -316,12 +316,13 @@ class ConnectionStringParsingTests {
     ConnectionString.parseInto(cs, telemetryClient);
     assertThat(telemetryClient.getInstrumentationKey()).isEqualTo(ikey);
     assertThat(telemetryClient.getEndpointProvider().getIngestionEndpoint())
-        .isEqualTo(new URL(Defaults.INGESTION_ENDPOINT));
+        .isEqualTo(new URL(DefaultEndpoints.INGESTION_ENDPOINT));
     assertThat(telemetryClient.getEndpointProvider().getIngestionEndpointUrl())
         .isEqualTo(
-            new URL(Defaults.INGESTION_ENDPOINT + "/" + EndpointProvider.INGESTION_URL_PATH));
+            new URL(
+                DefaultEndpoints.INGESTION_ENDPOINT + "/" + EndpointProvider.INGESTION_URL_PATH));
     assertThat(telemetryClient.getEndpointProvider().getLiveEndpointUrl())
-        .isEqualTo(new URL(Defaults.LIVE_ENDPOINT + "/" + EndpointProvider.LIVE_URL_PATH));
+        .isEqualTo(new URL(DefaultEndpoints.LIVE_ENDPOINT + "/" + EndpointProvider.LIVE_URL_PATH));
   }
 
   @Test

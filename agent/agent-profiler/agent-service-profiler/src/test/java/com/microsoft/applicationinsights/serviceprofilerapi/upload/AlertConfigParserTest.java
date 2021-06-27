@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.serviceprofilerapi.upload;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
+import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
