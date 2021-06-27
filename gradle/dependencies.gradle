@@ -37,6 +37,7 @@ ext {
     mockito                          : "3.11.1",
     logcaptor                        : "2.5.0",
 
-    aiLegacySdk                      : "2.6.0"
+    // need the latest version for Java 16 support without having to use --illegal-access=permit
+    aiLegacySdk                      : "2.6.3"
   ]
 }
