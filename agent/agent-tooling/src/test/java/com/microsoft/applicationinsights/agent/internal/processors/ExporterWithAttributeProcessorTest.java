@@ -33,7 +33,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorIncludeExclude;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorType;
 import com.microsoft.applicationinsights.agent.internal.configuration.ProcessorActionAdaptor;
-import com.microsoft.applicationinsights.agent.internal.wascore.common.FriendlyException;
+import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;

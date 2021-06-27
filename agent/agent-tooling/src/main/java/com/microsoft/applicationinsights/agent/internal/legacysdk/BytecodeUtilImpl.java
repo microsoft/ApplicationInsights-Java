@@ -40,7 +40,7 @@ import com.microsoft.applicationinsights.agent.internal.wascore.FormattedDuratio
 import com.microsoft.applicationinsights.agent.internal.wascore.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryUtil;
-import com.microsoft.applicationinsights.agent.internal.wascore.common.Strings;
+import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import java.net.URI;

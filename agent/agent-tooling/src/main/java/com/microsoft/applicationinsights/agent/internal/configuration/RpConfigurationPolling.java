@@ -28,7 +28,7 @@ import com.microsoft.applicationinsights.agent.internal.init.AppIdSupplier;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.wascore.util.ThreadPoolUtils;
+import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;

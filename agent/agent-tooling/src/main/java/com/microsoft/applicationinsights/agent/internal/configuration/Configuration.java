@@ -26,9 +26,8 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
-import com.microsoft.applicationinsights.agent.internal.wascore.common.FriendlyException;
-import com.microsoft.applicationinsights.agent.internal.wascore.connection.ConnectionString;
-import com.microsoft.applicationinsights.agent.internal.wascore.profiler.GcReportingLevel;
+import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
+import com.microsoft.applicationinsights.agent.internal.profiler.GcReportingLevel;
 import com.squareup.moshi.Json;
 import java.util.ArrayList;
 import java.util.HashMap;
