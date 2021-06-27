@@ -126,7 +126,7 @@ public class AiLegacyPropagator implements TextMapPropagator {
   private static final long INVALID_ID = 0;
 
   // copied from io.opentelemetry.sdk.trace.RandomIdGenerator
-  private static String generateSpanId() {
+  public static String generateSpanId() {
     long id;
     ThreadLocalRandom random = ThreadLocalRandom.current();
     do {

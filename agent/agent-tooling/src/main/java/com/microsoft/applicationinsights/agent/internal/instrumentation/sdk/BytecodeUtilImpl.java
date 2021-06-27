@@ -35,6 +35,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryE
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
 import com.microsoft.applicationinsights.agent.internal.Global;
+import com.microsoft.applicationinsights.agent.internal.propagator.AiLegacyPropagator;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingScoreGeneratorV2;
 import com.microsoft.applicationinsights.agent.internal.wascore.FormattedDuration;
 import com.microsoft.applicationinsights.agent.internal.wascore.FormattedTime;
@@ -182,7 +183,11 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     TelemetryClient.getActive().initRemoteDependencyTelemetry(telemetry, data);
 
     data.setName(name);
-    data.setId(id);
+    if (id == null) {
+      data.setId(AiLegacyPropagator.generateSpanId());
+    } else {
+      data.setId(id);
+    }
     data.setResultCode(resultCode);
     if (totalMillis != null) {
       data.setDuration(FormattedDuration.fromMillis(totalMillis));
@@ -325,7 +330,11 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     RequestData data = new RequestData();
     TelemetryClient.getActive().initRequestTelemetry(telemetry, data);
 
-    data.setId(id);
+    if (id == null) {
+      data.setId(AiLegacyPropagator.generateSpanId());
+    } else {
+      data.setId(id);
+    }
     data.setName(name);
     if (url != null) {
       data.setUrl(url.toString());
@@ -435,30 +444,54 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
   private static void track(TelemetryItem telemetry) {
     SpanContext context = Span.current().getSpanContext();
-    float samplingPercentage;
     if (context.isValid()) {
-      if (!context.isSampled()) {
-        // sampled out
-        return;
-      }
-      if (!telemetry.getTags().containsKey(ContextTagKeys.AI_OPERATION_ID.toString())) {
-        telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), context.getTraceId());
-      }
-      if (!telemetry.getTags().containsKey(ContextTagKeys.AI_OPERATION_PARENT_ID.toString())) {
-        telemetry
-            .getTags()
-            .put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), context.getSpanId());
-      }
-      samplingPercentage =
-          TelemetryUtil.getSamplingPercentage(
-              context.getTraceState(), Global.getSamplingPercentage(), false);
+      trackInsideValidSpanContext(telemetry, context);
     } else {
-      // sampling is done using the configured sampling percentage
-      samplingPercentage = Global.getSamplingPercentage();
-      if (!sample(telemetry, samplingPercentage)) {
-        // sampled out
-        return;
-      }
+      trackAsStandalone(telemetry);
+    }
+  }
+
+  private static void trackInsideValidSpanContext(
+      TelemetryItem telemetry, SpanContext spanContext) {
+
+    String operationId = telemetry.getTags().get(ContextTagKeys.AI_OPERATION_ID.toString());
+
+    if (operationId != null && !operationId.equals(spanContext.getTraceId())) {
+      trackAsStandalone(telemetry);
+      return;
+    }
+
+    if (!spanContext.isSampled()) {
+      // sampled out
+      return;
+    }
+
+    telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), spanContext.getTraceId());
+
+    if (!telemetry.getTags().containsKey(ContextTagKeys.AI_OPERATION_PARENT_ID.toString())) {
+      telemetry
+          .getTags()
+          .put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), spanContext.getSpanId());
+    }
+
+    float samplingPercentage =
+        TelemetryUtil.getSamplingPercentage(
+            spanContext.getTraceState(), Global.getSamplingPercentage(), false);
+
+    if (samplingPercentage != 100) {
+      telemetry.setSampleRate(samplingPercentage);
+    }
+    // this is not null because sdk instrumentation is not added until Global.setTelemetryClient()
+    // is called
+    Global.getTelemetryClient().trackAsync(telemetry);
+  }
+
+  private static void trackAsStandalone(TelemetryItem telemetry) {
+    // sampling is done using the configured sampling percentage
+    float samplingPercentage = Global.getSamplingPercentage();
+    if (!sample(telemetry, samplingPercentage)) {
+      // sampled out
+      return;
     }
     // sampled in
 
