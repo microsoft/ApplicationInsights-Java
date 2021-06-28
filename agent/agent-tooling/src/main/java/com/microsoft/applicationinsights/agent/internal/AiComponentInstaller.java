@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
@@ -40,28 +39,20 @@ import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.WebR
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.MainEntryPoint;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.OpenTelemetryConfigurer;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.agent.internal.wascore.MetricFilter;
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.wascore.authentication.AadAuthentication;
-import com.microsoft.applicationinsights.agent.internal.wascore.common.CommonUtils;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.AddTypeXmlElement;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.ApplicationInsightsXmlConfiguration;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.JmxXmlElement;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.ParamXmlElement;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.TelemetryModulesXmlElement;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.ConnectionString;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.InvalidConnectionStringException;
+import com.microsoft.applicationinsights.agent.internal.wascore.common.SystemInformation;
+import com.microsoft.applicationinsights.agent.internal.wascore.connection.ConnectionString;
+import com.microsoft.applicationinsights.agent.internal.wascore.connection.InvalidConnectionStringException;
 import com.microsoft.applicationinsights.agent.internal.wascore.profiler.GcEventMonitor;
 import com.microsoft.applicationinsights.agent.internal.wascore.profiler.ProfilerServiceInitializer;
 import com.microsoft.applicationinsights.agent.internal.wascore.statsbeat.StatsbeatModule;
-import com.microsoft.applicationinsights.agent.internal.wascore.system.SystemInformation;
 import com.microsoft.applicationinsights.agent.internal.wascore.util.PropertyHelper;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
@@ -71,7 +62,6 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
@@ -142,23 +132,11 @@ public class AiComponentInstaller implements AgentListener {
             "Please provide connection string or instrumentation key.");
       }
     }
+    // TODO (trask) should configuration validation be performed earlier?
     // Function to validate user provided processor configuration
     validateProcessorConfiguration(config);
+    // validate authentication configuration
     config.preview.authentication.validate();
-    // Inject authentication configuration
-    AadAuthentication aadAuthentication;
-    if (config.preview.authentication.enabled) {
-      // if enabled, then type must be non-null (validated above)
-      aadAuthentication =
-          new AadAuthentication(
-              config.preview.authentication.type,
-              config.preview.authentication.clientId,
-              config.preview.authentication.tenantId,
-              config.preview.authentication.clientSecret,
-              config.preview.authentication.authorityHost);
-    } else {
-      aadAuthentication = null;
-    }
 
     String jbossHome = System.getenv("JBOSS_HOME");
     if (!Strings.isNullOrEmpty(jbossHome)) {
@@ -180,15 +158,12 @@ public class AiComponentInstaller implements AgentListener {
     List<MetricFilter> metricFilters =
         config.preview.processors.stream()
             .filter(processor -> processor.type == Configuration.ProcessorType.METRIC_FILTER)
-            .map(ProcessorConfig::toMetricFilter)
+            .map(MetricFilter::new)
             .collect(Collectors.toList());
 
     TelemetryClient telemetryClient =
         TelemetryClient.initActive(
-            config.customDimensions,
-            metricFilters,
-            aadAuthentication,
-            buildXmlConfiguration(config));
+            config.customDimensions, metricFilters, config.preview.authentication, config);
 
     try {
       ConnectionString.updateStatsbeatConnectionString(
@@ -204,7 +179,7 @@ public class AiComponentInstaller implements AgentListener {
 
     ProfilerServiceInitializer.initialize(
         appIdSupplier::get,
-        SystemInformation.INSTANCE.getProcessId(),
+        SystemInformation.getProcessId(),
         formServiceProfilerConfig(config.preview.profiler),
         config.role.instance,
         config.role.name,
@@ -295,9 +270,9 @@ public class AiComponentInstaller implements AgentListener {
     }
     StringBuilder sdkNamePrefix = new StringBuilder(4);
     sdkNamePrefix.append(DiagnosticsHelper.rpIntegrationChar());
-    if (SystemInformation.INSTANCE.isWindows()) {
+    if (SystemInformation.isWindows()) {
       sdkNamePrefix.append("w");
-    } else if (SystemInformation.INSTANCE.isUnix()) {
+    } else if (SystemInformation.isUnix()) {
       sdkNamePrefix.append("l");
     } else {
       startupLogger.warn("could not detect os: {}", System.getProperty("os.name"));
@@ -309,67 +284,6 @@ public class AiComponentInstaller implements AgentListener {
 
   private static boolean hasConnectionStringOrInstrumentationKey(Configuration config) {
     return !Strings.isNullOrEmpty(config.connectionString);
-  }
-
-  private static ApplicationInsightsXmlConfiguration buildXmlConfiguration(Configuration config) {
-
-    ApplicationInsightsXmlConfiguration xmlConfiguration =
-        new ApplicationInsightsXmlConfiguration();
-
-    if (!Strings.isNullOrEmpty(config.connectionString)) {
-      xmlConfiguration.setConnectionString(config.connectionString);
-    }
-    if (!Strings.isNullOrEmpty(config.role.name)) {
-      xmlConfiguration.setRoleName(config.role.name);
-    }
-    if (!Strings.isNullOrEmpty(config.role.instance)) {
-      xmlConfiguration.setRoleInstance(config.role.instance);
-    } else {
-      String hostname = CommonUtils.getHostName();
-      xmlConfiguration.setRoleInstance(hostname == null ? "unknown" : hostname);
-    }
-
-    // configure heartbeat module
-    AddTypeXmlElement heartbeatModule = new AddTypeXmlElement();
-    heartbeatModule.setType(
-        "com.microsoft.applicationinsights.agent.internal.wascore.heartbeat.HeartBeatModule");
-    // do not allow interval longer than 15 minutes, since we use the heartbeat data for usage
-    // telemetry
-    long intervalSeconds = Math.min(config.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
-    heartbeatModule
-        .getParameters()
-        .add(newParamXml("HeartBeatInterval", Long.toString(intervalSeconds)));
-    ArrayList<AddTypeXmlElement> modules = new ArrayList<>();
-    modules.add(heartbeatModule);
-    TelemetryModulesXmlElement modulesXml = new TelemetryModulesXmlElement();
-    modulesXml.setAdds(modules);
-    xmlConfiguration.setModules(modulesXml);
-
-    // configure custom jmx metrics
-    ArrayList<JmxXmlElement> jmxXmls = new ArrayList<>();
-    for (JmxMetric jmxMetric : config.jmxMetrics) {
-      JmxXmlElement jmxXml = new JmxXmlElement();
-      jmxXml.setName(jmxMetric.name);
-      jmxXml.setObjectName(jmxMetric.objectName);
-      jmxXml.setAttribute(jmxMetric.attribute);
-      jmxXmls.add(jmxXml);
-    }
-    xmlConfiguration.getPerformance().setJmxXmlElements(jmxXmls);
-
-    xmlConfiguration
-        .getPerformance()
-        .setCollectionFrequencyInSec(config.preview.metricIntervalSeconds);
-
-    xmlConfiguration.getQuickPulse().setEnabled(config.preview.liveMetrics.enabled);
-
-    return xmlConfiguration;
-  }
-
-  private static ParamXmlElement newParamXml(String name, String value) {
-    ParamXmlElement paramXml = new ParamXmlElement();
-    paramXml.setName(name);
-    paramXml.setValue(value);
-    return paramXml;
   }
 
   private static class ShutdownHook extends Thread {

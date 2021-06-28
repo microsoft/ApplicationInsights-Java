@@ -28,24 +28,31 @@ import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.http.ProxyOptions;
 import com.azure.core.http.netty.NettyAsyncHttpClientBuilder;
+import com.azure.core.http.policy.BearerTokenAuthenticationPolicy;
 import com.azure.core.http.policy.HttpLogOptions;
 import com.azure.core.http.policy.HttpLoggingPolicy;
 import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.core.http.policy.RetryPolicy;
 import com.azure.core.util.Context;
-import com.microsoft.applicationinsights.agent.internal.wascore.authentication.AadAuthentication;
-import com.microsoft.applicationinsights.agent.internal.wascore.authentication.RedirectPolicy;
+import com.azure.identity.ClientSecretCredentialBuilder;
+import com.azure.identity.ManagedIdentityCredential;
+import com.azure.identity.ManagedIdentityCredentialBuilder;
+import com.azure.identity.VisualStudioCodeCredential;
+import com.azure.identity.VisualStudioCodeCredentialBuilder;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.checkerframework.checker.lock.qual.GuardedBy;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import reactor.core.publisher.Mono;
 import reactor.netty.resources.ConnectionProvider;
 
 public class LazyHttpClient implements HttpClient {
+
+  private static final String APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE =
+      "https://monitor.azure.com//.default";
 
   private static final HttpClient INSTANCE = new LazyHttpClient();
   private static final int DEFAULT_MAX_TOTAL_CONNECTIONS = 200;
@@ -113,14 +120,14 @@ public class LazyHttpClient implements HttpClient {
     return new NettyAsyncHttpClientBuilder().connectionProvider(connectionProvider).build();
   }
 
-  public static HttpPipeline newHttpPipeLine(@Nullable AadAuthentication aadAuthentication) {
+  public static HttpPipeline newHttpPipeLine(Configuration.AadAuthentication aadConfiguration) {
     List<HttpPipelinePolicy> policies = new ArrayList<>();
     // Redirect policy to to handle v2.1/track redirects (and other redirects too, e.g. profiler)
     policies.add(new RedirectPolicy());
     // Retry policy for failed requests
     policies.add(new RetryPolicy());
-    if (aadAuthentication != null) {
-      policies.add(aadAuthentication.getAuthenticationPolicy());
+    if (aadConfiguration.enabled) {
+      policies.add(getAuthenticationPolicy(aadConfiguration));
     }
     // Add Logging Policy. Can be enabled using AZURE_LOG_LEVEL.
     // TODO set the logging level based on self diagnostic log level set by user
@@ -138,5 +145,57 @@ public class LazyHttpClient implements HttpClient {
   @Override
   public Mono<HttpResponse> send(HttpRequest request, Context context) {
     return getDelegate().send(request, context);
+  }
+
+  private static HttpPipelinePolicy getAuthenticationPolicy(
+      Configuration.AadAuthentication configuration) {
+    switch (configuration.type) {
+      case UAMI:
+        return getAuthenticationPolicyWithUami(configuration);
+      case SAMI:
+        return getAuthenticationPolicyWithSami();
+      case VSCODE:
+        return getAuthenticationPolicyWithVsCode();
+      case CLIENTSECRET:
+        return getAuthenticationPolicyWithClientSecret(configuration);
+    }
+    throw new IllegalStateException(
+        "Invalid Authentication Type used in AAD Authentication: " + configuration.type);
+  }
+
+  private static HttpPipelinePolicy getAuthenticationPolicyWithUami(
+      Configuration.AadAuthentication configuration) {
+    ManagedIdentityCredentialBuilder managedIdentityCredential =
+        new ManagedIdentityCredentialBuilder().clientId(configuration.clientId);
+    return new BearerTokenAuthenticationPolicy(
+        managedIdentityCredential.build(), APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE);
+  }
+
+  private static HttpPipelinePolicy getAuthenticationPolicyWithClientSecret(
+      Configuration.AadAuthentication configuration) {
+    ClientSecretCredentialBuilder credential =
+        new ClientSecretCredentialBuilder()
+            .tenantId(configuration.tenantId)
+            .clientSecret(configuration.clientSecret)
+            .clientId(configuration.clientId);
+    if (configuration.authorityHost != null) {
+      credential.authorityHost(configuration.authorityHost);
+    }
+    return new BearerTokenAuthenticationPolicy(
+        credential.build(), APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE);
+  }
+
+  private static HttpPipelinePolicy getAuthenticationPolicyWithVsCode() {
+    VisualStudioCodeCredential visualStudioCodeCredential =
+        new VisualStudioCodeCredentialBuilder().build();
+    return new BearerTokenAuthenticationPolicy(
+        visualStudioCodeCredential, APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE);
+  }
+
+  private static HttpPipelinePolicy getAuthenticationPolicyWithSami() {
+    ManagedIdentityCredential managedIdentityCredential =
+        new ManagedIdentityCredentialBuilder().build();
+    return new BearerTokenAuthenticationPolicy(
+        managedIdentityCredential, APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE);
   }
 }

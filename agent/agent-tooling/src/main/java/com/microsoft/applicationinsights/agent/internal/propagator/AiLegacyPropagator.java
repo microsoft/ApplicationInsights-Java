@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.propagator;
 
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.LegacyHeaderSpanProcessor.LegacyIds;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.AiLegacyHeaderSpanProcessor.LegacyIds;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;

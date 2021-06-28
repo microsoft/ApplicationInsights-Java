@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.agent.internal.wascore.heartbeat;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -40,9 +39,6 @@ import org.slf4j.LoggerFactory;
 public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterface {
 
   private static final Logger logger = LoggerFactory.getLogger(WebAppsHeartbeatProvider.class);
-
-  /** Name of the provider. */
-  private static final String name = "webapps";
 
   /** Collection holding default properties for this default provider. */
   private final Set<String> defaultFields;
@@ -64,16 +60,10 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
   }
 
   @Override
-  public String getName() {
-    return name;
-  }
-
-  @Override
-  public Callable<Boolean> setDefaultPayload(
-      List<String> disableFields, HeartBeatProviderInterface provider) {
+  public Callable<Boolean> setDefaultPayload(HeartBeatProvider provider) {
     return new Callable<Boolean>() {
 
-      final Set<String> enabledProperties = MiscUtils.except(defaultFields, disableFields);
+      final Set<String> enabledProperties = defaultFields;
 
       @Override
       public Boolean call() {

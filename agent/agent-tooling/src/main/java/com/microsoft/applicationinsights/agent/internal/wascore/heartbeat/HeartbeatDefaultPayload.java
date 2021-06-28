@@ -40,27 +40,16 @@ public class HeartbeatDefaultPayload {
   /**
    * Callable which delegates calls to providers for adding payload.
    *
-   * @param disabledFields the properties which are disabled by user
-   * @param disabledProviders providers which are disabled by users
    * @param provider The HeartBeat provider
    * @return Callable to perform execution
    */
-  public static Callable<Boolean> populateDefaultPayload(
-      List<String> disabledFields,
-      List<String> disabledProviders,
-      HeartBeatProviderInterface provider) {
+  public static Callable<Boolean> populateDefaultPayload(HeartBeatProvider provider) {
     return new Callable<Boolean>() {
       @Override
       public Boolean call() throws Exception {
         boolean populatedFields = false;
         for (HeartBeatPayloadProviderInterface payloadProvider : defaultPayloadProviders) {
-          if (disabledProviders != null && disabledProviders.contains(payloadProvider.getName())) {
-
-            // skip any azure specific modules here
-            continue;
-          }
-
-          boolean fieldsAreSet = payloadProvider.setDefaultPayload(disabledFields, provider).call();
+          boolean fieldsAreSet = payloadProvider.setDefaultPayload(provider).call();
           populatedFields = populatedFields || fieldsAreSet;
         }
         return populatedFields;

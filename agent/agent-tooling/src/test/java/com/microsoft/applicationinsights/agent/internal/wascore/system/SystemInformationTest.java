@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.wascore.system;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.microsoft.applicationinsights.agent.internal.wascore.common.SystemInformation;
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.Test;
 
@@ -30,14 +31,12 @@ class SystemInformationTest {
   @Test
   void testOs() {
     assertThat(
-            SystemUtils.IS_OS_WINDOWS
-                ? SystemInformation.INSTANCE.isWindows()
-                : SystemInformation.INSTANCE.isUnix())
+            SystemUtils.IS_OS_WINDOWS ? SystemInformation.isWindows() : SystemInformation.isUnix())
         .isTrue();
   }
 
   @Test
   void testProcessId() {
-    Integer.parseInt(SystemInformation.INSTANCE.getProcessId());
+    Integer.parseInt(SystemInformation.getProcessId());
   }
 }

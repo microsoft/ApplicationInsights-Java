@@ -19,20 +19,18 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.wascore.util;
+package com.microsoft.applicationinsights.agent.internal.wascore.perfcounter.jmx;
 
-import com.microsoft.applicationinsights.agent.internal.wascore.common.CommonUtils;
-import java.util.Locale;
+/**
+ * Represents JMX data of an Attribute The display name The name of the attribute The type of the
+ * attribute.
+ */
+public final class JmxAttributeData {
+  public final String metricName;
+  public final String attribute;
 
-/** A view into the context information specific to device information. */
-public class DeviceInfo {
-  public static String getHostName() {
-    return CommonUtils.getHostName();
+  public JmxAttributeData(String metricName, String attribute) {
+    this.attribute = attribute;
+    this.metricName = metricName;
   }
-
-  public static String getLocale() {
-    return Locale.getDefault().toLanguageTag();
-  }
-
-  private DeviceInfo() {}
 }

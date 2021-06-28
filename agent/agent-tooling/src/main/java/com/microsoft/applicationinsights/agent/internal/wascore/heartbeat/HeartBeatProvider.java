@@ -29,9 +29,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryI
 import com.microsoft.applicationinsights.agent.internal.wascore.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.wascore.util.ThreadPoolUtils;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -43,22 +41,21 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Concrete implementation of Heartbeat functionality. This class implements {@link
- * HeartBeatProviderInterface}
- */
-public class HeartBeatProvider implements HeartBeatProviderInterface {
+/** Concrete implementation of Heartbeat functionality. */
+public class HeartBeatProvider {
 
   private static final Logger logger = LoggerFactory.getLogger(HeartBeatProvider.class);
 
+  /** Default interval in seconds to transmit heartbeat pulse. */
+  // visible for testing
+  static final long DEFAULT_HEARTBEAT_INTERVAL = TimeUnit.MINUTES.toSeconds(15);
+
+  /** Minimum interval which can be configured by user to transmit heartbeat pulse. */
+  // visible for testing
+  static final long MINIMUM_HEARTBEAT_INTERVAL = 30;
+
   /** The name of the heartbeat metric. */
   private static final String HEARTBEAT_SYNTHETIC_METRIC_NAME = "HeartbeatState";
-
-  /** The list of disabled properties. */
-  private List<String> disableDefaultProperties = new ArrayList<>();
-
-  /** List of disabled heartbeat providers. */
-  private List<String> disabledHeartBeatPropertiesProviders = new ArrayList<>();
 
   /** The counter for heartbeat sent to portal. */
   private long heartbeatsSent;
@@ -79,10 +76,10 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
   private final ScheduledExecutorService heartBeatSenderService;
 
   /** Heartbeat enabled state. */
-  private volatile boolean isEnabled;
+  private final boolean isEnabled;
 
   public HeartBeatProvider() {
-    this.interval = HeartBeatProviderInterface.DEFAULT_HEARTBEAT_INTERVAL;
+    this.interval = DEFAULT_HEARTBEAT_INTERVAL;
     this.heartbeatProperties = new ConcurrentHashMap<>();
     this.isEnabled = true;
     this.heartbeatsSent = 0;
@@ -96,7 +93,6 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
                 HeartBeatProvider.class, "heartBeatSenderService"));
   }
 
-  @Override
   public void initialize(TelemetryClient telemetryClient) {
     if (isEnabled) {
       if (this.telemetryClient == null) {
@@ -105,15 +101,12 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
 
       // Submit task to set properties to dictionary using separate thread. we do not wait for the
       // results to come out as some I/O bound properties may take time.
-      propertyUpdateService.submit(
-          HeartbeatDefaultPayload.populateDefaultPayload(
-              getExcludedHeartBeatProperties(), getExcludedHeartBeatPropertyProviders(), this));
+      propertyUpdateService.submit(HeartbeatDefaultPayload.populateDefaultPayload(this));
 
       heartBeatSenderService.scheduleAtFixedRate(this::send, interval, interval, TimeUnit.SECONDS);
     }
   }
 
-  @Override
   public boolean addHeartBeatProperty(
       String propertyName, String propertyValue, boolean isHealthy) {
 
@@ -137,46 +130,13 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
     return isAdded;
   }
 
-  @Override
-  public boolean isHeartBeatEnabled() {
-    return isEnabled;
-  }
-
-  @Override
-  public void setHeartBeatEnabled(boolean isEnabled) {
-    this.isEnabled = isEnabled;
-  }
-
-  @Override
-  public List<String> getExcludedHeartBeatPropertyProviders() {
-    return this.disabledHeartBeatPropertiesProviders;
-  }
-
-  @Override
-  public void setExcludedHeartBeatPropertyProviders(
-      List<String> excludedHeartBeatPropertyProviders) {
-    this.disabledHeartBeatPropertiesProviders = excludedHeartBeatPropertyProviders;
-  }
-
-  @Override
   public long getHeartBeatInterval() {
     return this.interval;
   }
 
-  @Override
   public void setHeartBeatInterval(long timeUnit) {
     // user set time unit in seconds
-    this.interval = Math.max(timeUnit, HeartBeatProviderInterface.MINIMUM_HEARTBEAT_INTERVAL);
-  }
-
-  @Override
-  public List<String> getExcludedHeartBeatProperties() {
-    return this.disableDefaultProperties;
-  }
-
-  @Override
-  public void setExcludedHeartBeatProperties(List<String> excludedHeartBeatProperties) {
-    this.disableDefaultProperties = excludedHeartBeatProperties;
+    this.interval = Math.max(timeUnit, MINIMUM_HEARTBEAT_INTERVAL);
   }
 
   /** Send the heartbeat item synchronously to application insights backend. */

@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.wascore.util;
 
+import com.microsoft.applicationinsights.agent.internal.wascore.common.Strings;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,6 +56,7 @@ public class LocalFileSystemUtils {
     return result;
   }
 
+  // visible for testing
   static File getTempDir(String initialValue, String userName) {
     String tempDirectory = initialValue;
 
@@ -74,22 +76,22 @@ public class LocalFileSystemUtils {
    *
    * @return the best guess at what the current user's login name is.
    */
-  public static String determineCurrentUserName() {
+  private static String determineCurrentUserName() {
     String userName;
     // Start with the value of the "user.name" property
     userName = System.getProperty("user.name");
 
-    if (LocalStringsUtils.isNullOrEmpty(userName)) {
+    if (Strings.isNullOrEmpty(userName)) {
       // Try some environment variables
       for (String candidate : CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES) {
         userName = System.getenv(candidate);
-        if (!LocalStringsUtils.isNullOrEmpty(userName)) {
+        if (!Strings.isNullOrEmpty(userName)) {
           break;
         }
       }
     }
 
-    if (LocalStringsUtils.isNullOrEmpty(userName)) {
+    if (Strings.isNullOrEmpty(userName)) {
       // TODO: it might be nice to use a unique-ish value, such as the current process ID
       userName = "unknown";
     }

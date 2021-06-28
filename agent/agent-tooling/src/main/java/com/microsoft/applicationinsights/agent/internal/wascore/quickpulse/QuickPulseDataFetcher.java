@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.wascore.quickpulse;
 
 import com.azure.core.http.HttpRequest;
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.wascore.util.LocalStringsUtils;
+import com.microsoft.applicationinsights.agent.internal.wascore.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.wascore.util.PropertyHelper;
 import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -66,7 +66,7 @@ class QuickPulseDataFetcher {
         .append("\",");
     sb.append("\"InvariantVersion\":").append(QuickPulse.QP_INVARIANT_VERSION).append(",");
     sb.append("\"MachineName\":\"").append(machineName).append("\",");
-    if (LocalStringsUtils.isNullOrEmpty(roleName)) {
+    if (Strings.isNullOrEmpty(roleName)) {
       sb.append("\"RoleName\":null,");
     } else {
       sb.append("\"RoleName\":\"").append(roleName).append("\",");
@@ -94,9 +94,7 @@ class QuickPulseDataFetcher {
 
       Date currentDate = new Date();
       String endpointPrefix =
-          LocalStringsUtils.isNullOrEmpty(redirectedEndpoint)
-              ? getQuickPulseEndpoint()
-              : redirectedEndpoint;
+          Strings.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
       HttpRequest request =
           networkHelper.buildRequest(currentDate, this.getEndpointUrl(endpointPrefix));
       request.setBody(buildPostEntity(counters));

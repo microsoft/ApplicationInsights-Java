@@ -19,14 +19,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.wascore.config.connection;
+package com.microsoft.applicationinsights.agent.internal.wascore.connection;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.ConnectionString.Defaults;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.ConnectionString.EndpointPrefixes;
+import com.microsoft.applicationinsights.agent.internal.wascore.connection.ConnectionString.Defaults;
+import com.microsoft.applicationinsights.agent.internal.wascore.connection.ConnectionString.EndpointPrefixes;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.UUID;

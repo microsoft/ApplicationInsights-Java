@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.wascore.util;
 
 import com.microsoft.applicationinsights.agent.internal.wascore.common.FriendlyException;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.ConnectionString.Defaults;
+import com.microsoft.applicationinsights.agent.internal.wascore.connection.ConnectionString.Defaults;
 import java.io.File;
 
 public class SslUtil {

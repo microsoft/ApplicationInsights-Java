@@ -27,13 +27,8 @@ public class FriendlyException extends RuntimeException {
   }
 
   public FriendlyException(String message, String action) {
-    // TODO can these constructors cascade?
+    // TODO (trask) can these constructors cascade?
     super(populateFriendlyMessage(message, action));
-  }
-
-  public FriendlyException(
-      String banner, String action, String message, String note, Throwable cause) {
-    super(populateFriendlyMessage(message, action, banner, note), cause);
   }
 
   public FriendlyException(String banner, String action, String message, String note) {
@@ -46,31 +41,28 @@ public class FriendlyException extends RuntimeException {
 
   // TODO consolidate with method below?
   public String getMessageWithBanner(String banner) {
-    return new StringBuilder()
-        .append(System.lineSeparator())
-        .append("*************************")
-        .append(System.lineSeparator())
-        .append(banner)
-        .append(System.lineSeparator())
-        .append("*************************")
-        .append(getMessage()) // getMessage() is prefixed with lineSeparator already
-        .toString();
+    return System.lineSeparator()
+        + "*************************"
+        + System.lineSeparator()
+        + banner
+        + System.lineSeparator()
+        + "*************************"
+        // getMessage() is prefixed with lineSeparator already
+        + getMessage();
   }
 
   // TODO consolidate with method below
   public static String populateFriendlyMessage(String description, String action) {
-    return new StringBuilder()
-        .append(System.lineSeparator())
-        .append("Description:")
-        .append(System.lineSeparator())
-        .append(description)
-        .append(System.lineSeparator())
-        .append(System.lineSeparator())
-        .append("Action:")
-        .append(System.lineSeparator())
-        .append(action)
-        .append(System.lineSeparator())
-        .toString();
+    return System.lineSeparator()
+        + "Description:"
+        + System.lineSeparator()
+        + description
+        + System.lineSeparator()
+        + System.lineSeparator()
+        + "Action:"
+        + System.lineSeparator()
+        + action
+        + System.lineSeparator();
   }
 
   public static String populateFriendlyMessage(

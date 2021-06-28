@@ -30,7 +30,6 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorActionType;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorType;
-import com.microsoft.applicationinsights.agent.internal.wascore.authentication.AuthenticationType;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonDataException;
 import com.squareup.moshi.JsonReader;
@@ -246,7 +245,7 @@ class ConfigurationTest {
     assertThat(configuration.connectionString)
         .isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
     assertThat(preview.authentication.enabled).isTrue();
-    assertThat(preview.authentication.type).isEqualTo(AuthenticationType.SAMI);
+    assertThat(preview.authentication.type).isEqualTo(Configuration.AuthenticationType.SAMI);
     assertThat(preview.authentication.clientId).isEqualTo("123xyz");
     assertThat(preview.authentication.tenantId).isEqualTo("tenant123");
     assertThat(preview.authentication.clientSecret).isEqualTo("clientsecret123");
@@ -564,7 +563,8 @@ class ConfigurationTest {
     ConfigurationBuilder.overlayEnvVars(configuration);
 
     assertThat(configuration.preview.authentication.enabled).isTrue();
-    assertThat(configuration.preview.authentication.type).isEqualTo(AuthenticationType.UAMI);
+    assertThat(configuration.preview.authentication.type)
+        .isEqualTo(Configuration.AuthenticationType.UAMI);
     assertThat(configuration.preview.authentication.clientId).isEqualTo("12345678");
     assertThat(configuration.preview.authentication.clientSecret).isNull();
 
@@ -574,7 +574,8 @@ class ConfigurationTest {
     ConfigurationBuilder.overlayEnvVars(configuration2);
 
     assertThat(configuration2.preview.authentication.enabled).isTrue();
-    assertThat(configuration2.preview.authentication.type).isEqualTo(AuthenticationType.SAMI);
+    assertThat(configuration2.preview.authentication.type)
+        .isEqualTo(Configuration.AuthenticationType.SAMI);
     assertThat(configuration2.preview.authentication.clientId).isNull();
     assertThat(configuration2.preview.authentication.clientSecret).isNull();
   }

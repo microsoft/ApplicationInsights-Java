@@ -24,9 +24,9 @@ package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurat
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SamplingOverride;
-import com.microsoft.applicationinsights.agent.internal.wascore.authentication.AuthenticationType;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.FriendlyException;
-import com.microsoft.applicationinsights.agent.internal.wascore.config.connection.ConnectionString;
+import com.microsoft.applicationinsights.agent.internal.wascore.common.HostName;
+import com.microsoft.applicationinsights.agent.internal.wascore.connection.ConnectionString;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonDataException;
 import com.squareup.moshi.JsonEncodingException;
@@ -131,6 +131,11 @@ public class ConfigurationBuilder {
     if (rpConfiguration != null) {
       overlayRpConfiguration(config, rpConfiguration);
     }
+    // only set role instance to host name as a last resort
+    if (config.role.instance == null) {
+      String hostname = HostName.get();
+      config.role.instance = hostname == null ? "unknown" : hostname;
+    }
     return config;
   }
 
@@ -159,11 +164,11 @@ public class ConfigurationBuilder {
         // Override any configuration from json
         config.preview.authentication = new Configuration.AadAuthentication();
         config.preview.authentication.enabled = true;
-        config.preview.authentication.type = AuthenticationType.SAMI;
+        config.preview.authentication.type = Configuration.AuthenticationType.SAMI;
         String clientId = keyValueMap.get("ClientId");
         if (clientId != null && !clientId.isEmpty()) {
           // Override type to User Assigned Managed Identity
-          config.preview.authentication.type = AuthenticationType.UAMI;
+          config.preview.authentication.type = Configuration.AuthenticationType.UAMI;
           config.preview.authentication.clientId = clientId;
         }
       }
@@ -522,7 +527,7 @@ public class ConfigurationBuilder {
             "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
       } catch (Exception e) {
         throw new ConfigurationException(
-            "Error parsing configuration from file: " + configPath.toAbsolutePath().toString(), e);
+            "Error parsing configuration from file: " + configPath.toAbsolutePath(), e);
       }
     }
   }
@@ -572,8 +577,7 @@ public class ConfigurationBuilder {
   }
 
   static String getJsonEncodingExceptionMessageForFile(Path configPath, String message) {
-    return getJsonEncodingExceptionMessage(
-        "file " + configPath.toAbsolutePath().toString(), message);
+    return getJsonEncodingExceptionMessage("file " + configPath.toAbsolutePath(), message);
   }
 
   static String getJsonEncodingExceptionMessageForEnvVar(String message) {

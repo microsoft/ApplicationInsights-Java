@@ -25,9 +25,9 @@ import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.microsoft.applicationinsights.agent.internal.wascore.TelemetryClient;
+import com.microsoft.applicationinsights.agent.internal.wascore.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.wascore.util.ExceptionStats;
 import com.microsoft.applicationinsights.agent.internal.wascore.util.ExceptionUtil;
-import com.microsoft.applicationinsights.agent.internal.wascore.util.LocalStringsUtils;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
@@ -79,9 +79,7 @@ class QuickPulsePingSender {
 
     Date currentDate = new Date();
     String endpointPrefix =
-        LocalStringsUtils.isNullOrEmpty(redirectedEndpoint)
-            ? getQuickPulseEndpoint()
-            : redirectedEndpoint;
+        Strings.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
     HttpRequest request =
         networkHelper.buildPingRequest(
             currentDate,
@@ -134,7 +132,7 @@ class QuickPulsePingSender {
       sb.append("\"InstrumentationKey\":null,");
       sb.append("\"InvariantVersion\":").append(QuickPulse.QP_INVARIANT_VERSION).append(",");
       sb.append("\"MachineName\":\"").append(machineName).append("\",");
-      if (LocalStringsUtils.isNullOrEmpty(roleName)) {
+      if (Strings.isNullOrEmpty(roleName)) {
         sb.append("\"RoleName\":null,");
       } else {
         sb.append("\"RoleName\":\"").append(roleName).append("\",");
