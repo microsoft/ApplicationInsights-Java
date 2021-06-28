@@ -385,15 +385,11 @@ public class Exporter implements SpanExporter {
   }
 
   private static void setOperationTags(TelemetryItem telemetry, SpanData span) {
-    setOperationTags(
-        telemetry,
-        span.getTraceId(),
-        span.getParentSpanContext().getSpanId(),
-        span.getAttributes());
+    setOperationTags(telemetry, span.getTraceId(), span.getParentSpanContext().getSpanId());
   }
 
   private static void setOperationTags(
-      TelemetryItem telemetry, String traceId, String parentSpanId, Attributes attributes) {
+      TelemetryItem telemetry, String traceId, String parentSpanId) {
     telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), traceId);
     if (SpanId.isValid(parentSpanId)) {
       telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), parentSpanId);
@@ -758,7 +754,7 @@ public class Exporter implements SpanExporter {
       telemetryClient.initEventTelemetry(telemetry, data);
 
       // set common properties
-      setOperationTags(telemetry, span.getTraceId(), span.getSpanId(), span.getAttributes());
+      setOperationTags(telemetry, span.getTraceId(), span.getSpanId());
       setTime(telemetry, event.getEpochNanos());
       setExtraAttributes(telemetry, data, event.getAttributes());
       setSampleRate(telemetry, samplingPercentage);
@@ -773,7 +769,7 @@ public class Exporter implements SpanExporter {
     telemetryClient.initExceptionTelemetry(telemetry, data);
 
     // common properties
-    setOperationTags(telemetry, span.getTraceId(), span.getSpanId(), span.getAttributes());
+    setOperationTags(telemetry, span.getTraceId(), span.getSpanId());
     setTime(telemetry, span.getEndEpochNanos());
     setSampleRate(telemetry, samplingPercentage);
 
