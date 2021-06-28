@@ -47,15 +47,18 @@ public class RpConfigurationPolling implements Runnable {
   private volatile RpConfiguration rpConfiguration;
   private final Configuration configuration;
   private final TelemetryClient telemetryClient;
+  private final AppIdSupplier appIdSupplier;
 
   public static void startPolling(
       RpConfiguration rpConfiguration,
       Configuration configuration,
-      TelemetryClient telemetryClient) {
+      TelemetryClient telemetryClient,
+      AppIdSupplier appIdSupplier) {
     Executors.newSingleThreadScheduledExecutor(
             ThreadPoolUtils.createDaemonThreadFactory(RpConfigurationPolling.class))
         .scheduleWithFixedDelay(
-            new RpConfigurationPolling(rpConfiguration, configuration, telemetryClient),
+            new RpConfigurationPolling(
+                rpConfiguration, configuration, telemetryClient, appIdSupplier),
             60,
             60,
             SECONDS);
@@ -65,10 +68,12 @@ public class RpConfigurationPolling implements Runnable {
   RpConfigurationPolling(
       RpConfiguration rpConfiguration,
       Configuration configuration,
-      TelemetryClient telemetryClient) {
+      TelemetryClient telemetryClient,
+      AppIdSupplier appIdSupplier) {
     this.rpConfiguration = rpConfiguration;
     this.configuration = configuration;
     this.telemetryClient = telemetryClient;
+    this.appIdSupplier = appIdSupplier;
   }
 
   @Override
@@ -94,7 +99,7 @@ public class RpConfigurationPolling implements Runnable {
           logger.debug(
               "Connection string from the JSON config file is overriding the previously configured connection string.");
           telemetryClient.setConnectionString(newRpConfiguration.connectionString);
-          AppIdSupplier.INSTANCE.startAppIdRetrieval();
+          appIdSupplier.startAppIdRetrieval();
         }
 
         if (newRpConfiguration.sampling.percentage != rpConfiguration.sampling.percentage) {

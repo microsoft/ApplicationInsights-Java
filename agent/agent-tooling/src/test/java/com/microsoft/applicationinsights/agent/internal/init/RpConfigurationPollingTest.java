@@ -80,6 +80,8 @@ class RpConfigurationPollingTest {
 
     TelemetryClient telemetryClient = new TelemetryClient();
     telemetryClient.setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+    AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient);
+
     BytecodeUtilImpl.samplingPercentage = 100;
 
     // pre-check
@@ -89,7 +91,8 @@ class RpConfigurationPollingTest {
     assertThat(getCurrentSamplingPercentage()).isEqualTo(100);
 
     // when
-    new RpConfigurationPolling(rpConfiguration, new Configuration(), telemetryClient).run();
+    new RpConfigurationPolling(rpConfiguration, new Configuration(), telemetryClient, appIdSupplier)
+        .run();
 
     // then
     assertThat(telemetryClient.getInstrumentationKey())
@@ -111,6 +114,8 @@ class RpConfigurationPollingTest {
 
     TelemetryClient telemetryClient = new TelemetryClient();
     telemetryClient.setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+    AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient);
+
     BytecodeUtilImpl.samplingPercentage = 100;
 
     envVars.set(
@@ -125,7 +130,8 @@ class RpConfigurationPollingTest {
     assertThat(getCurrentSamplingPercentage()).isEqualTo(100);
 
     // when
-    new RpConfigurationPolling(rpConfiguration, new Configuration(), telemetryClient).run();
+    new RpConfigurationPolling(rpConfiguration, new Configuration(), telemetryClient, appIdSupplier)
+        .run();
 
     // then
     assertThat(telemetryClient.getInstrumentationKey())

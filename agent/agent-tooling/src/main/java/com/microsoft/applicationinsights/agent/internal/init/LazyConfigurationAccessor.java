@@ -94,8 +94,8 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
     DelegatingSampler.getInstance().setAlwaysOnDelegate();
     logger.info("Set connection string {} lazily for the Azure Function Consumption Plan.", value);
 
-    // register and start app id retrieval after the connection string becomes available.
-    appIdSupplier.registerAndStartAppIdRetrieval();
+    // start app id retrieval after the connection string becomes available.
+    appIdSupplier.startAppIdRetrieval();
   }
 
   void setWebsiteSiteName(String websiteSiteName) {

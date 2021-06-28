@@ -53,6 +53,7 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.InvalidConnect
 import com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
+import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
 import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.extension.AgentListener;
@@ -74,11 +75,13 @@ public class AiComponentInstaller implements AgentListener {
 
   // TODO move to "agent builder" and then can inject this in the constructor
   //  or convert to ByteBuddy and use ByteBuddyAgentCustomizer
-  private static Instrumentation instrumentation;
+  private static volatile Instrumentation instrumentation;
 
   public static void setInstrumentation(Instrumentation inst) {
     instrumentation = inst;
   }
+
+  private volatile AppIdSupplier appIdSupplier;
 
   @Override
   public void beforeAgent(Config config) {
@@ -101,15 +104,15 @@ public class AiComponentInstaller implements AgentListener {
     // only safe now to resolve app id because SSL initialization
     // triggers loading of java.util.logging (starting with Java 8u231)
     // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized.
-    // Delay registering and starting AppId retrieval to later when the connection string becomes
-    // available
-    // for Linux Consumption Plan.
+
     if (!"java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
-      AppIdSupplier.INSTANCE.registerAndStartAppIdRetrieval();
+      // Delay registering and starting AppId retrieval until the connection string becomes
+      // available for Linux Consumption Plan.
+      appIdSupplier.startAppIdRetrieval();
     }
   }
 
-  private static void start(Instrumentation instrumentation) {
+  private void start(Instrumentation instrumentation) {
 
     String codelessSdkNamePrefix = getCodelessSdkNamePrefix();
     if (codelessSdkNamePrefix != null) {
@@ -151,8 +154,6 @@ public class AiComponentInstaller implements AgentListener {
       LazyHttpClient.proxyPortNumber = config.proxy.port;
     }
 
-    AppIdSupplier appIdSupplier = AppIdSupplier.INSTANCE;
-
     List<MetricFilter> metricFilters =
         config.preview.processors.stream()
             .filter(processor -> processor.type == Configuration.ProcessorType.METRIC_FILTER)
@@ -174,6 +175,9 @@ public class AiComponentInstaller implements AgentListener {
     }
 
     BytecodeUtilImpl.samplingPercentage = config.sampling.percentage;
+
+    appIdSupplier = new AppIdSupplier(telemetryClient);
+    AiAppId.setSupplier(appIdSupplier);
 
     ProfilerServiceInitializer.initialize(
         appIdSupplier::get,
@@ -197,7 +201,7 @@ public class AiComponentInstaller implements AgentListener {
 
     RpConfiguration rpConfiguration = MainEntryPoint.getRpConfiguration();
     if (rpConfiguration != null) {
-      RpConfigurationPolling.startPolling(rpConfiguration, config, telemetryClient);
+      RpConfigurationPolling.startPolling(rpConfiguration, config, telemetryClient, appIdSupplier);
     }
 
     // initialize StatsbeatModule

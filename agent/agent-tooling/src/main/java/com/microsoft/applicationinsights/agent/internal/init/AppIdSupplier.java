@@ -42,8 +42,6 @@ public class AppIdSupplier implements AiAppId.Supplier {
 
   private static final Logger logger = LoggerFactory.getLogger(AppIdSupplier.class);
 
-  public static final AppIdSupplier INSTANCE = new AppIdSupplier();
-
   private final ScheduledExecutorService scheduledExecutor =
       Executors.newSingleThreadScheduledExecutor(
           ThreadPoolUtils.createDaemonThreadFactory(AppIdSupplier.class));
@@ -55,15 +53,15 @@ public class AppIdSupplier implements AiAppId.Supplier {
   private GetAppIdTask task;
   private final Object taskLock = new Object();
 
+  private final TelemetryClient telemetryClient;
+
   private volatile String appId;
 
-  public void registerAndStartAppIdRetrieval() {
-    AiAppId.setSupplier(this);
-    startAppIdRetrieval();
+  public AppIdSupplier(TelemetryClient telemetryClient) {
+    this.telemetryClient = telemetryClient;
   }
 
   public void startAppIdRetrieval() {
-    TelemetryClient telemetryClient = TelemetryClient.getActive();
     String instrumentationKey = telemetryClient.getInstrumentationKey();
     GetAppIdTask newTask =
         new GetAppIdTask(
