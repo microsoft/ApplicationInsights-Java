@@ -77,7 +77,7 @@ public class ExceptionUtil {
     return getUnknownHostException(cause);
   }
 
-  private static IOException getIOException(Throwable t) {
+  private static IOException getIoException(Throwable t) {
     if (t instanceof IOException) {
       return (IOException) t;
     }
@@ -85,7 +85,7 @@ public class ExceptionUtil {
     if (cause == null) {
       return null;
     }
-    return getIOException(cause);
+    return getIoException(cause);
   }
 
   private static ConnectException getConnectException(Throwable t) {
@@ -132,7 +132,7 @@ public class ExceptionUtil {
               error.getMessage()));
       return;
     }
-    IOException ioException = ExceptionUtil.getIOException(error);
+    IOException ioException = ExceptionUtil.getIoException(error);
     if (ioException != null && !exceptionThrown.getAndSet(true)) {
       FriendlyException.getMessageWithDefaultBanner(
           String.format("I/O exception: %s", error.getMessage()));
