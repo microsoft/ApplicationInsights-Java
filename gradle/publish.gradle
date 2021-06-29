@@ -19,12 +19,42 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 
 ext {
   projectPomName = ""
   projectPomDescription = ""
   whenPomConfigured = { p -> }
+}
+
+def releaseNotesFileDir = "$project.buildDir/src/common/main/resources"
+task copyReleaseNotesToCommonResourcesDir(type: Copy) {
+  from(rootDir) {
+    include "release_notes.txt"
+  }
+  into releaseNotesFileDir
+}
+
+processResources.dependsOn copyReleaseNotesToCommonResourcesDir
+
+sourceSets {
+  main {
+    resources {
+      srcDir releaseNotesFileDir
+    }
+  }
+}
+
+repositories {
+  mavenCentral()
+}
+
+configurations {
+  mavenDeployer
+}
+
+dependencies {
+  mavenDeployer "org.apache.maven.wagon:wagon-ftp:2.8"
 }
 
 // generates a pom file "beside" the jar file
@@ -105,3 +135,5 @@ task copyLibsToGlobalArtifactsFolder(type: Copy) {
   exclude '**/windows/**'
   dependsOn assemble, prepareSourcesArchive, prepareJavadocArchive, generatePom
 }
+
+// endregion Publishing configuration
