@@ -27,6 +27,49 @@ ext {
   whenPomConfigured = { p -> }
 }
 
+// customize pom
+publishing {
+  publications {
+    mavenCustom(MavenPublication) {
+      pom.withXml {
+        // TODO (heya) Append license text to pom.xml
+        asNode().get('artifactId').first().value = archivesBaseName
+        asNode().appendNode('name', projectPomName)
+        asNode().appendNode('description', projectPomDescription)
+        asNode().appendNode('url', 'https://github.com/Microsoft/ApplicationInsights-Java')
+        asNode().append(pomLicenses())
+        asNode().append(pomScm())
+        asNode().append(pomDevelopers())
+      }
+    }
+  }
+}
+
+def pomLicenses() {
+  new NodeBuilder().licenses {
+    license {
+      name 'MIT License'
+      url 'http://www.opensource.org/licenses/mit-license.php'
+    }
+  }
+}
+
+def pomScm() {
+  new NodeBuilder().scm {
+    connection 'scm:git:git://github.com/Microsoft/ApplicationInsights-Java.git'
+    url 'scm:git:https://github.com/Microsoft/ApplicationInsights-Java'
+  }
+}
+
+def pomDevelopers() {
+  new NodeBuilder().developers {
+    developer {
+      id 'Microsoft'
+      name 'Microsoft'
+    }
+  }
+}
+
 def releaseNotesFileDir = "$project.buildDir/src/common/main/resources"
 task copyReleaseNotesToCommonResourcesDir(type: Copy) {
   from(rootDir) {
@@ -62,53 +105,9 @@ task generatePom {
   doLast {
     def pomFileName = jar.archiveFileName.get().replaceFirst(/\.jar$/, '.pom')
     def pomFileObj = jar.destinationDirectory.file(pomFileName)
-    def pomObject = updatePomWithGeneralProjectInformation(pom())
-    pomObject.writeTo(pomFileObj)
-  }
-}
-
-// customizes pom, used for both uploadArchives.repositories.mavenDeployer.pom and install.repositories.mavenInstaller.pom
-def updatePomWithGeneralProjectInformation(pomObject) {
-  configure(pomObject) {
-    assert (!projectPomName.isEmpty() && !projectPomDescription.isEmpty())
-    project {
-      name = projectPomName
-      description = projectPomDescription
-      artifactId = archivesBaseName
-      url = "https://github.com/Microsoft/ApplicationInsights-Java"
-
-      licenses {
-        license {
-          name = "MIT License"
-          url = "http://www.opensource.org/licenses/mit-license.php"
-        }
-      }
-
-      scm {
-        url = "scm:git:https://github.com/Microsoft/ApplicationInsights-Java"
-        connection = "scm:git:git://github.com/Microsoft/ApplicationInsights-Java.git"
-      }
-
-      developers {
-        developer {
-          id = "microsoft"
-          name = "Microsoft"
-        }
-      }
+    tasks.generatePomFileForMavenCustomPublication {
+      destination = pomFileObj
     }
-
-    withXml {
-      // Append license text to pom.xml
-      def pomText = asString()
-      def licenseComment = new StringBuilder()
-      licenseComment.append("<!--\n")
-      licenseComment.append(rootProject.file("LICENSE").text)
-      licenseComment.append("\n-->\n")
-      // insert in pom.xml after the first row (xml declaration)
-      pomText.insert(pomText.indexOf(String.valueOf((char)'\n')) + 1, licenseComment)
-    }
-
-    whenConfigured whenPomConfigured
   }
 }
 
@@ -133,7 +132,7 @@ task copyLibsToGlobalArtifactsFolder(type: Copy) {
   from "$buildDir/$libsDirName"
   into "$artifactsDirectoryRoot"
   exclude '**/windows/**'
-  dependsOn assemble, prepareSourcesArchive, prepareJavadocArchive, generatePom
+  dependsOn assemble, prepareSourcesArchive, prepareJavadocArchive, tasks.withType(GenerateMavenPom), generatePom
 }
 
 // endregion Publishing configuration
