@@ -91,6 +91,17 @@ dependencies {
   }
 }
 
+// region Publishing properties
+
+projectPomName = project.msftAppInsights + " Codeless Java Agent"
+projectPomDescription = "This is the Codeless Java agent of " + project.msftAppInsightsJavaSdk
+
+whenPomConfigured = { p ->
+  p.dependencies = []
+}
+
+// endregion Publishing properties
+
 
 import java.util.jar.JarFile
 import org.apache.tools.ant.taskdefs.condition.Os
