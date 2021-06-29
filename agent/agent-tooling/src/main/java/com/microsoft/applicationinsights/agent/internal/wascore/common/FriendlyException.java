@@ -28,7 +28,7 @@ public class FriendlyException extends RuntimeException {
 
   public FriendlyException(String message, String action) {
     // TODO (trask) can these constructors cascade?
-    super(populateFriendlyMessage(message, action));
+    super(populateFriendlyMessage(message, action, "", ""));
   }
 
   public FriendlyException(String banner, String action, String message, String note) {
@@ -41,44 +41,34 @@ public class FriendlyException extends RuntimeException {
 
   // TODO consolidate with method below?
   public String getMessageWithBanner(String banner) {
-    return System.lineSeparator()
-        + "*************************"
-        + System.lineSeparator()
-        + banner
-        + System.lineSeparator()
-        + "*************************"
-        // getMessage() is prefixed with lineSeparator already
-        + getMessage();
+    return populateFriendlyMessage(getMessage(), "", banner, "");
   }
 
-  // TODO consolidate with method below
-  public static String populateFriendlyMessage(String description, String action) {
-    return System.lineSeparator()
-        + "Description:"
-        + System.lineSeparator()
-        + description
-        + System.lineSeparator()
-        + System.lineSeparator()
-        + "Action:"
-        + System.lineSeparator()
-        + action
-        + System.lineSeparator();
+  public static String getMessageWithDefaultBanner(String message) {
+    return populateFriendlyMessage(message, "", "", "");
   }
 
   public static String populateFriendlyMessage(
       String description, String action, String banner, String note) {
     StringBuilder messageBuilder = new StringBuilder();
+    if (banner.isEmpty()) {
+      banner = "ApplicationInsights Java Agent failed to send telemetry data";
+    }
     messageBuilder.append(System.lineSeparator());
     messageBuilder.append("*************************").append(System.lineSeparator());
     messageBuilder.append(banner).append(System.lineSeparator());
     messageBuilder.append("*************************").append(System.lineSeparator());
-    messageBuilder.append(System.lineSeparator());
-    messageBuilder.append("Description:").append(System.lineSeparator());
-    messageBuilder.append(description).append(System.lineSeparator());
-    messageBuilder.append(System.lineSeparator());
-    messageBuilder.append("Action:").append(System.lineSeparator());
-    messageBuilder.append(action).append(System.lineSeparator());
-    if (!note.isEmpty()) {
+    if (description != null && !description.isEmpty()) {
+      messageBuilder.append(System.lineSeparator());
+      messageBuilder.append("Description:").append(System.lineSeparator());
+      messageBuilder.append(description).append(System.lineSeparator());
+    }
+    if (action != null && !action.isEmpty()) {
+      messageBuilder.append(System.lineSeparator());
+      messageBuilder.append("Action:").append(System.lineSeparator());
+      messageBuilder.append(action).append(System.lineSeparator());
+    }
+    if (note != null && !note.isEmpty()) {
       messageBuilder.append(System.lineSeparator());
       messageBuilder.append("Note:").append(System.lineSeparator());
       messageBuilder.append(note).append(System.lineSeparator());

@@ -62,7 +62,7 @@ public class TelemetryChannel {
       new ExceptionStats(
           TelemetryChannel.class,
           "Unable to send telemetry to the ingestion service (telemetry will be stored to disk):");
-  private static final AtomicBoolean friendlySslExceptionThrown = new AtomicBoolean();
+  private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
   static {
     mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -98,7 +98,6 @@ public class TelemetryChannel {
     } catch (Throwable t) {
       networkExceptionStats.recordFailure(
           String.format("Error encoding telemetry items: %s", t.getMessage()), t);
-      // logger.error("Error encoding telemetry items: {}", t.getMessage(), t);
       return CompletableResultCode.ofFailure();
     }
     try {
@@ -106,7 +105,6 @@ public class TelemetryChannel {
     } catch (Throwable t) {
       networkExceptionStats.recordFailure(
           String.format("Error sending telemetry items: %s", t.getMessage()), t);
-      // logger.error("Error sending telemetry items: {}", t.getMessage(), t);
       return CompletableResultCode.ofFailure();
     }
   }
@@ -174,8 +172,7 @@ public class TelemetryChannel {
             },
             error -> {
               StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
-              ExceptionUtil.parseError(
-                  error, endpoint.toString(), friendlySslExceptionThrown, logger);
+              ExceptionUtil.parseError(error, endpoint.toString(), friendlyExceptionThrown, logger);
               writeToDiskOnFailure(byteBuffers, finalByteBuffers);
               result.fail();
             },

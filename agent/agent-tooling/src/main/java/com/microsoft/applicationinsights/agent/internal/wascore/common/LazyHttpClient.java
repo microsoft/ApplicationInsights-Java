@@ -32,7 +32,6 @@ import com.azure.core.http.policy.BearerTokenAuthenticationPolicy;
 import com.azure.core.http.policy.HttpLogOptions;
 import com.azure.core.http.policy.HttpLoggingPolicy;
 import com.azure.core.http.policy.HttpPipelinePolicy;
-import com.azure.core.http.policy.RetryPolicy;
 import com.azure.core.util.Context;
 import com.azure.identity.ClientSecretCredentialBuilder;
 import com.azure.identity.ManagedIdentityCredential;
@@ -124,8 +123,6 @@ public class LazyHttpClient implements HttpClient {
     List<HttpPipelinePolicy> policies = new ArrayList<>();
     // Redirect policy to to handle v2.1/track redirects (and other redirects too, e.g. profiler)
     policies.add(new RedirectPolicy());
-    // Retry policy for failed requests
-    policies.add(new RetryPolicy());
     if (aadConfiguration.enabled) {
       policies.add(getAuthenticationPolicy(aadConfiguration));
     }
