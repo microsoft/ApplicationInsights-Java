@@ -87,8 +87,7 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
 
   private void setValue(String value) {
     telemetryClient.setConnectionString(value);
-    // now that we know the user has opted in to tracing, we need to init the legacyheaders and
-    // sampler
+    // now that we know the user has opted in to tracing, we need to init the propagator and sampler
     DelegatingPropagator.getInstance().setUpStandardDelegate();
     // TODO handle APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE
     DelegatingSampler.getInstance().setAlwaysOnDelegate();
