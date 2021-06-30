@@ -27,8 +27,8 @@ import java.io.File;
 
 public class SslUtil {
 
-  public static FriendlyException newSslFriendlyException(String url) {
-    return new FriendlyException(
+  public static String friendlyMessage(String url) {
+    return FriendlyException.populateFriendlyMessage(
         getSslFriendlyExceptionBanner(url),
         getSslFriendlyExceptionAction(url),
         getSslFriendlyExceptionMessage(),
@@ -48,18 +48,18 @@ public class SslUtil {
     return null;
   }
 
-  public static String getSslFriendlyExceptionBanner(String url) {
+  private static String getSslFriendlyExceptionBanner(String url) {
     if (url.equals(DefaultEndpoints.LIVE_ENDPOINT)) {
       return "ApplicationInsights Java Agent failed to connect to Live metric end point.";
     }
     return "ApplicationInsights Java Agent failed to send telemetry data.";
   }
 
-  public static String getSslFriendlyExceptionMessage() {
+  private static String getSslFriendlyExceptionMessage() {
     return "Unable to find valid certification path to requested target.";
   }
 
-  public static String getSslFriendlyExceptionAction(String url) {
+  private static String getSslFriendlyExceptionAction(String url) {
     String customJavaKeyStorePath = getCustomJavaKeystorePath();
     if (customJavaKeyStorePath != null) {
       return "Please import the SSL certificate from "
@@ -77,7 +77,7 @@ public class SslUtil {
         + "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450";
   }
 
-  public static String getSslFriendlyExceptionNote() {
+  private static String getSslFriendlyExceptionNote() {
     return "This message is only logged the first time it occurs after startup.";
   }
 

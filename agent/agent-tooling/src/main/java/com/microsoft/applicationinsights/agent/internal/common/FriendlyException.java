@@ -22,13 +22,18 @@
 package com.microsoft.applicationinsights.agent.internal.common;
 
 public class FriendlyException extends RuntimeException {
+  // TODO (trask) this seems like default for failing to send telemetry, but not necessarily default
+  //  for all friendly exceptions
+  private static final String DEFAULT_BANNER =
+      "ApplicationInsights Java Agent failed to send telemetry data";
+
   public FriendlyException() {
     super();
   }
 
   public FriendlyException(String message, String action) {
     // TODO (trask) can these constructors cascade?
-    super(populateFriendlyMessage(message, action, "", ""));
+    super(populateFriendlyMessage(message, action, DEFAULT_BANNER, ""));
   }
 
   public FriendlyException(String banner, String action, String message, String note) {
@@ -39,36 +44,32 @@ public class FriendlyException extends RuntimeException {
     super(populateFriendlyMessage("", action, banner, ""), cause);
   }
 
-  // TODO consolidate with method below?
   public String getMessageWithBanner(String banner) {
     return populateFriendlyMessage(getMessage(), "", banner, "");
   }
 
   public static String getMessageWithDefaultBanner(String message) {
-    return populateFriendlyMessage(message, "", "", "");
+    return populateFriendlyMessage(message, "", DEFAULT_BANNER, "");
   }
 
   public static String populateFriendlyMessage(
       String description, String action, String banner, String note) {
     StringBuilder messageBuilder = new StringBuilder();
-    if (banner.isEmpty()) {
-      banner = "ApplicationInsights Java Agent failed to send telemetry data";
-    }
     messageBuilder.append(System.lineSeparator());
     messageBuilder.append("*************************").append(System.lineSeparator());
     messageBuilder.append(banner).append(System.lineSeparator());
     messageBuilder.append("*************************").append(System.lineSeparator());
-    if (description != null && !description.isEmpty()) {
+    if (!Strings.isNullOrEmpty(description)) {
       messageBuilder.append(System.lineSeparator());
       messageBuilder.append("Description:").append(System.lineSeparator());
       messageBuilder.append(description).append(System.lineSeparator());
     }
-    if (action != null && !action.isEmpty()) {
+    if (!Strings.isNullOrEmpty(action)) {
       messageBuilder.append(System.lineSeparator());
       messageBuilder.append("Action:").append(System.lineSeparator());
       messageBuilder.append(action).append(System.lineSeparator());
     }
-    if (note != null && !note.isEmpty()) {
+    if (!Strings.isNullOrEmpty(note)) {
       messageBuilder.append(System.lineSeparator());
       messageBuilder.append("Note:").append(System.lineSeparator());
       messageBuilder.append(note).append(System.lineSeparator());

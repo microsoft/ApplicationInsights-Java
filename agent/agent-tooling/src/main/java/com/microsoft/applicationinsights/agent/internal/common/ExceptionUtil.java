@@ -104,12 +104,7 @@ public class ExceptionUtil {
     // Handle SSL cert exceptions
     SSLHandshakeException sslException = ExceptionUtil.getSslHandshakeException(error);
     if (sslException != null && !exceptionThrown.getAndSet(true)) {
-      logger.error(
-          FriendlyException.populateFriendlyMessage(
-              SslUtil.getSslFriendlyExceptionBanner(url),
-              SslUtil.getSslFriendlyExceptionAction(url),
-              SslUtil.getSslFriendlyExceptionMessage(),
-              SslUtil.getSslFriendlyExceptionNote()));
+      logger.error(SslUtil.friendlyMessage(url));
       return;
     }
     SocketException socketException = ExceptionUtil.getSocketException(error);
