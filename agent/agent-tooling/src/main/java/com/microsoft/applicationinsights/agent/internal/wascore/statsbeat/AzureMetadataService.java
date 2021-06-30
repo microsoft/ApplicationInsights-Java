@@ -101,7 +101,7 @@ class AzureMetadataService implements Runnable {
         throw new AssertionError("http response mono returned empty");
       }
       parseJsonResponse(response.toString());
-    } catch (JsonEncodingException jsonEncodingException) {
+    } catch (JsonEncodingException ex) {
       // When it's not VM/VMSS, server does not return json back, and instead it returns text like
       // the following:
       // "<br />Error: NetworkUnreachable (0x2743). <br />System.Net.Sockets.SocketException A
@@ -110,8 +110,14 @@ class AzureMetadataService implements Runnable {
           "This is not running from an Azure VM or VMSS. Shut down AzureMetadataService scheduler.");
       scheduledExecutor.shutdown();
     } catch (Exception ex) {
-      // TODO add backoff and retry if it's a sporadic failure
-      logger.debug("Fail to query Azure Metadata Service.", ex);
+      if (ex.getCause().toString().contains("Network is unreachable: no further information: /169.254.169.254:80")) {
+        logger.debug(
+            "This is not running from an Azure VM or VMSS. Shut down AzureMetadataService scheduler.");
+        scheduledExecutor.shutdown();
+      } else {
+        // TODO add backoff and retry if it's a sporadic failure
+        logger.debug("Fail to query Azure Metadata Service.", ex);
+      }
     }
   }
 }
