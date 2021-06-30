@@ -117,7 +117,6 @@ class AzureMetadataService implements Runnable {
             "This is not running from an Azure VM or VMSS. Shut down AzureMetadataService scheduler.");
         scheduledExecutor.shutdown();
       } else {
-        // TODO add backoff and retry if it's a sporadic failure
         logger.debug("Fail to query Azure Metadata Service.", ex);
       }
     }
