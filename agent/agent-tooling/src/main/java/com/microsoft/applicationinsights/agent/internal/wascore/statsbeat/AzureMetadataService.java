@@ -100,7 +100,7 @@ class AzureMetadataService implements Runnable {
     HttpResponse response;
     try {
       response = LazyHttpClient.getInstance().send(request).block();
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       logger.debug(
           "Shutting down AzureMetadataService scheduler: is not running on Azure VM or VMSS");
       logger.trace(e.getMessage(), e);
