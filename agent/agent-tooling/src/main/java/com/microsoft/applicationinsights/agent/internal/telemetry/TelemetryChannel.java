@@ -196,9 +196,6 @@ public class TelemetryChannel {
           String.format(
               "Fail to write %s to disk.",
               (finalByteBuffers != null ? "List<ByteBuffers>" : "byte[]")));
-      // logger.warn(
-      //    "Fail to write {} to disk.",
-      //    (finalByteBuffers != null ? "List<ByteBuffers>" : "byte[]"));
       // TODO (heya) track # of write failure via Statsbeat
     }
 
