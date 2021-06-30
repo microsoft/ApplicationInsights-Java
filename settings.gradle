@@ -79,7 +79,7 @@ include ':test:fakeIngestion:servlet'
 include ':test:fakeIngestion:standalone'
 
 include ':test:smoke:testApps:AzureSdk'
-include ':test:smoke:testApps:CachingCalculator'
+include ':test:smoke:testApps:Jedis'
 include ':test:smoke:testApps:Cassandra'
 include ':test:smoke:testApps:CoreAndFilter'
 include ':test:smoke:testApps:CustomDimensions'

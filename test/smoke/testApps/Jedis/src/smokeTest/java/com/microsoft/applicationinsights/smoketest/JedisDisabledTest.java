@@ -19,15 +19,35 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.smoketestapp;
+package com.microsoft.applicationinsights.smoketest;
 
-public class CalculatorParameterException extends Exception {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-  public CalculatorParameterException(String message, Throwable cause) {
-    super(message, cause);
-  }
+import com.microsoft.applicationinsights.smoketest.schemav2.Data;
+import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
+import java.util.List;
+import org.junit.Test;
 
-  public CalculatorParameterException(String message) {
-    super(message);
+@UseAgent("disabled_redis")
+@WithDependencyContainers(@DependencyContainer(value = "redis", portMapping = "6379"))
+public class JedisDisabledTest extends AiSmokeTest {
+
+  @Test
+  @TargetUri("/jedis")
+  public void jedis() throws Exception {
+    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    Envelope rdEnvelope = rdList.get(0);
+    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+
+    assertEquals("GET /Jedis/*", rd.getName());
+    assertEquals("200", rd.getResponseCode());
+    assertTrue(rd.getProperties().isEmpty());
+    assertTrue(rd.getSuccess());
+
+    // sleep a bit and make sure no jedis dependencies are reported
+    Thread.sleep(5000);
+    assertEquals(0, mockedIngestion.getCountForType("RemoteDependencyData"));
   }
 }
