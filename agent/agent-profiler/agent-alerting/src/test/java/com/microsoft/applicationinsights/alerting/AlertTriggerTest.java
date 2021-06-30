@@ -24,8 +24,8 @@ package com.microsoft.applicationinsights.alerting;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.analysis.AlertPipelineTrigger;
+import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;

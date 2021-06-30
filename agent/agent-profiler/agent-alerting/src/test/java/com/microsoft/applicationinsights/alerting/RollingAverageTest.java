@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.alerting;
 
-import static com.microsoft.applicationinsights.alerting.alert.AlertMetricType.CPU;
+import static com.microsoft.applicationinsights.alerting.config.AlertMetricType.CPU;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.alerting.analysis.RollingAverage;

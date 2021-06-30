@@ -1,1 +1,1 @@
-com.microsoft.applicationinsights.agent.internal.AiComponentInstaller
+com.microsoft.applicationinsights.agent.internal.init.AiComponentInstaller

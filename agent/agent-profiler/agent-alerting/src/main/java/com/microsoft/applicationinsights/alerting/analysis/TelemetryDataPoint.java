@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.alerting.analysis;
 
-import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
+import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
