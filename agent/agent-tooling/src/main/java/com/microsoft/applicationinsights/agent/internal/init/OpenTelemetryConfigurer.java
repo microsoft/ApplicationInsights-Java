@@ -114,7 +114,7 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
     tracerProvider.addSpanProcessor(batchSpanProcessor);
     // legacy span processor is only applied on span start, to pass legacy attributes from the
     // context (extracted by the AiLegacyPropagator) to the span attributes
-    // (since there is no way to update attributes on span directly from legacyheaders)
+    // (since there is no way to update attributes on span directly from propagator)
     tracerProvider.addSpanProcessor(new AiLegacyHeaderSpanProcessor());
   }
 }
