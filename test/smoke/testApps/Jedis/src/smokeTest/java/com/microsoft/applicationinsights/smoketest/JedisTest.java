@@ -38,13 +38,12 @@ import org.junit.Test;
 public class JedisTest extends AiSmokeTest {
 
   @Test
-  @TargetUri("/index.jsp")
-  public void doCalcSendsRequestDataAndMetricData() throws Exception {
+  @TargetUri("/jedis")
+  public void jedis() throws Exception {
     List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
-
     List<Envelope> rddList =
         mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
     assertEquals(0, mockedIngestion.getCountForType("EventData"));
@@ -55,13 +54,18 @@ public class JedisTest extends AiSmokeTest {
     RemoteDependencyData rdd =
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-    assertEquals("EXISTS", rdd.getName());
+    assertEquals("GET /Jedis/*", rd.getName());
+    assertEquals("200", rd.getResponseCode());
+    assertTrue(rd.getProperties().isEmpty());
+    assertTrue(rd.getSuccess());
+
+    assertEquals("GET", rdd.getName());
     assertEquals("redis", rdd.getType());
     assertTrue(rdd.getTarget().matches("dependency[0-9]+"));
     assertTrue(rdd.getProperties().isEmpty());
     assertTrue(rdd.getSuccess());
 
-    assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /CachingCalculator/index.jsp");
+    assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /Jedis/*");
   }
 
   private static void assertParentChild(
