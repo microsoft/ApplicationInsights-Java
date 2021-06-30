@@ -47,7 +47,7 @@ public class AzureMetadataServiceTest {
     AttachStatsbeat attachStatsbeat = new AttachStatsbeat(new CustomDimensions());
     AzureMetadataService azureMetadataService =
         new AzureMetadataService(attachStatsbeat, new CustomDimensions());
-    azureMetadataService.parseJsonResponse(result);
+    azureMetadataService.updateMetadata(result);
 
     MetadataInstanceResponse response = attachStatsbeat.getMetadataInstanceResponse();
     assertThat(response.getVmId()).isEqualTo("2a1216c3-a2a0-4fc5-a941-b1f5acde7051");
@@ -70,7 +70,7 @@ public class AzureMetadataServiceTest {
     AttachStatsbeat attachStatsbeat = new AttachStatsbeat(new CustomDimensions());
     AzureMetadataService azureMetadataService =
         new AzureMetadataService(attachStatsbeat, new CustomDimensions());
-    azureMetadataService.parseJsonResponse(result);
+    azureMetadataService.updateMetadata(result);
 
     MetadataInstanceResponse response = attachStatsbeat.getMetadataInstanceResponse();
     assertThat(response.getVmId()).isEqualTo("2955a129-2323-4c1f-8918-994a7a83eefd");
