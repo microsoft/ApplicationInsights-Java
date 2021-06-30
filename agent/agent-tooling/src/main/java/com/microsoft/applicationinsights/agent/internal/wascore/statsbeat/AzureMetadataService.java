@@ -110,7 +110,9 @@ class AzureMetadataService implements Runnable {
           "This is not running from an Azure VM or VMSS. Shut down AzureMetadataService scheduler.");
       scheduledExecutor.shutdown();
     } catch (Exception ex) {
-      if (ex.getCause().toString().contains("Network is unreachable: no further information: /169.254.169.254:80")) {
+      if (ex.getCause()
+          .toString()
+          .contains("Network is unreachable: no further information: /169.254.169.254:80")) {
         logger.debug(
             "This is not running from an Azure VM or VMSS. Shut down AzureMetadataService scheduler.");
         scheduledExecutor.shutdown();
