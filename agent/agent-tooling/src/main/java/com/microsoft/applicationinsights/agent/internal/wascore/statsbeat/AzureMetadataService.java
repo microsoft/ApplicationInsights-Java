@@ -27,7 +27,6 @@ import com.azure.core.http.HttpResponse;
 import com.microsoft.applicationinsights.agent.internal.wascore.common.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.wascore.util.ThreadPoolUtils;
 import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.JsonEncodingException;
 import com.squareup.moshi.Moshi;
 import java.io.IOException;
 import java.util.concurrent.Executors;
@@ -70,7 +69,7 @@ class AzureMetadataService implements Runnable {
   }
 
   // visible for testing
-  void parseJsonResponse(String response) throws IOException {
+  void updateMetadata(String response) throws IOException {
     MetadataInstanceResponse metadataInstanceResponse = jsonAdapter.fromJson(response);
     attachStatsbeat.updateMetadataInstance(metadataInstanceResponse);
     customDimensions.setResourceProvider(ResourceProvider.RP_VM);
@@ -94,31 +93,43 @@ class AzureMetadataService implements Runnable {
   public void run() {
     HttpRequest request = new HttpRequest(HttpMethod.GET, ENDPOINT);
     request.setHeader("Metadata", "true");
+    HttpResponse response;
     try {
-      HttpResponse response = LazyHttpClient.getInstance().send(request).block();
-      if (response == null) {
-        // this shouldn't happen, the mono should complete with a response or a failure
-        throw new AssertionError("http response mono returned empty");
-      }
-      parseJsonResponse(response.toString());
-    } catch (JsonEncodingException ex) {
-      // When it's not VM/VMSS, server does not return json back, and instead it returns text like
-      // the following:
-      // "<br />Error: NetworkUnreachable (0x2743). <br />System.Net.Sockets.SocketException A
-      // socket operation was attempted to an unreachable network 169.254.169.254:80".
-      logger.debug(
-          "This is not running from an Azure VM or VMSS. Shut down AzureMetadataService scheduler.");
-      scheduledExecutor.shutdown();
+      response = LazyHttpClient.getInstance().send(request).block();
     } catch (Exception ex) {
       if (ex.getCause()
           .toString()
           .contains("Network is unreachable: no further information: /169.254.169.254:80")) {
         logger.debug(
-            "This is not running from an Azure VM or VMSS. Shut down AzureMetadataService scheduler.");
-        scheduledExecutor.shutdown();
+            "Shutting down AzureMetadataService scheduler: this is not running on Azure VM or VMSS");
       } else {
-        logger.debug("Fail to query Azure Metadata Service.", ex);
+        logger.debug(
+            "Shutting down AzureMetadataService scheduler:"
+                + " error received from Azure Metadata Service",
+            ex);
       }
+      scheduledExecutor.shutdown();
+      return;
+    }
+
+    if (response == null) {
+      // this shouldn't happen, the mono should complete with a response or a failure
+      throw new AssertionError("http response mono returned empty");
+    }
+    String json = response.getBodyAsString().block();
+    if (json == null) {
+      // this shouldn't happen, the mono should complete with a response or a failure
+      throw new AssertionError("response body mono returned empty");
+    }
+    try {
+      updateMetadata(json);
+    } catch (IOException ex) {
+      logger.debug(
+          "Shutting down AzureMetadataService scheduler:"
+              + " error parsing response from Azure Metadata Service: {}",
+          json,
+          ex);
+      scheduledExecutor.shutdown();
     }
   }
 }
