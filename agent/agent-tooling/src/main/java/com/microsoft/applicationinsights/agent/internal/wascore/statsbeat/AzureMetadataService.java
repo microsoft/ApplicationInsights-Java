@@ -68,9 +68,13 @@ class AzureMetadataService implements Runnable {
     scheduledExecutor.scheduleWithFixedDelay(this, interval, interval, TimeUnit.SECONDS);
   }
 
-  // visible for testing
+  // only used by tests
   void updateMetadata(String response) throws IOException {
-    MetadataInstanceResponse metadataInstanceResponse = jsonAdapter.fromJson(response);
+    updateMetadata(jsonAdapter.fromJson(response));
+  }
+
+  // visible for testing
+  private void updateMetadata(MetadataInstanceResponse metadataInstanceResponse) {
     attachStatsbeat.updateMetadataInstance(metadataInstanceResponse);
     customDimensions.setResourceProvider(ResourceProvider.RP_VM);
 
@@ -96,18 +100,10 @@ class AzureMetadataService implements Runnable {
     HttpResponse response;
     try {
       response = LazyHttpClient.getInstance().send(request).block();
-    } catch (Exception ex) {
-      if (ex.getCause()
-          .toString()
-          .contains("Network is unreachable: no further information: /169.254.169.254:80")) {
-        logger.debug(
-            "Shutting down AzureMetadataService scheduler: this is not running on Azure VM or VMSS");
-      } else {
-        logger.debug(
-            "Shutting down AzureMetadataService scheduler:"
-                + " error received from Azure Metadata Service",
-            ex);
-      }
+    } catch (Exception e) {
+      logger.debug(
+          "Shutting down AzureMetadataService scheduler: is not running on Azure VM or VMSS");
+      logger.trace(e.getMessage(), e);
       scheduledExecutor.shutdown();
       return;
     }
@@ -121,15 +117,20 @@ class AzureMetadataService implements Runnable {
       // this shouldn't happen, the mono should complete with a response or a failure
       throw new AssertionError("response body mono returned empty");
     }
+
+    MetadataInstanceResponse metadataInstanceResponse;
     try {
-      updateMetadata(json);
-    } catch (IOException ex) {
+      metadataInstanceResponse = jsonAdapter.fromJson(json);
+    } catch (IOException e) {
       logger.debug(
           "Shutting down AzureMetadataService scheduler:"
               + " error parsing response from Azure Metadata Service: {}",
           json,
-          ex);
+          e);
       scheduledExecutor.shutdown();
+      return;
     }
+
+    updateMetadata(metadataInstanceResponse);
   }
 }
