@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.processors;
 
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ProcessorActionAdaptor;
+import com.microsoft.applicationinsights.agent.internal.configuration.ProcessorActionAdaptor;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;

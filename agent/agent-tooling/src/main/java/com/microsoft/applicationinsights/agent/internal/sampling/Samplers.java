@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 
 public class Samplers {

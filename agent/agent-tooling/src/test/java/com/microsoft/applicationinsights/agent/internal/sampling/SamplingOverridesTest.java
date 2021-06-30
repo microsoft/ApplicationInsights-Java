@@ -24,9 +24,9 @@ package com.microsoft.applicationinsights.agent.internal.sampling;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.MatchType;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SamplingOverride;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SamplingOverrideAttribute;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.MatchType;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverrideAttribute;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import java.util.ArrayList;

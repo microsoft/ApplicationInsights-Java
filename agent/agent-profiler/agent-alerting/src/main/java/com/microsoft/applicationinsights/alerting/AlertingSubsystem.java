@@ -22,10 +22,10 @@
 package com.microsoft.applicationinsights.alerting;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.analysis.AlertPipelines;
 import com.microsoft.applicationinsights.alerting.analysis.TelemetryDataPoint;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
+import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfigurationBuilder;

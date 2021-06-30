@@ -3,6 +3,7 @@ plugins {
 }
 
 apply from: "$buildScriptsDir/common-java.gradle"
+apply from: "$buildScriptsDir/publish.gradle"
 
 repositories {
   // maven local is needed for locally built otel fork
@@ -89,6 +90,17 @@ dependencies {
     exclude group: "org.slf4j", module: "slf4j-simple"
   }
 }
+
+// region Publishing properties
+
+projectPomName = project.msftAppInsights + " Codeless Java Agent"
+projectPomDescription = "This is the Codeless Java agent of " + project.msftAppInsightsJavaSdk
+
+whenPomConfigured = { p ->
+  p.dependencies = []
+}
+
+// endregion Publishing properties
 
 
 import java.util.jar.JarFile

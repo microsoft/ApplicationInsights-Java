@@ -1,0 +1,139 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+apply plugin: 'maven-publish'
+
+ext {
+  projectPomName = ""
+  projectPomDescription = ""
+  whenPomConfigured = { p -> }
+}
+
+// customize pom
+publishing {
+  publications {
+    mavenCustom(MavenPublication) {
+      pom.withXml {
+        // TODO (heya) Append license text to pom.xml
+        asNode().remove(asNode().get('packaging'))
+        asNode().get('artifactId').first().value = archivesBaseName
+        asNode().appendNode('name', projectPomName)
+        asNode().appendNode('description', projectPomDescription)
+        asNode().appendNode('url', 'https://github.com/Microsoft/ApplicationInsights-Java')
+        asNode().append(pomLicenses())
+        asNode().append(pomScm())
+        asNode().append(pomDevelopers())
+      }
+    }
+  }
+}
+
+def pomLicenses() {
+  new NodeBuilder().licenses {
+    license {
+      name 'MIT License'
+      url 'http://www.opensource.org/licenses/mit-license.php'
+    }
+  }
+}
+
+def pomScm() {
+  new NodeBuilder().scm {
+    connection 'scm:git:git://github.com/Microsoft/ApplicationInsights-Java.git'
+    url 'scm:git:https://github.com/Microsoft/ApplicationInsights-Java'
+  }
+}
+
+def pomDevelopers() {
+  new NodeBuilder().developers {
+    developer {
+      id 'Microsoft'
+      name 'Microsoft'
+    }
+  }
+}
+
+def releaseNotesFileDir = "$project.buildDir/src/common/main/resources"
+task copyReleaseNotesToCommonResourcesDir(type: Copy) {
+  from(rootDir) {
+    include "release_notes.txt"
+  }
+  into releaseNotesFileDir
+}
+
+processResources.dependsOn copyReleaseNotesToCommonResourcesDir
+
+sourceSets {
+  main {
+    resources {
+      srcDir releaseNotesFileDir
+    }
+  }
+}
+
+repositories {
+  mavenCentral()
+}
+
+configurations {
+  mavenDeployer
+}
+
+dependencies {
+  mavenDeployer "org.apache.maven.wagon:wagon-ftp:2.8"
+}
+
+// generates a pom file "beside" the jar file
+task generatePom {
+  doLast {
+    def pomFileName = jar.archiveFileName.get().replaceFirst(/\.jar$/, '.pom')
+    def pomFileObj = jar.destinationDirectory.file(pomFileName)
+    tasks.generatePomFileForMavenCustomPublication {
+      destination = pomFileObj
+    }
+  }
+}
+
+task prepareSourcesArchive(type: Jar) {
+  archiveClassifier = 'sources'
+  from sourceSets.main.allJava
+  doFirst {
+    archiveFileName = "$archivesBaseName-$version-sources.jar"
+  }
+}
+
+task prepareJavadocArchive(type: Jar){
+  archiveClassifier = 'javadoc'
+  from "$docsDir/javadoc"
+  doFirst {
+    archiveFileName = "$archivesBaseName-$version-javadoc.jar"
+  }
+  dependsOn javadoc
+}
+
+task copyLibsToGlobalArtifactsFolder(type: Copy) {
+  from "$buildDir/$libsDirName"
+  into "$artifactsDirectoryRoot"
+  exclude '**/windows/**'
+  dependsOn assemble, prepareSourcesArchive, prepareJavadocArchive, tasks.withType(GenerateMavenPom), generatePom
+}
+
+// endregion Publishing configuration
