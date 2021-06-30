@@ -33,113 +33,60 @@ import org.slf4j.Logger;
 
 public class ExceptionUtil {
 
-  private static SSLHandshakeException getSslHandshakeException(Throwable t) {
-    if (t instanceof SSLHandshakeException) {
-      return (SSLHandshakeException) t;
-    }
-    Throwable cause = t.getCause();
-    if (cause == null) {
-      return null;
-    }
-    return getSslHandshakeException(cause);
-  }
-
-  private static SocketException getSocketException(Throwable t) {
-    if (t instanceof SocketException) {
-      return (SocketException) t;
-    }
-    Throwable cause = t.getCause();
-    if (cause == null) {
-      return null;
-    }
-    return getSocketException(cause);
-  }
-
-  private static SocketTimeoutException getSocketTimeoutException(Throwable t) {
-    if (t instanceof SocketTimeoutException) {
-      return (SocketTimeoutException) t;
-    }
-    Throwable cause = t.getCause();
-    if (cause == null) {
-      return null;
-    }
-    return getSocketTimeoutException(cause);
-  }
-
-  private static UnknownHostException getUnknownHostException(Throwable t) {
-    if (t instanceof UnknownHostException) {
-      return (UnknownHostException) t;
-    }
-    Throwable cause = t.getCause();
-    if (cause == null) {
-      return null;
-    }
-    return getUnknownHostException(cause);
-  }
-
-  private static IOException getIoException(Throwable t) {
-    if (t instanceof IOException) {
-      return (IOException) t;
-    }
-    Throwable cause = t.getCause();
-    if (cause == null) {
-      return null;
-    }
-    return getIoException(cause);
-  }
-
-  private static ConnectException getConnectException(Throwable t) {
-    if (t instanceof ConnectException) {
-      return (ConnectException) t;
-    }
-    Throwable cause = t.getCause();
-    if (cause == null) {
-      return null;
-    }
-    return getConnectException(cause);
-  }
-
   public static void parseError(
       Throwable error, String url, AtomicBoolean exceptionThrown, Logger logger) {
+    if (exceptionThrown.getAndSet(true)) {
+      return;
+    }
     // Handle SSL cert exceptions
-    SSLHandshakeException sslException = ExceptionUtil.getSslHandshakeException(error);
-    if (sslException != null && !exceptionThrown.getAndSet(true)) {
+    SSLHandshakeException sslException = getCausedByOfType(error, SSLHandshakeException.class);
+    if (sslException != null) {
       logger.error(SslUtil.friendlyMessage(url));
       return;
     }
-    SocketException socketException = ExceptionUtil.getSocketException(error);
-    if (socketException != null && !exceptionThrown.getAndSet(true)) {
-      FriendlyException.getMessageWithDefaultBanner(
-          String.format("socket exception: %s", error.getMessage()));
+    SocketException socketException = getCausedByOfType(error, SocketException.class);
+    if (socketException != null) {
+      FriendlyException.getMessageWithDefaultBanner("socket exception: " + error.getMessage());
       return;
     }
-    SocketTimeoutException socketTimeoutException = ExceptionUtil.getSocketTimeoutException(error);
-    if (socketTimeoutException != null && !exceptionThrown.getAndSet(true)) {
+    SocketTimeoutException socketTimeoutException =
+        getCausedByOfType(error, SocketTimeoutException.class);
+    if (socketTimeoutException != null) {
       FriendlyException.getMessageWithDefaultBanner(
-          String.format("socket timeout exception: %s", error.getMessage()));
+          "socket timeout exception: " + error.getMessage());
       return;
     }
-    UnknownHostException unknownHostException = ExceptionUtil.getUnknownHostException(error);
-    if (unknownHostException != null && !exceptionThrown.getAndSet(true)) {
+    UnknownHostException unknownHostException =
+        getCausedByOfType(error, UnknownHostException.class);
+    if (unknownHostException != null) {
       FriendlyException.getMessageWithDefaultBanner(
-          String.format(
-              "wrong host address or cannot reach address due to network issues: %s",
-              error.getMessage()));
+          "wrong host address or cannot reach address due to network issues: "
+              + error.getMessage());
       return;
     }
-    IOException ioException = ExceptionUtil.getIoException(error);
-    if (ioException != null && !exceptionThrown.getAndSet(true)) {
-      FriendlyException.getMessageWithDefaultBanner(
-          String.format("I/O exception: %s", error.getMessage()));
+    IOException ioException = getCausedByOfType(error, IOException.class);
+    if (ioException != null) {
+      FriendlyException.getMessageWithDefaultBanner("I/O exception: " + error.getMessage());
       return;
     }
+    ConnectException connectException = getCausedByOfType(error, ConnectException.class);
+    if (connectException != null) {
+      FriendlyException.getMessageWithDefaultBanner("I/O exception: " + error.getMessage());
+      return;
+    }
+  }
 
-    ConnectException connectException = ExceptionUtil.getConnectException(error);
-    if (connectException != null && !exceptionThrown.getAndSet(true)) {
-      FriendlyException.getMessageWithDefaultBanner(
-          String.format("I/O exception: %s", error.getMessage()));
-      return;
+  private static <T extends Exception> T getCausedByOfType(Throwable throwable, Class<T> type) {
+    if (type.isInstance(throwable)) {
+      @SuppressWarnings("unchecked")
+      T ofType = (T) throwable;
+      return ofType;
     }
+    Throwable cause = throwable.getCause();
+    if (cause == null) {
+      return null;
+    }
+    return getCausedByOfType(cause, type);
   }
 
   private ExceptionUtil() {}
