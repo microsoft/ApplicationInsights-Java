@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.alerting.alert;
 
+import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 
 /** Represents a breach of an alert threshold. */

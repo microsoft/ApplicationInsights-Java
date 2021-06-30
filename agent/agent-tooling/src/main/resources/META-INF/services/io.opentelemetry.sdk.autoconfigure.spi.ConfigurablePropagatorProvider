@@ -1,1 +1,1 @@
-com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagatorProvider
+com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagatorProvider
