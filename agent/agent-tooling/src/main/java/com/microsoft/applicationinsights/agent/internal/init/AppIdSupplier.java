@@ -121,9 +121,9 @@ public class AppIdSupplier implements AiAppId.Supplier {
       HttpResponse response;
       try {
         response = LazyHttpClient.getInstance().send(request).block();
-      } catch (Throwable t) {
-        ExceptionUtil.parseError(t, url.toString(), friendlyExceptionThrown, logger);
-        backOff("exception sending request to " + url, t);
+      } catch (RuntimeException ex) {
+        ExceptionUtil.parseError(ex, url.toString(), friendlyExceptionThrown, logger);
+        backOff("exception sending request to " + url, ex);
         return;
       }
 

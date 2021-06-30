@@ -74,6 +74,9 @@ public class ExceptionUtil {
       FriendlyException.getMessageWithDefaultBanner("I/O exception: " + error.getMessage());
       return;
     }
+
+    // If none of the exception matches log default friendly exception
+    FriendlyException.getMessageWithDefaultBanner(error.getMessage());
   }
 
   private static <T extends Exception> T getCausedByOfType(Throwable throwable, Class<T> type) {
