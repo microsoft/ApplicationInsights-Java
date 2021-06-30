@@ -33,6 +33,7 @@ publishing {
     mavenCustom(MavenPublication) {
       pom.withXml {
         // TODO (heya) Append license text to pom.xml
+        asNode().remove(asNode().get('packaging'))
         asNode().get('artifactId').first().value = archivesBaseName
         asNode().appendNode('name', projectPomName)
         asNode().appendNode('description', projectPomDescription)
