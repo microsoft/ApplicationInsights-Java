@@ -366,10 +366,9 @@ public class LocalFileLoaderTests {
         assertThat(properties.get("SourceType").asText()).isEqualTo("Logger");
         return;
       case 2:
-        // TODO (heya) should we delete this case?
-        return;
       default:
         // all good
+        return;
     }
   }
 
