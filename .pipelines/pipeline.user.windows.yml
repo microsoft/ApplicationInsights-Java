@@ -24,7 +24,7 @@ static_analysis_options:
     files_to_scan:
       - from: 'src\Dependencies\'
         exclude:
-          - '**.*.exe'
+          - '**/*.exe'
           - '**/*.dll'
 restore:
   commands:
