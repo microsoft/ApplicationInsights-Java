@@ -19,7 +19,6 @@ configurations {
   implementation.exclude group: "io.opentelemetry", module: "opentelemetry-semconv"
 
   implementation.exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api"
-  implementation.exclude group: "io.opentelemetry.instrumentation", module: "opentelemetry-instrumentation-api-caching"
 
   // TODO (trask) Azure SDK: why is this included in azure-core?
   implementation.exclude group: "io.netty", module: "netty-tcnative-boringssl-static"
@@ -82,7 +81,7 @@ dependencies {
   implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-lettuce-4.0:${versions.opentelemetryInstrumentationAlpha}"
   implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-lettuce-5.0:${versions.opentelemetryInstrumentationAlpha}"
   implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-lettuce-5.1:${versions.opentelemetryInstrumentationAlpha}"
-  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-lettuce-common:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.instrumentation:opentelemetry-lettuce-common:${versions.opentelemetryInstrumentationAlpha}"
   implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-spans-1.2:${versions.opentelemetryInstrumentationAlpha}"
   implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-spans-2.0:${versions.opentelemetryInstrumentationAlpha}"
   implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-spans-1.0:${versions.opentelemetryInstrumentationAlpha}"

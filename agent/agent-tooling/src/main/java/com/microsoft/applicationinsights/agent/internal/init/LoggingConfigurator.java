@@ -252,6 +252,7 @@ public class LoggingConfigurator {
   }
 
   private void configureLoggingLevels() {
+    loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger("reactor.netty"));
     loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger("io.grpc.Context"));
     loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger("muzzleMatcher"));
     loggingLevelConfigurator.updateLoggerLevel(
