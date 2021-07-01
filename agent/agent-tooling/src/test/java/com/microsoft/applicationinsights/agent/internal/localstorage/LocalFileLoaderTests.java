@@ -39,6 +39,7 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 public class LocalFileLoaderTests {
 
@@ -152,7 +153,12 @@ public class LocalFileLoaderTests {
 
   @Test
   public void testWriteGzipRawByte() throws IOException {
-    String text = "hello world";
+    String text = "1. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore \n"
+        + "2. magna aliquyam erat, sed diam voluptua. \n"
+        + "3. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum \n"
+        + "4. dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore\n"
+        + "5. magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, \n"
+        + "6. no sea takimata sanctus est Lorem ipsum dolor sit amet.";
 
     // gzip
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -174,8 +180,7 @@ public class LocalFileLoaderTests {
 
     // ungzip
     ByteArrayInputStream inputStream = new ByteArrayInputStream(result);
-    // TODO (heya) does ungzip need to be larger?
-    byte[] ungzip = new byte[bytes.length];
+    byte[] ungzip = new byte[bytes.length * 3];
     int read;
     try (GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream)) {
       read = gzipInputStream.read(ungzip, 0, ungzip.length);
