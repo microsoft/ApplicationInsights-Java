@@ -119,7 +119,6 @@ public class HandlerMappingResourceNameFilter implements Filter, Ordered {
     public BeanDefinition() {
       setScope(SCOPE_SINGLETON);
       setBeanClass(HandlerMappingResourceNameFilter.class);
-      setBeanClassName(HandlerMappingResourceNameFilter.class.getName());
     }
   }
 }
