@@ -58,7 +58,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class TelemetryClient {
 
-  // TODO (heya) can you confirm these are the same as used in 3.1.1?
   private static final String EVENT_TELEMETRY_NAME = "Event";
   private static final String EXCEPTION_TELEMETRY_NAME = "Exception";
   private static final String MESSAGE_TELEMETRY_NAME = "Message";

@@ -43,6 +43,7 @@ final class PersistenceHelper {
   /**
    * Windows: C:\Users\{USER_NAME}\AppData\Local\Temp\applicationinsights Linux:
    * /var/temp/applicationinsights We will store all persisted files in this folder for all apps.
+   * TODO it is a good security practice to purge data after 24 hours in this folder.
    */
   static final File DEFAULT_FOLDER =
       new File(LocalFileSystemUtils.getTempDir(), "applicationinsights");
