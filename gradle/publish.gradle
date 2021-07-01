@@ -71,6 +71,16 @@ def pomDevelopers() {
   }
 }
 
+def releaseNotesFileDir = "$project.buildDir/src/common/main/resources"
+
+sourceSets {
+  main {
+    resources {
+      srcDir releaseNotesFileDir
+    }
+  }
+}
+
 repositories {
   mavenCentral()
 }
