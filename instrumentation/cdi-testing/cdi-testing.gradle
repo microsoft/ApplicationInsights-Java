@@ -1,7 +1,6 @@
-ext {
-  skipPublish = true
+plugins {
+  id("otel.javaagent-testing")
 }
-apply from: "$rootDir/gradle/instrumentation.gradle"
 
 dependencies {
   testLibrary "org.jboss.weld:weld-core:2.3.0.Final"
