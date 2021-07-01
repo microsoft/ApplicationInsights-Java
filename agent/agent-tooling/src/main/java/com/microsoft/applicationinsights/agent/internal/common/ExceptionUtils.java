@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.net.ssl.SSLHandshakeException;
 import org.slf4j.Logger;
 
-public class ExceptionUtil {
+public class ExceptionUtils {
 
   public static void parseError(
       Throwable error, String url, AtomicBoolean exceptionThrown, Logger logger) {
@@ -71,10 +71,9 @@ public class ExceptionUtil {
     }
     ConnectException connectException = getCausedByOfType(error, ConnectException.class);
     if (connectException != null) {
-      FriendlyException.getMessageWithDefaultBanner("I/O exception: " + error.getMessage());
+      FriendlyException.getMessageWithDefaultBanner("Connection exception: " + error.getMessage());
       return;
     }
-
     // If none of the exception matches log default friendly exception
     FriendlyException.getMessageWithDefaultBanner(error.getMessage());
   }
@@ -92,5 +91,5 @@ public class ExceptionUtil {
     return getCausedByOfType(cause, type);
   }
 
-  private ExceptionUtil() {}
+  private ExceptionUtils() {}
 }

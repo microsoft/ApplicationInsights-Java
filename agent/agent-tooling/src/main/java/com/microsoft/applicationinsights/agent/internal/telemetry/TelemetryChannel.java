@@ -30,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.agent.internal.common.ExceptionStats;
-import com.microsoft.applicationinsights.agent.internal.common.ExceptionUtil;
+import com.microsoft.applicationinsights.agent.internal.common.ExceptionUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
@@ -172,7 +172,8 @@ public class TelemetryChannel {
             },
             error -> {
               StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
-              ExceptionUtil.parseError(error, endpoint.toString(), friendlyExceptionThrown, logger);
+              ExceptionUtils.parseError(
+                  error, endpoint.toString(), friendlyExceptionThrown, logger);
               writeToDiskOnFailure(byteBuffers, finalByteBuffers);
               result.fail();
             },

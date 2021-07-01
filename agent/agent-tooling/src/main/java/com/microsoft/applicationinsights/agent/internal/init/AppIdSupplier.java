@@ -27,7 +27,7 @@ import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.microsoft.applicationinsights.agent.internal.common.ExceptionStats;
-import com.microsoft.applicationinsights.agent.internal.common.ExceptionUtil;
+import com.microsoft.applicationinsights.agent.internal.common.ExceptionUtils;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -122,7 +122,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
       try {
         response = LazyHttpClient.getInstance().send(request).block();
       } catch (RuntimeException ex) {
-        ExceptionUtil.parseError(ex, url.toString(), friendlyExceptionThrown, logger);
+        ExceptionUtils.parseError(ex, url.toString(), friendlyExceptionThrown, logger);
         backOff("exception sending request to " + url, ex);
         return;
       }

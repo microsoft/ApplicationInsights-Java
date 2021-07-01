@@ -25,7 +25,7 @@ import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.microsoft.applicationinsights.agent.internal.common.ExceptionStats;
-import com.microsoft.applicationinsights.agent.internal.common.ExceptionUtil;
+import com.microsoft.applicationinsights.agent.internal.common.ExceptionUtils;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.Date;
@@ -110,7 +110,7 @@ class QuickPulsePingSender {
       }
     } catch (Throwable t) {
       exceptionStats.recordFailure(t.getMessage(), t);
-      ExceptionUtil.parseError(t, getQuickPulseEndpoint(), friendlyExceptionThrown, logger);
+      ExceptionUtils.parseError(t, getQuickPulseEndpoint(), friendlyExceptionThrown, logger);
     } finally {
       if (response != null) {
         response.close();
