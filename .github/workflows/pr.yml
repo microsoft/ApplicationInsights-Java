@@ -33,6 +33,12 @@ jobs:
             otel-fork-build-
             otel-fork-
 
+      - name: Cache Gradle Wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-cache-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+
       - name: Start deadlock detector
         run: .github/scripts/deadlock-detector.sh
 
@@ -84,6 +90,12 @@ jobs:
             otel-fork-test-
             otel-fork-
 
+      - name: Cache Gradle Wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-cache-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+
       - name: Start deadlock detector
         run: .github/scripts/deadlock-detector.sh
 
@@ -100,7 +112,7 @@ jobs:
 
   # testLatestDeps is intentionally not included in the PR workflow
   # because any time a new library version is released to maven central
-  # it can fail due to test code incompatibility with the new release,
+  # it can fail due to test code incompatibility with the new library version,
   # or due to slight changes in emitted telemetry, which can be confusing for contributors
   # (muzzle can also fail when a new library version is released to maven central
   # but that happens much less often)
@@ -140,6 +152,12 @@ jobs:
             otel-fork-smoke-test-
             otel-fork-
 
+      - name: Cache Gradle Wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-cache-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+
       - name: Test
         run: ./gradlew :smoke-tests:test -PsmokeTestSuite=${{ matrix.suite }}
 
@@ -158,6 +176,12 @@ jobs:
         with:
           distribution: adopt
           java-version: 11
+
+      - name: Cache Gradle Wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-cache-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
 
       - id: set-matrix
         run: echo "::set-output name=matrix::{\"module\":[\"$(./gradlew -q instrumentation:listInstrumentations | xargs echo | sed 's/ /","/g')\"]}"
@@ -179,6 +203,12 @@ jobs:
         with:
           distribution: adopt
           java-version: 11
+
+      - name: Cache Gradle Wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-cache-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
 
       - name: Run muzzle
         # using retry because of sporadic gradle download failures
@@ -214,6 +244,12 @@ jobs:
           restore-keys: |
             otel-fork-example-distro-
             otel-fork-
+
+      - name: Cache Gradle Wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-cache-${{ hashFiles('examples/distro/gradle/wrapper/gradle-wrapper.properties') }}
 
       - name: Build
         run: ./gradlew build --stacktrace
