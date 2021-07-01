@@ -64,8 +64,14 @@ public class TraceLog4j12Test extends AiSmokeTest {
     assertEquals("Logger", md1.getProperties().get("SourceType"));
     assertEquals("WARN", md1.getProperties().get("LoggingLevel"));
     assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
-    assertEquals("MDC value", md1.getProperties().get("MDC key"));
-    assertEquals(4, md1.getProperties().size());
+    // TODO (trask) revisit after Java 17 release
+    //  MDC.getContext() always returns null on Java 17-ea
+    if (!currentImageName.contains("_openjdk_17")) {
+      assertEquals("MDC value", md1.getProperties().get("MDC key"));
+      assertEquals(4, md1.getProperties().size());
+    } else {
+      assertEquals(3, md1.getProperties().size());
+    }
 
     assertEquals("This is log4j1.2 error.", md2.getMessage());
     assertEquals(SeverityLevel.Error, md2.getSeverityLevel());
@@ -79,7 +85,7 @@ public class TraceLog4j12Test extends AiSmokeTest {
     assertEquals("Logger", md3.getProperties().get("SourceType"));
     assertEquals("FATAL", md3.getProperties().get("LoggingLevel"));
     assertEquals("smoketestapp", md3.getProperties().get("LoggerName"));
-    assertEquals(3, md2.getProperties().size());
+    assertEquals(3, md3.getProperties().size());
 
     assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /TraceLog4j1_2/traceLog4j12");
     assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /TraceLog4j1_2/traceLog4j12");
@@ -111,8 +117,14 @@ public class TraceLog4j12Test extends AiSmokeTest {
     assertEquals("Logger", ed.getProperties().get("SourceType"));
     assertEquals("ERROR", ed.getProperties().get("LoggingLevel"));
     assertEquals("smoketestapp", ed.getProperties().get("LoggerName"));
-    assertEquals("MDC value", ed.getProperties().get("MDC key"));
-    assertEquals(5, ed.getProperties().size());
+    // TODO (trask) revisit after Java 17 release
+    //  MDC.getContext() always returns null on Java 17-ea
+    if (!currentImageName.contains("_openjdk_17")) {
+      assertEquals("MDC value", ed.getProperties().get("MDC key"));
+      assertEquals(5, ed.getProperties().size());
+    } else {
+      assertEquals(4, ed.getProperties().size());
+    }
 
     assertParentChild(rd, rdEnvelope, edEnvelope, "GET /TraceLog4j1_2/traceLog4j1_2WithException");
   }
