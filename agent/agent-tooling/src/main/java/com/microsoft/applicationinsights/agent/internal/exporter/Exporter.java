@@ -348,12 +348,13 @@ public class Exporter implements SpanExporter {
     // set message-specific properties
     String level = attributes.get(AI_LOG_LEVEL_KEY);
     String loggerName = attributes.get(AI_LOGGER_NAME_KEY);
+    String threadName = attributes.get(SemanticAttributes.THREAD_NAME);
 
     data.setVersion(2);
     data.setSeverityLevel(toSeverityLevel(level));
     data.setMessage(span.getName());
 
-    setLoggerProperties(data, level, loggerName);
+    setLoggerProperties(data, level, loggerName, threadName);
 
     // export
     telemetryClient.trackAsync(telemetry);
@@ -374,11 +375,12 @@ public class Exporter implements SpanExporter {
     // set exception-specific properties
     String level = attributes.get(AI_LOG_LEVEL_KEY);
     String loggerName = attributes.get(AI_LOGGER_NAME_KEY);
+    String threadName = attributes.get(SemanticAttributes.THREAD_NAME);
 
     data.setExceptions(Exceptions.minimalParse(errorStack));
     data.setSeverityLevel(toSeverityLevel(level));
     TelemetryUtil.getProperties(data).put("Logger Message", span.getName());
-    setLoggerProperties(data, level, loggerName);
+    setLoggerProperties(data, level, loggerName, threadName);
 
     // export
     telemetryClient.trackAsync(telemetry);
@@ -396,7 +398,8 @@ public class Exporter implements SpanExporter {
     }
   }
 
-  private static void setLoggerProperties(MonitorDomain data, String level, String loggerName) {
+  private static void setLoggerProperties(
+      MonitorDomain data, String level, String loggerName, String threadName) {
     if (level != null) {
       // TODO are these needed? level is already reported as severityLevel, sourceType maybe needed
       // for exception telemetry only?
@@ -406,6 +409,9 @@ public class Exporter implements SpanExporter {
     }
     if (loggerName != null) {
       TelemetryUtil.getProperties(data).put("LoggerName", loggerName);
+    }
+    if (threadName != null) {
+      TelemetryUtil.getProperties(data).put("ThreadName", loggerName);
     }
   }
 
