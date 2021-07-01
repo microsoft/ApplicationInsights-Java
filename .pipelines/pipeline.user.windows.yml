@@ -24,8 +24,7 @@ static_analysis_options:
     files_to_scan:
       - from: 'src\Dependencies\'
         exclude:
-          - '**/*.exe'
-          - '**/*.dll'
+          - '/source/agent/agent/build/resources/main/inst/com/sun/jna/win32-aarch64/jnidispatch.dll'
 restore:
   commands:
     - !!defaultcommand
