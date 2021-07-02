@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
+import static com.microsoft.applicationinsights.agent.internal.localstorage.PersistenceHelper.DEFAULT_FOLDER;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,6 +52,9 @@ public class LocalFileLoaderTests {
     if (PERSISTED_FILE.exists()) {
       assertThat(PERSISTED_FILE.delete()).isTrue();
     }
+
+    assertThat(PersistenceHelper.getDefaultFolder(false).delete()).isTrue();
+    assertThat(DEFAULT_FOLDER.delete()).isTrue();
   }
 
   @Test

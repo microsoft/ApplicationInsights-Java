@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
+import static com.microsoft.applicationinsights.agent.internal.localstorage.PersistenceHelper.DEFAULT_FOLDER;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -69,11 +70,15 @@ public class LocalFileWriterTests {
   public void cleanup() {
     Queue<String> queue = localFileCache.getPersistedFilesCache();
     String filename;
+    File defaultFolder = PersistenceHelper.getDefaultFolder(false);
     while ((filename = queue.poll()) != null) {
-      File tempFile = new File(PersistenceHelper.getDefaultFolder(false), filename);
+      File tempFile = new File(defaultFolder, filename);
       assertThat(tempFile.exists()).isTrue();
       assertThat(tempFile.delete()).isTrue();
     }
+
+    assertThat(defaultFolder.delete()).isTrue();
+    assertThat(DEFAULT_FOLDER.delete()).isTrue();
   }
 
   @Test
