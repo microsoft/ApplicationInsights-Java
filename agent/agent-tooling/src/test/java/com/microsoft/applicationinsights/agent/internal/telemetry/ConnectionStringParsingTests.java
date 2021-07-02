@@ -205,6 +205,9 @@ class ConnectionStringParsingTests {
         new URL("https://ingestion.example.com/" + EndpointProvider.INGESTION_URL_PATH);
     final String liveHost = "https://live.example.com";
     URL expectedLiveEndpoint = new URL(liveHost + "/" + EndpointProvider.LIVE_URL_PATH);
+    String statsbeatEndpoint = "https://statsbeat.example.com";
+    URL expectedStatsbeatEndpoint = new URL(statsbeatEndpoint + "/" + EndpointProvider.INGESTION_URL_PATH);
+
     String cs =
         "InstrumentationKey="
             + ikey
@@ -221,6 +224,9 @@ class ConnectionStringParsingTests {
         .isEqualTo(expectedIngestionEndpointUrl);
     assertThat(telemetryClient.getEndpointProvider().getLiveEndpointUrl())
         .isEqualTo(expectedLiveEndpoint);
+
+    ConnectionString.updateStatsbeatConnectionString(ikey, statsbeatEndpoint, telemetryClient);
+    assertThat(telemetryClient.getEndpointProvider().getStatsbeatEndpointUrl()).isEqualTo(expectedStatsbeatEndpoint);
   }
 
   @Test

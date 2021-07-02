@@ -126,7 +126,7 @@ public class EndpointProvider {
     }
   }
 
-  public URL getStatsbeatEndpoint(){
+  public URL getStatsbeatEndpoint() {
     return statsbeatEndpoint;
   }
 
