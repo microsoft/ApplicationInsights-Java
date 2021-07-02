@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
-import static com.microsoft.applicationinsights.agent.internal.localstorage.PersistenceHelper.DEFAULT_FOLDER;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -74,8 +73,8 @@ public class IntegrationTests {
         new TelemetryChannel(
             pipelineBuilder.build(),
             new URL("http://foo.bar"),
-            new LocalFileWriter(localFileCache));
-    localFileLoader = new LocalFileLoader(localFileCache);
+            new LocalFileWriter(localFileCache, false));
+    localFileLoader = new LocalFileLoader(localFileCache, false);
   }
 
   @AfterEach
@@ -83,7 +82,7 @@ public class IntegrationTests {
     Queue<String> queue = localFileCache.getPersistedFilesCache();
     String filename;
     while ((filename = queue.poll()) != null) {
-      File tempFile = new File(DEFAULT_FOLDER, filename);
+      File tempFile = new File(PersistenceHelper.getDefaultFolder(false), filename);
       assertThat(tempFile.exists()).isTrue();
       assertThat(tempFile.delete()).isTrue();
     }

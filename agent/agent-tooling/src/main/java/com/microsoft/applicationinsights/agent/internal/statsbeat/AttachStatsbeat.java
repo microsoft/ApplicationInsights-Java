@@ -56,7 +56,7 @@ class AttachStatsbeat extends BaseStatsbeat {
         createStatsbeatTelemetry(telemetryClient, ATTACH_METRIC_NAME, 0);
     TelemetryUtil.getProperties(statsbeatTelemetry.getData().getBaseData())
         .put("rpId", resourceProviderId);
-    telemetryClient.trackAsync(statsbeatTelemetry);
+    telemetryClient.trackStatsbeatAsync(statsbeatTelemetry);
   }
 
   /** Returns the unique identifier of the resource provider. */

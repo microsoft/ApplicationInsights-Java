@@ -66,7 +66,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
               telemetryClient, REQUEST_SUCCESS_COUNT_METRIC_NAME, local.requestSuccessCount.get());
       TelemetryUtil.getProperties(requestSuccessCountSt.getData().getBaseData())
           .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
-      telemetryClient.trackAsync(requestSuccessCountSt);
+      telemetryClient.trackStatsbeatAsync(requestSuccessCountSt);
     }
 
     if (local.requestFailureCount.get() != 0) {
@@ -75,7 +75,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
               telemetryClient, REQUEST_FAILURE_COUNT_METRIC_NAME, local.requestFailureCount.get());
       TelemetryUtil.getProperties(requestFailureCountSt.getData().getBaseData())
           .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
-      telemetryClient.trackAsync(requestFailureCountSt);
+      telemetryClient.trackStatsbeatAsync(requestFailureCountSt);
     }
 
     double durationAvg = local.getRequestDurationAvg();
@@ -84,7 +84,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
           createStatsbeatTelemetry(telemetryClient, REQUEST_DURATION_METRIC_NAME, durationAvg);
       TelemetryUtil.getProperties(requestDurationSt.getData().getBaseData())
           .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
-      telemetryClient.trackAsync(requestDurationSt);
+      telemetryClient.trackStatsbeatAsync(requestDurationSt);
     }
 
     if (local.retryCount.get() != 0) {
@@ -93,7 +93,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
               telemetryClient, RETRY_COUNT_METRIC_NAME, local.retryCount.get());
       TelemetryUtil.getProperties(retryCountSt.getData().getBaseData())
           .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
-      telemetryClient.trackAsync(retryCountSt);
+      telemetryClient.trackStatsbeatAsync(retryCountSt);
     }
 
     if (local.throttlingCount.get() != 0) {
@@ -102,7 +102,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
               telemetryClient, THROTTLE_COUNT_METRIC_NAME, local.throttlingCount.get());
       TelemetryUtil.getProperties(throttleCountSt.getData().getBaseData())
           .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
-      telemetryClient.trackAsync(throttleCountSt);
+      telemetryClient.trackStatsbeatAsync(throttleCountSt);
     }
 
     if (local.exceptionCount.get() != 0) {
@@ -111,7 +111,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
               telemetryClient, EXCEPTION_COUNT_METRIC_NAME, local.exceptionCount.get());
       TelemetryUtil.getProperties(exceptionCountSt.getData().getBaseData())
           .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
-      telemetryClient.trackAsync(exceptionCountSt);
+      telemetryClient.trackStatsbeatAsync(exceptionCountSt);
     }
   }
 
