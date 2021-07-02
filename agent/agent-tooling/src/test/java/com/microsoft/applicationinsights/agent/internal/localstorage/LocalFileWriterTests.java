@@ -77,8 +77,13 @@ public class LocalFileWriterTests {
       assertThat(tempFile.delete()).isTrue();
     }
 
-    assertThat(defaultFolder.delete()).isTrue();
-    assertThat(DEFAULT_FOLDER.delete()).isTrue();
+    if (defaultFolder.exists()) {
+      assertThat(defaultFolder.delete()).isTrue();
+    }
+
+    if (DEFAULT_FOLDER.exists()) {
+      assertThat(DEFAULT_FOLDER.delete()).isTrue();
+    }
   }
 
   @Test

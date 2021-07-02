@@ -89,8 +89,13 @@ public class IntegrationTests {
       assertThat(tempFile.delete()).isTrue();
     }
 
-    assertThat(folder.delete()).isTrue();
-    assertThat(DEFAULT_FOLDER.delete()).isTrue();
+    if (folder.exists()) {
+      assertThat(folder.delete()).isTrue();
+    }
+
+    if (DEFAULT_FOLDER.exists()) {
+      assertThat(DEFAULT_FOLDER.delete()).isTrue();
+    }
   }
 
   @Test

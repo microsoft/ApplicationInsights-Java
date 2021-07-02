@@ -38,23 +38,38 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class LocalFileLoaderTests {
 
   private static final String BYTE_BUFFERS_TEST_FILE = "read-transmission.txt";
   private static final ObjectMapper MAPPER = new ObjectMapper();
-  private static final File PERSISTED_FILE =
-      new File(PersistenceHelper.getDefaultFolder(false), BYTE_BUFFERS_TEST_FILE);
+  private File persistedFile;
+
+  @BeforeEach
+  public void setup() {
+    if (!PersistenceHelper.DEFAULT_FOLDER.exists()) {
+      PersistenceHelper.DEFAULT_FOLDER.mkdir();
+    }
+
+    persistedFile = new File(PersistenceHelper.getDefaultFolder(false), BYTE_BUFFERS_TEST_FILE);
+  }
 
   @AfterEach
   public void cleanup() {
-    if (PERSISTED_FILE.exists()) {
-      assertThat(PERSISTED_FILE.delete()).isTrue();
+    if (persistedFile.exists()) {
+      assertThat(persistedFile.delete()).isTrue();
     }
 
-    assertThat(PersistenceHelper.getDefaultFolder(false).delete()).isTrue();
-    assertThat(DEFAULT_FOLDER.delete()).isTrue();
+    File defaultFolder = PersistenceHelper.getDefaultFolder(false);
+    if (defaultFolder.exists()) {
+      assertThat(defaultFolder.delete()).isTrue();
+    }
+
+    if (DEFAULT_FOLDER.exists()) {
+      assertThat(DEFAULT_FOLDER.delete()).isTrue();
+    }
   }
 
   @Test
@@ -65,10 +80,10 @@ public class LocalFileLoaderTests {
     /*
      * move this file to {@link DEFAULT_FOlDER} if it doesn't exist yet.
      */
-    if (!PERSISTED_FILE.exists()) {
-      FileUtils.moveFile(sourceFile, PERSISTED_FILE);
+    if (!persistedFile.exists()) {
+      FileUtils.moveFile(sourceFile, persistedFile);
     }
-    assertThat(PERSISTED_FILE.exists()).isTrue();
+    assertThat(persistedFile.exists()).isTrue();
 
     LocalFileCache localFileCache = new LocalFileCache();
     localFileCache.addPersistedFilenameToMap(BYTE_BUFFERS_TEST_FILE);
