@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
+import static com.microsoft.applicationinsights.agent.internal.localstorage.PersistenceHelper.DEFAULT_FOLDER;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -81,11 +82,15 @@ public class IntegrationTests {
   public void cleanup() {
     Queue<String> queue = localFileCache.getPersistedFilesCache();
     String filename;
+    File folder = PersistenceHelper.getDefaultFolder(false);
     while ((filename = queue.poll()) != null) {
-      File tempFile = new File(PersistenceHelper.getDefaultFolder(false), filename);
+      File tempFile = new File(folder, filename);
       assertThat(tempFile.exists()).isTrue();
       assertThat(tempFile.delete()).isTrue();
     }
+
+    assertThat(folder.delete()).isTrue();
+    assertThat(DEFAULT_FOLDER.delete()).isTrue();
   }
 
   @Test
