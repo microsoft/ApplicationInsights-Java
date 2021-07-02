@@ -43,7 +43,8 @@ public class LocalFileLoaderTests {
 
   private static final String BYTE_BUFFERS_TEST_FILE = "read-transmission.txt";
   private static final ObjectMapper MAPPER = new ObjectMapper();
-  private static final File PERSISTED_FILE = new File(PersistenceHelper.getDefaultFolder(false), BYTE_BUFFERS_TEST_FILE);
+  private static final File PERSISTED_FILE =
+      new File(PersistenceHelper.getDefaultFolder(false), BYTE_BUFFERS_TEST_FILE);
 
   @AfterEach
   public void cleanup() {

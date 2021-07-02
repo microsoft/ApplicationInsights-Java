@@ -120,7 +120,7 @@ public class LocalFileWriterTests {
       executorService.execute(
           () -> {
             for (int j = 0; j < 10; j++) {
-              LocalFileWriter writer = new LocalFileWriter(localFileCache,false);
+              LocalFileWriter writer = new LocalFileWriter(localFileCache, false);
               writer.writeToDisk(singletonList(ByteBuffer.wrap(telemetry.getBytes(UTF_8))));
             }
           });

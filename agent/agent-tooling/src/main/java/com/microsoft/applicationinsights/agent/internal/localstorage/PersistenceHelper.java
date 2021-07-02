@@ -98,7 +98,7 @@ final class PersistenceHelper {
   static File getDefaultFolder(boolean isStatsbeat) {
     File subdirectory;
     if (isStatsbeat) {
-      subdirectory= new File(DEFAULT_FOLDER, STATSBEAT_FOLDER);
+      subdirectory = new File(DEFAULT_FOLDER, STATSBEAT_FOLDER);
     } else {
       subdirectory = new File(DEFAULT_FOLDER, TELEMETRIES_FOLDER);
     }
@@ -108,7 +108,8 @@ final class PersistenceHelper {
     }
 
     if (!subdirectory.exists() || !subdirectory.canRead() || !subdirectory.canWrite()) {
-      throw new IllegalArgumentException("subdirectory must exist and have read and write permissions.");
+      throw new IllegalArgumentException(
+          "subdirectory must exist and have read and write permissions.");
     }
 
     return subdirectory;
