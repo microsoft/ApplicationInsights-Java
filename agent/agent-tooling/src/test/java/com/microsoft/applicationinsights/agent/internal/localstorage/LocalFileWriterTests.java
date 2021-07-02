@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
-import static com.microsoft.applicationinsights.agent.internal.localstorage.PersistenceHelper.DEFAULT_FOLDER;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -71,7 +70,7 @@ public class LocalFileWriterTests {
     Queue<String> queue = localFileCache.getPersistedFilesCache();
     String filename;
     while ((filename = queue.poll()) != null) {
-      File tempFile = new File(DEFAULT_FOLDER, filename);
+      File tempFile = new File(PersistenceHelper.getDefaultFolder(false), filename);
       assertThat(tempFile.exists()).isTrue();
       assertThat(tempFile.delete()).isTrue();
     }
@@ -99,14 +98,14 @@ public class LocalFileWriterTests {
 
     assertThat(byteBuffers.size()).isEqualTo(10);
 
-    LocalFileWriter writer = new LocalFileWriter(localFileCache);
+    LocalFileWriter writer = new LocalFileWriter(localFileCache, false);
     assertThat(writer.writeToDisk(byteBuffers)).isTrue();
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(1);
   }
 
   @Test
   public void testWriteRawByteArray() {
-    LocalFileWriter writer = new LocalFileWriter(localFileCache);
+    LocalFileWriter writer = new LocalFileWriter(localFileCache, false);
     assertThat(writer.writeToDisk(singletonList(buffer))).isTrue();
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(1);
   }
@@ -121,7 +120,7 @@ public class LocalFileWriterTests {
       executorService.execute(
           () -> {
             for (int j = 0; j < 10; j++) {
-              LocalFileWriter writer = new LocalFileWriter(localFileCache);
+              LocalFileWriter writer = new LocalFileWriter(localFileCache,false);
               writer.writeToDisk(singletonList(ByteBuffer.wrap(telemetry.getBytes(UTF_8))));
             }
           });

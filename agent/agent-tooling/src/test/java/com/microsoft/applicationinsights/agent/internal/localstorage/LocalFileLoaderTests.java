@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
-import static com.microsoft.applicationinsights.agent.internal.localstorage.PersistenceHelper.DEFAULT_FOLDER;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,13 +38,12 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.LoggerFactory;
 
 public class LocalFileLoaderTests {
 
   private static final String BYTE_BUFFERS_TEST_FILE = "read-transmission.txt";
   private static final ObjectMapper MAPPER = new ObjectMapper();
-  private static final File PERSISTED_FILE = new File(DEFAULT_FOLDER, BYTE_BUFFERS_TEST_FILE);
+  private static final File PERSISTED_FILE = new File(PersistenceHelper.getDefaultFolder(false), BYTE_BUFFERS_TEST_FILE);
 
   @AfterEach
   public void cleanup() {
@@ -70,7 +68,7 @@ public class LocalFileLoaderTests {
     LocalFileCache localFileCache = new LocalFileCache();
     localFileCache.addPersistedFilenameToMap(BYTE_BUFFERS_TEST_FILE);
 
-    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache);
+    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, false);
     String bytesString = readTelemetriesFromDiskToString(localFileLoader);
 
     String[] stringArray = bytesString.split("\n");
@@ -143,10 +141,10 @@ public class LocalFileLoaderTests {
   public void testWriteAndReadRandomText() {
     String text = "hello world";
     LocalFileCache cache = new LocalFileCache();
-    LocalFileWriter writer = new LocalFileWriter(cache);
+    LocalFileWriter writer = new LocalFileWriter(cache, false);
     writer.writeToDisk(singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))));
 
-    LocalFileLoader loader = new LocalFileLoader(cache);
+    LocalFileLoader loader = new LocalFileLoader(cache, false);
     String bytesString = readTelemetriesFromDiskToString(loader);
     assertThat(bytesString).isEqualTo(text);
   }
@@ -172,11 +170,11 @@ public class LocalFileLoaderTests {
     // write gzipped bytes[] to disk
     byte[] result = byteArrayOutputStream.toByteArray();
     LocalFileCache cache = new LocalFileCache();
-    LocalFileWriter writer = new LocalFileWriter(cache);
+    LocalFileWriter writer = new LocalFileWriter(cache, false);
     writer.writeToDisk(singletonList(ByteBuffer.wrap(result)));
 
     // read gzipped byte[] from disk
-    LocalFileLoader loader = new LocalFileLoader(cache);
+    LocalFileLoader loader = new LocalFileLoader(cache, false);
     byte[] bytes = readTelemetriesFromDiskToBytes(loader);
 
     // ungzip
