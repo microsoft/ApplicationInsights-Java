@@ -34,9 +34,11 @@ public class LocalFileLoader {
   private static final Logger logger = LoggerFactory.getLogger(LocalFileLoader.class);
 
   private final LocalFileCache localFileCache;
+  private final boolean isStatsbeat;
 
-  public LocalFileLoader(LocalFileCache localFileCache) {
+  public LocalFileLoader(LocalFileCache localFileCache, boolean isStatsbeat) {
     this.localFileCache = localFileCache;
+    this.isStatsbeat = isStatsbeat;
   }
 
   // Load ByteBuffer from persisted files on disk in FIFO order.
@@ -48,7 +50,7 @@ public class LocalFileLoader {
 
     File tempFile =
         PersistenceHelper.renameFileExtension(
-            filenameToBeLoaded, PersistenceHelper.TEMPORARY_FILE_EXTENSION);
+            filenameToBeLoaded, PersistenceHelper.TEMPORARY_FILE_EXTENSION, isStatsbeat);
     if (tempFile == null) {
       return null;
     }

@@ -36,8 +36,9 @@ public final class LocalFileWriter {
   private static final Logger logger = LoggerFactory.getLogger(LocalFileWriter.class);
 
   private final LocalFileCache localFileCache;
+  private final boolean isStatsbeat;
 
-  public LocalFileWriter(LocalFileCache localFileCache) {
+  public LocalFileWriter(LocalFileCache localFileCache, boolean isStatsbeat) {
     if (!PersistenceHelper.DEFAULT_FOLDER.exists()) {
       PersistenceHelper.DEFAULT_FOLDER.mkdir();
     }
@@ -49,15 +50,16 @@ public final class LocalFileWriter {
           PersistenceHelper.DEFAULT_FOLDER + " must exist and have read and write permissions.");
     }
 
+    this.isStatsbeat = isStatsbeat;
     this.localFileCache = localFileCache;
   }
 
   public boolean writeToDisk(List<ByteBuffer> buffers) {
-    if (!PersistenceHelper.maxFileSizeExceeded()) {
+    if (!PersistenceHelper.maxFileSizeExceeded(isStatsbeat)) {
       return false;
     }
 
-    File tempFile = PersistenceHelper.createTempFile();
+    File tempFile = PersistenceHelper.createTempFile(isStatsbeat);
     if (tempFile == null) {
       return false;
     }
@@ -68,7 +70,7 @@ public final class LocalFileWriter {
 
     File permanentFile =
         PersistenceHelper.renameFileExtension(
-            tempFile.getName(), PersistenceHelper.PERMANENT_FILE_EXTENSION);
+            tempFile.getName(), PersistenceHelper.PERMANENT_FILE_EXTENSION, isStatsbeat);
     if (permanentFile == null) {
       return false;
     }
