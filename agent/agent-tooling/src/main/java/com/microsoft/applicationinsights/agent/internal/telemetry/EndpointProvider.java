@@ -68,7 +68,6 @@ public class EndpointProvider {
     return ingestionEndpointUrl;
   }
 
-  // TODO (heya) this looks unused?
   public URL getStatsbeatEndpointUrl() {
     return statsbeatEndpointUrl;
   }

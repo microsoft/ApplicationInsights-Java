@@ -92,6 +92,7 @@ public class TelemetryClient {
 
   private final Object channelInitLock = new Object();
   private volatile @MonotonicNonNull BatchSpanProcessor channelBatcher;
+  private volatile @MonotonicNonNull BatchSpanProcessor statsbeatChannelBatcher;
 
   // only used by tests
   public TelemetryClient() {
@@ -141,7 +142,6 @@ public class TelemetryClient {
   }
 
   public void trackAsync(TelemetryItem telemetry) {
-
     MonitorDomain data = telemetry.getData().getBaseData();
     if (data instanceof MetricsData) {
       MetricsData metricsData = (MetricsData) data;
@@ -183,6 +183,13 @@ public class TelemetryClient {
     getChannelBatcher().trackAsync(telemetry);
   }
 
+  public void trackStatsbeatAsync(TelemetryItem telemetry) {
+    // batching, retry, throttling, and writing to disk on failure occur downstream
+    // for simplicity not reporting back success/failure from this layer
+    // only that it was successfully delivered to the next layer
+    getStatsbeatChannelBatcher().trackAsync(telemetry);
+  }
+
   public CompletableResultCode flushChannelBatcher() {
     return channelBatcher.forceFlush();
   }
@@ -192,8 +199,8 @@ public class TelemetryClient {
       synchronized (channelInitLock) {
         if (channelBatcher == null) {
           LocalFileCache localFileCache = new LocalFileCache();
-          LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache);
-          LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache);
+          LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, false);
+          LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, false);
           TelemetryChannel channel =
               TelemetryChannel.create(
                   endpointProvider.getIngestionEndpoint(), aadAuthentication, localFileWriter);
@@ -203,6 +210,24 @@ public class TelemetryClient {
       }
     }
     return channelBatcher;
+  }
+
+  public BatchSpanProcessor getStatsbeatChannelBatcher() {
+    if (statsbeatChannelBatcher == null) {
+      synchronized (channelInitLock) {
+        if (statsbeatChannelBatcher == null) {
+          LocalFileCache localFileCache = new LocalFileCache();
+          LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, true);
+          LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, true);
+          TelemetryChannel channel =
+              TelemetryChannel.create(
+                  endpointProvider.getStatsbeatEndpointUrl(), aadAuthentication, localFileWriter);
+          LocalFileSender.start(localFileLoader, channel);
+          statsbeatChannelBatcher = BatchSpanProcessor.builder(channel).build();
+        }
+      }
+    }
+    return statsbeatChannelBatcher;
   }
 
   /** Gets or sets the default instrumentation key for the application. */
