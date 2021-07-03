@@ -108,9 +108,9 @@ public class LocalFileLoaderTests {
       JsonNode metrics = baseData.get("metrics");
 
       if (i < 7) { // metrics is only applicable to Metric Telemetry type
-        verifyMetricsName(i, metrics.get(0).get("name").asText());
+        assertThat(metrics.get(0).get("name").asText()).isEqualTo(expectedMetricsName(i));
         assertThat(metrics.get(0).get("kind").asInt()).isEqualTo(0);
-        verifyMetricsValue(i, metrics.get(0).get("value").asInt());
+        assertThat(metrics.get(0).get("value").asInt()).isEqualTo(expectedMetricsValue(i));
       }
 
       if (i == 7) { // Message
@@ -267,68 +267,46 @@ public class LocalFileLoaderTests {
         .isEqualTo("http://localhost:8080/webjars/jquery/2.2.4/jquery.min.js");
   }
 
-  private static void verifyMetricsName(int index, String actualName) {
-    String expectedName;
+  private static String expectedMetricsName(int index) {
     switch (index) {
       case 0:
-        expectedName = "jvm_threads_states";
-        break;
+        return "jvm_threads_states";
       case 1:
-        expectedName = "hikaricp_connections_max";
-        break;
+        return "hikaricp_connections_max";
       case 2:
-        expectedName = "process_uptime";
-        break;
+        return "process_uptime";
       case 3:
-        expectedName = "jvm_memory_used";
-        break;
+        return "jvm_memory_used";
       case 4:
-        expectedName = "jvm_threads_live";
-        break;
+        return "jvm_threads_live";
       case 5:
-        expectedName = "jdbc_connections_min";
-        break;
+        return "jdbc_connections_min";
       case 6:
-        expectedName = "Request Success Count";
-        break;
+        return "Request Success Count";
       default:
-        expectedName = null;
-        break;
+        throw new AssertionError("Unexpected index: " + index);
     }
-
-    assertThat(actualName).isEqualTo(expectedName);
   }
 
-  private static void verifyMetricsValue(int index, int actualValue) {
-    int expectedValue;
+  private static int expectedMetricsValue(int index) {
     switch (index) {
       case 0:
-        expectedValue = 3;
-        break;
+        return 3;
       case 1:
-        expectedValue = 10;
-        break;
+        return 10;
       case 2:
-        expectedValue = 3131610;
-        break;
+        return 3131610;
       case 3:
-        expectedValue = 12958128;
-        break;
+        return 12958128;
       case 4:
-        expectedValue = 150;
-        break;
+        return 150;
       case 5:
-        expectedValue = 110;
-        break;
+        return 110;
       case 6:
-        expectedValue = 2;
-        break;
+        return 2;
       default:
-        expectedValue = 0;
-        break;
+        throw new AssertionError("Unexpected index: " + index);
     }
-
-    assertThat(actualValue).isEqualTo(expectedValue);
   }
 
   private static void verifyProperties(int index, JsonNode properties) {
@@ -359,9 +337,12 @@ public class LocalFileLoaderTests {
         assertThat(properties.get("SourceType").asText()).isEqualTo("Logger");
         return;
       case 2:
-      default:
-        // all good
+      case 8:
+      case 9:
+        assertThat(properties).isNull();
         return;
+      default:
+        throw new AssertionError("Unexpected index " + index);
     }
   }
 
