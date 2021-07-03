@@ -25,7 +25,7 @@ import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.extension.bootstrap.BootstrapPackagesBuilder;
 import io.opentelemetry.javaagent.extension.bootstrap.BootstrapPackagesConfigurer;
 
-public class AiBootstrapPackageProvider implements BootstrapPackagesConfigurer {
+public class AiBootstrapPackagesConfigurer implements BootstrapPackagesConfigurer {
 
   @Override
   public void configure(Config config, BootstrapPackagesBuilder bootstrapPackagesBuilder) {
