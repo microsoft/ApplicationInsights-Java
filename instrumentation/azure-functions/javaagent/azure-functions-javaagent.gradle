@@ -1,7 +1,0 @@
-apply plugin: "otel.javaagent-instrumentation"
-
-muzzle {
-  pass {
-    coreJdk = true
-  }
-}

@@ -26,7 +26,7 @@ public class LibertyDispatcherTracer
 
   @Override
   protected String getInstrumentationName() {
-    return "io.opentelemetry.javaagent.liberty-dispatcher";
+    return "io.opentelemetry.liberty-dispatcher";
   }
 
   @Override
@@ -37,8 +37,8 @@ public class LibertyDispatcherTracer
 
   @Override
   @Nullable
-  protected String peerHostIP(LibertyConnectionWrapper libertyConnectionWrapper) {
-    return libertyConnectionWrapper.peerHostIP();
+  protected String peerHostIp(LibertyConnectionWrapper libertyConnectionWrapper) {
+    return libertyConnectionWrapper.peerHostIp();
   }
 
   @Override

@@ -1,16 +1,11 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import io.opentelemetry.instrumentation.gradle.bytebuddy.ByteBuddyPluginConfigurator
 
 plugins {
   id("net.bytebuddy.byte-buddy")
 
   id("otel.instrumentation-conventions")
+  id("otel.javaagent-codegen")
   id("otel.shadow-conventions")
-}
-
-val toolingRuntime by configurations.creating {
-  isCanBeConsumed = false
-  isCanBeResolved = true
 }
 
 dependencies {
@@ -39,14 +34,9 @@ dependencies {
 
   testImplementation("org.testcontainers:testcontainers")
 
-  toolingRuntime(project(path = ":javaagent-tooling", configuration = "instrumentationMuzzle"))
-  toolingRuntime(project(path = ":javaagent-extension-api", configuration = "instrumentationMuzzle"))
+  add("codegen", project(path = ":javaagent-tooling", configuration = "instrumentationMuzzle"))
+  add("codegen", project(path = ":javaagent-extension-api", configuration = "instrumentationMuzzle"))
 }
-
-val pluginName = "io.opentelemetry.javaagent.tooling.muzzle.collector.MuzzleCodeGenerationPlugin"
-ByteBuddyPluginConfigurator(project, sourceSets.main.get(), pluginName,
-  toolingRuntime.plus(configurations.runtimeClasspath.get()))
-  .configure()
 
 val testInstrumentation by configurations.creating {
   isCanBeConsumed = false
@@ -81,6 +71,10 @@ afterEvaluate {
     // prevent sporadic gradle deadlocks, see SafeLogger for more details
     jvmArgs("-Dotel.javaagent.testing.transform-safe-logging.enabled=true")
     jvmArgs("-Dai.internal.testing.appId=1234")
+
+    // Reduce noise in assertion messages since we don't need to verify this in most tests. We check
+    // in smoke tests instead.
+    jvmArgs("-Dotel.javaagent.add-thread-details=false")
 
     // We do fine-grained filtering of the classpath of this codebase's sources since Gradle's
     // configurations will include transitive dependencies as well, which tests do often need.
