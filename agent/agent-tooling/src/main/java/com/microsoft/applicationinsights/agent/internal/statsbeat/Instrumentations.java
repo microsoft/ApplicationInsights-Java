@@ -36,6 +36,7 @@ class Instrumentations {
   private static final Map<String, Integer> INSTRUMENTATION_MAP;
 
   static {
+    // TODO (heya) in OTel 1.4.0, all of these names change, dropping the ".javaagent" component
     INSTRUMENTATION_MAP = new HashMap<>();
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.apache-httpasyncclient-4.1", 0);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.apache-httpclient-2.0", 1);
@@ -46,11 +47,15 @@ class Instrumentations {
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.azure-core-1.14", 6);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.cassandra-3.0", 7);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.cassandra-4.0", 8);
+    // TODO (heya) this is non-span producing instrumentation
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.classloaders", 9);
+    // TODO (heya) this is non-span producing instrumentation
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.eclipse-osgi-3.6", 10);
+    // TODO (heya) this is non-span producing instrumentation
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.executors", 11);
-    INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.grpc-1.5", 12);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.grpc-1.6", 12);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.http-url-connection", 13);
+    // TODO (heya) this is not instrumentation name anymore
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.java-util-logging", 14);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.java-util-logging-spans", 15);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.jaxrs-1.0", 16);
@@ -65,26 +70,32 @@ class Instrumentations {
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.jms-1.1", 25);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.kafka-clients-0.11", 26);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.kafka-streams-0.11", 27);
+    // TODO (heya) this is non-span producing instrumentation
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.kotlinx-coroutines", 28);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.lettuce-4.0", 29);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.lettuce-5.0", 30);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.lettuce-5.1", 31);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.lettuce-common", 32);
+    // TODO (heya) this is not instrumentation name anymore
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.log4j-2.0", 33);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.log4j-spans-1.2", 34);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.log4j-spans-2.0", 35);
+    // TODO (heya) this is not instrumentation name anymore
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.logback-1.0", 36);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.logback-spans-1.0", 37);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.micrometer-1.0", 38);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.mongo-3.1", 39);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.mongo-3.7", 40);
+    // TODO (heya) add mongo-4.0
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.mongo-async-3.3", 41);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.mongo-common", 42);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.netty-4.0", 43);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.netty-4.1", 44);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.okhttp-3.0", 45);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.opentelemetry-annotations-1.0", 46);
+    // TODO (heya) this is non-span producing instrumentation
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.opentelemetry-api-1.0", 47);
+    // TODO (heya) this is non-span producing instrumentation
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.reactor-3.1", 48);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.reactor-netty-0.9", 49);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.reactor-netty-1.0", 50);
@@ -95,6 +106,9 @@ class Instrumentations {
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.spring-webflux-5.0", 55);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.spring-webmvc-3.1", 56);
     INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.tomcat-7.0", 57);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.java-http-client", 58);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.rabbitmq-2.7", 59);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.spring-integration-4.1", 60);
   }
 
   // encode BitSet to a long
