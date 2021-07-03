@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -55,36 +56,28 @@ public class StatsbeatModule {
     featureStatsbeat = new FeatureStatsbeat(customDimensions);
   }
 
-  public void start(
-      TelemetryClient telemetryClient,
-      long interval,
-      long featureInterval,
-      boolean aadEnabled,
-      boolean cassandraEnabled,
-      boolean jdbcEnabled,
-      boolean jmsEnabled,
-      boolean kafkaEnabled,
-      boolean micrometerEnabled,
-      boolean mongoEnabled,
-      boolean redisEnabled,
-      boolean springSchedulingEnabled) {
+  public void start(TelemetryClient telemetryClient, Configuration config) {
     if (started.getAndSet(true)) {
       throw new IllegalStateException("initialize already called");
     }
+
+    long intervalSeconds = config.internal.statsbeat.intervalSeconds;
+    long featureIntervalSeconds = config.internal.statsbeat.featureIntervalSeconds;
+
     scheduledExecutor.scheduleWithFixedDelay(
         new StatsbeatSender(networkStatsbeat, telemetryClient),
-        interval,
-        interval,
+        intervalSeconds,
+        intervalSeconds,
         TimeUnit.SECONDS);
     scheduledExecutor.scheduleWithFixedDelay(
         new StatsbeatSender(attachStatsbeat, telemetryClient),
-        interval,
-        interval,
+        intervalSeconds,
+        intervalSeconds,
         TimeUnit.SECONDS);
     scheduledExecutor.scheduleWithFixedDelay(
         new StatsbeatSender(featureStatsbeat, telemetryClient),
-        featureInterval,
-        featureInterval,
+        featureIntervalSeconds,
+        featureIntervalSeconds,
         TimeUnit.SECONDS);
 
     ResourceProvider rp = customDimensions.getResourceProvider();
@@ -93,19 +86,12 @@ public class StatsbeatModule {
     // and it's not necessary to make this call.
     if (rp == ResourceProvider.RP_VM || rp == ResourceProvider.UNKNOWN) {
       // will only reach here the first time, after instance has been instantiated
-      new AzureMetadataService(attachStatsbeat, customDimensions).scheduleWithFixedDelay(interval);
+      new AzureMetadataService(attachStatsbeat, customDimensions)
+          .scheduleWithFixedDelay(intervalSeconds);
     }
 
-    featureStatsbeat.trackAadEnabled(aadEnabled);
-    featureStatsbeat.trackDisabledInstrumentations(
-        cassandraEnabled,
-        jdbcEnabled,
-        jmsEnabled,
-        kafkaEnabled,
-        micrometerEnabled,
-        mongoEnabled,
-        redisEnabled,
-        springSchedulingEnabled);
+    featureStatsbeat.trackAadEnabled(config.preview.authentication.enabled);
+    featureStatsbeat.trackDisabledInstrumentations(config);
   }
 
   public static StatsbeatModule get() {
