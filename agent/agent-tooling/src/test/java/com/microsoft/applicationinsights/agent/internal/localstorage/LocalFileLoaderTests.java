@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
-import static com.microsoft.applicationinsights.agent.internal.localstorage.PersistenceHelper.DEFAULT_FOLDER;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,57 +37,33 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 public class LocalFileLoaderTests {
 
   private static final String BYTE_BUFFERS_TEST_FILE = "read-transmission.txt";
   private static final ObjectMapper MAPPER = new ObjectMapper();
-  private File persistedFile;
 
-  @BeforeEach
-  public void setup() {
-    if (!PersistenceHelper.DEFAULT_FOLDER.exists()) {
-      PersistenceHelper.DEFAULT_FOLDER.mkdir();
-    }
-
-    persistedFile = new File(PersistenceHelper.getDefaultFolder(false), BYTE_BUFFERS_TEST_FILE);
-  }
+  @TempDir File tempFolder;
 
   @AfterEach
-  public void cleanup() {
-    if (persistedFile.exists()) {
-      assertThat(persistedFile.delete()).isTrue();
-    }
-
-    File defaultFolder = PersistenceHelper.getDefaultFolder(false);
-    if (defaultFolder.exists()) {
-      assertThat(defaultFolder.delete()).isTrue();
-    }
-
-    if (DEFAULT_FOLDER.exists()) {
-      assertThat(DEFAULT_FOLDER.delete()).isTrue();
-    }
-  }
+  public void cleanup() {}
 
   @Test
   public void testLoadFile() throws IOException {
     File sourceFile =
         new File(getClass().getClassLoader().getResource(BYTE_BUFFERS_TEST_FILE).getPath());
 
-    /*
-     * move this file to {@link DEFAULT_FOlDER} if it doesn't exist yet.
-     */
-    if (!persistedFile.exists()) {
-      FileUtils.moveFile(sourceFile, persistedFile);
-    }
+    File persistedFile = new File(tempFolder, BYTE_BUFFERS_TEST_FILE);
+
+    FileUtils.copyFile(sourceFile, persistedFile);
     assertThat(persistedFile.exists()).isTrue();
 
     LocalFileCache localFileCache = new LocalFileCache();
     localFileCache.addPersistedFilenameToMap(BYTE_BUFFERS_TEST_FILE);
 
-    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, false);
+    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder);
     String bytesString = readTelemetriesFromDiskToString(localFileLoader);
 
     String[] stringArray = bytesString.split("\n");
@@ -161,10 +136,10 @@ public class LocalFileLoaderTests {
   public void testWriteAndReadRandomText() {
     String text = "hello world";
     LocalFileCache cache = new LocalFileCache();
-    LocalFileWriter writer = new LocalFileWriter(cache, false);
+    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder);
     writer.writeToDisk(singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))));
 
-    LocalFileLoader loader = new LocalFileLoader(cache, false);
+    LocalFileLoader loader = new LocalFileLoader(cache, tempFolder);
     String bytesString = readTelemetriesFromDiskToString(loader);
     assertThat(bytesString).isEqualTo(text);
   }
@@ -190,11 +165,11 @@ public class LocalFileLoaderTests {
     // write gzipped bytes[] to disk
     byte[] result = byteArrayOutputStream.toByteArray();
     LocalFileCache cache = new LocalFileCache();
-    LocalFileWriter writer = new LocalFileWriter(cache, false);
+    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder);
     writer.writeToDisk(singletonList(ByteBuffer.wrap(result)));
 
     // read gzipped byte[] from disk
-    LocalFileLoader loader = new LocalFileLoader(cache, false);
+    LocalFileLoader loader = new LocalFileLoader(cache, tempFolder);
     byte[] bytes = readTelemetriesFromDiskToBytes(loader);
 
     // ungzip

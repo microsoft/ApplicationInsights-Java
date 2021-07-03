@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
-import static com.microsoft.applicationinsights.agent.internal.localstorage.PersistenceHelper.DEFAULT_FOLDER;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,21 +34,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import okio.BufferedSource;
 import okio.Okio;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 public class LocalFileWriterTests {
 
   private LocalFileCache localFileCache;
 
   private ByteBuffer buffer;
+
+  @TempDir File tempFolder;
 
   @BeforeEach
   public void setup() {
@@ -63,26 +63,6 @@ public class LocalFileWriterTests {
       BufferedSource source = Okio.buffer(Okio.source(in));
       buffer = ByteBuffer.wrap(source.readByteArray());
     } catch (IOException ignored) {
-    }
-  }
-
-  @AfterEach
-  public void cleanup() {
-    Queue<String> queue = localFileCache.getPersistedFilesCache();
-    String filename;
-    File defaultFolder = PersistenceHelper.getDefaultFolder(false);
-    while ((filename = queue.poll()) != null) {
-      File tempFile = new File(defaultFolder, filename);
-      assertThat(tempFile.exists()).isTrue();
-      assertThat(tempFile.delete()).isTrue();
-    }
-
-    if (defaultFolder.exists()) {
-      assertThat(defaultFolder.delete()).isTrue();
-    }
-
-    if (DEFAULT_FOLDER.exists()) {
-      assertThat(DEFAULT_FOLDER.delete()).isTrue();
     }
   }
 
@@ -108,14 +88,14 @@ public class LocalFileWriterTests {
 
     assertThat(byteBuffers.size()).isEqualTo(10);
 
-    LocalFileWriter writer = new LocalFileWriter(localFileCache, false);
+    LocalFileWriter writer = new LocalFileWriter(localFileCache, tempFolder);
     assertThat(writer.writeToDisk(byteBuffers)).isTrue();
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(1);
   }
 
   @Test
   public void testWriteRawByteArray() {
-    LocalFileWriter writer = new LocalFileWriter(localFileCache, false);
+    LocalFileWriter writer = new LocalFileWriter(localFileCache, tempFolder);
     assertThat(writer.writeToDisk(singletonList(buffer))).isTrue();
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(1);
   }
@@ -130,7 +110,7 @@ public class LocalFileWriterTests {
       executorService.execute(
           () -> {
             for (int j = 0; j < 10; j++) {
-              LocalFileWriter writer = new LocalFileWriter(localFileCache, false);
+              LocalFileWriter writer = new LocalFileWriter(localFileCache, tempFolder);
               writer.writeToDisk(singletonList(ByteBuffer.wrap(telemetry.getBytes(UTF_8))));
             }
           });

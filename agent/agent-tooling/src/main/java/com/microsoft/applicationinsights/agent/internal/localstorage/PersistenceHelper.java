@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
-import com.microsoft.applicationinsights.agent.internal.common.LocalFileSystemUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -39,22 +38,12 @@ final class PersistenceHelper {
   private static final long MAX_FILE_SIZE_IN_BYTES = 52428800; // 50MB
   static final String PERMANENT_FILE_EXTENSION = ".trn";
   static final String TEMPORARY_FILE_EXTENSION = ".tmp";
-  static final String TELEMETRIES_FOLDER = "telemetries";
-  static final String STATSBEAT_FOLDER = "statsbeat";
 
-  /**
-   * Windows: C:\Users\{USER_NAME}\AppData\Local\Temp\applicationinsights Linux:
-   * /var/temp/applicationinsights We will store all persisted files in this folder for all apps.
-   * TODO it is a good security practice to purge data after 24 hours in this folder.
-   */
-  static final File DEFAULT_FOLDER =
-      new File(LocalFileSystemUtils.getTempDir(), "applicationinsights");
-
-  static File createTempFile(boolean isStatsbeat) {
+  static File createTempFile(File telemetryFolder) {
     File file = null;
     try {
       String prefix = System.currentTimeMillis() + "-";
-      file = File.createTempFile(prefix, null, getDefaultFolder(isStatsbeat));
+      file = File.createTempFile(prefix, null, telemetryFolder);
     } catch (IOException ex) {
       logger.error("Fail to create a temp file.", ex);
       // TODO (heya) track number of failures to create a temp file via Statsbeat
@@ -64,10 +53,9 @@ final class PersistenceHelper {
   }
 
   /** Rename the given file's file extension. */
-  static File renameFileExtension(String filename, String fileExtension, boolean isStatsbeat) {
-    File defaultFolder = getDefaultFolder(isStatsbeat);
-    File sourceFile = new File(defaultFolder, filename);
-    File tempFile = new File(defaultFolder, FilenameUtils.getBaseName(filename) + fileExtension);
+  static File renameFileExtension(String filename, String fileExtension, File telemetryFolder) {
+    File sourceFile = new File(telemetryFolder, filename);
+    File tempFile = new File(telemetryFolder, FilenameUtils.getBaseName(filename) + fileExtension);
     try {
       FileUtils.moveFile(sourceFile, tempFile);
     } catch (IOException ex) {
@@ -83,8 +71,8 @@ final class PersistenceHelper {
    * Before a list of {@link ByteBuffer} can be persisted to disk, need to make sure capacity has
    * not been reached yet.
    */
-  static boolean maxFileSizeExceeded(boolean isStatsbeat) {
-    long size = getTotalSizeOfPersistedFiles(isStatsbeat);
+  static boolean maxFileSizeExceeded(File telemetryFolder) {
+    long size = getTotalSizeOfPersistedFiles(telemetryFolder);
     if (size >= MAX_FILE_SIZE_IN_BYTES) {
       logger.warn(
           "Local persistent storage capacity has been reached. It's currently at {} KB. Telemetry will be lost.",
@@ -95,35 +83,14 @@ final class PersistenceHelper {
     return true;
   }
 
-  static File getDefaultFolder(boolean isStatsbeat) {
-    File subdirectory;
-    if (isStatsbeat) {
-      subdirectory = new File(DEFAULT_FOLDER, STATSBEAT_FOLDER);
-    } else {
-      subdirectory = new File(DEFAULT_FOLDER, TELEMETRIES_FOLDER);
-    }
-
-    if (!subdirectory.exists()) {
-      subdirectory.mkdir();
-    }
-
-    if (!subdirectory.exists() || !subdirectory.canRead() || !subdirectory.canWrite()) {
-      throw new IllegalArgumentException(
-          "subdirectory must exist and have read and write permissions.");
-    }
-
-    return subdirectory;
-  }
-
-  private static long getTotalSizeOfPersistedFiles(boolean isStatsbeat) {
-    File defaultFolder = getDefaultFolder(isStatsbeat);
-    if (!defaultFolder.exists()) {
+  private static long getTotalSizeOfPersistedFiles(File telemetryFolder) {
+    if (!telemetryFolder.exists()) {
       return 0;
     }
 
     long sum = 0;
     Collection<File> files =
-        FileUtils.listFiles(defaultFolder, new String[] {PERMANENT_FILE_EXTENSION}, false);
+        FileUtils.listFiles(telemetryFolder, new String[] {PERMANENT_FILE_EXTENSION}, false);
     for (File file : files) {
       sum += file.length();
     }

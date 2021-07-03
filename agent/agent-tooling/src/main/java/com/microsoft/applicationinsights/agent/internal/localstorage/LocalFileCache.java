@@ -34,7 +34,7 @@ public class LocalFileCache {
    * a system property that can be customized via the command line. TODO (heya) need to uniquely
    * identify each app and figure out how to retrieve data from the disk for each app.
    */
-  private static final Queue<String> persistedFilesCache = new ConcurrentLinkedDeque<>();
+  private final Queue<String> persistedFilesCache = new ConcurrentLinkedDeque<>();
 
   // Track the newly persisted filename to the concurrent hashmap.
   void addPersistedFilenameToMap(String filename) {
