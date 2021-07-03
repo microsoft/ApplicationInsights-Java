@@ -56,7 +56,7 @@ class AttachStatsbeat extends BaseStatsbeat {
         createStatsbeatTelemetry(telemetryClient, ATTACH_METRIC_NAME, 0);
     TelemetryUtil.getProperties(statsbeatTelemetry.getData().getBaseData())
         .put("rpId", resourceProviderId);
-    telemetryClient.trackAsync(statsbeatTelemetry);
+    telemetryClient.trackStatsbeatAsync(statsbeatTelemetry);
   }
 
   /** Returns the unique identifier of the resource provider. */
@@ -78,8 +78,7 @@ class AttachStatsbeat extends BaseStatsbeat {
       ResourceProvider resourceProvider, MetadataInstanceResponse response) {
     switch (resourceProvider) {
       case RP_APPSVC:
-        // Linux App Services doesn't have WEBSITE_HOME_STAMPNAME yet.
-        // TODO (heya) make a feature request for Linux App Services Team to support this.
+        // Linux App Services doesn't have WEBSITE_HOME_STAMPNAME yet. An ask has been submitted.
         return System.getenv(WEBSITE_SITE_NAME) + "/" + System.getenv(WEBSITE_HOME_STAMPNAME);
       case RP_FUNCTIONS:
         return System.getenv(WEBSITE_HOSTNAME);

@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
-import static com.microsoft.applicationinsights.agent.internal.localstorage.PersistenceHelper.DEFAULT_FOLDER;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,37 +38,32 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 public class LocalFileLoaderTests {
 
   private static final String BYTE_BUFFERS_TEST_FILE = "read-transmission.txt";
   private static final ObjectMapper MAPPER = new ObjectMapper();
-  private static final File PERSISTED_FILE = new File(DEFAULT_FOLDER, BYTE_BUFFERS_TEST_FILE);
+
+  @TempDir File tempFolder;
 
   @AfterEach
-  public void cleanup() {
-    if (PERSISTED_FILE.exists()) {
-      assertThat(PERSISTED_FILE.delete()).isTrue();
-    }
-  }
+  public void cleanup() {}
 
   @Test
   public void testLoadFile() throws IOException {
     File sourceFile =
         new File(getClass().getClassLoader().getResource(BYTE_BUFFERS_TEST_FILE).getPath());
 
-    /*
-     * move this file to {@link DEFAULT_FOlDER} if it doesn't exist yet.
-     */
-    if (!PERSISTED_FILE.exists()) {
-      FileUtils.moveFile(sourceFile, PERSISTED_FILE);
-    }
-    assertThat(PERSISTED_FILE.exists()).isTrue();
+    File persistedFile = new File(tempFolder, BYTE_BUFFERS_TEST_FILE);
+
+    FileUtils.copyFile(sourceFile, persistedFile);
+    assertThat(persistedFile.exists()).isTrue();
 
     LocalFileCache localFileCache = new LocalFileCache();
     localFileCache.addPersistedFilenameToMap(BYTE_BUFFERS_TEST_FILE);
 
-    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache);
+    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder);
     String bytesString = readTelemetriesFromDiskToString(localFileLoader);
 
     String[] stringArray = bytesString.split("\n");
@@ -114,9 +108,9 @@ public class LocalFileLoaderTests {
       JsonNode metrics = baseData.get("metrics");
 
       if (i < 7) { // metrics is only applicable to Metric Telemetry type
-        verifyMetricsName(i, metrics.get(0).get("name").asText());
+        assertThat(metrics.get(0).get("name").asText()).isEqualTo(expectedMetricsName(i));
         assertThat(metrics.get(0).get("kind").asInt()).isEqualTo(0);
-        verifyMetricsValue(i, metrics.get(0).get("value").asInt());
+        assertThat(metrics.get(0).get("value").asInt()).isEqualTo(expectedMetricsValue(i));
       }
 
       if (i == 7) { // Message
@@ -142,17 +136,23 @@ public class LocalFileLoaderTests {
   public void testWriteAndReadRandomText() {
     String text = "hello world";
     LocalFileCache cache = new LocalFileCache();
-    LocalFileWriter writer = new LocalFileWriter(cache);
+    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder);
     writer.writeToDisk(singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))));
 
-    LocalFileLoader loader = new LocalFileLoader(cache);
+    LocalFileLoader loader = new LocalFileLoader(cache, tempFolder);
     String bytesString = readTelemetriesFromDiskToString(loader);
     assertThat(bytesString).isEqualTo(text);
   }
 
   @Test
   public void testWriteGzipRawByte() throws IOException {
-    String text = "hello world";
+    String text =
+        "1. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore \n"
+            + "2. magna aliquyam erat, sed diam voluptua. \n"
+            + "3. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum \n"
+            + "4. dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore\n"
+            + "5. magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, \n"
+            + "6. no sea takimata sanctus est Lorem ipsum dolor sit amet.";
 
     // gzip
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -165,17 +165,16 @@ public class LocalFileLoaderTests {
     // write gzipped bytes[] to disk
     byte[] result = byteArrayOutputStream.toByteArray();
     LocalFileCache cache = new LocalFileCache();
-    LocalFileWriter writer = new LocalFileWriter(cache);
+    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder);
     writer.writeToDisk(singletonList(ByteBuffer.wrap(result)));
 
     // read gzipped byte[] from disk
-    LocalFileLoader loader = new LocalFileLoader(cache);
+    LocalFileLoader loader = new LocalFileLoader(cache, tempFolder);
     byte[] bytes = readTelemetriesFromDiskToBytes(loader);
 
     // ungzip
     ByteArrayInputStream inputStream = new ByteArrayInputStream(result);
-    // TODO (heya) does ungzip need to be larger?
-    byte[] ungzip = new byte[bytes.length];
+    byte[] ungzip = new byte[bytes.length * 3];
     int read;
     try (GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream)) {
       read = gzipInputStream.read(ungzip, 0, ungzip.length);
@@ -268,68 +267,46 @@ public class LocalFileLoaderTests {
         .isEqualTo("http://localhost:8080/webjars/jquery/2.2.4/jquery.min.js");
   }
 
-  private static void verifyMetricsName(int index, String actualName) {
-    String expectedName;
+  private static String expectedMetricsName(int index) {
     switch (index) {
       case 0:
-        expectedName = "jvm_threads_states";
-        break;
+        return "jvm_threads_states";
       case 1:
-        expectedName = "hikaricp_connections_max";
-        break;
+        return "hikaricp_connections_max";
       case 2:
-        expectedName = "process_uptime";
-        break;
+        return "process_uptime";
       case 3:
-        expectedName = "jvm_memory_used";
-        break;
+        return "jvm_memory_used";
       case 4:
-        expectedName = "jvm_threads_live";
-        break;
+        return "jvm_threads_live";
       case 5:
-        expectedName = "jdbc_connections_min";
-        break;
+        return "jdbc_connections_min";
       case 6:
-        expectedName = "Request Success Count";
-        break;
+        return "Request Success Count";
       default:
-        expectedName = null;
-        break;
+        throw new AssertionError("Unexpected index: " + index);
     }
-
-    assertThat(actualName).isEqualTo(expectedName);
   }
 
-  private static void verifyMetricsValue(int index, int actualValue) {
-    int expectedValue;
+  private static int expectedMetricsValue(int index) {
     switch (index) {
       case 0:
-        expectedValue = 3;
-        break;
+        return 3;
       case 1:
-        expectedValue = 10;
-        break;
+        return 10;
       case 2:
-        expectedValue = 3131610;
-        break;
+        return 3131610;
       case 3:
-        expectedValue = 12958128;
-        break;
+        return 12958128;
       case 4:
-        expectedValue = 150;
-        break;
+        return 150;
       case 5:
-        expectedValue = 110;
-        break;
+        return 110;
       case 6:
-        expectedValue = 2;
-        break;
+        return 2;
       default:
-        expectedValue = 0;
-        break;
+        throw new AssertionError("Unexpected index: " + index);
     }
-
-    assertThat(actualValue).isEqualTo(expectedValue);
   }
 
   private static void verifyProperties(int index, JsonNode properties) {
@@ -360,10 +337,12 @@ public class LocalFileLoaderTests {
         assertThat(properties.get("SourceType").asText()).isEqualTo("Logger");
         return;
       case 2:
-        // TODO (heya) should we delete this case?
+      case 8:
+      case 9:
+        assertThat(properties).isNull();
         return;
       default:
-        // all good
+        throw new AssertionError("Unexpected index " + index);
     }
   }
 

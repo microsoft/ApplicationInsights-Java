@@ -36,28 +36,19 @@ public final class LocalFileWriter {
   private static final Logger logger = LoggerFactory.getLogger(LocalFileWriter.class);
 
   private final LocalFileCache localFileCache;
+  private final File telemetryFolder;
 
-  public LocalFileWriter(LocalFileCache localFileCache) {
-    if (!PersistenceHelper.DEFAULT_FOLDER.exists()) {
-      PersistenceHelper.DEFAULT_FOLDER.mkdir();
-    }
-
-    if (!PersistenceHelper.DEFAULT_FOLDER.exists()
-        || !PersistenceHelper.DEFAULT_FOLDER.canRead()
-        || !PersistenceHelper.DEFAULT_FOLDER.canWrite()) {
-      throw new IllegalArgumentException(
-          PersistenceHelper.DEFAULT_FOLDER + " must exist and have read and write permissions.");
-    }
-
+  public LocalFileWriter(LocalFileCache localFileCache, File telemetryFolder) {
+    this.telemetryFolder = telemetryFolder;
     this.localFileCache = localFileCache;
   }
 
   public boolean writeToDisk(List<ByteBuffer> buffers) {
-    if (!PersistenceHelper.maxFileSizeExceeded()) {
+    if (!PersistenceHelper.maxFileSizeExceeded(telemetryFolder)) {
       return false;
     }
 
-    File tempFile = PersistenceHelper.createTempFile();
+    File tempFile = PersistenceHelper.createTempFile(telemetryFolder);
     if (tempFile == null) {
       return false;
     }
@@ -68,7 +59,7 @@ public final class LocalFileWriter {
 
     File permanentFile =
         PersistenceHelper.renameFileExtension(
-            tempFile.getName(), PersistenceHelper.PERMANENT_FILE_EXTENSION);
+            tempFile.getName(), PersistenceHelper.PERMANENT_FILE_EXTENSION, telemetryFolder);
     if (permanentFile == null) {
       return false;
     }

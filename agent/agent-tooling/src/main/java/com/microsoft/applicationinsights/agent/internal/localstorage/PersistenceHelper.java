@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
-import com.microsoft.applicationinsights.agent.internal.common.LocalFileSystemUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -40,18 +39,11 @@ final class PersistenceHelper {
   static final String PERMANENT_FILE_EXTENSION = ".trn";
   static final String TEMPORARY_FILE_EXTENSION = ".tmp";
 
-  /**
-   * Windows: C:\Users\{USER_NAME}\AppData\Local\Temp\applicationinsights Linux:
-   * /var/temp/applicationinsights We will store all persisted files in this folder for all apps.
-   */
-  static final File DEFAULT_FOLDER =
-      new File(LocalFileSystemUtils.getTempDir(), "applicationinsights");
-
-  static File createTempFile() {
+  static File createTempFile(File telemetryFolder) {
     File file = null;
     try {
       String prefix = System.currentTimeMillis() + "-";
-      file = File.createTempFile(prefix, null, DEFAULT_FOLDER);
+      file = File.createTempFile(prefix, null, telemetryFolder);
     } catch (IOException ex) {
       logger.error("Fail to create a temp file.", ex);
       // TODO (heya) track number of failures to create a temp file via Statsbeat
@@ -61,9 +53,9 @@ final class PersistenceHelper {
   }
 
   /** Rename the given file's file extension. */
-  static File renameFileExtension(String filename, String fileExtension) {
-    File sourceFile = new File(DEFAULT_FOLDER, filename);
-    File tempFile = new File(DEFAULT_FOLDER, FilenameUtils.getBaseName(filename) + fileExtension);
+  static File renameFileExtension(String filename, String fileExtension, File telemetryFolder) {
+    File sourceFile = new File(telemetryFolder, filename);
+    File tempFile = new File(telemetryFolder, FilenameUtils.getBaseName(filename) + fileExtension);
     try {
       FileUtils.moveFile(sourceFile, tempFile);
     } catch (IOException ex) {
@@ -79,8 +71,8 @@ final class PersistenceHelper {
    * Before a list of {@link ByteBuffer} can be persisted to disk, need to make sure capacity has
    * not been reached yet.
    */
-  static boolean maxFileSizeExceeded() {
-    long size = getTotalSizeOfPersistedFiles();
+  static boolean maxFileSizeExceeded(File telemetryFolder) {
+    long size = getTotalSizeOfPersistedFiles(telemetryFolder);
     if (size >= MAX_FILE_SIZE_IN_BYTES) {
       logger.warn(
           "Local persistent storage capacity has been reached. It's currently at {} KB. Telemetry will be lost.",
@@ -91,14 +83,14 @@ final class PersistenceHelper {
     return true;
   }
 
-  private static long getTotalSizeOfPersistedFiles() {
-    if (!DEFAULT_FOLDER.exists()) {
+  private static long getTotalSizeOfPersistedFiles(File telemetryFolder) {
+    if (!telemetryFolder.exists()) {
       return 0;
     }
 
     long sum = 0;
     Collection<File> files =
-        FileUtils.listFiles(DEFAULT_FOLDER, new String[] {PERMANENT_FILE_EXTENSION}, false);
+        FileUtils.listFiles(telemetryFolder, new String[] {PERMANENT_FILE_EXTENSION}, false);
     for (File file : files) {
       sum += file.length();
     }
