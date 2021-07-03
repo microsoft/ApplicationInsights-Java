@@ -31,7 +31,7 @@ public class UndertowHttpServerTracer
 
   @Override
   protected String getInstrumentationName() {
-    return "io.opentelemetry.javaagent.undertow";
+    return "io.opentelemetry.undertow-1.4";
   }
 
   public Context startServerSpan(HttpServerExchange exchange) {
@@ -103,7 +103,7 @@ public class UndertowHttpServerTracer
 
   @Override
   @Nullable
-  protected String peerHostIP(HttpServerExchange exchange) {
+  protected String peerHostIp(HttpServerExchange exchange) {
     InetSocketAddress peerAddress =
         exchange.getConnection().getPeerAddress(InetSocketAddress.class);
     return peerAddress.getHostString();
