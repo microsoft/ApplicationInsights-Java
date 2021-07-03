@@ -103,6 +103,7 @@ dependencies {
   implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-2.2:${versions.opentelemetryInstrumentationAlpha}"
   implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:${versions.opentelemetryInstrumentationAlpha}"
   implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spring-integration-4.1:${versions.opentelemetryInstrumentationAlpha}"
   implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spring-scheduling-3.1:${versions.opentelemetryInstrumentationAlpha}"
   implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spring-webmvc-3.1:${versions.opentelemetryInstrumentationAlpha}"
   implementation "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spring-webflux-5.0:${versions.opentelemetryInstrumentationAlpha}"

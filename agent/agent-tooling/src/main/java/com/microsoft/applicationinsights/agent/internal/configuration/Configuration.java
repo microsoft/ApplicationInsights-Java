@@ -234,6 +234,8 @@ public class Configuration {
     public DisabledByDefaultInstrumentation javaHttpClient = new DisabledByDefaultInstrumentation();
     public DisabledByDefaultInstrumentation jaxws = new DisabledByDefaultInstrumentation();
     public DisabledByDefaultInstrumentation rabbitmq = new DisabledByDefaultInstrumentation();
+    public DisabledByDefaultInstrumentation springIntegration =
+        new DisabledByDefaultInstrumentation();
   }
 
   public static class DisabledByDefaultInstrumentation {
