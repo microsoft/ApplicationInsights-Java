@@ -24,8 +24,6 @@ tasks {
   shadowJar {
     configurations = listOf(shadowInclude)
 
-    archiveClassifier.set("")
-
     relocate("com.github.benmanes.caffeine", "io.opentelemetry.instrumentation.api.internal.shaded.caffeine")
     relocate("com.blogspot.mydailyjava.weaklockfree", "io.opentelemetry.instrumentation.api.internal.shaded.weaklockfree")
 
