@@ -41,16 +41,16 @@ public class NetworkStatsbeatTest {
 
   @Test
   public void testAddInstrumentation() {
-    networkStatsbeat.addInstrumentation("io.opentelemetry.javaagent.jdbc");
-    networkStatsbeat.addInstrumentation("io.opentelemetry.javaagent.tomcat-7.0");
-    networkStatsbeat.addInstrumentation("io.opentelemetry.javaagent.http-url-connection");
+    networkStatsbeat.addInstrumentation("io.opentelemetry.jdbc");
+    networkStatsbeat.addInstrumentation("io.opentelemetry.tomcat-7.0");
+    networkStatsbeat.addInstrumentation("io.opentelemetry.http-url-connection");
     assertThat(networkStatsbeat.getInstrumentation())
         .isEqualTo(
             (long)
                 (Math.pow(2, 13)
                     + Math.pow(2, 21)
                     + Math.pow(
-                        2, 57))); // Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP.)
+                        2, 57))); // Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP
   }
 
   @Test
