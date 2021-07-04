@@ -67,7 +67,10 @@ include ':agent:agent'
 // Projects for smokeTests
 include ':test:smoke'
 include ':test:smoke:appServers'
+include ':test:smoke:appServers:Tomcat.8.5'
 include ':test:smoke:appServers:Wildfly.11'
+include ':test:smoke:appServers:Jetty.9'
+include ':test:smoke:appServers:JavaSE'
 include ':test:smoke:testApps'
 
 include ':test:smoke:framework:testCore'
