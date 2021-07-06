@@ -26,20 +26,8 @@ import java.util.Date;
 
 public class ProfilerConfiguration {
 
-  // TODO (johnoliver) can we remove unused fields here?
-  //  if moshi is complaining, there's a setting to tell it to ignore missing fields
-  //  (which is probably good anyways in case server adds new fields)
-  @SuppressWarnings("unused")
-  @Json(name = "id")
-  private final String id;
-
   @Json(name = "lastModified")
   private final Date lastModified;
-
-  // TODO (johnoliver) can we remove unused fields here?
-  @SuppressWarnings("unused")
-  @Json(name = "enabledLastModified")
-  private final Date enabledLastModified;
 
   @Json(name = "enabled")
   private final boolean enabled;
@@ -56,31 +44,19 @@ public class ProfilerConfiguration {
   @Json(name = "defaultConfiguration")
   private final String defaultConfiguration;
 
-  // TODO (johnoliver) can we remove unused fields here?
-  @SuppressWarnings("unused")
-  @Json(name = "geoOverride")
-  private final String geoOverride;
-
-  // TODO (johnoliver) is this used?
   public ProfilerConfiguration(
-      String id,
       Date lastModified,
-      Date enabledLastModified,
       boolean enabled,
       String collectionPlan,
       String cpuTriggerConfiguration,
       String memoryTriggerConfiguration,
-      String defaultConfiguration,
-      String geoOverride) {
-    this.id = id;
+      String defaultConfiguration) {
     this.lastModified = new Date(lastModified.getTime());
-    this.enabledLastModified = new Date(enabledLastModified.getTime());
     this.enabled = enabled;
     this.collectionPlan = collectionPlan;
     this.cpuTriggerConfiguration = cpuTriggerConfiguration;
     this.memoryTriggerConfiguration = memoryTriggerConfiguration;
     this.defaultConfiguration = defaultConfiguration;
-    this.geoOverride = geoOverride;
   }
 
   public Date getLastModified() {

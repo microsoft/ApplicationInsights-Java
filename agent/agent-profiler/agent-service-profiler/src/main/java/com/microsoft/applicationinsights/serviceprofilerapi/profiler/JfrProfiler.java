@@ -34,6 +34,7 @@ import com.microsoft.jfr.JfrStreamingException;
 import com.microsoft.jfr.Recording;
 import com.microsoft.jfr.RecordingConfiguration;
 import com.microsoft.jfr.RecordingOptions;
+import com.microsoft.jfr.dcmd.FlightRecorderDiagnosticCommandConnection;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -152,7 +153,12 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
     try {
       // connect to mbeans
       MBeanServerConnection mbeanServer = ManagementFactory.getPlatformMBeanServer();
-      flightRecorderConnection = FlightRecorderConnection.connect(mbeanServer);
+      try {
+        flightRecorderConnection = FlightRecorderConnection.connect(mbeanServer);
+      } catch (JfrStreamingException | InstanceNotFoundException jfrStreamingException) {
+        // Possibly an older JVM, try using Diagnostic command
+        flightRecorderConnection = FlightRecorderDiagnosticCommandConnection.connect(mbeanServer);
+      }
     } catch (Exception e) {
       LOGGER.error("Failed to connect to mbean", e);
       return false;

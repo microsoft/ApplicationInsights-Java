@@ -171,17 +171,18 @@ class ServiceProfilerUploaderTest {
     return new ServiceProfilerClientV2() {
 
       @Override
-      public BlobAccessPass getUploadAccess(UUID profileId) {
-        return new BlobAccessPass("https://localhost:99999/a-blob-uri", null, "a-sas-token");
+      public Mono<BlobAccessPass> getUploadAccess(UUID profileId) {
+        return Mono.just(
+            new BlobAccessPass("https://localhost:99999/a-blob-uri", null, "a-sas-token"));
       }
 
       @Override
-      public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag) {
-        return null;
+      public Mono<ArtifactAcceptedResponse> reportUploadFinish(UUID profileId, String etag) {
+        return Mono.just(null);
       }
 
       @Override
-      public String getSettings(Date oldTimeStamp) {
+      public Mono<String> getSettings(Date oldTimeStamp) {
         return null;
       }
     };

@@ -44,24 +44,30 @@ public class ServiceProfilerSettingsClient {
 
   /** Pulls the latest settings. If they have not been modified empty is returned. */
   public Mono<ProfilerConfiguration> pullSettings() {
-    try {
-      String config = serviceProfilerClient.getSettings(lastModified);
-      ProfilerConfiguration serviceProfilerConfiguration = toServiceProfilerConfiguration(config);
-      if (serviceProfilerConfiguration != null
-          && serviceProfilerConfiguration.getLastModified().getTime() != lastModified.getTime()) {
-        lastModified = serviceProfilerConfiguration.getLastModified();
-        return Mono.just(serviceProfilerConfiguration);
-      }
-      return Mono.empty();
-    } catch (HttpResponseException e) {
-      if (e.getResponse().getStatusCode() == 304) {
-        return Mono.empty();
-      } else {
-        return Mono.error(e);
-      }
-    } catch (Exception e) {
-      return Mono.error(e);
-    }
+    return serviceProfilerClient
+        .getSettings(lastModified)
+        .flatMap(
+            config -> {
+              try {
+                ProfilerConfiguration serviceProfilerConfiguration =
+                    toServiceProfilerConfiguration(config);
+                if (serviceProfilerConfiguration != null
+                    && serviceProfilerConfiguration.getLastModified().getTime()
+                        != lastModified.getTime()) {
+                  lastModified = serviceProfilerConfiguration.getLastModified();
+                  return Mono.just(serviceProfilerConfiguration);
+                }
+                return Mono.empty();
+              } catch (HttpResponseException e) {
+                if (e.getResponse().getStatusCode() == 304) {
+                  return Mono.empty();
+                } else {
+                  return Mono.error(e);
+                }
+              } catch (Exception e) {
+                return Mono.error(e);
+              }
+            });
   }
 
   private static ProfilerConfiguration toServiceProfilerConfiguration(String config)

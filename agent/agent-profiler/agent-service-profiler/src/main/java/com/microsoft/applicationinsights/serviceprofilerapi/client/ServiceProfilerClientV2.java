@@ -23,17 +23,15 @@ package com.microsoft.applicationinsights.serviceprofilerapi.client;
 
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.UUID;
+import reactor.core.publisher.Mono;
 
 /** Client that can interact with the Service Profiler endpoint. */
 public interface ServiceProfilerClientV2 {
-  BlobAccessPass getUploadAccess(UUID profileId) throws URISyntaxException, IOException;
+  Mono<BlobAccessPass> getUploadAccess(UUID profileId);
 
-  ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag)
-      throws URISyntaxException, IOException;
+  Mono<ArtifactAcceptedResponse> reportUploadFinish(UUID profileId, String etag);
 
-  String getSettings(Date oldTimeStamp) throws IOException, URISyntaxException;
+  Mono<String> getSettings(Date oldTimeStamp);
 }
