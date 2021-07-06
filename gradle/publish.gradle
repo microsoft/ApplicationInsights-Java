@@ -71,24 +71,6 @@ def pomDevelopers() {
   }
 }
 
-def releaseNotesFileDir = "$project.buildDir/src/common/main/resources"
-task copyReleaseNotesToCommonResourcesDir(type: Copy) {
-  from(rootDir) {
-    include "release_notes.txt"
-  }
-  into releaseNotesFileDir
-}
-
-processResources.dependsOn copyReleaseNotesToCommonResourcesDir
-
-sourceSets {
-  main {
-    resources {
-      srcDir releaseNotesFileDir
-    }
-  }
-}
-
 repositories {
   mavenCentral()
 }
@@ -120,7 +102,7 @@ task prepareSourcesArchive(type: Jar) {
   }
 }
 
-task prepareJavadocArchive(type: Jar){
+task prepareJavadocArchive(type: Jar) {
   archiveClassifier = 'javadoc'
   from "$docsDir/javadoc"
   doFirst {

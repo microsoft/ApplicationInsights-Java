@@ -86,6 +86,9 @@ public class ConfigurationBuilder {
       "APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_JAXWS_ENABLED";
   private static final String APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_RABBITMQ_ENABLED =
       "APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_RABBITMQ_ENABLED";
+  private static final String
+      APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_SPRING_INTEGRATION_ENABLED =
+          "APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_SPRING_INTEGRATION_ENABLED";
 
   private static final String APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED =
       "APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED";
@@ -368,6 +371,10 @@ public class ConfigurationBuilder {
         overlayWithEnvVar(
             APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_RABBITMQ_ENABLED,
             config.preview.instrumentation.rabbitmq.enabled);
+    config.preview.instrumentation.springIntegration.enabled =
+        overlayWithEnvVar(
+            APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_SPRING_INTEGRATION_ENABLED,
+            config.preview.instrumentation.springIntegration.enabled);
 
     config.preview.liveMetrics.enabled =
         overlayWithEnvVar(

@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
-import static com.microsoft.applicationinsights.agent.internal.localstorage.PersistenceHelper.DEFAULT_FOLDER;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -46,13 +45,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import reactor.core.publisher.Mono;
 
 public class IntegrationTests {
@@ -60,6 +58,8 @@ public class IntegrationTests {
   private TelemetryChannel telemetryChannel;
   private LocalFileCache localFileCache;
   private LocalFileLoader localFileLoader;
+
+  @TempDir File tempFolder;
 
   @BeforeEach
   public void setup() throws MalformedURLException {
@@ -74,19 +74,8 @@ public class IntegrationTests {
         new TelemetryChannel(
             pipelineBuilder.build(),
             new URL("http://foo.bar"),
-            new LocalFileWriter(localFileCache));
-    localFileLoader = new LocalFileLoader(localFileCache);
-  }
-
-  @AfterEach
-  public void cleanup() {
-    Queue<String> queue = localFileCache.getPersistedFilesCache();
-    String filename;
-    while ((filename = queue.poll()) != null) {
-      File tempFile = new File(DEFAULT_FOLDER, filename);
-      assertThat(tempFile.exists()).isTrue();
-      assertThat(tempFile.delete()).isTrue();
-    }
+            new LocalFileWriter(localFileCache, tempFolder));
+    localFileLoader = new LocalFileLoader(localFileCache, tempFolder);
   }
 
   @Test

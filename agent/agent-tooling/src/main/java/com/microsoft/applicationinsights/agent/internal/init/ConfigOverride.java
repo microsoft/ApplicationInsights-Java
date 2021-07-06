@@ -77,6 +77,9 @@ class ConfigOverride {
     if (!config.preview.instrumentation.rabbitmq.enabled) {
       properties.put("otel.instrumentation.rabbitmq.enabled", "false");
     }
+    if (!config.preview.instrumentation.springIntegration.enabled) {
+      properties.put("otel.instrumentation.spring-integration.enabled", "false");
+    }
     if (!config.preview.instrumentation.jaxws.enabled) {
       properties.put("otel.instrumentation.jaxws.enabled", "false");
       properties.put("otel.instrumentation.axis2.enabled", "false");

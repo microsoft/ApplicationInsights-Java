@@ -27,7 +27,6 @@ import com.azure.core.http.HttpResponse;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.JsonEncodingException;
 import com.squareup.moshi.Moshi;
 import java.io.IOException;
 import java.util.concurrent.Executors;
@@ -65,13 +64,16 @@ class AzureMetadataService implements Runnable {
     // Querying Azure Metadata Service is required for every 15 mins since VM id will get updated
     // frequently.
     // Starting and restarting a VM will generate a new VM id each time.
-    // TODO (heya) need to confirm if restarting VM will also restart the Java Agent
     scheduledExecutor.scheduleWithFixedDelay(this, interval, interval, TimeUnit.SECONDS);
   }
 
+  // only used by tests
+  void updateMetadata(String response) throws IOException {
+    updateMetadata(jsonAdapter.fromJson(response));
+  }
+
   // visible for testing
-  void parseJsonResponse(String response) throws IOException {
-    MetadataInstanceResponse metadataInstanceResponse = jsonAdapter.fromJson(response);
+  private void updateMetadata(MetadataInstanceResponse metadataInstanceResponse) {
     attachStatsbeat.updateMetadataInstance(metadataInstanceResponse);
     customDimensions.setResourceProvider(ResourceProvider.RP_VM);
 
@@ -94,24 +96,40 @@ class AzureMetadataService implements Runnable {
   public void run() {
     HttpRequest request = new HttpRequest(HttpMethod.GET, ENDPOINT);
     request.setHeader("Metadata", "true");
+    HttpResponse response;
     try {
-      HttpResponse response = LazyHttpClient.getInstance().send(request).block();
-      if (response == null) {
-        // this shouldn't happen, the mono should complete with a response or a failure
-        throw new AssertionError("http response mono returned empty");
-      }
-      parseJsonResponse(response.toString());
-    } catch (JsonEncodingException jsonEncodingException) {
-      // When it's not VM/VMSS, server does not return json back, and instead it returns text like
-      // the following:
-      // "<br />Error: NetworkUnreachable (0x2743). <br />System.Net.Sockets.SocketException A
-      // socket operation was attempted to an unreachable network 169.254.169.254:80".
+      response = LazyHttpClient.getInstance().send(request).block();
+    } catch (RuntimeException e) {
       logger.debug(
-          "This is not running from an Azure VM or VMSS. Shut down AzureMetadataService scheduler.");
+          "Shutting down AzureMetadataService scheduler: is not running on Azure VM or VMSS");
+      logger.trace(e.getMessage(), e);
       scheduledExecutor.shutdown();
-    } catch (Exception ex) {
-      // TODO add backoff and retry if it's a sporadic failure
-      logger.debug("Fail to query Azure Metadata Service.", ex);
+      return;
     }
+
+    if (response == null) {
+      // this shouldn't happen, the mono should complete with a response or a failure
+      throw new AssertionError("http response mono returned empty");
+    }
+    String json = response.getBodyAsString().block();
+    if (json == null) {
+      // this shouldn't happen, the mono should complete with a response or a failure
+      throw new AssertionError("response body mono returned empty");
+    }
+
+    MetadataInstanceResponse metadataInstanceResponse;
+    try {
+      metadataInstanceResponse = jsonAdapter.fromJson(json);
+    } catch (IOException e) {
+      logger.debug(
+          "Shutting down AzureMetadataService scheduler:"
+              + " error parsing response from Azure Metadata Service: {}",
+          json,
+          e);
+      scheduledExecutor.shutdown();
+      return;
+    }
+
+    updateMetadata(metadataInstanceResponse);
   }
 }

@@ -34,9 +34,11 @@ public class LocalFileLoader {
   private static final Logger logger = LoggerFactory.getLogger(LocalFileLoader.class);
 
   private final LocalFileCache localFileCache;
+  private final File telemetryFolder;
 
-  public LocalFileLoader(LocalFileCache localFileCache) {
+  public LocalFileLoader(LocalFileCache localFileCache, File telemetryFolder) {
     this.localFileCache = localFileCache;
+    this.telemetryFolder = telemetryFolder;
   }
 
   // Load ByteBuffer from persisted files on disk in FIFO order.
@@ -48,7 +50,7 @@ public class LocalFileLoader {
 
     File tempFile =
         PersistenceHelper.renameFileExtension(
-            filenameToBeLoaded, PersistenceHelper.TEMPORARY_FILE_EXTENSION);
+            filenameToBeLoaded, PersistenceHelper.TEMPORARY_FILE_EXTENSION, telemetryFolder);
     if (tempFile == null) {
       return null;
     }

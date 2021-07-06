@@ -19,48 +19,42 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.smoketestapp.model;
+package com.microsoft.applicationinsights.smoketestapp;
 
-public enum BinaryOperator {
-  ADDITION("plus", "+"),
-  SUBTRACTION("minus", "-");
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import redis.clients.jedis.Jedis;
 
-  private final String verb;
-  private final String symbol;
+@WebServlet("/*")
+public class JedisTestServlet extends HttpServlet {
 
-  BinaryOperator(String verb, String symbol) {
-    this.verb = verb;
-    this.symbol = symbol;
-  }
-
-  public String getVerb() {
-    return verb;
-  }
-
-  public String getSymbol() {
-    return symbol;
-  }
-
-  public double compute(double leftOperand, double rightOperand) {
-    switch (this) {
-      case ADDITION:
-        return leftOperand + rightOperand;
-      case SUBTRACTION:
-        return leftOperand - rightOperand;
-      default:
-        throw new UnsupportedOperationException(this + " compute is not yet implemented");
+  @Override
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
+    try {
+      doGetInternal(req);
+      resp.getWriter().println("ok");
+    } catch (ServletException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new ServletException(e);
     }
   }
 
-  public static BinaryOperator fromVerb(String verb) {
-    if (verb == null || verb.length() == 0) {
-      throw new IllegalArgumentException("verb must be non-null, non-empty");
+  private void doGetInternal(HttpServletRequest req) throws Exception {
+    String pathInfo = req.getPathInfo();
+    if (pathInfo.equals("/jedis")) {
+      jedis();
+    } else if (!pathInfo.equals("/")) {
+      throw new ServletException("Unexpected url: " + pathInfo);
     }
-    for (BinaryOperator op : BinaryOperator.values()) {
-      if (op.getVerb().equals(verb)) {
-        return op;
-      }
-    }
-    return null;
+  }
+
+  private void jedis() {
+    String hostname = System.getenv("REDIS");
+    Jedis jedis = new Jedis(hostname, 6379);
+    jedis.get("test");
   }
 }

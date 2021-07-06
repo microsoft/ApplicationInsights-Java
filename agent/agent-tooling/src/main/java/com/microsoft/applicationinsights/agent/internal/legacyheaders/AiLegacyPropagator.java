@@ -38,7 +38,7 @@ import java.util.Collection;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.annotation.Nullable;
 
-// this legacyheaders handles the legacy Application Insights distributed tracing header format
+// this propagator handles the legacy Application Insights distributed tracing header format
 public class AiLegacyPropagator implements TextMapPropagator {
 
   private static final TextMapPropagator instance = new AiLegacyPropagator();

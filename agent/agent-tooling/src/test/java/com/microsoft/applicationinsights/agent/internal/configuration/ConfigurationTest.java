@@ -466,6 +466,16 @@ class ConfigurationTest {
   }
 
   @Test
+  void shouldOverridePreviewSpringIntegrationInstrumentation() throws IOException {
+    envVars.set("APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_SPRING_INTEGRATION_ENABLED", "true");
+
+    Configuration configuration = loadConfiguration();
+    ConfigurationBuilder.overlayEnvVars(configuration);
+
+    assertThat(configuration.preview.instrumentation.springIntegration.enabled).isTrue();
+  }
+
+  @Test
   void shouldOverridePreviewLiveMetricsEnabled() throws IOException {
     envVars.set("APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED", "false");
 
