@@ -411,7 +411,7 @@ public class Exporter implements SpanExporter {
       TelemetryUtil.getProperties(data).put("LoggerName", loggerName);
     }
     if (threadName != null) {
-      TelemetryUtil.getProperties(data).put("ThreadName", loggerName);
+      TelemetryUtil.getProperties(data).put("ThreadName", threadName);
     }
   }
 
