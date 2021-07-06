@@ -58,17 +58,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Exporter implements SpanExporter {
 
   private static final Logger logger = LoggerFactory.getLogger(Exporter.class);
-
-  private static final Pattern COMPONENT_PATTERN =
-      Pattern.compile("io\\.opentelemetry\\.javaagent\\.([^0-9]*)(-[0-9.]*)?");
 
   private static final Set<String> SQL_DB_SYSTEMS;
 
@@ -173,13 +168,11 @@ public class Exporter implements SpanExporter {
     SpanKind kind = span.getKind();
     String instrumentationName = span.getInstrumentationLibraryInfo().getName();
     StatsbeatModule.get().getNetworkStatsbeat().addInstrumentation(instrumentationName);
-    Matcher matcher = COMPONENT_PATTERN.matcher(instrumentationName);
-    String stdComponent = matcher.matches() ? matcher.group(1) : null;
     if (kind == SpanKind.INTERNAL) {
       Boolean isLog = span.getAttributes().get(AI_LOG_KEY);
       if (isLog != null && isLog) {
         exportLogSpan(span);
-      } else if ("spring-scheduling".equals(stdComponent)
+      } else if (instrumentationName.startsWith("io.opentelemetry.spring-scheduling-")
           && !span.getParentSpanContext().isValid()) {
         // TODO (trask) AI mapping: need semantic convention for determining whether to map INTERNAL
         // to request or
@@ -731,9 +724,7 @@ public class Exporter implements SpanExporter {
   private void exportEvents(SpanData span, float samplingPercentage) {
     for (EventData event : span.getEvents()) {
       boolean lettuce51 =
-          span.getInstrumentationLibraryInfo()
-              .getName()
-              .equals("io.opentelemetry.javaagent.lettuce-5.1");
+          span.getInstrumentationLibraryInfo().getName().equals("io.opentelemetry.lettuce-5.1");
       if (lettuce51 && event.getName().startsWith("redis.encode.")) {
         // special case as these are noisy and come from the underlying library itself
         continue;
@@ -753,11 +744,14 @@ public class Exporter implements SpanExporter {
       TelemetryEventData data = new TelemetryEventData();
       telemetryClient.initEventTelemetry(telemetry, data);
 
-      // set common properties
+      // common properties
       setOperationTags(telemetry, span.getTraceId(), span.getSpanId());
       setTime(telemetry, event.getEpochNanos());
       setExtraAttributes(telemetry, data, event.getAttributes());
       setSampleRate(telemetry, samplingPercentage);
+
+      // event-specific properties
+      data.setName(event.getName());
 
       telemetryClient.trackAsync(telemetry);
     }

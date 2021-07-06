@@ -33,9 +33,9 @@ public class InstrumentationsTest {
 
   static {
     instrumentations = new HashSet<>();
-    instrumentations.add("io.opentelemetry.javaagent.jdbc");
-    instrumentations.add("io.opentelemetry.javaagent.tomcat-7.0");
-    instrumentations.add("io.opentelemetry.javaagent.http-url-connection");
+    instrumentations.add("io.opentelemetry.jdbc");
+    instrumentations.add("io.opentelemetry.tomcat-7.0");
+    instrumentations.add("io.opentelemetry.http-url-connection");
   }
 
   private static final long EXPECTED_INSTRUMENTATION =
