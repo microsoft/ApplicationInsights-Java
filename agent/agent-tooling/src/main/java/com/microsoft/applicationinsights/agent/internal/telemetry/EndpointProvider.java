@@ -41,7 +41,6 @@ public class EndpointProvider {
   private volatile URL liveEndpointUrl;
   private volatile URL profilerEndpoint;
   private volatile URL snapshotEndpoint;
-  private volatile URL statsbeatEndpoint;
   private volatile URL statsbeatEndpointUrl;
 
   public EndpointProvider() {
@@ -51,7 +50,6 @@ public class EndpointProvider {
       liveEndpointUrl = buildLiveUri(new URL(DefaultEndpoints.LIVE_ENDPOINT));
       profilerEndpoint = new URL(DefaultEndpoints.PROFILER_ENDPOINT);
       snapshotEndpoint = new URL(DefaultEndpoints.SNAPSHOT_ENDPOINT);
-      statsbeatEndpoint = new URL(DefaultEndpoints.INGESTION_ENDPOINT);
       statsbeatEndpointUrl = buildIngestionUrl(ingestionEndpointUrl);
     } catch (MalformedURLException e) {
       throw new IllegalStateException("ConnectionString.Defaults are invalid", e);
@@ -74,7 +72,7 @@ public class EndpointProvider {
     return statsbeatEndpointUrl;
   }
 
-  public synchronized URL getAppIdEndpointUrl(String instrumentationKey) {
+  public URL getAppIdEndpointUrl(String instrumentationKey) {
     return buildAppIdUrl(instrumentationKey);
   }
 
@@ -101,7 +99,8 @@ public class EndpointProvider {
     return new URL(uriString + appendPath);
   }
 
-  public URL getIngestionEndpoint() {
+  // only used by tests
+  URL getIngestionEndpoint() {
     return ingestionEndpoint;
   }
 
@@ -126,18 +125,12 @@ public class EndpointProvider {
     }
   }
 
-  public URL getStatsbeatEndpoint() {
-    return statsbeatEndpoint;
-  }
-
   void setStatsbeatEndpoint(URL statsbeatEndpoint) {
     try {
       this.statsbeatEndpointUrl = buildIngestionUrl(statsbeatEndpoint);
     } catch (MalformedURLException e) {
       throw new IllegalStateException("could not construct statsbeat ingestion endpoint uri", e);
     }
-
-    this.statsbeatEndpoint = statsbeatEndpoint;
   }
 
   public URL getProfilerEndpoint() {
