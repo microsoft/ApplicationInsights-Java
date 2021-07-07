@@ -242,27 +242,29 @@ class ProfilerServiceTest {
   private static ServiceProfilerClientV2 stubClient(boolean triggerNow) {
     return new ServiceProfilerClientV2() {
       @Override
-      public BlobAccessPass getUploadAccess(UUID profileId) {
-        return new BlobAccessPass("https://localhost:99999/a-blob-uri", null, "a-sas-token");
+      public Mono<BlobAccessPass> getUploadAccess(UUID profileId) {
+        return Mono.just(
+            new BlobAccessPass("https://localhost:99999/a-blob-uri", null, "a-sas-token"));
       }
 
       @Override
-      public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag) {
-        return null;
+      public Mono<ArtifactAcceptedResponse> reportUploadFinish(UUID profileId, String etag) {
+        return Mono.just(null);
       }
 
       @Override
-      public String getSettings(Date oldTimeStamp) {
+      public Mono<String> getSettings(Date oldTimeStamp) {
         String expiration = triggerNow ? "999999999999999999" : "5249157885138288517";
 
-        return "{\"id\":\"8929ed2e-24da-4ad4-8a8b-5a5ebc03abb4\",\"lastModified\":\"2021-01-25T15:46:11"
-            + ".0900613+00:00\",\"enabledLastModified\":\"0001-01-01T00:00:00+00:00\",\"enabled\":true,\"collectionPlan\":\"--single --mode immediate --immediate-profiling-duration 120  "
-            + "--expiration "
-            + expiration
-            + " --settings-moniker a-settings-moniker\",\"cpuTriggerConfiguration\":\"--cpu-trigger-enabled true --cpu-threshold 80 "
-            + "--cpu-trigger-profilingDuration 30 --cpu-trigger-cooldown 14400\",\"memoryTriggerConfiguration\":\"--memory-trigger-enabled true --memory-threshold 20 "
-            + "--memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400\",\"defaultConfiguration\":\"--sampling-enabled true --sampling-rate 5 --sampling-profiling-duration "
-            + "120\",\"geoOverride\":null}";
+        return Mono.just(
+            "{\"id\":\"8929ed2e-24da-4ad4-8a8b-5a5ebc03abb4\",\"lastModified\":\"2021-01-25T15:46:11"
+                + ".0900613+00:00\",\"enabledLastModified\":\"0001-01-01T00:00:00+00:00\",\"enabled\":true,\"collectionPlan\":\"--single --mode immediate --immediate-profiling-duration 120  "
+                + "--expiration "
+                + expiration
+                + " --settings-moniker a-settings-moniker\",\"cpuTriggerConfiguration\":\"--cpu-trigger-enabled true --cpu-threshold 80 "
+                + "--cpu-trigger-profilingDuration 30 --cpu-trigger-cooldown 14400\",\"memoryTriggerConfiguration\":\"--memory-trigger-enabled true --memory-threshold 20 "
+                + "--memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400\",\"defaultConfiguration\":\"--sampling-enabled true --sampling-rate 5 --sampling-profiling-duration "
+                + "120\",\"geoOverride\":null}");
       }
     };
   }

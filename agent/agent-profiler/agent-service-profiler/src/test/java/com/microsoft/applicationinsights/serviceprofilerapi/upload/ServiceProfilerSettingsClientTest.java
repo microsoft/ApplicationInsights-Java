@@ -38,7 +38,7 @@ class ServiceProfilerSettingsClientTest {
   void badServiceResponseDoesNotProvideReturn() throws IOException, URISyntaxException {
     ServiceProfilerClientV2 serviceProfilerClient = Mockito.mock(ServiceProfilerClientV2.class);
 
-    Mockito.when(serviceProfilerClient.getSettings(Mockito.any())).thenReturn("");
+    Mockito.when(serviceProfilerClient.getSettings(Mockito.any())).thenReturn(Mono.just(""));
 
     ServiceProfilerSettingsClient settingsClient =
         new ServiceProfilerSettingsClient(serviceProfilerClient);
