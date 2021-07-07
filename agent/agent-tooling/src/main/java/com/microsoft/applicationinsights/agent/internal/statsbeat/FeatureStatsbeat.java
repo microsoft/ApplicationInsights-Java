@@ -52,7 +52,7 @@ class FeatureStatsbeat extends BaseStatsbeat {
         createStatsbeatTelemetry(telemetryClient, FEATURE_METRIC_NAME, 0);
     TelemetryUtil.getProperties(statsbeatTelemetry.getData().getBaseData())
         .put("feature", String.valueOf(getFeature()));
-    telemetryClient.trackAsync(statsbeatTelemetry);
+    telemetryClient.trackStatsbeatAsync(statsbeatTelemetry);
   }
 
   void trackAadEnabled(boolean aadEnabled) {

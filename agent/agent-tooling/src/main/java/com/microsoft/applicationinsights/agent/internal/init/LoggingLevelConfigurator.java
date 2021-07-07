@@ -40,8 +40,8 @@ public class LoggingLevelConfigurator {
   public void updateLoggerLevel(Logger logger) {
     Level loggerLevel;
     String name = logger.getName();
-    if (name.startsWith("org.apache.http")) {
-      // never want to log apache http at trace or debug, it's just way too verbose
+    if (name.startsWith("reactor.netty")) {
+      // never want to log reactor netty at trace or debug, it's just way too verbose
       loggerLevel = getAtLeastInfoLevel(level);
     } else if (name.startsWith("io.grpc.Context")) {
       // never want to log io.grpc.Context at trace or debug, as it logs confusing stack trace that

@@ -60,15 +60,15 @@ public class TelemetryChannel {
   }
 
   private final HttpPipeline pipeline;
-  private final URL endpoint;
+  private final URL endpointUrl;
   private final LocalFileWriter localFileWriter;
 
   public static TelemetryChannel create(
-      URL endpoint,
+      URL endpointUrl,
       Configuration.AadAuthentication aadAuthentication,
       LocalFileWriter localFileWriter) {
     HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(aadAuthentication);
-    return new TelemetryChannel(httpPipeline, endpoint, localFileWriter);
+    return new TelemetryChannel(httpPipeline, endpointUrl, localFileWriter);
   }
 
   public CompletableResultCode sendRawBytes(ByteBuffer buffer) {
@@ -76,9 +76,9 @@ public class TelemetryChannel {
   }
 
   // used by tests only
-  public TelemetryChannel(HttpPipeline pipeline, URL endpoint, LocalFileWriter localFileWriter) {
+  public TelemetryChannel(HttpPipeline pipeline, URL endpointUrl, LocalFileWriter localFileWriter) {
     this.pipeline = pipeline;
-    this.endpoint = endpoint;
+    this.endpointUrl = endpointUrl;
     this.localFileWriter = localFileWriter;
   }
 
@@ -127,7 +127,7 @@ public class TelemetryChannel {
    * sent as {@code List<ByteBuffer>}. Persisted telemetries will be sent as byte[]
    */
   private CompletableResultCode internalSend(List<ByteBuffer> byteBuffers) {
-    HttpRequest request = new HttpRequest(HttpMethod.POST, endpoint + "v2.1/track");
+    HttpRequest request = new HttpRequest(HttpMethod.POST, endpointUrl);
 
     request.setBody(Flux.fromIterable(byteBuffers));
     int contentLength = byteBuffers.stream().mapToInt(ByteBuffer::limit).sum();

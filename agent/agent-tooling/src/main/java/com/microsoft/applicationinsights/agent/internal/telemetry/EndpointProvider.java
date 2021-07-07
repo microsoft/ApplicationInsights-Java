@@ -50,7 +50,7 @@ public class EndpointProvider {
       liveEndpointUrl = buildLiveUri(new URL(DefaultEndpoints.LIVE_ENDPOINT));
       profilerEndpoint = new URL(DefaultEndpoints.PROFILER_ENDPOINT);
       snapshotEndpoint = new URL(DefaultEndpoints.SNAPSHOT_ENDPOINT);
-      statsbeatEndpointUrl = ingestionEndpointUrl;
+      statsbeatEndpointUrl = buildIngestionUrl(ingestionEndpointUrl);
     } catch (MalformedURLException e) {
       throw new IllegalStateException("ConnectionString.Defaults are invalid", e);
     }
@@ -68,12 +68,11 @@ public class EndpointProvider {
     return ingestionEndpointUrl;
   }
 
-  // TODO (heya) this looks unused?
   public URL getStatsbeatEndpointUrl() {
     return statsbeatEndpointUrl;
   }
 
-  public synchronized URL getAppIdEndpointUrl(String instrumentationKey) {
+  public URL getAppIdEndpointUrl(String instrumentationKey) {
     return buildAppIdUrl(instrumentationKey);
   }
 
@@ -100,7 +99,8 @@ public class EndpointProvider {
     return new URL(uriString + appendPath);
   }
 
-  public URL getIngestionEndpoint() {
+  // only used by tests
+  URL getIngestionEndpoint() {
     return ingestionEndpoint;
   }
 

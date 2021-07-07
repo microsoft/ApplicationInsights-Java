@@ -36,6 +36,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestDat
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.common.LocalFileSystemUtils;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -45,6 +46,7 @@ import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileSe
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,7 +60,17 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class TelemetryClient {
 
-  // TODO (heya) can you confirm these are the same as used in 3.1.1?
+  private static final String TELEMETRY_FOLDER = "telemetry";
+  private static final String STATSBEAT_FOLDER = "statsbeat";
+
+  /**
+   * Windows: C:\Users\{USER_NAME}\AppData\Local\Temp\applicationinsights Linux:
+   * /var/temp/applicationinsights We will store all persisted files in this folder for all apps.
+   * TODO it is a good security practice to purge data after 24 hours in this folder.
+   */
+  private static final File DEFAULT_FOLDER =
+      new File(LocalFileSystemUtils.getTempDir(), "applicationinsights");
+
   private static final String EVENT_TELEMETRY_NAME = "Event";
   private static final String EXCEPTION_TELEMETRY_NAME = "Exception";
   private static final String MESSAGE_TELEMETRY_NAME = "Message";
@@ -93,6 +105,7 @@ public class TelemetryClient {
 
   private final Object channelInitLock = new Object();
   private volatile @MonotonicNonNull BatchSpanProcessor channelBatcher;
+  private volatile @MonotonicNonNull BatchSpanProcessor statsbeatChannelBatcher;
 
   // only used by tests
   public TelemetryClient() {
@@ -142,7 +155,6 @@ public class TelemetryClient {
   }
 
   public void trackAsync(TelemetryItem telemetry) {
-
     MonitorDomain data = telemetry.getData().getBaseData();
     if (data instanceof MetricsData) {
       MetricsData metricsData = (MetricsData) data;
@@ -184,6 +196,13 @@ public class TelemetryClient {
     getChannelBatcher().trackAsync(telemetry);
   }
 
+  public void trackStatsbeatAsync(TelemetryItem telemetry) {
+    // batching, retry, throttling, and writing to disk on failure occur downstream
+    // for simplicity not reporting back success/failure from this layer
+    // only that it was successfully delivered to the next layer
+    getStatsbeatChannelBatcher().trackAsync(telemetry);
+  }
+
   public CompletableResultCode flushChannelBatcher() {
     return channelBatcher.forceFlush();
   }
@@ -193,17 +212,37 @@ public class TelemetryClient {
       synchronized (channelInitLock) {
         if (channelBatcher == null) {
           LocalFileCache localFileCache = new LocalFileCache();
-          LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache);
-          LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache);
+          File telemetryFolder = getTelemetryFolder(TELEMETRY_FOLDER);
+          LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, telemetryFolder);
+          LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, telemetryFolder);
           TelemetryChannel channel =
               TelemetryChannel.create(
-                  endpointProvider.getIngestionEndpoint(), aadAuthentication, localFileWriter);
+                  endpointProvider.getIngestionEndpointUrl(), aadAuthentication, localFileWriter);
           LocalFileSender.start(localFileLoader, channel);
           channelBatcher = BatchSpanProcessor.builder(channel).build();
         }
       }
     }
     return channelBatcher;
+  }
+
+  public BatchSpanProcessor getStatsbeatChannelBatcher() {
+    if (statsbeatChannelBatcher == null) {
+      synchronized (channelInitLock) {
+        if (statsbeatChannelBatcher == null) {
+          LocalFileCache localFileCache = new LocalFileCache();
+          File statsbeatFolder = getTelemetryFolder(STATSBEAT_FOLDER);
+          LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, statsbeatFolder);
+          LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, statsbeatFolder);
+          TelemetryChannel channel =
+              TelemetryChannel.create(
+                  endpointProvider.getStatsbeatEndpointUrl(), aadAuthentication, localFileWriter);
+          LocalFileSender.start(localFileLoader, channel);
+          statsbeatChannelBatcher = BatchSpanProcessor.builder(channel).build();
+        }
+      }
+    }
+    return statsbeatChannelBatcher;
   }
 
   /** Gets or sets the default instrumentation key for the application. */
@@ -404,5 +443,21 @@ public class TelemetryClient {
     telemetry.setData(monitorBase);
     monitorBase.setBaseType(baseType);
     monitorBase.setBaseData(data);
+  }
+
+  // visible for testing
+  public static File getTelemetryFolder(String name) {
+    File subdirectory = new File(DEFAULT_FOLDER, name);
+
+    if (!subdirectory.exists()) {
+      subdirectory.mkdirs();
+    }
+
+    if (!subdirectory.exists() || !subdirectory.canRead() || !subdirectory.canWrite()) {
+      throw new IllegalArgumentException(
+          "subdirectory must exist and have read and write permissions.");
+    }
+
+    return subdirectory;
   }
 }

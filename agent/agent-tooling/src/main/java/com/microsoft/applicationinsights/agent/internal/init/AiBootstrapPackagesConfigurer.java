@@ -21,14 +21,14 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import io.opentelemetry.javaagent.spi.BootstrapPackagesProvider;
-import java.util.Arrays;
-import java.util.List;
+import io.opentelemetry.instrumentation.api.config.Config;
+import io.opentelemetry.javaagent.extension.bootstrap.BootstrapPackagesBuilder;
+import io.opentelemetry.javaagent.extension.bootstrap.BootstrapPackagesConfigurer;
 
-public class AiBootstrapPackageProvider implements BootstrapPackagesProvider {
+public class AiBootstrapPackagesConfigurer implements BootstrapPackagesConfigurer {
 
   @Override
-  public List<String> getPackagePrefixes() {
-    return Arrays.asList("com.microsoft.applicationinsights.agent.bootstrap");
+  public void configure(Config config, BootstrapPackagesBuilder bootstrapPackagesBuilder) {
+    bootstrapPackagesBuilder.add("com.microsoft.applicationinsights.agent.bootstrap");
   }
 }

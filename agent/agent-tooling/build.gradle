@@ -79,9 +79,6 @@ dependencies {
   implementation "io.opentelemetry:opentelemetry-api:${versions.opentelemetry}"
   implementation "org.jctools:jctools-core:3.3.0"
 
-  // to use the cache from opentelemetry javaagent
-  implementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-caching:${versions.opentelemetryInstrumentationAlpha}"
-
   compileOnly project(":agent:agent-bootstrap")
   compileOnly "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions.opentelemetryInstrumentationAlpha}"
 
