@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
+import com.microsoft.applicationinsights.agent.internal.common.ExceptionStats;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -37,6 +38,11 @@ public final class LocalFileWriter {
 
   private final LocalFileCache localFileCache;
   private final File telemetryFolder;
+
+  private static final ExceptionStats diskExceptionStats =
+      new ExceptionStats(
+          PersistenceHelper.class,
+          "Unable to store telemetry to disk (telemetry will be discarded):");
 
   public LocalFileWriter(LocalFileCache localFileCache, File telemetryFolder) {
     this.telemetryFolder = telemetryFolder;
@@ -68,7 +74,8 @@ public final class LocalFileWriter {
 
     logger.info(
         "List<ByteBuffers> has been persisted to file and will be sent when the network becomes available.");
-    // TODO (heya) track data localstorage success via Statsbeat
+    // TODO (heya) track data persistence success via Statsbeat
+    diskExceptionStats.recordSuccess();
     return true;
   }
 
@@ -80,7 +87,7 @@ public final class LocalFileWriter {
       return true;
     } catch (IOException ex) {
       // TODO (heya) track IO write failure via Statsbeat
-      logger.error("Fail to write to file.", ex);
+      diskExceptionStats.recordFailure(String.format("unable to write to file: %s", ex), ex);
       return false;
     }
   }

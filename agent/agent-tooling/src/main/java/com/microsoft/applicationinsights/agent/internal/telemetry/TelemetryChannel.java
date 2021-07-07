@@ -29,6 +29,8 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryI
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.applicationinsights.agent.internal.common.ExceptionStats;
+import com.microsoft.applicationinsights.agent.internal.common.ExceptionUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
@@ -40,6 +42,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +57,12 @@ public class TelemetryChannel {
   private static final ObjectMapper mapper = new ObjectMapper();
 
   private static final AppInsightsByteBufferPool byteBufferPool = new AppInsightsByteBufferPool();
+
+  private static final ExceptionStats networkExceptionStats =
+      new ExceptionStats(
+          TelemetryChannel.class,
+          "Unable to send telemetry to the ingestion service (telemetry will be stored to disk):");
+  private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
   static {
     mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -87,13 +96,15 @@ public class TelemetryChannel {
     try {
       byteBuffers = encode(telemetryItems);
     } catch (Throwable t) {
-      logger.error("Error encoding telemetry items: {}", t.getMessage(), t);
+      networkExceptionStats.recordFailure(
+          String.format("Error encoding telemetry items: %s", t.getMessage()), t);
       return CompletableResultCode.ofFailure();
     }
     try {
       return internalSend(byteBuffers);
     } catch (Throwable t) {
-      logger.error("Error sending telemetry items: {}", t.getMessage(), t);
+      networkExceptionStats.recordFailure(
+          String.format("Error sending telemetry items: %s", t.getMessage()), t);
       return CompletableResultCode.ofFailure();
     }
   }
@@ -150,28 +161,19 @@ public class TelemetryChannel {
     // already, see above)
     //  * write to disk on second failure
     CompletableResultCode result = new CompletableResultCode();
-    List<ByteBuffer> finalByteBuffers = byteBuffers;
     final long startTime = System.currentTimeMillis();
     pipeline
         .send(request)
         .contextWrite(Context.of(Tracer.DISABLE_TRACING_KEY, true))
         .subscribe(
             response -> {
-              parseResponseCode(response.getStatusCode());
+              parseResponseCode(response.getStatusCode(), byteBuffers, byteBuffers);
             },
             error -> {
               StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
-
-              if (!localFileWriter.writeToDisk(byteBuffers)) {
-                logger.warn(
-                    "Fail to write {} to disk.",
-                    (finalByteBuffers != null ? "List<ByteBuffers>" : "byte[]"));
-                // TODO (heya) track # of write failure via Statsbeat
-              }
-
-              if (finalByteBuffers != null) {
-                byteBufferPool.offer(finalByteBuffers);
-              }
+              ExceptionUtils.parseError(
+                  error, endpointUrl.toString(), friendlyExceptionThrown, logger);
+              writeToDiskOnFailure(byteBuffers, byteBuffers);
               result.fail();
             },
             () -> {
@@ -179,21 +181,38 @@ public class TelemetryChannel {
                   .getNetworkStatsbeat()
                   .incrementRequestSuccessCount(System.currentTimeMillis() - startTime);
 
-              if (finalByteBuffers != null) {
-                byteBufferPool.offer(finalByteBuffers);
+              if (byteBuffers != null) {
+                byteBufferPool.offer(byteBuffers);
               }
               result.succeed();
             });
     return result;
   }
 
-  private static void parseResponseCode(int statusCode) {
+  private void writeToDiskOnFailure(
+      List<ByteBuffer> byteBuffers, List<ByteBuffer> finalByteBuffers) {
+    if (!localFileWriter.writeToDisk(byteBuffers)) {
+      networkExceptionStats.recordFailure(
+          String.format(
+              "Fail to write %s to disk.",
+              (finalByteBuffers != null ? "List<ByteBuffers>" : "byte[]")));
+      // TODO (heya) track # of write failure via Statsbeat
+    }
+
+    if (finalByteBuffers != null) {
+      byteBufferPool.offer(finalByteBuffers);
+    }
+  }
+
+  private void parseResponseCode(
+      int statusCode, List<ByteBuffer> byteBuffers, List<ByteBuffer> finalByteBuffers) {
     switch (statusCode) {
       case 401: // UNAUTHORIZED
       case 403: // FORBIDDEN
         logger.warn(
             "Failed to send telemetry with status code:{}, please check your credentials",
             statusCode);
+        writeToDiskOnFailure(byteBuffers, finalByteBuffers);
         break;
       case 408: // REQUEST TIMEOUT
       case 500: // INTERNAL SERVER ERROR
@@ -203,6 +222,9 @@ public class TelemetryChannel {
         // TODO handle throttling
         // TODO (heya) track throttling count via Statsbeat
         StatsbeatModule.get().getNetworkStatsbeat().incrementThrottlingCount();
+        break;
+      case 200: // SUCCESS
+        networkExceptionStats.recordSuccess();
         break;
       case 206: // PARTIAL CONTENT, Breeze-specific: PARTIAL SUCCESS
         // TODO handle partial success

@@ -22,13 +22,18 @@
 package com.microsoft.applicationinsights.agent.internal.common;
 
 public class FriendlyException extends RuntimeException {
+  // TODO (trask) this seems like default for failing to send telemetry, but not necessarily default
+  //  for all friendly exceptions
+  private static final String DEFAULT_BANNER =
+      "ApplicationInsights Java Agent failed to send telemetry data";
+
   public FriendlyException() {
     super();
   }
 
   public FriendlyException(String message, String action) {
     // TODO (trask) can these constructors cascade?
-    super(populateFriendlyMessage(message, action));
+    super(populateFriendlyMessage(message, action, DEFAULT_BANNER, ""));
   }
 
   public FriendlyException(String banner, String action, String message, String note) {
@@ -39,46 +44,32 @@ public class FriendlyException extends RuntimeException {
     super(populateFriendlyMessage("", action, banner, ""), cause);
   }
 
-  // TODO consolidate with method below?
   public String getMessageWithBanner(String banner) {
-    return System.lineSeparator()
-        + "*************************"
-        + System.lineSeparator()
-        + banner
-        + System.lineSeparator()
-        + "*************************"
-        // getMessage() is prefixed with lineSeparator already
-        + getMessage();
+    return populateFriendlyMessage(getMessage(), "", banner, "");
   }
 
-  // TODO consolidate with method below
-  private static String populateFriendlyMessage(String description, String action) {
-    return System.lineSeparator()
-        + "Description:"
-        + System.lineSeparator()
-        + description
-        + System.lineSeparator()
-        + System.lineSeparator()
-        + "Action:"
-        + System.lineSeparator()
-        + action
-        + System.lineSeparator();
+  public static String getMessageWithDefaultBanner(String message) {
+    return populateFriendlyMessage(message, "", DEFAULT_BANNER, "");
   }
 
-  private static String populateFriendlyMessage(
+  public static String populateFriendlyMessage(
       String description, String action, String banner, String note) {
     StringBuilder messageBuilder = new StringBuilder();
     messageBuilder.append(System.lineSeparator());
     messageBuilder.append("*************************").append(System.lineSeparator());
     messageBuilder.append(banner).append(System.lineSeparator());
     messageBuilder.append("*************************").append(System.lineSeparator());
-    messageBuilder.append(System.lineSeparator());
-    messageBuilder.append("Description:").append(System.lineSeparator());
-    messageBuilder.append(description).append(System.lineSeparator());
-    messageBuilder.append(System.lineSeparator());
-    messageBuilder.append("Action:").append(System.lineSeparator());
-    messageBuilder.append(action).append(System.lineSeparator());
-    if (!note.isEmpty()) {
+    if (!Strings.isNullOrEmpty(description)) {
+      messageBuilder.append(System.lineSeparator());
+      messageBuilder.append("Description:").append(System.lineSeparator());
+      messageBuilder.append(description).append(System.lineSeparator());
+    }
+    if (!Strings.isNullOrEmpty(action)) {
+      messageBuilder.append(System.lineSeparator());
+      messageBuilder.append("Action:").append(System.lineSeparator());
+      messageBuilder.append(action).append(System.lineSeparator());
+    }
+    if (!Strings.isNullOrEmpty(note)) {
       messageBuilder.append(System.lineSeparator());
       messageBuilder.append("Note:").append(System.lineSeparator());
       messageBuilder.append(note).append(System.lineSeparator());

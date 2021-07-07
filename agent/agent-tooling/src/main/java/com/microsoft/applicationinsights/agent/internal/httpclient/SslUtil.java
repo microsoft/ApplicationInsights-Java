@@ -27,8 +27,8 @@ import java.io.File;
 
 public class SslUtil {
 
-  public static FriendlyException newSslFriendlyException(String url) {
-    return new FriendlyException(
+  public static String friendlyMessage(String url) {
+    return FriendlyException.populateFriendlyMessage(
         getSslFriendlyExceptionBanner(url),
         getSslFriendlyExceptionAction(url),
         getSslFriendlyExceptionMessage(),
