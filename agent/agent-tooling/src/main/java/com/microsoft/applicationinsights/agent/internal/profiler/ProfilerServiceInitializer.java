@@ -22,10 +22,10 @@
 package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import com.azure.core.http.HttpPipeline;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MessageData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.MessageData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;

@@ -257,8 +257,6 @@ public class LoggingConfigurator {
     loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger("muzzleMatcher"));
     loggingLevelConfigurator.updateLoggerLevel(
         loggerContext.getLogger("com.microsoft.applicationinsights"));
-    loggingLevelConfigurator.updateLoggerLevel(
-        loggerContext.getLogger("com.azure.monitor.opentelemetry.exporter"));
     loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger(ROOT_LOGGER_NAME));
   }
 

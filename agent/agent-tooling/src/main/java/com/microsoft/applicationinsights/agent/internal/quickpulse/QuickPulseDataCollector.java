@@ -21,11 +21,11 @@
 
 package com.microsoft.applicationinsights.agent.internal.quickpulse;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDependencyData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorDomain;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDependencyData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.CpuPerformanceCounterCalculator;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.lang.management.ManagementFactory;

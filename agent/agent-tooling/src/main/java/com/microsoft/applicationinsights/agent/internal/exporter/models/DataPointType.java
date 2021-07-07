@@ -19,30 +19,33 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.perfcounter;
+package com.microsoft.applicationinsights.agent.internal.exporter.models;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
+import com.azure.core.util.ExpandableStringEnum;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.Collection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public final class JmxMetricPerformanceCounter extends AbstractJmxPerformanceCounter {
+/** Defines values for DataPointType. */
+public final class DataPointType extends ExpandableStringEnum<DataPointType> {
+  /** Static value Measurement for DataPointType. */
+  public static final DataPointType MEASUREMENT = fromString("Measurement");
 
-  private static final Logger logger = LoggerFactory.getLogger(JmxMetricPerformanceCounter.class);
+  /** Static value Aggregation for DataPointType. */
+  public static final DataPointType AGGREGATION = fromString("Aggregation");
 
-  public JmxMetricPerformanceCounter(
-      String id, String objectName, Collection<JmxAttributeData> attributes) {
-    super(id, objectName, attributes);
+  /**
+   * Creates or finds a DataPointType from its string representation.
+   *
+   * @param name a name to look for.
+   * @return the corresponding DataPointType.
+   */
+  @JsonCreator
+  public static DataPointType fromString(String name) {
+    return fromString(name, DataPointType.class);
   }
 
-  @Override
-  protected void send(TelemetryClient telemetryClient, String displayName, double value) {
-    logger.trace("Metric JMX: {}, {}", displayName, value);
-
-    TelemetryItem telemetry =
-        TelemetryUtil.createMetricsTelemetry(telemetryClient, displayName, value);
-    telemetryClient.trackAsync(telemetry);
+  /** Returns known DataPointType values. */
+  public static Collection<DataPointType> values() {
+    return values(DataPointType.class);
   }
 }

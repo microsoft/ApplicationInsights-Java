@@ -19,30 +19,36 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.perfcounter;
+package com.microsoft.applicationinsights.agent.internal.exporter.models;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
-import java.util.Collection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.azure.core.exception.HttpResponseException;
+import com.azure.core.http.HttpResponse;
 
-public final class JmxMetricPerformanceCounter extends AbstractJmxPerformanceCounter {
+/** Exception thrown for an invalid response with ExportResult information. */
+public final class ExportResultException extends HttpResponseException {
+  /**
+   * Initializes a new instance of the ExportResultException class.
+   *
+   * @param message the exception message or the response content if a message is not available.
+   * @param response the HTTP response.
+   */
+  public ExportResultException(String message, HttpResponse response) {
+    super(message, response);
+  }
 
-  private static final Logger logger = LoggerFactory.getLogger(JmxMetricPerformanceCounter.class);
-
-  public JmxMetricPerformanceCounter(
-      String id, String objectName, Collection<JmxAttributeData> attributes) {
-    super(id, objectName, attributes);
+  /**
+   * Initializes a new instance of the ExportResultException class.
+   *
+   * @param message the exception message or the response content if a message is not available.
+   * @param response the HTTP response.
+   * @param value the deserialized response value.
+   */
+  public ExportResultException(String message, HttpResponse response, ExportResult value) {
+    super(message, response, value);
   }
 
   @Override
-  protected void send(TelemetryClient telemetryClient, String displayName, double value) {
-    logger.trace("Metric JMX: {}, {}", displayName, value);
-
-    TelemetryItem telemetry =
-        TelemetryUtil.createMetricsTelemetry(telemetryClient, displayName, value);
-    telemetryClient.trackAsync(telemetry);
+  public ExportResult getValue() {
+    return (ExportResult) super.getValue();
   }
 }

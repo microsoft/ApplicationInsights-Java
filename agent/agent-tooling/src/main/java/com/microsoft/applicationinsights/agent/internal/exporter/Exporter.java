@@ -21,17 +21,17 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MessageData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDependencyData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionDetails;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.ContextTagKeys;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.MessageData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorDomain;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDependencyData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.SeverityLevel;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedDuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
