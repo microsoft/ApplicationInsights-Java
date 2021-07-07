@@ -85,7 +85,6 @@ public final class TelemetryItem {
   /*
    * Telemetry data item.
    */
-  // TODO check why azure exporter uses OTEL exporter MonitorBase
   @JsonProperty(value = "data")
   private MonitorBase data;
 
@@ -254,7 +253,6 @@ public final class TelemetryItem {
    *
    * @return the data value.
    */
-  // TODO check why azure exporter uses OTEL exporter MonitorBase
   public MonitorBase getData() {
     return this.data;
   }
