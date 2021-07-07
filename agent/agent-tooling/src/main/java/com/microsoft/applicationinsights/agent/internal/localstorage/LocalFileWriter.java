@@ -28,13 +28,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /** This class manages writing a list of {@link ByteBuffer} to the file system. */
 public final class LocalFileWriter {
-
-  private static final Logger logger = LoggerFactory.getLogger(LocalFileWriter.class);
 
   private final LocalFileCache localFileCache;
   private final File telemetryFolder;
@@ -72,8 +68,6 @@ public final class LocalFileWriter {
 
     localFileCache.addPersistedFilenameToMap(permanentFile.getName());
 
-    logger.info(
-        "List<ByteBuffers> has been persisted to file and will be sent when the network becomes available.");
     // TODO (heya) track data persistence success via Statsbeat
     diskExceptionStats.recordSuccess();
     return true;
