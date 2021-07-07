@@ -161,20 +161,19 @@ public class TelemetryChannel {
     // already, see above)
     //  * write to disk on second failure
     CompletableResultCode result = new CompletableResultCode();
-    List<ByteBuffer> finalByteBuffers = byteBuffers;
     final long startTime = System.currentTimeMillis();
     pipeline
         .send(request)
         .contextWrite(Context.of(Tracer.DISABLE_TRACING_KEY, true))
         .subscribe(
             response -> {
-              parseResponseCode(response.getStatusCode(), byteBuffers, finalByteBuffers);
+              parseResponseCode(response.getStatusCode(), byteBuffers, byteBuffers);
             },
             error -> {
               StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
               ExceptionUtils.parseError(
-                  error, endpoint.toString(), friendlyExceptionThrown, logger);
-              writeToDiskOnFailure(byteBuffers, finalByteBuffers);
+                  error, endpointUrl.toString(), friendlyExceptionThrown, logger);
+              writeToDiskOnFailure(byteBuffers, byteBuffers);
               result.fail();
             },
             () -> {
@@ -182,8 +181,8 @@ public class TelemetryChannel {
                   .getNetworkStatsbeat()
                   .incrementRequestSuccessCount(System.currentTimeMillis() - startTime);
 
-              if (finalByteBuffers != null) {
-                byteBufferPool.offer(finalByteBuffers);
+              if (byteBuffers != null) {
+                byteBufferPool.offer(byteBuffers);
               }
               result.succeed();
             });
