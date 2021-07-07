@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import java.util.HashSet;
@@ -60,45 +61,47 @@ class FeatureStatsbeat extends BaseStatsbeat {
     }
   }
 
-  void trackDisabledInstrumentations(
-      boolean cassandraEnabled,
-      boolean jdbcEnabled,
-      boolean jmsEnabled,
-      boolean kafkaEnabled,
-      boolean micrometerEnabled,
-      boolean mongoEnabled,
-      boolean redisEnabled,
-      boolean springSchedulingEnabled) {
-    if (!cassandraEnabled) {
-      featureList.add(Feature.Cassandra_DISABLED);
+  void trackDisabledInstrumentations(Configuration config) {
+    if (!config.instrumentation.cassandra.enabled) {
+      featureList.add(Feature.CASSANDRA_DISABLED);
     }
-
-    if (!jdbcEnabled) {
+    if (!config.instrumentation.jdbc.enabled) {
       featureList.add(Feature.JDBC_DISABLED);
     }
-
-    if (!jmsEnabled) {
+    if (!config.instrumentation.jms.enabled) {
       featureList.add(Feature.JMS_DISABLED);
     }
-
-    if (!kafkaEnabled) {
+    if (!config.instrumentation.kafka.enabled) {
       featureList.add(Feature.KAFKA_DISABLED);
     }
-
-    if (!micrometerEnabled) {
+    if (!config.instrumentation.micrometer.enabled) {
       featureList.add(Feature.MICROMETER_DISABLED);
     }
-
-    if (!mongoEnabled) {
+    if (!config.instrumentation.mongo.enabled) {
       featureList.add(Feature.MONGO_DISABLED);
     }
-
-    if (!redisEnabled) {
+    if (!config.instrumentation.redis.enabled) {
       featureList.add(Feature.REDIS_DISABLED);
     }
-
-    if (!springSchedulingEnabled) {
+    if (!config.instrumentation.springScheduling.enabled) {
       featureList.add(Feature.SPRING_SCHEDULING_DISABLED);
+    }
+
+    // preview instrumentation
+    if (!config.preview.instrumentation.azureSdk.enabled) {
+      featureList.add(Feature.AZURE_SDK_DISABLED);
+    }
+    if (!config.preview.instrumentation.javaHttpClient.enabled) {
+      featureList.add(Feature.JAVA_HTTP_CLIENT_DISABLED);
+    }
+    if (!config.preview.instrumentation.jaxws.enabled) {
+      featureList.add(Feature.JAXWS_DISABLED);
+    }
+    if (!config.preview.instrumentation.rabbitmq.enabled) {
+      featureList.add(Feature.RABBITMQ_DISABLED);
+    }
+    if (!config.preview.instrumentation.springIntegration.enabled) {
+      featureList.add(Feature.SPRING_INTEGRATION_DISABLED);
     }
   }
 }
