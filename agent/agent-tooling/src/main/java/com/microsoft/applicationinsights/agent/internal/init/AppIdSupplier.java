@@ -123,7 +123,8 @@ public class AppIdSupplier implements AiAppId.Supplier {
         response = LazyHttpClient.getInstance().send(request).block();
       } catch (RuntimeException ex) {
         ExceptionUtils.parseError(ex, url.toString(), friendlyExceptionThrown, logger);
-        backOff("exception sending request to " + url, ex);
+        exceptionStats.recordFailure("exception sending request to " + url, ex);
+        backOff();
         return;
       }
 
@@ -135,13 +136,16 @@ public class AppIdSupplier implements AiAppId.Supplier {
       String body = response.getBodyAsString().block();
       int statusCode = response.getStatusCode();
       if (statusCode != 200) {
-        backOff("received " + statusCode + " from " + url + "\nfull response:\n" + body, null);
+        exceptionStats.recordFailure(
+            "received " + statusCode + " from " + url + "\nfull response:\n" + body, null);
+        backOff();
         return;
       }
 
       // check for case when breeze returns invalid value
       if (body == null || body.isEmpty()) {
-        backOff("received empty body from " + url, null);
+        exceptionStats.recordFailure("received empty body from " + url, null);
+        backOff();
         return;
       }
 
@@ -150,8 +154,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
       appId = body;
     }
 
-    private void backOff(String warningMessage, Throwable exception) {
-      exceptionStats.recordFailure(warningMessage, exception);
+    private void backOff() {
       scheduledExecutor.schedule(this, backoffSeconds, SECONDS);
       backoffSeconds = Math.min(backoffSeconds * 2, 60);
     }
