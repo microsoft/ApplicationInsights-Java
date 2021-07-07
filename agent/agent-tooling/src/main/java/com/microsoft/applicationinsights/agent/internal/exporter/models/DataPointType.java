@@ -44,7 +44,7 @@ public final class DataPointType extends ExpandableStringEnum<DataPointType> {
     return fromString(name, DataPointType.class);
   }
 
-  /** @return known DataPointType values. */
+  /** Returns known DataPointType values. */
   public static Collection<DataPointType> values() {
     return values(DataPointType.class);
   }

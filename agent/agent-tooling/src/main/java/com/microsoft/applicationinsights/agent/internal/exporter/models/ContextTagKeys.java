@@ -125,7 +125,7 @@ public final class ContextTagKeys extends ExpandableStringEnum<ContextTagKeys> {
     return fromString(name, ContextTagKeys.class);
   }
 
-  /** @return known ContextTagKeys values. */
+  /** Returns known ContextTagKeys values. */
   public static Collection<ContextTagKeys> values() {
     return values(ContextTagKeys.class);
   }
