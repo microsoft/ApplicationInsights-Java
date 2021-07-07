@@ -53,7 +53,7 @@ public class LoggingLevelConfigurator {
       loggerLevel = getMuzzleMatcherLevel(level);
     } else if (name.startsWith("com.microsoft.applicationinsights")) {
       loggerLevel = level;
-    } else if (name.startsWith("com.azure.monitor.opentelemetry.exporter")) {
+    } else if (name.startsWith("com.microsoft.applicationinsights.agent.internal.exporter")) {
       loggerLevel = level;
     } else {
       loggerLevel = getOtherLibLevel(level);

@@ -19,30 +19,37 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.perfcounter;
+package com.microsoft.applicationinsights.agent.internal.exporter.models;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
-import java.util.Collection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.azure.core.annotation.Fluent;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public final class JmxMetricPerformanceCounter extends AbstractJmxPerformanceCounter {
+/** The abstract common base of all domains. */
+@Fluent
+public class MonitorDomain {
+  /*
+   * Schema version
+   */
+  @JsonProperty(value = "ver", required = true)
+  private int version;
 
-  private static final Logger logger = LoggerFactory.getLogger(JmxMetricPerformanceCounter.class);
-
-  public JmxMetricPerformanceCounter(
-      String id, String objectName, Collection<JmxAttributeData> attributes) {
-    super(id, objectName, attributes);
+  /**
+   * Get the version property: Schema version.
+   *
+   * @return the version value.
+   */
+  public int getVersion() {
+    return this.version;
   }
 
-  @Override
-  protected void send(TelemetryClient telemetryClient, String displayName, double value) {
-    logger.trace("Metric JMX: {}, {}", displayName, value);
-
-    TelemetryItem telemetry =
-        TelemetryUtil.createMetricsTelemetry(telemetryClient, displayName, value);
-    telemetryClient.trackAsync(telemetry);
+  /**
+   * Set the version property: Schema version.
+   *
+   * @param version the version value to set.
+   * @return the MonitorDomain object itself.
+   */
+  public MonitorDomain setVersion(int version) {
+    this.version = version;
+    return this;
   }
 }

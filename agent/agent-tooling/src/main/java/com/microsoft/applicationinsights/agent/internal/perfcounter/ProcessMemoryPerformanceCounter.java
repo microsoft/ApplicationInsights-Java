@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
 import static com.microsoft.applicationinsights.agent.internal.perfcounter.Constants.PROCESS_MEM_PC_METRICS_NAME;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import java.lang.management.ManagementFactory;

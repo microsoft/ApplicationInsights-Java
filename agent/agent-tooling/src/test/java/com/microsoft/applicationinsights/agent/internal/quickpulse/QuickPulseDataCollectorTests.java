@@ -24,10 +24,10 @@ package com.microsoft.applicationinsights.agent.internal.quickpulse;
 import static com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil.getExceptions;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDependencyData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDependencyData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector.CountAndDuration;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector.Counters;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector.FinalCounters;

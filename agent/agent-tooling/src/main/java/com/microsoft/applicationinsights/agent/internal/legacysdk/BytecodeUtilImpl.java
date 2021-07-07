@@ -21,20 +21,20 @@
 
 package com.microsoft.applicationinsights.agent.internal.legacysdk;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MessageData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.PageViewData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDependencyData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.ContextTagKeys;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.DataPointType;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.MessageData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDataPoint;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.PageViewData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDependencyData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.SeverityLevel;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyPropagator;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingScoreGeneratorV2;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedDuration;

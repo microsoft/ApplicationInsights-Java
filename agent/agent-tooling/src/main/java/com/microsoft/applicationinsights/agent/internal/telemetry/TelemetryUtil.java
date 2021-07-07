@@ -21,22 +21,22 @@
 
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.AvailabilityData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MessageData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.PageViewData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.PageViewPerfData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDependencyData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.StackFrame;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionDetails;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.AvailabilityData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.DataPointType;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.MessageData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDataPoint;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorDomain;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.PageViewData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.PageViewPerfData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDependencyData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.StackFrame;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.instrumentation.api.caching.Cache;
 import java.util.ArrayList;

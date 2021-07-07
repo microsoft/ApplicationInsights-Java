@@ -258,7 +258,7 @@ public class LoggingConfigurator {
     loggingLevelConfigurator.updateLoggerLevel(
         loggerContext.getLogger("com.microsoft.applicationinsights"));
     loggingLevelConfigurator.updateLoggerLevel(
-        loggerContext.getLogger("com.azure.monitor.opentelemetry.exporter"));
+        loggerContext.getLogger("com.microsoft.applicationinsights.agent.internal.exporter"));
     loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger(ROOT_LOGGER_NAME));
   }
 

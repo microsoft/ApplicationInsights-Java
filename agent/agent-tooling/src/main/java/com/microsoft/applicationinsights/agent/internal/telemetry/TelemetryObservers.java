@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;

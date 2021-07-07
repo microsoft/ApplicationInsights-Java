@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.exporter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionDetails;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
