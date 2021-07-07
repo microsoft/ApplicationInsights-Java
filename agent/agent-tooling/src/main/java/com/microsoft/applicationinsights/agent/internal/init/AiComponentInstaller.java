@@ -205,20 +205,7 @@ public class AiComponentInstaller implements AgentListener {
     }
 
     // initialize StatsbeatModule
-    StatsbeatModule.get()
-        .start(
-            telemetryClient,
-            config.internal.statsbeat.intervalSeconds,
-            config.internal.statsbeat.featureIntervalSeconds,
-            config.preview.authentication.enabled,
-            config.instrumentation.cassandra.enabled,
-            config.instrumentation.jdbc.enabled,
-            config.instrumentation.jms.enabled,
-            config.instrumentation.kafka.enabled,
-            config.instrumentation.micrometer.enabled,
-            config.instrumentation.mongo.enabled,
-            config.instrumentation.redis.enabled,
-            config.instrumentation.springScheduling.enabled);
+    StatsbeatModule.get().start(telemetryClient, config);
   }
 
   private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(

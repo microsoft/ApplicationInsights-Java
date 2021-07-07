@@ -21,23 +21,24 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
+import com.microsoft.applicationinsights.agent.internal.common.ExceptionStats;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 final class PersistenceHelper {
-
-  private static final Logger logger = LoggerFactory.getLogger(PersistenceHelper.class);
 
   // 50MB per folder for all apps.
   private static final long MAX_FILE_SIZE_IN_BYTES = 52428800; // 50MB
   static final String PERMANENT_FILE_EXTENSION = ".trn";
   static final String TEMPORARY_FILE_EXTENSION = ".tmp";
+  private static final ExceptionStats diskExceptionStats =
+      new ExceptionStats(
+          PersistenceHelper.class,
+          "Unable to store telemetry to disk (telemetry will be discarded):");
 
   static File createTempFile(File telemetryFolder) {
     File file = null;
@@ -45,7 +46,8 @@ final class PersistenceHelper {
       String prefix = System.currentTimeMillis() + "-";
       file = File.createTempFile(prefix, null, telemetryFolder);
     } catch (IOException ex) {
-      logger.error("Fail to create a temp file.", ex);
+      diskExceptionStats.recordFailure(
+          String.format("unable to create temporary file: %s", ex), ex);
       // TODO (heya) track number of failures to create a temp file via Statsbeat
     }
 
@@ -59,7 +61,8 @@ final class PersistenceHelper {
     try {
       FileUtils.moveFile(sourceFile, tempFile);
     } catch (IOException ex) {
-      logger.error("Fail to change {} to have {} extension.", filename, fileExtension, ex);
+      diskExceptionStats.recordFailure(
+          String.format("Fail to change %s to have %s extension: ", filename, fileExtension), ex);
       // TODO (heya) track number of failures to rename a file via Statsbeat
       return null;
     }
@@ -74,9 +77,11 @@ final class PersistenceHelper {
   static boolean maxFileSizeExceeded(File telemetryFolder) {
     long size = getTotalSizeOfPersistedFiles(telemetryFolder);
     if (size >= MAX_FILE_SIZE_IN_BYTES) {
-      logger.warn(
-          "Local persistent storage capacity has been reached. It's currently at {} KB. Telemetry will be lost.",
-          (size / 1024));
+      diskExceptionStats.recordFailure(
+          String.format(
+              "Local persistent storage capacity has been reached. It's currently at ("
+                  + (size / 1024)
+                  + "KB). Telemetry will be lost"));
       return false;
     }
 

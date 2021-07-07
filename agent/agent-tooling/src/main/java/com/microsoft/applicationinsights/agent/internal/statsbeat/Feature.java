@@ -34,41 +34,38 @@ enum Feature {
   JAVA_VENDOR_REDHAT(4),
   JAVA_VENDOR_OTHER(5),
   AAD(6),
-  Cassandra_DISABLED(7),
+  CASSANDRA_DISABLED(7),
   JDBC_DISABLED(8),
   JMS_DISABLED(9),
   KAFKA_DISABLED(10),
   MICROMETER_DISABLED(11),
   MONGO_DISABLED(12),
   REDIS_DISABLED(13),
-  SPRING_SCHEDULING_DISABLED(14);
+  SPRING_SCHEDULING_DISABLED(14),
+  AZURE_SDK_DISABLED(15),
+  JAVA_HTTP_CLIENT_DISABLED(16),
+  JAXWS_DISABLED(17),
+  RABBITMQ_DISABLED(18),
+  SPRING_INTEGRATION_DISABLED(19);
 
-  private static final Map<String, Feature> features;
+  private static final Map<String, Feature> javaVendorFeatureMap;
 
   static {
-    features = new HashMap<>();
-    features.put(
+    javaVendorFeatureMap = new HashMap<>();
+    javaVendorFeatureMap.put(
         "Oracle Corporation",
         Feature
             .JAVA_VENDOR_ORACLE); // https://www.oracle.com/technetwork/java/javase/downloads/index.html
-    features.put(
+    javaVendorFeatureMap.put(
         "Azul Systems, Inc.",
         Feature.JAVA_VENDOR_MICROSOFT); // https://www.azul.com/downloads/zulu/
-    features.put(
+    javaVendorFeatureMap.put(
         "Microsoft", Feature.JAVA_VENDOR_MICROSOFT); // https://www.azul.com/downloads/zulu/
-    features.put("AdoptOpenJDK", Feature.JAVA_VENDOR_ADOPT_OPENJDK); // https://adoptopenjdk.net/
-    features.put(
+    javaVendorFeatureMap.put(
+        "AdoptOpenJDK", Feature.JAVA_VENDOR_ADOPT_OPENJDK); // https://adoptopenjdk.net/
+    javaVendorFeatureMap.put(
         "Red Hat, Inc.",
         Feature.JAVA_VENDOR_REDHAT); // https://developers.redhat.com/products/openjdk/download/
-    features.put("AAD", Feature.AAD);
-    features.put("CASSANDRA OFF", Feature.Cassandra_DISABLED);
-    features.put("JDBC OFF", Feature.JDBC_DISABLED);
-    features.put("JMS OFF", Feature.JMS_DISABLED);
-    features.put("KAFKA OFF", Feature.KAFKA_DISABLED);
-    features.put("MICROMETER OFF", Feature.MICROMETER_DISABLED);
-    features.put("MONGO OFF", Feature.MONGO_DISABLED);
-    features.put("REDIS OFF", Feature.REDIS_DISABLED);
-    features.put("SPRING SCHEDULING OFF", Feature.SPRING_SCHEDULING_DISABLED);
   }
 
   private final int bitmapIndex;
@@ -78,7 +75,7 @@ enum Feature {
   }
 
   static Feature fromJavaVendor(String javaVendor) {
-    Feature feature = features.get(javaVendor);
+    Feature feature = javaVendorFeatureMap.get(javaVendor);
     return feature != null ? feature : Feature.JAVA_VENDOR_OTHER;
   }
 
@@ -94,5 +91,10 @@ enum Feature {
     }
 
     return 0L;
+  }
+
+  // only used by tests
+  int getBitmapIndex() {
+    return bitmapIndex;
   }
 }

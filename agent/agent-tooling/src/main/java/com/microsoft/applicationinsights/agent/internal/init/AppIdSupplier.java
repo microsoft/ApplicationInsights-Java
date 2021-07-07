@@ -27,6 +27,7 @@ import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.microsoft.applicationinsights.agent.internal.common.ExceptionStats;
+import com.microsoft.applicationinsights.agent.internal.common.ExceptionUtils;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -34,6 +35,7 @@ import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import java.net.URL;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +58,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
   private final TelemetryClient telemetryClient;
 
   private volatile String appId;
+  private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
   public AppIdSupplier(TelemetryClient telemetryClient) {
     this.telemetryClient = telemetryClient;
@@ -118,10 +121,10 @@ public class AppIdSupplier implements AiAppId.Supplier {
       HttpResponse response;
       try {
         response = LazyHttpClient.getInstance().send(request).block();
-      } catch (RuntimeException e) {
-        // TODO handle Friendly SSL exception
-        logger.debug(e.getMessage(), e);
-        backOff("exception sending request to " + url, e);
+      } catch (RuntimeException ex) {
+        ExceptionUtils.parseError(ex, url.toString(), friendlyExceptionThrown, logger);
+        exceptionStats.recordFailure("exception sending request to " + url, ex);
+        backOff();
         return;
       }
 
@@ -133,22 +136,25 @@ public class AppIdSupplier implements AiAppId.Supplier {
       String body = response.getBodyAsString().block();
       int statusCode = response.getStatusCode();
       if (statusCode != 200) {
-        backOff("received " + statusCode + " from " + url + "\nfull response:\n" + body, null);
+        exceptionStats.recordFailure(
+            "received " + statusCode + " from " + url + "\nfull response:\n" + body, null);
+        backOff();
         return;
       }
 
       // check for case when breeze returns invalid value
       if (body == null || body.isEmpty()) {
-        backOff("received empty body from " + url, null);
+        exceptionStats.recordFailure("received empty body from " + url, null);
+        backOff();
         return;
       }
 
       logger.debug("appId retrieved: {}", body);
+      exceptionStats.recordSuccess();
       appId = body;
     }
 
-    private void backOff(String warningMessage, Exception exception) {
-      exceptionStats.recordFailure(warningMessage, exception);
+    private void backOff() {
       scheduledExecutor.schedule(this, backoffSeconds, SECONDS);
       backoffSeconds = Math.min(backoffSeconds * 2, 60);
     }
