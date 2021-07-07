@@ -61,11 +61,12 @@ public class TraceLogBackTest extends AiSmokeTest {
     assertEquals("Logger", md1.getProperties().get("SourceType"));
     assertEquals("WARN", md1.getProperties().get("LoggingLevel"));
     assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
+    assertNotNull(md1.getProperties().get("ThreadName"));
     // TODO add MDC instrumentation for jboss logging
-    if (currentImageName.contains("wildfly")) {
-      assertEquals(3, md1.getProperties().size());
-    } else {
+    if (!currentImageName.contains("wildfly")) {
       assertEquals("MDC value", md1.getProperties().get("MDC key"));
+      assertEquals(5, md1.getProperties().size());
+    } else {
       assertEquals(4, md1.getProperties().size());
     }
 
@@ -74,7 +75,8 @@ public class TraceLogBackTest extends AiSmokeTest {
     assertEquals("Logger", md2.getProperties().get("SourceType"));
     assertEquals("ERROR", md2.getProperties().get("LoggingLevel"));
     assertEquals("smoketestapp", md2.getProperties().get("LoggerName"));
-    assertEquals(3, md2.getProperties().size());
+    assertNotNull(md2.getProperties().get("ThreadName"));
+    assertEquals(4, md2.getProperties().size());
 
     assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /TraceLogBack/traceLogBack");
     assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /TraceLogBack/traceLogBack");
@@ -102,11 +104,12 @@ public class TraceLogBackTest extends AiSmokeTest {
     assertEquals("Logger", ed.getProperties().get("SourceType"));
     assertEquals("ERROR", ed.getProperties().get("LoggingLevel"));
     assertEquals("smoketestapp", ed.getProperties().get("LoggerName"));
+    assertNotNull(ed.getProperties().get("ThreadName"));
     // TODO add MDC instrumentation for jboss logging
-    if (currentImageName.contains("wildfly")) {
-      assertEquals(4, ed.getProperties().size());
-    } else {
+    if (!currentImageName.contains("wildfly")) {
       assertEquals("MDC value", ed.getProperties().get("MDC key"));
+      assertEquals(6, ed.getProperties().size());
+    } else {
       assertEquals(5, ed.getProperties().size());
     }
 
