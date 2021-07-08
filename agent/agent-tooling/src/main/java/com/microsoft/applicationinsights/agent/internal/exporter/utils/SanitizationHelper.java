@@ -26,6 +26,7 @@ import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class SanitizationHelper {
   public static final int MAX_KEY_NAME_LENGTH = 150;
@@ -50,6 +51,7 @@ public class SanitizationHelper {
   public static final int MAX_FILE_NAME_LENGTH = 1024;
   public static final int MAX_SEQUENCE_LENGTH = 64;
 
+  @Nullable
   public static Map<String, String> copyAndSanitizeProperties(Map<String, String> properties) {
     if (properties != null) {
       Map<String, String> clonedProperties =
@@ -60,8 +62,8 @@ public class SanitizationHelper {
         String sanitizedKey = sanitizeKey(entry.getKey());
         String sanitizedValue = sanitizeValue(entry.getValue());
         if (Strings.isNullOrEmpty(sanitizedValue)
-            || (!sanitizedKey.equals(entry.getKey()))
-            || (!sanitizedValue.equals(entry.getValue()))) {
+            || !sanitizedKey.equals(entry.getKey())
+            || !sanitizedValue.equals(entry.getValue())) {
           sanitizedProperties.put(entry.getKey(), Pair.of(sanitizedKey, sanitizedValue));
         }
       }
@@ -97,14 +99,15 @@ public class SanitizationHelper {
 
   private static String sanitizeKey(String key) {
     String sanitizedKey = Strings.trimAndTruncate(key, MAX_KEY_NAME_LENGTH);
-    return MakeKeyNonEmpty(sanitizedKey);
+    return makeKeyNonEmpty(sanitizedKey);
   }
 
-  private static String MakeKeyNonEmpty(String sanitizedKey) {
+  private static String makeKeyNonEmpty(String sanitizedKey) {
     // TODO check if this is valid. Below code is based on .Net implementation of the same
     return Strings.isNullOrEmpty(sanitizedKey) ? "required" : sanitizedKey;
   }
 
+  @Nullable
   public static Map<String, Double> copyAndSanitizeMeasurements(Map<String, Double> measurements) {
     if (measurements != null) {
       Map<String, Double> clonedMeasurements =
@@ -128,10 +131,14 @@ public class SanitizationHelper {
     return null;
   }
 
+  private SanitizationHelper() {}
+
   static class Pair {
     // Return a map entry (key-value pair) from the specified values
     public static <T, U> Map.Entry<T, U> of(T first, U second) {
       return new AbstractMap.SimpleEntry<>(first, second);
     }
+
+    private Pair() {}
   }
 }
