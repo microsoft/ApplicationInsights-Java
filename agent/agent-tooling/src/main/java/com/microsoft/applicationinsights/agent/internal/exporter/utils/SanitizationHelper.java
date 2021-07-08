@@ -71,7 +71,7 @@ public class SanitizationHelper {
       for (Map.Entry<String, Map.Entry<String, String>> entry : sanitizedProperties.entrySet()) {
         clonedProperties.remove(entry.getKey());
         if (!Strings.isNullOrEmpty(entry.getValue().getValue())) {
-          String uniqueKey = makeKeyUnique(entry.getKey(), clonedProperties);
+          String uniqueKey = makeKeyUnique(entry.getValue().getKey(), clonedProperties);
           clonedProperties.put(uniqueKey, entry.getValue().getValue());
         }
       }
