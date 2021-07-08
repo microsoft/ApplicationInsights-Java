@@ -23,6 +23,8 @@ package com.microsoft.applicationinsights.agent.internal.exporter.models;
 
 import com.azure.core.annotation.Fluent;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.applicationinsights.agent.internal.common.Strings;
+import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
 import java.util.Map;
 
 /**
@@ -68,7 +70,7 @@ public final class TelemetryEventData extends MonitorDomain {
    * @return the TelemetryEventData object itself.
    */
   public TelemetryEventData setName(String name) {
-    this.name = name;
+    this.name = Strings.trimAndTruncate(name, SanitizationHelper.MAX_EVENT_NAME_LENGTH);
     return this;
   }
 
@@ -88,7 +90,7 @@ public final class TelemetryEventData extends MonitorDomain {
    * @return the TelemetryEventData object itself.
    */
   public TelemetryEventData setProperties(Map<String, String> properties) {
-    this.properties = properties;
+    this.properties = SanitizationHelper.copyAndSanitizeProperties(properties);
     return this;
   }
 
@@ -108,7 +110,7 @@ public final class TelemetryEventData extends MonitorDomain {
    * @return the TelemetryEventData object itself.
    */
   public TelemetryEventData setMeasurements(Map<String, Double> measurements) {
-    this.measurements = measurements;
+    this.measurements = SanitizationHelper.copyAndSanitizeMeasurements(measurements);
     return this;
   }
 }

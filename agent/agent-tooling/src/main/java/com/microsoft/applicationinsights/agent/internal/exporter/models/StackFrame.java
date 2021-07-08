@@ -23,6 +23,8 @@ package com.microsoft.applicationinsights.agent.internal.exporter.models;
 
 import com.azure.core.annotation.Fluent;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.applicationinsights.agent.internal.common.Strings;
+import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
 
 /** Stack frame information. */
 @Fluent
@@ -93,7 +95,7 @@ public final class StackFrame {
    * @return the StackFrame object itself.
    */
   public StackFrame setMethod(String method) {
-    this.method = method;
+    this.method = Strings.trimAndTruncate(method, SanitizationHelper.MAX_METHOD_NAME_LENGTH);
     return this;
   }
 
@@ -113,7 +115,7 @@ public final class StackFrame {
    * @return the StackFrame object itself.
    */
   public StackFrame setAssembly(String assembly) {
-    this.assembly = assembly;
+    this.assembly = Strings.trimAndTruncate(assembly, SanitizationHelper.MAX_ASSEMBLY_NAME_LENGTH);
     return this;
   }
 
@@ -133,7 +135,7 @@ public final class StackFrame {
    * @return the StackFrame object itself.
    */
   public StackFrame setFileName(String fileName) {
-    this.fileName = fileName;
+    this.fileName = Strings.trimAndTruncate(fileName, SanitizationHelper.MAX_FILE_NAME_LENGTH);
     return this;
   }
 

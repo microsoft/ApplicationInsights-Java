@@ -23,6 +23,8 @@ package com.microsoft.applicationinsights.agent.internal.exporter.models;
 
 import com.azure.core.annotation.Fluent;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.applicationinsights.agent.internal.common.Strings;
+import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
 import java.util.Map;
 
 /**
@@ -109,7 +111,7 @@ public final class RequestData extends MonitorDomain {
    * @return the RequestData object itself.
    */
   public RequestData setId(String id) {
-    this.id = id;
+    this.id = Strings.trimAndTruncate(id, SanitizationHelper.MAX_ID_LENGTH);
     return this;
   }
 
@@ -133,7 +135,7 @@ public final class RequestData extends MonitorDomain {
    * @return the RequestData object itself.
    */
   public RequestData setName(String name) {
-    this.name = name;
+    this.name = Strings.trimAndTruncate(name, SanitizationHelper.MAX_NAME_LENGTH);
     return this;
   }
 
@@ -197,7 +199,8 @@ public final class RequestData extends MonitorDomain {
    * @return the RequestData object itself.
    */
   public RequestData setResponseCode(String responseCode) {
-    this.responseCode = responseCode;
+    this.responseCode =
+        Strings.trimAndTruncate(responseCode, SanitizationHelper.MAX_RESPONSE_CODE_LENGTH);
     return this;
   }
 
@@ -219,7 +222,7 @@ public final class RequestData extends MonitorDomain {
    * @return the RequestData object itself.
    */
   public RequestData setSource(String source) {
-    this.source = source;
+    this.source = Strings.trimAndTruncate(source, SanitizationHelper.MAX_SOURCE_LENGTH);
     return this;
   }
 
@@ -239,7 +242,7 @@ public final class RequestData extends MonitorDomain {
    * @return the RequestData object itself.
    */
   public RequestData setUrl(String url) {
-    this.url = url;
+    this.url = Strings.trimAndTruncate(url, SanitizationHelper.MAX_URL_LENGTH);
     return this;
   }
 
@@ -259,7 +262,7 @@ public final class RequestData extends MonitorDomain {
    * @return the RequestData object itself.
    */
   public RequestData setProperties(Map<String, String> properties) {
-    this.properties = properties;
+    this.properties = SanitizationHelper.copyAndSanitizeProperties(properties);
     return this;
   }
 
@@ -279,7 +282,7 @@ public final class RequestData extends MonitorDomain {
    * @return the RequestData object itself.
    */
   public RequestData setMeasurements(Map<String, Double> measurements) {
-    this.measurements = measurements;
+    this.measurements = SanitizationHelper.copyAndSanitizeMeasurements(measurements);
     return this;
   }
 }

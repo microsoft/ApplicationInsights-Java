@@ -23,6 +23,8 @@ package com.microsoft.applicationinsights.agent.internal.exporter.models;
 
 import com.azure.core.annotation.Fluent;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.applicationinsights.agent.internal.common.Strings;
+import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
 import java.util.Map;
 
 /** Instances of AvailabilityData represent the result of executing an availability test. */
@@ -95,7 +97,7 @@ public final class AvailabilityData extends MonitorDomain {
    * @return the AvailabilityData object itself.
    */
   public AvailabilityData setId(String id) {
-    this.id = id;
+    this.id = Strings.trimAndTruncate(id, SanitizationHelper.MAX_ID_LENGTH);
     return this;
   }
 
@@ -115,7 +117,7 @@ public final class AvailabilityData extends MonitorDomain {
    * @return the AvailabilityData object itself.
    */
   public AvailabilityData setName(String name) {
-    this.name = name;
+    this.name = Strings.trimAndTruncate(name, SanitizationHelper.MAX_NAME_LENGTH);
     return this;
   }
 
@@ -175,7 +177,8 @@ public final class AvailabilityData extends MonitorDomain {
    * @return the AvailabilityData object itself.
    */
   public AvailabilityData setRunLocation(String runLocation) {
-    this.runLocation = runLocation;
+    this.runLocation =
+        Strings.trimAndTruncate(runLocation, SanitizationHelper.MAX_RUN_LOCATION_LENGTH);
     return this;
   }
 
@@ -195,7 +198,8 @@ public final class AvailabilityData extends MonitorDomain {
    * @return the AvailabilityData object itself.
    */
   public AvailabilityData setMessage(String message) {
-    this.message = message;
+    this.message =
+        Strings.trimAndTruncate(message, SanitizationHelper.MAX_AVAILABILITY_MESSAGE_LENGTH);
     return this;
   }
 
@@ -215,7 +219,7 @@ public final class AvailabilityData extends MonitorDomain {
    * @return the AvailabilityData object itself.
    */
   public AvailabilityData setProperties(Map<String, String> properties) {
-    this.properties = properties;
+    this.properties = SanitizationHelper.copyAndSanitizeProperties(properties);
     return this;
   }
 
@@ -235,7 +239,7 @@ public final class AvailabilityData extends MonitorDomain {
    * @return the AvailabilityData object itself.
    */
   public AvailabilityData setMeasurements(Map<String, Double> measurements) {
-    this.measurements = measurements;
+    this.measurements = SanitizationHelper.copyAndSanitizeMeasurements(measurements);
     return this;
   }
 }

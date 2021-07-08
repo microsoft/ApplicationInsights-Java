@@ -23,6 +23,8 @@ package com.microsoft.applicationinsights.agent.internal.exporter.models;
 
 import com.azure.core.annotation.Fluent;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.applicationinsights.agent.internal.common.Strings;
+import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
 import java.util.Map;
 
 /**
@@ -117,7 +119,7 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setId(String id) {
-    this.id = id;
+    this.id = Strings.trimAndTruncate(id, SanitizationHelper.MAX_ID_LENGTH);
     return this;
   }
 
@@ -139,7 +141,7 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setName(String name) {
-    this.name = name;
+    this.name = Strings.trimAndTruncate(name, SanitizationHelper.MAX_NAME_LENGTH);
     return this;
   }
 
@@ -161,7 +163,8 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setResultCode(String resultCode) {
-    this.resultCode = resultCode;
+    this.resultCode =
+        Strings.trimAndTruncate(resultCode, SanitizationHelper.MAX_RESULT_CODE_LENGTH);
     return this;
   }
 
@@ -183,7 +186,7 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setData(String data) {
-    this.data = data;
+    this.data = Strings.trimAndTruncate(data, SanitizationHelper.MAX_DATA_LENGTH);
     return this;
   }
 
@@ -207,7 +210,7 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setType(String type) {
-    this.type = type;
+    this.type = Strings.trimAndTruncate(type, SanitizationHelper.MAX_DEPENDENCY_TYPE_LENGTH);
     return this;
   }
 
@@ -229,7 +232,7 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setTarget(String target) {
-    this.target = target;
+    this.target = Strings.trimAndTruncate(target, SanitizationHelper.MAX_TARGET_NAME_LENGTH);
     return this;
   }
 
@@ -291,7 +294,7 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setProperties(Map<String, String> properties) {
-    this.properties = properties;
+    this.properties = SanitizationHelper.copyAndSanitizeProperties(properties);
     return this;
   }
 
@@ -311,7 +314,7 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setMeasurements(Map<String, Double> measurements) {
-    this.measurements = measurements;
+    this.measurements = SanitizationHelper.copyAndSanitizeMeasurements(measurements);
     return this;
   }
 }
