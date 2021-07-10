@@ -49,6 +49,7 @@ public class SanitizationHelper {
   public static final int MAX_FILE_NAME_LENGTH = 1024;
   public static final int MAX_SEQUENCE_LENGTH = 64;
 
+  /** Function to sanitize both key and value in properties. */
   public static void sanitizeProperties(Map<String, String> properties) {
     if (properties != null) {
       Map<String, Map.Entry<String, String>> sanitizedProperties = new HashMap<>();
@@ -72,6 +73,7 @@ public class SanitizationHelper {
     }
   }
 
+  /** Function to create unique key */
   private static String makeKeyUnique(String key, Map<String, ?> map) {
     if (map.containsKey(key)) {
       String truncatedKey = Strings.truncate(key, MAX_KEY_NAME_LENGTH - 3);
@@ -85,20 +87,24 @@ public class SanitizationHelper {
     return key;
   }
 
+  /** Function to sanitize value. */
   private static String sanitizeValue(String value) {
     return Strings.trimAndTruncate(value, MAX_VALUE_LENGTH);
   }
 
+  /** Function to sanitize key. */
   private static String sanitizeKey(String key) {
     String sanitizedKey = Strings.trimAndTruncate(key, MAX_KEY_NAME_LENGTH);
     return makeKeyNonEmpty(sanitizedKey);
   }
 
+  /** Function to return non empty key. */
   private static String makeKeyNonEmpty(String sanitizedKey) {
     // TODO check if this is valid. Below code is based on .Net implementation of the same
     return Strings.isNullOrEmpty(sanitizedKey) ? "required" : sanitizedKey;
   }
 
+  /** Function to sanitize key value pair in measurements. */
   public static void sanitizeMeasurements(Map<String, Double> measurements) {
     if (measurements != null) {
       Map<String, Map.Entry<String, Double>> sanitizedMeasurements = new HashMap<>();
