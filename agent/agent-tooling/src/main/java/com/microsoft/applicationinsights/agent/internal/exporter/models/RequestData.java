@@ -262,7 +262,8 @@ public final class RequestData extends MonitorDomain {
    * @return the RequestData object itself.
    */
   public RequestData setProperties(Map<String, String> properties) {
-    this.properties = SanitizationHelper.copyAndSanitizeProperties(properties);
+    SanitizationHelper.sanitizeProperties(properties);
+    this.properties = properties;
     return this;
   }
 
@@ -282,7 +283,8 @@ public final class RequestData extends MonitorDomain {
    * @return the RequestData object itself.
    */
   public RequestData setMeasurements(Map<String, Double> measurements) {
-    this.measurements = SanitizationHelper.copyAndSanitizeMeasurements(measurements);
+    SanitizationHelper.sanitizeMeasurements(measurements);
+    this.measurements = measurements;
     return this;
   }
 }

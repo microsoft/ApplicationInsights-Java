@@ -34,11 +34,21 @@ public class SanitizationHelperTests {
     Map<String, String> properties = new HashMap<>();
     properties.put("key1", "value1");
     properties.put("key2", "value2");
-    Map<String, String> sanitizedProperties =
-        SanitizationHelper.copyAndSanitizeProperties(properties);
+    SanitizationHelper.sanitizeProperties(properties);
     assertThat(properties.get("key1")).isEqualTo("value1");
-    assertThat(sanitizedProperties.get("key1")).isEqualTo("value1");
-    assertThat(sanitizedProperties.get("key2")).isEqualTo("value2");
+    assertThat(properties.get("key2")).isEqualTo("value2");
+  }
+
+  @Test
+  public void testValidPropertiesData2() {
+    Map<String, String> properties = new HashMap<>();
+    properties.put("attribute1", "testValue");
+    properties.put("attribute2", "testValue2");
+    properties.put("sensitiveAttribute1", "sensitiveData1");
+    SanitizationHelper.sanitizeProperties(properties);
+    assertThat(properties.get("attribute1")).isEqualTo("testValue");
+    assertThat(properties.get("attribute2")).isEqualTo("testValue2");
+    assertThat(properties.get("sensitiveAttribute1")).isEqualTo("sensitiveData1");
   }
 
   @Test
@@ -46,11 +56,9 @@ public class SanitizationHelperTests {
     Map<String, Double> measurements = new HashMap<>();
     measurements.put("key1", 1.0);
     measurements.put("key2", 2.0);
-    Map<String, Double> sanitizedMeasurements =
-        SanitizationHelper.copyAndSanitizeMeasurements(measurements);
+    SanitizationHelper.sanitizeMeasurements(measurements);
     assertThat(measurements.get("key1")).isEqualTo(1.0);
-    assertThat(sanitizedMeasurements.get("key1")).isEqualTo(1.0);
-    assertThat(sanitizedMeasurements.get("key2")).isEqualTo(2.0);
+    assertThat(measurements.get("key2")).isEqualTo(2.0);
   }
 
   @Test
@@ -58,12 +66,10 @@ public class SanitizationHelperTests {
     Map<String, String> properties = new HashMap<>();
     properties.put("", "value1");
     properties.put("key2", "value2");
-    Map<String, String> sanitizedProperties =
-        SanitizationHelper.copyAndSanitizeProperties(properties);
-    assertThat(properties.get("")).isEqualTo("value1");
-    assertThat(sanitizedProperties.get("")).isEqualTo(null);
-    assertThat(sanitizedProperties.get("required")).isEqualTo("value1");
-    assertThat(sanitizedProperties.get("key2")).isEqualTo("value2");
+    SanitizationHelper.sanitizeProperties(properties);
+    assertThat(properties.get("")).isEqualTo(null);
+    assertThat(properties.get("required")).isEqualTo("value1");
+    assertThat(properties.get("key2")).isEqualTo("value2");
   }
 
   @Test
@@ -71,12 +77,10 @@ public class SanitizationHelperTests {
     Map<String, Double> measurements = new HashMap<>();
     measurements.put("", 1.0);
     measurements.put("key2", 2.0);
-    Map<String, Double> sanitizedMeasurements =
-        SanitizationHelper.copyAndSanitizeMeasurements(measurements);
-    assertThat(measurements.get("")).isEqualTo(1.0);
-    assertThat(sanitizedMeasurements.get("")).isEqualTo(null);
-    assertThat(sanitizedMeasurements.get("required")).isEqualTo(1.0);
-    assertThat(sanitizedMeasurements.get("key2")).isEqualTo(2.0);
+    SanitizationHelper.sanitizeMeasurements(measurements);
+    assertThat(measurements.get("")).isEqualTo(null);
+    assertThat(measurements.get("required")).isEqualTo(1.0);
+    assertThat(measurements.get("key2")).isEqualTo(2.0);
   }
 
   @Test
@@ -84,11 +88,9 @@ public class SanitizationHelperTests {
     Map<String, String> properties = new HashMap<>();
     properties.put("key1", "");
     properties.put("key2", "value2");
-    Map<String, String> sanitizedProperties =
-        SanitizationHelper.copyAndSanitizeProperties(properties);
-    assertThat(properties.get("key1")).isEqualTo("");
-    assertThat(sanitizedProperties.get("key1")).isEqualTo(null);
-    assertThat(sanitizedProperties.get("key2")).isEqualTo("value2");
+    SanitizationHelper.sanitizeProperties(properties);
+    assertThat(properties.get("key1")).isEqualTo(null);
+    assertThat(properties.get("key2")).isEqualTo("value2");
   }
 
   @Test
@@ -101,14 +103,11 @@ public class SanitizationHelperTests {
     String longKey = sb.toString();
     properties.put(longKey, "value1");
     properties.put("key2", "value2");
-    Map<String, String> sanitizedProperties =
-        SanitizationHelper.copyAndSanitizeProperties(properties);
-    assertThat(properties.get(longKey)).isEqualTo("value1");
-    assertThat(sanitizedProperties.get(longKey)).isEqualTo(null);
-    assertThat(
-            sanitizedProperties.get(longKey.substring(0, SanitizationHelper.MAX_KEY_NAME_LENGTH)))
+    SanitizationHelper.sanitizeProperties(properties);
+    assertThat(properties.get(longKey)).isEqualTo(null);
+    assertThat(properties.get(longKey.substring(0, SanitizationHelper.MAX_KEY_NAME_LENGTH)))
         .isEqualTo("value1");
-    assertThat(sanitizedProperties.get("key2")).isEqualTo("value2");
+    assertThat(properties.get("key2")).isEqualTo("value2");
   }
 
   @Test
@@ -121,14 +120,11 @@ public class SanitizationHelperTests {
     String longKey = sb.toString();
     measurements.put(longKey, 1.0);
     measurements.put("key2", 2.0);
-    Map<String, Double> sanitizedMeasurements =
-        SanitizationHelper.copyAndSanitizeMeasurements(measurements);
-    assertThat(measurements.get(longKey)).isEqualTo(1.0);
-    assertThat(sanitizedMeasurements.get(longKey)).isEqualTo(null);
-    assertThat(
-            sanitizedMeasurements.get(longKey.substring(0, SanitizationHelper.MAX_KEY_NAME_LENGTH)))
+    SanitizationHelper.sanitizeMeasurements(measurements);
+    assertThat(measurements.get(longKey)).isEqualTo(null);
+    assertThat(measurements.get(longKey.substring(0, SanitizationHelper.MAX_KEY_NAME_LENGTH)))
         .isEqualTo(1.0);
-    assertThat(sanitizedMeasurements.get("key2")).isEqualTo(2.0);
+    assertThat(measurements.get("key2")).isEqualTo(2.0);
   }
 
   @Test
@@ -141,12 +137,9 @@ public class SanitizationHelperTests {
     String longValue = sb.toString();
     properties.put("key1", longValue);
     properties.put("key2", "value2");
-    Map<String, String> sanitizedProperties =
-        SanitizationHelper.copyAndSanitizeProperties(properties);
-    assertThat(properties.get("key1")).isEqualTo(longValue);
-    assertThat(sanitizedProperties.get("key1").length())
-        .isEqualTo(SanitizationHelper.MAX_VALUE_LENGTH);
-    assertThat(sanitizedProperties.get("key2")).isEqualTo("value2");
+    SanitizationHelper.sanitizeProperties(properties);
+    assertThat(properties.get("key1").length()).isEqualTo(SanitizationHelper.MAX_VALUE_LENGTH);
+    assertThat(properties.get("key2")).isEqualTo("value2");
   }
 
   @Test
@@ -162,19 +155,14 @@ public class SanitizationHelperTests {
     properties.put(longKey1, "value1");
     properties.put(longKey2, "value1");
     properties.put("key2", "value2");
-    Map<String, String> sanitizedProperties =
-        SanitizationHelper.copyAndSanitizeProperties(properties);
-    assertThat(properties.get(longKey1)).isEqualTo("value1");
-    assertThat(properties.get(longKey2)).isEqualTo("value1");
-    assertThat(sanitizedProperties.get(longKey1)).isEqualTo(null);
-    assertThat(sanitizedProperties.get(longKey2)).isEqualTo(null);
-    assertThat(
-            sanitizedProperties.get(longKey1.substring(0, SanitizationHelper.MAX_KEY_NAME_LENGTH)))
+    SanitizationHelper.sanitizeProperties(properties);
+    assertThat(properties.get(longKey1)).isEqualTo(null);
+    assertThat(properties.get(longKey2)).isEqualTo(null);
+    assertThat(properties.get(longKey1.substring(0, SanitizationHelper.MAX_KEY_NAME_LENGTH)))
         .isEqualTo("value1");
     assertThat(
-            sanitizedProperties.get(
-                longKey2.substring(0, SanitizationHelper.MAX_KEY_NAME_LENGTH - 3) + "1"))
+            properties.get(longKey2.substring(0, SanitizationHelper.MAX_KEY_NAME_LENGTH - 3) + "1"))
         .isEqualTo("value1");
-    assertThat(sanitizedProperties.get("key2")).isEqualTo("value2");
+    assertThat(properties.get("key2")).isEqualTo("value2");
   }
 }

@@ -25,8 +25,6 @@ import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class SanitizationHelper {
   public static final int MAX_KEY_NAME_LENGTH = 150;
@@ -51,14 +49,10 @@ public class SanitizationHelper {
   public static final int MAX_FILE_NAME_LENGTH = 1024;
   public static final int MAX_SEQUENCE_LENGTH = 64;
 
-  @Nullable
-  public static Map<String, String> copyAndSanitizeProperties(Map<String, String> properties) {
+  public static void sanitizeProperties(Map<String, String> properties) {
     if (properties != null) {
-      Map<String, String> clonedProperties =
-          properties.entrySet().stream()
-              .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
       Map<String, Map.Entry<String, String>> sanitizedProperties = new HashMap<>();
-      for (Map.Entry<String, String> entry : clonedProperties.entrySet()) {
+      for (Map.Entry<String, String> entry : properties.entrySet()) {
         String sanitizedKey = sanitizeKey(entry.getKey());
         String sanitizedValue = sanitizeValue(entry.getValue());
         if (Strings.isNullOrEmpty(sanitizedValue)
@@ -69,15 +63,13 @@ public class SanitizationHelper {
       }
 
       for (Map.Entry<String, Map.Entry<String, String>> entry : sanitizedProperties.entrySet()) {
-        clonedProperties.remove(entry.getKey());
+        properties.remove(entry.getKey());
         if (!Strings.isNullOrEmpty(entry.getValue().getValue())) {
-          String uniqueKey = makeKeyUnique(entry.getValue().getKey(), clonedProperties);
-          clonedProperties.put(uniqueKey, entry.getValue().getValue());
+          String uniqueKey = makeKeyUnique(entry.getValue().getKey(), properties);
+          properties.put(uniqueKey, entry.getValue().getValue());
         }
       }
-      return clonedProperties;
     }
-    return null;
   }
 
   private static String makeKeyUnique(String key, Map<String, ?> map) {
@@ -107,14 +99,10 @@ public class SanitizationHelper {
     return Strings.isNullOrEmpty(sanitizedKey) ? "required" : sanitizedKey;
   }
 
-  @Nullable
-  public static Map<String, Double> copyAndSanitizeMeasurements(Map<String, Double> measurements) {
+  public static void sanitizeMeasurements(Map<String, Double> measurements) {
     if (measurements != null) {
-      Map<String, Double> clonedMeasurements =
-          measurements.entrySet().stream()
-              .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
       Map<String, Map.Entry<String, Double>> sanitizedMeasurements = new HashMap<>();
-      for (Map.Entry<String, Double> entry : clonedMeasurements.entrySet()) {
+      for (Map.Entry<String, Double> entry : measurements.entrySet()) {
         String sanitizedKey = sanitizeKey(entry.getKey());
         // TODO sanitize value ?
         if (!sanitizedKey.equals(entry.getKey())) {
@@ -122,13 +110,11 @@ public class SanitizationHelper {
         }
       }
       for (Map.Entry<String, Map.Entry<String, Double>> entry : sanitizedMeasurements.entrySet()) {
-        clonedMeasurements.remove(entry.getKey());
-        String uniqueKey = makeKeyUnique(entry.getValue().getKey(), clonedMeasurements);
-        clonedMeasurements.put(uniqueKey, entry.getValue().getValue());
+        measurements.remove(entry.getKey());
+        String uniqueKey = makeKeyUnique(entry.getValue().getKey(), measurements);
+        measurements.put(uniqueKey, entry.getValue().getValue());
       }
-      return clonedMeasurements;
     }
-    return null;
   }
 
   private SanitizationHelper() {}

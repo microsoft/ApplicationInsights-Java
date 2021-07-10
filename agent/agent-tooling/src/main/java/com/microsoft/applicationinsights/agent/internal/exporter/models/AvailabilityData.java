@@ -219,7 +219,8 @@ public final class AvailabilityData extends MonitorDomain {
    * @return the AvailabilityData object itself.
    */
   public AvailabilityData setProperties(Map<String, String> properties) {
-    this.properties = SanitizationHelper.copyAndSanitizeProperties(properties);
+    SanitizationHelper.sanitizeProperties(properties);
+    this.properties = properties;
     return this;
   }
 
@@ -239,7 +240,8 @@ public final class AvailabilityData extends MonitorDomain {
    * @return the AvailabilityData object itself.
    */
   public AvailabilityData setMeasurements(Map<String, Double> measurements) {
-    this.measurements = SanitizationHelper.copyAndSanitizeMeasurements(measurements);
+    SanitizationHelper.sanitizeMeasurements(measurements);
+    this.measurements = measurements;
     return this;
   }
 }
