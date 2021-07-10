@@ -73,7 +73,7 @@ public class SanitizationHelper {
     }
   }
 
-  /** Function to create unique key */
+  /** Function to create unique key. */
   private static String makeKeyUnique(String key, Map<String, ?> map) {
     if (map.containsKey(key)) {
       String truncatedKey = Strings.truncate(key, MAX_KEY_NAME_LENGTH - 3);
