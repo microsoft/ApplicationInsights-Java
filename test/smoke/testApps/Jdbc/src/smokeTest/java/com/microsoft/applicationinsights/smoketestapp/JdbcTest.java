@@ -123,7 +123,6 @@ public class JdbcTest extends AiSmokeTest {
   }
 
   // FIXME (trask)
-  @Ignore
   @Test
   @TargetUri("/hsqldbLargeStatement")
   public void hsqldbLargeStatement() throws Exception {
