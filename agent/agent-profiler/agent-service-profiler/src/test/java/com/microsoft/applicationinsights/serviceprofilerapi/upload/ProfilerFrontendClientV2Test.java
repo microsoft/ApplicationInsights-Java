@@ -23,15 +23,20 @@ package com.microsoft.applicationinsights.serviceprofilerapi.upload;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.azure.core.http.HttpHeaders;
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpPipelineBuilder;
 import com.azure.core.http.HttpRequest;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFrontendClientV2;
+import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
+import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
@@ -48,7 +53,7 @@ class ProfilerFrontendClientV2Test {
             .httpClient(
                 request -> {
                   requestHolder.set(request);
-                  return Mono.just(new MockHttpResponse(request, 200));
+                  return Mono.just(mockResponse(request, 200, "some-settings"));
                 })
             .build();
 
@@ -57,7 +62,7 @@ class ProfilerFrontendClientV2Test {
             new URL("http://a-host"), "a-instrumentation-key", httpPipeline);
 
     Date now = Date.from(Instant.now());
-    profilerFrontendClientV2.getSettings(now);
+    String settings = profilerFrontendClientV2.getSettings(now).block();
 
     HttpRequest request = requestHolder.get();
     String url = request.getUrl().toString();
@@ -65,6 +70,7 @@ class ProfilerFrontendClientV2Test {
     assertThat(request.getHttpMethod()).isEqualTo(HttpMethod.GET);
     assertThat(url.contains("a-instrumentation-key")).isTrue();
     assertThat(url.contains("/api/profileragent/v4/settings")).isTrue();
+    assertThat(settings).isEqualTo("some-settings");
   }
 
   @Test
@@ -77,7 +83,7 @@ class ProfilerFrontendClientV2Test {
             .httpClient(
                 request -> {
                   requestHolder.set(request);
-                  return Mono.just(new MockHttpResponse(request, 200));
+                  return Mono.just(mockResponse(request));
                 })
             .build();
 
@@ -86,7 +92,7 @@ class ProfilerFrontendClientV2Test {
             new URL("http://a-host"), "a-instrumentation-key", httpPipeline);
 
     UUID id = UUID.randomUUID();
-    profilerFrontendClientV2.getUploadAccess(id);
+    BlobAccessPass pass = profilerFrontendClientV2.getUploadAccess(id).block();
 
     HttpRequest request = requestHolder.get();
     String url = request.getUrl().toString();
@@ -96,6 +102,18 @@ class ProfilerFrontendClientV2Test {
             url.contains("/api/apps/a-instrumentation-key/artifactkinds/profile/artifacts/" + id))
         .isTrue();
     assertThat(url.contains("action=gettoken")).isTrue();
+    assertThat(pass.getUriWithSasToken()).isEqualTo("http://localhost:99999");
+  }
+
+  private static MockHttpResponse mockResponse(HttpRequest request) {
+    return mockResponse(request, 200, "");
+  }
+
+  private static MockHttpResponse mockResponse(HttpRequest request, int code, String body) {
+    HashMap<String, String> headers = new HashMap<>();
+    headers.put("Location", "http://localhost:99999");
+    return new MockHttpResponse(
+        request, code, new HttpHeaders(headers), body.getBytes(StandardCharsets.UTF_8));
   }
 
   @Test
@@ -108,7 +126,11 @@ class ProfilerFrontendClientV2Test {
             .httpClient(
                 request -> {
                   requestHolder.set(request);
-                  return Mono.just(new MockHttpResponse(request, 200));
+                  return Mono.just(
+                      mockResponse(
+                          request,
+                          201,
+                          "{\"acceptedTime\":\"a-time\",\"blobUri\":\"a-blob-uri\",\"correlationId\":\"a-correlation-id\",\"stampId\":\"a-stamp\"}"));
                 })
             .build();
 
@@ -117,7 +139,8 @@ class ProfilerFrontendClientV2Test {
             new URL("http://a-host"), "a-instrumentation-key", httpPipeline);
 
     UUID id = UUID.randomUUID();
-    profilerFrontendClientV2.reportUploadFinish(id, "an-etag");
+    ArtifactAcceptedResponse artifactAcceptedResponse =
+        profilerFrontendClientV2.reportUploadFinish(id, "an-etag").block();
 
     HttpRequest request = requestHolder.get();
     String url = request.getUrl().toString();
@@ -127,5 +150,9 @@ class ProfilerFrontendClientV2Test {
             url.contains("/api/apps/a-instrumentation-key/artifactkinds/profile/artifacts/" + id))
         .isTrue();
     assertThat(url.contains("action=commit")).isTrue();
+    assertThat(artifactAcceptedResponse.getAcceptedTime()).isEqualTo("a-time");
+    assertThat(artifactAcceptedResponse.getBlobUri()).isEqualTo("a-blob-uri");
+    assertThat(artifactAcceptedResponse.getCorrelationId()).isEqualTo("a-correlation-id");
+    assertThat(artifactAcceptedResponse.getStampId()).isEqualTo("a-stamp");
   }
 }

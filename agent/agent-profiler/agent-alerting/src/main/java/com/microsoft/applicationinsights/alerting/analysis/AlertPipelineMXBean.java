@@ -21,7 +21,9 @@
 
 package com.microsoft.applicationinsights.alerting.analysis;
 
-public interface AlertPipelineMxBean {
+// This class name must end in MXBean (case sensitive)
+@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
+public interface AlertPipelineMXBean {
 
   // Attributes
   long getCoolDown();

@@ -29,6 +29,7 @@ import com.azure.core.http.HttpResponse;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.TimestampContract;
+import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi.Builder;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -73,24 +74,27 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
 
   /** Obtain permission to upload a profile to service profiler. */
   @Override
-  public BlobAccessPass getUploadAccess(UUID profileId) throws IOException {
+  public Mono<BlobAccessPass> getUploadAccess(UUID profileId) {
     URL requestUrl = uploadRequestUri(profileId);
     LOGGER.debug("Etl upload access request: {}", requestUrl);
 
-    HttpResponse response = executePostWithRedirect(requestUrl).block();
-    if (response == null) {
-      // this shouldn't happen, the mono should complete with a response or a failure
-      throw new AssertionError("http response mono returned empty");
-    }
-    if (response.getStatusCode() >= 300) {
-      throw new HttpResponseException(response);
-    }
+    return executePostWithRedirect(requestUrl)
+        .map(
+            response -> {
+              if (response == null) {
+                // this shouldn't happen, the mono should complete with a response or a failure
+                throw new AssertionError("http response mono returned empty");
+              }
+              if (response.getStatusCode() >= 300) {
+                throw new HttpResponseException(response);
+              }
 
-    String location = response.getHeaderValue("Location");
-    if (location == null || location.isEmpty()) {
-      return null;
-    }
-    return new BlobAccessPass(null, location, null);
+              String location = response.getHeaderValue("Location");
+              if (location == null || location.isEmpty()) {
+                throw new AssertionError("response did not have a location");
+              }
+              return new BlobAccessPass(null, location, null);
+            });
   }
 
   public Mono<HttpResponse> executePostWithRedirect(URL requestUrl) {
@@ -105,56 +109,76 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
 
   /** Report to Service Profiler that the profile upload has been completed. */
   @Override
-  public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag)
-      throws IOException {
+  public Mono<ArtifactAcceptedResponse> reportUploadFinish(UUID profileId, String etag) {
 
     URL requestUrl = uploadFinishedRequestUrl(profileId, etag);
 
-    HttpResponse response = executePostWithRedirect(requestUrl).block();
-    if (response == null) {
-      // this shouldn't happen, the mono should complete with a response or a failure
-      throw new AssertionError("http response mono returned empty");
-    }
+    return executePostWithRedirect(requestUrl)
+        .flatMap(
+            response -> {
+              if (response == null) {
+                // this shouldn't happen, the mono should complete with a response or a failure
+                return Mono.error(new AssertionError("http response mono returned empty"));
+              }
 
-    int statusCode = response.getStatusCode();
-    if (statusCode != 201 && statusCode != 202) {
-      LOGGER.error("Trace upload failed: {}", statusCode);
-      return null;
-    }
+              int statusCode = response.getStatusCode();
+              if (statusCode != 201 && statusCode != 202) {
+                LOGGER.error("Trace upload failed: {}", statusCode);
+                return Mono.error(new AssertionError("http request failed"));
+              }
 
-    String json = response.getBodyAsString().block();
-    if (json == null) {
-      // this shouldn't happen, the mono should complete with a response or a failure
-      throw new AssertionError("response body mono returned empty");
-    }
-    return new Builder().build().adapter(ArtifactAcceptedResponse.class).fromJson(json);
+              return response.getBodyAsString();
+            })
+        .flatMap(
+            json -> {
+              if (json == null) {
+                // this shouldn't happen, the mono should complete with a response or a failure
+                return Mono.error(new AssertionError("response body mono returned empty"));
+              }
+              try {
+                JsonAdapter<ArtifactAcceptedResponse> builder =
+                    new Builder().build().adapter(ArtifactAcceptedResponse.class);
+
+                ArtifactAcceptedResponse data = builder.fromJson(json);
+                if (data == null) {
+                  return Mono.error(new IllegalStateException("Failed to deserialize response"));
+                }
+                return Mono.just(data);
+              } catch (IOException e) {
+                return Mono.error(new IllegalStateException("Failed to deserialize response", e));
+              }
+            });
   }
 
   /** Obtain current settings that have been configured within the UI. */
   @Override
-  public String getSettings(Date oldTimeStamp) throws MalformedURLException {
+  public Mono<String> getSettings(Date oldTimeStamp) {
 
     URL requestUrl = getSettingsPath(oldTimeStamp);
     LOGGER.debug("Settings pull request: {}", requestUrl);
 
     HttpRequest request = new HttpRequest(HttpMethod.GET, requestUrl);
 
-    HttpResponse response = httpPipeline.send(request).block();
-    if (response == null) {
-      // this shouldn't happen, the mono should complete with a response or a failure
-      throw new AssertionError("http response mono returned empty");
-    }
-    if (response.getStatusCode() >= 300) {
-      // FIXME (trask) does azure http client throw HttpResponseException already on >= 300 response
-      // above?
-      throw new HttpResponseException(response);
-    }
-
-    return response.getBodyAsString().block();
+    return httpPipeline
+        .send(request)
+        .flatMap(
+            response -> {
+              if (response == null) {
+                // this shouldn't happen, the mono should complete with a response or a failure
+                return Mono.error(new AssertionError("http response mono returned empty"));
+              }
+              if (response.getStatusCode() >= 300) {
+                // FIXME (trask) does azure http client throw HttpResponseException already on >=
+                // 300 response
+                // above?
+                return Mono.error(new HttpResponseException(response));
+              }
+              return response.getBodyAsString();
+            });
   }
 
   // api/profileragent/v4/settings?ikey=xyz&featureVersion=1.0.0&oldTimestamp=123
-  private URL getSettingsPath(Date oldTimeStamp) throws MalformedURLException {
+  private URL getSettingsPath(Date oldTimeStamp) {
 
     String path =
         SETTINGS_PATH
@@ -171,11 +195,15 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
             + "="
             + FEATURE_VERSION;
 
-    return new URL(hostUrl, path);
+    try {
+      return new URL(hostUrl, path);
+    } catch (MalformedURLException e) {
+      throw new IllegalArgumentException("Malformed url", e);
+    }
   }
 
   // api/apps/{ikey}/artifactkinds/{artifactKind}/artifacts/{artifactId}?action=gettoken&extension={ext}&api-version=2020-10-14-preview
-  private URL uploadRequestUri(UUID profileId) throws MalformedURLException {
+  private URL uploadRequestUri(UUID profileId) {
 
     StringBuilder path = new StringBuilder();
     appendBasePath(path, profileId);
@@ -183,11 +211,15 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
 
     path.append("&action=gettoken");
 
-    return new URL(hostUrl, path.toString());
+    try {
+      return new URL(hostUrl, path.toString());
+    } catch (MalformedURLException e) {
+      throw new IllegalArgumentException("Malformed url", e);
+    }
   }
 
   // api/apps/{ikey}/artifactkinds/{artifactKind}/artifacts/{artifactId}?action=commit&extension={ext}&etag={ETag}&api-version=2020-10-14-preview
-  private URL uploadFinishedRequestUrl(UUID profileId, String etag) throws MalformedURLException {
+  private URL uploadFinishedRequestUrl(UUID profileId, String etag) {
 
     StringBuilder path = new StringBuilder();
     appendBasePath(path, profileId);
@@ -195,7 +227,11 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
 
     path.append("&action=commit&etag=\"").append(etag).append("\"");
 
-    return new URL(hostUrl, path.toString());
+    try {
+      return new URL(hostUrl, path.toString());
+    } catch (MalformedURLException e) {
+      throw new IllegalArgumentException("Malformed url", e);
+    }
   }
 
   private void appendBasePath(StringBuilder path, UUID profileId) {

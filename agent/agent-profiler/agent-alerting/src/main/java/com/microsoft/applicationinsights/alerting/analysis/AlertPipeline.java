@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * Contains a pipeline that receives telemetry, feeds it into the analysis pipeline (starting at the
  * rolling average).
  */
-public class AlertPipeline implements AlertPipelineMxBean {
+public class AlertPipeline implements AlertPipelineMXBean {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AlertPipeline.class);
   private static final String JMX_KEY = "com.microsoft:type=AI-alert,name=";
