@@ -33,6 +33,7 @@ import java.util.Map;
  */
 @Fluent
 public final class TelemetryEventData extends MonitorDomain {
+  private static final int MAX_EVENT_NAME_LENGTH = 512;
   /*
    * Event name. Keep it low cardinality to allow proper grouping and useful
    * metrics.
@@ -70,7 +71,7 @@ public final class TelemetryEventData extends MonitorDomain {
    * @return the TelemetryEventData object itself.
    */
   public TelemetryEventData setName(String name) {
-    this.name = Strings.trimAndTruncate(name, SanitizationHelper.MAX_EVENT_NAME_LENGTH);
+    this.name = Strings.trimAndTruncate(name, MAX_EVENT_NAME_LENGTH);
     return this;
   }
 

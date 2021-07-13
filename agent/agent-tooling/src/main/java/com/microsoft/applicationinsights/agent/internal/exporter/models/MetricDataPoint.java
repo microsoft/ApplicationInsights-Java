@@ -29,6 +29,7 @@ import com.microsoft.applicationinsights.agent.internal.exporter.utils.Sanitizat
 /** Metric data single measurement. */
 @Fluent
 public final class MetricDataPoint {
+  private static final int MAX_METRIC_NAME_SPACE_LENGTH = 256;
   /*
    * Namespace of the metric.
    */
@@ -98,8 +99,7 @@ public final class MetricDataPoint {
    * @return the MetricDataPoint object itself.
    */
   public MetricDataPoint setNamespace(String namespace) {
-    this.namespace =
-        Strings.trimAndTruncate(namespace, SanitizationHelper.MAX_METRIC_NAME_SPACE_LENGTH);
+    this.namespace = Strings.trimAndTruncate(namespace, MAX_METRIC_NAME_SPACE_LENGTH);
     return this;
   }
 

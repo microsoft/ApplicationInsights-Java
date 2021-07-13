@@ -33,6 +33,10 @@ import java.util.Map;
  */
 @Fluent
 public final class RemoteDependencyData extends MonitorDomain {
+  private static final int MAX_DATA_LENGTH = 8192;
+  private static final int MAX_RESULT_CODE_LENGTH = 1024;
+  private static final int MAX_DEPENDENCY_TYPE_LENGTH = 1024;
+  private static final int MAX_TARGET_NAME_LENGTH = 1024;
   /*
    * Identifier of a dependency call instance. Used for correlation with the
    * request telemetry item corresponding to this dependency call.
@@ -163,8 +167,7 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setResultCode(String resultCode) {
-    this.resultCode =
-        Strings.trimAndTruncate(resultCode, SanitizationHelper.MAX_RESULT_CODE_LENGTH);
+    this.resultCode = Strings.trimAndTruncate(resultCode, MAX_RESULT_CODE_LENGTH);
     return this;
   }
 
@@ -186,7 +189,7 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setData(String data) {
-    this.data = Strings.trimAndTruncate(data, SanitizationHelper.MAX_DATA_LENGTH);
+    this.data = Strings.trimAndTruncate(data, MAX_DATA_LENGTH);
     return this;
   }
 
@@ -210,7 +213,7 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setType(String type) {
-    this.type = Strings.trimAndTruncate(type, SanitizationHelper.MAX_DEPENDENCY_TYPE_LENGTH);
+    this.type = Strings.trimAndTruncate(type, MAX_DEPENDENCY_TYPE_LENGTH);
     return this;
   }
 
@@ -232,7 +235,7 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setTarget(String target) {
-    this.target = Strings.trimAndTruncate(target, SanitizationHelper.MAX_TARGET_NAME_LENGTH);
+    this.target = Strings.trimAndTruncate(target, MAX_TARGET_NAME_LENGTH);
     return this;
   }
 

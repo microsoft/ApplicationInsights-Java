@@ -24,11 +24,13 @@ package com.microsoft.applicationinsights.agent.internal.exporter.models;
 import com.azure.core.annotation.Fluent;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
 
 /** Stack frame information. */
 @Fluent
 public final class StackFrame {
+  private static final int MAX_FILE_NAME_LENGTH = 1024;
+  private static final int MAX_METHOD_NAME_LENGTH = 1024;
+  private static final int MAX_ASSEMBLY_NAME_LENGTH = 1024;
   /*
    * The level property.
    */
@@ -95,7 +97,7 @@ public final class StackFrame {
    * @return the StackFrame object itself.
    */
   public StackFrame setMethod(String method) {
-    this.method = Strings.trimAndTruncate(method, SanitizationHelper.MAX_METHOD_NAME_LENGTH);
+    this.method = Strings.trimAndTruncate(method, MAX_METHOD_NAME_LENGTH);
     return this;
   }
 
@@ -115,7 +117,7 @@ public final class StackFrame {
    * @return the StackFrame object itself.
    */
   public StackFrame setAssembly(String assembly) {
-    this.assembly = Strings.trimAndTruncate(assembly, SanitizationHelper.MAX_ASSEMBLY_NAME_LENGTH);
+    this.assembly = Strings.trimAndTruncate(assembly, MAX_ASSEMBLY_NAME_LENGTH);
     return this;
   }
 
@@ -135,7 +137,7 @@ public final class StackFrame {
    * @return the StackFrame object itself.
    */
   public StackFrame setFileName(String fileName) {
-    this.fileName = Strings.trimAndTruncate(fileName, SanitizationHelper.MAX_FILE_NAME_LENGTH);
+    this.fileName = Strings.trimAndTruncate(fileName, MAX_FILE_NAME_LENGTH);
     return this;
   }
 

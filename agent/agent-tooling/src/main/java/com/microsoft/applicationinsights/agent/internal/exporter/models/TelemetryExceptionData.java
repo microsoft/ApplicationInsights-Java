@@ -34,6 +34,7 @@ import java.util.Map;
  */
 @Fluent
 public final class TelemetryExceptionData extends MonitorDomain {
+  private static final int MAX_PROBLEM_ID_LENGTH = 1024;
   /*
    * Exception chain - list of inner exceptions.
    */
@@ -129,7 +130,7 @@ public final class TelemetryExceptionData extends MonitorDomain {
    * @return the TelemetryExceptionData object itself.
    */
   public TelemetryExceptionData setProblemId(String problemId) {
-    this.problemId = Strings.trimAndTruncate(problemId, SanitizationHelper.MAX_PROBLEM_ID_LENGTH);
+    this.problemId = Strings.trimAndTruncate(problemId, MAX_PROBLEM_ID_LENGTH);
     return this;
   }
 

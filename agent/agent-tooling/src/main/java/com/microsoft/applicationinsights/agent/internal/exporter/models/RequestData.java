@@ -33,6 +33,8 @@ import java.util.Map;
  */
 @Fluent
 public final class RequestData extends MonitorDomain {
+  private static final int MAX_SOURCE_LENGTH = 1024;
+  private static final int MAX_RESPONSE_CODE_LENGTH = 1024;
   /*
    * Identifier of a request call instance. Used for correlation between
    * request and other telemetry items.
@@ -199,8 +201,7 @@ public final class RequestData extends MonitorDomain {
    * @return the RequestData object itself.
    */
   public RequestData setResponseCode(String responseCode) {
-    this.responseCode =
-        Strings.trimAndTruncate(responseCode, SanitizationHelper.MAX_RESPONSE_CODE_LENGTH);
+    this.responseCode = Strings.trimAndTruncate(responseCode, MAX_RESPONSE_CODE_LENGTH);
     return this;
   }
 
@@ -222,7 +223,7 @@ public final class RequestData extends MonitorDomain {
    * @return the RequestData object itself.
    */
   public RequestData setSource(String source) {
-    this.source = Strings.trimAndTruncate(source, SanitizationHelper.MAX_SOURCE_LENGTH);
+    this.source = Strings.trimAndTruncate(source, MAX_SOURCE_LENGTH);
     return this;
   }
 
