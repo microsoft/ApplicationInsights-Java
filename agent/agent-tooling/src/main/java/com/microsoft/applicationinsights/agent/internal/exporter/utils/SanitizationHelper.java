@@ -22,11 +22,12 @@
 package com.microsoft.applicationinsights.agent.internal.exporter.utils;
 
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 public class SanitizationHelper {
-  public static final int MAX_KEY_NAME_LENGTH = 150;
+  public static final int MAX_KEY_LENGTH = 150;
   public static final int MAX_VALUE_LENGTH = 8192;
   public static final int MAX_NAME_LENGTH = 1024;
   public static final int MAX_ID_LENGTH = 512;
@@ -34,27 +35,40 @@ public class SanitizationHelper {
   public static final int MAX_URL_LENGTH = 2048;
 
   /** Function to sanitize both key and value in properties. */
-  public static void sanitizeProperties(Map<String, String> properties) {
+  public static Map<String, String> sanitizeProperties(Map<String, String> properties) {
     if (properties == null) {
-      return;
+      // TODO (trask) never pass null
+      return Collections.emptyMap();
     }
-    Map<String, SanitizedEntry<String>> sanitizedProperties = new HashMap<>();
+    if (!needsSanitizing(properties)) {
+      System.out.println("NO SAN");
+      return properties;
+    }
+    Map<String, String> sanitized = new HashMap<>();
     for (Map.Entry<String, String> entry : properties.entrySet()) {
       String sanitizedKey = sanitizeKey(entry.getKey());
       String sanitizedValue = sanitizeValue(entry.getValue());
-      if (Strings.isNullOrEmpty(sanitizedValue)
-          || !sanitizedKey.equals(entry.getKey())
-          || !sanitizedValue.equals(entry.getValue())) {
-        sanitizedProperties.put(entry.getKey(), new SanitizedEntry<>(sanitizedKey, sanitizedValue));
+      System.out.println(sanitizedKey + ":" + sanitizedValue);
+      if (!Strings.isNullOrEmpty(sanitizedValue)) {
+        String uniqueKey = makeKeyUnique(sanitizedKey, sanitized);
+        sanitized.put(uniqueKey, sanitizedValue);
       }
     }
-    for (Map.Entry<String, SanitizedEntry<String>> entry : sanitizedProperties.entrySet()) {
-      properties.remove(entry.getKey());
-      if (!Strings.isNullOrEmpty(entry.getValue().getValue())) {
-        String uniqueKey = makeKeyUnique(entry.getValue().getKey(), properties);
-        properties.put(uniqueKey, entry.getValue().getValue());
+    return sanitized;
+  }
+
+  private static boolean needsSanitizing(Map<String, String> properties) {
+    for (Map.Entry<String, String> entry : properties.entrySet()) {
+      String key = entry.getKey();
+      String value = entry.getValue();
+      if (Strings.isNullOrEmpty(key)
+          || Strings.isNullOrEmpty(value)
+          || key.length() > MAX_KEY_LENGTH
+          || value.length() > MAX_VALUE_LENGTH) {
+        return true;
       }
     }
+    return false;
   }
 
   /** Function to create unique key. */
@@ -62,7 +76,7 @@ public class SanitizationHelper {
     if (!map.containsKey(key)) {
       return key;
     }
-    String truncatedKey = Strings.truncate(key, MAX_KEY_NAME_LENGTH - 3);
+    String truncatedKey = Strings.truncate(key, MAX_KEY_LENGTH - 3);
     int candidate = 1;
     do {
       key = truncatedKey + candidate;
@@ -78,7 +92,7 @@ public class SanitizationHelper {
 
   /** Function to sanitize key. */
   private static String sanitizeKey(String key) {
-    String sanitizedKey = Strings.trimAndTruncate(key, MAX_KEY_NAME_LENGTH);
+    String sanitizedKey = Strings.trimAndTruncate(key, MAX_KEY_LENGTH);
     return makeKeyNonEmpty(sanitizedKey);
   }
 

@@ -31,33 +31,47 @@ public class SanitizationHelperTests {
 
   @Test
   public void testValidPropertiesData() {
+    // given
     Map<String, String> properties = new HashMap<>();
     properties.put("key1", "value1");
     properties.put("key2", "value2");
-    SanitizationHelper.sanitizeProperties(properties);
-    assertThat(properties).containsEntry("key1", "value1");
-    assertThat(properties).containsEntry("key2", "value2");
+
+    // when
+    Map<String, String> sanitized = SanitizationHelper.sanitizeProperties(properties);
+
+    // then
+    assertThat(sanitized == properties).isTrue();
   }
 
   @Test
   public void testValidMeasurementsData() {
+    // given
     Map<String, Double> measurements = new HashMap<>();
     measurements.put("key1", 1.0);
     measurements.put("key2", 2.0);
+
+    // when
     SanitizationHelper.sanitizeMeasurements(measurements);
+
+    // then
     assertThat(measurements).containsEntry("key1", 1.0);
     assertThat(measurements).containsEntry("key2", 2.0);
   }
 
   @Test
   public void testEmptyKeyInPropertiesData() {
+    // given
     Map<String, String> properties = new HashMap<>();
     properties.put("", "value1");
     properties.put("key2", "value2");
-    SanitizationHelper.sanitizeProperties(properties);
-    assertThat(properties).doesNotContainKey("");
-    assertThat(properties).containsEntry("empty", "value1");
-    assertThat(properties).containsEntry("key2", "value2");
+
+    // when
+    Map<String, String> sanitized = SanitizationHelper.sanitizeProperties(properties);
+
+    // then
+    assertThat(sanitized).doesNotContainKey("");
+    assertThat(sanitized).containsEntry("empty", "value1");
+    assertThat(sanitized).containsEntry("key2", "value2");
   }
 
   @Test
@@ -73,36 +87,46 @@ public class SanitizationHelperTests {
 
   @Test
   public void testEmptyValueInPropertiesData() {
+    // given
     Map<String, String> properties = new HashMap<>();
     properties.put("key1", "");
     properties.put("key2", "value2");
-    SanitizationHelper.sanitizeProperties(properties);
-    assertThat(properties).doesNotContainKey("key1");
-    assertThat(properties).containsEntry("key2", "value2");
+
+    // when
+    Map<String, String> sanitized = SanitizationHelper.sanitizeProperties(properties);
+
+    // then
+    assertThat(sanitized).doesNotContainKey("key1");
+    assertThat(sanitized).containsEntry("key2", "value2");
   }
 
   @Test
   public void testVeryLongKeyInPropertiesData() {
+    // given
     Map<String, String> properties = new HashMap<>();
     StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < SanitizationHelper.MAX_KEY_NAME_LENGTH + 1; i++) {
+    for (int i = 0; i < SanitizationHelper.MAX_KEY_LENGTH + 1; i++) {
       sb.append('a');
     }
     String longKey = sb.toString();
     properties.put(longKey, "value1");
     properties.put("key2", "value2");
-    SanitizationHelper.sanitizeProperties(properties);
-    assertThat(properties).doesNotContainKey(longKey);
-    assertThat(properties)
-        .containsEntry(longKey.substring(0, SanitizationHelper.MAX_KEY_NAME_LENGTH), "value1");
-    assertThat(properties).containsEntry("key2", "value2");
+
+    // when
+    Map<String, String> sanitized = SanitizationHelper.sanitizeProperties(properties);
+
+    // then
+    assertThat(sanitized).doesNotContainKey(longKey);
+    assertThat(sanitized)
+        .containsEntry(longKey.substring(0, SanitizationHelper.MAX_KEY_LENGTH), "value1");
+    assertThat(sanitized).containsEntry("key2", "value2");
   }
 
   @Test
   public void testVeryLongKeyInMeasurementsData() {
     Map<String, Double> measurements = new HashMap<>();
     StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < SanitizationHelper.MAX_KEY_NAME_LENGTH + 1; i++) {
+    for (int i = 0; i < SanitizationHelper.MAX_KEY_LENGTH + 1; i++) {
       sb.append('a');
     }
     String longKey = sb.toString();
@@ -111,12 +135,13 @@ public class SanitizationHelperTests {
     SanitizationHelper.sanitizeMeasurements(measurements);
     assertThat(measurements).doesNotContainKey(longKey);
     assertThat(measurements)
-        .containsEntry(longKey.substring(0, SanitizationHelper.MAX_KEY_NAME_LENGTH), 1.0);
+        .containsEntry(longKey.substring(0, SanitizationHelper.MAX_KEY_LENGTH), 1.0);
     assertThat(measurements).containsEntry("key2", 2.0);
   }
 
   @Test
   public void testVeryLongValueInPropertiesData() {
+    // given
     Map<String, String> properties = new HashMap<>();
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < SanitizationHelper.MAX_VALUE_LENGTH + 1; i++) {
@@ -125,16 +150,21 @@ public class SanitizationHelperTests {
     String longValue = sb.toString();
     properties.put("key1", longValue);
     properties.put("key2", "value2");
-    SanitizationHelper.sanitizeProperties(properties);
-    assertThat(properties.get("key1").length()).isEqualTo(SanitizationHelper.MAX_VALUE_LENGTH);
-    assertThat(properties).containsEntry("key2", "value2");
+
+    // when
+    Map<String, String> sanitized = SanitizationHelper.sanitizeProperties(properties);
+
+    // then
+    assertThat(sanitized.get("key1").length()).isEqualTo(SanitizationHelper.MAX_VALUE_LENGTH);
+    assertThat(sanitized).containsEntry("key2", "value2");
   }
 
   @Test
   public void testVeryLongDuplicateKeyInPropertiesData() {
+    // given
     Map<String, String> properties = new HashMap<>();
     StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < SanitizationHelper.MAX_KEY_NAME_LENGTH + 1; i++) {
+    for (int i = 0; i < SanitizationHelper.MAX_KEY_LENGTH + 1; i++) {
       sb.append('a');
     }
     String longKey1 = sb.append("key1").toString();
@@ -142,14 +172,18 @@ public class SanitizationHelperTests {
     properties.put(longKey1, "value1");
     properties.put(longKey2, "value1");
     properties.put("key2", "value2");
-    SanitizationHelper.sanitizeProperties(properties);
-    assertThat(properties).doesNotContainKey(longKey1);
-    assertThat(properties).doesNotContainKey(longKey2);
-    assertThat(properties)
-        .containsEntry(longKey1.substring(0, SanitizationHelper.MAX_KEY_NAME_LENGTH), "value1");
-    assertThat(properties)
+
+    // when
+    Map<String, String> sanitized = SanitizationHelper.sanitizeProperties(properties);
+
+    // then
+    assertThat(sanitized).doesNotContainKey(longKey1);
+    assertThat(sanitized).doesNotContainKey(longKey2);
+    assertThat(sanitized)
+        .containsEntry(longKey1.substring(0, SanitizationHelper.MAX_KEY_LENGTH), "value1");
+    assertThat(sanitized)
         .containsEntry(
-            longKey2.substring(0, SanitizationHelper.MAX_KEY_NAME_LENGTH - 3) + "1", "value1");
-    assertThat(properties).containsEntry("key2", "value2");
+            longKey2.substring(0, SanitizationHelper.MAX_KEY_LENGTH - 3) + "1", "value1");
+    assertThat(sanitized).containsEntry("key2", "value2");
   }
 }
