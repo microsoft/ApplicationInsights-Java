@@ -38,21 +38,21 @@ public class SanitizationHelper {
     if (properties == null) {
       return;
     }
-    Map<String, SanitizedEntry> sanitizedProperties = new HashMap<>();
+    Map<String, SanitizedEntry<String>> sanitizedProperties = new HashMap<>();
     for (Map.Entry<String, String> entry : properties.entrySet()) {
       String sanitizedKey = sanitizeKey(entry.getKey());
       String sanitizedValue = sanitizeValue(entry.getValue());
       if (Strings.isNullOrEmpty(sanitizedValue)
           || !sanitizedKey.equals(entry.getKey())
           || !sanitizedValue.equals(entry.getValue())) {
-        sanitizedProperties.put(entry.getKey(), new SanitizedEntry(sanitizedKey, sanitizedValue));
+        sanitizedProperties.put(entry.getKey(), new SanitizedEntry<>(sanitizedKey, sanitizedValue));
       }
     }
-    for (Map.Entry<String, SanitizedEntry> entry : sanitizedProperties.entrySet()) {
+    for (Map.Entry<String, SanitizedEntry<String>> entry : sanitizedProperties.entrySet()) {
       properties.remove(entry.getKey());
-      if (!Strings.isNullOrEmpty((String) entry.getValue().getValue())) {
-        String uniqueKey = makeKeyUnique((String) entry.getValue().getKey(), properties);
-        properties.put(uniqueKey, (String) entry.getValue().getValue());
+      if (!Strings.isNullOrEmpty(entry.getValue().getValue())) {
+        String uniqueKey = makeKeyUnique(entry.getValue().getKey(), properties);
+        properties.put(uniqueKey, entry.getValue().getValue());
       }
     }
   }
@@ -93,34 +93,34 @@ public class SanitizationHelper {
     if (measurements == null) {
       return;
     }
-    Map<String, SanitizedEntry> sanitizedMeasurements = new HashMap<>();
+    Map<String, SanitizedEntry<Double>> sanitizedMeasurements = new HashMap<>();
     for (Map.Entry<String, Double> entry : measurements.entrySet()) {
       String sanitizedKey = sanitizeKey(entry.getKey());
       // TODO sanitize value ?
       if (!sanitizedKey.equals(entry.getKey())) {
         sanitizedMeasurements.put(
-            entry.getKey(), new SanitizedEntry(sanitizedKey, entry.getValue()));
+            entry.getKey(), new SanitizedEntry<>(sanitizedKey, entry.getValue()));
       }
     }
-    for (Map.Entry<String, SanitizedEntry> entry : sanitizedMeasurements.entrySet()) {
+    for (Map.Entry<String, SanitizedEntry<Double>> entry : sanitizedMeasurements.entrySet()) {
       measurements.remove(entry.getKey());
-      String uniqueKey = makeKeyUnique((String) entry.getValue().getKey(), measurements);
-      measurements.put(uniqueKey, (Double) entry.getValue().getValue());
+      String uniqueKey = makeKeyUnique(entry.getValue().getKey(), measurements);
+      measurements.put(uniqueKey, entry.getValue().getValue());
     }
   }
 
   private SanitizationHelper() {}
 
-  static class SanitizedEntry<K, V> {
-    private final K key;
+  static class SanitizedEntry<V> {
+    private final String key;
     private final V value;
 
-    public SanitizedEntry(K key, V value) {
+    public SanitizedEntry(String key, V value) {
       this.key = key;
       this.value = value;
     }
 
-    public K getKey() {
+    public String getKey() {
       return key;
     }
 
