@@ -317,8 +317,7 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setMeasurements(Map<String, Double> measurements) {
-    SanitizationHelper.sanitizeMeasurements(measurements);
-    this.measurements = measurements;
+    this.measurements = SanitizationHelper.sanitizeMeasurements(measurements);
     return this;
   }
 }

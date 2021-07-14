@@ -239,8 +239,7 @@ public final class AvailabilityData extends MonitorDomain {
    * @return the AvailabilityData object itself.
    */
   public AvailabilityData setMeasurements(Map<String, Double> measurements) {
-    SanitizationHelper.sanitizeMeasurements(measurements);
-    this.measurements = measurements;
+    this.measurements = SanitizationHelper.sanitizeMeasurements(measurements);
     return this;
   }
 }

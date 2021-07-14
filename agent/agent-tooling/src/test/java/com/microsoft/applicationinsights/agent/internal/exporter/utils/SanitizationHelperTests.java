@@ -51,11 +51,11 @@ public class SanitizationHelperTests {
     measurements.put("key2", 2.0);
 
     // when
-    SanitizationHelper.sanitizeMeasurements(measurements);
+    Map<String, Double> sanitized = SanitizationHelper.sanitizeMeasurements(measurements);
 
     // then
-    assertThat(measurements).containsEntry("key1", 1.0);
-    assertThat(measurements).containsEntry("key2", 2.0);
+    assertThat(sanitized).containsEntry("key1", 1.0);
+    assertThat(sanitized).containsEntry("key2", 2.0);
   }
 
   @Test
@@ -76,13 +76,18 @@ public class SanitizationHelperTests {
 
   @Test
   public void testEmptyKeyInMeasurementsData() {
+    // given
     Map<String, Double> measurements = new HashMap<>();
     measurements.put("", 1.0);
     measurements.put("key2", 2.0);
-    SanitizationHelper.sanitizeMeasurements(measurements);
-    assertThat(measurements).doesNotContainKey("");
-    assertThat(measurements).containsEntry("empty", 1.0);
-    assertThat(measurements).containsEntry("key2", 2.0);
+
+    // when
+    Map<String, Double> sanitized = SanitizationHelper.sanitizeMeasurements(measurements);
+
+    // then
+    assertThat(sanitized).doesNotContainKey("");
+    assertThat(sanitized).containsEntry("empty", 1.0);
+    assertThat(sanitized).containsEntry("key2", 2.0);
   }
 
   @Test
@@ -124,6 +129,7 @@ public class SanitizationHelperTests {
 
   @Test
   public void testVeryLongKeyInMeasurementsData() {
+    // given
     Map<String, Double> measurements = new HashMap<>();
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < SanitizationHelper.MAX_KEY_LENGTH + 1; i++) {
@@ -132,11 +138,15 @@ public class SanitizationHelperTests {
     String longKey = sb.toString();
     measurements.put(longKey, 1.0);
     measurements.put("key2", 2.0);
-    SanitizationHelper.sanitizeMeasurements(measurements);
-    assertThat(measurements).doesNotContainKey(longKey);
-    assertThat(measurements)
+
+    // when
+    Map<String, Double> sanitized = SanitizationHelper.sanitizeMeasurements(measurements);
+
+    // then
+    assertThat(sanitized).doesNotContainKey(longKey);
+    assertThat(sanitized)
         .containsEntry(longKey.substring(0, SanitizationHelper.MAX_KEY_LENGTH), 1.0);
-    assertThat(measurements).containsEntry("key2", 2.0);
+    assertThat(sanitized).containsEntry("key2", 2.0);
   }
 
   @Test
@@ -183,7 +193,34 @@ public class SanitizationHelperTests {
         .containsEntry(longKey1.substring(0, SanitizationHelper.MAX_KEY_LENGTH), "value1");
     assertThat(sanitized)
         .containsEntry(
-            longKey2.substring(0, SanitizationHelper.MAX_KEY_LENGTH - 3) + "1", "value1");
+            longKey2.substring(
+                    0,
+                    SanitizationHelper.MAX_KEY_LENGTH
+                        - SanitizationHelper.UNIQUE_KEY_TRUNCATION_LENGTH)
+                + "1",
+            "value1");
     assertThat(sanitized).containsEntry("key2", "value2");
+  }
+
+  @Test
+  public void testMakeUniqueKey() {
+    // given
+    Map<String, String> properties = new HashMap<>();
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < SanitizationHelper.MAX_KEY_LENGTH + 1; i++) {
+      sb.append('a');
+    }
+    for (int i = 0; i < 1001; i++) {
+      properties.put(sb.append("key").append(i).toString(), "value" + i);
+    }
+
+    // when
+    Map<String, String> sanitized = SanitizationHelper.sanitizeProperties(properties);
+
+    // then
+    assertThat(sanitized.keySet().size()).isEqualTo(1001);
+    for (String key : sanitized.keySet()) {
+      assertThat(key.length()).isLessThanOrEqualTo(SanitizationHelper.MAX_KEY_LENGTH);
+    }
   }
 }

@@ -227,8 +227,7 @@ public final class PageViewData extends MonitorDomain {
    * @return the PageViewData object itself.
    */
   public PageViewData setMeasurements(Map<String, Double> measurements) {
-    SanitizationHelper.sanitizeMeasurements(measurements);
-    this.measurements = measurements;
+    this.measurements = SanitizationHelper.sanitizeMeasurements(measurements);
     return this;
   }
 }

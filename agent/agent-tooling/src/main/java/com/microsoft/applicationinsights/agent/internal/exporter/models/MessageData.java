@@ -134,8 +134,7 @@ public final class MessageData extends MonitorDomain {
    * @return the MessageData object itself.
    */
   public MessageData setMeasurements(Map<String, Double> measurements) {
-    SanitizationHelper.sanitizeMeasurements(measurements);
-    this.measurements = measurements;
+    this.measurements = SanitizationHelper.sanitizeMeasurements(measurements);
     return this;
   }
 }

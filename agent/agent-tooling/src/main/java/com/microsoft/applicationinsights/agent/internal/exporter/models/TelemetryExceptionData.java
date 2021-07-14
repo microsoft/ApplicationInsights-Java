@@ -170,8 +170,7 @@ public final class TelemetryExceptionData extends MonitorDomain {
    * @return the TelemetryExceptionData object itself.
    */
   public TelemetryExceptionData setMeasurements(Map<String, Double> measurements) {
-    SanitizationHelper.sanitizeMeasurements(measurements);
-    this.measurements = measurements;
+    this.measurements = SanitizationHelper.sanitizeMeasurements(measurements);
     return this;
   }
 }

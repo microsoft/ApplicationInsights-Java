@@ -32,6 +32,7 @@ public class SanitizationHelper {
   public static final int MAX_ID_LENGTH = 512;
   public static final int MAX_MESSAGE_LENGTH = 32768;
   public static final int MAX_URL_LENGTH = 2048;
+  public static final int UNIQUE_KEY_TRUNCATION_LENGTH = 6;
 
   /** Function to sanitize both key and value in properties. */
   @SuppressWarnings("ReturnsNullCollection")
@@ -39,7 +40,7 @@ public class SanitizationHelper {
     if (properties == null) {
       return null;
     }
-    if (!needsSanitizing(properties)) {
+    if (!needsSanitizingForProperties(properties)) {
       // this is an optimization to avoid any memory allocation in the normal case
       return properties;
     }
@@ -55,7 +56,7 @@ public class SanitizationHelper {
     return sanitized;
   }
 
-  private static boolean needsSanitizing(Map<String, String> properties) {
+  private static boolean needsSanitizingForProperties(Map<String, String> properties) {
     for (Map.Entry<String, String> entry : properties.entrySet()) {
       String key = entry.getKey();
       String value = entry.getValue();
@@ -69,12 +70,22 @@ public class SanitizationHelper {
     return false;
   }
 
-  /** Function to create unique key. */
+  private static boolean needsSanitizingForMeasurements(Map<String, Double> measurements) {
+    for (Map.Entry<String, Double> entry : measurements.entrySet()) {
+      String key = entry.getKey();
+      if (Strings.isNullOrEmpty(key) || key.length() > MAX_KEY_LENGTH) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** Function to create unique key. Generates 1000000 unique keys for */
   private static String makeKeyUnique(String key, Map<String, ?> map) {
     if (!map.containsKey(key)) {
       return key;
     }
-    String truncatedKey = Strings.truncate(key, MAX_KEY_LENGTH - 3);
+    String truncatedKey = Strings.truncate(key, MAX_KEY_LENGTH - UNIQUE_KEY_TRUNCATION_LENGTH);
     int candidate = 1;
     do {
       key = truncatedKey + candidate;
@@ -100,44 +111,24 @@ public class SanitizationHelper {
     return Strings.isNullOrEmpty(sanitizedKey) ? "empty" : sanitizedKey;
   }
 
-  /** Function to sanitize key value pair in measurements. */
-  public static void sanitizeMeasurements(Map<String, Double> measurements) {
+  /** Function to sanitize both key and value in Measurements. */
+  @SuppressWarnings("ReturnsNullCollection")
+  public static Map<String, Double> sanitizeMeasurements(Map<String, Double> measurements) {
     if (measurements == null) {
-      return;
+      return null;
     }
-    Map<String, SanitizedEntry<Double>> sanitizedMeasurements = new HashMap<>();
+    if (!needsSanitizingForMeasurements(measurements)) {
+      // this is an optimization to avoid any memory allocation in the normal case
+      return measurements;
+    }
+    Map<String, Double> sanitized = new HashMap<>();
     for (Map.Entry<String, Double> entry : measurements.entrySet()) {
       String sanitizedKey = sanitizeKey(entry.getKey());
-      // TODO sanitize value ?
-      if (!sanitizedKey.equals(entry.getKey())) {
-        sanitizedMeasurements.put(
-            entry.getKey(), new SanitizedEntry<>(sanitizedKey, entry.getValue()));
-      }
+      String uniqueKey = makeKeyUnique(sanitizedKey, sanitized);
+      sanitized.put(uniqueKey, entry.getValue());
     }
-    for (Map.Entry<String, SanitizedEntry<Double>> entry : sanitizedMeasurements.entrySet()) {
-      measurements.remove(entry.getKey());
-      String uniqueKey = makeKeyUnique(entry.getValue().getKey(), measurements);
-      measurements.put(uniqueKey, entry.getValue().getValue());
-    }
+    return sanitized;
   }
 
   private SanitizationHelper() {}
-
-  static class SanitizedEntry<V> {
-    private final String key;
-    private final V value;
-
-    public SanitizedEntry(String key, V value) {
-      this.key = key;
-      this.value = value;
-    }
-
-    public String getKey() {
-      return key;
-    }
-
-    public V getValue() {
-      return value;
-    }
-  }
 }

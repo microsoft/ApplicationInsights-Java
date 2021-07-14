@@ -111,8 +111,7 @@ public final class TelemetryEventData extends MonitorDomain {
    * @return the TelemetryEventData object itself.
    */
   public TelemetryEventData setMeasurements(Map<String, Double> measurements) {
-    SanitizationHelper.sanitizeMeasurements(measurements);
-    this.measurements = measurements;
+    this.measurements = SanitizationHelper.sanitizeMeasurements(measurements);
     return this;
   }
 }
