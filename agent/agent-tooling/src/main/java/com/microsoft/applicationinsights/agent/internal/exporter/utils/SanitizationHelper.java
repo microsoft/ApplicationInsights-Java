@@ -41,14 +41,12 @@ public class SanitizationHelper {
       return Collections.emptyMap();
     }
     if (!needsSanitizing(properties)) {
-      System.out.println("NO SAN");
       return properties;
     }
     Map<String, String> sanitized = new HashMap<>();
     for (Map.Entry<String, String> entry : properties.entrySet()) {
       String sanitizedKey = sanitizeKey(entry.getKey());
       String sanitizedValue = sanitizeValue(entry.getValue());
-      System.out.println(sanitizedKey + ":" + sanitizedValue);
       if (!Strings.isNullOrEmpty(sanitizedValue)) {
         String uniqueKey = makeKeyUnique(sanitizedKey, sanitized);
         sanitized.put(uniqueKey, sanitizedValue);
