@@ -323,8 +323,7 @@ public final class PageViewPerfData extends MonitorDomain {
    * @return the PageViewPerfData object itself.
    */
   public PageViewPerfData setProperties(Map<String, String> properties) {
-    SanitizationHelper.sanitizeProperties(properties);
-    this.properties = properties;
+    this.properties = SanitizationHelper.sanitizeProperties(properties);
     return this;
   }
 

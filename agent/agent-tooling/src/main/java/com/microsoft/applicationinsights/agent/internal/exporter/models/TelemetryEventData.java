@@ -91,8 +91,7 @@ public final class TelemetryEventData extends MonitorDomain {
    * @return the TelemetryEventData object itself.
    */
   public TelemetryEventData setProperties(Map<String, String> properties) {
-    SanitizationHelper.sanitizeProperties(properties);
-    this.properties = properties;
+    this.properties = SanitizationHelper.sanitizeProperties(properties);
     return this;
   }
 

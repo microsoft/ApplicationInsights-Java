@@ -263,8 +263,7 @@ public final class RequestData extends MonitorDomain {
    * @return the RequestData object itself.
    */
   public RequestData setProperties(Map<String, String> properties) {
-    SanitizationHelper.sanitizeProperties(properties);
-    this.properties = properties;
+    this.properties = SanitizationHelper.sanitizeProperties(properties);
     return this;
   }
 

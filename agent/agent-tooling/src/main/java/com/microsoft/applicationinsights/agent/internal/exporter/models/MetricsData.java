@@ -87,8 +87,7 @@ public final class MetricsData extends MonitorDomain {
    * @return the MetricsData object itself.
    */
   public MetricsData setProperties(Map<String, String> properties) {
-    SanitizationHelper.sanitizeProperties(properties);
-    this.properties = properties;
+    this.properties = SanitizationHelper.sanitizeProperties(properties);
     return this;
   }
 }

@@ -219,8 +219,7 @@ public final class AvailabilityData extends MonitorDomain {
    * @return the AvailabilityData object itself.
    */
   public AvailabilityData setProperties(Map<String, String> properties) {
-    SanitizationHelper.sanitizeProperties(properties);
-    this.properties = properties;
+    this.properties = SanitizationHelper.sanitizeProperties(properties);
     return this;
   }
 
