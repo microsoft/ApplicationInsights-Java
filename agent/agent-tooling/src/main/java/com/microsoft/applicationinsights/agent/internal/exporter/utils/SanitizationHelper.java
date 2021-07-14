@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.agent.internal.exporter.utils;
 
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,10 +34,10 @@ public class SanitizationHelper {
   public static final int MAX_URL_LENGTH = 2048;
 
   /** Function to sanitize both key and value in properties. */
+  @SuppressWarnings("ReturnsNullCollection")
   public static Map<String, String> sanitizeProperties(Map<String, String> properties) {
     if (properties == null) {
-      // TODO (trask) never pass null
-      return Collections.emptyMap();
+      return null;
     }
     if (!needsSanitizing(properties)) {
       return properties;
