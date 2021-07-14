@@ -40,6 +40,7 @@ public class SanitizationHelper {
       return null;
     }
     if (!needsSanitizing(properties)) {
+      // this is an optimization to avoid any memory allocation in the normal case
       return properties;
     }
     Map<String, String> sanitized = new HashMap<>();
