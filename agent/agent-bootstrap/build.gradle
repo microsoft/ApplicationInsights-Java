@@ -4,11 +4,6 @@ plugins {
   id("ai.java-conventions")
 }
 
-repositories {
-  // maven local is needed for locally built otel fork
-  mavenLocal()
-}
-
 def sdkVersionFileDir = "$project.buildDir/src/generated/main/resources"
 
 sourceSets {

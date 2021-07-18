@@ -5,11 +5,6 @@ plugins {
 
 apply from: "$buildScriptsDir/publish.gradle"
 
-repositories {
-  // maven local is needed for locally built otel fork
-  mavenLocal()
-}
-
 configurations {
   shadowInclude {
     description "For marking dependencies that should be shaded into this project's artifact"
@@ -93,8 +88,8 @@ dependencies {
 
 // region Publishing properties
 
-projectPomName = project.msftAppInsights + " Codeless Java Agent"
-projectPomDescription = "This is the Codeless Java agent of " + project.msftAppInsightsJavaSdk
+projectPomName = "Microsoft Application Insights Java Agent"
+projectPomDescription = "Microsoft Application Insights Java Agent"
 
 whenPomConfigured = { p ->
   p.dependencies = []

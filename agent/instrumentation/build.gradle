@@ -3,13 +3,8 @@ plugins {
   id "com.github.johnrengelman.shadow"
 }
 
-repositories {
-  // maven local is needed for locally built otel fork
-  mavenLocal()
-}
-
 ext {
-  otelInstrumentationAlphaVersion = "1.3.1+ai.patch.1"
+  otelInstrumentationAlphaVersion = "1.3.1+ai.patch.1-alpha"
 }
 
 configurations {

@@ -4,11 +4,6 @@ plugins {
   id("ai.jmh-conventions")
 }
 
-repositories {
-  // maven local is needed for locally built otel fork
-  mavenLocal()
-}
-
 dependencies {
   implementation project(":agent:agent-profiler:agent-service-profiler")
   implementation project(":agent:agent-profiler:agent-alerting-api")

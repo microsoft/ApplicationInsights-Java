@@ -12,14 +12,10 @@ plugins {
   id("ai.spotless-conventions")
 }
 
-// Version to use to compile code and run tests.
-val DEFAULT_JAVA_VERSION = JavaVersion.VERSION_11
-
 java {
-  // FIXME (trask)
-//  toolchain {
-//    languageVersion.set(DEFAULT_JAVA_VERSION.majorVersion.toInt())
-//  }
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(11))
+  }
 
   // See https://docs.gradle.org/current/userguide/upgrading_version_5.html, Automatic target JVM version
   disableAutoTargetJvm()
@@ -34,22 +30,21 @@ tasks.withType<JavaCompile>().configureEach {
   }
 }
 
-evaluationDependsOn(":dependencyManagement")
-val dependencyManagementConf = configurations.create("dependencyManagement") {
+val dependencyManagement by configurations.creating {
   isCanBeConsumed = false
   isCanBeResolved = false
   isVisible = false
 }
-afterEvaluate {
-  configurations.configureEach {
-    if (isCanBeResolved && !isCanBeConsumed) {
-      extendsFrom(dependencyManagementConf)
-    }
-  }
-}
 
 dependencies {
-  add(dependencyManagementConf.name, platform(project(":dependencyManagement")))
+  dependencyManagement(platform(project(":dependencyManagement")))
+  afterEvaluate {
+    configurations.configureEach {
+      if (isCanBeResolved && !isCanBeConsumed) {
+        extendsFrom(dependencyManagement)
+      }
+    }
+  }
 
   compileOnly("org.checkerframework:checker-qual")
 
@@ -62,6 +57,13 @@ dependencies {
   testImplementation("org.slf4j:log4j-over-slf4j")
   testImplementation("org.slf4j:jcl-over-slf4j")
   testImplementation("org.slf4j:jul-to-slf4j")
+}
+
+configurations.configureEach {
+  resolutionStrategy {
+    failOnVersionConflict()
+    preferProjectModules()
+  }
 }
 
 tasks {
