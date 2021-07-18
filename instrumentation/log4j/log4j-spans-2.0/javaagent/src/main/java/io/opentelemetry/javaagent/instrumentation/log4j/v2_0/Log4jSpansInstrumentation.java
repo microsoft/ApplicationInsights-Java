@@ -6,7 +6,7 @@
 package io.opentelemetry.javaagent.instrumentation.log4j.v2_0;
 
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.extendsClass;
-import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasClassesNamed;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.isProtected;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
@@ -16,7 +16,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
+import io.opentelemetry.javaagent.instrumentation.api.CallDepth;
 import io.opentelemetry.javaagent.instrumentation.api.logger.LoggerDepth;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -65,53 +65,51 @@ final class Log4jSpansInstrumentation implements TypeInstrumentation {
         Log4jSpansInstrumentation.class.getName() + "$LogAdvice");
   }
 
+  @SuppressWarnings("unused")
   public static class LogMessageAdvice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static boolean methodEnter(
+    public static void methodEnter(
         @Advice.This final Logger logger,
         @Advice.Argument(1) final Level level,
         @Advice.Argument(3) final Message message,
-        @Advice.Argument(4) final Throwable t) {
+        @Advice.Argument(4) final Throwable t,
+        @Advice.Local("otelCallDepth") CallDepth callDepth) {
       // need to track call depth across all loggers in order to avoid double capture when one
       // logging framework delegates to another
-      boolean topLevel = CallDepthThreadLocalMap.incrementCallDepth(LoggerDepth.class) == 0;
-      if (topLevel) {
+      callDepth = CallDepth.forClass(LoggerDepth.class);
+      if (callDepth.getAndIncrement() == 0) {
         Log4jSpans.capture(logger, level, message, t);
       }
-      return topLevel;
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
-    public static void methodExit(@Advice.Enter final boolean topLevel) {
-      if (topLevel) {
-        CallDepthThreadLocalMap.reset(LoggerDepth.class);
-      }
+    public static void methodExit(@Advice.Local("otelCallDepth") CallDepth callDepth) {
+      callDepth.decrementAndGet();
     }
   }
 
+  @SuppressWarnings("unused")
   public static class LogAdvice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static boolean methodEnter(
+    public static void methodEnter(
         @Advice.This final Logger logger,
         @Advice.Argument(0) final Level level,
         @Advice.Argument(4) final Message message,
-        @Advice.Argument(5) final Throwable t) {
+        @Advice.Argument(5) final Throwable t,
+        @Advice.Local("otelCallDepth") CallDepth callDepth) {
       // need to track call depth across all loggers in order to avoid double capture when one
       // logging framework delegates to another
-      boolean topLevel = CallDepthThreadLocalMap.incrementCallDepth(LoggerDepth.class) == 0;
-      if (topLevel) {
+      callDepth = CallDepth.forClass(LoggerDepth.class);
+      if (callDepth.getAndIncrement() == 0) {
         Log4jSpans.capture(logger, level, message, t);
       }
-      return topLevel;
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
-    public static void methodExit(@Advice.Enter final boolean topLevel) {
-      if (topLevel) {
-        CallDepthThreadLocalMap.reset(LoggerDepth.class);
-      }
+    public static void methodExit(@Advice.Local("otelCallDepth") CallDepth callDepth) {
+      callDepth.decrementAndGet();
     }
   }
 }
