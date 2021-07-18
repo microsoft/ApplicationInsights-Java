@@ -46,9 +46,9 @@ public class LoggingFailSafeMatcher<T> extends ElementMatcher.Junction.AbstractB
     } catch (IllegalStateException e) {
       if (!e.getMessage()
           .startsWith("Cannot resolve type description for io.opentelemetry.javaagent.")) {
-        log.debug(description, e);
+        logger.debug(description, e);
       }
-      return fallback;
+      return false;
     } catch (Throwable e) {
       logger.debug(description, e);
       return false;
