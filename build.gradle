@@ -50,10 +50,8 @@ allprojects {
       // meaning you must run with --write-locks parameter
     }
     doLast {
-      configurations.findAll {
-        it.canBeResolved
-      }.each {
-        it.resolve()
+      if (configurations.findByName("runtimeClasspath") != null) {
+        configurations.runtimeClasspath.resolve()
       }
     }
   }
