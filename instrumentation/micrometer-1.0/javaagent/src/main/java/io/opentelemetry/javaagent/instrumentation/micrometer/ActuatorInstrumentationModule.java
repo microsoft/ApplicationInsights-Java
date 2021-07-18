@@ -8,10 +8,11 @@ package io.opentelemetry.javaagent.instrumentation.micrometer;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
-import io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher;
 import java.util.Arrays;
 import java.util.List;
 import net.bytebuddy.matcher.ElementMatcher;
+
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasClassesNamed;
 
 @AutoService(InstrumentationModule.class)
 public class ActuatorInstrumentationModule extends InstrumentationModule {
@@ -24,7 +25,7 @@ public class ActuatorInstrumentationModule extends InstrumentationModule {
 
   @Override
   public ElementMatcher.Junction<ClassLoader> classLoaderMatcher() {
-    return ClassLoaderMatcher.hasClassesNamed("io.micrometer.core.instrument.Metrics");
+    return hasClassesNamed("io.micrometer.core.instrument.Metrics");
   }
 
   @Override
