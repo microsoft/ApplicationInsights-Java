@@ -81,9 +81,11 @@ dependencies {
 
   compileOnly project(":agent:agent-bootstrap")
   compileOnly "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions.opentelemetryInstrumentationAlpha}"
+  compileOnly "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support:${versions.opentelemetryInstrumentationAlpha}"
 
   testImplementation project(":agent:agent-bootstrap")
   testImplementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions.opentelemetryInstrumentationAlpha}"
+  testImplementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support:${versions.opentelemetryInstrumentationAlpha}"
 
   testImplementation platform("org.junit:junit-bom:${versions.junit}")
   testImplementation "org.junit.jupiter:junit-jupiter"
