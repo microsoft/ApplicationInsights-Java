@@ -1,9 +1,8 @@
 plugins {
+  id("ai.java-conventions")
   id "org.springframework.boot" version "2.1.7.RELEASE"
-  id "war"
+  id("war")
 }
-
-apply from: "$buildScriptsDir/smoke-tests.gradle"
 
 dependencies {
   implementation springBootStarterJar

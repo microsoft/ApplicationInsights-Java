@@ -1,9 +1,8 @@
 plugins {
+  id("ai.java-conventions")
   id "org.springframework.boot" version "2.1.7.RELEASE"
   id "com.google.protobuf" version "0.8.14"
 }
-
-apply from: "$buildScriptsDir/smoke-tests.gradle"
 
 ext.testAppArtifactDir = jar.destinationDirectory
 ext.testAppArtifactFilename = jar.archiveFileName.get()

@@ -1,6 +1,8 @@
 import com.microsoft.applicationinsights.build.tasks.PropsFileGen
 
-apply from: "$buildScriptsDir/common-java.gradle"
+plugins {
+  id("ai.java-conventions")
+}
 
 repositories {
   // maven local is needed for locally built otel fork

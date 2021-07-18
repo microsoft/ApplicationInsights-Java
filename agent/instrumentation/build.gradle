@@ -1,8 +1,7 @@
 plugins {
+  id("ai.java-conventions")
   id "com.github.johnrengelman.shadow"
 }
-
-apply from: "$buildScriptsDir/common-java.gradle"
 
 repositories {
   // maven local is needed for locally built otel fork

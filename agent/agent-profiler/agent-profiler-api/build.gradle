@@ -1,8 +1,10 @@
-apply from: "$buildScriptsDir/common-java.gradle"
+plugins {
+  id("ai.java-conventions")
+}
 
 dependencies {
   implementation project(":agent:agent-profiler:agent-alerting-api")
-  implementation "com.azure:azure-core:${versions.azureCore}"
-  implementation "com.squareup.moshi:moshi:${versions.moshi}"
-  implementation "org.slf4j:slf4j-api:${versions.slf4j}"
+  implementation "com.azure:azure-core"
+  implementation "com.squareup.moshi:moshi"
+  implementation "org.slf4j:slf4j-api"
 }

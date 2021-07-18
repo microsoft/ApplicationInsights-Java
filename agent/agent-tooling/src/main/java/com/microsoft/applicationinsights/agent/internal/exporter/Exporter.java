@@ -883,6 +883,7 @@ public class Exporter implements SpanExporter {
             return;
           }
           int index = stringKey.indexOf(".");
+          // FIXME (trask) do this without memory allocation
           String prefix = index == -1 ? stringKey : stringKey.substring(0, index);
           if (STANDARD_ATTRIBUTE_PREFIXES.contains(prefix)) {
             return;

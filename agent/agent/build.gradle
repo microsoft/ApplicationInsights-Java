@@ -1,8 +1,8 @@
 plugins {
+  id("ai.java-conventions")
   id "com.github.johnrengelman.shadow"
 }
 
-apply from: "$buildScriptsDir/common-java.gradle"
 apply from: "$buildScriptsDir/publish.gradle"
 
 repositories {

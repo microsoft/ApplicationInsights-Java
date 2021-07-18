@@ -1,8 +1,7 @@
 plugins {
-  id "war"
+  id("ai.java-conventions")
+  id("war")
 }
-
-apply from: "$buildScriptsDir/smoke-tests.gradle"
 
 war {
   // this is done to remove the version from the archive file name

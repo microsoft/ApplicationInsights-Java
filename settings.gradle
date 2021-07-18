@@ -23,6 +23,13 @@ plugins {
   id 'com.gradle.enterprise' version '3.5'
 }
 
+dependencyResolutionManagement {
+  repositories {
+    mavenCentral()
+    mavenLocal()
+  }
+}
+
 def isCI = System.getenv("CI") != null
 gradleEnterprise {
   buildScan {
@@ -63,6 +70,9 @@ include ':agent:agent-bootstrap'
 include ':agent:agent-tooling'
 include ':agent:instrumentation'
 include ':agent:agent'
+
+// misc
+include(":dependencyManagement")
 
 // Projects for smokeTests
 include ':test:smoke'
