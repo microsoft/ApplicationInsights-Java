@@ -9,6 +9,13 @@ repositories {
   mavenLocal()
 }
 
+java {
+  // this is needed because opentelemetry-javaagent-java-http-client is published with Java 11
+  // TODO (trask) is there a way to publish opentelemetry-javaagent-java-http-client as Java 8
+  //  since it's (sort of) Java 8 compatible
+  disableAutoTargetJvm()
+}
+
 configurations {
   // exclude bootstrap dependencies from shadowJar
   implementation.exclude group: "org.slf4j"
@@ -32,7 +39,7 @@ dependencies {
     // exclude bootstrap dependencies from shadowJar
 
     exclude group: "io.opentelemetry.javaagent", module: "opentelemetry-javaagent-bootstrap"
-    exclude group: "io.opentelemetry.javaagent", module: "opentelemetry-javaagent-api"
+    exclude group: "io.opentelemetry.javaagent", module: "opentelemetry-javaagent-instrumentation-api"
 
     exclude group: "io.opentelemetry", module: "opentelemetry-context"
     exclude group: "io.opentelemetry", module: "opentelemetry-context-prop"

@@ -29,7 +29,7 @@ dependencies {
     exclude group: "org.slf4j", module: "slf4j-simple"
   }
   implementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions.opentelemetryInstrumentationAlpha}"
-  implementation "io.opentelemetry.javaagent:opentelemetry-javaagent-api:${versions.opentelemetryInstrumentationAlpha}"
+  implementation "io.opentelemetry.javaagent:opentelemetry-javaagent-instrumentation-api:${versions.opentelemetryInstrumentationAlpha}"
   implementation "ch.qos.logback:logback-classic:${versions.logback}"
   implementation "ch.qos.logback.contrib:logback-json-classic:${versions.logbackJson}"
 
