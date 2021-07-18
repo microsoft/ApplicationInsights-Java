@@ -7,6 +7,7 @@ ch.qos.logback:logback-classic:1.2.3=runtimeClasspath
 ch.qos.logback:logback-core:1.2.3=runtimeClasspath
 com.squareup.moshi:moshi:1.11.0=runtimeClasspath
 com.squareup.okio:okio:1.17.5=runtimeClasspath
+io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support:1.3.1+ai.patch.1-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:1.3.1+ai.patch.1-alpha=runtimeClasspath
 io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:1.3.1+ai.patch.1-alpha=runtimeClasspath
 io.opentelemetry.javaagent:opentelemetry-javaagent-instrumentation-api:1.3.1+ai.patch.1-alpha=runtimeClasspath
