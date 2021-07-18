@@ -18,30 +18,29 @@ dependencies {
 
   // not using gson because it has dependency on java.sql.*, which is not available in Java 9+ bootstrap class loader
   // only complaint so far about moshi is that it doesn't give line numbers when there are json formatting errors
-  implementation "com.squareup.moshi:moshi:${versions.moshi}"
+  implementation "com.squareup.moshi:moshi"
 
-  implementation "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${versions.opentelemetryInstrumentationAlpha}"
-  implementation "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${versions.opentelemetryInstrumentationAlpha}"
-  implementation "net.bytebuddy:byte-buddy:${versions.bytebuddy}"
+  implementation "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling"
+  implementation "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api"
+  implementation "net.bytebuddy:byte-buddy"
 
-  implementation "commons-codec:commons-codec:${versions.commonsCodec}"
-  implementation "org.apache.commons:commons-lang3:${versions.commonsLang}"
-  implementation "commons-io:commons-io:${versions.commonsIo}"
-  implementation "org.apache.commons:commons-lang3:${versions.commonsLang}"
-  implementation "org.apache.commons:commons-text:${versions.commonsText}"
+  implementation "commons-codec:commons-codec"
+  implementation "org.apache.commons:commons-lang3"
+  implementation "commons-io:commons-io"
+  implementation "org.apache.commons:commons-text"
   // TODO (trask) this is probably still needed for above apache commons projects
-  implementation "org.slf4j:jcl-over-slf4j:${versions.slf4j}"
+  implementation "org.slf4j:jcl-over-slf4j"
 
-  implementation "org.checkerframework:checker-qual:${versions.checker}"
+  implementation "org.checkerframework:checker-qual"
   implementation "com.google.code.findbugs:annotations:3.0.1"
 
-  implementation "ch.qos.logback:logback-classic:${versions.logback}"
-  implementation "ch.qos.logback.contrib:logback-json-classic:${versions.logbackJson}"
+  implementation "ch.qos.logback:logback-classic"
+  implementation "ch.qos.logback.contrib:logback-json-classic"
 
   implementation project(":agent:agent-profiler:agent-profiler-api")
 
   implementation "com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.4"
-  implementation "com.azure:azure-core:${versions.azureCore}"
+  implementation "com.azure:azure-core"
   implementation("com.azure:azure-identity:1.2.4") {
     // "This dependency can be excluded if IntelliJ Credential is not being used for authentication
     //  via `IntelliJCredential` or `DefaultAzureCredential`"
@@ -49,32 +48,31 @@ dependencies {
     exclude group: "org.linguafranca.pwdb", module: "KeePassJava2"
   }
 
-  implementation "io.opentelemetry:opentelemetry-sdk-extension-tracing-incubator:${versions.opentelemetryAlpha}"
-  implementation "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions.opentelemetryAlpha}"
+  implementation "io.opentelemetry:opentelemetry-sdk-extension-tracing-incubator"
+  implementation "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure"
 
-  implementation "com.github.oshi:oshi-core:${versions.oshi}"
-  implementation "org.slf4j:slf4j-api:${versions.slf4j}"
+  implementation "com.github.oshi:oshi-core"
+  implementation "org.slf4j:slf4j-api"
 
-  implementation "io.opentelemetry:opentelemetry-api:${versions.opentelemetry}"
+  implementation "io.opentelemetry:opentelemetry-api"
   implementation "org.jctools:jctools-core:3.3.0"
 
   compileOnly project(":agent:agent-bootstrap")
-  compileOnly "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions.opentelemetryInstrumentationAlpha}"
-  compileOnly "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support:${versions.opentelemetryInstrumentationAlpha}"
+  compileOnly "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api"
+  compileOnly "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support"
 
   testImplementation project(":agent:agent-bootstrap")
-  testImplementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions.opentelemetryInstrumentationAlpha}"
-  testImplementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support:${versions.opentelemetryInstrumentationAlpha}"
+  testImplementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api"
+  testImplementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support"
 
-  testImplementation platform("org.junit:junit-bom:${versions.junit}")
   testImplementation "org.junit.jupiter:junit-jupiter"
-  testImplementation "org.assertj:assertj-core:${versions.assertj}"
-  testImplementation "org.mockito:mockito-core:${versions.mockito}"
+  testImplementation "org.assertj:assertj-core"
+  testImplementation "org.mockito:mockito-core"
   testImplementation "uk.org.webcompere:system-stubs-jupiter:1.1.0"
-  testImplementation "io.github.hakky54:logcaptor:${versions.logcaptor}"
+  testImplementation "io.github.hakky54:logcaptor"
 
-  testImplementation "com.microsoft.jfr:jfr-streaming:${versions.microsoftJfrStreaming}"
-  testImplementation "com.azure:azure-storage-blob:${versions.azureStorageBlob}"
+  testImplementation "com.microsoft.jfr:jfr-streaming"
+  testImplementation "com.azure:azure-storage-blob"
 }
 
 def sdkVersionFileDir = "$project.buildDir/src/generated/main/resources"

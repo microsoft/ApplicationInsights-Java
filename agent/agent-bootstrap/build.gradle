@@ -27,24 +27,23 @@ task generateVersionProperties(type: PropsFileGen) {
 processResources.dependsOn generateVersionProperties
 
 dependencies {
-  implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${versions.opentelemetryInstrumentationAlpha}") {
+  implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap") {
     exclude group: "org.slf4j", module: "slf4j-simple"
   }
-  implementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions.opentelemetryInstrumentationAlpha}"
-  implementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support:${versions.opentelemetryInstrumentationAlpha}"
-  implementation "io.opentelemetry.javaagent:opentelemetry-javaagent-instrumentation-api:${versions.opentelemetryInstrumentationAlpha}"
-  implementation "ch.qos.logback:logback-classic:${versions.logback}"
-  implementation "ch.qos.logback.contrib:logback-json-classic:${versions.logbackJson}"
+  implementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api"
+  implementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support"
+  implementation "io.opentelemetry.javaagent:opentelemetry-javaagent-instrumentation-api"
+  implementation "ch.qos.logback:logback-classic"
+  implementation "ch.qos.logback.contrib:logback-json-classic"
 
   // not using gson because it has dependency on java.sql.*, which is not available in Java 9+ bootstrap class loader
   // only complaint so far about moshi is that it doesn"t give line numbers when there are json formatting errors
-  implementation "com.squareup.moshi:moshi:${versions.moshi}"
+  implementation "com.squareup.moshi:moshi"
 
   implementation project(path: ":etw:java")
 
-  testImplementation platform("org.junit:junit-bom:${versions.junit}")
   testImplementation "org.junit.jupiter:junit-jupiter"
-  testImplementation "org.assertj:assertj-core:${versions.assertj}"
-  testImplementation "org.mockito:mockito-core:${versions.mockito}"
+  testImplementation "org.assertj:assertj-core"
+  testImplementation "org.mockito:mockito-core"
   testImplementation "uk.org.webcompere:system-stubs-jupiter:1.1.0"
 }

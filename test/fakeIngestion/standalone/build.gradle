@@ -1,16 +1,13 @@
-apply from: "$buildScriptsDir/common-java.gradle"
-
-apply plugin: "application"
+plugins {
+  id("ai.java-conventions")
+  id("application")
+}
 
 dependencies {
   implementation "org.eclipse.jetty.aggregate:jetty-all:9.4.39.v20210325"
-  implementation "com.google.code.gson:gson:${versions.gson}"
+  implementation "com.google.code.gson:gson"
   implementation project(":test:fakeIngestion:servlet")
   implementation project(":test:smoke:framework:utils")
 }
 
 mainClassName = "com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServer"
-
-tasks.withType(JavaCompile) {
-  options.release.set(8)
-}

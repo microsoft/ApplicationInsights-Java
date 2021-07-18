@@ -19,10 +19,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 plugins {
-  id "java-library"
+  id("ai.java-conventions")
 }
-
-apply from: "$buildScriptsDir/common-java.gradle"
 
 configurations {
   jni64 {
@@ -51,7 +49,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
 def buildNative = !(System.properties["skipWinNative"] ?: "false").toBoolean() && Os.isFamily(Os.FAMILY_WINDOWS);
 
 dependencies {
-  implementation "org.slf4j:slf4j-api:${versions.slf4j}"
+  implementation "org.slf4j:slf4j-api"
 
   if (buildNative) {
     jni32 project(path: ":etw:native", configuration: "${project.properties['ai.etw.native.build']}X86RuntimeElements")
@@ -60,11 +58,10 @@ dependencies {
     logger.quiet "Skipping build of :etw:native because skipWinNative=true. EtwAppender/EtwProvider will not work because library is missing"
   }
 
-  testImplementation platform("org.junit:junit-bom:${versions.junit}")
   testImplementation "org.junit.jupiter:junit-jupiter"
-  testImplementation "org.assertj:assertj-core:${versions.assertj}"
-  testImplementation "org.mockito:mockito-core:${versions.mockito}"
-  testImplementation "org.apache.commons:commons-lang3:${versions.commonsLang}"
+  testImplementation "org.assertj:assertj-core"
+  testImplementation "org.mockito:mockito-core"
+  testImplementation "org.apache.commons:commons-lang3"
 }
 
 // To rebuild naitive code with new headers, first run `gradlew :etw:java:classes -Pai.etw.native.generateHeaders` to generate new header, then update the method implementations.

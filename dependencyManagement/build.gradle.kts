@@ -14,9 +14,12 @@ rootProject.extra["versions"] = dependencyVersions
 val otelVersion = "1.4.1"
 rootProject.extra["otelVersion"] = otelVersion
 
+val otelInstrumentationVersion = "1.3.1+ai.patch.1"
+
 val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
+  "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationVersion}-alpha",
   "org.junit:junit-bom:5.7.2"
 )
 
@@ -51,11 +54,21 @@ val DEPENDENCY_SETS = listOf(
     "org.testcontainers",
     "1.15.3",
     listOf("testcontainers", "junit-jupiter")
+  ),
+  DependencySet(
+    "io.opentelemetry.javaagent",
+    "${otelInstrumentationVersion}-alpha",
+    listOf(
+      "opentelemetry-javaagent-instrumentation-api",
+      "opentelemetry-javaagent-bootstrap",
+      "opentelemetry-javaagent-tooling",
+      "opentelemetry-javaagent-extension-api")
   )
 )
 
 val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.2.3",
+  "ch.qos.logback.contrib:logback-json-classic:0.1.5",
   "com.google.auto.service:auto-service:1.0",
   "com.uber.nullaway:nullaway:0.9.1",
   "commons-codec:commons-codec:1.15",
@@ -65,13 +78,15 @@ val DEPENDENCIES = listOf(
   "com.azure:azure-storage-blob:12.12.0",
   "com.squareup.moshi:moshi:1.11.0", // 1.12.0 and above use okio 2.x which pulls in kotlin libs
   "com.squareup.moshi:moshi-adapters:1.11.0",
+  "com.github.oshi:oshi-core:5.6.0",
   "org.assertj:assertj-core:3.19.0",
+  "io.github.hakky54:logcaptor:2.5.0",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
   "org.checkerframework:checker-qual:3.14.0",
   "com.microsoft.azure:applicationinsights-core:2.6.3",
   "com.microsoft.azure:applicationinsights-web:2.6.3",
   "com.microsoft.azure:applicationinsights-web-auto:2.6.3",
-  "com.microsoft.azure:applicationinsights-spring-boot-starter:2.6.3"
+  "com.microsoft.azure:applicationinsights-spring-boot-starter:2.6.3",
 )
 
 javaPlatform {

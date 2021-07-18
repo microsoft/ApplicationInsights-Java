@@ -1,9 +1,8 @@
 plugins {
+  id("ai.java-conventions")
   id "org.springframework.boot" version "2.1.7.RELEASE"
   id "war"
 }
-
-apply from: "$buildScriptsDir/common-java.gradle"
 
 dependencies {
   compileOnly "javax.servlet:javax.servlet-api:3.0.1"
@@ -14,5 +13,5 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-web:2.1.7.RELEASE") {
     exclude group: "org.springframework.boot", module: "spring-boot-starter-tomcat"
   }
-  implementation "org.apache.commons:commons-lang3:${versions.commonsLang}"
+  implementation "org.apache.commons:commons-lang3"
 }
