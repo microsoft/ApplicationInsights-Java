@@ -1,8 +1,7 @@
 import com.microsoft.applicationinsights.gradle.AiSmokeTestExtension
 
 plugins {
-  id("ai.java-conventions")
-  id("ai.spotless-conventions")
+  `java-library`
 }
 
 // TODO (trask) this is copy-paste from :test:smoke
@@ -24,7 +23,24 @@ val smokeTestImplementation by configurations.getting {
 
 configurations["smokeTestRuntimeOnly"].extendsFrom(configurations.runtimeOnly.get())
 
+// FIXME (trask) copy-pasted from ai.java-conventions.gradle
+val dependencyManagement by configurations.creating {
+  isCanBeConsumed = false
+  isCanBeResolved = false
+  isVisible = false
+}
+
 dependencies {
+// FIXME (trask) copy-pasted from ai.java-conventions.gradle
+  dependencyManagement(platform(project(":dependencyManagement")))
+  afterEvaluate {
+    configurations.configureEach {
+      if (isCanBeResolved && !isCanBeConsumed) {
+        extendsFrom(dependencyManagement)
+      }
+    }
+  }
+
   smokeTestImplementation(project(":test:smoke:framework:testCore"))
   smokeTestImplementation(project(":test:smoke:framework:utils"))
   smokeTestImplementation(project(":test:fakeIngestion:standalone"))
@@ -50,7 +66,7 @@ tasks {
     }
   }
 
-  val smokeTest by registering(Test::class) {
+  task<Test>("smokeTest") {
     // this is just to force building the agent first
     dependsOn(":agent:agent:shadowJar")
 
@@ -58,6 +74,14 @@ tasks {
     dependsOn(project(":test:smoke:appServers").getTasksByName("buildDockerImage", true))
     dependsOn(assemble)
     dependsOn(pullDependencyContainers)
+
+    testClassesDirs = sourceSets["smokeTest"].output.classesDirs
+    classpath = sourceSets["smokeTest"].runtimeClasspath
+
+    doFirst {
+      // need to delay for project to configure the extension
+      jvmArgs("-Dai.smoketest.testAppWarFile=${aiSmokeTest.testAppArtifactFilename.get()}")
+    }
 
     // TODO (trask) is this still a problem?
     //outputs.upToDateWhen { false }
@@ -69,10 +93,4 @@ tasks {
     from(aiSmokeTest.testAppArtifactDir.file(aiSmokeTest.testAppArtifactFilename.get()))
     from(sharedResourcesDir)
   }
-
-  // FIXME (trask) set this via system property command line
-//  val generateProperties by registering(WriteProperties::class) {
-//    outputFile = File(processSmokeTestResources.destinationDir, "testInfo.properties")
-//    property("ai.smoketest.testAppWarFile", aiSmokeTest.testAppArtifactFilename)
-//  }
 }

@@ -7,10 +7,10 @@ tasks.war {
   // this is done to remove the version from the archive file name
   // to make span name verification simpler
   archiveFileName.set(project.name + ".war")
-
-  aiSmokeTest.testAppArtifactDir.set(destinationDirectory.get())
-  aiSmokeTest.testAppArtifactFilename.set(project.name + ".war")
 }
+
+aiSmokeTest.testAppArtifactDir.set(tasks.war.get().destinationDirectory.get())
+aiSmokeTest.testAppArtifactFilename.set(project.name + ".war")
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter-web:2.1.7.RELEASE") {

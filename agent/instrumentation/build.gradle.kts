@@ -138,9 +138,9 @@ tasks {
   val shadowJarStep1 by registering(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class) {
 
     archiveClassifier.set("step1")
-    //destinationDirectory = file("${project.buildDir}/step1")
+    destinationDirectory.set(file("${project.buildDir}/step1"))
 
-    //configurations = listOf(project.configurations.runtimeClasspath)
+    configurations.add(project.configurations.runtimeClasspath.get())
 
     dependencies {
       exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging-spans"))
@@ -159,9 +159,7 @@ tasks {
 
     archiveClassifier.set("")
 
-//    from {
-//      zipTree(shadowJarStep1.archiveFile)
-//    }
+    from(zipTree(shadowJarStep1.get().archiveFile))
 
     mergeServiceFiles()
 
@@ -191,8 +189,3 @@ tasks {
     relocate("application.java.util.logging.Logger", "java.util.logging.Logger")
   }
 }
-
-// FIXME (trask)
-//artifacts {
-//  archives shadowJar
-//}
