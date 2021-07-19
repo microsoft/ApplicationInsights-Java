@@ -5,7 +5,6 @@
 
 import static io.opentelemetry.api.trace.SpanKind.CLIENT
 import static io.opentelemetry.instrumentation.test.utils.TraceUtils.basicSpan
-import static io.opentelemetry.instrumentation.test.utils.TraceUtils.runUnderTrace
 
 import com.datastax.oss.driver.api.core.CqlSession
 import com.datastax.oss.driver.api.core.config.DefaultDriverOption
@@ -23,7 +22,7 @@ import org.testcontainers.containers.output.Slf4jLogConsumer
 import spock.lang.Shared
 
 class CassandraClientTest extends AgentInstrumentationSpecification {
-  private static final Logger log = LoggerFactory.getLogger(CassandraClientTest)
+  private static final Logger logger = LoggerFactory.getLogger(CassandraClientTest)
 
   @Shared
   GenericContainer cassandra
@@ -33,7 +32,7 @@ class CassandraClientTest extends AgentInstrumentationSpecification {
   def setupSpec() {
     cassandra = new GenericContainer("cassandra:4.0")
       .withExposedPorts(9042)
-      .withLogConsumer(new Slf4jLogConsumer(log))
+      .withLogConsumer(new Slf4jLogConsumer(logger))
       .withStartupTimeout(Duration.ofSeconds(120))
     cassandra.start()
 
@@ -73,10 +72,10 @@ class CassandraClientTest extends AgentInstrumentationSpecification {
     setup:
     CqlSession session = getSession(keyspace)
 
-    runUnderTrace("parent") {
-      session.executeAsync(statement).toCompletableFuture().whenComplete({result, throwable ->
-        runUnderTrace("child") {}
-      }) .get()
+    runWithSpan("parent") {
+      session.executeAsync(statement).toCompletableFuture().whenComplete({ result, throwable ->
+        runWithSpan("child") {}
+      }).get()
     }
 
     expect:

@@ -14,7 +14,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
+import io.opentelemetry.javaagent.instrumentation.api.CallDepth;
 import io.opentelemetry.javaagent.instrumentation.api.logger.LoggerDepth;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -38,24 +38,24 @@ class LogbackSpansInstrumentation implements TypeInstrumentation {
         LogbackSpansInstrumentation.class.getName() + "$CallAppendersAdvice");
   }
 
+  @SuppressWarnings("unused")
   public static class CallAppendersAdvice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static boolean methodEnter(@Advice.Argument(0) final ILoggingEvent event) {
+    public static void methodEnter(
+        @Advice.Argument(0) final ILoggingEvent event,
+        @Advice.Local("otelCallDepth") CallDepth callDepth) {
       // need to track call depth across all loggers in order to avoid double capture when one
       // logging framework delegates to another
-      boolean topLevel = CallDepthThreadLocalMap.incrementCallDepth(LoggerDepth.class) == 0;
-      if (topLevel) {
+      callDepth = CallDepth.forClass(LoggerDepth.class);
+      if (callDepth.getAndIncrement() == 0) {
         LogbackSpans.capture(event);
       }
-      return topLevel;
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
-    public static void methodExit(@Advice.Enter final boolean topLevel) {
-      if (topLevel) {
-        CallDepthThreadLocalMap.reset(LoggerDepth.class);
-      }
+    public static void methodExit(@Advice.Local("otelCallDepth") CallDepth callDepth) {
+      callDepth.decrementAndGet();
     }
   }
 }

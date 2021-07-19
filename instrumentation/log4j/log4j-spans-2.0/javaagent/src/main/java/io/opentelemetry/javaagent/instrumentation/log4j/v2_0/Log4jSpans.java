@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 public class Log4jSpans {
 
-  private static final org.slf4j.Logger log = LoggerFactory.getLogger(Log4jSpans.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(Log4jSpans.class);
 
   private static final Tracer TRACER =
       GlobalOpenTelemetry.getTracer("io.opentelemetry.javaagent.log4j-spans-2.0");
@@ -84,7 +84,7 @@ public class Log4jSpans {
       case "ALL":
         return Level.ALL;
       default:
-        log.error("unexpected value for otel.experimental.log.capture.threshold: {}", level);
+        logger.error("unexpected value for otel.experimental.log.capture.threshold: {}", level);
         return Level.OFF;
     }
   }

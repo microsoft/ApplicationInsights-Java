@@ -2,6 +2,7 @@ pluginManagement {
   plugins {
     id("com.github.ben-manes.versions") version "0.39.0"
     id("com.github.jk1.dependency-license-report") version "1.16"
+    id("com.gradle.plugin-publish") version "0.15.0"
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
     id("me.champeau.jmh") version "0.6.5"
     id("org.jetbrains.kotlin.jvm") version "1.5.10"
@@ -49,12 +50,13 @@ buildCache {
 
 rootProject.name = "opentelemetry-java-instrumentation"
 
+include(":muzzle")
+
 // agent projects
 include(":opentelemetry-api-shaded-for-instrumenting")
 include(":opentelemetry-ext-annotations-shaded-for-instrumenting")
 include(":java-util-logging-logger-shaded-for-instrumenting")
 include(":javaagent-bootstrap")
-include(":javaagent-bootstrap-tests")
 include(":javaagent-exporters")
 include(":javaagent-extension-api")
 include(":javaagent-tooling")
@@ -63,7 +65,8 @@ include(":javaagent")
 include(":bom-alpha")
 include(":instrumentation-api")
 include(":instrumentation-api-caching")
-include(":javaagent-api")
+include(":javaagent-instrumentation-api")
+include(":instrumentation-api-annotation-support")
 
 // misc
 include(":dependencyManagement")
@@ -319,6 +322,7 @@ include(":instrumentation:tomcat:tomcat-7.0:javaagent")
 include(":instrumentation:tomcat:tomcat-10.0:javaagent")
 include(":instrumentation:tomcat:tomcat-common:javaagent")
 include(":instrumentation:twilio-6.6:javaagent")
+include(":instrumentation:undertow-1.4:bootstrap")
 include(":instrumentation:undertow-1.4:javaagent")
 include(":instrumentation:vaadin-14.2:javaagent")
 include(":instrumentation:vaadin-14.2:testing")

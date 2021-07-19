@@ -13,7 +13,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
+import io.opentelemetry.javaagent.instrumentation.api.CallDepth;
 import io.opentelemetry.javaagent.instrumentation.api.logger.LoggerDepth;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -42,28 +42,27 @@ final class Log4jSpansInstrumentation implements TypeInstrumentation {
         Log4jSpansInstrumentation.class.getName() + "$ForcedLogAdvice");
   }
 
+  @SuppressWarnings("unused")
   public static class ForcedLogAdvice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static boolean methodEnter(
+    public static void methodEnter(
         @Advice.This final Category logger,
         @Advice.Argument(1) final Priority level,
         @Advice.Argument(2) final Object message,
-        @Advice.Argument(3) final Throwable t) {
+        @Advice.Argument(3) final Throwable t,
+        @Advice.Local("otelCallDepth") CallDepth callDepth) {
       // need to track call depth across all loggers to avoid double capture when one logging
       // framework delegates to another
-      boolean topLevel = CallDepthThreadLocalMap.incrementCallDepth(LoggerDepth.class) == 0;
-      if (topLevel) {
+      callDepth = CallDepth.forClass(LoggerDepth.class);
+      if (callDepth.getAndIncrement() == 0) {
         Log4jSpans.capture(logger, level, message, t);
       }
-      return topLevel;
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
-    public static void methodExit(@Advice.Enter final boolean topLevel) {
-      if (topLevel) {
-        CallDepthThreadLocalMap.reset(LoggerDepth.class);
-      }
+    public static void methodExit(@Advice.Local("otelCallDepth") CallDepth callDepth) {
+      callDepth.decrementAndGet();
     }
   }
 }
