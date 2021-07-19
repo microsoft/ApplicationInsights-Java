@@ -19,7 +19,8 @@ import org.slf4j.LoggerFactory;
 
 public class JavaUtilLoggingSpans {
 
-  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(JavaUtilLoggingSpans.class);
+  private static final org.slf4j.Logger logger =
+      LoggerFactory.getLogger(JavaUtilLoggingSpans.class);
 
   private static final Tracer TRACER =
       GlobalOpenTelemetry.getTracer("io.opentelemetry.javaagent.java-util-logging-spans");
