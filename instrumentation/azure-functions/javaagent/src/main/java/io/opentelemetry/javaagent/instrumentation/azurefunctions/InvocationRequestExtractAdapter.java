@@ -14,7 +14,8 @@ import org.slf4j.LoggerFactory;
 // compile against
 public class InvocationRequestExtractAdapter implements TextMapGetter<Object> {
 
-  private static final Logger logger = LoggerFactory.getLogger(InvocationRequestExtractAdapter.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(InvocationRequestExtractAdapter.class);
 
   public static final InvocationRequestExtractAdapter GETTER =
       new InvocationRequestExtractAdapter();
