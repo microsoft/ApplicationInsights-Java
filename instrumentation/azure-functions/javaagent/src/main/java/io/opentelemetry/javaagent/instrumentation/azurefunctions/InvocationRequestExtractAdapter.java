@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 // compile against
 public class InvocationRequestExtractAdapter implements TextMapGetter<Object> {
 
-  private static final Logger log = LoggerFactory.getLogger(InvocationRequestExtractAdapter.class);
+  private static final Logger logger = LoggerFactory.getLogger(InvocationRequestExtractAdapter.class);
 
   public static final InvocationRequestExtractAdapter GETTER =
       new InvocationRequestExtractAdapter();
@@ -36,7 +36,7 @@ public class InvocationRequestExtractAdapter implements TextMapGetter<Object> {
       getTraceParentMethodLocal = rpcTraceContextClass.getMethod("getTraceParent");
       getTraceStateMethodLocal = rpcTraceContextClass.getMethod("getTraceState");
     } catch (final ReflectiveOperationException e) {
-      log.error(e.getMessage(), e);
+      logger.error(e.getMessage(), e);
     }
     getTraceContextMethod = getTraceContextMethodLocal;
     getTraceParentMethod = getTraceParentMethodLocal;
@@ -61,7 +61,7 @@ public class InvocationRequestExtractAdapter implements TextMapGetter<Object> {
           return null;
       }
     } catch (final ReflectiveOperationException e) {
-      log.debug(e.getMessage(), e);
+      logger.debug(e.getMessage(), e);
       return null;
     }
   }
