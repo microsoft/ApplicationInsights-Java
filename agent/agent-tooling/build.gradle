@@ -1,5 +1,6 @@
 plugins {
   id("ai.java-conventions")
+  id("ai.sdk-version-file")
   id "com.github.johnrengelman.shadow"
   id("ai.jmh-conventions")
 }
@@ -69,20 +70,3 @@ dependencies {
   testImplementation "com.microsoft.jfr:jfr-streaming"
   testImplementation "com.azure:azure-storage-blob"
 }
-
-def sdkVersionFileDir = "$project.buildDir/src/generated/main/resources"
-
-sourceSets {
-  main {
-    resources {
-      srcDir sdkVersionFileDir
-    }
-  }
-}
-
-task generateVersionProperties(type: com.microsoft.applicationinsights.build.tasks.PropsFileGen) {
-  targetFile = new File(sdkVersionFileDir, "sdk-version.properties")
-  property "version", project.version
-}
-
-processResources.dependsOn generateVersionProperties
