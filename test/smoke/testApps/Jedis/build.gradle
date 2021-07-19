@@ -15,8 +15,8 @@ ext.testAppArtifactFilename = project.name + ".war"
 ext.dependencyContainers = ["redis"]
 
 dependencies {
-  implementation aiWebJar
-  implementation "redis.clients:jedis:2+"
+  implementation(aiWebJar)
+  implementation("redis.clients:jedis:2+")
 
-  compileOnly "javax.servlet:javax.servlet-api:3.0.1"
+  compileOnly("javax.servlet:javax.servlet-api:3.0.1")
 }

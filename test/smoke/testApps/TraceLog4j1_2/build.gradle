@@ -13,14 +13,14 @@ ext.testAppArtifactDir = war.destinationDirectory
 ext.testAppArtifactFilename = project.name + ".war"
 
 dependencies {
-  implementation aiWebJar
+  implementation(aiWebJar)
   implementation("com.microsoft.azure:applicationinsights-logging-log4j1_2:${versions.aiLegacySdk}") {
     // applicationinsights-core is embedded in applicationinsights-web
     // and duplicate class files produces lots of warning messages on jetty
-    exclude group: "com.microsoft.azure", module: "applicationinsights-core"
+    exclude("com.microsoft.azure", "applicationinsights-core")
   }
 
-  compileOnly "javax.servlet:javax.servlet-api:3.0.1"
+  compileOnly("javax.servlet:javax.servlet-api:3.0.1")
 
-  implementation "log4j:log4j:1.2.17"
+  implementation("log4j:log4j:1.2.17")
 }

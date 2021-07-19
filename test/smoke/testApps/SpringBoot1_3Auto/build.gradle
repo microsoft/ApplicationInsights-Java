@@ -13,10 +13,10 @@ ext.testAppArtifactDir = war.destinationDirectory
 ext.testAppArtifactFilename = project.name + ".war"
 
 dependencies {
-  implementation aiWebAutoJar
+  implementation(aiWebAutoJar)
   implementation("org.springframework.boot:spring-boot-starter-web:1.3.8.RELEASE") {
-    exclude group: "org.springframework.boot", module: "spring-boot-starter-tomcat"
+    exclude("org.springframework.boot", "spring-boot-starter-tomcat")
   }
 
-  compileOnly "javax.servlet:javax.servlet-api:3.0.1"
+  compileOnly("javax.servlet:javax.servlet-api:3.0.1")
 }

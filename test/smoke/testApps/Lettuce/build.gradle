@@ -15,8 +15,8 @@ ext.testAppArtifactFilename = project.name + ".war"
 ext.dependencyContainers = ["redis"]
 
 dependencies {
-  implementation aiWebJar
-  implementation "io.lettuce:lettuce-core:5.2.2.RELEASE"
+  implementation(aiWebJar)
+  implementation("io.lettuce:lettuce-core:5.2.2.RELEASE")
 
-  compileOnly "javax.servlet:javax.servlet-api:3.0.1"
+  compileOnly("javax.servlet:javax.servlet-api:3.0.1")
 }

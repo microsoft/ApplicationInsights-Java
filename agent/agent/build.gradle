@@ -1,6 +1,6 @@
 plugins {
   id("ai.java-conventions")
-  id "com.github.johnrengelman.shadow"
+  id("com.github.johnrengelman.shadow")
 }
 
 apply from: "$buildScriptsDir/publish.gradle"
@@ -80,7 +80,7 @@ shadowJar {
 archivesBaseName = "applicationinsights-agent"
 
 dependencies {
-  implementation project(":agent:agent-bootstrap")
+  implementation(project(":agent:agent-bootstrap"))
   implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap") {
     exclude group: "org.slf4j", module: "slf4j-simple"
   }
