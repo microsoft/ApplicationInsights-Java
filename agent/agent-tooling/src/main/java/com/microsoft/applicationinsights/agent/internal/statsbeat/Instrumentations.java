@@ -44,7 +44,7 @@ class Instrumentations {
     INSTRUMENTATION_MAP.put("io.opentelemetry.apache-httpclient-5.0", 3);
     INSTRUMENTATION_MAP.put("io.opentelemetry.applicationinsights-web-2.3", 4);
     INSTRUMENTATION_MAP.put("io.opentelemetry.azure-functions", 5);
-    INSTRUMENTATION_MAP.put("io.opentelemetry.azure-core-1.14", 6);
+    INSTRUMENTATION_MAP.put("Azure-OpenTelemetry", 6); // bridged by azure-core-1.14 module
     INSTRUMENTATION_MAP.put("io.opentelemetry.cassandra-3.0", 7);
     INSTRUMENTATION_MAP.put("io.opentelemetry.cassandra-4.0", 8);
     // TODO (heya) this is non-span producing instrumentation

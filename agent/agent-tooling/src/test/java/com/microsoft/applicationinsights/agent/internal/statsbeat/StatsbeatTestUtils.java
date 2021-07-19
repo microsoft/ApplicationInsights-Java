@@ -39,7 +39,7 @@ public final class StatsbeatTestUtils {
     INSTRUMENTATION_MAP_DECODING.put(3, "io.opentelemetry.apache-httpclient-5.0");
     INSTRUMENTATION_MAP_DECODING.put(4, "io.opentelemetry.applicationinsights-web-2.3");
     INSTRUMENTATION_MAP_DECODING.put(5, "io.opentelemetry.azure-functions");
-    INSTRUMENTATION_MAP_DECODING.put(6, "io.opentelemetry.azure-core-1.14");
+    INSTRUMENTATION_MAP_DECODING.put(6, "Azure-OpenTelemetry"); // bridged by azure-core-1.14 module
     INSTRUMENTATION_MAP_DECODING.put(7, "io.opentelemetry.cassandra-3.0");
     INSTRUMENTATION_MAP_DECODING.put(8, "io.opentelemetry.cassandra-4.0");
     INSTRUMENTATION_MAP_DECODING.put(9, "io.opentelemetry.classloaders");
