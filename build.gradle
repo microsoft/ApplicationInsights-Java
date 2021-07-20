@@ -61,12 +61,12 @@ allprojects {
   task downloadDependencies {
     doLast {
       configurations.findAll {
-        it.canBeResolved && !it.canBeConsumed
+        it.canBeResolved
       }.each {
         it.resolve()
       }
       buildscript.configurations.findAll {
-        it.canBeResolved && !it.canBeConsumed
+        it.canBeResolved
       }.each {
         it.resolve()
       }
