@@ -1,16 +1,6 @@
 plugins {
-  id("ai.java-conventions")
-  id("war")
+  id("ai.smoke-test-war")
 }
-
-war {
-  // this is done to remove the version from the archive file name
-  // to make span name verification simpler
-  archiveFileName = project.name + ".war"
-}
-
-ext.testAppArtifactDir = war.destinationDirectory
-ext.testAppArtifactFilename = project.name + ".war"
 
 dependencies {
   implementation("com.microsoft.azure:applicationinsights-web-auto")
@@ -19,6 +9,4 @@ dependencies {
   }
   // this dependency is needed to make wildfly happy
   implementation("org.reactivestreams:reactive-streams:1.0.3")
-
-  compileOnly("javax.servlet:javax.servlet-api:3.0.1")
 }

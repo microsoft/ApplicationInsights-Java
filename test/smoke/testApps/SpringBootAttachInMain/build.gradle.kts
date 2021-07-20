@@ -1,10 +1,6 @@
 plugins {
-  id("ai.java-conventions")
-  id "org.springframework.boot" version "2.2.0.RELEASE"
+  id("ai.smoke-test-jar")
 }
-
-ext.testAppArtifactDir = jar.destinationDirectory
-ext.testAppArtifactFilename = jar.archiveFileName.get()
 
 dependencies {
   implementation(project(":agent:agent"))

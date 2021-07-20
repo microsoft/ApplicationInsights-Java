@@ -1,5 +1,5 @@
 plugins {
-  id("ai.java-conventions")
+  id("ai.smoke-test")
   id "org.springframework.boot" version "2.1.7.RELEASE"
   id("war")
 }
@@ -27,5 +27,7 @@ bootWar {
   archiveFileName = project.name + ".war"
 }
 
-ext.testAppArtifactDir = war.destinationDirectory
-ext.testAppArtifactFilename = project.name + ".war"
+val aiSmokeTest = extensions.getByType(com.microsoft.applicationinsights.gradle.AiSmokeTestExtension::class)
+
+aiSmokeTest.testAppArtifactDir.set(tasks.war.get().destinationDirectory.get())
+aiSmokeTest.testAppArtifactFilename.set(project.name + ".war")

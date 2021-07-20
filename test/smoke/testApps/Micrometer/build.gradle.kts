@@ -1,12 +1,8 @@
 plugins {
-    id("ai.java-conventions")
-    id "org.springframework.boot" version "2.1.7.RELEASE"
+  id("ai.smoke-test-jar")
 }
 
-ext.testAppArtifactDir = jar.destinationDirectory
-ext.testAppArtifactFilename = jar.archiveFileName.get()
-
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web:2.1.7.RELEASE")
-    implementation("io.micrometer:micrometer-core:1.4.1")
+  implementation("org.springframework.boot:spring-boot-starter-web:2.1.7.RELEASE")
+  implementation("io.micrometer:micrometer-core:1.4.1")
 }

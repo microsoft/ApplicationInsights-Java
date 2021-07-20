@@ -1,14 +1,10 @@
 plugins {
-    id("ai.java-conventions")
-    id "org.springframework.boot" version "2.1.7.RELEASE"
+  id("ai.smoke-test-jar")
 }
 
-ext.testAppArtifactDir = jar.destinationDirectory
-ext.testAppArtifactFilename = jar.archiveFileName.get()
-
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter:2.1.7.RELEASE")
+  implementation("org.springframework.boot:spring-boot-starter:2.1.7.RELEASE")
 
-    // needs to be same version used in fakeIngestion server
-    implementation("org.eclipse.jetty:jetty-server:9.4.7.v20170914")
+  // needs to be same version used in fakeIngestion server
+  implementation("org.eclipse.jetty:jetty-server:9.4.7.v20170914")
 }
