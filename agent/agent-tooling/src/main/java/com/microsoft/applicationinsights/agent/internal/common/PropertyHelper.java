@@ -32,7 +32,7 @@ public final class PropertyHelper {
 
   private static final Logger logger = LoggerFactory.getLogger(PropertyHelper.class);
 
-  public static final String SDK_VERSION_FILE_NAME = "sdk-version.properties";
+  public static final String SDK_VERSION_FILE_NAME = "ai.sdk-version.properties";
 
   public static final String VERSION_STRING_PREFIX = "java:";
   public static final String VERSION_PROPERTY_NAME = "version";

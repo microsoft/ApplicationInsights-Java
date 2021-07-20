@@ -102,6 +102,12 @@ tasks {
     doFirst {
       // need to delay for project to configure the extension
       jvmArgs("-Dai.smoketest.testAppWarFile=${aiSmokeTest.testAppArtifactFilename.get()}")
+
+      // There's no real harm in setting this for all tests even if any happen to not be using
+      // context propagation.
+      jvmArgs("-Dio.opentelemetry.context.enableStrictContext=true")
+      // TODO (trask): Have agent map unshaded to shaded.
+      jvmArgs("-Dio.opentelemetry.javaagent.shaded.io.opentelemetry.context.enableStrictContext=true")
     }
 
     // TODO (trask) is this still a problem?

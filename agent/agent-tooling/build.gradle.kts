@@ -2,7 +2,6 @@ plugins {
   id("ai.java-conventions")
   id("ai.sdk-version-file")
   id("com.github.johnrengelman.shadow")
-  id("ai.jmh-conventions")
 }
 
 dependencies {

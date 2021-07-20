@@ -95,12 +95,6 @@ normalization {
 tasks.withType<Test>().configureEach {
   useJUnitPlatform()
 
-  // There's no real harm in setting this for all tests even if any happen to not be using context
-  // propagation.
-  jvmArgs("-Dio.opentelemetry.context.enableStrictContext=true")
-  // TODO (trask): Have agent map unshaded to shaded.
-  jvmArgs("-Dio.opentelemetry.javaagent.shaded.io.opentelemetry.context.enableStrictContext=true")
-
   // All tests must complete within 15 minutes.
   // This value is quite big because with lower values (3 mins) we were experiencing large number of false positives
   timeout.set(Duration.ofMinutes(15))

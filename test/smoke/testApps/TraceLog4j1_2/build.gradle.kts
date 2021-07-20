@@ -9,6 +9,5 @@ dependencies {
     // and duplicate class files produces lots of warning messages on jetty
     exclude("com.microsoft.azure", "applicationinsights-core")
   }
-
   implementation("log4j:log4j:1.2.17")
 }
