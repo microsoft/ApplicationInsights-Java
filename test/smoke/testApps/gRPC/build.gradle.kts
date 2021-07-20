@@ -1,23 +1,27 @@
+import com.google.protobuf.gradle.*
+
 plugins {
   id("ai.smoke-test-jar")
-  id("com.google.protobuf") version "0.8.14"
+  id("com.google.protobuf") version "0.8.16"
 }
 
-def protobufVersion = "3.6.1"
-def grpcVersion = "1.16.1"
+val grpcVersion = "1.16.1"
 
 protobuf {
   protoc {
-    artifact = "com.google.protobuf:protoc:$protobufVersion"
+    // Download compiler rather than using locally installed version:
+    artifact = "com.google.protobuf:protoc:3.3.0"
   }
   plugins {
-    grpc {
-      artifact = "io.grpc:protoc-gen-grpc-java:$grpcVersion"
+    id("grpc") {
+      artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
     }
   }
   generateProtoTasks {
-    all()*.plugins {
-      grpc {}
+    all().configureEach {
+      plugins {
+        id("grpc")
+      }
     }
   }
 }

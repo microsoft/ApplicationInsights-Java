@@ -9,7 +9,7 @@ build:
     - !!buildcommand
       name: 'Assemble ApplicationInsights-Java JARs'
       command: '.scripts/gradle.cmd'
-      arguments: 'assemble'
+      arguments: 'build'
       artifacts:
         - to: 'Artifacts'
           include:
