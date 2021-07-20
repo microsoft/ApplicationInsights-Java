@@ -60,13 +60,9 @@ allprojects {
 
   task downloadDependencies {
     doLast {
-      configurations.findAll {
-        it.canBeResolved && !it.canBeConsumed
-      }.each {
-        it.resolve()
-      }
-      buildscript.configurations.findAll {
-        it.canBeResolved && !it.canBeConsumed
+      [configurations, buildscript.configurations].flatten().findAll {
+        // dependencyManagement gets in the way of resolving the "default" configuration
+        it.canBeResolved && it.name != "default"
       }.each {
         it.resolve()
       }
