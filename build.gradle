@@ -56,6 +56,21 @@ allprojects {
     }
   }
 
+  task downloadDependencies {
+    doLast {
+      configurations.findAll {
+        it.canBeResolved && !it.canBeConsumed
+      }.each {
+        it.resolve()
+      }
+      buildscript.configurations.findAll {
+        it.canBeResolved && !it.canBeConsumed
+      }.each {
+        it.resolve()
+      }
+    }
+  }
+
   tasks.withType(ShadowJar) {
     exclude "META-INF/maven/**"
     exclude "META-INF/LICENSE*"

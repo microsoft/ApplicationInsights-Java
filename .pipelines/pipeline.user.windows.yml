@@ -43,6 +43,10 @@ restore:
       command: '.scripts/ot-gradle.cmd'
       arguments: 'publishToMavenLocal'
     - !!defaultcommand
+      name: 'Download Dependencies'
+      command: '.scripts/gradle.cmd'
+      arguments: 'downloadDependencies'
+    - !!defaultcommand
       name: 'List Installation Information'
       command: '.scripts/dumpInstallationInfo.cmd'
 test:
