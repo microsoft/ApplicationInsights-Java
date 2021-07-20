@@ -7,22 +7,6 @@ allprojects {
   }
 }
 
-subprojects {
-  ext {
-    /*
-        By default, the Applciation Insights jars are built and used by the smokeTests.
-        To use different jars for smokeTests, reassign these variables to point the path to the jar using this "files" function.
-        For example,
-            aiCoreJar = files("c:\\core_jar_from_previous_build\\applicationinsights-core-vSomething.jar")
-    */
-    aiAgentJar = project(":agent:agent")
-    aiCoreJar = dependencies.create("com.microsoft.azure:applicationinsights-core")
-    aiWebJar = dependencies.create("com.microsoft.azure:applicationinsights-web")
-    aiWebAutoJar = dependencies.create("com.microsoft.azure:applicationinsights-web-auto")
-    springBootStarterJar = dependencies.create("com.microsoft.azure:applicationinsights-spring-boot-starter")
-  }
-}
-
 configurations {
   smokeTest.exclude group: "com.microsoft.azure", name: "applicationinsights-core"
   smokeTest.exclude group: "com.microsoft.azure", name: "applicationinsights-web"

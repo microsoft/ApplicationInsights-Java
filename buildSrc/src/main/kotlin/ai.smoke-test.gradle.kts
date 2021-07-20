@@ -1,4 +1,5 @@
 import com.microsoft.applicationinsights.gradle.AiSmokeTestExtension
+import gradle.kotlin.dsl.accessors._94a23f0be9141f27f052e4809bb3869b.java
 
 plugins {
   `java-library`
@@ -22,6 +23,26 @@ val smokeTestImplementation by configurations.getting {
 }
 
 configurations["smokeTestRuntimeOnly"].extendsFrom(configurations.runtimeOnly.get())
+
+// FIXME (trask) copy-pasted from ai.java-conventions.gradle
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(11))
+  }
+
+  // See https://docs.gradle.org/current/userguide/upgrading_version_5.html, Automatic target JVM version
+  disableAutoTargetJvm()
+  withJavadocJar()
+  withSourcesJar()
+}
+
+// FIXME (trask) copy-pasted from ai.java-conventions.gradle
+tasks.withType<JavaCompile>().configureEach {
+  with(options) {
+    release.set(8)
+    compilerArgs.add("-Werror")
+  }
+}
 
 // FIXME (trask) copy-pasted from ai.java-conventions.gradle
 val dependencyManagement by configurations.creating {

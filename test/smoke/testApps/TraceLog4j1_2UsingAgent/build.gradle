@@ -13,7 +13,7 @@ ext.testAppArtifactDir = war.destinationDirectory
 ext.testAppArtifactFilename = project.name + ".war"
 
 dependencies {
-  implementation(aiWebAutoJar)
+  implementation("com.microsoft.azure:applicationinsights-web-auto")
 
   compileOnly("javax.servlet:javax.servlet-api:3.0.1")
 
