@@ -123,7 +123,7 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setId(String id) {
-    this.id = Strings.trimAndTruncate(id, SanitizationHelper.MAX_ID_LENGTH);
+    this.id = Strings.truncate(id, SanitizationHelper.MAX_ID_LENGTH);
     return this;
   }
 
@@ -145,7 +145,7 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setName(String name) {
-    this.name = Strings.trimAndTruncate(name, SanitizationHelper.MAX_NAME_LENGTH);
+    this.name = Strings.truncate(name, SanitizationHelper.MAX_NAME_LENGTH);
     return this;
   }
 
@@ -167,7 +167,7 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setResultCode(String resultCode) {
-    this.resultCode = Strings.trimAndTruncate(resultCode, MAX_RESULT_CODE_LENGTH);
+    this.resultCode = Strings.truncate(resultCode, MAX_RESULT_CODE_LENGTH);
     return this;
   }
 
@@ -189,7 +189,7 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setData(String data) {
-    this.data = Strings.trimAndTruncate(data, MAX_DATA_LENGTH);
+    this.data = Strings.truncate(data, MAX_DATA_LENGTH);
     return this;
   }
 
@@ -213,7 +213,7 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setType(String type) {
-    this.type = Strings.trimAndTruncate(type, MAX_DEPENDENCY_TYPE_LENGTH);
+    this.type = Strings.truncate(type, MAX_DEPENDENCY_TYPE_LENGTH);
     return this;
   }
 
@@ -235,7 +235,7 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setTarget(String target) {
-    this.target = Strings.trimAndTruncate(target, MAX_TARGET_NAME_LENGTH);
+    this.target = Strings.truncate(target, MAX_TARGET_NAME_LENGTH);
     return this;
   }
 

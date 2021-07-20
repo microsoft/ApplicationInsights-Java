@@ -97,7 +97,7 @@ public final class StackFrame {
    * @return the StackFrame object itself.
    */
   public StackFrame setMethod(String method) {
-    this.method = Strings.trimAndTruncate(method, MAX_METHOD_NAME_LENGTH);
+    this.method = Strings.truncate(method, MAX_METHOD_NAME_LENGTH);
     return this;
   }
 
@@ -117,7 +117,7 @@ public final class StackFrame {
    * @return the StackFrame object itself.
    */
   public StackFrame setAssembly(String assembly) {
-    this.assembly = Strings.trimAndTruncate(assembly, MAX_ASSEMBLY_NAME_LENGTH);
+    this.assembly = Strings.truncate(assembly, MAX_ASSEMBLY_NAME_LENGTH);
     return this;
   }
 
@@ -137,7 +137,7 @@ public final class StackFrame {
    * @return the StackFrame object itself.
    */
   public StackFrame setFileName(String fileName) {
-    this.fileName = Strings.trimAndTruncate(fileName, MAX_FILE_NAME_LENGTH);
+    this.fileName = Strings.truncate(fileName, MAX_FILE_NAME_LENGTH);
     return this;
   }
 

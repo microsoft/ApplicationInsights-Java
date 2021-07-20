@@ -130,7 +130,7 @@ public final class TelemetryExceptionData extends MonitorDomain {
    * @return the TelemetryExceptionData object itself.
    */
   public TelemetryExceptionData setProblemId(String problemId) {
-    this.problemId = Strings.trimAndTruncate(problemId, MAX_PROBLEM_ID_LENGTH);
+    this.problemId = Strings.truncate(problemId, MAX_PROBLEM_ID_LENGTH);
     return this;
   }
 

@@ -136,7 +136,7 @@ public final class TelemetryExceptionDetails {
    * @return the TelemetryExceptionDetails object itself.
    */
   public TelemetryExceptionDetails setTypeName(String typeName) {
-    this.typeName = Strings.trimAndTruncate(typeName, SanitizationHelper.MAX_NAME_LENGTH);
+    this.typeName = Strings.truncate(typeName, SanitizationHelper.MAX_NAME_LENGTH);
     return this;
   }
 
@@ -156,7 +156,7 @@ public final class TelemetryExceptionDetails {
    * @return the TelemetryExceptionDetails object itself.
    */
   public TelemetryExceptionDetails setMessage(String message) {
-    this.message = Strings.trimAndTruncate(message, SanitizationHelper.MAX_MESSAGE_LENGTH);
+    this.message = Strings.truncate(message, SanitizationHelper.MAX_MESSAGE_LENGTH);
     return this;
   }
 
@@ -200,7 +200,7 @@ public final class TelemetryExceptionDetails {
    * @return the TelemetryExceptionDetails object itself.
    */
   public TelemetryExceptionDetails setStack(String stack) {
-    this.stack = Strings.trimAndTruncate(stack, SanitizationHelper.MAX_MESSAGE_LENGTH);
+    this.stack = Strings.truncate(stack, SanitizationHelper.MAX_MESSAGE_LENGTH);
     return this;
   }
 

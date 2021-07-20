@@ -71,7 +71,7 @@ public final class TelemetryEventData extends MonitorDomain {
    * @return the TelemetryEventData object itself.
    */
   public TelemetryEventData setName(String name) {
-    this.name = Strings.trimAndTruncate(name, MAX_EVENT_NAME_LENGTH);
+    this.name = Strings.truncate(name, MAX_EVENT_NAME_LENGTH);
     return this;
   }
 

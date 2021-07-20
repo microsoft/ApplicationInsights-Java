@@ -113,7 +113,7 @@ public final class RequestData extends MonitorDomain {
    * @return the RequestData object itself.
    */
   public RequestData setId(String id) {
-    this.id = Strings.trimAndTruncate(id, SanitizationHelper.MAX_ID_LENGTH);
+    this.id = Strings.truncate(id, SanitizationHelper.MAX_ID_LENGTH);
     return this;
   }
 
@@ -137,7 +137,7 @@ public final class RequestData extends MonitorDomain {
    * @return the RequestData object itself.
    */
   public RequestData setName(String name) {
-    this.name = Strings.trimAndTruncate(name, SanitizationHelper.MAX_NAME_LENGTH);
+    this.name = Strings.truncate(name, SanitizationHelper.MAX_NAME_LENGTH);
     return this;
   }
 
@@ -201,7 +201,7 @@ public final class RequestData extends MonitorDomain {
    * @return the RequestData object itself.
    */
   public RequestData setResponseCode(String responseCode) {
-    this.responseCode = Strings.trimAndTruncate(responseCode, MAX_RESPONSE_CODE_LENGTH);
+    this.responseCode = Strings.truncate(responseCode, MAX_RESPONSE_CODE_LENGTH);
     return this;
   }
 
@@ -223,7 +223,7 @@ public final class RequestData extends MonitorDomain {
    * @return the RequestData object itself.
    */
   public RequestData setSource(String source) {
-    this.source = Strings.trimAndTruncate(source, MAX_SOURCE_LENGTH);
+    this.source = Strings.truncate(source, MAX_SOURCE_LENGTH);
     return this;
   }
 
@@ -243,7 +243,7 @@ public final class RequestData extends MonitorDomain {
    * @return the RequestData object itself.
    */
   public RequestData setUrl(String url) {
-    this.url = Strings.trimAndTruncate(url, SanitizationHelper.MAX_URL_LENGTH);
+    this.url = Strings.truncate(url, SanitizationHelper.MAX_URL_LENGTH);
     return this;
   }
 

@@ -96,12 +96,12 @@ public class SanitizationHelper {
 
   /** Function to sanitize value. */
   private static String sanitizeValue(String value) {
-    return Strings.trimAndTruncate(value, MAX_VALUE_LENGTH);
+    return Strings.truncate(value, MAX_VALUE_LENGTH);
   }
 
   /** Function to sanitize key. */
   private static String sanitizeKey(String key) {
-    String sanitizedKey = Strings.trimAndTruncate(key, MAX_KEY_LENGTH);
+    String sanitizedKey = Strings.truncate(key, MAX_KEY_LENGTH);
     return makeKeyNonEmpty(sanitizedKey);
   }
 

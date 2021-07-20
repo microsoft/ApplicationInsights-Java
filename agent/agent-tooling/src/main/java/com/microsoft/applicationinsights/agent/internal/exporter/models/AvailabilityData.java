@@ -99,7 +99,7 @@ public final class AvailabilityData extends MonitorDomain {
    * @return the AvailabilityData object itself.
    */
   public AvailabilityData setId(String id) {
-    this.id = Strings.trimAndTruncate(id, SanitizationHelper.MAX_ID_LENGTH);
+    this.id = Strings.truncate(id, SanitizationHelper.MAX_ID_LENGTH);
     return this;
   }
 
@@ -119,7 +119,7 @@ public final class AvailabilityData extends MonitorDomain {
    * @return the AvailabilityData object itself.
    */
   public AvailabilityData setName(String name) {
-    this.name = Strings.trimAndTruncate(name, SanitizationHelper.MAX_NAME_LENGTH);
+    this.name = Strings.truncate(name, SanitizationHelper.MAX_NAME_LENGTH);
     return this;
   }
 
@@ -179,7 +179,7 @@ public final class AvailabilityData extends MonitorDomain {
    * @return the AvailabilityData object itself.
    */
   public AvailabilityData setRunLocation(String runLocation) {
-    this.runLocation = Strings.trimAndTruncate(runLocation, MAX_RUN_LOCATION_LENGTH);
+    this.runLocation = Strings.truncate(runLocation, MAX_RUN_LOCATION_LENGTH);
     return this;
   }
 
@@ -199,7 +199,7 @@ public final class AvailabilityData extends MonitorDomain {
    * @return the AvailabilityData object itself.
    */
   public AvailabilityData setMessage(String message) {
-    this.message = Strings.trimAndTruncate(message, MAX_AVAILABILITY_MESSAGE_LENGTH);
+    this.message = Strings.truncate(message, MAX_AVAILABILITY_MESSAGE_LENGTH);
     return this;
   }
 

@@ -99,7 +99,7 @@ public final class MetricDataPoint {
    * @return the MetricDataPoint object itself.
    */
   public MetricDataPoint setNamespace(String namespace) {
-    this.namespace = Strings.trimAndTruncate(namespace, MAX_METRIC_NAME_SPACE_LENGTH);
+    this.namespace = Strings.truncate(namespace, MAX_METRIC_NAME_SPACE_LENGTH);
     return this;
   }
 
@@ -119,7 +119,7 @@ public final class MetricDataPoint {
    * @return the MetricDataPoint object itself.
    */
   public MetricDataPoint setName(String name) {
-    this.name = Strings.trimAndTruncate(name, SanitizationHelper.MAX_NAME_LENGTH);
+    this.name = Strings.truncate(name, SanitizationHelper.MAX_NAME_LENGTH);
     return this;
   }
 

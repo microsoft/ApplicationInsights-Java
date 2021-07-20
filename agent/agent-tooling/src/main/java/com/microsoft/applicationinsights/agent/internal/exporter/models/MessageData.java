@@ -74,7 +74,7 @@ public final class MessageData extends MonitorDomain {
    * @return the MessageData object itself.
    */
   public MessageData setMessage(String message) {
-    this.message = Strings.trimAndTruncate(message, SanitizationHelper.MAX_MESSAGE_LENGTH);
+    this.message = Strings.truncate(message, SanitizationHelper.MAX_MESSAGE_LENGTH);
     return this;
   }
 

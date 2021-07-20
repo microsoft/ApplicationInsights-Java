@@ -127,7 +127,7 @@ public final class PageViewPerfData extends MonitorDomain {
    * @return the PageViewPerfData object itself.
    */
   public PageViewPerfData setId(String id) {
-    this.id = Strings.trimAndTruncate(id, SanitizationHelper.MAX_ID_LENGTH);
+    this.id = Strings.truncate(id, SanitizationHelper.MAX_ID_LENGTH);
     return this;
   }
 
@@ -149,7 +149,7 @@ public final class PageViewPerfData extends MonitorDomain {
    * @return the PageViewPerfData object itself.
    */
   public PageViewPerfData setName(String name) {
-    this.name = Strings.trimAndTruncate(name, SanitizationHelper.MAX_NAME_LENGTH);
+    this.name = Strings.truncate(name, SanitizationHelper.MAX_NAME_LENGTH);
     return this;
   }
 
@@ -169,7 +169,7 @@ public final class PageViewPerfData extends MonitorDomain {
    * @return the PageViewPerfData object itself.
    */
   public PageViewPerfData setUrl(String url) {
-    this.url = Strings.trimAndTruncate(url, SanitizationHelper.MAX_URL_LENGTH);
+    this.url = Strings.truncate(url, SanitizationHelper.MAX_URL_LENGTH);
     return this;
   }
 

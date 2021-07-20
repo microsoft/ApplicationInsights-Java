@@ -202,7 +202,7 @@ public final class TelemetryItem {
    * @return the TelemetryItem object itself.
    */
   public TelemetryItem setSequence(String sequence) {
-    this.sequence = Strings.trimAndTruncate(sequence, MAX_SEQUENCE_LENGTH);
+    this.sequence = Strings.truncate(sequence, MAX_SEQUENCE_LENGTH);
     return this;
   }
 
