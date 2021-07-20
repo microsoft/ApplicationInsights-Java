@@ -56,7 +56,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -197,8 +196,6 @@ public abstract class AiSmokeTest {
   public static final int HEALTH_CHECK_RETRIES = 2;
   public static final int APPSERVER_HEALTH_CHECK_TIMEOUT = 75;
   // endregion
-
-  private static final Properties testProps = new Properties();
 
   protected static final MockedAppInsightsIngestionServer mockedIngestion =
       new MockedAppInsightsIngestionServer();
