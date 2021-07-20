@@ -15,7 +15,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 import application.java.util.logging.Logger;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
+import io.opentelemetry.javaagent.instrumentation.api.CallDepth;
 import io.opentelemetry.javaagent.instrumentation.api.logger.LoggerDepth;
 import java.util.logging.LogRecord;
 import net.bytebuddy.asm.Advice;
@@ -49,25 +49,25 @@ final class JavaUtilLoggingSpansInstrumentation implements TypeInstrumentation {
         JavaUtilLoggingSpansInstrumentation.class.getName() + "$LogAdvice");
   }
 
+  @SuppressWarnings("unused")
   public static class LogAdvice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static boolean methodEnter(
-        @Advice.This final Logger logger, @Advice.Argument(0) final LogRecord logRecord) {
+    public static void methodEnter(
+        @Advice.This final Logger logger,
+        @Advice.Argument(0) final LogRecord logRecord,
+        @Advice.Local("otelCallDepth") CallDepth callDepth) {
       // need to track call depth across all loggers in order to avoid double capture when one
       // logging framework delegates to another
-      boolean topLevel = CallDepthThreadLocalMap.incrementCallDepth(LoggerDepth.class) == 0;
-      if (topLevel) {
+      callDepth = CallDepth.forClass(LoggerDepth.class);
+      if (callDepth.getAndIncrement() == 0) {
         JavaUtilLoggingSpans.capture(logger, logRecord);
       }
-      return topLevel;
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
-    public static void methodExit(@Advice.Enter final boolean topLevel) {
-      if (topLevel) {
-        CallDepthThreadLocalMap.reset(LoggerDepth.class);
-      }
+    public static void methodExit(@Advice.Local("otelCallDepth") CallDepth callDepth) {
+      callDepth.decrementAndGet();
     }
   }
 }

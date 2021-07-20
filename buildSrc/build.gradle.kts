@@ -13,15 +13,6 @@ spotless {
   }
 }
 
-gradlePlugin {
-  plugins {
-    create("muzzle-plugin") {
-      id = "muzzle"
-      implementationClass = "io.opentelemetry.instrumentation.gradle.muzzle.MuzzlePlugin"
-    }
-  }
-}
-
 repositories {
   mavenCentral()
   gradlePluginPortal()
@@ -35,6 +26,9 @@ tasks.withType<Test>().configureEach {
 dependencies {
   implementation(gradleApi())
   implementation(localGroovy())
+
+  //TODO start using this when separate codegen plugin is published
+//  implementation("io.opentelemetry.instrumentation.gradle:opentelemetry-codegen:1.4.0-alpha-SNAPSHOT")
 
   implementation("org.eclipse.aether:aether-connector-basic:1.1.0")
   implementation("org.eclipse.aether:aether-transport-http:1.1.0")
