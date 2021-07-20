@@ -9,6 +9,4 @@ dependencies {
 
   // the test code (not the app under test) needs a modern core jar (well, at least 1.0.8)
   testImplementation("com.microsoft.azure:applicationinsights-core")
-
-  providedRuntime "mysql:mysql-connector-java:5.1.44"
 }

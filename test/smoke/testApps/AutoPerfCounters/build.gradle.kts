@@ -4,6 +4,4 @@ plugins {
 
 dependencies {
   implementation("com.microsoft.azure:applicationinsights-web")
-
-  providedRuntime("mysql:mysql-connector-java:5.1.44")
 }

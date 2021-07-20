@@ -17,7 +17,5 @@ dependencies {
 
   compileOnly("javax.servlet:javax.servlet-api:3.0.1")
 
-  providedRuntime "mysql:mysql-connector-java:5.1.44"
-
   implementation("org.apache.httpcomponents:httpclient:4.5.7")
 }
