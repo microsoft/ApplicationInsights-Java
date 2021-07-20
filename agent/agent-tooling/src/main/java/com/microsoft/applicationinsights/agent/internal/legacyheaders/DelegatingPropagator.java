@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.legacyheaders;
 
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
+import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -47,15 +48,16 @@ public class DelegatingPropagator implements TextMapPropagator {
 
   public void setUpStandardDelegate() {
 
-    // TODO when should we enable baggage propagation?
     // currently using modified W3CTraceContextPropagator because "ai-internal-sp" trace state
     // shouldn't be sent over the wire (at least not yet, and not with that name)
 
-    // important that W3CTraceContextPropagator is last, so it will take precedence if both sets of
-    // headers are present
+    // important that W3CTraceContextPropagator is after AiLegacyPropagator, so it will take
+    // precedence if both sets of headers are present
     delegate =
         TextMapPropagator.composite(
-            AiLegacyPropagator.getInstance(), new ModifiedW3cTraceContextPropagator());
+            AiLegacyPropagator.getInstance(),
+            new ModifiedW3cTraceContextPropagator(),
+            W3CBaggagePropagator.getInstance());
   }
 
   @Override
