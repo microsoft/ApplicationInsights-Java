@@ -132,31 +132,16 @@ public class Configuration {
 
   public static class Instrumentation {
 
-    public CassandraInstrumentation cassandra = new CassandraInstrumentation();
-    public JdbcInstrumentation jdbc = new JdbcInstrumentation();
-    public JmsInstrumentation jms = new JmsInstrumentation();
-    public KafkaInstrumentation kafka = new KafkaInstrumentation();
+    public EnabledByDefaultInstrumentation cassandra = new EnabledByDefaultInstrumentation();
+    public EnabledByDefaultInstrumentation jdbc = new EnabledByDefaultInstrumentation();
+    public EnabledByDefaultInstrumentation jms = new EnabledByDefaultInstrumentation();
+    public EnabledByDefaultInstrumentation kafka = new EnabledByDefaultInstrumentation();
     public LoggingInstrumentation logging = new LoggingInstrumentation();
     public MicrometerInstrumentation micrometer = new MicrometerInstrumentation();
-    public MongoInstrumentation mongo = new MongoInstrumentation();
-    public RedisInstrumentation redis = new RedisInstrumentation();
-    public SpringSchedulingInstrumentation springScheduling = new SpringSchedulingInstrumentation();
-  }
-
-  public static class CassandraInstrumentation {
-    public boolean enabled = true;
-  }
-
-  public static class JdbcInstrumentation {
-    public boolean enabled = true;
-  }
-
-  public static class JmsInstrumentation {
-    public boolean enabled = true;
-  }
-
-  public static class KafkaInstrumentation {
-    public boolean enabled = true;
+    public EnabledByDefaultInstrumentation mongo = new EnabledByDefaultInstrumentation();
+    public EnabledByDefaultInstrumentation rabbitmq = new EnabledByDefaultInstrumentation();
+    public EnabledByDefaultInstrumentation redis = new EnabledByDefaultInstrumentation();
+    public EnabledByDefaultInstrumentation springScheduling = new EnabledByDefaultInstrumentation();
   }
 
   public static class LoggingInstrumentation {
@@ -168,18 +153,6 @@ public class Configuration {
     // this is just here to detect if using this old undocumented setting in order to give a helpful
     // error message
     @Deprecated public int reportingIntervalSeconds = 60;
-  }
-
-  public static class MongoInstrumentation {
-    public boolean enabled = true;
-  }
-
-  public static class RedisInstrumentation {
-    public boolean enabled = true;
-  }
-
-  public static class SpringSchedulingInstrumentation {
-    public boolean enabled = true;
   }
 
   public static class Heartbeat {
@@ -231,11 +204,25 @@ public class Configuration {
 
   public static class PreviewInstrumentation {
     public DisabledByDefaultInstrumentation azureSdk = new DisabledByDefaultInstrumentation();
+
+    // this is just here to detect if using this old setting in order to give a helpful message
+    @Deprecated
     public DisabledByDefaultInstrumentation javaHttpClient = new DisabledByDefaultInstrumentation();
+
+    // this is just here to detect if using this old setting in order to give a helpful message
+    @Deprecated
     public DisabledByDefaultInstrumentation jaxws = new DisabledByDefaultInstrumentation();
+
+    // this is just here to detect if using this old setting in order to give a helpful message
+    @Deprecated
     public DisabledByDefaultInstrumentation rabbitmq = new DisabledByDefaultInstrumentation();
+
     public DisabledByDefaultInstrumentation springIntegration =
         new DisabledByDefaultInstrumentation();
+  }
+
+  public static class EnabledByDefaultInstrumentation {
+    public boolean enabled = true;
   }
 
   public static class DisabledByDefaultInstrumentation {

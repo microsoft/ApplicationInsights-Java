@@ -41,11 +41,11 @@ restore:
     - !!defaultcommand
       name: 'Add OpenTelemetry to MavenLocal'
       command: '.scripts/ot-gradle.cmd'
-      arguments: 'publishToMavenLocal --refresh-dependencies'
+      arguments: 'publishToMavenLocal'
     - !!defaultcommand
-      name: 'Clean and Resolve Dependencies'
+      name: 'Download Dependencies'
       command: '.scripts/gradle.cmd'
-      arguments: 'clean resolveDependencies --refresh-dependencies'
+      arguments: 'downloadDependencies'
     - !!defaultcommand
       name: 'List Installation Information'
       command: '.scripts/dumpInstallationInfo.cmd'
