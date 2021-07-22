@@ -6,12 +6,12 @@
 package io.opentelemetry.instrumentation.reactor
 
 import static io.opentelemetry.api.trace.StatusCode.ERROR
-import static io.opentelemetry.instrumentation.test.utils.TraceUtils.basicSpan
 import static io.opentelemetry.instrumentation.test.utils.TraceUtils.runInternalSpan
 
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.context.Context
 import io.opentelemetry.instrumentation.test.InstrumentationSpecification
 import java.time.Duration
@@ -52,11 +52,23 @@ abstract class AbstractReactorCoreTest extends InstrumentationSpecification {
     and:
     assertTraces(1) {
       trace(0, workSpans + 2) {
-        basicSpan(it, 0, "trace-parent")
-        basicSpan(it, 1, "publisher-parent", span(0))
+        span(0) {
+          name "trace-parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
+        span(1) {
+          name "publisher-parent"
+          kind SpanKind.INTERNAL
+          childOf span(0)
+        }
 
         for (int i = 0; i < workSpans; i++) {
-          basicSpan(it, 2 + i, "add one", span(1))
+          span(2 + i) {
+            name "add one"
+            kind SpanKind.INTERNAL
+            childOf span(1)
+          }
         }
       }
     }
@@ -108,7 +120,11 @@ abstract class AbstractReactorCoreTest extends InstrumentationSpecification {
         // impact the spans on reactor instrumentations such as netty and lettuce, as reactor is
         // more of a context propagation mechanism than something we would be tracking for
         // errors this is ok.
-        basicSpan(it, 1, "publisher-parent", span(0))
+        span(1) {
+          name "publisher-parent"
+          kind SpanKind.INTERNAL
+          childOf span(0)
+        }
       }
     }
 
@@ -139,7 +155,11 @@ abstract class AbstractReactorCoreTest extends InstrumentationSpecification {
         // impact the spans on reactor instrumentations such as netty and lettuce, as reactor is
         // more of a context propagation mechanism than something we would be tracking for
         // errors this is ok.
-        basicSpan(it, 1, "publisher-parent", span(0))
+        span(1) {
+          name "publisher-parent"
+          kind SpanKind.INTERNAL
+          childOf span(0)
+        }
 
         for (int i = 0; i < workSpans; i++) {
           span(i + 2) {
@@ -174,7 +194,11 @@ abstract class AbstractReactorCoreTest extends InstrumentationSpecification {
           }
         }
 
-        basicSpan(it, 1, "publisher-parent", span(0))
+        span(1) {
+          name "publisher-parent"
+          kind SpanKind.INTERNAL
+          childOf span(0)
+        }
       }
     }
 
@@ -198,7 +222,11 @@ abstract class AbstractReactorCoreTest extends InstrumentationSpecification {
           }
         }
 
-        basicSpan(it, 1, "publisher-parent", span(0))
+        span(1) {
+          name "publisher-parent"
+          kind SpanKind.INTERNAL
+          childOf span(0)
+        }
 
         for (int i = 0; i < workSpans; i++) {
           span(i + 2) {
@@ -247,13 +275,33 @@ abstract class AbstractReactorCoreTest extends InstrumentationSpecification {
     then:
     assertTraces(1) {
       trace(0, (workItems * 2) + 3) {
-        basicSpan(it, 0, "trace-parent")
-        basicSpan(it, 1, "publisher-parent", span(0))
-        basicSpan(it, 2, "intermediate", span(1))
+        span(0) {
+          name "trace-parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
+        span(1) {
+          name "publisher-parent"
+          kind SpanKind.INTERNAL
+          childOf span(0)
+        }
+        span(2) {
+          name "intermediate"
+          kind SpanKind.INTERNAL
+          childOf span(1)
+        }
 
         for (int i = 0; i < 2 * workItems; i = i + 2) {
-          basicSpan(it, 3 + i, "add one", span(1))
-          basicSpan(it, 3 + i + 1, "add two", span(1))
+          span(3 + i) {
+            name "add one"
+            kind SpanKind.INTERNAL
+            childOf span(1)
+          }
+          span(3 + i + 1) {
+            name "add two"
+            kind SpanKind.INTERNAL
+            childOf span(1)
+          }
         }
       }
     }

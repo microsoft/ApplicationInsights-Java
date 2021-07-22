@@ -5,7 +5,6 @@
 
 import static io.opentelemetry.api.trace.SpanKind.CLIENT
 import static io.opentelemetry.api.trace.StatusCode.ERROR
-import static io.opentelemetry.instrumentation.test.utils.TraceUtils.basicSpan
 import static io.opentelemetry.instrumentation.test.utils.TraceUtils.runInternalSpan
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NetTransportValues.IP_TCP
 
@@ -13,6 +12,7 @@ import io.kubernetes.client.openapi.ApiCallback
 import io.kubernetes.client.openapi.ApiClient
 import io.kubernetes.client.openapi.ApiException
 import io.kubernetes.client.openapi.apis.CoreV1Api
+import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
 import io.opentelemetry.instrumentation.test.asserts.TraceAssert
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
@@ -64,7 +64,11 @@ class KubernetesClientTest extends AgentInstrumentationSpecification {
 
     assertTraces(1) {
       trace(0, 2) {
-        basicSpan(it, 0, "parent")
+        span(0) {
+          name "parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
         apiClientSpan(it, 1, "get  pods/proxy", "${server.httpUri()}/api/v1/namespaces/namespace/pods/name/proxy?path=path", 200)
       }
     }
@@ -85,7 +89,13 @@ class KubernetesClientTest extends AgentInstrumentationSpecification {
 
     assertTraces(1) {
       trace(0, 2) {
-        basicSpan(it, 0, "parent", null, exception)
+        span(0) {
+          name "parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+          status ERROR
+          errorEvent(exception.class, exception.message)
+        }
         apiClientSpan(it, 1, "get  pods/proxy", "${server.httpUri()}/api/v1/namespaces/namespace/pods/name/proxy?path=path", 451, exception)
       }
     }
@@ -117,9 +127,17 @@ class KubernetesClientTest extends AgentInstrumentationSpecification {
 
     assertTraces(1) {
       trace(0, 3) {
-        basicSpan(it, 0, "parent")
+        span(0) {
+          name "parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
         apiClientSpan(it, 1, "get  pods/proxy", "${server.httpUri()}/api/v1/namespaces/namespace/pods/name/proxy?path=path", 200)
-        basicSpan(it, 2, "callback", span(0))
+        span(2) {
+          name "callback"
+          kind SpanKind.INTERNAL
+          childOf span(0)
+        }
       }
     }
   }
@@ -150,9 +168,17 @@ class KubernetesClientTest extends AgentInstrumentationSpecification {
 
     assertTraces(1) {
       trace(0, 3) {
-        basicSpan(it, 0, "parent")
+        span(0) {
+          name "parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
         apiClientSpan(it, 1, "get  pods/proxy", "${server.httpUri()}/api/v1/namespaces/namespace/pods/name/proxy?path=path", 451, exception.get())
-        basicSpan(it, 2, "callback", span(0))
+        span(2) {
+          name "callback"
+          kind SpanKind.INTERNAL
+          childOf span(0)
+        }
       }
     }
   }

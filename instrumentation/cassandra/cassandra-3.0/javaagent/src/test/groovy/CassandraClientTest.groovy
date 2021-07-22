@@ -4,10 +4,10 @@
  */
 
 import static io.opentelemetry.api.trace.SpanKind.CLIENT
-import static io.opentelemetry.instrumentation.test.utils.TraceUtils.basicSpan
 
 import com.datastax.driver.core.Cluster
 import com.datastax.driver.core.Session
+import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
 import io.opentelemetry.instrumentation.test.asserts.TraceAssert
 import io.opentelemetry.sdk.trace.data.SpanData
@@ -104,9 +104,17 @@ class CassandraClientTest extends AgentInstrumentationSpecification {
         }
       }
       trace(keyspace ? 1 : 0, 3) {
-        basicSpan(it, 0, "parent")
+        span(0) {
+          name "parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
         cassandraSpan(it, 1, spanName, expectedStatement, operation, keyspace, table, span(0))
-        basicSpan(it, 2, "callbackListener", span(0))
+        span(2) {
+          name "callbackListener"
+          kind SpanKind.INTERNAL
+          childOf span(0)
+        }
       }
     }
 

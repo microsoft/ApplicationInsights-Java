@@ -3,16 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import io.opentelemetry.instrumentation.jdbc.TestConnection
-import io.opentelemetry.instrumentation.jdbc.TestDriver
-
 import static io.opentelemetry.api.trace.SpanKind.CLIENT
 import static io.opentelemetry.api.trace.SpanKind.INTERNAL
-import static io.opentelemetry.instrumentation.test.utils.TraceUtils.basicSpan
 
 import com.mchange.v2.c3p0.ComboPooledDataSource
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.instrumentation.jdbc.TestConnection
+import io.opentelemetry.instrumentation.jdbc.TestDriver
 import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
 import java.sql.CallableStatement
@@ -176,7 +175,11 @@ class JdbcInstrumentationTest extends AgentInstrumentationSpecification {
     resultSet.getInt(1) == 3
     assertTraces(1) {
       trace(0, 2) {
-        basicSpan(it, 0, "parent")
+        span(0) {
+          name "parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
         span(1) {
           name spanName
           kind CLIENT
@@ -232,7 +235,11 @@ class JdbcInstrumentationTest extends AgentInstrumentationSpecification {
     resultSet.getInt(1) == 3
     assertTraces(1) {
       trace(0, 2) {
-        basicSpan(it, 0, "parent")
+        span(0) {
+          name "parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
         span(1) {
           name spanName
           kind CLIENT
@@ -280,7 +287,11 @@ class JdbcInstrumentationTest extends AgentInstrumentationSpecification {
     resultSet.getInt(1) == 3
     assertTraces(1) {
       trace(0, 2) {
-        basicSpan(it, 0, "parent")
+        span(0) {
+          name "parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
         span(1) {
           name spanName
           kind CLIENT
@@ -328,7 +339,11 @@ class JdbcInstrumentationTest extends AgentInstrumentationSpecification {
     resultSet.getInt(1) == 3
     assertTraces(1) {
       trace(0, 2) {
-        basicSpan(it, 0, "parent")
+        span(0) {
+          name "parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
         span(1) {
           name spanName
           kind CLIENT
@@ -376,7 +391,11 @@ class JdbcInstrumentationTest extends AgentInstrumentationSpecification {
     statement.updateCount == 0
     assertTraces(1) {
       trace(0, 2) {
-        basicSpan(it, 0, "parent")
+        span(0) {
+          name "parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
         span(1) {
           name dbNameLower
           kind CLIENT
@@ -425,7 +444,11 @@ class JdbcInstrumentationTest extends AgentInstrumentationSpecification {
     }
     assertTraces(1) {
       trace(0, 2) {
-        basicSpan(it, 0, "parent")
+        span(0) {
+          name "parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
         span(1) {
           name dbNameLower
           kind CLIENT
@@ -486,7 +509,11 @@ class JdbcInstrumentationTest extends AgentInstrumentationSpecification {
     rs.getInt(1) == 3
     assertTraces(1) {
       trace(0, 2) {
-        basicSpan(it, 0, "parent")
+        span(0) {
+          name "parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
         span(1) {
           name spanName
           kind CLIENT
@@ -538,7 +565,11 @@ class JdbcInstrumentationTest extends AgentInstrumentationSpecification {
     then:
     assertTraces(1) {
       trace(0, recursive ? 3 : 2) {
-        basicSpan(it, 0, "parent")
+        span(0) {
+          name "parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
 
         span(1) {
           name "${datasource.class.simpleName}.getConnection"
@@ -593,7 +624,11 @@ class JdbcInstrumentationTest extends AgentInstrumentationSpecification {
     then:
     assertTraces(1) {
       trace(0, 2) {
-        basicSpan(it, 0, "parent")
+        span(0) {
+          name "parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
         span(1) {
           name "DB Query"
           kind CLIENT
@@ -630,7 +665,11 @@ class JdbcInstrumentationTest extends AgentInstrumentationSpecification {
     then:
     assertTraces(1) {
       trace(0, 2) {
-        basicSpan(it, 0, "parent")
+        span(0) {
+          name "parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
         span(1) {
           name spanName
           kind CLIENT
@@ -732,7 +771,11 @@ class JdbcInstrumentationTest extends AgentInstrumentationSpecification {
     then:
     assertTraces(1) {
       trace(0, 2) {
-        basicSpan(it, 0, "parent")
+        span(0) {
+          name "parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
         span(1) {
           name "SELECT table"
           kind CLIENT
