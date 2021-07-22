@@ -79,20 +79,6 @@ public class SanitizationHelper {
     return false;
   }
 
-  /** Function to create unique key. Generates 1000000 unique keys for */
-  private static String makeKeyUnique(String key, Map<String, ?> map) {
-    if (!map.containsKey(key)) {
-      return key;
-    }
-    String truncatedKey = Strings.truncate(key, MAX_KEY_LENGTH - UNIQUE_KEY_TRUNCATION_LENGTH);
-    int candidate = 1;
-    do {
-      key = truncatedKey + candidate;
-      ++candidate;
-    } while (map.containsKey(key));
-    return key;
-  }
-
   /** Function to sanitize value. */
   private static String sanitizeValue(String value) {
     return Strings.truncate(value, MAX_VALUE_LENGTH);
@@ -122,8 +108,9 @@ public class SanitizationHelper {
     Map<String, Double> sanitized = new HashMap<>();
     for (Map.Entry<String, Double> entry : measurements.entrySet()) {
       String sanitizedKey = sanitizeKey(entry.getKey());
-      String uniqueKey = makeKeyUnique(sanitizedKey, sanitized);
-      sanitized.put(uniqueKey, entry.getValue());
+      if (!Strings.isNullOrEmpty(sanitizedKey)) {
+        sanitized.put(sanitizedKey, entry.getValue());
+      }
     }
     return sanitized;
   }
