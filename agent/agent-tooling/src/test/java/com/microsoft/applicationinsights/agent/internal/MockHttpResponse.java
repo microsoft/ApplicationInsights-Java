@@ -38,6 +38,10 @@ public class MockHttpResponse extends HttpResponse {
 
   private final byte[] bodyBytes;
 
+  public MockHttpResponse(HttpRequest request, int statusCode) {
+    this(request, statusCode, new HttpHeaders(), new byte[0]);
+  }
+
   public MockHttpResponse(HttpRequest request, int statusCode, HttpHeaders headers) {
     this(request, statusCode, headers, new byte[0]);
   }

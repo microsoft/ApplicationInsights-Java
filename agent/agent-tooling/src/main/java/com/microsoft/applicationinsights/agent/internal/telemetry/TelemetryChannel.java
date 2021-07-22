@@ -39,9 +39,12 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPOutputStream;
 import org.slf4j.Logger;
@@ -91,7 +94,24 @@ public class TelemetryChannel {
     this.localFileWriter = localFileWriter;
   }
 
-  public CompletableResultCode send(List<TelemetryItem> telemetryItems) {
+  public List<CompletableResultCode> send(List<TelemetryItem> telemetryItems) {
+    Map<String, List<TelemetryItem>> iKeyMap = new HashMap();
+    List<CompletableResultCode> resultCodeList = new ArrayList<>();
+    for (TelemetryItem telemetryItem : telemetryItems) {
+      String iKey = telemetryItem.getInstrumentationKey();
+      if (!iKeyMap.containsKey(iKey)) {
+        iKeyMap.put(iKey, new ArrayList<>());
+      }
+      iKeyMap.get(iKey).add(telemetryItem);
+    }
+    for (String iKey : iKeyMap.keySet()) {
+      resultCodeList.add(internalSendByInstrumentationKey(iKeyMap.get(iKey)));
+    }
+    return resultCodeList;
+  }
+
+  public CompletableResultCode internalSendByInstrumentationKey(
+      List<TelemetryItem> telemetryItems) {
     List<ByteBuffer> byteBuffers;
     try {
       byteBuffers = encode(telemetryItems);

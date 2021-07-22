@@ -26,6 +26,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -225,8 +226,11 @@ public final class BatchSpanProcessor {
 
       try {
         // batching, retry, logging, and writing to disk on failure occur downstream
-        CompletableResultCode result = spanExporter.send(Collections.unmodifiableList(batch));
-        result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+        List<CompletableResultCode> completableResultCodes =
+            spanExporter.send(Collections.unmodifiableList(batch));
+        for (CompletableResultCode resultCode : completableResultCodes) {
+          resultCode.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+        }
       } finally {
         batch.clear();
       }

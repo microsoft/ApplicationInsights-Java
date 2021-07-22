@@ -88,9 +88,12 @@ public class IntegrationTests {
       executorService.execute(
           () -> {
             for (int j = 0; j < 10; j++) {
-              CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
-              completableResultCode.join(10, SECONDS);
-              assertThat(completableResultCode.isSuccess()).isEqualTo(false);
+              List<CompletableResultCode> completableResultCodes =
+                  telemetryChannel.send(telemetryItems);
+              for (CompletableResultCode resultCode : completableResultCodes) {
+                resultCode.join(10, SECONDS);
+                assertThat(resultCode.isSuccess()).isEqualTo(false);
+              }
             }
           });
     }
