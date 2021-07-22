@@ -48,9 +48,8 @@ public class SanitizationHelper {
     for (Map.Entry<String, String> entry : properties.entrySet()) {
       String sanitizedKey = sanitizeKey(entry.getKey());
       String sanitizedValue = sanitizeValue(entry.getValue());
-      if (!Strings.isNullOrEmpty(sanitizedValue)) {
-        String uniqueKey = makeKeyUnique(sanitizedKey, sanitized);
-        sanitized.put(uniqueKey, sanitizedValue);
+      if (!Strings.isNullOrEmpty(sanitizedKey) && !Strings.isNullOrEmpty(sanitizedValue)) {
+        sanitized.put(sanitizedKey, sanitizedValue);
       }
     }
     return sanitized;
@@ -101,14 +100,13 @@ public class SanitizationHelper {
 
   /** Function to sanitize key. */
   private static String sanitizeKey(String key) {
-    String sanitizedKey = Strings.truncate(key, MAX_KEY_LENGTH);
-    return makeKeyNonEmpty(sanitizedKey);
-  }
-
-  /** Function to return non empty key. */
-  private static String makeKeyNonEmpty(String sanitizedKey) {
-    // TODO check if this is valid. Below code is based on .Net implementation of the same
-    return Strings.isNullOrEmpty(sanitizedKey) ? "empty" : sanitizedKey;
+    if (Strings.isNullOrEmpty(key)) {
+      return null;
+    }
+    if (key.length() <= MAX_KEY_LENGTH) {
+      return key;
+    }
+    return null;
   }
 
   /** Function to sanitize both key and value in Measurements. */
