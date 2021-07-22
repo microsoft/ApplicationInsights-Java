@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.agent.internal.exporter.utils;
 
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -56,34 +55,23 @@ public class SanitizationHelper {
     }
   }
 
-  private static boolean needsSanitizingForMeasurements(Map<String, Double> measurements) {
-    for (Map.Entry<String, Double> entry : measurements.entrySet()) {
+  /**
+   * Function to sanitize both key and value in measurements, see rules at
+   * https://github.com/microsoft/common-schema/blob/main/Mappings/AzureMonitor-AI.md#mapping-rule
+   */
+  public static void sanitizeMeasurements(Map<String, Double> measurements) {
+    if (measurements == null) {
+      return;
+    }
+    for (Iterator<Map.Entry<String, Double>> i = measurements.entrySet().iterator();
+        i.hasNext(); ) {
+      Map.Entry<String, Double> entry = i.next();
       String key = entry.getKey();
       if (Strings.isNullOrEmpty(key) || key.length() > MAX_KEY_LENGTH) {
-        return true;
+        i.remove();
+        continue;
       }
     }
-    return false;
-  }
-
-  /** Function to sanitize both key and value in Measurements. */
-  @SuppressWarnings("ReturnsNullCollection")
-  public static Map<String, Double> sanitizeMeasurements(Map<String, Double> measurements) {
-    if (measurements == null) {
-      return null;
-    }
-    if (!needsSanitizingForMeasurements(measurements)) {
-      // this is an optimization to avoid any memory allocation in the normal case
-      return measurements;
-    }
-    Map<String, Double> sanitized = new HashMap<>();
-    for (Map.Entry<String, Double> entry : measurements.entrySet()) {
-      String sanitizedKey = sanitizeKey(entry.getKey());
-      if (!Strings.isNullOrEmpty(sanitizedKey)) {
-        sanitized.put(sanitizedKey, entry.getValue());
-      }
-    }
-    return sanitized;
   }
 
   private SanitizationHelper() {}

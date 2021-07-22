@@ -37,10 +37,11 @@ public class SanitizationHelperTests {
     properties.put("key2", "value2");
 
     // when
-    Map<String, String> sanitized = SanitizationHelper.sanitizeProperties(properties);
+    SanitizationHelper.sanitizeProperties(properties);
 
     // then
-    assertThat(sanitized == properties).isTrue();
+    assertThat(properties).containsEntry("key1", "value1");
+    assertThat(properties).containsEntry("key2", "value2");
   }
 
   @Test
@@ -51,11 +52,11 @@ public class SanitizationHelperTests {
     measurements.put("key2", 2.0);
 
     // when
-    Map<String, Double> sanitized = SanitizationHelper.sanitizeMeasurements(measurements);
+    SanitizationHelper.sanitizeMeasurements(measurements);
 
     // then
-    assertThat(sanitized).containsEntry("key1", 1.0);
-    assertThat(sanitized).containsEntry("key2", 2.0);
+    assertThat(measurements).containsEntry("key1", 1.0);
+    assertThat(measurements).containsEntry("key2", 2.0);
   }
 
   @Test
@@ -66,11 +67,11 @@ public class SanitizationHelperTests {
     properties.put("key2", "value2");
 
     // when
-    Map<String, String> sanitized = SanitizationHelper.sanitizeProperties(properties);
+    SanitizationHelper.sanitizeProperties(properties);
 
     // then
-    assertThat(sanitized).doesNotContainKey("");
-    assertThat(sanitized).containsEntry("key2", "value2");
+    assertThat(properties).doesNotContainKey("");
+    assertThat(properties).containsEntry("key2", "value2");
   }
 
   @Test
@@ -81,11 +82,11 @@ public class SanitizationHelperTests {
     measurements.put("key2", 2.0);
 
     // when
-    Map<String, Double> sanitized = SanitizationHelper.sanitizeMeasurements(measurements);
+    SanitizationHelper.sanitizeMeasurements(measurements);
 
     // then
-    assertThat(sanitized).doesNotContainKey("");
-    assertThat(sanitized).containsEntry("key2", 2.0);
+    assertThat(measurements).doesNotContainKey("");
+    assertThat(measurements).containsEntry("key2", 2.0);
   }
 
   @Test
@@ -96,11 +97,26 @@ public class SanitizationHelperTests {
     properties.put("key2", "value2");
 
     // when
-    Map<String, String> sanitized = SanitizationHelper.sanitizeProperties(properties);
+    SanitizationHelper.sanitizeProperties(properties);
 
     // then
-    assertThat(sanitized).doesNotContainKey("key1");
-    assertThat(sanitized).containsEntry("key2", "value2");
+    assertThat(properties).containsEntry("key1", "");
+    assertThat(properties).containsEntry("key2", "value2");
+  }
+
+  @Test
+  public void testNullValueInPropertiesData() {
+    // given
+    Map<String, String> properties = new HashMap<>();
+    properties.put("key1", null);
+    properties.put("key2", "value2");
+
+    // when
+    SanitizationHelper.sanitizeProperties(properties);
+
+    // then
+    assertThat(properties).doesNotContainKey("key1");
+    assertThat(properties).containsEntry("key2", "value2");
   }
 
   @Test
@@ -116,10 +132,10 @@ public class SanitizationHelperTests {
     properties.put("key2", "value2");
 
     // when
-    Map<String, String> sanitized = SanitizationHelper.sanitizeProperties(properties);
+    SanitizationHelper.sanitizeProperties(properties);
 
     // then
-    assertThat(sanitized.get("key1").length()).isEqualTo(SanitizationHelper.MAX_VALUE_LENGTH);
-    assertThat(sanitized).containsEntry("key2", "value2");
+    assertThat(properties.get("key1").length()).isEqualTo(SanitizationHelper.MAX_VALUE_LENGTH);
+    assertThat(properties).containsEntry("key2", "value2");
   }
 }
