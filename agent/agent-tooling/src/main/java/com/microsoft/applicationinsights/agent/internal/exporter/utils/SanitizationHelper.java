@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.exporter.utils;
 
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 public class SanitizationHelper {
@@ -32,41 +33,27 @@ public class SanitizationHelper {
   public static final int MAX_ID_LENGTH = 512;
   public static final int MAX_MESSAGE_LENGTH = 32768;
   public static final int MAX_URL_LENGTH = 2048;
-  public static final int UNIQUE_KEY_TRUNCATION_LENGTH = 6;
 
-  /** Function to sanitize both key and value in properties. */
-  @SuppressWarnings("ReturnsNullCollection")
-  public static Map<String, String> sanitizeProperties(Map<String, String> properties) {
+  /**
+   * Function to sanitize both key and value in properties, see rules at
+   * https://github.com/microsoft/common-schema/blob/main/Mappings/AzureMonitor-AI.md#mapping-rule
+   */
+  public static void sanitizeProperties(Map<String, String> properties) {
     if (properties == null) {
-      return null;
+      return;
     }
-    if (!needsSanitizingForProperties(properties)) {
-      // this is an optimization to avoid any memory allocation in the normal case
-      return properties;
-    }
-    Map<String, String> sanitized = new HashMap<>();
-    for (Map.Entry<String, String> entry : properties.entrySet()) {
-      String sanitizedKey = sanitizeKey(entry.getKey());
-      String sanitizedValue = sanitizeValue(entry.getValue());
-      if (!Strings.isNullOrEmpty(sanitizedKey) && !Strings.isNullOrEmpty(sanitizedValue)) {
-        sanitized.put(sanitizedKey, sanitizedValue);
-      }
-    }
-    return sanitized;
-  }
-
-  private static boolean needsSanitizingForProperties(Map<String, String> properties) {
-    for (Map.Entry<String, String> entry : properties.entrySet()) {
+    for (Iterator<Map.Entry<String, String>> i = properties.entrySet().iterator(); i.hasNext(); ) {
+      Map.Entry<String, String> entry = i.next();
       String key = entry.getKey();
       String value = entry.getValue();
-      if (Strings.isNullOrEmpty(key)
-          || Strings.isNullOrEmpty(value)
-          || key.length() > MAX_KEY_LENGTH
-          || value.length() > MAX_VALUE_LENGTH) {
-        return true;
+      if (Strings.isNullOrEmpty(key) || key.length() > MAX_KEY_LENGTH || value == null) {
+        i.remove();
+        continue;
+      }
+      if (value.length() > MAX_VALUE_LENGTH) {
+        entry.setValue(Strings.truncate(value, MAX_VALUE_LENGTH));
       }
     }
-    return false;
   }
 
   private static boolean needsSanitizingForMeasurements(Map<String, Double> measurements) {
@@ -77,22 +64,6 @@ public class SanitizationHelper {
       }
     }
     return false;
-  }
-
-  /** Function to sanitize value. */
-  private static String sanitizeValue(String value) {
-    return Strings.truncate(value, MAX_VALUE_LENGTH);
-  }
-
-  /** Function to sanitize key. */
-  private static String sanitizeKey(String key) {
-    if (Strings.isNullOrEmpty(key)) {
-      return null;
-    }
-    if (key.length() <= MAX_KEY_LENGTH) {
-      return key;
-    }
-    return null;
   }
 
   /** Function to sanitize both key and value in Measurements. */
