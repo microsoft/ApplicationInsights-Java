@@ -29,7 +29,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import net.bytebuddy.agent.ByteBuddyAgent;
-import org.springframework.lang.Nullable;
 
 public class AttachInFirstLineOfMain {
 
@@ -70,7 +69,7 @@ public class AttachInFirstLineOfMain {
 
     private final Path directory;
     private final Path agentJarFile;
-    @Nullable private final Path configFile;
+    private final Path configFile;
 
     private ShutdownHook(Path directory, Path agentJarFile, Path configFile) {
       this.directory = directory;
@@ -78,6 +77,7 @@ public class AttachInFirstLineOfMain {
       this.configFile = configFile;
     }
 
+    @Override
     public void run() {
       try {
         Files.delete(directory);

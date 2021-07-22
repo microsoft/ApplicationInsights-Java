@@ -91,13 +91,7 @@ class FeatureStatsbeat extends BaseStatsbeat {
     if (!config.preview.instrumentation.azureSdk.enabled) {
       featureList.add(Feature.AZURE_SDK_DISABLED);
     }
-    if (!config.preview.instrumentation.javaHttpClient.enabled) {
-      featureList.add(Feature.JAVA_HTTP_CLIENT_DISABLED);
-    }
-    if (!config.preview.instrumentation.jaxws.enabled) {
-      featureList.add(Feature.JAXWS_DISABLED);
-    }
-    if (!config.preview.instrumentation.rabbitmq.enabled) {
+    if (!config.instrumentation.rabbitmq.enabled) {
       featureList.add(Feature.RABBITMQ_DISABLED);
     }
     if (!config.preview.instrumentation.springIntegration.enabled) {
