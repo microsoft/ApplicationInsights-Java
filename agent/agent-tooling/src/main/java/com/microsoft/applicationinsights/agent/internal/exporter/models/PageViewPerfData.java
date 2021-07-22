@@ -23,6 +23,8 @@ package com.microsoft.applicationinsights.agent.internal.exporter.models;
 
 import com.azure.core.annotation.Fluent;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.applicationinsights.agent.internal.common.Strings;
+import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
 import java.util.Map;
 
 /**
@@ -125,7 +127,7 @@ public final class PageViewPerfData extends MonitorDomain {
    * @return the PageViewPerfData object itself.
    */
   public PageViewPerfData setId(String id) {
-    this.id = id;
+    this.id = Strings.truncate(id, SanitizationHelper.MAX_ID_LENGTH);
     return this;
   }
 
@@ -147,7 +149,7 @@ public final class PageViewPerfData extends MonitorDomain {
    * @return the PageViewPerfData object itself.
    */
   public PageViewPerfData setName(String name) {
-    this.name = name;
+    this.name = Strings.truncate(name, SanitizationHelper.MAX_NAME_LENGTH);
     return this;
   }
 
@@ -167,7 +169,7 @@ public final class PageViewPerfData extends MonitorDomain {
    * @return the PageViewPerfData object itself.
    */
   public PageViewPerfData setUrl(String url) {
-    this.url = url;
+    this.url = Strings.truncate(url, SanitizationHelper.MAX_URL_LENGTH);
     return this;
   }
 
@@ -321,6 +323,7 @@ public final class PageViewPerfData extends MonitorDomain {
    * @return the PageViewPerfData object itself.
    */
   public PageViewPerfData setProperties(Map<String, String> properties) {
+    SanitizationHelper.sanitizeProperties(properties);
     this.properties = properties;
     return this;
   }
@@ -341,6 +344,7 @@ public final class PageViewPerfData extends MonitorDomain {
    * @return the PageViewPerfData object itself.
    */
   public PageViewPerfData setMeasurements(Map<String, Double> measurements) {
+    SanitizationHelper.sanitizeMeasurements(measurements);
     this.measurements = measurements;
     return this;
   }
