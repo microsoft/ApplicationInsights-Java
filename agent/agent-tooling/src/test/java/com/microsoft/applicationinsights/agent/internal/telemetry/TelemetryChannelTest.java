@@ -65,7 +65,7 @@ public class TelemetryChannelTest {
   }
 
   @Test
-  public void singleIKeyTest() {
+  public void singleIkeyTest() {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
     telemetryItems.add(
@@ -82,7 +82,7 @@ public class TelemetryChannelTest {
   }
 
   @Test
-  public void dualIKeyTest() {
+  public void dualIkeyTest() {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
     telemetryItems.add(
@@ -101,7 +101,7 @@ public class TelemetryChannelTest {
   }
 
   @Test
-  public void singleIKeyBatchTest() {
+  public void singleIkeyBatchTest() {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
     telemetryItems.add(
@@ -120,7 +120,7 @@ public class TelemetryChannelTest {
   }
 
   @Test
-  public void dualIKeyBatchTest() {
+  public void dualIkeyBatchTest() {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
     telemetryItems.add(
@@ -142,11 +142,12 @@ public class TelemetryChannelTest {
     }
   }
 
-  private static TelemetryItem createMetricTelemetry(String name, int value, String iKey) {
+  private static TelemetryItem createMetricTelemetry(
+      String name, int value, String instrumentationKey) {
     TelemetryItem telemetry = new TelemetryItem();
     telemetry.setVersion(1);
     telemetry.setName("Metric");
-    telemetry.setInstrumentationKey(iKey);
+    telemetry.setInstrumentationKey(instrumentationKey);
     Map<String, String> tags = new HashMap<>();
     tags.put("ai.internal.sdkVersion", "test_version");
     tags.put("ai.internal.nodeName", "test_role_name");
