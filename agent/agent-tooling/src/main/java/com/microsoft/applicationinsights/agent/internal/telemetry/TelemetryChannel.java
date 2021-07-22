@@ -95,17 +95,18 @@ public class TelemetryChannel {
   }
 
   public List<CompletableResultCode> send(List<TelemetryItem> telemetryItems) {
-    Map<String, List<TelemetryItem>> iKeyMap = new HashMap();
+    Map<String, List<TelemetryItem>> instrumentationKeyMap = new HashMap();
     List<CompletableResultCode> resultCodeList = new ArrayList<>();
     for (TelemetryItem telemetryItem : telemetryItems) {
-      String iKey = telemetryItem.getInstrumentationKey();
-      if (!iKeyMap.containsKey(iKey)) {
-        iKeyMap.put(iKey, new ArrayList<>());
+      String instrumentationKey = telemetryItem.getInstrumentationKey();
+      if (!instrumentationKeyMap.containsKey(instrumentationKey)) {
+        instrumentationKeyMap.put(instrumentationKey, new ArrayList<>());
       }
-      iKeyMap.get(iKey).add(telemetryItem);
+      instrumentationKeyMap.get(instrumentationKey).add(telemetryItem);
     }
-    for (String iKey : iKeyMap.keySet()) {
-      resultCodeList.add(internalSendByInstrumentationKey(iKeyMap.get(iKey)));
+    for (String instrumentationKey : instrumentationKeyMap.keySet()) {
+      resultCodeList.add(
+          internalSendByInstrumentationKey(instrumentationKeyMap.get(instrumentationKey)));
     }
     return resultCodeList;
   }
