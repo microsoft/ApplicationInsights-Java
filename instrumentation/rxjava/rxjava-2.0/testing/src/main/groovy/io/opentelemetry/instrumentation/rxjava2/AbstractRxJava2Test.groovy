@@ -5,13 +5,12 @@
 
 package io.opentelemetry.instrumentation.rxjava2
 
-import io.opentelemetry.api.common.AttributeKey
-
-import static io.opentelemetry.instrumentation.test.utils.TraceUtils.basicSpan
 import static io.opentelemetry.instrumentation.test.utils.TraceUtils.runUnderTraceWithoutExceptionCatch
 import static java.util.concurrent.TimeUnit.MILLISECONDS
 
 import com.google.common.collect.Lists
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.test.InstrumentationSpecification
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Completable
@@ -65,7 +64,7 @@ abstract class AbstractRxJava2Test extends InstrumentationSpecification {
     }
   }
 
-  def "Publisher '#name' test"() {
+  def "Publisher '#testName' test"() {
     when:
     def result = assemblePublisherUnderTrace(publisherSupplier)
 
@@ -76,15 +75,23 @@ abstract class AbstractRxJava2Test extends InstrumentationSpecification {
       sortSpansByStartTime()
       trace(0, workSpans + 1) {
 
-        basicSpan(it, 0, "publisher-parent")
+        span(0) {
+          name "publisher-parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
         for (int i = 1; i < workSpans + 1; ++i) {
-          basicSpan(it, i, "addOne", span(0))
+          span(i) {
+            name "addOne"
+            kind SpanKind.INTERNAL
+            childOf span(0)
+          }
         }
       }
     }
 
     where:
-    name                      | expected | workSpans | publisherSupplier
+    testName                  | expected | workSpans | publisherSupplier
     "basic maybe"             | 2        | 1         | { -> Maybe.just(1).map(addOne) }
     "two operations maybe"    | 4        | 2         | { -> Maybe.just(2).map(addOne).map(addOne) }
     "delayed maybe"           | 4        | 1         | { ->
@@ -118,7 +125,7 @@ abstract class AbstractRxJava2Test extends InstrumentationSpecification {
     }
   }
 
-  def "Publisher error '#name' test"() {
+  def "Publisher error '#testName' test"() {
     when:
     assemblePublisherUnderTrace(publisherSupplier)
 
@@ -133,12 +140,16 @@ abstract class AbstractRxJava2Test extends InstrumentationSpecification {
         // impact the spans on reactor integrations such as netty and lettuce, as reactor is
         // more of a context propagation mechanism than something we would be tracking for
         // errors this is ok.
-        basicSpan(it, 0, "publisher-parent")
+        span(0) {
+          name "publisher-parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
       }
     }
 
     where:
-    name          | publisherSupplier
+    testName      | publisherSupplier
     "maybe"       | { -> Maybe.error(new RuntimeException(EXCEPTION_MESSAGE)) }
     "flowable"    | { -> Flowable.error(new RuntimeException(EXCEPTION_MESSAGE)) }
     "single"      | { -> Single.error(new RuntimeException(EXCEPTION_MESSAGE)) }
@@ -146,7 +157,7 @@ abstract class AbstractRxJava2Test extends InstrumentationSpecification {
     "completable" | { -> Completable.error(new RuntimeException(EXCEPTION_MESSAGE)) }
   }
 
-  def "Publisher step '#name' test"() {
+  def "Publisher step '#testName' test"() {
     when:
     assemblePublisherUnderTrace(publisherSupplier)
 
@@ -161,16 +172,24 @@ abstract class AbstractRxJava2Test extends InstrumentationSpecification {
         // impact the spans on reactor integrations such as netty and lettuce, as reactor is
         // more of a context propagation mechanism than something we would be tracking for
         // errors this is ok.
-        basicSpan(it, 0, "publisher-parent")
+        span(0) {
+          name "publisher-parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
 
         for (int i = 1; i < workSpans + 1; i++) {
-          basicSpan(it, i, "addOne", span(0))
+          span(i) {
+            name "addOne"
+            kind SpanKind.INTERNAL
+            childOf span(0)
+          }
         }
       }
     }
 
     where:
-    name                     | workSpans | publisherSupplier
+    testName                 | workSpans | publisherSupplier
     "basic maybe failure"    | 1         | { ->
       Maybe.just(1).map(addOne).map({ throwException() })
     }
@@ -179,19 +198,23 @@ abstract class AbstractRxJava2Test extends InstrumentationSpecification {
     }
   }
 
-  def "Publisher '#name' cancel"() {
+  def "Publisher '#testName' cancel"() {
     when:
     cancelUnderTrace(publisherSupplier)
 
     then:
     assertTraces(1) {
       trace(0, 1) {
-        basicSpan(it, 0, "publisher-parent")
+        span(0) {
+          name "publisher-parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
       }
     }
 
     where:
-    name                | publisherSupplier
+    testName            | publisherSupplier
     "basic maybe"       | { -> Maybe.just(1) }
     "basic flowable"    | { -> Flowable.fromIterable([5, 6]) }
     "basic single"      | { -> Single.just(1) }
@@ -199,23 +222,31 @@ abstract class AbstractRxJava2Test extends InstrumentationSpecification {
     "basic observable"  | { -> Observable.just(1) }
   }
 
-  def "Publisher chain spans have the correct parent for '#name'"() {
+  def "Publisher chain spans have the correct parent for '#testName'"() {
     when:
     assemblePublisherUnderTrace(publisherSupplier)
 
     then:
     assertTraces(1) {
       trace(0, workSpans + 1) {
-        basicSpan(it, 0, "publisher-parent")
+        span(0) {
+          name "publisher-parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
 
         for (int i = 1; i < workSpans + 1; i++) {
-          basicSpan(it, i, "addOne", span(0))
+          span(i) {
+            name "addOne"
+            kind SpanKind.INTERNAL
+            childOf span(0)
+          }
         }
       }
     }
 
     where:
-    name             | workSpans | publisherSupplier
+    testName         | workSpans | publisherSupplier
     "basic maybe"    | 3         | { ->
       Maybe.just(1).map(addOne).map(addOne).concatWith(Maybe.just(1).map(addOne))
     }
@@ -238,14 +269,26 @@ abstract class AbstractRxJava2Test extends InstrumentationSpecification {
     assertTraces(1) {
       trace(0, 3) {
         sortSpansByStartTime()
-        basicSpan(it, 0, "trace-parent")
-        basicSpan(it, 1, "addOne", span(0))
-        basicSpan(it, 2, "addTwo", span(0))
+        span(0) {
+          name "trace-parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
+        span(1) {
+          name "addOne"
+          kind SpanKind.INTERNAL
+          childOf span(0)
+        }
+        span(2) {
+          name "addTwo"
+          kind SpanKind.INTERNAL
+          childOf span(0)
+        }
       }
     }
   }
 
-  def "Publisher chain spans have the correct parents from subscription time '#name'"() {
+  def "Publisher chain spans have the correct parents from subscription time '#testName'"() {
     when:
     assemblePublisherUnderTrace {
       // The "add one" operations in the publisher created here should be children of the publisher-parent
@@ -271,18 +314,34 @@ abstract class AbstractRxJava2Test extends InstrumentationSpecification {
     assertTraces(1) {
       trace(0, 2 + 2 * workItems) {
         sortSpansByStartTime()
-        basicSpan(it, 0, "publisher-parent")
-        basicSpan(it, 1, "intermediate", span(0))
+        span(0) {
+          name "publisher-parent"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
+        span(1) {
+          name "intermediate"
+          kind SpanKind.INTERNAL
+          childOf span(0)
+        }
 
         for (int i = 2; i < 2 + 2 * workItems; i = i + 2) {
-          basicSpan(it, i, "addOne", span(0))
-          basicSpan(it, i + 1, "addTwo", span(0))
+          span(i) {
+            name "addOne"
+            kind SpanKind.INTERNAL
+            childOf span(0)
+          }
+          span(i + 1) {
+            name "addTwo"
+            kind SpanKind.INTERNAL
+            childOf span(0)
+          }
         }
       }
     }
 
     where:
-    name               | workItems | publisherSupplier
+    testName           | workItems | publisherSupplier
     "basic maybe"      | 1         | { -> Maybe.just(1).map(addOne) }
     "basic flowable"   | 2         | { -> Flowable.fromIterable([1, 2]).map(addOne) }
     "basic single"     | 1         | { -> Single.just(1).map(addOne) }
@@ -307,9 +366,17 @@ abstract class AbstractRxJava2Test extends InstrumentationSpecification {
     values.size() == 4
     assertTraces(1) {
       trace(0, 5) {
-        basicSpan(it, 0, "flowable root")
+        span(0) {
+          name "flowable root"
+          kind SpanKind.INTERNAL
+          hasNoParent()
+        }
         for (int i = 1; i < values.size() + 1; i++) {
-          basicSpan(it, i, "addOne", span(0))
+          span(i) {
+            name "addOne"
+            kind SpanKind.INTERNAL
+            childOf span(0)
+          }
         }
       }
     }
