@@ -80,12 +80,6 @@ public class ConfigurationBuilder {
       "APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT";
   private static final String APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_AZURE_SDK_ENABLED =
       "APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_AZURE_SDK_ENABLED";
-  private static final String APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_JAVA_HTTP_CLIENT_ENABLED =
-      "APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_JAVA_HTTP_CLIENT_ENABLED";
-  private static final String APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_JAXWS_ENABLED =
-      "APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_JAXWS_ENABLED";
-  private static final String APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_RABBITMQ_ENABLED =
-      "APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_RABBITMQ_ENABLED";
   private static final String
       APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_SPRING_INTEGRATION_ENABLED =
           "APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_SPRING_INTEGRATION_ENABLED";
@@ -127,6 +121,27 @@ public class ConfigurationBuilder {
           new ConfigurationWarnMessage(
               "\"httpMethodInOperationName\" preview setting is now the (one and only) default behavior"));
     }
+    if (config.preview.instrumentation.javaHttpClient.enabled) {
+      configurationWarnMessages.add(
+          new ConfigurationWarnMessage(
+              "\"javaHttpClient\" instrumentation is no longer in preview"
+                  + " and it is now enabled by default,"
+                  + " so no need to enable it under preview configuration"));
+    }
+    if (config.preview.instrumentation.jaxws.enabled) {
+      configurationWarnMessages.add(
+          new ConfigurationWarnMessage(
+              "\"jaxws\" instrumentation is no longer in preview"
+                  + " and it is now enabled by default,"
+                  + " so no need to enable it under preview configuration"));
+    }
+    if (config.preview.instrumentation.rabbitmq.enabled) {
+      configurationWarnMessages.add(
+          new ConfigurationWarnMessage(
+              "\"rabbitmq\" instrumentation is no longer in preview"
+                  + " and it is now enabled by default,"
+                  + " so no need to enable it under preview configuration"));
+    }
     overlayEnvVars(config);
     applySamplingPercentageRounding(config);
     // rp configuration should always be last (so it takes precedence)
@@ -142,7 +157,7 @@ public class ConfigurationBuilder {
     return config;
   }
 
-  private static void overlayProfilerConfiguration(Configuration config) {
+  private static void overlayProfilerEnvVars(Configuration config) {
     config.preview.profiler.enabled =
         Boolean.parseBoolean(
             overlayWithEnvVar(
@@ -150,7 +165,7 @@ public class ConfigurationBuilder {
                 Boolean.toString(config.preview.profiler.enabled)));
   }
 
-  private static void overlayAadConfiguration(Configuration config) {
+  private static void overlayAadEnvVars(Configuration config) {
     String aadAuthString = getEnvVar(APPLICATIONINSIGHTS_AUTHENTICATION_STRING);
     if (aadAuthString != null) {
       Map<String, String> keyValueMap;
@@ -228,34 +243,38 @@ public class ConfigurationBuilder {
     return false;
   }
 
-  private static void loadInstrumentationEnabledEnvVars(Configuration config) {
-    config.instrumentation.micrometer.enabled =
-        overlayWithEnvVar(
-            "APPLICATIONINSIGHTS_INSTRUMENTATION_MICROMETER_ENABLED",
-            config.instrumentation.micrometer.enabled);
-    config.instrumentation.jdbc.enabled =
-        overlayWithEnvVar(
-            "APPLICATIONINSIGHTS_INSTRUMENTATION_JDBC_ENABLED",
-            config.instrumentation.jdbc.enabled);
-    config.instrumentation.redis.enabled =
-        overlayWithEnvVar(
-            "APPLICATIONINSIGHTS_INSTRUMENTATION_REDIS_ENABLED",
-            config.instrumentation.redis.enabled);
-    config.instrumentation.kafka.enabled =
-        overlayWithEnvVar(
-            "APPLICATIONINSIGHTS_INSTRUMENTATION_KAFKA_ENABLED",
-            config.instrumentation.kafka.enabled);
-    config.instrumentation.jms.enabled =
-        overlayWithEnvVar(
-            "APPLICATIONINSIGHTS_INSTRUMENTATION_JMS_ENABLED", config.instrumentation.jms.enabled);
-    config.instrumentation.mongo.enabled =
-        overlayWithEnvVar(
-            "APPLICATIONINSIGHTS_INSTRUMENTATION_MONGO_ENABLED",
-            config.instrumentation.mongo.enabled);
+  private static void overlayInstrumentationEnabledEnvVars(Configuration config) {
     config.instrumentation.cassandra.enabled =
         overlayWithEnvVar(
             "APPLICATIONINSIGHTS_INSTRUMENTATION_CASSANDRA_ENABLED",
             config.instrumentation.cassandra.enabled);
+    config.instrumentation.jdbc.enabled =
+        overlayWithEnvVar(
+            "APPLICATIONINSIGHTS_INSTRUMENTATION_JDBC_ENABLED",
+            config.instrumentation.jdbc.enabled);
+    config.instrumentation.jms.enabled =
+        overlayWithEnvVar(
+            "APPLICATIONINSIGHTS_INSTRUMENTATION_JMS_ENABLED", config.instrumentation.jms.enabled);
+    config.instrumentation.kafka.enabled =
+        overlayWithEnvVar(
+            "APPLICATIONINSIGHTS_INSTRUMENTATION_KAFKA_ENABLED",
+            config.instrumentation.kafka.enabled);
+    config.instrumentation.micrometer.enabled =
+        overlayWithEnvVar(
+            "APPLICATIONINSIGHTS_INSTRUMENTATION_MICROMETER_ENABLED",
+            config.instrumentation.micrometer.enabled);
+    config.instrumentation.mongo.enabled =
+        overlayWithEnvVar(
+            "APPLICATIONINSIGHTS_INSTRUMENTATION_MONGO_ENABLED",
+            config.instrumentation.mongo.enabled);
+    config.instrumentation.rabbitmq.enabled =
+        overlayWithEnvVar(
+            "APPLICATIONINSIGHTS_INSTRUMENTATION_RABBITMQ_ENABLED",
+            config.instrumentation.rabbitmq.enabled);
+    config.instrumentation.redis.enabled =
+        overlayWithEnvVar(
+            "APPLICATIONINSIGHTS_INSTRUMENTATION_REDIS_ENABLED",
+            config.instrumentation.redis.enabled);
     config.instrumentation.springScheduling.enabled =
         overlayWithEnvVar(
             "APPLICATIONINSIGHTS_INSTRUMENTATION_SPRING_SCHEDULING_ENABLED",
@@ -359,18 +378,6 @@ public class ConfigurationBuilder {
         overlayWithEnvVar(
             APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_AZURE_SDK_ENABLED,
             config.preview.instrumentation.azureSdk.enabled);
-    config.preview.instrumentation.javaHttpClient.enabled =
-        overlayWithEnvVar(
-            APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_JAVA_HTTP_CLIENT_ENABLED,
-            config.preview.instrumentation.javaHttpClient.enabled);
-    config.preview.instrumentation.jaxws.enabled =
-        overlayWithEnvVar(
-            APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_JAXWS_ENABLED,
-            config.preview.instrumentation.jaxws.enabled);
-    config.preview.instrumentation.rabbitmq.enabled =
-        overlayWithEnvVar(
-            APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_RABBITMQ_ENABLED,
-            config.preview.instrumentation.rabbitmq.enabled);
     config.preview.instrumentation.springIntegration.enabled =
         overlayWithEnvVar(
             APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_SPRING_INTEGRATION_ENABLED,
@@ -384,9 +391,9 @@ public class ConfigurationBuilder {
     loadJmxMetricsEnvVar(config);
 
     addDefaultJmxMetricsIfNotPresent(config);
-    overlayProfilerConfiguration(config);
-    overlayAadConfiguration(config);
-    loadInstrumentationEnabledEnvVars(config);
+    overlayProfilerEnvVars(config);
+    overlayAadEnvVars(config);
+    overlayInstrumentationEnabledEnvVars(config);
   }
 
   public static void applySamplingPercentageRounding(Configuration config) {

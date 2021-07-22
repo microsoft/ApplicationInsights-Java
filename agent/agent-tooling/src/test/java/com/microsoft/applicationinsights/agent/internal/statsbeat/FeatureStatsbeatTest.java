@@ -161,9 +161,6 @@ public class FeatureStatsbeatTest {
     config.preview.instrumentation = new Configuration.PreviewInstrumentation();
     // preview instrumentation is disabled by default
     config.preview.instrumentation.azureSdk.enabled = true;
-    config.preview.instrumentation.javaHttpClient.enabled = true;
-    config.preview.instrumentation.jaxws.enabled = true;
-    config.preview.instrumentation.rabbitmq.enabled = true;
     config.preview.instrumentation.springIntegration.enabled = true;
     return config;
   }

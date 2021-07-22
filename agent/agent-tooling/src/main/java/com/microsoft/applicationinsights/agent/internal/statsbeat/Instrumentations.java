@@ -109,6 +109,14 @@ class Instrumentations {
     INSTRUMENTATION_MAP.put("io.opentelemetry.java-http-client", 58);
     INSTRUMENTATION_MAP.put("io.opentelemetry.rabbitmq-2.7", 59);
     INSTRUMENTATION_MAP.put("io.opentelemetry.spring-integration-4.1", 60);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.servlet-5.0", 61);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.async-http-client-1.9", 62);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.async-http-client-2.0", 63);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.google-http-client-1.19", 64);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.jetty-httpclient-9.2", 65);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.spring-rabbit-1.0", 66);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.jaxrs-client-2.0", 67);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.jaxrs-client-2.0-resteasy-3.0", 68);
   }
 
   // encode BitSet to a long

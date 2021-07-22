@@ -1,7 +1,0 @@
-apply plugin: "java"
-
-apply from: "$buildScriptsDir/spotless.gradle"
-
-tasks.withType(JavaCompile) {
-  options.release.set(8)
-}
