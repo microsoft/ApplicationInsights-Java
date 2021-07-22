@@ -32,7 +32,9 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import javax.annotation.Nullable;
 
 public class DelegatingPropagator implements TextMapPropagator {
@@ -46,18 +48,21 @@ public class DelegatingPropagator implements TextMapPropagator {
     return instance;
   }
 
-  public void setUpStandardDelegate() {
+  public void setUpStandardDelegate(boolean legacyRequestIdPropagation) {
+    List<TextMapPropagator> propagators = new ArrayList<>();
+
+    // important to add AiLegacyPropagator before W3CTraceContextPropagator, so that
+    // W3CTraceContextPropagator will take precedence if both sets of headers are present
+    if (legacyRequestIdPropagation) {
+      propagators.add(AiLegacyPropagator.getInstance());
+    }
 
     // currently using modified W3CTraceContextPropagator because "ai-internal-sp" trace state
     // shouldn't be sent over the wire (at least not yet, and not with that name)
+    propagators.add(new ModifiedW3cTraceContextPropagator());
+    propagators.add(W3CBaggagePropagator.getInstance());
 
-    // important that W3CTraceContextPropagator is after AiLegacyPropagator, so it will take
-    // precedence if both sets of headers are present
-    delegate =
-        TextMapPropagator.composite(
-            AiLegacyPropagator.getInstance(),
-            new ModifiedW3cTraceContextPropagator(),
-            W3CBaggagePropagator.getInstance());
+    delegate = TextMapPropagator.composite(propagators);
   }
 
   @Override
