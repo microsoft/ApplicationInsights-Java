@@ -15,7 +15,7 @@ val otelVersion = "1.4.1"
 rootProject.extra["otelVersion"] = otelVersion
 
 // IMPORTANT when updating opentelemetry version, be sure to update bytebuddy version to match
-val otelInstrumentationVersion = "1.3.1+ai.patch.1"
+val otelInstrumentationVersion = "1.4.0+ai.patch.1"
 
 val DEPENDENCY_BOMS = listOf(
   "com.google.guava:guava-bom:30.1.1-jre",
