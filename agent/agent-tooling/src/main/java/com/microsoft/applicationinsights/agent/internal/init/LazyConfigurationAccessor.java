@@ -88,7 +88,7 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
   private void setValue(String value) {
     telemetryClient.setConnectionString(value);
     // now that we know the user has opted in to tracing, we need to init the propagator and sampler
-    DelegatingPropagator.getInstance().setUpStandardDelegate();
+    DelegatingPropagator.getInstance().setUpStandardDelegate(false);
     // TODO handle APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE
     DelegatingSampler.getInstance().setAlwaysOnDelegate();
     logger.info("Set connection string {} lazily for the Azure Function Consumption Plan.", value);

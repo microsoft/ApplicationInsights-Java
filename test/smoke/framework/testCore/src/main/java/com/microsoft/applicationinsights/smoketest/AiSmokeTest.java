@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -48,7 +47,6 @@ import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIng
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,7 +56,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -151,7 +148,6 @@ public abstract class AiSmokeTest {
 
   // region: container fields
   private static final short BASE_PORT_NUMBER = 28080;
-  private static final String TEST_CONFIG_FILENAME = "testInfo.properties";
 
   private static final AiDockerClient docker = AiDockerClient.createLinuxClient();
 
@@ -200,8 +196,6 @@ public abstract class AiSmokeTest {
   public static final int HEALTH_CHECK_RETRIES = 2;
   public static final int APPSERVER_HEALTH_CHECK_TIMEOUT = 75;
   // endregion
-
-  private static final Properties testProps = new Properties();
 
   protected static final MockedAppInsightsIngestionServer mockedIngestion =
       new MockedAppInsightsIngestionServer();
@@ -513,11 +507,8 @@ public abstract class AiSmokeTest {
     assertNotNull(String.format(fmt, "jreVersion"), jreVersion);
   }
 
-  protected static void setupProperties(String appServer, String os, String jreVersion)
-      throws Exception {
-    testProps.load(
-        Files.newBufferedReader(
-            new File(Resources.getResource(TEST_CONFIG_FILENAME).toURI()).toPath(), UTF_8));
+  protected static void setupProperties(String appServer, String os, String jreVersion) {
+    warFileName = System.getProperty("ai.smoketest.testAppWarFile");
     currentImageName = String.format("%s_%s_%s", appServer, os, jreVersion);
     appServerPort = currentPortNumber++;
   }
@@ -689,7 +680,6 @@ public abstract class AiSmokeTest {
     }
 
     try {
-      warFileName = getProperty("ai.smoketest.testAppWarFile");
       System.out.printf("Deploying test application: %s...%n", warFileName);
       docker.copyAndDeployToContainer(
           containerId, new File(Resources.getResource(warFileName).toURI()));
@@ -790,14 +780,6 @@ public abstract class AiSmokeTest {
 
   // region: test helper methods
   /// This section has methods to be used inside tests ///
-
-  protected static String getProperty(String key) {
-    String rval = testProps.getProperty(key);
-    if (rval == null) {
-      throw new SmokeTestException(String.format("test property not found '%s'", key));
-    }
-    return rval;
-  }
 
   @SuppressWarnings("TypeParameterUnusedInFormals")
   protected static <T extends Domain> T getBaseData(Envelope envelope) {

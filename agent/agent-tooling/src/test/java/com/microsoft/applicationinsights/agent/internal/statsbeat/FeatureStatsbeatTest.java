@@ -25,133 +25,107 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import java.util.BitSet;
-import java.util.function.Consumer;
-import org.junit.jupiter.api.BeforeEach;
+import java.util.function.BiConsumer;
 import org.junit.jupiter.api.Test;
 
 public class FeatureStatsbeatTest {
 
-  private FeatureStatsbeat featureStatsbeat;
-
-  @BeforeEach
-  public void init() {
-    featureStatsbeat = new FeatureStatsbeat(new CustomDimensions());
+  @Test
+  public void testAadEnabled() {
+    testFeatureTrackingEnablement(
+        (config, value) -> config.preview.authentication.enabled = value, Feature.AAD);
   }
 
   @Test
-  public void testAadEnable() {
-    // when
-    featureStatsbeat.trackAadEnabled(true);
-
-    // then
-    assertThat(getBitAtIndex(featureStatsbeat.getFeature(), Feature.AAD.getBitmapIndex()))
-        .isEqualTo(true);
+  public void testLegacyPropagationEnabled() {
+    testFeatureTrackingDisablement(
+        (config, value) -> config.preview.legacyRequestIdPropagation.enabled = value,
+        Feature.LEGACY_PROPAGATION_DISABLED);
   }
 
   @Test
-  public void testAadDisable() {
-    // when
-    featureStatsbeat.trackAadEnabled(false);
-
-    // then
-    assertThat(getBitAtIndex(featureStatsbeat.getFeature(), Feature.AAD.getBitmapIndex()))
-        .isEqualTo(false);
+  public void testCassandraEnabled() {
+    testFeatureTrackingDisablement(
+        (config, enabled) -> config.instrumentation.cassandra.enabled = enabled,
+        Feature.CASSANDRA_DISABLED);
   }
 
   @Test
-  public void testCassandraDisable() {
-    testDisabledInstrumentation(
-        config -> {
-          config.instrumentation.cassandra.enabled = false;
-        },
-        Feature.CASSANDRA_DISABLED,
-        true);
+  public void testJdbcEnabled() {
+    testFeatureTrackingDisablement(
+        (config, enabled) -> config.instrumentation.jdbc.enabled = enabled, Feature.JDBC_DISABLED);
   }
 
   @Test
-  public void testJdbcDisable() {
-    testDisabledInstrumentation(
-        config -> {
-          config.instrumentation.jdbc.enabled = false;
-        },
-        Feature.JDBC_DISABLED,
-        true);
+  public void testJmsEnabled() {
+    testFeatureTrackingDisablement(
+        (config, enabled) -> config.instrumentation.jms.enabled = enabled, Feature.JMS_DISABLED);
   }
 
   @Test
-  public void testJmsDisable() {
-    testDisabledInstrumentation(
-        config -> {
-          config.instrumentation.jms.enabled = false;
-        },
-        Feature.JMS_DISABLED,
-        true);
+  public void testKafkaEnabled() {
+    testFeatureTrackingDisablement(
+        (config, enabled) -> config.instrumentation.kafka.enabled = enabled,
+        Feature.KAFKA_DISABLED);
   }
 
   @Test
-  public void testKafkaDisable() {
-    testDisabledInstrumentation(
-        config -> {
-          config.instrumentation.kafka.enabled = false;
-        },
-        Feature.KAFKA_DISABLED,
-        true);
+  public void testMicrometerEnabled() {
+    testFeatureTrackingDisablement(
+        (config, enabled) -> config.instrumentation.micrometer.enabled = enabled,
+        Feature.MICROMETER_DISABLED);
   }
 
   @Test
-  public void testMicrometerDisable() {
-    testDisabledInstrumentation(
-        config -> {
-          config.instrumentation.micrometer.enabled = false;
-        },
-        Feature.MICROMETER_DISABLED,
-        true);
+  public void testMongoEnabled() {
+    testFeatureTrackingDisablement(
+        (config, enabled) -> config.instrumentation.mongo.enabled = enabled,
+        Feature.MONGO_DISABLED);
   }
 
   @Test
-  public void testMongoDisable() {
-    testDisabledInstrumentation(
-        config -> {
-          config.instrumentation.mongo.enabled = false;
-        },
-        Feature.MONGO_DISABLED,
-        true);
+  public void testRedisEnabled() {
+    testFeatureTrackingDisablement(
+        (config, enabled) -> config.instrumentation.redis.enabled = enabled,
+        Feature.REDIS_DISABLED);
   }
 
   @Test
-  public void testRedisDisable() {
-    testDisabledInstrumentation(
-        config -> {
-          config.instrumentation.redis.enabled = false;
-        },
-        Feature.REDIS_DISABLED,
-        true);
+  public void testSpringSchedulingEnabled() {
+    testFeatureTrackingDisablement(
+        (config, enabled) -> config.instrumentation.springScheduling.enabled = enabled,
+        Feature.SPRING_SCHEDULING_DISABLED);
   }
 
-  @Test
-  public void testSpringSchedulingDisable() {
-    testDisabledInstrumentation(
-        config -> {
-          config.instrumentation.springScheduling.enabled = false;
-        },
-        Feature.SPRING_SCHEDULING_DISABLED,
-        true);
+  private static void testFeatureTrackingEnablement(
+      BiConsumer<Configuration, Boolean> init, Feature feature) {
+    testFeature(init, feature, false, false);
+    testFeature(init, feature, true, true);
   }
 
-  private static void testDisabledInstrumentation(
-      Consumer<Configuration> init, Feature expectedFeature, boolean expectedValue) {
+  private static void testFeatureTrackingDisablement(
+      BiConsumer<Configuration, Boolean> init, Feature feature) {
+    testFeature(init, feature, false, true);
+    testFeature(init, feature, true, false);
+  }
+
+  private static void testFeature(
+      BiConsumer<Configuration, Boolean> init,
+      Feature feature,
+      boolean configValue,
+      boolean featureValue) {
     // given
     FeatureStatsbeat featureStatsbeat = new FeatureStatsbeat(new CustomDimensions());
 
     Configuration config = newConfiguration();
-    init.accept(config);
+    init.accept(config, configValue);
 
     // when
-    featureStatsbeat.trackDisabledInstrumentations(config);
+    featureStatsbeat.trackConfigurationOptions(config);
 
     // then
-    assertThat(getBitAtIndex(featureStatsbeat.getFeature(), expectedFeature.getBitmapIndex()))
-        .isEqualTo(expectedValue);
+    assertThat(getBitAtIndex(featureStatsbeat.getFeature(), feature.getBitmapIndex()))
+        .isEqualTo(featureValue);
   }
 
   private static Configuration newConfiguration() {
@@ -161,9 +135,6 @@ public class FeatureStatsbeatTest {
     config.preview.instrumentation = new Configuration.PreviewInstrumentation();
     // preview instrumentation is disabled by default
     config.preview.instrumentation.azureSdk.enabled = true;
-    config.preview.instrumentation.javaHttpClient.enabled = true;
-    config.preview.instrumentation.jaxws.enabled = true;
-    config.preview.instrumentation.rabbitmq.enabled = true;
     config.preview.instrumentation.springIntegration.enabled = true;
     return config;
   }

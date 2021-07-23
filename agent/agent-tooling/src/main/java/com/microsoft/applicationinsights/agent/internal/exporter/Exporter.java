@@ -242,7 +242,7 @@ public class Exporter implements SpanExporter {
 
     // set dependency-specific properties
     data.setId(span.getSpanId());
-    data.setName(getTelemetryName(span));
+    data.setName(span.getName());
     data.setDuration(
         FormattedDuration.fromNanos(span.getEndEpochNanos() - span.getStartEpochNanos()));
     data.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
@@ -616,7 +616,6 @@ public class Exporter implements SpanExporter {
     telemetryClient.initRequestTelemetry(telemetry, data);
     Attributes attributes = span.getAttributes();
     long startEpochNanos = span.getStartEpochNanos();
-    String name = getTelemetryName(span);
     float samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
 
     // set standard properties
@@ -626,7 +625,8 @@ public class Exporter implements SpanExporter {
     setExtraAttributes(telemetry, data, attributes);
     addLinks(data, span.getLinks());
 
-    telemetry.getTags().put(ContextTagKeys.AI_OPERATION_NAME.toString(), name);
+    String operationName = getOperationName(span);
+    telemetry.getTags().put(ContextTagKeys.AI_OPERATION_NAME.toString(), operationName);
     telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), span.getTraceId());
 
     // see behavior specified at https://github.com/microsoft/ApplicationInsights-Java/issues/1174
@@ -647,7 +647,7 @@ public class Exporter implements SpanExporter {
     }
 
     // set request-specific properties
-    data.setName(name);
+    data.setName(operationName);
     data.setDuration(FormattedDuration.fromNanos(span.getEndEpochNanos() - startEpochNanos));
     data.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
 
@@ -657,6 +657,9 @@ public class Exporter implements SpanExporter {
     }
 
     Long httpStatusCode = attributes.get(SemanticAttributes.HTTP_STATUS_CODE);
+    if (httpStatusCode == null) {
+      httpStatusCode = attributes.get(SemanticAttributes.RPC_GRPC_STATUS_CODE);
+    }
     if (httpStatusCode != null) {
       data.setResponseCode(Long.toString(httpStatusCode));
     } else {
@@ -705,16 +708,13 @@ public class Exporter implements SpanExporter {
     exportEvents(span, samplingPercentage);
   }
 
-  private static String getTelemetryName(SpanData span) {
-    String name = span.getName();
-    if (!name.startsWith("/")) {
-      return name;
-    }
+  private static String getOperationName(SpanData span) {
+    String spanName = span.getName();
     String httpMethod = span.getAttributes().get(SemanticAttributes.HTTP_METHOD);
-    if (Strings.isNullOrEmpty(httpMethod)) {
-      return name;
+    if (!Strings.isNullOrEmpty(httpMethod) && spanName.startsWith("/")) {
+      return httpMethod + " " + spanName;
     }
-    return httpMethod + " " + name;
+    return spanName;
   }
 
   private static String nullAwareConcat(String str1, String str2, String separator) {
@@ -883,6 +883,7 @@ public class Exporter implements SpanExporter {
             return;
           }
           int index = stringKey.indexOf(".");
+          // FIXME (trask) do this without memory allocation
           String prefix = index == -1 ? stringKey : stringKey.substring(0, index);
           if (STANDARD_ATTRIBUTE_PREFIXES.contains(prefix)) {
             return;

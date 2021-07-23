@@ -55,13 +55,15 @@ class FeatureStatsbeat extends BaseStatsbeat {
     telemetryClient.trackStatsbeatAsync(statsbeatTelemetry);
   }
 
-  void trackAadEnabled(boolean aadEnabled) {
-    if (aadEnabled) {
+  void trackConfigurationOptions(Configuration config) {
+    if (config.preview.authentication.enabled) {
       featureList.add(Feature.AAD);
     }
-  }
+    if (!config.preview.legacyRequestIdPropagation.enabled) {
+      featureList.add(Feature.LEGACY_PROPAGATION_DISABLED);
+    }
 
-  void trackDisabledInstrumentations(Configuration config) {
+    // disabled instrumentations
     if (!config.instrumentation.cassandra.enabled) {
       featureList.add(Feature.CASSANDRA_DISABLED);
     }
@@ -91,13 +93,7 @@ class FeatureStatsbeat extends BaseStatsbeat {
     if (!config.preview.instrumentation.azureSdk.enabled) {
       featureList.add(Feature.AZURE_SDK_DISABLED);
     }
-    if (!config.preview.instrumentation.javaHttpClient.enabled) {
-      featureList.add(Feature.JAVA_HTTP_CLIENT_DISABLED);
-    }
-    if (!config.preview.instrumentation.jaxws.enabled) {
-      featureList.add(Feature.JAXWS_DISABLED);
-    }
-    if (!config.preview.instrumentation.rabbitmq.enabled) {
+    if (!config.instrumentation.rabbitmq.enabled) {
       featureList.add(Feature.RABBITMQ_DISABLED);
     }
     if (!config.preview.instrumentation.springIntegration.enabled) {

@@ -1,14 +1,9 @@
 plugins {
-  id "com.github.johnrengelman.shadow"
+  id("ai.java-conventions")
+  id("com.github.johnrengelman.shadow")
 }
 
-apply from: "$buildScriptsDir/common-java.gradle"
 apply from: "$buildScriptsDir/publish.gradle"
-
-repositories {
-  // maven local is needed for locally built otel fork
-  mavenLocal()
-}
 
 configurations {
   shadowInclude {
@@ -85,16 +80,16 @@ shadowJar {
 archivesBaseName = "applicationinsights-agent"
 
 dependencies {
-  implementation project(":agent:agent-bootstrap")
-  implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${versions.opentelemetryInstrumentationAlpha}") {
+  implementation(project(":agent:agent-bootstrap"))
+  implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap") {
     exclude group: "org.slf4j", module: "slf4j-simple"
   }
 }
 
 // region Publishing properties
 
-projectPomName = project.msftAppInsights + " Codeless Java Agent"
-projectPomDescription = "This is the Codeless Java agent of " + project.msftAppInsightsJavaSdk
+projectPomName = "Microsoft Application Insights Java Agent"
+projectPomDescription = "Microsoft Application Insights Java Agent"
 
 whenPomConfigured = { p ->
   p.dependencies = []

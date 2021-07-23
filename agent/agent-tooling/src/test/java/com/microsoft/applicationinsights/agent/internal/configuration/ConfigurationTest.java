@@ -436,36 +436,6 @@ class ConfigurationTest {
   }
 
   @Test
-  void shouldOverridePreviewJavaHttpClientInstrumentation() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_JAVA_HTTP_CLIENT_ENABLED", "true");
-
-    Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayEnvVars(configuration);
-
-    assertThat(configuration.preview.instrumentation.javaHttpClient.enabled).isTrue();
-  }
-
-  @Test
-  void shouldOverridePreviewJaxwsInstrumentation() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_JAXWS_ENABLED", "true");
-
-    Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayEnvVars(configuration);
-
-    assertThat(configuration.preview.instrumentation.jaxws.enabled).isTrue();
-  }
-
-  @Test
-  void shouldOverridePreviewRabbitmqInstrumentation() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_RABBITMQ_ENABLED", "true");
-
-    Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayEnvVars(configuration);
-
-    assertThat(configuration.preview.instrumentation.rabbitmq.enabled).isTrue();
-  }
-
-  @Test
   void shouldOverridePreviewSpringIntegrationInstrumentation() throws IOException {
     envVars.set("APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_SPRING_INTEGRATION_ENABLED", "true");
 
@@ -543,6 +513,16 @@ class ConfigurationTest {
     ConfigurationBuilder.overlayEnvVars(configuration);
 
     assertThat(configuration.instrumentation.mongo.enabled).isFalse();
+  }
+
+  @Test
+  void shouldOverrideInstrumentationRabbitmqEnabled() throws IOException {
+    envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_RABBITMQ_ENABLED", "true");
+
+    Configuration configuration = loadConfiguration();
+    ConfigurationBuilder.overlayEnvVars(configuration);
+
+    assertThat(configuration.instrumentation.rabbitmq.enabled).isTrue();
   }
 
   @Test
