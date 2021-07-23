@@ -23,8 +23,11 @@ package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.azure.core.http.HttpClient;
 import com.azure.core.http.HttpHeaders;
 import com.azure.core.http.HttpPipelineBuilder;
+import com.azure.core.http.HttpRequest;
+import com.azure.core.http.HttpResponse;
 import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.microsoft.applicationinsights.agent.internal.MockHttpResponse;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.DataPointType;
@@ -44,8 +47,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -54,35 +58,43 @@ import reactor.core.publisher.Mono;
 public class TelemetryChannelTest {
   private TelemetryChannel telemetryChannel;
   private LocalFileCache localFileCache;
+  private RecordingHttpClient recordingHttpClient;
   private final AtomicInteger requestCount = new AtomicInteger();
 
   @TempDir File tempFolder;
 
   @BeforeEach
-  public void setup() throws MalformedURLException {
+  public void setupEach() throws MalformedURLException {
+    recordingHttpClient =
+        new RecordingHttpClient(
+            request -> {
+              // Every alternative request will be a redirect request.
+              if (requestCount.getAndIncrement() % 2 == 0) {
+                return Mono.just(new MockHttpResponse(request, 200));
+              } else {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Location", "http://foo.bar.redirect");
+                HttpHeaders httpHeaders = new HttpHeaders(headers);
+                return Mono.just(new MockHttpResponse(request, 307, httpHeaders));
+              }
+            });
     List<HttpPipelinePolicy> policies = new ArrayList<>();
     policies.add(new RedirectPolicy());
     HttpPipelineBuilder pipelineBuilder =
         new HttpPipelineBuilder()
             .policies(policies.toArray(new HttpPipelinePolicy[0]))
-            .httpClient(
-                request -> {
-                  // Every alternative request will be a redirect request.
-                  if (requestCount.getAndIncrement() % 2 == 0) {
-                    return Mono.just(new MockHttpResponse(request, 200));
-                  } else {
-                    Map<String, String> headers = new HashMap<>();
-                    headers.put("Location", "http://foo.bar.redirect");
-                    HttpHeaders httpHeaders = new HttpHeaders(headers);
-                    return Mono.just(new MockHttpResponse(request, 307, httpHeaders));
-                  }
-                });
+            .httpClient(recordingHttpClient);
     localFileCache = new LocalFileCache();
     telemetryChannel =
         new TelemetryChannel(
             pipelineBuilder.build(),
             new URL("http://foo.bar"),
             new LocalFileWriter(localFileCache, tempFolder));
+  }
+
+  @AfterEach
+  public void cleanUpEach() {
+    requestCount.set(0);
   }
 
   @Test
@@ -93,13 +105,11 @@ public class TelemetryChannelTest {
         createMetricTelemetry("metric" + 1, 1, "00000000-0000-0000-0000-0FEEDDADBEEF"));
 
     // when
-    List<CompletableResultCode> completableResultCodes = telemetryChannel.send(telemetryItems);
+    CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
 
     // then
-    for (CompletableResultCode resultCode : completableResultCodes) {
-      resultCode.join(10, TimeUnit.SECONDS);
-      assertThat(resultCode.isSuccess()).isEqualTo(true);
-    }
+    assertThat(completableResultCode.isSuccess()).isEqualTo(true);
+    assertThat(recordingHttpClient.getCount()).isEqualTo(1);
   }
 
   @Test
@@ -112,13 +122,11 @@ public class TelemetryChannelTest {
         createMetricTelemetry("metric" + 2, 2, "00000000-0000-0000-0000-0FEEDDADBEEE"));
 
     // when
-    List<CompletableResultCode> completableResultCodes = telemetryChannel.send(telemetryItems);
+    CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
 
     // then
-    for (CompletableResultCode resultCode : completableResultCodes) {
-      resultCode.join(10, TimeUnit.SECONDS);
-      assertThat(resultCode.isSuccess()).isEqualTo(true);
-    }
+    assertThat(completableResultCode.isSuccess()).isEqualTo(true);
+    assertThat(recordingHttpClient.getCount()).isEqualTo(3);
   }
 
   @Test
@@ -131,13 +139,11 @@ public class TelemetryChannelTest {
         createMetricTelemetry("metric" + 2, 2, "00000000-0000-0000-0000-0FEEDDADBEEF"));
 
     // when
-    List<CompletableResultCode> completableResultCodes = telemetryChannel.send(telemetryItems);
+    CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
 
     // then
-    for (CompletableResultCode resultCode : completableResultCodes) {
-      resultCode.join(10, TimeUnit.SECONDS);
-      assertThat(resultCode.isSuccess()).isEqualTo(true);
-    }
+    assertThat(completableResultCode.isSuccess()).isEqualTo(true);
+    assertThat(recordingHttpClient.getCount()).isEqualTo(1);
   }
 
   @Test
@@ -154,13 +160,11 @@ public class TelemetryChannelTest {
         createMetricTelemetry("metric" + 4, 4, "00000000-0000-0000-0000-0FEEDDADBEEE"));
 
     // when
-    List<CompletableResultCode> completableResultCodes = telemetryChannel.send(telemetryItems);
+    CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
 
     // then
-    for (CompletableResultCode resultCode : completableResultCodes) {
-      resultCode.join(10, TimeUnit.SECONDS);
-      assertThat(resultCode.isSuccess()).isEqualTo(true);
-    }
+    assertThat(completableResultCode.isSuccess()).isEqualTo(true);
+    assertThat(recordingHttpClient.getCount()).isEqualTo(3);
   }
 
   private static TelemetryItem createMetricTelemetry(
@@ -197,5 +201,29 @@ public class TelemetryChannelTest {
     telemetry.setTime(new Date().toString());
 
     return telemetry;
+  }
+
+  static class RecordingHttpClient implements HttpClient {
+
+    private final AtomicInteger count = new AtomicInteger();
+    private final Function<HttpRequest, Mono<HttpResponse>> handler;
+
+    RecordingHttpClient(Function<HttpRequest, Mono<HttpResponse>> handler) {
+      this.handler = handler;
+    }
+
+    @Override
+    public Mono<HttpResponse> send(HttpRequest httpRequest) {
+      count.getAndIncrement();
+      return handler.apply(httpRequest);
+    }
+
+    int getCount() {
+      return count.get();
+    }
+
+    void resetCount() {
+      count.set(0);
+    }
   }
 }

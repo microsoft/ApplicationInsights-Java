@@ -94,7 +94,7 @@ public class TelemetryChannel {
     this.localFileWriter = localFileWriter;
   }
 
-  public List<CompletableResultCode> send(List<TelemetryItem> telemetryItems) {
+  public CompletableResultCode send(List<TelemetryItem> telemetryItems) {
     Map<String, List<TelemetryItem>> instrumentationKeyMap = new HashMap();
     List<CompletableResultCode> resultCodeList = new ArrayList<>();
     for (TelemetryItem telemetryItem : telemetryItems) {
@@ -108,7 +108,7 @@ public class TelemetryChannel {
       resultCodeList.add(
           internalSendByInstrumentationKey(instrumentationKeyMap.get(instrumentationKey)));
     }
-    return resultCodeList;
+    return CompletableResultCode.ofAll(resultCodeList);
   }
 
   public CompletableResultCode internalSendByInstrumentationKey(
