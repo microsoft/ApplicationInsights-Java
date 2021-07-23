@@ -21,8 +21,11 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import static org.slf4j.Logger.ROOT_LOGGER_NAME;
+
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
 import java.util.Locale;
 
 public class LoggingLevelConfigurator {
@@ -37,11 +40,20 @@ public class LoggingLevelConfigurator {
     }
   }
 
+  public void initLoggerLevels(LoggerContext loggerContext) {
+    updateLoggerLevel(loggerContext.getLogger("reactor.netty"));
+    updateLoggerLevel(loggerContext.getLogger("io.netty"));
+    updateLoggerLevel(loggerContext.getLogger("io.grpc.Context"));
+    updateLoggerLevel(loggerContext.getLogger("muzzleMatcher"));
+    updateLoggerLevel(loggerContext.getLogger("com.microsoft.applicationinsights"));
+    updateLoggerLevel(loggerContext.getLogger(ROOT_LOGGER_NAME));
+  }
+
   public void updateLoggerLevel(Logger logger) {
     Level loggerLevel;
     String name = logger.getName();
-    if (name.startsWith("reactor.netty")) {
-      // never want to log reactor netty at trace or debug, it's just way too verbose
+    if (name.startsWith("reactor.netty") || name.startsWith("io.netty")) {
+      // never want to log reactor netty or netty at trace or debug, it's just way too verbose
       loggerLevel = getAtLeastInfoLevel(level);
     } else if (name.startsWith("io.grpc.Context")) {
       // never want to log io.grpc.Context at trace or debug, as it logs confusing stack trace that
