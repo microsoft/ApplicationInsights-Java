@@ -191,10 +191,15 @@ public class Configuration {
     // this is just here to detect if using this old setting in order to give a helpful message
     @Deprecated public boolean httpMethodInOperationName;
     public LiveMetrics liveMetrics = new LiveMetrics();
+    public LegacyRequestIdPropagation legacyRequestIdPropagation = new LegacyRequestIdPropagation();
 
     public ProfilerConfiguration profiler = new ProfilerConfiguration();
     public GcEventConfiguration gcEvents = new GcEventConfiguration();
     public AadAuthentication authentication = new AadAuthentication();
+  }
+
+  public static class LegacyRequestIdPropagation {
+    public boolean enabled;
   }
 
   public static class InternalConfiguration {

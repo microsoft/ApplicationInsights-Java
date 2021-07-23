@@ -55,13 +55,15 @@ class FeatureStatsbeat extends BaseStatsbeat {
     telemetryClient.trackStatsbeatAsync(statsbeatTelemetry);
   }
 
-  void trackAadEnabled(boolean aadEnabled) {
-    if (aadEnabled) {
+  void trackConfigurationOptions(Configuration config) {
+    if (config.preview.authentication.enabled) {
       featureList.add(Feature.AAD);
     }
-  }
+    if (!config.preview.legacyRequestIdPropagation.enabled) {
+      featureList.add(Feature.LEGACY_PROPAGATION_DISABLED);
+    }
 
-  void trackDisabledInstrumentations(Configuration config) {
+    // disabled instrumentations
     if (!config.instrumentation.cassandra.enabled) {
       featureList.add(Feature.CASSANDRA_DISABLED);
     }

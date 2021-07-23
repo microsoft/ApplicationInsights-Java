@@ -46,7 +46,8 @@ enum Feature {
   // JAVA_HTTP_CLIENT_DISABLED(16), no longer used
   // JAXWS_DISABLED(17), no longer used
   RABBITMQ_DISABLED(18),
-  SPRING_INTEGRATION_DISABLED(19);
+  SPRING_INTEGRATION_DISABLED(19),
+  LEGACY_PROPAGATION_DISABLED(20);
 
   private static final Map<String, Feature> javaVendorFeatureMap;
 
