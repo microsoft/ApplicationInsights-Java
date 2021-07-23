@@ -48,12 +48,12 @@ public class DelegatingPropagator implements TextMapPropagator {
     return instance;
   }
 
-  public void setUpStandardDelegate(boolean legacyRequestIdPropagation) {
+  public void setUpStandardDelegate(boolean legacyRequestIdPropagationEnabled) {
     List<TextMapPropagator> propagators = new ArrayList<>();
 
     // important to add AiLegacyPropagator before W3CTraceContextPropagator, so that
     // W3CTraceContextPropagator will take precedence if both sets of headers are present
-    if (legacyRequestIdPropagation) {
+    if (legacyRequestIdPropagationEnabled) {
       propagators.add(AiLegacyPropagator.getInstance());
     }
 

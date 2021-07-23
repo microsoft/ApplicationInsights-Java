@@ -90,8 +90,7 @@ public class StatsbeatModule {
           .scheduleWithFixedDelay(intervalSeconds);
     }
 
-    featureStatsbeat.trackAadEnabled(config.preview.authentication.enabled);
-    featureStatsbeat.trackDisabledInstrumentations(config);
+    featureStatsbeat.trackConfigurationOptions(config);
   }
 
   public static StatsbeatModule get() {
