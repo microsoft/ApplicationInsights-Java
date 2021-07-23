@@ -21,9 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter.models;
 
+import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
+
 import com.azure.core.annotation.Fluent;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
 import java.util.Map;
 
@@ -123,7 +124,7 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setId(String id) {
-    this.id = Strings.truncate(id, SanitizationHelper.MAX_ID_LENGTH);
+    this.id = truncateTelemetry(id, SanitizationHelper.MAX_ID_LENGTH, "RemoteDependencyData.id");
     return this;
   }
 
@@ -145,7 +146,8 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setName(String name) {
-    this.name = Strings.truncate(name, SanitizationHelper.MAX_NAME_LENGTH);
+    this.name =
+        truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "RemoteDependencyData.name");
     return this;
   }
 
@@ -167,7 +169,8 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setResultCode(String resultCode) {
-    this.resultCode = Strings.truncate(resultCode, MAX_RESULT_CODE_LENGTH);
+    this.resultCode =
+        truncateTelemetry(resultCode, MAX_RESULT_CODE_LENGTH, "RemoteDependencyData.resultCode");
     return this;
   }
 
@@ -189,7 +192,7 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setData(String data) {
-    this.data = Strings.truncate(data, MAX_DATA_LENGTH);
+    this.data = truncateTelemetry(data, MAX_DATA_LENGTH, "RemoteDependencyData.data");
     return this;
   }
 
@@ -213,7 +216,7 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setType(String type) {
-    this.type = Strings.truncate(type, MAX_DEPENDENCY_TYPE_LENGTH);
+    this.type = truncateTelemetry(type, MAX_DEPENDENCY_TYPE_LENGTH, "RemoteDependencyData.type");
     return this;
   }
 
@@ -235,7 +238,7 @@ public final class RemoteDependencyData extends MonitorDomain {
    * @return the RemoteDependencyData object itself.
    */
   public RemoteDependencyData setTarget(String target) {
-    this.target = Strings.truncate(target, MAX_TARGET_NAME_LENGTH);
+    this.target = truncateTelemetry(target, MAX_TARGET_NAME_LENGTH, "RemoteDependencyData.target");
     return this;
   }
 

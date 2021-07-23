@@ -21,9 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter.models;
 
+import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
+
 import com.azure.core.annotation.Fluent;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
 
 /** Stack frame information. */
 @Fluent
@@ -97,7 +98,7 @@ public final class StackFrame {
    * @return the StackFrame object itself.
    */
   public StackFrame setMethod(String method) {
-    this.method = Strings.truncate(method, MAX_METHOD_NAME_LENGTH);
+    this.method = truncateTelemetry(method, MAX_METHOD_NAME_LENGTH, "StackFrame.method");
     return this;
   }
 
@@ -117,7 +118,7 @@ public final class StackFrame {
    * @return the StackFrame object itself.
    */
   public StackFrame setAssembly(String assembly) {
-    this.assembly = Strings.truncate(assembly, MAX_ASSEMBLY_NAME_LENGTH);
+    this.assembly = truncateTelemetry(assembly, MAX_ASSEMBLY_NAME_LENGTH, "StackFrame.assembly");
     return this;
   }
 
@@ -137,7 +138,7 @@ public final class StackFrame {
    * @return the StackFrame object itself.
    */
   public StackFrame setFileName(String fileName) {
-    this.fileName = Strings.truncate(fileName, MAX_FILE_NAME_LENGTH);
+    this.fileName = truncateTelemetry(fileName, MAX_FILE_NAME_LENGTH, "StackFrame.fileName");
     return this;
   }
 

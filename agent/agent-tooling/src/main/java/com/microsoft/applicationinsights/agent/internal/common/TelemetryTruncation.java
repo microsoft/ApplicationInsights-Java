@@ -21,32 +21,28 @@
 
 package com.microsoft.applicationinsights.agent.internal.common;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.checkerframework.checker.nullness.qual.Nullable;
+public class TelemetryTruncation {
 
-public final class Strings {
+  private static final ExceptionStats exceptionStats =
+      new ExceptionStats(TelemetryTruncation.class, "Telemetry was truncated");
 
-  public static boolean isNullOrEmpty(@Nullable String string) {
-    return string == null || string.isEmpty();
-  }
-
-  public static Map<String, String> splitToMap(String str) {
-    Map<String, String> map = new HashMap<>();
-    for (String part : str.split(";")) {
-      if (part.trim().isEmpty()) {
-        continue;
-      }
-      int index = part.indexOf('=');
-      if (index == -1) {
-        throw new IllegalArgumentException();
-      }
-      String key = part.substring(0, index);
-      String value = part.substring(index + 1);
-      map.put(key, value);
+  public static String truncateTelemetry(String value, int maxLength, String attributeName) {
+    if (value == null || value.length() <= maxLength) {
+      return value;
     }
-    return map;
+    exceptionStats.recordFailure("truncated " + attributeName + ": " + value);
+    return value.substring(0, maxLength);
   }
 
-  private Strings() {}
+  // need a separate method because don't want to concatenate "property[key]" on every call above
+  // which would be memory allocating
+  public static String truncatePropertyValue(String value, int maxLength, String key) {
+    if (value == null || value.length() <= maxLength) {
+      return value;
+    }
+    exceptionStats.recordFailure("truncated property[" + key + "]: " + value);
+    return value.substring(0, maxLength);
+  }
+
+  private TelemetryTruncation() {}
 }

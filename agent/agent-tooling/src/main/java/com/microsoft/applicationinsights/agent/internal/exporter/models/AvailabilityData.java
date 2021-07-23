@@ -21,9 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter.models;
 
+import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
+
 import com.azure.core.annotation.Fluent;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
 import java.util.Map;
 
@@ -99,7 +100,7 @@ public final class AvailabilityData extends MonitorDomain {
    * @return the AvailabilityData object itself.
    */
   public AvailabilityData setId(String id) {
-    this.id = Strings.truncate(id, SanitizationHelper.MAX_ID_LENGTH);
+    this.id = truncateTelemetry(id, SanitizationHelper.MAX_ID_LENGTH, "AvailabilityData.id");
     return this;
   }
 
@@ -119,7 +120,8 @@ public final class AvailabilityData extends MonitorDomain {
    * @return the AvailabilityData object itself.
    */
   public AvailabilityData setName(String name) {
-    this.name = Strings.truncate(name, SanitizationHelper.MAX_NAME_LENGTH);
+    this.name =
+        truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "AvailabilityData.name");
     return this;
   }
 
@@ -179,7 +181,8 @@ public final class AvailabilityData extends MonitorDomain {
    * @return the AvailabilityData object itself.
    */
   public AvailabilityData setRunLocation(String runLocation) {
-    this.runLocation = Strings.truncate(runLocation, MAX_RUN_LOCATION_LENGTH);
+    this.runLocation =
+        truncateTelemetry(runLocation, MAX_RUN_LOCATION_LENGTH, "AvailabilityData.runLocation");
     return this;
   }
 
@@ -199,7 +202,8 @@ public final class AvailabilityData extends MonitorDomain {
    * @return the AvailabilityData object itself.
    */
   public AvailabilityData setMessage(String message) {
-    this.message = Strings.truncate(message, MAX_AVAILABILITY_MESSAGE_LENGTH);
+    this.message =
+        truncateTelemetry(message, MAX_AVAILABILITY_MESSAGE_LENGTH, "AvailabilityData.message");
     return this;
   }
 

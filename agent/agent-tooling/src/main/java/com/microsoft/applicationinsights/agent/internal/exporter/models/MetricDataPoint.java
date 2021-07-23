@@ -21,9 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter.models;
 
+import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
+
 import com.azure.core.annotation.Fluent;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
 
 /** Metric data single measurement. */
@@ -99,7 +100,8 @@ public final class MetricDataPoint {
    * @return the MetricDataPoint object itself.
    */
   public MetricDataPoint setNamespace(String namespace) {
-    this.namespace = Strings.truncate(namespace, MAX_METRIC_NAME_SPACE_LENGTH);
+    this.namespace =
+        truncateTelemetry(namespace, MAX_METRIC_NAME_SPACE_LENGTH, "MetricDataPoint.namespace");
     return this;
   }
 
@@ -119,7 +121,7 @@ public final class MetricDataPoint {
    * @return the MetricDataPoint object itself.
    */
   public MetricDataPoint setName(String name) {
-    this.name = Strings.truncate(name, SanitizationHelper.MAX_NAME_LENGTH);
+    this.name = truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "MetricDataPoint.name");
     return this;
   }
 
