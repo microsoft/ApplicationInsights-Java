@@ -21,9 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter.models;
 
+import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
+
 import com.azure.core.annotation.Fluent;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
 import java.util.Map;
 
@@ -71,7 +72,7 @@ public final class TelemetryEventData extends MonitorDomain {
    * @return the TelemetryEventData object itself.
    */
   public TelemetryEventData setName(String name) {
-    this.name = Strings.truncate(name, MAX_EVENT_NAME_LENGTH);
+    this.name = truncateTelemetry(name, MAX_EVENT_NAME_LENGTH, "TelemetryEventData.name");
     return this;
   }
 

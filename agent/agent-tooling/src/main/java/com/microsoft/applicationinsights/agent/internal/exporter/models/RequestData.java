@@ -21,9 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter.models;
 
+import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
+
 import com.azure.core.annotation.Fluent;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
 import java.util.Map;
 
@@ -113,7 +114,7 @@ public final class RequestData extends MonitorDomain {
    * @return the RequestData object itself.
    */
   public RequestData setId(String id) {
-    this.id = Strings.truncate(id, SanitizationHelper.MAX_ID_LENGTH);
+    this.id = truncateTelemetry(id, SanitizationHelper.MAX_ID_LENGTH, "RequestData.id");
     return this;
   }
 
@@ -137,7 +138,7 @@ public final class RequestData extends MonitorDomain {
    * @return the RequestData object itself.
    */
   public RequestData setName(String name) {
-    this.name = Strings.truncate(name, SanitizationHelper.MAX_NAME_LENGTH);
+    this.name = truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "RequestData.name");
     return this;
   }
 
@@ -201,7 +202,8 @@ public final class RequestData extends MonitorDomain {
    * @return the RequestData object itself.
    */
   public RequestData setResponseCode(String responseCode) {
-    this.responseCode = Strings.truncate(responseCode, MAX_RESPONSE_CODE_LENGTH);
+    this.responseCode =
+        truncateTelemetry(responseCode, MAX_RESPONSE_CODE_LENGTH, "RequestData.responseCode");
     return this;
   }
 
@@ -223,7 +225,7 @@ public final class RequestData extends MonitorDomain {
    * @return the RequestData object itself.
    */
   public RequestData setSource(String source) {
-    this.source = Strings.truncate(source, MAX_SOURCE_LENGTH);
+    this.source = truncateTelemetry(source, MAX_SOURCE_LENGTH, "RequestData.source");
     return this;
   }
 
@@ -243,7 +245,7 @@ public final class RequestData extends MonitorDomain {
    * @return the RequestData object itself.
    */
   public RequestData setUrl(String url) {
-    this.url = Strings.truncate(url, SanitizationHelper.MAX_URL_LENGTH);
+    this.url = truncateTelemetry(url, SanitizationHelper.MAX_URL_LENGTH, "RequestData.url");
     return this;
   }
 

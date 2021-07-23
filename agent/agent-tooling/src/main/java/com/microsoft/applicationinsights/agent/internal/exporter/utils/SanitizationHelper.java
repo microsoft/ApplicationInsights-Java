@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter.utils;
 
+import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncatePropertyValue;
+
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import java.util.Iterator;
 import java.util.Map;
@@ -50,7 +52,7 @@ public class SanitizationHelper {
         continue;
       }
       if (value.length() > MAX_VALUE_LENGTH) {
-        entry.setValue(Strings.truncate(value, MAX_VALUE_LENGTH));
+        entry.setValue(truncatePropertyValue(value, MAX_VALUE_LENGTH, key));
       }
     }
   }
@@ -69,7 +71,6 @@ public class SanitizationHelper {
       String key = entry.getKey();
       if (Strings.isNullOrEmpty(key) || key.length() > MAX_KEY_LENGTH) {
         i.remove();
-        continue;
       }
     }
   }

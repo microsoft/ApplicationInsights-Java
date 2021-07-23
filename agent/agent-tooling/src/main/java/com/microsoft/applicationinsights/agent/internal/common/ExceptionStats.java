@@ -53,7 +53,6 @@ public class ExceptionStats {
 
   // number of successes and failures in the 5-min window
   private long numSuccesses;
-  private long numFailures;
 
   // using MutableLong for two purposes
   // * so we don't need to get and set into map each time we want to increment
@@ -103,14 +102,19 @@ public class ExceptionStats {
 
     logger.debug(introMessage + " " + warningMessage, exception);
 
-    if (warningMessages.size() > 100) {
-      // we have a cardinality problem and don't want to consume too much memory or do too much
-      // logging
-      return;
-    }
     synchronized (lock) {
-      warningMessages.computeIfAbsent(warningMessage, key -> new MutableLong()).increment();
-      numFailures++;
+      if (warningMessages.size() < 10) {
+        warningMessages.computeIfAbsent(warningMessage, key -> new MutableLong()).increment();
+      } else {
+        // we have a cardinality problem and don't want to spam the logger
+        // (or consume too much memory)
+        MutableLong count = warningMessages.get(warningMessage);
+        if (count != null) {
+          count.increment();
+        } else {
+          warningMessages.computeIfAbsent("other", key -> new MutableLong()).increment();
+        }
+      }
     }
   }
 
@@ -127,19 +131,17 @@ public class ExceptionStats {
     @Override
     public void run() {
       long numSuccesses;
-      long numFailures;
       Map<String, MutableLong> warningMessages;
       // grab quickly and reset under lock (do not perform logging under lock)
       synchronized (lock) {
         numSuccesses = ExceptionStats.this.numSuccesses;
-        numFailures = ExceptionStats.this.numFailures;
         warningMessages = ExceptionStats.this.warningMessages;
 
         ExceptionStats.this.numSuccesses = 0;
-        ExceptionStats.this.numFailures = 0;
         ExceptionStats.this.warningMessages = new HashMap<>();
       }
-      if (numFailures > 0) {
+      if (!warningMessages.isEmpty()) {
+        long numFailures = getTotalWarnings(warningMessages);
         long numMinutes = ExceptionStats.this.intervalSeconds / 60;
         long total = numSuccesses + numFailures;
         StringBuilder message = new StringBuilder();
@@ -161,5 +163,13 @@ public class ExceptionStats {
         logger.warn(message.toString());
       }
     }
+  }
+
+  private static long getTotalWarnings(Map<String, MutableLong> warnings) {
+    long total = 0;
+    for (MutableLong value : warnings.values()) {
+      total += value.value;
+    }
+    return total;
   }
 }

@@ -21,9 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter.models;
 
+import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
+
 import com.azure.core.annotation.Fluent;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
 import java.util.List;
 
@@ -136,7 +137,9 @@ public final class TelemetryExceptionDetails {
    * @return the TelemetryExceptionDetails object itself.
    */
   public TelemetryExceptionDetails setTypeName(String typeName) {
-    this.typeName = Strings.truncate(typeName, SanitizationHelper.MAX_NAME_LENGTH);
+    this.typeName =
+        truncateTelemetry(
+            typeName, SanitizationHelper.MAX_NAME_LENGTH, "TelemetryExceptionDetails.typeName");
     return this;
   }
 
@@ -156,7 +159,9 @@ public final class TelemetryExceptionDetails {
    * @return the TelemetryExceptionDetails object itself.
    */
   public TelemetryExceptionDetails setMessage(String message) {
-    this.message = Strings.truncate(message, SanitizationHelper.MAX_MESSAGE_LENGTH);
+    this.message =
+        truncateTelemetry(
+            message, SanitizationHelper.MAX_MESSAGE_LENGTH, "TelemetryExceptionDetails.message");
     return this;
   }
 
@@ -200,7 +205,9 @@ public final class TelemetryExceptionDetails {
    * @return the TelemetryExceptionDetails object itself.
    */
   public TelemetryExceptionDetails setStack(String stack) {
-    this.stack = Strings.truncate(stack, SanitizationHelper.MAX_MESSAGE_LENGTH);
+    this.stack =
+        truncateTelemetry(
+            stack, SanitizationHelper.MAX_MESSAGE_LENGTH, "TelemetryExceptionDetails.stack");
     return this;
   }
 
