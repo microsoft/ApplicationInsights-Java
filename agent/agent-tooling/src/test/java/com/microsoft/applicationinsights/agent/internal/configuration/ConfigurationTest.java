@@ -47,11 +47,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
+import uk.org.webcompere.systemstubs.properties.SystemProperties;
 
 @ExtendWith(SystemStubsExtension.class)
 class ConfigurationTest {
 
   @SystemStub EnvironmentVariables envVars = new EnvironmentVariables();
+  @SystemStub SystemProperties systemProperties = new SystemProperties();
 
   private static Configuration loadConfiguration() throws IOException {
     return loadConfiguration("applicationinsights.json");
@@ -270,7 +272,7 @@ class ConfigurationTest {
   }
 
   @Test
-  void shouldOverrideConnectionString() throws IOException {
+  void shouldOverrideConnectionStringWithEnvVar() throws IOException {
     envVars.set(
         "APPLICATIONINSIGHTS_CONNECTION_STRING",
         "InstrumentationKey=11111111-1111-1111-1111-111111111111");
@@ -283,14 +285,69 @@ class ConfigurationTest {
   }
 
   @Test
-  void shouldOverrideRoleName() throws IOException {
+  void shouldOverrideConnectionStringWithSysProp() throws IOException {
+    systemProperties.set(
+        "applicationinsights.connection.string",
+        "InstrumentationKey=11111111-1111-1111-1111-111111111111");
+
+    Configuration configuration = loadConfiguration();
+    ConfigurationBuilder.overlayEnvVars(configuration);
+
+    assertThat(configuration.connectionString)
+        .isEqualTo("InstrumentationKey=11111111-1111-1111-1111-111111111111");
+  }
+
+  @Test
+  void shouldOverrideConnectionStringWithBothEnvVarAndSysProp() throws IOException {
+    envVars.set(
+        "APPLICATIONINSIGHTS_CONNECTION_STRING",
+        "InstrumentationKey=11111111-1111-1111-1111-111111111111");
+    systemProperties.set(
+        "applicationinsights.connection.string",
+        "InstrumentationKey=22222222-2222-2222-2222-222222222222");
+
+    Configuration configuration = loadConfiguration();
+    ConfigurationBuilder.overlayEnvVars(configuration);
+
+    assertThat(configuration.connectionString)
+        .isEqualTo("InstrumentationKey=22222222-2222-2222-2222-222222222222");
+  }
+
+  @Test
+  void shouldOverrideRoleNameWithEnvVar() throws IOException {
     envVars.set("APPLICATIONINSIGHTS_ROLE_NAME", "role name from env");
+
     envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
 
     Configuration configuration = loadConfiguration();
     ConfigurationBuilder.overlayEnvVars(configuration);
 
     assertThat(configuration.role.name).isEqualTo("role name from env");
+  }
+
+  @Test
+  void shouldOverrideRoleNameWithSysProp() throws IOException {
+    systemProperties.set("applicationinsights.role.name", "role name from sys");
+
+    envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
+
+    Configuration configuration = loadConfiguration();
+    ConfigurationBuilder.overlayEnvVars(configuration);
+
+    assertThat(configuration.role.name).isEqualTo("role name from sys");
+  }
+
+  @Test
+  void shouldOverrideRoleNameWithBothEnvVarAndSysProp() throws IOException {
+    envVars.set("APPLICATIONINSIGHTS_ROLE_NAME", "role name from env");
+    systemProperties.set("applicationinsights.role.name", "role name from sys");
+
+    envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
+
+    Configuration configuration = loadConfiguration();
+    ConfigurationBuilder.overlayEnvVars(configuration);
+
+    assertThat(configuration.role.name).isEqualTo("role name from sys");
   }
 
   @Test
@@ -325,14 +382,40 @@ class ConfigurationTest {
   }
 
   @Test
-  void shouldOverrideRoleInstance() throws IOException {
+  void shouldOverrideRoleInstanceWithEnvVar() throws IOException {
     envVars.set("APPLICATIONINSIGHTS_ROLE_INSTANCE", "role instance from env");
+
     envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
 
     Configuration configuration = loadConfiguration();
     ConfigurationBuilder.overlayEnvVars(configuration);
 
     assertThat(configuration.role.instance).isEqualTo("role instance from env");
+  }
+
+  @Test
+  void shouldOverrideRoleInstanceWithSysProp() throws IOException {
+    systemProperties.set("applicationinsights.role.instance", "role instance from sys");
+
+    envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
+
+    Configuration configuration = loadConfiguration();
+    ConfigurationBuilder.overlayEnvVars(configuration);
+
+    assertThat(configuration.role.instance).isEqualTo("role instance from sys");
+  }
+
+  @Test
+  void shouldOverrideRoleInstanceWithBothEnvVarAndSysProp() throws IOException {
+    envVars.set("APPLICATIONINSIGHTS_ROLE_INSTANCE", "role instance from env");
+    systemProperties.set("applicationinsights.role.instance", "role instance from sys");
+
+    envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
+
+    Configuration configuration = loadConfiguration();
+    ConfigurationBuilder.overlayEnvVars(configuration);
+
+    assertThat(configuration.role.instance).isEqualTo("role instance from sys");
   }
 
   @Test
