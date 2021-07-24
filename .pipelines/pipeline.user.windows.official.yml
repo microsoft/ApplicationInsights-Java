@@ -3,6 +3,13 @@ version:
   minor: 0
   name: 'ApplicationInsights-Java'
   system: 'custom'
+
+restore:
+  commands:
+    - !!defaultcommand
+      name: 'Checkout Remote E2ETests Repo'
+      command: '.build\git-remote-checkout-e2e-tests.cmd'
+
 build:
   commands:
     - !!buildcommand
