@@ -90,19 +90,34 @@ public class LoggingConfigurator {
     rootLogger.addAppender(configureFileAppender());
     rootLogger.addAppender(configureConsoleAppender());
 
-    // Diagnostics IPA log file location. Disabled by default.
+    // App Services linux environments set this environment variable to control where the internal
+    // diagnostic log is written, so that App Services can consume that file and send those logging
+    // events to an internal kusto store for internal alerting and diagnostics
     String diagnosticsOutputDirectory =
         System.getenv(DiagnosticsHelper.APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY);
     if (diagnosticsOutputDirectory != null && !diagnosticsOutputDirectory.isEmpty()) {
-      rootLogger.addAppender(configureDiagnosticAppender(diagnosticsOutputDirectory));
+      Appender<ILoggingEvent> diagnosticAppender =
+          configureDiagnosticAppender(diagnosticsOutputDirectory);
+
+      // applicationinsights.extension.diagnostics logging should go to extension diagnostic log,
+      // but should not go to normal user-facing log
+      Logger diagnosticLogger = loggerContext.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME);
+      diagnosticLogger.setLevel(Level.INFO);
+      diagnosticLogger.setAdditive(false);
+      diagnosticLogger.addAppender(diagnosticAppender);
+
+      // errors reported by other loggers should also go to diagnostic log
+      // (level filter for these is applied in ApplicationInsightsDiagnosticsLogFilter)
+      rootLogger.addAppender(diagnosticAppender);
     }
 
+    // App Services windows environments use ETW to consume internal diagnostics logging events and
+    // to send those logging events to an internal kusto store for internal alerting and diagnostics
     if (DiagnosticsHelper.isOsWindows()) {
       rootLogger.addAppender(configureEtwAppender());
     }
-    // TODO what about linux?
 
-    configureLoggingLevels();
+    loggingLevelConfigurator.initLoggerLevels(loggerContext);
   }
 
   private void configureFileAndConsole() {
@@ -110,7 +125,7 @@ public class LoggingConfigurator {
     rootLogger.addAppender(configureFileAppender());
     rootLogger.addAppender(configureConsoleAppender());
 
-    configureLoggingLevels();
+    loggingLevelConfigurator.initLoggerLevels(loggerContext);
     // these messages are specifically designed for attach
     loggerContext.getLogger("applicationinsights.extension.diagnostics").setLevel(Level.OFF);
   }
@@ -119,7 +134,7 @@ public class LoggingConfigurator {
     Logger rootLogger = loggerContext.getLogger(ROOT_LOGGER_NAME);
     rootLogger.addAppender(configureFileAppender());
 
-    configureLoggingLevels();
+    loggingLevelConfigurator.initLoggerLevels(loggerContext);
     // these messages are specifically designed for attach
     loggerContext.getLogger("applicationinsights.extension.diagnostics").setLevel(Level.OFF);
   }
@@ -128,7 +143,7 @@ public class LoggingConfigurator {
     Logger rootLogger = loggerContext.getLogger(ROOT_LOGGER_NAME);
     rootLogger.addAppender(configureConsoleAppender());
 
-    configureLoggingLevels();
+    loggingLevelConfigurator.initLoggerLevels(loggerContext);
     // these messages are specifically designed for attach
     loggerContext.getLogger("applicationinsights.extension.diagnostics").setLevel(Level.OFF);
   }
@@ -249,15 +264,6 @@ public class LoggingConfigurator {
     appender.start();
 
     return appender;
-  }
-
-  private void configureLoggingLevels() {
-    loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger("reactor.netty"));
-    loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger("io.grpc.Context"));
-    loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger("muzzleMatcher"));
-    loggingLevelConfigurator.updateLoggerLevel(
-        loggerContext.getLogger("com.microsoft.applicationinsights"));
-    loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger(ROOT_LOGGER_NAME));
   }
 
   private Encoder<ILoggingEvent> createEncoder() {

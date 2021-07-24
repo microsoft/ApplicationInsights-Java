@@ -110,9 +110,9 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
     if (loggingLevel == null || !loggingLevel.isEmpty()) {
       return;
     }
-    LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-    List<ch.qos.logback.classic.Logger> loggerList = loggerContext.getLoggerList();
+
     logger.info("setting APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL to {}", loggingLevel);
+
     LoggingLevelConfigurator configurator;
     try {
       configurator = new LoggingLevelConfigurator(loggingLevel);
@@ -120,6 +120,13 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
       logger.warn("unexpected self-diagnostic level: {}", loggingLevel);
       return;
     }
+
+    LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+
+    configurator.initLoggerLevels(loggerContext);
+
+    // also need to update any previously created loggers
+    List<ch.qos.logback.classic.Logger> loggerList = loggerContext.getLoggerList();
     loggerList.forEach(configurator::updateLoggerLevel);
     logger.debug("self-diagnostics logging level has been updated.");
   }
