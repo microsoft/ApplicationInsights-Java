@@ -41,9 +41,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 import okio.Buffer;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ConfigurationBuilder {
@@ -53,18 +51,26 @@ public class ConfigurationBuilder {
   private static final String APPLICATIONINSIGHTS_CONFIGURATION_CONTENT =
       "APPLICATIONINSIGHTS_CONFIGURATION_CONTENT";
 
-  private static final String APPLICATIONINSIGHTS_CONNECTION_STRING =
+  private static final String APPLICATIONINSIGHTS_CONNECTION_STRING_ENV =
       "APPLICATIONINSIGHTS_CONNECTION_STRING";
+
+  private static final String APPLICATIONINSIGHTS_CONNECTION_STRING_SYS =
+      "applicationinsights.connection.string";
 
   // this is for backwards compatibility only
   private static final String APPINSIGHTS_INSTRUMENTATIONKEY = "APPINSIGHTS_INSTRUMENTATIONKEY";
 
-  private static final String APPLICATIONINSIGHTS_ROLE_NAME = "APPLICATIONINSIGHTS_ROLE_NAME";
-  private static final String APPLICATIONINSIGHTS_ROLE_INSTANCE =
+  private static final String APPLICATIONINSIGHTS_ROLE_NAME_ENV = "APPLICATIONINSIGHTS_ROLE_NAME";
+  private static final String APPLICATIONINSIGHTS_ROLE_INSTANCE_ENV =
       "APPLICATIONINSIGHTS_ROLE_INSTANCE";
 
-  // this is undocumented and may be removed in the future
+  private static final String APPLICATIONINSIGHTS_ROLE_NAME_SYS = "applicationinsights.role.name";
+  private static final String APPLICATIONINSIGHTS_ROLE_INSTANCE_SYS =
+      "applicationinsights.role.instance";
+
+  // this is undocumented and will be removed in the future
   private static final String APPLICATIONINSIGHTS_JMX_METRICS = "APPLICATIONINSIGHTS_JMX_METRICS";
+
   private static final String APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE =
       "APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE";
 
@@ -90,8 +96,8 @@ public class ConfigurationBuilder {
   private static final String WEBSITE_SITE_NAME = "WEBSITE_SITE_NAME";
   private static final String WEBSITE_INSTANCE_ID = "WEBSITE_INSTANCE_ID";
 
-  private static final String APPLICATIONINSIGHTS_PROFILER_ENABLED =
-      "APPLICATIONINSIGHTS_PROFILER_ENABLED";
+  private static final String APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED =
+      "APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED";
 
   private static final String APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS =
       "APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS";
@@ -101,46 +107,42 @@ public class ConfigurationBuilder {
 
   // cannot use logger before loading configuration, so need to store warning messages locally until
   // logger is initialized
-  private static final List<ConfigurationWarnMessage> configurationWarnMessages =
-      new CopyOnWriteArrayList<>();
+  private static final ConfigurationLogger configurationLogger = new ConfigurationLogger();
 
+  // using deprecated fields to give warning message to user if they are still using them
+  @SuppressWarnings("deprecation")
   public static Configuration create(Path agentJarPath, RpConfiguration rpConfiguration)
       throws IOException {
     Configuration config = loadConfigurationFile(agentJarPath);
     if (config.instrumentation.micrometer.reportingIntervalSeconds != 60) {
-      configurationWarnMessages.add(
-          new ConfigurationWarnMessage(
-              "micrometer \"reportingIntervalSeconds\" setting leaked out previously"
-                  + " as an undocumented testing detail,"
-                  + " please use \"preview\": { \"metricIntervalSeconds\" } instead now"
-                  + " (and note that metricIntervalSeconds applies to all auto-collected metrics,"
-                  + " not only micrometer)"));
+      configurationLogger.warn(
+          "micrometer \"reportingIntervalSeconds\" setting leaked out previously"
+              + " as an undocumented testing detail,"
+              + " please use \"preview\": { \"metricIntervalSeconds\" } instead now"
+              + " (and note that metricIntervalSeconds applies to all auto-collected metrics,"
+              + " not only micrometer)");
     }
     if (config.preview.httpMethodInOperationName) {
-      configurationWarnMessages.add(
-          new ConfigurationWarnMessage(
-              "\"httpMethodInOperationName\" preview setting is now the (one and only) default behavior"));
+      configurationLogger.warn(
+          "\"httpMethodInOperationName\" preview setting is now the (one and only) default behavior");
     }
     if (config.preview.instrumentation.javaHttpClient.enabled) {
-      configurationWarnMessages.add(
-          new ConfigurationWarnMessage(
-              "\"javaHttpClient\" instrumentation is no longer in preview"
-                  + " and it is now enabled by default,"
-                  + " so no need to enable it under preview configuration"));
+      configurationLogger.warn(
+          "\"javaHttpClient\" instrumentation is no longer in preview"
+              + " and it is now enabled by default,"
+              + " so no need to enable it under preview configuration");
     }
     if (config.preview.instrumentation.jaxws.enabled) {
-      configurationWarnMessages.add(
-          new ConfigurationWarnMessage(
-              "\"jaxws\" instrumentation is no longer in preview"
-                  + " and it is now enabled by default,"
-                  + " so no need to enable it under preview configuration"));
+      configurationLogger.warn(
+          "\"jaxws\" instrumentation is no longer in preview"
+              + " and it is now enabled by default,"
+              + " so no need to enable it under preview configuration");
     }
     if (config.preview.instrumentation.rabbitmq.enabled) {
-      configurationWarnMessages.add(
-          new ConfigurationWarnMessage(
-              "\"rabbitmq\" instrumentation is no longer in preview"
-                  + " and it is now enabled by default,"
-                  + " so no need to enable it under preview configuration"));
+      configurationLogger.warn(
+          "\"rabbitmq\" instrumentation is no longer in preview"
+              + " and it is now enabled by default,"
+              + " so no need to enable it under preview configuration");
     }
     overlayEnvVars(config);
     applySamplingPercentageRounding(config);
@@ -161,7 +163,7 @@ public class ConfigurationBuilder {
     config.preview.profiler.enabled =
         Boolean.parseBoolean(
             overlayWithEnvVar(
-                APPLICATIONINSIGHTS_PROFILER_ENABLED,
+                APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED,
                 Boolean.toString(config.preview.profiler.enabled)));
   }
 
@@ -207,6 +209,10 @@ public class ConfigurationBuilder {
     // JmxMetrics env variable has higher precedence over jmxMetrics config from
     // applicationinsights.json
     if (jmxMetricsEnvVarJson != null && !jmxMetricsEnvVarJson.isEmpty()) {
+      configurationLogger.warn(
+          "The undocumented APPLICATIONINSIGHTS_JMX_METRICS environment variable support"
+              + " has been deprecated, please use json file configuration instead");
+
       Moshi moshi = MoshiBuilderFactory.createBasicBuilder();
       Type listOfJmxMetrics = Types.newParameterizedType(List.class, JmxMetric.class);
       JsonReader reader = JsonReader.of(new Buffer().writeUtf8(jmxMetricsEnvVarJson));
@@ -217,14 +223,14 @@ public class ConfigurationBuilder {
   }
 
   private static void addDefaultJmxMetricsIfNotPresent(Configuration config) {
-    if (!jmxMetricExisted(config.jmxMetrics, "java.lang:type=Threading", "ThreadCount")) {
+    if (!jmxMetricExists(config.jmxMetrics, "java.lang:type=Threading", "ThreadCount")) {
       JmxMetric threadCountJmxMetric = new JmxMetric();
       threadCountJmxMetric.name = "Current Thread Count";
       threadCountJmxMetric.objectName = "java.lang:type=Threading";
       threadCountJmxMetric.attribute = "ThreadCount";
       config.jmxMetrics.add(threadCountJmxMetric);
     }
-    if (!jmxMetricExisted(config.jmxMetrics, "java.lang:type=ClassLoading", "LoadedClassCount")) {
+    if (!jmxMetricExists(config.jmxMetrics, "java.lang:type=ClassLoading", "LoadedClassCount")) {
       JmxMetric classCountJmxMetric = new JmxMetric();
       classCountJmxMetric.name = "Loaded Class Count";
       classCountJmxMetric.objectName = "java.lang:type=ClassLoading";
@@ -233,7 +239,7 @@ public class ConfigurationBuilder {
     }
   }
 
-  private static boolean jmxMetricExisted(
+  private static boolean jmxMetricExists(
       List<JmxMetric> jmxMetrics, String objectName, String attribute) {
     for (JmxMetric metric : jmxMetrics) {
       if (metric.objectName.equals(objectName) && metric.attribute.equals(attribute)) {
@@ -324,21 +330,23 @@ public class ConfigurationBuilder {
   // cannot use logger before loading configuration, so need to store any messages locally until
   // logger is initialized
   public static void logConfigurationWarnMessages() {
-    Logger logger = LoggerFactory.getLogger(ConfigurationBuilder.class);
-    for (ConfigurationWarnMessage configurationWarnMessage : configurationWarnMessages) {
-      configurationWarnMessage.warn(logger);
-    }
+    configurationLogger.log(LoggerFactory.getLogger(ConfigurationBuilder.class));
   }
 
   // visible for testing
   static void overlayEnvVars(Configuration config) throws IOException {
     config.connectionString =
-        overlayWithEnvVar(APPLICATIONINSIGHTS_CONNECTION_STRING, config.connectionString);
+        overlayWithSysPropEnvVar(
+            APPLICATIONINSIGHTS_CONNECTION_STRING_SYS,
+            APPLICATIONINSIGHTS_CONNECTION_STRING_ENV,
+            config.connectionString);
     if (config.connectionString == null) {
       // this is for backwards compatibility only
       String instrumentationKey = getEnvVar(APPINSIGHTS_INSTRUMENTATIONKEY);
       if (instrumentationKey != null) {
-        // TODO log an info message recommending APPLICATIONINSIGHTS_CONNECTION_STRING
+        configurationLogger.warn(
+            "APPINSIGHTS_INSTRUMENTATIONKEY is only supported for backwards compatibility,"
+                + " please consider using APPLICATIONINSIGHTS_CONNECTION_STRING instead");
         config.connectionString = "InstrumentationKey=" + instrumentationKey;
       }
     }
@@ -347,14 +355,19 @@ public class ConfigurationBuilder {
       // only use WEBSITE_SITE_NAME as a fallback
       config.role.name = getWebsiteSiteNameEnvVar();
     }
-    config.role.name = overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_NAME, config.role.name);
+    config.role.name =
+        overlayWithSysPropEnvVar(
+            APPLICATIONINSIGHTS_ROLE_NAME_SYS, APPLICATIONINSIGHTS_ROLE_NAME_ENV, config.role.name);
 
     if (isTrimEmpty(config.role.instance)) {
       // only use WEBSITE_INSTANCE_ID as a fallback
       config.role.instance = getEnvVar(WEBSITE_INSTANCE_ID);
     }
     config.role.instance =
-        overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_INSTANCE, config.role.instance);
+        overlayWithSysPropEnvVar(
+            APPLICATIONINSIGHTS_ROLE_INSTANCE_SYS,
+            APPLICATIONINSIGHTS_ROLE_INSTANCE_ENV,
+            config.role.instance);
 
     config.sampling.percentage =
         overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, config.sampling.percentage);
@@ -437,7 +450,7 @@ public class ConfigurationBuilder {
 
   private static String getWebsiteSiteNameEnvVar() {
     String value = getEnvVar(WEBSITE_SITE_NAME);
-    // TODO is the best way to identify running as Azure Functions worker?
+    // TODO what is the best way to identify running as Azure Functions worker?
     // TODO is this the correct way to match role name from Azure Functions IIS host?
     if (value != null && "java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
       // special case for Azure Functions
@@ -446,23 +459,48 @@ public class ConfigurationBuilder {
     return value;
   }
 
+  public static String overlayWithSysPropEnvVar(
+      String systemPropertyName, String envVarName, String defaultValue) {
+    String value = getSystemProperty(systemPropertyName);
+    if (value != null) {
+      configurationLogger.debug("using system property: {}", systemPropertyName);
+      return value;
+    }
+    return overlayWithEnvVar(envVarName, defaultValue);
+  }
+
   public static String overlayWithEnvVar(String name, String defaultValue) {
     String value = getEnvVar(name);
-    return value != null ? value : defaultValue;
+    if (value != null) {
+      configurationLogger.debug("using environment variable: {}", name);
+      return value;
+    }
+    return defaultValue;
   }
 
   static float overlayWithEnvVar(String name, float defaultValue) {
     String value = getEnvVar(name);
-    // intentionally allowing NumberFormatException to bubble up as invalid configuration and
-    // prevent agent from starting
-    return value != null ? Float.parseFloat(value) : defaultValue;
+    if (value != null) {
+      configurationLogger.debug("using environment variable: {}", name);
+      // intentionally allowing NumberFormatException to bubble up as invalid configuration and
+      // prevent agent from starting
+      return Float.parseFloat(value);
+    }
+    return defaultValue;
   }
 
   static boolean overlayWithEnvVar(String name, boolean defaultValue) {
     String value = getEnvVar(name);
-    // intentionally allowing NumberFormatException to bubble up as invalid configuration and
-    // prevent agent from starting
-    return value != null ? Boolean.parseBoolean(value) : defaultValue;
+    if (value != null) {
+      configurationLogger.debug("using environment variable: {}", name);
+      return Boolean.parseBoolean(value);
+    }
+    return defaultValue;
+  }
+
+  // never returns empty string (empty string is normalized to null)
+  protected static String getSystemProperty(String name) {
+    return trimAndEmptyToNull(System.getProperty(name));
   }
 
   // never returns empty string (empty string is normalized to null)
@@ -494,20 +532,6 @@ public class ConfigurationBuilder {
     }
   }
 
-  public static class ConfigurationWarnMessage {
-    private final String message;
-    private final Object[] args;
-
-    public ConfigurationWarnMessage(String message, Object... args) {
-      this.message = message;
-      this.args = args;
-    }
-
-    private void warn(Logger logger) {
-      logger.warn(message, args);
-    }
-  }
-
   static Configuration getConfigurationFromConfigFile(Path configPath, boolean strict)
       throws IOException {
     try (InputStream in = Files.newInputStream(configPath)) {
@@ -526,9 +550,8 @@ public class ConfigurationBuilder {
           Configuration configuration = getConfigurationFromConfigFile(configPath, false);
           // cannot use logger before loading configuration, so need to store warning messages
           // locally until logger is initialized
-          configurationWarnMessages.add(
-              new ConfigurationWarnMessage(
-                  getJsonEncodingExceptionMessageForFile(configPath, ex.getMessage())));
+          configurationLogger.warn(
+              getJsonEncodingExceptionMessageForFile(configPath, ex.getMessage()));
           return configuration;
         } else {
           throw new FriendlyException(
@@ -561,9 +584,7 @@ public class ConfigurationBuilder {
         configuration = getConfigurationFromEnvVar(content, false);
         // cannot use logger before loading configuration, so need to store warning messages locally
         // until logger is initialized
-        configurationWarnMessages.add(
-            new ConfigurationWarnMessage(
-                getJsonEncodingExceptionMessageForEnvVar(ex.getMessage())));
+        configurationLogger.warn(getJsonEncodingExceptionMessageForEnvVar(ex.getMessage()));
       } else {
         throw new FriendlyException(
             getJsonEncodingExceptionMessageForEnvVar(ex.getMessage()),
@@ -584,7 +605,7 @@ public class ConfigurationBuilder {
           "\"connectionString\" attribute is not supported inside of "
               + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT
               + ", please use "
-              + APPLICATIONINSIGHTS_CONNECTION_STRING
+              + APPLICATIONINSIGHTS_CONNECTION_STRING_ENV
               + " to specify the connection string");
     }
     return configuration;
@@ -669,11 +690,10 @@ public class ConfigurationBuilder {
     if (Math.abs(samplingPercentage - rounded) >= 1) {
       // TODO include link to docs in this warning message
       if (doNotLogWarnMessages) {
-        configurationWarnMessages.add(
-            new ConfigurationWarnMessage(
-                "the requested sampling percentage {} was rounded to nearest 100/N: {}",
-                samplingPercentage,
-                rounded));
+        configurationLogger.warn(
+            "the requested sampling percentage {} was rounded to nearest 100/N: {}",
+            samplingPercentage,
+            rounded);
       } else {
         // this is the "startup logger"
         LoggerFactory.getLogger("com.microsoft.applicationinsights.agent")
