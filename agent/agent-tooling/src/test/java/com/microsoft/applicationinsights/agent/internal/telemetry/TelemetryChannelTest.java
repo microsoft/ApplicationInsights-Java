@@ -112,13 +112,13 @@ public class TelemetryChannelTest {
   private static String getRequestBodyString(Flux<ByteBuffer> requestBody) {
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     byte[] compressed = FluxUtil.collectBytesInByteBufferStream(requestBody).block();
-    final int BUFFER_SIZE = compressed.length;
+    final int bufferSize = compressed.length;
     String requestBodyString = null;
     try {
       ByteArrayInputStream bis = new ByteArrayInputStream(compressed);
-      GZIPInputStream gis = new GZIPInputStream(bis, BUFFER_SIZE);
+      GZIPInputStream gis = new GZIPInputStream(bis, bufferSize);
       StringBuilder sb = new StringBuilder();
-      byte[] data = new byte[BUFFER_SIZE];
+      byte[] data = new byte[bufferSize];
       int bytesRead;
       while ((bytesRead = gis.read(data)) != -1) {
         sb.append(new String(data, 0, bytesRead, Charset.defaultCharset()));
