@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.zip.GZIPInputStream;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,7 +77,6 @@ public class TelemetryChannelTest {
   @TempDir File tempFolder;
 
   @BeforeEach
-  @SuppressWarnings("CatchAndPrintStackTrace")
   public void setup() throws MalformedURLException {
     recordingHttpClient =
         new RecordingHttpClient(
@@ -85,27 +85,8 @@ public class TelemetryChannelTest {
                 return Mono.just(new MockHttpResponse(request, 200));
               }
               Flux<ByteBuffer> requestBody = request.getBody();
-              ByteArrayOutputStream bos = new ByteArrayOutputStream();
-              byte[] compressed = FluxUtil.collectBytesInByteBufferStream(requestBody).block();
-              final int BUFFER_SIZE = compressed.length;
-              String requestBodyString = null;
-              try {
-                ByteArrayInputStream bis = new ByteArrayInputStream(compressed);
-                GZIPInputStream gis = new GZIPInputStream(bis, BUFFER_SIZE);
-                StringBuilder sb = new StringBuilder();
-                byte[] data = new byte[BUFFER_SIZE];
-                int bytesRead;
-                while ((bytesRead = gis.read(data)) != -1) {
-                  sb.append(new String(data, 0, bytesRead, Charset.defaultCharset()));
-                }
-                bis.close();
-                bos.close();
-                gis.close();
-                requestBodyString = new String(sb);
-              } catch (IOException e) {
-                e.printStackTrace();
-              }
-              if (requestBodyString.contains(INSTRUMENTATION_KEY)) {
+              String requestBodyString = getRequestBodyString(requestBody);
+              if (requestBodyString != null && requestBodyString.contains(INSTRUMENTATION_KEY)) {
                 return Mono.just(new MockHttpResponse(request, 200));
               }
               Map<String, String> headers = new HashMap<>();
@@ -125,6 +106,32 @@ public class TelemetryChannelTest {
             pipelineBuilder.build(),
             new URL(END_POINT_URL),
             new LocalFileWriter(localFileCache, tempFolder));
+  }
+
+  @Nullable
+  private static String getRequestBodyString(Flux<ByteBuffer> requestBody) {
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    byte[] compressed = FluxUtil.collectBytesInByteBufferStream(requestBody).block();
+    final int BUFFER_SIZE = compressed.length;
+    String requestBodyString = null;
+    try {
+      ByteArrayInputStream bis = new ByteArrayInputStream(compressed);
+      GZIPInputStream gis = new GZIPInputStream(bis, BUFFER_SIZE);
+      StringBuilder sb = new StringBuilder();
+      byte[] data = new byte[BUFFER_SIZE];
+      int bytesRead;
+      while ((bytesRead = gis.read(data)) != -1) {
+        sb.append(new String(data, 0, bytesRead, Charset.defaultCharset()));
+      }
+      bis.close();
+      bos.close();
+      gis.close();
+      requestBodyString = new String(sb);
+    } catch (IOException e) {
+      // It's ok when this exception is thrown. The tests will fail. Added this comment to satisfy
+      // style guide.
+    }
+    return requestBodyString;
   }
 
   @AfterEach
