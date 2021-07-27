@@ -24,12 +24,14 @@ package com.microsoft.applicationinsights.agent.internal.telemetry;
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
+import com.azure.core.util.Context;
 import com.azure.core.util.tracing.Tracer;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.agent.internal.common.ExceptionStats;
 import com.microsoft.applicationinsights.agent.internal.common.ExceptionUtils;
+import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
@@ -50,7 +52,6 @@ import java.util.zip.GZIPOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
-import reactor.util.context.Context;
 
 // TODO performance testing
 public class TelemetryChannel {
@@ -84,7 +85,7 @@ public class TelemetryChannel {
   }
 
   public CompletableResultCode sendRawBytes(ByteBuffer buffer) {
-    return internalSend(Arrays.asList(buffer));
+    return internalSend(Arrays.asList(buffer), null);
   }
 
   // used by tests only
@@ -106,13 +107,14 @@ public class TelemetryChannel {
     }
     for (String instrumentationKey : instrumentationKeyMap.keySet()) {
       resultCodeList.add(
-          internalSendByInstrumentationKey(instrumentationKeyMap.get(instrumentationKey)));
+          internalSendByInstrumentationKey(
+              instrumentationKeyMap.get(instrumentationKey), instrumentationKey));
     }
     return CompletableResultCode.ofAll(resultCodeList);
   }
 
   public CompletableResultCode internalSendByInstrumentationKey(
-      List<TelemetryItem> telemetryItems) {
+      List<TelemetryItem> telemetryItems, String instrumentationKey) {
     List<ByteBuffer> byteBuffers;
     try {
       byteBuffers = encode(telemetryItems);
@@ -122,7 +124,7 @@ public class TelemetryChannel {
       return CompletableResultCode.ofFailure();
     }
     try {
-      return internalSend(byteBuffers);
+      return internalSend(byteBuffers, instrumentationKey);
     } catch (Throwable t) {
       networkExceptionStats.recordFailure(
           String.format("Error sending telemetry items: %s", t.getMessage()), t);
@@ -158,7 +160,8 @@ public class TelemetryChannel {
    * Object can be a list of {@link ByteBuffer} or a raw byte array. Regular telemetries will be
    * sent as {@code List<ByteBuffer>}. Persisted telemetries will be sent as byte[]
    */
-  private CompletableResultCode internalSend(List<ByteBuffer> byteBuffers) {
+  private CompletableResultCode internalSend(
+      List<ByteBuffer> byteBuffers, String instrumentationKey) {
     HttpRequest request = new HttpRequest(HttpMethod.POST, endpointUrl);
 
     request.setBody(Flux.fromIterable(byteBuffers));
@@ -183,9 +186,14 @@ public class TelemetryChannel {
     //  * write to disk on second failure
     CompletableResultCode result = new CompletableResultCode();
     final long startTime = System.currentTimeMillis();
+    // Add instrumentation to context to use in redirectPolicy
+    Map<Object, Object> contextKeyValues = new HashMap<>();
+    if (!Strings.isNullOrEmpty(instrumentationKey)) {
+      contextKeyValues.put("instrumentationKey", instrumentationKey);
+    }
+    contextKeyValues.put(Tracer.DISABLE_TRACING_KEY, true);
     pipeline
-        .send(request)
-        .contextWrite(Context.of(Tracer.DISABLE_TRACING_KEY, true))
+        .send(request, Context.of(contextKeyValues))
         .subscribe(
             response -> {
               parseResponseCode(response.getStatusCode(), byteBuffers, byteBuffers);

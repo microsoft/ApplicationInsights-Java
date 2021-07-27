@@ -29,6 +29,7 @@ import com.azure.core.http.HttpPipelineBuilder;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.http.policy.HttpPipelinePolicy;
+import com.azure.core.util.FluxUtil;
 import com.microsoft.applicationinsights.agent.internal.MockHttpResponse;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.DataPointType;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDataPoint;
@@ -39,9 +40,14 @@ import com.microsoft.applicationinsights.agent.internal.httpclient.RedirectPolic
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileCache;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -49,34 +55,63 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.zip.GZIPInputStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class TelemetryChannelTest {
   private TelemetryChannel telemetryChannel;
   private LocalFileCache localFileCache;
   private RecordingHttpClient recordingHttpClient;
-  private final AtomicInteger requestCount = new AtomicInteger();
+  private static final AtomicInteger requestCount = new AtomicInteger();
+  private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
+  private static final String REDIRECT_INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEE";
+  private static final String END_POINT_URL = "http://foo.bar";
+  private static final String REDIRECT_URL = "http://foo.bar.redirect";
 
   @TempDir File tempFolder;
 
   @BeforeEach
-  public void setupEach() throws MalformedURLException {
+  @SuppressWarnings("CatchAndPrintStackTrace")
+  public void setup() throws MalformedURLException {
     recordingHttpClient =
         new RecordingHttpClient(
             request -> {
-              // Every alternative request will be a redirect request.
-              if (requestCount.getAndIncrement() % 2 == 0) {
+              if (request.getUrl().toString().contains(REDIRECT_URL)) {
                 return Mono.just(new MockHttpResponse(request, 200));
-              } else {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("Location", "http://foo.bar.redirect");
-                HttpHeaders httpHeaders = new HttpHeaders(headers);
-                return Mono.just(new MockHttpResponse(request, 307, httpHeaders));
               }
+              Flux<ByteBuffer> requestBody = request.getBody();
+              ByteArrayOutputStream bos = new ByteArrayOutputStream();
+              byte[] compressed = FluxUtil.collectBytesInByteBufferStream(requestBody).block();
+              final int BUFFER_SIZE = compressed.length;
+              String requestBodyString = null;
+              try {
+                ByteArrayInputStream bis = new ByteArrayInputStream(compressed);
+                GZIPInputStream gis = new GZIPInputStream(bis, BUFFER_SIZE);
+                StringBuilder sb = new StringBuilder();
+                byte[] data = new byte[BUFFER_SIZE];
+                int bytesRead;
+                while ((bytesRead = gis.read(data)) != -1) {
+                  sb.append(new String(data, 0, bytesRead, Charset.defaultCharset()));
+                }
+                bis.close();
+                bos.close();
+                gis.close();
+                requestBodyString = new String(sb);
+              } catch (IOException e) {
+                e.printStackTrace();
+              }
+              if (requestBodyString.contains(INSTRUMENTATION_KEY)) {
+                return Mono.just(new MockHttpResponse(request, 200));
+              }
+              Map<String, String> headers = new HashMap<>();
+              headers.put("Location", REDIRECT_URL);
+              HttpHeaders httpHeaders = new HttpHeaders(headers);
+              return Mono.just(new MockHttpResponse(request, 307, httpHeaders));
             });
     List<HttpPipelinePolicy> policies = new ArrayList<>();
     policies.add(new RedirectPolicy());
@@ -88,12 +123,12 @@ public class TelemetryChannelTest {
     telemetryChannel =
         new TelemetryChannel(
             pipelineBuilder.build(),
-            new URL("http://foo.bar"),
+            new URL(END_POINT_URL),
             new LocalFileWriter(localFileCache, tempFolder));
   }
 
   @AfterEach
-  public void cleanUpEach() {
+  public void reset() {
     requestCount.set(0);
   }
 
@@ -101,8 +136,7 @@ public class TelemetryChannelTest {
   public void singleIkeyTest() {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-    telemetryItems.add(
-        createMetricTelemetry("metric" + 1, 1, "00000000-0000-0000-0000-0FEEDDADBEEF"));
+    telemetryItems.add(createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
 
     // when
     CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
@@ -116,10 +150,8 @@ public class TelemetryChannelTest {
   public void dualIkeyTest() {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-    telemetryItems.add(
-        createMetricTelemetry("metric" + 1, 1, "00000000-0000-0000-0000-0FEEDDADBEEF"));
-    telemetryItems.add(
-        createMetricTelemetry("metric" + 2, 2, "00000000-0000-0000-0000-0FEEDDADBEEE"));
+    telemetryItems.add(createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
+    telemetryItems.add(createMetricTelemetry("metric" + 2, 2, REDIRECT_INSTRUMENTATION_KEY));
 
     // when
     CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
@@ -133,10 +165,8 @@ public class TelemetryChannelTest {
   public void singleIkeyBatchTest() {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-    telemetryItems.add(
-        createMetricTelemetry("metric" + 1, 1, "00000000-0000-0000-0000-0FEEDDADBEEF"));
-    telemetryItems.add(
-        createMetricTelemetry("metric" + 2, 2, "00000000-0000-0000-0000-0FEEDDADBEEF"));
+    telemetryItems.add(createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
+    telemetryItems.add(createMetricTelemetry("metric" + 2, 2, INSTRUMENTATION_KEY));
 
     // when
     CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
@@ -150,14 +180,10 @@ public class TelemetryChannelTest {
   public void dualIkeyBatchTest() {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-    telemetryItems.add(
-        createMetricTelemetry("metric" + 1, 1, "00000000-0000-0000-0000-0FEEDDADBEEF"));
-    telemetryItems.add(
-        createMetricTelemetry("metric" + 2, 2, "00000000-0000-0000-0000-0FEEDDADBEEF"));
-    telemetryItems.add(
-        createMetricTelemetry("metric" + 3, 3, "00000000-0000-0000-0000-0FEEDDADBEEE"));
-    telemetryItems.add(
-        createMetricTelemetry("metric" + 4, 4, "00000000-0000-0000-0000-0FEEDDADBEEE"));
+    telemetryItems.add(createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
+    telemetryItems.add(createMetricTelemetry("metric" + 2, 2, INSTRUMENTATION_KEY));
+    telemetryItems.add(createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
+    telemetryItems.add(createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
 
     // when
     CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
@@ -165,6 +191,30 @@ public class TelemetryChannelTest {
     // then
     assertThat(completableResultCode.isSuccess()).isEqualTo(true);
     assertThat(recordingHttpClient.getCount()).isEqualTo(3);
+  }
+
+  @Test
+  public void dualIkeyBatchWithDelayTest() {
+    // given
+    List<TelemetryItem> telemetryItems = new ArrayList<>();
+    telemetryItems.add(createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
+    telemetryItems.add(createMetricTelemetry("metric" + 2, 2, INSTRUMENTATION_KEY));
+    telemetryItems.add(createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
+    telemetryItems.add(createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
+
+    // when
+    CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
+
+    // then
+    assertThat(completableResultCode.isSuccess()).isEqualTo(true);
+    assertThat(recordingHttpClient.getCount()).isEqualTo(3);
+
+    completableResultCode = telemetryChannel.send(telemetryItems);
+
+    // then
+    // the redirect url should be cached and should not invoke another redirect.
+    assertThat(completableResultCode.isSuccess()).isEqualTo(true);
+    assertThat(recordingHttpClient.getCount()).isEqualTo(5);
   }
 
   private static TelemetryItem createMetricTelemetry(
