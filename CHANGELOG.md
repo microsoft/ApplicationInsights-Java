@@ -11,6 +11,18 @@
 * Log controlled warning when telemetry truncated [#1021](https://github.com/microsoft/ApplicationInsights-Java/issues/1021).
 * Support system properties for connection string, role name and role instance [#1684](https://github.com/microsoft/ApplicationInsights-Java/issues/1684).
 * Small fixes to 2.x interop.
+* Updated to support OpenTelemetry API 1.4.1
+* Moves 3 instrumentations out of preview, and enables them by default
+    - Java 11 HTTP client
+    - JAX-WS
+    - RabbitMQ
+* Pulls in new instrumentations (enabled by default)
+    - AsyncHttpClient
+    - Google HTTP client
+    - JAX-RS client
+    - Jetty client
+    - Spring RabbitMQ
+    - Servlet 5.0 [#1800](https://github.com/microsoft/ApplicationInsights-Java/issues/1800)
 
 # Version 3.2.0-BETA
 * Support Azure Active Directory Authentication.
