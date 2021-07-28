@@ -3,7 +3,7 @@ plugins {
   id("com.github.johnrengelman.shadow")
 }
 
-val otelInstrumentationAlphaVersion = "1.3.1+ai.patch.1-alpha"
+val otelInstrumentationAlphaVersion = "1.4.0+ai.patch.1-alpha"
 
 configurations {
   // exclude bootstrap dependencies from shadowJar
@@ -82,7 +82,7 @@ dependencies {
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jetty-httpclient-9.2:${otelInstrumentationAlphaVersion}")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jms-1.1:${otelInstrumentationAlphaVersion}")
   // TODO (trask) add this once able to disable INTERNAL spans
-  // implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jws-1.1:${otelInstrumentationAlphaVersion}")
+  // implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxws-jws-1.1:${otelInstrumentationAlphaVersion}")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-kafka-clients-0.11:${otelInstrumentationAlphaVersion}")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-kafka-streams-0.11:${otelInstrumentationAlphaVersion}")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-kotlinx-coroutines:${otelInstrumentationAlphaVersion}")

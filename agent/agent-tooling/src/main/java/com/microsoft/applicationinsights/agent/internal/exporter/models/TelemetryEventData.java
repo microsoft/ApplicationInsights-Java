@@ -21,8 +21,11 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter.models;
 
+import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
+
 import com.azure.core.annotation.Fluent;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
 import java.util.Map;
 
 /**
@@ -31,6 +34,7 @@ import java.util.Map;
  */
 @Fluent
 public final class TelemetryEventData extends MonitorDomain {
+  private static final int MAX_EVENT_NAME_LENGTH = 512;
   /*
    * Event name. Keep it low cardinality to allow proper grouping and useful
    * metrics.
@@ -68,7 +72,7 @@ public final class TelemetryEventData extends MonitorDomain {
    * @return the TelemetryEventData object itself.
    */
   public TelemetryEventData setName(String name) {
-    this.name = name;
+    this.name = truncateTelemetry(name, MAX_EVENT_NAME_LENGTH, "TelemetryEventData.name");
     return this;
   }
 
@@ -88,6 +92,7 @@ public final class TelemetryEventData extends MonitorDomain {
    * @return the TelemetryEventData object itself.
    */
   public TelemetryEventData setProperties(Map<String, String> properties) {
+    SanitizationHelper.sanitizeProperties(properties);
     this.properties = properties;
     return this;
   }
@@ -108,6 +113,7 @@ public final class TelemetryEventData extends MonitorDomain {
    * @return the TelemetryEventData object itself.
    */
   public TelemetryEventData setMeasurements(Map<String, Double> measurements) {
+    SanitizationHelper.sanitizeMeasurements(measurements);
     this.measurements = measurements;
     return this;
   }

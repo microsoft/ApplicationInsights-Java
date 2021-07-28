@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter.models;
 
+import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
+
 import com.azure.core.annotation.Fluent;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Map;
@@ -28,6 +30,7 @@ import java.util.Map;
 /** System variables for a telemetry item. */
 @Fluent
 public final class TelemetryItem {
+  private static final int MAX_SEQUENCE_LENGTH = 64;
   /*
    * Envelope version. For internal use only. By assigning this the default,
    * it will not be serialized within the payload unless changed to a value
@@ -200,7 +203,7 @@ public final class TelemetryItem {
    * @return the TelemetryItem object itself.
    */
   public TelemetryItem setSequence(String sequence) {
-    this.sequence = sequence;
+    this.sequence = truncateTelemetry(sequence, MAX_SEQUENCE_LENGTH, "TelemetryItem.sequence");
     return this;
   }
 

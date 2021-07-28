@@ -197,11 +197,6 @@ public class StatusFile {
                       .nullSafe()
                       .toJson(b, map);
                   b.flush();
-                  if (logger != null) {
-                    logger.info("Wrote status to file: {}", file.getAbsolutePath());
-                  } else {
-                    System.out.println("Wrote status to file: " + file.getAbsolutePath());
-                  }
                 } catch (Exception e) {
                   if (logger != null) {
                     logger.error("Error writing {}", file.getAbsolutePath(), e);

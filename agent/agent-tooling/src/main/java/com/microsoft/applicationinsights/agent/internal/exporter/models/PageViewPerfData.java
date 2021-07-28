@@ -21,8 +21,11 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter.models;
 
+import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
+
 import com.azure.core.annotation.Fluent;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
 import java.util.Map;
 
 /**
@@ -125,7 +128,7 @@ public final class PageViewPerfData extends MonitorDomain {
    * @return the PageViewPerfData object itself.
    */
   public PageViewPerfData setId(String id) {
-    this.id = id;
+    this.id = truncateTelemetry(id, SanitizationHelper.MAX_ID_LENGTH, "PageViewPerfData.id");
     return this;
   }
 
@@ -147,7 +150,8 @@ public final class PageViewPerfData extends MonitorDomain {
    * @return the PageViewPerfData object itself.
    */
   public PageViewPerfData setName(String name) {
-    this.name = name;
+    this.name =
+        truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "PageViewPerfData.name");
     return this;
   }
 
@@ -167,7 +171,7 @@ public final class PageViewPerfData extends MonitorDomain {
    * @return the PageViewPerfData object itself.
    */
   public PageViewPerfData setUrl(String url) {
-    this.url = url;
+    this.url = truncateTelemetry(url, SanitizationHelper.MAX_URL_LENGTH, "PageViewPerfData.url");
     return this;
   }
 
@@ -321,6 +325,7 @@ public final class PageViewPerfData extends MonitorDomain {
    * @return the PageViewPerfData object itself.
    */
   public PageViewPerfData setProperties(Map<String, String> properties) {
+    SanitizationHelper.sanitizeProperties(properties);
     this.properties = properties;
     return this;
   }
@@ -341,6 +346,7 @@ public final class PageViewPerfData extends MonitorDomain {
    * @return the PageViewPerfData object itself.
    */
   public PageViewPerfData setMeasurements(Map<String, Double> measurements) {
+    SanitizationHelper.sanitizeMeasurements(measurements);
     this.measurements = measurements;
     return this;
   }
