@@ -67,23 +67,12 @@ public final class RedirectPolicy implements HttpPipelinePolicy {
       HttpPipelineNextPolicy next,
       HttpRequest originalHttpRequest,
       int retryCount) {
-    // make sure the context is not modified during retry, except for the URL
-    final String redirectLocation;
-    HttpRequest newHttpRequest = originalHttpRequest.copy();
-    final String instrumentationKey = getInstrumentationKeyFromContext(context);
-    if (followInstrumentationKeyForRedirect) {
-      if (instrumentationKey != null) {
-        redirectLocation = instrumentationKeyMappings.get(instrumentationKey);
-      } else {
-        redirectLocation = null;
-      }
-    } else {
-      redirectLocation = redirectMappings.get(originalHttpRequest.getUrl());
+    String instrumentationKey = getInstrumentationKeyFromContext(context);
+    String redirectUrl = getCachedRedirectUrl(instrumentationKey, originalHttpRequest.getUrl());
+    if (redirectUrl != null) {
+      // make sure the context is not modified during retry, except for the URL
+      context.setHttpRequest(originalHttpRequest.copy().setUrl(redirectUrl));
     }
-    if (redirectLocation != null) {
-      newHttpRequest.setUrl(redirectLocation);
-    }
-    context.setHttpRequest(newHttpRequest);
     return next.clone()
         .process()
         .flatMap(
@@ -91,25 +80,34 @@ public final class RedirectPolicy implements HttpPipelinePolicy {
               if (shouldRetryWithRedirect(httpResponse.getStatusCode(), retryCount)) {
                 String responseLocation = httpResponse.getHeaderValue("Location");
                 if (responseLocation != null) {
-                  if (followInstrumentationKeyForRedirect) {
-                    if (instrumentationKey != null) {
-                      instrumentationKeyMappings.put(instrumentationKey, responseLocation);
-                    } else {
-                      // special case (LocalFileSender) where followInstrumentationKeyForRedirect is
-                      // false and instrumentationKey is not set.
-                      HttpRequest httpRequestCopy = originalHttpRequest.copy();
-                      httpRequestCopy.setUrl(responseLocation);
-                      context.setHttpRequest(httpRequestCopy);
-                      return attemptRetry(context, next, httpRequestCopy, retryCount + 1);
-                    }
-                  } else {
-                    redirectMappings.put(originalHttpRequest.getUrl(), responseLocation);
-                  }
+                  cacheRedirectUrl(
+                      responseLocation, instrumentationKey, originalHttpRequest.getUrl());
+                  context.setHttpRequest(originalHttpRequest.copy().setUrl(responseLocation));
                   return attemptRetry(context, next, originalHttpRequest, retryCount + 1);
                 }
               }
               return Mono.just(httpResponse);
             });
+  }
+
+  private void cacheRedirectUrl(String redirectUrl, String instrumentationKey, URL originalUrl) {
+    if (!followInstrumentationKeyForRedirect) {
+      redirectMappings.put(originalUrl, redirectUrl);
+      return;
+    }
+    if (instrumentationKey != null) {
+      instrumentationKeyMappings.put(instrumentationKey, redirectUrl);
+    }
+  }
+
+  private String getCachedRedirectUrl(String instrumentationKey, URL originalUrl) {
+    if (!followInstrumentationKeyForRedirect) {
+      return redirectMappings.get(originalUrl);
+    }
+    if (instrumentationKey != null) {
+      return instrumentationKeyMappings.get(instrumentationKey);
+    }
+    return null;
   }
 
   /**
