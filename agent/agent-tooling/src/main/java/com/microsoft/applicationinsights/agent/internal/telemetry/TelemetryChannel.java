@@ -31,10 +31,10 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.agent.internal.common.ExceptionStats;
 import com.microsoft.applicationinsights.agent.internal.common.ExceptionUtils;
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
+import com.microsoft.applicationinsights.agent.internal.httpclient.RedirectPolicy;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPOutputStream;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
@@ -80,7 +81,7 @@ public class TelemetryChannel {
       URL endpointUrl,
       Configuration.AadAuthentication aadAuthentication,
       LocalFileWriter localFileWriter) {
-    HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(aadAuthentication);
+    HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(aadAuthentication, true);
     return new TelemetryChannel(httpPipeline, endpointUrl, localFileWriter);
   }
 
@@ -161,7 +162,7 @@ public class TelemetryChannel {
    * sent as {@code List<ByteBuffer>}. Persisted telemetries will be sent as byte[]
    */
   private CompletableResultCode internalSend(
-      List<ByteBuffer> byteBuffers, String instrumentationKey) {
+      List<ByteBuffer> byteBuffers, @Nullable String instrumentationKey) {
     HttpRequest request = new HttpRequest(HttpMethod.POST, endpointUrl);
 
     request.setBody(Flux.fromIterable(byteBuffers));
@@ -186,10 +187,10 @@ public class TelemetryChannel {
     //  * write to disk on second failure
     CompletableResultCode result = new CompletableResultCode();
     final long startTime = System.currentTimeMillis();
-    // Add instrumentation to context to use in redirectPolicy
+    // Add instrumentation key to context to use in redirectPolicy
     Map<Object, Object> contextKeyValues = new HashMap<>();
-    if (!Strings.isNullOrEmpty(instrumentationKey)) {
-      contextKeyValues.put("instrumentationKey", instrumentationKey);
+    if (instrumentationKey != null) {
+      contextKeyValues.put(RedirectPolicy.INSTRUMENTATION_KEY, instrumentationKey);
     }
     contextKeyValues.put(Tracer.DISABLE_TRACING_KEY, true);
     pipeline

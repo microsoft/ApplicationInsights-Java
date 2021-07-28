@@ -26,7 +26,6 @@ import com.azure.core.http.HttpPipelineNextPolicy;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.http.policy.HttpPipelinePolicy;
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import io.opentelemetry.instrumentation.api.caching.Cache;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -36,18 +35,24 @@ import reactor.core.publisher.Mono;
 
 // This is mostly a copy from Azure Monitor Open Telemetry Exporter SDK AzureMonitorRedirectPolicy
 public final class RedirectPolicy implements HttpPipelinePolicy {
-
+  private final boolean followInstrumentationKeyForRedirect;
+  // use this only when followInstrumentationKeyForRedirect is true and instrumentation key is null
+  private String cachedUrl;
   private static final int PERMANENT_REDIRECT_STATUS_CODE = 308;
   private static final int TEMP_REDIRECT_STATUS_CODE = 307;
   // Based on Stamp specific redirects design doc
   private static final int MAX_REDIRECT_RETRIES = 10;
   private static final Logger logger = LoggerFactory.getLogger(RedirectPolicy.class);
-  private static final String INSTRUMENTATION_KEY = "instrumentationKey";
+  public static final String INSTRUMENTATION_KEY = "instrumentationKey";
 
   private final Cache<URL, String> redirectMappings =
       Cache.newBuilder().setMaximumSize(100).build();
   private final Cache<String, String> instrumentationKeyMappings =
       Cache.newBuilder().setMaximumSize(100).build();
+
+  public RedirectPolicy(boolean followInstrumentationKeyForRedirect) {
+    this.followInstrumentationKeyForRedirect = followInstrumentationKeyForRedirect;
+  }
 
   @Override
   public Mono<HttpResponse> process(HttpPipelineCallContext context, HttpPipelineNextPolicy next) {
@@ -64,17 +69,26 @@ public final class RedirectPolicy implements HttpPipelinePolicy {
       HttpRequest originalHttpRequest,
       int retryCount) {
     // make sure the context is not modified during retry, except for the URL
-    String redirectLocation = null;
+    final String redirectLocation;
     HttpRequest newHttpRequest = originalHttpRequest.copy();
     final String instrumentationKey = getInstrumentationKeyFromContext(context);
-    if (!Strings.isNullOrEmpty(instrumentationKey)) {
-      redirectLocation = instrumentationKeyMappings.get(instrumentationKey);
+    if (followInstrumentationKeyForRedirect) {
+      if (instrumentationKey != null) {
+        redirectLocation = instrumentationKeyMappings.get(instrumentationKey);
+      } else {
+        // special case (localStorage) when followInstrumentationKeyForRedirect is true but
+        // instrumentation key is
+        // null.
+        redirectLocation = cachedUrl;
+      }
     } else {
       redirectLocation = redirectMappings.get(originalHttpRequest.getUrl());
     }
     if (redirectLocation != null) {
       newHttpRequest.setUrl(redirectLocation);
     }
+    // reset cached url
+    cachedUrl = null;
     context.setHttpRequest(newHttpRequest);
     return next.clone()
         .process()
@@ -83,9 +97,14 @@ public final class RedirectPolicy implements HttpPipelinePolicy {
               if (shouldRetryWithRedirect(httpResponse.getStatusCode(), retryCount)) {
                 String responseLocation = httpResponse.getHeaderValue("Location");
                 if (responseLocation != null) {
-                  redirectMappings.put(originalHttpRequest.getUrl(), responseLocation);
-                  if (instrumentationKey != null) {
-                    instrumentationKeyMappings.put(instrumentationKey, responseLocation);
+                  if (followInstrumentationKeyForRedirect) {
+                    if (instrumentationKey != null) {
+                      instrumentationKeyMappings.put(instrumentationKey, responseLocation);
+                    } else {
+                      cachedUrl = responseLocation;
+                    }
+                  } else {
+                    redirectMappings.put(originalHttpRequest.getUrl(), responseLocation);
                   }
                   return attemptRetry(context, next, originalHttpRequest, retryCount + 1);
                 }
@@ -114,10 +133,6 @@ public final class RedirectPolicy implements HttpPipelinePolicy {
   }
 
   private static String getInstrumentationKeyFromContext(HttpPipelineCallContext context) {
-    Object instrumentationKey = context.getData(INSTRUMENTATION_KEY).orElse(null);
-    if (instrumentationKey == null) {
-      return null;
-    }
-    return instrumentationKey.toString();
+    return (String) context.getData(INSTRUMENTATION_KEY).orElse(null);
   }
 }
