@@ -119,10 +119,12 @@ public class LazyHttpClient implements HttpClient {
     return new NettyAsyncHttpClientBuilder().connectionProvider(connectionProvider).build();
   }
 
-  public static HttpPipeline newHttpPipeLine(Configuration.AadAuthentication aadConfiguration) {
+  public static HttpPipeline newHttpPipeLine(
+      Configuration.AadAuthentication aadConfiguration,
+      boolean followInstrumentationKeyForRedirect) {
     List<HttpPipelinePolicy> policies = new ArrayList<>();
     // Redirect policy to to handle v2.1/track redirects (and other redirects too, e.g. profiler)
-    policies.add(new RedirectPolicy());
+    policies.add(new RedirectPolicy(followInstrumentationKeyForRedirect));
     if (aadConfiguration.enabled) {
       policies.add(getAuthenticationPolicy(aadConfiguration));
     }

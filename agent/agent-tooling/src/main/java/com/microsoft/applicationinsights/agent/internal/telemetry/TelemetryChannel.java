@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.telemetry;
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
+import com.azure.core.util.Context;
 import com.azure.core.util.tracing.Tracer;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -33,21 +34,25 @@ import com.microsoft.applicationinsights.agent.internal.common.ExceptionUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
+import com.microsoft.applicationinsights.agent.internal.httpclient.RedirectPolicy;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPOutputStream;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
-import reactor.util.context.Context;
 
 // TODO performance testing
 public class TelemetryChannel {
@@ -76,12 +81,12 @@ public class TelemetryChannel {
       URL endpointUrl,
       Configuration.AadAuthentication aadAuthentication,
       LocalFileWriter localFileWriter) {
-    HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(aadAuthentication);
+    HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(aadAuthentication, true);
     return new TelemetryChannel(httpPipeline, endpointUrl, localFileWriter);
   }
 
   public CompletableResultCode sendRawBytes(ByteBuffer buffer) {
-    return internalSend(Arrays.asList(buffer));
+    return internalSend(Arrays.asList(buffer), null);
   }
 
   // used by tests only
@@ -92,6 +97,25 @@ public class TelemetryChannel {
   }
 
   public CompletableResultCode send(List<TelemetryItem> telemetryItems) {
+    Map<String, List<TelemetryItem>> instrumentationKeyMap = new HashMap();
+    List<CompletableResultCode> resultCodeList = new ArrayList<>();
+    for (TelemetryItem telemetryItem : telemetryItems) {
+      String instrumentationKey = telemetryItem.getInstrumentationKey();
+      if (!instrumentationKeyMap.containsKey(instrumentationKey)) {
+        instrumentationKeyMap.put(instrumentationKey, new ArrayList<>());
+      }
+      instrumentationKeyMap.get(instrumentationKey).add(telemetryItem);
+    }
+    for (String instrumentationKey : instrumentationKeyMap.keySet()) {
+      resultCodeList.add(
+          internalSendByInstrumentationKey(
+              instrumentationKeyMap.get(instrumentationKey), instrumentationKey));
+    }
+    return CompletableResultCode.ofAll(resultCodeList);
+  }
+
+  public CompletableResultCode internalSendByInstrumentationKey(
+      List<TelemetryItem> telemetryItems, String instrumentationKey) {
     List<ByteBuffer> byteBuffers;
     try {
       byteBuffers = encode(telemetryItems);
@@ -101,7 +125,7 @@ public class TelemetryChannel {
       return CompletableResultCode.ofFailure();
     }
     try {
-      return internalSend(byteBuffers);
+      return internalSend(byteBuffers, instrumentationKey);
     } catch (Throwable t) {
       networkExceptionStats.recordFailure(
           String.format("Error sending telemetry items: %s", t.getMessage()), t);
@@ -137,7 +161,8 @@ public class TelemetryChannel {
    * Object can be a list of {@link ByteBuffer} or a raw byte array. Regular telemetries will be
    * sent as {@code List<ByteBuffer>}. Persisted telemetries will be sent as byte[]
    */
-  private CompletableResultCode internalSend(List<ByteBuffer> byteBuffers) {
+  private CompletableResultCode internalSend(
+      List<ByteBuffer> byteBuffers, @Nullable String instrumentationKey) {
     HttpRequest request = new HttpRequest(HttpMethod.POST, endpointUrl);
 
     request.setBody(Flux.fromIterable(byteBuffers));
@@ -162,9 +187,14 @@ public class TelemetryChannel {
     //  * write to disk on second failure
     CompletableResultCode result = new CompletableResultCode();
     final long startTime = System.currentTimeMillis();
+    // Add instrumentation key to context to use in redirectPolicy
+    Map<Object, Object> contextKeyValues = new HashMap<>();
+    if (instrumentationKey != null) {
+      contextKeyValues.put(RedirectPolicy.INSTRUMENTATION_KEY, instrumentationKey);
+    }
+    contextKeyValues.put(Tracer.DISABLE_TRACING_KEY, true);
     pipeline
-        .send(request)
-        .contextWrite(Context.of(Tracer.DISABLE_TRACING_KEY, true))
+        .send(request, Context.of(contextKeyValues))
         .subscribe(
             response -> {
               parseResponseCode(response.getStatusCode(), byteBuffers, byteBuffers);

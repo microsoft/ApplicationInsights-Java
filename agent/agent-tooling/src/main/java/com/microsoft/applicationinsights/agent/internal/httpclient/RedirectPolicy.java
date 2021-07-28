@@ -35,15 +35,23 @@ import reactor.core.publisher.Mono;
 
 // This is mostly a copy from Azure Monitor Open Telemetry Exporter SDK AzureMonitorRedirectPolicy
 public final class RedirectPolicy implements HttpPipelinePolicy {
-
+  private final boolean followInstrumentationKeyForRedirect;
+  // use this only when followInstrumentationKeyForRedirect is true and instrumentation key is null
   private static final int PERMANENT_REDIRECT_STATUS_CODE = 308;
   private static final int TEMP_REDIRECT_STATUS_CODE = 307;
   // Based on Stamp specific redirects design doc
   private static final int MAX_REDIRECT_RETRIES = 10;
   private static final Logger logger = LoggerFactory.getLogger(RedirectPolicy.class);
+  public static final String INSTRUMENTATION_KEY = "instrumentationKey";
 
   private final Cache<URL, String> redirectMappings =
       Cache.newBuilder().setMaximumSize(100).build();
+  private final Cache<String, String> instrumentationKeyMappings =
+      Cache.newBuilder().setMaximumSize(100).build();
+
+  public RedirectPolicy(boolean followInstrumentationKeyForRedirect) {
+    this.followInstrumentationKeyForRedirect = followInstrumentationKeyForRedirect;
+  }
 
   @Override
   public Mono<HttpResponse> process(HttpPipelineCallContext context, HttpPipelineNextPolicy next) {
@@ -59,13 +67,12 @@ public final class RedirectPolicy implements HttpPipelinePolicy {
       HttpPipelineNextPolicy next,
       HttpRequest originalHttpRequest,
       int retryCount) {
-    // make sure the context is not modified during retry, except for the URL
-    HttpRequest newHttpRequest = originalHttpRequest.copy();
-    String redirectLocation = redirectMappings.get(originalHttpRequest.getUrl());
-    if (redirectLocation != null) {
-      newHttpRequest.setUrl(redirectLocation);
+    String instrumentationKey = getInstrumentationKeyFromContext(context);
+    String redirectUrl = getCachedRedirectUrl(instrumentationKey, originalHttpRequest.getUrl());
+    if (redirectUrl != null) {
+      // make sure the context is not modified during retry, except for the URL
+      context.setHttpRequest(originalHttpRequest.copy().setUrl(redirectUrl));
     }
-    context.setHttpRequest(newHttpRequest);
     return next.clone()
         .process()
         .flatMap(
@@ -73,12 +80,34 @@ public final class RedirectPolicy implements HttpPipelinePolicy {
               if (shouldRetryWithRedirect(httpResponse.getStatusCode(), retryCount)) {
                 String responseLocation = httpResponse.getHeaderValue("Location");
                 if (responseLocation != null) {
-                  redirectMappings.put(originalHttpRequest.getUrl(), responseLocation);
+                  cacheRedirectUrl(
+                      responseLocation, instrumentationKey, originalHttpRequest.getUrl());
+                  context.setHttpRequest(originalHttpRequest.copy().setUrl(responseLocation));
                   return attemptRetry(context, next, originalHttpRequest, retryCount + 1);
                 }
               }
               return Mono.just(httpResponse);
             });
+  }
+
+  private void cacheRedirectUrl(String redirectUrl, String instrumentationKey, URL originalUrl) {
+    if (!followInstrumentationKeyForRedirect) {
+      redirectMappings.put(originalUrl, redirectUrl);
+      return;
+    }
+    if (instrumentationKey != null) {
+      instrumentationKeyMappings.put(instrumentationKey, redirectUrl);
+    }
+  }
+
+  private String getCachedRedirectUrl(String instrumentationKey, URL originalUrl) {
+    if (!followInstrumentationKeyForRedirect) {
+      return redirectMappings.get(originalUrl);
+    }
+    if (instrumentationKey != null) {
+      return instrumentationKeyMappings.get(instrumentationKey);
+    }
+    return null;
   }
 
   /**
@@ -98,5 +127,9 @@ public final class RedirectPolicy implements HttpPipelinePolicy {
         || statusCode == HttpURLConnection.HTTP_MOVED_PERM
         || statusCode == PERMANENT_REDIRECT_STATUS_CODE
         || statusCode == TEMP_REDIRECT_STATUS_CODE;
+  }
+
+  private static String getInstrumentationKeyFromContext(HttpPipelineCallContext context) {
+    return (String) context.getData(INSTRUMENTATION_KEY).orElse(null);
   }
 }
