@@ -37,7 +37,6 @@ import reactor.core.publisher.Mono;
 public final class RedirectPolicy implements HttpPipelinePolicy {
   private final boolean followInstrumentationKeyForRedirect;
   // use this only when followInstrumentationKeyForRedirect is true and instrumentation key is null
-  private String cachedUrl;
   private static final int PERMANENT_REDIRECT_STATUS_CODE = 308;
   private static final int TEMP_REDIRECT_STATUS_CODE = 307;
   // Based on Stamp specific redirects design doc
@@ -76,10 +75,7 @@ public final class RedirectPolicy implements HttpPipelinePolicy {
       if (instrumentationKey != null) {
         redirectLocation = instrumentationKeyMappings.get(instrumentationKey);
       } else {
-        // special case (localStorage) when followInstrumentationKeyForRedirect is true but
-        // instrumentation key is
-        // null.
-        redirectLocation = cachedUrl;
+        redirectLocation = null;
       }
     } else {
       redirectLocation = redirectMappings.get(originalHttpRequest.getUrl());
@@ -87,8 +83,6 @@ public final class RedirectPolicy implements HttpPipelinePolicy {
     if (redirectLocation != null) {
       newHttpRequest.setUrl(redirectLocation);
     }
-    // reset cached url
-    cachedUrl = null;
     context.setHttpRequest(newHttpRequest);
     return next.clone()
         .process()
@@ -101,7 +95,12 @@ public final class RedirectPolicy implements HttpPipelinePolicy {
                     if (instrumentationKey != null) {
                       instrumentationKeyMappings.put(instrumentationKey, responseLocation);
                     } else {
-                      cachedUrl = responseLocation;
+                      // special case (LocalFileSender) where followInstrumentationKeyForRedirect is
+                      // false and instrumentationKey is not set.
+                      HttpRequest httpRequestCopy = originalHttpRequest.copy();
+                      httpRequestCopy.setUrl(responseLocation);
+                      context.setHttpRequest(httpRequestCopy);
+                      return attemptRetry(context, next, httpRequestCopy, retryCount + 1);
                     }
                   } else {
                     redirectMappings.put(originalHttpRequest.getUrl(), responseLocation);
