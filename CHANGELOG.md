@@ -1,23 +1,16 @@
 # CHANGELOG
 
-# Version 3.2.0-BETA.3
-* Add Spring integration (preview).
-* Add thread name to log capture. Resolves [#1699](https://github.com/microsoft/ApplicationInsights-Java/issues/1699)
-* Use azure monitor exporter instead of Open Telemetry exporter.
-* Add data truncation and sanitization to telemetry data.
-* Support W3C baggage propagation.
-* Update App Services internal diagnostics comments.
-* Disable legacy Request-Id propagation by default.
-* Handle partial content success due to Stamp specific redirects. Resolves [#1674](https://github.com/microsoft/ApplicationInsights-Java/issues/1674)
-* Log controlled warning when telemetry truncated. Resolves [#1021](https://github.com/microsoft/ApplicationInsights-Java/issues/1021)
-* Support system properties for the main "coordinates". Resolves [#1684](https://github.com/microsoft/ApplicationInsights-Java/issues/1684)
-* Small fixes to 2.x interop and exporter code cleanup.
-* Persist regular telemetries on disk inorder to retry when failed to send telemetry.
-
-
 # Version 3.2.0-BETA.2
 * Lots of internal clean up.
 * Reduce binary size from 3.2.0-BETA
+* Add Spring Integration instrumentation (preview).
+* Add thread name to log capture [#1699](https://github.com/microsoft/ApplicationInsights-Java/issues/1699).
+* Support W3C baggage propagation.
+* Disable legacy Request-Id propagation by default.
+* Handle partial content success due to Stamp specific redirects [#1674](https://github.com/microsoft/ApplicationInsights-Java/issues/1674).
+* Log controlled warning when telemetry truncated [#1021](https://github.com/microsoft/ApplicationInsights-Java/issues/1021).
+* Support system properties for connection string, role name and role instance [#1684](https://github.com/microsoft/ApplicationInsights-Java/issues/1684).
+* Small fixes to 2.x interop.
 
 # Version 3.2.0-BETA
 * Support Azure Active Directory Authentication.
