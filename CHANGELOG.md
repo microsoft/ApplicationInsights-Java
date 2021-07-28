@@ -11,7 +11,7 @@
 * Log controlled warning when telemetry truncated [#1021](https://github.com/microsoft/ApplicationInsights-Java/issues/1021).
 * Support system properties for connection string, role name and role instance [#1684](https://github.com/microsoft/ApplicationInsights-Java/issues/1684).
 * Small fixes to 2.x interop.
-* Updated to support OpenTelemetry API 1.4.1
+* Updated to support OpenTelemetry API 1.4.1 (preview)
 * Moves 3 instrumentations out of preview, and enables them by default
     - Java 11 HTTP client
     - JAX-WS
