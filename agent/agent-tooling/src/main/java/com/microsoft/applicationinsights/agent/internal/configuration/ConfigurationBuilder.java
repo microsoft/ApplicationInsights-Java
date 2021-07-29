@@ -538,8 +538,8 @@ public class ConfigurationBuilder {
       Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
       JsonAdapter<Configuration> jsonAdapter =
           strict
-              ? moshi.adapter(Configuration.class).failOnUnknown()
-              : moshi.adapter(Configuration.class);
+              ? moshi.adapter(Configuration.class).failOnUnknown().lenient()
+              : moshi.adapter(Configuration.class).lenient();
       Buffer buffer = new Buffer();
       buffer.readFrom(in);
       try {

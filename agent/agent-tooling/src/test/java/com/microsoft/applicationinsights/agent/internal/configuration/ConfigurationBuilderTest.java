@@ -95,6 +95,16 @@ class ConfigurationBuilderTest {
   }
 
   @Test
+  void testLenientMalformedJson() throws IOException {
+    Path path = getConfigFilePath("applicationinsights_lenient_malformed.json");
+    Configuration configuration = ConfigurationBuilder.getConfigurationFromConfigFile(path, true);
+    // Configuration object should still be created.
+    assertThat(configuration.connectionString)
+        .isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+    assertThat(configuration.role.name).isEqualTo("Something Good");
+  }
+
+  @Test
   void testGetJsonEncodingExceptionMessage() {
     String pathNull =
         ConfigurationBuilder.getJsonEncodingExceptionMessage("file path/to/file", null);
