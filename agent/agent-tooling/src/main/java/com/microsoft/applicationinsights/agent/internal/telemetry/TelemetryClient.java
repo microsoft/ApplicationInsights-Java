@@ -235,8 +235,9 @@ public class TelemetryClient {
           LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, statsbeatFolder);
           LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, statsbeatFolder);
           TelemetryChannel channel =
-              TelemetryChannel.create(
-                  endpointProvider.getStatsbeatEndpointUrl(), aadAuthentication, localFileWriter);
+              // Telemetry Channel with AadAuthentication disabled. Default value of enabled flag is
+              // false
+              TelemetryChannel.create(endpointProvider.getStatsbeatEndpointUrl(), localFileWriter);
           LocalFileSender.start(localFileLoader, channel);
           statsbeatChannelBatcher = BatchSpanProcessor.builder(channel).build();
         }

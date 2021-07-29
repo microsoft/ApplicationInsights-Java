@@ -85,6 +85,10 @@ public class TelemetryChannel {
     return new TelemetryChannel(httpPipeline, endpointUrl, localFileWriter);
   }
 
+  public static TelemetryChannel create(URL endpointUrl, LocalFileWriter localFileWriter) {
+    return create(endpointUrl, null, localFileWriter);
+  }
+
   public CompletableResultCode sendRawBytes(ByteBuffer buffer) {
     return internalSend(Arrays.asList(buffer), null);
   }
