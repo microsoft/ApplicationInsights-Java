@@ -217,7 +217,7 @@ public class TelemetryClient {
           LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, telemetryFolder);
           TelemetryChannel channel =
               TelemetryChannel.create(
-                  endpointProvider.getIngestionEndpointUrl(), aadAuthentication, localFileWriter);
+                  endpointProvider.getIngestionEndpointUrl(), localFileWriter, aadAuthentication);
           LocalFileSender.start(localFileLoader, channel);
           channelBatcher = BatchSpanProcessor.builder(channel).build();
         }
@@ -235,8 +235,6 @@ public class TelemetryClient {
           LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, statsbeatFolder);
           LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, statsbeatFolder);
           TelemetryChannel channel =
-              // Telemetry Channel with AadAuthentication disabled. Default value of enabled flag is
-              // false
               TelemetryChannel.create(endpointProvider.getStatsbeatEndpointUrl(), localFileWriter);
           LocalFileSender.start(localFileLoader, channel);
           statsbeatChannelBatcher = BatchSpanProcessor.builder(channel).build();
