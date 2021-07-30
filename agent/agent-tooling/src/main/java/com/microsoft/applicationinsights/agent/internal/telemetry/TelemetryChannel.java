@@ -79,10 +79,14 @@ public class TelemetryChannel {
 
   public static TelemetryChannel create(
       URL endpointUrl,
-      Configuration.AadAuthentication aadAuthentication,
-      LocalFileWriter localFileWriter) {
+      LocalFileWriter localFileWriter,
+      Configuration.AadAuthentication aadAuthentication) {
     HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(aadAuthentication, true);
     return new TelemetryChannel(httpPipeline, endpointUrl, localFileWriter);
+  }
+
+  public static TelemetryChannel create(URL endpointUrl, LocalFileWriter localFileWriter) {
+    return create(endpointUrl, localFileWriter, null);
   }
 
   public CompletableResultCode sendRawBytes(ByteBuffer buffer) {

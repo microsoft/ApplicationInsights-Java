@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import reactor.core.publisher.Mono;
 import reactor.netty.resources.ConnectionProvider;
@@ -120,12 +121,12 @@ public class LazyHttpClient implements HttpClient {
   }
 
   public static HttpPipeline newHttpPipeLine(
-      Configuration.AadAuthentication aadConfiguration,
+      @Nullable Configuration.AadAuthentication aadConfiguration,
       boolean followInstrumentationKeyForRedirect) {
     List<HttpPipelinePolicy> policies = new ArrayList<>();
     // Redirect policy to to handle v2.1/track redirects (and other redirects too, e.g. profiler)
     policies.add(new RedirectPolicy(followInstrumentationKeyForRedirect));
-    if (aadConfiguration.enabled) {
+    if (aadConfiguration != null && aadConfiguration.enabled) {
       policies.add(getAuthenticationPolicy(aadConfiguration));
     }
     // Add Logging Policy. Can be enabled using AZURE_LOG_LEVEL.
