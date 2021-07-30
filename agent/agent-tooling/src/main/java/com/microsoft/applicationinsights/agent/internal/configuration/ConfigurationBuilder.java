@@ -33,9 +33,11 @@ import com.squareup.moshi.JsonEncodingException;
 import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -534,7 +536,10 @@ public class ConfigurationBuilder {
 
   static Configuration getConfigurationFromConfigFile(Path configPath, boolean strict)
       throws IOException {
-    try (InputStream in = Files.newInputStream(configPath)) {
+    String cleanJsonConfiguration =
+        cleanJsonContent(new String(Files.readAllBytes(configPath), Charset.defaultCharset()));
+    try (InputStream in =
+        new ByteArrayInputStream(cleanJsonConfiguration.getBytes(Charset.defaultCharset()))) {
       Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
       JsonAdapter<Configuration> jsonAdapter =
           strict
@@ -567,6 +572,14 @@ public class ConfigurationBuilder {
             "Error parsing configuration from file: " + configPath.toAbsolutePath(), e);
       }
     }
+  }
+
+  // Function to remove all non-ASCII characters
+  // Note: Is public, since we have to use this function in tests.
+  public static String cleanJsonContent(String text) {
+    // strips off all non-ASCII characters
+    text = text.replaceAll("[^\\x00-\\x7F]", "");
+    return text.trim();
   }
 
   static Configuration getConfigurationFromEnvVar(String content, boolean strict) {

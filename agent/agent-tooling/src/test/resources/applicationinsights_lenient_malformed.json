@@ -1,23 +1,22 @@
 {
   "connectionString": à"InstrumentationKey=00000000-0000-0000-0000-000000000000",
   "role": {
-    "name": "Something Good",
-    "instance": "xyz123"
+    "name": à"Something Good",
+    "instance": à"xyz123"
   },
   "customDimensions": {
     "some key": "abc",
     "another key": "def"
   },
   "sampling": {
-    "percentage": 10
+    "percentage": à10
   },
   "instrumentation": {
     "jdbc": {
-      "enabled": false
+      "enabled": àfalse
     },
     "logging": {
-      "enabled": true,
-      "level": "error"
+      "level": à"error"
     },
     "micrometer": {
       "enabled": true
@@ -44,14 +43,14 @@
     "intervalSeconds": 60
   },
   "proxy": {
-    "host": "myproxy",
+    "host": à"myproxy",
     "port": 8080
   },
   "selfDiagnostics": {
     "level": "debug",
     "destination": "file",
     "file": {
-      "path": "/var/log/applicationinsights/abc.log",
+      "path": à"/var/log/applicationinsights/abc.log",
       "maxSizeMb": 10,
       "maxHistory": 2
     }
