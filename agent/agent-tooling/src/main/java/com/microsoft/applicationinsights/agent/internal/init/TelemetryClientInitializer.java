@@ -65,6 +65,10 @@ public class TelemetryClientInitializer {
     PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(
         configuration.preview.metricIntervalSeconds);
 
+    if (configuration.selfDiagnostics.logAvailableJmxMetrics) {
+      PerformanceCounterContainer.INSTANCE.setLogAvailableJmxMetrics();
+    }
+
     loadCustomJmxPerfCounters(configuration.jmxMetrics);
 
     PerformanceCounterContainer.INSTANCE.register(new ProcessCpuPerformanceCounter());
