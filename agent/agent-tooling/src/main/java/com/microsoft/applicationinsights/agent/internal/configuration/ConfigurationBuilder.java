@@ -33,16 +33,16 @@ import com.squareup.moshi.JsonEncodingException;
 import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import okio.Buffer;
 import org.slf4j.LoggerFactory;
 
@@ -536,10 +536,7 @@ public class ConfigurationBuilder {
 
   static Configuration getConfigurationFromConfigFile(Path configPath, boolean strict)
       throws IOException {
-    String cleanJsonConfiguration =
-        cleanJsonContent(new String(Files.readAllBytes(configPath), Charset.defaultCharset()));
-    try (InputStream in =
-        new ByteArrayInputStream(cleanJsonConfiguration.getBytes(Charset.defaultCharset()))) {
+    try (InputStream in = Files.newInputStream(configPath)) {
       Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
       JsonAdapter<Configuration> jsonAdapter =
           strict
@@ -564,9 +561,21 @@ public class ConfigurationBuilder {
               "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
         }
       } catch (JsonEncodingException ex) {
+        List<String> nonAsciiList = getNonAsciiListOfStrings(configPath);
+        StringBuilder note = new StringBuilder();
+        if (!nonAsciiList.isEmpty()) {
+          note.append(
+              "Application Insights Java agent identified the following list of non-ASCII strings in the configuration file: \n");
+          for (String nonAsciiString : nonAsciiList) {
+            note.append(nonAsciiString).append("\n");
+          }
+          note.append("Please remove any unexpected characters from the json configuration file");
+        }
         throw new FriendlyException(
+            "Application Insights Java agent failed to start",
+            "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358",
             getJsonEncodingExceptionMessageForFile(configPath, ex.getMessage()),
-            "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
+            new String(note));
       } catch (Exception e) {
         throw new ConfigurationException(
             "Error parsing configuration from file: " + configPath.toAbsolutePath(), e);
@@ -574,12 +583,12 @@ public class ConfigurationBuilder {
     }
   }
 
-  // Function to remove all non-ASCII characters
-  // Note: Is public, since we have to use this function in tests.
-  public static String cleanJsonContent(String text) {
-    // strips off all non-ASCII characters
-    text = text.replaceAll("[^\\x00-\\x7F]", "");
-    return text.trim();
+  private static List<String> getNonAsciiListOfStrings(Path configPath) throws IOException {
+    List<String> list;
+    try (Stream<String> stream = Files.lines(configPath)) {
+      list = stream.filter(line -> !line.matches("\\A\\p{ASCII}*\\z")).collect(Collectors.toList());
+    }
+    return list;
   }
 
   static Configuration getConfigurationFromEnvVar(String content, boolean strict) {

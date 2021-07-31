@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
-import static com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder.cleanJsonContent;
 import static com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder.trimAndEmptyToNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -29,8 +28,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
@@ -100,11 +97,10 @@ class ConfigurationBuilderTest {
   @Test
   void testLenientMalformedJson() throws IOException {
     Path path = getConfigFilePath("applicationinsights_lenient_malformed.json");
-    Configuration configuration = ConfigurationBuilder.getConfigurationFromConfigFile(path, true);
-    // Configuration object should still be created.
-    assertThat(configuration.connectionString)
-        .isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
-    assertThat(configuration.role.name).isEqualTo("Something Good");
+    assertThatThrownBy(() -> ConfigurationBuilder.getConfigurationFromConfigFile(path, true))
+        .isInstanceOf(FriendlyException.class)
+        .hasMessageContaining(
+            "Application Insights Java agent identified the following list of non-ASCII strings in the configuration file");
   }
 
   @Test
@@ -137,16 +133,5 @@ class ConfigurationBuilderTest {
     assertThat(pathInvalidAndNull)
         .isEqualTo(
             "Application Insights Java agent's configuration file path/to/file has a malformed JSON\n");
-  }
-
-  @Test
-  void testCleanJsonConetent() throws IOException {
-    Path path = getConfigFilePath("applicationinsights.json");
-    Path malformedPath = getConfigFilePath("applicationinsights_lenient_malformed.json");
-    String jsonContent =
-        cleanJsonContent(new String(Files.readAllBytes(path), Charset.defaultCharset()));
-    String cleanJsonContent =
-        cleanJsonContent(new String(Files.readAllBytes(malformedPath), Charset.defaultCharset()));
-    assertThat(cleanJsonContent).isEqualTo(jsonContent);
   }
 }
