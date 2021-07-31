@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
@@ -89,7 +90,10 @@ public class MainEntryPoint {
       AiComponentInstaller.setInstrumentation(instrumentation);
       AgentInstaller.installBytebuddyAgent(
           instrumentation, ConfigOverride.getConfig(configuration), false);
-      startupLogger.info("ApplicationInsights Java Agent {} started successfully", version);
+      startupLogger.info(
+          "ApplicationInsights Java Agent {} started successfully (PID {})",
+          version,
+          new PidFinder().getValue());
       success = true;
       LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
           .info("Application Insights Codeless Agent {} Attach Successful", version);
