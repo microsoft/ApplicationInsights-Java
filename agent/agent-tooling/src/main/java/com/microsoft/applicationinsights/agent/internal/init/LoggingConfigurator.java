@@ -269,7 +269,7 @@ public class LoggingConfigurator {
   private Encoder<ILoggingEvent> createEncoder() {
     PatternLayoutEncoder encoder = new PatternLayoutEncoder();
     encoder.setContext(loggerContext);
-    encoder.setPattern("%d{yyyy-MM-dd HH:mm:ss.SSSX} %-5level %logger{36} - %msg%n");
+    encoder.setPattern("%d{yyyy-MM-dd HH:mm:ss.SSSXXX} %-5level %logger{36} - %msg%n");
     encoder.start();
     return encoder;
   }
