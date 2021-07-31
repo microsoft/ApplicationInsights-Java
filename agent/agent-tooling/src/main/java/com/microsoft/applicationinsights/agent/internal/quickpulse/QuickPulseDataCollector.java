@@ -176,6 +176,11 @@ public enum QuickPulseDataCollector {
   }
 
   public void add(TelemetryItem telemetryItem) {
+    if (telemetryClient == null) {
+      // quick pulse is not enabled
+      return;
+    }
+
     if (!telemetryItem.getInstrumentationKey().equals(getInstrumentationKey())) {
       return;
     }
