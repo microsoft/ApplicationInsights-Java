@@ -125,7 +125,10 @@ class AvailableJmxMetricLogger {
           availableJmxMetrics.put(name, attrs);
         }
       } catch (Exception e) {
-        logger.debug(e.getMessage(), e);
+        // log exception at trace level since this is expected in several cases, e.g.
+        // "java.lang.UnsupportedOperationException: CollectionUsage threshold is not supported"
+        // and available jmx metrics are already only logged at debug
+        logger.trace(e.getMessage(), e);
         availableJmxMetrics.put(name, Collections.singleton("<error getting attributes: " + e));
       }
     }
@@ -142,8 +145,10 @@ class AvailableJmxMetricLogger {
           Object value = server.getAttribute(objectName, attribute.getName());
           attributeNames.addAll(getNumericAttributes(attribute, value));
         } catch (Exception e) {
-          // log exception at debug level
-          logger.debug(e.getMessage(), e);
+          // log exception at trace level since this is expected in several cases, e.g.
+          // "java.lang.UnsupportedOperationException: CollectionUsage threshold is not supported"
+          // and available jmx metrics are already only logged at debug
+          logger.trace(e.getMessage(), e);
         }
       }
     }
