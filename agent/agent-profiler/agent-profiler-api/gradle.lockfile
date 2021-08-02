@@ -1,7 +1,7 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-com.azure:azure-core:1.17.0=runtimeClasspath
+com.azure:azure-core:1.18.0=runtimeClasspath
 com.fasterxml.jackson.core:jackson-annotations:2.12.3=runtimeClasspath
 com.fasterxml.jackson.core:jackson-core:2.12.3=runtimeClasspath
 com.fasterxml.jackson.core:jackson-databind:2.12.3=runtimeClasspath
