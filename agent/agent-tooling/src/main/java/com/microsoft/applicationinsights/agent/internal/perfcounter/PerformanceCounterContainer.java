@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +64,8 @@ public enum PerformanceCounterContainer {
 
   private final ConcurrentMap<String, PerformanceCounter> performanceCounters =
       new ConcurrentHashMap<>();
+
+  private volatile @Nullable AvailableJmxMetricLogger availableJmxMetricLogger;
 
   private volatile boolean initialized = false;
 
@@ -117,6 +120,10 @@ public enum PerformanceCounterContainer {
     this.collectionFrequencyInMillis = collectionFrequencyInSec * 1000;
   }
 
+  public void setLogAvailableJmxMetrics() {
+    availableJmxMetricLogger = new AvailableJmxMetricLogger();
+  }
+
   /**
    * A private method that is called only when the container needs to start collecting performance
    * counters data. The method will schedule a callback to be called, it will initialize a {@link
@@ -141,6 +148,10 @@ public enum PerformanceCounterContainer {
         new Runnable() {
           @Override
           public void run() {
+            if (availableJmxMetricLogger != null) {
+              availableJmxMetricLogger.logAvailableJmxMetrics();
+            }
+
             TelemetryClient telemetryClient = TelemetryClient.getActive();
 
             for (PerformanceCounter performanceCounter : performanceCounters.values()) {
