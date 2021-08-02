@@ -147,6 +147,13 @@ public class LazyHttpClient implements HttpClient {
     return getDelegate().send(request, context);
   }
 
+  // need to consume response, otherwise get netty ByteBuf leak warnings:
+  // io.netty.util.ResourceLeakDetector - LEAK: ByteBuf.release() was not called before
+  // it's garbage-collected (see https://github.com/Azure/azure-sdk-for-java/issues/10467)
+  public static void consumeResponseBody(HttpResponse response) {
+    response.getBody().subscribe();
+  }
+
   private static HttpPipelinePolicy getAuthenticationPolicy(
       Configuration.AadAuthentication configuration) {
     switch (configuration.type) {

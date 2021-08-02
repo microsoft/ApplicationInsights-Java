@@ -202,10 +202,7 @@ public class TelemetryChannel {
         .subscribe(
             response -> {
               parseResponseCode(response.getStatusCode(), byteBuffers, byteBuffers);
-              // need to consume response, otherwise get netty ByteBuf leak warnings:
-              // io.netty.util.ResourceLeakDetector - LEAK: ByteBuf.release() was not called before
-              // it's garbage-collected
-              response.getBody().subscribe();
+              LazyHttpClient.consumeResponseBody(response);
             },
             error -> {
               StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();

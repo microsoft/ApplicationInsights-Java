@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.quickpulse;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
+import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import java.util.concurrent.ArrayBlockingQueue;
 
 class QuickPulseDataSender implements Runnable {
@@ -57,7 +58,14 @@ class QuickPulseDataSender implements Runnable {
 
       long sendTime = System.nanoTime();
       try (HttpResponse response = httpPipeline.send(post).block()) {
-        if (response != null && networkHelper.isSuccess(response)) {
+        if (response == null) {
+          // this shouldn't happen, the mono should complete with a response or a failure
+          throw new AssertionError("http response mono returned empty");
+        }
+        // response body is not consumed below
+        LazyHttpClient.consumeResponseBody(response);
+
+        if (networkHelper.isSuccess(response)) {
           QuickPulseHeaderInfo quickPulseHeaderInfo =
               networkHelper.getQuickPulseHeaderInfo(response);
           switch (quickPulseHeaderInfo.getQuickPulseStatus()) {

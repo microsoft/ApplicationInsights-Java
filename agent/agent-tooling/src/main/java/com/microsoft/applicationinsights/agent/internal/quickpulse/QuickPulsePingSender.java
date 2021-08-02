@@ -27,6 +27,7 @@ import com.azure.core.http.HttpResponse;
 import com.microsoft.applicationinsights.agent.internal.common.ExceptionStats;
 import com.microsoft.applicationinsights.agent.internal.common.ExceptionUtils;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
+import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -91,11 +92,15 @@ class QuickPulsePingSender {
     request.setBody(buildPingEntity(currentDate.getTime()));
 
     long sendTime = System.nanoTime();
-    HttpResponse response = null;
-    try {
+    try (HttpResponse response = httpPipeline.send(request).block()) {
+      if (response == null) {
+        // this shouldn't happen, the mono should complete with a response or a failure
+        throw new AssertionError("http response mono returned empty");
+      }
+      // response body is not consumed below
+      LazyHttpClient.consumeResponseBody(response);
 
-      response = httpPipeline.send(request).block();
-      if (response != null && networkHelper.isSuccess(response)) {
+      if (networkHelper.isSuccess(response)) {
         QuickPulseHeaderInfo quickPulseHeaderInfo = networkHelper.getQuickPulseHeaderInfo(response);
         switch (quickPulseHeaderInfo.getQuickPulseStatus()) {
           case QP_IS_OFF:
@@ -111,10 +116,6 @@ class QuickPulsePingSender {
     } catch (Throwable t) {
       exceptionStats.recordFailure(t.getMessage(), t);
       ExceptionUtils.parseError(t, getQuickPulseEndpoint(), friendlyExceptionThrown, logger);
-    } finally {
-      if (response != null) {
-        response.close();
-      }
     }
     return onPingError(sendTime);
   }
