@@ -79,6 +79,11 @@ class ConfigOverride {
     if (!config.preview.instrumentation.azureSdk.enabled) {
       properties.put("otel.instrumentation.azure-core.enabled", "false");
     }
+    if (config.preview.instrumentation.grizzly.enabled) {
+      // grizzly instrumentation is off by default
+      // TODO (trask) investigate if grizzly instrumentation can be enabled upstream by default now
+      properties.put("otel.instrumentation.grizzly.enabled", "true");
+    }
     if (!config.preview.instrumentation.springIntegration.enabled) {
       properties.put("otel.instrumentation.spring-integration.enabled", "false");
     }

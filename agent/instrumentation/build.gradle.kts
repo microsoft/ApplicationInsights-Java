@@ -52,6 +52,7 @@ dependencies {
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-cassandra-4.0:${otelInstrumentationAlphaVersion}")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-executors:${otelInstrumentationAlphaVersion}")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-google-http-client-1.19:${otelInstrumentationAlphaVersion}")
+  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grizzly-2.0:${otelInstrumentationAlphaVersion}")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.6:${otelInstrumentationAlphaVersion}")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-guava-10.0:${otelInstrumentationAlphaVersion}")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-http-url-connection:${otelInstrumentationAlphaVersion}")

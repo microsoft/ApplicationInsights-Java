@@ -210,6 +210,8 @@ public class Configuration {
   public static class PreviewInstrumentation {
     public DisabledByDefaultInstrumentation azureSdk = new DisabledByDefaultInstrumentation();
 
+    public DisabledByDefaultInstrumentation grizzly = new DisabledByDefaultInstrumentation();
+
     // this is just here to detect if using this old setting in order to give a helpful message
     @Deprecated
     public DisabledByDefaultInstrumentation javaHttpClient = new DisabledByDefaultInstrumentation();
