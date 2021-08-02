@@ -243,9 +243,6 @@ public class Configuration {
     public String level = "info";
     public String destination = "file+console";
     public DestinationFile file = new DestinationFile();
-
-    // specific use-case driven troubleshooting options
-    public boolean logAvailableJmxMetrics;
   }
 
   public static class DestinationFile {
