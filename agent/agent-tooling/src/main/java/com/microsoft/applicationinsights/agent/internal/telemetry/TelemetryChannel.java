@@ -202,6 +202,7 @@ public class TelemetryChannel {
         .subscribe(
             response -> {
               parseResponseCode(response.getStatusCode(), byteBuffers, byteBuffers);
+              LazyHttpClient.consumeResponseBody(response);
             },
             error -> {
               StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
