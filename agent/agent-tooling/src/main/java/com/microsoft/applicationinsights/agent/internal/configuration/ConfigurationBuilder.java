@@ -445,7 +445,7 @@ public class ConfigurationBuilder {
     }
     // intentionally not checking system properties for other system properties
     // with the intention to keep configuration paths minimal to help with supportability
-    return trimAndEmptyToNull(System.getProperty("applicationinsights.configuration.file"));
+    return Strings.trimAndEmptyToNull(System.getProperty("applicationinsights.configuration.file"));
   }
 
   private static String getWebsiteSiteNameEnvVar() {
@@ -500,21 +500,12 @@ public class ConfigurationBuilder {
 
   // never returns empty string (empty string is normalized to null)
   protected static String getSystemProperty(String name) {
-    return trimAndEmptyToNull(System.getProperty(name));
+    return Strings.trimAndEmptyToNull(System.getProperty(name));
   }
 
   // never returns empty string (empty string is normalized to null)
   protected static String getEnvVar(String name) {
-    return trimAndEmptyToNull(System.getenv(name));
-  }
-
-  // visible for testing
-  static String trimAndEmptyToNull(String str) {
-    if (str == null) {
-      return null;
-    }
-    String trimmed = str.trim();
-    return trimmed.isEmpty() ? null : trimmed;
+    return Strings.trimAndEmptyToNull(System.getenv(name));
   }
 
   private static boolean isTrimEmpty(String value) {

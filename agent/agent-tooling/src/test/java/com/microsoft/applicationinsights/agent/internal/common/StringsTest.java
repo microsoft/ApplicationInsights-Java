@@ -21,40 +21,19 @@
 
 package com.microsoft.applicationinsights.agent.internal.common;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public final class Strings {
+import org.junit.jupiter.api.Test;
 
-  public static boolean isNullOrEmpty(@Nullable String string) {
-    return string == null || string.isEmpty();
+public class StringsTest {
+
+  @Test
+  void testEmptyToNull() {
+    assertThat(Strings.trimAndEmptyToNull("   ")).isNull();
+    assertThat(Strings.trimAndEmptyToNull("")).isNull();
+    assertThat(Strings.trimAndEmptyToNull(null)).isNull();
+    assertThat(Strings.trimAndEmptyToNull("a")).isEqualTo("a");
+    assertThat(Strings.trimAndEmptyToNull("  a  ")).isEqualTo("a");
+    assertThat(Strings.trimAndEmptyToNull("\t")).isNull();
   }
-
-  public static String trimAndEmptyToNull(String str) {
-    if (str == null) {
-      return null;
-    }
-    String trimmed = str.trim();
-    return trimmed.isEmpty() ? null : trimmed;
-  }
-
-  public static Map<String, String> splitToMap(String str) {
-    Map<String, String> map = new HashMap<>();
-    for (String part : str.split(";")) {
-      if (part.trim().isEmpty()) {
-        continue;
-      }
-      int index = part.indexOf('=');
-      if (index == -1) {
-        throw new IllegalArgumentException();
-      }
-      String key = part.substring(0, index);
-      String value = part.substring(index + 1);
-      map.put(key, value);
-    }
-    return map;
-  }
-
-  private Strings() {}
 }
