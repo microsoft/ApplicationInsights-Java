@@ -31,6 +31,14 @@ public final class Strings {
     return string == null || string.isEmpty();
   }
 
+  public static String trimAndEmptyToNull(String str) {
+    if (str == null) {
+      return null;
+    }
+    String trimmed = str.trim();
+    return trimmed.isEmpty() ? null : trimmed;
+  }
+
   public static Map<String, String> splitToMap(String str) {
     Map<String, String> map = new HashMap<>();
     for (String part : str.split(";")) {

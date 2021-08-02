@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.exporter;
 
 import static java.util.Collections.singletonList;
 
+import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +46,7 @@ public class Exceptions {
     // at the end of the loop, current will be end of the first line
     if (separator != -1) {
       details.setTypeName(str.substring(0, separator));
-      details.setMessage(str.substring(separator + 2, current));
+      details.setMessage(Strings.trimAndEmptyToNull(str.substring(separator + 1, current)));
     } else {
       details.setTypeName(str.substring(0, current));
     }
@@ -80,10 +81,10 @@ public class Exceptions {
           line = line.substring("Caused by: ".length());
         }
         current = new TelemetryExceptionDetails();
-        int index = line.indexOf(": ");
+        int index = line.indexOf(':');
         if (index != -1) {
           current.setTypeName(line.substring(0, index));
-          current.setMessage(line.substring(index + 2));
+          current.setMessage(Strings.trimAndEmptyToNull(line.substring(index + 1)));
         } else {
           current.setTypeName(line);
         }

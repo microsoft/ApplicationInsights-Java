@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
-import static com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder.trimAndEmptyToNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -37,16 +36,6 @@ class ConfigurationBuilderTest {
     ClassLoader classLoader = getClass().getClassLoader();
     File file = new File(classLoader.getResource(resourceName).getFile());
     return file.toPath();
-  }
-
-  @Test
-  void testEmptyToNull() {
-    assertThat(trimAndEmptyToNull("   ")).isNull();
-    assertThat(trimAndEmptyToNull("")).isNull();
-    assertThat(trimAndEmptyToNull(null)).isNull();
-    assertThat(trimAndEmptyToNull("a")).isEqualTo("a");
-    assertThat(trimAndEmptyToNull("  a  ")).isEqualTo("a");
-    assertThat(trimAndEmptyToNull("\t")).isNull();
   }
 
   @Test
