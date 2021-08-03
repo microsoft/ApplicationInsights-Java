@@ -47,7 +47,8 @@ enum Feature {
   // JAXWS_DISABLED(17), no longer used
   RABBITMQ_DISABLED(18),
   SPRING_INTEGRATION_DISABLED(19),
-  LEGACY_PROPAGATION_DISABLED(20);
+  LEGACY_PROPAGATION_DISABLED(20),
+  GRIZZLY_DISABLED(21); // preview instrumentation
 
   private static final Map<String, Feature> javaVendorFeatureMap;
 

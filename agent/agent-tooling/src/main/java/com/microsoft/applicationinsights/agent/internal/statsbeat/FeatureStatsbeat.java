@@ -82,6 +82,9 @@ class FeatureStatsbeat extends BaseStatsbeat {
     if (!config.instrumentation.mongo.enabled) {
       featureList.add(Feature.MONGO_DISABLED);
     }
+    if (!config.instrumentation.rabbitmq.enabled) {
+      featureList.add(Feature.RABBITMQ_DISABLED);
+    }
     if (!config.instrumentation.redis.enabled) {
       featureList.add(Feature.REDIS_DISABLED);
     }
@@ -93,8 +96,8 @@ class FeatureStatsbeat extends BaseStatsbeat {
     if (!config.preview.instrumentation.azureSdk.enabled) {
       featureList.add(Feature.AZURE_SDK_DISABLED);
     }
-    if (!config.instrumentation.rabbitmq.enabled) {
-      featureList.add(Feature.RABBITMQ_DISABLED);
+    if (!config.preview.instrumentation.grizzly.enabled) {
+      featureList.add(Feature.GRIZZLY_DISABLED);
     }
     if (!config.preview.instrumentation.springIntegration.enabled) {
       featureList.add(Feature.SPRING_INTEGRATION_DISABLED);
