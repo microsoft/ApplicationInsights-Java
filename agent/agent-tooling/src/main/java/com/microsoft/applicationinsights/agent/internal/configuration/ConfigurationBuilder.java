@@ -21,6 +21,11 @@
 
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.common.HostName;
@@ -41,8 +46,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import okio.Buffer;
 import org.slf4j.LoggerFactory;
 
@@ -536,59 +539,33 @@ public class ConfigurationBuilder {
 
   static Configuration getConfigurationFromConfigFile(Path configPath, boolean strict)
       throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
     try (InputStream in = Files.newInputStream(configPath)) {
-      Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
-      JsonAdapter<Configuration> jsonAdapter =
-          strict
-              ? moshi.adapter(Configuration.class).failOnUnknown()
-              : moshi.adapter(Configuration.class);
-      Buffer buffer = new Buffer();
-      buffer.readFrom(in);
-      try {
-        return jsonAdapter.fromJson(buffer);
-      } catch (JsonDataException ex) {
-        if (strict) {
-          // Try extracting the configuration without failOnUnknown
-          Configuration configuration = getConfigurationFromConfigFile(configPath, false);
-          // cannot use logger before loading configuration, so need to store warning messages
-          // locally until logger is initialized
-          configurationLogger.warn(
-              getJsonEncodingExceptionMessageForFile(configPath, ex.getMessage()));
-          return configuration;
-        } else {
-          throw new FriendlyException(
-              getJsonEncodingExceptionMessageForFile(configPath, ex.getMessage()),
-              "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
-        }
-      } catch (JsonEncodingException ex) {
-        List<String> nonAsciiList = getNonAsciiListOfStrings(configPath);
-        StringBuilder note = new StringBuilder();
-        if (!nonAsciiList.isEmpty()) {
-          note.append(
-              "Application Insights Java agent identified the following list of non-ASCII strings in the configuration file: \n");
-          for (String nonAsciiString : nonAsciiList) {
-            note.append(nonAsciiString).append("\n");
-          }
-          note.append("Please remove any unexpected characters from the json configuration file");
-        }
-        throw new FriendlyException(
-            "Application Insights Java agent failed to start",
-            "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358",
-            getJsonEncodingExceptionMessageForFile(configPath, ex.getMessage()),
-            new String(note));
-      } catch (Exception e) {
-        throw new ConfigurationException(
-            "Error parsing configuration from file: " + configPath.toAbsolutePath(), e);
+      if (!strict) {
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
       }
+      return mapper.readValue(in, Configuration.class);
+    } catch (UnrecognizedPropertyException ex) {
+      if (strict) {
+        Configuration configuration = getConfigurationFromConfigFile(configPath, false);
+        configurationLogger.warn(
+            getJsonEncodingExceptionMessageForFile(configPath, ex.getMessage()));
+        return configuration;
+      } else {
+        throw new FriendlyException(
+            getJsonEncodingExceptionMessageForFile(configPath, ex.getMessage()),
+            "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
+      }
+    } catch (JsonMappingException | JsonParseException ex) {
+      throw new FriendlyException(
+          "Application Insights Java agent failed to start",
+          "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358",
+          ex.getMessage(),
+          "Error parsing configuration from file: " + configPath.toAbsolutePath());
+    } catch (Exception e) {
+      throw new ConfigurationException(
+          "Error parsing configuration from file: " + configPath.toAbsolutePath(), e);
     }
-  }
-
-  private static List<String> getNonAsciiListOfStrings(Path configPath) throws IOException {
-    List<String> list;
-    try (Stream<String> stream = Files.lines(configPath)) {
-      list = stream.filter(line -> !line.matches("\\A\\p{ASCII}*\\z")).collect(Collectors.toList());
-    }
-    return list;
   }
 
   static Configuration getConfigurationFromEnvVar(String content, boolean strict) {

@@ -78,29 +78,22 @@ class ConfigurationBuilderTest {
   @Test
   void testMalformedJson() {
     Path path = getConfigFilePath("applicationinsights_malformed.json");
-
     assertThatThrownBy(() -> ConfigurationBuilder.getConfigurationFromConfigFile(path, true))
-        .isInstanceOf(FriendlyException.class)
-        .hasMessageContaining("has a malformed JSON at path $.role.");
+        .isInstanceOf(FriendlyException.class);
   }
 
   @Test
   void testMalformedFaultyJson() {
     Path path = getConfigFilePath("applicationinsights_malformed_faulty.json");
-
     assertThatThrownBy(() -> ConfigurationBuilder.getConfigurationFromConfigFile(path, true))
-        .isInstanceOf(FriendlyException.class)
-        .hasMessageContaining("has a malformed JSON")
-        .hasMessageNotContaining("has a malformed JSON at path $.null.");
+        .isInstanceOf(FriendlyException.class);
   }
 
   @Test
-  void testLenientMalformedJson() throws IOException {
+  void testMalformedJsonWithUnicode() throws IOException {
     Path path = getConfigFilePath("applicationinsights_lenient_malformed.json");
     assertThatThrownBy(() -> ConfigurationBuilder.getConfigurationFromConfigFile(path, true))
-        .isInstanceOf(FriendlyException.class)
-        .hasMessageContaining(
-            "Application Insights Java agent identified the following list of non-ASCII strings in the configuration file");
+        .isInstanceOf(FriendlyException.class);
   }
 
   @Test

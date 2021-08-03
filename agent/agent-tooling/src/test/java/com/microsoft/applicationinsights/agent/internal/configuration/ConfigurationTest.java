@@ -24,24 +24,19 @@ package com.microsoft.applicationinsights.agent.internal.configuration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.PreviewConfiguration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorActionType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorType;
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.JsonDataException;
-import com.squareup.moshi.JsonReader;
-import com.squareup.moshi.Moshi;
-import com.squareup.moshi.Types;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.nio.file.Paths;
 import java.util.List;
-import okio.Buffer;
-import okio.BufferedSource;
-import okio.Okio;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
@@ -60,15 +55,19 @@ class ConfigurationTest {
   }
 
   private static Configuration loadConfiguration(String resourceName) throws IOException {
-    Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
-    JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class).failOnUnknown();
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    return mapper.readValue(
+        ConfigurationTest.class.getClassLoader().getResourceAsStream(resourceName),
+        Configuration.class);
+  }
 
-    BufferedSource buffer =
-        Okio.buffer(
-            Okio.source(
-                ConfigurationTest.class.getClassLoader().getResourceAsStream(resourceName)));
-
-    return jsonAdapter.fromJson(buffer.readUtf8());
+  private static Configuration loadConfigurationWithoutFailOnUnknown(String resourceName)
+      throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    return mapper.readValue(
+        ConfigurationTest.class.getClassLoader().getResourceAsStream(resourceName),
+        Configuration.class);
   }
 
   @Test
@@ -461,8 +460,8 @@ class ConfigurationTest {
   @Test
   void shouldOverrideJmxMetrics() throws IOException {
     String jmxMetricsJson =
-        "[{'objectName': 'java.lang:type=ClassLoading','attribute': 'LoadedClassCount','display': 'Loaded Class Count from EnvVar'},"
-            + "{'objectName': 'java.lang:type=MemoryPool,name=Code Cache','attribute': 'Usage.used','display': 'Code Cache Used from EnvVar'}]";
+        "[{\"objectName\": \"java.lang:type=ClassLoading\",\"attribute\": \"LoadedClassCount\",\"display\": \"Loaded Class Count from EnvVar\"},"
+            + "{\"objectName\": \"java.lang:type=MemoryPool,name=Code Cache\",\"attribute\": \"Usage.used\",\"display\": \"Code Cache Used from EnvVar\"}]";
     envVars.set("APPLICATIONINSIGHTS_JMX_METRICS", jmxMetricsJson);
 
     Configuration configuration = loadConfiguration();
@@ -681,16 +680,14 @@ class ConfigurationTest {
 
   @Test
   void shouldNotParseFaultyJson() {
-    assertThatThrownBy(() -> loadConfiguration("applicationinsights_faulty.json"))
-        .isInstanceOf(JsonDataException.class);
+    assertThatThrownBy(
+            () -> loadConfigurationWithoutFailOnUnknown("applicationinsights_faulty.json"))
+        .isInstanceOf(UnrecognizedPropertyException.class);
   }
 
   private static List<JmxMetric> parseJmxMetricsJson(String json) throws IOException {
-    Moshi moshi = MoshiBuilderFactory.createBasicBuilder();
-    Type listOfJmxMetrics = Types.newParameterizedType(List.class, JmxMetric.class);
-    JsonReader reader = JsonReader.of(new Buffer().writeUtf8(json));
-    reader.setLenient(true);
-    JsonAdapter<List<JmxMetric>> jsonAdapter = moshi.adapter(listOfJmxMetrics);
-    return jsonAdapter.fromJson(reader);
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    return mapper.readValue(json, new TypeReference<List<JmxMetric>>() {});
   }
 }

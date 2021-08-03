@@ -24,10 +24,12 @@ package com.microsoft.applicationinsights.agent.internal.configuration;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
-import com.squareup.moshi.Json;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -61,33 +63,33 @@ public class Configuration {
   }
 
   public enum MatchType {
-    @Json(name = "strict")
+    @JsonProperty("strict")
     STRICT,
-    @Json(name = "regexp")
+    @JsonProperty("regexp")
     REGEXP
   }
 
   public enum ProcessorActionType {
-    @Json(name = "insert")
+    @JsonProperty("insert")
     INSERT,
-    @Json(name = "update")
+    @JsonProperty("update")
     UPDATE,
-    @Json(name = "delete")
+    @JsonProperty("delete")
     DELETE,
-    @Json(name = "hash")
+    @JsonProperty("hash")
     HASH,
-    @Json(name = "extract")
+    @JsonProperty("extract")
     EXTRACT
   }
 
   public enum ProcessorType {
-    @Json(name = "attribute")
+    @JsonProperty("attribute")
     ATTRIBUTE("an attribute"),
-    @Json(name = "log")
+    @JsonProperty("log")
     LOG("a log"),
-    @Json(name = "span")
+    @JsonProperty("span")
     SPAN("a span"),
-    @Json(name = "metric-filter")
+    @JsonProperty("metric-filter")
     METRIC_FILTER("a metric-filter");
 
     private final String anX;
@@ -703,6 +705,11 @@ public class Configuration {
     public final Pattern pattern;
     public final List<String> groupNames;
 
+    public ExtractAttribute() {
+      this.pattern = null;
+      this.groupNames = null;
+    }
+
     public ExtractAttribute(Pattern pattern, List<String> groupNames) {
       this.pattern = pattern;
       this.groupNames = groupNames;
@@ -720,12 +727,13 @@ public class Configuration {
     }
   }
 
+  @JsonDeserialize(using = ProcessorActionDeserializer.class)
   public static class ProcessorAction {
     public String key;
     public ProcessorActionType action;
     public String value;
     public String fromAttribute;
-    public ExtractAttribute extractAttribute;
+    @JsonUnwrapped public ExtractAttribute extractAttribute;
 
     public void validate() {
 

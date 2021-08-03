@@ -1,22 +1,22 @@
 {
-  "connectionString": à"InstrumentationKey=00000000-0000-0000-0000-000000000000",
+  "connectionString": "InstrumentationKey=00000000-0000-0000-0000-000000000000",
   "role": {
-    "name": à"Something Good",
-    "instance": à"xyz123"
+    "name": "Something Good",
+    "instance": "xyz123"
   },
   "customDimensions": {
     "some key": "abc",
     "another key": "def"
   },
   "sampling": {
-    "percentage": à10
+    "percentage": 10
   },
   "instrumentation": {
     "jdbc": {
-      "enabled": àfalse
+      "enabled": false
     },
     "logging": {
-      "level": à"error"
+      "level": "error"
     },
     "micrometer": {
       "enabled": true
@@ -43,7 +43,7 @@
     "intervalSeconds": 60
   },
   "proxy": {
-    "host": à"myproxy",
+    "host": "myproxy",
     "port": 8080
   },
   "selfDiagnostics": {
