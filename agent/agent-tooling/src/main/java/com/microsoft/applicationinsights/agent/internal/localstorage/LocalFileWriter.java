@@ -21,24 +21,29 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
-import com.microsoft.applicationinsights.agent.internal.common.ExceptionStats;
+import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.Collection;
 import java.util.List;
+import org.apache.commons.io.FileUtils;
 
 /** This class manages writing a list of {@link ByteBuffer} to the file system. */
 public final class LocalFileWriter {
 
+  // 50MB per folder for all apps.
+  private static final long MAX_FILE_SIZE_IN_BYTES = 52428800; // 50MB
+  private static final String PERMANENT_FILE_EXTENSION = ".trn";
+
   private final LocalFileCache localFileCache;
   private final File telemetryFolder;
 
-  private static final ExceptionStats diskExceptionStats =
-      new ExceptionStats(
-          PersistenceHelper.class,
-          "Unable to store telemetry to disk (telemetry will be discarded):");
+  private static final OperationLogger operationLogger =
+      new OperationLogger(
+          PersistenceHelper.class, "Writing telemetry to disk (telemetry is discarded on failure)");
 
   public LocalFileWriter(LocalFileCache localFileCache, File telemetryFolder) {
     this.telemetryFolder = telemetryFolder;
@@ -46,43 +51,81 @@ public final class LocalFileWriter {
   }
 
   public boolean writeToDisk(List<ByteBuffer> buffers) {
-    if (!PersistenceHelper.maxFileSizeExceeded(telemetryFolder)) {
+    long size = getTotalSizeOfPersistedFiles(telemetryFolder);
+    if (size >= MAX_FILE_SIZE_IN_BYTES) {
+      operationLogger.recordFailure(
+          "Local persistent storage capacity has been reached. It's currently at ("
+              + (size / 1024)
+              + "KB). Telemetry will be lost");
       return false;
     }
 
-    File tempFile = PersistenceHelper.createTempFile(telemetryFolder);
-    if (tempFile == null) {
+    File tempFile;
+    try {
+      tempFile = createTempFile(telemetryFolder);
+    } catch (IOException e) {
+      operationLogger.recordFailure("unable to create temporary file: " + e, e);
+      // TODO (heya) track number of failures to create a temp file via Statsbeat
       return false;
     }
 
-    if (!write(tempFile, buffers)) {
+    try {
+      write(tempFile, buffers);
+    } catch (IOException e) {
+      operationLogger.recordFailure(String.format("unable to write to file: %s", e), e);
+      // TODO (heya) track IO write failure via Statsbeat
       return false;
     }
 
-    File permanentFile =
-        PersistenceHelper.renameFileExtension(
-            tempFile.getName(), PersistenceHelper.PERMANENT_FILE_EXTENSION, telemetryFolder);
-    if (permanentFile == null) {
+    File permanentFile;
+    try {
+      permanentFile =
+          PersistenceHelper.renameFileExtension(
+              tempFile.getName(), PERMANENT_FILE_EXTENSION, telemetryFolder);
+    } catch (IOException e) {
+      operationLogger.recordFailure(
+          "Fail to change "
+              + tempFile.getName()
+              + " to have "
+              + PERMANENT_FILE_EXTENSION
+              + " extension: ",
+          e);
+      // TODO (heya) track number of failures to rename a file via Statsbeat
       return false;
     }
 
     localFileCache.addPersistedFilenameToMap(permanentFile.getName());
 
     // TODO (heya) track data persistence success via Statsbeat
-    diskExceptionStats.recordSuccess();
+    operationLogger.recordSuccess();
     return true;
   }
 
-  private static boolean write(File file, List<ByteBuffer> buffers) {
+  private static void write(File file, List<ByteBuffer> buffers) throws IOException {
     try (FileChannel channel = new FileOutputStream(file).getChannel()) {
       for (ByteBuffer byteBuffer : buffers) {
         channel.write(byteBuffer);
       }
-      return true;
-    } catch (IOException ex) {
-      // TODO (heya) track IO write failure via Statsbeat
-      diskExceptionStats.recordFailure(String.format("unable to write to file: %s", ex), ex);
-      return false;
     }
+  }
+
+  private static File createTempFile(File telemetryFolder) throws IOException {
+    String prefix = System.currentTimeMillis() + "-";
+    return File.createTempFile(prefix, null, telemetryFolder);
+  }
+
+  private static long getTotalSizeOfPersistedFiles(File telemetryFolder) {
+    if (!telemetryFolder.exists()) {
+      return 0;
+    }
+
+    long sum = 0;
+    Collection<File> files =
+        FileUtils.listFiles(telemetryFolder, new String[] {PERMANENT_FILE_EXTENSION}, false);
+    for (File file : files) {
+      sum += file.length();
+    }
+
+    return sum;
   }
 }

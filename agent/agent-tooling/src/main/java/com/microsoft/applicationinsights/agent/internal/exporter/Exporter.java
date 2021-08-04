@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
+import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.ContextTagKeys;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MessageData;
@@ -136,6 +137,12 @@ public class Exporter implements SpanExporter {
   private static final AttributeKey<String> AZURE_SDK_MESSAGE_BUS_DESTINATION =
       AttributeKey.stringKey("message_bus.destination");
 
+  private static final OperationLogger exportingSpanLogger =
+      new OperationLogger(Exporter.class, "Exporting span");
+
+  private static final OperationLogger parsingHttpUrlLogger =
+      new OperationLogger(Exporter.class, "Parsing http.url");
+
   private final TelemetryClient telemetryClient;
 
   public Exporter(TelemetryClient telemetryClient) {
@@ -148,20 +155,21 @@ public class Exporter implements SpanExporter {
       logger.debug("Instrumentation key is null or empty.");
       return CompletableResultCode.ofSuccess();
     }
-
-    try {
-      for (SpanData span : spans) {
-        logger.debug("exporting span: {}", span);
+    boolean failure = false;
+    for (SpanData span : spans) {
+      logger.debug("exporting span: {}", span);
+      try {
         export(span);
+        exportingSpanLogger.recordSuccess();
+      } catch (Throwable t) {
+        exportingSpanLogger.recordFailure(t.getMessage(), t);
+        failure = true;
       }
-      // batching, retry, throttling, and writing to disk on failure occur downstream
-      // for simplicity not reporting back success/failure from this layer
-      // only that it was successfully delivered to the next layer
-      return CompletableResultCode.ofSuccess();
-    } catch (Throwable t) {
-      logger.error(t.getMessage(), t);
-      return CompletableResultCode.ofFailure();
     }
+    // batching, retry, throttling, and writing to disk on failure occur downstream
+    // for simplicity not reporting back success/failure from this layer
+    // only that it was successfully delivered to the next layer
+    return failure ? CompletableResultCode.ofFailure() : CompletableResultCode.ofSuccess();
   }
 
   private void export(SpanData span) {
@@ -430,16 +438,18 @@ public class Exporter implements SpanExporter {
     }
     String url = attributes.get(SemanticAttributes.HTTP_URL);
     if (target == null && url != null) {
+      URI uri;
       try {
-        URI uri = new URI(url);
+        uri = new URI(url);
+      } catch (URISyntaxException e) {
+        parsingHttpUrlLogger.recordFailure(e.getMessage(), e);
+        uri = null;
+      }
+      if (uri != null) {
         target = uri.getHost();
         if (uri.getPort() != 80 && uri.getPort() != 443 && uri.getPort() != -1) {
           target += ":" + uri.getPort();
         }
-      } catch (URISyntaxException e) {
-        // TODO (trask) "log once"
-        logger.error(e.getMessage());
-        logger.debug(e.getMessage(), e);
       }
     }
     if (target == null) {

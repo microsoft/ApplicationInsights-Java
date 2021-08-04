@@ -21,86 +21,20 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
-import com.microsoft.applicationinsights.agent.internal.common.ExceptionStats;
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.Collection;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 final class PersistenceHelper {
 
-  // 50MB per folder for all apps.
-  private static final long MAX_FILE_SIZE_IN_BYTES = 52428800; // 50MB
-  static final String PERMANENT_FILE_EXTENSION = ".trn";
-  static final String TEMPORARY_FILE_EXTENSION = ".tmp";
-  private static final ExceptionStats diskExceptionStats =
-      new ExceptionStats(
-          PersistenceHelper.class,
-          "Unable to store telemetry to disk (telemetry will be discarded):");
-
-  static File createTempFile(File telemetryFolder) {
-    File file = null;
-    try {
-      String prefix = System.currentTimeMillis() + "-";
-      file = File.createTempFile(prefix, null, telemetryFolder);
-    } catch (IOException ex) {
-      diskExceptionStats.recordFailure(
-          String.format("unable to create temporary file: %s", ex), ex);
-      // TODO (heya) track number of failures to create a temp file via Statsbeat
-    }
-
-    return file;
-  }
-
   /** Rename the given file's file extension. */
-  static File renameFileExtension(String filename, String fileExtension, File telemetryFolder) {
+  static File renameFileExtension(String filename, String fileExtension, File telemetryFolder)
+      throws IOException {
     File sourceFile = new File(telemetryFolder, filename);
     File tempFile = new File(telemetryFolder, FilenameUtils.getBaseName(filename) + fileExtension);
-    try {
-      FileUtils.moveFile(sourceFile, tempFile);
-    } catch (IOException ex) {
-      diskExceptionStats.recordFailure(
-          String.format("Fail to change %s to have %s extension: ", filename, fileExtension), ex);
-      // TODO (heya) track number of failures to rename a file via Statsbeat
-      return null;
-    }
-
+    FileUtils.moveFile(sourceFile, tempFile);
     return tempFile;
-  }
-
-  /**
-   * Before a list of {@link ByteBuffer} can be persisted to disk, need to make sure capacity has
-   * not been reached yet.
-   */
-  static boolean maxFileSizeExceeded(File telemetryFolder) {
-    long size = getTotalSizeOfPersistedFiles(telemetryFolder);
-    if (size >= MAX_FILE_SIZE_IN_BYTES) {
-      diskExceptionStats.recordFailure(
-          String.format(
-              "Local persistent storage capacity has been reached. It's currently at ("
-                  + (size / 1024)
-                  + "KB). Telemetry will be lost"));
-      return false;
-    }
-
-    return true;
-  }
-
-  private static long getTotalSizeOfPersistedFiles(File telemetryFolder) {
-    if (!telemetryFolder.exists()) {
-      return 0;
-    }
-
-    long sum = 0;
-    Collection<File> files =
-        FileUtils.listFiles(telemetryFolder, new String[] {PERMANENT_FILE_EXTENSION}, false);
-    for (File file : files) {
-      sum += file.length();
-    }
-
-    return sum;
   }
 
   private PersistenceHelper() {}

@@ -100,9 +100,8 @@ public class IntegrationTests {
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(100);
 
     for (int i = 100; i > 0; i--) {
-      localFileLoader
-          .loadTelemetriesFromDisk(); // need to convert ByteBuffer back to TelemetryItem and then
-      // compare.
+      // need to convert ByteBuffer back to TelemetryItem and then compare
+      localFileLoader.loadTelemetriesFromDisk();
       assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(i - 1);
     }
 
