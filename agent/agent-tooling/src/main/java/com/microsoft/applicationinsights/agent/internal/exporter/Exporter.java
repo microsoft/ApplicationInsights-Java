@@ -663,8 +663,7 @@ public class Exporter implements SpanExporter {
     if (httpStatusCode != null) {
       data.setResponseCode(Long.toString(httpStatusCode));
     } else {
-      // TODO (trask) AI mapping: what should the default value be?
-      data.setResponseCode("200");
+      data.setResponseCode("0");
     }
 
     String locationIp = attributes.get(SemanticAttributes.HTTP_CLIENT_IP);
