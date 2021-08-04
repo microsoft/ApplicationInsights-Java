@@ -83,7 +83,7 @@ public class ProcessorActionDeserializer extends StdDeserializer<Configuration.P
     }
   }
 
-  private static List<String> getGroupNames(String regex) {
+  public static List<String> getGroupNames(String regex) {
     List<String> groupNames = new ArrayList<>();
     Matcher matcher = capturingGroupNames.matcher(regex);
     while (matcher.find()) {

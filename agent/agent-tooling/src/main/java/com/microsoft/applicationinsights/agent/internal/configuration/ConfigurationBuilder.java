@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,21 +33,13 @@ import com.microsoft.applicationinsights.agent.internal.common.HostName;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.JsonDataException;
-import com.squareup.moshi.JsonEncodingException;
-import com.squareup.moshi.JsonReader;
-import com.squareup.moshi.Moshi;
-import com.squareup.moshi.Types;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import okio.Buffer;
 import org.slf4j.LoggerFactory;
 
 public class ConfigurationBuilder {
@@ -218,12 +211,10 @@ public class ConfigurationBuilder {
           "The undocumented APPLICATIONINSIGHTS_JMX_METRICS environment variable support"
               + " has been deprecated, please use json file configuration instead");
 
-      Moshi moshi = MoshiBuilderFactory.createBasicBuilder();
-      Type listOfJmxMetrics = Types.newParameterizedType(List.class, JmxMetric.class);
-      JsonReader reader = JsonReader.of(new Buffer().writeUtf8(jmxMetricsEnvVarJson));
-      reader.setLenient(true);
-      JsonAdapter<List<JmxMetric>> jsonAdapter = moshi.adapter(listOfJmxMetrics);
-      config.jmxMetrics = jsonAdapter.fromJson(reader);
+      ObjectMapper mapper = new ObjectMapper();
+      mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+      config.jmxMetrics =
+          mapper.readValue(jmxMetricsEnvVarJson, new TypeReference<List<JmxMetric>>() {});
     }
   }
 
@@ -569,15 +560,14 @@ public class ConfigurationBuilder {
   }
 
   static Configuration getConfigurationFromEnvVar(String content, boolean strict) {
-    Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
-    JsonAdapter<Configuration> jsonAdapter =
-        strict
-            ? moshi.adapter(Configuration.class).failOnUnknown()
-            : moshi.adapter(Configuration.class);
     Configuration configuration;
+    ObjectMapper mapper = new ObjectMapper();
+    if (!strict) {
+      mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
     try {
-      configuration = jsonAdapter.fromJson(content);
-    } catch (JsonDataException ex) {
+      configuration = mapper.readValue(content, Configuration.class);
+    } catch (UnrecognizedPropertyException ex) {
       if (strict) {
         // Try extracting the configuration without failOnUnknown
         configuration = getConfigurationFromEnvVar(content, false);
@@ -589,7 +579,7 @@ public class ConfigurationBuilder {
             getJsonEncodingExceptionMessageForEnvVar(ex.getMessage()),
             "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
       }
-    } catch (JsonEncodingException ex) {
+    } catch (JsonMappingException | JsonParseException ex) {
       throw new FriendlyException(
           getJsonEncodingExceptionMessageForEnvVar(ex.getMessage()),
           "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
@@ -622,41 +612,10 @@ public class ConfigurationBuilder {
   static String getJsonEncodingExceptionMessage(String location, String message) {
     String defaultMessage =
         "Application Insights Java agent's configuration " + location + " has a malformed JSON\n";
-    if (message == null) {
+    if (message == null || message.isEmpty()) {
       return defaultMessage;
     }
-
-    // Moshi builder json data exception sample:
-    // Cannot skip unexpected NAME at $.httpProxy
-    // Removing the 'Cannot Skip' string from the message.
-    if (message.toLowerCase().contains("cannot skip")) {
-      return "Application Insights Java agent's configuration "
-          + location
-          + " has the following JSON issue: "
-          + message.toLowerCase().replaceAll("cannot skip", "")
-          + "\n";
-    }
-
-    // Moshi builder json data exception sample:
-    // Use JsonReader.setLenient(true) to accept malformed JSON at path $.null.[0]
-    // This exception message is thrown if the json has an unexpected attribute and json object
-    // that belong to this attribute has malformed json syntax.
-    if (message.contains("$.null")) {
-      return defaultMessage;
-    }
-
-    // Moshi builder json data exception sample:
-    // Use JsonReader.setLenient(true) to accept malformed JSON at path $.selfDiagnostics
-    int jsonAttributeIndex = message.lastIndexOf("$.");
-    if (jsonAttributeIndex > 0 && jsonAttributeIndex < message.length() - 2) {
-      return "Application Insights Java agent's configuration "
-          + location
-          + " has a malformed JSON at path "
-          + message.substring(jsonAttributeIndex)
-          + "\n";
-    } else {
-      return defaultMessage;
-    }
+    return message;
   }
 
   public static Configuration loadJsonConfigFile(Path configPath) throws IOException {

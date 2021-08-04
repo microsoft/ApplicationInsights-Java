@@ -33,7 +33,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorIncludeExclude;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorType;
-import com.microsoft.applicationinsights.agent.internal.configuration.ProcessorActionAdaptor;
+import com.microsoft.applicationinsights.agent.internal.configuration.ProcessorActionDeserializer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -1365,7 +1365,7 @@ class ExporterWithAttributeProcessorTest {
     String regex =
         "^(?<httpProtocol>.*)://(?<httpDomain>.*)/(?<httpPath>.*)([?&])(?<httpQueryParams>.*)";
     Pattern pattern = Pattern.compile(regex);
-    List<String> groupNames = ProcessorActionAdaptor.getGroupNames(regex);
+    List<String> groupNames = ProcessorActionDeserializer.getGroupNames(regex);
     action.extractAttribute = new ExtractAttribute(pattern, groupNames);
     action.action = ProcessorActionType.EXTRACT;
     List<ProcessorAction> actions = new ArrayList<>();
@@ -1416,7 +1416,7 @@ class ExporterWithAttributeProcessorTest {
     String regex =
         "^(?<httpProtocol>.*)://(?<httpDomain>.*)/(?<httpPath>.*)([?&])(?<httpQueryParams>.*)";
     Pattern pattern = Pattern.compile(regex);
-    List<String> groupNames = ProcessorActionAdaptor.getGroupNames(regex);
+    List<String> groupNames = ProcessorActionDeserializer.getGroupNames(regex);
     action.extractAttribute = new ExtractAttribute(pattern, groupNames);
     action.action = ProcessorActionType.EXTRACT;
     List<ProcessorAction> actions = new ArrayList<>();
