@@ -26,6 +26,7 @@ import static com.microsoft.applicationinsights.agent.internal.perfcounter.JvmHe
 import static com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil.createMetricsTelemetry;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.microsoft.applicationinsights.agent.internal.common.LocalFileSystemUtils;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorDomain;
@@ -158,7 +159,14 @@ class ProfilerServiceTest {
         new JfrProfilerService(
                 () -> appId,
                 new ServiceProfilerServiceConfig(
-                    1, 2, 3, new URL("http://localhost"), true, null, null),
+                    1,
+                    2,
+                    3,
+                    new URL("http://localhost"),
+                    true,
+                    null,
+                    null,
+                    LocalFileSystemUtils.getTempDir()),
                 jfrProfiler,
                 ProfilerServiceInitializer.updateAlertingConfig(alertService),
                 ProfilerServiceInitializer.sendServiceProfilerIndex(client),
@@ -211,7 +219,15 @@ class ProfilerServiceTest {
 
   private JfrProfiler getJfrDaemon(AtomicBoolean profileInvoked) throws MalformedURLException {
     return new JfrProfiler(
-        new ServiceProfilerServiceConfig(1, 2, 3, new URL("http://localhost"), false, null, null)) {
+        new ServiceProfilerServiceConfig(
+            1,
+            2,
+            3,
+            new URL("http://localhost"),
+            false,
+            null,
+            null,
+            LocalFileSystemUtils.getTempDir())) {
       @Override
       protected void profileAndUpload(AlertBreach alertBreach, Duration duration) {
         profileInvoked.set(true);

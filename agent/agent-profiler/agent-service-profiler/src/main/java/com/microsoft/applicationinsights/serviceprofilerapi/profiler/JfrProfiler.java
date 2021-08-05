@@ -81,6 +81,8 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
   private final RecordingConfiguration memoryRecordingConfiguration;
   private final RecordingConfiguration cpuRecordingConfiguration;
 
+  private final File temporaryDirectory;
+
   public JfrProfiler(ServiceProfilerServiceConfig configuration) {
     periodicConfig =
         new AlertConfiguration(
@@ -92,6 +94,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
 
     memoryRecordingConfiguration = getMemoryProfileConfig(configuration);
     cpuRecordingConfiguration = getCpuProfileConfig(configuration);
+    temporaryDirectory = configuration.tempDirectory();
   }
 
   private static RecordingConfiguration getMemoryProfileConfig(
@@ -297,8 +300,16 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
   protected File createJfrFile(Recording recording, Instant recordingStart, Instant recordingEnd)
       throws IOException {
     try {
+      if (!temporaryDirectory.exists()) {
+        if (!temporaryDirectory.mkdirs()) {
+          throw new IOException(
+              "Failed to create temporary directory " + temporaryDirectory.getAbsolutePath());
+        }
+      }
+
       File file =
           new File(
+              temporaryDirectory,
               "recording_"
                   + recordingStart.toEpochMilli()
                   + "-"

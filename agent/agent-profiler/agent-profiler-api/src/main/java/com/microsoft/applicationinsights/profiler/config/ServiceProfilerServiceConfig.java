@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.profiler.config;
 
+import java.io.File;
 import java.net.URL;
 
 /** Configuration of the service profiler subsystem. */
@@ -52,6 +53,9 @@ public class ServiceProfilerServiceConfig {
   // cpu profiling
   private final String cpuTriggeredSettings;
 
+  // Location to which jfr files will be temporarily held
+  private final File tempDirectory;
+
   public ServiceProfilerServiceConfig(
       int configPollPeriod,
       int periodicRecordingDuration,
@@ -59,7 +63,8 @@ public class ServiceProfilerServiceConfig {
       URL serviceProfilerFrontEndPoint,
       boolean enabled,
       String memoryTriggeredSettings,
-      String cpuTriggeredSettings) {
+      String cpuTriggeredSettings,
+      File tempDirectory) {
     this.configPollPeriod = configPollPeriod;
     this.periodicRecordingDuration = periodicRecordingDuration;
     this.periodicRecordingInterval = periodicRecordingInterval;
@@ -67,6 +72,7 @@ public class ServiceProfilerServiceConfig {
     this.enabled = enabled;
     this.memoryTriggeredSettings = memoryTriggeredSettings;
     this.cpuTriggeredSettings = cpuTriggeredSettings;
+    this.tempDirectory = tempDirectory;
   }
 
   public int getConfigPollPeriod() {
@@ -99,5 +105,9 @@ public class ServiceProfilerServiceConfig {
 
   public String cpuTriggeredSettings() {
     return cpuTriggeredSettings;
+  }
+
+  public File tempDirectory() {
+    return tempDirectory;
   }
 }
