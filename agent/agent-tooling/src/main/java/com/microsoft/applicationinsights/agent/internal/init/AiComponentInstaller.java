@@ -27,6 +27,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
+import com.microsoft.applicationinsights.agent.internal.common.LocalFileSystemUtils;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
@@ -82,6 +83,9 @@ public class AiComponentInstaller implements AgentListener {
   }
 
   private volatile AppIdSupplier appIdSupplier;
+
+  private static final File tempDirectory =
+      new File(LocalFileSystemUtils.getTempDir(), "applicationinsights/profiles");
 
   @Override
   public void beforeAgent(Config config) {
@@ -240,7 +244,8 @@ public class AiComponentInstaller implements AgentListener {
         serviceProfilerFrontEndPoint,
         configuration.enabled,
         configuration.memoryTriggeredSettings,
-        configuration.cpuTriggeredSettings);
+        configuration.cpuTriggeredSettings,
+        tempDirectory);
   }
 
   private static void validateProcessorConfiguration(Configuration config) {
