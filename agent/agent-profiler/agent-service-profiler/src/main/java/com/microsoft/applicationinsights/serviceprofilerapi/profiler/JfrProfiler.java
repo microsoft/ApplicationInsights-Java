@@ -81,6 +81,8 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
   private final RecordingConfiguration memoryRecordingConfiguration;
   private final RecordingConfiguration cpuRecordingConfiguration;
 
+  private final String tempDirectory = System.getProperty("java.io.tmpdir");
+
   public JfrProfiler(ServiceProfilerServiceConfig configuration) {
     periodicConfig =
         new AlertConfiguration(
@@ -299,6 +301,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
     try {
       File file =
           new File(
+              new File(tempDirectory),
               "recording_"
                   + recordingStart.toEpochMilli()
                   + "-"
