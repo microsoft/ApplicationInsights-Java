@@ -204,7 +204,11 @@ public class TelemetryClient {
   }
 
   public CompletableResultCode flushChannelBatcher() {
-    return channelBatcher.forceFlush();
+    if (channelBatcher != null) {
+      return channelBatcher.forceFlush();
+    } else {
+      return CompletableResultCode.ofSuccess();
+    }
   }
 
   public BatchSpanProcessor getChannelBatcher() {
