@@ -100,7 +100,7 @@ val DEPENDENCIES = listOf(
   "com.google.code.gson:gson:2.8.2",
   "com.azure:azure-core:1.18.0",
   "com.azure:azure-storage-blob:12.13.0",
-  "com.github.oshi:oshi-core:5.6.0",
+  "com.github.oshi:oshi-core:5.8.0",
   "org.assertj:assertj-core:3.19.0",
   "io.github.hakky54:logcaptor:2.5.0",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
