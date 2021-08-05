@@ -81,7 +81,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
   private final RecordingConfiguration memoryRecordingConfiguration;
   private final RecordingConfiguration cpuRecordingConfiguration;
 
-  private final String tempDirectory = System.getProperty("java.io.tmpdir");
+  private final File tempDirectory = new File(LocalFileSystemUtils.getTempDir(), "applicationinsights/profiles")
 
   public JfrProfiler(ServiceProfilerServiceConfig configuration) {
     periodicConfig =
