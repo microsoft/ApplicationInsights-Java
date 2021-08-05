@@ -28,7 +28,6 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorD
 import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDependencyData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.SeverityLevel;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
@@ -746,17 +745,17 @@ public class Exporter implements SpanExporter {
       }
 
       TelemetryItem telemetry = new TelemetryItem();
-      TelemetryEventData data = new TelemetryEventData();
-      telemetryClient.initEventTelemetry(telemetry, data);
+      MessageData data = new MessageData();
+      telemetryClient.initMessageTelemetry(telemetry, data);
 
-      // common properties
+      // set standard properties
       setOperationTags(telemetry, span.getTraceId(), span.getSpanId());
       setTime(telemetry, event.getEpochNanos());
       setExtraAttributes(telemetry, data, event.getAttributes());
       setSampleRate(telemetry, samplingPercentage);
 
-      // event-specific properties
-      data.setName(event.getName());
+      // set message-specific properties
+      data.setMessage(event.getName());
 
       telemetryClient.trackAsync(telemetry);
     }
@@ -767,12 +766,12 @@ public class Exporter implements SpanExporter {
     TelemetryExceptionData data = new TelemetryExceptionData();
     telemetryClient.initExceptionTelemetry(telemetry, data);
 
-    // common properties
+    // set standard properties
     setOperationTags(telemetry, span.getTraceId(), span.getSpanId());
     setTime(telemetry, span.getEndEpochNanos());
     setSampleRate(telemetry, samplingPercentage);
 
-    // exception-specific properties
+    // set exception-specific properties
     data.setExceptions(minimalParse(errorStack));
 
     telemetryClient.trackAsync(telemetry);
