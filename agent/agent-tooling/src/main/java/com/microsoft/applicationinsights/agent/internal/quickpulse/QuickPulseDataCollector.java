@@ -186,7 +186,7 @@ public enum QuickPulseDataCollector {
     }
 
     Float sampleRate = telemetryItem.getSampleRate();
-    int itemCount = sampleRate == null ? 1 : Math.round(100 / sampleRate);
+    int itemCount = (sampleRate == null || sampleRate == 0) ? 1 : Math.round(100 / sampleRate);
 
     MonitorDomain data = telemetryItem.getData().getBaseData();
     if (data instanceof RequestData) {
