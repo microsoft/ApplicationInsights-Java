@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.processors;
 
-import com.microsoft.applicationinsights.agent.internal.configuration.ProcessorActionDeserializer;
+import com.microsoft.applicationinsights.agent.internal.configuration.Patterns;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -72,7 +72,7 @@ public class ProcessorUtil {
   public static List<List<String>> getGroupNamesList(List<String> toAttributeRules) {
     List<List<String>> groupNamesList = new ArrayList<>();
     for (String rule : toAttributeRules) {
-      groupNamesList.add(ProcessorActionDeserializer.getGroupNames(rule));
+      groupNamesList.add(Patterns.getGroupNames(rule));
     }
     return groupNamesList;
   }

@@ -24,9 +24,9 @@ package com.microsoft.applicationinsights.agent.internal.configuration;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
@@ -702,9 +702,30 @@ public class Configuration {
   }
 
   public static class ExtractAttribute {
+
     public final Pattern pattern;
     public final List<String> groupNames;
 
+    @JsonCreator
+    public static ExtractAttribute create(@JsonProperty("pattern") String pattern) {
+      if (pattern == null) {
+        return null;
+      }
+      Pattern regexPattern;
+      try {
+        regexPattern = Pattern.compile(pattern);
+      } catch (PatternSyntaxException e) {
+        throw new FriendlyException(
+            "Telemetry processor configuration does not have valid regex:" + pattern,
+            "Please provide a valid regex in the telemetry processors configuration. "
+                + "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557",
+            e);
+      }
+      List<String> groupNames = Patterns.getGroupNames(pattern);
+      return new Configuration.ExtractAttribute(regexPattern, groupNames);
+    }
+
+    // visible for testing
     public ExtractAttribute(Pattern pattern, List<String> groupNames) {
       this.pattern = pattern;
       this.groupNames = groupNames;
@@ -722,7 +743,6 @@ public class Configuration {
     }
   }
 
-  @JsonDeserialize(using = ProcessorActionDeserializer.class)
   public static class ProcessorAction {
     public String key;
     public ProcessorActionType action;
