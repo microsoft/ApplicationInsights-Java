@@ -30,6 +30,7 @@ import java.nio.channels.FileChannel;
 import java.util.Collection;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 /** This class manages writing a list of {@link ByteBuffer} to the file system. */
 public final class LocalFileWriter {
@@ -43,7 +44,7 @@ public final class LocalFileWriter {
 
   private static final OperationLogger operationLogger =
       new OperationLogger(
-          PersistenceHelper.class, "Writing telemetry to disk (telemetry is discarded on failure)");
+          LocalFileWriter.class, "Writing telemetry to disk (telemetry is discarded on failure)");
 
   public LocalFileWriter(LocalFileCache localFileCache, File telemetryFolder) {
     this.telemetryFolder = telemetryFolder;
@@ -79,9 +80,11 @@ public final class LocalFileWriter {
 
     File permanentFile;
     try {
+      String filename = tempFile.getName();
+      File sourceFile = new File(telemetryFolder, filename);
       permanentFile =
-          PersistenceHelper.renameFileExtension(
-              tempFile.getName(), PERMANENT_FILE_EXTENSION, telemetryFolder);
+          new File(telemetryFolder, FilenameUtils.getBaseName(filename) + PERMANENT_FILE_EXTENSION);
+      FileUtils.moveFile(sourceFile, permanentFile);
     } catch (IOException e) {
       operationLogger.recordFailure(
           "Fail to change "

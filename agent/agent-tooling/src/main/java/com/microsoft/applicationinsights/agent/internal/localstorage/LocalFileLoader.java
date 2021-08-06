@@ -26,6 +26,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 /** This class manages loading a list of {@link ByteBuffer} from the disk. */
 public class LocalFileLoader {
@@ -36,7 +38,7 @@ public class LocalFileLoader {
   private final File telemetryFolder;
 
   private static final OperationLogger operationLogger =
-      new OperationLogger(PersistenceHelper.class, "Loading telemetry from disk");
+      new OperationLogger(LocalFileLoader.class, "Loading telemetry from disk");
 
   public LocalFileLoader(LocalFileCache localFileCache, File telemetryFolder) {
     this.localFileCache = localFileCache;
@@ -54,9 +56,12 @@ public class LocalFileLoader {
 
     File tempFile;
     try {
+      File sourceFile = new File(telemetryFolder, filenameToBeLoaded);
       tempFile =
-          PersistenceHelper.renameFileExtension(
-              filenameToBeLoaded, TEMPORARY_FILE_EXTENSION, telemetryFolder);
+          new File(
+              telemetryFolder,
+              FilenameUtils.getBaseName(filenameToBeLoaded) + TEMPORARY_FILE_EXTENSION);
+      FileUtils.moveFile(sourceFile, tempFile);
     } catch (IOException e) {
       operationLogger.recordFailure(
           "Failed to change "
