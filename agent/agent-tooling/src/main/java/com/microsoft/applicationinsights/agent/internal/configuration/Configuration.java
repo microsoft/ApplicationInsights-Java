@@ -705,11 +705,6 @@ public class Configuration {
     public final Pattern pattern;
     public final List<String> groupNames;
 
-    public ExtractAttribute() {
-      this.pattern = null;
-      this.groupNames = null;
-    }
-
     public ExtractAttribute(Pattern pattern, List<String> groupNames) {
       this.pattern = pattern;
       this.groupNames = groupNames;
