@@ -52,6 +52,8 @@ dependencies {
   implementation("io.opentelemetry:opentelemetry-api")
   implementation("org.jctools:jctools-core:3.3.0")
 
+  compileOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+
   compileOnly(project(":agent:agent-bootstrap"))
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support")

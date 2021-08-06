@@ -190,7 +190,7 @@ public class ProfilerServiceInitializer {
       data.setProperties(done.getServiceProfilerIndex().getProperties());
       data.setMeasurements(done.getServiceProfilerIndex().getMetrics());
 
-      telemetry.setTime(FormattedTime.fromNow());
+      telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
 
       telemetryClient.trackAsync(telemetry);
 
@@ -229,7 +229,7 @@ public class ProfilerServiceInitializer {
     MessageData data = new MessageData();
     telemetryClient.initMessageTelemetry(telemetry, data);
     data.setMessage(message);
-    telemetry.setTime(FormattedTime.fromNow());
+    telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
     telemetryClient.trackAsync(telemetry);
   }
 

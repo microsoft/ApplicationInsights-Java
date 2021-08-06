@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.telemetry;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -34,8 +35,16 @@ public class FormattedTime {
     return fromEpochMillis(System.currentTimeMillis());
   }
 
+  public static OffsetDateTime offSetDateTimeFromNow() {
+    return offSetDateTimeFromEpochMillis(System.currentTimeMillis());
+  }
+
   public static String fromDate(Date date) {
     return fromEpochMillis(date.getTime());
+  }
+
+  public static OffsetDateTime offSetDateTimeFromDate(Date date) {
+    return offSetDateTimeFromEpochMillis(date.getTime());
   }
 
   public static String fromEpochNanos(long epochNanos) {
@@ -48,6 +57,14 @@ public class FormattedTime {
     return Instant.ofEpochMilli(epochMillis)
         .atOffset(ZoneOffset.UTC)
         .format(DateTimeFormatter.ISO_DATE_TIME);
+  }
+
+  public static OffsetDateTime offSetDateTimeFromEpochNanos(long epochNanos) {
+    return Instant.ofEpochMilli(NANOSECONDS.toMillis(epochNanos)).atOffset(ZoneOffset.UTC);
+  }
+
+  public static OffsetDateTime offSetDateTimeFromEpochMillis(long epochMillis) {
+    return Instant.ofEpochMilli(epochMillis).atOffset(ZoneOffset.UTC);
   }
 
   private FormattedTime() {}

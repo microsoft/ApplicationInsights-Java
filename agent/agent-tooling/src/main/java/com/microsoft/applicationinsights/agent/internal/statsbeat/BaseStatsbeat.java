@@ -56,7 +56,7 @@ abstract class BaseStatsbeat {
     point.setDataPointType(DataPointType.MEASUREMENT);
 
     telemetry.setInstrumentationKey(telemetryClient.getStatsbeatInstrumentationKey());
-    telemetry.setTime(FormattedTime.fromNow());
+    telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
 
     Map<String, String> properties = new HashMap<>();
     customDimensions.populateProperties(properties, telemetryClient.getInstrumentationKey());
