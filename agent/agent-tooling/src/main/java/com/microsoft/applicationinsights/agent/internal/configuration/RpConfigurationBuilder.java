@@ -63,8 +63,8 @@ public class RpConfigurationBuilder {
     // last modified doesn't change after that, the new updated file will not be read afterwards
     long lastModifiedTime = attributes.lastModifiedTime().toMillis();
     RpConfiguration configuration = getConfigurationFromConfigFile(configPath);
-    configuration.setConfigPath(configPath);
-    configuration.setLastModifiedTime(lastModifiedTime);
+    configuration.configPath = configPath;
+    configuration.lastModifiedTime = lastModifiedTime;
     return configuration;
   }
 

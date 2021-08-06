@@ -78,22 +78,22 @@ public class RpConfigurationPolling implements Runnable {
 
   @Override
   public void run() {
-    if (rpConfiguration.getConfigPath() == null) {
+    if (rpConfiguration.configPath == null) {
       logger.warn("rp configuration path is null");
       return;
     }
-    if (!Files.exists(rpConfiguration.getConfigPath())) {
-      logger.warn("rp configuration path doesn't exist: {}", rpConfiguration.getConfigPath());
+    if (!Files.exists(rpConfiguration.configPath)) {
+      logger.warn("rp configuration path doesn't exist: {}", rpConfiguration.configPath);
       return;
     }
     try {
       BasicFileAttributes attributes =
-          Files.readAttributes(rpConfiguration.getConfigPath(), BasicFileAttributes.class);
+          Files.readAttributes(rpConfiguration.configPath, BasicFileAttributes.class);
       FileTime fileTime = attributes.lastModifiedTime();
-      if (rpConfiguration.getLastModifiedTime() != fileTime.toMillis()) {
-        rpConfiguration.setLastModifiedTime(fileTime.toMillis());
+      if (rpConfiguration.lastModifiedTime != fileTime.toMillis()) {
+        rpConfiguration.lastModifiedTime = fileTime.toMillis();
         RpConfiguration newRpConfiguration =
-            RpConfigurationBuilder.loadJsonConfigFile(rpConfiguration.getConfigPath());
+            RpConfigurationBuilder.loadJsonConfigFile(rpConfiguration.configPath);
 
         if (!newRpConfiguration.connectionString.equals(rpConfiguration.connectionString)) {
           logger.debug(

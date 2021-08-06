@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Role;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Sampling;
 import java.nio.file.Path;
@@ -30,15 +29,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class RpConfiguration {
 
-  // Use private and add the @JsonIgnore annotation on the getter of the configPath,
-  // and enable Jackson deserialization for the field by applying the @JsonProperty annotation on
-  // the setter.
-  private Path configPath;
+  @JsonIgnore public Path configPath;
 
-  // Use private and add the @JsonIgnore annotation on the getter of the configPath,
-  // and enable Jackson deserialization for the field by applying the @JsonProperty annotation on
-  // the setter.
-  private long lastModifiedTime;
+  @JsonIgnore public long lastModifiedTime;
 
   public String connectionString;
 
@@ -54,24 +47,4 @@ public class RpConfiguration {
   // sampled)
   // null means do not override the users selection
   public @Nullable Boolean ignoreRemoteParentNotSampled;
-
-  @JsonIgnore
-  public Path getConfigPath() {
-    return configPath;
-  }
-
-  @JsonProperty
-  public void setConfigPath(Path configPath) {
-    this.configPath = configPath;
-  }
-
-  @JsonIgnore
-  public long getLastModifiedTime() {
-    return lastModifiedTime;
-  }
-
-  @JsonProperty
-  public void setLastModifiedTime(long lastModifiedTime) {
-    this.lastModifiedTime = lastModifiedTime;
-  }
 }

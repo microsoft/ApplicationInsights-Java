@@ -73,10 +73,10 @@ class RpConfigurationPollingTest {
     RpConfiguration rpConfiguration = new RpConfiguration();
     rpConfiguration.connectionString = "InstrumentationKey=11111111-1111-1111-1111-111111111111";
     rpConfiguration.sampling.percentage = 90;
-    rpConfiguration.setConfigPath(
+    rpConfiguration.configPath =
         Paths.get(
-            RpConfigurationPollingTest.class.getResource("/applicationinsights-rp.json").toURI()));
-    rpConfiguration.setLastModifiedTime(0);
+            RpConfigurationPollingTest.class.getResource("/applicationinsights-rp.json").toURI());
+    rpConfiguration.lastModifiedTime = 0;
 
     TelemetryClient telemetryClient = new TelemetryClient();
     telemetryClient.setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
@@ -107,10 +107,10 @@ class RpConfigurationPollingTest {
     RpConfiguration rpConfiguration = new RpConfiguration();
     rpConfiguration.connectionString = "InstrumentationKey=11111111-1111-1111-1111-111111111111";
     rpConfiguration.sampling.percentage = 90;
-    rpConfiguration.setConfigPath(
+    rpConfiguration.configPath =
         Paths.get(
-            RpConfigurationPollingTest.class.getResource("/applicationinsights-rp.json").toURI()));
-    rpConfiguration.setLastModifiedTime(0);
+            RpConfigurationPollingTest.class.getResource("/applicationinsights-rp.json").toURI());
+    rpConfiguration.lastModifiedTime = 0;
 
     TelemetryClient telemetryClient = new TelemetryClient();
     telemetryClient.setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
