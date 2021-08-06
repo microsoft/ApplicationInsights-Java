@@ -50,26 +50,6 @@ class ConfigurationTest {
   @SystemStub EnvironmentVariables envVars = new EnvironmentVariables();
   @SystemStub SystemProperties systemProperties = new SystemProperties();
 
-  private static Configuration loadConfiguration() throws IOException {
-    return loadConfiguration("applicationinsights.json");
-  }
-
-  private static Configuration loadConfiguration(String resourceName) throws IOException {
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    return mapper.readValue(
-        ConfigurationTest.class.getClassLoader().getResourceAsStream(resourceName),
-        Configuration.class);
-  }
-
-  private static Configuration loadConfigurationWithoutFailOnUnknown(String resourceName)
-      throws IOException {
-    ObjectMapper mapper = new ObjectMapper();
-    return mapper.readValue(
-        ConfigurationTest.class.getClassLoader().getResourceAsStream(resourceName),
-        Configuration.class);
-  }
-
   @Test
   void shouldParse() throws IOException {
     Configuration configuration = loadConfiguration();
@@ -680,9 +660,25 @@ class ConfigurationTest {
 
   @Test
   void shouldNotParseFaultyJson() {
-    assertThatThrownBy(
-            () -> loadConfigurationWithoutFailOnUnknown("applicationinsights_faulty.json"))
+    assertThatThrownBy(() -> loadConfiguration("applicationinsights_faulty.json", true))
         .isInstanceOf(UnrecognizedPropertyException.class);
+  }
+
+  private static Configuration loadConfiguration() throws IOException {
+    return loadConfiguration("applicationinsights.json");
+  }
+
+  private static Configuration loadConfiguration(String resourceName) throws IOException {
+    return loadConfiguration(resourceName, false);
+  }
+
+  private static Configuration loadConfiguration(
+      String resourceName, boolean failOnUnknownProperties) throws IOException {
+    return new ObjectMapper()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, failOnUnknownProperties)
+        .readValue(
+            ConfigurationTest.class.getClassLoader().getResourceAsStream(resourceName),
+            Configuration.class);
   }
 
   private static List<JmxMetric> parseJmxMetricsJson(String json) throws IOException {

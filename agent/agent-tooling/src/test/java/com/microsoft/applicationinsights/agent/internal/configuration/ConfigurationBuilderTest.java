@@ -90,8 +90,8 @@ class ConfigurationBuilderTest {
   }
 
   @Test
-  void testMalformedJsonWithUnicode() throws IOException {
-    Path path = getConfigFilePath("applicationinsights_lenient_malformed.json");
+  void testMalformedJsonWithUnicode() {
+    Path path = getConfigFilePath("applicationinsights_malformed_unicode.json");
     assertThatThrownBy(() -> ConfigurationBuilder.getConfigurationFromConfigFile(path, true))
         .isInstanceOf(FriendlyException.class);
   }
@@ -99,9 +99,9 @@ class ConfigurationBuilderTest {
   @Test
   void testGetJsonEncodingExceptionMessage() {
     String pathNull =
-        ConfigurationBuilder.getJsonEncodingExceptionMessage("file path/to/file", null);
+        ConfigurationBuilder.getJsonEncodingExceptionMessage(null, "file path/to/file");
     String pathEmpty =
-        ConfigurationBuilder.getJsonEncodingExceptionMessage("file path/to/file", "");
+        ConfigurationBuilder.getJsonEncodingExceptionMessage("", "file path/to/file");
     assertThat(pathNull)
         .isEqualTo(
             "Application Insights Java agent's configuration file path/to/file has a malformed JSON\n");

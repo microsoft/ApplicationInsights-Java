@@ -601,21 +601,21 @@ public class ConfigurationBuilder {
   }
 
   static String getJsonEncodingExceptionMessageForFile(Path configPath, String message) {
-    return getJsonEncodingExceptionMessage("file " + configPath.toAbsolutePath(), message);
+    return getJsonEncodingExceptionMessage(message, "file " + configPath.toAbsolutePath());
   }
 
   static String getJsonEncodingExceptionMessageForEnvVar(String message) {
     return getJsonEncodingExceptionMessage(
-        "env var " + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT, message);
+        message, "env var " + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
   }
 
-  static String getJsonEncodingExceptionMessage(String location, String message) {
-    String defaultMessage =
-        "Application Insights Java agent's configuration " + location + " has a malformed JSON\n";
-    if (message == null || message.isEmpty()) {
-      return defaultMessage;
+  static String getJsonEncodingExceptionMessage(String message, String location) {
+    if (message != null && !message.isEmpty()) {
+      return message;
     }
-    return message;
+    return "Application Insights Java agent's configuration "
+        + location
+        + " has a malformed JSON\n";
   }
 
   public static Configuration loadJsonConfigFile(Path configPath) throws IOException {
