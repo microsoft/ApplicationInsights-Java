@@ -1145,6 +1145,7 @@ public abstract class AbstractHttpClientTest<REQUEST> {
 
               if (options.capturesAiTargetAppId
                   && !uri.getPath().equals("/circular-redirect")
+                  && !uri.getPath().equals("/read-timeout")
                   && uri.getPort() != PortUtils.UNUSABLE_PORT
                   && !uri.getHost().equals("192.0.2.1")
                   && !uri.getHost().equals("www.google.com")) {
