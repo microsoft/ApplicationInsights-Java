@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
+import static java.util.Collections.singletonList;
+
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
@@ -29,8 +31,8 @@ import com.azure.core.util.tracing.Tracer;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.applicationinsights.agent.internal.common.ExceptionStats;
 import com.microsoft.applicationinsights.agent.internal.common.ExceptionUtils;
+import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
@@ -42,7 +44,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -63,10 +64,13 @@ public class TelemetryChannel {
 
   private static final AppInsightsByteBufferPool byteBufferPool = new AppInsightsByteBufferPool();
 
-  private static final ExceptionStats networkExceptionStats =
-      new ExceptionStats(
+  private static final OperationLogger operationLogger =
+      new OperationLogger(
           TelemetryChannel.class,
-          "Unable to send telemetry to the ingestion service (telemetry will be stored to disk):");
+          "Sending telemetry to the ingestion service (telemetry will be stored to disk on failure):");
+
+  // TODO (kryalama) do we still need this AtomicBoolean, or can we use throttling built in to the
+  //  operationLogger?
   private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
   static {
@@ -90,7 +94,7 @@ public class TelemetryChannel {
   }
 
   public CompletableResultCode sendRawBytes(ByteBuffer buffer) {
-    return internalSend(Arrays.asList(buffer), null);
+    return internalSend(singletonList(buffer), null);
   }
 
   // used by tests only
@@ -101,7 +105,7 @@ public class TelemetryChannel {
   }
 
   public CompletableResultCode send(List<TelemetryItem> telemetryItems) {
-    Map<String, List<TelemetryItem>> instrumentationKeyMap = new HashMap();
+    Map<String, List<TelemetryItem>> instrumentationKeyMap = new HashMap<>();
     List<CompletableResultCode> resultCodeList = new ArrayList<>();
     for (TelemetryItem telemetryItem : telemetryItems) {
       String instrumentationKey = telemetryItem.getInstrumentationKey();
@@ -124,14 +128,14 @@ public class TelemetryChannel {
     try {
       byteBuffers = encode(telemetryItems);
     } catch (Throwable t) {
-      networkExceptionStats.recordFailure(
+      operationLogger.recordFailure(
           String.format("Error encoding telemetry items: %s", t.getMessage()), t);
       return CompletableResultCode.ofFailure();
     }
     try {
       return internalSend(byteBuffers, instrumentationKey);
     } catch (Throwable t) {
-      networkExceptionStats.recordFailure(
+      operationLogger.recordFailure(
           String.format("Error sending telemetry items: %s", t.getMessage()), t);
       return CompletableResultCode.ofFailure();
     }
@@ -227,7 +231,7 @@ public class TelemetryChannel {
   private void writeToDiskOnFailure(
       List<ByteBuffer> byteBuffers, List<ByteBuffer> finalByteBuffers) {
     if (!localFileWriter.writeToDisk(byteBuffers)) {
-      networkExceptionStats.recordFailure(
+      operationLogger.recordFailure(
           String.format(
               "Fail to write %s to disk.",
               (finalByteBuffers != null ? "List<ByteBuffers>" : "byte[]")));
@@ -259,7 +263,7 @@ public class TelemetryChannel {
         StatsbeatModule.get().getNetworkStatsbeat().incrementThrottlingCount();
         break;
       case 200: // SUCCESS
-        networkExceptionStats.recordSuccess();
+        operationLogger.recordSuccess();
         break;
       case 206: // PARTIAL CONTENT, Breeze-specific: PARTIAL SUCCESS
         // TODO handle partial success

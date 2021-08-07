@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.common;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -31,25 +32,21 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// exception stats for a given 5-min window
-// each instance represents a logical grouping of errors that a user cares about and can understand,
-// e.g. sending telemetry to the portal, storing telemetry to disk, ...
-public class ExceptionStats {
+class AggregatingLogger {
 
   private static final ScheduledExecutorService scheduledExecutor =
       Executors.newSingleThreadScheduledExecutor(
-          ThreadPoolUtils.createDaemonThreadFactory(
-              ExceptionStats.class, "exception stats logger"));
+          ThreadPoolUtils.createDaemonThreadFactory(AggregatingLogger.class, "aggregating logger"));
 
   private final Logger logger;
-  private final String introMessage;
+  private final String grouping;
 
   // Period for scheduled executor in secs
   private final int intervalSeconds;
 
-  private final AtomicBoolean firstFailure = new AtomicBoolean();
+  private final boolean trackingOperations;
 
-  // private final String groupingMessage;
+  private final AtomicBoolean firstFailure = new AtomicBoolean();
 
   // number of successes and failures in the 5-min window
   private long numSuccesses;
@@ -57,41 +54,43 @@ public class ExceptionStats {
   // using MutableLong for two purposes
   // * so we don't need to get and set into map each time we want to increment
   // * avoid autoboxing for values above 128
-  private Map<String, MutableLong> warningMessages = new HashMap<>();
+  private Map<String, MutableLong> failureMessages = new HashMap<>();
 
   private final Object lock = new Object();
 
-  public ExceptionStats(Class<?> source, String introMessage) {
-    this(source, introMessage, 300);
+  AggregatingLogger(Class<?> source, String operation, boolean trackingOperations) {
+    this(source, operation, trackingOperations, 300);
   }
 
-  // Primarily used by test
-  public ExceptionStats(Class<?> source, String introMessage, int intervalSeconds) {
+  // visible for testing
+  AggregatingLogger(
+      Class<?> source, String operation, boolean trackingOperations, int intervalSeconds) {
     logger = LoggerFactory.getLogger(source);
-    this.introMessage = introMessage;
+    this.grouping = operation;
+    this.trackingOperations = trackingOperations;
     this.intervalSeconds = intervalSeconds;
   }
 
-  public void recordSuccess() {
+  void recordSuccess() {
     synchronized (lock) {
       numSuccesses++;
     }
   }
 
   // warningMessage should have low cardinality
-  public void recordFailure(String warningMessage) {
-    recordFailure(warningMessage, null);
+  void recordWarning(String warningMessage) {
+    recordWarning(warningMessage, null);
   }
 
   // warningMessage should have low cardinality
-  public void recordFailure(String warningMessage, @Nullable Throwable exception) {
+  void recordWarning(String warningMessage, @Nullable Throwable exception) {
     if (!firstFailure.getAndSet(true)) {
       // log the first time we see an exception as soon as it occurs, along with full stack trace
       logger.warn(
-          introMessage
-              + " "
+          grouping
+              + ": "
               + warningMessage
-              + " (future failures will be aggregated and logged once every "
+              + " (future warnings will be aggregated and logged once every "
               + intervalSeconds / 60
               + " minutes)",
           exception);
@@ -100,74 +99,90 @@ public class ExceptionStats {
       return;
     }
 
-    logger.debug(introMessage + " " + warningMessage, exception);
+    logger.debug(grouping + " " + warningMessage, exception);
 
     synchronized (lock) {
-      if (warningMessages.size() < 10) {
-        warningMessages.computeIfAbsent(warningMessage, key -> new MutableLong()).increment();
+      if (failureMessages.size() < 10) {
+        failureMessages.computeIfAbsent(warningMessage, key -> new MutableLong()).increment();
       } else {
         // we have a cardinality problem and don't want to spam the logger
         // (or consume too much memory)
-        MutableLong count = warningMessages.get(warningMessage);
+        MutableLong count = failureMessages.get(warningMessage);
         if (count != null) {
           count.increment();
         } else {
-          warningMessages.computeIfAbsent("other", key -> new MutableLong()).increment();
+          failureMessages.computeIfAbsent("other", key -> new MutableLong()).increment();
         }
       }
     }
   }
 
-  private static class MutableLong {
+  private static class MutableLong implements Comparable<MutableLong> {
     private long value;
 
     private void increment() {
       value++;
     }
+
+    @Override
+    public int compareTo(MutableLong other) {
+      return Long.compare(value, other.value);
+    }
   }
 
-  public class ExceptionStatsLogger implements Runnable {
+  private class ExceptionStatsLogger implements Runnable {
 
     @Override
     public void run() {
       long numSuccesses;
-      Map<String, MutableLong> warningMessages;
+      Map<String, MutableLong> failureMessages;
       // grab quickly and reset under lock (do not perform logging under lock)
       synchronized (lock) {
-        numSuccesses = ExceptionStats.this.numSuccesses;
-        warningMessages = ExceptionStats.this.warningMessages;
+        numSuccesses = AggregatingLogger.this.numSuccesses;
+        failureMessages = AggregatingLogger.this.failureMessages;
 
-        ExceptionStats.this.numSuccesses = 0;
-        ExceptionStats.this.warningMessages = new HashMap<>();
+        AggregatingLogger.this.numSuccesses = 0;
+        AggregatingLogger.this.failureMessages = new HashMap<>();
       }
-      if (!warningMessages.isEmpty()) {
-        long numFailures = getTotalWarnings(warningMessages);
-        long numMinutes = ExceptionStats.this.intervalSeconds / 60;
-        long total = numSuccesses + numFailures;
+      if (!failureMessages.isEmpty()) {
+        long numWarnings = getTotalFailures(failureMessages);
+        long numMinutes = AggregatingLogger.this.intervalSeconds / 60;
+        long total = numSuccesses + numWarnings;
         StringBuilder message = new StringBuilder();
         message.append("In the last ");
         message.append(numMinutes);
-        message.append(" minutes, the following operation has failed ");
-        message.append(numFailures);
-        message.append(" times (out of ");
-        message.append(total);
-        message.append("):\n");
-        message.append(introMessage);
-        for (Map.Entry<String, MutableLong> entry : warningMessages.entrySet()) {
-          message.append("\n * ");
-          message.append(entry.getKey());
-          message.append(" (");
-          message.append(entry.getValue().value);
-          message.append(" times)");
+        message.append(" minutes, the following");
+        if (trackingOperations) {
+          message.append(" operation has failed ");
+          message.append(numWarnings);
+          message.append(" times (out of ");
+          message.append(total);
+          message.append("): ");
+        } else {
+          message.append(" warning has occurred ");
+          message.append(numWarnings);
+          message.append(" times: ");
         }
+        message.append(grouping);
+        message.append(":");
+        failureMessages.entrySet().stream()
+            .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+            .forEach(
+                entry -> {
+                  message.append("\n * ");
+                  message.append(entry.getKey());
+                  message.append(" (");
+                  message.append(entry.getValue().value);
+                  message.append(" times)");
+                });
         logger.warn(message.toString());
       }
     }
   }
 
-  private static long getTotalWarnings(Map<String, MutableLong> warnings) {
+  private static long getTotalFailures(Map<String, MutableLong> failureMessages) {
     long total = 0;
-    for (MutableLong value : warnings.values()) {
+    for (MutableLong value : failureMessages.values()) {
       total += value.value;
     }
     return total;

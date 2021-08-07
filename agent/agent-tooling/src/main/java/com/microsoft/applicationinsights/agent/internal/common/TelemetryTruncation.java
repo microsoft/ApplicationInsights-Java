@@ -23,14 +23,14 @@ package com.microsoft.applicationinsights.agent.internal.common;
 
 public class TelemetryTruncation {
 
-  private static final ExceptionStats exceptionStats =
-      new ExceptionStats(TelemetryTruncation.class, "Telemetry was truncated");
+  private static final WarningLogger warningLogger =
+      new WarningLogger(TelemetryTruncation.class, "Telemetry was truncated");
 
   public static String truncateTelemetry(String value, int maxLength, String attributeName) {
     if (value == null || value.length() <= maxLength) {
       return value;
     }
-    exceptionStats.recordFailure("truncated " + attributeName + ": " + value);
+    warningLogger.recordWarning("truncated " + attributeName + ": " + value);
     return value.substring(0, maxLength);
   }
 
@@ -40,7 +40,7 @@ public class TelemetryTruncation {
     if (value == null || value.length() <= maxLength) {
       return value;
     }
-    exceptionStats.recordFailure("truncated property[" + key + "]: " + value);
+    warningLogger.recordWarning("truncated property[" + key + "]: " + value);
     return value.substring(0, maxLength);
   }
 

@@ -19,35 +19,31 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.localstorage;
+package com.microsoft.applicationinsights.agent.internal.common;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-public class LocalFileCache {
+// aggregated warnings for a given 5-min window
+public class WarningLogger {
 
-  /**
-   * Track a list of active filenames persisted on disk. FIFO (First-In-First-Out) read will avoid
-   * an additional sorting at every read. Caveat: data loss happens when the app crashes. filenames
-   * stored in this queue will be lost forever. There isn't an unique way to identify each java app.
-   * C# uses "User@processName" to identify each app, but Java can't rely on process name since it's
-   * a system property that can be customized via the command line.
-   */
-  // TODO (heya) need to uniquely identify each app and figure out how to retrieve data from the
-  //  disk for each app.
-  private final Queue<String> persistedFilesCache = new ConcurrentLinkedDeque<>();
+  private final AggregatingLogger aggregatingLogger;
 
-  // Track the newly persisted filename to the concurrent hashmap.
-  void addPersistedFilenameToMap(String filename) {
-    persistedFilesCache.add(filename);
+  public WarningLogger(Class<?> source, String operation) {
+    this(source, operation, 300);
   }
 
-  String poll() {
-    return persistedFilesCache.poll();
+  // visible for testing
+  WarningLogger(Class<?> source, String operation, int intervalSeconds) {
+    aggregatingLogger = new AggregatingLogger(source, operation, false, intervalSeconds);
   }
 
-  // only used by tests
-  Queue<String> getPersistedFilesCache() {
-    return persistedFilesCache;
+  // warningMessage should have low cardinality
+  public void recordWarning(String warningMessage) {
+    aggregatingLogger.recordWarning(warningMessage);
+  }
+
+  // warningMessage should have low cardinality
+  public void recordWarning(String warningMessage, @Nullable Throwable exception) {
+    aggregatingLogger.recordWarning(warningMessage, exception);
   }
 }

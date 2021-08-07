@@ -26,9 +26,9 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
-import com.microsoft.applicationinsights.agent.internal.common.ExceptionStats;
 import com.microsoft.applicationinsights.agent.internal.common.ExceptionUtils;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
+import com.microsoft.applicationinsights.agent.internal.common.WarningLogger;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
@@ -48,8 +48,8 @@ public class AppIdSupplier implements AiAppId.Supplier {
       Executors.newSingleThreadScheduledExecutor(
           ThreadPoolUtils.createDaemonThreadFactory(AppIdSupplier.class));
 
-  private final ExceptionStats exceptionStats =
-      new ExceptionStats(GetAppIdTask.class, "unable to retrieve appId");
+  private static final WarningLogger warningLogger =
+      new WarningLogger(GetAppIdTask.class, "Unable to retrieve appId");
 
   // guarded by taskLock
   private GetAppIdTask task;
@@ -58,6 +58,9 @@ public class AppIdSupplier implements AiAppId.Supplier {
   private final TelemetryClient telemetryClient;
 
   private volatile String appId;
+
+  // TODO (kryalama) do we still need this AtomicBoolean, or can we use throttling built in to the
+  //  warningLogger?
   private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
   public AppIdSupplier(TelemetryClient telemetryClient) {
@@ -123,7 +126,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
         response = LazyHttpClient.getInstance().send(request).block();
       } catch (RuntimeException ex) {
         ExceptionUtils.parseError(ex, url.toString(), friendlyExceptionThrown, logger);
-        exceptionStats.recordFailure("exception sending request to " + url, ex);
+        warningLogger.recordWarning("exception sending request to " + url, ex);
         backOff();
         return;
       }
@@ -136,7 +139,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
       String body = response.getBodyAsString().block();
       int statusCode = response.getStatusCode();
       if (statusCode != 200) {
-        exceptionStats.recordFailure(
+        warningLogger.recordWarning(
             "received " + statusCode + " from " + url + "\nfull response:\n" + body, null);
         backOff();
         return;
@@ -144,13 +147,12 @@ public class AppIdSupplier implements AiAppId.Supplier {
 
       // check for case when breeze returns invalid value
       if (body == null || body.isEmpty()) {
-        exceptionStats.recordFailure("received empty body from " + url, null);
+        warningLogger.recordWarning("received empty body from " + url, null);
         backOff();
         return;
       }
 
       logger.debug("appId retrieved: {}", body);
-      exceptionStats.recordSuccess();
       appId = body;
     }
 
