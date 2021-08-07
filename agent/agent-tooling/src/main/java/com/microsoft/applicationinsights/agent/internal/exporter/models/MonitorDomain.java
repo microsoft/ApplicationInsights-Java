@@ -78,7 +78,6 @@ public class MonitorDomain {
    *
    * @param additionalProperties the additionalProperties value to set.
    * @return the MonitorDomain object itself.
-   *     <p>//TODO (kryalama) add data sanitization
    */
   public MonitorDomain setAdditionalProperties(Map<String, Object> additionalProperties) {
     this.additionalProperties = additionalProperties;
