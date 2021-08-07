@@ -48,7 +48,8 @@ dependencies {
   implementation("io.opentelemetry:opentelemetry-api")
   implementation("org.jctools:jctools-core:3.3.0")
 
-  implementation("com.squareup.okio:okio:2.8.0")
+  // TODO(trask): update tests, no need to use this anymore
+  testImplementation("com.squareup.okio:okio:2.8.0")
 
   compileOnly(project(":agent:agent-bootstrap"))
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
