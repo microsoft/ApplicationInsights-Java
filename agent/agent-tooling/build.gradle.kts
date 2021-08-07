@@ -11,10 +11,6 @@ dependencies {
   implementation(project(":agent:agent-gc-monitor:gc-monitor-api"))
   implementation(project(":agent:agent-gc-monitor:gc-monitor-core"))
 
-  // not using gson because it has dependency on java.sql.*, which is not available in Java 9+ bootstrap class loader
-  // only complaint so far about moshi is that it doesn't give line numbers when there are json formatting errors
-  implementation("com.squareup.moshi:moshi")
-
   implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
   implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api")
   implementation("net.bytebuddy:byte-buddy")
@@ -51,6 +47,9 @@ dependencies {
 
   implementation("io.opentelemetry:opentelemetry-api")
   implementation("org.jctools:jctools-core:3.3.0")
+
+  // TODO(trask): update tests, no need to use this anymore
+  testImplementation("com.squareup.okio:okio:2.8.0")
 
   compileOnly(project(":agent:agent-bootstrap"))
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")

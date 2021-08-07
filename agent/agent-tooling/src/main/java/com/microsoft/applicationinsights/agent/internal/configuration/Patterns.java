@@ -21,16 +21,24 @@
 
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
-import com.squareup.moshi.Moshi;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class MoshiBuilderFactory {
-  public static Moshi createBasicBuilder() {
-    return new Moshi.Builder().build();
+public class Patterns {
+
+  private static final Pattern CAPTURING_GROUP_NAMES =
+      Pattern.compile("\\(\\?<([a-zA-Z][a-zA-Z0-9]*)>");
+
+  public static List<String> getGroupNames(String regex) {
+    List<String> groupNames = new ArrayList<>();
+    Matcher matcher = CAPTURING_GROUP_NAMES.matcher(regex);
+    while (matcher.find()) {
+      groupNames.add(matcher.group(1));
+    }
+    return groupNames;
   }
 
-  public static Moshi createBuilderWithAdaptor() {
-    return new Moshi.Builder().add(new ProcessorActionAdaptor()).build();
-  }
-
-  private MoshiBuilderFactory() {}
+  private Patterns() {}
 }

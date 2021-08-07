@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Role;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Sampling;
 import java.nio.file.Path;
@@ -28,11 +29,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class RpConfiguration {
 
-  // transient so that Moshi will ignore when binding from json
-  public transient Path configPath;
+  @JsonIgnore public Path configPath;
 
-  // transient so that Moshi will ignore when binding from json
-  public transient long lastModifiedTime;
+  @JsonIgnore public long lastModifiedTime;
 
   public String connectionString;
 

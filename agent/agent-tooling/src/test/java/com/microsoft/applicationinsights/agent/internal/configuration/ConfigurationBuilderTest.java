@@ -67,50 +67,34 @@ class ConfigurationBuilderTest {
   @Test
   void testMalformedJson() {
     Path path = getConfigFilePath("applicationinsights_malformed.json");
-
     assertThatThrownBy(() -> ConfigurationBuilder.getConfigurationFromConfigFile(path, true))
-        .isInstanceOf(FriendlyException.class)
-        .hasMessageContaining("has a malformed JSON at path $.role.");
+        .isInstanceOf(FriendlyException.class);
   }
 
   @Test
   void testMalformedFaultyJson() {
     Path path = getConfigFilePath("applicationinsights_malformed_faulty.json");
-
     assertThatThrownBy(() -> ConfigurationBuilder.getConfigurationFromConfigFile(path, true))
-        .isInstanceOf(FriendlyException.class)
-        .hasMessageContaining("has a malformed JSON")
-        .hasMessageNotContaining("has a malformed JSON at path $.null.");
+        .isInstanceOf(FriendlyException.class);
+  }
+
+  @Test
+  void testMalformedJsonWithUnicode() {
+    Path path = getConfigFilePath("applicationinsights_malformed_unicode.json");
+    assertThatThrownBy(() -> ConfigurationBuilder.getConfigurationFromConfigFile(path, true))
+        .isInstanceOf(FriendlyException.class);
   }
 
   @Test
   void testGetJsonEncodingExceptionMessage() {
     String pathNull =
-        ConfigurationBuilder.getJsonEncodingExceptionMessage("file path/to/file", null);
+        ConfigurationBuilder.getJsonEncodingExceptionMessage(null, "file path/to/file");
     String pathEmpty =
-        ConfigurationBuilder.getJsonEncodingExceptionMessage("file path/to/file", "");
-    String pathValid =
-        ConfigurationBuilder.getJsonEncodingExceptionMessage(
-            "file path/to/file", "has a malformed JSON at path $.role.");
-    String pathInvalidAndNull =
-        ConfigurationBuilder.getJsonEncodingExceptionMessage(
-            "file path/to/file", "has a malformed JSON at path $.null.[0]");
-    String pathInvalid =
-        ConfigurationBuilder.getJsonEncodingExceptionMessage(
-            "file path/to/file", "has a malformed JSON at path $.");
+        ConfigurationBuilder.getJsonEncodingExceptionMessage("", "file path/to/file");
     assertThat(pathNull)
         .isEqualTo(
             "Application Insights Java agent's configuration file path/to/file has a malformed JSON\n");
     assertThat(pathEmpty)
-        .isEqualTo(
-            "Application Insights Java agent's configuration file path/to/file has a malformed JSON\n");
-    assertThat(pathValid)
-        .isEqualTo(
-            "Application Insights Java agent's configuration file path/to/file has a malformed JSON at path $.role.\n");
-    assertThat(pathInvalid)
-        .isEqualTo(
-            "Application Insights Java agent's configuration file path/to/file has a malformed JSON\n");
-    assertThat(pathInvalidAndNull)
         .isEqualTo(
             "Application Insights Java agent's configuration file path/to/file has a malformed JSON\n");
   }

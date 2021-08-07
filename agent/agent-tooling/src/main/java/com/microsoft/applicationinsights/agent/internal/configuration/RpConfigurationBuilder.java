@@ -21,15 +21,14 @@
 
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import okio.Buffer;
 
 public class RpConfigurationBuilder {
 
@@ -71,13 +70,10 @@ public class RpConfigurationBuilder {
 
   private static RpConfiguration getConfigurationFromConfigFile(Path configPath)
       throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     try (InputStream in = Files.newInputStream(configPath)) {
-      Buffer buffer = new Buffer();
-      buffer.readFrom(in);
-      Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
-      JsonAdapter<RpConfiguration> jsonAdapter =
-          moshi.adapter(RpConfiguration.class).failOnUnknown();
-      return jsonAdapter.fromJson(buffer);
+      return mapper.readValue(in, RpConfiguration.class);
     }
   }
 
