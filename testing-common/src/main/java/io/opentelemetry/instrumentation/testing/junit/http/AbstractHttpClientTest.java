@@ -195,6 +195,9 @@ public abstract class AbstractHttpClientTest<REQUEST> {
     if (!testErrorWithCallback()) {
       options.disableTestErrorWithCallback();
     }
+    if (!capturesAiTargetAppId()) {
+      options.disableCapturesAiTargetAppId();
+    }
 
     configure(options);
   }
@@ -1250,6 +1253,10 @@ public abstract class AbstractHttpClientTest<REQUEST> {
   }
 
   protected boolean testErrorWithCallback() {
+    return true;
+  }
+
+  protected boolean capturesAiTargetAppId() {
     return true;
   }
 
