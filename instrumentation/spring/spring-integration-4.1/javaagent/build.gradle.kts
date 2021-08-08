@@ -39,7 +39,9 @@ tasks {
   val testWithRabbitInstrumentation by registering(Test::class) {
     filter {
       includeTestsMatching("SpringIntegrationAndRabbitTest")
+      isFailOnNoMatchingTests = false
     }
+    include("**/SpringIntegrationAndRabbitTest.*")
     jvmArgs("-Dotel.instrumentation.rabbitmq.enabled=true")
     jvmArgs("-Dotel.instrumentation.spring-rabbit.enabled=true")
   }
@@ -49,12 +51,14 @@ tasks {
 
     filter {
       excludeTestsMatching("SpringIntegrationAndRabbitTest")
+      isFailOnNoMatchingTests = false
     }
     jvmArgs("-Dotel.instrumentation.rabbitmq.enabled=false")
     jvmArgs("-Dotel.instrumentation.spring-rabbit.enabled=false")
   }
 
   withType<Test>().configureEach {
-    systemProperty("testLatestDeps", findProperty("testLatestDeps"))
+    systemProperty("testLatestDeps", findProperty("testLatestDeps") as Boolean)
+    usesService(gradle.sharedServices.registrations["testcontainersBuildService"].getService())
   }
 }

@@ -47,6 +47,7 @@ tasks {
     if (findProperty("testLatestDeps") as Boolean) {
       dependsOn(vaadin14LatestTest)
     }
+    usesService(gradle.sharedServices.registrations["testcontainersBuildService"].getService())
   }
 }
 
@@ -63,5 +64,9 @@ dependencies {
   testInstrumentation(project(":instrumentation:tomcat:tomcat-7.0:javaagent"))
 
   add("vaadin14LatestTestImplementation", "com.vaadin:vaadin-spring-boot-starter:14.+")
-  add("latestDepTestImplementation", "com.vaadin:vaadin-spring-boot-starter:+")
+  // Pin latest tested vaadin version to 19
+  // https://github.com/vaadin/flow/issues/11524
+  // Update to workbox-build node module broke building javascript, remove this restriction after
+  // new version of vaadin is released.
+  add("latestDepTestImplementation", "com.vaadin:vaadin-spring-boot-starter:19.+")
 }

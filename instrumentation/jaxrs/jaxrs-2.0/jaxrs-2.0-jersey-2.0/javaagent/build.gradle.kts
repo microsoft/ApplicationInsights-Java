@@ -20,6 +20,8 @@ muzzle {
 }
 
 dependencies {
+  compileOnly(project(":instrumentation:jaxrs:bootstrap"))
+
   compileOnly("javax.ws.rs:javax.ws.rs-api:2.0")
   compileOnly("javax.servlet:javax.servlet-api:3.1.0")
   library("org.glassfish.jersey.core:jersey-server:2.0")
@@ -46,7 +48,7 @@ dependencies {
 
 tasks {
   named<Test>("test") {
-    systemProperty("testLatestDeps", findProperty("testLatestDeps"))
+    systemProperty("testLatestDeps", findProperty("testLatestDeps") as Boolean)
   }
 
   withType<Test>().configureEach {
