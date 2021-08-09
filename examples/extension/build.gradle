@@ -12,7 +12,8 @@ plugins {
    */
   id "com.github.johnrengelman.shadow" version "6.1.0"
 
-  id "io.opentelemetry.instrumentation.muzzle-generation" version "0.1.0-SNAPSHOT"
+  id "io.opentelemetry.instrumentation.muzzle-generation" version "0.3.0"
+  id "io.opentelemetry.instrumentation.muzzle-check" version "0.3.0"
 }
 
 group 'io.opentelemetry.example'
@@ -22,8 +23,8 @@ ext {
   versions = [
     opentelemetry              : "1.4.1",
     opentelemetryAlpha         : "1.4.1-alpha",
-    opentelemetryJavaagent     : "1.4.0",
-    opentelemetryJavaagentAlpha: "1.4.0-alpha",
+    opentelemetryJavaagent     : "1.5.0-SNAPSHOT",
+    opentelemetryJavaagentAlpha: "1.5.0-alpha-SNAPSHOT",
   ]
 
   deps = [
@@ -34,6 +35,7 @@ ext {
 repositories {
   mavenCentral()
   maven {
+    name = "sonatype"
     url = uri("https://oss.sonatype.org/content/repositories/snapshots")
   }
 }
@@ -91,6 +93,10 @@ dependencies {
 
   //Otel Java instrumentation that we use and extend during integration tests
   otel("io.opentelemetry.javaagent:opentelemetry-javaagent:${versions.opentelemetryJavaagent}:all")
+
+  //TODO remove when start using io.opentelemetry.instrumentation.javaagent-instrumentation plugin
+  add("muzzleTooling", "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${versions.opentelemetryJavaagentAlpha}")
+  add("muzzleTooling", "ch.qos.logback:logback-classic:1.2.3")
 }
 
 //Extracts manifest from OpenTelemetry Java agent to reuse it later
@@ -130,4 +136,19 @@ tasks {
   }
 
   assemble.dependsOn(shadowJar)
+}
+
+muzzle {
+  pass {
+    group.set("javax.servlet")
+    module.set("javax.servlet-api")
+    versions.set("[3.0,)")
+    assertInverse.set(true)
+  }
+  pass {
+    group.set("javax.servlet")
+    module.set("servlet-api")
+    versions.set("[2.2, 3.0)")
+    assertInverse.set(true)
+  }
 }
