@@ -24,10 +24,12 @@ package com.microsoft.applicationinsights.agent.internal.configuration;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
-import com.squareup.moshi.Json;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -61,33 +63,33 @@ public class Configuration {
   }
 
   public enum MatchType {
-    @Json(name = "strict")
+    @JsonProperty("strict")
     STRICT,
-    @Json(name = "regexp")
+    @JsonProperty("regexp")
     REGEXP
   }
 
   public enum ProcessorActionType {
-    @Json(name = "insert")
+    @JsonProperty("insert")
     INSERT,
-    @Json(name = "update")
+    @JsonProperty("update")
     UPDATE,
-    @Json(name = "delete")
+    @JsonProperty("delete")
     DELETE,
-    @Json(name = "hash")
+    @JsonProperty("hash")
     HASH,
-    @Json(name = "extract")
+    @JsonProperty("extract")
     EXTRACT
   }
 
   public enum ProcessorType {
-    @Json(name = "attribute")
+    @JsonProperty("attribute")
     ATTRIBUTE("an attribute"),
-    @Json(name = "log")
+    @JsonProperty("log")
     LOG("a log"),
-    @Json(name = "span")
+    @JsonProperty("span")
     SPAN("a span"),
-    @Json(name = "metric-filter")
+    @JsonProperty("metric-filter")
     METRIC_FILTER("a metric-filter");
 
     private final String anX;
@@ -209,6 +211,8 @@ public class Configuration {
 
   public static class PreviewInstrumentation {
     public DisabledByDefaultInstrumentation azureSdk = new DisabledByDefaultInstrumentation();
+
+    public DisabledByDefaultInstrumentation grizzly = new DisabledByDefaultInstrumentation();
 
     // this is just here to detect if using this old setting in order to give a helpful message
     @Deprecated
@@ -700,9 +704,30 @@ public class Configuration {
   }
 
   public static class ExtractAttribute {
+
     public final Pattern pattern;
     public final List<String> groupNames;
 
+    @JsonCreator
+    public static ExtractAttribute create(@JsonProperty("pattern") String pattern) {
+      if (pattern == null) {
+        return null;
+      }
+      Pattern regexPattern;
+      try {
+        regexPattern = Pattern.compile(pattern);
+      } catch (PatternSyntaxException e) {
+        throw new FriendlyException(
+            "Telemetry processor configuration does not have valid regex:" + pattern,
+            "Please provide a valid regex in the telemetry processors configuration. "
+                + "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557",
+            e);
+      }
+      List<String> groupNames = Patterns.getGroupNames(pattern);
+      return new Configuration.ExtractAttribute(regexPattern, groupNames);
+    }
+
+    // visible for testing
     public ExtractAttribute(Pattern pattern, List<String> groupNames) {
       this.pattern = pattern;
       this.groupNames = groupNames;
@@ -725,7 +750,7 @@ public class Configuration {
     public ProcessorActionType action;
     public String value;
     public String fromAttribute;
-    public ExtractAttribute extractAttribute;
+    @JsonUnwrapped public ExtractAttribute extractAttribute;
 
     public void validate() {
 

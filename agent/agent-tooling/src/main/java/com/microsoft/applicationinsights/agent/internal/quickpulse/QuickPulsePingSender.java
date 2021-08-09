@@ -24,9 +24,10 @@ package com.microsoft.applicationinsights.agent.internal.quickpulse;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
-import com.microsoft.applicationinsights.agent.internal.common.ExceptionStats;
 import com.microsoft.applicationinsights.agent.internal.common.ExceptionUtils;
+import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
+import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,9 +46,13 @@ class QuickPulsePingSender {
   private final String machineName;
   private final String quickPulseId;
   private long lastValidTransmission = 0;
+
+  private static final OperationLogger operationLogger =
+      new OperationLogger(QuickPulsePingSender.class, "Pinging live metrics endpoint");
+
+  // TODO (kryalama) do we still need this AtomicBoolean, or can we use throttling built in to the
+  //  operationLogger?
   private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
-  private final ExceptionStats exceptionStats =
-      new ExceptionStats(QuickPulsePingSender.class, "Live metrics endpoint ping failed");
 
   public QuickPulsePingSender(
       HttpPipeline httpPipeline,
@@ -91,17 +96,21 @@ class QuickPulsePingSender {
     request.setBody(buildPingEntity(currentDate.getTime()));
 
     long sendTime = System.nanoTime();
-    HttpResponse response = null;
-    try {
+    try (HttpResponse response = httpPipeline.send(request).block()) {
+      if (response == null) {
+        // this shouldn't happen, the mono should complete with a response or a failure
+        throw new AssertionError("http response mono returned empty");
+      }
+      // response body is not consumed below
+      LazyHttpClient.consumeResponseBody(response);
 
-      response = httpPipeline.send(request).block();
-      if (response != null && networkHelper.isSuccess(response)) {
+      if (networkHelper.isSuccess(response)) {
         QuickPulseHeaderInfo quickPulseHeaderInfo = networkHelper.getQuickPulseHeaderInfo(response);
         switch (quickPulseHeaderInfo.getQuickPulseStatus()) {
           case QP_IS_OFF:
           case QP_IS_ON:
             lastValidTransmission = sendTime;
-            exceptionStats.recordSuccess();
+            operationLogger.recordSuccess();
             return quickPulseHeaderInfo;
 
           default:
@@ -109,12 +118,8 @@ class QuickPulsePingSender {
         }
       }
     } catch (Throwable t) {
-      exceptionStats.recordFailure(t.getMessage(), t);
+      operationLogger.recordFailure(t.getMessage(), t);
       ExceptionUtils.parseError(t, getQuickPulseEndpoint(), friendlyExceptionThrown, logger);
-    } finally {
-      if (response != null) {
-        response.close();
-      }
     }
     return onPingError(sendTime);
   }

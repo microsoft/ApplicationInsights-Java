@@ -27,18 +27,18 @@ import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-class ExceptionStatsLoggerTest {
-  private static ExceptionStats networkExceptionStats;
+class MessageAggregatorTest {
+  private static OperationLogger networkExceptionStats;
 
   @BeforeAll
   static void setUp() {
     // one-time initialization code
-    networkExceptionStats = new ExceptionStats(ExceptionStatsLoggerTest.class, "intro:", 1);
+    networkExceptionStats = new OperationLogger(MessageAggregatorTest.class, "intro", 1);
   }
 
   @Test
   void testWarnAndExceptionsAreLogged() throws InterruptedException {
-    LogCaptor logCaptor = LogCaptor.forClass(ExceptionStatsLoggerTest.class);
+    LogCaptor logCaptor = LogCaptor.forClass(MessageAggregatorTest.class);
     networkExceptionStats.recordSuccess();
     Exception ex = new IllegalArgumentException();
     networkExceptionStats.recordFailure("Test Message", ex);
@@ -51,11 +51,10 @@ class ExceptionStatsLoggerTest {
     assertThat(logCaptor.getWarnLogs()).hasSize(2);
     assertThat(logCaptor.getWarnLogs().get(0))
         .contains(
-            "intro: Test Message (future failures will be aggregated and logged once every 0 minutes)");
+            "intro: Test Message (future warnings will be aggregated and logged once every 0 minutes)");
     assertThat(logCaptor.getWarnLogs().get(1))
         .contains(
-            "In the last 0 minutes, the following operation has failed 3 times (out of 4):\n"
-                + "intro:\n"
+            "In the last 0 minutes, the following operation has failed 3 times (out of 4): intro:\n"
                 + " * Test Message2 (2 times)\n"
                 + " * Test Message3 (1 times)");
   }

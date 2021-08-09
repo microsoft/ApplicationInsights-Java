@@ -19,32 +19,31 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.configuration;
+package com.microsoft.applicationinsights.agent.internal.common;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Role;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Sampling;
-import java.nio.file.Path;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-public class RpConfiguration {
+// aggregated warnings for a given 5-min window
+public class WarningLogger {
 
-  @JsonIgnore public Path configPath;
+  private final AggregatingLogger aggregatingLogger;
 
-  @JsonIgnore public long lastModifiedTime;
+  public WarningLogger(Class<?> source, String operation) {
+    this(source, operation, 300);
+  }
 
-  public String connectionString;
+  // visible for testing
+  WarningLogger(Class<?> source, String operation, int intervalSeconds) {
+    aggregatingLogger = new AggregatingLogger(source, operation, false, intervalSeconds);
+  }
 
-  // intentionally null, so that we can tell if rp is providing or not
-  public Sampling sampling = new Sampling();
+  // warningMessage should have low cardinality
+  public void recordWarning(String warningMessage) {
+    aggregatingLogger.recordWarning(warningMessage);
+  }
 
-  // this is needed in Azure Spring Cloud because it will set the role name to application name
-  // on behalf of customers by default.
-  // Note the role doesn't support hot load due to unnecessary currently.
-  public Role role = new Role();
-
-  // this is needed in Azure Functions because .NET SDK always propagates trace flags "00" (not
-  // sampled)
-  // null means do not override the users selection
-  public @Nullable Boolean ignoreRemoteParentNotSampled;
+  // warningMessage should have low cardinality
+  public void recordWarning(String warningMessage, @Nullable Throwable exception) {
+    aggregatingLogger.recordWarning(warningMessage, exception);
+  }
 }

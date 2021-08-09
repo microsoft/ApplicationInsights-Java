@@ -19,32 +19,37 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.configuration;
+package com.microsoft.applicationinsights.agent.internal.common;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Role;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Sampling;
-import java.nio.file.Path;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-public class RpConfiguration {
+// operation failure stats for a given 5-min window
+// each instance represents a logical grouping of errors that a user cares about and can understand,
+// e.g. sending telemetry to the portal, storing telemetry to disk, ...
+public class OperationLogger {
 
-  @JsonIgnore public Path configPath;
+  private final AggregatingLogger aggregatingLogger;
 
-  @JsonIgnore public long lastModifiedTime;
+  public OperationLogger(Class<?> source, String operation) {
+    this(source, operation, 300);
+  }
 
-  public String connectionString;
+  // visible for testing
+  OperationLogger(Class<?> source, String operation, int intervalSeconds) {
+    aggregatingLogger = new AggregatingLogger(source, operation, true, intervalSeconds);
+  }
 
-  // intentionally null, so that we can tell if rp is providing or not
-  public Sampling sampling = new Sampling();
+  public void recordSuccess() {
+    aggregatingLogger.recordSuccess();
+  }
 
-  // this is needed in Azure Spring Cloud because it will set the role name to application name
-  // on behalf of customers by default.
-  // Note the role doesn't support hot load due to unnecessary currently.
-  public Role role = new Role();
+  // failureMessage should have low cardinality
+  public void recordFailure(String failureMessage) {
+    aggregatingLogger.recordWarning(failureMessage);
+  }
 
-  // this is needed in Azure Functions because .NET SDK always propagates trace flags "00" (not
-  // sampled)
-  // null means do not override the users selection
-  public @Nullable Boolean ignoreRemoteParentNotSampled;
+  // failureMessage should have low cardinality
+  public void recordFailure(String failureMessage, @Nullable Throwable exception) {
+    aggregatingLogger.recordWarning(failureMessage, exception);
+  }
 }

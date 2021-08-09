@@ -32,7 +32,55 @@ import org.junit.jupiter.api.Test;
 class ExceptionsTest {
 
   @Test
-  void test() {
+  void testMinimalParse() {
+    // given
+    String str = toString(new IllegalStateException("test"));
+
+    // when
+    List<TelemetryExceptionDetails> list = Exceptions.minimalParse(str);
+
+    // then
+    assertThat(list.size()).isEqualTo(1);
+
+    TelemetryExceptionDetails details = list.get(0);
+    assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
+    assertThat(details.getMessage()).isEqualTo("test");
+  }
+
+  @Test
+  void testMinimalParseWithNoMessage() {
+    // given
+    String str = toString(new IllegalStateException());
+
+    // when
+    List<TelemetryExceptionDetails> list = Exceptions.minimalParse(str);
+
+    // then
+    assertThat(list.size()).isEqualTo(1);
+
+    TelemetryExceptionDetails details = list.get(0);
+    assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
+    assertThat(details.getMessage()).isNull();
+  }
+
+  @Test
+  void testMinimalParseWithProblematicMessage() {
+    // given
+    String str = toString(new ProblematicException());
+
+    // when
+    List<TelemetryExceptionDetails> list = Exceptions.minimalParse(str);
+
+    // then
+    assertThat(list.size()).isEqualTo(1);
+
+    TelemetryExceptionDetails details = list.get(0);
+    assertThat(details.getTypeName()).isEqualTo(ProblematicException.class.getName());
+    assertThat(details.getMessage()).isNull();
+  }
+
+  @Test
+  void testFullParse() {
     // given
     String str = toString(new IllegalStateException("test"));
 
@@ -48,7 +96,7 @@ class ExceptionsTest {
   }
 
   @Test
-  void testWithNoMessage() {
+  void testFullParseWithNoMessage() {
     // given
     String str = toString(new IllegalStateException());
 
@@ -60,6 +108,22 @@ class ExceptionsTest {
 
     TelemetryExceptionDetails details = list.get(0);
     assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
+    assertThat(details.getMessage()).isNull();
+  }
+
+  @Test
+  void testFullParseWithProblematicMessage() {
+    // given
+    String str = toString(new ProblematicException());
+
+    // when
+    List<TelemetryExceptionDetails> list = Exceptions.fullParse(str);
+
+    // then
+    assertThat(list.size()).isEqualTo(1);
+
+    TelemetryExceptionDetails details = list.get(0);
+    assertThat(details.getTypeName()).isEqualTo(ProblematicException.class.getName());
     assertThat(details.getMessage()).isNull();
   }
 
@@ -107,5 +171,13 @@ class ExceptionsTest {
     StringWriter out = new StringWriter();
     t.printStackTrace(new PrintWriter(out));
     return out.toString();
+  }
+
+  @SuppressWarnings("OverrideThrowableToString")
+  private static class ProblematicException extends Exception {
+    @Override
+    public String toString() {
+      return ProblematicException.class.getName() + ":";
+    }
   }
 }

@@ -176,18 +176,30 @@ public enum QuickPulseDataCollector {
   }
 
   public void add(TelemetryItem telemetryItem) {
+    if (telemetryClient == null) {
+      // quick pulse is not enabled
+      return;
+    }
+
     if (!telemetryItem.getInstrumentationKey().equals(getInstrumentationKey())) {
       return;
     }
 
+    Float sampleRate = telemetryItem.getSampleRate();
+    if (sampleRate != null && sampleRate == 0) {
+      // sampleRate should never be zero (how could it be captured if sampling set to zero percent?)
+      return;
+    }
+    int itemCount = sampleRate == null ? 1 : Math.round(100 / sampleRate);
+
     MonitorDomain data = telemetryItem.getData().getBaseData();
     if (data instanceof RequestData) {
       RequestData requestTelemetry = (RequestData) data;
-      addRequest(requestTelemetry);
+      addRequest(requestTelemetry, itemCount);
     } else if (data instanceof RemoteDependencyData) {
-      addDependency((RemoteDependencyData) data);
+      addDependency((RemoteDependencyData) data, itemCount);
     } else if (data instanceof TelemetryExceptionData) {
-      addException();
+      addException(itemCount);
     }
   }
 
@@ -195,36 +207,37 @@ public enum QuickPulseDataCollector {
     return telemetryClient.getInstrumentationKey();
   }
 
-  private void addDependency(RemoteDependencyData telemetry) {
+  private void addDependency(RemoteDependencyData telemetry, int itemCount) {
     Counters counters = this.counters.get();
     if (counters == null) {
       return;
     }
     counters.rddsAndDuations.addAndGet(
-        Counters.encodeCountAndDuration(1, parseDurationToMillis(telemetry.getDuration())));
+        Counters.encodeCountAndDuration(itemCount, parseDurationToMillis(telemetry.getDuration())));
     Boolean success = telemetry.isSuccess();
     if (success != null && !success) { // success should not be null
       counters.unsuccessfulRdds.incrementAndGet();
     }
   }
 
-  private void addException() {
+  private void addException(int itemCount) {
     Counters counters = this.counters.get();
     if (counters == null) {
       return;
     }
 
-    counters.exceptions.incrementAndGet();
+    counters.exceptions.addAndGet(itemCount);
   }
 
-  private void addRequest(RequestData requestTelemetry) {
+  private void addRequest(RequestData requestTelemetry, int itemCount) {
     Counters counters = this.counters.get();
     if (counters == null) {
       return;
     }
 
     counters.requestsAndDurations.addAndGet(
-        Counters.encodeCountAndDuration(1, parseDurationToMillis(requestTelemetry.getDuration())));
+        Counters.encodeCountAndDuration(
+            itemCount, parseDurationToMillis(requestTelemetry.getDuration())));
     if (!requestTelemetry.isSuccess()) {
       counters.unsuccessfulRequests.incrementAndGet();
     }

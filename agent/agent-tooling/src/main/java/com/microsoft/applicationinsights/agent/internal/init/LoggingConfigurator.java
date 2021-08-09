@@ -113,7 +113,11 @@ public class LoggingConfigurator {
 
     // App Services windows environments use ETW to consume internal diagnostics logging events and
     // to send those logging events to an internal kusto store for internal alerting and diagnostics
-    if (DiagnosticsHelper.isOsWindows()) {
+    //
+    // applicationinsights.testing.etw.disabled setting is useful for local testing of app services
+    // diagnostic logging without building the etw dll locally
+    if (DiagnosticsHelper.isOsWindows()
+        && !Boolean.getBoolean("applicationinsights.testing.etw.disabled")) {
       rootLogger.addAppender(configureEtwAppender());
     }
 
@@ -269,7 +273,7 @@ public class LoggingConfigurator {
   private Encoder<ILoggingEvent> createEncoder() {
     PatternLayoutEncoder encoder = new PatternLayoutEncoder();
     encoder.setContext(loggerContext);
-    encoder.setPattern("%d{yyyy-MM-dd HH:mm:ss.SSSX} %-5level %logger{36} - %msg%n");
+    encoder.setPattern("%d{yyyy-MM-dd HH:mm:ss.SSSXXX} %-5level %logger{36} - %msg%n");
     encoder.start();
     return encoder;
   }

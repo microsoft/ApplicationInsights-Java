@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
+import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.ContextTagKeys;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MessageData;
@@ -28,7 +29,6 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorD
 import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDependencyData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.SeverityLevel;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
@@ -136,6 +136,12 @@ public class Exporter implements SpanExporter {
   private static final AttributeKey<String> AZURE_SDK_MESSAGE_BUS_DESTINATION =
       AttributeKey.stringKey("message_bus.destination");
 
+  private static final OperationLogger exportingSpanLogger =
+      new OperationLogger(Exporter.class, "Exporting span");
+
+  private static final OperationLogger parsingHttpUrlLogger =
+      new OperationLogger(Exporter.class, "Parsing http.url");
+
   private final TelemetryClient telemetryClient;
 
   public Exporter(TelemetryClient telemetryClient) {
@@ -148,20 +154,21 @@ public class Exporter implements SpanExporter {
       logger.debug("Instrumentation key is null or empty.");
       return CompletableResultCode.ofSuccess();
     }
-
-    try {
-      for (SpanData span : spans) {
-        logger.debug("exporting span: {}", span);
+    boolean failure = false;
+    for (SpanData span : spans) {
+      logger.debug("exporting span: {}", span);
+      try {
         export(span);
+        exportingSpanLogger.recordSuccess();
+      } catch (Throwable t) {
+        exportingSpanLogger.recordFailure(t.getMessage(), t);
+        failure = true;
       }
-      // batching, retry, throttling, and writing to disk on failure occur downstream
-      // for simplicity not reporting back success/failure from this layer
-      // only that it was successfully delivered to the next layer
-      return CompletableResultCode.ofSuccess();
-    } catch (Throwable t) {
-      logger.error(t.getMessage(), t);
-      return CompletableResultCode.ofFailure();
     }
+    // batching, retry, throttling, and writing to disk on failure occur downstream
+    // for simplicity not reporting back success/failure from this layer
+    // only that it was successfully delivered to the next layer
+    return failure ? CompletableResultCode.ofFailure() : CompletableResultCode.ofSuccess();
   }
 
   private void export(SpanData span) {
@@ -430,16 +437,18 @@ public class Exporter implements SpanExporter {
     }
     String url = attributes.get(SemanticAttributes.HTTP_URL);
     if (target == null && url != null) {
+      URI uri;
       try {
-        URI uri = new URI(url);
+        uri = new URI(url);
+      } catch (URISyntaxException e) {
+        parsingHttpUrlLogger.recordFailure(e.getMessage(), e);
+        uri = null;
+      }
+      if (uri != null) {
         target = uri.getHost();
         if (uri.getPort() != 80 && uri.getPort() != 443 && uri.getPort() != -1) {
           target += ":" + uri.getPort();
         }
-      } catch (URISyntaxException e) {
-        // TODO (trask) "log once"
-        logger.error(e.getMessage());
-        logger.debug(e.getMessage(), e);
       }
     }
     if (target == null) {
@@ -663,8 +672,7 @@ public class Exporter implements SpanExporter {
     if (httpStatusCode != null) {
       data.setResponseCode(Long.toString(httpStatusCode));
     } else {
-      // TODO (trask) AI mapping: what should the default value be?
-      data.setResponseCode("200");
+      data.setResponseCode("0");
     }
 
     String locationIp = attributes.get(SemanticAttributes.HTTP_CLIENT_IP);
@@ -747,17 +755,17 @@ public class Exporter implements SpanExporter {
       }
 
       TelemetryItem telemetry = new TelemetryItem();
-      TelemetryEventData data = new TelemetryEventData();
-      telemetryClient.initEventTelemetry(telemetry, data);
+      MessageData data = new MessageData();
+      telemetryClient.initMessageTelemetry(telemetry, data);
 
-      // common properties
+      // set standard properties
       setOperationTags(telemetry, span.getTraceId(), span.getSpanId());
       setTime(telemetry, event.getEpochNanos());
       setExtraAttributes(telemetry, data, event.getAttributes());
       setSampleRate(telemetry, samplingPercentage);
 
-      // event-specific properties
-      data.setName(event.getName());
+      // set message-specific properties
+      data.setMessage(event.getName());
 
       telemetryClient.trackAsync(telemetry);
     }
@@ -768,12 +776,12 @@ public class Exporter implements SpanExporter {
     TelemetryExceptionData data = new TelemetryExceptionData();
     telemetryClient.initExceptionTelemetry(telemetry, data);
 
-    // common properties
+    // set standard properties
     setOperationTags(telemetry, span.getTraceId(), span.getSpanId());
     setTime(telemetry, span.getEndEpochNanos());
     setSampleRate(telemetry, samplingPercentage);
 
-    // exception-specific properties
+    // set exception-specific properties
     data.setExceptions(minimalParse(errorStack));
 
     telemetryClient.trackAsync(telemetry);

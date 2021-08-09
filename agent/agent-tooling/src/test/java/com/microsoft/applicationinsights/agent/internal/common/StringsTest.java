@@ -19,32 +19,21 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.configuration;
+package com.microsoft.applicationinsights.agent.internal.common;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Role;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Sampling;
-import java.nio.file.Path;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class RpConfiguration {
+import org.junit.jupiter.api.Test;
 
-  @JsonIgnore public Path configPath;
+public class StringsTest {
 
-  @JsonIgnore public long lastModifiedTime;
-
-  public String connectionString;
-
-  // intentionally null, so that we can tell if rp is providing or not
-  public Sampling sampling = new Sampling();
-
-  // this is needed in Azure Spring Cloud because it will set the role name to application name
-  // on behalf of customers by default.
-  // Note the role doesn't support hot load due to unnecessary currently.
-  public Role role = new Role();
-
-  // this is needed in Azure Functions because .NET SDK always propagates trace flags "00" (not
-  // sampled)
-  // null means do not override the users selection
-  public @Nullable Boolean ignoreRemoteParentNotSampled;
+  @Test
+  void testEmptyToNull() {
+    assertThat(Strings.trimAndEmptyToNull("   ")).isNull();
+    assertThat(Strings.trimAndEmptyToNull("")).isNull();
+    assertThat(Strings.trimAndEmptyToNull(null)).isNull();
+    assertThat(Strings.trimAndEmptyToNull("a")).isEqualTo("a");
+    assertThat(Strings.trimAndEmptyToNull("  a  ")).isEqualTo("a");
+    assertThat(Strings.trimAndEmptyToNull("\t")).isNull();
+  }
 }

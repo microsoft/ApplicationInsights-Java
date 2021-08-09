@@ -24,10 +24,10 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
 import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -43,14 +43,18 @@ class AzureMetadataService implements Runnable {
       Executors.newSingleThreadScheduledExecutor(
           ThreadPoolUtils.createDaemonThreadFactory(AzureMetadataService.class));
 
-  private static final String API_VERSION =
-      "api-version=2017-08-01"; // this version has the smallest payload.
+  // this version has the smallest payload.
+  private static final String API_VERSION = "api-version=2017-08-01";
   private static final String JSON_FORMAT = "format=json";
   private static final String BASE_URL = "http://169.254.169.254/metadata/instance/compute";
   private static final String ENDPOINT = BASE_URL + "?" + API_VERSION + "&" + JSON_FORMAT;
 
-  private static final JsonAdapter<MetadataInstanceResponse> jsonAdapter =
-      new Moshi.Builder().build().adapter(MetadataInstanceResponse.class);
+  private static final ObjectMapper mapper;
+
+  static {
+    mapper = new ObjectMapper();
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+  }
 
   private final AttachStatsbeat attachStatsbeat;
   private final CustomDimensions customDimensions;
@@ -69,7 +73,7 @@ class AzureMetadataService implements Runnable {
 
   // only used by tests
   void updateMetadata(String response) throws IOException {
-    updateMetadata(jsonAdapter.fromJson(response));
+    updateMetadata(mapper.readValue(response, MetadataInstanceResponse.class));
   }
 
   // visible for testing
@@ -119,7 +123,7 @@ class AzureMetadataService implements Runnable {
 
     MetadataInstanceResponse metadataInstanceResponse;
     try {
-      metadataInstanceResponse = jsonAdapter.fromJson(json);
+      metadataInstanceResponse = mapper.readValue(json, MetadataInstanceResponse.class);
     } catch (IOException e) {
       logger.debug(
           "Shutting down AzureMetadataService scheduler:"

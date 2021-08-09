@@ -34,8 +34,8 @@ public class LocalFileSender implements Runnable {
 
   private static final Logger logger = LoggerFactory.getLogger(LocalFileSender.class);
 
-  private static final long INTERVAL_SECONDS =
-      30; // send persisted telemetries from local disk every 30 seconds.
+  // send persisted telemetries from local disk every 30 seconds.
+  private static final long INTERVAL_SECONDS = 30;
   private static final ScheduledExecutorService scheduledExecutor =
       Executors.newSingleThreadScheduledExecutor(
           ThreadPoolUtils.createDaemonThreadFactory(LocalFileLoader.class));
@@ -56,13 +56,16 @@ public class LocalFileSender implements Runnable {
 
   @Override
   public void run() {
+    // TODO (heya) should this loop more aggressively until it reads all telemetry from disk?
+    //  or is it intentional to only send one batch per 30 seconds?
     try {
       ByteBuffer buffer = localFileLoader.loadTelemetriesFromDisk();
       if (buffer != null) {
         telemetryChannel.sendRawBytes(buffer);
       }
     } catch (RuntimeException ex) {
-      logger.error("Error occurred while sending telemetries from the local storage.", ex);
+      logger.error(
+          "Unexpected error occurred while sending telemetries from the local storage.", ex);
       // TODO (heya) track sending persisted telemetries failure via Statsbeat.
     }
   }

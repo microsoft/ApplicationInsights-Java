@@ -21,20 +21,24 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
+import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 /** This class manages loading a list of {@link ByteBuffer} from the disk. */
 public class LocalFileLoader {
 
-  private static final Logger logger = LoggerFactory.getLogger(LocalFileLoader.class);
+  private static final String TEMPORARY_FILE_EXTENSION = ".tmp";
 
   private final LocalFileCache localFileCache;
   private final File telemetryFolder;
+
+  private static final OperationLogger operationLogger =
+      new OperationLogger(LocalFileLoader.class, "Loading telemetry from disk");
 
   public LocalFileLoader(LocalFileCache localFileCache, File telemetryFolder) {
     this.localFileCache = localFileCache;
@@ -43,37 +47,57 @@ public class LocalFileLoader {
 
   // Load ByteBuffer from persisted files on disk in FIFO order.
   ByteBuffer loadTelemetriesFromDisk() {
+    // TODO (heya) how does this load files from disk at startup that were left over from prior
+    //  process?
     String filenameToBeLoaded = localFileCache.poll();
     if (filenameToBeLoaded == null) {
       return null;
     }
 
-    File tempFile =
-        PersistenceHelper.renameFileExtension(
-            filenameToBeLoaded, PersistenceHelper.TEMPORARY_FILE_EXTENSION, telemetryFolder);
-    if (tempFile == null) {
+    File tempFile;
+    try {
+      File sourceFile = new File(telemetryFolder, filenameToBeLoaded);
+      tempFile =
+          new File(
+              telemetryFolder,
+              FilenameUtils.getBaseName(filenameToBeLoaded) + TEMPORARY_FILE_EXTENSION);
+      FileUtils.moveFile(sourceFile, tempFile);
+    } catch (IOException e) {
+      operationLogger.recordFailure(
+          "Failed to change "
+              + filenameToBeLoaded
+              + " to have "
+              + TEMPORARY_FILE_EXTENSION
+              + " extension: ",
+          e);
+      // TODO (heya) track number of failures to create a temp file via Statsbeat
       return null;
     }
 
-    return read(tempFile);
-  }
-
-  private static ByteBuffer read(File file) {
+    byte[] result;
     try {
       // TODO (trask) optimization: read this directly into ByteBuffer(s)
-      byte[] result = Files.readAllBytes(file.toPath());
-
-      // TODO (heya) backoff and retry delete when it fails.
-      Files.delete(file.toPath());
-
-      return ByteBuffer.wrap(result);
+      result = Files.readAllBytes(tempFile.toPath());
     } catch (IOException ex) {
       // TODO (heya) track deserialization failure via Statsbeat
-      logger.error("Fail to deserialize objects from  {}", file.getName(), ex);
-      return null;
-    } catch (SecurityException ex) {
-      logger.error("Unable to delete {}. Access is denied.", file.getName(), ex);
+      operationLogger.recordFailure("Fail to read telemetry from " + tempFile.getName(), ex);
       return null;
     }
+
+    try {
+      // TODO (heya) backoff and retry delete when it fails.
+      Files.delete(tempFile.toPath());
+    } catch (IOException ex) {
+      // TODO (heya) track deserialization failure via Statsbeat
+      operationLogger.recordFailure("Fail to read telemetry from " + tempFile.getName(), ex);
+      return null;
+    } catch (SecurityException ex) {
+      operationLogger.recordFailure(
+          "Unable to delete " + tempFile.getName() + ". Access is denied.", ex);
+      return null;
+    }
+
+    operationLogger.recordSuccess();
+    return ByteBuffer.wrap(result);
   }
 }

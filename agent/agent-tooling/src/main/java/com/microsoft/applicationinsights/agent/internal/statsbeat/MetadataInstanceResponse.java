@@ -21,29 +21,26 @@
 
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
-import com.squareup.moshi.Json;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /** Metadata instance response from the Azure Metadata Service. */
 class MetadataInstanceResponse {
 
-  @Json(name = "vmId")
   private final String vmId;
 
-  @Json(name = "subscriptionId")
   private final String subscriptionId;
 
-  @Json(name = "osType")
   private final String osType;
 
-  @Json(name = "resourceGroupName")
   private final String resourceGroupName;
 
+  @JsonCreator
   MetadataInstanceResponse(
-      String vmId,
-      String subscriptionId,
-      String osType,
-      String resourceGroupName,
-      String resourceId) {
+      @JsonProperty("vmId") String vmId,
+      @JsonProperty("subscriptionId") String subscriptionId,
+      @JsonProperty("osType") String osType,
+      @JsonProperty("resourceGroupName") String resourceGroupName) {
     this.vmId = vmId;
     this.subscriptionId = subscriptionId;
     this.osType = osType;
