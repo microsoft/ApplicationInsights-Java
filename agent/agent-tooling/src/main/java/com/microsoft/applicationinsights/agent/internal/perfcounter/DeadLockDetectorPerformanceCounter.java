@@ -106,14 +106,14 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
 
         messageData.setMessage(String.format("%s%s", "Suspected deadlocked threads: ", sb));
 
-        messageTelemetry.setTime(FormattedTime.fromNow());
+        messageTelemetry.setTime(FormattedTime.offSetDateTimeFromNow());
         messageTelemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), uuid);
 
         telemetryClient.trackAsync(messageTelemetry);
       }
     }
 
-    telemetry.setTime(FormattedTime.fromNow());
+    telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
 
     telemetryClient.trackAsync(telemetry);
   }

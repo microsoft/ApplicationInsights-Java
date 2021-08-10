@@ -66,7 +66,7 @@ public class TelemetryUtil {
     point.setValue(value);
     point.setDataPointType(DataPointType.MEASUREMENT);
 
-    telemetry.setTime(FormattedTime.fromNow());
+    telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
 
     return telemetry;
   }

@@ -788,7 +788,7 @@ public class Exporter implements SpanExporter {
   }
 
   private static void setTime(TelemetryItem telemetry, long epochNanos) {
-    telemetry.setTime(FormattedTime.fromEpochNanos(epochNanos));
+    telemetry.setTime(FormattedTime.offSetDateTimeFromEpochNanos(epochNanos));
   }
 
   private static void setSampleRate(TelemetryItem telemetry, SpanData span) {

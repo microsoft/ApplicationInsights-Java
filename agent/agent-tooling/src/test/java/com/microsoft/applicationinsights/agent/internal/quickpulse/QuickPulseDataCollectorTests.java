@@ -254,7 +254,7 @@ class QuickPulseDataCollectorTests {
     data.setResponseCode(responseCode);
     data.setSuccess(success);
 
-    telemetry.setTime(FormattedTime.fromDate(timestamp));
+    telemetry.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
     return telemetry;
   }
 

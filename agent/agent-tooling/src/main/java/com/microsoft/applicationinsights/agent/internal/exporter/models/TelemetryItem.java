@@ -25,6 +25,7 @@ import static com.microsoft.applicationinsights.agent.internal.common.TelemetryT
 
 import com.azure.core.annotation.Fluent;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.time.OffsetDateTime;
 import java.util.Map;
 
 /** System variables for a telemetry item. */
@@ -57,10 +58,10 @@ public final class TelemetryItem {
    * 2009-06-15T13:45:30.0000000Z.
    */
   @JsonProperty(value = "time", required = true)
-  private String time;
+  private OffsetDateTime time;
 
   /*
-   * Sampling rate used in application. This telemetry item represents 1 /
+   * Sampling rate used in application. This telemetry item represents 100 /
    * sampleRate actual telemetry items.
    */
   @JsonProperty(value = "sampleRate")
@@ -144,7 +145,7 @@ public final class TelemetryItem {
    *
    * @return the time value.
    */
-  public String getTime() {
+  public OffsetDateTime getTime() {
     return this.time;
   }
 
@@ -160,14 +161,14 @@ public final class TelemetryItem {
    * @param time the time value to set.
    * @return the TelemetryItem object itself.
    */
-  public TelemetryItem setTime(String time) {
+  public TelemetryItem setTime(OffsetDateTime time) {
     this.time = time;
     return this;
   }
 
   /**
    * Get the sampleRate property: Sampling rate used in application. This telemetry item represents
-   * 1 / sampleRate actual telemetry items.
+   * 100 / sampleRate actual telemetry items.
    *
    * @return the sampleRate value.
    */
@@ -177,7 +178,7 @@ public final class TelemetryItem {
 
   /**
    * Set the sampleRate property: Sampling rate used in application. This telemetry item represents
-   * 1 / sampleRate actual telemetry items.
+   * 100 / sampleRate actual telemetry items.
    *
    * @param sampleRate the sampleRate value to set.
    * @return the TelemetryItem object itself.
