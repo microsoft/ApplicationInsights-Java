@@ -40,7 +40,7 @@ jobs:
       - name: Build otel-fork
         run: |
           cd otel
-          ./gradlew publishToMavenLocal --no-build-cache
+          ./gradlew publishToMavenLocal
       - name: Test
         # TODO enable build cache, either --build-cache here, or org.gradle.caching=true in gradle.properties
         run: ./gradlew check --stacktrace
