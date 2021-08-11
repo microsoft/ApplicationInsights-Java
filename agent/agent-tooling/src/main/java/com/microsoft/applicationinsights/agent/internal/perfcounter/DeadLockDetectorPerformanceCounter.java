@@ -74,7 +74,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
     int blockedThreadCount = threadIds == null ? 0 : threadIds.length;
 
     data.getMetrics().get(0).setValue(blockedThreadCount);
-    telemetry.setTime(FormattedTime.fromNow());
+    telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
 
     telemetryClient.trackAsync(telemetry);
 
@@ -97,7 +97,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
       }
     }
     messageData.setMessage(sb.toString());
-    messageTelemetry.setTime(FormattedTime.fromNow());
+    messageTelemetry.setTime(FormattedTime.offSetDateTimeFromNow());
     telemetryClient.trackAsync(messageTelemetry);
   }
 

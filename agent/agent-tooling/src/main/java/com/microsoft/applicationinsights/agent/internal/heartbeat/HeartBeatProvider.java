@@ -180,7 +180,7 @@ public class HeartBeatProvider {
 
     data.setProperties(properties);
 
-    telemetry.setTime(FormattedTime.fromNow());
+    telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
 
     return telemetry;
   }

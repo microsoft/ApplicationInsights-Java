@@ -49,7 +49,6 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -301,7 +300,7 @@ public class TelemetryChannelTest {
     monitorBase.setBaseType("MetricData");
     monitorBase.setBaseData(data);
     telemetry.setData(monitorBase);
-    telemetry.setTime(new Date().toString());
+    telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
 
     return telemetry;
   }

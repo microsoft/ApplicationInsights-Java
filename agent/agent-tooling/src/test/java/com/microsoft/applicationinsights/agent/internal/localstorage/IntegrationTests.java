@@ -35,13 +35,13 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDa
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorBase;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryChannel;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -138,7 +138,7 @@ public class IntegrationTests {
     monitorBase.setBaseType("MetricData");
     monitorBase.setBaseData(data);
     telemetry.setData(monitorBase);
-    telemetry.setTime(new Date().toString());
+    telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
 
     return telemetry;
   }

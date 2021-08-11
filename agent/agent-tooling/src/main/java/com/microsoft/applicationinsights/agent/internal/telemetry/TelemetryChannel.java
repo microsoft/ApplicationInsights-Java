@@ -31,6 +31,7 @@ import com.azure.core.util.tracing.Tracer;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.microsoft.applicationinsights.agent.internal.common.ExceptionUtils;
 import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -75,6 +76,8 @@ public class TelemetryChannel {
 
   static {
     mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    mapper.findAndRegisterModules();
+    mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
   }
 
   private final HttpPipeline pipeline;

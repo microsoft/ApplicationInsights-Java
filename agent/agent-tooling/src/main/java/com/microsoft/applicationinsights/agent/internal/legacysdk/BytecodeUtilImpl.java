@@ -92,9 +92,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     if (timestamp != null) {
-      telemetry.setTime(FormattedTime.fromDate(timestamp));
+      telemetry.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
     } else {
-      telemetry.setTime(FormattedTime.fromNow());
+      telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetry, tags);
     if (instrumentationKey != null) {
@@ -148,9 +148,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     if (timestamp != null) {
-      telemetry.setTime(FormattedTime.fromDate(timestamp));
+      telemetry.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
     } else {
-      telemetry.setTime(FormattedTime.fromNow());
+      telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetry, tags);
     if (instrumentationKey != null) {
@@ -209,9 +209,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     if (timestamp != null) {
-      telemetry.setTime(FormattedTime.fromDate(timestamp));
+      telemetry.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
     } else {
-      telemetry.setTime(FormattedTime.fromNow());
+      telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetry, tags);
     if (instrumentationKey != null) {
@@ -256,9 +256,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     if (timestamp != null) {
-      telemetry.setTime(FormattedTime.fromDate(timestamp));
+      telemetry.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
     } else {
-      telemetry.setTime(FormattedTime.fromNow());
+      telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetry, tags);
     if (instrumentationKey != null) {
@@ -298,9 +298,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     if (timestamp != null) {
-      telemetry.setTime(FormattedTime.fromDate(timestamp));
+      telemetry.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
     } else {
-      telemetry.setTime(FormattedTime.fromNow());
+      telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetry, tags);
     if (instrumentationKey != null) {
@@ -358,9 +358,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     if (timestamp != null) {
-      telemetry.setTime(FormattedTime.fromDate(timestamp));
+      telemetry.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
     } else {
-      telemetry.setTime(FormattedTime.fromNow());
+      telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetry, tags);
     if (instrumentationKey != null) {
@@ -399,9 +399,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     if (timestamp != null) {
-      telemetry.setTime(FormattedTime.fromDate(timestamp));
+      telemetry.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
     } else {
-      telemetry.setTime(FormattedTime.fromNow());
+      telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetry, tags);
     if (instrumentationKey != null) {
