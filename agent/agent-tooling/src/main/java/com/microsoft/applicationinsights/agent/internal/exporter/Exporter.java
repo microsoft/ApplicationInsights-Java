@@ -58,6 +58,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -417,44 +418,7 @@ public class Exporter implements SpanExporter {
 
   private static void applyHttpClientSpan(Attributes attributes, RemoteDependencyData telemetry) {
 
-    // from the spec, at least one of the following sets of attributes is required:
-    // * http.url
-    // * http.scheme, http.host, http.target
-    // * http.scheme, net.peer.name, net.peer.port, http.target
-    // * http.scheme, net.peer.ip, net.peer.port, http.target
-    String scheme = attributes.get(SemanticAttributes.HTTP_SCHEME);
-    int defaultPort;
-    if ("http".equals(scheme)) {
-      defaultPort = 80;
-    } else if ("https".equals(scheme)) {
-      defaultPort = 443;
-    } else {
-      defaultPort = 0;
-    }
-    String target = getTargetFromPeerAttributes(attributes, defaultPort);
-    if (target == null) {
-      target = attributes.get(SemanticAttributes.HTTP_HOST);
-    }
-    String url = attributes.get(SemanticAttributes.HTTP_URL);
-    if (target == null && url != null) {
-      URI uri;
-      try {
-        uri = new URI(url);
-      } catch (URISyntaxException e) {
-        parsingHttpUrlLogger.recordFailure(e.getMessage(), e);
-        uri = null;
-      }
-      if (uri != null) {
-        target = uri.getHost();
-        if (uri.getPort() != 80 && uri.getPort() != 443 && uri.getPort() != -1) {
-          target += ":" + uri.getPort();
-        }
-      }
-    }
-    if (target == null) {
-      // this should not happen, just a failsafe
-      target = "Http";
-    }
+    String target = getTargetForHttpClientSpan(attributes);
 
     String targetAppId = attributes.get(AI_SPAN_TARGET_APP_ID_KEY);
 
@@ -475,19 +439,87 @@ public class Exporter implements SpanExporter {
       telemetry.setResultCode(Long.toString(httpStatusCode));
     }
 
+    String url = attributes.get(SemanticAttributes.HTTP_URL);
     telemetry.setData(url);
   }
 
-  private static String getTargetFromPeerAttributes(Attributes attributes, int defaultPort) {
-    String target = attributes.get(SemanticAttributes.PEER_SERVICE);
+  private static String getTargetForHttpClientSpan(Attributes attributes) {
+    // from the spec, at least one of the following sets of attributes is required:
+    // * http.url
+    // * http.scheme, http.host, http.target
+    // * http.scheme, net.peer.name, net.peer.port, http.target
+    // * http.scheme, net.peer.ip, net.peer.port, http.target
+    String target = getTargetFromPeerService(attributes);
     if (target != null) {
-      // do not append port if peer.service is provided
       return target;
     }
-    target = attributes.get(SemanticAttributes.NET_PEER_NAME);
-    if (target == null) {
-      target = attributes.get(SemanticAttributes.NET_PEER_IP);
+    // note http.host includes the port (at least when non-default)
+    target = attributes.get(SemanticAttributes.HTTP_HOST);
+    if (target != null) {
+      String scheme = attributes.get(SemanticAttributes.HTTP_SCHEME);
+      if ("http".equals(scheme)) {
+        if (target.endsWith(":80")) {
+          target = target.substring(0, target.length() - 3);
+        }
+      } else if ("https".equals(scheme)) {
+        if (target.endsWith(":443")) {
+          target = target.substring(0, target.length() - 4);
+        }
+      }
+      return target;
     }
+    String url = attributes.get(SemanticAttributes.HTTP_URL);
+    if (url != null) {
+      URI uri;
+      try {
+        uri = new URI(url);
+      } catch (URISyntaxException e) {
+        parsingHttpUrlLogger.recordFailure(e.getMessage(), e);
+        uri = null;
+      }
+      if (uri != null) {
+        target = uri.getHost();
+        if (uri.getPort() != 80 && uri.getPort() != 443 && uri.getPort() != -1) {
+          target += ":" + uri.getPort();
+        }
+        return target;
+      }
+    }
+    String scheme = attributes.get(SemanticAttributes.HTTP_SCHEME);
+    int defaultPort;
+    if ("http".equals(scheme)) {
+      defaultPort = 80;
+    } else if ("https".equals(scheme)) {
+      defaultPort = 443;
+    } else {
+      defaultPort = 0;
+    }
+    target = getTargetFromNetAttributes(attributes, defaultPort);
+    if (target != null) {
+      return target;
+    }
+    // this should not happen, just a failsafe
+    return "Http";
+  }
+
+  @Nullable
+  private static String getTargetFromPeerAttributes(Attributes attributes, int defaultPort) {
+    String target = getTargetFromPeerService(attributes);
+    if (target != null) {
+      return target;
+    }
+    return getTargetFromNetAttributes(attributes, defaultPort);
+  }
+
+  @Nullable
+  private static String getTargetFromPeerService(Attributes attributes) {
+    // do not append port to peer.service
+    return attributes.get(SemanticAttributes.PEER_SERVICE);
+  }
+
+  @Nullable
+  private static String getTargetFromNetAttributes(Attributes attributes, int defaultPort) {
+    String target = getHostFromNetAttributes(attributes);
     if (target == null) {
       return null;
     }
@@ -497,6 +529,15 @@ public class Exporter implements SpanExporter {
       return target + ":" + port;
     }
     return target;
+  }
+
+  @Nullable
+  private static String getHostFromNetAttributes(Attributes attributes) {
+    String host = attributes.get(SemanticAttributes.NET_PEER_NAME);
+    if (host != null) {
+      return host;
+    }
+    return attributes.get(SemanticAttributes.NET_PEER_IP);
   }
 
   private static void applyRpcClientSpan(
