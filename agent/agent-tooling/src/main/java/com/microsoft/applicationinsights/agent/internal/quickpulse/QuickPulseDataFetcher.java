@@ -57,7 +57,20 @@ class QuickPulseDataFetcher {
     String roleName = telemetryClient.getRoleName();
 
     sb.append("[{");
-    sb.append("\"Documents\":[],");
+    sb.append("\"Documents\":[");
+    sb.append("{");
+    sb.append("\"DocumentType\":\"Request\",");
+    sb.append("\"__type\":\"RequestTelemetryDocument\",");
+    sb.append("\"OperationId\":\"testId\",");
+    sb.append("\"Version\":\"1.0\",");
+    sb.append("\"Properties\":null,");
+    sb.append("\"Name\":\"Test request\",");
+    sb.append("\"Success\":true,");
+    sb.append("\"Duration\":1000,");
+    sb.append("\"ResponseCode\":200,");
+    sb.append("\"OperationName\":\"Test\"");
+    sb.append("}");
+    sb.append("],");
     sb.append("\"Instance\":\"").append(instanceName).append("\",");
     // TODO (trask) live metrics: instrumentation key is also part of query string, is it needed in
     // both places?
