@@ -718,6 +718,7 @@ public class Exporter implements SpanExporter {
     }
 
     data.setSource(getSource(attributes));
+
     String azureNamespace = attributes.get(AZURE_NAMESPACE);
     if (azureNamespace != null
         && (azureNamespace.equals("Microsoft.EventHub")
