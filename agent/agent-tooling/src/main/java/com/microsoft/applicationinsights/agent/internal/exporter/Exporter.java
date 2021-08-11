@@ -74,40 +74,6 @@ public class Exporter implements SpanExporter {
 
   private static final Set<String> STANDARD_ATTRIBUTE_PREFIXES;
 
-  static {
-    Set<String> dbSystems = new HashSet<>();
-    dbSystems.add("db2");
-    dbSystems.add("derby");
-    dbSystems.add("mariadb");
-    dbSystems.add("mssql");
-    dbSystems.add("mysql");
-    dbSystems.add("oracle");
-    dbSystems.add("postgresql");
-    dbSystems.add("sqlite");
-    dbSystems.add("other_sql");
-    dbSystems.add("hsqldb");
-    dbSystems.add("h2");
-
-    SQL_DB_SYSTEMS = Collections.unmodifiableSet(dbSystems);
-
-    // TODO need to keep this list in sync as new semantic conventions are defined
-    // TODO make this opt-in for javaagent
-    Set<String> standardAttributesPrefix = new HashSet<>();
-    standardAttributesPrefix.add("http");
-    standardAttributesPrefix.add("db");
-    standardAttributesPrefix.add("message");
-    standardAttributesPrefix.add("messaging");
-    standardAttributesPrefix.add("rpc");
-    standardAttributesPrefix.add("enduser");
-    standardAttributesPrefix.add("net");
-    standardAttributesPrefix.add("peer");
-    standardAttributesPrefix.add("exception");
-    standardAttributesPrefix.add("thread");
-    standardAttributesPrefix.add("faas");
-
-    STANDARD_ATTRIBUTE_PREFIXES = Collections.unmodifiableSet(standardAttributesPrefix);
-  }
-
   private static final AttributeKey<Boolean> AI_LOG_KEY =
       AttributeKey.booleanKey("applicationinsights.internal.log");
 
@@ -147,6 +113,40 @@ public class Exporter implements SpanExporter {
 
   private static final OperationLogger parsingHttpUrlLogger =
       new OperationLogger(Exporter.class, "Parsing http.url");
+
+  static {
+    Set<String> dbSystems = new HashSet<>();
+    dbSystems.add("db2");
+    dbSystems.add("derby");
+    dbSystems.add("mariadb");
+    dbSystems.add("mssql");
+    dbSystems.add("mysql");
+    dbSystems.add("oracle");
+    dbSystems.add("postgresql");
+    dbSystems.add("sqlite");
+    dbSystems.add("other_sql");
+    dbSystems.add("hsqldb");
+    dbSystems.add("h2");
+
+    SQL_DB_SYSTEMS = Collections.unmodifiableSet(dbSystems);
+
+    // TODO need to keep this list in sync as new semantic conventions are defined
+    // TODO make this opt-in for javaagent
+    Set<String> standardAttributesPrefix = new HashSet<>();
+    standardAttributesPrefix.add("http");
+    standardAttributesPrefix.add("db");
+    standardAttributesPrefix.add("message");
+    standardAttributesPrefix.add("messaging");
+    standardAttributesPrefix.add("rpc");
+    standardAttributesPrefix.add("enduser");
+    standardAttributesPrefix.add("net");
+    standardAttributesPrefix.add("peer");
+    standardAttributesPrefix.add("exception");
+    standardAttributesPrefix.add("thread");
+    standardAttributesPrefix.add("faas");
+
+    STANDARD_ATTRIBUTE_PREFIXES = Collections.unmodifiableSet(standardAttributesPrefix);
+  }
 
   private final TelemetryClient telemetryClient;
 
