@@ -719,10 +719,7 @@ public class Exporter implements SpanExporter {
 
     data.setSource(getSource(attributes));
 
-    String azureNamespace = attributes.get(AZURE_NAMESPACE);
-    if (azureNamespace != null
-        && (azureNamespace.equals("Microsoft.EventHub")
-            || azureNamespace.equals("Microsoft.ServiceBus"))) {
+    if (isAzureQueue(attributes)) {
       // TODO(trask): for batch consumer, enqueuedTime should be the average of this attribute
       //  across all links
       Long enqueuedTime = attributes.get(AZURE_SDK_ENQUEUED_TIME);
@@ -755,10 +752,7 @@ public class Exporter implements SpanExporter {
     if (source != null && !AiAppId.getAppId().equals(source)) {
       return source;
     }
-    String azureNamespace = attributes.get(AZURE_NAMESPACE);
-    if (azureNamespace != null
-        && (azureNamespace.equals("Microsoft.EventHub")
-            || azureNamespace.equals("Microsoft.ServiceBus"))) {
+    if (isAzureQueue(attributes)) {
       return getAzureSdkTargetSource(attributes);
     }
     String messagingSystem = attributes.get(SemanticAttributes.MESSAGING_SYSTEM);
@@ -776,6 +770,15 @@ public class Exporter implements SpanExporter {
       return messagingSystem;
     }
     return null;
+  }
+
+  private static boolean isAzureQueue(Attributes attributes) {
+    String azureNamespace = attributes.get(AZURE_NAMESPACE);
+    if (azureNamespace == null) {
+      return false;
+    }
+    return azureNamespace.equals("Microsoft.EventHub")
+        || azureNamespace.equals("Microsoft.ServiceBus");
   }
 
   private static String getOperationName(SpanData span) {
