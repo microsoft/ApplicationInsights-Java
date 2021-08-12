@@ -164,7 +164,7 @@ public class Exporter implements SpanExporter {
     for (SpanData span : spans) {
       logger.debug("exporting span: {}", span);
       try {
-        export(span);
+        internalExport(span);
         exportingSpanLogger.recordSuccess();
       } catch (Throwable t) {
         exportingSpanLogger.recordFailure(t.getMessage(), t);
@@ -187,7 +187,7 @@ public class Exporter implements SpanExporter {
     return CompletableResultCode.ofSuccess();
   }
 
-  private void export(SpanData span) {
+  private void internalExport(SpanData span) {
     SpanKind kind = span.getKind();
     String instrumentationName = span.getInstrumentationLibraryInfo().getName();
     StatsbeatModule.get().getNetworkStatsbeat().addInstrumentation(instrumentationName);
