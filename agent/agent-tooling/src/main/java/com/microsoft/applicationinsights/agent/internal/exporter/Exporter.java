@@ -177,6 +177,16 @@ public class Exporter implements SpanExporter {
     return failure ? CompletableResultCode.ofFailure() : CompletableResultCode.ofSuccess();
   }
 
+  @Override
+  public CompletableResultCode flush() {
+    return CompletableResultCode.ofSuccess();
+  }
+
+  @Override
+  public CompletableResultCode shutdown() {
+    return CompletableResultCode.ofSuccess();
+  }
+
   private void export(SpanData span) {
     SpanKind kind = span.getKind();
     String instrumentationName = span.getInstrumentationLibraryInfo().getName();
@@ -214,16 +224,6 @@ public class Exporter implements SpanExporter {
     }
   }
 
-  @Override
-  public CompletableResultCode flush() {
-    return CompletableResultCode.ofSuccess();
-  }
-
-  @Override
-  public CompletableResultCode shutdown() {
-    return CompletableResultCode.ofSuccess();
-  }
-
   private static List<TelemetryExceptionDetails> minimalParse(String errorStack) {
     TelemetryExceptionDetails details = new TelemetryExceptionDetails();
     String line = errorStack.split(System.lineSeparator())[0];
@@ -244,6 +244,7 @@ public class Exporter implements SpanExporter {
     TelemetryItem telemetry = new TelemetryItem();
     RemoteDependencyData data = new RemoteDependencyData();
     telemetryClient.initRemoteDependencyTelemetry(telemetry, data);
+
     float samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
 
     // set standard properties
@@ -334,6 +335,7 @@ public class Exporter implements SpanExporter {
     TelemetryItem telemetry = new TelemetryItem();
     MessageData data = new MessageData();
     telemetryClient.initMessageTelemetry(telemetry, data);
+
     Attributes attributes = span.getAttributes();
 
     // set standard properties
@@ -361,6 +363,7 @@ public class Exporter implements SpanExporter {
     TelemetryItem telemetry = new TelemetryItem();
     TelemetryExceptionData data = new TelemetryExceptionData();
     telemetryClient.initExceptionTelemetry(telemetry, data);
+
     Attributes attributes = span.getAttributes();
 
     // set standard properties
@@ -554,19 +557,19 @@ public class Exporter implements SpanExporter {
     if (SQL_DB_SYSTEMS.contains(dbSystem)) {
       type = "SQL";
       // keeping existing behavior that was release in 3.0.0 for now
-      // not going with new jdbc instrumentation span name of "<db.operation>
-      // <db.name>.<db.sql.table>" for now
-      // just in case this behavior is reversed due to spec:
+      // not going with new jdbc instrumentation span name of
+      // "<db.operation> <db.name>.<db.sql.table>" for now just in case this behavior is reversed
+      // due to spec:
       // "It is not recommended to attempt any client-side parsing of `db.statement` just to get
-      // these properties,
-      // they should only be used if the library being instrumented already provides them."
+      // these properties, they should only be used if the library being instrumented already
+      // provides them."
       // also need to discuss with other AI language exporters
       //
       // if we go to shorter span name now, and it gets reverted, no way for customers to get the
       // shorter name back
-      // whereas if we go to shorter span name in future, and they still prefer more cardinality,
-      // they can get that
-      // back using telemetry processor to copy db.statement into span name
+      // whereas if we go to shorter span name in the future, and they still prefer more
+      // cardinality, they can get that back using telemetry processor to copy db.statement into
+      // span name
       telemetry.setName(dbStatement);
     } else {
       type = dbSystem;
@@ -656,6 +659,7 @@ public class Exporter implements SpanExporter {
     TelemetryItem telemetry = new TelemetryItem();
     RequestData data = new RequestData();
     telemetryClient.initRequestTelemetry(telemetry, data);
+
     Attributes attributes = span.getAttributes();
     long startEpochNanos = span.getStartEpochNanos();
     float samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
@@ -890,30 +894,6 @@ public class Exporter implements SpanExporter {
     TelemetryUtil.getProperties(data).put("_MS.links", sb.toString());
   }
 
-  private static String getStringValue(AttributeKey<?> attributeKey, Object value) {
-    switch (attributeKey.getType()) {
-      case STRING:
-      case BOOLEAN:
-      case LONG:
-      case DOUBLE:
-        return String.valueOf(value);
-      case STRING_ARRAY:
-      case BOOLEAN_ARRAY:
-      case LONG_ARRAY:
-      case DOUBLE_ARRAY:
-        StringBuilder sb = new StringBuilder();
-        for (Object val : (List<?>) value) {
-          if (sb.length() > 0) {
-            sb.append(", ");
-          }
-          sb.append(val);
-        }
-        return sb.toString();
-    }
-    logger.warn("unexpected attribute type: {}", attributeKey.getType());
-    return null;
-  }
-
   private static void setExtraAttributes(
       TelemetryItem telemetry, MonitorDomain data, Attributes attributes) {
     attributes.forEach(
@@ -967,6 +947,34 @@ public class Exporter implements SpanExporter {
             TelemetryUtil.getProperties(data).put(key.getKey(), val);
           }
         });
+  }
+
+  private static String getStringValue(AttributeKey<?> attributeKey, Object value) {
+    switch (attributeKey.getType()) {
+      case STRING:
+      case BOOLEAN:
+      case LONG:
+      case DOUBLE:
+        return String.valueOf(value);
+      case STRING_ARRAY:
+      case BOOLEAN_ARRAY:
+      case LONG_ARRAY:
+      case DOUBLE_ARRAY:
+        return join((List<?>) value);
+    }
+    logger.warn("unexpected attribute type: {}", attributeKey.getType());
+    return null;
+  }
+
+  private static <T> String join(List<T> values) {
+    StringBuilder sb = new StringBuilder();
+    for (Object val : values) {
+      if (sb.length() > 0) {
+        sb.append(", ");
+      }
+      sb.append(val);
+    }
+    return sb.toString();
   }
 
   private static SeverityLevel toSeverityLevel(String level) {
