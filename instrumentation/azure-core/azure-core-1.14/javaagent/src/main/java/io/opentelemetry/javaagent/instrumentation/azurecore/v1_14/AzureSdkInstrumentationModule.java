@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.javaagent.instrumentation.azuresdk;
+package io.opentelemetry.javaagent.instrumentation.azurecore.v1_14;
 
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasClassesNamed;
 import static java.util.Arrays.asList;
@@ -11,6 +11,7 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.not;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.javaagent.extension.instrumentation.HelperResourceBuilder;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
@@ -25,20 +26,20 @@ public class AzureSdkInstrumentationModule extends InstrumentationModule {
   }
 
   @Override
-  public boolean isHelperClass(String className) {
-    return className.startsWith("com.azure.core.tracing.opentelemetry.");
-  }
-
-  @Override
-  public List<String> helperResourceNames() {
-    return asList(
+  public void registerHelperResources(HelperResourceBuilder helperResourceBuilder) {
+    helperResourceBuilder.register(
         "META-INF/services/com.azure.core.http.policy.AfterRetryPolicyProvider",
-        "META-INF/services/com.azure.core.util.tracing.Tracer");
+        "azure-core-1.14/META-INF/services/com.azure.core.http.policy.AfterRetryPolicyProvider");
+    helperResourceBuilder.register(
+        "META-INF/services/com.azure.core.util.tracing.Tracer",
+        "azure-core-1.14/META-INF/services/com.azure.core.util.tracing.Tracer");
   }
 
   @Override
   public ElementMatcher.Junction<ClassLoader> classLoaderMatcher() {
     return hasClassesNamed("com.azure.core.util.tracing.Tracer")
+        // this is needed to prevent this instrumentation from being applied to azure-core 1.19+
+        .and(not(hasClassesNamed("com.azure.core.util.tracing.StartSpanOptions")))
         .and(not(hasClassesNamed("com.azure.core.tracing.opentelemetry.OpenTelemetryTracer")));
   }
 
