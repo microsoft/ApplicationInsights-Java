@@ -19,7 +19,8 @@ class AzureSdkTest extends AgentInstrumentationSpecification {
     HttpPolicyProviders.addAfterRetryPolicies(list)
 
     list.size() == 1
-    list.get(0).getClass().getName() == "com.azure.core.tracing.opentelemetry.OpenTelemetryHttpPolicy"
+    list.get(0).getClass().getName() == "io.opentelemetry.javaagent.instrumentation.azurecore.v1_19.shaded" +
+      ".com.azure.core.tracing.opentelemetry.OpenTelemetryHttpPolicy"
   }
 
   def "test span"() {
