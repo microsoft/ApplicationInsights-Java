@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.javaagent.instrumentation.azuresdk;
+package io.opentelemetry.javaagent.instrumentation.azurecore.v1_19;
 
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasClassesNamed;
 import static java.util.Arrays.asList;
@@ -21,24 +21,20 @@ import net.bytebuddy.matcher.ElementMatcher;
 @AutoService(InstrumentationModule.class)
 public class AzureSdkInstrumentationModule extends InstrumentationModule {
   public AzureSdkInstrumentationModule() {
-    super("azure-core", "azure-core-1.14");
-  }
-
-  @Override
-  public boolean isHelperClass(String className) {
-    return className.startsWith("com.azure.core.tracing.opentelemetry.");
+    super("azure-core", "azure-core-1.19");
   }
 
   @Override
   public List<String> helperResourceNames() {
     return asList(
-        "META-INF/services/com.azure.core.http.policy.AfterRetryPolicyProvider",
-        "META-INF/services/com.azure.core.util.tracing.Tracer");
+        "azure-core-1.19:META-INF/services/com.azure.core.http.policy.AfterRetryPolicyProvider",
+        "azure-core-1.19:META-INF/services/com.azure.core.util.tracing.Tracer");
   }
 
   @Override
   public ElementMatcher.Junction<ClassLoader> classLoaderMatcher() {
-    return hasClassesNamed("com.azure.core.util.tracing.Tracer")
+    // this class was introduced in azure-core 1.19
+    return hasClassesNamed("com.azure.core.util.tracing.StartSpanOptions")
         .and(not(hasClassesNamed("com.azure.core.tracing.opentelemetry.OpenTelemetryTracer")));
   }
 
