@@ -80,6 +80,10 @@ public final class ReferenceCollector {
       return;
     }
 
+    // ":" provides namespacing for resources to avoid conflict when there are instrumentations
+    // for different versions of a library which each need to refer to their own SPI class
+    resource = resource.replace(':', '/');
+
     List<String> spiImplementations = new ArrayList<>();
     try (InputStream stream = getResourceStream(resource)) {
       BufferedReader reader = new BufferedReader(new InputStreamReader(stream, UTF_8));
@@ -104,6 +108,9 @@ public final class ReferenceCollector {
 
   private static boolean isSpiFile(String resource) {
     return resource.startsWith("META-INF/services/")
+        // ":" provides namespacing for resources to avoid conflict when there are instrumentations
+        // for different versions of a library which each need to refer to their own SPI class
+        || resource.contains(":META-INF/services/")
         || resource.equals("software/amazon/awssdk/global/handlers/execution.interceptors")
         || resource.equals("com/amazonaws/global/handlers/request.handler2s")
         || AWS_SDK_V2_SERVICE_INTERCEPTOR_SPI.matcher(resource).matches()
