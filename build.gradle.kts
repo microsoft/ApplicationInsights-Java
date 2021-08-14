@@ -9,7 +9,7 @@ plugins {
 }
 
 allprojects {
-  version = "1.4.0+ai.patch.1"
+  version = "1.5.0-SNAPSHOT"
 }
 
 nexusPublishing {
