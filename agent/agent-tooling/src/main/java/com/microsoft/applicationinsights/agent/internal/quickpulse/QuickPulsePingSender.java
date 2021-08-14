@@ -24,10 +24,15 @@ package com.microsoft.applicationinsights.agent.internal.quickpulse;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.microsoft.applicationinsights.agent.internal.common.ExceptionUtils;
 import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
+import com.microsoft.applicationinsights.agent.internal.quickpulse.model.QuickPulseEnvelope;
+import com.microsoft.applicationinsights.agent.internal.quickpulse.util.CustomCharacterEscapes;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -41,11 +46,13 @@ class QuickPulsePingSender {
   private final TelemetryClient telemetryClient;
   private final HttpPipeline httpPipeline;
   private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
-  private volatile String pingPrefix; // cached for performance
+  private volatile QuickPulseEnvelope pingEnvelope; // cached for performance
   private final String instanceName;
   private final String machineName;
   private final String quickPulseId;
   private long lastValidTransmission = 0;
+  private final ObjectMapper mapper = new ObjectMapper();
+  private static final String quickPulseVersion = "2.2.0-738";
 
   private static final OperationLogger operationLogger =
       new OperationLogger(QuickPulsePingSender.class, "Pinging live metrics endpoint");
@@ -65,13 +72,14 @@ class QuickPulsePingSender {
     this.instanceName = instanceName;
     this.machineName = machineName;
     this.quickPulseId = quickPulseId;
-
     if (logger.isTraceEnabled()) {
       logger.trace(
           "{} using endpoint {}",
           QuickPulsePingSender.class.getSimpleName(),
           getQuickPulseEndpoint());
     }
+    this.mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+    this.mapper.getFactory().setCharacterEscapes(new CustomCharacterEscapes());
   }
 
   public QuickPulseHeaderInfo ping(String redirectedEndpoint) {
@@ -93,10 +101,11 @@ class QuickPulsePingSender {
             machineName,
             telemetryClient.getRoleName(),
             instanceName);
-    request.setBody(buildPingEntity(currentDate.getTime()));
 
     long sendTime = System.nanoTime();
-    try (HttpResponse response = httpPipeline.send(request).block()) {
+    try {
+      request.setBody(buildPingEntity(currentDate.getTime()));
+      HttpResponse response = httpPipeline.send(request).block();
       if (response == null) {
         // this shouldn't happen, the mono should complete with a response or a failure
         throw new AssertionError("http response mono returned empty");
@@ -124,33 +133,6 @@ class QuickPulsePingSender {
     return onPingError(sendTime);
   }
 
-  private String getPingPrefix() {
-    if (pingPrefix == null) {
-      // Linux Consumption Plan role name is lazily set
-      String roleName = telemetryClient.getRoleName();
-
-      StringBuilder sb = new StringBuilder();
-
-      sb.append("{");
-      sb.append("\"Documents\":null,");
-      sb.append("\"Instance\":\"").append(instanceName).append("\",");
-      sb.append("\"InstrumentationKey\":null,");
-      sb.append("\"InvariantVersion\":").append(QuickPulse.QP_INVARIANT_VERSION).append(",");
-      sb.append("\"MachineName\":\"").append(machineName).append("\",");
-      if (Strings.isNullOrEmpty(roleName)) {
-        sb.append("\"RoleName\":null,");
-      } else {
-        sb.append("\"RoleName\":\"").append(roleName).append("\",");
-      }
-      sb.append("\"StreamId\":\"").append(quickPulseId).append("\",");
-      sb.append("\"Metrics\":null,");
-      sb.append("\"Timestamp\":\"\\/Date(");
-
-      pingPrefix = sb.toString();
-    }
-    return pingPrefix;
-  }
-
   // visible for testing
   String getQuickPulsePingUri(String endpointPrefix) {
     return endpointPrefix + "/ping?ikey=" + getInstrumentationKey();
@@ -165,8 +147,19 @@ class QuickPulsePingSender {
     return telemetryClient.getEndpointProvider().getLiveEndpointUrl().toString();
   }
 
-  private String buildPingEntity(long timeInMillis) {
-    return getPingPrefix() + timeInMillis + ")\\/\"," + "\"Version\":\"2.2.0-738\"" + "}";
+  private String buildPingEntity(long timeInMillis) throws JsonProcessingException {
+    if (pingEnvelope == null) {
+      pingEnvelope = new QuickPulseEnvelope();
+      pingEnvelope.setInstance(instanceName);
+      pingEnvelope.setInvariantVersion(QuickPulse.QP_INVARIANT_VERSION);
+      pingEnvelope.setMachineName(machineName);
+      pingEnvelope.setRoleName(telemetryClient.getRoleName());
+      pingEnvelope.setStreamId(quickPulseId);
+      pingEnvelope.setVersion(quickPulseVersion);
+    }
+    pingEnvelope.setTimeStamp("/Date(" + timeInMillis + ")/");
+    String envelope = mapper.writeValueAsString(pingEnvelope);
+    return envelope;
   }
 
   private QuickPulseHeaderInfo onPingError(long sendTime) {

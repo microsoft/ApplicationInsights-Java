@@ -22,10 +22,18 @@
 package com.microsoft.applicationinsights.agent.internal.quickpulse;
 
 import com.azure.core.http.HttpRequest;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
+import com.microsoft.applicationinsights.agent.internal.quickpulse.model.QuickPulseEnvelope;
+import com.microsoft.applicationinsights.agent.internal.quickpulse.model.QuickPulseMetrics;
+import com.microsoft.applicationinsights.agent.internal.quickpulse.util.CustomCharacterEscapes;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,8 +47,11 @@ class QuickPulseDataFetcher {
   private final ArrayBlockingQueue<HttpRequest> sendQueue;
   private final TelemetryClient telemetryClient;
   private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
-  private final String postPrefix;
+  private final ObjectMapper mapper = new ObjectMapper();
   private final String sdkVersion;
+  private final String instanceName;
+  private final String machineName;
+  private final String quickPulseId;
 
   public QuickPulseDataFetcher(
       ArrayBlockingQueue<HttpRequest> sendQueue,
@@ -50,35 +61,18 @@ class QuickPulseDataFetcher {
       String quickPulseId) {
     this.sendQueue = sendQueue;
     this.telemetryClient = telemetryClient;
+    this.instanceName = instanceName;
+    this.machineName = machineName;
+    this.quickPulseId = quickPulseId;
     sdkVersion = getCurrentSdkVersion();
-    StringBuilder sb = new StringBuilder();
-
-    // FIXME (heya) what about azure functions consumption plan where role name not available yet?
-    String roleName = telemetryClient.getRoleName();
-
-    sb.append("[{");
-    sb.append("\"Documents\":[],");
-    sb.append("\"Instance\":\"").append(instanceName).append("\",");
-    // TODO (trask) live metrics: instrumentation key is also part of query string, is it needed in
-    // both places?
-    sb.append("\"InstrumentationKey\":\"")
-        .append(telemetryClient.getInstrumentationKey())
-        .append("\",");
-    sb.append("\"InvariantVersion\":").append(QuickPulse.QP_INVARIANT_VERSION).append(",");
-    sb.append("\"MachineName\":\"").append(machineName).append("\",");
-    if (Strings.isNullOrEmpty(roleName)) {
-      sb.append("\"RoleName\":null,");
-    } else {
-      sb.append("\"RoleName\":\"").append(roleName).append("\",");
-    }
-    sb.append("\"StreamId\":\"").append(quickPulseId).append("\",");
-    postPrefix = sb.toString();
     if (logger.isTraceEnabled()) {
       logger.trace(
           "{} using endpoint {}",
           QuickPulseDataFetcher.class.getSimpleName(),
           getQuickPulseEndpoint());
     }
+    this.mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+    this.mapper.getFactory().setCharacterEscapes(new CustomCharacterEscapes());
   }
 
   /** Returns SDK Version from properties. */
@@ -131,92 +125,67 @@ class QuickPulseDataFetcher {
     return telemetryClient.getInstrumentationKey();
   }
 
-  private String buildPostEntity(QuickPulseDataCollector.FinalCounters counters) {
-    StringBuilder sb = new StringBuilder(postPrefix);
-    formatMetrics(counters, sb);
-    sb.append("\"Timestamp\":\"\\/Date(");
-    long ms = System.currentTimeMillis();
-    sb.append(ms);
-    sb.append(")\\/\",");
-    sb.append("\"Version\":\"");
-    sb.append(sdkVersion);
-    sb.append("\"}]");
-    return sb.toString();
+  private String buildPostEntity(QuickPulseDataCollector.FinalCounters counters)
+      throws JsonProcessingException {
+    List<QuickPulseEnvelope> envelopes = new ArrayList<>();
+    QuickPulseEnvelope postEnvelope = new QuickPulseEnvelope();
+    postEnvelope.setInstance(instanceName);
+    postEnvelope.setInvariantVersion(QuickPulse.QP_INVARIANT_VERSION);
+    postEnvelope.setMachineName(machineName);
+    // FIXME (heya) what about azure functions consumption plan where role name not available yet?
+    postEnvelope.setRoleName(telemetryClient.getRoleName());
+    // TODO (trask) live metrics: instrumentation key is also part of query string, is it needed in
+    // both places?
+    postEnvelope.setInstrumentationKey(telemetryClient.getInstrumentationKey());
+    postEnvelope.setStreamId(quickPulseId);
+    postEnvelope.setVersion(sdkVersion);
+    postEnvelope.setTimeStamp("/Date(" + System.currentTimeMillis() + ")/");
+    postEnvelope.setMetrics(addMetricsToQuickPulseEnvelope(counters));
+    envelopes.add(postEnvelope);
+    return mapper.writeValueAsString(envelopes);
   }
 
-  private static void formatSingleMetric(
-      StringBuilder sb,
-      String metricName,
-      double metricValue,
-      int metricWeight,
-      boolean includeComma) {
-    String comma = includeComma ? "," : "";
-    sb.append(
-        String.format(
-            "{\"Name\": \"%s\",\"Value\": %s,\"Weight\": %s}%s",
-            metricName, metricValue, metricWeight, comma));
-  }
+  private static List<QuickPulseMetrics> addMetricsToQuickPulseEnvelope(
+      QuickPulseDataCollector.FinalCounters counters) {
+    List<QuickPulseMetrics> metricsList = new ArrayList<>();
+    metricsList.add(
+        new QuickPulseMetrics("\\ApplicationInsights\\Requests/Sec", counters.requests, 1));
+    metricsList.add(
+        new QuickPulseMetrics(
+            "\\ApplicationInsights\\Request Duration",
+            (long) counters.requestsDuration,
+            (int) counters.requests));
+    metricsList.add(
+        new QuickPulseMetrics(
+            "\\ApplicationInsights\\Requests Failed/Sec", counters.unsuccessfulRequests, 1));
+    metricsList.add(
+        new QuickPulseMetrics(
+            "\\ApplicationInsights\\Requests Succeeded/Sec",
+            counters.requests - counters.unsuccessfulRequests,
+            1));
+    metricsList.add(
+        new QuickPulseMetrics("\\ApplicationInsights\\Dependency Calls/Sec", counters.rdds, 1));
+    metricsList.add(
+        new QuickPulseMetrics(
+            "\\ApplicationInsights\\Dependency Call Duration",
+            (long) counters.rddsDuration,
+            (int) counters.rdds));
+    metricsList.add(
+        new QuickPulseMetrics(
+            "\\ApplicationInsights\\Dependency Calls Failed/Sec", counters.unsuccessfulRdds, 1));
+    metricsList.add(
+        new QuickPulseMetrics(
+            "\\ApplicationInsights\\Dependency Calls Succeeded/Sec",
+            counters.rdds - counters.unsuccessfulRdds,
+            1));
+    metricsList.add(
+        new QuickPulseMetrics("\\ApplicationInsights\\Exceptions/Sec", counters.exceptions, 1));
+    metricsList.add(
+        new QuickPulseMetrics("\\Memory\\Committed Bytes", counters.memoryCommitted, 1));
+    metricsList.add(
+        new QuickPulseMetrics(
+            "\\Processor(_Total)\\% Processor Time", (long) counters.cpuUsage, 1));
 
-  private static void formatSingleMetric(
-      StringBuilder sb,
-      String metricName,
-      long metricValue,
-      int metricWeight,
-      boolean includeComma) {
-    String comma = includeComma ? "," : "";
-    sb.append(
-        String.format(
-            "{\"Name\": \"%s\",\"Value\": %s,\"Weight\": %s}%s",
-            metricName, metricValue, metricWeight, comma));
-  }
-
-  private static void formatMetrics(
-      QuickPulseDataCollector.FinalCounters counters, StringBuilder sb) {
-    sb.append("\"Metrics\":[");
-    formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Requests\\/Sec", counters.requests, 1, true);
-    formatSingleMetric(
-        sb,
-        "\\\\ApplicationInsights\\\\Request Duration",
-        counters.requestsDuration,
-        (int) counters.requests,
-        true);
-    formatSingleMetric(
-        sb,
-        "\\\\ApplicationInsights\\\\Requests Failed\\/Sec",
-        counters.unsuccessfulRequests,
-        1,
-        true);
-    formatSingleMetric(
-        sb,
-        "\\\\ApplicationInsights\\\\Requests Succeeded\\/Sec",
-        (counters.requests - counters.unsuccessfulRequests),
-        1,
-        true);
-    formatSingleMetric(
-        sb, "\\\\ApplicationInsights\\\\Dependency Calls\\/Sec", counters.rdds, 1, true);
-    formatSingleMetric(
-        sb,
-        "\\\\ApplicationInsights\\\\Dependency Call Duration",
-        counters.rddsDuration,
-        (int) counters.rdds,
-        true);
-    formatSingleMetric(
-        sb,
-        "\\\\ApplicationInsights\\\\Dependency Calls Failed\\/Sec",
-        counters.unsuccessfulRdds,
-        1,
-        true);
-    formatSingleMetric(
-        sb,
-        "\\\\ApplicationInsights\\\\Dependency Calls Succeeded\\/Sec",
-        counters.rdds - counters.unsuccessfulRdds,
-        1,
-        true);
-    formatSingleMetric(
-        sb, "\\\\ApplicationInsights\\\\Exceptions\\/Sec", counters.exceptions, 1, true);
-    formatSingleMetric(sb, "\\\\Memory\\\\Committed Bytes", counters.memoryCommitted, 1, true);
-    formatSingleMetric(
-        sb, "\\\\Processor(_Total)\\\\% Processor Time", counters.cpuUsage, 1, false);
-    sb.append("],");
+    return metricsList;
   }
 }

@@ -61,6 +61,7 @@ dependencies {
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support")
 
   testImplementation("org.junit.jupiter:junit-jupiter")
+  testImplementation("com.azure:azure-core-test:1.7.0")
   testImplementation("org.assertj:assertj-core")
   testImplementation("org.mockito:mockito-core")
   testImplementation("uk.org.webcompere:system-stubs-jupiter:1.1.0")
