@@ -16,6 +16,7 @@ spotless {
 repositories {
   mavenCentral()
   gradlePluginPortal()
+  mavenLocal() // this is needed to run locally modified gradle plugins
   maven {
     url = uri("https://oss.sonatype.org/content/repositories/snapshots")
   }
