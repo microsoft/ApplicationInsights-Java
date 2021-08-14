@@ -614,6 +614,7 @@ public class Exporter implements SpanExporter {
 
   // special case needed until Azure SDK moves to OTel semantic conventions
   private static void applyServiceBusSpan(Attributes attributes, RemoteDependencyData telemetry) {
+    // TODO(trask) change this to Microsoft.ServiceBus once that is supported in U/X E2E view
     telemetry.setType("AZURE SERVICE BUS");
     telemetry.setTarget(getAzureSdkTargetSource(attributes));
   }
