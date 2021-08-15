@@ -37,6 +37,7 @@ jobs:
       - name: Build
         # :muzzle:publishToMavenLocal is needed to support local muzzle changes until they are upstreamed
         run: |
+          ./gradlew --project-dir gradle-plugins publishToMavenLocal
           ./gradlew :muzzle:publishToMavenLocal
           ./gradlew build --stacktrace
 
@@ -96,6 +97,7 @@ jobs:
       - name: Test
         # :muzzle:publishToMavenLocal is needed to support local muzzle changes until they are upstreamed
         run: |
+          ./gradlew --project-dir gradle-plugins publishToMavenLocal
           ./gradlew :muzzle:publishToMavenLocal
           ./gradlew test -PtestJavaVersion=${{ matrix.test-java-version }} -PtestJavaVM=${{ matrix.vm }} --stacktrace -Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }} -Porg.gradle.java.installations.auto-download=false
 
@@ -160,6 +162,7 @@ jobs:
       - name: Test
         # :muzzle:publishToMavenLocal is needed to support local muzzle changes until they are upstreamed
         run: |
+          ./gradlew --project-dir gradle-plugins publishToMavenLocal
           ./gradlew :muzzle:publishToMavenLocal
           ./gradlew :smoke-tests:test -PsmokeTestSuite=${{ matrix.smoke-test-suite }}
 
@@ -186,7 +189,10 @@ jobs:
           key: ${{ runner.os }}-gradle-wrapper-cache-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
 
       - id: set-matrix
-        run: echo "::set-output name=matrix::{\"module\":[\"$(./gradlew -q instrumentation:listInstrumentations | xargs echo | sed 's/ /","/g')\"]}"
+        run: |
+          ./gradlew --project-dir gradle-plugins publishToMavenLocal
+          ./gradlew :muzzle:publishToMavenLocal
+          echo "::set-output name=matrix::{\"module\":[\"$(./gradlew -q instrumentation:listInstrumentations | xargs echo | sed 's/ /","/g')\"]}"
 
   muzzle:
     needs: setup-muzzle-matrix
@@ -221,6 +227,7 @@ jobs:
           max_attempts: 3
           # :muzzle:publishToMavenLocal is needed to support local muzzle changes until they are upstreamed
           command: |
+            ./gradlew --project-dir gradle-plugins publishToMavenLocal
             ./gradlew :muzzle:publishToMavenLocal
             ./gradlew ${{ matrix.module }}:muzzle
 

@@ -36,6 +36,7 @@ jobs:
           S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.S3_BUILD_CACHE_ACCESS_KEY_ID }}
           S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.S3_BUILD_CACHE_SECRET_KEY }}
         run: |
+          ./gradlew --project-dir gradle-plugins publishToMavenLocal
           ./gradlew :muzzle:publishToMavenLocal
           ./gradlew build --stacktrace
 
@@ -87,6 +88,7 @@ jobs:
           S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.S3_BUILD_CACHE_SECRET_KEY }}
         # :muzzle:publishToMavenLocal is needed to support local muzzle changes until they are upstreamed
         run: |
+          ./gradlew --project-dir gradle-plugins publishToMavenLocal
           ./gradlew :muzzle:publishToMavenLocal
           ./gradlew test -PtestJavaVersion=${{ matrix.test-java-version }} -PtestJavaVM=${{ matrix.vm }} --stacktrace -Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }} -Porg.gradle.java.installations.auto-download=false
 
@@ -127,6 +129,7 @@ jobs:
           S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.S3_BUILD_CACHE_SECRET_KEY }}
         # :muzzle:publishToMavenLocal is needed to support local muzzle changes until they are upstreamed
         run: |
+          ./gradlew --project-dir gradle-plugins publishToMavenLocal
           ./gradlew :muzzle:publishToMavenLocal
           ./gradlew test -PtestLatestDeps=true --stacktrace
 
@@ -179,6 +182,7 @@ jobs:
           S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.S3_BUILD_CACHE_SECRET_KEY }}
         # :muzzle:publishToMavenLocal is needed to support local muzzle changes until they are upstreamed
         run: |
+          ./gradlew --project-dir gradle-plugins publishToMavenLocal
           ./gradlew :muzzle:publishToMavenLocal
           ./gradlew :smoke-tests:test -PsmokeTestSuite=${{ matrix.smoke-test-suite }}
 
