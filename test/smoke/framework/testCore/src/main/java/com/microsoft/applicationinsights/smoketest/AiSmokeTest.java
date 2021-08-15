@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.base.CaseFormat;
@@ -41,6 +42,7 @@ import com.microsoft.applicationinsights.smoketest.fixtures.ParameterizedRunnerW
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServer;
 import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServlet;
@@ -839,4 +841,110 @@ public abstract class AiSmokeTest {
     return mockedIngestion.getBaseDataForType(index, type);
   }
   // endregion
+
+  protected static Telemetry getTelemetry(int rddCount) throws Exception {
+    return getTelemetry(rddCount, rdd -> true);
+  }
+
+  protected static Telemetry getTelemetry(int rddCount, Predicate<RemoteDependencyData> condition)
+      throws Exception {
+
+    Telemetry telemetry = new Telemetry();
+
+    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    telemetry.rdEnvelope = rdList.get(0);
+    telemetry.rd = (RequestData) ((Data<?>) telemetry.rdEnvelope.getData()).getBaseData();
+
+    assertEquals(0, mockedIngestion.getCountForType("EventData"));
+
+    if (rddCount == 0) {
+      return telemetry;
+    }
+
+    String operationId = telemetry.rdEnvelope.getTags().get("ai.operation.id");
+
+    List<Envelope> rddList =
+        mockedIngestion.waitForItemsInOperation(
+            "RemoteDependencyData",
+            rddCount,
+            operationId,
+            envelope -> {
+              RemoteDependencyData rdd =
+                  (RemoteDependencyData) ((Data<?>) envelope.getData()).getBaseData();
+              return condition.test(rdd);
+            });
+
+    telemetry.rddEnvelope1 = rddList.get(0);
+    telemetry.rdd1 =
+        (RemoteDependencyData) ((Data<?>) telemetry.rddEnvelope1.getData()).getBaseData();
+
+    if (rddCount == 1) {
+      return telemetry;
+    }
+
+    telemetry.rddEnvelope2 = rddList.get(1);
+    telemetry.rdd2 =
+        (RemoteDependencyData) ((Data<?>) telemetry.rddEnvelope2.getData()).getBaseData();
+
+    if (rddCount == 2) {
+      return telemetry;
+    }
+
+    telemetry.rddEnvelope3 = rddList.get(2);
+    telemetry.rdd3 =
+        (RemoteDependencyData) ((Data<?>) telemetry.rddEnvelope3.getData()).getBaseData();
+
+    return telemetry;
+  }
+
+  public static class Telemetry {
+    public Envelope rdEnvelope;
+    public Envelope rddEnvelope1;
+    public Envelope rddEnvelope2;
+    public Envelope rddEnvelope3;
+
+    public RequestData rd;
+    public RemoteDependencyData rdd1;
+    public RemoteDependencyData rdd2;
+    public RemoteDependencyData rdd3;
+  }
+
+  public static void assertParentChild(
+      RequestData rd, Envelope parentEnvelope, Envelope childEnvelope, String operationName) {
+    assertParentChild(
+        rd.getId(), parentEnvelope, childEnvelope, operationName, operationName, true);
+  }
+
+  public static void assertParentChild(
+      RemoteDependencyData rdd,
+      Envelope parentEnvelope,
+      Envelope childEnvelope,
+      String operationName) {
+    assertParentChild(
+        rdd.getId(), parentEnvelope, childEnvelope, operationName, operationName, false);
+  }
+
+  public static void assertParentChild(
+      String parentId,
+      Envelope parentEnvelope,
+      Envelope childEnvelope,
+      String parentOperationName,
+      String childOperationName,
+      boolean topLevelParent) {
+    String operationId = parentEnvelope.getTags().get("ai.operation.id");
+    assertNotNull(operationId);
+    assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
+
+    String operationParentId = parentEnvelope.getTags().get("ai.operation.parentId");
+    if (topLevelParent) {
+      assertNull(operationParentId);
+    } else {
+      assertNotNull(operationParentId);
+    }
+
+    assertEquals(parentId, childEnvelope.getTags().get("ai.operation.parentId"));
+
+    assertEquals(parentOperationName, parentEnvelope.getTags().get("ai.operation.name"));
+    assertEquals(childOperationName, childEnvelope.getTags().get("ai.operation.name"));
+  }
 }

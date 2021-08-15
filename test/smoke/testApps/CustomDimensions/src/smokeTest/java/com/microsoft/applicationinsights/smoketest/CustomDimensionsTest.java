@@ -24,10 +24,6 @@ package com.microsoft.applicationinsights.smoketest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.microsoft.applicationinsights.smoketest.schemav2.Data;
-import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
-import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
-import java.util.List;
 import org.junit.Test;
 
 @UseAgent("customdimensions")
@@ -36,19 +32,15 @@ public class CustomDimensionsTest extends AiSmokeTest {
   @Test
   @TargetUri("/test")
   public void doMostBasicTest() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    Telemetry telemetry = getTelemetry(0);
 
-    Envelope rdEnvelope = rdList.get(0);
+    assertEquals("value", telemetry.rd.getProperties().get("test"));
+    assertEquals("/root", telemetry.rd.getProperties().get("home"));
+    assertEquals(2, telemetry.rd.getProperties().size());
+    assertTrue(telemetry.rd.getSuccess());
 
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+    assertEquals("123", telemetry.rdEnvelope.getTags().get("ai.application.ver"));
 
-    assertEquals("value", rd.getProperties().get("test"));
-    assertEquals("/root", rd.getProperties().get("home"));
-    assertEquals(2, rd.getProperties().size());
-    assertTrue(rd.getSuccess());
-
-    assertEquals("123", rdEnvelope.getTags().get("ai.application.ver"));
-
-    assertTrue(rd.getSuccess());
+    assertTrue(telemetry.rd.getSuccess());
   }
 }

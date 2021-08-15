@@ -23,10 +23,6 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertTrue;
 
-import com.microsoft.applicationinsights.smoketest.schemav2.Data;
-import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
-import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
-import java.util.List;
 import org.junit.Test;
 
 @UseAgent
@@ -35,12 +31,8 @@ public class VerifyShadingTest extends AiSmokeTest {
   @Test
   @TargetUri("/verifyShading")
   public void verifyShading() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    Telemetry telemetry = getTelemetry(0);
 
-    Envelope rdEnvelope = rdList.get(0);
-
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-
-    assertTrue(rd.getSuccess());
+    assertTrue(telemetry.rd.getSuccess());
   }
 }

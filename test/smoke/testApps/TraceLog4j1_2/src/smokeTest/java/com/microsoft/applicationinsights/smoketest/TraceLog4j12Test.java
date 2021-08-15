@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -131,20 +130,5 @@ public class TraceLog4j12Test extends AiSmokeTest {
     }
 
     assertParentChild(rd, rdEnvelope, edEnvelope, "GET /TraceLog4j1_2/traceLog4j1_2WithException");
-  }
-
-  private static void assertParentChild(
-      RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {
-    String operationId = rdEnvelope.getTags().get("ai.operation.id");
-    assertNotNull(operationId);
-    assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
-
-    String operationParentId = rdEnvelope.getTags().get("ai.operation.parentId");
-    assertNull(operationParentId);
-
-    assertEquals(rd.getId(), childEnvelope.getTags().get("ai.operation.parentId"));
-
-    assertEquals(operationName, rdEnvelope.getTags().get("ai.operation.name"));
-    assertEquals(operationName, childEnvelope.getTags().get("ai.operation.name"));
   }
 }
