@@ -21,6 +21,9 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.ContextTagKeys;
@@ -54,6 +57,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -69,40 +73,6 @@ public class Exporter implements SpanExporter {
   private static final Set<String> SQL_DB_SYSTEMS;
 
   private static final Set<String> STANDARD_ATTRIBUTE_PREFIXES;
-
-  static {
-    Set<String> dbSystems = new HashSet<>();
-    dbSystems.add("db2");
-    dbSystems.add("derby");
-    dbSystems.add("mariadb");
-    dbSystems.add("mssql");
-    dbSystems.add("mysql");
-    dbSystems.add("oracle");
-    dbSystems.add("postgresql");
-    dbSystems.add("sqlite");
-    dbSystems.add("other_sql");
-    dbSystems.add("hsqldb");
-    dbSystems.add("h2");
-
-    SQL_DB_SYSTEMS = Collections.unmodifiableSet(dbSystems);
-
-    // TODO need to keep this list in sync as new semantic conventions are defined
-    // TODO make this opt-in for javaagent
-    Set<String> standardAttributesPrefix = new HashSet<>();
-    standardAttributesPrefix.add("http");
-    standardAttributesPrefix.add("db");
-    standardAttributesPrefix.add("message");
-    standardAttributesPrefix.add("messaging");
-    standardAttributesPrefix.add("rpc");
-    standardAttributesPrefix.add("enduser");
-    standardAttributesPrefix.add("net");
-    standardAttributesPrefix.add("peer");
-    standardAttributesPrefix.add("exception");
-    standardAttributesPrefix.add("thread");
-    standardAttributesPrefix.add("faas");
-
-    STANDARD_ATTRIBUTE_PREFIXES = Collections.unmodifiableSet(standardAttributesPrefix);
-  }
 
   public static final AttributeKey<String> AI_OPERATION_NAME_KEY =
       AttributeKey.stringKey("applicationinsights.internal.operation_name");
@@ -132,19 +102,54 @@ public class Exporter implements SpanExporter {
   private static final AttributeKey<String> AI_LOG_ERROR_STACK_KEY =
       AttributeKey.stringKey("applicationinsights.internal.log_error_stack");
 
-  // note: this gets filtered out of user dimensions automatically since it shares official "peer."
-  // prefix
-  // (even though it's not an official semantic convention attribute)
+  private static final AttributeKey<String> AZURE_NAMESPACE =
+      AttributeKey.stringKey("az.namespace");
   private static final AttributeKey<String> AZURE_SDK_PEER_ADDRESS =
       AttributeKey.stringKey("peer.address");
   private static final AttributeKey<String> AZURE_SDK_MESSAGE_BUS_DESTINATION =
       AttributeKey.stringKey("message_bus.destination");
+  private static final AttributeKey<Long> AZURE_SDK_ENQUEUED_TIME =
+      AttributeKey.longKey("x-opt-enqueued-time");
 
   private static final OperationLogger exportingSpanLogger =
       new OperationLogger(Exporter.class, "Exporting span");
 
   private static final OperationLogger parsingHttpUrlLogger =
       new OperationLogger(Exporter.class, "Parsing http.url");
+
+  static {
+    Set<String> dbSystems = new HashSet<>();
+    dbSystems.add(SemanticAttributes.DbSystemValues.DB2);
+    dbSystems.add(SemanticAttributes.DbSystemValues.DERBY);
+    dbSystems.add(SemanticAttributes.DbSystemValues.MARIADB);
+    dbSystems.add(SemanticAttributes.DbSystemValues.MSSQL);
+    dbSystems.add(SemanticAttributes.DbSystemValues.MYSQL);
+    dbSystems.add(SemanticAttributes.DbSystemValues.ORACLE);
+    dbSystems.add(SemanticAttributes.DbSystemValues.POSTGRESQL);
+    dbSystems.add(SemanticAttributes.DbSystemValues.SQLITE);
+    dbSystems.add(SemanticAttributes.DbSystemValues.OTHER_SQL);
+    dbSystems.add(SemanticAttributes.DbSystemValues.HSQLDB);
+    dbSystems.add(SemanticAttributes.DbSystemValues.H2);
+
+    SQL_DB_SYSTEMS = Collections.unmodifiableSet(dbSystems);
+
+    // TODO need to keep this list in sync as new semantic conventions are defined
+    // TODO make this opt-in for javaagent
+    Set<String> standardAttributesPrefix = new HashSet<>();
+    standardAttributesPrefix.add("http");
+    standardAttributesPrefix.add("db");
+    standardAttributesPrefix.add("message");
+    standardAttributesPrefix.add("messaging");
+    standardAttributesPrefix.add("rpc");
+    standardAttributesPrefix.add("enduser");
+    standardAttributesPrefix.add("net");
+    standardAttributesPrefix.add("peer");
+    standardAttributesPrefix.add("exception");
+    standardAttributesPrefix.add("thread");
+    standardAttributesPrefix.add("faas");
+
+    STANDARD_ATTRIBUTE_PREFIXES = Collections.unmodifiableSet(standardAttributesPrefix);
+  }
 
   private final TelemetryClient telemetryClient;
 
@@ -162,7 +167,7 @@ public class Exporter implements SpanExporter {
     for (SpanData span : spans) {
       logger.debug("exporting span: {}", span);
       try {
-        export(span);
+        internalExport(span);
         exportingSpanLogger.recordSuccess();
       } catch (Throwable t) {
         exportingSpanLogger.recordFailure(t.getMessage(), t);
@@ -175,7 +180,17 @@ public class Exporter implements SpanExporter {
     return failure ? CompletableResultCode.ofFailure() : CompletableResultCode.ofSuccess();
   }
 
-  private void export(SpanData span) {
+  @Override
+  public CompletableResultCode flush() {
+    return CompletableResultCode.ofSuccess();
+  }
+
+  @Override
+  public CompletableResultCode shutdown() {
+    return CompletableResultCode.ofSuccess();
+  }
+
+  private void internalExport(SpanData span) {
     SpanKind kind = span.getKind();
     String instrumentationName = span.getInstrumentationLibraryInfo().getName();
     StatsbeatModule.get().getNetworkStatsbeat().addInstrumentation(instrumentationName);
@@ -212,16 +227,6 @@ public class Exporter implements SpanExporter {
     }
   }
 
-  @Override
-  public CompletableResultCode flush() {
-    return CompletableResultCode.ofSuccess();
-  }
-
-  @Override
-  public CompletableResultCode shutdown() {
-    return CompletableResultCode.ofSuccess();
-  }
-
   private static List<TelemetryExceptionDetails> minimalParse(String errorStack) {
     TelemetryExceptionDetails details = new TelemetryExceptionDetails();
     String line = errorStack.split(System.lineSeparator())[0];
@@ -242,6 +247,7 @@ public class Exporter implements SpanExporter {
     TelemetryItem telemetry = new TelemetryItem();
     RemoteDependencyData data = new RemoteDependencyData();
     telemetryClient.initRemoteDependencyTelemetry(telemetry, data);
+
     float samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
 
     // set standard properties
@@ -287,27 +293,18 @@ public class Exporter implements SpanExporter {
       applyDatabaseClientSpan(attributes, remoteDependencyData, dbSystem);
       return;
     }
-
-    String messagingSystem = attributes.get(SemanticAttributes.MESSAGING_SYSTEM);
-    if (messagingSystem != null) {
-      applyMessagingClientSpan(attributes, remoteDependencyData, messagingSystem, span.getKind());
-      return;
-    }
-    // TODO (trask) Azure SDK: ideally EventHubs SDK should conform and fit the above path used for
-    // other messaging systems
-    //  but no rush as messaging semantic conventions may still change
-    //  https://github.com/Azure/azure-sdk-for-java/issues/21684
-    String name = span.getName();
-    if (name.equals("EventHubs.send") || name.equals("EventHubs.message")) {
+    String azureNamespace = attributes.get(AZURE_NAMESPACE);
+    if (azureNamespace != null && azureNamespace.equals("Microsoft.EventHub")) {
       applyEventHubsSpan(attributes, remoteDependencyData);
       return;
     }
-    // TODO (trask) Azure SDK: ideally ServiceBus SDK should conform and fit the above path used for
-    // other messaging systems
-    //  but no rush as messaging semantic conventions may still change
-    //  https://github.com/Azure/azure-sdk-for-java/issues/21686
-    if (name.equals("ServiceBus.message") || name.equals("ServiceBus.process")) {
+    if (azureNamespace != null && azureNamespace.equals("Microsoft.ServiceBus")) {
       applyServiceBusSpan(attributes, remoteDependencyData);
+      return;
+    }
+    String messagingSystem = attributes.get(SemanticAttributes.MESSAGING_SYSTEM);
+    if (messagingSystem != null) {
+      applyMessagingClientSpan(attributes, remoteDependencyData, messagingSystem, span.getKind());
       return;
     }
 
@@ -341,6 +338,7 @@ public class Exporter implements SpanExporter {
     TelemetryItem telemetry = new TelemetryItem();
     MessageData data = new MessageData();
     telemetryClient.initMessageTelemetry(telemetry, data);
+
     Attributes attributes = span.getAttributes();
 
     // set standard properties
@@ -368,6 +366,7 @@ public class Exporter implements SpanExporter {
     TelemetryItem telemetry = new TelemetryItem();
     TelemetryExceptionData data = new TelemetryExceptionData();
     telemetryClient.initExceptionTelemetry(telemetry, data);
+
     Attributes attributes = span.getAttributes();
 
     // set standard properties
@@ -569,19 +568,19 @@ public class Exporter implements SpanExporter {
     if (SQL_DB_SYSTEMS.contains(dbSystem)) {
       type = "SQL";
       // keeping existing behavior that was release in 3.0.0 for now
-      // not going with new jdbc instrumentation span name of "<db.operation>
-      // <db.name>.<db.sql.table>" for now
-      // just in case this behavior is reversed due to spec:
+      // not going with new jdbc instrumentation span name of
+      // "<db.operation> <db.name>.<db.sql.table>" for now just in case this behavior is reversed
+      // due to spec:
       // "It is not recommended to attempt any client-side parsing of `db.statement` just to get
-      // these properties,
-      // they should only be used if the library being instrumented already provides them."
+      // these properties, they should only be used if the library being instrumented already
+      // provides them."
       // also need to discuss with other AI language exporters
       //
       // if we go to shorter span name now, and it gets reverted, no way for customers to get the
       // shorter name back
-      // whereas if we go to shorter span name in future, and they still prefer more cardinality,
-      // they can get that
-      // back using telemetry processor to copy db.statement into span name
+      // whereas if we go to shorter span name in the future, and they still prefer more
+      // cardinality, they can get that back using telemetry processor to copy db.statement into
+      // span name
       telemetry.setName(dbStatement);
     } else {
       type = dbSystem;
@@ -618,26 +617,23 @@ public class Exporter implements SpanExporter {
     }
   }
 
-  // TODO (trask) Azure SDK: ideally EventHubs SDK should conform and fit the above path used for
-  // other messaging systems
-  //  but no rush as messaging semantic conventions may still change
-  //  https://github.com/Azure/azure-sdk-for-java/issues/21684
+  // special case needed until Azure SDK moves to OTel semantic conventions
   private static void applyEventHubsSpan(Attributes attributes, RemoteDependencyData telemetry) {
     telemetry.setType("Microsoft.EventHub");
-    String peerAddress = attributes.get(AZURE_SDK_PEER_ADDRESS);
-    String destination = attributes.get(AZURE_SDK_MESSAGE_BUS_DESTINATION);
-    telemetry.setTarget(peerAddress + "/" + destination);
+    telemetry.setTarget(getAzureSdkTargetSource(attributes));
   }
 
-  // TODO (trask) Azure SDK: ideally ServiceBus SDK should conform and fit the above path used for
-  // other messaging systems
-  //  but no rush as messaging semantic conventions may still change
-  //  https://github.com/Azure/azure-sdk-for-java/issues/21686
+  // special case needed until Azure SDK moves to OTel semantic conventions
   private static void applyServiceBusSpan(Attributes attributes, RemoteDependencyData telemetry) {
+    // TODO(trask) change this to Microsoft.ServiceBus once that is supported in U/X E2E view
     telemetry.setType("AZURE SERVICE BUS");
+    telemetry.setTarget(getAzureSdkTargetSource(attributes));
+  }
+
+  private static String getAzureSdkTargetSource(Attributes attributes) {
     String peerAddress = attributes.get(AZURE_SDK_PEER_ADDRESS);
     String destination = attributes.get(AZURE_SDK_MESSAGE_BUS_DESTINATION);
-    telemetry.setTarget(peerAddress + "/" + destination);
+    return peerAddress + "/" + destination;
   }
 
   private static int getDefaultPortForDbSystem(String dbSystem) {
@@ -675,6 +671,7 @@ public class Exporter implements SpanExporter {
     TelemetryItem telemetry = new TelemetryItem();
     RequestData data = new RequestData();
     telemetryClient.initRequestTelemetry(telemetry, data);
+
     Attributes attributes = span.getAttributes();
     long startEpochNanos = span.getStartEpochNanos();
     float samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
@@ -736,36 +733,68 @@ public class Exporter implements SpanExporter {
       telemetry.getTags().put(ContextTagKeys.AI_LOCATION_IP.toString(), locationIp);
     }
 
-    String source = null;
-    String sourceAppId = attributes.get(AI_SPAN_SOURCE_APP_ID_KEY);
-    if (sourceAppId != null && !AiAppId.getAppId().equals(sourceAppId)) {
-      source = sourceAppId;
-    }
-    if (source == null) {
-      String messagingSystem = attributes.get(SemanticAttributes.MESSAGING_SYSTEM);
-      if (messagingSystem != null) {
-        // TODO (trask) AI mapping: should this pass default port for messaging.system?
-        source =
-            nullAwareConcat(
-                getTargetFromPeerAttributes(attributes, 0),
-                attributes.get(SemanticAttributes.MESSAGING_DESTINATION),
-                "/");
-        if (source == null) {
-          source = messagingSystem;
+    data.setSource(getSource(attributes));
+
+    if (isAzureQueue(attributes)) {
+      // TODO(trask): for batch consumer, enqueuedTime should be the average of this attribute
+      //  across all links
+      Long enqueuedTime = attributes.get(AZURE_SDK_ENQUEUED_TIME);
+      if (enqueuedTime != null) {
+        long timeSinceEnqueued =
+            NANOSECONDS.toMillis(span.getStartEpochNanos()) - SECONDS.toMillis(enqueuedTime);
+        if (timeSinceEnqueued < 0) {
+          timeSinceEnqueued = 0;
         }
+        if (data.getMeasurements() == null) {
+          data.setMeasurements(new HashMap<>());
+        }
+        data.getMeasurements().put("timeSinceEnqueued", (double) timeSinceEnqueued);
       }
     }
-    if (source == null) {
-      // this is only used by the 2.x web interop bridge
-      // for ThreadContext.getRequestTelemetryContext().getRequestTelemetry().setSource()
-
-      source = attributes.get(AI_SPAN_SOURCE_KEY);
-    }
-    data.setSource(source);
 
     // export
     telemetryClient.trackAsync(telemetry);
     exportEvents(span, samplingPercentage);
+  }
+
+  private static String getSource(Attributes attributes) {
+    // this is only used by the 2.x web interop bridge
+    // for ThreadContext.getRequestTelemetryContext().getRequestTelemetry().setSource()
+    String source = attributes.get(AI_SPAN_SOURCE_KEY);
+    if (source != null) {
+      return source;
+    }
+    source = attributes.get(AI_SPAN_SOURCE_APP_ID_KEY);
+    if (source != null && !AiAppId.getAppId().equals(source)) {
+      return source;
+    }
+    if (isAzureQueue(attributes)) {
+      return getAzureSdkTargetSource(attributes);
+    }
+    String messagingSystem = attributes.get(SemanticAttributes.MESSAGING_SYSTEM);
+    if (messagingSystem != null) {
+      // TODO (trask) AI mapping: should this pass default port for messaging.system?
+      source =
+          nullAwareConcat(
+              getTargetFromPeerAttributes(attributes, 0),
+              attributes.get(SemanticAttributes.MESSAGING_DESTINATION),
+              "/");
+      if (source != null) {
+        return source;
+      }
+      // fallback
+      return messagingSystem;
+    }
+    return null;
+  }
+
+  private static boolean isAzureQueue(Attributes attributes) {
+    String azureNamespace = attributes.get(AZURE_NAMESPACE);
+    if (azureNamespace == null) {
+      return false;
+    }
+    return azureNamespace.equals("Microsoft.EventHub")
+        || azureNamespace.equals("Microsoft.ServiceBus");
   }
 
   private static String getOperationName(SpanData span) {
@@ -877,30 +906,6 @@ public class Exporter implements SpanExporter {
     TelemetryUtil.getProperties(data).put("_MS.links", sb.toString());
   }
 
-  private static String getStringValue(AttributeKey<?> attributeKey, Object value) {
-    switch (attributeKey.getType()) {
-      case STRING:
-      case BOOLEAN:
-      case LONG:
-      case DOUBLE:
-        return String.valueOf(value);
-      case STRING_ARRAY:
-      case BOOLEAN_ARRAY:
-      case LONG_ARRAY:
-      case DOUBLE_ARRAY:
-        StringBuilder sb = new StringBuilder();
-        for (Object val : (List<?>) value) {
-          if (sb.length() > 0) {
-            sb.append(", ");
-          }
-          sb.append(val);
-        }
-        return sb.toString();
-    }
-    logger.warn("unexpected attribute type: {}", attributeKey.getType());
-    return null;
-  }
-
   private static void setExtraAttributes(
       TelemetryItem telemetry, MonitorDomain data, Attributes attributes) {
     attributes.forEach(
@@ -909,10 +914,11 @@ public class Exporter implements SpanExporter {
           if (stringKey.startsWith("applicationinsights.internal.")) {
             return;
           }
-          // TODO use az.namespace for something?
-          if (stringKey.equals(AZURE_SDK_MESSAGE_BUS_DESTINATION.getKey())
-              || stringKey.equals("az.namespace")) {
-            // these are from azure SDK
+          if (stringKey.equals(AZURE_NAMESPACE.getKey())
+              || stringKey.equals(AZURE_SDK_MESSAGE_BUS_DESTINATION.getKey())
+              || stringKey.equals(AZURE_SDK_ENQUEUED_TIME.getKey())) {
+            // these are from azure SDK (AZURE_SDK_PEER_ADDRESS gets filtered out automatically
+            // since it uses the otel "peer." prefix)
             return;
           }
           // special case mappings
@@ -953,6 +959,34 @@ public class Exporter implements SpanExporter {
             TelemetryUtil.getProperties(data).put(key.getKey(), val);
           }
         });
+  }
+
+  private static String getStringValue(AttributeKey<?> attributeKey, Object value) {
+    switch (attributeKey.getType()) {
+      case STRING:
+      case BOOLEAN:
+      case LONG:
+      case DOUBLE:
+        return String.valueOf(value);
+      case STRING_ARRAY:
+      case BOOLEAN_ARRAY:
+      case LONG_ARRAY:
+      case DOUBLE_ARRAY:
+        return join((List<?>) value);
+    }
+    logger.warn("unexpected attribute type: {}", attributeKey.getType());
+    return null;
+  }
+
+  private static <T> String join(List<T> values) {
+    StringBuilder sb = new StringBuilder();
+    for (Object val : values) {
+      if (sb.length() > 0) {
+        sb.append(", ");
+      }
+      sb.append(val);
+    }
+    return sb.toString();
   }
 
   private static SeverityLevel toSeverityLevel(String level) {
