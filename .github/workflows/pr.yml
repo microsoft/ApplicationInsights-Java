@@ -21,9 +21,17 @@ jobs:
           java-version: 11
 
       - name: Restore cache
-        uses: burrunan/gradle-cache-action@v1.10
+        uses: actions/cache@v2
+        # configuration from https://github.com/actions/cache/blob/main/examples.md#java---gradle
         with:
-          job-id: jdk11
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: otel-fork-build-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          # the cache with the most recent creation date matching this will be used
+          restore-keys: |
+            otel-fork-build-
+            otel-fork-
 
       - name: Cache Gradle Wrapper
         uses: actions/cache@v2
@@ -80,10 +88,17 @@ jobs:
           java-version: 11
 
       - name: Restore cache
-        uses: burrunan/gradle-cache-action@v1.10
+        uses: actions/cache@v2
+        # configuration from https://github.com/actions/cache/blob/main/examples.md#java---gradle
         with:
-          job-id: jdk${{ matrix.test-java-version }}
-          read-only: true
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: otel-fork-build-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          # the cache with the most recent creation date matching this will be used
+          restore-keys: |
+            otel-fork-test-
+            otel-fork-
 
       - name: Cache Gradle Wrapper
         uses: actions/cache@v2
@@ -148,10 +163,17 @@ jobs:
           java-version: 11
 
       - name: Restore cache
-        uses: burrunan/gradle-cache-action@v1.10
+        uses: actions/cache@v2
+        # configuration from https://github.com/actions/cache/blob/main/examples.md#java---gradle
         with:
-          job-id: smokeTests
-          read-only: true
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: otel-fork-build-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          # the cache with the most recent creation date matching this will be used
+          restore-keys: |
+            otel-fork-smoke-test-
+            otel-fork-
 
       - name: Cache Gradle Wrapper
         uses: actions/cache@v2
