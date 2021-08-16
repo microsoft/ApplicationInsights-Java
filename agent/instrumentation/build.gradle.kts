@@ -48,6 +48,7 @@ dependencies {
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-async-http-client-2.0:${otelInstrumentationAlphaVersion}")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-azure-functions:${otelInstrumentationAlphaVersion}")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-azure-core-1.14:${otelInstrumentationAlphaVersion}")
+  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-azure-core-1.19:${otelInstrumentationAlphaVersion}")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-cassandra-3.0:${otelInstrumentationAlphaVersion}")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-cassandra-4.0:${otelInstrumentationAlphaVersion}")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-executors:${otelInstrumentationAlphaVersion}")

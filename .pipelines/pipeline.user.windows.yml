@@ -39,6 +39,14 @@ restore:
       name: 'Install Java 11 JDK'
       command: '.scripts/installJava11jdk.cmd'
     - !!defaultcommand
+      name: 'Add OpenTelemetry to MavenLocal (pre-1)'
+      command: '.scripts/ot-gradle.cmd'
+      arguments: '--project-dir gradle-plugins publishToMavenLocal'
+    - !!defaultcommand
+      name: 'Add OpenTelemetry to MavenLocal (pre-2)'
+      command: '.scripts/ot-gradle.cmd'
+      arguments: ':muzzle:publishToMavenLocal'
+    - !!defaultcommand
       name: 'Add OpenTelemetry to MavenLocal'
       command: '.scripts/ot-gradle.cmd'
       arguments: 'publishToMavenLocal'

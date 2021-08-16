@@ -84,6 +84,7 @@ io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-applicationin
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-async-http-client-1.9:1.5.0-alpha-SNAPSHOT=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-async-http-client-2.0:1.5.0-alpha-SNAPSHOT=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-azure-core-1.14:1.5.0-alpha-SNAPSHOT=runtimeClasspath
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-azure-core-1.19:1.5.0-alpha-SNAPSHOT=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-azure-functions:1.5.0-alpha-SNAPSHOT=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-cassandra-3.0:1.5.0-alpha-SNAPSHOT=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-cassandra-4.0:1.5.0-alpha-SNAPSHOT=runtimeClasspath
