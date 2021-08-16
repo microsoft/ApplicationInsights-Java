@@ -102,6 +102,7 @@ val DEPENDENCIES = listOf(
   "com.azure:azure-storage-blob:12.13.0",
   "com.github.oshi:oshi-core:5.8.0",
   "org.assertj:assertj-core:3.19.0",
+  "org.awaitility:awaitility:4.1.0",
   "io.github.hakky54:logcaptor:2.5.0",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
   "org.checkerframework:checker-qual:3.14.0"

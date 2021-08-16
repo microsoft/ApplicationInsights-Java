@@ -62,9 +62,12 @@ dependencies {
 
   testImplementation("org.junit.jupiter:junit-jupiter")
   testImplementation("org.assertj:assertj-core")
+  testImplementation("org.awaitility:awaitility")
   testImplementation("org.mockito:mockito-core")
   testImplementation("uk.org.webcompere:system-stubs-jupiter:1.1.0")
   testImplementation("io.github.hakky54:logcaptor")
+
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
 
   testImplementation("com.microsoft.jfr:jfr-streaming")
   testImplementation("com.azure:azure-storage-blob")
