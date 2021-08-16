@@ -43,7 +43,11 @@ jobs:
         run: .github/scripts/deadlock-detector.sh
 
       - name: Build
-        run: ./gradlew build --stacktrace
+        # :muzzle:publishToMavenLocal is needed to support local muzzle changes until they are upstreamed
+        run: |
+          ./gradlew --project-dir gradle-plugins publishToMavenLocal
+          ./gradlew :muzzle:publishToMavenLocal
+          ./gradlew build --stacktrace
 
       - name: Upload deadlock detector artifacts
         if: always()
@@ -59,7 +63,11 @@ jobs:
       matrix:
         test-java-version:
           - 8
+          - 11
           - 15
+        vm:
+         - hotspot
+         - openj9
       fail-fast: false
     steps:
       - uses: actions/checkout@v2.3.4
@@ -67,10 +75,10 @@ jobs:
           fetch-depth: 0
 
       - id: setup-test-java
-        name: Set up JDK ${{ matrix.test-java-version }} for running tests
+        name: Set up JDK ${{ matrix.test-java-version }}-${{ matrix.vm }} for running tests
         uses: actions/setup-java@v2
         with:
-          distribution: adopt
+          distribution: adopt-${{ matrix.vm }}
           java-version: ${{ matrix.test-java-version }}
 
       - name: Set up JDK 11 for running Gradle
@@ -102,7 +110,11 @@ jobs:
         run: .github/scripts/deadlock-detector.sh
 
       - name: Test
-        run: ./gradlew test -PtestJavaVersion=${{ matrix.test-java-version }} --stacktrace -Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }} -Porg.gradle.java.installations.auto-download=false
+        # :muzzle:publishToMavenLocal is needed to support local muzzle changes until they are upstreamed
+        run: |
+          ./gradlew --project-dir gradle-plugins publishToMavenLocal
+          ./gradlew :muzzle:publishToMavenLocal
+          ./gradlew test -PtestJavaVersion=${{ matrix.test-java-version }} -PtestJavaVM=${{ matrix.vm }} --stacktrace -Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }} -Porg.gradle.java.installations.auto-download=false
 
       - name: Upload deadlock detector artifacts
         if: always()
@@ -170,7 +182,11 @@ jobs:
           key: ${{ runner.os }}-gradle-wrapper-cache-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
 
       - name: Test
-        run: ./gradlew :smoke-tests:test -PsmokeTestSuite=${{ matrix.smoke-test-suite }}
+        # :muzzle:publishToMavenLocal is needed to support local muzzle changes until they are upstreamed
+        run: |
+          ./gradlew --project-dir gradle-plugins publishToMavenLocal
+          ./gradlew :muzzle:publishToMavenLocal
+          ./gradlew :smoke-tests:test -PsmokeTestSuite=${{ matrix.smoke-test-suite }}
 
   setup-muzzle-matrix:
     runs-on: ubuntu-latest
@@ -195,7 +211,10 @@ jobs:
           key: ${{ runner.os }}-gradle-wrapper-cache-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
 
       - id: set-matrix
-        run: echo "::set-output name=matrix::{\"module\":[\"$(./gradlew -q instrumentation:listInstrumentations | xargs echo | sed 's/ /","/g')\"]}"
+        run: |
+          ./gradlew --project-dir gradle-plugins publishToMavenLocal
+          ./gradlew :muzzle:publishToMavenLocal
+          echo "::set-output name=matrix::{\"module\":[\"$(./gradlew -q instrumentation:listInstrumentations | xargs echo | sed 's/ /","/g')\"]}"
 
   muzzle:
     needs: setup-muzzle-matrix
@@ -228,7 +247,11 @@ jobs:
           # timing out has not been a problem, these jobs typically finish in 2-3 minutes
           timeout_minutes: 15
           max_attempts: 3
-          command: ./gradlew ${{ matrix.module }}:muzzle
+          # :muzzle:publishToMavenLocal is needed to support local muzzle changes until they are upstreamed
+          command: |
+            ./gradlew --project-dir gradle-plugins publishToMavenLocal
+            ./gradlew :muzzle:publishToMavenLocal
+            ./gradlew ${{ matrix.module }}:muzzle
 
   examples:
     runs-on: ubuntu-latest
