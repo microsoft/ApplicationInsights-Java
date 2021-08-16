@@ -74,6 +74,9 @@ public class Exporter implements SpanExporter {
 
   private static final Set<String> STANDARD_ATTRIBUTE_PREFIXES;
 
+  public static final AttributeKey<String> AI_OPERATION_NAME_KEY =
+      AttributeKey.stringKey("applicationinsights.internal.operation_name");
+
   private static final AttributeKey<Boolean> AI_LOG_KEY =
       AttributeKey.booleanKey("applicationinsights.internal.log");
 
@@ -387,14 +390,22 @@ public class Exporter implements SpanExporter {
   }
 
   private static void setOperationTags(TelemetryItem telemetry, SpanData span) {
-    setOperationTags(telemetry, span.getTraceId(), span.getParentSpanContext().getSpanId());
+    setOperationTags(
+        telemetry,
+        span.getTraceId(),
+        span.getParentSpanContext().getSpanId(),
+        span.getAttributes());
   }
 
   private static void setOperationTags(
-      TelemetryItem telemetry, String traceId, String parentSpanId) {
+      TelemetryItem telemetry, String traceId, String parentSpanId, Attributes attributes) {
     telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), traceId);
     if (SpanId.isValid(parentSpanId)) {
       telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), parentSpanId);
+    }
+    String operationName = attributes.get(AI_OPERATION_NAME_KEY);
+    if (operationName != null) {
+      telemetry.getTags().put(ContextTagKeys.AI_OPERATION_NAME.toString(), operationName);
     }
   }
 
@@ -829,7 +840,7 @@ public class Exporter implements SpanExporter {
       telemetryClient.initMessageTelemetry(telemetry, data);
 
       // set standard properties
-      setOperationTags(telemetry, span.getTraceId(), span.getSpanId());
+      setOperationTags(telemetry, span.getTraceId(), span.getSpanId(), span.getAttributes());
       setTime(telemetry, event.getEpochNanos());
       setExtraAttributes(telemetry, data, event.getAttributes());
       setSampleRate(telemetry, samplingPercentage);
@@ -847,7 +858,7 @@ public class Exporter implements SpanExporter {
     telemetryClient.initExceptionTelemetry(telemetry, data);
 
     // set standard properties
-    setOperationTags(telemetry, span.getTraceId(), span.getSpanId());
+    setOperationTags(telemetry, span.getTraceId(), span.getSpanId(), span.getAttributes());
     setTime(telemetry, span.getEndEpochNanos());
     setSampleRate(telemetry, samplingPercentage);
 
