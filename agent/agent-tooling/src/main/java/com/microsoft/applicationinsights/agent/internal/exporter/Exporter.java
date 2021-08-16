@@ -116,17 +116,17 @@ public class Exporter implements SpanExporter {
 
   static {
     Set<String> dbSystems = new HashSet<>();
-    dbSystems.add("db2");
-    dbSystems.add("derby");
-    dbSystems.add("mariadb");
-    dbSystems.add("mssql");
-    dbSystems.add("mysql");
-    dbSystems.add("oracle");
-    dbSystems.add("postgresql");
-    dbSystems.add("sqlite");
-    dbSystems.add("other_sql");
-    dbSystems.add("hsqldb");
-    dbSystems.add("h2");
+    dbSystems.add(SemanticAttributes.DbSystemValues.DB2);
+    dbSystems.add(SemanticAttributes.DbSystemValues.DERBY);
+    dbSystems.add(SemanticAttributes.DbSystemValues.MARIADB);
+    dbSystems.add(SemanticAttributes.DbSystemValues.MSSQL);
+    dbSystems.add(SemanticAttributes.DbSystemValues.MYSQL);
+    dbSystems.add(SemanticAttributes.DbSystemValues.ORACLE);
+    dbSystems.add(SemanticAttributes.DbSystemValues.POSTGRESQL);
+    dbSystems.add(SemanticAttributes.DbSystemValues.SQLITE);
+    dbSystems.add(SemanticAttributes.DbSystemValues.OTHER_SQL);
+    dbSystems.add(SemanticAttributes.DbSystemValues.HSQLDB);
+    dbSystems.add(SemanticAttributes.DbSystemValues.H2);
 
     SQL_DB_SYSTEMS = Collections.unmodifiableSet(dbSystems);
 
