@@ -151,6 +151,16 @@ public class HelperInjector implements Transformer {
 
     if (helpersSource != null && !helperResourceNames.isEmpty()) {
       for (String resourceName : helperResourceNames) {
+
+        final String injectedAsResourceName;
+        int namespaceSeparator = resourceName.indexOf(':');
+        if (namespaceSeparator != -1) {
+          resourceName = resourceName.replace(':', '/');
+          injectedAsResourceName = resourceName.substring(namespaceSeparator + 1);
+        } else {
+          injectedAsResourceName = resourceName;
+        }
+
         URL resource = helpersSource.getResource(resourceName);
         if (resource == null) {
           logger.debug("Helper resource {} requested but not found.", resourceName);
@@ -158,7 +168,7 @@ public class HelperInjector implements Transformer {
         }
 
         logger.debug("Injecting resource onto classloader {} -> {}", classLoader, resourceName);
-        HelperResources.register(classLoader, resourceName, resource);
+        HelperResources.register(classLoader, injectedAsResourceName, resource);
       }
     }
 
