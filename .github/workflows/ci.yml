@@ -35,7 +35,10 @@ jobs:
         env:
           S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.S3_BUILD_CACHE_ACCESS_KEY_ID }}
           S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.S3_BUILD_CACHE_SECRET_KEY }}
-        run: ./gradlew build --stacktrace
+        run: |
+          ./gradlew --project-dir gradle-plugins publishToMavenLocal
+          ./gradlew :muzzle:publishToMavenLocal
+          ./gradlew build --stacktrace
 
   test:
     runs-on: ubuntu-latest
@@ -43,7 +46,11 @@ jobs:
       matrix:
         test-java-version:
           - 8
+          - 11
           - 15
+        vm:
+         - hotspot
+         - openj9
       fail-fast: false
     steps:
       - uses: actions/checkout@v2.3.4
@@ -51,10 +58,10 @@ jobs:
           fetch-depth: 0
 
       - id: setup-test-java
-        name: Set up JDK ${{ matrix.test-java-version }} for running tests
+        name: Set up JDK ${{ matrix.test-java-version }}-${{ matrix.vm }} for running tests
         uses: actions/setup-java@v2
         with:
-          distribution: adopt
+          distribution: adopt-${{ matrix.vm }}
           java-version: ${{ matrix.test-java-version }}
 
       - name: Set up JDK 11 for running Gradle
@@ -79,7 +86,11 @@ jobs:
         env:
           S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.S3_BUILD_CACHE_ACCESS_KEY_ID }}
           S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.S3_BUILD_CACHE_SECRET_KEY }}
-        run: ./gradlew test -PtestJavaVersion=${{ matrix.test-java-version }} --stacktrace -Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }} -Porg.gradle.java.installations.auto-download=false
+        # :muzzle:publishToMavenLocal is needed to support local muzzle changes until they are upstreamed
+        run: |
+          ./gradlew --project-dir gradle-plugins publishToMavenLocal
+          ./gradlew :muzzle:publishToMavenLocal
+          ./gradlew test -PtestJavaVersion=${{ matrix.test-java-version }} -PtestJavaVM=${{ matrix.vm }} --stacktrace -Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }} -Porg.gradle.java.installations.auto-download=false
 
   testLatestDeps:
     runs-on: ubuntu-latest
@@ -116,7 +127,11 @@ jobs:
         env:
           S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.S3_BUILD_CACHE_ACCESS_KEY_ID }}
           S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.S3_BUILD_CACHE_SECRET_KEY }}
-        run: ./gradlew test -PtestLatestDeps=true --stacktrace
+        # :muzzle:publishToMavenLocal is needed to support local muzzle changes until they are upstreamed
+        run: |
+          ./gradlew --project-dir gradle-plugins publishToMavenLocal
+          ./gradlew :muzzle:publishToMavenLocal
+          ./gradlew test -PtestLatestDeps=true --stacktrace
 
   smoke-test:
     runs-on: ${{ matrix.os }}
@@ -165,7 +180,11 @@ jobs:
         env:
           S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.S3_BUILD_CACHE_ACCESS_KEY_ID }}
           S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.S3_BUILD_CACHE_SECRET_KEY }}
-        run: ./gradlew :smoke-tests:test -PsmokeTestSuite=${{ matrix.smoke-test-suite }}
+        # :muzzle:publishToMavenLocal is needed to support local muzzle changes until they are upstreamed
+        run: |
+          ./gradlew --project-dir gradle-plugins publishToMavenLocal
+          ./gradlew :muzzle:publishToMavenLocal
+          ./gradlew :smoke-tests:test -PsmokeTestSuite=${{ matrix.smoke-test-suite }}
 
   examples:
     runs-on: ubuntu-latest

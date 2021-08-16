@@ -37,6 +37,7 @@ val codegen by configurations.creating {
 val sourceSet = sourceSets.main.get()
 val inputClasspath = (sourceSet.output.resourcesDir?.let { codegen.plus(project.files(it)) }
   ?: codegen)
+  .plus(sourceSet.output.dirs)
   .plus(configurations.runtimeClasspath.get())
 
 val languageTasks = LANGUAGES.map { language ->
