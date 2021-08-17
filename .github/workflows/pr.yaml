@@ -39,8 +39,9 @@ jobs:
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
       - name: Build otel-fork
         run: |
-          cd otel
-          ./gradlew publishToMavenLocal
+          ./otel/gradlew --project-dir otel/gradle-plugins publishToMavenLocal
+          ./otel/gradlew --project-dir otel :muzzle:publishToMavenLocal
+          ./otel/gradlew --project-dir otel publishToMavenLocal
       - name: Test
         # TODO enable build cache, either --build-cache here, or org.gradle.caching=true in gradle.properties
         run: ./gradlew check --stacktrace
@@ -92,8 +93,9 @@ jobs:
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
       - name: Build otel-fork
         run: |
-          cd otel
-          ./gradlew publishToMavenLocal
+          ./otel/gradlew --project-dir otel/gradle-plugins publishToMavenLocal
+          ./otel/gradlew --project-dir otel :muzzle:publishToMavenLocal
+          ./otel/gradlew --project-dir otel publishToMavenLocal
       - name: Test
         # TODO enable build cache, either --build-cache here, or org.gradle.caching=true in gradle.properties
         run: ./gradlew ${{ matrix.module }}:smokeTest
