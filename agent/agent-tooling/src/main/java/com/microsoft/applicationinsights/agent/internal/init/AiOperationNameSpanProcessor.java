@@ -25,6 +25,7 @@ import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.api.tracer.ConsumerSpan;
 import io.opentelemetry.instrumentation.api.tracer.ServerSpan;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -39,6 +40,12 @@ public class AiOperationNameSpanProcessor implements SpanProcessor {
     if (serverSpan instanceof ReadableSpan) {
       span.setAttribute(
           Exporter.AI_OPERATION_NAME_KEY, getOperationName((ReadableSpan) serverSpan));
+    } else if (serverSpan == null) {
+      Span consumerSpan = ConsumerSpan.fromContextOrNull(parentContext);
+      if (consumerSpan instanceof ReadableSpan) {
+        span.setAttribute(
+            Exporter.AI_OPERATION_NAME_KEY, getOperationName((ReadableSpan) consumerSpan));
+      }
     }
   }
 
