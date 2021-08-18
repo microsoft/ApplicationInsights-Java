@@ -4,6 +4,7 @@ plugins {
   id("com.github.johnrengelman.shadow")
 }
 
+// Adding this step to copy playback test results from session-records to build/classes/java/test. Azure core testing framework follows this directory structure.
 sourceSets {
   test {
     output.setResourcesDir("build/classes/java/test")
