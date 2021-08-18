@@ -39,12 +39,10 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   private static final String RETRY_COUNT_METRIC_NAME = "Retry Count";
   private static final String THROTTLE_COUNT_METRIC_NAME = "Throttle Count";
   private static final String EXCEPTION_COUNT_METRIC_NAME = "Exception Count";
-
   private static final String INSTRUMENTATION_CUSTOM_DIMENSION = "instrumentation";
   private static final String BREEZE_ENDPOINT = "breeze";
 
   private volatile IntervalMetrics current;
-
   private final Object lock = new Object();
 
   NetworkStatsbeat(CustomDimensions customDimensions) {
