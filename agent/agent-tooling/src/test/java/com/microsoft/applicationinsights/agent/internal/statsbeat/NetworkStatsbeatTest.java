@@ -127,4 +127,16 @@ public class NetworkStatsbeatTest {
     assertThat(networkStatsbeat.getRequestDurationAvg()).isEqualTo(7.5);
     assertThat(networkStatsbeat.getInstrumentationList().size()).isEqualTo(100000);
   }
+
+  @Test
+  public void testGetHost() {
+    String url = "https://fake-host.applicationinsights.azure.com/v2.1/track";
+    assertThat(networkStatsbeat.getHost(url)).isEqualTo("fake-host.applicationinsights.azure.com");
+
+    url = "http://fake-host.example.com/v2/track";
+    assertThat(networkStatsbeat.getHost(url)).isEqualTo("fake-host.example.com");
+
+    url = "http://www.fake-host.com/v2/track";
+    assertThat(networkStatsbeat.getHost(url)).isEqualTo("www.fake-host.com");
+  }
 }
