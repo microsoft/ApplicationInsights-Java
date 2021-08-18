@@ -4,6 +4,12 @@ plugins {
   id("com.github.johnrengelman.shadow")
 }
 
+sourceSets {
+  test {
+    output.setResourcesDir("build/classes/java/test")
+  }
+}
+
 dependencies {
   implementation(project(":agent:agent-profiler:agent-service-profiler"))
   implementation(project(":agent:agent-profiler:agent-alerting-api"))
@@ -70,3 +76,5 @@ dependencies {
   testImplementation("com.microsoft.jfr:jfr-streaming")
   testImplementation("com.azure:azure-storage-blob")
 }
+
+

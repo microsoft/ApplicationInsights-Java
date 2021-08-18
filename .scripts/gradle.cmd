@@ -16,13 +16,5 @@ if errorlevel 1 (
     echo Error running '%GRADLE_CMD%' in '%PROJECT_ROOT%'
     exit /b 1
 )
-
-def names = []
-fileTree("%PROJECT_ROOT%\agent\agent-tooling\build\classes\java\test\section-records").visit {
-  echo "List Session-Records content"
-  FileVisitDetails details ->
-    names << details.file.path
-}
-
 popd
 endlocal
