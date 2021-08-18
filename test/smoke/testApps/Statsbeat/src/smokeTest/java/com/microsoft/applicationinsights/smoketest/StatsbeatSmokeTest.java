@@ -80,6 +80,8 @@ public class StatsbeatSmokeTest extends AiSmokeTest {
     assertNotNull(requestSuccessCountData.getProperties().get("language"));
     assertNotNull(requestSuccessCountData.getProperties().get("version"));
     assertNotNull(requestSuccessCountData.getProperties().get("instrumentation"));
+    assertNotNull(requestSuccessCountData.getProperties().get("endpoint"));
+    assertNotNull(requestSuccessCountData.getProperties().get("host"));
     assertEquals(8, data.getProperties().size());
 
     List<Envelope> requestDurationMetrics =
@@ -96,6 +98,8 @@ public class StatsbeatSmokeTest extends AiSmokeTest {
     assertNotNull(requestDurationData.getProperties().get("language"));
     assertNotNull(requestDurationData.getProperties().get("version"));
     assertNotNull(requestDurationData.getProperties().get("instrumentation"));
+    assertNotNull(requestSuccessCountData.getProperties().get("endpoint"));
+    assertNotNull(requestSuccessCountData.getProperties().get("host"));
     assertEquals(8, data.getProperties().size());
   }
 
