@@ -849,6 +849,10 @@ public abstract class AiSmokeTest {
   protected static Telemetry getTelemetry(int rddCount, Predicate<RemoteDependencyData> condition)
       throws Exception {
 
+    if (rddCount > 3) {
+      throw new IllegalArgumentException("this method currently only supports rddCount up to 3");
+    }
+
     Telemetry telemetry = new Telemetry();
 
     List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
