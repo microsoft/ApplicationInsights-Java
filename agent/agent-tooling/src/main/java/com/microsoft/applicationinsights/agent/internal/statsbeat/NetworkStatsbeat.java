@@ -26,6 +26,7 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import java.net.URL;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,10 +45,14 @@ public class NetworkStatsbeat extends BaseStatsbeat {
 
   private volatile IntervalMetrics current;
   private final Object lock = new Object();
+  // Map<originHost, newHost>
+  private volatile Map<String, String> redirectHostMap;
+  private volatile String originalHost;
 
   NetworkStatsbeat(CustomDimensions customDimensions) {
     super(customDimensions);
     current = new IntervalMetrics();
+    redirectHostMap = new HashMap<>();
   }
 
   @Override
@@ -58,15 +63,18 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       current = new IntervalMetrics();
     }
 
+    if (originalHost == null) {
+      originalHost = getHost(telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString());
+    }
+
     // send instrumentation as an UTF-8 string
     String instrumentation = String.valueOf(Instrumentations.encode(local.instrumentationList));
-    URL url = telemetryClient.getEndpointProvider().getIngestionEndpointUrl();
 
     if (local.requestSuccessCount.get() != 0) {
       TelemetryItem requestSuccessCountSt =
           createStatsbeatTelemetry(
               telemetryClient, REQUEST_SUCCESS_COUNT_METRIC_NAME, local.requestSuccessCount.get());
-      updateCustomDimensions(requestSuccessCountSt, instrumentation, url);
+      updateCustomDimensions(requestSuccessCountSt, instrumentation);
       telemetryClient.trackStatsbeatAsync(requestSuccessCountSt);
     }
 
@@ -74,7 +82,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       TelemetryItem requestFailureCountSt =
           createStatsbeatTelemetry(
               telemetryClient, REQUEST_FAILURE_COUNT_METRIC_NAME, local.requestFailureCount.get());
-      updateCustomDimensions(requestFailureCountSt, instrumentation, url);
+      updateCustomDimensions(requestFailureCountSt, instrumentation);
       telemetryClient.trackStatsbeatAsync(requestFailureCountSt);
     }
 
@@ -82,7 +90,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     if (durationAvg != 0) {
       TelemetryItem requestDurationSt =
           createStatsbeatTelemetry(telemetryClient, REQUEST_DURATION_METRIC_NAME, durationAvg);
-      updateCustomDimensions(requestDurationSt, instrumentation, url);
+      updateCustomDimensions(requestDurationSt, instrumentation);
       telemetryClient.trackStatsbeatAsync(requestDurationSt);
     }
 
@@ -90,7 +98,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       TelemetryItem retryCountSt =
           createStatsbeatTelemetry(
               telemetryClient, RETRY_COUNT_METRIC_NAME, local.retryCount.get());
-      updateCustomDimensions(retryCountSt, instrumentation, url);
+      updateCustomDimensions(retryCountSt, instrumentation);
       telemetryClient.trackStatsbeatAsync(retryCountSt);
     }
 
@@ -98,7 +106,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       TelemetryItem throttleCountSt =
           createStatsbeatTelemetry(
               telemetryClient, THROTTLE_COUNT_METRIC_NAME, local.throttlingCount.get());
-      updateCustomDimensions(throttleCountSt, instrumentation, url);
+      updateCustomDimensions(throttleCountSt, instrumentation);
       telemetryClient.trackStatsbeatAsync(throttleCountSt);
     }
 
@@ -106,16 +114,16 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       TelemetryItem exceptionCountSt =
           createStatsbeatTelemetry(
               telemetryClient, EXCEPTION_COUNT_METRIC_NAME, local.exceptionCount.get());
-      updateCustomDimensions(exceptionCountSt, instrumentation, url);
+      updateCustomDimensions(exceptionCountSt, instrumentation);
       telemetryClient.trackStatsbeatAsync(exceptionCountSt);
     }
   }
 
-  private void updateCustomDimensions(TelemetryItem telemetryItem, String instrumentation, URL url) {
+  private void updateCustomDimensions(TelemetryItem telemetryItem, String instrumentation) {
     Map<String, String> properties = TelemetryUtil.getProperties(telemetryItem.getData().getBaseData());
     properties.put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
     properties.put("endpoint", BREEZE_ENDPOINT);
-    properties.put("host", getHost(url.toString()));
+    properties.put("host", originalHost);
   }
 
   // this is used by Exporter
@@ -224,5 +232,19 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   String getHost(String endpointUrl) {
     assert(endpointUrl != null && !endpointUrl.isEmpty());
     return endpointUrl.replaceAll("^\\w+://", "").replaceAll("/\\w+.?\\w?/\\w+", "");
+  }
+
+  void updateRedirectHostMap(TelemetryClient telemetryClient, String redirectUrl) {
+    String newHost = getHost(redirectUrl);
+    if (originalHost == null) {
+      originalHost = getHost(telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString());
+    } else {
+      String redirectHost = redirectHostMap.get(originalHost);
+      if (newHost != null) {
+        originalHost = redirectHost;
+      }
+    }
+
+    redirectHostMap.put(originalHost, newHost);
   }
 }

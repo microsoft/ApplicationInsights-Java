@@ -49,6 +49,8 @@ public class StatsbeatModule {
 
   private final AtomicBoolean started = new AtomicBoolean();
 
+  private volatile TelemetryClient telemetryClient;
+
   private StatsbeatModule() {
     customDimensions = new CustomDimensions();
     networkStatsbeat = new NetworkStatsbeat(customDimensions);
@@ -59,6 +61,10 @@ public class StatsbeatModule {
   public void start(TelemetryClient telemetryClient, Configuration config) {
     if (started.getAndSet(true)) {
       throw new IllegalStateException("initialize already called");
+    }
+
+    if (this.telemetryClient == null) {
+      this.telemetryClient = telemetryClient;
     }
 
     long intervalSeconds = config.internal.statsbeat.intervalSeconds;
@@ -98,6 +104,16 @@ public class StatsbeatModule {
 
   public NetworkStatsbeat getNetworkStatsbeat() {
     return networkStatsbeat;
+  }
+
+  // send network statsbeat whenever redirect happens since url has been changed.
+  // new url is always retrieved from the redirect policy cache map and we don't update the endpoint.
+  public void sendNetworkStatsbeatOnRedirect(String redirectUrl) {
+    networkStatsbeat.updateRedirectHostMap(telemetryClient, redirectUrl);
+    StatsbeatSender sender = new StatsbeatSender(networkStatsbeat, telemetryClient);
+    Thread senderThread = new Thread(sender);
+    senderThread.setDaemon(true);
+    senderThread.start();
   }
 
   /** Runnable which is responsible for calling the send method to transmit Statsbeat telemetry. */
