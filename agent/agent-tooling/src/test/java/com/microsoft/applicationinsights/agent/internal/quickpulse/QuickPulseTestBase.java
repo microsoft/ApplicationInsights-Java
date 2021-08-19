@@ -168,6 +168,8 @@ public class QuickPulseTestBase extends TestBase {
               .map(bytes -> new String(bytes, StandardCharsets.UTF_8));
       asyncString.subscribe(
           value -> {
+            System.out.println("expected:" + expectedRequestBody);
+            System.out.println("actual:" + value);
             if (Pattern.matches(expectedRequestBody, value)) {
               countDown.countDown();
             }
