@@ -97,7 +97,7 @@ public class StatsbeatSmokeTest extends AiSmokeTest {
     assertNotNull(requestSuccessCountData.getProperties().get("version"));
     assertNotNull(requestSuccessCountData.getProperties().get("endpoint"));
     assertNotNull(requestSuccessCountData.getProperties().get("host"));
-    assertEquals(8, data.getProperties().size());
+    assertEquals(9, data.getProperties().size());
 
     List<Envelope> requestDurationMetrics =
         mockedIngestion.waitForItems(
@@ -112,10 +112,9 @@ public class StatsbeatSmokeTest extends AiSmokeTest {
     assertNotNull(requestDurationData.getProperties().get("os"));
     assertNotNull(requestDurationData.getProperties().get("language"));
     assertNotNull(requestDurationData.getProperties().get("version"));
-    assertNotNull(requestDurationData.getProperties().get("instrumentation"));
     assertNotNull(requestSuccessCountData.getProperties().get("endpoint"));
     assertNotNull(requestSuccessCountData.getProperties().get("host"));
-    assertEquals(8, data.getProperties().size());
+    assertEquals(9, data.getProperties().size());
   }
 
   private static Predicate<Envelope> getMetricPredicate(String name) {
