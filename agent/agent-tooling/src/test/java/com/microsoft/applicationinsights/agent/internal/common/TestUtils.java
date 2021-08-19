@@ -48,4 +48,6 @@ public final class TestUtils {
 
     return telemetry;
   }
+
+  private TestUtils() {}
 }
