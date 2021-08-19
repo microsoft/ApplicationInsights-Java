@@ -65,7 +65,8 @@ public class StatsbeatModule {
     }
 
     if (config.internal.statsbeat.disabledAll) {
-      // disabledAll is an internal emergency kill-switch to turn off Statsbeat completely when something goes wrong.
+      // disabledAll is an internal emergency kill-switch to turn off Statsbeat completely when
+      // something goes wrong.
       // this happens rarely.
       disabledAll.set(true);
       return;
@@ -109,7 +110,8 @@ public class StatsbeatModule {
 
       featureStatsbeat.trackConfigurationOptions(config);
     } else {
-      // disabled will disable non-essentials Statsbeat, such as tracking failure or success of disk persistence operations, optional network statsbeat, live metric,
+      // disabled will disable non-essentials Statsbeat, such as tracking failure or success of disk
+      // persistence operations, optional network statsbeat, live metric,
       // azure metadata service failure, profile endpoint, etc.
       // TODO exclude non-essential Statsbeat if applicable
     }
