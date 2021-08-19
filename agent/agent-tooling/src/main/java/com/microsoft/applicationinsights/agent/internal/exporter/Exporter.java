@@ -193,7 +193,7 @@ public class Exporter implements SpanExporter {
   private void internalExport(SpanData span) {
     SpanKind kind = span.getKind();
     String instrumentationName = span.getInstrumentationLibraryInfo().getName();
-    StatsbeatModule.get().getNetworkStatsbeat().addInstrumentation(instrumentationName);
+    StatsbeatModule.get().getInstrumentationStatsbeat().addInstrumentation(instrumentationName);
     if (kind == SpanKind.INTERNAL) {
       Boolean isLog = span.getAttributes().get(AI_LOG_KEY);
       if (isLog != null && isLog) {

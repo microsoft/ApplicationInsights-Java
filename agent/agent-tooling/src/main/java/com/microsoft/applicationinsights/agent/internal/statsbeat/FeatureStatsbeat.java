@@ -25,18 +25,26 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
-class FeatureStatsbeat extends BaseStatsbeat {
+public class FeatureStatsbeat extends BaseStatsbeat {
 
   private static final String FEATURE_METRIC_NAME = "Feature";
+  private static final String INSTRUMENTATION_METRIC_NAME = "Instrumentation";
 
   private final Set<Feature> featureList = new HashSet<>(64);
+  private final Set<String> instrumentationList = Collections.newSetFromMap(new ConcurrentHashMap<>());
+  private final Object lock = new Object();
+  private final FeatureType type;
 
-  FeatureStatsbeat(CustomDimensions customDimensions) {
+  FeatureStatsbeat(CustomDimensions customDimensions, FeatureType type) {
     // track java distribution
     super(customDimensions);
+    this.type = type;
     String javaVendor = System.getProperty("java.vendor");
     featureList.add(Feature.fromJavaVendor(javaVendor));
   }
@@ -46,13 +54,45 @@ class FeatureStatsbeat extends BaseStatsbeat {
     return Feature.encode(featureList);
   }
 
+  /** Returns a long that represents a list of instrumentations. Each bitfield maps to an instrumentation. */
+  long getInstrumentation() {
+    return Instrumentations.encode(instrumentationList);
+  }
+
+  // used by tests only
+  Set<String> getInstrumentationList() { return instrumentationList; }
+
+  // this is used by Exporter
+  public void addInstrumentation(String instrumentation) {
+    synchronized (lock) {
+      instrumentationList.add(instrumentation);
+    }
+  }
+
   @Override
   protected void send(TelemetryClient telemetryClient) {
-    TelemetryItem statsbeatTelemetry =
-        createStatsbeatTelemetry(telemetryClient, FEATURE_METRIC_NAME, 0);
-    TelemetryUtil.getProperties(statsbeatTelemetry.getData().getBaseData())
-        .put("feature", String.valueOf(getFeature()));
-    telemetryClient.trackStatsbeatAsync(statsbeatTelemetry);
+    String metricName;
+    long encodedLong;
+    String featureType;
+
+    if (type == FeatureType.Feature) {
+      metricName = FEATURE_METRIC_NAME;
+      encodedLong = getFeature();
+      featureType = "feature";
+    } else {
+      metricName = INSTRUMENTATION_METRIC_NAME;
+      encodedLong = getInstrumentation();
+      featureType = "instrumentation";
+    }
+
+    TelemetryItem telemetryItem =
+        createStatsbeatTelemetry(telemetryClient, metricName, 0);
+    Map<String, String> properties =
+        TelemetryUtil.getProperties(telemetryItem.getData().getBaseData());
+    properties.put("feature", String.valueOf(encodedLong));
+    properties.put("type", featureType);
+
+    telemetryClient.trackStatsbeatAsync(telemetryItem);
   }
 
   void trackConfigurationOptions(Configuration config) {

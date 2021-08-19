@@ -46,6 +46,7 @@ public class StatsbeatModule {
   private final NetworkStatsbeat networkStatsbeat;
   private final AttachStatsbeat attachStatsbeat;
   private final FeatureStatsbeat featureStatsbeat;
+  private final FeatureStatsbeat instrumentationStatsbeat;
 
   private final AtomicBoolean started = new AtomicBoolean();
   private final AtomicBoolean disabledAll = new AtomicBoolean();
@@ -56,7 +57,8 @@ public class StatsbeatModule {
     customDimensions = new CustomDimensions();
     networkStatsbeat = new NetworkStatsbeat(customDimensions);
     attachStatsbeat = new AttachStatsbeat(customDimensions);
-    featureStatsbeat = new FeatureStatsbeat(customDimensions);
+    featureStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.Feature);
+    instrumentationStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.Instrumentation);
   }
 
   public void start(TelemetryClient telemetryClient, Configuration config) {
@@ -98,6 +100,11 @@ public class StatsbeatModule {
           longIntervalSeconds,
           longIntervalSeconds,
           TimeUnit.SECONDS);
+      scheduledExecutor.scheduleWithFixedDelay(
+          new StatsbeatSender(instrumentationStatsbeat, telemetryClient),
+          longIntervalSeconds,
+          longIntervalSeconds,
+          TimeUnit.SECONDS);
 
       ResourceProvider rp = customDimensions.getResourceProvider();
       // only turn on AzureMetadataService when the resource provider is VM or UNKNOWN.
@@ -131,6 +138,10 @@ public class StatsbeatModule {
 
   public NetworkStatsbeat getNetworkStatsbeat() {
     return networkStatsbeat;
+  }
+
+  public FeatureStatsbeat getInstrumentationStatsbeat() {
+    return instrumentationStatsbeat;
   }
 
   // send network statsbeat whenever redirect happens since url has been changed.
