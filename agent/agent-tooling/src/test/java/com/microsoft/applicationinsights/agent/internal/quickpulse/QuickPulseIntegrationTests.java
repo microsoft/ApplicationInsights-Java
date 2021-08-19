@@ -101,7 +101,7 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
     String expectedPostRequestBody =
         "\\[\\{\"Documents\":null,\"InstrumentationKey\":\""
             + instrumentationKey
-            + "\",\"Metrics\":\\[\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Requests\\\\\\/Sec\",\"Value\":0,\"Weight\":1\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Request Duration\",\"Value\":0,\"Weight\":0\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Requests Failed\\\\\\/Sec\",\"Value\":0,\"Weight\":1\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Requests Succeeded\\\\\\/Sec\",\"Value\":0,\"Weight\":1\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Dependency Calls\\\\\\/Sec\",\"Value\":0,\"Weight\":1\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Dependency Call Duration\",\"Value\":0,\"Weight\":0\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Dependency Calls Failed\\\\\\/Sec\",\"Value\":0,\"Weight\":1\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Dependency Calls Succeeded\\\\\\/Sec\",\"Value\":0,\"Weight\":1\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Exceptions\\\\\\/Sec\",\"Value\":0,\"Weight\":1\\},\\{\"Name\":\"\\\\\\\\Memory\\\\\\\\Committed Bytes\",\"Value\":266338304,\"Weight\":1\\},\\{\"Name\":\"\\\\\\\\Processor\\(_Total\\)\\\\\\\\% Processor Time\",\"Value\":0,\"Weight\":1\\}\\],\"InvariantVersion\":1,\"Timestamp\":\"\\\\\\/Date\\(\\d+\\)\\\\\\/\",\"Version\":\"java:3\\.2\\.0-BETA\\.3-SNAPSHOT\",\"StreamId\":null,\"MachineName\":\"machine1\",\"Instance\":\"instance1\",\"RoleName\":null\\}\\]";
+            + "\",\"Metrics\":\\[\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Requests\\\\\\/Sec\",\"Value\":0,\"Weight\":1\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Request Duration\",\"Value\":0,\"Weight\":0\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Requests Failed\\\\\\/Sec\",\"Value\":0,\"Weight\":1\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Requests Succeeded\\\\\\/Sec\",\"Value\":0,\"Weight\":1\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Dependency Calls\\\\\\/Sec\",\"Value\":0,\"Weight\":1\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Dependency Call Duration\",\"Value\":0,\"Weight\":0\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Dependency Calls Failed\\\\\\/Sec\",\"Value\":0,\"Weight\":1\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Dependency Calls Succeeded\\\\\\/Sec\",\"Value\":0,\"Weight\":1\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Exceptions\\\\\\/Sec\",\"Value\":0,\"Weight\":1\\},\\{\"Name\":\"\\\\\\\\Memory\\\\\\\\Committed Bytes\",\"Value\":266338304,\"Weight\":1\\},\\{\"Name\":\"\\\\\\\\Processor\\(_Total\\)\\\\\\\\% Processor Time\",\"Value\":\\d+,\"Weight\":1\\}\\],\"InvariantVersion\":1,\"Timestamp\":\"\\\\\\/Date\\(\\d+\\)\\\\\\/\",\"Version\":\"java:3\\.2\\.0-BETA\\.3-SNAPSHOT\",\"StreamId\":null,\"MachineName\":\"machine1\",\"Instance\":\"instance1\",\"RoleName\":null\\}\\]";
     QuickPulsePingSender pingSender =
         getQuickPulsePingSenderWithValidator(
             new ValidationPolicy(pingCountDown, expectedPingRequestBody));
@@ -126,6 +126,9 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
             .withDataFetcher(dataFetcher)
             .withDataSender(dataSender)
             .withPingSender(pingSender)
+            .withWaitBetweenPingsInMillis(10L)
+            .withWaitBetweenPostsInMillis(10L)
+            .withWaitOnErrorInMillis(10L)
             .build();
     QuickPulseCoordinator coordinator = new QuickPulseCoordinator(initData);
 
@@ -136,10 +139,10 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
     Thread senderThread = new Thread(dataSender, QuickPulseDataSender.class.getSimpleName());
     senderThread.setDaemon(true);
     senderThread.start();
-    Thread.sleep(1000);
+    Thread.sleep(100);
     assertTrue(pingCountDown.await(1, TimeUnit.SECONDS));
     assertThat(quickPulseHeaderInfo.getQuickPulseStatus()).isEqualTo(QuickPulseStatus.QP_IS_ON);
-    assertTrue(postCountDown.await(5, TimeUnit.SECONDS));
+    assertTrue(postCountDown.await(1, TimeUnit.SECONDS));
     senderThread.interrupt();
     coordinatorThread.interrupt();
   }
