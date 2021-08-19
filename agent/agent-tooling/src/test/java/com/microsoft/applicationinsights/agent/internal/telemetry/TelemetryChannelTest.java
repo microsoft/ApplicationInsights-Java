@@ -171,7 +171,8 @@ public class TelemetryChannelTest {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
     telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
-    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 2, 2, REDIRECT_INSTRUMENTATION_KEY));
+    telemetryItems.add(
+        TestUtils.createMetricTelemetry("metric" + 2, 2, REDIRECT_INSTRUMENTATION_KEY));
     TelemetryChannel telemetryChannel = getTelemetryChannel(true);
 
     // when
@@ -204,8 +205,10 @@ public class TelemetryChannelTest {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
     telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
     telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 2, 2, INSTRUMENTATION_KEY));
-    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
-    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
+    telemetryItems.add(
+        TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
+    telemetryItems.add(
+        TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
     TelemetryChannel telemetryChannel = getTelemetryChannel(true);
 
     // when
@@ -222,8 +225,10 @@ public class TelemetryChannelTest {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
     telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
     telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 2, 2, INSTRUMENTATION_KEY));
-    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
-    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
+    telemetryItems.add(
+        TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
+    telemetryItems.add(
+        TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
     TelemetryChannel telemetryChannel = getTelemetryChannel(true);
 
     // when
@@ -247,8 +252,10 @@ public class TelemetryChannelTest {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
     telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
     telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 2, 2, INSTRUMENTATION_KEY));
-    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
-    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
+    telemetryItems.add(
+        TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
+    telemetryItems.add(
+        TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
     TelemetryChannel telemetryChannel = getTelemetryChannel(false);
 
     // when

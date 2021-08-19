@@ -150,7 +150,8 @@ public class NetworkStatsbeatTest {
     String originalUrl = "https://fake-original-url.com/";
 
     TelemetryClient mockTelemetryClient = Mockito.mock(TelemetryClient.class);
-    mockTelemetryClient.setConnectionString("InstrumentationKey=fake-ikey;EndpointSuffix=" + originalUrl);
+    mockTelemetryClient.setConnectionString(
+        "InstrumentationKey=fake-ikey;EndpointSuffix=" + originalUrl);
     EndpointProvider mockEndpointProvider = Mockito.mock(EndpointProvider.class);
     Mockito.when(mockTelemetryClient.getEndpointProvider()).thenReturn(mockEndpointProvider);
     URL mockUrl = new URL(originalUrl);
@@ -170,7 +171,8 @@ public class NetworkStatsbeatTest {
     // 2nd redirect
     String redirectUrl2 = "https://fake-redirect-url-2.test.com/";
     networkStatsbeat.trackHostOnRedirect(mockTelemetryClient, redirectUrl2);
-    assertThat(networkStatsbeat.getPreviousHost()).isEqualTo(networkStatsbeat.getHost(redirectUrl1));
+    assertThat(networkStatsbeat.getPreviousHost())
+        .isEqualTo(networkStatsbeat.getHost(redirectUrl1));
     assertThat(networkStatsbeat.getCurrentHost()).isEqualTo(networkStatsbeat.getHost(redirectUrl2));
     assertThat(networkStatsbeat.getRedirected().get()).isEqualTo(true);
   }

@@ -75,7 +75,8 @@ public class IntegrationTests {
   @Test
   public void integrationTest() throws InterruptedException {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, "00000000-0000-0000-0000-0FEEDDADBEEF"));
+    telemetryItems.add(
+        TestUtils.createMetricTelemetry("metric" + 1, 1, "00000000-0000-0000-0000-0FEEDDADBEEF"));
 
     ExecutorService executorService = Executors.newFixedThreadPool(10);
     for (int i = 0; i < 10; i++) {

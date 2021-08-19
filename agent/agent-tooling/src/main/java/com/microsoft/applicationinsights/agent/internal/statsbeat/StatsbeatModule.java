@@ -65,7 +65,9 @@ public class StatsbeatModule {
 
     if (this.telemetryClient == null) {
       this.telemetryClient = telemetryClient;
-      networkStatsbeat.setCurrentHost(networkStatsbeat.getHost(telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString()));
+      networkStatsbeat.setCurrentHost(
+          networkStatsbeat.getHost(
+              telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString()));
     }
 
     long intervalSeconds = config.internal.statsbeat.intervalSeconds;
@@ -108,7 +110,8 @@ public class StatsbeatModule {
   }
 
   // send network statsbeat whenever redirect happens since url has been changed.
-  // new url is always retrieved from the redirect policy cache map and we don't update the endpoint.
+  // new url is always retrieved from the redirect policy cache map and we don't update the
+  // endpoint.
   public void sendNetworkStatsbeatOnRedirect(String redirectUrl) {
     networkStatsbeat.trackHostOnRedirect(telemetryClient, redirectUrl);
     StatsbeatSender sender = new StatsbeatSender(networkStatsbeat, telemetryClient);

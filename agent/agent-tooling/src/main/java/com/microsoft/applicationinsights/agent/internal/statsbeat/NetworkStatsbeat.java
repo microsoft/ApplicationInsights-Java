@@ -47,7 +47,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   private final Object lock = new Object();
   private volatile String previousHost;
   private volatile String currentHost;
-  private final AtomicBoolean redirected = new AtomicBoolean(false) ;
+  private final AtomicBoolean redirected = new AtomicBoolean(false);
 
   NetworkStatsbeat(CustomDimensions customDimensions) {
     super(customDimensions);
@@ -118,13 +118,15 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   }
 
   private void updateCustomDimensions(TelemetryItem telemetryItem, String instrumentation) {
-    Map<String, String> properties = TelemetryUtil.getProperties(telemetryItem.getData().getBaseData());
+    Map<String, String> properties =
+        TelemetryUtil.getProperties(telemetryItem.getData().getBaseData());
     properties.put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
     properties.put("endpoint", BREEZE_ENDPOINT);
 
     // redirect will send the previous host
     // non-redirect will send the current host
-    String host = redirected.get() && !Strings.isNullOrEmpty(previousHost) ? previousHost : currentHost;
+    String host =
+        redirected.get() && !Strings.isNullOrEmpty(previousHost) ? previousHost : currentHost;
     properties.put("host", host);
   }
 
@@ -228,17 +230,18 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   }
 
   /**
-   * e.g. endpointUrl 'https://westus-0.in.applicationinsights.azure.com/v2.1/track'
-   * host will return 'westus-0.in.applicationinsights.azure.com'
+   * e.g. endpointUrl 'https://westus-0.in.applicationinsights.azure.com/v2.1/track' host will
+   * return 'westus-0.in.applicationinsights.azure.com'
    */
   String getHost(String endpointUrl) {
-    assert(endpointUrl != null && !endpointUrl.isEmpty());
+    assert (endpointUrl != null && !endpointUrl.isEmpty());
     return endpointUrl.replaceAll("^\\w+://", "").replaceAll("/\\w+.?\\w?/\\w+", "");
   }
 
   void trackHostOnRedirect(TelemetryClient telemetryClient, String redirectedUrl) {
     if (previousHost == null) {
-      previousHost = getHost(telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString());
+      previousHost =
+          getHost(telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString());
     } else {
       previousHost = currentHost;
     }
