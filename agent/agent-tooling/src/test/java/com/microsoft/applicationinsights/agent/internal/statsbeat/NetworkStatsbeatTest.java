@@ -30,7 +30,6 @@ import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -42,20 +41,6 @@ public class NetworkStatsbeatTest {
   @BeforeEach
   public void init() {
     networkStatsbeat = new NetworkStatsbeat(new CustomDimensions());
-  }
-
-  @Test
-  public void testAddInstrumentation() {
-    networkStatsbeat.addInstrumentation("io.opentelemetry.jdbc");
-    networkStatsbeat.addInstrumentation("io.opentelemetry.tomcat-7.0");
-    networkStatsbeat.addInstrumentation("io.opentelemetry.http-url-connection");
-    assertThat(networkStatsbeat.getInstrumentation())
-        .isEqualTo(
-            (long)
-                (Math.pow(2, 13)
-                    + Math.pow(2, 21)
-                    + Math.pow(
-                        2, 57))); // Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP
   }
 
   @Test
@@ -103,7 +88,6 @@ public class NetworkStatsbeatTest {
   @Test
   public void testRaceCondition() throws InterruptedException {
     ExecutorService executorService = Executors.newFixedThreadPool(100);
-    AtomicInteger instrumentationCounter = new AtomicInteger();
     for (int i = 0; i < 100; i++) {
       executorService.execute(
           new Runnable() {
@@ -115,8 +99,6 @@ public class NetworkStatsbeatTest {
                 networkStatsbeat.incrementRetryCount();
                 networkStatsbeat.incrementThrottlingCount();
                 networkStatsbeat.incrementExceptionCount();
-                networkStatsbeat.addInstrumentation(
-                    "instrumentation" + instrumentationCounter.getAndDecrement());
               }
             }
           });
@@ -130,7 +112,6 @@ public class NetworkStatsbeatTest {
     assertThat(networkStatsbeat.getThrottlingCount()).isEqualTo(100000);
     assertThat(networkStatsbeat.getExceptionCount()).isEqualTo(100000);
     assertThat(networkStatsbeat.getRequestDurationAvg()).isEqualTo(7.5);
-    assertThat(networkStatsbeat.getInstrumentationList().size()).isEqualTo(100000);
   }
 
   @Test

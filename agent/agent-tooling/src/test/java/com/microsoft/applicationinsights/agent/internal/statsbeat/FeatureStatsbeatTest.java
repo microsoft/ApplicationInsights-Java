@@ -97,6 +97,21 @@ public class FeatureStatsbeatTest {
         Feature.SPRING_SCHEDULING_DISABLED);
   }
 
+  @Test
+  public void testAddInstrumentation() {
+    FeatureStatsbeat instrumentationStatsbeat = new FeatureStatsbeat(new CustomDimensions(), FeatureType.Instrumentation);
+    instrumentationStatsbeat.addInstrumentation("io.opentelemetry.jdbc");
+    instrumentationStatsbeat.addInstrumentation("io.opentelemetry.tomcat-7.0");
+    instrumentationStatsbeat.addInstrumentation("io.opentelemetry.http-url-connection");
+    assertThat(instrumentationStatsbeat.getInstrumentation())
+        .isEqualTo(
+            (long)
+                (Math.pow(2, 13)
+                    + Math.pow(2, 21)
+                    + Math.pow(
+                    2, 57))); // Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP
+  }
+
   private static void testFeatureTrackingEnablement(
       BiConsumer<Configuration, Boolean> init, Feature feature) {
     testFeature(init, feature, false, false);
@@ -115,7 +130,7 @@ public class FeatureStatsbeatTest {
       boolean configValue,
       boolean featureValue) {
     // given
-    FeatureStatsbeat featureStatsbeat = new FeatureStatsbeat(new CustomDimensions());
+    FeatureStatsbeat featureStatsbeat = new FeatureStatsbeat(new CustomDimensions(), FeatureType.Feature);
 
     Configuration config = newConfiguration();
     init.accept(config, configValue);
