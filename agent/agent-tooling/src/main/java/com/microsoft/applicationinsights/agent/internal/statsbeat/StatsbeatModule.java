@@ -104,7 +104,8 @@ public class StatsbeatModule {
       // and it's not necessary to make this call.
       if (rp == ResourceProvider.RP_VM || rp == ResourceProvider.UNKNOWN) {
         // will only reach here the first time, after instance has been instantiated
-        AzureMetadataService metadataService = new AzureMetadataService(attachStatsbeat, customDimensions);
+        AzureMetadataService metadataService =
+            new AzureMetadataService(attachStatsbeat, customDimensions);
         metadataService.scheduleWithFixedDelay(longIntervalSeconds);
 
         // start AzureMetadataService on start
