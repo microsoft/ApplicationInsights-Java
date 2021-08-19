@@ -40,7 +40,7 @@ abstract class BaseStatsbeat {
     this.customDimensions = customDimensions;
   }
 
-  protected abstract void send(TelemetryClient telemetryClient);
+  protected abstract void send(TelemetryClient telemetryClient, boolean redirected);
 
   protected TelemetryItem createStatsbeatTelemetry(
       TelemetryClient telemetryClient, String name, double value) {

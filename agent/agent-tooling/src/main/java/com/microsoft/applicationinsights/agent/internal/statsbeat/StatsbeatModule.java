@@ -71,17 +71,17 @@ public class StatsbeatModule {
     long featureIntervalSeconds = config.internal.statsbeat.featureIntervalSeconds;
 
     scheduledExecutor.scheduleWithFixedDelay(
-        new StatsbeatSender(networkStatsbeat, telemetryClient),
+        new StatsbeatSender(networkStatsbeat, telemetryClient, false),
         intervalSeconds,
         intervalSeconds,
         TimeUnit.SECONDS);
     scheduledExecutor.scheduleWithFixedDelay(
-        new StatsbeatSender(attachStatsbeat, telemetryClient),
+        new StatsbeatSender(attachStatsbeat, telemetryClient, false),
         intervalSeconds,
         intervalSeconds,
         TimeUnit.SECONDS);
     scheduledExecutor.scheduleWithFixedDelay(
-        new StatsbeatSender(featureStatsbeat, telemetryClient),
+        new StatsbeatSender(featureStatsbeat, telemetryClient, false),
         featureIntervalSeconds,
         featureIntervalSeconds,
         TimeUnit.SECONDS);
@@ -110,7 +110,7 @@ public class StatsbeatModule {
   // new url is always retrieved from the redirect policy cache map and we don't update the endpoint.
   public void sendNetworkStatsbeatOnRedirect(String redirectUrl) {
     networkStatsbeat.updateRedirectHostMap(telemetryClient, redirectUrl);
-    StatsbeatSender sender = new StatsbeatSender(networkStatsbeat, telemetryClient);
+    StatsbeatSender sender = new StatsbeatSender(networkStatsbeat, telemetryClient, true);
     Thread senderThread = new Thread(sender);
     senderThread.setDaemon(true);
     senderThread.start();
@@ -121,10 +121,12 @@ public class StatsbeatModule {
 
     private final BaseStatsbeat statsbeat;
     private final TelemetryClient telemetryClient;
+    private final boolean redirected;
 
-    private StatsbeatSender(BaseStatsbeat statsbeat, TelemetryClient telemetryClient) {
+    private StatsbeatSender(BaseStatsbeat statsbeat, TelemetryClient telemetryClient, boolean redirected) {
       this.statsbeat = statsbeat;
       this.telemetryClient = telemetryClient;
+      this.redirected = redirected;
     }
 
     @Override
@@ -136,7 +138,7 @@ public class StatsbeatModule {
         if (customerIkey == null || customerIkey.isEmpty()) {
           return;
         }
-        statsbeat.send(telemetryClient);
+        statsbeat.send(telemetryClient, redirected);
       } catch (RuntimeException e) {
         logger.error("Error occurred while sending statsbeat", e);
       }
