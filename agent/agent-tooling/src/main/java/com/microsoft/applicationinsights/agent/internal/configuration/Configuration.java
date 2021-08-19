@@ -170,12 +170,13 @@ public class Configuration {
     // disabled is used by customer to turn off non-essential Statsbeat, e.g. disk persistence
     // operation status, optional network statsbeat, other endpoints except Breeze, etc.
     public boolean disabled = false;
+
     public String instrumentationKey =
         "c4a29126-a7cb-47e5-b348-11414998b11e"; // workspace-aistatsbeat
     public String endpoint =
         DefaultEndpoints.INGESTION_ENDPOINT; // this supports the government cloud
-    public long intervalSeconds = MINUTES.toSeconds(15); // default to 15 minutes
-    public long featureIntervalSeconds = DAYS.toSeconds(1); // default to daily
+    public long shortIntervalSeconds = MINUTES.toSeconds(15); // default to 15 minutes
+    public long longIntervalSeconds = DAYS.toSeconds(1); // default to daily
   }
 
   public static class Proxy {
