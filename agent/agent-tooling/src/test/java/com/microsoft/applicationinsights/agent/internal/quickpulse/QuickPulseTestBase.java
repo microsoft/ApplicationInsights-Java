@@ -50,6 +50,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 public class QuickPulseTestBase extends TestBase {
@@ -154,6 +156,7 @@ public class QuickPulseTestBase extends TestBase {
 
     private final CountDownLatch countDown;
     private final String expectedRequestBody;
+    Logger logger = LoggerFactory.getLogger(ValidationPolicy.class);
 
     ValidationPolicy(CountDownLatch countDown, String expectedRequestBody) {
       this.countDown = countDown;
@@ -168,8 +171,8 @@ public class QuickPulseTestBase extends TestBase {
               .map(bytes -> new String(bytes, StandardCharsets.UTF_8));
       asyncString.subscribe(
           value -> {
-            System.out.println("expected:" + expectedRequestBody);
-            System.out.println("actual:" + value);
+            logger.info("expected:{}", expectedRequestBody);
+            logger.info("actual:{}", value);
             if (Pattern.matches(expectedRequestBody, value)) {
               countDown.countDown();
             }
