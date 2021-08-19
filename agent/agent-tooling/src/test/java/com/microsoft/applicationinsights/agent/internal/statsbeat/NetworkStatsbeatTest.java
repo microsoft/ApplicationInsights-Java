@@ -23,12 +23,17 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.microsoft.applicationinsights.agent.internal.telemetry.EndpointProvider;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 public class NetworkStatsbeatTest {
 
@@ -138,5 +143,29 @@ public class NetworkStatsbeatTest {
 
     url = "http://www.fake-host.com/v2/track";
     assertThat(networkStatsbeat.getHost(url)).isEqualTo("www.fake-host.com");
+  }
+
+  @Test
+  public void testUpdateRedirectHostMap() throws MalformedURLException {
+    String originalUrl = "https://fake-original-url.com/";
+
+    TelemetryClient mockTelemetryClient = Mockito.mock(TelemetryClient.class);
+    mockTelemetryClient.setConnectionString("InstrumentationKey=fake-ikey;EndpointSuffix=" + originalUrl);
+    EndpointProvider mockEndpointProvider = Mockito.mock(EndpointProvider.class);
+    Mockito.when(mockTelemetryClient.getEndpointProvider()).thenReturn(mockEndpointProvider);
+    URL mockUrl = new URL(originalUrl);
+    Mockito.when(mockEndpointProvider.getIngestionEndpointUrl()).thenReturn(mockUrl);
+
+    // 1st
+    String redirectUrl1 = "https://fake-redirect-url.test.com/";
+    networkStatsbeat.updateRedirectHostMap(mockTelemetryClient, redirectUrl1);
+    assertThat(networkStatsbeat.getRedirectHostMap().size()).isEqualTo(1);
+    assertThat(networkStatsbeat.getRedirectHostMap().get(networkStatsbeat.getHost(originalUrl))).isEqualTo(networkStatsbeat.getHost(redirectUrl1));
+
+    // 2nd redirect
+    String redirectUrl2 = "https://fake-redirect-url-2.test.com/";
+    networkStatsbeat.updateRedirectHostMap(mockTelemetryClient, redirectUrl2);
+    assertThat(networkStatsbeat.getRedirectHostMap().size()).isEqualTo(2);
+    assertThat(networkStatsbeat.getRedirectHostMap().get(networkStatsbeat.getHost(redirectUrl1))).isEqualTo(networkStatsbeat.getHost(redirectUrl2));
   }
 }
