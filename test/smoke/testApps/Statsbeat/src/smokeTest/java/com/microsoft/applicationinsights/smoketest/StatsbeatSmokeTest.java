@@ -50,7 +50,23 @@ public class StatsbeatSmokeTest extends AiSmokeTest {
     assertNotNull(data.getProperties().get("language"));
     assertNotNull(data.getProperties().get("version"));
     assertNotNull(data.getProperties().get("feature"));
-    assertEquals(8, data.getProperties().size());
+    assertNotNull(data.getProperties().get("type"));
+    assertEquals(9, data.getProperties().size());
+
+    List<Envelope> instrumentationMetrics =
+        mockedIngestion.waitForItems(getMetricPredicate("Instrumentation"), 1, 70, TimeUnit.SECONDS);
+
+    MetricData instrumentationData = (MetricData) ((Data<?>) instrumentationMetrics.get(0).getData()).getBaseData();
+    assertNotNull(instrumentationData.getProperties().get("rp"));
+    assertNotNull(instrumentationData.getProperties().get("attach"));
+    assertNotNull(instrumentationData.getProperties().get("cikey"));
+    assertNotNull(instrumentationData.getProperties().get("runtimeVersion"));
+    assertNotNull(instrumentationData.getProperties().get("os"));
+    assertNotNull(instrumentationData.getProperties().get("language"));
+    assertNotNull(instrumentationData.getProperties().get("version"));
+    assertNotNull(instrumentationData.getProperties().get("feature"));
+    assertNotNull(instrumentationData.getProperties().get("type"));
+    assertEquals(9, data.getProperties().size());
 
     List<Envelope> attachMetrics =
         mockedIngestion.waitForItems(getMetricPredicate("Attach"), 1, 70, TimeUnit.SECONDS);
@@ -79,7 +95,6 @@ public class StatsbeatSmokeTest extends AiSmokeTest {
     assertNotNull(requestSuccessCountData.getProperties().get("os"));
     assertNotNull(requestSuccessCountData.getProperties().get("language"));
     assertNotNull(requestSuccessCountData.getProperties().get("version"));
-    assertNotNull(requestSuccessCountData.getProperties().get("instrumentation"));
     assertNotNull(requestSuccessCountData.getProperties().get("endpoint"));
     assertNotNull(requestSuccessCountData.getProperties().get("host"));
     assertEquals(8, data.getProperties().size());
