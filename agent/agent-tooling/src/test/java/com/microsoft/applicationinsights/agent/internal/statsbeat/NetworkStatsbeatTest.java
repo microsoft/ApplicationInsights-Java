@@ -146,7 +146,7 @@ public class NetworkStatsbeatTest {
   }
 
   @Test
-  public void testUpdateRedirectHostMap() throws MalformedURLException {
+  public void testTrackHostOnRedirect() throws MalformedURLException {
     String originalUrl = "https://fake-original-url.com/";
 
     TelemetryClient mockTelemetryClient = Mockito.mock(TelemetryClient.class);
@@ -156,16 +156,22 @@ public class NetworkStatsbeatTest {
     URL mockUrl = new URL(originalUrl);
     Mockito.when(mockEndpointProvider.getIngestionEndpointUrl()).thenReturn(mockUrl);
 
-    // 1st
+    assertThat(networkStatsbeat.getPreviousHost()).isEqualTo(null);
+    assertThat(networkStatsbeat.getCurrentHost()).isEqualTo(null);
+    assertThat(networkStatsbeat.getRedirected().get()).isEqualTo(false);
+
+    // 1st redirect
     String redirectUrl1 = "https://fake-redirect-url.test.com/";
-    networkStatsbeat.updateRedirectHostMap(mockTelemetryClient, redirectUrl1);
-    assertThat(networkStatsbeat.getRedirectHostMap().size()).isEqualTo(1);
-    assertThat(networkStatsbeat.getRedirectHostMap().get(networkStatsbeat.getHost(originalUrl))).isEqualTo(networkStatsbeat.getHost(redirectUrl1));
+    networkStatsbeat.trackHostOnRedirect(mockTelemetryClient, redirectUrl1);
+    assertThat(networkStatsbeat.getPreviousHost()).isEqualTo(networkStatsbeat.getHost(originalUrl));
+    assertThat(networkStatsbeat.getCurrentHost()).isEqualTo(networkStatsbeat.getHost(redirectUrl1));
+    assertThat(networkStatsbeat.getRedirected().get()).isEqualTo(true);
 
     // 2nd redirect
     String redirectUrl2 = "https://fake-redirect-url-2.test.com/";
-    networkStatsbeat.updateRedirectHostMap(mockTelemetryClient, redirectUrl2);
-    assertThat(networkStatsbeat.getRedirectHostMap().size()).isEqualTo(2);
-    assertThat(networkStatsbeat.getRedirectHostMap().get(networkStatsbeat.getHost(redirectUrl1))).isEqualTo(networkStatsbeat.getHost(redirectUrl2));
+    networkStatsbeat.trackHostOnRedirect(mockTelemetryClient, redirectUrl2);
+    assertThat(networkStatsbeat.getPreviousHost()).isEqualTo(networkStatsbeat.getHost(redirectUrl1));
+    assertThat(networkStatsbeat.getCurrentHost()).isEqualTo(networkStatsbeat.getHost(redirectUrl2));
+    assertThat(networkStatsbeat.getRedirected().get()).isEqualTo(true);
   }
 }
