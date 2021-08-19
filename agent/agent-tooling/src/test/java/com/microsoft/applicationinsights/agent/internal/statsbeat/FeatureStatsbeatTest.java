@@ -99,7 +99,8 @@ public class FeatureStatsbeatTest {
 
   @Test
   public void testAddInstrumentation() {
-    FeatureStatsbeat instrumentationStatsbeat = new FeatureStatsbeat(new CustomDimensions(), FeatureType.Instrumentation);
+    FeatureStatsbeat instrumentationStatsbeat =
+        new FeatureStatsbeat(new CustomDimensions(), FeatureType.Instrumentation);
     instrumentationStatsbeat.addInstrumentation("io.opentelemetry.jdbc");
     instrumentationStatsbeat.addInstrumentation("io.opentelemetry.tomcat-7.0");
     instrumentationStatsbeat.addInstrumentation("io.opentelemetry.http-url-connection");
@@ -109,7 +110,7 @@ public class FeatureStatsbeatTest {
                 (Math.pow(2, 13)
                     + Math.pow(2, 21)
                     + Math.pow(
-                    2, 57))); // Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP
+                        2, 57))); // Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP
   }
 
   private static void testFeatureTrackingEnablement(
@@ -130,7 +131,8 @@ public class FeatureStatsbeatTest {
       boolean configValue,
       boolean featureValue) {
     // given
-    FeatureStatsbeat featureStatsbeat = new FeatureStatsbeat(new CustomDimensions(), FeatureType.Feature);
+    FeatureStatsbeat featureStatsbeat =
+        new FeatureStatsbeat(new CustomDimensions(), FeatureType.Feature);
 
     Configuration config = newConfiguration();
     init.accept(config, configValue);

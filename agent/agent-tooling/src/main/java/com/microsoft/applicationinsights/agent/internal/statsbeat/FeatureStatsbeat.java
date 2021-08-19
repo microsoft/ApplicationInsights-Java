@@ -37,7 +37,8 @@ public class FeatureStatsbeat extends BaseStatsbeat {
   private static final String INSTRUMENTATION_METRIC_NAME = "Instrumentation";
 
   private final Set<Feature> featureList = new HashSet<>(64);
-  private final Set<String> instrumentationList = Collections.newSetFromMap(new ConcurrentHashMap<>());
+  private final Set<String> instrumentationList =
+      Collections.newSetFromMap(new ConcurrentHashMap<>());
   private final Object lock = new Object();
   private final FeatureType type;
 
@@ -54,13 +55,18 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     return Feature.encode(featureList);
   }
 
-  /** Returns a long that represents a list of instrumentations. Each bitfield maps to an instrumentation. */
+  /**
+   * Returns a long that represents a list of instrumentations. Each bitfield maps to an
+   * instrumentation.
+   */
   long getInstrumentation() {
     return Instrumentations.encode(instrumentationList);
   }
 
   // used by tests only
-  Set<String> getInstrumentationList() { return instrumentationList; }
+  Set<String> getInstrumentationList() {
+    return instrumentationList;
+  }
 
   // this is used by Exporter
   public void addInstrumentation(String instrumentation) {
@@ -85,8 +91,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
       featureType = "instrumentation";
     }
 
-    TelemetryItem telemetryItem =
-        createStatsbeatTelemetry(telemetryClient, metricName, 0);
+    TelemetryItem telemetryItem = createStatsbeatTelemetry(telemetryClient, metricName, 0);
     Map<String, String> properties =
         TelemetryUtil.getProperties(telemetryItem.getData().getBaseData());
     properties.put("feature", String.valueOf(encodedLong));
