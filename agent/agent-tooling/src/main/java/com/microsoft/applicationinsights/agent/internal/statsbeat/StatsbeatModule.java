@@ -80,23 +80,23 @@ public class StatsbeatModule {
                 telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString()));
       }
 
-      long intervalSeconds = config.internal.statsbeat.intervalSeconds;
-      long featureIntervalSeconds = config.internal.statsbeat.featureIntervalSeconds;
+      long shortIntervalSeconds = config.internal.statsbeat.shortIntervalSeconds;
+      long longIntervalSeconds = config.internal.statsbeat.longIntervalSeconds;
 
       scheduledExecutor.scheduleWithFixedDelay(
           new StatsbeatSender(networkStatsbeat, telemetryClient),
-          intervalSeconds,
-          intervalSeconds,
+          shortIntervalSeconds,
+          shortIntervalSeconds,
           TimeUnit.SECONDS);
       scheduledExecutor.scheduleWithFixedDelay(
           new StatsbeatSender(attachStatsbeat, telemetryClient),
-          intervalSeconds,
-          intervalSeconds,
+          longIntervalSeconds,
+          longIntervalSeconds,
           TimeUnit.SECONDS);
       scheduledExecutor.scheduleWithFixedDelay(
           new StatsbeatSender(featureStatsbeat, telemetryClient),
-          featureIntervalSeconds,
-          featureIntervalSeconds,
+          longIntervalSeconds,
+          longIntervalSeconds,
           TimeUnit.SECONDS);
 
       ResourceProvider rp = customDimensions.getResourceProvider();
@@ -104,16 +104,23 @@ public class StatsbeatModule {
       // and it's not necessary to make this call.
       if (rp == ResourceProvider.RP_VM || rp == ResourceProvider.UNKNOWN) {
         // will only reach here the first time, after instance has been instantiated
-        new AzureMetadataService(attachStatsbeat, customDimensions)
-            .scheduleWithFixedDelay(intervalSeconds);
+        AzureMetadataService metadataService = new AzureMetadataService(attachStatsbeat, customDimensions);
+        metadataService.scheduleWithFixedDelay(longIntervalSeconds);
+
+        // start AzureMetadataService on start
+        Thread senderThread = new Thread(metadataService);
+        senderThread.setDaemon(true);
+        senderThread.start();
       }
 
       featureStatsbeat.trackConfigurationOptions(config);
+
+      sendAttachStatsbeatOnStart();
     } else {
       // disabled will disable non-essentials Statsbeat, such as tracking failure or success of disk
       // persistence operations, optional network statsbeat, live metric,
       // azure metadata service failure, profile endpoint, etc.
-      // TODO exclude non-essential Statsbeat if applicable
+      // TODO exclude non-essential Statsbeat when applicable
     }
   }
 
@@ -138,6 +145,13 @@ public class StatsbeatModule {
     }
 
     // TODO disable optional network statsbeat when applicable
+  }
+
+  private void sendAttachStatsbeatOnStart() {
+    StatsbeatSender sender = new StatsbeatSender(attachStatsbeat, telemetryClient);
+    Thread senderThread = new Thread(sender);
+    senderThread.setDaemon(true);
+    senderThread.start();
   }
 
   /** Runnable which is responsible for calling the send method to transmit Statsbeat telemetry. */
