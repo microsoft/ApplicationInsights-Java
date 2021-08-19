@@ -48,6 +48,7 @@ public class StatsbeatModule {
   private final FeatureStatsbeat featureStatsbeat;
 
   private final AtomicBoolean started = new AtomicBoolean();
+  private final AtomicBoolean disabledAll = new AtomicBoolean();
 
   private volatile TelemetryClient telemetryClient;
 
@@ -63,42 +64,55 @@ public class StatsbeatModule {
       throw new IllegalStateException("initialize already called");
     }
 
-    if (this.telemetryClient == null) {
-      this.telemetryClient = telemetryClient;
-      networkStatsbeat.setCurrentHost(
-          networkStatsbeat.getHost(
-              telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString()));
+    if (config.internal.statsbeat.disabledAll) {
+      // disabledAll is an internal emergency kill-switch to turn off Statsbeat completely when something goes wrong.
+      // this happens rarely.
+      disabledAll.set(true);
+      return;
     }
 
-    long intervalSeconds = config.internal.statsbeat.intervalSeconds;
-    long featureIntervalSeconds = config.internal.statsbeat.featureIntervalSeconds;
+    if (!config.internal.statsbeat.disabled) {
+      if (this.telemetryClient == null) {
+        this.telemetryClient = telemetryClient;
+        networkStatsbeat.setCurrentHost(
+            networkStatsbeat.getHost(
+                telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString()));
+      }
 
-    scheduledExecutor.scheduleWithFixedDelay(
-        new StatsbeatSender(networkStatsbeat, telemetryClient),
-        intervalSeconds,
-        intervalSeconds,
-        TimeUnit.SECONDS);
-    scheduledExecutor.scheduleWithFixedDelay(
-        new StatsbeatSender(attachStatsbeat, telemetryClient),
-        intervalSeconds,
-        intervalSeconds,
-        TimeUnit.SECONDS);
-    scheduledExecutor.scheduleWithFixedDelay(
-        new StatsbeatSender(featureStatsbeat, telemetryClient),
-        featureIntervalSeconds,
-        featureIntervalSeconds,
-        TimeUnit.SECONDS);
+      long intervalSeconds = config.internal.statsbeat.intervalSeconds;
+      long featureIntervalSeconds = config.internal.statsbeat.featureIntervalSeconds;
 
-    ResourceProvider rp = customDimensions.getResourceProvider();
-    // only turn on AzureMetadataService when the resource provider is VM or UNKNOWN.
-    // and it's not necessary to make this call.
-    if (rp == ResourceProvider.RP_VM || rp == ResourceProvider.UNKNOWN) {
-      // will only reach here the first time, after instance has been instantiated
-      new AzureMetadataService(attachStatsbeat, customDimensions)
-          .scheduleWithFixedDelay(intervalSeconds);
+      scheduledExecutor.scheduleWithFixedDelay(
+          new StatsbeatSender(networkStatsbeat, telemetryClient),
+          intervalSeconds,
+          intervalSeconds,
+          TimeUnit.SECONDS);
+      scheduledExecutor.scheduleWithFixedDelay(
+          new StatsbeatSender(attachStatsbeat, telemetryClient),
+          intervalSeconds,
+          intervalSeconds,
+          TimeUnit.SECONDS);
+      scheduledExecutor.scheduleWithFixedDelay(
+          new StatsbeatSender(featureStatsbeat, telemetryClient),
+          featureIntervalSeconds,
+          featureIntervalSeconds,
+          TimeUnit.SECONDS);
+
+      ResourceProvider rp = customDimensions.getResourceProvider();
+      // only turn on AzureMetadataService when the resource provider is VM or UNKNOWN.
+      // and it's not necessary to make this call.
+      if (rp == ResourceProvider.RP_VM || rp == ResourceProvider.UNKNOWN) {
+        // will only reach here the first time, after instance has been instantiated
+        new AzureMetadataService(attachStatsbeat, customDimensions)
+            .scheduleWithFixedDelay(intervalSeconds);
+      }
+
+      featureStatsbeat.trackConfigurationOptions(config);
+    } else {
+      // disabled will disable non-essentials Statsbeat, such as tracking failure or success of disk persistence operations, optional network statsbeat, live metric,
+      // azure metadata service failure, profile endpoint, etc.
+      // TODO exclude non-essential Statsbeat if applicable
     }
-
-    featureStatsbeat.trackConfigurationOptions(config);
   }
 
   public static StatsbeatModule get() {
@@ -113,11 +127,15 @@ public class StatsbeatModule {
   // new url is always retrieved from the redirect policy cache map and we don't update the
   // endpoint.
   public void sendNetworkStatsbeatOnRedirect(String redirectUrl) {
-    networkStatsbeat.trackHostOnRedirect(telemetryClient, redirectUrl);
-    StatsbeatSender sender = new StatsbeatSender(networkStatsbeat, telemetryClient);
-    Thread senderThread = new Thread(sender);
-    senderThread.setDaemon(true);
-    senderThread.start();
+    if (!disabledAll.get()) {
+      networkStatsbeat.trackHostOnRedirect(telemetryClient, redirectUrl);
+      StatsbeatSender sender = new StatsbeatSender(networkStatsbeat, telemetryClient);
+      Thread senderThread = new Thread(sender);
+      senderThread.setDaemon(true);
+      senderThread.start();
+    }
+
+    // TODO disable optional network statsbeat when applicable
   }
 
   /** Runnable which is responsible for calling the send method to transmit Statsbeat telemetry. */

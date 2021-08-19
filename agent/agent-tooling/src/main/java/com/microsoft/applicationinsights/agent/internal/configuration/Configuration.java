@@ -163,6 +163,13 @@ public class Configuration {
   }
 
   public static class Statsbeat {
+    // disabledAll is used internally as an emergency kill-switch to turn off Statsbeat completely
+    // when something goes wrong.
+    public boolean disabledAll = false;
+
+    // disabled is used by customer to turn off non-essential Statsbeat, e.g. disk persistence
+    // operation status, optional network statsbeat, other endpoints except Breeze, etc.
+    public boolean disabled = false;
     public String instrumentationKey =
         "c4a29126-a7cb-47e5-b348-11414998b11e"; // workspace-aistatsbeat
     public String endpoint =
