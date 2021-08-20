@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
 import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
+import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -31,10 +32,9 @@ import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
+import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import javax.annotation.Nullable;
 
 /** This class manages loading a list of {@link ByteBuffer} from the disk. */
 public class LocalFileLoader {
@@ -56,18 +56,21 @@ public class LocalFileLoader {
   }
 
   // purgeIntervalSeconds and expiredIntervalSeconds are used by tests only
-  public LocalFileLoader(LocalFileCache localFileCache, File telemetryFolder, @Nullable Long purgeIntervalSeconds, @Nullable Long expiredIntervalSeconds) {
+  public LocalFileLoader(
+      LocalFileCache localFileCache,
+      File telemetryFolder,
+      @Nullable Long purgeIntervalSeconds,
+      @Nullable Long expiredIntervalSeconds) {
     this.localFileCache = localFileCache;
     this.telemetryFolder = telemetryFolder;
 
     // run purge task daily to clean up expired files that are older than 48 hours.
-    long interval = purgeIntervalSeconds == null ? TimeUnit.DAYS.toSeconds(1) : purgeIntervalSeconds;
-    long expiredInterval = expiredIntervalSeconds == null ? TimeUnit.DAYS.toSeconds(2) : expiredIntervalSeconds;
+    long interval =
+        purgeIntervalSeconds == null ? TimeUnit.DAYS.toSeconds(1) : purgeIntervalSeconds;
+    long expiredInterval =
+        expiredIntervalSeconds == null ? TimeUnit.DAYS.toSeconds(2) : expiredIntervalSeconds;
     scheduledExecutor.scheduleWithFixedDelay(
-        new PurgeExpiredFilesTask(expiredInterval),
-        interval,
-        interval,
-        TimeUnit.SECONDS);
+        new PurgeExpiredFilesTask(expiredInterval), interval, interval, TimeUnit.SECONDS);
   }
 
   // Load ByteBuffer from persisted files on disk in FIFO order.
@@ -127,6 +130,7 @@ public class LocalFileLoader {
   private class PurgeExpiredFilesTask implements Runnable {
 
     private final long expiredIntervalSeconds;
+
     private PurgeExpiredFilesTask(long expiredIntervalSeconds) {
       this.expiredIntervalSeconds = expiredIntervalSeconds;
     }
@@ -150,7 +154,8 @@ public class LocalFileLoader {
       }
     }
 
-    // files that are older than expiredIntervalSeconds (default 48 hours) are expired and need to be deleted permanently.
+    // files that are older than expiredIntervalSeconds (default 48 hours) are expired and need to
+    // be deleted permanently.
     private boolean expired(String fileName) {
       String time = fileName.substring(0, fileName.lastIndexOf('-'));
       long milliseconds = Long.parseLong(time);

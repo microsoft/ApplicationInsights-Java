@@ -123,8 +123,7 @@ public final class LocalFileWriter {
     }
 
     long sum = 0;
-    Collection<File> files =
-        FileUtils.listFiles(telemetryFolder, new String[] {"trn"}, false);
+    Collection<File> files = FileUtils.listFiles(telemetryFolder, new String[] {"trn"}, false);
     for (File file : files) {
       sum += file.length();
     }
