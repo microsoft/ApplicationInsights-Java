@@ -221,7 +221,7 @@ public class TelemetryClient {
           LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, telemetryFolder);
           TelemetryChannel channel =
               TelemetryChannel.create(
-                  endpointProvider.getIngestionEndpointUrl(), localFileWriter, aadAuthentication);
+                  endpointProvider.getIngestionEndpointUrl(), localFileWriter, localFileLoader, aadAuthentication);
           LocalFileSender.start(localFileLoader, channel);
           channelBatcher = BatchSpanProcessor.builder(channel).build();
         }
@@ -239,7 +239,7 @@ public class TelemetryClient {
           LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, statsbeatFolder);
           LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, statsbeatFolder);
           TelemetryChannel channel =
-              TelemetryChannel.create(endpointProvider.getStatsbeatEndpointUrl(), localFileWriter);
+              TelemetryChannel.create(endpointProvider.getStatsbeatEndpointUrl(), localFileWriter, localFileLoader);
           LocalFileSender.start(localFileLoader, channel);
           statsbeatChannelBatcher = BatchSpanProcessor.builder(channel).build();
         }

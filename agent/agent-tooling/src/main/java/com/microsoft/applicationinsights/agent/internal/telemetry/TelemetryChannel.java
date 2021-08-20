@@ -38,6 +38,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.httpclient.RedirectPolicy;
+import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileLoader;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -83,28 +84,35 @@ public class TelemetryChannel {
   private final HttpPipeline pipeline;
   private final URL endpointUrl;
   private final LocalFileWriter localFileWriter;
+  private final LocalFileLoader localFileLoader;
 
   public static TelemetryChannel create(
       URL endpointUrl,
       LocalFileWriter localFileWriter,
+      LocalFileLoader localFileLoader,
       Configuration.AadAuthentication aadAuthentication) {
     HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(aadAuthentication, true);
-    return new TelemetryChannel(httpPipeline, endpointUrl, localFileWriter);
+    return new TelemetryChannel(httpPipeline, endpointUrl, localFileWriter, localFileLoader);
   }
 
-  public static TelemetryChannel create(URL endpointUrl, LocalFileWriter localFileWriter) {
-    return create(endpointUrl, localFileWriter, null);
+  public static TelemetryChannel create(URL endpointUrl, LocalFileWriter localFileWriter, LocalFileLoader localFileLoader) {
+    return create(endpointUrl, localFileWriter, localFileLoader,null);
   }
 
   public CompletableResultCode sendRawBytes(ByteBuffer buffer) {
-    return internalSend(singletonList(buffer), null);
+    CompletableResultCode resultCode = internalSend(singletonList(buffer), null);
+    if (resultCode.isSuccess()) {
+      localFileLoader.deleteFilePermanently();
+    }
+    return resultCode;
   }
 
   // used by tests only
-  public TelemetryChannel(HttpPipeline pipeline, URL endpointUrl, LocalFileWriter localFileWriter) {
+  public TelemetryChannel(HttpPipeline pipeline, URL endpointUrl, LocalFileWriter localFileWriter, LocalFileLoader localFileLoader) {
     this.pipeline = pipeline;
     this.endpointUrl = endpointUrl;
     this.localFileWriter = localFileWriter;
+    this.localFileLoader = localFileLoader;
   }
 
   public CompletableResultCode send(List<TelemetryItem> telemetryItems) {

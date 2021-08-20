@@ -29,6 +29,8 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -50,6 +52,8 @@ public class LocalFileLoader {
 
   private static final OperationLogger operationLogger =
       new OperationLogger(LocalFileLoader.class, "Loading telemetry from disk");
+
+  private final Queue<File> toBeDeletedFileQueue = new ConcurrentLinkedDeque<>();
 
   public LocalFileLoader(LocalFileCache localFileCache, File telemetryFolder) {
     this(localFileCache, telemetryFolder, null, null);
@@ -81,8 +85,9 @@ public class LocalFileLoader {
     }
 
     File tempFile;
+    File sourceFile;
     try {
-      File sourceFile = new File(telemetryFolder, filenameToBeLoaded);
+      sourceFile = new File(telemetryFolder, filenameToBeLoaded);
       tempFile =
           new File(
               telemetryFolder,
@@ -110,25 +115,27 @@ public class LocalFileLoader {
       return null;
     }
 
-    try {
-      Files.delete(tempFile.toPath());
-    } catch (IOException ex) {
-      // TODO (heya) track deserialization failure via Statsbeat
-      operationLogger.recordFailure("Fail to delete " + tempFile.getName(), ex);
-      retryDelete(tempFile);
-      return null;
-    } catch (SecurityException ex) {
-      operationLogger.recordFailure(
-          "Unable to delete " + tempFile.getName() + ". Access is denied.", ex);
-      return null;
-    }
-
+    toBeDeletedFileQueue.add(sourceFile);
     operationLogger.recordSuccess();
     return ByteBuffer.wrap(result);
   }
 
+  public void deleteFilePermanently() {
+    File file = toBeDeletedFileQueue.poll();
+    try {
+      Files.delete(file.toPath());
+    } catch (IOException ex) {
+      // TODO (heya) track file deletion failure via Statsbeat
+      operationLogger.recordFailure("Fail to delete " + file.getName(), ex);
+      retryDelete(file);
+    } catch (SecurityException ex) {
+      operationLogger.recordFailure(
+          "Unable to delete " + file.getName() + ". Access is denied.", ex);
+    }
+  }
+
   // retry delete 3 times when it fails.
-  private void retryDelete(File file) {
+  private static void retryDelete(File file) {
     if (file.exists()) {
       for (int i = 0; i < 3; i++) {
         try {
