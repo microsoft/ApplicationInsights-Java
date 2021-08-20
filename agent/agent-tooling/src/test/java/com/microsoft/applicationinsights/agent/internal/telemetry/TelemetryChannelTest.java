@@ -38,6 +38,7 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorB
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.httpclient.RedirectPolicy;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileCache;
+import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileLoader;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
@@ -85,7 +86,7 @@ public class TelemetryChannelTest {
     return new TelemetryChannel(
         pipelineBuilder.build(),
         new URL(END_POINT_URL),
-        new LocalFileWriter(localFileCache, tempFolder));
+        new LocalFileWriter(localFileCache, tempFolder), new LocalFileLoader(localFileCache, tempFolder));
   }
 
   @Nullable
