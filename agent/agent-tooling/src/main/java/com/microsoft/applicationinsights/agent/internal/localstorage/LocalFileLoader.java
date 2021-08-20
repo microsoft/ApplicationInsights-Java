@@ -120,8 +120,14 @@ public class LocalFileLoader {
     return ByteBuffer.wrap(result);
   }
 
-  public void deleteFilePermanently() {
+  // delete a file on the queue permanently when http response returns success.
+  public void deleteFilePermanentlyOnSuccess() {
     File file = toBeDeletedFileQueue.poll();
+
+    if (!file.exists()) {
+      return;
+    }
+
     try {
       Files.delete(file.toPath());
     } catch (IOException ex) {
