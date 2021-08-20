@@ -111,11 +111,11 @@ public class LocalFileLoader {
     }
 
     try {
-      // TODO (heya) backoff and retry delete when it fails.
       Files.delete(tempFile.toPath());
     } catch (IOException ex) {
       // TODO (heya) track deserialization failure via Statsbeat
-      operationLogger.recordFailure("Fail to read telemetry from " + tempFile.getName(), ex);
+      operationLogger.recordFailure("Fail to delete " + tempFile.getName(), ex);
+      retryDelete(tempFile);
       return null;
     } catch (SecurityException ex) {
       operationLogger.recordFailure(
@@ -125,6 +125,23 @@ public class LocalFileLoader {
 
     operationLogger.recordSuccess();
     return ByteBuffer.wrap(result);
+  }
+
+  // retry delete 3 times when it fails.
+  private void retryDelete(File file) {
+    if (file.exists()) {
+      for (int i = 0; i < 3; i++) {
+        try {
+          Thread.sleep(500);
+          System.gc();
+          if (file.delete()) {
+            break;
+          }
+        } catch (InterruptedException ex) {
+          operationLogger.recordFailure("Fail to perform Thread.sleep.", ex);
+        }
+      }
+    }
   }
 
   private class PurgeExpiredFilesTask implements Runnable {
@@ -162,23 +179,6 @@ public class LocalFileLoader {
       Date twoDaysAgo = new Date(System.currentTimeMillis() - 1000 * expiredIntervalSeconds);
       Date fileDate = new Date(milliseconds);
       return fileDate.before(twoDaysAgo);
-    }
-
-    // retry delete 3 times when it fails.
-    private void retryDelete(File file) {
-      if (file.exists()) {
-        for (int i = 0; i < 3; i++) {
-          try {
-            Thread.sleep(500);
-            System.gc();
-            if (file.delete()) {
-              break;
-            }
-          } catch (InterruptedException ex) {
-            operationLogger.recordFailure("Fail to perform Thread.sleep.", ex);
-          }
-        }
-      }
     }
   }
 }
