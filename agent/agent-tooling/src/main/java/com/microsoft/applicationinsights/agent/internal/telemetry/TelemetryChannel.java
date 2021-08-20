@@ -95,8 +95,9 @@ public class TelemetryChannel {
     return new TelemetryChannel(httpPipeline, endpointUrl, localFileWriter, localFileLoader);
   }
 
-  public static TelemetryChannel create(URL endpointUrl, LocalFileWriter localFileWriter, LocalFileLoader localFileLoader) {
-    return create(endpointUrl, localFileWriter, localFileLoader,null);
+  public static TelemetryChannel create(
+      URL endpointUrl, LocalFileWriter localFileWriter, LocalFileLoader localFileLoader) {
+    return create(endpointUrl, localFileWriter, localFileLoader, null);
   }
 
   public CompletableResultCode sendRawBytes(ByteBuffer buffer) {
@@ -108,7 +109,11 @@ public class TelemetryChannel {
   }
 
   // used by tests only
-  public TelemetryChannel(HttpPipeline pipeline, URL endpointUrl, LocalFileWriter localFileWriter, LocalFileLoader localFileLoader) {
+  public TelemetryChannel(
+      HttpPipeline pipeline,
+      URL endpointUrl,
+      LocalFileWriter localFileWriter,
+      LocalFileLoader localFileLoader) {
     this.pipeline = pipeline;
     this.endpointUrl = endpointUrl;
     this.localFileWriter = localFileWriter;
