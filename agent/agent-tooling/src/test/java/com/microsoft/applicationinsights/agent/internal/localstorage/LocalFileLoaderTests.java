@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.apache.commons.io.FileUtils;
@@ -183,6 +184,29 @@ public class LocalFileLoaderTests {
     }
 
     assertThat(new String(Arrays.copyOf(ungzip, read), UTF_8)).isEqualTo(text);
+  }
+
+  @Test
+  public void testPurgedExpiredFiles() throws InterruptedException {
+    String text = "hello world";
+    LocalFileCache cache = new LocalFileCache();
+    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder);
+
+    // run purge task every second to delete files that are 5 seconds old
+    new LocalFileLoader(cache, tempFolder, 1L, 5L);
+
+    // persist 100 files to disk
+    for (int i = 0; i < 100; i++) {
+      writer.writeToDisk(singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))));
+    }
+
+    Collection<File> files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);
+    assertThat(files.size()).isEqualTo(100);
+
+    Thread.sleep(10000); // wait 10 seconds
+
+    files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);
+    assertThat(files.size()).isEqualTo(0);
   }
 
   private static void verifyTelemetryName(int index, String actualName) {
