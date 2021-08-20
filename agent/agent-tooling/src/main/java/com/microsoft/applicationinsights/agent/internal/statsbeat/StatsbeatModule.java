@@ -159,6 +159,11 @@ public class StatsbeatModule {
     // TODO disable optional network statsbeat when applicable
   }
 
+  // used by tests only
+  public void setDisabledAll(boolean value) {
+    disabledAll.set(value);
+  }
+
   private void sendAttachStatsbeatOnStart() {
     StatsbeatSender sender = new StatsbeatSender(attachStatsbeat, telemetryClient);
     Thread senderThread = new Thread(sender);

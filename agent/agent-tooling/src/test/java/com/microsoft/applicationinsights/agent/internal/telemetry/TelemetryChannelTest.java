@@ -36,6 +36,7 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.Telemetr
 import com.microsoft.applicationinsights.agent.internal.httpclient.RedirectPolicy;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileCache;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -129,6 +130,8 @@ public class TelemetryChannelTest {
               HttpHeaders httpHeaders = new HttpHeaders(headers);
               return Mono.just(new MockHttpResponse(request, 307, httpHeaders));
             });
+
+    StatsbeatModule.get().setDisabledAll(true); // avoid to send network statsbeat on redirect
   }
 
   @AfterEach
