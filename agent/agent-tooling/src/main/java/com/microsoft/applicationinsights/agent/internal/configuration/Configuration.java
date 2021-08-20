@@ -30,6 +30,7 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
+import io.opentelemetry.api.common.AttributeKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -195,9 +196,57 @@ public class Configuration {
     public LiveMetrics liveMetrics = new LiveMetrics();
     public LegacyRequestIdPropagation legacyRequestIdPropagation = new LegacyRequestIdPropagation();
 
+    public List<InheritedAttribute> inheritedAttributes = new ArrayList<>();
+
     public ProfilerConfiguration profiler = new ProfilerConfiguration();
     public GcEventConfiguration gcEvents = new GcEventConfiguration();
     public AadAuthentication authentication = new AadAuthentication();
+  }
+
+  public static class InheritedAttribute {
+    public String key;
+    public SpanAttributeType type;
+
+    public AttributeKey<?> getAttributeKey() {
+      switch (type) {
+        case STRING:
+          return AttributeKey.stringKey(key);
+        case BOOLEAN:
+          return AttributeKey.booleanKey(key);
+        case LONG:
+          return AttributeKey.longKey(key);
+        case DOUBLE:
+          return AttributeKey.doubleKey(key);
+        case STRING_ARRAY:
+          return AttributeKey.stringArrayKey(key);
+        case BOOLEAN_ARRAY:
+          return AttributeKey.booleanArrayKey(key);
+        case LONG_ARRAY:
+          return AttributeKey.longArrayKey(key);
+        case DOUBLE_ARRAY:
+          return AttributeKey.doubleArrayKey(key);
+      }
+      throw new IllegalStateException("Unexpected attribute key type: " + type);
+    }
+  }
+
+  public enum SpanAttributeType {
+    @JsonProperty("string")
+    STRING,
+    @JsonProperty("boolean")
+    BOOLEAN,
+    @JsonProperty("long")
+    LONG,
+    @JsonProperty("double")
+    DOUBLE,
+    @JsonProperty("string-array")
+    STRING_ARRAY,
+    @JsonProperty("boolean-array")
+    BOOLEAN_ARRAY,
+    @JsonProperty("long-array")
+    LONG_ARRAY,
+    @JsonProperty("double-array")
+    DOUBLE_ARRAY
   }
 
   public static class LegacyRequestIdPropagation {
@@ -904,6 +953,7 @@ public class Configuration {
   }
 
   public enum AuthenticationType {
+    // TODO (kyralama) should these use @JsonProperty to bind lowercase like other enums?
     UAMI,
     SAMI,
     VSCODE,

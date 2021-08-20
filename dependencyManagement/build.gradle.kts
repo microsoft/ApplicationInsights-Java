@@ -15,13 +15,13 @@ val otelVersion = "1.4.1"
 rootProject.extra["otelVersion"] = otelVersion
 
 // IMPORTANT when updating opentelemetry version, be sure to update bytebuddy version to match
-val otelInstrumentationVersion = "1.4.0+ai.patch.1"
+val otelInstrumentationVersionAlpha = "1.5.0-alpha-SNAPSHOT"
 
 val DEPENDENCY_BOMS = listOf(
   "com.google.guava:guava-bom:30.1.1-jre",
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
-  "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationVersion}-alpha",
+  "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationVersionAlpha}",
   "org.junit:junit-bom:5.7.2"
 )
 
@@ -67,7 +67,7 @@ val DEPENDENCY_SETS = listOf(
   ),
   DependencySet(
     "io.opentelemetry.javaagent",
-    "${otelInstrumentationVersion}-alpha",
+    "${otelInstrumentationVersionAlpha}",
     listOf(
       "opentelemetry-javaagent-instrumentation-api",
       "opentelemetry-javaagent-bootstrap",
@@ -102,6 +102,7 @@ val DEPENDENCIES = listOf(
   "com.azure:azure-storage-blob:12.13.0",
   "com.github.oshi:oshi-core:5.8.0",
   "org.assertj:assertj-core:3.19.0",
+  "org.awaitility:awaitility:4.1.0",
   "io.github.hakky54:logcaptor:2.5.0",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
   "org.checkerframework:checker-qual:3.14.0"
