@@ -26,13 +26,24 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+import java.util.Collection;
+import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import javax.annotation.Nullable;
 
 /** This class manages loading a list of {@link ByteBuffer} from the disk. */
 public class LocalFileLoader {
 
   private static final String TEMPORARY_FILE_EXTENSION = ".tmp";
+
+  private static final ScheduledExecutorService scheduledExecutor =
+      Executors.newSingleThreadScheduledExecutor(
+          ThreadPoolUtils.createDaemonThreadFactory(LocalFileLoader.class));
 
   private final LocalFileCache localFileCache;
   private final File telemetryFolder;
@@ -41,14 +52,26 @@ public class LocalFileLoader {
       new OperationLogger(LocalFileLoader.class, "Loading telemetry from disk");
 
   public LocalFileLoader(LocalFileCache localFileCache, File telemetryFolder) {
+    this(localFileCache, telemetryFolder, null, null);
+  }
+
+  // purgeIntervalSeconds and expiredIntervalSeconds are used by tests only
+  public LocalFileLoader(LocalFileCache localFileCache, File telemetryFolder, @Nullable Long purgeIntervalSeconds, @Nullable Long expiredIntervalSeconds) {
     this.localFileCache = localFileCache;
     this.telemetryFolder = telemetryFolder;
+
+    // run purge task daily to clean up expired files that are older than 48 hours.
+    long interval = purgeIntervalSeconds == null ? TimeUnit.DAYS.toSeconds(1) : purgeIntervalSeconds;
+    long expiredInterval = expiredIntervalSeconds == null ? TimeUnit.DAYS.toSeconds(2) : expiredIntervalSeconds;
+    scheduledExecutor.scheduleWithFixedDelay(
+        new PurgeExpiredFilesTask(expiredInterval),
+        interval,
+        interval,
+        TimeUnit.SECONDS);
   }
 
   // Load ByteBuffer from persisted files on disk in FIFO order.
   ByteBuffer loadTelemetriesFromDisk() {
-    // TODO (heya) how does this load files from disk at startup that were left over from prior
-    //  process?
     String filenameToBeLoaded = localFileCache.poll();
     if (filenameToBeLoaded == null) {
       return null;
@@ -99,5 +122,58 @@ public class LocalFileLoader {
 
     operationLogger.recordSuccess();
     return ByteBuffer.wrap(result);
+  }
+
+  private class PurgeExpiredFilesTask implements Runnable {
+
+    private final long expiredIntervalSeconds;
+    private PurgeExpiredFilesTask(long expiredIntervalSeconds) {
+      this.expiredIntervalSeconds = expiredIntervalSeconds;
+    }
+
+    @Override
+    public void run() {
+      purgedExpiredFiles();
+    }
+
+    private void purgedExpiredFiles() {
+      Collection<File> files = FileUtils.listFiles(telemetryFolder, new String[] {"trn"}, false);
+      for (File file : files) {
+        if (expired(file.getName())) {
+          try {
+            Files.delete(file.toPath());
+          } catch (IOException ex) {
+            operationLogger.recordFailure("Fail to delete the expired " + file.getName(), ex);
+            retryDelete(file);
+          }
+        }
+      }
+    }
+
+    // files that are older than expiredIntervalSeconds (default 48 hours) are expired and need to be deleted permanently.
+    private boolean expired(String fileName) {
+      String time = fileName.substring(0, fileName.lastIndexOf('-'));
+      long milliseconds = Long.parseLong(time);
+      Date twoDaysAgo = new Date(System.currentTimeMillis() - 1000 * expiredIntervalSeconds);
+      Date fileDate = new Date(milliseconds);
+      return fileDate.before(twoDaysAgo);
+    }
+
+    // retry delete 3 times when it fails.
+    private void retryDelete(File file) {
+      if (file.exists()) {
+        for (int i = 0; i < 3; i++) {
+          try {
+            Thread.sleep(500);
+            System.gc();
+            if (file.delete()) {
+              break;
+            }
+          } catch (InterruptedException ex) {
+            operationLogger.recordFailure("Fail to perform Thread.sleep.", ex);
+          }
+        }
+      }
+    }
   }
 }
