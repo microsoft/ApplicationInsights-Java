@@ -131,7 +131,7 @@ public class TelemetryChannelTest {
               return Mono.just(new MockHttpResponse(request, 307, httpHeaders));
             });
 
-    StatsbeatModule.get().setDisabledAll(true); // avoid to send network statsbeat on redirect
+    StatsbeatModule.get().setDisabledAll(true); // avoid sending network statsbeat on redirect
   }
 
   @AfterEach
