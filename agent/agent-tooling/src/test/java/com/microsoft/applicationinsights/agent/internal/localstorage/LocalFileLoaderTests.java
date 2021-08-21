@@ -258,8 +258,9 @@ public class LocalFileLoaderTests {
 
       files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);
       assertThat(files.size()).isEqualTo(--expectedCount);
-      assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(0);
     }
+
+    assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(0);
   }
 
   @Test
