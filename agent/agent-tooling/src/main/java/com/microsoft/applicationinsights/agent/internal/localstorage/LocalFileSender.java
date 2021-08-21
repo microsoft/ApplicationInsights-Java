@@ -56,8 +56,6 @@ public class LocalFileSender implements Runnable {
 
   @Override
   public void run() {
-    // TODO (heya) should this loop more aggressively until it reads all telemetry from disk?
-    //  or is it intentional to only send one batch per 30 seconds?
     try {
       ByteBuffer buffer = localFileLoader.loadTelemetriesFromDisk();
       if (buffer != null) {

@@ -102,9 +102,8 @@ public class TelemetryChannel {
 
   public CompletableResultCode sendRawBytes(ByteBuffer buffer) {
     CompletableResultCode resultCode = internalSend(singletonList(buffer), null);
-    if (resultCode.isSuccess()) {
-      localFileLoader.deleteFilePermanently();
-    }
+    localFileLoader.updateProcessedFileStatus(resultCode.isSuccess());
+
     return resultCode;
   }
 
@@ -149,7 +148,12 @@ public class TelemetryChannel {
       return CompletableResultCode.ofFailure();
     }
     try {
-      return internalSend(byteBuffers, instrumentationKey);
+      CompletableResultCode resultCode = internalSend(byteBuffers, instrumentationKey);
+      if (!resultCode.isSuccess()) {
+        writeToDiskOnFailure(byteBuffers, byteBuffers);
+      }
+
+      return resultCode;
     } catch (Throwable t) {
       operationLogger.recordFailure(
           String.format("Error sending telemetry items: %s", t.getMessage()), t);
@@ -228,7 +232,6 @@ public class TelemetryChannel {
               StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
               ExceptionUtils.parseError(
                   error, endpointUrl.toString(), friendlyExceptionThrown, logger);
-              writeToDiskOnFailure(byteBuffers, byteBuffers);
               result.fail();
             },
             () -> {

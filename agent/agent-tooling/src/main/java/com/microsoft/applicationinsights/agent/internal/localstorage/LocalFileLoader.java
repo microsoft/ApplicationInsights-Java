@@ -80,7 +80,7 @@ public class LocalFileLoader {
   // Load ByteBuffer from persisted files on disk in FIFO order.
   ByteBuffer loadTelemetriesFromDisk() {
     String filenameToBeLoaded = localFileCache.poll();
-    if (filenameToBeLoaded == null) {
+    if (filenameToBeLoaded == null || filenameToBeLoaded.isEmpty()) {
       return null;
     }
 
@@ -119,19 +119,34 @@ public class LocalFileLoader {
       return null;
     }
 
-    toBeDeletedFileQueue.add(sourceFile);
+    toBeDeletedFileQueue.add(sourceFile); // mark source file to be deleted when it's sent successfully.
+    deleteFile(tempFile); // delete temp file immediately
     operationLogger.recordSuccess();
     return ByteBuffer.wrap(result);
   }
 
+  // either delete it permanently on success or add it back to cache to be processed again later on failure
+  public void updateProcessedFileStatus(boolean success) {
+    if (success) {
+      deleteFilePermanentlyOnSuccess();
+    } else {
+      // add the file back to local file cache to be process later.
+      localFileCache.addPersistedFilenameToMap(toBeDeletedFileQueue.poll().getName());
+    }
+  }
+
   // delete a file on the queue permanently when http response returns success.
-  public void deleteFilePermanentlyOnSuccess() {
+  private void deleteFilePermanentlyOnSuccess() {
     File file = toBeDeletedFileQueue.poll();
 
     if (!file.exists()) {
       return;
     }
 
+    deleteFile(file);
+  }
+
+  private static void deleteFile(File file) {
     try {
       Files.delete(file.toPath());
     } catch (IOException ex) {
