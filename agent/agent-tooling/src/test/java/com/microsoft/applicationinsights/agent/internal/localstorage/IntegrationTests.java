@@ -70,13 +70,14 @@ public class IntegrationTests {
     when(mockedClient.send(mockedRequest)).thenReturn(Mono.just(mockedResponse));
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
     localFileCache = new LocalFileCache();
+    localFileLoader = new LocalFileLoader(localFileCache, tempFolder);
+
     telemetryChannel =
         new TelemetryChannel(
             pipelineBuilder.build(),
             new URL("http://foo.bar"),
             new LocalFileWriter(localFileCache, tempFolder),
-            new LocalFileLoader(localFileCache, tempFolder));
-    localFileLoader = new LocalFileLoader(localFileCache, tempFolder);
+            localFileLoader);
   }
 
   @Test
