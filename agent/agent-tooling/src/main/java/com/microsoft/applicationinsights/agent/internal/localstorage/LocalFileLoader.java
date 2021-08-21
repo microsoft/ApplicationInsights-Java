@@ -119,13 +119,15 @@ public class LocalFileLoader {
       return null;
     }
 
-    toBeDeletedFileQueue.add(sourceFile); // mark source file to be deleted when it's sent successfully.
+    toBeDeletedFileQueue.add(
+        sourceFile); // mark source file to be deleted when it's sent successfully.
     deleteFile(tempFile); // delete temp file immediately
     operationLogger.recordSuccess();
     return ByteBuffer.wrap(result);
   }
 
-  // either delete it permanently on success or add it back to cache to be processed again later on failure
+  // either delete it permanently on success or add it back to cache to be processed again later on
+  // failure
   public void updateProcessedFileStatus(boolean success) {
     if (success) {
       deleteFilePermanentlyOnSuccess();

@@ -232,10 +232,7 @@ public class LocalFileLoaderTests {
 
     TelemetryChannel telemetryChannel =
         new TelemetryChannel(
-            pipelineBuilder.build(),
-            new URL("http://foo.bar"),
-            localFileWriter,
-            localFileLoader);
+            pipelineBuilder.build(), new URL("http://foo.bar"), localFileWriter, localFileLoader);
 
     // persist 10 files to disk
     for (int i = 0; i < 10; i++) {
@@ -280,10 +277,7 @@ public class LocalFileLoaderTests {
 
     TelemetryChannel telemetryChannel =
         new TelemetryChannel(
-            pipelineBuilder.build(),
-            new URL("http://foo.bar"),
-            localFileWriter,
-            localFileLoader);
+            pipelineBuilder.build(), new URL("http://foo.bar"), localFileWriter, localFileLoader);
 
     // persist 10 files to disk
     for (int i = 0; i < 10; i++) {
