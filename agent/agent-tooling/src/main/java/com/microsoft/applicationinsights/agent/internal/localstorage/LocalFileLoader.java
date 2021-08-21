@@ -88,11 +88,15 @@ public class LocalFileLoader {
     File sourceFile;
     try {
       sourceFile = new File(telemetryFolder, filenameToBeLoaded);
+      if (!sourceFile.exists()) {
+        return null;
+      }
+
       tempFile =
           new File(
               telemetryFolder,
               FilenameUtils.getBaseName(filenameToBeLoaded) + TEMPORARY_FILE_EXTENSION);
-      FileUtils.moveFile(sourceFile, tempFile);
+      FileUtils.copyFile(sourceFile, tempFile);
     } catch (IOException e) {
       operationLogger.recordFailure(
           "Failed to change "
