@@ -21,13 +21,11 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -137,31 +135,30 @@ public class SpringbootSmokeTest extends AiSmokeTest {
             TimeUnit.SECONDS);
     assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
-    Envelope rddEnvelope = rddList.get(0);
+    Envelope rddEnvelope1 = rddList.get(0);
     Envelope edEnvelope1 = edList.get(0);
 
     RequestData rd = getTelemetryDataForType(0, "RequestData");
-    RemoteDependencyData rdd =
-        (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
-    System.out.println("Response code after exception: " + rd.getResponseCode());
-    int code = -123;
-    try {
-      code = Integer.parseInt(rd.getResponseCode());
-    } catch (NumberFormatException e) {
-      fail("Response code is not a number");
-    }
-    assertThat(code, greaterThanOrEqualTo(500));
+    RemoteDependencyData rdd1 =
+        (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
 
-    assertParentChild(rdd.getId(), rdEnvelope, edEnvelope1);
+    assertEquals("GET /SpringBootTest/throwsException", rd.getName());
+    assertEquals("500", rd.getResponseCode());
+    assertTrue(rd.getProperties().isEmpty());
+    assertFalse(rd.getSuccess());
+
+    assertEquals("TestController.resultCodeTest", rdd1.getName());
+    assertEquals(rdd1.getType(), "InProc");
+    assertTrue(rdd1.getProperties().isEmpty());
+    assertFalse(rdd1.getSuccess());
+
+    assertParentChild(rd, rdEnvelope, rddEnvelope1, "GET /SpringBootTest/throwsException");
+    assertParentChild(rdd1, rddEnvelope1, edEnvelope1, "GET /SpringBootTest/throwsException");
   }
 
   @Test
   @TargetUri("/asyncDependencyCall")
   public void testAsyncDependencyCall() throws Exception {
-    commonValidation();
-  }
-
-  private static void commonValidation() throws Exception {
     List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
@@ -197,21 +194,13 @@ public class SpringbootSmokeTest extends AiSmokeTest {
     assertTrue(rdd2.getProperties().isEmpty());
     assertTrue(rdd2.getSuccess());
 
+    // TODO (trask): why is spring-webmvc instrumentation capturing this twice?
     assertEquals("TestController.asyncDependencyCall", rdd3.getName());
     assertTrue(rdd3.getProperties().isEmpty());
     assertTrue(rdd3.getSuccess());
 
-    assertParentChild(rdd1.getId(), rdEnvelope, rddEnvelope2);
-    assertParentChild(rdd1.getId(), rdEnvelope, rddEnvelope3);
-  }
-
-  private static void assertParentChild(
-      String parentId, Envelope parentEnvelope, Envelope childEnvelope) {
-    String operationId = parentEnvelope.getTags().get("ai.operation.id");
-
-    assertNotNull(operationId);
-
-    assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
-    assertEquals(parentId, childEnvelope.getTags().get("ai.operation.parentId"));
+    assertParentChild(rd, rdEnvelope, rddEnvelope1, "GET /SpringBootTest/asyncDependencyCall");
+    assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /SpringBootTest/asyncDependencyCall");
+    assertParentChild(rdd1, rddEnvelope1, rddEnvelope3, "GET /SpringBootTest/asyncDependencyCall");
   }
 }

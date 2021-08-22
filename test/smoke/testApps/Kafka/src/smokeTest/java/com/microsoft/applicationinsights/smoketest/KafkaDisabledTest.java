@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
@@ -74,7 +73,7 @@ public class KafkaDisabledTest extends AiSmokeTest {
 
     assertEquals("HelloController.sendMessage", rdd.getName());
 
-    assertParentChild(rd.getId(), rdEnvelope, rddEnvelope);
+    assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /sendMessage");
 
     // verify the downstream http dependency that is no longer part of the same trace
     rddList = mockedIngestion.waitForItems("RemoteDependencyData", 2);
@@ -93,15 +92,5 @@ public class KafkaDisabledTest extends AiSmokeTest {
     Thread.sleep(5000);
     assertEquals(1, mockedIngestion.getCountForType("RequestData"));
     assertEquals(2, mockedIngestion.getCountForType("RemoteDependencyData"));
-  }
-
-  private static void assertParentChild(
-      String parentId, Envelope parentEnvelope, Envelope childEnvelope) {
-    String operationId = parentEnvelope.getTags().get("ai.operation.id");
-
-    assertNotNull(operationId);
-
-    assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
-    assertEquals(parentId, childEnvelope.getTags().get("ai.operation.parentId"));
   }
 }

@@ -24,10 +24,6 @@ package com.microsoft.applicationinsights.smoketest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.microsoft.applicationinsights.smoketest.schemav2.Data;
-import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
-import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
-import java.util.List;
 import org.junit.Test;
 
 @UseAgent("disabled_redis")
@@ -37,14 +33,12 @@ public class LettuceDisabledTest extends AiSmokeTest {
   @Test
   @TargetUri("/lettuce")
   public void lettuce() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-    Envelope rdEnvelope = rdList.get(0);
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+    Telemetry telemetry = getTelemetry(0);
 
-    assertEquals("GET /Lettuce/*", rd.getName());
-    assertEquals("200", rd.getResponseCode());
-    assertTrue(rd.getProperties().isEmpty());
-    assertTrue(rd.getSuccess());
+    assertEquals("GET /Lettuce/*", telemetry.rd.getName());
+    assertEquals("200", telemetry.rd.getResponseCode());
+    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getSuccess());
 
     // sleep a bit and make sure no lettuce dependencies are reported
     Thread.sleep(5000);
