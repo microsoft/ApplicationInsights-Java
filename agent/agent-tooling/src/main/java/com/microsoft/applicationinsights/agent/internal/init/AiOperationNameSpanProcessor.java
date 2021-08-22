@@ -36,16 +36,13 @@ public class AiOperationNameSpanProcessor implements SpanProcessor {
 
   @Override
   public void onStart(Context parentContext, ReadWriteSpan span) {
-    Span serverSpan = ServerSpan.fromContextOrNull(parentContext);
-    if (serverSpan instanceof ReadableSpan) {
+    Span localRootSpan = ServerSpan.fromContextOrNull(parentContext);
+    if (localRootSpan == null) {
+      localRootSpan = ConsumerSpan.fromContextOrNull(parentContext);
+    }
+    if (localRootSpan instanceof ReadableSpan) {
       span.setAttribute(
-          Exporter.AI_OPERATION_NAME_KEY, getOperationName((ReadableSpan) serverSpan));
-    } else if (serverSpan == null) {
-      Span consumerSpan = ConsumerSpan.fromContextOrNull(parentContext);
-      if (consumerSpan instanceof ReadableSpan) {
-        span.setAttribute(
-            Exporter.AI_OPERATION_NAME_KEY, getOperationName((ReadableSpan) consumerSpan));
-      }
+          Exporter.AI_OPERATION_NAME_KEY, getOperationName((ReadableSpan) localRootSpan));
     }
   }
 
