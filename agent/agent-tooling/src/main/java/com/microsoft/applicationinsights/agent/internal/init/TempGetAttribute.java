@@ -54,7 +54,7 @@ class TempGetAttribute {
       lockMethodHandle = lookup.unreflectGetter(lockField);
       attributesMapMethodHandle = lookup.unreflectGetter(attributesField);
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error(e.getMessage(), e);
       throw new IllegalStateException(e);
     }
   }
