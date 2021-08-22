@@ -365,4 +365,8 @@ public abstract class Config {
     properties.putAll(getAllProperties());
     return properties;
   }
+
+  public void updateProperty(String key, String value) {
+    getAllProperties().put(key, value);
+  }
 }
