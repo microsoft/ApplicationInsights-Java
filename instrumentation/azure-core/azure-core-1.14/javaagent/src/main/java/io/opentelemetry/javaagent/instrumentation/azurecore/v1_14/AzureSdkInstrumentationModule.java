@@ -11,6 +11,7 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.not;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.javaagent.extension.instrumentation.HelperResourceBuilder;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
@@ -25,10 +26,13 @@ public class AzureSdkInstrumentationModule extends InstrumentationModule {
   }
 
   @Override
-  public List<String> helperResourceNames() {
-    return asList(
-        "azure-core-1.14:META-INF/services/com.azure.core.http.policy.AfterRetryPolicyProvider",
-        "azure-core-1.14:META-INF/services/com.azure.core.util.tracing.Tracer");
+  public void registerHelperResources(HelperResourceBuilder helperResourceBuilder) {
+    helperResourceBuilder.register(
+        "META-INF/services/com.azure.core.http.policy.AfterRetryPolicyProvider",
+        "azure-core-1.14/META-INF/services/com.azure.core.http.policy.AfterRetryPolicyProvider");
+    helperResourceBuilder.register(
+        "META-INF/services/com.azure.core.util.tracing.Tracer",
+        "azure-core-1.14/META-INF/services/com.azure.core.util.tracing.Tracer");
   }
 
   @Override
