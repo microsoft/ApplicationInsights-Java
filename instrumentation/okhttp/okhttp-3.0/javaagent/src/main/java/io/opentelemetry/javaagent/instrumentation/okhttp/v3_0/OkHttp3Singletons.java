@@ -16,6 +16,7 @@ import okhttp3.Response;
 /** Holder of singleton interceptors for adding to instrumented clients. */
 public final class OkHttp3Singletons {
 
+  @SuppressWarnings("deprecation") // we're still using the interceptor on its own for now
   public static final Interceptor TRACING_INTERCEPTOR =
       OkHttpTracing.newBuilder(GlobalOpenTelemetry.get())
           .addAttributesExtractor(
