@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -36,9 +37,12 @@ public class WebFluxTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(1);
 
     assertEquals("GET /test/**", telemetry.rd.getName());
+    assertEquals("http://localhost:28080/test", telemetry.rd.getUrl());
     assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
+    assertNull(telemetry.rd.getSource());
+    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getMeasurements().isEmpty());
 
     // TODO (trask): assert on rdd1
   }
@@ -49,9 +53,12 @@ public class WebFluxTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(1);
 
     assertEquals("GET /exception", telemetry.rd.getName());
+    assertEquals("http://localhost:28080/exception", telemetry.rd.getUrl());
     assertEquals("500", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
     assertFalse(telemetry.rd.getSuccess());
+    assertNull(telemetry.rd.getSource());
+    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getMeasurements().isEmpty());
 
     // TODO (trask): assert on rdd1
   }
@@ -62,9 +69,12 @@ public class WebFluxTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(1);
 
     assertEquals("GET /futureException", telemetry.rd.getName());
+    assertEquals("http://localhost:28080/futureException", telemetry.rd.getUrl());
     assertEquals("500", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
     assertFalse(telemetry.rd.getSuccess());
+    assertNull(telemetry.rd.getSource());
+    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getMeasurements().isEmpty());
 
     // TODO (trask): assert on rdd1
   }

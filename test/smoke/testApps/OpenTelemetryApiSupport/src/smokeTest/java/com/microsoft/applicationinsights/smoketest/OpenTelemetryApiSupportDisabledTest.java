@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -35,11 +36,9 @@ public class OpenTelemetryApiSupportDisabledTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(1);
 
     assertEquals("GET /OpenTelemetryApiSupport/test-api", telemetry.rd.getName());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
 
     assertEquals("TestController.testApi", telemetry.rdd1.getName());
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
     assertTrue(telemetry.rdd1.getSuccess());
 
     assertParentChild(

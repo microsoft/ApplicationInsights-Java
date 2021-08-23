@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -35,8 +36,11 @@ public class JettyNativeHandlerTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(0);
 
     assertEquals("HTTP GET", telemetry.rd.getName());
+    assertEquals("http://localhost:28080/path", telemetry.rd.getUrl());
     assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
+    assertNull(telemetry.rd.getSource());
+    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getMeasurements().isEmpty());
   }
 }

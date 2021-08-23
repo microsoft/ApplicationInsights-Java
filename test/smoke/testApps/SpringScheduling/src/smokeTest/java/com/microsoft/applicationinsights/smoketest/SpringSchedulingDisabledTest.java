@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -35,8 +36,6 @@ public class SpringSchedulingDisabledTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(0);
 
     assertEquals("GET /SpringScheduling/scheduler", telemetry.rd.getName());
-    assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
 
     // sleep a bit and make sure no spring scheduling "requests" are reported
