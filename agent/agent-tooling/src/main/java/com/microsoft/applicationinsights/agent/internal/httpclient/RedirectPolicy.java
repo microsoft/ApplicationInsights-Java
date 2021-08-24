@@ -49,9 +49,12 @@ public final class RedirectPolicy implements HttpPipelinePolicy {
       Cache.newBuilder().setMaximumSize(100).build();
   private final Cache<String, String> instrumentationKeyMappings =
       Cache.newBuilder().setMaximumSize(100).build();
+  private final StatsbeatModule statsbeatModule;
 
-  public RedirectPolicy(boolean followInstrumentationKeyForRedirect) {
+  public RedirectPolicy(
+      boolean followInstrumentationKeyForRedirect, StatsbeatModule statsbeatModule) {
     this.followInstrumentationKeyForRedirect = followInstrumentationKeyForRedirect;
+    this.statsbeatModule = statsbeatModule;
   }
 
   @Override
@@ -84,7 +87,9 @@ public final class RedirectPolicy implements HttpPipelinePolicy {
                   cacheRedirectUrl(
                       responseLocation, instrumentationKey, originalHttpRequest.getUrl());
                   context.setHttpRequest(originalHttpRequest.copy().setUrl(responseLocation));
-                  StatsbeatModule.get().sendNetworkStatsbeatOnRedirect(responseLocation);
+                  if (statsbeatModule != null) {
+                    statsbeatModule.sendNetworkStatsbeatOnRedirect(responseLocation);
+                  }
                   return attemptRetry(context, next, originalHttpRequest, retryCount + 1);
                 }
               }

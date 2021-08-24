@@ -158,12 +158,7 @@ public class StatsbeatModule {
       senderThread.start();
     }
 
-    // TODO disable optional network statsbeat when applicable
-  }
-
-  // used by tests only
-  public void setDisabledAll(boolean value) {
-    disabledAll.set(value);
+    // TODO send optional network statsbeat when 'disabled' is off
   }
 
   private void sendAttachStatsbeatOnStart() {

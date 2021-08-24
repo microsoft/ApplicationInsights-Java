@@ -39,6 +39,7 @@ import com.azure.identity.ManagedIdentityCredentialBuilder;
 import com.azure.identity.VisualStudioCodeCredential;
 import com.azure.identity.VisualStudioCodeCredentialBuilder;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -125,7 +126,7 @@ public class LazyHttpClient implements HttpClient {
       boolean followInstrumentationKeyForRedirect) {
     List<HttpPipelinePolicy> policies = new ArrayList<>();
     // Redirect policy to to handle v2.1/track redirects (and other redirects too, e.g. profiler)
-    policies.add(new RedirectPolicy(followInstrumentationKeyForRedirect));
+    policies.add(new RedirectPolicy(followInstrumentationKeyForRedirect, StatsbeatModule.get()));
     if (aadConfiguration != null && aadConfiguration.enabled) {
       policies.add(getAuthenticationPolicy(aadConfiguration));
     }
