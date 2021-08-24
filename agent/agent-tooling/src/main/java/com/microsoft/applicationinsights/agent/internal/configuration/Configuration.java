@@ -167,10 +167,6 @@ public class Configuration {
     // when something goes wrong.
     public boolean disabledAll = false;
 
-    // disabled is used by customer to turn off non-essential Statsbeat, e.g. disk persistence
-    // operation status, optional network statsbeat, other endpoints except Breeze, etc.
-    public boolean disabled = false;
-
     public String instrumentationKey =
         "c4a29126-a7cb-47e5-b348-11414998b11e"; // workspace-aistatsbeat
     public String endpoint =
@@ -209,6 +205,7 @@ public class Configuration {
     public ProfilerConfiguration profiler = new ProfilerConfiguration();
     public GcEventConfiguration gcEvents = new GcEventConfiguration();
     public AadAuthentication authentication = new AadAuthentication();
+    public PreviewStatsbeat statsbeat = new PreviewStatsbeat();
   }
 
   public static class InheritedAttribute {
@@ -285,6 +282,12 @@ public class Configuration {
 
     public DisabledByDefaultInstrumentation springIntegration =
         new DisabledByDefaultInstrumentation();
+  }
+
+  public static class PreviewStatsbeat {
+    // disabled is used by customer to turn off non-essential Statsbeat, e.g. disk persistence
+    // operation status, optional network statsbeat, other endpoints except Breeze, etc.
+    public boolean disabled = false;
   }
 
   public static class EnabledByDefaultInstrumentation {

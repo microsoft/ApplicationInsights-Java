@@ -140,7 +140,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     }
 
     // Statsbeat
-    if (config.internal.statsbeat.disabled) {
+    if (config.preview.statsbeat.disabled) {
       featureList.add(Feature.STATSBEAT_DISABLED);
     }
   }
