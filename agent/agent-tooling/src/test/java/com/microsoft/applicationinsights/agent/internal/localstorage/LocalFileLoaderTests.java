@@ -251,6 +251,7 @@ public class LocalFileLoaderTests {
       CompletableResultCode completableResultCode = telemetryChannel.sendRawBytes(byteBuffer);
       completableResultCode.join(10, SECONDS);
       assertThat(completableResultCode.isSuccess()).isEqualTo(true);
+      localFileLoader.updateProcessedFileStatus(true);
 
       // sleep 1 second to wait for delete to complete
       Thread.sleep(1000);
@@ -294,6 +295,7 @@ public class LocalFileLoaderTests {
       CompletableResultCode completableResultCode = telemetryChannel.sendRawBytes(byteBuffer);
       completableResultCode.join(10, SECONDS);
       assertThat(completableResultCode.isSuccess()).isEqualTo(false);
+      localFileLoader.updateProcessedFileStatus(false);
     }
 
     files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);
