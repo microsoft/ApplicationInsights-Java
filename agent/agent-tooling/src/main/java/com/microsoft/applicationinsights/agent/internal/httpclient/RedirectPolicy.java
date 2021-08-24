@@ -87,9 +87,7 @@ public final class RedirectPolicy implements HttpPipelinePolicy {
                   cacheRedirectUrl(
                       responseLocation, instrumentationKey, originalHttpRequest.getUrl());
                   context.setHttpRequest(originalHttpRequest.copy().setUrl(responseLocation));
-                  if (statsbeatModule != null) {
-                    statsbeatModule.sendNetworkStatsbeatOnRedirect(responseLocation);
-                  }
+                  statsbeatModule.sendNetworkStatsbeatOnRedirect(responseLocation);
                   return attemptRetry(context, next, originalHttpRequest, retryCount + 1);
                 }
               }

@@ -36,6 +36,7 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.Telemetr
 import com.microsoft.applicationinsights.agent.internal.httpclient.RedirectPolicy;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileCache;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -57,6 +58,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mockito;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -73,7 +75,9 @@ public class TelemetryChannelTest {
   private TelemetryChannel getTelemetryChannel(boolean followInstrumentationKeyForRedirect)
       throws MalformedURLException {
     List<HttpPipelinePolicy> policies = new ArrayList<>();
-    policies.add(new RedirectPolicy(followInstrumentationKeyForRedirect, null));
+    StatsbeatModule mockStatsbeatModule = Mockito.mock(StatsbeatModule.class);
+    Mockito.doNothing().when(mockStatsbeatModule).sendNetworkStatsbeatOnRedirect(null);
+    policies.add(new RedirectPolicy(followInstrumentationKeyForRedirect, mockStatsbeatModule));
     HttpPipelineBuilder pipelineBuilder =
         new HttpPipelineBuilder()
             .policies(policies.toArray(new HttpPipelinePolicy[0]))
