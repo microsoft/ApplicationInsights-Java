@@ -22,6 +22,6 @@
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 enum FeatureType {
-  Feature,
-  Instrumentation
+  FEATURE,
+  INSTRUMENTATION
 }

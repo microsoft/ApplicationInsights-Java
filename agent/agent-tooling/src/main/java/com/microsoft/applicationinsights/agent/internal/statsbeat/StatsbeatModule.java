@@ -57,8 +57,8 @@ public class StatsbeatModule {
     customDimensions = new CustomDimensions();
     networkStatsbeat = new NetworkStatsbeat(customDimensions);
     attachStatsbeat = new AttachStatsbeat(customDimensions);
-    featureStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.Feature);
-    instrumentationStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.Instrumentation);
+    featureStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.FEATURE);
+    instrumentationStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.INSTRUMENTATION);
   }
 
   public void start(TelemetryClient telemetryClient, Configuration config) {

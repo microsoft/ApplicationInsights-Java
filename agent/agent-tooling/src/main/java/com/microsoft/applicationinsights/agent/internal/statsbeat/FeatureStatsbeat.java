@@ -26,7 +26,6 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.Telemetr
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,7 +63,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
 
   // this is used by Exporter
   public void addInstrumentation(String instrumentation) {
-      instrumentationList.add(instrumentation);
+    instrumentationList.add(instrumentation);
   }
 
   @Override
@@ -73,7 +72,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     long encodedLong;
     String featureType;
 
-    if (type == FeatureType.Feature) {
+    if (type == FeatureType.FEATURE) {
       metricName = FEATURE_METRIC_NAME;
       encodedLong = getFeature();
       featureType = "feature";

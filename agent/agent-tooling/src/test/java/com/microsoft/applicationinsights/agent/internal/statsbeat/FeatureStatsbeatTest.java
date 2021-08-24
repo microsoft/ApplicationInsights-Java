@@ -100,7 +100,7 @@ public class FeatureStatsbeatTest {
   @Test
   public void testAddInstrumentation() {
     FeatureStatsbeat instrumentationStatsbeat =
-        new FeatureStatsbeat(new CustomDimensions(), FeatureType.Instrumentation);
+        new FeatureStatsbeat(new CustomDimensions(), FeatureType.INSTRUMENTATION);
     instrumentationStatsbeat.addInstrumentation("io.opentelemetry.jdbc");
     instrumentationStatsbeat.addInstrumentation("io.opentelemetry.tomcat-7.0");
     instrumentationStatsbeat.addInstrumentation("io.opentelemetry.http-url-connection");
@@ -132,7 +132,7 @@ public class FeatureStatsbeatTest {
       boolean featureValue) {
     // given
     FeatureStatsbeat featureStatsbeat =
-        new FeatureStatsbeat(new CustomDimensions(), FeatureType.Feature);
+        new FeatureStatsbeat(new CustomDimensions(), FeatureType.FEATURE);
 
     Configuration config = newConfiguration();
     init.accept(config, configValue);
