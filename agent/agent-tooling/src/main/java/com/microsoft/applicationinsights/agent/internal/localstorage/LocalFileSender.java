@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +60,8 @@ public class LocalFileSender implements Runnable {
     try {
       ByteBuffer buffer = localFileLoader.loadTelemetriesFromDisk();
       if (buffer != null) {
-        telemetryChannel.sendRawBytes(buffer);
+        CompletableResultCode resultCode = telemetryChannel.sendRawBytes(buffer);
+        localFileLoader.updateProcessedFileStatus(resultCode.isSuccess());
       }
     } catch (RuntimeException ex) {
       logger.error(

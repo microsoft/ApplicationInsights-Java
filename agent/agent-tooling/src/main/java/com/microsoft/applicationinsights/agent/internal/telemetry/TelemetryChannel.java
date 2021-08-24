@@ -84,7 +84,6 @@ public class TelemetryChannel {
   private final HttpPipeline pipeline;
   private final URL endpointUrl;
   private final LocalFileWriter localFileWriter;
-  private final LocalFileLoader localFileLoader;
 
   public static TelemetryChannel create(
       URL endpointUrl,
@@ -92,7 +91,7 @@ public class TelemetryChannel {
       LocalFileLoader localFileLoader,
       Configuration.AadAuthentication aadAuthentication) {
     HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(aadAuthentication, true);
-    return new TelemetryChannel(httpPipeline, endpointUrl, localFileWriter, localFileLoader);
+    return new TelemetryChannel(httpPipeline, endpointUrl, localFileWriter);
   }
 
   public static TelemetryChannel create(
@@ -101,22 +100,17 @@ public class TelemetryChannel {
   }
 
   public CompletableResultCode sendRawBytes(ByteBuffer buffer) {
-    CompletableResultCode resultCode = internalSend(singletonList(buffer), null);
-    localFileLoader.updateProcessedFileStatus(resultCode.isSuccess());
-
-    return resultCode;
+    return internalSend(singletonList(buffer), null);
   }
 
   // used by tests only
   public TelemetryChannel(
       HttpPipeline pipeline,
       URL endpointUrl,
-      LocalFileWriter localFileWriter,
-      LocalFileLoader localFileLoader) {
+      LocalFileWriter localFileWriter) {
     this.pipeline = pipeline;
     this.endpointUrl = endpointUrl;
     this.localFileWriter = localFileWriter;
-    this.localFileLoader = localFileLoader;
   }
 
   public CompletableResultCode send(List<TelemetryItem> telemetryItems) {

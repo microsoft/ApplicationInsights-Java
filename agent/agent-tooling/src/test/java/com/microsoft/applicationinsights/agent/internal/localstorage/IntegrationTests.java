@@ -76,8 +76,7 @@ public class IntegrationTests {
         new TelemetryChannel(
             pipelineBuilder.build(),
             new URL("http://foo.bar"),
-            new LocalFileWriter(localFileCache, tempFolder),
-            localFileLoader);
+            new LocalFileWriter(localFileCache, tempFolder));
   }
 
   @Test
