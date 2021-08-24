@@ -97,10 +97,7 @@ public class TelemetryChannel {
   }
 
   // used by tests only
-  public TelemetryChannel(
-      HttpPipeline pipeline,
-      URL endpointUrl,
-      LocalFileWriter localFileWriter) {
+  public TelemetryChannel(HttpPipeline pipeline, URL endpointUrl, LocalFileWriter localFileWriter) {
     this.pipeline = pipeline;
     this.endpointUrl = endpointUrl;
     this.localFileWriter = localFileWriter;

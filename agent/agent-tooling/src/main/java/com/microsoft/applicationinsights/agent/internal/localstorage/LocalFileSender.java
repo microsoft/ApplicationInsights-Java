@@ -23,11 +23,11 @@ package com.microsoft.applicationinsights.agent.internal.localstorage;
 
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryChannel;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import io.opentelemetry.sdk.common.CompletableResultCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
