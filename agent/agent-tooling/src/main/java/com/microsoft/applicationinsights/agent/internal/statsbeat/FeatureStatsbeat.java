@@ -36,10 +36,9 @@ public class FeatureStatsbeat extends BaseStatsbeat {
   private static final String FEATURE_METRIC_NAME = "Feature";
   private static final String INSTRUMENTATION_METRIC_NAME = "Instrumentation";
 
-  private final Set<Feature> featureList = new HashSet<>(64);
+  private final Set<Feature> featureList = Collections.newSetFromMap(new ConcurrentHashMap<>());
   private final Set<String> instrumentationList =
       Collections.newSetFromMap(new ConcurrentHashMap<>());
-  private final Object lock = new Object();
   private final FeatureType type;
 
   FeatureStatsbeat(CustomDimensions customDimensions, FeatureType type) {
@@ -70,9 +69,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
 
   // this is used by Exporter
   public void addInstrumentation(String instrumentation) {
-    synchronized (lock) {
       instrumentationList.add(instrumentation);
-    }
   }
 
   @Override
