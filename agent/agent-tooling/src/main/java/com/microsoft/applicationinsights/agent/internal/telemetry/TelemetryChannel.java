@@ -38,7 +38,6 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.httpclient.RedirectPolicy;
-import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileLoader;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -88,15 +87,9 @@ public class TelemetryChannel {
   public static TelemetryChannel create(
       URL endpointUrl,
       LocalFileWriter localFileWriter,
-      LocalFileLoader localFileLoader,
       Configuration.AadAuthentication aadAuthentication) {
     HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(aadAuthentication, true);
     return new TelemetryChannel(httpPipeline, endpointUrl, localFileWriter);
-  }
-
-  public static TelemetryChannel create(
-      URL endpointUrl, LocalFileWriter localFileWriter, LocalFileLoader localFileLoader) {
-    return create(endpointUrl, localFileWriter, localFileLoader, null);
   }
 
   public CompletableResultCode sendRawBytes(ByteBuffer buffer) {
