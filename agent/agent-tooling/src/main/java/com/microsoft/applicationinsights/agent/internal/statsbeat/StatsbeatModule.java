@@ -74,61 +74,63 @@ public class StatsbeatModule {
       return;
     }
 
-    if (!config.internal.statsbeat.disabled) {
-      if (this.telemetryClient == null) {
-        this.telemetryClient = telemetryClient;
-        networkStatsbeat.setCurrentHost(
-            networkStatsbeat.getHost(
-                telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString()));
-      }
+    if (this.telemetryClient == null) {
+      this.telemetryClient = telemetryClient;
+    }
 
-      long shortIntervalSeconds = config.internal.statsbeat.shortIntervalSeconds;
-      long longIntervalSeconds = config.internal.statsbeat.longIntervalSeconds;
+    // send essential Statsbeat
+    networkStatsbeat.setCurrentHost(
+        networkStatsbeat.getHost(
+            telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString()));
 
-      scheduledExecutor.scheduleWithFixedDelay(
-          new StatsbeatSender(networkStatsbeat, telemetryClient),
-          shortIntervalSeconds,
-          shortIntervalSeconds,
-          TimeUnit.SECONDS);
-      scheduledExecutor.scheduleWithFixedDelay(
-          new StatsbeatSender(attachStatsbeat, telemetryClient),
-          longIntervalSeconds,
-          longIntervalSeconds,
-          TimeUnit.SECONDS);
-      scheduledExecutor.scheduleWithFixedDelay(
-          new StatsbeatSender(featureStatsbeat, telemetryClient),
-          longIntervalSeconds,
-          longIntervalSeconds,
-          TimeUnit.SECONDS);
-      scheduledExecutor.scheduleWithFixedDelay(
-          new StatsbeatSender(instrumentationStatsbeat, telemetryClient),
-          longIntervalSeconds,
-          longIntervalSeconds,
-          TimeUnit.SECONDS);
+    long shortIntervalSeconds = config.internal.statsbeat.shortIntervalSeconds;
+    long longIntervalSeconds = config.internal.statsbeat.longIntervalSeconds;
 
-      ResourceProvider rp = customDimensions.getResourceProvider();
-      // only turn on AzureMetadataService when the resource provider is VM or UNKNOWN.
-      // and it's not necessary to make this call.
-      if (rp == ResourceProvider.RP_VM || rp == ResourceProvider.UNKNOWN) {
-        // will only reach here the first time, after instance has been instantiated
-        AzureMetadataService metadataService =
-            new AzureMetadataService(attachStatsbeat, customDimensions);
-        metadataService.scheduleWithFixedDelay(longIntervalSeconds);
+    scheduledExecutor.scheduleWithFixedDelay(
+        new StatsbeatSender(networkStatsbeat, telemetryClient),
+        shortIntervalSeconds,
+        shortIntervalSeconds,
+        TimeUnit.SECONDS);
+    scheduledExecutor.scheduleWithFixedDelay(
+        new StatsbeatSender(attachStatsbeat, telemetryClient),
+        longIntervalSeconds,
+        longIntervalSeconds,
+        TimeUnit.SECONDS);
+    scheduledExecutor.scheduleWithFixedDelay(
+        new StatsbeatSender(featureStatsbeat, telemetryClient),
+        longIntervalSeconds,
+        longIntervalSeconds,
+        TimeUnit.SECONDS);
+    scheduledExecutor.scheduleWithFixedDelay(
+        new StatsbeatSender(instrumentationStatsbeat, telemetryClient),
+        longIntervalSeconds,
+        longIntervalSeconds,
+        TimeUnit.SECONDS);
 
-        // start AzureMetadataService on start
-        Thread senderThread = new Thread(metadataService);
-        senderThread.setDaemon(true);
-        senderThread.start();
-      }
+    ResourceProvider rp = customDimensions.getResourceProvider();
+    // only turn on AzureMetadataService when the resource provider is VM or UNKNOWN.
+    // and it's not necessary to make this call.
+    if (rp == ResourceProvider.RP_VM || rp == ResourceProvider.UNKNOWN) {
+      // will only reach here the first time, after instance has been instantiated
+      AzureMetadataService metadataService =
+          new AzureMetadataService(attachStatsbeat, customDimensions);
+      metadataService.scheduleWithFixedDelay(longIntervalSeconds);
 
-      featureStatsbeat.trackConfigurationOptions(config);
+      // start AzureMetadataService on start
+      Thread senderThread = new Thread(metadataService);
+      senderThread.setDaemon(true);
+      senderThread.start();
+    }
 
-      sendAttachStatsbeatOnStart();
-    } else {
+    featureStatsbeat.trackConfigurationOptions(config);
+
+    sendAttachStatsbeatOnStart();
+
+    if (config.internal.statsbeat.disabled) {
       // disabled will disable non-essentials Statsbeat, such as tracking failure or success of disk
       // persistence operations, optional network statsbeat, live metric,
       // azure metadata service failure, profile endpoint, etc.
-      // TODO exclude non-essential Statsbeat when applicable
+      // TODO stop sending non-essential Statsbeat when applicable
     }
   }
 
