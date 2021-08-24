@@ -93,7 +93,7 @@ public class StatsbeatModule {
         TimeUnit.SECONDS);
     scheduledExecutor.scheduleWithFixedDelay(
         new StatsbeatSender(attachStatsbeat, telemetryClient),
-        longIntervalSeconds,
+        0,
         longIntervalSeconds,
         TimeUnit.SECONDS);
     scheduledExecutor.scheduleWithFixedDelay(
@@ -115,16 +115,9 @@ public class StatsbeatModule {
       AzureMetadataService metadataService =
           new AzureMetadataService(attachStatsbeat, customDimensions);
       metadataService.scheduleWithFixedDelay(longIntervalSeconds);
-
-      // start AzureMetadataService on start
-      Thread senderThread = new Thread(metadataService);
-      senderThread.setDaemon(true);
-      senderThread.start();
     }
 
     featureStatsbeat.trackConfigurationOptions(config);
-
-    sendAttachStatsbeatOnStart();
 
     if (config.internal.statsbeat.disabled) {
       // disabled will disable non-essentials Statsbeat, such as tracking failure or success of disk
@@ -159,13 +152,6 @@ public class StatsbeatModule {
     }
 
     // TODO send optional network statsbeat when 'disabled' is off
-  }
-
-  private void sendAttachStatsbeatOnStart() {
-    StatsbeatSender sender = new StatsbeatSender(attachStatsbeat, telemetryClient);
-    Thread senderThread = new Thread(sender);
-    senderThread.setDaemon(true);
-    senderThread.start();
   }
 
   /** Runnable which is responsible for calling the send method to transmit Statsbeat telemetry. */
