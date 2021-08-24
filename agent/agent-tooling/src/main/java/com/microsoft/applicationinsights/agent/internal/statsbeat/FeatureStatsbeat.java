@@ -62,11 +62,6 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     return Instrumentations.encode(instrumentationList);
   }
 
-  // used by tests only
-  Set<String> getInstrumentationList() {
-    return instrumentationList;
-  }
-
   // this is used by Exporter
   public void addInstrumentation(String instrumentation) {
       instrumentationList.add(instrumentation);
