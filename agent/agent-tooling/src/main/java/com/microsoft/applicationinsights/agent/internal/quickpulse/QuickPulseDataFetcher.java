@@ -129,6 +129,7 @@ class QuickPulseDataFetcher {
       throws JsonProcessingException {
     List<QuickPulseEnvelope> envelopes = new ArrayList<>();
     QuickPulseEnvelope postEnvelope = new QuickPulseEnvelope();
+    postEnvelope.setDocuments(counters.documentList);
     postEnvelope.setInstance(instanceName);
     postEnvelope.setInvariantVersion(QuickPulse.QP_INVARIANT_VERSION);
     postEnvelope.setMachineName(machineName);

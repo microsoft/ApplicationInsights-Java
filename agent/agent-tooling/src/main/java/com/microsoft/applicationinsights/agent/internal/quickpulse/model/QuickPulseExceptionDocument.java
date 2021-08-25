@@ -22,62 +22,38 @@
 package com.microsoft.applicationinsights.agent.internal.quickpulse.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Map;
 
-public class QuickPulseDocument {
+public class QuickPulseExceptionDocument extends QuickPulseDocument {
+  @JsonProperty(value = "Exception")
+  private String exception;
 
-  @JsonProperty(value = "__type")
-  private String type;
+  @JsonProperty(value = "ExceptionMessage")
+  private String exceptionMessage;
 
-  @JsonProperty(value = "DocumentType")
-  private String documentType;
+  @JsonProperty(value = "ExceptionType")
+  private String exceptionType;
 
-  @JsonProperty(value = "Version")
-  private String version;
-
-  @JsonProperty(value = "OperationId")
-  private String operationId;
-
-  @JsonProperty(value = "Properties")
-  private Map<String, String> properties;
-
-  public String getType() {
-    return type;
+  public String getException() {
+    return exception;
   }
 
-  public void setType(String type) {
-    this.type = type;
+  public void setException(String exception) {
+    this.exception = exception;
   }
 
-  public String getDocumentType() {
-    return documentType;
+  public String getExceptionMessage() {
+    return exceptionMessage;
   }
 
-  public void setDocumentType(String documentType) {
-    this.documentType = documentType;
+  public void setExceptionMessage(String exceptionMessage) {
+    this.exceptionMessage = exceptionMessage;
   }
 
-  public String getVersion() {
-    return version;
+  public String getExceptionType() {
+    return exceptionType;
   }
 
-  public void setVersion(String version) {
-    this.version = version;
-  }
-
-  public String getOperationId() {
-    return operationId;
-  }
-
-  public void setOperationId(String operationId) {
-    this.operationId = operationId;
-  }
-
-  public Map<String, String> getProperties() {
-    return properties;
-  }
-
-  public void setProperties(Map<String, String> properties) {
-    this.properties = properties;
+  public void setExceptionType(String exceptionType) {
+    this.exceptionType = exceptionType;
   }
 }
