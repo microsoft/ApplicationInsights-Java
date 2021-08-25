@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.quickpulse;
 
-import static com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient.APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE;
 import static com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil.getExceptions;
 
 import com.azure.core.credential.TokenCredential;
@@ -53,6 +52,9 @@ import java.util.regex.Pattern;
 import reactor.core.publisher.Mono;
 
 public class QuickPulseTestBase extends TestBase {
+  private static final String APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE =
+      "https://monitor.azure.com//.default";
+
   HttpPipeline getHttpPipeline() {
     HttpClient httpClient;
     if (getTestMode() == TestMode.RECORD || getTestMode() == TestMode.LIVE) {

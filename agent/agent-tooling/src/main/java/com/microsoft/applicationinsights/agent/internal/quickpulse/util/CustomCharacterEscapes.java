@@ -31,8 +31,8 @@ public class CustomCharacterEscapes extends CharacterEscapes {
 
   public CustomCharacterEscapes() {
     asciiEscapes = standardAsciiEscapesForJSON();
-    // By default the ascii Escape table in jackson has / added as escape string
-    // overwriting that here.
+    // By default jackson doesn't escape forward slashes (`/`), but the quick pulse backend requires
+    // them to be escaped.
     asciiEscapes['/'] = CharacterEscapes.ESCAPE_CUSTOM;
   }
 

@@ -47,11 +47,17 @@ class QuickPulseDataFetcher {
   private final ArrayBlockingQueue<HttpRequest> sendQueue;
   private final TelemetryClient telemetryClient;
   private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
-  private final ObjectMapper mapper = new ObjectMapper();
+  private static final ObjectMapper mapper;
   private final String sdkVersion;
   private final String instanceName;
   private final String machineName;
   private final String quickPulseId;
+
+  static {
+    mapper = new ObjectMapper();
+    mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+    mapper.getFactory().setCharacterEscapes(new CustomCharacterEscapes());
+  }
 
   public QuickPulseDataFetcher(
       ArrayBlockingQueue<HttpRequest> sendQueue,
@@ -71,8 +77,6 @@ class QuickPulseDataFetcher {
           QuickPulseDataFetcher.class.getSimpleName(),
           getQuickPulseEndpoint());
     }
-    this.mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-    this.mapper.getFactory().setCharacterEscapes(new CustomCharacterEscapes());
   }
 
   /** Returns SDK Version from properties. */
