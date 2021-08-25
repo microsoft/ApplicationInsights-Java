@@ -159,14 +159,25 @@ public class MockedAppInsightsIngestionServer {
   // operationId
   public List<Envelope> waitForItems(String type, int numItems, String operationId)
       throws InterruptedException, ExecutionException, TimeoutException {
+    return waitForItems(type, numItems, operationId, envelope -> true);
+  }
+
+  public List<Envelope> waitForItems(
+      String type, int numItems, String operationId, Predicate<Envelope> condition)
+      throws InterruptedException, ExecutionException, TimeoutException {
     List<Envelope> items =
         waitForItems(
             new Predicate<Envelope>() {
               @Override
               public boolean test(Envelope input) {
-                return input.getData().getBaseType().equals(type)
-                    && (operationId == null
-                        || operationId.equals(input.getTags().get("ai.operation.id")));
+                if (!input.getData().getBaseType().equals(type)) {
+                  return false;
+                }
+                if (operationId != null
+                    && !operationId.equals(input.getTags().get("ai.operation.id"))) {
+                  return false;
+                }
+                return condition.test(input);
               }
             },
             numItems,
@@ -204,6 +215,12 @@ public class MockedAppInsightsIngestionServer {
   public List<Envelope> waitForItemsInOperation(String type, int numItems, String operationId)
       throws ExecutionException, InterruptedException, TimeoutException {
     return waitForItems(type, numItems, operationId);
+  }
+
+  public List<Envelope> waitForItemsInOperation(
+      String type, int numItems, String operationId, Predicate<Envelope> condition)
+      throws ExecutionException, InterruptedException, TimeoutException {
+    return waitForItems(type, numItems, operationId, condition);
   }
 
   // this is used to filter out some sporadic messages that are captured via java.util.logging
