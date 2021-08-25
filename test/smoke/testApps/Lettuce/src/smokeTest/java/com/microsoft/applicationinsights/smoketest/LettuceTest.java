@@ -37,7 +37,7 @@ public class LettuceTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(1);
 
     assertEquals("GET /Lettuce/*", telemetry.rd.getName());
-    assertEquals("http://localhost:28080/Lettuce/lettuce", telemetry.rd.getUrl());
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/Lettuce/lettuce"));
     assertEquals("200", telemetry.rd.getResponseCode());
     assertTrue(telemetry.rd.getSuccess());
     assertNull(telemetry.rd.getSource());

@@ -37,7 +37,7 @@ public class WebFluxTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(1);
 
     assertEquals("GET /test/**", telemetry.rd.getName());
-    assertEquals("http://localhost:28080/test", telemetry.rd.getUrl());
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/test"));
     assertEquals("200", telemetry.rd.getResponseCode());
     assertTrue(telemetry.rd.getSuccess());
     assertNull(telemetry.rd.getSource());
@@ -53,7 +53,7 @@ public class WebFluxTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(1);
 
     assertEquals("GET /exception", telemetry.rd.getName());
-    assertEquals("http://localhost:28080/exception", telemetry.rd.getUrl());
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/exception"));
     assertEquals("500", telemetry.rd.getResponseCode());
     assertFalse(telemetry.rd.getSuccess());
     assertNull(telemetry.rd.getSource());
@@ -69,7 +69,7 @@ public class WebFluxTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(1);
 
     assertEquals("GET /futureException", telemetry.rd.getName());
-    assertEquals("http://localhost:28080/futureException", telemetry.rd.getUrl());
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/futureException"));
     assertEquals("500", telemetry.rd.getResponseCode());
     assertFalse(telemetry.rd.getSuccess());
     assertNull(telemetry.rd.getSource());

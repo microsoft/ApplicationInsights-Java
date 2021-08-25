@@ -35,7 +35,7 @@ public class SpringBootAttachInMainTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(0);
 
     assertEquals("GET /test", telemetry.rd.getName());
-    assertEquals("http://localhost:28080/test", telemetry.rd.getUrl());
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/test"));
     assertEquals("200", telemetry.rd.getResponseCode());
     assertTrue(telemetry.rd.getSuccess());
     assertNull(telemetry.rd.getSource());

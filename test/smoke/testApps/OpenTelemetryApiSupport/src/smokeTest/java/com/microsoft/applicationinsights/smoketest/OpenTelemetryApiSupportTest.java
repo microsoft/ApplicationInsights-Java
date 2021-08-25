@@ -38,7 +38,7 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(1);
 
     assertEquals("GET /OpenTelemetryApiSupport/test-api", telemetry.rd.getName());
-    assertEquals("http://localhost:28080/OpenTelemetryApiSupport/test-api", telemetry.rd.getUrl());
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-api"));
     assertEquals("200", telemetry.rd.getResponseCode());
     assertTrue(telemetry.rd.getSuccess());
     assertNull(telemetry.rd.getSource());
@@ -77,7 +77,7 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(1);
 
     assertEquals("GET /OpenTelemetryApiSupport/test-overriding-ikey-etc", telemetry.rd.getName());
-    assertEquals("http://localhost:28080/OpenTelemetryApiSupport/test-overriding-ikey-etc", telemetry.rd.getUrl());
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-overriding-ikey-etc"));
     assertEquals("200", telemetry.rd.getResponseCode());
     assertTrue(telemetry.rd.getSuccess());
     assertNull(telemetry.rd.getSource());
@@ -123,7 +123,7 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
     }
 
     assertEquals("GET /OpenTelemetryApiSupport/test-annotations", telemetry.rd.getName());
-    assertEquals("http://localhost:28080/OpenTelemetryApiSupport/test-annotations", telemetry.rd.getUrl());
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-annotations"));
     assertEquals("200", telemetry.rd.getResponseCode());
     assertTrue(telemetry.rd.getSuccess());
     assertNull(telemetry.rd.getSource());

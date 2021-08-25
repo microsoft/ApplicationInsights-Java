@@ -37,7 +37,7 @@ public class JedisTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(1);
 
     assertEquals("GET /Jedis/*", telemetry.rd.getName());
-    assertEquals("http://localhost:28080/Jedis/jedis", telemetry.rd.getUrl());
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/Jedis/jedis"));
     assertEquals("200", telemetry.rd.getResponseCode());
     assertTrue(telemetry.rd.getSuccess());
     assertNull(telemetry.rd.getSource());

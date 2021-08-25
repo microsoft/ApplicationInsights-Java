@@ -48,7 +48,7 @@ public class AzureSdkTest extends AiSmokeTest {
     }
 
     assertEquals("GET /AzureSdk/test", telemetry.rd.getName());
-    assertEquals("http://localhost:28080/AzureSdk/test", telemetry.rd.getUrl());
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/AzureSdk/test"));
     assertEquals("200", telemetry.rd.getResponseCode());
     assertTrue(telemetry.rd.getSuccess());
     assertNull(telemetry.rd.getSource());
