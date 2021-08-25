@@ -4,6 +4,13 @@ plugins {
   id("com.github.johnrengelman.shadow")
 }
 
+// Adding this step to copy playback test results from session-records to build/classes/java/test. Azure core testing framework follows this directory structure.
+sourceSets {
+  test {
+    output.setResourcesDir("build/classes/java/test")
+  }
+}
+
 dependencies {
   implementation(project(":agent:agent-profiler:agent-service-profiler"))
   implementation(project(":agent:agent-profiler:agent-alerting-api"))
@@ -61,6 +68,7 @@ dependencies {
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support")
 
   testImplementation("org.junit.jupiter:junit-jupiter")
+  testImplementation("com.azure:azure-core-test:1.7.0")
   testImplementation("org.assertj:assertj-core")
   testImplementation("org.awaitility:awaitility")
   testImplementation("org.mockito:mockito-core")
@@ -72,3 +80,5 @@ dependencies {
   testImplementation("com.microsoft.jfr:jfr-streaming")
   testImplementation("com.azure:azure-storage-blob")
 }
+
+
