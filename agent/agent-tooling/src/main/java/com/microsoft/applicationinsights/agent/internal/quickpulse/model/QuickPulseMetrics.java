@@ -26,13 +26,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class QuickPulseMetrics {
 
   @JsonProperty(value = "Name")
-  private String name;
+  private final String name;
 
   @JsonProperty(value = "Value")
-  private long value;
+  private final long value;
 
   @JsonProperty(value = "Weight")
-  private int weight;
+  private final int weight;
 
   public QuickPulseMetrics(String name, long value, int weight) {
     this.name = name;
@@ -44,23 +44,11 @@ public class QuickPulseMetrics {
     return name;
   }
 
-  public void setName(String name) {
-    this.name = name;
-  }
-
   public long getValue() {
     return value;
   }
 
-  public void setValue(long value) {
-    this.value = value;
-  }
-
   public int getWeight() {
     return weight;
-  }
-
-  public void setWeight(int weight) {
-    this.weight = weight;
   }
 }
