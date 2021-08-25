@@ -24,10 +24,6 @@ package com.microsoft.applicationinsights.smoketest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.microsoft.applicationinsights.smoketest.schemav2.Data;
-import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
-import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
-import java.util.List;
 import org.junit.Test;
 
 @UseAgent
@@ -36,15 +32,11 @@ public class JettyNativeHandlerTest extends AiSmokeTest {
   @Test
   @TargetUri("/path")
   public void doSimpleTest() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    Telemetry telemetry = getTelemetry(0);
 
-    Envelope rdEnvelope = rdList.get(0);
-
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-
-    assertEquals("HTTP GET", rd.getName());
-    assertEquals("200", rd.getResponseCode());
-    assertTrue(rd.getProperties().isEmpty());
-    assertTrue(rd.getSuccess());
+    assertEquals("HTTP GET", telemetry.rd.getName());
+    assertEquals("200", telemetry.rd.getResponseCode());
+    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getSuccess());
   }
 }

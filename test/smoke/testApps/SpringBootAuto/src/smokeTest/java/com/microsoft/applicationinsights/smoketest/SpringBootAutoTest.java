@@ -25,10 +25,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import com.microsoft.applicationinsights.smoketest.schemav2.Data;
-import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
-import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
-import java.util.List;
 import org.junit.Test;
 
 @UseAgent
@@ -37,19 +33,16 @@ public class SpringBootAutoTest extends AiSmokeTest {
   @Test
   @TargetUri("/test")
   public void doMostBasicTest() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-
-    Envelope rdEnvelope = rdList.get(0);
-
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+    Telemetry telemetry = getTelemetry(1);
 
     // TODO verify browser and other envelope tags somewhere else
-    assertTrue(rdEnvelope.getTags().get("ai.user.userAgent").startsWith("Apache-HttpClient/"));
-    assertNotNull(rdEnvelope.getTags().get("ai.location.ip"));
+    assertTrue(
+        telemetry.rdEnvelope.getTags().get("ai.user.userAgent").startsWith("Apache-HttpClient/"));
+    assertNotNull(telemetry.rdEnvelope.getTags().get("ai.location.ip"));
 
-    assertEquals("GET /SpringBootAuto/test", rd.getName());
-    assertEquals("200", rd.getResponseCode());
-    assertTrue(rd.getProperties().isEmpty());
-    assertTrue(rd.getSuccess());
+    assertEquals("GET /SpringBootAuto/test", telemetry.rd.getName());
+    assertEquals("200", telemetry.rd.getResponseCode());
+    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getSuccess());
   }
 }
