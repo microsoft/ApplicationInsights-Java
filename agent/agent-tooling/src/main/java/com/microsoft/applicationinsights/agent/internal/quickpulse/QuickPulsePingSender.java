@@ -51,7 +51,7 @@ class QuickPulsePingSender {
   private final String machineName;
   private final String quickPulseId;
   private long lastValidTransmission = 0;
-  private final ObjectMapper mapper = new ObjectMapper();
+  private static final ObjectMapper mapper;
   private static final String quickPulseVersion = "2.2.0-738";
 
   private static final OperationLogger operationLogger =
@@ -60,6 +60,12 @@ class QuickPulsePingSender {
   // TODO (kryalama) do we still need this AtomicBoolean, or can we use throttling built in to the
   //  operationLogger?
   private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
+
+  static {
+    mapper = new ObjectMapper();
+    mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+    mapper.getFactory().setCharacterEscapes(new CustomCharacterEscapes());
+  }
 
   public QuickPulsePingSender(
       HttpPipeline httpPipeline,
@@ -78,8 +84,6 @@ class QuickPulsePingSender {
           QuickPulsePingSender.class.getSimpleName(),
           getQuickPulseEndpoint());
     }
-    this.mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-    this.mapper.getFactory().setCharacterEscapes(new CustomCharacterEscapes());
   }
 
   public QuickPulseHeaderInfo ping(String redirectedEndpoint) {
@@ -103,9 +107,10 @@ class QuickPulsePingSender {
             instanceName);
 
     long sendTime = System.nanoTime();
+    HttpResponse response = null;
     try {
       request.setBody(buildPingEntity(currentDate.getTime()));
-      HttpResponse response = httpPipeline.send(request).block();
+      response = httpPipeline.send(request).block();
       if (response == null) {
         // this shouldn't happen, the mono should complete with a response or a failure
         throw new AssertionError("http response mono returned empty");
@@ -129,6 +134,10 @@ class QuickPulsePingSender {
     } catch (Throwable t) {
       operationLogger.recordFailure(t.getMessage(), t);
       ExceptionUtils.parseError(t, getQuickPulseEndpoint(), friendlyExceptionThrown, logger);
+    } finally {
+      if (response != null) {
+        response.close();
+      }
     }
     return onPingError(sendTime);
   }

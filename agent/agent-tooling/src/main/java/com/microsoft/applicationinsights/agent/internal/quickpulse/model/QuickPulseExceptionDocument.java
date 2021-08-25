@@ -19,34 +19,41 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.quickpulse.util;
+package com.microsoft.applicationinsights.agent.internal.quickpulse.model;
 
-import com.fasterxml.jackson.core.SerializableString;
-import com.fasterxml.jackson.core.io.CharacterEscapes;
-import com.fasterxml.jackson.core.io.SerializedString;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class CustomCharacterEscapes extends CharacterEscapes {
+public class QuickPulseExceptionDocument extends QuickPulseDocument {
+  @JsonProperty(value = "Exception")
+  private String exception;
 
-  private final int[] asciiEscapes;
+  @JsonProperty(value = "ExceptionMessage")
+  private String exceptionMessage;
 
-  public CustomCharacterEscapes() {
-    asciiEscapes = standardAsciiEscapesForJSON();
-    // By default jackson doesn't escape forward slashes (`/`), but the quick pulse backend requires
-    // them to be escaped.
-    asciiEscapes['/'] = CharacterEscapes.ESCAPE_CUSTOM;
+  @JsonProperty(value = "ExceptionType")
+  private String exceptionType;
+
+  public String getException() {
+    return exception;
   }
 
-  @Override
-  public int[] getEscapeCodesForAscii() {
-    return asciiEscapes;
+  public void setException(String exception) {
+    this.exception = exception;
   }
 
-  @Override
-  public SerializableString getEscapeSequence(int i) {
-    if (i == '/') {
-      return new SerializedString("\\/");
-    } else {
-      return null;
-    }
+  public String getExceptionMessage() {
+    return exceptionMessage;
+  }
+
+  public void setExceptionMessage(String exceptionMessage) {
+    this.exceptionMessage = exceptionMessage;
+  }
+
+  public String getExceptionType() {
+    return exceptionType;
+  }
+
+  public void setExceptionType(String exceptionType) {
+    this.exceptionType = exceptionType;
   }
 }

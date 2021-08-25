@@ -22,62 +22,61 @@
 package com.microsoft.applicationinsights.agent.internal.quickpulse.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Map;
 
-public class QuickPulseDocument {
+public class QuickPulseRequestDocument extends QuickPulseDocument {
 
-  @JsonProperty(value = "__type")
-  private String type;
+  @JsonProperty(value = "Name")
+  private String name;
 
-  @JsonProperty(value = "DocumentType")
-  private String documentType;
+  @JsonProperty(value = "Success")
+  private boolean success;
 
-  @JsonProperty(value = "Version")
-  private String version;
+  @JsonProperty(value = "Duration")
+  private String duration;
 
-  @JsonProperty(value = "OperationId")
-  private String operationId;
+  @JsonProperty(value = "ResponseCode")
+  private String responseCode;
 
-  @JsonProperty(value = "Properties")
-  private Map<String, String> properties;
+  @JsonProperty(value = "OperationName")
+  private String operationName;
 
-  public String getType() {
-    return type;
+  public boolean isSuccess() {
+    return success;
   }
 
-  public void setType(String type) {
-    this.type = type;
+  public void setSuccess(boolean success) {
+    this.success = success;
   }
 
-  public String getDocumentType() {
-    return documentType;
+  public String getDuration() {
+    return duration;
   }
 
-  public void setDocumentType(String documentType) {
-    this.documentType = documentType;
+  public void setDuration(String duration) {
+    this.duration = duration;
   }
 
-  public String getVersion() {
-    return version;
+  public String getResponseCode() {
+    return responseCode;
   }
 
-  public void setVersion(String version) {
-    this.version = version;
+  public void setResponseCode(String responseCode) {
+    this.responseCode = responseCode;
   }
 
-  public String getOperationId() {
-    return operationId;
+  public String getOperationName() {
+    return operationName;
   }
 
-  public void setOperationId(String operationId) {
-    this.operationId = operationId;
+  public void setOperationName(String operationName) {
+    this.operationName = operationName;
   }
 
-  public Map<String, String> getProperties() {
-    return properties;
+  public String getName() {
+    return name;
   }
 
-  public void setProperties(Map<String, String> properties) {
-    this.properties = properties;
+  public void setName(String name) {
+    this.name = name;
   }
 }

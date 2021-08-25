@@ -51,7 +51,7 @@ import reactor.netty.resources.ConnectionProvider;
 
 public class LazyHttpClient implements HttpClient {
 
-  public static final String APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE =
+  private static final String APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE =
       "https://monitor.azure.com//.default";
 
   private static final HttpClient INSTANCE = new LazyHttpClient();
