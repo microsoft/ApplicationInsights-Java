@@ -24,10 +24,6 @@ package com.microsoft.applicationinsights.smoketest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.microsoft.applicationinsights.smoketest.schemav2.Data;
-import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
-import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
-import java.util.List;
 import org.junit.Test;
 
 @UseAgent
@@ -36,19 +32,15 @@ public class LegacySdkWebInteropTest extends AiSmokeTest {
   @Test
   @TargetUri("/test")
   public void doMostBasicTest() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    Telemetry telemetry = getTelemetry(0);
 
-    Envelope rdEnvelope = rdList.get(0);
+    assertEquals("myspanname", telemetry.rd.getName());
+    assertEquals("mysource", telemetry.rd.getSource());
+    assertEquals("myuser", telemetry.rdEnvelope.getTags().get("ai.user.id"));
+    assertEquals("myvalue1", telemetry.rd.getProperties().get("myattr1"));
+    assertEquals("myvalue2", telemetry.rd.getProperties().get("myattr2"));
+    assertEquals(2, telemetry.rd.getProperties().size());
 
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-
-    assertEquals("myspanname", rd.getName());
-    assertEquals("mysource", rd.getSource());
-    assertEquals("myuser", rdEnvelope.getTags().get("ai.user.id"));
-    assertEquals("myvalue1", rd.getProperties().get("myattr1"));
-    assertEquals("myvalue2", rd.getProperties().get("myattr2"));
-    assertEquals(2, rd.getProperties().size());
-
-    assertTrue(rd.getSuccess());
+    assertTrue(telemetry.rd.getSuccess());
   }
 }

@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
@@ -101,10 +100,12 @@ public class KafkaTest extends AiSmokeTest {
     assertTrue(rdd3.getProperties().isEmpty());
     assertTrue(rdd3.getSuccess());
 
-    assertParentChild(rd1.getId(), rdEnvelope1, rddEnvelope1);
-    assertParentChild(rdd1.getId(), rddEnvelope1, rddEnvelope2);
-    assertParentChild(rdd2.getId(), rddEnvelope2, rdEnvelope2);
-    assertParentChild(rd2.getId(), rdEnvelope2, rddEnvelope3);
+    assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
+    assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /sendMessage");
+    assertParentChild(
+        rdd2.getId(), rddEnvelope2, rdEnvelope2, "GET /sendMessage", "mytopic process", false);
+    assertParentChild(
+        rd2.getId(), rdEnvelope2, rddEnvelope3, "mytopic process", "mytopic process", false);
   }
 
   private static Envelope getRequestEnvelope(List<Envelope> envelopes, String name) {
@@ -126,15 +127,5 @@ public class KafkaTest extends AiSmokeTest {
       }
     }
     throw new IllegalStateException("Could not find dependency with name: " + name);
-  }
-
-  private static void assertParentChild(
-      String parentId, Envelope parentEnvelope, Envelope childEnvelope) {
-    String operationId = parentEnvelope.getTags().get("ai.operation.id");
-
-    assertNotNull(operationId);
-
-    assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
-    assertEquals(parentId, childEnvelope.getTags().get("ai.operation.parentId"));
   }
 }

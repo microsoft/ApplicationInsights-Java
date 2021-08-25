@@ -22,8 +22,6 @@
 package com.microsoft.applicationinsights.smoketestapp;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
@@ -31,11 +29,6 @@ import com.microsoft.applicationinsights.smoketest.DependencyContainer;
 import com.microsoft.applicationinsights.smoketest.TargetUri;
 import com.microsoft.applicationinsights.smoketest.UseAgent;
 import com.microsoft.applicationinsights.smoketest.WithDependencyContainers;
-import com.microsoft.applicationinsights.smoketest.schemav2.Data;
-import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
-import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
-import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
-import java.util.List;
 import org.junit.Test;
 
 @UseAgent
@@ -49,47 +42,20 @@ public class MongoTest extends AiSmokeTest {
   @Test
   @TargetUri("/mongo")
   public void mongo() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    Telemetry telemetry = getTelemetry(1);
 
-    Envelope rdEnvelope = rdList.get(0);
-    String operationId = rdEnvelope.getTags().get("ai.operation.id");
-    List<Envelope> rddList =
-        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
+    assertEquals("GET /MongoDB/*", telemetry.rd.getName());
+    assertEquals("200", telemetry.rd.getResponseCode());
+    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getSuccess());
 
-    Envelope rddEnvelope = rddList.get(0);
+    assertEquals("find testdb.test", telemetry.rdd1.getName());
+    assertEquals("mongodb", telemetry.rdd1.getType());
+    assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+/testdb"));
+    assertEquals("{\"find\": \"test\", \"$db\": \"?\"}", telemetry.rdd1.getData());
+    assertTrue(telemetry.rdd1.getProperties().isEmpty());
+    assertTrue(telemetry.rdd1.getSuccess());
 
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-    RemoteDependencyData rdd =
-        (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
-
-    assertEquals("GET /MongoDB/*", rd.getName());
-    assertEquals("200", rd.getResponseCode());
-    assertTrue(rd.getProperties().isEmpty());
-    assertTrue(rd.getSuccess());
-
-    assertEquals("find testdb.test", rdd.getName());
-    assertEquals("mongodb", rdd.getType());
-    assertTrue(rdd.getTarget().matches("dependency[0-9]+/testdb"));
-    assertEquals("{\"find\": \"test\", \"$db\": \"?\"}", rdd.getData());
-    assertTrue(rdd.getProperties().isEmpty());
-    assertTrue(rdd.getSuccess());
-
-    assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /MongoDB/*");
-  }
-
-  private static void assertParentChild(
-      RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {
-    String operationId = rdEnvelope.getTags().get("ai.operation.id");
-    assertNotNull(operationId);
-    assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
-
-    String operationParentId = rdEnvelope.getTags().get("ai.operation.parentId");
-    assertNull(operationParentId);
-
-    assertEquals(rd.getId(), childEnvelope.getTags().get("ai.operation.parentId"));
-
-    assertEquals(operationName, rdEnvelope.getTags().get("ai.operation.name"));
-    assertEquals(operationName, childEnvelope.getTags().get("ai.operation.name"));
+    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /MongoDB/*");
   }
 }
