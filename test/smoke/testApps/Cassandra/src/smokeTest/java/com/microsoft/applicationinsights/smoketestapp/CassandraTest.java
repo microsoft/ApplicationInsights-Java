@@ -46,7 +46,7 @@ public class CassandraTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(1);
 
     assertEquals("GET /Cassandra/*", telemetry.rd.getName());
-    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/Cassandra/test"));
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/Cassandra/cassandra"));
     assertEquals("200", telemetry.rd.getResponseCode());
     assertTrue(telemetry.rd.getSuccess());
     assertNull(telemetry.rd.getSource());

@@ -46,7 +46,7 @@ public class MongoTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(1);
 
     assertEquals("GET /MongoDB/*", telemetry.rd.getName());
-    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/MongoDB/mongodb"));
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/MongoDB/mongo"));
     assertEquals("200", telemetry.rd.getResponseCode());
     assertTrue(telemetry.rd.getSuccess());
     assertNull(telemetry.rd.getSource());
