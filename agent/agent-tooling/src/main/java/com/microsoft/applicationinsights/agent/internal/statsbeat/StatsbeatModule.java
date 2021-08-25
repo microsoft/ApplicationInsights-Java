@@ -49,7 +49,7 @@ public class StatsbeatModule {
   private final FeatureStatsbeat instrumentationStatsbeat;
 
   private final AtomicBoolean started = new AtomicBoolean();
-  private final AtomicBoolean disabledAll = new AtomicBoolean();
+  private volatile boolean disabledAll;
 
   private volatile TelemetryClient telemetryClient;
 
@@ -70,7 +70,7 @@ public class StatsbeatModule {
       // disabledAll is an internal emergency kill-switch to turn off Statsbeat completely when
       // something goes wrong.
       // this happens rarely.
-      disabledAll.set(true);
+      disabledAll = true;
       return;
     }
 
@@ -93,7 +93,7 @@ public class StatsbeatModule {
         TimeUnit.SECONDS);
     scheduledExecutor.scheduleWithFixedDelay(
         new StatsbeatSender(attachStatsbeat, telemetryClient),
-        5,
+        60,
         longIntervalSeconds,
         TimeUnit.SECONDS);
     scheduledExecutor.scheduleWithFixedDelay(
@@ -142,7 +142,7 @@ public class StatsbeatModule {
   // new url is always retrieved from the redirect policy cache map and we don't update the
   // endpoint.
   public void sendNetworkStatsbeatOnRedirect(String redirectUrl) {
-    if (!disabledAll.get()) {
+    if (!disabledAll) {
       networkStatsbeat.trackHostOnRedirect(telemetryClient, redirectUrl);
       StatsbeatSender sender = new StatsbeatSender(networkStatsbeat, telemetryClient);
       Thread senderThread = new Thread(sender);

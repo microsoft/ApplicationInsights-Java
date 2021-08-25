@@ -76,7 +76,6 @@ public class TelemetryChannelTest {
       throws MalformedURLException {
     List<HttpPipelinePolicy> policies = new ArrayList<>();
     StatsbeatModule mockStatsbeatModule = Mockito.mock(StatsbeatModule.class);
-    Mockito.doNothing().when(mockStatsbeatModule).sendNetworkStatsbeatOnRedirect(null);
     policies.add(new RedirectPolicy(followInstrumentationKeyForRedirect, mockStatsbeatModule));
     HttpPipelineBuilder pipelineBuilder =
         new HttpPipelineBuilder()
