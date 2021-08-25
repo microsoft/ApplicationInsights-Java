@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -31,7 +32,12 @@ public class MicrometerDisabledTest extends AiSmokeTest {
   @Test
   @TargetUri("/test")
   public void doMostBasicTest() throws Exception {
-    mockedIngestion.waitForItems("RequestData", 1);
+    Telemetry telemetry = getTelemetry(0);
+
+    assertEquals("GET /test", telemetry.rd.getName());
+    assertEquals("200", telemetry.rd.getResponseCode());
+    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getSuccess());
 
     // sleep a bit and make sure no micrometer metrics are reported
     Thread.sleep(10000);

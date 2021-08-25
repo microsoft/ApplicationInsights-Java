@@ -55,7 +55,6 @@ import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import com.microsoft.applicationinsights.smoketest.schemav2.PageViewData;
-import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import com.microsoft.applicationinsights.smoketest.telemetry.Duration;
@@ -71,32 +70,23 @@ public class CoreAndFilterTests extends AiSmokeTest {
   @Test
   @TargetUri("/trackDependency")
   public void trackDependency() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-
-    Envelope rdEnvelope = rdList.get(0);
-    String operationId = rdEnvelope.getTags().get("ai.operation.id");
-
-    List<Envelope> rddList =
-        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
-
-    Envelope rddEnvelope = rddList.get(0);
-
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-    RemoteDependencyData rdd =
-        (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
+    Telemetry telemetry = getTelemetry(1);
 
     final String expectedName = "DependencyTest";
     final String expectedData = "commandName";
     Duration expectedDuration = new Duration(0, 0, 1, 1, 1);
 
-    assertEquals(expectedName, rdd.getName());
-    assertEquals(expectedData, rdd.getData());
-    assertEquals(expectedDuration, rdd.getDuration());
-    assertTrue(rdd.getProperties().isEmpty());
-    assertTrue(rdd.getSuccess());
+    assertEquals(expectedName, telemetry.rdd1.getName());
+    assertEquals(expectedData, telemetry.rdd1.getData());
+    assertEquals(expectedDuration, telemetry.rdd1.getDuration());
+    assertTrue(telemetry.rdd1.getProperties().isEmpty());
+    assertTrue(telemetry.rdd1.getSuccess());
 
-    assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /CoreAndFilter/trackDependency");
+    assertParentChild(
+        telemetry.rd,
+        telemetry.rdEnvelope,
+        telemetry.rddEnvelope1,
+        "GET /CoreAndFilter/trackDependency");
   }
 
   @Test
@@ -114,13 +104,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
     List<EventData> events = mockedIngestion.getTelemetryDataByTypeInRequest("EventData");
-    events.sort(
-        new Comparator<EventData>() {
-          @Override
-          public int compare(EventData o1, EventData o2) {
-            return o1.getName().compareTo(o2.getName());
-          }
-        });
+    events.sort(Comparator.comparing(EventData::getName));
 
     EventData ed1 = events.get(0);
     EventData ed2 = events.get(1);
@@ -510,20 +494,5 @@ public class CoreAndFilterTests extends AiSmokeTest {
     assertThat(actual, both(greaterThanOrEqualTo(min)).and(lessThan(max)));
 
     assertEquals(operationName, rdEnvelope.getTags().get("ai.operation.name"));
-  }
-
-  private static void assertParentChild(
-      RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {
-    String operationId = rdEnvelope.getTags().get("ai.operation.id");
-    assertNotNull(operationId);
-    assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
-
-    String operationParentId = rdEnvelope.getTags().get("ai.operation.parentId");
-    assertNull(operationParentId);
-
-    assertEquals(rd.getId(), childEnvelope.getTags().get("ai.operation.parentId"));
-
-    assertEquals(operationName, rdEnvelope.getTags().get("ai.operation.name"));
-    assertEquals(operationName, childEnvelope.getTags().get("ai.operation.name"));
   }
 }
