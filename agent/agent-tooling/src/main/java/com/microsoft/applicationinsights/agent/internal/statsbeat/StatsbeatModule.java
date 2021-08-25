@@ -93,7 +93,7 @@ public class StatsbeatModule {
         TimeUnit.SECONDS);
     scheduledExecutor.scheduleWithFixedDelay(
         new StatsbeatSender(attachStatsbeat, telemetryClient),
-        0,
+        5,
         longIntervalSeconds,
         TimeUnit.SECONDS);
     scheduledExecutor.scheduleWithFixedDelay(
@@ -109,7 +109,6 @@ public class StatsbeatModule {
 
     ResourceProvider rp = customDimensions.getResourceProvider();
     // only turn on AzureMetadataService when the resource provider is VM or UNKNOWN.
-    // and it's not necessary to make this call.
     if (rp == ResourceProvider.RP_VM || rp == ResourceProvider.UNKNOWN) {
       // will only reach here the first time, after instance has been instantiated
       AzureMetadataService metadataService =
