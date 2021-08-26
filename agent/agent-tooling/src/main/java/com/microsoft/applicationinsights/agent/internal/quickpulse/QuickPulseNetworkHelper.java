@@ -68,9 +68,8 @@ final class QuickPulseNetworkHelper {
     return request;
   }
 
-  public boolean isSuccess(HttpResponse response) {
-    int responseCode = response.getStatusCode();
-    return responseCode == 200;
+  boolean isSuccess(HttpResponse response) {
+    return response.getStatusCode() == 200;
   }
 
   public QuickPulseHeaderInfo getQuickPulseHeaderInfo(HttpResponse response) {

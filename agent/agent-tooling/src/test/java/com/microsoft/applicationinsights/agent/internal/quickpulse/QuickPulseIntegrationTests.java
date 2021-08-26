@@ -56,11 +56,7 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
     TelemetryClient telemetryClient = new TelemetryClient();
     telemetryClient.setConnectionString(connectionString);
     return new QuickPulsePingSender(
-        getHttpPipelineWithValidator(validator),
-        telemetryClient,
-        "machine1",
-        "instance1",
-        "qpid123");
+        getHttpPipeline(validator), telemetryClient, "machine1", "instance1", "qpid123");
   }
 
   @Test
@@ -108,8 +104,7 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
     QuickPulseHeaderInfo quickPulseHeaderInfo = pingSender.ping(null);
     QuickPulseDataSender dataSender =
         new QuickPulseDataSender(
-            getHttpPipelineWithValidator(
-                new ValidationPolicy(postCountDown, expectedPostRequestBody)),
+            getHttpPipeline(new ValidationPolicy(postCountDown, expectedPostRequestBody)),
             sendQueue);
     TelemetryClient telemetryClient = new TelemetryClient();
     telemetryClient.setConnectionString(connectionString);

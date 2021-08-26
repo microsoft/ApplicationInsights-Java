@@ -45,6 +45,7 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -55,61 +56,35 @@ public class QuickPulseTestBase extends TestBase {
   private static final String APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE =
       "https://monitor.azure.com//.default";
 
-  HttpPipeline getHttpPipeline() {
-    HttpClient httpClient;
-    if (getTestMode() == TestMode.RECORD || getTestMode() == TestMode.LIVE) {
-      httpClient = HttpClient.createDefault();
-    } else {
-      httpClient = interceptorManager.getPlaybackClient();
-    }
-
-    return new HttpPipelineBuilder()
-        .httpClient(httpClient)
-        .policies(interceptorManager.getRecordPolicy())
-        .build();
-  }
-
-  HttpPipeline getHttpPipelineWithValidator(HttpPipelinePolicy validator) {
-    HttpClient httpClient;
-    if (getTestMode() == TestMode.RECORD || getTestMode() == TestMode.LIVE) {
-      httpClient = HttpClient.createDefault();
-    } else {
-      httpClient = interceptorManager.getPlaybackClient();
-    }
-    List<HttpPipelinePolicy> policies = new ArrayList<>();
-    policies.add(validator);
-    policies.add(interceptorManager.getRecordPolicy());
-    return new HttpPipelineBuilder()
-        .httpClient(httpClient)
-        .policies(policies.toArray(new HttpPipelinePolicy[0]))
-        .build();
-  }
-
   HttpPipeline getHttpPipelineWithAuthentication() {
-    TokenCredential credential = null;
-    HttpClient httpClient;
     if (getTestMode() == TestMode.RECORD || getTestMode() == TestMode.LIVE) {
-      httpClient = HttpClient.createDefault();
-      credential =
+      TokenCredential credential =
           new ClientSecretCredentialBuilder()
               .tenantId(System.getenv("AZURE_TENANT_ID"))
               .clientSecret(System.getenv("AZURE_CLIENT_SECRET"))
               .clientId(System.getenv("AZURE_CLIENT_ID"))
               .build();
+      return getHttpPipeline(
+          new BearerTokenAuthenticationPolicy(
+              credential, APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE));
+    } else {
+      return getHttpPipeline();
+    }
+  }
+
+  HttpPipeline getHttpPipeline(HttpPipelinePolicy... policies) {
+    HttpClient httpClient;
+    if (getTestMode() == TestMode.RECORD || getTestMode() == TestMode.LIVE) {
+      httpClient = HttpClient.createDefault();
     } else {
       httpClient = interceptorManager.getPlaybackClient();
     }
-
-    List<HttpPipelinePolicy> policies = new ArrayList<>();
-    if (credential != null) {
-      policies.add(
-          new BearerTokenAuthenticationPolicy(
-              credential, APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE));
-    }
-    policies.add(interceptorManager.getRecordPolicy());
+    List<HttpPipelinePolicy> allPolicies = new ArrayList<>();
+    allPolicies.add(interceptorManager.getRecordPolicy());
+    allPolicies.addAll(Arrays.asList(policies));
     return new HttpPipelineBuilder()
         .httpClient(httpClient)
-        .policies(policies.toArray(new HttpPipelinePolicy[0]))
+        .policies(allPolicies.toArray(new HttpPipelinePolicy[0]))
         .build();
   }
 

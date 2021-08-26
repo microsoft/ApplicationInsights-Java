@@ -167,8 +167,7 @@ class QuickPulsePingSender {
       pingEnvelope.setVersion(quickPulseVersion);
     }
     pingEnvelope.setTimeStamp("/Date(" + timeInMillis + ")/");
-    String envelope = mapper.writeValueAsString(pingEnvelope);
-    return envelope;
+    return mapper.writeValueAsString(pingEnvelope);
   }
 
   private QuickPulseHeaderInfo onPingError(long sendTime) {

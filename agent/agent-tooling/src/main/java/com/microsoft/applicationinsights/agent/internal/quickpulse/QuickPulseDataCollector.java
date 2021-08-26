@@ -179,7 +179,7 @@ public enum QuickPulseDataCollector {
     return null;
   }
 
-  /*@VisibleForTesting*/
+  // only used by tests
   synchronized FinalCounters peek() {
     Counters currentCounters = this.counters.get(); // this should be the only differece
     if (currentCounters != null) {
