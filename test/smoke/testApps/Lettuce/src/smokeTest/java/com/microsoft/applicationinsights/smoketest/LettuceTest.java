@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -36,9 +37,12 @@ public class LettuceTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(1);
 
     assertEquals("GET /Lettuce/*", telemetry.rd.getName());
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/Lettuce/lettuce"));
     assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
+    assertNull(telemetry.rd.getSource());
+    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getMeasurements().isEmpty());
 
     assertEquals("GET", telemetry.rdd1.getName());
     assertEquals("redis", telemetry.rdd1.getType());
