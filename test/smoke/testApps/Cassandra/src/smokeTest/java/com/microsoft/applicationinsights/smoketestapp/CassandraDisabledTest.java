@@ -29,10 +29,6 @@ import com.microsoft.applicationinsights.smoketest.DependencyContainer;
 import com.microsoft.applicationinsights.smoketest.TargetUri;
 import com.microsoft.applicationinsights.smoketest.UseAgent;
 import com.microsoft.applicationinsights.smoketest.WithDependencyContainers;
-import com.microsoft.applicationinsights.smoketest.schemav2.Data;
-import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
-import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
-import java.util.List;
 import org.junit.Test;
 
 @UseAgent("disabled_cassandra")
@@ -46,14 +42,10 @@ public class CassandraDisabledTest extends AiSmokeTest {
   @Test
   @TargetUri("/cassandra")
   public void cassandra() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-    Envelope rdEnvelope = rdList.get(0);
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+    Telemetry telemetry = getTelemetry(0);
 
-    assertEquals("GET /Cassandra/*", rd.getName());
-    assertEquals("200", rd.getResponseCode());
-    assertTrue(rd.getProperties().isEmpty());
-    assertTrue(rd.getSuccess());
+    assertEquals("GET /Cassandra/*", telemetry.rd.getName());
+    assertTrue(telemetry.rd.getSuccess());
 
     // sleep a bit and make sure no cassandra dependencies are reported
     Thread.sleep(5000);

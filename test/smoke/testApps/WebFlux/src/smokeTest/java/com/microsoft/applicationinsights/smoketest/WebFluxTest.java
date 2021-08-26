@@ -23,12 +23,9 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import com.microsoft.applicationinsights.smoketest.schemav2.Data;
-import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
-import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
-import java.util.List;
 import org.junit.Test;
 
 @UseAgent
@@ -37,57 +34,48 @@ public class WebFluxTest extends AiSmokeTest {
   @Test
   @TargetUri("/test")
   public void doMostBasicTest() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    Telemetry telemetry = getTelemetry(1);
 
-    Envelope rdEnvelope = rdList.get(0);
-    String operationId = rdEnvelope.getTags().get("ai.operation.id");
+    assertEquals("GET /test/**", telemetry.rd.getName());
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/test"));
+    assertEquals("200", telemetry.rd.getResponseCode());
+    assertTrue(telemetry.rd.getSuccess());
+    assertNull(telemetry.rd.getSource());
+    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getMeasurements().isEmpty());
 
-    mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
-
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-
-    assertEquals("GET /test/**", rd.getName());
-    assertEquals("200", rd.getResponseCode());
-    assertTrue(rd.getProperties().isEmpty());
-    assertTrue(rd.getSuccess());
+    // TODO (trask): assert on rdd1
   }
 
   @Test
   @TargetUri("/exception")
   public void testException() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    Telemetry telemetry = getTelemetry(1);
 
-    Envelope rdEnvelope = rdList.get(0);
-    String operationId = rdEnvelope.getTags().get("ai.operation.id");
+    assertEquals("GET /exception", telemetry.rd.getName());
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/exception"));
+    assertEquals("500", telemetry.rd.getResponseCode());
+    assertFalse(telemetry.rd.getSuccess());
+    assertNull(telemetry.rd.getSource());
+    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getMeasurements().isEmpty());
 
-    mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
-
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-
-    assertEquals("GET /exception", rd.getName());
-    assertEquals("500", rd.getResponseCode());
-    assertTrue(rd.getProperties().isEmpty());
-    assertFalse(rd.getSuccess());
+    // TODO (trask): assert on rdd1
   }
 
   @Test
   @TargetUri("/futureException")
   public void testFutureException() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    Telemetry telemetry = getTelemetry(1);
 
-    Envelope rdEnvelope = rdList.get(0);
-    String operationId = rdEnvelope.getTags().get("ai.operation.id");
+    assertEquals("GET /futureException", telemetry.rd.getName());
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/futureException"));
+    assertEquals("500", telemetry.rd.getResponseCode());
+    assertFalse(telemetry.rd.getSuccess());
+    assertNull(telemetry.rd.getSource());
+    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getMeasurements().isEmpty());
 
-    mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
-
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-
-    assertEquals("GET /futureException", rd.getName());
-    assertEquals("500", rd.getResponseCode());
-    assertTrue(rd.getProperties().isEmpty());
-    assertFalse(rd.getSuccess());
+    // TODO (trask): assert on rdd1
   }
 }

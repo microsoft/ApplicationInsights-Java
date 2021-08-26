@@ -22,12 +22,9 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import com.microsoft.applicationinsights.smoketest.schemav2.Data;
-import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
-import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
-import java.util.List;
 import org.junit.Test;
 
 @UseAgent("disabled_springscheduling")
@@ -36,14 +33,10 @@ public class SpringSchedulingDisabledTest extends AiSmokeTest {
   @Test
   @TargetUri("/scheduler")
   public void fixedRateSchedulerTest() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-    Envelope rdEnvelope = rdList.get(0);
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+    Telemetry telemetry = getTelemetry(0);
 
-    assertEquals("GET /SpringScheduling/scheduler", rd.getName());
-    assertEquals("200", rd.getResponseCode());
-    assertTrue(rd.getProperties().isEmpty());
-    assertTrue(rd.getSuccess());
+    assertEquals("GET /SpringScheduling/scheduler", telemetry.rd.getName());
+    assertTrue(telemetry.rd.getSuccess());
 
     // sleep a bit and make sure no spring scheduling "requests" are reported
     Thread.sleep(5000);

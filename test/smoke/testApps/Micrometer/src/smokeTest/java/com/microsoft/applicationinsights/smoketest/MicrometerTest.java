@@ -40,7 +40,15 @@ public class MicrometerTest extends AiSmokeTest {
   @Test
   @TargetUri("/test")
   public void doMostBasicTest() throws Exception {
-    mockedIngestion.waitForItems("RequestData", 1);
+    Telemetry telemetry = getTelemetry(0);
+
+    assertEquals("GET /test", telemetry.rd.getName());
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/test"));
+    assertEquals("200", telemetry.rd.getResponseCode());
+    assertTrue(telemetry.rd.getSuccess());
+    assertNull(telemetry.rd.getSource());
+    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getMeasurements().isEmpty());
 
     // sleep a bit and make sure that the excluded metric is not reported
     Thread.sleep(10000);

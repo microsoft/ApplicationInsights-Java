@@ -24,10 +24,6 @@ package com.microsoft.applicationinsights.smoketest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.microsoft.applicationinsights.smoketest.schemav2.Data;
-import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
-import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
-import java.util.List;
 import org.junit.Test;
 
 @UseAgent("disabled_redis")
@@ -37,14 +33,10 @@ public class JedisDisabledTest extends AiSmokeTest {
   @Test
   @TargetUri("/jedis")
   public void jedis() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-    Envelope rdEnvelope = rdList.get(0);
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+    Telemetry telemetry = getTelemetry(0);
 
-    assertEquals("GET /Jedis/*", rd.getName());
-    assertEquals("200", rd.getResponseCode());
-    assertTrue(rd.getProperties().isEmpty());
-    assertTrue(rd.getSuccess());
+    assertEquals("GET /Jedis/*", telemetry.rd.getName());
+    assertTrue(telemetry.rd.getSuccess());
 
     // sleep a bit and make sure no jedis dependencies are reported
     Thread.sleep(5000);
