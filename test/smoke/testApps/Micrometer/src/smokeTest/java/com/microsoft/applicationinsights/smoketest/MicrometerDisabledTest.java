@@ -35,8 +35,6 @@ public class MicrometerDisabledTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(0);
 
     assertEquals("GET /test", telemetry.rd.getName());
-    assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
 
     // sleep a bit and make sure no micrometer metrics are reported

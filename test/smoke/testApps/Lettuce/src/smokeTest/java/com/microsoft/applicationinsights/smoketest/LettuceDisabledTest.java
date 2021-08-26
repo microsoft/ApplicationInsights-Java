@@ -36,8 +36,6 @@ public class LettuceDisabledTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(0);
 
     assertEquals("GET /Lettuce/*", telemetry.rd.getName());
-    assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
 
     // sleep a bit and make sure no lettuce dependencies are reported
