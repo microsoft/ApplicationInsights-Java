@@ -41,7 +41,8 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   private static final String BREEZE_ENDPOINT = "breeze";
 
   private final Object lock = new Object();
-  private final ConcurrentMap<String, IntervalMetrics> counterPerIkeyMap = new ConcurrentHashMap<>();
+  private final ConcurrentMap<String, IntervalMetrics> counterPerIkeyMap =
+      new ConcurrentHashMap<>();
 
   NetworkStatsbeat(CustomDimensions customDimensions, List<String> ikeys) {
     super(customDimensions);
@@ -55,7 +56,10 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   protected void send(TelemetryClient telemetryClient) {
     IntervalMetrics local = counterPerIkeyMap.get(telemetryClient.getInstrumentationKey());
     counterPerIkeyMap.put(telemetryClient.getInstrumentationKey(), new IntervalMetrics());
-    sendIntervalMetric(telemetryClient, local, getHost(telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString()));
+    sendIntervalMetric(
+        telemetryClient,
+        local,
+        getHost(telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString()));
   }
 
   public void incrementRequestSuccessCount(long duration, String ikey) {
@@ -119,7 +123,8 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     return counterPerIkeyMap.get(ikey).exceptionCount.get();
   }
 
-  private void sendIntervalMetric(TelemetryClient telemetryClient, IntervalMetrics local, String host) {
+  private void sendIntervalMetric(
+      TelemetryClient telemetryClient, IntervalMetrics local, String host) {
     if (local.requestSuccessCount.get() != 0) {
       TelemetryItem requestSuccessCountSt =
           createStatsbeatTelemetry(
@@ -204,7 +209,8 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     return endpointUrl.replaceAll("^\\w+://", "").replaceAll("/\\w+.?\\w?/\\w+", "");
   }
 
-  void sendOriginalEndpointCounterOnRedirect(TelemetryClient telemetryClient, String ikey, String originalUrl) {
+  void sendOriginalEndpointCounterOnRedirect(
+      TelemetryClient telemetryClient, String ikey, String originalUrl) {
     IntervalMetrics local = counterPerIkeyMap.get(ikey);
     sendIntervalMetric(telemetryClient, local, originalUrl);
   }

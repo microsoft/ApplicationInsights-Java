@@ -208,11 +208,14 @@ public class TelemetryChannel {
         .send(request, Context.of(contextKeyValues))
         .subscribe(
             response -> {
-              parseResponseCode(response.getStatusCode(), byteBuffers, byteBuffers, instrumentationKey);
+              parseResponseCode(
+                  response.getStatusCode(), byteBuffers, byteBuffers, instrumentationKey);
               LazyHttpClient.consumeResponseBody(response);
             },
             error -> {
-              StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount(instrumentationKey);
+              StatsbeatModule.get()
+                  .getNetworkStatsbeat()
+                  .incrementRequestFailureCount(instrumentationKey);
               ExceptionUtils.parseError(
                   error, endpointUrl.toString(), friendlyExceptionThrown, logger);
               writeToDiskOnFailure(byteBuffers, byteBuffers);
@@ -221,7 +224,8 @@ public class TelemetryChannel {
             () -> {
               StatsbeatModule.get()
                   .getNetworkStatsbeat()
-                  .incrementRequestSuccessCount(System.currentTimeMillis() - startTime, instrumentationKey);
+                  .incrementRequestSuccessCount(
+                      System.currentTimeMillis() - startTime, instrumentationKey);
 
               if (byteBuffers != null) {
                 byteBufferPool.offer(byteBuffers);
@@ -247,7 +251,10 @@ public class TelemetryChannel {
   }
 
   private void parseResponseCode(
-      int statusCode, List<ByteBuffer> byteBuffers, List<ByteBuffer> finalByteBuffers, String instrumentationKey) {
+      int statusCode,
+      List<ByteBuffer> byteBuffers,
+      List<ByteBuffer> finalByteBuffers,
+      String instrumentationKey) {
     switch (statusCode) {
       case 401: // UNAUTHORIZED
       case 403: // FORBIDDEN

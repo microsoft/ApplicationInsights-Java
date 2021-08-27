@@ -60,7 +60,8 @@ public class StatsbeatModule {
     customDimensions = new CustomDimensions();
     List<String> ikeyList = Collections.synchronizedList(new ArrayList<>());
     ikeyList.add(telemetryClient.getInstrumentationKey());
-    // TODO will pass a list of iKey directly from TelemetryClient to NetworkStatsbeat when we start supporting multi-ikey
+    // TODO will pass a list of iKey directly from TelemetryClient to NetworkStatsbeat when we start
+    // supporting multi-ikey
     networkStatsbeat = new NetworkStatsbeat(customDimensions, ikeyList);
     attachStatsbeat = new AttachStatsbeat(customDimensions);
     featureStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.FEATURE);
@@ -144,7 +145,8 @@ public class StatsbeatModule {
   // endpoint.
   public void sendNetworkStatsbeatOnRedirect(String ikey, String originalEndpoint) {
     if (!disabledAll) {
-      networkStatsbeat.sendOriginalEndpointCounterOnRedirect(telemetryClient, ikey, originalEndpoint);
+      networkStatsbeat.sendOriginalEndpointCounterOnRedirect(
+          telemetryClient, ikey, originalEndpoint);
     }
   }
 
