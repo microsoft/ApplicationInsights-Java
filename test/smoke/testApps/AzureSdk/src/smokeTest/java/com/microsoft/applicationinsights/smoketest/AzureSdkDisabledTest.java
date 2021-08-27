@@ -35,11 +35,9 @@ public class AzureSdkDisabledTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(1);
 
     assertEquals("GET /AzureSdk/test", telemetry.rd.getName());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
 
     assertEquals("TestController.test", telemetry.rdd1.getName());
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
     assertTrue(telemetry.rdd1.getSuccess());
 
     assertParentChild(

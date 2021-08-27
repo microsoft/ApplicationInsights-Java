@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.smoketestapp;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
@@ -45,9 +46,12 @@ public class CassandraTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(1);
 
     assertEquals("GET /Cassandra/*", telemetry.rd.getName());
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/Cassandra/cassandra"));
     assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
+    assertNull(telemetry.rd.getSource());
+    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getMeasurements().isEmpty());
 
     assertEquals("SELECT test.test", telemetry.rdd1.getName());
     assertEquals("cassandra", telemetry.rdd1.getType());
