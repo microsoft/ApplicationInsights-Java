@@ -24,6 +24,9 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -55,7 +58,10 @@ public class StatsbeatModule {
 
   private StatsbeatModule() {
     customDimensions = new CustomDimensions();
-    networkStatsbeat = new NetworkStatsbeat(customDimensions);
+    List<String> ikeyList = Collections.synchronizedList(new ArrayList<>());
+    ikeyList.add(telemetryClient.getInstrumentationKey());
+    // TODO will pass a list of iKey directly from TelemetryClient to NetworkStatsbeat when we start supporting multi-ikey
+    networkStatsbeat = new NetworkStatsbeat(customDimensions, ikeyList);
     attachStatsbeat = new AttachStatsbeat(customDimensions);
     featureStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.FEATURE);
     instrumentationStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.INSTRUMENTATION);

@@ -25,7 +25,10 @@ import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -39,24 +42,24 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   private static final String EXCEPTION_COUNT_METRIC_NAME = "Exception Count";
   private static final String BREEZE_ENDPOINT = "breeze";
 
-  private volatile IntervalMetrics current;
   private final Object lock = new Object();
   private volatile String previousHost;
   private volatile String currentHost;
   private final AtomicBoolean redirected = new AtomicBoolean(false);
+  private final ConcurrentMap<String, IntervalMetrics> counterPerIkeyMap = new ConcurrentHashMap<>();
 
-  NetworkStatsbeat(CustomDimensions customDimensions) {
+  NetworkStatsbeat(CustomDimensions customDimensions, List<String> ikeys) {
     super(customDimensions);
-    current = new IntervalMetrics();
+    for (String ikey : ikeys) {
+      IntervalMetrics intervalMetrics = new IntervalMetrics();
+      counterPerIkeyMap.put(ikey, intervalMetrics);
+    }
   }
 
   @Override
   protected void send(TelemetryClient telemetryClient) {
-    IntervalMetrics local;
-    synchronized (lock) {
-      local = current;
-      current = new IntervalMetrics();
-    }
+    IntervalMetrics local = counterPerIkeyMap.get(telemetryClient.getInstrumentationKey());
+    counterPerIkeyMap.put(telemetryClient.getInstrumentationKey(), new IntervalMetrics());
 
     if (local.requestSuccessCount.get() != 0) {
       TelemetryItem requestSuccessCountSt =
@@ -105,9 +108,6 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       updateCustomDimensions(exceptionCountSt);
       telemetryClient.trackStatsbeatAsync(exceptionCountSt);
     }
-
-    // reset redirected flag
-    redirected.set(false);
   }
 
   private void updateCustomDimensions(TelemetryItem telemetryItem) {
@@ -122,65 +122,65 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     properties.put("host", host);
   }
 
-  public void incrementRequestSuccessCount(long duration) {
+  public void incrementRequestSuccessCount(long duration, String ikey) {
     synchronized (lock) {
-      current.requestSuccessCount.incrementAndGet();
-      current.totalRequestDuration.getAndAdd(duration);
+      counterPerIkeyMap.get(ikey).requestSuccessCount.incrementAndGet();
+      counterPerIkeyMap.get(ikey).totalRequestDuration.getAndAdd(duration);
     }
   }
 
-  public void incrementRequestFailureCount() {
+  public void incrementRequestFailureCount(String ikey) {
     synchronized (lock) {
-      current.requestFailureCount.incrementAndGet();
+      counterPerIkeyMap.get(ikey).requestFailureCount.incrementAndGet();
     }
   }
 
-  public void incrementRetryCount() {
+  public void incrementRetryCount(String ikey) {
     synchronized (lock) {
-      current.retryCount.incrementAndGet();
+      counterPerIkeyMap.get(ikey).retryCount.incrementAndGet();
     }
   }
 
-  public void incrementThrottlingCount() {
+  public void incrementThrottlingCount(String ikey) {
     synchronized (lock) {
-      current.throttlingCount.incrementAndGet();
+      counterPerIkeyMap.get(ikey).throttlingCount.incrementAndGet();
     }
   }
 
-  void incrementExceptionCount() {
+  void incrementExceptionCount(String ikey) {
     synchronized (lock) {
-      current.exceptionCount.incrementAndGet();
+      counterPerIkeyMap.get(ikey).exceptionCount.incrementAndGet();
     }
   }
 
   // only used by tests
-  long getRequestSuccessCount() {
-    return current.requestSuccessCount.get();
+  long getRequestSuccessCount(String ikey) {
+    return counterPerIkeyMap.get(ikey).requestSuccessCount.get();
   }
 
   // only used by tests
-  long getRequestFailureCount() {
-    return current.requestFailureCount.get();
+  long getRequestFailureCount(String ikey) {
+    return counterPerIkeyMap.get(ikey).requestFailureCount.get();
   }
 
   // only used by tests
-  double getRequestDurationAvg() {
-    return current.getRequestDurationAvg();
+  double getRequestDurationAvg(String ikey) {
+    return counterPerIkeyMap.get(ikey).getRequestDurationAvg();
   }
 
   // only used by tests
-  long getRetryCount() {
-    return current.retryCount.get();
+  long getRetryCount(String ikey) {
+    return counterPerIkeyMap.get(ikey).retryCount.get();
   }
 
   // only used by tests
-  long getThrottlingCount() {
-    return current.throttlingCount.get();
+  long getThrottlingCount(String ikey) {
+    return counterPerIkeyMap.get(ikey).throttlingCount.get();
   }
 
   // only used by tests
-  long getExceptionCount() {
-    return current.exceptionCount.get();
+  long getExceptionCount(String ikey) {
+    return counterPerIkeyMap.get(ikey).exceptionCount.get();
   }
 
   private static class IntervalMetrics {

@@ -208,11 +208,11 @@ public class TelemetryChannel {
         .send(request, Context.of(contextKeyValues))
         .subscribe(
             response -> {
-              parseResponseCode(response.getStatusCode(), byteBuffers, byteBuffers);
+              parseResponseCode(response.getStatusCode(), byteBuffers, byteBuffers, instrumentationKey);
               LazyHttpClient.consumeResponseBody(response);
             },
             error -> {
-              StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
+              StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount(instrumentationKey);
               ExceptionUtils.parseError(
                   error, endpointUrl.toString(), friendlyExceptionThrown, logger);
               writeToDiskOnFailure(byteBuffers, byteBuffers);
@@ -221,7 +221,7 @@ public class TelemetryChannel {
             () -> {
               StatsbeatModule.get()
                   .getNetworkStatsbeat()
-                  .incrementRequestSuccessCount(System.currentTimeMillis() - startTime);
+                  .incrementRequestSuccessCount(System.currentTimeMillis() - startTime, instrumentationKey);
 
               if (byteBuffers != null) {
                 byteBufferPool.offer(byteBuffers);
@@ -247,7 +247,7 @@ public class TelemetryChannel {
   }
 
   private void parseResponseCode(
-      int statusCode, List<ByteBuffer> byteBuffers, List<ByteBuffer> finalByteBuffers) {
+      int statusCode, List<ByteBuffer> byteBuffers, List<ByteBuffer> finalByteBuffers, String instrumentationKey) {
     switch (statusCode) {
       case 401: // UNAUTHORIZED
       case 403: // FORBIDDEN
@@ -263,7 +263,7 @@ public class TelemetryChannel {
       case 439: // Breeze-specific: THROTTLED OVER EXTENDED TIME
         // TODO handle throttling
         // TODO (heya) track throttling count via Statsbeat
-        StatsbeatModule.get().getNetworkStatsbeat().incrementThrottlingCount();
+        StatsbeatModule.get().getNetworkStatsbeat().incrementThrottlingCount(instrumentationKey);
         break;
       case 200: // SUCCESS
         operationLogger.recordSuccess();
@@ -274,7 +274,7 @@ public class TelemetryChannel {
       case 0: // client-side exception
         // TODO exponential backoff and retry to a limit
         // TODO (heya) track failure count via Statsbeat
-        StatsbeatModule.get().getNetworkStatsbeat().incrementRetryCount();
+        StatsbeatModule.get().getNetworkStatsbeat().incrementRetryCount(instrumentationKey);
         break;
       default:
         // ok
