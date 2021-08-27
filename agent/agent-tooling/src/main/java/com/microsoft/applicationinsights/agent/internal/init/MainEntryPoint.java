@@ -52,6 +52,7 @@ public class MainEntryPoint {
 
   private static RpConfiguration rpConfiguration;
   private static Configuration configuration;
+  private static String agentVersion = "(unknown)";
 
   private MainEntryPoint() {}
 
@@ -63,12 +64,15 @@ public class MainEntryPoint {
     return configuration;
   }
 
+  public static String getAgentVersion() {
+    return agentVersion;
+  }
+
   // TODO turn this into an interceptor
   @SuppressWarnings("SystemOut")
   public static void start(Instrumentation instrumentation, File javaagentFile) {
     boolean success = false;
     Logger startupLogger = null;
-    String version = "(unknown)";
     try {
       if (DEBUG_SIGNED_JAR_ACCESS) {
         JarVerifierClassFileTransformer transformer = new JarVerifierClassFileTransformer();
@@ -78,7 +82,7 @@ public class MainEntryPoint {
       }
       Path agentPath = javaagentFile.toPath();
       // need to initialize version before initializing DiagnosticsHelper
-      version = SdkVersionFinder.initVersion(agentPath);
+      agentVersion = SdkVersionFinder.initVersion(agentPath);
       DiagnosticsHelper.setAgentJarFile(agentPath);
       // configuration is only read this early in order to extract logging configuration
       rpConfiguration = RpConfigurationBuilder.create(agentPath);
@@ -92,17 +96,17 @@ public class MainEntryPoint {
           instrumentation, ConfigOverride.getConfig(configuration), false);
       startupLogger.info(
           "ApplicationInsights Java Agent {} started successfully (PID {})",
-          version,
+          agentVersion,
           new PidFinder().getValue());
       success = true;
       LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
-          .info("Application Insights Codeless Agent {} Attach Successful", version);
+          .info("Application Insights Codeless Agent {} Attach Successful", agentVersion);
     } catch (ThreadDeath td) {
       throw td;
     } catch (Throwable t) {
 
       FriendlyException friendlyException = getFriendlyException(t);
-      String banner = "ApplicationInsights Java Agent " + version + " failed to start";
+      String banner = "ApplicationInsights Java Agent " + agentVersion + " failed to start";
       if (friendlyException != null) {
         logErrorMessage(
             startupLogger, friendlyException.getMessageWithBanner(banner), true, t, javaagentFile);

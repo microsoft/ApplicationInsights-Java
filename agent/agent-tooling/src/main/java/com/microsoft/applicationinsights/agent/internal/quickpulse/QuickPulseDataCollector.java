@@ -93,7 +93,9 @@ public enum QuickPulseDataCollector {
       this.rdds = countAndDuration.count;
       this.rddsDuration = countAndDuration.duration;
       this.unsuccessfulRdds = currentCounters.unsuccessfulRdds.get();
-      this.documentList.addAll(currentCounters.documentList);
+      synchronized (currentCounters.documentList) {
+        this.documentList.addAll(currentCounters.documentList);
+      }
     }
   }
 
@@ -242,8 +244,7 @@ public enum QuickPulseDataCollector {
     quickPulseDependencyDocument.setSuccess(telemetry.isSuccess());
     quickPulseDependencyDocument.setDuration(telemetry.getDuration());
     quickPulseDependencyDocument.setResultCode(telemetry.getResultCode());
-    quickPulseDependencyDocument.setOperationName(
-        telemetry.getId()); // TODO Krishna need to check with Quickpulse Team
+    quickPulseDependencyDocument.setOperationName(telemetry.getId());
     quickPulseDependencyDocument.setDependencyTypeName(telemetry.getType());
     quickPulseDependencyDocument.setProperties(
         aggregateProperties(telemetry.getProperties(), telemetry.getMeasurements()));
@@ -262,8 +263,7 @@ public enum QuickPulseDataCollector {
     QuickPulseExceptionDocument quickPulseExceptionDocument = new QuickPulseExceptionDocument();
     quickPulseExceptionDocument.setDocumentType("Exception");
     quickPulseExceptionDocument.setType("ExceptionTelemetryDocument");
-    quickPulseExceptionDocument.setOperationId(
-        exceptionData.getProblemId()); // TODO Krishna need to check with Quickpulse Team
+    quickPulseExceptionDocument.setOperationId(exceptionData.getProblemId());
     quickPulseExceptionDocument.setVersion("1.0");
     List<TelemetryExceptionDetails> exceptionList = exceptionData.getExceptions();
     StringBuilder exceptions = new StringBuilder();
@@ -272,7 +272,9 @@ public enum QuickPulseDataCollector {
       String stack = exceptionList.get(0).getStack();
       if (parsedStack != null && parsedStack.size() > 0) {
         for (StackFrame stackFrame : parsedStack) {
-          exceptions.append(stackFrame.getAssembly()).append("\n");
+          if (stackFrame != null && stackFrame.getAssembly() != null) {
+            exceptions.append(stackFrame.getAssembly()).append("\n");
+          }
         }
       } else if (stack != null && stack.length() > 0) {
         exceptions.append(stack);
@@ -306,8 +308,7 @@ public enum QuickPulseDataCollector {
     quickPulseRequestDocument.setSuccess(requestTelemetry.isSuccess());
     quickPulseRequestDocument.setDuration(requestTelemetry.getDuration());
     quickPulseRequestDocument.setResponseCode(requestTelemetry.getResponseCode());
-    quickPulseRequestDocument.setOperationName(
-        requestTelemetry.getName()); // TODO Krishna need to check with Quickpulse Team
+    quickPulseRequestDocument.setOperationName(requestTelemetry.getName());
     quickPulseRequestDocument.setProperties(
         aggregateProperties(requestTelemetry.getProperties(), requestTelemetry.getMeasurements()));
     synchronized (counters.documentList) {

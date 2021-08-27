@@ -46,7 +46,9 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Pattern;
 import reactor.core.publisher.Mono;
@@ -118,12 +120,13 @@ public class QuickPulseTestBase extends TestBase {
     TelemetryItem telemetry = new TelemetryItem();
     RequestData data = new RequestData();
     new TelemetryClient().initRequestTelemetry(telemetry, data);
-
+    Map<String, String> properties = new HashMap<>();
+    properties.put("customProperty", "customValue");
+    data.setProperties(properties);
     data.setName(name);
     data.setDuration(FormattedDuration.fromMillis(durationMillis));
     data.setResponseCode(responseCode);
     data.setSuccess(success);
-
     telemetry.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
     return telemetry;
   }
@@ -133,12 +136,13 @@ public class QuickPulseTestBase extends TestBase {
     TelemetryItem telemetry = new TelemetryItem();
     RemoteDependencyData data = new RemoteDependencyData();
     new TelemetryClient().initRemoteDependencyTelemetry(telemetry, data);
-
+    Map<String, String> properties = new HashMap<>();
+    properties.put("customProperty", "customValue");
+    data.setProperties(properties);
     data.setName(name);
     data.setData(command);
     data.setDuration(FormattedDuration.fromMillis(durationMillis));
     data.setSuccess(success);
-
     return telemetry;
   }
 
@@ -146,9 +150,7 @@ public class QuickPulseTestBase extends TestBase {
     TelemetryItem telemetry = new TelemetryItem();
     TelemetryExceptionData data = new TelemetryExceptionData();
     new TelemetryClient().initExceptionTelemetry(telemetry, data);
-
     data.setExceptions(getExceptions(exception));
-
     return telemetry;
   }
 

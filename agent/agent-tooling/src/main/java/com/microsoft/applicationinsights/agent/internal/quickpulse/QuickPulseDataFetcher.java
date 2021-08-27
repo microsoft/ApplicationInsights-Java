@@ -44,20 +44,21 @@ class QuickPulseDataFetcher {
 
   private static final String QP_BASE_URI =
       "https://rt.services.visualstudio.com/QuickPulseService.svc";
-  private final ArrayBlockingQueue<HttpRequest> sendQueue;
-  private final TelemetryClient telemetryClient;
-  private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
   private static final ObjectMapper mapper;
-  private final String sdkVersion;
-  private final String instanceName;
-  private final String machineName;
-  private final String quickPulseId;
 
   static {
     mapper = new ObjectMapper();
     mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     mapper.getFactory().setCharacterEscapes(new CustomCharacterEscapes());
   }
+
+  private final ArrayBlockingQueue<HttpRequest> sendQueue;
+  private final TelemetryClient telemetryClient;
+  private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
+  private final String sdkVersion;
+  private final String instanceName;
+  private final String machineName;
+  private final String quickPulseId;
 
   public QuickPulseDataFetcher(
       ArrayBlockingQueue<HttpRequest> sendQueue,
@@ -139,8 +140,8 @@ class QuickPulseDataFetcher {
     postEnvelope.setMachineName(machineName);
     // FIXME (heya) what about azure functions consumption plan where role name not available yet?
     postEnvelope.setRoleName(telemetryClient.getRoleName());
-    // TODO (trask) live metrics: instrumentation key is also part of query string, is it needed in
-    // both places?
+    // For historical reasons, instrumentation key is provided both in the query string and
+    // envelope.
     postEnvelope.setInstrumentationKey(telemetryClient.getInstrumentationKey());
     postEnvelope.setStreamId(quickPulseId);
     postEnvelope.setVersion(sdkVersion);

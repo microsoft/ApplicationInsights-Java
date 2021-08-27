@@ -31,6 +31,7 @@ import com.microsoft.applicationinsights.agent.internal.common.ExceptionUtils;
 import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
+import com.microsoft.applicationinsights.agent.internal.init.MainEntryPoint;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.model.QuickPulseEnvelope;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.util.CustomCharacterEscapes;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -43,16 +44,9 @@ class QuickPulsePingSender {
 
   private static final Logger logger = LoggerFactory.getLogger(QuickPulsePingSender.class);
 
-  private final TelemetryClient telemetryClient;
-  private final HttpPipeline httpPipeline;
-  private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
-  private volatile QuickPulseEnvelope pingEnvelope; // cached for performance
-  private final String instanceName;
-  private final String machineName;
-  private final String quickPulseId;
-  private long lastValidTransmission = 0;
   private static final ObjectMapper mapper;
-  private static final String quickPulseVersion = "2.2.0-738";
+
+  private static final String quickPulseVersion = MainEntryPoint.getAgentVersion();
 
   private static final OperationLogger operationLogger =
       new OperationLogger(QuickPulsePingSender.class, "Pinging live metrics endpoint");
@@ -66,6 +60,15 @@ class QuickPulsePingSender {
     mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     mapper.getFactory().setCharacterEscapes(new CustomCharacterEscapes());
   }
+
+  private final TelemetryClient telemetryClient;
+  private final HttpPipeline httpPipeline;
+  private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
+  private volatile QuickPulseEnvelope pingEnvelope; // cached for performance
+  private final String instanceName;
+  private final String machineName;
+  private final String quickPulseId;
+  private long lastValidTransmission = 0;
 
   public QuickPulsePingSender(
       HttpPipeline httpPipeline,
