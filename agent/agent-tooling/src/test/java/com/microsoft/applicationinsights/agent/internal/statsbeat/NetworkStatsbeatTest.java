@@ -27,6 +27,8 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.EndpointProvid
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -37,52 +39,56 @@ import org.mockito.Mockito;
 public class NetworkStatsbeatTest {
 
   private NetworkStatsbeat networkStatsbeat;
+  private List<String> ikeys;
 
   @BeforeEach
   public void init() {
-    networkStatsbeat = new NetworkStatsbeat(new CustomDimensions());
+    ikeys = new ArrayList<>();
+    ikeys.add("00000000-0000-0000-0000-0FEEDDADBEEF");
+    ikeys.add("00000000-0000-0000-0000-0ABCDDADABCE");
+    networkStatsbeat = new NetworkStatsbeat(new CustomDimensions(), ikeys);
   }
 
   @Test
   public void testIncrementRequestSuccessCount() {
-    assertThat(networkStatsbeat.getRequestSuccessCount()).isEqualTo(0);
-    assertThat(networkStatsbeat.getRequestDurationAvg()).isEqualTo(0);
-    networkStatsbeat.incrementRequestSuccessCount(1000);
-    networkStatsbeat.incrementRequestSuccessCount(3000);
-    assertThat(networkStatsbeat.getRequestSuccessCount()).isEqualTo(2);
-    assertThat(networkStatsbeat.getRequestDurationAvg()).isEqualTo(2000.0);
+    assertThat(networkStatsbeat.getRequestSuccessCount(ikeys.get(0))).isEqualTo(0);
+    assertThat(networkStatsbeat.getRequestDurationAvg(ikeys.get(0))).isEqualTo(0);
+    networkStatsbeat.incrementRequestSuccessCount(1000, ikeys.get(0));
+    networkStatsbeat.incrementRequestSuccessCount(3000, ikeys.get(0));
+    assertThat(networkStatsbeat.getRequestSuccessCount(ikeys.get(0))).isEqualTo(2);
+    assertThat(networkStatsbeat.getRequestDurationAvg(ikeys.get(0))).isEqualTo(2000.0);
   }
 
   @Test
   public void testIncrementRequestFailureCount() {
-    assertThat(networkStatsbeat.getRequestFailureCount()).isEqualTo(0);
-    networkStatsbeat.incrementRequestFailureCount();
-    networkStatsbeat.incrementRequestFailureCount();
-    assertThat(networkStatsbeat.getRequestFailureCount()).isEqualTo(2);
+    assertThat(networkStatsbeat.getRequestFailureCount(ikeys.get(0))).isEqualTo(0);
+    networkStatsbeat.incrementRequestFailureCount(ikeys.get(0));
+    networkStatsbeat.incrementRequestFailureCount(ikeys.get(0));
+    assertThat(networkStatsbeat.getRequestFailureCount(ikeys.get(0))).isEqualTo(2);
   }
 
   @Test
   public void testIncrementRetryCount() {
-    assertThat(networkStatsbeat.getRetryCount()).isEqualTo(0);
-    networkStatsbeat.incrementRetryCount();
-    networkStatsbeat.incrementRetryCount();
-    assertThat(networkStatsbeat.getRetryCount()).isEqualTo(2);
+    assertThat(networkStatsbeat.getRetryCount(ikeys.get(0))).isEqualTo(0);
+    networkStatsbeat.incrementRetryCount(ikeys.get(0));
+    networkStatsbeat.incrementRetryCount(ikeys.get(0));
+    assertThat(networkStatsbeat.getRetryCount(ikeys.get(0))).isEqualTo(2);
   }
 
   @Test
   public void testIncrementThrottlingCount() {
-    assertThat(networkStatsbeat.getThrottlingCount()).isEqualTo(0);
-    networkStatsbeat.incrementThrottlingCount();
-    networkStatsbeat.incrementThrottlingCount();
-    assertThat(networkStatsbeat.getThrottlingCount()).isEqualTo(2);
+    assertThat(networkStatsbeat.getThrottlingCount(ikeys.get(0))).isEqualTo(0);
+    networkStatsbeat.incrementThrottlingCount(ikeys.get(0));
+    networkStatsbeat.incrementThrottlingCount(ikeys.get(0));
+    assertThat(networkStatsbeat.getThrottlingCount(ikeys.get(0))).isEqualTo(2);
   }
 
   @Test
   public void testIncrementExceptionCount() {
-    assertThat(networkStatsbeat.getExceptionCount()).isEqualTo(0);
-    networkStatsbeat.incrementExceptionCount();
-    networkStatsbeat.incrementExceptionCount();
-    assertThat(networkStatsbeat.getExceptionCount()).isEqualTo(2);
+    assertThat(networkStatsbeat.getExceptionCount(ikeys.get(0))).isEqualTo(0);
+    networkStatsbeat.incrementExceptionCount(ikeys.get(0));
+    networkStatsbeat.incrementExceptionCount(ikeys.get(0));
+    assertThat(networkStatsbeat.getExceptionCount(ikeys.get(0))).isEqualTo(2);
   }
 
   @Test
@@ -94,11 +100,11 @@ public class NetworkStatsbeatTest {
             @Override
             public void run() {
               for (int j = 0; j < 1000; j++) {
-                networkStatsbeat.incrementRequestSuccessCount(j % 2 == 0 ? 5 : 10);
-                networkStatsbeat.incrementRequestFailureCount();
-                networkStatsbeat.incrementRetryCount();
-                networkStatsbeat.incrementThrottlingCount();
-                networkStatsbeat.incrementExceptionCount();
+                networkStatsbeat.incrementRequestSuccessCount(j % 2 == 0 ? 5 : 10, ikeys.get(0));
+                networkStatsbeat.incrementRequestFailureCount(ikeys.get(0));
+                networkStatsbeat.incrementRetryCount(ikeys.get(0));
+                networkStatsbeat.incrementThrottlingCount(ikeys.get(0));
+                networkStatsbeat.incrementExceptionCount(ikeys.get(0));
               }
             }
           });
@@ -106,12 +112,12 @@ public class NetworkStatsbeatTest {
 
     executorService.shutdown();
     executorService.awaitTermination(10, TimeUnit.MINUTES);
-    assertThat(networkStatsbeat.getRequestSuccessCount()).isEqualTo(100000);
-    assertThat(networkStatsbeat.getRequestFailureCount()).isEqualTo(100000);
-    assertThat(networkStatsbeat.getRetryCount()).isEqualTo(100000);
-    assertThat(networkStatsbeat.getThrottlingCount()).isEqualTo(100000);
-    assertThat(networkStatsbeat.getExceptionCount()).isEqualTo(100000);
-    assertThat(networkStatsbeat.getRequestDurationAvg()).isEqualTo(7.5);
+    assertThat(networkStatsbeat.getRequestSuccessCount(ikeys.get(0))).isEqualTo(100000);
+    assertThat(networkStatsbeat.getRequestFailureCount(ikeys.get(0))).isEqualTo(100000);
+    assertThat(networkStatsbeat.getRetryCount(ikeys.get(0))).isEqualTo(100000);
+    assertThat(networkStatsbeat.getThrottlingCount(ikeys.get(0))).isEqualTo(100000);
+    assertThat(networkStatsbeat.getExceptionCount(ikeys.get(0))).isEqualTo(100000);
+    assertThat(networkStatsbeat.getRequestDurationAvg(ikeys.get(0))).isEqualTo(7.5);
   }
 
   @Test
