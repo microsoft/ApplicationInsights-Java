@@ -83,5 +83,3 @@ dependencies {
   testImplementation("com.microsoft.jfr:jfr-streaming")
   testImplementation("com.azure:azure-storage-blob")
 }
-
-
