@@ -26,3 +26,9 @@ dependencies {
 
   testImplementation("com.microsoft.azure:azure-spring-boot-metrics-starter:2.2.3")
 }
+
+tasks {
+  withType<Test>().configureEach {
+    jvmArgs("-Dotel.micrometer.step.millis=100")
+  }
+}

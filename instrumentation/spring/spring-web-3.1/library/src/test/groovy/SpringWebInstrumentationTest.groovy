@@ -63,9 +63,8 @@ class SpringWebInstrumentationTest extends HttpClientTest<HttpEntity<String>> im
     false
   }
 
-  // library instrumentation doesn't have a good way of suppressing nested CLIENT spans yet
   @Override
-  boolean testWithClientParent() {
+  boolean capturesAiTargetAppId() {
     false
   }
 
