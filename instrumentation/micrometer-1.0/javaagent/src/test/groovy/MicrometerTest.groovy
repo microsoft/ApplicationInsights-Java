@@ -20,6 +20,7 @@ import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
 import io.opentelemetry.javaagent.instrumentation.micrometer.AzureMonitorMeterRegistry
 import io.opentelemetry.javaagent.testing.common.AgentTestingMicrometerDelegateAccess
 import java.util.concurrent.Executors
+import java.util.stream.Collectors
 
 class MicrometerTest extends AgentInstrumentationSpecification {
 
@@ -45,111 +46,95 @@ class MicrometerTest extends AgentInstrumentationSpecification {
 
   def "should capture time gauge"() {
     setup:
-    def registry = new AzureMonitorMeterRegistry(Clock.SYSTEM)
-    TimeGauge.builder("test", "", MILLISECONDS, { 11d }).register(registry)
+    def registry = Metrics.globalRegistry
+    TimeGauge.builder("test-time-gauge", "", MILLISECONDS, { 11d }).register(registry)
 
     when:
-    registry.publish()
+    Thread.sleep(500)
 
     then:
-    def measurements = AgentTestingMicrometerDelegateAccess.getMeasurements()
-    measurements.size() == 1
-    measurements[0].name == "test"
-    measurements[0].value == 11
-    measurements[0].count == null
-    measurements[0].min == null
-    measurements[0].max == null
+    def measurement = getLastMeasurement("test-time-gauge")
+    measurement.value() == 11
+    measurement.count() == null
+    measurement.min() == null
+    measurement.max() == null
   }
 
   def "should capture gauge"() {
     setup:
-    def registry = new AzureMonitorMeterRegistry(Clock.SYSTEM)
-    Gauge.builder("test", { 22 }).register(registry)
+    def registry = Metrics.globalRegistry
 
     when:
-    registry.publish()
+    Gauge.builder("test-gauge", { 22 }).register(registry)
+    Thread.sleep(500)
 
     then:
-    def measurements = AgentTestingMicrometerDelegateAccess.getMeasurements()
-    measurements.size() == 1
-    measurements[0].name == "test"
-    measurements[0].value == 22
-    measurements[0].count == null
-    measurements[0].min == null
-    measurements[0].max == null
+    def measurement = getLastMeasurement("test-gauge")
+    measurement.value() == 22
+    measurement.count() == null
+    measurement.min() == null
+    measurement.max() == null
   }
 
   def "should capture counter"() {
     setup:
-    def clock = new TestClock()
-    def registry = new AzureMonitorMeterRegistry(clock)
-    def counter = Counter.builder("test").register(registry)
+    def registry = Metrics.globalRegistry
 
     when:
+    def counter = Counter.builder("test-counter").register(registry)
     counter.increment(3.3)
-    clock.timeMillis = 60000
-    registry.publish()
+    Thread.sleep(500)
 
     then:
-    def measurements = AgentTestingMicrometerDelegateAccess.getMeasurements()
-    measurements.size() == 1
-    measurements[0].name == "test"
-    measurements[0].value == 3.3
-    measurements[0].count == null
-    measurements[0].min == null
-    measurements[0].max == null
+    def measurement = getLastMeasurement("test-counter")
+    measurement.value() == 3.3
+    measurement.count() == null
+    measurement.min() == null
+    measurement.max() == null
   }
 
   def "should capture timer"() {
     setup:
-    def clock = new TestClock()
-    def registry = new AzureMonitorMeterRegistry(clock)
-    def timer = Timer.builder("test").register(registry)
+    def registry = Metrics.globalRegistry
+    def timer = Timer.builder("test-timer").register(registry)
 
     when:
     timer.record(44, MILLISECONDS)
     timer.record(55, MILLISECONDS)
-    clock.timeMillis = 60000
-    registry.publish()
+    Thread.sleep(500)
 
     then:
-    def measurements = AgentTestingMicrometerDelegateAccess.getMeasurements()
-    measurements.size() == 1
-    measurements[0].name == "test"
-    measurements[0].value == 99
-    measurements[0].count == 2
-    measurements[0].min == null // min is not supported, see https://github.com/micrometer-metrics/micrometer/issues/457
-    measurements[0].max == 55
+    def measurement = getLastMeasurement("test-timer")
+    measurement.value() == 99
+    measurement.count() == 2
+    measurement.min() == null // min is not supported, see https://github.com/micrometer-metrics/micrometer/issues/457
+    measurement.max() == 55
   }
 
   def "should capture distribution summary"() {
     setup:
-    def clock = new TestClock()
-    def registry = new AzureMonitorMeterRegistry(clock)
-    def distributionSummary = DistributionSummary.builder("test").register(registry)
+    def registry = Metrics.globalRegistry
+    def distributionSummary = DistributionSummary.builder("test-summary").register(registry)
 
     when:
     distributionSummary.record(4.4)
     distributionSummary.record(5.5)
-    clock.timeMillis = 60000
-    registry.publish()
+    Thread.sleep(500)
 
     then:
-    def measurements = AgentTestingMicrometerDelegateAccess.getMeasurements()
-    measurements.size() == 1
-    measurements[0].name == "test"
-    measurements[0].value == 9.9
-    measurements[0].count == 2
-    measurements[0].min == null // min is not supported, see https://github.com/micrometer-metrics/micrometer/issues/457
-    measurements[0].max == 5.5
+    def measurement = getLastMeasurement("test-summary")
+    measurement.value() == 9.9
+    measurement.count() == 2
+    measurement.min() == null // min is not supported, see https://github.com/micrometer-metrics/micrometer/issues/457
+    measurement.max() == 5.5
   }
 
   def "should capture long task timer"() {
     setup:
-    def registry = new AzureMonitorMeterRegistry(Clock.SYSTEM)
-    def timer = LongTaskTimer.builder("test").register(registry)
+    def registry = Metrics.globalRegistry
 
     when:
+    def timer = LongTaskTimer.builder("test-long-task-timer").register(registry)
     def executor = Executors.newCachedThreadPool()
     executor.execute({
       timer.record({
@@ -161,62 +146,60 @@ class MicrometerTest extends AgentInstrumentationSpecification {
         Thread.sleep(Long.MAX_VALUE)
       })
     })
-    Thread.sleep(1000)
-    registry.publish()
+    Thread.sleep(500)
 
     then:
-    def measurements = AgentTestingMicrometerDelegateAccess.getMeasurements()
-    measurements.size() == 2
-    measurements[0].name == "test_active"
-    measurements[0].value == 2
-    measurements[0].count == null
-    measurements[0].min == null
-    measurements[0].max == null
-    measurements[1].name == "test_duration"
-    measurements[1].value > 150
-    measurements[1].count == null
-    measurements[1].min == null
-    measurements[1].max == null
+    def activeMeasurement = getLastMeasurement("test-long-task-timer_active")
+    activeMeasurement.value() == 2
+    activeMeasurement.count() == null
+    activeMeasurement.min() == null
+    activeMeasurement.max() == null
+
+    def durationMeasurement = getLastMeasurement("test-long-task-timer_duration")
+    durationMeasurement.value() > 50
+    durationMeasurement.count() == null
+    durationMeasurement.min() == null
+    durationMeasurement.max() == null
   }
 
   def "should capture function counter"() {
     setup:
-    def clock = new TestClock()
-    def registry = new AzureMonitorMeterRegistry(clock)
-    FunctionCounter.builder("test", "", { 6.6d }).register(registry)
+    def registry = Metrics.globalRegistry
 
     when:
-    clock.timeMillis = 60000
-    registry.publish()
+    FunctionCounter.builder("test-function-counter", "", { 6.6d }).register(registry)
+    Thread.sleep(500)
 
     then:
-    def measurements = AgentTestingMicrometerDelegateAccess.getMeasurements()
-    measurements.size() == 1
-    measurements[0].name == "test"
-    measurements[0].value == 6.6
-    measurements[0].count == null
-    measurements[0].min == null
-    measurements[0].max == null
+    def measurements = getLastMeasurement("test-function-counter")
+    measurements.value() == 6.6
+    measurements.count() == null
+    measurements.min() == null
+    measurements.max() == null
   }
 
   def "should capture function timer"() {
     setup:
-    def clock = new TestClock()
-    def registry = new AzureMonitorMeterRegistry(clock)
-    FunctionTimer.builder("test", "", { 2L }, { 4.4d }, MILLISECONDS)
-      .register(registry)
+    def registry = Metrics.globalRegistry
+
     when:
-    clock.timeMillis = 60000
-    registry.publish()
+    FunctionTimer.builder("test-function-timer", "", { 2L }, { 4.4d }, MILLISECONDS)
+      .register(registry)
+    Thread.sleep(500)
 
     then:
-    def measurements = AgentTestingMicrometerDelegateAccess.getMeasurements()
-    measurements.size() == 1
-    measurements[0].name == "test"
-    measurements[0].value == 4.4
-    measurements[0].count == 2
-    measurements[0].min == null
-    measurements[0].max == null
+    def measurement = getLastMeasurement("test-function-timer")
+    measurement.value() == 4.4
+    measurement.count() == 2
+    measurement.min() == null
+    measurement.max() == null
+  }
+
+  AgentTestingMicrometerDelegateAccess.Measurement getLastMeasurement(String name) {
+    def measurements = AgentTestingMicrometerDelegateAccess.getMeasurements().stream()
+      .filter({ it.name() == name && it.value() != 0 })
+      .collect(Collectors.toList())
+    return measurements.get(measurements.size() - 1)
   }
 
   static class TestClock implements Clock {

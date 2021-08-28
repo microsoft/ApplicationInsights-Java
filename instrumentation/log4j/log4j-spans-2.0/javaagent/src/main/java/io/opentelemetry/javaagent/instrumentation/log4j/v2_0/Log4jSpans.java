@@ -56,7 +56,7 @@ public class Log4jSpans {
   }
 
   private static Level getThreshold() {
-    String level = Config.get().getProperty("otel.experimental.log.capture.threshold");
+    String level = Config.get().getString("otel.experimental.log.capture.threshold");
     if (level == null) {
       return Level.OFF;
     }

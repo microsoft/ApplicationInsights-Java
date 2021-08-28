@@ -12,10 +12,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory
 
 class JettyHttpClient9LibraryTest extends AbstractJettyClient9Test implements LibraryTestTrait {
 
-
-  @Override
-  boolean testWithClientParent() {
-    //The client parent test does not work well in the context of library only tests.
+  boolean capturesAiTargetAppId() {
     false
   }
 
@@ -32,10 +29,5 @@ class JettyHttpClient9LibraryTest extends AbstractJettyClient9Test implements Li
       .setSslContextFactory(sslContextFactory)
       .build()
       .getHttpClient()
-  }
-
-  @Override
-  boolean capturesAiTargetAppId() {
-    false
   }
 }

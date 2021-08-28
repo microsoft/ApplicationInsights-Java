@@ -16,7 +16,6 @@ spotless {
 repositories {
   mavenCentral()
   gradlePluginPortal()
-  mavenLocal() // this is needed to run locally modified gradle plugins
   maven {
     url = uri("https://oss.sonatype.org/content/repositories/snapshots")
   }
@@ -30,8 +29,8 @@ dependencies {
   implementation(gradleApi())
   implementation(localGroovy())
 
-  implementation("io.opentelemetry.instrumentation.muzzle-generation:io.opentelemetry.instrumentation.muzzle-generation.gradle.plugin:0.5.0-SNAPSHOT")
-  implementation("io.opentelemetry.instrumentation.muzzle-check:io.opentelemetry.instrumentation.muzzle-check.gradle.plugin:0.5.0-SNAPSHOT")
+  implementation("io.opentelemetry.instrumentation.muzzle-generation:io.opentelemetry.instrumentation.muzzle-generation.gradle.plugin:0.7.0")
+  implementation("io.opentelemetry.instrumentation.muzzle-check:io.opentelemetry.instrumentation.muzzle-check.gradle.plugin:0.7.0")
 
   implementation("org.eclipse.aether:aether-connector-basic:1.1.0")
   implementation("org.eclipse.aether:aether-transport-http:1.1.0")

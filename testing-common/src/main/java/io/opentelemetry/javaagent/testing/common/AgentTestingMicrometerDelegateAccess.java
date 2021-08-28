@@ -5,12 +5,14 @@
 
 package io.opentelemetry.javaagent.testing.common;
 
+import com.google.auto.value.AutoValue;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class AgentTestingMicrometerDelegateAccess {
 
@@ -60,33 +62,38 @@ public class AgentTestingMicrometerDelegateAccess {
       Double max = (Double) d[4];
       @SuppressWarnings("unchecked")
       Map<String, String> properties = (Map<String, String>) d[5];
-      measurements.add(new Measurement(name, value, count, min, max, properties));
+      measurements.add(Measurement.create(name, value, count, min, max, properties));
     }
     return measurements;
   }
 
-  public static class Measurement {
+  @AutoValue
+  public abstract static class Measurement {
 
-    public final String name;
-    public final double value;
-    public final Integer count;
-    public final Double min;
-    public final Double max;
-    public final Map<String, String> properties;
-
-    private Measurement(
+    private static Measurement create(
         String name,
         double value,
         Integer count,
         Double min,
         Double max,
         Map<String, String> properties) {
-      this.name = name;
-      this.value = value;
-      this.count = count;
-      this.min = min;
-      this.max = max;
-      this.properties = properties;
+      return new AutoValue_AgentTestingMicrometerDelegateAccess_Measurement(
+          name, value, count, min, max, properties);
     }
+
+    public abstract String name();
+
+    public abstract double value();
+
+    @Nullable
+    public abstract Integer count();
+
+    @Nullable
+    public abstract Double min();
+
+    @Nullable
+    public abstract Double max();
+
+    public abstract Map<String, String> properties();
   }
 }
