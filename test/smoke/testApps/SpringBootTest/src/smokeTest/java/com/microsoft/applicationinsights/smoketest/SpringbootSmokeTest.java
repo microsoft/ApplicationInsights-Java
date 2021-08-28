@@ -25,6 +25,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
@@ -148,7 +149,9 @@ public class SpringbootSmokeTest extends AiSmokeTest {
     assertFalse(rd.getSuccess());
 
     assertEquals("TestController.resultCodeTest", rdd1.getName());
-    assertEquals(rdd1.getType(), "InProc");
+    assertNull(rdd1.getData());
+    assertEquals("InProc", rdd1.getType());
+    assertNull(rdd1.getTarget());
     assertTrue(rdd1.getProperties().isEmpty());
     assertFalse(rdd1.getSuccess());
 
@@ -185,6 +188,9 @@ public class SpringbootSmokeTest extends AiSmokeTest {
     assertTrue(rd.getSuccess());
 
     assertEquals("TestController.asyncDependencyCall", rdd1.getName());
+    assertNull(rdd1.getData());
+    assertEquals("InProc", rdd1.getType());
+    assertNull(rdd1.getTarget());
     assertTrue(rdd1.getProperties().isEmpty());
     assertTrue(rdd1.getSuccess());
 

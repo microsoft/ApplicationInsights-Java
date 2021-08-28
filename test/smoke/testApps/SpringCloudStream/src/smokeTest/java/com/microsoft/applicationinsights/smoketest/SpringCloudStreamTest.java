@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
@@ -87,10 +88,14 @@ public class SpringCloudStreamTest extends AiSmokeTest {
     assertTrue(rd1.getSuccess());
 
     assertEquals("GreetingsController.sendMessage", rdd1.getName());
+    assertNull(rdd1.getData());
+    assertEquals("InProc", rdd1.getType());
+    assertNull(rdd1.getTarget());
     assertTrue(rdd1.getProperties().isEmpty());
     assertTrue(rdd1.getSuccess());
 
     assertEquals("greetings send", rdd2.getName());
+    assertNull(rdd2.getData());
     assertEquals("Queue Message | kafka", rdd2.getType());
     assertEquals("greetings", rdd2.getTarget());
     assertTrue(rdd2.getProperties().isEmpty());

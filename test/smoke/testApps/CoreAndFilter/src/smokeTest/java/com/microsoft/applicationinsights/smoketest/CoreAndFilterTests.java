@@ -72,15 +72,16 @@ public class CoreAndFilterTests extends AiSmokeTest {
   public void trackDependency() throws Exception {
     Telemetry telemetry = getTelemetry(1);
 
-    final String expectedName = "DependencyTest";
-    final String expectedData = "commandName";
     Duration expectedDuration = new Duration(0, 0, 1, 1, 1);
 
-    assertEquals(expectedName, telemetry.rdd1.getName());
-    assertEquals(expectedData, telemetry.rdd1.getData());
-    assertEquals(expectedDuration, telemetry.rdd1.getDuration());
+    assertEquals("DependencyTest", telemetry.rdd1.getName());
+    assertEquals("commandName", telemetry.rdd1.getData());
+    assertNull(telemetry.rdd1.getType());
+    assertNull(telemetry.rdd1.getTarget());
     assertTrue(telemetry.rdd1.getProperties().isEmpty());
     assertTrue(telemetry.rdd1.getSuccess());
+
+    assertEquals(expectedDuration, telemetry.rdd1.getDuration());
 
     assertParentChild(
         telemetry.rd,

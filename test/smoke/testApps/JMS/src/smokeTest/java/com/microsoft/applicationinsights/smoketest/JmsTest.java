@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
@@ -65,10 +66,14 @@ public class JmsTest extends AiSmokeTest {
     assertTrue(rd1.getSuccess());
 
     assertEquals("HelloController.sendMessage", rdd1.getName());
+    assertNull(rdd1.getData());
+    assertEquals("InProc", rdd1.getType());
+    assertNull(rdd1.getTarget());
     assertTrue(rdd1.getProperties().isEmpty());
     assertTrue(rdd1.getSuccess());
 
     assertEquals("message send", rdd2.getName());
+    assertNull(rdd2.getData());
     assertEquals("Queue Message | jms", rdd2.getType());
     assertEquals("message", rdd2.getTarget());
     assertTrue(rdd2.getProperties().isEmpty());
@@ -81,6 +86,8 @@ public class JmsTest extends AiSmokeTest {
 
     assertEquals("HTTP GET", rdd3.getName());
     assertEquals("https://www.bing.com", rdd3.getData());
+    assertEquals("Http", rdd3.getType());
+    assertEquals("www.bing.com", rdd3.getTarget());
     assertTrue(rdd3.getProperties().isEmpty());
     assertTrue(rdd3.getSuccess());
 

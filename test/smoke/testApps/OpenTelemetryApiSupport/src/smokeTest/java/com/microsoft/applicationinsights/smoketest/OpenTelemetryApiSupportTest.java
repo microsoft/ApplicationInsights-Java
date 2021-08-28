@@ -38,7 +38,8 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(1);
 
     assertEquals("GET /OpenTelemetryApiSupport/test-api", telemetry.rd.getName());
-    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-api"));
+    assertTrue(
+        telemetry.rd.getUrl().matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-api"));
     assertEquals("200", telemetry.rd.getResponseCode());
     assertTrue(telemetry.rd.getSuccess());
     assertNull(telemetry.rd.getSource());
@@ -46,6 +47,13 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
     assertTrue(telemetry.rd.getMeasurements().isEmpty());
 
     assertEquals("myspanname", telemetry.rdd1.getName());
+    assertNull(telemetry.rdd1.getData());
+    assertEquals("InProc", telemetry.rdd1.getType());
+    assertNull(telemetry.rdd1.getTarget());
+    assertEquals(2, telemetry.rdd1.getProperties().size());
+    assertEquals("myvalue1", telemetry.rdd1.getProperties().get("myattr1"));
+    assertEquals("myvalue2", telemetry.rdd1.getProperties().get("myattr2"));
+    assertTrue(telemetry.rdd1.getSuccess());
 
     // ideally want the properties below on rd, but can't get SERVER span yet
     // see
@@ -59,10 +67,6 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
     assertTrue(
         telemetry.rddEnvelope1.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
     assertEquals("myuser", telemetry.rddEnvelope1.getTags().get("ai.user.id"));
-    assertEquals("myvalue1", telemetry.rdd1.getProperties().get("myattr1"));
-    assertEquals("myvalue2", telemetry.rdd1.getProperties().get("myattr2"));
-    assertEquals(2, telemetry.rdd1.getProperties().size());
-    assertTrue(telemetry.rdd1.getSuccess());
 
     assertParentChild(
         telemetry.rd,
@@ -77,7 +81,11 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(1);
 
     assertEquals("GET /OpenTelemetryApiSupport/test-overriding-ikey-etc", telemetry.rd.getName());
-    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-overriding-ikey-etc"));
+    assertTrue(
+        telemetry
+            .rd
+            .getUrl()
+            .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-overriding-ikey-etc"));
     assertEquals("200", telemetry.rd.getResponseCode());
     assertTrue(telemetry.rd.getSuccess());
     assertNull(telemetry.rd.getSource());
@@ -123,7 +131,11 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
     }
 
     assertEquals("GET /OpenTelemetryApiSupport/test-annotations", telemetry.rd.getName());
-    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-annotations"));
+    assertTrue(
+        telemetry
+            .rd
+            .getUrl()
+            .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-annotations"));
     assertEquals("200", telemetry.rd.getResponseCode());
     assertTrue(telemetry.rd.getSuccess());
     assertNull(telemetry.rd.getSource());
@@ -131,10 +143,16 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
     assertTrue(telemetry.rd.getMeasurements().isEmpty());
 
     assertEquals("TestController.testAnnotations", telemetry.rdd1.getName());
+    assertNull(telemetry.rdd1.getData());
+    assertEquals("InProc", telemetry.rdd1.getType());
+    assertNull(telemetry.rdd1.getTarget());
     assertTrue(telemetry.rdd1.getProperties().isEmpty());
     assertTrue(telemetry.rdd1.getSuccess());
 
     assertEquals("TestController.underAnnotation", telemetry.rdd2.getName());
+    assertNull(telemetry.rdd2.getData());
+    assertEquals("InProc", telemetry.rdd2.getType());
+    assertNull(telemetry.rdd2.getTarget());
     assertTrue(telemetry.rdd2.getProperties().isEmpty());
     assertTrue(telemetry.rdd2.getSuccess());
 
