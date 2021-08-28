@@ -67,9 +67,8 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   }
 
   public void incrementRequestSuccessCount(long duration, String ikey) {
-
-    synchronized (lock) {
-      if (!Strings.isNullOrEmpty(ikey) && counterPerIkeyMap.get(ikey) != null) {
+    if (!Strings.isNullOrEmpty(ikey) && counterPerIkeyMap.get(ikey) != null) {
+      synchronized (lock) {
         counterPerIkeyMap.get(ikey).requestSuccessCount.incrementAndGet();
         counterPerIkeyMap.get(ikey).totalRequestDuration.getAndAdd(duration);
       }
@@ -77,32 +76,32 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   }
 
   public void incrementRequestFailureCount(String ikey) {
-    synchronized (lock) {
-      if (counterPerIkeyMap.get(ikey) != null) {
+    if (counterPerIkeyMap.get(ikey) != null) {
+      synchronized (lock) {
         counterPerIkeyMap.get(ikey).requestFailureCount.incrementAndGet();
       }
     }
   }
 
   public void incrementRetryCount(String ikey) {
-    synchronized (lock) {
-      if (counterPerIkeyMap.get(ikey) != null) {
+    if (counterPerIkeyMap.get(ikey) != null) {
+      synchronized (lock) {
         counterPerIkeyMap.get(ikey).retryCount.incrementAndGet();
       }
     }
   }
 
   public void incrementThrottlingCount(String ikey) {
-    synchronized (lock) {
-      if (counterPerIkeyMap.get(ikey) != null) {
+    if (counterPerIkeyMap.get(ikey) != null) {
+      synchronized (lock) {
         counterPerIkeyMap.get(ikey).throttlingCount.incrementAndGet();
       }
     }
   }
 
   void incrementExceptionCount(String ikey) {
-    synchronized (lock) {
-      if (counterPerIkeyMap.get(ikey) != null) {
+    if (counterPerIkeyMap.get(ikey) != null) {
+      synchronized (lock) {
         counterPerIkeyMap.get(ikey).exceptionCount.incrementAndGet();
       }
     }
