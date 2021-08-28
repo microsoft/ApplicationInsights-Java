@@ -87,6 +87,10 @@ class ConfigOverride {
     if (!config.preview.instrumentation.springIntegration.enabled) {
       properties.put("otel.instrumentation.spring-integration.enabled", "false");
     }
+    if (!config.preview.captureControllerSpans) {
+      properties.put("otel.instrumentation.common.experimental.suppress-controller-spans", "true");
+    }
+
     properties.put("otel.propagators", DelegatingPropagatorProvider.NAME);
     // AI exporter is configured manually
     properties.put("otel.traces.exporter", "none");

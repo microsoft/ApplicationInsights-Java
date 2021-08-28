@@ -191,6 +191,7 @@ public class Configuration {
     // ignoreRemoteParentNotSampled is currently needed
     // because .NET SDK always propagates trace flags "00" (not sampled)
     public boolean ignoreRemoteParentNotSampled = true;
+    public boolean captureControllerSpans = true;
     // this is just here to detect if using this old setting in order to give a helpful message
     @Deprecated public boolean httpMethodInOperationName;
     public LiveMetrics liveMetrics = new LiveMetrics();
