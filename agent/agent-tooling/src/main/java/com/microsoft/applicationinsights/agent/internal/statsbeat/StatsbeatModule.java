@@ -77,7 +77,8 @@ public class StatsbeatModule {
 
     if (this.telemetryClient == null) {
       this.telemetryClient = telemetryClient;
-      networkStatsbeat.initInstrumentationKeyList(Arrays.asList(telemetryClient.getInstrumentationKey()));
+      networkStatsbeat.initInstrumentationKeyList(
+          Arrays.asList(telemetryClient.getInstrumentationKey()));
     }
 
     long shortIntervalSeconds = config.internal.statsbeat.shortIntervalSeconds;
