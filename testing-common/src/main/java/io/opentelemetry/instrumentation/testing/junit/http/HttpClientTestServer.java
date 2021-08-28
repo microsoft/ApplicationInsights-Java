@@ -111,6 +111,8 @@ public final class HttpClientTestServer extends ServerExtension {
               }
               span.startSpan().end();
 
+              ctx.addAdditionalResponseHeader("Request-Context", "appId=1234");
+
               return delegate.serve(ctx, req);
             })
         .decorator(LoggingService.newDecorator());
