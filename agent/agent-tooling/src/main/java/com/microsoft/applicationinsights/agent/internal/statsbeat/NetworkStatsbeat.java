@@ -42,24 +42,24 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   private static final String BREEZE_ENDPOINT = "breeze";
 
   private final Object lock = new Object();
-  private final ConcurrentMap<String, IntervalMetrics> counterPerIkeyMap =
+  private final ConcurrentMap<String, IntervalMetrics> instrumentationKeyCounterMap =
       new ConcurrentHashMap<>();
 
   NetworkStatsbeat(CustomDimensions customDimensions) {
     super(customDimensions);
   }
 
-  void initInstrumentationKeyList(List<String> ikeys) {
+  void initInstrumentationKeyCounterMap(List<String> ikeys) {
     for (String ikey : ikeys) {
       IntervalMetrics intervalMetrics = new IntervalMetrics();
-      counterPerIkeyMap.put(ikey, intervalMetrics);
+      instrumentationKeyCounterMap.put(ikey, intervalMetrics);
     }
   }
 
   @Override
   protected void send(TelemetryClient telemetryClient) {
-    IntervalMetrics local = counterPerIkeyMap.get(telemetryClient.getInstrumentationKey());
-    counterPerIkeyMap.put(telemetryClient.getInstrumentationKey(), new IntervalMetrics());
+    IntervalMetrics local = instrumentationKeyCounterMap.get(telemetryClient.getInstrumentationKey());
+    instrumentationKeyCounterMap.put(telemetryClient.getInstrumentationKey(), new IntervalMetrics());
     sendIntervalMetric(
         telemetryClient,
         local,
@@ -67,90 +67,90 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   }
 
   public void incrementRequestSuccessCount(long duration, String ikey) {
-    if (!Strings.isNullOrEmpty(ikey) && counterPerIkeyMap.get(ikey) != null) {
+    if (!Strings.isNullOrEmpty(ikey) && instrumentationKeyCounterMap.get(ikey) != null) {
       synchronized (lock) {
-        counterPerIkeyMap.get(ikey).requestSuccessCount.incrementAndGet();
-        counterPerIkeyMap.get(ikey).totalRequestDuration.getAndAdd(duration);
+        instrumentationKeyCounterMap.get(ikey).requestSuccessCount.incrementAndGet();
+        instrumentationKeyCounterMap.get(ikey).totalRequestDuration.getAndAdd(duration);
       }
     }
   }
 
   public void incrementRequestFailureCount(String ikey) {
-    if (counterPerIkeyMap.get(ikey) != null) {
+    if (instrumentationKeyCounterMap.get(ikey) != null) {
       synchronized (lock) {
-        counterPerIkeyMap.get(ikey).requestFailureCount.incrementAndGet();
+        instrumentationKeyCounterMap.get(ikey).requestFailureCount.incrementAndGet();
       }
     }
   }
 
   public void incrementRetryCount(String ikey) {
-    if (counterPerIkeyMap.get(ikey) != null) {
+    if (instrumentationKeyCounterMap.get(ikey) != null) {
       synchronized (lock) {
-        counterPerIkeyMap.get(ikey).retryCount.incrementAndGet();
+        instrumentationKeyCounterMap.get(ikey).retryCount.incrementAndGet();
       }
     }
   }
 
   public void incrementThrottlingCount(String ikey) {
-    if (counterPerIkeyMap.get(ikey) != null) {
+    if (instrumentationKeyCounterMap.get(ikey) != null) {
       synchronized (lock) {
-        counterPerIkeyMap.get(ikey).throttlingCount.incrementAndGet();
+        instrumentationKeyCounterMap.get(ikey).throttlingCount.incrementAndGet();
       }
     }
   }
 
   void incrementExceptionCount(String ikey) {
-    if (counterPerIkeyMap.get(ikey) != null) {
+    if (instrumentationKeyCounterMap.get(ikey) != null) {
       synchronized (lock) {
-        counterPerIkeyMap.get(ikey).exceptionCount.incrementAndGet();
+        instrumentationKeyCounterMap.get(ikey).exceptionCount.incrementAndGet();
       }
     }
   }
 
   // only used by tests
   long getRequestSuccessCount(String ikey) {
-    if (counterPerIkeyMap.get(ikey) != null) {
-      return counterPerIkeyMap.get(ikey).requestSuccessCount.get();
+    if (instrumentationKeyCounterMap.get(ikey) != null) {
+      return instrumentationKeyCounterMap.get(ikey).requestSuccessCount.get();
     }
     return 0L;
   }
 
   // only used by tests
   long getRequestFailureCount(String ikey) {
-    if (counterPerIkeyMap.get(ikey) != null) {
-      return counterPerIkeyMap.get(ikey).requestFailureCount.get();
+    if (instrumentationKeyCounterMap.get(ikey) != null) {
+      return instrumentationKeyCounterMap.get(ikey).requestFailureCount.get();
     }
     return 0L;
   }
 
   // only used by tests
   double getRequestDurationAvg(String ikey) {
-    if (counterPerIkeyMap.get(ikey) != null) {
-      return counterPerIkeyMap.get(ikey).getRequestDurationAvg();
+    if (instrumentationKeyCounterMap.get(ikey) != null) {
+      return instrumentationKeyCounterMap.get(ikey).getRequestDurationAvg();
     }
     return 0L;
   }
 
   // only used by tests
   long getRetryCount(String ikey) {
-    if (counterPerIkeyMap.get(ikey) != null) {
-      return counterPerIkeyMap.get(ikey).retryCount.get();
+    if (instrumentationKeyCounterMap.get(ikey) != null) {
+      return instrumentationKeyCounterMap.get(ikey).retryCount.get();
     }
     return 0L;
   }
 
   // only used by tests
   long getThrottlingCount(String ikey) {
-    if (counterPerIkeyMap.get(ikey) != null) {
-      return counterPerIkeyMap.get(ikey).throttlingCount.get();
+    if (instrumentationKeyCounterMap.get(ikey) != null) {
+      return instrumentationKeyCounterMap.get(ikey).throttlingCount.get();
     }
     return 0L;
   }
 
   // only used by tests
   long getExceptionCount(String ikey) {
-    if (counterPerIkeyMap.get(ikey) != null) {
-      return counterPerIkeyMap.get(ikey).exceptionCount.get();
+    if (instrumentationKeyCounterMap.get(ikey) != null) {
+      return instrumentationKeyCounterMap.get(ikey).exceptionCount.get();
     }
     return 0L;
   }
@@ -243,7 +243,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
 
   void sendOriginalEndpointCounterOnRedirect(
       TelemetryClient telemetryClient, String ikey, String originalUrl) {
-    IntervalMetrics local = counterPerIkeyMap.get(ikey);
+    IntervalMetrics local = instrumentationKeyCounterMap.get(ikey);
     sendIntervalMetric(telemetryClient, local, originalUrl);
   }
 }

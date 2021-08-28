@@ -77,7 +77,7 @@ public class StatsbeatModule {
 
     if (this.telemetryClient == null) {
       this.telemetryClient = telemetryClient;
-      networkStatsbeat.initInstrumentationKeyList(
+      networkStatsbeat.initInstrumentationKeyCounterMap(
           Arrays.asList(telemetryClient.getInstrumentationKey()));
     }
 
