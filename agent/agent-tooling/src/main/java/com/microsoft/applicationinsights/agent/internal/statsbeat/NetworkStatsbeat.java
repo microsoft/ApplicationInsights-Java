@@ -236,14 +236,13 @@ public class NetworkStatsbeat extends BaseStatsbeat {
    * e.g. endpointUrl 'https://westus-0.in.applicationinsights.azure.com/v2.1/track' host will
    * return 'westus-0.in.applicationinsights.azure.com'
    */
-  String getHost(String endpointUrl) {
+  private String getHost(String endpointUrl) {
     assert (endpointUrl != null && !endpointUrl.isEmpty());
     return endpointUrl.replaceAll("^\\w+://", "").replaceAll("/\\w+.?\\w?/\\w+", "");
   }
 
   void sendOriginalEndpointCounterOnRedirect(
       TelemetryClient telemetryClient, String ikey, String originalUrl) {
-    IntervalMetrics local = instrumentationKeyCounterMap.get(ikey);
-    sendIntervalMetric(telemetryClient, local, originalUrl);
+    sendIntervalMetric(telemetryClient, instrumentationKeyCounterMap.get(ikey), originalUrl);
   }
 }
