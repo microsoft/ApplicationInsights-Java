@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
+import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
@@ -44,8 +45,11 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   private final ConcurrentMap<String, IntervalMetrics> counterPerIkeyMap =
       new ConcurrentHashMap<>();
 
-  NetworkStatsbeat(CustomDimensions customDimensions, List<String> ikeys) {
+  NetworkStatsbeat(CustomDimensions customDimensions) {
     super(customDimensions);
+  }
+
+  void initInstrumentationKeyList(List<String> ikeys) {
     for (String ikey : ikeys) {
       IntervalMetrics intervalMetrics = new IntervalMetrics();
       counterPerIkeyMap.put(ikey, intervalMetrics);
@@ -63,64 +67,93 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   }
 
   public void incrementRequestSuccessCount(long duration, String ikey) {
+
     synchronized (lock) {
-      counterPerIkeyMap.get(ikey).requestSuccessCount.incrementAndGet();
-      counterPerIkeyMap.get(ikey).totalRequestDuration.getAndAdd(duration);
+      if (!Strings.isNullOrEmpty(ikey) && counterPerIkeyMap.get(ikey) != null) {
+        counterPerIkeyMap.get(ikey).requestSuccessCount.incrementAndGet();
+        counterPerIkeyMap.get(ikey).totalRequestDuration.getAndAdd(duration);
+      }
     }
   }
 
   public void incrementRequestFailureCount(String ikey) {
     synchronized (lock) {
-      counterPerIkeyMap.get(ikey).requestFailureCount.incrementAndGet();
+      if (counterPerIkeyMap.get(ikey) != null) {
+        counterPerIkeyMap.get(ikey).requestFailureCount.incrementAndGet();
+      }
     }
   }
 
   public void incrementRetryCount(String ikey) {
     synchronized (lock) {
-      counterPerIkeyMap.get(ikey).retryCount.incrementAndGet();
+      if (counterPerIkeyMap.get(ikey) != null) {
+        counterPerIkeyMap.get(ikey).retryCount.incrementAndGet();
+      }
     }
   }
 
   public void incrementThrottlingCount(String ikey) {
     synchronized (lock) {
-      counterPerIkeyMap.get(ikey).throttlingCount.incrementAndGet();
+      if (counterPerIkeyMap.get(ikey) != null) {
+        counterPerIkeyMap.get(ikey).throttlingCount.incrementAndGet();
+      }
     }
   }
 
   void incrementExceptionCount(String ikey) {
     synchronized (lock) {
-      counterPerIkeyMap.get(ikey).exceptionCount.incrementAndGet();
+      if (counterPerIkeyMap.get(ikey) != null) {
+        counterPerIkeyMap.get(ikey).exceptionCount.incrementAndGet();
+      }
     }
   }
 
   // only used by tests
   long getRequestSuccessCount(String ikey) {
-    return counterPerIkeyMap.get(ikey).requestSuccessCount.get();
+    if (counterPerIkeyMap.get(ikey) != null) {
+      return counterPerIkeyMap.get(ikey).requestSuccessCount.get();
+    }
+    return 0L;
   }
 
   // only used by tests
   long getRequestFailureCount(String ikey) {
-    return counterPerIkeyMap.get(ikey).requestFailureCount.get();
+    if (counterPerIkeyMap.get(ikey) != null) {
+      return counterPerIkeyMap.get(ikey).requestFailureCount.get();
+    }
+    return 0L;
   }
 
   // only used by tests
   double getRequestDurationAvg(String ikey) {
-    return counterPerIkeyMap.get(ikey).getRequestDurationAvg();
+    if (counterPerIkeyMap.get(ikey) != null) {
+      return counterPerIkeyMap.get(ikey).getRequestDurationAvg();
+    }
+    return 0L;
   }
 
   // only used by tests
   long getRetryCount(String ikey) {
-    return counterPerIkeyMap.get(ikey).retryCount.get();
+    if (counterPerIkeyMap.get(ikey) != null) {
+      return counterPerIkeyMap.get(ikey).retryCount.get();
+    }
+    return 0L;
   }
 
   // only used by tests
   long getThrottlingCount(String ikey) {
-    return counterPerIkeyMap.get(ikey).throttlingCount.get();
+    if (counterPerIkeyMap.get(ikey) != null) {
+      return counterPerIkeyMap.get(ikey).throttlingCount.get();
+    }
+    return 0L;
   }
 
   // only used by tests
   long getExceptionCount(String ikey) {
-    return counterPerIkeyMap.get(ikey).exceptionCount.get();
+    if (counterPerIkeyMap.get(ikey) != null) {
+      return counterPerIkeyMap.get(ikey).exceptionCount.get();
+    }
+    return 0L;
   }
 
   private void sendIntervalMetric(
