@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -47,14 +48,21 @@ public class AzureSdkTest extends AiSmokeTest {
     }
 
     assertEquals("GET /AzureSdk/test", telemetry.rd.getName());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/AzureSdk/test"));
+    assertEquals("200", telemetry.rd.getResponseCode());
     assertTrue(telemetry.rd.getSuccess());
+    assertNull(telemetry.rd.getSource());
+    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getMeasurements().isEmpty());
 
     assertEquals("TestController.test", telemetry.rdd1.getName());
+    assertEquals("InProc", telemetry.rdd1.getType());
+    assertNull(telemetry.rdd1.getTarget());
     assertTrue(telemetry.rdd1.getProperties().isEmpty());
     assertTrue(telemetry.rdd1.getSuccess());
 
     assertEquals("hello", telemetry.rdd2.getName());
+    assertEquals("InProc", telemetry.rdd2.getType());
     assertTrue(telemetry.rdd2.getProperties().isEmpty());
     assertTrue(telemetry.rdd2.getSuccess());
 

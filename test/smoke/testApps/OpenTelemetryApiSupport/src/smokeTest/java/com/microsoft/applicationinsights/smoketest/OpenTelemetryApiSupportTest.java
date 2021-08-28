@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -37,8 +38,12 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(1);
 
     assertEquals("GET /OpenTelemetryApiSupport/test-api", telemetry.rd.getName());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-api"));
+    assertEquals("200", telemetry.rd.getResponseCode());
     assertTrue(telemetry.rd.getSuccess());
+    assertNull(telemetry.rd.getSource());
+    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getMeasurements().isEmpty());
 
     assertEquals("myspanname", telemetry.rdd1.getName());
 
@@ -72,8 +77,12 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
     Telemetry telemetry = getTelemetry(1);
 
     assertEquals("GET /OpenTelemetryApiSupport/test-overriding-ikey-etc", telemetry.rd.getName());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-overriding-ikey-etc"));
+    assertEquals("200", telemetry.rd.getResponseCode());
     assertTrue(telemetry.rd.getSuccess());
+    assertNull(telemetry.rd.getSource());
+    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getMeasurements().isEmpty());
 
     // ideally want the properties below on rd, but can't get SERVER span yet, see
     // https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1726#issuecomment-731890267
@@ -114,8 +123,12 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
     }
 
     assertEquals("GET /OpenTelemetryApiSupport/test-annotations", telemetry.rd.getName());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-annotations"));
+    assertEquals("200", telemetry.rd.getResponseCode());
     assertTrue(telemetry.rd.getSuccess());
+    assertNull(telemetry.rd.getSource());
+    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getMeasurements().isEmpty());
 
     assertEquals("TestController.testAnnotations", telemetry.rdd1.getName());
     assertTrue(telemetry.rdd1.getProperties().isEmpty());
