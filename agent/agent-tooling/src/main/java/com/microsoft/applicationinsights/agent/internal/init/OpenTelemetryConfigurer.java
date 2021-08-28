@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
@@ -43,6 +44,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@AutoService(SdkTracerProviderConfigurer.class)
 public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
 
   private static volatile BatchSpanProcessor batchSpanProcessor;

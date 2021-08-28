@@ -21,10 +21,12 @@
 
 package com.microsoft.gcmonitor;
 
+import com.google.auto.service.AutoService;
 import java.lang.management.ManagementFactory;
 import java.util.concurrent.ExecutorService;
 import javax.management.MBeanServerConnection;
 
+@AutoService(GcMonitorFactory.class)
 public class JmxGcMonitorFactory implements GcMonitorFactory {
 
   @Override

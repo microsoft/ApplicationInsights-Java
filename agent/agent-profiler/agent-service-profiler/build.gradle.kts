@@ -3,6 +3,9 @@ plugins {
 }
 
 dependencies {
+    compileOnly("com.google.auto.service:auto-service")
+    annotationProcessor("com.google.auto.service:auto-service")
+
     implementation(project(":agent:agent-profiler:agent-alerting-api"))
     implementation(project(":agent:agent-profiler:agent-profiler-api"))
     implementation("com.microsoft.jfr:jfr-streaming")
