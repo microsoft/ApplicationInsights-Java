@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.bootstrap.diagnostics;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Method;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class PidFinder extends CachedDiagnosticsValueFinder {
   public static final String PROPERTY_NAME = "PID";
@@ -38,6 +39,7 @@ public class PidFinder extends CachedDiagnosticsValueFinder {
     return getPidUsingRuntimeBean();
   }
 
+  @Nullable
   private static String getPidUsingRuntimeBean() {
     // will only work with sun based jvm
     RuntimeMXBean rb = ManagementFactory.getRuntimeMXBean();
@@ -59,6 +61,7 @@ public class PidFinder extends CachedDiagnosticsValueFinder {
     }
   }
 
+  @Nullable
   private static String getPidUsingProcessHandle() {
     try {
       // if java.specification.version < 9, the next line will fail.

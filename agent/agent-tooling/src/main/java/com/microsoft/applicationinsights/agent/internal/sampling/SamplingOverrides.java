@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 // TODO find a better name for this class (and MatcherGroup too)
 class SamplingOverrides {
@@ -49,6 +50,7 @@ class SamplingOverrides {
     }
   }
 
+  @Nullable
   MatcherGroup getOverride(Attributes attributes) {
     for (MatcherGroup matcherGroups : matcherGroups) {
       if (matcherGroups.matches(attributes)) {

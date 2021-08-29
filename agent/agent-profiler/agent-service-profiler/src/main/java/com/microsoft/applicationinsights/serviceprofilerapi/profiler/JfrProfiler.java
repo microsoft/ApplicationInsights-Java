@@ -48,6 +48,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanServerConnection;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -184,6 +185,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
         alertBreach.getType(), duration, uploadNewRecording(alertBreach, recordingStart));
   }
 
+  @Nullable
   private Recording startRecording(AlertMetricType alertType) {
     synchronized (activeRecordingLock) {
       if (activeRecording != null) {

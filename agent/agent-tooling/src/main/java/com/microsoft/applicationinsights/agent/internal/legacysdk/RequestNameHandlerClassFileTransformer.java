@@ -76,6 +76,7 @@ public class RequestNameHandlerClassFileTransformer implements ClassFileTransfor
     }
 
     @Override
+    @Nullable
     public MethodVisitor visitMethod(
         int access,
         String name,

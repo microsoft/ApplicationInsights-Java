@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.alerting.config;
 
 import java.time.ZonedDateTime;
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class CollectionPlanConfiguration {
 
@@ -81,7 +82,7 @@ public class CollectionPlanConfiguration {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(@Nullable Object obj) {
     if (obj == this) {
       return true;
     }

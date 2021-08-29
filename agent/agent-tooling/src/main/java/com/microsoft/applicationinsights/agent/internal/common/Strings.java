@@ -31,6 +31,7 @@ public final class Strings {
     return string == null || string.isEmpty();
   }
 
+  @Nullable
   public static String trimAndEmptyToNull(String str) {
     if (str == null) {
       return null;

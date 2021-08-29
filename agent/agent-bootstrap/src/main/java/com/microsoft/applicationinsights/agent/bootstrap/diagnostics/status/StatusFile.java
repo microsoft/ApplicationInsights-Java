@@ -43,6 +43,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import okio.BufferedSink;
 import okio.Okio;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -313,6 +314,7 @@ public class StatusFile {
     }
   }
 
+  @Nullable
   private static String capitalize(String input) {
     if (input == null) {
       return null;

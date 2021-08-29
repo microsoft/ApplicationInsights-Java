@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.httpclient;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.configuration.DefaultEndpoints;
 import java.io.File;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class SslUtil {
 
@@ -40,6 +41,7 @@ public class SslUtil {
     return new File(javaHome, "lib/security/cacerts").getPath();
   }
 
+  @Nullable
   private static String getCustomJavaKeystorePath() {
     String cacertsPath = System.getProperty("javax.net.ssl.trustStore");
     if (cacertsPath != null) {

@@ -763,6 +763,7 @@ public class Exporter implements SpanExporter {
     exportEvents(span, operationName, samplingPercentage);
   }
 
+  @Nullable
   private static String getSource(Attributes attributes) {
     // this is only used by the 2.x web interop bridge
     // for ThreadContext.getRequestTelemetryContext().getRequestTelemetry().setSource()
@@ -978,6 +979,7 @@ public class Exporter implements SpanExporter {
         });
   }
 
+  @Nullable
   private static String getStringValue(AttributeKey<?> attributeKey, Object value) {
     switch (attributeKey.getType()) {
       case STRING:
@@ -1006,6 +1008,7 @@ public class Exporter implements SpanExporter {
     return sb.toString();
   }
 
+  @Nullable
   private static SeverityLevel toSeverityLevel(String level) {
     if (level == null) {
       return null;

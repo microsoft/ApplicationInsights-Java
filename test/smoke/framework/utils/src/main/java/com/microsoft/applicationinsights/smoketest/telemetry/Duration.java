@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.smoketest.telemetry;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 /**
  * This class lets its users to define an interval of time which can be defined in terms of days,
  * hours, minutes, seconds and milliseconds.
@@ -188,7 +190,7 @@ public final class Duration {
   }
 
   @Override
-  public boolean equals(Object other) {
+  public boolean equals(@Nullable Object other) {
     if (this == other) {
       return true;
     }

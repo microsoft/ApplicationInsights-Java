@@ -41,7 +41,7 @@ dependencies {
   implementation("org.gradle:test-retry-gradle-plugin:1.2.1")
   // When updating, also update dependencyManagement/dependencyManagement.gradle.kts
   implementation("net.bytebuddy:byte-buddy-gradle-plugin:1.11.2")
-  implementation("net.ltgt.gradle:gradle-errorprone-plugin:2.0.1")
+  implementation("net.ltgt.gradle:gradle-errorprone-plugin:2.0.2")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.1.0")
 
   implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.0")

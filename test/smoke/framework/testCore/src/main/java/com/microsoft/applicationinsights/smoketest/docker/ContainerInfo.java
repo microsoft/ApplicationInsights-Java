@@ -25,6 +25,7 @@ import com.google.common.base.MoreObjects;
 import com.microsoft.applicationinsights.smoketest.DependencyContainer;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class ContainerInfo {
   private final String containerId;
@@ -66,7 +67,7 @@ public class ContainerInfo {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(@Nullable Object obj) {
     if (this == obj) {
       return true;
     }

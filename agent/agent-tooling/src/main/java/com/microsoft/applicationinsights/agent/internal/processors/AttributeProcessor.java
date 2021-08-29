@@ -57,6 +57,7 @@ public class AttributeProcessor extends AgentProcessor {
 
   // this won't be needed once we update to 0.13.0
   // see https://github.com/open-telemetry/opentelemetry-java/pull/2284
+  @Nullable
   public static String getAttribute(Attributes attributes, AttributeKey<String> key) {
     Object existingValueObj = attributes.get(key);
     // checking the return type won't be needed once we update to 0.13.0

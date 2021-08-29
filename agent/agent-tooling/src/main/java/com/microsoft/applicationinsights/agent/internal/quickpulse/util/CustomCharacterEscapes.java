@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.quickpulse.util;
 import com.fasterxml.jackson.core.SerializableString;
 import com.fasterxml.jackson.core.io.CharacterEscapes;
 import com.fasterxml.jackson.core.io.SerializedString;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class CustomCharacterEscapes extends CharacterEscapes {
 
@@ -42,6 +43,7 @@ public class CustomCharacterEscapes extends CharacterEscapes {
   }
 
   @Override
+  @Nullable
   public SerializableString getEscapeSequence(int i) {
     if (i == '/') {
       return new SerializedString("\\/");

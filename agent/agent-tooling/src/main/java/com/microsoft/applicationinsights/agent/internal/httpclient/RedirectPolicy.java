@@ -29,6 +29,7 @@ import com.azure.core.http.policy.HttpPipelinePolicy;
 import io.opentelemetry.instrumentation.api.caching.Cache;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -100,6 +101,7 @@ public final class RedirectPolicy implements HttpPipelinePolicy {
     }
   }
 
+  @Nullable
   private String getCachedRedirectUrl(String instrumentationKey, URL originalUrl) {
     if (!followInstrumentationKeyForRedirect) {
       return redirectMappings.get(originalUrl);
