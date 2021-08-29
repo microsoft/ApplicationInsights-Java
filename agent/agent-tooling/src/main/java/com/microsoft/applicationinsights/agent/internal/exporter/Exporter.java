@@ -72,7 +72,7 @@ public class Exporter implements SpanExporter {
 
   private static final Set<String> SQL_DB_SYSTEMS;
 
-  private static final Set<String> STANDARD_ATTRIBUTE_PREFIXES;
+  private static final Trie<Boolean> STANDARD_ATTRIBUTE_PREFIXES;
 
   public static final AttributeKey<String> AI_OPERATION_NAME_KEY =
       AttributeKey.stringKey("applicationinsights.internal.operation_name");
@@ -134,21 +134,20 @@ public class Exporter implements SpanExporter {
     SQL_DB_SYSTEMS = Collections.unmodifiableSet(dbSystems);
 
     // TODO need to keep this list in sync as new semantic conventions are defined
-    // TODO make this opt-in for javaagent
-    Set<String> standardAttributesPrefix = new HashSet<>();
-    standardAttributesPrefix.add("http");
-    standardAttributesPrefix.add("db");
-    standardAttributesPrefix.add("message");
-    standardAttributesPrefix.add("messaging");
-    standardAttributesPrefix.add("rpc");
-    standardAttributesPrefix.add("enduser");
-    standardAttributesPrefix.add("net");
-    standardAttributesPrefix.add("peer");
-    standardAttributesPrefix.add("exception");
-    standardAttributesPrefix.add("thread");
-    standardAttributesPrefix.add("faas");
-
-    STANDARD_ATTRIBUTE_PREFIXES = Collections.unmodifiableSet(standardAttributesPrefix);
+    STANDARD_ATTRIBUTE_PREFIXES =
+        Trie.<Boolean>newBuilder()
+            .put("http.", true)
+            .put("db.", true)
+            .put("message.", true)
+            .put("messaging.", true)
+            .put("rpc.", true)
+            .put("enduser.", true)
+            .put("net.", true)
+            .put("peer.", true)
+            .put("exception.", true)
+            .put("thread.", true)
+            .put("faas.", true)
+            .build();
   }
 
   private final TelemetryClient telemetryClient;
@@ -969,10 +968,7 @@ public class Exporter implements SpanExporter {
             telemetry.getTags().put(ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
             return;
           }
-          int index = stringKey.indexOf(".");
-          // FIXME (trask) do this without memory allocation
-          String prefix = index == -1 ? stringKey : stringKey.substring(0, index);
-          if (STANDARD_ATTRIBUTE_PREFIXES.contains(prefix)) {
+          if (STANDARD_ATTRIBUTE_PREFIXES.getOrDefault(stringKey, false)) {
             return;
           }
           String val = getStringValue(key, value);
