@@ -272,7 +272,7 @@ public class Exporter implements SpanExporter {
 
     // export
     telemetryClient.trackAsync(telemetry);
-    exportEvents(span, samplingPercentage);
+    exportEvents(span, null, samplingPercentage);
   }
 
   private static void applySemanticConventions(
@@ -390,23 +390,30 @@ public class Exporter implements SpanExporter {
   }
 
   private static void setOperationTags(TelemetryItem telemetry, SpanData span) {
-    setOperationTags(
-        telemetry,
-        span.getTraceId(),
-        span.getParentSpanContext().getSpanId(),
-        span.getAttributes());
+    setOperationId(telemetry, span.getTraceId());
+    setOperationParentId(telemetry, span.getParentSpanContext().getSpanId());
+    setOperationName(telemetry, span.getAttributes());
   }
 
-  private static void setOperationTags(
-      TelemetryItem telemetry, String traceId, String parentSpanId, Attributes attributes) {
+  private static void setOperationId(TelemetryItem telemetry, String traceId) {
     telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), traceId);
+  }
+
+  private static void setOperationParentId(TelemetryItem telemetry, String parentSpanId) {
     if (SpanId.isValid(parentSpanId)) {
       telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), parentSpanId);
     }
+  }
+
+  private static void setOperationName(TelemetryItem telemetry, Attributes attributes) {
     String operationName = attributes.get(AI_OPERATION_NAME_KEY);
     if (operationName != null) {
-      telemetry.getTags().put(ContextTagKeys.AI_OPERATION_NAME.toString(), operationName);
+      setOperationName(telemetry, operationName);
     }
+  }
+
+  private static void setOperationName(TelemetryItem telemetry, String operationName) {
+    telemetry.getTags().put(ContextTagKeys.AI_OPERATION_NAME.toString(), operationName);
   }
 
   private static void setLoggerProperties(
@@ -754,7 +761,7 @@ public class Exporter implements SpanExporter {
 
     // export
     telemetryClient.trackAsync(telemetry);
-    exportEvents(span, samplingPercentage);
+    exportEvents(span, operationName, samplingPercentage);
   }
 
   private static String getSource(Attributes attributes) {
@@ -816,7 +823,8 @@ public class Exporter implements SpanExporter {
     return str1 + separator + str2;
   }
 
-  private void exportEvents(SpanData span, float samplingPercentage) {
+  private void exportEvents(
+      SpanData span, @Nullable String operationName, float samplingPercentage) {
     for (EventData event : span.getEvents()) {
       boolean lettuce51 =
           span.getInstrumentationLibraryInfo().getName().equals("io.opentelemetry.lettuce-5.1");
@@ -830,7 +838,7 @@ public class Exporter implements SpanExporter {
         // TODO map OpenTelemetry exception to Application Insights exception better
         String stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
         if (stacktrace != null) {
-          trackException(stacktrace, span, samplingPercentage);
+          trackException(stacktrace, span, operationName, samplingPercentage);
         }
         return;
       }
@@ -840,7 +848,13 @@ public class Exporter implements SpanExporter {
       telemetryClient.initMessageTelemetry(telemetry, data);
 
       // set standard properties
-      setOperationTags(telemetry, span.getTraceId(), span.getSpanId(), span.getAttributes());
+      setOperationId(telemetry, span.getTraceId());
+      setOperationParentId(telemetry, span.getSpanId());
+      if (operationName != null) {
+        setOperationName(telemetry, operationName);
+      } else {
+        setOperationName(telemetry, span.getAttributes());
+      }
       setTime(telemetry, event.getEpochNanos());
       setExtraAttributes(telemetry, data, event.getAttributes());
       setSampleRate(telemetry, samplingPercentage);
@@ -852,13 +866,20 @@ public class Exporter implements SpanExporter {
     }
   }
 
-  private void trackException(String errorStack, SpanData span, float samplingPercentage) {
+  private void trackException(
+      String errorStack, SpanData span, @Nullable String operationName, float samplingPercentage) {
     TelemetryItem telemetry = new TelemetryItem();
     TelemetryExceptionData data = new TelemetryExceptionData();
     telemetryClient.initExceptionTelemetry(telemetry, data);
 
     // set standard properties
-    setOperationTags(telemetry, span.getTraceId(), span.getSpanId(), span.getAttributes());
+    setOperationId(telemetry, span.getTraceId());
+    setOperationParentId(telemetry, span.getSpanId());
+    if (operationName != null) {
+      setOperationName(telemetry, operationName);
+    } else {
+      setOperationName(telemetry, span.getAttributes());
+    }
     setTime(telemetry, span.getEndEpochNanos());
     setSampleRate(telemetry, samplingPercentage);
 
