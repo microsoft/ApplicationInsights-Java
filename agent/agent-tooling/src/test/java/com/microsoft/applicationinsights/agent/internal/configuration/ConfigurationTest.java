@@ -34,6 +34,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorActionType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorType;
+import io.opentelemetry.api.common.AttributeKey;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
@@ -138,16 +139,17 @@ class ConfigurationTest {
     assertThat(insertConfig.type).isEqualTo(ProcessorType.ATTRIBUTE);
     assertThat(insertConfig.actions.get(0).action).isEqualTo(ProcessorActionType.INSERT);
     assertThat(insertConfig.actions.get(0).value).isEqualTo("123");
-    assertThat(insertConfig.actions.get(0).key).isEqualTo("attribute1");
-    assertThat(insertConfig.actions.get(1).fromAttribute).isEqualTo("anotherKey");
+    assertThat(insertConfig.actions.get(0).key).isEqualTo(AttributeKey.stringKey("attribute1"));
+    assertThat(insertConfig.actions.get(1).fromAttribute)
+        .isEqualTo(AttributeKey.stringKey("anotherKey"));
     // update config test
     ProcessorConfig updateConfig = preview.processors.get(1);
     assertThat(updateConfig.id).isEqualTo("attributes/update");
     assertThat(updateConfig.type).isEqualTo(ProcessorType.ATTRIBUTE);
     assertThat(updateConfig.actions.get(0).action).isEqualTo(ProcessorActionType.UPDATE);
-    assertThat(updateConfig.actions.get(0).key).isEqualTo("boo");
-    assertThat(updateConfig.actions.get(0).fromAttribute).isEqualTo("foo");
-    assertThat(updateConfig.actions.get(1).key).isEqualTo("db.secret");
+    assertThat(updateConfig.actions.get(0).key).isEqualTo(AttributeKey.stringKey("boo"));
+    assertThat(updateConfig.actions.get(0).fromAttribute).isEqualTo(AttributeKey.stringKey("foo"));
+    assertThat(updateConfig.actions.get(1).key).isEqualTo(AttributeKey.stringKey("db.secret"));
     // selective processing test
     ProcessorConfig selectiveConfig = preview.processors.get(2);
     assertThat(selectiveConfig.type).isEqualTo(ProcessorType.ATTRIBUTE);
@@ -160,7 +162,7 @@ class ConfigurationTest {
     assertThat(selectiveConfig.exclude.attributes.get(0).key).isEqualTo("redact_trace");
     assertThat(selectiveConfig.exclude.attributes.get(0).value).isEqualTo("false");
     assertThat(selectiveConfig.actions.size()).isEqualTo(2);
-    assertThat(selectiveConfig.actions.get(0).key).isEqualTo("credit_card");
+    assertThat(selectiveConfig.actions.get(0).key).isEqualTo(AttributeKey.stringKey("credit_card"));
     assertThat(selectiveConfig.actions.get(0).action).isEqualTo(ProcessorActionType.DELETE);
     // log/update name test
     ProcessorConfig logUpdateNameConfig = preview.processors.get(3);
@@ -200,7 +202,8 @@ class ConfigurationTest {
     assertThat(attributesExtractConfig.actions.size()).isEqualTo(1);
     assertThat(attributesExtractConfig.actions.get(0).action)
         .isEqualTo(ProcessorActionType.EXTRACT);
-    assertThat(attributesExtractConfig.actions.get(0).key).isEqualTo("http.url");
+    assertThat(attributesExtractConfig.actions.get(0).key)
+        .isEqualTo(AttributeKey.stringKey("http.url"));
     assertThat(attributesExtractConfig.actions.size()).isEqualTo(1);
     assertThat(attributesExtractConfig.actions.get(0).extractAttribute).isNotNull();
     assertThat(attributesExtractConfig.actions.get(0).extractAttribute.pattern).isNotNull();
