@@ -118,12 +118,12 @@ public class NetworkStatsbeatTest {
   @Test
   public void testGetHost() {
     String url = "https://fake-host.applicationinsights.azure.com/v2.1/track";
-    assertThat(networkStatsbeat.getHost(url)).isEqualTo("fake-host.applicationinsights.azure.com");
+    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fake-host.applicationinsights.azure.com");
 
     url = "http://fake-host.example.com/v2/track";
-    assertThat(networkStatsbeat.getHost(url)).isEqualTo("fake-host.example.com");
+    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fake-host.example.com");
 
     url = "http://www.fake-host.com/v2/track";
-    assertThat(networkStatsbeat.getHost(url)).isEqualTo("www.fake-host.com");
+    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("www.fake-host.com");
   }
 }

@@ -236,7 +236,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
    * e.g. endpointUrl 'https://westus-0.in.applicationinsights.azure.com/v2.1/track' host will
    * return 'westus-0.in.applicationinsights.azure.com'
    */
-  private static String getHost(String endpointUrl) {
+  static String getHost(String endpointUrl) {
     assert (endpointUrl != null && !endpointUrl.isEmpty());
     return endpointUrl.replaceAll("^\\w+://", "").replaceAll("/\\w+.?\\w?/\\w+", "");
   }
