@@ -24,10 +24,16 @@ package com.microsoft.applicationinsights.agent.internal.quickpulse;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.microsoft.applicationinsights.agent.internal.common.ExceptionUtils;
 import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
+import com.microsoft.applicationinsights.agent.internal.init.MainEntryPoint;
+import com.microsoft.applicationinsights.agent.internal.quickpulse.model.QuickPulseEnvelope;
+import com.microsoft.applicationinsights.agent.internal.quickpulse.util.CustomCharacterEscapes;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -38,14 +44,9 @@ class QuickPulsePingSender {
 
   private static final Logger logger = LoggerFactory.getLogger(QuickPulsePingSender.class);
 
-  private final TelemetryClient telemetryClient;
-  private final HttpPipeline httpPipeline;
-  private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
-  private volatile String pingPrefix; // cached for performance
-  private final String instanceName;
-  private final String machineName;
-  private final String quickPulseId;
-  private long lastValidTransmission = 0;
+  private static final ObjectMapper mapper;
+
+  private static final String quickPulseVersion = MainEntryPoint.getAgentVersion();
 
   private static final OperationLogger operationLogger =
       new OperationLogger(QuickPulsePingSender.class, "Pinging live metrics endpoint");
@@ -53,6 +54,21 @@ class QuickPulsePingSender {
   // TODO (kryalama) do we still need this AtomicBoolean, or can we use throttling built in to the
   //  operationLogger?
   private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
+
+  static {
+    mapper = new ObjectMapper();
+    mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+    mapper.getFactory().setCharacterEscapes(new CustomCharacterEscapes());
+  }
+
+  private final TelemetryClient telemetryClient;
+  private final HttpPipeline httpPipeline;
+  private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
+  private volatile QuickPulseEnvelope pingEnvelope; // cached for performance
+  private final String instanceName;
+  private final String machineName;
+  private final String quickPulseId;
+  private long lastValidTransmission = 0;
 
   public QuickPulsePingSender(
       HttpPipeline httpPipeline,
@@ -65,7 +81,6 @@ class QuickPulsePingSender {
     this.instanceName = instanceName;
     this.machineName = machineName;
     this.quickPulseId = quickPulseId;
-
     if (logger.isTraceEnabled()) {
       logger.trace(
           "{} using endpoint {}",
@@ -93,10 +108,12 @@ class QuickPulsePingSender {
             machineName,
             telemetryClient.getRoleName(),
             instanceName);
-    request.setBody(buildPingEntity(currentDate.getTime()));
 
     long sendTime = System.nanoTime();
-    try (HttpResponse response = httpPipeline.send(request).block()) {
+    HttpResponse response = null;
+    try {
+      request.setBody(buildPingEntity(currentDate.getTime()));
+      response = httpPipeline.send(request).block();
       if (response == null) {
         // this shouldn't happen, the mono should complete with a response or a failure
         throw new AssertionError("http response mono returned empty");
@@ -120,35 +137,12 @@ class QuickPulsePingSender {
     } catch (Throwable t) {
       operationLogger.recordFailure(t.getMessage(), t);
       ExceptionUtils.parseError(t, getQuickPulseEndpoint(), friendlyExceptionThrown, logger);
+    } finally {
+      if (response != null) {
+        response.close();
+      }
     }
     return onPingError(sendTime);
-  }
-
-  private String getPingPrefix() {
-    if (pingPrefix == null) {
-      // Linux Consumption Plan role name is lazily set
-      String roleName = telemetryClient.getRoleName();
-
-      StringBuilder sb = new StringBuilder();
-
-      sb.append("{");
-      sb.append("\"Documents\":null,");
-      sb.append("\"Instance\":\"").append(instanceName).append("\",");
-      sb.append("\"InstrumentationKey\":null,");
-      sb.append("\"InvariantVersion\":").append(QuickPulse.QP_INVARIANT_VERSION).append(",");
-      sb.append("\"MachineName\":\"").append(machineName).append("\",");
-      if (Strings.isNullOrEmpty(roleName)) {
-        sb.append("\"RoleName\":null,");
-      } else {
-        sb.append("\"RoleName\":\"").append(roleName).append("\",");
-      }
-      sb.append("\"StreamId\":\"").append(quickPulseId).append("\",");
-      sb.append("\"Metrics\":null,");
-      sb.append("\"Timestamp\":\"\\/Date(");
-
-      pingPrefix = sb.toString();
-    }
-    return pingPrefix;
   }
 
   // visible for testing
@@ -165,8 +159,18 @@ class QuickPulsePingSender {
     return telemetryClient.getEndpointProvider().getLiveEndpointUrl().toString();
   }
 
-  private String buildPingEntity(long timeInMillis) {
-    return getPingPrefix() + timeInMillis + ")\\/\"," + "\"Version\":\"2.2.0-738\"" + "}";
+  private String buildPingEntity(long timeInMillis) throws JsonProcessingException {
+    if (pingEnvelope == null) {
+      pingEnvelope = new QuickPulseEnvelope();
+      pingEnvelope.setInstance(instanceName);
+      pingEnvelope.setInvariantVersion(QuickPulse.QP_INVARIANT_VERSION);
+      pingEnvelope.setMachineName(machineName);
+      pingEnvelope.setRoleName(telemetryClient.getRoleName());
+      pingEnvelope.setStreamId(quickPulseId);
+      pingEnvelope.setVersion(quickPulseVersion);
+    }
+    pingEnvelope.setTimeStamp("/Date(" + timeInMillis + ")/");
+    return mapper.writeValueAsString(pingEnvelope);
   }
 
   private QuickPulseHeaderInfo onPingError(long sendTime) {
