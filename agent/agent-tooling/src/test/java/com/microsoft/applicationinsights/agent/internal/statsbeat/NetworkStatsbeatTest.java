@@ -41,7 +41,6 @@ public class NetworkStatsbeatTest {
     ikeys = new ArrayList<>();
     ikeys.add("00000000-0000-0000-0000-0FEEDDADBEEF");
     networkStatsbeat = new NetworkStatsbeat(new CustomDimensions());
-    networkStatsbeat.initInstrumentationKeyCounterMap(ikeys);
   }
 
   @Test

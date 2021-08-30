@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -77,8 +76,6 @@ public class StatsbeatModule {
 
     if (this.telemetryClient == null) {
       this.telemetryClient = telemetryClient;
-      networkStatsbeat.initInstrumentationKeyCounterMap(
-          Arrays.asList(telemetryClient.getInstrumentationKey()));
     }
 
     long shortIntervalSeconds = config.internal.statsbeat.shortIntervalSeconds;
