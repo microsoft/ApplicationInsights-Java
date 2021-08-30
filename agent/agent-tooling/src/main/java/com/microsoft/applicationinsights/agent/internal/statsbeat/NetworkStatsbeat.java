@@ -58,8 +58,10 @@ public class NetworkStatsbeat extends BaseStatsbeat {
 
   @Override
   protected void send(TelemetryClient telemetryClient) {
-    IntervalMetrics local = instrumentationKeyCounterMap.get(telemetryClient.getInstrumentationKey());
-    instrumentationKeyCounterMap.put(telemetryClient.getInstrumentationKey(), new IntervalMetrics());
+    IntervalMetrics local =
+        instrumentationKeyCounterMap.get(telemetryClient.getInstrumentationKey());
+    instrumentationKeyCounterMap.put(
+        telemetryClient.getInstrumentationKey(), new IntervalMetrics());
     sendIntervalMetric(
         telemetryClient,
         local,
