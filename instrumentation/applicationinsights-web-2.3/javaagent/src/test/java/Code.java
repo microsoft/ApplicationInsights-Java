@@ -44,6 +44,11 @@ public class Code {
   }
 
   @WithSpan(kind = SpanKind.SERVER)
+  public static void setSuccess() {
+    internalSetSuccess();
+  }
+
+  @WithSpan(kind = SpanKind.SERVER)
   public static void setSource() {
     internalSetSource();
   }
@@ -61,6 +66,11 @@ public class Code {
   @WithSpan
   private static void internalSetName() {
     ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setName("new name");
+  }
+
+  @WithSpan
+  private static void internalSetSuccess() {
+    ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setSuccess(false);
   }
 
   @WithSpan

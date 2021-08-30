@@ -32,10 +32,6 @@ abstract class ApacheHttpClientTest<T extends HttpRequest> extends HttpClientTes
   CloseableHttpClient client = createClient()
 
   @Override
-  boolean testCausality() {
-    false
-  }
-
   boolean capturesAiTargetAppId() {
     false
   }

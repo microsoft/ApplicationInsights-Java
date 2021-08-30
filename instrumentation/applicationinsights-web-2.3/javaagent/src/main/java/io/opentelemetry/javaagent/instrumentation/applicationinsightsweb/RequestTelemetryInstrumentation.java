@@ -15,6 +15,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesNoArguments;
 
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
@@ -41,6 +42,13 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
         isMethod()
             .and(isPublic())
             .and(not(isStatic()))
+            .and(named("setSuccess"))
+            .and(takesArguments(1)),
+        RequestTelemetryInstrumentation.class.getName() + "$SetSuccessAdvice");
+    transformer.applyAdviceToMethod(
+        isMethod()
+            .and(isPublic())
+            .and(not(isStatic()))
             .and(named("setSource"))
             .and(takesArguments(1)),
         RequestTelemetryInstrumentation.class.getName() + "$SetSourceAdvice");
@@ -52,6 +60,7 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
             .and(isPublic())
             .and(not(isStatic()))
             .and(not(named("setName")))
+            .and(not(named("setSuccess")))
             .and(not(named("setSource")))
             .and(not(named("getId"))),
         RequestTelemetryInstrumentation.class.getName() + "$OtherMethodsAdvice");
@@ -65,6 +74,18 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
           InstrumentationContext.get(RequestTelemetry.class, Span.class).get(requestTelemetry);
       if (span != null) {
         span.updateName(name);
+      }
+    }
+  }
+
+  public static class SetSuccessAdvice {
+    @Advice.OnMethodEnter
+    public static void methodEnter(
+        @Advice.This RequestTelemetry requestTelemetry, @Advice.Argument(0) boolean success) {
+      Span span =
+          InstrumentationContext.get(RequestTelemetry.class, Span.class).get(requestTelemetry);
+      if (span != null) {
+        span.setStatus(success ? StatusCode.OK : StatusCode.ERROR);
       }
     }
   }

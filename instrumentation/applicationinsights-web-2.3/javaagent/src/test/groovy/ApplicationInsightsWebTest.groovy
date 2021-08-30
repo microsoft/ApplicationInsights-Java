@@ -10,6 +10,7 @@ import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCo
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanContext
+import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.api.trace.TraceFlags
 import io.opentelemetry.api.trace.TraceState
 import io.opentelemetry.context.Context
@@ -80,6 +81,28 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
         }
         span(1) {
           name "Code.internalSetName"
+          kind INTERNAL
+          childOf span(0)
+        }
+      }
+    }
+  }
+
+  def "set success"() {
+    when:
+    new Code().setSuccess()
+
+    then:
+    assertTraces(1) {
+      trace(0, 2) {
+        span(0) {
+          name "Code.setSuccess"
+          kind SERVER
+          hasNoParent()
+          status StatusCode.ERROR
+        }
+        span(1) {
+          name "Code.internalSetSuccess"
           kind INTERNAL
           childOf span(0)
         }
