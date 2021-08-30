@@ -21,18 +21,15 @@
 
 package com.microsoft.applicationinsights.agent.internal.quickpulse;
 
-import static com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil.getExceptions;
+import static com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseTestBase.createExceptionTelemetry;
+import static com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseTestBase.createRemoteDependencyTelemetry;
+import static com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseTestBase.createRequestTelemetry;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDependencyData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector.CountAndDuration;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector.Counters;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector.FinalCounters;
-import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedDuration;
-import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.time.Duration;
 import java.util.Date;
@@ -241,45 +238,6 @@ class QuickPulseDataCollectorTests {
                 .plusSeconds(44)
                 .plusMillis(123)
                 .toMillis());
-  }
-
-  private static TelemetryItem createRequestTelemetry(
-      String name, Date timestamp, long durationMillis, String responseCode, boolean success) {
-    TelemetryItem telemetry = new TelemetryItem();
-    RequestData data = new RequestData();
-    new TelemetryClient().initRequestTelemetry(telemetry, data);
-
-    data.setName(name);
-    data.setDuration(FormattedDuration.fromMillis(durationMillis));
-    data.setResponseCode(responseCode);
-    data.setSuccess(success);
-
-    telemetry.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
-    return telemetry;
-  }
-
-  private static TelemetryItem createRemoteDependencyTelemetry(
-      String name, String command, long durationMillis, boolean success) {
-    TelemetryItem telemetry = new TelemetryItem();
-    RemoteDependencyData data = new RemoteDependencyData();
-    new TelemetryClient().initRemoteDependencyTelemetry(telemetry, data);
-
-    data.setName(name);
-    data.setData(command);
-    data.setDuration(FormattedDuration.fromMillis(durationMillis));
-    data.setSuccess(success);
-
-    return telemetry;
-  }
-
-  private static TelemetryItem createExceptionTelemetry(Exception exception) {
-    TelemetryItem telemetry = new TelemetryItem();
-    TelemetryExceptionData data = new TelemetryExceptionData();
-    new TelemetryClient().initExceptionTelemetry(telemetry, data);
-
-    data.setExceptions(getExceptions(exception));
-
-    return telemetry;
   }
 
   private static void assertCountersReset(FinalCounters counters) {
