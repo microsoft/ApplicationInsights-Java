@@ -247,4 +247,12 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     assert (endpointUrl != null && !endpointUrl.isEmpty());
     return endpointUrl.replaceAll("^\\w+://", "").replaceAll("/\\w+.?\\w?/\\w+", "");
   }
+
+  void sendOriginalEndpointCounterOnRedirect(
+      TelemetryClient telemetryClient, String ikey, String originalEndpoint) {
+    IntervalMetrics local = instrumentationKeyCounterMap.get(ikey);
+    if (local != null) {
+      sendIntervalMetric(telemetryClient, ikey, local, getHost(originalEndpoint));
+    }
+  }
 }

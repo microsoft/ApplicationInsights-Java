@@ -26,6 +26,7 @@ import com.azure.core.http.HttpPipelineNextPolicy;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.http.policy.HttpPipelinePolicy;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import io.opentelemetry.instrumentation.api.caching.Cache;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -84,6 +85,11 @@ public final class RedirectPolicy implements HttpPipelinePolicy {
                   cacheRedirectUrl(
                       responseLocation, instrumentationKey, originalHttpRequest.getUrl());
                   context.setHttpRequest(originalHttpRequest.copy().setUrl(responseLocation));
+                  if (StatsbeatModule.get() != null) {
+                    StatsbeatModule.get()
+                        .sendNetworkStatsbeatOnRedirect(
+                            instrumentationKey, originalHttpRequest.getUrl().toString());
+                  }
                   return attemptRetry(context, next, originalHttpRequest, retryCount + 1);
                 }
               }
