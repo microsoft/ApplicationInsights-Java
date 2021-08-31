@@ -253,6 +253,9 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     IntervalMetrics local = instrumentationKeyCounterMap.get(ikey);
     if (local != null) {
       sendIntervalMetric(telemetryClient, ikey, local, getHost(originalEndpoint));
+      instrumentationKeyCounterMap.remove(
+          ikey,
+          new IntervalMetrics()); // it will get added back next time when increment is called.
     }
   }
 }
