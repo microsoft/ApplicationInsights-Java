@@ -54,10 +54,6 @@ public class StatsbeatModule {
 
   private volatile TelemetryClient telemetryClient;
 
-  public static void setInstance(StatsbeatModule instance) {
-    StatsbeatModule.instance = instance;
-  }
-
   public StatsbeatModule(Cache<String, String> ikeyEndpointMap) {
     customDimensions = new CustomDimensions();
     networkStatsbeat = new NetworkStatsbeat(customDimensions, ikeyEndpointMap);

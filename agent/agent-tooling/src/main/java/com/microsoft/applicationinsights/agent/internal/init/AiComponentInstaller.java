@@ -166,9 +166,7 @@ public class AiComponentInstaller implements AgentListener {
             .collect(Collectors.toList());
 
     Cache<String, String> ikeyEndpointMap = Cache.newBuilder().setMaximumSize(100).build();
-
     StatsbeatModule statsbeatModule = new StatsbeatModule(ikeyEndpointMap);
-
     TelemetryClient telemetryClient =
         new TelemetryClient(
             config.customDimensions,
@@ -219,8 +217,6 @@ public class AiComponentInstaller implements AgentListener {
     }
 
     // initialize StatsbeatModule
-    // TODO (trask) there's still two places that uses StatsbeatModule global
-    StatsbeatModule.setInstance(statsbeatModule);
     statsbeatModule.start(telemetryClient, config);
   }
 
