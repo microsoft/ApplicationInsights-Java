@@ -65,7 +65,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     }
 
     for (String ikey : local.keySet()) {
-      if (!ikey.equals(telemetryClient.getStatsbeatInstrumentationKey())) { // skip statsbeat iKey
+      if (!ikey.equals(telemetryClient.getStatsbeatInstrumentationKey())) { // skip statsbeat ikey
         if (ikeyEndpointMap != null) {
           String endpointUrl = ikeyEndpointMap.get(ikey);
           if (Strings.isNullOrEmpty(endpointUrl)) {
@@ -162,12 +162,12 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   }
 
   private void sendIntervalMetric(
-      TelemetryClient telemetryClient, String iKey, IntervalMetrics local, String host) {
+      TelemetryClient telemetryClient, String ikey, IntervalMetrics local, String host) {
     if (local.requestSuccessCount.get() != 0) {
       TelemetryItem requestSuccessCountSt =
           createStatsbeatTelemetry(
               telemetryClient, REQUEST_SUCCESS_COUNT_METRIC_NAME, local.requestSuccessCount.get());
-      addCommonProperties(requestSuccessCountSt, iKey, host);
+      addCommonProperties(requestSuccessCountSt, ikey, host);
       telemetryClient.trackStatsbeatAsync(requestSuccessCountSt);
     }
 
@@ -175,7 +175,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       TelemetryItem requestFailureCountSt =
           createStatsbeatTelemetry(
               telemetryClient, REQUEST_FAILURE_COUNT_METRIC_NAME, local.requestFailureCount.get());
-      addCommonProperties(requestFailureCountSt, iKey, host);
+      addCommonProperties(requestFailureCountSt, ikey, host);
       telemetryClient.trackStatsbeatAsync(requestFailureCountSt);
     }
 
@@ -183,7 +183,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     if (durationAvg != 0) {
       TelemetryItem requestDurationSt =
           createStatsbeatTelemetry(telemetryClient, REQUEST_DURATION_METRIC_NAME, durationAvg);
-      addCommonProperties(requestDurationSt, iKey, host);
+      addCommonProperties(requestDurationSt, ikey, host);
       telemetryClient.trackStatsbeatAsync(requestDurationSt);
     }
 
@@ -191,7 +191,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       TelemetryItem retryCountSt =
           createStatsbeatTelemetry(
               telemetryClient, RETRY_COUNT_METRIC_NAME, local.retryCount.get());
-      addCommonProperties(retryCountSt, iKey, host);
+      addCommonProperties(retryCountSt, ikey, host);
       telemetryClient.trackStatsbeatAsync(retryCountSt);
     }
 
@@ -199,7 +199,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       TelemetryItem throttleCountSt =
           createStatsbeatTelemetry(
               telemetryClient, THROTTLE_COUNT_METRIC_NAME, local.throttlingCount.get());
-      addCommonProperties(throttleCountSt, iKey, host);
+      addCommonProperties(throttleCountSt, ikey, host);
       telemetryClient.trackStatsbeatAsync(throttleCountSt);
     }
 
@@ -207,16 +207,16 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       TelemetryItem exceptionCountSt =
           createStatsbeatTelemetry(
               telemetryClient, EXCEPTION_COUNT_METRIC_NAME, local.exceptionCount.get());
-      addCommonProperties(exceptionCountSt, iKey, host);
+      addCommonProperties(exceptionCountSt, ikey, host);
       telemetryClient.trackStatsbeatAsync(exceptionCountSt);
     }
   }
 
-  private static void addCommonProperties(TelemetryItem telemetryItem, String iKey, String host) {
+  private static void addCommonProperties(TelemetryItem telemetryItem, String ikey, String host) {
     Map<String, String> properties =
         TelemetryUtil.getProperties(telemetryItem.getData().getBaseData());
     properties.put("endpoint", BREEZE_ENDPOINT);
-    properties.put("cikey", iKey);
+    properties.put("cikey", ikey);
     properties.put("host", host);
   }
 
