@@ -174,7 +174,7 @@ public class AiComponentInstaller implements AgentListener {
             config.customDimensions,
             metricFilters,
             ikeyEndpointMap,
-            statsbeatModule.getNetworkStatsbeat(),
+            statsbeatModule,
             config.preview.authentication);
     TelemetryClientInitializer.initialize(telemetryClient, config);
     TelemetryClient.setActive(telemetryClient);

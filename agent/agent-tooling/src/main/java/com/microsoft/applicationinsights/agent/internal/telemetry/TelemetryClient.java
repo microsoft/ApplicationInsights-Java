@@ -45,7 +45,7 @@ import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileLo
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileSender;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeat;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import io.opentelemetry.instrumentation.api.caching.Cache;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.File;
@@ -104,7 +104,7 @@ public class TelemetryClient {
   private final List<MetricFilter> metricFilters;
 
   private final Cache<String, String> ikeyEndpointMap;
-  private final NetworkStatsbeat networkStatsbeat;
+  private final StatsbeatModule statsbeatModule;
 
   @Nullable private final Configuration.AadAuthentication aadAuthentication;
 
@@ -118,7 +118,7 @@ public class TelemetryClient {
         new HashMap<>(),
         new ArrayList<>(),
         Cache.newBuilder().build(),
-        new NetworkStatsbeat(),
+        new StatsbeatModule(null),
         null);
   }
 
@@ -126,7 +126,7 @@ public class TelemetryClient {
       Map<String, String> customDimensions,
       List<MetricFilter> metricFilters,
       Cache<String, String> ikeyEndpointMap,
-      NetworkStatsbeat networkStatsbeat,
+      StatsbeatModule statsbeatModule,
       @Nullable Configuration.AadAuthentication aadAuthentication) {
     StringSubstitutor substitutor = new StringSubstitutor(System.getenv());
     Map<String, String> globalProperties = new HashMap<>();
@@ -149,7 +149,7 @@ public class TelemetryClient {
     this.globalTags = globalTags;
     this.metricFilters = metricFilters;
     this.ikeyEndpointMap = ikeyEndpointMap;
-    this.networkStatsbeat = networkStatsbeat;
+    this.statsbeatModule = statsbeatModule;
     this.aadAuthentication = aadAuthentication;
   }
 
@@ -238,7 +238,7 @@ public class TelemetryClient {
                   endpointProvider.getIngestionEndpointUrl(),
                   localFileWriter,
                   ikeyEndpointMap,
-                  networkStatsbeat,
+                  statsbeatModule.getNetworkStatsbeat(),
                   aadAuthentication);
           LocalFileSender.start(localFileLoader, channel);
           channelBatcher = BatchSpanProcessor.builder(channel).build();
@@ -328,6 +328,10 @@ public class TelemetryClient {
 
   public Configuration.AadAuthentication getAadAuthentication() {
     return aadAuthentication;
+  }
+
+  public StatsbeatModule getStatsbeatModule() {
+    return statsbeatModule;
   }
 
   public void addNonFilterableMetricNames(String... metricNames) {

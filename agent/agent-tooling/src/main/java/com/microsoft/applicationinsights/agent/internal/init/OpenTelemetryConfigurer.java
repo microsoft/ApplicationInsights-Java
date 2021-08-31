@@ -31,7 +31,6 @@ import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithL
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.opentelemetry.sdk.autoconfigure.spi.SdkTracerProviderConfigurer;
@@ -85,9 +84,7 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
     // Reversing the order of processors before passing it to SpanProcessor
     Collections.reverse(processors);
 
-    SpanExporter currExporter =
-        new Exporter(
-            TelemetryClient.getActive(), StatsbeatModule.get().getInstrumentationStatsbeat());
+    SpanExporter currExporter = new Exporter(TelemetryClient.getActive());
 
     // NOTE if changing the span processor to something async, flush it in the shutdown hook before
     // flushing TelemetryClient

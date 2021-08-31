@@ -35,7 +35,6 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.Severity
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.FeatureStatsbeat;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedDuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -152,11 +151,9 @@ public class Exporter implements SpanExporter {
   }
 
   private final TelemetryClient telemetryClient;
-  private final FeatureStatsbeat instrumentationStatsbeat;
 
-  public Exporter(TelemetryClient telemetryClient, FeatureStatsbeat instrumentationStatsbeat) {
+  public Exporter(TelemetryClient telemetryClient) {
     this.telemetryClient = telemetryClient;
-    this.instrumentationStatsbeat = instrumentationStatsbeat;
   }
 
   @Override
@@ -195,7 +192,10 @@ public class Exporter implements SpanExporter {
   private void internalExport(SpanData span) {
     SpanKind kind = span.getKind();
     String instrumentationName = span.getInstrumentationLibraryInfo().getName();
-    instrumentationStatsbeat.addInstrumentation(instrumentationName);
+    telemetryClient
+        .getStatsbeatModule()
+        .getInstrumentationStatsbeat()
+        .addInstrumentation(instrumentationName);
     if (kind == SpanKind.INTERNAL) {
       Boolean isLog = span.getAttributes().get(AI_LOG_KEY);
       if (isLog != null && isLog) {
