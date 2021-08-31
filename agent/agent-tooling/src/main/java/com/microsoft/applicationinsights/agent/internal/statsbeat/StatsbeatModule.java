@@ -125,10 +125,6 @@ public class StatsbeatModule {
     }
   }
 
-  public static StatsbeatModule get() {
-    return instance;
-  }
-
   public NetworkStatsbeat getNetworkStatsbeat() {
     return networkStatsbeat;
   }
