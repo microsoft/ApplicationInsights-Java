@@ -133,16 +133,6 @@ public class StatsbeatModule {
     return instrumentationStatsbeat;
   }
 
-  // TODO (heya) send network statsbeat whenever redirect happens since url has been changed.
-  // new url is always retrieved from the redirect policy cache map and we don't update the
-  // endpoint.
-  //  public void sendNetworkStatsbeatOnRedirect(String ikey, String originalEndpoint) {
-  //    if (!disabledAll) {
-  //      networkStatsbeat.sendOriginalEndpointCounterOnRedirect(
-  //          telemetryClient, ikey, originalEndpoint);
-  //    }
-  //  }
-
   /** Runnable which is responsible for calling the send method to transmit Statsbeat telemetry. */
   private static class StatsbeatSender implements Runnable {
 
