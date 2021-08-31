@@ -121,6 +121,7 @@ public class LazyHttpClient implements HttpClient {
     return new NettyAsyncHttpClientBuilder().connectionProvider(connectionProvider).build();
   }
 
+  // pass non-null ikeyRedirectCache if you want to use ikey-specific redirect policy
   public static HttpPipeline newHttpPipeLine(
       @Nullable Configuration.AadAuthentication aadConfiguration,
       @Nullable Cache<String, String> ikeyRedirectCache) {
