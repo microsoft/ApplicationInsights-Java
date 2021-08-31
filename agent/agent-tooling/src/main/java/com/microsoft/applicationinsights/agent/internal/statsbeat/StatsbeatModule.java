@@ -29,15 +29,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class StatsbeatModule {
 
   private static final Logger logger = LoggerFactory.getLogger(BaseStatsbeat.class);
-
-  @Nullable private static volatile StatsbeatModule instance;
 
   private static final ScheduledExecutorService scheduledExecutor =
       Executors.newSingleThreadScheduledExecutor(
@@ -51,8 +48,6 @@ public class StatsbeatModule {
   private final FeatureStatsbeat instrumentationStatsbeat;
 
   private final AtomicBoolean started = new AtomicBoolean();
-
-  private volatile TelemetryClient telemetryClient;
 
   public StatsbeatModule(Cache<String, String> ikeyEndpointMap) {
     customDimensions = new CustomDimensions();
@@ -72,10 +67,6 @@ public class StatsbeatModule {
       // something goes wrong.
       // this happens rarely.
       return;
-    }
-
-    if (this.telemetryClient == null) {
-      this.telemetryClient = telemetryClient;
     }
 
     long shortIntervalSeconds = config.internal.statsbeat.shortIntervalSeconds;
