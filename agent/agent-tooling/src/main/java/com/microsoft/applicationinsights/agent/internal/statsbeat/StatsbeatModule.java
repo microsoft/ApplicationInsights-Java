@@ -49,7 +49,9 @@ public class StatsbeatModule {
   private final FeatureStatsbeat instrumentationStatsbeat;
 
   private final AtomicBoolean started = new AtomicBoolean();
-  private volatile boolean disabledAll;
+
+  // TODO (heya) send network statsbeat per original endpoint url
+  //  private volatile boolean disabledAll;
 
   private volatile TelemetryClient telemetryClient;
 
@@ -70,7 +72,7 @@ public class StatsbeatModule {
       // disabledAll is an internal emergency kill-switch to turn off Statsbeat completely when
       // something goes wrong.
       // this happens rarely.
-      disabledAll = true;
+      //      disabledAll = true;
       return;
     }
 

@@ -65,13 +65,16 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     }
 
     for (String ikey : local.keySet()) {
-      if (ikeyEndpointMap != null) {
-        String endpointUrl = ikeyEndpointMap.get(ikey);
-        if (Strings.isNullOrEmpty(endpointUrl)) {
-          endpointUrl = telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString();
-        }
+      if (!ikey.equals(telemetryClient.getStatsbeatInstrumentationKey())) { // skip statsbeat iKey
+        if (ikeyEndpointMap != null) {
+          String endpointUrl = ikeyEndpointMap.get(ikey);
+          if (Strings.isNullOrEmpty(endpointUrl)) {
+            endpointUrl =
+                telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString();
+          }
 
-        sendIntervalMetric(telemetryClient, ikey, local.get(ikey), getHost(endpointUrl));
+          sendIntervalMetric(telemetryClient, ikey, local.get(ikey), getHost(endpointUrl));
+        }
       }
     }
   }
