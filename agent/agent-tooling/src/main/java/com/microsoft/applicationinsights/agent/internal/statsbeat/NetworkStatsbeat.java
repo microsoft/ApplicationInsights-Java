@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
+import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
@@ -64,11 +65,14 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     }
 
     for (String ikey : local.keySet()) {
-      String endpointUrl =
-          ikeyEndpointMap != null && ikeyEndpointMap.get(ikey) != null
-              ? ikeyEndpointMap.get(ikey)
-              : telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString();
-      sendIntervalMetric(telemetryClient, ikey, local.get(ikey), getHost(endpointUrl));
+      if (ikeyEndpointMap != null) {
+        String endpointUrl = ikeyEndpointMap.get(ikey);
+        if (Strings.isNullOrEmpty(endpointUrl)) {
+          endpointUrl = telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString();
+        }
+
+        sendIntervalMetric(telemetryClient, ikey, local.get(ikey), getHost(endpointUrl));
+      }
     }
   }
 
