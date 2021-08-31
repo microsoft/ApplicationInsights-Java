@@ -40,6 +40,7 @@ import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClien
 import com.microsoft.applicationinsights.agent.internal.httpclient.RedirectPolicy;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
+import io.opentelemetry.instrumentation.api.caching.Cache;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.IOException;
 import java.net.URL;
@@ -83,12 +84,16 @@ public class TelemetryChannel {
   private final HttpPipeline pipeline;
   private final URL endpointUrl;
   private final LocalFileWriter localFileWriter;
+  private static final Cache<String, String> ikeyEndpointMap =
+      Cache.newBuilder().setMaximumSize(100).build();
 
   public static TelemetryChannel create(
       URL endpointUrl,
       LocalFileWriter localFileWriter,
       Configuration.AadAuthentication aadAuthentication) {
-    HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(aadAuthentication, true);
+    HttpPipeline httpPipeline =
+        LazyHttpClient.newHttpPipeLine(aadAuthentication, true, ikeyEndpointMap);
+    StatsbeatModule.get().getNetworkStatsbeat().setIkeyEndpointMap(ikeyEndpointMap);
     return new TelemetryChannel(httpPipeline, endpointUrl, localFileWriter);
   }
 
