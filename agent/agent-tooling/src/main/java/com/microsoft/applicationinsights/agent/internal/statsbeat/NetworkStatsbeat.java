@@ -43,16 +43,20 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   private static final String BREEZE_ENDPOINT = "breeze";
 
   private final Object lock = new Object();
-  private Cache<String, String> ikeyEndpointMap;
+  private final Cache<String, String> ikeyEndpointMap;
 
   @GuardedBy("lock")
   private final Map<String, IntervalMetrics> instrumentationKeyCounterMap = new HashMap<>();
 
-  NetworkStatsbeat(CustomDimensions customDimensions) {
-    super(customDimensions);
+  // only used by tests
+  public NetworkStatsbeat() {
+    super(new CustomDimensions());
+    this.ikeyEndpointMap = Cache.newBuilder().build();
   }
 
-  public void setIkeyEndpointMap(Cache<String, String> ikeyEndpointMap) {
+  public NetworkStatsbeat(
+      CustomDimensions customDimensions, Cache<String, String> ikeyEndpointMap) {
+    super(customDimensions);
     this.ikeyEndpointMap = ikeyEndpointMap;
   }
 

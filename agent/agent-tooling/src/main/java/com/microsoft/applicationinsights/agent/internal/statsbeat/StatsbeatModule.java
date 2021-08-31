@@ -24,10 +24,12 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import io.opentelemetry.instrumentation.api.caching.Cache;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +37,7 @@ public class StatsbeatModule {
 
   private static final Logger logger = LoggerFactory.getLogger(BaseStatsbeat.class);
 
-  private static final StatsbeatModule instance = new StatsbeatModule();
+  @Nullable private static volatile StatsbeatModule instance;
 
   private static final ScheduledExecutorService scheduledExecutor =
       Executors.newSingleThreadScheduledExecutor(
@@ -53,9 +55,13 @@ public class StatsbeatModule {
 
   private volatile TelemetryClient telemetryClient;
 
-  private StatsbeatModule() {
+  public static void setInstance(StatsbeatModule instance) {
+    StatsbeatModule.instance = instance;
+  }
+
+  public StatsbeatModule(Cache<String, String> ikeyEndpointMap) {
     customDimensions = new CustomDimensions();
-    networkStatsbeat = new NetworkStatsbeat(customDimensions);
+    networkStatsbeat = new NetworkStatsbeat(customDimensions, ikeyEndpointMap);
     attachStatsbeat = new AttachStatsbeat(customDimensions);
     featureStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.FEATURE);
     instrumentationStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.INSTRUMENTATION);

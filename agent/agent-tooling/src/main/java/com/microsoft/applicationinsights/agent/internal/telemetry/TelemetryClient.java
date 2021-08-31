@@ -45,6 +45,8 @@ import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileLo
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileSender;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeat;
+import io.opentelemetry.instrumentation.api.caching.Cache;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.File;
 import java.util.ArrayList;
@@ -54,9 +56,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.apache.commons.text.StringSubstitutor;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class TelemetryClient {
 
@@ -101,7 +103,10 @@ public class TelemetryClient {
 
   private final List<MetricFilter> metricFilters;
 
-  private final Configuration.AadAuthentication aadAuthentication;
+  private final Cache<String, String> ikeyEndpointMap;
+  private final NetworkStatsbeat networkStatsbeat;
+
+  @Nullable private final Configuration.AadAuthentication aadAuthentication;
 
   private final Object channelInitLock = new Object();
   private volatile @MonotonicNonNull BatchSpanProcessor channelBatcher;
@@ -109,13 +114,20 @@ public class TelemetryClient {
 
   // only used by tests
   public TelemetryClient() {
-    this(new HashMap<>(), new ArrayList<>(), null);
+    this(
+        new HashMap<>(),
+        new ArrayList<>(),
+        Cache.newBuilder().build(),
+        new NetworkStatsbeat(),
+        null);
   }
 
   public TelemetryClient(
       Map<String, String> customDimensions,
       List<MetricFilter> metricFilters,
-      Configuration.AadAuthentication aadAuthentication) {
+      Cache<String, String> ikeyEndpointMap,
+      NetworkStatsbeat networkStatsbeat,
+      @Nullable Configuration.AadAuthentication aadAuthentication) {
     StringSubstitutor substitutor = new StringSubstitutor(System.getenv());
     Map<String, String> globalProperties = new HashMap<>();
     Map<String, String> globalTags = new HashMap<>();
@@ -136,6 +148,8 @@ public class TelemetryClient {
     this.globalProperties = globalProperties;
     this.globalTags = globalTags;
     this.metricFilters = metricFilters;
+    this.ikeyEndpointMap = ikeyEndpointMap;
+    this.networkStatsbeat = networkStatsbeat;
     this.aadAuthentication = aadAuthentication;
   }
 
@@ -221,7 +235,11 @@ public class TelemetryClient {
           LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, telemetryFolder);
           TelemetryChannel channel =
               TelemetryChannel.create(
-                  endpointProvider.getIngestionEndpointUrl(), localFileWriter, aadAuthentication);
+                  endpointProvider.getIngestionEndpointUrl(),
+                  localFileWriter,
+                  ikeyEndpointMap,
+                  networkStatsbeat,
+                  aadAuthentication);
           LocalFileSender.start(localFileLoader, channel);
           channelBatcher = BatchSpanProcessor.builder(channel).build();
         }
@@ -239,7 +257,12 @@ public class TelemetryClient {
           LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, statsbeatFolder);
           LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, statsbeatFolder);
           TelemetryChannel channel =
-              TelemetryChannel.create(endpointProvider.getStatsbeatEndpointUrl(), localFileWriter);
+              TelemetryChannel.create(
+                  endpointProvider.getStatsbeatEndpointUrl(),
+                  localFileWriter,
+                  ikeyEndpointMap,
+                  null,
+                  null);
           LocalFileSender.start(localFileLoader, channel);
           statsbeatChannelBatcher = BatchSpanProcessor.builder(channel).build();
         }
@@ -272,7 +295,8 @@ public class TelemetryClient {
     statsbeatInstrumentationKey = key;
   }
 
-  public @Nullable String getRoleName() {
+  @Nullable
+  public String getRoleName() {
     return roleName;
   }
 

@@ -56,6 +56,7 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
+import io.opentelemetry.instrumentation.api.caching.Cache;
 import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.extension.AgentListener;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -164,8 +165,17 @@ public class AiComponentInstaller implements AgentListener {
             .map(MetricFilter::new)
             .collect(Collectors.toList());
 
+    Cache<String, String> ikeyEndpointMap = Cache.newBuilder().setMaximumSize(100).build();
+
+    StatsbeatModule statsbeatModule = new StatsbeatModule(ikeyEndpointMap);
+
     TelemetryClient telemetryClient =
-        new TelemetryClient(config.customDimensions, metricFilters, config.preview.authentication);
+        new TelemetryClient(
+            config.customDimensions,
+            metricFilters,
+            ikeyEndpointMap,
+            statsbeatModule.getNetworkStatsbeat(),
+            config.preview.authentication);
     TelemetryClientInitializer.initialize(telemetryClient, config);
     TelemetryClient.setActive(telemetryClient);
 
@@ -209,7 +219,9 @@ public class AiComponentInstaller implements AgentListener {
     }
 
     // initialize StatsbeatModule
-    StatsbeatModule.get().start(telemetryClient, config);
+    // TODO (trask) there's still two places that uses StatsbeatModule global
+    StatsbeatModule.setInstance(statsbeatModule);
+    statsbeatModule.start(telemetryClient, config);
   }
 
   private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(

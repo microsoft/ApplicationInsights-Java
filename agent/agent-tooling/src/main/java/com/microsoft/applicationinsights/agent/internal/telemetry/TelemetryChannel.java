@@ -39,7 +39,7 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.Telemetr
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.httpclient.RedirectPolicy;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeat;
 import io.opentelemetry.instrumentation.api.caching.Cache;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.IOException;
@@ -84,20 +84,17 @@ public class TelemetryChannel {
   private final HttpPipeline pipeline;
   private final URL endpointUrl;
   private final LocalFileWriter localFileWriter;
-  private static final Cache<String, String> ikeyEndpointMap =
-      Cache.newBuilder().setMaximumSize(100).build();
+  // this is null for the statsbeat channel
+  @Nullable private final NetworkStatsbeat networkStatsbeat;
 
   public static TelemetryChannel create(
       URL endpointUrl,
       LocalFileWriter localFileWriter,
-      Configuration.AadAuthentication aadAuthentication) {
+      Cache<String, String> ikeyEndpointMap,
+      @Nullable NetworkStatsbeat networkStatsbeat,
+      @Nullable Configuration.AadAuthentication aadAuthentication) {
     HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(aadAuthentication, ikeyEndpointMap);
-    StatsbeatModule.get().getNetworkStatsbeat().setIkeyEndpointMap(ikeyEndpointMap);
-    return new TelemetryChannel(httpPipeline, endpointUrl, localFileWriter);
-  }
-
-  public static TelemetryChannel create(URL endpointUrl, LocalFileWriter localFileWriter) {
-    return create(endpointUrl, localFileWriter, null);
+    return new TelemetryChannel(httpPipeline, endpointUrl, localFileWriter, networkStatsbeat);
   }
 
   public CompletableResultCode sendRawBytes(ByteBuffer buffer) {
@@ -105,10 +102,15 @@ public class TelemetryChannel {
   }
 
   // used by tests only
-  public TelemetryChannel(HttpPipeline pipeline, URL endpointUrl, LocalFileWriter localFileWriter) {
+  public TelemetryChannel(
+      HttpPipeline pipeline,
+      URL endpointUrl,
+      LocalFileWriter localFileWriter,
+      @Nullable NetworkStatsbeat networkStatsbeat) {
     this.pipeline = pipeline;
     this.endpointUrl = endpointUrl;
     this.localFileWriter = localFileWriter;
+    this.networkStatsbeat = networkStatsbeat;
   }
 
   public CompletableResultCode send(List<TelemetryItem> telemetryItems) {
@@ -217,20 +219,19 @@ public class TelemetryChannel {
               LazyHttpClient.consumeResponseBody(response);
             },
             error -> {
-              StatsbeatModule.get()
-                  .getNetworkStatsbeat()
-                  .incrementRequestFailureCount(instrumentationKey);
+              if (networkStatsbeat != null) {
+                networkStatsbeat.incrementRequestFailureCount(instrumentationKey);
+              }
               ExceptionUtils.parseError(
                   error, endpointUrl.toString(), friendlyExceptionThrown, logger);
               writeToDiskOnFailure(byteBuffers, byteBuffers);
               result.fail();
             },
             () -> {
-              StatsbeatModule.get()
-                  .getNetworkStatsbeat()
-                  .incrementRequestSuccessCount(
-                      System.currentTimeMillis() - startTime, instrumentationKey);
-
+              if (networkStatsbeat != null) {
+                networkStatsbeat.incrementRequestSuccessCount(
+                    System.currentTimeMillis() - startTime, instrumentationKey);
+              }
               if (byteBuffers != null) {
                 byteBufferPool.offer(byteBuffers);
               }
@@ -274,7 +275,9 @@ public class TelemetryChannel {
       case 439: // Breeze-specific: THROTTLED OVER EXTENDED TIME
         // TODO handle throttling
         // TODO (heya) track throttling count via Statsbeat
-        StatsbeatModule.get().getNetworkStatsbeat().incrementThrottlingCount(instrumentationKey);
+        if (networkStatsbeat != null) {
+          networkStatsbeat.incrementThrottlingCount(instrumentationKey);
+        }
         break;
       case 200: // SUCCESS
         operationLogger.recordSuccess();
@@ -285,7 +288,9 @@ public class TelemetryChannel {
       case 0: // client-side exception
         // TODO exponential backoff and retry to a limit
         // TODO (heya) track failure count via Statsbeat
-        StatsbeatModule.get().getNetworkStatsbeat().incrementRetryCount(instrumentationKey);
+        if (networkStatsbeat != null) {
+          networkStatsbeat.incrementRetryCount(instrumentationKey);
+        }
         break;
       default:
         // ok
