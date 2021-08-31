@@ -75,7 +75,7 @@ public class ProfilerServiceInitializer {
       GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
 
     HttpPipeline httpPipeline =
-        LazyHttpClient.newHttpPipeLine(telemetryClient.getAadAuthentication(), false, null);
+        LazyHttpClient.newHttpPipeLine(telemetryClient.getAadAuthentication(), null);
 
     initialize(
         appIdSupplier,

@@ -123,11 +123,10 @@ public class LazyHttpClient implements HttpClient {
 
   public static HttpPipeline newHttpPipeLine(
       @Nullable Configuration.AadAuthentication aadConfiguration,
-      boolean followInstrumentationKeyForRedirect,
-      Cache<String, String> ikeyRedirectCache) {
+      @Nullable Cache<String, String> ikeyRedirectCache) {
     List<HttpPipelinePolicy> policies = new ArrayList<>();
-    // Redirect policy to to handle v2.1/track redirects (and other redirects too, e.g. profiler)
-    policies.add(new RedirectPolicy(followInstrumentationKeyForRedirect, ikeyRedirectCache));
+    // Redirect policy to handle v2.1/track redirects (and other redirects too, e.g. profiler)
+    policies.add(new RedirectPolicy(ikeyRedirectCache));
     if (aadConfiguration != null && aadConfiguration.enabled) {
       policies.add(getAuthenticationPolicy(aadConfiguration));
     }

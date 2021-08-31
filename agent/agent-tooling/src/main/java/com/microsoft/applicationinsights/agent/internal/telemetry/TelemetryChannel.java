@@ -91,8 +91,7 @@ public class TelemetryChannel {
       URL endpointUrl,
       LocalFileWriter localFileWriter,
       Configuration.AadAuthentication aadAuthentication) {
-    HttpPipeline httpPipeline =
-        LazyHttpClient.newHttpPipeLine(aadAuthentication, true, ikeyEndpointMap);
+    HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(aadAuthentication, ikeyEndpointMap);
     StatsbeatModule.get().getNetworkStatsbeat().setIkeyEndpointMap(ikeyEndpointMap);
     return new TelemetryChannel(httpPipeline, endpointUrl, localFileWriter);
   }
