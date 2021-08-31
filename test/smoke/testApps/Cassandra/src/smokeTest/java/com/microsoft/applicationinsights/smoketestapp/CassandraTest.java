@@ -54,6 +54,7 @@ public class CassandraTest extends AiSmokeTest {
     assertTrue(telemetry.rd.getMeasurements().isEmpty());
 
     assertEquals("SELECT test.test", telemetry.rdd1.getName());
+    assertEquals("select * from test.test", telemetry.rdd1.getData());
     assertEquals("cassandra", telemetry.rdd1.getType());
     assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+"));
     assertTrue(telemetry.rdd1.getProperties().isEmpty());

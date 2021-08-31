@@ -22,12 +22,14 @@
 package com.microsoft.applicationinsights.serviceprofilerapi.client.uploader;
 
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.OsPlatforms;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class OsPlatformProvider {
   private static final Logger LOGGER = LoggerFactory.getLogger(OsPlatformProvider.class.getName());
 
+  @Nullable
   public static String getOsPlatformDescription() {
     if (isWindows()) {
       return OsPlatforms.WINDOWS;

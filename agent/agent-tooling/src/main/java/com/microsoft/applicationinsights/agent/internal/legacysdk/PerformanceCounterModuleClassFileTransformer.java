@@ -77,6 +77,7 @@ public class PerformanceCounterModuleClassFileTransformer implements ClassFileTr
     }
 
     @Override
+    @Nullable
     public MethodVisitor visitMethod(
         int access,
         String name,

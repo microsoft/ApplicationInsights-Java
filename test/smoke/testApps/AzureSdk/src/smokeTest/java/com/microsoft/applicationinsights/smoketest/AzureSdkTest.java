@@ -56,13 +56,16 @@ public class AzureSdkTest extends AiSmokeTest {
     assertTrue(telemetry.rd.getMeasurements().isEmpty());
 
     assertEquals("TestController.test", telemetry.rdd1.getName());
+    assertNull(telemetry.rdd1.getData());
     assertEquals("InProc", telemetry.rdd1.getType());
     assertNull(telemetry.rdd1.getTarget());
     assertTrue(telemetry.rdd1.getProperties().isEmpty());
     assertTrue(telemetry.rdd1.getSuccess());
 
     assertEquals("hello", telemetry.rdd2.getName());
+    assertNull(telemetry.rdd2.getData());
     assertEquals("InProc", telemetry.rdd2.getType());
+    assertNull(telemetry.rdd2.getTarget());
     assertTrue(telemetry.rdd2.getProperties().isEmpty());
     assertTrue(telemetry.rdd2.getSuccess());
 

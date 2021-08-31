@@ -28,6 +28,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** This class manages loading a list of {@link ByteBuffer} from the disk. */
 public class LocalFileLoader {
@@ -46,6 +47,7 @@ public class LocalFileLoader {
   }
 
   // Load ByteBuffer from persisted files on disk in FIFO order.
+  @Nullable
   ByteBuffer loadTelemetriesFromDisk() {
     // TODO (heya) how does this load files from disk at startup that were left over from prior
     //  process?

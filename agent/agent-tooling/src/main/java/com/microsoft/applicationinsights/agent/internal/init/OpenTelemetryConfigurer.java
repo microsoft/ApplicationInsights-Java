@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
@@ -43,6 +44,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@AutoService(SdkTracerProviderConfigurer.class)
 public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
 
   private static volatile BatchSpanProcessor batchSpanProcessor;
@@ -119,7 +121,9 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
     // it is used to pass legacy attributes from the context (extracted by the AiLegacyPropagator)
     // to the span attributes (since there is no way to update attributes on span directly from
     // propagator)
-    tracerProvider.addSpanProcessor(new AiLegacyHeaderSpanProcessor());
+    if (config.preview.legacyRequestIdPropagation.enabled) {
+      tracerProvider.addSpanProcessor(new AiLegacyHeaderSpanProcessor());
+    }
     // using BatchSpanProcessor in order to get off of the application thread as soon as possible
     // using batch size 1 because need to convert to SpanData as soon as possible to grab data for
     // live metrics. the real batching is done at a lower level

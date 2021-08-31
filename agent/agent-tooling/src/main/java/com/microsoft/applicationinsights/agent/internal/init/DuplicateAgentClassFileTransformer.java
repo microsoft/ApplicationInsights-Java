@@ -98,6 +98,7 @@ public class DuplicateAgentClassFileTransformer implements ClassFileTransformer 
     }
 
     @Override
+    @Nullable
     public MethodVisitor visitMethod(
         int access,
         String name,

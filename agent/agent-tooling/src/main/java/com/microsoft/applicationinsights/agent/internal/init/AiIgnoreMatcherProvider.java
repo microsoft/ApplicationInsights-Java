@@ -21,10 +21,12 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import com.google.auto.service.AutoService;
 import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.extension.ignore.IgnoredTypesBuilder;
 import io.opentelemetry.javaagent.extension.ignore.IgnoredTypesConfigurer;
 
+@AutoService(IgnoredTypesConfigurer.class)
 public class AiIgnoreMatcherProvider implements IgnoredTypesConfigurer {
 
   @Override

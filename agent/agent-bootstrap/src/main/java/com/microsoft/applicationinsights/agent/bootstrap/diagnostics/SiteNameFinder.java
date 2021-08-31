@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 public class SiteNameFinder extends CachedDiagnosticsValueFinder {
   // visible for testing
   static final String WEBSITE_SITE_NAME_ENV_VAR = "WEBSITE_SITE_NAME";
@@ -33,6 +35,7 @@ public class SiteNameFinder extends CachedDiagnosticsValueFinder {
   }
 
   @Override
+  @Nullable
   protected String populateValue() {
     String value = System.getenv(SiteNameFinder.WEBSITE_SITE_NAME_ENV_VAR);
     return value == null || value.isEmpty() ? null : value;

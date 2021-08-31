@@ -21,10 +21,12 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import com.google.auto.service.AutoService;
 import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.extension.bootstrap.BootstrapPackagesBuilder;
 import io.opentelemetry.javaagent.extension.bootstrap.BootstrapPackagesConfigurer;
 
+@AutoService(BootstrapPackagesConfigurer.class)
 public class AiBootstrapPackagesConfigurer implements BootstrapPackagesConfigurer {
 
   @Override

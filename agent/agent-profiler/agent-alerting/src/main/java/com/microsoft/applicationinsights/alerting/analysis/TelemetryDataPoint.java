@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.alerting.analysis;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import java.time.ZonedDateTime;
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** Individual sample of telemetry data. */
 public class TelemetryDataPoint implements Comparable<TelemetryDataPoint> {
@@ -62,7 +63,7 @@ public class TelemetryDataPoint implements Comparable<TelemetryDataPoint> {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(@Nullable Object obj) {
     if (obj == this) {
       return true;
     }

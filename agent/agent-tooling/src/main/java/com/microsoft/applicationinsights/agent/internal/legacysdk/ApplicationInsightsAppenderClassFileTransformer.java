@@ -81,6 +81,7 @@ public class ApplicationInsightsAppenderClassFileTransformer implements ClassFil
     }
 
     @Override
+    @Nullable
     public MethodVisitor visitMethod(
         int access,
         String name,

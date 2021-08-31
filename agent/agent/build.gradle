@@ -44,6 +44,10 @@ shadowJar {
   exclude "META-INF/jandex.idx" // from caffeine
   exclude "META-INF/moshi.kotlin_module"
 
+  // TEMPORARY until optimization lands upstream
+  exclude "io/opentelemetry/api/common/AttributeKeyImpl.class"
+  relocate "patched.io.opentelemetry.api.common.AttributeKeyImpl", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api.common.AttributeKeyImpl"
+
   // Prevents conflict with other SLF4J instances. Important for premain.
   relocate "org.slf4j", "io.opentelemetry.javaagent.slf4j"
   // rewrite dependencies calling Logger.getLogger

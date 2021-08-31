@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.serviceprofilerapi;
 
 import com.azure.core.http.HttpPipeline;
+import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
 import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
@@ -40,6 +41,7 @@ import java.util.function.Supplier;
  * Default ProfilerService factory loaded by a service loader, produces a Profiler Service based on
  * JFR.
  */
+@AutoService(ProfilerServiceFactory.class)
 public class JfrProfilerServiceFactory implements ProfilerServiceFactory {
   // Singleton instance that holds the one and only service of the ServiceProfiler subsystem
   private static JfrProfilerService instance;

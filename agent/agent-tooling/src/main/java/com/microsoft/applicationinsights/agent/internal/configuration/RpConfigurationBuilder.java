@@ -29,12 +29,14 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class RpConfigurationBuilder {
 
   private static final String APPLICATIONINSIGHTS_RP_CONFIGURATION_FILE =
       "APPLICATIONINSIGHTS_RP_CONFIGURATION_FILE";
 
+  @Nullable
   public static RpConfiguration create(Path agentJarPath) throws IOException {
     Path configPath;
     String configPathString =

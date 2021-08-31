@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.alerting.config;
 
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** Contains the overall configuration of the entire alerting subsystem. */
 public class AlertingConfiguration {
@@ -66,7 +67,7 @@ public class AlertingConfiguration {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(@Nullable Object obj) {
     if (obj == this) {
       return true;
     }
@@ -124,7 +125,7 @@ public class AlertingConfiguration {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
       if (obj == this) {
         return true;
       }

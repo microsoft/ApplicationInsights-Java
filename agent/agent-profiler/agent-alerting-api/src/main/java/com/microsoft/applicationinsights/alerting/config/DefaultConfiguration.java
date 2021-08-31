@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.alerting.config;
 
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class DefaultConfiguration {
 
@@ -37,7 +38,7 @@ public class DefaultConfiguration {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(@Nullable Object obj) {
     if (obj == this) {
       return true;
     }

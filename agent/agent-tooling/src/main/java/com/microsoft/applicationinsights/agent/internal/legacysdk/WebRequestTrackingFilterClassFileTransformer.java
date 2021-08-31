@@ -77,6 +77,7 @@ public class WebRequestTrackingFilterClassFileTransformer implements ClassFileTr
     }
 
     @Override
+    @Nullable
     public MethodVisitor visitMethod(
         int access,
         String name,
