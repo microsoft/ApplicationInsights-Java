@@ -51,7 +51,6 @@ public class StatsbeatModule {
   private final FeatureStatsbeat instrumentationStatsbeat;
 
   private final AtomicBoolean started = new AtomicBoolean();
-  private volatile boolean disabledAll;
 
   private volatile TelemetryClient telemetryClient;
 
@@ -76,7 +75,6 @@ public class StatsbeatModule {
       // disabledAll is an internal emergency kill-switch to turn off Statsbeat completely when
       // something goes wrong.
       // this happens rarely.
-      disabledAll = true;
       return;
     }
 
@@ -137,15 +135,6 @@ public class StatsbeatModule {
 
   public FeatureStatsbeat getInstrumentationStatsbeat() {
     return instrumentationStatsbeat;
-  }
-
-  public void sendNetworkStatsbeatOnRedirect(String ikey, String originalEndpoint) {
-    if (!disabledAll
-        && telemetryClient != null
-        && !telemetryClient.getStatsbeatInstrumentationKey().equals(ikey)) {
-      networkStatsbeat.sendOriginalEndpointCounterOnRedirect(
-          telemetryClient, ikey, originalEndpoint);
-    }
   }
 
   /** Runnable which is responsible for calling the send method to transmit Statsbeat telemetry. */
