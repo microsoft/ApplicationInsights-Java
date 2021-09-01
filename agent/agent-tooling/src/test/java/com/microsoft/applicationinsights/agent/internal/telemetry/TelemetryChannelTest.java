@@ -31,14 +31,12 @@ import com.azure.core.http.HttpResponse;
 import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.core.util.FluxUtil;
 import com.microsoft.applicationinsights.agent.internal.MockHttpResponse;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.DataPointType;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDataPoint;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorBase;
+import com.microsoft.applicationinsights.agent.internal.common.TestUtils;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.httpclient.RedirectPolicy;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileCache;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
+import io.opentelemetry.instrumentation.api.caching.Cache;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -56,7 +54,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.zip.GZIPInputStream;
 import javax.annotation.Nullable;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -65,7 +62,6 @@ import reactor.core.publisher.Mono;
 
 public class TelemetryChannelTest {
   RecordingHttpClient recordingHttpClient;
-  private static final AtomicInteger requestCount = new AtomicInteger();
   private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
   private static final String REDIRECT_INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEE";
   private static final String END_POINT_URL = "http://foo.bar";
@@ -73,10 +69,10 @@ public class TelemetryChannelTest {
 
   @TempDir File tempFolder;
 
-  private TelemetryChannel getTelemetryChannel(boolean followInstrumentationKeyForRedirect)
-      throws MalformedURLException {
+  private TelemetryChannel getTelemetryChannel() throws MalformedURLException {
     List<HttpPipelinePolicy> policies = new ArrayList<>();
-    policies.add(new RedirectPolicy(followInstrumentationKeyForRedirect));
+
+    policies.add(new RedirectPolicy(Cache.newBuilder().setMaximumSize(5).build()));
     HttpPipelineBuilder pipelineBuilder =
         new HttpPipelineBuilder()
             .policies(policies.toArray(new HttpPipelinePolicy[0]))
@@ -85,7 +81,8 @@ public class TelemetryChannelTest {
     return new TelemetryChannel(
         pipelineBuilder.build(),
         new URL(END_POINT_URL),
-        new LocalFileWriter(localFileCache, tempFolder));
+        new LocalFileWriter(localFileCache, tempFolder),
+        null);
   }
 
   @Nullable
@@ -134,32 +131,12 @@ public class TelemetryChannelTest {
             });
   }
 
-  @AfterEach
-  public void reset() {
-    requestCount.set(0);
-  }
-
-  @Test
-  public void nullIkeyTest() throws MalformedURLException {
-    // given
-    List<TelemetryItem> telemetryItems = new ArrayList<>();
-    telemetryItems.add(createMetricTelemetry("metric" + 1, 1, null));
-    TelemetryChannel telemetryChannel = getTelemetryChannel(true);
-
-    // when
-    CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
-
-    // then
-    assertThat(completableResultCode.isSuccess()).isEqualTo(true);
-    assertThat(recordingHttpClient.getCount()).isEqualTo(2);
-  }
-
   @Test
   public void singleIkeyTest() throws MalformedURLException {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-    telemetryItems.add(createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
-    TelemetryChannel telemetryChannel = getTelemetryChannel(true);
+    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
+    TelemetryChannel telemetryChannel = getTelemetryChannel();
 
     // when
     CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
@@ -173,9 +150,10 @@ public class TelemetryChannelTest {
   public void dualIkeyTest() throws MalformedURLException {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-    telemetryItems.add(createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
-    telemetryItems.add(createMetricTelemetry("metric" + 2, 2, REDIRECT_INSTRUMENTATION_KEY));
-    TelemetryChannel telemetryChannel = getTelemetryChannel(true);
+    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
+    telemetryItems.add(
+        TestUtils.createMetricTelemetry("metric" + 2, 2, REDIRECT_INSTRUMENTATION_KEY));
+    TelemetryChannel telemetryChannel = getTelemetryChannel();
 
     // when
     CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
@@ -189,9 +167,9 @@ public class TelemetryChannelTest {
   public void singleIkeyBatchTest() throws MalformedURLException {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-    telemetryItems.add(createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
-    telemetryItems.add(createMetricTelemetry("metric" + 2, 2, INSTRUMENTATION_KEY));
-    TelemetryChannel telemetryChannel = getTelemetryChannel(true);
+    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
+    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 2, 2, INSTRUMENTATION_KEY));
+    TelemetryChannel telemetryChannel = getTelemetryChannel();
 
     // when
     CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
@@ -205,11 +183,13 @@ public class TelemetryChannelTest {
   public void dualIkeyBatchTest() throws MalformedURLException {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-    telemetryItems.add(createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
-    telemetryItems.add(createMetricTelemetry("metric" + 2, 2, INSTRUMENTATION_KEY));
-    telemetryItems.add(createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
-    telemetryItems.add(createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
-    TelemetryChannel telemetryChannel = getTelemetryChannel(true);
+    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
+    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 2, 2, INSTRUMENTATION_KEY));
+    telemetryItems.add(
+        TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
+    telemetryItems.add(
+        TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
+    TelemetryChannel telemetryChannel = getTelemetryChannel();
 
     // when
     CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
@@ -223,11 +203,13 @@ public class TelemetryChannelTest {
   public void dualIkeyBatchWithDelayTest() throws MalformedURLException {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-    telemetryItems.add(createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
-    telemetryItems.add(createMetricTelemetry("metric" + 2, 2, INSTRUMENTATION_KEY));
-    telemetryItems.add(createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
-    telemetryItems.add(createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
-    TelemetryChannel telemetryChannel = getTelemetryChannel(true);
+    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
+    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 2, 2, INSTRUMENTATION_KEY));
+    telemetryItems.add(
+        TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
+    telemetryItems.add(
+        TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
+    TelemetryChannel telemetryChannel = getTelemetryChannel();
 
     // when
     CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
@@ -248,11 +230,13 @@ public class TelemetryChannelTest {
   public void dualIkeyBatchWithDelayAndRedirectFlagFalseTest() throws MalformedURLException {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-    telemetryItems.add(createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
-    telemetryItems.add(createMetricTelemetry("metric" + 2, 2, INSTRUMENTATION_KEY));
-    telemetryItems.add(createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
-    telemetryItems.add(createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
-    TelemetryChannel telemetryChannel = getTelemetryChannel(false);
+    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
+    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 2, 2, INSTRUMENTATION_KEY));
+    telemetryItems.add(
+        TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
+    telemetryItems.add(
+        TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
+    TelemetryChannel telemetryChannel = getTelemetryChannel();
 
     // when
     CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
@@ -267,42 +251,6 @@ public class TelemetryChannelTest {
     // the redirect url should be cached and should not invoke another redirect.
     assertThat(completableResultCode.isSuccess()).isEqualTo(true);
     assertThat(recordingHttpClient.getCount()).isEqualTo(5);
-  }
-
-  private static TelemetryItem createMetricTelemetry(
-      String name, int value, String instrumentationKey) {
-    TelemetryItem telemetry = new TelemetryItem();
-    telemetry.setVersion(1);
-    telemetry.setName("Metric");
-    telemetry.setInstrumentationKey(instrumentationKey);
-    Map<String, String> tags = new HashMap<>();
-    tags.put("ai.internal.sdkVersion", "test_version");
-    tags.put("ai.internal.nodeName", "test_role_name");
-    tags.put("ai.cloud.roleInstance", "test_cloud_name");
-    telemetry.setTags(tags);
-
-    MetricsData data = new MetricsData();
-    List<MetricDataPoint> dataPoints = new ArrayList<>();
-    MetricDataPoint dataPoint = new MetricDataPoint();
-    dataPoint.setDataPointType(DataPointType.MEASUREMENT);
-    dataPoint.setName(name);
-    dataPoint.setValue(value);
-    dataPoint.setCount(1);
-    dataPoints.add(dataPoint);
-
-    Map<String, String> properties = new HashMap<>();
-    properties.put("state", "blocked");
-
-    data.setMetrics(dataPoints);
-    data.setProperties(properties);
-
-    MonitorBase monitorBase = new MonitorBase();
-    monitorBase.setBaseType("MetricData");
-    monitorBase.setBaseData(data);
-    telemetry.setData(monitorBase);
-    telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
-
-    return telemetry;
   }
 
   static class RecordingHttpClient implements HttpClient {
@@ -322,10 +270,6 @@ public class TelemetryChannelTest {
 
     int getCount() {
       return count.get();
-    }
-
-    void resetCount() {
-      count.set(0);
     }
   }
 }

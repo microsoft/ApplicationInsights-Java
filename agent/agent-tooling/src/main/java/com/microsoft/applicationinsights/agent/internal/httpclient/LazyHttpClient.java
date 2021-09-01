@@ -39,6 +39,7 @@ import com.azure.identity.ManagedIdentityCredentialBuilder;
 import com.azure.identity.VisualStudioCodeCredential;
 import com.azure.identity.VisualStudioCodeCredentialBuilder;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import io.opentelemetry.instrumentation.api.caching.Cache;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -120,12 +121,13 @@ public class LazyHttpClient implements HttpClient {
     return new NettyAsyncHttpClientBuilder().connectionProvider(connectionProvider).build();
   }
 
+  // pass non-null ikeyRedirectCache if you want to use ikey-specific redirect policy
   public static HttpPipeline newHttpPipeLine(
       @Nullable Configuration.AadAuthentication aadConfiguration,
-      boolean followInstrumentationKeyForRedirect) {
+      @Nullable Cache<String, String> ikeyRedirectCache) {
     List<HttpPipelinePolicy> policies = new ArrayList<>();
-    // Redirect policy to to handle v2.1/track redirects (and other redirects too, e.g. profiler)
-    policies.add(new RedirectPolicy(followInstrumentationKeyForRedirect));
+    // Redirect policy to handle v2.1/track redirects (and other redirects too, e.g. profiler)
+    policies.add(new RedirectPolicy(ikeyRedirectCache));
     if (aadConfiguration != null && aadConfiguration.enabled) {
       policies.add(getAuthenticationPolicy(aadConfiguration));
     }

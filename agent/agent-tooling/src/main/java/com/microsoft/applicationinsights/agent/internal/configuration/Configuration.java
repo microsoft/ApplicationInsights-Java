@@ -162,12 +162,16 @@ public class Configuration {
   }
 
   public static class Statsbeat {
+    // disabledAll is used internally as an emergency kill-switch to turn off Statsbeat completely
+    // when something goes wrong.
+    public boolean disabledAll = false;
+
     public String instrumentationKey =
         "c4a29126-a7cb-47e5-b348-11414998b11e"; // workspace-aistatsbeat
     public String endpoint =
         DefaultEndpoints.INGESTION_ENDPOINT; // this supports the government cloud
-    public long intervalSeconds = MINUTES.toSeconds(15); // default to 15 minutes
-    public long featureIntervalSeconds = DAYS.toSeconds(1); // default to daily
+    public long shortIntervalSeconds = MINUTES.toSeconds(15); // default to 15 minutes
+    public long longIntervalSeconds = DAYS.toSeconds(1); // default to daily
   }
 
   public static class Proxy {
@@ -201,6 +205,7 @@ public class Configuration {
     public ProfilerConfiguration profiler = new ProfilerConfiguration();
     public GcEventConfiguration gcEvents = new GcEventConfiguration();
     public AadAuthentication authentication = new AadAuthentication();
+    public PreviewStatsbeat statsbeat = new PreviewStatsbeat();
   }
 
   public static class InheritedAttribute {
@@ -277,6 +282,12 @@ public class Configuration {
 
     public DisabledByDefaultInstrumentation springIntegration =
         new DisabledByDefaultInstrumentation();
+  }
+
+  public static class PreviewStatsbeat {
+    // disabled is used by customer to turn off non-essential Statsbeat, e.g. disk persistence
+    // operation status, optional network statsbeat, other endpoints except Breeze, etc.
+    public boolean disabled = false;
   }
 
   public static class EnabledByDefaultInstrumentation {

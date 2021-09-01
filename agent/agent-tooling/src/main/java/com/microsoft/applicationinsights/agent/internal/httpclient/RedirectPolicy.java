@@ -36,8 +36,6 @@ import reactor.core.publisher.Mono;
 
 // This is mostly a copy from Azure Monitor Open Telemetry Exporter SDK AzureMonitorRedirectPolicy
 public final class RedirectPolicy implements HttpPipelinePolicy {
-  private final boolean followInstrumentationKeyForRedirect;
-  // use this only when followInstrumentationKeyForRedirect is true and instrumentation key is null
   private static final int PERMANENT_REDIRECT_STATUS_CODE = 308;
   private static final int TEMP_REDIRECT_STATUS_CODE = 307;
   // Based on Stamp specific redirects design doc
@@ -47,11 +45,12 @@ public final class RedirectPolicy implements HttpPipelinePolicy {
 
   private final Cache<URL, String> redirectMappings =
       Cache.newBuilder().setMaximumSize(100).build();
-  private final Cache<String, String> instrumentationKeyMappings =
-      Cache.newBuilder().setMaximumSize(100).build();
 
-  public RedirectPolicy(boolean followInstrumentationKeyForRedirect) {
-    this.followInstrumentationKeyForRedirect = followInstrumentationKeyForRedirect;
+  @Nullable private final Cache<String, String> ikeyRedirectCache;
+
+  // pass non-null ikeyRedirectCache if you want to use ikey-specific redirect policy
+  public RedirectPolicy(@Nullable Cache<String, String> ikeyRedirectCache) {
+    this.ikeyRedirectCache = ikeyRedirectCache;
   }
 
   @Override
@@ -92,24 +91,27 @@ public final class RedirectPolicy implements HttpPipelinePolicy {
   }
 
   private void cacheRedirectUrl(String redirectUrl, String instrumentationKey, URL originalUrl) {
-    if (!followInstrumentationKeyForRedirect) {
+    if (ikeyRedirectCache == null) {
       redirectMappings.put(originalUrl, redirectUrl);
       return;
     }
-    if (instrumentationKey != null) {
-      instrumentationKeyMappings.put(instrumentationKey, redirectUrl);
+    if (instrumentationKey == null) {
+      throw new IllegalArgumentException(
+          "instrumentationKey must be non-null when using ikey redirect policy");
     }
+    ikeyRedirectCache.put(instrumentationKey, redirectUrl);
   }
 
   @Nullable
   private String getCachedRedirectUrl(String instrumentationKey, URL originalUrl) {
-    if (!followInstrumentationKeyForRedirect) {
+    if (ikeyRedirectCache == null) {
       return redirectMappings.get(originalUrl);
     }
-    if (instrumentationKey != null) {
-      return instrumentationKeyMappings.get(instrumentationKey);
+    if (instrumentationKey == null) {
+      throw new IllegalArgumentException(
+          "instrumentationKey must be non-null when using ikey redirect policy");
     }
-    return null;
+    return ikeyRedirectCache.get(instrumentationKey);
   }
 
   /**

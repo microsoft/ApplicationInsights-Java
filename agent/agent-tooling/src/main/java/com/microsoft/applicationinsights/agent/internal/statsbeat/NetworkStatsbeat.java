@@ -21,13 +21,16 @@
 
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
+import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
-import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import io.opentelemetry.instrumentation.api.caching.Cache;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+import org.checkerframework.checker.lock.qual.GuardedBy;
 
 public class NetworkStatsbeat extends BaseStatsbeat {
 
@@ -37,35 +40,134 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   private static final String RETRY_COUNT_METRIC_NAME = "Retry Count";
   private static final String THROTTLE_COUNT_METRIC_NAME = "Throttle Count";
   private static final String EXCEPTION_COUNT_METRIC_NAME = "Exception Count";
-
-  private static final String INSTRUMENTATION_CUSTOM_DIMENSION = "instrumentation";
-
-  private volatile IntervalMetrics current;
+  private static final String BREEZE_ENDPOINT = "breeze";
 
   private final Object lock = new Object();
+  private final Cache<String, String> ikeyEndpointMap;
 
-  NetworkStatsbeat(CustomDimensions customDimensions) {
+  @GuardedBy("lock")
+  private final Map<String, IntervalMetrics> instrumentationKeyCounterMap = new HashMap<>();
+
+  // only used by tests
+  public NetworkStatsbeat() {
+    super(new CustomDimensions());
+    this.ikeyEndpointMap = Cache.newBuilder().build();
+  }
+
+  public NetworkStatsbeat(
+      CustomDimensions customDimensions, Cache<String, String> ikeyEndpointMap) {
     super(customDimensions);
-    current = new IntervalMetrics();
+    this.ikeyEndpointMap = ikeyEndpointMap;
   }
 
   @Override
   protected void send(TelemetryClient telemetryClient) {
-    IntervalMetrics local;
+    Map<String, IntervalMetrics> local;
     synchronized (lock) {
-      local = current;
-      current = new IntervalMetrics();
+      local = new HashMap<>(instrumentationKeyCounterMap);
+      instrumentationKeyCounterMap.clear();
     }
 
-    // send instrumentation as an UTF-8 string
-    String instrumentation = String.valueOf(Instrumentations.encode(local.instrumentationList));
+    for (Map.Entry<String, IntervalMetrics> entry : local.entrySet()) {
+      String ikey = entry.getKey();
+      String endpointUrl = ikeyEndpointMap.get(ikey);
+      if (Strings.isNullOrEmpty(endpointUrl)) {
+        endpointUrl = telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString();
+      }
 
+      sendIntervalMetric(telemetryClient, ikey, entry.getValue(), getHost(endpointUrl));
+    }
+  }
+
+  public void incrementRequestSuccessCount(long duration, String ikey) {
+    doWithIntervalMetrics(
+        ikey,
+        intervalMetrics -> {
+          intervalMetrics.requestSuccessCount.incrementAndGet();
+          intervalMetrics.totalRequestDuration.getAndAdd(duration);
+        });
+  }
+
+  public void incrementRequestFailureCount(String ikey) {
+    doWithIntervalMetrics(
+        ikey, intervalMetrics -> intervalMetrics.requestFailureCount.incrementAndGet());
+  }
+
+  public void incrementRetryCount(String ikey) {
+    doWithIntervalMetrics(ikey, intervalMetrics -> intervalMetrics.retryCount.incrementAndGet());
+  }
+
+  public void incrementThrottlingCount(String ikey) {
+    doWithIntervalMetrics(
+        ikey, intervalMetrics -> intervalMetrics.throttlingCount.incrementAndGet());
+  }
+
+  void incrementExceptionCount(String ikey) {
+    doWithIntervalMetrics(
+        ikey, intervalMetrics -> intervalMetrics.exceptionCount.incrementAndGet());
+  }
+
+  // only used by tests
+  long getRequestSuccessCount(String ikey) {
+    synchronized (lock) {
+      IntervalMetrics intervalMetrics = instrumentationKeyCounterMap.get(ikey);
+      return intervalMetrics == null ? 0L : intervalMetrics.requestSuccessCount.get();
+    }
+  }
+
+  // only used by tests
+  long getRequestFailureCount(String ikey) {
+    synchronized (lock) {
+      IntervalMetrics intervalMetrics = instrumentationKeyCounterMap.get(ikey);
+      return intervalMetrics == null ? 0L : intervalMetrics.requestFailureCount.get();
+    }
+  }
+
+  // only used by tests
+  double getRequestDurationAvg(String ikey) {
+    synchronized (lock) {
+      IntervalMetrics intervalMetrics = instrumentationKeyCounterMap.get(ikey);
+      return intervalMetrics == null ? 0L : intervalMetrics.getRequestDurationAvg();
+    }
+  }
+
+  // only used by tests
+  long getRetryCount(String ikey) {
+    synchronized (lock) {
+      IntervalMetrics intervalMetrics = instrumentationKeyCounterMap.get(ikey);
+      return intervalMetrics == null ? 0L : intervalMetrics.retryCount.get();
+    }
+  }
+
+  // only used by tests
+  long getThrottlingCount(String ikey) {
+    synchronized (lock) {
+      IntervalMetrics intervalMetrics = instrumentationKeyCounterMap.get(ikey);
+      return intervalMetrics == null ? 0L : intervalMetrics.throttlingCount.get();
+    }
+  }
+
+  // only used by tests
+  long getExceptionCount(String ikey) {
+    synchronized (lock) {
+      IntervalMetrics intervalMetrics = instrumentationKeyCounterMap.get(ikey);
+      return intervalMetrics == null ? 0L : intervalMetrics.exceptionCount.get();
+    }
+  }
+
+  private void doWithIntervalMetrics(String ikey, Consumer<IntervalMetrics> update) {
+    synchronized (lock) {
+      update.accept(instrumentationKeyCounterMap.computeIfAbsent(ikey, k -> new IntervalMetrics()));
+    }
+  }
+
+  private void sendIntervalMetric(
+      TelemetryClient telemetryClient, String ikey, IntervalMetrics local, String host) {
     if (local.requestSuccessCount.get() != 0) {
       TelemetryItem requestSuccessCountSt =
           createStatsbeatTelemetry(
               telemetryClient, REQUEST_SUCCESS_COUNT_METRIC_NAME, local.requestSuccessCount.get());
-      TelemetryUtil.getProperties(requestSuccessCountSt.getData().getBaseData())
-          .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
+      addCommonProperties(requestSuccessCountSt, ikey, host);
       telemetryClient.trackStatsbeatAsync(requestSuccessCountSt);
     }
 
@@ -73,8 +175,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       TelemetryItem requestFailureCountSt =
           createStatsbeatTelemetry(
               telemetryClient, REQUEST_FAILURE_COUNT_METRIC_NAME, local.requestFailureCount.get());
-      TelemetryUtil.getProperties(requestFailureCountSt.getData().getBaseData())
-          .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
+      addCommonProperties(requestFailureCountSt, ikey, host);
       telemetryClient.trackStatsbeatAsync(requestFailureCountSt);
     }
 
@@ -82,8 +183,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     if (durationAvg != 0) {
       TelemetryItem requestDurationSt =
           createStatsbeatTelemetry(telemetryClient, REQUEST_DURATION_METRIC_NAME, durationAvg);
-      TelemetryUtil.getProperties(requestDurationSt.getData().getBaseData())
-          .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
+      addCommonProperties(requestDurationSt, ikey, host);
       telemetryClient.trackStatsbeatAsync(requestDurationSt);
     }
 
@@ -91,8 +191,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       TelemetryItem retryCountSt =
           createStatsbeatTelemetry(
               telemetryClient, RETRY_COUNT_METRIC_NAME, local.retryCount.get());
-      TelemetryUtil.getProperties(retryCountSt.getData().getBaseData())
-          .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
+      addCommonProperties(retryCountSt, ikey, host);
       telemetryClient.trackStatsbeatAsync(retryCountSt);
     }
 
@@ -100,8 +199,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       TelemetryItem throttleCountSt =
           createStatsbeatTelemetry(
               telemetryClient, THROTTLE_COUNT_METRIC_NAME, local.throttlingCount.get());
-      TelemetryUtil.getProperties(throttleCountSt.getData().getBaseData())
-          .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
+      addCommonProperties(throttleCountSt, ikey, host);
       telemetryClient.trackStatsbeatAsync(throttleCountSt);
     }
 
@@ -109,93 +207,20 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       TelemetryItem exceptionCountSt =
           createStatsbeatTelemetry(
               telemetryClient, EXCEPTION_COUNT_METRIC_NAME, local.exceptionCount.get());
-      TelemetryUtil.getProperties(exceptionCountSt.getData().getBaseData())
-          .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
+      addCommonProperties(exceptionCountSt, ikey, host);
       telemetryClient.trackStatsbeatAsync(exceptionCountSt);
     }
   }
 
-  // this is used by Exporter
-  public void addInstrumentation(String instrumentation) {
-    synchronized (lock) {
-      current.instrumentationList.add(instrumentation);
-    }
-  }
-
-  public void incrementRequestSuccessCount(long duration) {
-    synchronized (lock) {
-      current.requestSuccessCount.incrementAndGet();
-      current.totalRequestDuration.getAndAdd(duration);
-    }
-  }
-
-  public void incrementRequestFailureCount() {
-    synchronized (lock) {
-      current.requestFailureCount.incrementAndGet();
-    }
-  }
-
-  public void incrementRetryCount() {
-    synchronized (lock) {
-      current.retryCount.incrementAndGet();
-    }
-  }
-
-  public void incrementThrottlingCount() {
-    synchronized (lock) {
-      current.throttlingCount.incrementAndGet();
-    }
-  }
-
-  void incrementExceptionCount() {
-    synchronized (lock) {
-      current.exceptionCount.incrementAndGet();
-    }
-  }
-
-  // only used by tests
-  long getInstrumentation() {
-    return Instrumentations.encode(current.instrumentationList);
-  }
-
-  // only used by tests
-  long getRequestSuccessCount() {
-    return current.requestSuccessCount.get();
-  }
-
-  // only used by tests
-  long getRequestFailureCount() {
-    return current.requestFailureCount.get();
-  }
-
-  // only used by tests
-  double getRequestDurationAvg() {
-    return current.getRequestDurationAvg();
-  }
-
-  // only used by tests
-  long getRetryCount() {
-    return current.retryCount.get();
-  }
-
-  // only used by tests
-  long getThrottlingCount() {
-    return current.throttlingCount.get();
-  }
-
-  // only used by tests
-  long getExceptionCount() {
-    return current.exceptionCount.get();
-  }
-
-  // only used by tests
-  Set<String> getInstrumentationList() {
-    return current.instrumentationList;
+  private static void addCommonProperties(TelemetryItem telemetryItem, String ikey, String host) {
+    Map<String, String> properties =
+        TelemetryUtil.getProperties(telemetryItem.getData().getBaseData());
+    properties.put("endpoint", BREEZE_ENDPOINT);
+    properties.put("cikey", ikey);
+    properties.put("host", host);
   }
 
   private static class IntervalMetrics {
-    private final Set<String> instrumentationList =
-        Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final AtomicLong requestSuccessCount = new AtomicLong();
     private final AtomicLong requestFailureCount = new AtomicLong();
     // request duration count only counts request success.
@@ -212,5 +237,29 @@ public class NetworkStatsbeat extends BaseStatsbeat {
 
       return sum;
     }
+  }
+
+  /**
+   * e.g. endpointUrl 'https://westus-0.in.applicationinsights.azure.com/v2.1/track' host will
+   * return 'westus-0.in.applicationinsights.azure.com'
+   */
+  static String getHost(String endpointUrl) {
+    assert (endpointUrl != null && !endpointUrl.isEmpty());
+    int start = endpointUrl.indexOf("://");
+    if (start != -1) {
+      int end = endpointUrl.indexOf("/", start + 3);
+      if (end != -1) {
+        return endpointUrl.substring(start + 3, end);
+      }
+
+      return endpointUrl.substring(start + 3);
+    }
+
+    int end = endpointUrl.indexOf("/");
+    if (end != -1) {
+      return endpointUrl.substring(0, end);
+    }
+
+    return endpointUrl;
   }
 }
