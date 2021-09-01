@@ -136,12 +136,7 @@ public class TelemetryChannel {
       return CompletableResultCode.ofFailure();
     }
     try {
-      CompletableResultCode resultCode = internalSend(byteBuffers, instrumentationKey);
-      if (!resultCode.isSuccess()) {
-        writeToDiskOnFailure(byteBuffers, byteBuffers);
-      }
-
-      return resultCode;
+      return internalSend(byteBuffers, instrumentationKey);
     } catch (Throwable t) {
       operationLogger.recordFailure(
           String.format("Error sending telemetry items: %s", t.getMessage()), t);
@@ -220,6 +215,9 @@ public class TelemetryChannel {
               StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
               ExceptionUtils.parseError(
                   error, endpointUrl.toString(), friendlyExceptionThrown, logger);
+              if (instrumentationKey != null) {
+                writeToDiskOnFailure(byteBuffers, byteBuffers);
+              }
               result.fail();
             },
             () -> {
