@@ -245,6 +245,21 @@ public class NetworkStatsbeat extends BaseStatsbeat {
    */
   static String getHost(String endpointUrl) {
     assert (endpointUrl != null && !endpointUrl.isEmpty());
-    return endpointUrl.replaceAll("^\\w+://", "").replaceAll("/\\w+.?\\w?/\\w+", "");
+    int start = endpointUrl.indexOf("://");
+    if (start != -1) {
+      int end = endpointUrl.indexOf("/", start + 3);
+      if (end != -1) {
+        return endpointUrl.substring(start + 3, end);
+      }
+
+      return endpointUrl.substring(start + 3);
+    }
+
+    int end = endpointUrl.indexOf("/");
+    if (end != -1) {
+      return endpointUrl.substring(0, end);
+    }
+
+    return endpointUrl;
   }
 }

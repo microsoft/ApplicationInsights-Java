@@ -124,5 +124,14 @@ public class NetworkStatsbeatTest {
 
     url = "http://www.fake-host.com/v2/track";
     assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("www.fake-host.com");
+
+    url = "www.fake-host.com/";
+    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("www.fake-host.com");
+
+    url = "http://fake-host.com";
+    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fake-host.com");
+
+    url = "http://fake-host.com/";
+    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fake-host.com");
   }
 }
