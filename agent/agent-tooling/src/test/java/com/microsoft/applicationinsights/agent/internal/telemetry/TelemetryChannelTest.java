@@ -62,8 +62,6 @@ import reactor.core.publisher.Mono;
 
 public class TelemetryChannelTest {
   RecordingHttpClient recordingHttpClient;
-  private final Cache<String, String> ikeyRedirectCache =
-      Cache.newBuilder().setMaximumSize(5).build();
   private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
   private static final String REDIRECT_INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEE";
   private static final String END_POINT_URL = "http://foo.bar";
@@ -71,11 +69,10 @@ public class TelemetryChannelTest {
 
   @TempDir File tempFolder;
 
-  private TelemetryChannel getTelemetryChannel(@Nullable Cache<String, String> ikeyRedirectCache)
-      throws MalformedURLException {
+  private TelemetryChannel getTelemetryChannel() throws MalformedURLException {
     List<HttpPipelinePolicy> policies = new ArrayList<>();
 
-    policies.add(new RedirectPolicy(ikeyRedirectCache));
+    policies.add(new RedirectPolicy(Cache.newBuilder().setMaximumSize(5).build()));
     HttpPipelineBuilder pipelineBuilder =
         new HttpPipelineBuilder()
             .policies(policies.toArray(new HttpPipelinePolicy[0]))
@@ -139,7 +136,7 @@ public class TelemetryChannelTest {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
     telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
-    TelemetryChannel telemetryChannel = getTelemetryChannel(ikeyRedirectCache);
+    TelemetryChannel telemetryChannel = getTelemetryChannel();
 
     // when
     CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
@@ -156,7 +153,7 @@ public class TelemetryChannelTest {
     telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
     telemetryItems.add(
         TestUtils.createMetricTelemetry("metric" + 2, 2, REDIRECT_INSTRUMENTATION_KEY));
-    TelemetryChannel telemetryChannel = getTelemetryChannel(ikeyRedirectCache);
+    TelemetryChannel telemetryChannel = getTelemetryChannel();
 
     // when
     CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
@@ -172,7 +169,7 @@ public class TelemetryChannelTest {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
     telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
     telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 2, 2, INSTRUMENTATION_KEY));
-    TelemetryChannel telemetryChannel = getTelemetryChannel(ikeyRedirectCache);
+    TelemetryChannel telemetryChannel = getTelemetryChannel();
 
     // when
     CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
@@ -192,7 +189,7 @@ public class TelemetryChannelTest {
         TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
     telemetryItems.add(
         TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
-    TelemetryChannel telemetryChannel = getTelemetryChannel(ikeyRedirectCache);
+    TelemetryChannel telemetryChannel = getTelemetryChannel();
 
     // when
     CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
@@ -212,7 +209,7 @@ public class TelemetryChannelTest {
         TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
     telemetryItems.add(
         TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
-    TelemetryChannel telemetryChannel = getTelemetryChannel(ikeyRedirectCache);
+    TelemetryChannel telemetryChannel = getTelemetryChannel();
 
     // when
     CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
@@ -239,7 +236,7 @@ public class TelemetryChannelTest {
         TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
     telemetryItems.add(
         TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
-    TelemetryChannel telemetryChannel = getTelemetryChannel(null);
+    TelemetryChannel telemetryChannel = getTelemetryChannel();
 
     // when
     CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
