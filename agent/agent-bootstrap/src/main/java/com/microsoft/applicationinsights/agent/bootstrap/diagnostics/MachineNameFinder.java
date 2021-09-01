@@ -21,10 +21,13 @@
 
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 public class MachineNameFinder extends CachedDiagnosticsValueFinder {
   public static final String PROPERTY_NAME = "MachineName";
 
   @Override
+  @Nullable
   protected String populateValue() {
     String computerName = System.getenv("COMPUTERNAME");
     if (computerName != null) {

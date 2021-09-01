@@ -37,6 +37,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** This class manages loading a list of {@link ByteBuffer} from the disk. */
 public class LocalFileLoader {
@@ -78,6 +79,7 @@ public class LocalFileLoader {
   }
 
   // Load ByteBuffer from persisted files on disk in FIFO order.
+  @Nullable
   ByteBuffer loadTelemetriesFromDisk() {
     String filenameToBeLoaded = localFileCache.poll();
     if (filenameToBeLoaded == null || filenameToBeLoaded.isEmpty()) {

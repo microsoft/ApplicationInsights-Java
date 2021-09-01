@@ -26,7 +26,6 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
@@ -163,12 +162,16 @@ public class Configuration {
   }
 
   public static class Statsbeat {
+    // disabledAll is used internally as an emergency kill-switch to turn off Statsbeat completely
+    // when something goes wrong.
+    public boolean disabledAll = false;
+
     public String instrumentationKey =
         "c4a29126-a7cb-47e5-b348-11414998b11e"; // workspace-aistatsbeat
     public String endpoint =
         DefaultEndpoints.INGESTION_ENDPOINT; // this supports the government cloud
-    public long intervalSeconds = MINUTES.toSeconds(15); // default to 15 minutes
-    public long featureIntervalSeconds = DAYS.toSeconds(1); // default to daily
+    public long shortIntervalSeconds = MINUTES.toSeconds(15); // default to 15 minutes
+    public long longIntervalSeconds = DAYS.toSeconds(1); // default to daily
   }
 
   public static class Proxy {
@@ -191,6 +194,7 @@ public class Configuration {
     // ignoreRemoteParentNotSampled is currently needed
     // because .NET SDK always propagates trace flags "00" (not sampled)
     public boolean ignoreRemoteParentNotSampled = true;
+    public boolean captureControllerSpans = true;
     // this is just here to detect if using this old setting in order to give a helpful message
     @Deprecated public boolean httpMethodInOperationName;
     public LiveMetrics liveMetrics = new LiveMetrics();
@@ -201,6 +205,7 @@ public class Configuration {
     public ProfilerConfiguration profiler = new ProfilerConfiguration();
     public GcEventConfiguration gcEvents = new GcEventConfiguration();
     public AadAuthentication authentication = new AadAuthentication();
+    public PreviewStatsbeat statsbeat = new PreviewStatsbeat();
   }
 
   public static class InheritedAttribute {
@@ -277,6 +282,12 @@ public class Configuration {
 
     public DisabledByDefaultInstrumentation springIntegration =
         new DisabledByDefaultInstrumentation();
+  }
+
+  public static class PreviewStatsbeat {
+    // disabled is used by customer to turn off non-essential Statsbeat, e.g. disk persistence
+    // operation status, optional network statsbeat, other endpoints except Breeze, etc.
+    public boolean disabled = false;
   }
 
   public static class EnabledByDefaultInstrumentation {
@@ -757,25 +768,6 @@ public class Configuration {
     public final Pattern pattern;
     public final List<String> groupNames;
 
-    @JsonCreator
-    public static ExtractAttribute create(@JsonProperty("pattern") String pattern) {
-      if (pattern == null) {
-        return null;
-      }
-      Pattern regexPattern;
-      try {
-        regexPattern = Pattern.compile(pattern);
-      } catch (PatternSyntaxException e) {
-        throw new FriendlyException(
-            "Telemetry processor configuration does not have valid regex:" + pattern,
-            "Please provide a valid regex in the telemetry processors configuration. "
-                + "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557",
-            e);
-      }
-      List<String> groupNames = Patterns.getGroupNames(pattern);
-      return new Configuration.ExtractAttribute(regexPattern, groupNames);
-    }
-
     // visible for testing
     public ExtractAttribute(Pattern pattern, List<String> groupNames) {
       this.pattern = pattern;
@@ -795,15 +787,47 @@ public class Configuration {
   }
 
   public static class ProcessorAction {
-    public String key;
-    public ProcessorActionType action;
-    public String value;
-    public String fromAttribute;
-    @JsonUnwrapped public ExtractAttribute extractAttribute;
+    public final AttributeKey<String> key;
+    public final ProcessorActionType action;
+    public final String value;
+    public final AttributeKey<String> fromAttribute;
+    public final ExtractAttribute extractAttribute;
+
+    @JsonCreator
+    public ProcessorAction(
+        // TODO (trask) should this take attribute type, e.g. "key:type"
+        @JsonProperty("key") String key,
+        @JsonProperty("action") ProcessorActionType action,
+        @JsonProperty("value") String value,
+        // TODO (trask) should this take attribute type, e.g. "key:type"
+        @JsonProperty("fromAttribute") String fromAttribute,
+        @JsonProperty("pattern") String pattern) {
+      this.key = isEmpty(key) ? null : AttributeKey.stringKey(key);
+      this.action = action;
+      this.value = value;
+      this.fromAttribute = isEmpty(fromAttribute) ? null : AttributeKey.stringKey(fromAttribute);
+
+      if (pattern == null) {
+        extractAttribute = null;
+      } else {
+        Pattern regexPattern;
+        try {
+          regexPattern = Pattern.compile(pattern);
+        } catch (PatternSyntaxException e) {
+          throw new FriendlyException(
+              "Telemetry processor configuration does not have valid regex:" + pattern,
+              "Please provide a valid regex in the telemetry processors configuration. "
+                  + "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557",
+              e);
+        }
+        List<String> groupNames = Patterns.getGroupNames(pattern);
+        extractAttribute = new Configuration.ExtractAttribute(regexPattern, groupNames);
+      }
+    }
 
     public void validate() {
 
-      if (isEmpty(key)) {
+      if (key == null) {
         throw new FriendlyException(
             "An attribute processor configuration has an action section that is missing a \"key\".",
             "Please provide a \"key\" under the action section of the attribute processor configuration. "
@@ -816,7 +840,7 @@ public class Configuration {
                 + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
       }
       if (action == ProcessorActionType.INSERT || action == ProcessorActionType.UPDATE) {
-        if (isEmpty(value) && isEmpty(fromAttribute)) {
+        if (isEmpty(value) && fromAttribute == null) {
           throw new FriendlyException(
               "An attribute processor configuration has an "
                   + action
@@ -826,7 +850,7 @@ public class Configuration {
                   + " action. "
                   + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
         }
-        if (!isEmpty(value) && !isEmpty(fromAttribute)) {
+        if (!isEmpty(value) && fromAttribute != null) {
           throw new FriendlyException(
               "An attribute processor configuration has an "
                   + action
@@ -863,7 +887,7 @@ public class Configuration {
                   + " action. "
                   + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
         }
-        if (!isEmpty(fromAttribute)) {
+        if (fromAttribute != null) {
           throw new FriendlyException(
               "An attribute processor configuration has an "
                   + action
@@ -876,14 +900,6 @@ public class Configuration {
         extractAttribute.validate();
       }
     }
-  }
-
-  public static class ProcessorActionJson {
-    public String key;
-    public ProcessorActionType action;
-    public String value;
-    public String fromAttribute;
-    public String pattern;
   }
 
   public static class ProfilerConfiguration {

@@ -50,6 +50,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class MockedAppInsightsIngestionServlet extends HttpServlet {
   public static final long serialVersionUID = -1;
@@ -89,6 +90,7 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
     }
   }
 
+  @Nullable
   private static Boolean extractBooleanInitParam(String key, ServletConfig config) {
     String value = config.getInitParameter(key);
     if (value == null) {

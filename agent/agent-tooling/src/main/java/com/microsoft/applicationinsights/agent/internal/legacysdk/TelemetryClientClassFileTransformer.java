@@ -132,6 +132,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
     }
 
     @Override
+    @Nullable
     public MethodVisitor visitMethod(
         int access,
         String name,

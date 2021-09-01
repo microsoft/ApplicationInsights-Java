@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.common;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +38,7 @@ public class HostName {
    *
    * @return the local hostname, or null
    */
+  @Nullable
   public static String get() {
     try {
       InetAddress addr = InetAddress.getLocalHost();

@@ -44,6 +44,7 @@ public class LoggingLevelConfigurator {
     updateLoggerLevel(loggerContext.getLogger("reactor.netty"));
     updateLoggerLevel(loggerContext.getLogger("io.netty"));
     updateLoggerLevel(loggerContext.getLogger("io.grpc.Context"));
+    updateLoggerLevel(loggerContext.getLogger("io.opentelemetry"));
     updateLoggerLevel(loggerContext.getLogger("muzzleMatcher"));
     updateLoggerLevel(loggerContext.getLogger("com.microsoft.applicationinsights"));
     updateLoggerLevel(loggerContext.getLogger(ROOT_LOGGER_NAME));
@@ -59,6 +60,10 @@ public class LoggingLevelConfigurator {
       // never want to log io.grpc.Context at trace or debug, as it logs confusing stack trace that
       // looks like error but isn't
       loggerLevel = getAtLeastInfoLevel(level);
+    } else if (name.startsWith("io.opentelemetry")) {
+      // OpenTelemetry instrumentation debug log has lots of things that look like errors
+      // which has been confusing customers, so only enable it when user configures "trace" level
+      loggerLevel = getOpenTelemetryLevel(level);
     } else if (name.startsWith("muzzleMatcher")) {
       // muzzleMatcher logs at WARN level, so by default this is OFF, but enabled when DEBUG logging
       // is enabled
@@ -76,7 +81,13 @@ public class LoggingLevelConfigurator {
     return getMaxLevel(level, Level.INFO);
   }
 
+  private static Level getOpenTelemetryLevel(Level level) {
+    // bump DEBUG up to INFO, keep all others as-is
+    return level == Level.DEBUG ? Level.INFO : level;
+  }
+
   private static Level getOtherLibLevel(Level level) {
+    // bump INFO up to WARN, keep all others as-is
     return level == Level.INFO ? Level.WARN : level;
   }
 

@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 
@@ -41,6 +41,6 @@ public class LegacySdkWebInteropTest extends AiSmokeTest {
     assertEquals("myvalue2", telemetry.rd.getProperties().get("myattr2"));
     assertEquals(2, telemetry.rd.getProperties().size());
 
-    assertTrue(telemetry.rd.getSuccess());
+    assertFalse(telemetry.rd.getSuccess());
   }
 }

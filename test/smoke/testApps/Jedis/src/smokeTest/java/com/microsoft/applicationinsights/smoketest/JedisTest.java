@@ -45,6 +45,7 @@ public class JedisTest extends AiSmokeTest {
     assertTrue(telemetry.rd.getMeasurements().isEmpty());
 
     assertEquals("GET", telemetry.rdd1.getName());
+    assertEquals("GET test", telemetry.rdd1.getData());
     assertEquals("redis", telemetry.rdd1.getType());
     assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+"));
     assertTrue(telemetry.rdd1.getProperties().isEmpty());

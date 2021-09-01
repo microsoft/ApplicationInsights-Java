@@ -35,7 +35,6 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.Severity
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedDuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -72,7 +71,7 @@ public class Exporter implements SpanExporter {
 
   private static final Set<String> SQL_DB_SYSTEMS;
 
-  private static final Set<String> STANDARD_ATTRIBUTE_PREFIXES;
+  private static final Trie<Boolean> STANDARD_ATTRIBUTE_PREFIXES;
 
   public static final AttributeKey<String> AI_OPERATION_NAME_KEY =
       AttributeKey.stringKey("applicationinsights.internal.operation_name");
@@ -134,21 +133,20 @@ public class Exporter implements SpanExporter {
     SQL_DB_SYSTEMS = Collections.unmodifiableSet(dbSystems);
 
     // TODO need to keep this list in sync as new semantic conventions are defined
-    // TODO make this opt-in for javaagent
-    Set<String> standardAttributesPrefix = new HashSet<>();
-    standardAttributesPrefix.add("http");
-    standardAttributesPrefix.add("db");
-    standardAttributesPrefix.add("message");
-    standardAttributesPrefix.add("messaging");
-    standardAttributesPrefix.add("rpc");
-    standardAttributesPrefix.add("enduser");
-    standardAttributesPrefix.add("net");
-    standardAttributesPrefix.add("peer");
-    standardAttributesPrefix.add("exception");
-    standardAttributesPrefix.add("thread");
-    standardAttributesPrefix.add("faas");
-
-    STANDARD_ATTRIBUTE_PREFIXES = Collections.unmodifiableSet(standardAttributesPrefix);
+    STANDARD_ATTRIBUTE_PREFIXES =
+        Trie.<Boolean>newBuilder()
+            .put("http.", true)
+            .put("db.", true)
+            .put("message.", true)
+            .put("messaging.", true)
+            .put("rpc.", true)
+            .put("enduser.", true)
+            .put("net.", true)
+            .put("peer.", true)
+            .put("exception.", true)
+            .put("thread.", true)
+            .put("faas.", true)
+            .build();
   }
 
   private final TelemetryClient telemetryClient;
@@ -193,7 +191,10 @@ public class Exporter implements SpanExporter {
   private void internalExport(SpanData span) {
     SpanKind kind = span.getKind();
     String instrumentationName = span.getInstrumentationLibraryInfo().getName();
-    StatsbeatModule.get().getNetworkStatsbeat().addInstrumentation(instrumentationName);
+    telemetryClient
+        .getStatsbeatModule()
+        .getInstrumentationStatsbeat()
+        .addInstrumentation(instrumentationName);
     if (kind == SpanKind.INTERNAL) {
       Boolean isLog = span.getAttributes().get(AI_LOG_KEY);
       if (isLog != null && isLog) {
@@ -272,7 +273,7 @@ public class Exporter implements SpanExporter {
 
     // export
     telemetryClient.trackAsync(telemetry);
-    exportEvents(span, samplingPercentage);
+    exportEvents(span, null, samplingPercentage);
   }
 
   private static void applySemanticConventions(
@@ -390,23 +391,30 @@ public class Exporter implements SpanExporter {
   }
 
   private static void setOperationTags(TelemetryItem telemetry, SpanData span) {
-    setOperationTags(
-        telemetry,
-        span.getTraceId(),
-        span.getParentSpanContext().getSpanId(),
-        span.getAttributes());
+    setOperationId(telemetry, span.getTraceId());
+    setOperationParentId(telemetry, span.getParentSpanContext().getSpanId());
+    setOperationName(telemetry, span.getAttributes());
   }
 
-  private static void setOperationTags(
-      TelemetryItem telemetry, String traceId, String parentSpanId, Attributes attributes) {
+  private static void setOperationId(TelemetryItem telemetry, String traceId) {
     telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), traceId);
+  }
+
+  private static void setOperationParentId(TelemetryItem telemetry, String parentSpanId) {
     if (SpanId.isValid(parentSpanId)) {
       telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), parentSpanId);
     }
+  }
+
+  private static void setOperationName(TelemetryItem telemetry, Attributes attributes) {
     String operationName = attributes.get(AI_OPERATION_NAME_KEY);
     if (operationName != null) {
-      telemetry.getTags().put(ContextTagKeys.AI_OPERATION_NAME.toString(), operationName);
+      setOperationName(telemetry, operationName);
     }
+  }
+
+  private static void setOperationName(TelemetryItem telemetry, String operationName) {
+    telemetry.getTags().put(ContextTagKeys.AI_OPERATION_NAME.toString(), operationName);
   }
 
   private static void setLoggerProperties(
@@ -754,9 +762,10 @@ public class Exporter implements SpanExporter {
 
     // export
     telemetryClient.trackAsync(telemetry);
-    exportEvents(span, samplingPercentage);
+    exportEvents(span, operationName, samplingPercentage);
   }
 
+  @Nullable
   private static String getSource(Attributes attributes) {
     // this is only used by the 2.x web interop bridge
     // for ThreadContext.getRequestTelemetryContext().getRequestTelemetry().setSource()
@@ -816,7 +825,8 @@ public class Exporter implements SpanExporter {
     return str1 + separator + str2;
   }
 
-  private void exportEvents(SpanData span, float samplingPercentage) {
+  private void exportEvents(
+      SpanData span, @Nullable String operationName, float samplingPercentage) {
     for (EventData event : span.getEvents()) {
       boolean lettuce51 =
           span.getInstrumentationLibraryInfo().getName().equals("io.opentelemetry.lettuce-5.1");
@@ -830,7 +840,7 @@ public class Exporter implements SpanExporter {
         // TODO map OpenTelemetry exception to Application Insights exception better
         String stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
         if (stacktrace != null) {
-          trackException(stacktrace, span, samplingPercentage);
+          trackException(stacktrace, span, operationName, samplingPercentage);
         }
         return;
       }
@@ -840,7 +850,13 @@ public class Exporter implements SpanExporter {
       telemetryClient.initMessageTelemetry(telemetry, data);
 
       // set standard properties
-      setOperationTags(telemetry, span.getTraceId(), span.getSpanId(), span.getAttributes());
+      setOperationId(telemetry, span.getTraceId());
+      setOperationParentId(telemetry, span.getSpanId());
+      if (operationName != null) {
+        setOperationName(telemetry, operationName);
+      } else {
+        setOperationName(telemetry, span.getAttributes());
+      }
       setTime(telemetry, event.getEpochNanos());
       setExtraAttributes(telemetry, data, event.getAttributes());
       setSampleRate(telemetry, samplingPercentage);
@@ -852,13 +868,20 @@ public class Exporter implements SpanExporter {
     }
   }
 
-  private void trackException(String errorStack, SpanData span, float samplingPercentage) {
+  private void trackException(
+      String errorStack, SpanData span, @Nullable String operationName, float samplingPercentage) {
     TelemetryItem telemetry = new TelemetryItem();
     TelemetryExceptionData data = new TelemetryExceptionData();
     telemetryClient.initExceptionTelemetry(telemetry, data);
 
     // set standard properties
-    setOperationTags(telemetry, span.getTraceId(), span.getSpanId(), span.getAttributes());
+    setOperationId(telemetry, span.getTraceId());
+    setOperationParentId(telemetry, span.getSpanId());
+    if (operationName != null) {
+      setOperationName(telemetry, operationName);
+    } else {
+      setOperationName(telemetry, span.getAttributes());
+    }
     setTime(telemetry, span.getEndEpochNanos());
     setSampleRate(telemetry, samplingPercentage);
 
@@ -948,10 +971,7 @@ public class Exporter implements SpanExporter {
             telemetry.getTags().put(ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
             return;
           }
-          int index = stringKey.indexOf(".");
-          // FIXME (trask) do this without memory allocation
-          String prefix = index == -1 ? stringKey : stringKey.substring(0, index);
-          if (STANDARD_ATTRIBUTE_PREFIXES.contains(prefix)) {
+          if (STANDARD_ATTRIBUTE_PREFIXES.getOrDefault(stringKey, false)) {
             return;
           }
           String val = getStringValue(key, value);
@@ -961,6 +981,7 @@ public class Exporter implements SpanExporter {
         });
   }
 
+  @Nullable
   private static String getStringValue(AttributeKey<?> attributeKey, Object value) {
     switch (attributeKey.getType()) {
       case STRING:
@@ -989,6 +1010,7 @@ public class Exporter implements SpanExporter {
     return sb.toString();
   }
 
+  @Nullable
   private static SeverityLevel toSeverityLevel(String level) {
     if (level == null) {
       return null;

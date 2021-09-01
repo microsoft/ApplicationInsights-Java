@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import io.opentelemetry.instrumentation.api.caching.Cache;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -35,8 +36,6 @@ public class StatsbeatModule {
 
   private static final Logger logger = LoggerFactory.getLogger(BaseStatsbeat.class);
 
-  private static final StatsbeatModule instance = new StatsbeatModule();
-
   private static final ScheduledExecutorService scheduledExecutor =
       Executors.newSingleThreadScheduledExecutor(
           ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
@@ -46,14 +45,16 @@ public class StatsbeatModule {
   private final NetworkStatsbeat networkStatsbeat;
   private final AttachStatsbeat attachStatsbeat;
   private final FeatureStatsbeat featureStatsbeat;
+  private final FeatureStatsbeat instrumentationStatsbeat;
 
   private final AtomicBoolean started = new AtomicBoolean();
 
-  private StatsbeatModule() {
+  public StatsbeatModule(Cache<String, String> ikeyEndpointMap) {
     customDimensions = new CustomDimensions();
-    networkStatsbeat = new NetworkStatsbeat(customDimensions);
+    networkStatsbeat = new NetworkStatsbeat(customDimensions, ikeyEndpointMap);
     attachStatsbeat = new AttachStatsbeat(customDimensions);
-    featureStatsbeat = new FeatureStatsbeat(customDimensions);
+    featureStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.FEATURE);
+    instrumentationStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.INSTRUMENTATION);
   }
 
   public void start(TelemetryClient telemetryClient, Configuration config) {
@@ -61,44 +62,62 @@ public class StatsbeatModule {
       throw new IllegalStateException("initialize already called");
     }
 
-    long intervalSeconds = config.internal.statsbeat.intervalSeconds;
-    long featureIntervalSeconds = config.internal.statsbeat.featureIntervalSeconds;
+    if (config.internal.statsbeat.disabledAll) {
+      // disabledAll is an internal emergency kill-switch to turn off Statsbeat completely when
+      // something goes wrong.
+      // this happens rarely.
+      return;
+    }
+
+    long shortIntervalSeconds = config.internal.statsbeat.shortIntervalSeconds;
+    long longIntervalSeconds = config.internal.statsbeat.longIntervalSeconds;
 
     scheduledExecutor.scheduleWithFixedDelay(
         new StatsbeatSender(networkStatsbeat, telemetryClient),
-        intervalSeconds,
-        intervalSeconds,
+        shortIntervalSeconds,
+        shortIntervalSeconds,
         TimeUnit.SECONDS);
     scheduledExecutor.scheduleWithFixedDelay(
         new StatsbeatSender(attachStatsbeat, telemetryClient),
-        intervalSeconds,
-        intervalSeconds,
+        60,
+        longIntervalSeconds,
         TimeUnit.SECONDS);
     scheduledExecutor.scheduleWithFixedDelay(
         new StatsbeatSender(featureStatsbeat, telemetryClient),
-        featureIntervalSeconds,
-        featureIntervalSeconds,
+        longIntervalSeconds,
+        longIntervalSeconds,
+        TimeUnit.SECONDS);
+    scheduledExecutor.scheduleWithFixedDelay(
+        new StatsbeatSender(instrumentationStatsbeat, telemetryClient),
+        longIntervalSeconds,
+        longIntervalSeconds,
         TimeUnit.SECONDS);
 
     ResourceProvider rp = customDimensions.getResourceProvider();
     // only turn on AzureMetadataService when the resource provider is VM or UNKNOWN.
-    // FIXME (heya) Need to figure out why AzureMetadataService is not reachable from a function app
-    // and it's not necessary to make this call.
     if (rp == ResourceProvider.RP_VM || rp == ResourceProvider.UNKNOWN) {
       // will only reach here the first time, after instance has been instantiated
-      new AzureMetadataService(attachStatsbeat, customDimensions)
-          .scheduleWithFixedDelay(intervalSeconds);
+      AzureMetadataService metadataService =
+          new AzureMetadataService(attachStatsbeat, customDimensions);
+      metadataService.scheduleWithFixedDelay(longIntervalSeconds);
     }
 
     featureStatsbeat.trackConfigurationOptions(config);
-  }
 
-  public static StatsbeatModule get() {
-    return instance;
+    if (config.preview.statsbeat.disabled) {
+      // disabled will disable non-essentials Statsbeat, such as tracking failure or success of disk
+      // persistence operations, optional network statsbeat, live metric,
+      // azure metadata service failure, profile endpoint, etc.
+      // TODO stop sending non-essential Statsbeat when applicable
+    }
   }
 
   public NetworkStatsbeat getNetworkStatsbeat() {
     return networkStatsbeat;
+  }
+
+  public FeatureStatsbeat getInstrumentationStatsbeat() {
+    return instrumentationStatsbeat;
   }
 
   /** Runnable which is responsible for calling the send method to transmit Statsbeat telemetry. */

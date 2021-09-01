@@ -43,6 +43,7 @@ public class TestController {
     requestTelemetry.getContext().getUser().setId("myuser");
     requestTelemetry.setName("myspanname");
     requestTelemetry.setSource("mysource");
+    requestTelemetry.setSuccess(false);
     return "OK!";
   }
 }
