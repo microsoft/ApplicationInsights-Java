@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.agent.internal.telemetry;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 
-import com.microsoft.applicationinsights.agent.internal.common.LocalFileSystemUtils;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -44,6 +43,7 @@ import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileCa
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileLoader;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileSender;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
+import com.microsoft.applicationinsights.agent.internal.localstorage.LocalStorageUtils;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import io.opentelemetry.instrumentation.api.caching.Cache;
@@ -61,17 +61,6 @@ import org.apache.commons.text.StringSubstitutor;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
 public class TelemetryClient {
-
-  private static final String TELEMETRY_FOLDER = "telemetry";
-  private static final String STATSBEAT_FOLDER = "statsbeat";
-
-  /**
-   * Windows: C:\Users\{USER_NAME}\AppData\Local\Temp\applicationinsights Linux:
-   * /var/temp/applicationinsights We will store all persisted files in this folder for all apps.
-   * TODO it is a good security practice to purge data after 24 hours in this folder.
-   */
-  private static final File DEFAULT_FOLDER =
-      new File(LocalFileSystemUtils.getTempDir(), "applicationinsights");
 
   private static final String EVENT_TELEMETRY_NAME = "Event";
   private static final String EXCEPTION_TELEMETRY_NAME = "Exception";
@@ -230,7 +219,7 @@ public class TelemetryClient {
       synchronized (channelInitLock) {
         if (channelBatcher == null) {
           LocalFileCache localFileCache = new LocalFileCache();
-          File telemetryFolder = getTelemetryFolder(TELEMETRY_FOLDER);
+          File telemetryFolder = LocalStorageUtils.getOfflineTelemetryFolder();
           LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, telemetryFolder);
           LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, telemetryFolder);
           TelemetryChannel channel =
@@ -253,7 +242,7 @@ public class TelemetryClient {
       synchronized (channelInitLock) {
         if (statsbeatChannelBatcher == null) {
           LocalFileCache localFileCache = new LocalFileCache();
-          File statsbeatFolder = getTelemetryFolder(STATSBEAT_FOLDER);
+          File statsbeatFolder = LocalStorageUtils.getOfflineStatsbeatFolder();
           LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, statsbeatFolder);
           LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, statsbeatFolder);
           TelemetryChannel channel =
@@ -474,21 +463,5 @@ public class TelemetryClient {
     telemetry.setData(monitorBase);
     monitorBase.setBaseType(baseType);
     monitorBase.setBaseData(data);
-  }
-
-  // visible for testing
-  public static File getTelemetryFolder(String name) {
-    File subdirectory = new File(DEFAULT_FOLDER, name);
-
-    if (!subdirectory.exists()) {
-      subdirectory.mkdirs();
-    }
-
-    if (!subdirectory.exists() || !subdirectory.canRead() || !subdirectory.canWrite()) {
-      throw new IllegalArgumentException(
-          "subdirectory must exist and have read and write permissions.");
-    }
-
-    return subdirectory;
   }
 }

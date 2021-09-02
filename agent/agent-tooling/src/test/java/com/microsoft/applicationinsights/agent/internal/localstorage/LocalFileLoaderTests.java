@@ -200,29 +200,6 @@ public class LocalFileLoaderTests {
   }
 
   @Test
-  public void testPurgedExpiredFiles() throws InterruptedException {
-    String text = "hello world";
-    LocalFileCache cache = new LocalFileCache();
-    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder);
-
-    // run purge task every second to delete files that are 5 seconds old
-    new LocalFileLoader(cache, tempFolder, 1L, 5L);
-
-    // persist 100 files to disk
-    for (int i = 0; i < 100; i++) {
-      writer.writeToDisk(singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))));
-    }
-
-    Collection<File> files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);
-    assertThat(files.size()).isEqualTo(100);
-
-    Thread.sleep(10000); // wait 10 seconds
-
-    files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);
-    assertThat(files.size()).isEqualTo(0);
-  }
-
-  @Test
   public void testDeleteFilePermanentlyOnSuccess() throws Exception {
     HttpClient mockedClient = getMockHttpClientSuccess();
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
@@ -231,7 +208,7 @@ public class LocalFileLoaderTests {
     LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder);
 
     TelemetryChannel telemetryChannel =
-        new TelemetryChannel(pipelineBuilder.build(), new URL("http://foo.bar"), localFileWriter);
+        new TelemetryChannel(pipelineBuilder.build(), new URL("http://foo.bar"), localFileWriter, null);
 
     // persist 10 files to disk
     for (int i = 0; i < 10; i++) {
@@ -277,7 +254,7 @@ public class LocalFileLoaderTests {
     LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder);
 
     TelemetryChannel telemetryChannel =
-        new TelemetryChannel(pipelineBuilder.build(), new URL("http://foo.bar"), localFileWriter);
+        new TelemetryChannel(pipelineBuilder.build(), new URL("http://foo.bar"), localFileWriter, null);
 
     // persist 10 files to disk
     for (int i = 0; i < 10; i++) {
