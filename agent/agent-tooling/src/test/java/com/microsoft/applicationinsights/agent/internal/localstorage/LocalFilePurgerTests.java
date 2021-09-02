@@ -43,7 +43,7 @@ public class LocalFilePurgerTests {
     LocalFileWriter writer = new LocalFileWriter(cache, tempFolder);
 
     // run purge task every second to delete files that are 5 seconds old
-    new LocalFilePurger(1L, 5L, tempFolder);
+    LocalFilePurger.startPurging(1L, 5L, tempFolder);
 
     // persist 100 files to disk
     for (int i = 0; i < 100; i++) {

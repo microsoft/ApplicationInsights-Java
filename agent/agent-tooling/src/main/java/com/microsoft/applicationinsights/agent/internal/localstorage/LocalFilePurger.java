@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +30,6 @@ import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Date;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
@@ -39,77 +40,69 @@ import org.slf4j.LoggerFactory;
  * Purge files that are older than 48 hours in both 'telemetry' and 'statsbeat' folders. Purge is
  * run every 24 hours.
  */
-public class LocalFilePurger {
+public class LocalFilePurger implements Runnable {
 
   private static final Logger logger = LoggerFactory.getLogger(LocalFilePurger.class);
 
-  private static final ScheduledExecutorService scheduledExecutor =
-      Executors.newSingleThreadScheduledExecutor(
-          ThreadPoolUtils.createDaemonThreadFactory(LocalFileLoader.class));
+  private final long expiredInterval;
+  private final File folder;
 
-  public LocalFilePurger() {
-    this(null, null, null);
-  }
-
-  // this is used by tests only so that interval can be much smaller
-  LocalFilePurger(
+  public static void startPurging(
       @Nullable Long purgeIntervalSeconds, @Nullable Long expiredIntervalSeconds, File folder) {
     // run purge task daily to clean up expired files that are older than 48 hours.
     long interval =
         purgeIntervalSeconds == null ? TimeUnit.DAYS.toSeconds(1) : purgeIntervalSeconds;
     long expiredInterval =
         expiredIntervalSeconds == null ? TimeUnit.DAYS.toSeconds(2) : expiredIntervalSeconds;
-    scheduledExecutor.scheduleWithFixedDelay(
-        new PurgeExpiredFilesTask(expiredInterval, folder), interval, interval, TimeUnit.SECONDS);
+
+    Executors.newSingleThreadScheduledExecutor(
+            ThreadPoolUtils.createDaemonThreadFactory(LocalFilePurger.class))
+        .scheduleWithFixedDelay(
+            new LocalFilePurger(expiredInterval, folder), interval, interval, SECONDS);
   }
 
-  private static class PurgeExpiredFilesTask implements Runnable {
-    private final long expiredIntervalSeconds;
-    private final File folder;
+  LocalFilePurger(long expiredInterval, File folder) {
+    this.expiredInterval = expiredInterval;
+    this.folder = folder;
+  }
 
-    private PurgeExpiredFilesTask(long expiredIntervalSeconds, File folder) {
-      this.expiredIntervalSeconds = expiredIntervalSeconds;
-      this.folder = folder;
+  @Override
+  public void run() {
+    // this is used by tests only
+    if (folder != null && folder.exists()) {
+      purgedExpiredFiles(folder);
+    } else {
+      // default is to purge 'telemetry' and 'statsbeat' folders
+      purgedExpiredFiles(LocalStorageUtils.getOfflineTelemetryFolder());
+      purgedExpiredFiles(LocalStorageUtils.getOfflineStatsbeatFolder());
     }
+  }
 
-    @Override
-    public void run() {
-      // this is used by tests only
-      if (folder != null && folder.exists()) {
-        purgedExpiredFiles(folder);
-      } else {
-        // default is to purge 'telemetry' and 'statsbeat' folders
-        purgedExpiredFiles(LocalStorageUtils.getOfflineTelemetryFolder());
-        purgedExpiredFiles(LocalStorageUtils.getOfflineStatsbeatFolder());
-      }
-    }
-
-    private void purgedExpiredFiles(File folder) {
-      Collection<File> files = FileUtils.listFiles(folder, new String[] {"trn"}, false);
-      for (File file : files) {
-        if (expired(file.getName())) {
-          try {
-            Files.delete(file.toPath());
-          } catch (IOException ex) {
-            logger.error(
-                "Fail to delete the expired {} from folder '{}'.",
-                file.getName(),
-                folder.getName(),
-                ex);
-            LocalStorageUtils.retryDelete(file);
-          }
+  private void purgedExpiredFiles(File folder) {
+    Collection<File> files = FileUtils.listFiles(folder, new String[] {"trn"}, false);
+    for (File file : files) {
+      if (expired(file.getName())) {
+        try {
+          Files.delete(file.toPath());
+        } catch (IOException ex) {
+          logger.error(
+              "Fail to delete the expired {} from folder '{}'.",
+              file.getName(),
+              folder.getName(),
+              ex);
+          LocalStorageUtils.retryDelete(file);
         }
       }
     }
+  }
 
-    // files that are older than expiredIntervalSeconds (default 48 hours) are expired and need to
-    // be deleted permanently.
-    private boolean expired(String fileName) {
-      String time = fileName.substring(0, fileName.lastIndexOf('-'));
-      long milliseconds = Long.parseLong(time);
-      Date twoDaysAgo = new Date(System.currentTimeMillis() - 1000 * expiredIntervalSeconds);
-      Date fileDate = new Date(milliseconds);
-      return fileDate.before(twoDaysAgo);
-    }
+  // files that are older than expiredIntervalSeconds (default 48 hours) are expired and need to
+  // be deleted permanently.
+  private boolean expired(String fileName) {
+    String time = fileName.substring(0, fileName.lastIndexOf('-'));
+    long milliseconds = Long.parseLong(time);
+    Date twoDaysAgo = new Date(System.currentTimeMillis() - 1000 * expiredInterval);
+    Date fileDate = new Date(milliseconds);
+    return fileDate.before(twoDaysAgo);
   }
 }
