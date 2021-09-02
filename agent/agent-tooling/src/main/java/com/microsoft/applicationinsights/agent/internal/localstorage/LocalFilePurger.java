@@ -47,9 +47,13 @@ public class LocalFilePurger implements Runnable {
   private final long expiredInterval;
   private final File folder;
 
-  public static void startPurging(
+  public static void startPurging() {
+    startPurging(null, null, null);
+  }
+
+  // this is used by tests to configure purge interval, expired interval and the test folder which files are to be purged.
+  static void startPurging(
       @Nullable Long purgeIntervalSeconds, @Nullable Long expiredIntervalSeconds, File folder) {
-    // run purge task daily to clean up expired files that are older than 48 hours.
     long interval =
         purgeIntervalSeconds == null ? TimeUnit.DAYS.toSeconds(1) : purgeIntervalSeconds;
     long expiredInterval =
