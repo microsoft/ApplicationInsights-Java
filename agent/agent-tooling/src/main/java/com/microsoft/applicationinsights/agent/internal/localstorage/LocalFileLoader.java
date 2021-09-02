@@ -45,9 +45,7 @@ public class LocalFileLoader {
 
   private final Queue<File> toBeDeletedFileQueue = new ConcurrentLinkedDeque<>();
 
-  public LocalFileLoader(
-      LocalFileCache localFileCache,
-      File telemetryFolder) {
+  public LocalFileLoader(LocalFileCache localFileCache, File telemetryFolder) {
     this.localFileCache = localFileCache;
     this.telemetryFolder = telemetryFolder;
   }

@@ -22,10 +22,6 @@
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -34,10 +30,14 @@ import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Purge files that are older than 48 hours in both 'telemetry' and 'statsbeat' folders.
- * Purge is run every 24 hours.
+ * Purge files that are older than 48 hours in both 'telemetry' and 'statsbeat' folders. Purge is
+ * run every 24 hours.
  */
 public class LocalFilePurger {
 
@@ -52,7 +52,8 @@ public class LocalFilePurger {
   }
 
   // this is used by tests only so that interval can be much smaller
-  LocalFilePurger(@Nullable Long purgeIntervalSeconds, @Nullable Long expiredIntervalSeconds, File folder) {
+  LocalFilePurger(
+      @Nullable Long purgeIntervalSeconds, @Nullable Long expiredIntervalSeconds, File folder) {
     // run purge task daily to clean up expired files that are older than 48 hours.
     long interval =
         purgeIntervalSeconds == null ? TimeUnit.DAYS.toSeconds(1) : purgeIntervalSeconds;
@@ -90,7 +91,11 @@ public class LocalFilePurger {
           try {
             Files.delete(file.toPath());
           } catch (IOException ex) {
-            logger.error("Fail to delete the expired {} from folder '{}'.", file.getName(), folder.getName(), ex);
+            logger.error(
+                "Fail to delete the expired {} from folder '{}'.",
+                file.getName(),
+                folder.getName(),
+                ex);
             LocalStorageUtils.retryDelete(file);
           }
         }

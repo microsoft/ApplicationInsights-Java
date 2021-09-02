@@ -22,9 +22,9 @@
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
 import com.microsoft.applicationinsights.agent.internal.common.LocalFileSystemUtils;
+import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.io.File;
 
 public final class LocalStorageUtils {
 

@@ -214,8 +214,7 @@ public class TelemetryChannel {
         .send(request, Context.of(contextKeyValues))
         .subscribe(
             response -> {
-              parseResponseCode(
-                  response.getStatusCode(), instrumentationKey);
+              parseResponseCode(response.getStatusCode(), instrumentationKey);
               LazyHttpClient.consumeResponseBody(response);
             },
             error -> {
@@ -257,9 +256,7 @@ public class TelemetryChannel {
     }
   }
 
-  private void parseResponseCode(
-      int statusCode,
-      String instrumentationKey) {
+  private void parseResponseCode(int statusCode, String instrumentationKey) {
     switch (statusCode) {
       case 401: // UNAUTHORIZED
       case 403: // FORBIDDEN
