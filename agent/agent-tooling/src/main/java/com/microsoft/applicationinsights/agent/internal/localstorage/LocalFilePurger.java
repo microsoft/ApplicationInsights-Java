@@ -51,7 +51,8 @@ public class LocalFilePurger implements Runnable {
     startPurging(null, null, null);
   }
 
-  // this is used by tests to configure purge interval, expired interval and the test folder which files are to be purged.
+  // this is used by tests to configure purge interval, expired interval and the test folder which
+  // files are to be purged.
   static void startPurging(
       @Nullable Long purgeIntervalSeconds, @Nullable Long expiredIntervalSeconds, File folder) {
     long interval =
