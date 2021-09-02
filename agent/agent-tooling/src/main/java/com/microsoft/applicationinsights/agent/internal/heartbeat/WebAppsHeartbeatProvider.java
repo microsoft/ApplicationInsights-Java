@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.heartbeat;
 
+import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -55,7 +56,6 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
   private static final String WEBSITE_OWNER_NAME = "appSrv_wsOwner";
 
   private static final String WEBSITE_RESOURCE_GROUP = "appSrv_ResourceGroup";
-
   // Only populated in Azure functions
   private static final String WEBSITE_SLOT_NAME = "appSrv_SlotName";
 
@@ -83,7 +83,7 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
             switch (fieldName) {
               case WEBSITE_SITE_NAME:
                 String webSiteName = getWebsiteSiteName();
-                if (webSiteName == null) {
+                if (Strings.isNullOrEmpty(webSiteName)) {
                   break;
                 }
                 provider.addHeartBeatProperty(fieldName, webSiteName, true);
@@ -91,7 +91,7 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
                 break;
               case WEBSITE_HOSTNAME:
                 String webSiteHostName = getWebsiteHostName();
-                if (webSiteHostName == null) {
+                if (Strings.isNullOrEmpty(webSiteHostName)) {
                   break;
                 }
                 provider.addHeartBeatProperty(fieldName, webSiteHostName, true);
@@ -99,7 +99,7 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
                 break;
               case WEBSITE_HOME_STAMPNAME:
                 String websiteHomeStampName = getWebsiteHomeStampName();
-                if (websiteHomeStampName == null) {
+                if (Strings.isNullOrEmpty(websiteHomeStampName)) {
                   break;
                 }
                 provider.addHeartBeatProperty(fieldName, websiteHomeStampName, true);
@@ -107,7 +107,7 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
                 break;
               case WEBSITE_OWNER_NAME:
                 String websiteOwnerName = getWebsiteOwnerName();
-                if (websiteOwnerName == null) {
+                if (Strings.isNullOrEmpty(websiteOwnerName)) {
                   break;
                 }
                 provider.addHeartBeatProperty(fieldName, websiteOwnerName, true);
@@ -115,7 +115,7 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
                 break;
               case WEBSITE_RESOURCE_GROUP:
                 String websiteResourceGroup = getWebsiteResourceGroup();
-                if (websiteResourceGroup == null) {
+                if (Strings.isNullOrEmpty(websiteResourceGroup)) {
                   break;
                 }
                 provider.addHeartBeatProperty(fieldName, websiteResourceGroup, true);
@@ -123,7 +123,7 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
                 break;
               case WEBSITE_SLOT_NAME:
                 String websiteSlotName = getWebsiteSlotName();
-                if (websiteSlotName == null) {
+                if (Strings.isNullOrEmpty(websiteSlotName)) {
                   break;
                 }
                 provider.addHeartBeatProperty(fieldName, websiteSlotName, true);
