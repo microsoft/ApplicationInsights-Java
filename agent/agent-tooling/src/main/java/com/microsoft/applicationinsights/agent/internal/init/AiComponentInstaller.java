@@ -223,7 +223,7 @@ public class AiComponentInstaller implements AgentListener {
     // initialize StatsbeatModule
     statsbeatModule.start(telemetryClient, config);
 
-    // start local storage purger scheduled task
+    // start local File purger scheduler task
     LocalFilePurger.startPurging();
   }
 
