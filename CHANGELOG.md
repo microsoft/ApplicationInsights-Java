@@ -5,14 +5,13 @@
 * Misc logging improvements:
     - Adds PID to startup message. This will help support customers who need to take a thread/heap dump for any reason.
     - Clearer timezone identifier on logs (-07:00 instead of -07).
-    - add applicationinsights.testing.etw.disabled setting just for use during testing.
 * Add grizzly instrumentation as preview.
-* Use tmpdir to store temporary jfr recordings.
+* Use tmpdir to store temporary Java flight recordings.
 * Fix live metrics sampled counts.
 * Fix stack traces not being captured for deadlocks [#1263](https://github.com/microsoft/ApplicationInsights-Java/issues/1263).
-* Support Sample Telemetry feature to live metrics.
-* Add inherited attributes preview [#1743](https://github.com/microsoft/ApplicationInsights-Java/issues/1743)
-* Add App Map to App service/function view support.
+* Support Sample Telemetry feature for live metrics [#1852](https://github.com/microsoft/ApplicationInsights-Java/pull/1852).
+* Add inherited attributes preview [#1743](https://github.com/microsoft/ApplicationInsights-Java/issues/1743).
+* Fix Application Map to App service/function view support [#1868](https://github.com/microsoft/ApplicationInsights-Java/pull/1868).
 
 # Version 3.2.0-BETA.2
 * Lots of internal clean up.
