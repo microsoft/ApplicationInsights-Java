@@ -1,5 +1,17 @@
 # CHANGELOG
 
+# Version 3.2.0-BETA.3
+* Log all available jmx metrics at debug level.
+* Misc logging improvements [#1828](https://github.com/microsoft/ApplicationInsights-Java/pull/1828).
+* Add grizzly instrumentation as preview.
+* Use tmpdir to store temporary Java flight recordings [#1836](https://github.com/microsoft/ApplicationInsights-Java/pull/1836).
+* Fix live metrics sampled counts.
+* Fix stack traces not being captured for deadlocks [#1263](https://github.com/microsoft/ApplicationInsights-Java/issues/1263).
+* Support Sample Telemetry feature for live metrics [#1852](https://github.com/microsoft/ApplicationInsights-Java/pull/1852).
+* Add inherited attributes preview [#1743](https://github.com/microsoft/ApplicationInsights-Java/issues/1743).
+* Fix Application Map to App service/function view support [#1868](https://github.com/microsoft/ApplicationInsights-Java/pull/1868).
+* Fix service bus mapping [#1848](https://github.com/microsoft/ApplicationInsights-Java/pull/1848).
+
 # Version 3.2.0-BETA.2
 * Lots of internal clean up.
 * Reduce binary size from 3.2.0-BETA
