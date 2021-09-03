@@ -48,7 +48,8 @@ public class HeartBeatTest extends AiSmokeTest {
     assertNotNull(data.getProperties().get("sdkVersion"));
     assertNotNull(data.getProperties().get("osVersion"));
     assertNotNull(data.getProperties().get("processSessionId"));
-    assertEquals(4, data.getProperties().size());
+    assertNotNull(data.getProperties().get("osType"));
+    assertEquals(5, data.getProperties().size());
   }
 
   private static Predicate<Envelope> getMetricPredicate(String name) {

@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.heartbeat;
 
+import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -52,6 +53,12 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
 
   private static final String WEBSITE_HOME_STAMPNAME = "appSrv_wsStamp";
 
+  private static final String WEBSITE_OWNER_NAME = "appSrv_wsOwner";
+
+  private static final String WEBSITE_RESOURCE_GROUP = "appSrv_ResourceGroup";
+  // Only populated in Azure functions
+  private static final String WEBSITE_SLOT_NAME = "appSrv_SlotName";
+
   /** Constructor that initializes fields and load environment variables. */
   public WebAppsHeartbeatProvider() {
     defaultFields = new HashSet<>();
@@ -76,7 +83,7 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
             switch (fieldName) {
               case WEBSITE_SITE_NAME:
                 String webSiteName = getWebsiteSiteName();
-                if (webSiteName == null) {
+                if (Strings.isNullOrEmpty(webSiteName)) {
                   break;
                 }
                 provider.addHeartBeatProperty(fieldName, webSiteName, true);
@@ -84,7 +91,7 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
                 break;
               case WEBSITE_HOSTNAME:
                 String webSiteHostName = getWebsiteHostName();
-                if (webSiteHostName == null) {
+                if (Strings.isNullOrEmpty(webSiteHostName)) {
                   break;
                 }
                 provider.addHeartBeatProperty(fieldName, webSiteHostName, true);
@@ -92,10 +99,34 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
                 break;
               case WEBSITE_HOME_STAMPNAME:
                 String websiteHomeStampName = getWebsiteHomeStampName();
-                if (websiteHomeStampName == null) {
+                if (Strings.isNullOrEmpty(websiteHomeStampName)) {
                   break;
                 }
                 provider.addHeartBeatProperty(fieldName, websiteHomeStampName, true);
+                hasSetValues = true;
+                break;
+              case WEBSITE_OWNER_NAME:
+                String websiteOwnerName = getWebsiteOwnerName();
+                if (Strings.isNullOrEmpty(websiteOwnerName)) {
+                  break;
+                }
+                provider.addHeartBeatProperty(fieldName, websiteOwnerName, true);
+                hasSetValues = true;
+                break;
+              case WEBSITE_RESOURCE_GROUP:
+                String websiteResourceGroup = getWebsiteResourceGroup();
+                if (Strings.isNullOrEmpty(websiteResourceGroup)) {
+                  break;
+                }
+                provider.addHeartBeatProperty(fieldName, websiteResourceGroup, true);
+                hasSetValues = true;
+                break;
+              case WEBSITE_SLOT_NAME:
+                String websiteSlotName = getWebsiteSlotName();
+                if (Strings.isNullOrEmpty(websiteSlotName)) {
+                  break;
+                }
+                provider.addHeartBeatProperty(fieldName, websiteSlotName, true);
                 hasSetValues = true;
                 break;
               default:
@@ -118,6 +149,9 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
     defaultFields.add(WEBSITE_SITE_NAME);
     defaultFields.add(WEBSITE_HOSTNAME);
     defaultFields.add(WEBSITE_HOME_STAMPNAME);
+    defaultFields.add(WEBSITE_OWNER_NAME);
+    defaultFields.add(WEBSITE_RESOURCE_GROUP);
+    defaultFields.add(WEBSITE_SLOT_NAME);
   }
 
   /** Returns the name of the website by reading environment variable. */
@@ -133,6 +167,21 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
   /** Returns the website home stamp name by reading environment variable. */
   private String getWebsiteHomeStampName() {
     return environmentMap.get("WEBSITE_HOME_STAMPNAME");
+  }
+
+  /** Returns the website owner name by reading environment variable. */
+  private String getWebsiteOwnerName() {
+    return environmentMap.get("WEBSITE_OWNER_NAME");
+  }
+
+  /** Returns the website resource group by reading environment variable. */
+  private String getWebsiteResourceGroup() {
+    return environmentMap.get("WEBSITE_RESOURCE_GROUP");
+  }
+
+  /** Returns the website slot name by reading environment variable. */
+  private String getWebsiteSlotName() {
+    return environmentMap.get("WEBSITE_SLOT_NAME");
   }
 
   /**
