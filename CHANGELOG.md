@@ -10,6 +10,7 @@
 * Support Sample Telemetry feature for live metrics [#1852](https://github.com/microsoft/ApplicationInsights-Java/pull/1852).
 * Add inherited attributes preview [#1743](https://github.com/microsoft/ApplicationInsights-Java/issues/1743).
 * Fix Application Map to App service/function view support [#1868](https://github.com/microsoft/ApplicationInsights-Java/pull/1868).
+* Fix service bus mapping [#1848](https://github.com/microsoft/ApplicationInsights-Java/pull/1848).
 
 # Version 3.2.0-BETA.2
 * Lots of internal clean up.
