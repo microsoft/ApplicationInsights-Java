@@ -47,18 +47,13 @@ public final class LocalStorageUtils {
     return getTelemetryFolder(STATSBEAT_FOLDER);
   }
 
-  // retry delete 3 times when it fails.
-  static void retryDelete(File file) {
-    if (file.exists()) {
+  // delete a file and then retry 3 times when it fails.
+  static void deleteFileWithRetries(File file) throws Exception {
+    if (!file.delete()) {
       for (int i = 0; i < 3; i++) {
-        try {
-          Thread.sleep(500);
-          System.gc();
-          if (file.delete()) {
-            break;
-          }
-        } catch (InterruptedException ex) {
-          logger.error("Fail to perform Thread.sleep.", ex);
+        Thread.sleep(500);
+        if (file.delete()) {
+          break;
         }
       }
     }

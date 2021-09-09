@@ -88,14 +88,13 @@ public class LocalFilePurger implements Runnable {
     for (File file : files) {
       if (expired(file.getName())) {
         try {
-          Files.delete(file.toPath());
-        } catch (IOException ex) {
+          LocalStorageUtils.deleteFileWithRetries(file);
+        } catch (Exception ex) {
           logger.error(
               "Fail to delete the expired {} from folder '{}'.",
               file.getName(),
               folder.getName(),
               ex);
-          LocalStorageUtils.retryDelete(file);
         }
       }
     }

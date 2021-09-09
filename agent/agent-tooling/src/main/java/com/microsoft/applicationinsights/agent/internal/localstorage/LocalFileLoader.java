@@ -124,14 +124,10 @@ public class LocalFileLoader {
 
   private static void deleteFile(File file) {
     try {
-      Files.delete(file.toPath());
-    } catch (IOException ex) {
+      LocalStorageUtils.deleteFileWithRetries(file);
+    } catch (Exception ex) {
       // TODO (heya) track file deletion failure via Statsbeat
       operationLogger.recordFailure("Fail to delete " + file.getName(), ex);
-      LocalStorageUtils.retryDelete(file);
-    } catch (SecurityException ex) {
-      operationLogger.recordFailure(
-          "Unable to delete " + file.getName() + ". Access is denied.", ex);
     }
   }
 }
