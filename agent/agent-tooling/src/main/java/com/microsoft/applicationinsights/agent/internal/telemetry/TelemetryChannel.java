@@ -257,7 +257,8 @@ public class TelemetryChannel {
     }
   }
 
-  private void parseResponseCode(int statusCode, String instrumentationKey, List<ByteBuffer> finalByteBuffers) {
+  private void parseResponseCode(
+      int statusCode, String instrumentationKey, List<ByteBuffer> finalByteBuffers) {
     switch (statusCode) {
       case 401: // UNAUTHORIZED
       case 403: // FORBIDDEN
