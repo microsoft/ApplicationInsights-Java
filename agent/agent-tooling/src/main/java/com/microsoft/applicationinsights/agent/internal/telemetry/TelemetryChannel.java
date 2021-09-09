@@ -223,6 +223,7 @@ public class TelemetryChannel {
               }
               ExceptionUtils.parseError(
                   error, endpointUrl.toString(), friendlyExceptionThrown, logger);
+              // sending raw bytes won't have any instrumentation key
               if (instrumentationKey != null) {
                 writeToDiskOnFailure(byteBuffers, byteBuffers);
               }
