@@ -214,7 +214,7 @@ public class TelemetryChannel {
         .send(request, Context.of(contextKeyValues))
         .subscribe(
             response -> {
-              parseResponseCode(response.getStatusCode(), instrumentationKey);
+              parseResponseCode(response.getStatusCode(), instrumentationKey, byteBuffers);
               LazyHttpClient.consumeResponseBody(response);
             },
             error -> {
@@ -257,13 +257,16 @@ public class TelemetryChannel {
     }
   }
 
-  private void parseResponseCode(int statusCode, String instrumentationKey) {
+  private void parseResponseCode(int statusCode, String instrumentationKey, List<ByteBuffer> finalByteBuffers) {
     switch (statusCode) {
       case 401: // UNAUTHORIZED
       case 403: // FORBIDDEN
         logger.warn(
             "Failed to send telemetry with status code:{}, please check your credentials",
             statusCode);
+        if (instrumentationKey != null) {
+          writeToDiskOnFailure(finalByteBuffers, finalByteBuffers);
+        }
         break;
       case 408: // REQUEST TIMEOUT
       case 500: // INTERNAL SERVER ERROR
