@@ -61,7 +61,7 @@ public class LocalFileSender implements Runnable {
       ByteBuffer buffer = localFileLoader.loadTelemetriesFromDisk();
       if (buffer != null) {
         CompletableResultCode resultCode = telemetryChannel.sendRawBytes(buffer);
-        resultCode.join(5, TimeUnit.SECONDS); // wait for request to be completed.
+        resultCode.join(30, TimeUnit.SECONDS); // wait max 30 seconds for request to be completed.
         localFileLoader.updateProcessedFileStatus(resultCode.isSuccess());
       }
     } catch (RuntimeException ex) {
