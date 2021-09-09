@@ -25,8 +25,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Date;
 import java.util.concurrent.Executors;
@@ -87,14 +85,9 @@ public class LocalFilePurger implements Runnable {
     Collection<File> files = FileUtils.listFiles(folder, new String[] {"trn"}, false);
     for (File file : files) {
       if (expired(file.getName())) {
-        try {
-          LocalStorageUtils.deleteFileWithRetries(file);
-        } catch (Exception ex) {
-          logger.error(
-              "Fail to delete the expired {} from folder '{}'.",
-              file.getName(),
-              folder.getName(),
-              ex);
+        if (!LocalStorageUtils.deleteFileWithRetries(file)) {
+          logger.warn(
+              "Fail to delete the expired {} from folder '{}'.", file.getName(), folder.getName());
         }
       }
     }

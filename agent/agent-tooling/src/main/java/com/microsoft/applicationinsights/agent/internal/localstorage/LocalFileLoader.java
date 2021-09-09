@@ -123,11 +123,11 @@ public class LocalFileLoader {
   }
 
   private static void deleteFile(File file) {
-    try {
-      LocalStorageUtils.deleteFileWithRetries(file);
-    } catch (Exception ex) {
+    if (!LocalStorageUtils.deleteFileWithRetries(file)) {
       // TODO (heya) track file deletion failure via Statsbeat
-      operationLogger.recordFailure("Fail to delete " + file.getName(), ex);
+      operationLogger.recordFailure("Fail to delete " + file.getName());
+    } else {
+      operationLogger.recordSuccess();
     }
   }
 }

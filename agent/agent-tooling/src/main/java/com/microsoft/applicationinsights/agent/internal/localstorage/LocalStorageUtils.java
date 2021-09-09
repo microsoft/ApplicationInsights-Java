@@ -48,15 +48,22 @@ public final class LocalStorageUtils {
   }
 
   // delete a file and then retry 3 times when it fails.
-  static void deleteFileWithRetries(File file) throws Exception {
+  static boolean deleteFileWithRetries(File file) {
     if (!file.delete()) {
       for (int i = 0; i < 3; i++) {
-        Thread.sleep(500);
+        try {
+          Thread.sleep(500);
+        } catch (InterruptedException ex) {
+          Thread.currentThread().interrupt();
+          return false;
+        }
         if (file.delete()) {
           break;
         }
       }
     }
+
+    return true;
   }
 
   // retrieve the default folder name based on telemetry type.
