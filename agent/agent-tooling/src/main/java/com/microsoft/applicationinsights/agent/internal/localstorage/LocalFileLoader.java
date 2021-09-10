@@ -54,10 +54,16 @@ public class LocalFileLoader {
   @Nullable
   ByteBuffer loadTelemetriesFromDisk() {
     String filenameToBeLoaded = localFileCache.poll();
-    if (filenameToBeLoaded == null || filenameToBeLoaded.isEmpty()) {
+    if (filenameToBeLoaded == null) {
       return null;
     }
 
+    // when reading a file from the disk, we first make a copy of the source file with ".tmp" as the
+    // file extension.
+    // read raw bytes from the .tmp file and then delete it. we use a temp file to prevent source
+    // file data corruption during reading.
+    // source file will be kept until its content has been sent successfully to Application
+    // Insights.
     File tempFile;
     File sourceFile;
     try {
