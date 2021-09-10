@@ -265,6 +265,7 @@ public class TelemetryChannel {
         logger.warn(
             "Failed to send telemetry with status code:{}, please check your credentials",
             statusCode);
+        // sending raw bytes won't have any instrumentation key
         if (instrumentationKey != null) {
           writeToDiskOnFailure(finalByteBuffers, finalByteBuffers);
         }
