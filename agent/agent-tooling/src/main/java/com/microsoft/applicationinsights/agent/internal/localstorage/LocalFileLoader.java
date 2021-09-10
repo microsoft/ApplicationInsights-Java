@@ -56,12 +56,12 @@ public class LocalFileLoader {
       return null;
     }
 
-    // when reading a file from the disk, we first make a copy of the source file with ".tmp" as the
-    // file extension.
-    // read raw bytes from the .tmp file and then delete it. we use a temp file to prevent source
-    // file data corruption during reading.
-    // source file will be kept until its content has been sent successfully to Application
-    // Insights.
+    // when reading a file from the disk, loader renames the source file to "*.tmp" to prevent other
+    // threads from processing the same file over and over again. this will prevent same data gets
+    // sent to Application Insights more than once. after reading raw bytes from the .tmp file,
+    // loader will delete the temp file when http
+    // response confirms it is sent successfully; otherwise, temp file will get renamed back to the
+    // source file extension.
     File tempFile;
     File sourceFile;
     try {
@@ -74,7 +74,7 @@ public class LocalFileLoader {
           new File(
               telemetryFolder,
               FilenameUtils.getBaseName(filenameToBeLoaded) + TEMPORARY_FILE_EXTENSION);
-      FileUtils.copyFile(sourceFile, tempFile);
+      FileUtils.moveFile(sourceFile, tempFile);
     } catch (IOException e) {
       operationLogger.recordFailure(
           "Failed to change "
@@ -98,8 +98,7 @@ public class LocalFileLoader {
     }
 
     // mark source file to be deleted when it's sent successfully.
-    toBeDeletedFile = sourceFile;
-    deleteFile(tempFile); // delete temp file immediately
+    toBeDeletedFile = tempFile;
     operationLogger.recordSuccess();
     return ByteBuffer.wrap(result);
   }
@@ -110,8 +109,18 @@ public class LocalFileLoader {
     if (success) {
       deleteFilePermanentlyOnSuccess();
     } else {
-      // add the file back to local file cache to be process later.
-      localFileCache.addPersistedFilenameToMap(toBeDeletedFile.getName());
+      // rename the temp file back to .trn source file extension
+      File sourceFile =
+          new File(telemetryFolder, FilenameUtils.getBaseName(toBeDeletedFile.getName()) + ".trn");
+      try {
+        FileUtils.moveFile(toBeDeletedFile, sourceFile);
+      } catch (IOException ex) {
+        operationLogger.recordFailure(
+            "Fail to rename " + toBeDeletedFile.getName() + " to have a .trn extension.", ex);
+      }
+
+      // add the source filename back to local file cache to be processed later.
+      localFileCache.addPersistedFilenameToMap(sourceFile.getName());
     }
   }
 
