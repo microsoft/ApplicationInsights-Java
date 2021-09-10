@@ -93,8 +93,8 @@ public class LocalFileLoader {
       return null;
     }
 
-    toBeDeletedFileQueue.add(
-        sourceFile); // mark source file to be deleted when it's sent successfully.
+    // mark source file to be deleted when it's sent successfully.
+    toBeDeletedFileQueue.add(sourceFile);
     deleteFile(tempFile); // delete temp file immediately
     operationLogger.recordSuccess();
     return ByteBuffer.wrap(result);
