@@ -26,8 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -43,7 +41,7 @@ public class LocalFileLoader {
   private static final OperationLogger operationLogger =
       new OperationLogger(LocalFileLoader.class, "Loading telemetry from disk");
 
-  private final Queue<File> toBeDeletedFileQueue = new ConcurrentLinkedDeque<>();
+  @Nullable private File toBeDeletedFile;
 
   public LocalFileLoader(LocalFileCache localFileCache, File telemetryFolder) {
     this.localFileCache = localFileCache;
@@ -100,7 +98,7 @@ public class LocalFileLoader {
     }
 
     // mark source file to be deleted when it's sent successfully.
-    toBeDeletedFileQueue.add(sourceFile);
+    toBeDeletedFile = sourceFile;
     deleteFile(tempFile); // delete temp file immediately
     operationLogger.recordSuccess();
     return ByteBuffer.wrap(result);
@@ -113,19 +111,17 @@ public class LocalFileLoader {
       deleteFilePermanentlyOnSuccess();
     } else {
       // add the file back to local file cache to be process later.
-      localFileCache.addPersistedFilenameToMap(toBeDeletedFileQueue.poll().getName());
+      localFileCache.addPersistedFilenameToMap(toBeDeletedFile.getName());
     }
   }
 
   // delete a file on the queue permanently when http response returns success.
   private void deleteFilePermanentlyOnSuccess() {
-    File file = toBeDeletedFileQueue.poll();
-
-    if (!file.exists()) {
+    if (!toBeDeletedFile.exists()) {
       return;
     }
 
-    deleteFile(file);
+    deleteFile(toBeDeletedFile);
   }
 
   private static void deleteFile(File file) {
