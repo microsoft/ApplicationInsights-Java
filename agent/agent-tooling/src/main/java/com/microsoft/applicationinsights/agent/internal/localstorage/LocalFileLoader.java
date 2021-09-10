@@ -117,6 +117,7 @@ public class LocalFileLoader {
       } catch (IOException ex) {
         operationLogger.recordFailure(
             "Fail to rename " + toBeDeletedFile.getName() + " to have a .trn extension.", ex);
+        return;
       }
 
       // add the source filename back to local file cache to be processed later.
