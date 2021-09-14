@@ -57,6 +57,7 @@ public class LocalFileSender implements Runnable {
 
   @Override
   public void run() {
+    // TODO (heya) load all persisted files on disk in one or more batch per batch capacity?
     try {
       ByteBuffer buffer = localFileLoader.loadTelemetriesFromDisk();
       if (buffer != null) {
