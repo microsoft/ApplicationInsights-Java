@@ -64,7 +64,7 @@ Profiler may also be enabled via adding a config section to applicationinsights.
 ```
 {
   "preview": {
-    "profiler: {
+    "profiler": {
       "configPollPeriodSeconds": 60,
       "enabled": true
     }
