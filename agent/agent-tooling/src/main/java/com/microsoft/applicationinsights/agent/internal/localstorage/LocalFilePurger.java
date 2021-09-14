@@ -29,7 +29,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,41 +42,39 @@ public class LocalFilePurger implements Runnable {
   private static final Logger logger = LoggerFactory.getLogger(LocalFilePurger.class);
 
   private final long expiredInterval;
-  private final File folder;
+  private final File[] folders;
 
   public static void startPurging() {
-    startPurging(null, null, null);
+    startPurging(
+        TimeUnit.DAYS.toSeconds(1),
+        TimeUnit.DAYS.toSeconds(2),
+        LocalStorageUtils.getOfflineTelemetryFolder(),
+        LocalStorageUtils.getOfflineStatsbeatFolder());
   }
 
   // this is used by tests to configure purge interval, expired interval and the test folder which
   // files are to be purged.
   static void startPurging(
-      @Nullable Long purgeIntervalSeconds, @Nullable Long expiredIntervalSeconds, File folder) {
-    long interval =
-        purgeIntervalSeconds == null ? TimeUnit.DAYS.toSeconds(1) : purgeIntervalSeconds;
-    long expiredInterval =
-        expiredIntervalSeconds == null ? TimeUnit.DAYS.toSeconds(2) : expiredIntervalSeconds;
-
+      long purgeIntervalSeconds, long expiredIntervalSeconds, File... folders) {
     Executors.newSingleThreadScheduledExecutor(
             ThreadPoolUtils.createDaemonThreadFactory(LocalFilePurger.class))
         .scheduleWithFixedDelay(
-            new LocalFilePurger(expiredInterval, folder), interval, interval, SECONDS);
+            new LocalFilePurger(expiredIntervalSeconds, folders),
+            purgeIntervalSeconds,
+            purgeIntervalSeconds,
+            SECONDS);
   }
 
-  LocalFilePurger(long expiredInterval, File folder) {
+  LocalFilePurger(long expiredInterval, File... folders) {
     this.expiredInterval = expiredInterval;
-    this.folder = folder;
+    this.folders = folders;
   }
 
   @Override
   public void run() {
     // this is used by tests only
-    if (folder != null && folder.exists()) {
+    for (File folder : folders) {
       purgedExpiredFiles(folder);
-    } else {
-      // default is to purge 'telemetry' and 'statsbeat' folders
-      purgedExpiredFiles(LocalStorageUtils.getOfflineTelemetryFolder());
-      purgedExpiredFiles(LocalStorageUtils.getOfflineStatsbeatFolder());
     }
   }
 
