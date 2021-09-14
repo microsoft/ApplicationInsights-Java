@@ -60,6 +60,8 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
 
   private static final String PROCESS_SESSION_ID = "processSessionId";
 
+  private static final String OS_TYPE = "osType";
+
   public DefaultHeartBeatPropertyProvider() {
     defaultFields = new HashSet<>();
     initializeDefaultFields(defaultFields);
@@ -86,6 +88,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
                 hasSetValues = true;
                 break;
               case OS_VERSION:
+              case OS_TYPE:
                 provider.addHeartBeatProperty(fieldName, getOsVersion(), true);
                 hasSetValues = true;
                 break;
@@ -119,6 +122,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
     defaultFields.add(SDK_VERSION);
     defaultFields.add(OS_VERSION);
     defaultFields.add(PROCESS_SESSION_ID);
+    defaultFields.add(OS_TYPE);
   }
 
   /** Returns the JDK version being used by the application. */
