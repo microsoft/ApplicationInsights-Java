@@ -62,12 +62,14 @@ ApplicationInsights UI under the Performance, Profiler, Triggers UI.
 Profiler may also be enabled via adding a config section to applicationinsights.json:
 
 ```
-    preview {
-        profiler {
-            configPollPeriodSeconds: 60,
-            enabled: true
-        }
+{
+  "preview": {
+    "profiler: {
+      "configPollPeriodSeconds": 60,
+      "enabled": true
     }
+  }
+}
 ```
 
 ### Json Configuration Parameters
