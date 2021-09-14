@@ -60,7 +60,7 @@ public class LocalFilePurger implements Runnable {
             ThreadPoolUtils.createDaemonThreadFactory(LocalFilePurger.class))
         .scheduleWithFixedDelay(
             new LocalFilePurger(expiredIntervalSeconds, folders),
-            purgeIntervalSeconds,
+            60,
             purgeIntervalSeconds,
             SECONDS);
   }
@@ -72,7 +72,6 @@ public class LocalFilePurger implements Runnable {
 
   @Override
   public void run() {
-    // this is used by tests only
     for (File folder : folders) {
       purgedExpiredFiles(folder);
     }
