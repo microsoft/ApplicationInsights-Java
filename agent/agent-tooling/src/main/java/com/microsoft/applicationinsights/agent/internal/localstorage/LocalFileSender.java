@@ -59,7 +59,7 @@ public class LocalFileSender implements Runnable {
     // TODO (heya) load all persisted files on disk in one or more batch per batch capacity?
     try {
       LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
-      if (persistedFile != null && persistedFile.rawBytes != null) {
+      if (persistedFile != null) {
         CompletableResultCode resultCode = telemetryChannel.sendRawBytes(persistedFile.rawBytes);
         resultCode.join(30, TimeUnit.SECONDS); // wait max 30 seconds for request to be completed.
         localFileLoader.updateProcessedFileStatus(resultCode.isSuccess(), persistedFile.file);

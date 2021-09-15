@@ -140,8 +140,8 @@ public class LocalFileLoader {
   }
 
   static class PersistedFile {
-    public File file;
-    public ByteBuffer rawBytes;
+    final File file;
+    final ByteBuffer rawBytes;
 
     PersistedFile(File file, ByteBuffer byteBuffer) {
       this.file = file;
