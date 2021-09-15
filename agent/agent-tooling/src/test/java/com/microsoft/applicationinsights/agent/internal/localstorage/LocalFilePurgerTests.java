@@ -21,31 +21,41 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class LocalFileCache {
+import java.io.File;
+import java.nio.ByteBuffer;
+import java.util.Collection;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-  /**
-   * Track a list of active filenames persisted on disk. FIFO (First-In-First-Out) read will avoid
-   * an additional sorting at every read. Caveat: data loss happens when the app crashes. filenames
-   * stored in this queue will be lost forever. There isn't an unique way to identify each java app.
-   * C# uses "User@processName" to identify each app, but Java can't rely on process name since it's
-   * a system property that can be customized via the command line.
-   */
-  private final Queue<String> persistedFilesCache = new ConcurrentLinkedDeque<>();
+public class LocalFilePurgerTests {
 
-  // Track the newly persisted filename to the concurrent hashmap.
-  void addPersistedFilenameToMap(String filename) {
-    persistedFilesCache.add(filename);
-  }
+  @TempDir File tempFolder;
 
-  String poll() {
-    return persistedFilesCache.poll();
-  }
+  @Test
+  public void testPurgedExpiredFiles() throws InterruptedException {
+    String text = "hello world";
+    LocalFileCache cache = new LocalFileCache();
+    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder);
 
-  // only used by tests
-  Queue<String> getPersistedFilesCache() {
-    return persistedFilesCache;
+    // run purge task every second to delete files that are 5 seconds old
+    LocalFilePurger.startPurging(1L, 5L, tempFolder);
+
+    // persist 100 files to disk
+    for (int i = 0; i < 100; i++) {
+      writer.writeToDisk(singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))));
+    }
+
+    Collection<File> files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);
+    assertThat(files.size()).isEqualTo(100);
+
+    Thread.sleep(10000); // wait 10 seconds
+
+    files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);
+    assertThat(files.size()).isEqualTo(0);
   }
 }

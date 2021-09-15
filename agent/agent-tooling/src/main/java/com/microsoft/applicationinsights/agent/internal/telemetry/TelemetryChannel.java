@@ -214,8 +214,7 @@ public class TelemetryChannel {
         .send(request, Context.of(contextKeyValues))
         .subscribe(
             response -> {
-              parseResponseCode(
-                  response.getStatusCode(), byteBuffers, byteBuffers, instrumentationKey);
+              parseResponseCode(response.getStatusCode(), instrumentationKey, byteBuffers);
               LazyHttpClient.consumeResponseBody(response);
             },
             error -> {
@@ -224,7 +223,10 @@ public class TelemetryChannel {
               }
               ExceptionUtils.parseError(
                   error, endpointUrl.toString(), friendlyExceptionThrown, logger);
-              writeToDiskOnFailure(byteBuffers, byteBuffers);
+              // sending raw bytes won't have any instrumentation key
+              if (instrumentationKey != null) {
+                writeToDiskOnFailure(byteBuffers, byteBuffers);
+              }
               result.fail();
             },
             () -> {
@@ -256,17 +258,17 @@ public class TelemetryChannel {
   }
 
   private void parseResponseCode(
-      int statusCode,
-      List<ByteBuffer> byteBuffers,
-      List<ByteBuffer> finalByteBuffers,
-      String instrumentationKey) {
+      int statusCode, String instrumentationKey, List<ByteBuffer> finalByteBuffers) {
     switch (statusCode) {
       case 401: // UNAUTHORIZED
       case 403: // FORBIDDEN
         logger.warn(
             "Failed to send telemetry with status code:{}, please check your credentials",
             statusCode);
-        writeToDiskOnFailure(byteBuffers, finalByteBuffers);
+        // sending raw bytes won't have any instrumentation key
+        if (instrumentationKey != null) {
+          writeToDiskOnFailure(finalByteBuffers, finalByteBuffers);
+        }
         break;
       case 408: // REQUEST TIMEOUT
       case 500: // INTERNAL SERVER ERROR

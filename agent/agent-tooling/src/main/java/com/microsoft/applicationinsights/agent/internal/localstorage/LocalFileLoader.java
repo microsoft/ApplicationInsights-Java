@@ -26,9 +26,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** This class manages loading a list of {@link ByteBuffer} from the disk. */
 public class LocalFileLoader {
@@ -48,17 +48,26 @@ public class LocalFileLoader {
 
   // Load ByteBuffer from persisted files on disk in FIFO order.
   @Nullable
-  ByteBuffer loadTelemetriesFromDisk() {
-    // TODO (heya) how does this load files from disk at startup that were left over from prior
-    //  process?
+  PersistedFile loadTelemetriesFromDisk() {
     String filenameToBeLoaded = localFileCache.poll();
     if (filenameToBeLoaded == null) {
       return null;
     }
 
+    // when reading a file from the disk, loader renames the source file to "*.tmp" to prevent other
+    // threads from processing the same file over and over again. this will prevent same data gets
+    // sent to Application Insights more than once. after reading raw bytes from the .tmp file,
+    // loader will delete the temp file when http
+    // response confirms it is sent successfully; otherwise, temp file will get renamed back to the
+    // source file extension.
     File tempFile;
+    File sourceFile;
     try {
-      File sourceFile = new File(telemetryFolder, filenameToBeLoaded);
+      sourceFile = new File(telemetryFolder, filenameToBeLoaded);
+      if (!sourceFile.exists()) {
+        return null;
+      }
+
       tempFile =
           new File(
               telemetryFolder,
@@ -86,20 +95,57 @@ public class LocalFileLoader {
       return null;
     }
 
-    try {
-      // TODO (heya) backoff and retry delete when it fails.
-      Files.delete(tempFile.toPath());
-    } catch (IOException ex) {
-      // TODO (heya) track deserialization failure via Statsbeat
-      operationLogger.recordFailure("Fail to read telemetry from " + tempFile.getName(), ex);
-      return null;
-    } catch (SecurityException ex) {
-      operationLogger.recordFailure(
-          "Unable to delete " + tempFile.getName() + ". Access is denied.", ex);
-      return null;
+    operationLogger.recordSuccess();
+    return new PersistedFile(tempFile, ByteBuffer.wrap(result));
+  }
+
+  // either delete it permanently on success or add it back to cache to be processed again later on
+  // failure
+  public void updateProcessedFileStatus(boolean success, File file) {
+    if (success) {
+      deleteFilePermanentlyOnSuccess(file);
+    } else {
+      // rename the temp file back to .trn source file extension
+      File sourceFile =
+          new File(telemetryFolder, FilenameUtils.getBaseName(file.getName()) + ".trn");
+      try {
+        FileUtils.moveFile(file, sourceFile);
+      } catch (IOException ex) {
+        operationLogger.recordFailure(
+            "Fail to rename " + file.getName() + " to have a .trn extension.", ex);
+        return;
+      }
+
+      // add the source filename back to local file cache to be processed later.
+      localFileCache.addPersistedFilenameToMap(sourceFile.getName());
+    }
+  }
+
+  // delete a file on the queue permanently when http response returns success.
+  private static void deleteFilePermanentlyOnSuccess(File file) {
+    if (!file.exists()) {
+      return;
     }
 
-    operationLogger.recordSuccess();
-    return ByteBuffer.wrap(result);
+    deleteFile(file);
+  }
+
+  private static void deleteFile(File file) {
+    if (!LocalStorageUtils.deleteFileWithRetries(file)) {
+      // TODO (heya) track file deletion failure via Statsbeat
+      operationLogger.recordFailure("Fail to delete " + file.getName());
+    } else {
+      operationLogger.recordSuccess();
+    }
+  }
+
+  static class PersistedFile {
+    final File file;
+    final ByteBuffer rawBytes;
+
+    PersistedFile(File file, ByteBuffer byteBuffer) {
+      this.file = file;
+      this.rawBytes = byteBuffer;
+    }
   }
 }

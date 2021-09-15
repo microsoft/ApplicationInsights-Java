@@ -47,6 +47,7 @@ import com.microsoft.applicationinsights.agent.internal.legacysdk.RequestNameHan
 import com.microsoft.applicationinsights.agent.internal.legacysdk.RequestTelemetryClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.legacysdk.TelemetryClientClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.legacysdk.WebRequestTrackingFilterClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFilePurger;
 import com.microsoft.applicationinsights.agent.internal.profiler.GcEventMonitor;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilerServiceInitializer;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
@@ -221,6 +222,9 @@ public class AiComponentInstaller implements AgentListener {
 
     // initialize StatsbeatModule
     statsbeatModule.start(telemetryClient, config);
+
+    // start local File purger scheduler task
+    LocalFilePurger.startPurging();
   }
 
   private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(

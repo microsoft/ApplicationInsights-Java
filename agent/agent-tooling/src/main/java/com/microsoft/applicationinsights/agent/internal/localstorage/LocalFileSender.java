@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.localstorage;
 
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryChannel;
-import java.nio.ByteBuffer;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -56,12 +56,13 @@ public class LocalFileSender implements Runnable {
 
   @Override
   public void run() {
-    // TODO (heya) should this loop more aggressively until it reads all telemetry from disk?
-    //  or is it intentional to only send one batch per 30 seconds?
+    // TODO (heya) load all persisted files on disk in one or more batch per batch capacity?
     try {
-      ByteBuffer buffer = localFileLoader.loadTelemetriesFromDisk();
-      if (buffer != null) {
-        telemetryChannel.sendRawBytes(buffer);
+      LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
+      if (persistedFile != null) {
+        CompletableResultCode resultCode = telemetryChannel.sendRawBytes(persistedFile.rawBytes);
+        resultCode.join(30, TimeUnit.SECONDS); // wait max 30 seconds for request to be completed.
+        localFileLoader.updateProcessedFileStatus(resultCode.isSuccess(), persistedFile.file);
       }
     } catch (RuntimeException ex) {
       logger.error(

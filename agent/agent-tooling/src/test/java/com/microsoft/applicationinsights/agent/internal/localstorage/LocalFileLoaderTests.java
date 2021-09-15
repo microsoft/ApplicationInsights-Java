@@ -23,22 +23,36 @@ package com.microsoft.applicationinsights.agent.internal.localstorage;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import com.azure.core.http.HttpClient;
+import com.azure.core.http.HttpPipelineBuilder;
+import com.azure.core.http.HttpRequest;
+import com.azure.core.http.HttpResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.applicationinsights.agent.internal.MockHttpResponse;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryChannel;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.function.Function;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import reactor.core.publisher.Mono;
 
 public class LocalFileLoaderTests {
 
@@ -183,6 +197,91 @@ public class LocalFileLoaderTests {
     }
 
     assertThat(new String(Arrays.copyOf(ungzip, read), UTF_8)).isEqualTo(text);
+  }
+
+  @Test
+  public void testDeleteFilePermanentlyOnSuccess() throws Exception {
+    HttpClient mockedClient = getMockHttpClientSuccess();
+    HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
+    LocalFileCache localFileCache = new LocalFileCache();
+    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder);
+    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder);
+
+    TelemetryChannel telemetryChannel =
+        new TelemetryChannel(
+            pipelineBuilder.build(), new URL("http://foo.bar"), localFileWriter, null);
+
+    // persist 10 files to disk
+    for (int i = 0; i < 10; i++) {
+      localFileWriter.writeToDisk(singletonList(ByteBuffer.wrap("hello world".getBytes(UTF_8))));
+    }
+
+    assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(10);
+
+    Collection<File> files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);
+    assertThat(files.size()).isEqualTo(10);
+
+    int expectedCount = 10;
+
+    // send persisted files one by one and then delete it permanently.
+    for (int i = 0; i < 10; i++) {
+      LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
+      CompletableResultCode completableResultCode =
+          telemetryChannel.sendRawBytes(persistedFile.rawBytes);
+      completableResultCode.join(10, SECONDS);
+      assertThat(completableResultCode.isSuccess()).isEqualTo(true);
+      localFileLoader.updateProcessedFileStatus(true, persistedFile.file);
+
+      // sleep 1 second to wait for delete to complete
+      Thread.sleep(1000);
+
+      files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);
+      assertThat(files.size()).isEqualTo(--expectedCount);
+    }
+
+    assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(0);
+  }
+
+  @Test
+  public void testDeleteFilePermanentlyOnFailure() throws Exception {
+    HttpClient mockedClient = mock(HttpClient.class);
+    HttpRequest mockedRequest = mock(HttpRequest.class);
+    HttpResponse mockedResponse = mock(HttpResponse.class);
+    when(mockedResponse.getStatusCode()).thenReturn(500);
+    when(mockedClient.send(mockedRequest)).thenReturn(Mono.just(mockedResponse));
+    HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
+    LocalFileCache localFileCache = new LocalFileCache();
+
+    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder);
+    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder);
+
+    TelemetryChannel telemetryChannel =
+        new TelemetryChannel(
+            pipelineBuilder.build(), new URL("http://foo.bar"), localFileWriter, null);
+
+    // persist 10 files to disk
+    for (int i = 0; i < 10; i++) {
+      localFileWriter.writeToDisk(singletonList(ByteBuffer.wrap("hello world".getBytes(UTF_8))));
+    }
+
+    assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(10);
+
+    Collection<File> files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);
+    assertThat(files.size()).isEqualTo(10);
+
+    // fail to send persisted files and expect them to be kept on disk
+    for (int i = 0; i < 10; i++) {
+      LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
+      CompletableResultCode completableResultCode =
+          telemetryChannel.sendRawBytes(persistedFile.rawBytes);
+      completableResultCode.join(10, SECONDS);
+      assertThat(completableResultCode.isSuccess()).isEqualTo(false);
+      localFileLoader.updateProcessedFileStatus(false, persistedFile.file);
+    }
+
+    files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);
+    assertThat(files.size()).isEqualTo(10);
+    assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(10);
   }
 
   private static void verifyTelemetryName(int index, String actualName) {
@@ -362,9 +461,29 @@ public class LocalFileLoaderTests {
   }
 
   private static byte[] readTelemetriesFromDiskToBytes(LocalFileLoader localFileLoader) {
-    ByteBuffer buffer = localFileLoader.loadTelemetriesFromDisk();
-    byte[] bytes = new byte[buffer.remaining()];
-    buffer.get(bytes);
+    LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
+    byte[] bytes = new byte[persistedFile.rawBytes.remaining()];
+    persistedFile.rawBytes.get(bytes);
     return bytes;
+  }
+
+  private static HttpClient getMockHttpClientSuccess() {
+    return new MockHttpClient(
+        request -> {
+          return Mono.just(new MockHttpResponse(request, 200));
+        });
+  }
+
+  private static class MockHttpClient implements HttpClient {
+    private final Function<HttpRequest, Mono<HttpResponse>> handler;
+
+    MockHttpClient(Function<HttpRequest, Mono<HttpResponse>> handler) {
+      this.handler = handler;
+    }
+
+    @Override
+    public Mono<HttpResponse> send(HttpRequest httpRequest) {
+      return handler.apply(httpRequest);
+    }
   }
 }
