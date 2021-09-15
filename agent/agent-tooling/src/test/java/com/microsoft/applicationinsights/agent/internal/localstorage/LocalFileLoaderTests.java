@@ -225,11 +225,12 @@ public class LocalFileLoaderTests {
 
     // send persisted files one by one and then delete it permanently.
     for (int i = 0; i < 10; i++) {
-      ByteBuffer byteBuffer = localFileLoader.loadTelemetriesFromDisk();
-      CompletableResultCode completableResultCode = telemetryChannel.sendRawBytes(byteBuffer);
+      LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
+      CompletableResultCode completableResultCode =
+          telemetryChannel.sendRawBytes(persistedFile.rawBytes);
       completableResultCode.join(10, SECONDS);
       assertThat(completableResultCode.isSuccess()).isEqualTo(true);
-      localFileLoader.updateProcessedFileStatus(true);
+      localFileLoader.updateProcessedFileStatus(true, persistedFile.file);
 
       // sleep 1 second to wait for delete to complete
       Thread.sleep(1000);
@@ -270,11 +271,12 @@ public class LocalFileLoaderTests {
 
     // fail to send persisted files and expect them to be kept on disk
     for (int i = 0; i < 10; i++) {
-      ByteBuffer byteBuffer = localFileLoader.loadTelemetriesFromDisk();
-      CompletableResultCode completableResultCode = telemetryChannel.sendRawBytes(byteBuffer);
+      LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
+      CompletableResultCode completableResultCode =
+          telemetryChannel.sendRawBytes(persistedFile.rawBytes);
       completableResultCode.join(10, SECONDS);
       assertThat(completableResultCode.isSuccess()).isEqualTo(false);
-      localFileLoader.updateProcessedFileStatus(false);
+      localFileLoader.updateProcessedFileStatus(false, persistedFile.file);
     }
 
     files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);
@@ -459,9 +461,9 @@ public class LocalFileLoaderTests {
   }
 
   private static byte[] readTelemetriesFromDiskToBytes(LocalFileLoader localFileLoader) {
-    ByteBuffer buffer = localFileLoader.loadTelemetriesFromDisk();
-    byte[] bytes = new byte[buffer.remaining()];
-    buffer.get(bytes);
+    LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
+    byte[] bytes = new byte[persistedFile.rawBytes.remaining()];
+    persistedFile.rawBytes.get(bytes);
     return bytes;
   }
 

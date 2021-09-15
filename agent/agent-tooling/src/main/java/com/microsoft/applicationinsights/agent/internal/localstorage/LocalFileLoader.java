@@ -41,8 +41,6 @@ public class LocalFileLoader {
   private static final OperationLogger operationLogger =
       new OperationLogger(LocalFileLoader.class, "Loading telemetry from disk");
 
-  @Nullable private File toBeDeletedFile;
-
   public LocalFileLoader(LocalFileCache localFileCache, File telemetryFolder) {
     this.localFileCache = localFileCache;
     this.telemetryFolder = telemetryFolder;
@@ -50,7 +48,7 @@ public class LocalFileLoader {
 
   // Load ByteBuffer from persisted files on disk in FIFO order.
   @Nullable
-  ByteBuffer loadTelemetriesFromDisk() {
+  PersistedFile loadTelemetriesFromDisk() {
     String filenameToBeLoaded = localFileCache.poll();
     if (filenameToBeLoaded == null) {
       return null;
@@ -97,26 +95,24 @@ public class LocalFileLoader {
       return null;
     }
 
-    // mark source file to be deleted when it's sent successfully.
-    toBeDeletedFile = tempFile;
     operationLogger.recordSuccess();
-    return ByteBuffer.wrap(result);
+    return new PersistedFile(tempFile, ByteBuffer.wrap(result));
   }
 
   // either delete it permanently on success or add it back to cache to be processed again later on
   // failure
-  public void updateProcessedFileStatus(boolean success) {
+  public void updateProcessedFileStatus(boolean success, File file) {
     if (success) {
-      deleteFilePermanentlyOnSuccess();
+      deleteFilePermanentlyOnSuccess(file);
     } else {
       // rename the temp file back to .trn source file extension
       File sourceFile =
-          new File(telemetryFolder, FilenameUtils.getBaseName(toBeDeletedFile.getName()) + ".trn");
+          new File(telemetryFolder, FilenameUtils.getBaseName(file.getName()) + ".trn");
       try {
-        FileUtils.moveFile(toBeDeletedFile, sourceFile);
+        FileUtils.moveFile(file, sourceFile);
       } catch (IOException ex) {
         operationLogger.recordFailure(
-            "Fail to rename " + toBeDeletedFile.getName() + " to have a .trn extension.", ex);
+            "Fail to rename " + file.getName() + " to have a .trn extension.", ex);
         return;
       }
 
@@ -126,12 +122,12 @@ public class LocalFileLoader {
   }
 
   // delete a file on the queue permanently when http response returns success.
-  private void deleteFilePermanentlyOnSuccess() {
-    if (!toBeDeletedFile.exists()) {
+  private static void deleteFilePermanentlyOnSuccess(File file) {
+    if (!file.exists()) {
       return;
     }
 
-    deleteFile(toBeDeletedFile);
+    deleteFile(file);
   }
 
   private static void deleteFile(File file) {
@@ -140,6 +136,16 @@ public class LocalFileLoader {
       operationLogger.recordFailure("Fail to delete " + file.getName());
     } else {
       operationLogger.recordSuccess();
+    }
+  }
+
+  static class PersistedFile {
+    public File file;
+    public ByteBuffer rawBytes;
+
+    PersistedFile(File file, ByteBuffer byteBuffer) {
+      this.file = file;
+      this.rawBytes = byteBuffer;
     }
   }
 }
