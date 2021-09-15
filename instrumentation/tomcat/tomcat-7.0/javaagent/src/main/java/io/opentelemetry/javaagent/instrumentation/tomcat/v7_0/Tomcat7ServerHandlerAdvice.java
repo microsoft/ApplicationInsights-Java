@@ -9,6 +9,7 @@ import static io.opentelemetry.javaagent.instrumentation.tomcat.v7_0.Tomcat7Sing
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import net.bytebuddy.asm.Advice;
 import org.apache.coyote.Request;
@@ -27,6 +28,11 @@ public class Tomcat7ServerHandlerAdvice {
     Context parentContext = Java8BytecodeBridge.currentContext();
     if (!helper().shouldStart(parentContext, request)) {
       return;
+    }
+
+    String appId = AiAppId.getAppId();
+    if (!appId.isEmpty()) {
+      response.setHeader(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
     }
 
     context = helper().start(parentContext, request);

@@ -9,6 +9,7 @@ import static io.opentelemetry.api.trace.SpanKind.CLIENT;
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NetTransportValues.IP_TCP;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanKind;
@@ -32,6 +33,9 @@ public abstract class HttpClientTracer<REQUEST, CARRIER, RESPONSE> extends BaseT
   public static final String DEFAULT_SPAN_NAME = "HTTP request";
 
   protected static final String USER_AGENT = "User-Agent";
+
+  private static final AttributeKey<String> SPAN_TARGET_APP_ID_ATTRIBUTE_KEY =
+      AttributeKey.stringKey("applicationinsights.internal.target_app_id");
 
   protected final NetPeerAttributes netPeerAttributes;
 
@@ -217,7 +221,7 @@ public abstract class HttpClientTracer<REQUEST, CARRIER, RESPONSE> extends BaseT
           span.setStatus(statusCode);
         }
       }
-      final String responseHeader = responseHeader(response, AiAppId.RESPONSE_HEADER_NAME);
+      String responseHeader = responseHeader(response, AiAppId.RESPONSE_HEADER_NAME);
       setTargetAppId(span, responseHeader);
     }
   }
@@ -234,11 +238,11 @@ public abstract class HttpClientTracer<REQUEST, CARRIER, RESPONSE> extends BaseT
     if (responseHeader == null) {
       return;
     }
-    final int index = responseHeader.indexOf('=');
+    int index = responseHeader.indexOf('=');
     if (index == -1) {
       return;
     }
-    final String targetAppId = responseHeader.substring(index + 1);
-    span.setAttribute(AiAppId.SPAN_TARGET_APP_ID_ATTRIBUTE_NAME, targetAppId);
+    String targetAppId = responseHeader.substring(index + 1);
+    span.setAttribute(SPAN_TARGET_APP_ID_ATTRIBUTE_KEY, targetAppId);
   }
 }

@@ -9,6 +9,7 @@ import static io.opentelemetry.javaagent.instrumentation.servlet.v5_0.Servlet5Si
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.instrumentation.api.servlet.AppServerBridge;
 import io.opentelemetry.instrumentation.api.servlet.MappingResolver;
 import io.opentelemetry.instrumentation.api.tracer.ServerSpan;
@@ -46,6 +47,7 @@ public class JakartaServletServiceAdvice {
     }
 
     HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+    HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 
     boolean servlet = servletOrFilter instanceof Servlet;
     MappingResolver mappingResolver;
@@ -89,6 +91,11 @@ public class JakartaServletServiceAdvice {
 
     if (!helper().shouldStart(currentContext, requestContext)) {
       return;
+    }
+
+    String appId = AiAppId.getAppId();
+    if (!appId.isEmpty()) {
+      httpServletResponse.setHeader(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
     }
 
     context = helper().start(currentContext, requestContext, servlet);

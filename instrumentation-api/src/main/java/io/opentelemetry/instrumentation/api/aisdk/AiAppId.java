@@ -5,19 +5,14 @@
 
 package io.opentelemetry.instrumentation.api.aisdk;
 
-public class AiAppId {
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
-  // forward propagation of appId
-  public static final String TRACESTATE_KEY = "az";
-  public static final String SPAN_SOURCE_APP_ID_ATTRIBUTE_NAME =
-      "applicationinsights.internal.source_app_id";
+public class AiAppId {
 
   // backwards propagation of appId
   public static final String RESPONSE_HEADER_NAME = "Request-Context";
-  public static final String SPAN_TARGET_APP_ID_ATTRIBUTE_NAME =
-      "applicationinsights.internal.target_app_id";
 
-  private static volatile Supplier supplier;
+  @MonotonicNonNull private static volatile Supplier supplier;
 
   static {
     String testingAppId = System.getProperty("ai.internal.testing.appId");
