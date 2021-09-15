@@ -7,7 +7,7 @@ package io.opentelemetry.javaagent.instrumentation.jetty.httpclient.v9_2;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
-import io.opentelemetry.instrumentation.api.instrumenter.appid.AppIdAttributeExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.appid.TargetAppIdAttributeExtractor;
 import io.opentelemetry.instrumentation.jetty.httpclient.v9_2.internal.JettyClientInstrumenterBuilder;
 import io.opentelemetry.instrumentation.jetty.httpclient.v9_2.internal.JettyHttpClientNetAttributesExtractor;
 import io.opentelemetry.javaagent.instrumentation.api.instrumenter.PeerServiceAttributesExtractor;
@@ -30,7 +30,7 @@ public class JettyHttpClientSingletons {
         builder
             .addAttributeExtractor(peerServiceAttributesExtractor)
             .addAttributeExtractor(
-                new AppIdAttributeExtractor<>(
+                new TargetAppIdAttributeExtractor<>(
                     (response, headerName) -> response.getHeaders().get(headerName)))
             .build();
   }
