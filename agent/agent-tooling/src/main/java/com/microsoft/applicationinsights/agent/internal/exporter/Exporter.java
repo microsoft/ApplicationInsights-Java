@@ -573,7 +573,13 @@ public class Exporter implements SpanExporter {
     String dbStatement = attributes.get(SemanticAttributes.DB_STATEMENT);
     String type;
     if (SQL_DB_SYSTEMS.contains(dbSystem)) {
-      type = "SQL";
+      if (dbSystem.equals(SemanticAttributes.DbSystemValues.MYSQL)) {
+        type = "mysql"; // this has special icon in portal
+      } else if (dbSystem.equals(SemanticAttributes.DbSystemValues.POSTGRESQL)) {
+        type = "postgresql"; // this has special icon in portal
+      } else {
+        type = "SQL";
+      }
       // keeping existing behavior that was release in 3.0.0 for now
       // not going with new jdbc instrumentation span name of
       // "<db.operation> <db.name>.<db.sql.table>" for now just in case this behavior is reversed

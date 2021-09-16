@@ -172,7 +172,7 @@ public class JdbcTest extends AiSmokeTest {
 
     assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getName());
     assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getData());
-    assertEquals("SQL", telemetry.rdd1.getType());
+    assertEquals("mysql", telemetry.rdd1.getType());
     // not the best test, because this is both the db.name and db.system
     assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+/mysql"));
     assertTrue(telemetry.rdd1.getProperties().isEmpty());
@@ -193,7 +193,7 @@ public class JdbcTest extends AiSmokeTest {
 
     assertEquals("select * from abc", telemetry.rdd1.getName());
     assertEquals("select * from abc", telemetry.rdd1.getData());
-    assertEquals("SQL", telemetry.rdd1.getType());
+    assertEquals("mysql", telemetry.rdd1.getType());
     // not the best test, because this is both the db.name and db.system
     assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+/mysql"));
     assertTrue(telemetry.rdd1.getProperties().isEmpty());
@@ -212,7 +212,7 @@ public class JdbcTest extends AiSmokeTest {
 
     assertTrue(telemetry.rdd1.getName().startsWith("select * from abc where xyz = ?"));
     assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getData());
-    assertEquals("SQL", telemetry.rdd1.getType());
+    assertEquals("postgresql", telemetry.rdd1.getType());
     // not the best test, because this is both the db.name and db.system
     assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+/postgres"));
     assertTrue(telemetry.rdd1.getProperties().isEmpty());
@@ -231,7 +231,7 @@ public class JdbcTest extends AiSmokeTest {
 
     assertTrue(telemetry.rdd1.getName().startsWith("select * from abc"));
     assertEquals("select * from abc", telemetry.rdd1.getData());
-    assertEquals("SQL", telemetry.rdd1.getType());
+    assertEquals("postgresql", telemetry.rdd1.getType());
     // not the best test, because this is both the db.name and db.system
     assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+/postgres"));
     assertTrue(telemetry.rdd1.getProperties().isEmpty());
