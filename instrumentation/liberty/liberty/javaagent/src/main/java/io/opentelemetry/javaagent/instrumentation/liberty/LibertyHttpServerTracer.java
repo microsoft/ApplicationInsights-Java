@@ -6,6 +6,7 @@
 package io.opentelemetry.javaagent.instrumentation.liberty;
 
 import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.api.servlet.AppServerBridge;
 import io.opentelemetry.instrumentation.servlet.v3_0.Servlet3HttpServerTracer;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,6 +20,12 @@ public class LibertyHttpServerTracer extends Servlet3HttpServerTracer {
 
   public Context startSpan(HttpServletRequest request, HttpServletResponse response) {
     return startSpan(request, response, "HTTP " + request.getMethod(), /* servlet= */ false);
+  }
+
+  @Override
+  protected Context customizeContext(Context context, HttpServletRequest httpServletRequest) {
+    context = super.customizeContext(context, httpServletRequest);
+    return AppServerBridge.init(context);
   }
 
   @Override

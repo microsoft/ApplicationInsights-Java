@@ -3,12 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import static io.opentelemetry.api.trace.SpanKind.CONSUMER
-import static io.opentelemetry.api.trace.SpanKind.PRODUCER
-
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.TimeUnit
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
@@ -16,6 +11,12 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.listener.KafkaMessageListenerContainer
 import org.springframework.kafka.listener.MessageListener
+
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
+
+import static io.opentelemetry.api.trace.SpanKind.CONSUMER
+import static io.opentelemetry.api.trace.SpanKind.PRODUCER
 
 class KafkaClientPropagationDisabledTest extends KafkaClientBaseTest {
 
@@ -67,11 +68,23 @@ class KafkaClientPropagationDisabledTest extends KafkaClientBaseTest {
           }
         }
       }
-      trace(1, 1) {
+      trace(1, 2) {
         span(0) {
-          name SHARED_TOPIC + " process"
+          name SHARED_TOPIC + " receive"
           kind CONSUMER
           hasNoParent()
+          attributes {
+            "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
+            "${SemanticAttributes.MESSAGING_DESTINATION.key}" SHARED_TOPIC
+            "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" "topic"
+            "${SemanticAttributes.MESSAGING_OPERATION.key}" "receive"
+          }
+        }
+        span(1) {
+          name SHARED_TOPIC + " process"
+          kind CONSUMER
+          childOf span(0)
+          hasNoLinks()
           attributes {
             "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
             "${SemanticAttributes.MESSAGING_DESTINATION.key}" SHARED_TOPIC

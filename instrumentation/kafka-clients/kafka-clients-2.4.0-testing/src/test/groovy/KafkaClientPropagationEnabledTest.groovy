@@ -3,13 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import static io.opentelemetry.api.trace.SpanKind.CONSUMER
-import static io.opentelemetry.api.trace.SpanKind.PRODUCER
-
-import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.sdk.trace.data.SpanData
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.TimeUnit
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -24,6 +19,13 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.listener.KafkaMessageListenerContainer
 import org.springframework.kafka.listener.MessageListener
 import org.springframework.kafka.test.utils.KafkaTestUtils
+
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
+
+import static io.opentelemetry.api.trace.SpanKind.CONSUMER
+import static io.opentelemetry.api.trace.SpanKind.INTERNAL
+import static io.opentelemetry.api.trace.SpanKind.PRODUCER
 
 class KafkaClientPropagationEnabledTest extends KafkaClientBaseTest {
 
@@ -80,11 +82,15 @@ class KafkaClientPropagationEnabledTest extends KafkaClientBaseTest {
     received.value() == greeting
     received.key() == null
 
-    assertTraces(1) {
-      trace(0, 4) {
+    assertTraces(2) {
+      traces.sort(orderByRootSpanKind(INTERNAL, CONSUMER))
+
+      SpanData producerSpan
+
+      trace(0, 3) {
         span(0) {
           name "parent"
-          kind SpanKind.INTERNAL
+          kind INTERNAL
           hasNoParent()
         }
         span(1) {
@@ -98,9 +104,30 @@ class KafkaClientPropagationEnabledTest extends KafkaClientBaseTest {
           }
         }
         span(2) {
+          name "producer callback"
+          kind INTERNAL
+          childOf span(0)
+        }
+
+        producerSpan = span(1)
+      }
+      trace(1, 2) {
+        span(0) {
+          name SHARED_TOPIC + " receive"
+          kind CONSUMER
+          hasNoParent()
+          attributes {
+            "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
+            "${SemanticAttributes.MESSAGING_DESTINATION.key}" SHARED_TOPIC
+            "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" "topic"
+            "${SemanticAttributes.MESSAGING_OPERATION.key}" "receive"
+          }
+        }
+        span(1) {
           name SHARED_TOPIC + " process"
           kind CONSUMER
-          childOf span(1)
+          childOf span(0)
+          hasLink producerSpan
           attributes {
             "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
             "${SemanticAttributes.MESSAGING_DESTINATION.key}" SHARED_TOPIC
@@ -111,11 +138,6 @@ class KafkaClientPropagationEnabledTest extends KafkaClientBaseTest {
             "kafka.offset" 0
             "kafka.record.queue_time_ms" { it >= 0 }
           }
-        }
-        span(3) {
-          name "producer callback"
-          kind SpanKind.INTERNAL
-          childOf span(0)
         }
       }
     }
@@ -176,11 +198,15 @@ class KafkaClientPropagationEnabledTest extends KafkaClientBaseTest {
     received.value() == greeting
     received.key() == null
 
-    assertTraces(1) {
-      trace(0, 4) {
+    assertTraces(2) {
+      traces.sort(orderByRootSpanKind(INTERNAL, CONSUMER))
+
+      SpanData producerSpan
+
+      trace(0, 3) {
         span(0) {
           name "parent"
-          kind SpanKind.INTERNAL
+          kind INTERNAL
           hasNoParent()
         }
         span(1) {
@@ -194,9 +220,30 @@ class KafkaClientPropagationEnabledTest extends KafkaClientBaseTest {
           }
         }
         span(2) {
+          name "producer callback"
+          kind INTERNAL
+          childOf span(0)
+        }
+
+        producerSpan = span(1)
+      }
+      trace(1, 2) {
+        span(0) {
+          name SHARED_TOPIC + " receive"
+          kind CONSUMER
+          hasNoParent()
+          attributes {
+            "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
+            "${SemanticAttributes.MESSAGING_DESTINATION.key}" SHARED_TOPIC
+            "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" "topic"
+            "${SemanticAttributes.MESSAGING_OPERATION.key}" "receive"
+          }
+        }
+        span(1) {
           name SHARED_TOPIC + " process"
           kind CONSUMER
-          childOf span(1)
+          childOf span(0)
+          hasLink producerSpan
           attributes {
             "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
             "${SemanticAttributes.MESSAGING_DESTINATION.key}" SHARED_TOPIC
@@ -207,11 +254,6 @@ class KafkaClientPropagationEnabledTest extends KafkaClientBaseTest {
             "kafka.offset" 0
             "kafka.record.queue_time_ms" { it >= 0 }
           }
-        }
-        span(3) {
-          name "producer callback"
-          kind SpanKind.INTERNAL
-          childOf span(0)
         }
       }
     }
@@ -265,9 +307,12 @@ class KafkaClientPropagationEnabledTest extends KafkaClientBaseTest {
     received.value() == null
     received.key() == null
 
-    assertTraces(1) {
-      trace(0, 2) {
-        // PRODUCER span 0
+    assertTraces(2) {
+      traces.sort(orderByRootSpanKind(PRODUCER, CONSUMER))
+
+      SpanData producerSpan
+
+      trace(0, 1) {
         span(0) {
           name SHARED_TOPIC + " send"
           kind PRODUCER
@@ -279,11 +324,26 @@ class KafkaClientPropagationEnabledTest extends KafkaClientBaseTest {
             "${SemanticAttributes.MESSAGING_KAFKA_TOMBSTONE.key}" true
           }
         }
-        // CONSUMER span 0
+
+        producerSpan = span(0)
+      }
+      trace(1, 2) {
+        span(0) {
+          name SHARED_TOPIC + " receive"
+          kind CONSUMER
+          hasNoParent()
+          attributes {
+            "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
+            "${SemanticAttributes.MESSAGING_DESTINATION.key}" SHARED_TOPIC
+            "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" "topic"
+            "${SemanticAttributes.MESSAGING_OPERATION.key}" "receive"
+          }
+        }
         span(1) {
           name SHARED_TOPIC + " process"
           kind CONSUMER
           childOf span(0)
+          hasLink producerSpan
           attributes {
             "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
             "${SemanticAttributes.MESSAGING_DESTINATION.key}" SHARED_TOPIC
@@ -339,8 +399,12 @@ class KafkaClientPropagationEnabledTest extends KafkaClientBaseTest {
     first.value() == greeting
     first.key() == null
 
-    assertTraces(1) {
-      trace(0, 2) {
+    assertTraces(2) {
+      traces.sort(orderByRootSpanKind(PRODUCER, CONSUMER))
+
+      SpanData producerSpan
+
+      trace(0, 1) {
         span(0) {
           name SHARED_TOPIC + " send"
           kind PRODUCER
@@ -352,10 +416,26 @@ class KafkaClientPropagationEnabledTest extends KafkaClientBaseTest {
             "${SemanticAttributes.MESSAGING_KAFKA_PARTITION.key}" { it >= 0 }
           }
         }
+
+        producerSpan = span(0)
+      }
+      trace(1, 2) {
+        span(0) {
+          name SHARED_TOPIC + " receive"
+          kind CONSUMER
+          hasNoParent()
+          attributes {
+            "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
+            "${SemanticAttributes.MESSAGING_DESTINATION.key}" SHARED_TOPIC
+            "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" "topic"
+            "${SemanticAttributes.MESSAGING_OPERATION.key}" "receive"
+          }
+        }
         span(1) {
           name SHARED_TOPIC + " process"
           kind CONSUMER
           childOf span(0)
+          hasLink producerSpan
           attributes {
             "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
             "${SemanticAttributes.MESSAGING_DESTINATION.key}" SHARED_TOPIC

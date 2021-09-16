@@ -5,20 +5,26 @@
 
 package io.opentelemetry.smoketest
 
-import static java.util.stream.Collectors.toSet
-
 import io.opentelemetry.api.trace.TraceId
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest
-import java.util.jar.Attributes
-import java.util.jar.JarFile
 import spock.lang.IgnoreIf
 import spock.lang.Unroll
+
+import java.util.jar.Attributes
+import java.util.jar.JarFile
+
+import static java.util.stream.Collectors.toSet
 
 @IgnoreIf({ os.windows })
 class SpringBootSmokeTest extends SmokeTest {
 
   protected String getTargetImage(String jdk) {
     "ghcr.io/open-telemetry/java-test-containers:smoke-springboot-jdk$jdk-20210218.577304949"
+  }
+
+  @Override
+  protected Map<String, String> getExtraEnv() {
+    return Collections.singletonMap("OTEL_METRICS_EXPORTER", "otlp")
   }
 
   @Unroll
