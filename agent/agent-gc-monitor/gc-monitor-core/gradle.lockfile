@@ -1,7 +1,7 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-com.google.errorprone:error_prone_annotations:2.7.1=runtimeClasspath
+com.google.errorprone:error_prone_annotations:2.9.0=runtimeClasspath
 com.google.guava:guava-bom:30.1.1-jre=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.5.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry:opentelemetry-bom-alpha:1.5.0-alpha=runtimeClasspath

@@ -41,6 +41,7 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
@@ -79,10 +80,8 @@ public class Exporter implements SpanExporter {
   private static final AttributeKey<Boolean> AI_LOG_KEY =
       AttributeKey.booleanKey("applicationinsights.internal.log");
 
-  private static final AttributeKey<String> AI_SPAN_SOURCE_APP_ID_KEY =
-      AttributeKey.stringKey(AiAppId.SPAN_SOURCE_APP_ID_ATTRIBUTE_NAME);
   private static final AttributeKey<String> AI_SPAN_TARGET_APP_ID_KEY =
-      AttributeKey.stringKey(AiAppId.SPAN_TARGET_APP_ID_ATTRIBUTE_NAME);
+      AttributeKey.stringKey("applicationinsights.internal.target_app_id");
 
   public static final AttributeKey<String> AI_LEGACY_PARENT_ID_KEY =
       AttributeKey.stringKey("applicationinsights.internal.legacy_parent_id");
@@ -741,7 +740,7 @@ public class Exporter implements SpanExporter {
       telemetry.getTags().put(ContextTagKeys.AI_LOCATION_IP.toString(), locationIp);
     }
 
-    data.setSource(getSource(attributes));
+    data.setSource(getSource(attributes, span.getSpanContext()));
 
     if (isAzureQueue(attributes)) {
       // TODO(trask): for batch consumer, enqueuedTime should be the average of this attribute
@@ -766,14 +765,16 @@ public class Exporter implements SpanExporter {
   }
 
   @Nullable
-  private static String getSource(Attributes attributes) {
+  private static String getSource(Attributes attributes, SpanContext spanContext) {
     // this is only used by the 2.x web interop bridge
     // for ThreadContext.getRequestTelemetryContext().getRequestTelemetry().setSource()
     String source = attributes.get(AI_SPAN_SOURCE_KEY);
     if (source != null) {
       return source;
     }
-    source = attributes.get(AI_SPAN_SOURCE_APP_ID_KEY);
+
+    source = spanContext.getTraceState().get("az");
+
     if (source != null && !AiAppId.getAppId().equals(source)) {
       return source;
     }
