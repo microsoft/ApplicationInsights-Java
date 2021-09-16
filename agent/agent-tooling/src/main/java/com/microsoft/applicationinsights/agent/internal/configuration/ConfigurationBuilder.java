@@ -400,7 +400,8 @@ public class ConfigurationBuilder {
             APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED, config.preview.liveMetrics.enabled);
 
     config.preview.statsbeat.disabled =
-        overlayWithEnvVar(APPLICATIONINSIGHTS_STATSBEAT_DISABLED, config.preview.statsbeat.disabled);
+        overlayWithEnvVar(
+            APPLICATIONINSIGHTS_STATSBEAT_DISABLED, config.preview.statsbeat.disabled);
 
     loadLogCaptureEnvVar(config);
     loadJmxMetricsEnvVar(config);
