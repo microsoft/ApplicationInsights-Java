@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated
 public abstract class ServletHttpServerTracer<REQUEST, RESPONSE>
     extends HttpServerTracer<REQUEST, RESPONSE, REQUEST, REQUEST> {
 
@@ -37,7 +38,7 @@ public abstract class ServletHttpServerTracer<REQUEST, RESPONSE>
   public static final String ASYNC_LISTENER_RESPONSE_ATTRIBUTE =
       ServletHttpServerTracer.class.getName() + ".AsyncListenerResponse";
 
-  private static final boolean CAPTURE_EXPERIMENTAL_SPAN_ATTRIBUTES =
+  public static final boolean CAPTURE_EXPERIMENTAL_SPAN_ATTRIBUTES =
       Config.get().getBoolean("otel.instrumentation.servlet.experimental-span-attributes", false);
 
   private final ServletAccessor<REQUEST, RESPONSE> accessor;
@@ -235,14 +236,6 @@ public abstract class ServletHttpServerTracer<REQUEST, RESPONSE>
     }
 
     return context;
-  }
-
-  public void updateSpanName(REQUEST request) {
-    updateSpanName(getServerSpan(request), request);
-  }
-
-  private void updateSpanName(Span span, REQUEST request) {
-    span.updateName(getSpanName(request));
   }
 
   public void onTimeout(Context context, long timeout) {

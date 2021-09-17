@@ -3,17 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import static io.opentelemetry.api.trace.SpanKind.CONSUMER
-import static io.opentelemetry.api.trace.SpanKind.PRODUCER
-
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.propagation.TextMapGetter
 import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
+import io.opentelemetry.sdk.trace.data.SpanData
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.TimeUnit
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
@@ -30,6 +26,12 @@ import org.springframework.kafka.test.rule.KafkaEmbedded
 import org.springframework.kafka.test.utils.ContainerTestUtils
 import org.springframework.kafka.test.utils.KafkaTestUtils
 import spock.lang.Shared
+
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
+
+import static io.opentelemetry.api.trace.SpanKind.CONSUMER
+import static io.opentelemetry.api.trace.SpanKind.PRODUCER
 
 class KafkaStreamsTest extends AgentInstrumentationSpecification {
 
@@ -140,9 +142,16 @@ class KafkaStreamsTest extends AgentInstrumentationSpecification {
     received.value() == greeting.toLowerCase()
     received.key() == null
 
-    assertTraces(1) {
-      trace(0, 5) {
-        // PRODUCER span 0
+    assertTraces(3) {
+      traces.sort(orderByRootSpanName(
+        STREAM_PENDING + " send",
+        STREAM_PENDING + " receive",
+        STREAM_PROCESSED + " receive"))
+
+      SpanData producerPending, producerProcessed
+
+      trace(0, 3) {
+        // kafka-clients PRODUCER
         span(0) {
           name STREAM_PENDING + " send"
           kind PRODUCER
@@ -153,24 +162,8 @@ class KafkaStreamsTest extends AgentInstrumentationSpecification {
             "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" "topic"
           }
         }
-        // CONSUMER span 0
+        // kafka-stream CONSUMER
         span(1) {
-          name STREAM_PENDING + " process"
-          kind CONSUMER
-          childOf span(0)
-          attributes {
-            "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
-            "${SemanticAttributes.MESSAGING_DESTINATION.key}" STREAM_PENDING
-            "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" "topic"
-            "${SemanticAttributes.MESSAGING_OPERATION.key}" "process"
-            "${SemanticAttributes.MESSAGING_MESSAGE_PAYLOAD_SIZE_BYTES.key}" Long
-            "${SemanticAttributes.MESSAGING_KAFKA_PARTITION.key}" { it >= 0 }
-            "kafka.offset" 0
-            "kafka.record.queue_time_ms" { it >= 0 }
-          }
-        }
-        // STREAMING span 1
-        span(2) {
           name STREAM_PENDING + " process"
           kind CONSUMER
           childOf span(0)
@@ -184,22 +177,71 @@ class KafkaStreamsTest extends AgentInstrumentationSpecification {
             "asdf" "testing"
           }
         }
-        // STREAMING span 0
-        span(3) {
+        // kafka-stream PRODUCER
+        span(2) {
           name STREAM_PROCESSED + " send"
           kind PRODUCER
-          childOf span(2)
+          childOf span(1)
           attributes {
             "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
             "${SemanticAttributes.MESSAGING_DESTINATION.key}" STREAM_PROCESSED
             "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" "topic"
           }
         }
-        // CONSUMER span 0
-        span(4) {
+
+        producerPending = span(0)
+        producerProcessed = span(2)
+      }
+      trace(1, 2) {
+        // kafka-clients CONSUMER receive
+        span(0) {
+          name STREAM_PENDING + " receive"
+          kind CONSUMER
+          hasNoParent()
+          attributes {
+            "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
+            "${SemanticAttributes.MESSAGING_DESTINATION.key}" STREAM_PENDING
+            "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" "topic"
+            "${SemanticAttributes.MESSAGING_OPERATION.key}" "receive"
+          }
+        }
+        // kafka-clients CONSUMER process
+        span(1) {
+          name STREAM_PENDING + " process"
+          kind CONSUMER
+          childOf span(0)
+          hasLink producerPending
+          attributes {
+            "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
+            "${SemanticAttributes.MESSAGING_DESTINATION.key}" STREAM_PENDING
+            "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" "topic"
+            "${SemanticAttributes.MESSAGING_OPERATION.key}" "process"
+            "${SemanticAttributes.MESSAGING_MESSAGE_PAYLOAD_SIZE_BYTES.key}" Long
+            "${SemanticAttributes.MESSAGING_KAFKA_PARTITION.key}" { it >= 0 }
+            "kafka.offset" 0
+            "kafka.record.queue_time_ms" { it >= 0 }
+          }
+        }
+      }
+      trace(2, 2) {
+        // kafka-clients CONSUMER receive
+        span(0) {
+          name STREAM_PROCESSED + " receive"
+          kind CONSUMER
+          hasNoParent()
+          attributes {
+            "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
+            "${SemanticAttributes.MESSAGING_DESTINATION.key}" STREAM_PROCESSED
+            "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" "topic"
+            "${SemanticAttributes.MESSAGING_OPERATION.key}" "receive"
+          }
+        }
+        // kafka-clients CONSUMER process
+        span(1) {
           name STREAM_PROCESSED + " process"
           kind CONSUMER
-          childOf span(3)
+          childOf span(0)
+          hasLink producerProcessed
           attributes {
             "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
             "${SemanticAttributes.MESSAGING_DESTINATION.key}" STREAM_PROCESSED
@@ -233,7 +275,8 @@ class KafkaStreamsTest extends AgentInstrumentationSpecification {
       }
     })
     def spanContext = Span.fromContext(context).getSpanContext()
-    def streamSendSpan = traces[0][3]
+    def streamTrace = traces.find { it.size() == 3 }
+    def streamSendSpan = streamTrace[2]
     spanContext.traceId == streamSendSpan.traceId
     spanContext.spanId == streamSendSpan.spanId
 
