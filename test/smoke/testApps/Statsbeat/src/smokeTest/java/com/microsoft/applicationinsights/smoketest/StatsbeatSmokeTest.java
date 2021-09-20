@@ -51,10 +51,11 @@ public class StatsbeatSmokeTest extends AiSmokeTest {
     assertNotNull(data.getProperties().get("version"));
     assertNotNull(data.getProperties().get("feature"));
     assertNotNull(data.getProperties().get("type"));
+    assertEquals("0", data.getProperties().get("type"));
     assertEquals(9, data.getProperties().size());
 
     List<Envelope> instrumentationMetrics =
-        mockedIngestion.waitForItems(getMetricPredicate("Instrumentation"), 1, 70, TimeUnit.SECONDS);
+        mockedIngestion.waitForItems(getMetricPredicate("Feature"), 1, 70, TimeUnit.SECONDS);
 
     MetricData instrumentationData = (MetricData) ((Data<?>) instrumentationMetrics.get(0).getData()).getBaseData();
     assertNotNull(instrumentationData.getProperties().get("rp"));
@@ -66,6 +67,7 @@ public class StatsbeatSmokeTest extends AiSmokeTest {
     assertNotNull(instrumentationData.getProperties().get("version"));
     assertNotNull(instrumentationData.getProperties().get("feature"));
     assertNotNull(instrumentationData.getProperties().get("type"));
+    assertEquals("1", instrumentationData.getProperties().get("type"));
     assertEquals(9, instrumentationData.getProperties().size());
 
     List<Envelope> attachMetrics =
