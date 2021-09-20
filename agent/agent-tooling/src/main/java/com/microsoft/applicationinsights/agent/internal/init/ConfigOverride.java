@@ -94,8 +94,6 @@ class ConfigOverride {
     properties.put("otel.propagators", DelegatingPropagatorProvider.NAME);
     // AI exporter is configured manually
     properties.put("otel.traces.exporter", "none");
-    // this should be none, but see comment in TemporaryNoopMeterConfigurer
-    properties.put("otel.metrics.exporter", "noop");
 
     return new ConfigBuilder().readProperties(properties).build();
   }

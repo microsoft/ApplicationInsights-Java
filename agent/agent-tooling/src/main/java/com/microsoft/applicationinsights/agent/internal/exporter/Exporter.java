@@ -835,10 +835,15 @@ public class Exporter implements SpanExporter {
   private void exportEvents(
       SpanData span, @Nullable String operationName, float samplingPercentage) {
     for (EventData event : span.getEvents()) {
-      boolean lettuce51 =
-          span.getInstrumentationLibraryInfo().getName().equals("io.opentelemetry.lettuce-5.1");
+      String instrumentationLibraryName = span.getInstrumentationLibraryInfo().getName();
+      boolean lettuce51 = instrumentationLibraryName.equals("io.opentelemetry.lettuce-5.1");
       if (lettuce51 && event.getName().startsWith("redis.encode.")) {
         // special case as these are noisy and come from the underlying library itself
+        continue;
+      }
+      boolean grpc16 = instrumentationLibraryName.equals("io.opentelemetry.grpc-1.6");
+      if (grpc16 && event.getName().equals("message")) {
+        // special case as these are semi-noisy auto-collected events
         continue;
       }
 

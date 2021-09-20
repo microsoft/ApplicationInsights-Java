@@ -90,6 +90,14 @@ public class MockedAppInsightsIngestionServer {
     return getItemsEnvelopeDataType(type).size();
   }
 
+  public int getCountForType(String type, String operationId) {
+    Objects.requireNonNull(type, "type");
+    return (int)
+        getItemsEnvelopeDataType(type).stream()
+            .filter(input -> operationId.equals(input.getTags().get("ai.operation.id")))
+            .count();
+  }
+
   public List<Envelope> getItemsEnvelopeDataType(String type) {
     return this.servlet.getItemsByType(type);
   }

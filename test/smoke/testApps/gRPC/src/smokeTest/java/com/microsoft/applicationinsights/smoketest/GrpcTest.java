@@ -45,8 +45,8 @@ public class GrpcTest extends AiSmokeTest {
 
     List<Envelope> rddList =
         mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 2, operationId);
-    // individual messages are captured as OTel span events on the CLIENT/SERVER spans
-    mockedIngestion.waitForItemsInOperation("MessageData", 2, operationId);
+    // auto-collected grpc events are suppressed by exporter because they are noisy
+    assertEquals(0, mockedIngestion.getCountForType("MessageData", operationId));
 
     Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "HelloController.simple");
     Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "example.Greeter/SayHello");
@@ -89,8 +89,8 @@ public class GrpcTest extends AiSmokeTest {
 
     List<Envelope> rddList =
         mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 2, operationId);
-    // individual messages are captured as OTel span events on the CLIENT/SERVER spans
-    mockedIngestion.waitForItemsInOperation("MessageData", 3, operationId);
+    // auto-collected grpc events are suppressed by exporter because they are noisy
+    assertEquals(0, mockedIngestion.getCountForType("MessageData", operationId));
 
     Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "HelloController.conversation");
     Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "example.Greeter/Conversation");

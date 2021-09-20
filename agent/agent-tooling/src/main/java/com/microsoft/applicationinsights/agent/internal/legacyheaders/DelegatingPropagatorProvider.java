@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.legacyheaders;
 
 import com.google.auto.service.AutoService;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
 
 @AutoService(ConfigurablePropagatorProvider.class)
@@ -31,7 +32,7 @@ public class DelegatingPropagatorProvider implements ConfigurablePropagatorProvi
   public static final String NAME = "lazyinit";
 
   @Override
-  public TextMapPropagator getPropagator() {
+  public TextMapPropagator getPropagator(ConfigProperties config) {
     return DelegatingPropagator.getInstance();
   }
 

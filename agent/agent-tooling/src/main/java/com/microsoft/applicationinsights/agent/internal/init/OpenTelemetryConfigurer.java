@@ -34,7 +34,8 @@ import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampl
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.opentelemetry.sdk.autoconfigure.spi.SdkTracerProviderConfigurer;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -57,22 +58,22 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
   @SuppressFBWarnings(
       value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
       justification = "this method is only called once during initialization")
-  public void configure(SdkTracerProviderBuilder tracerProvider) {
+  public void configure(SdkTracerProviderBuilder tracerProvider, ConfigProperties config) {
     TelemetryClient telemetryClient = TelemetryClient.getActive();
     if (telemetryClient == null) {
       // agent failed during startup
       return;
     }
 
-    Configuration config = MainEntryPoint.getConfiguration();
+    Configuration configuration = MainEntryPoint.getConfiguration();
 
     tracerProvider.setSampler(DelegatingSampler.getInstance());
 
-    if (config.connectionString != null) {
+    if (configuration.connectionString != null) {
       DelegatingPropagator.getInstance()
-          .setUpStandardDelegate(config.preview.legacyRequestIdPropagation.enabled);
+          .setUpStandardDelegate(configuration.preview.legacyRequestIdPropagation.enabled);
       DelegatingSampler.getInstance()
-          .setDelegate(Samplers.getSampler(config.sampling.percentage, config));
+          .setDelegate(Samplers.getSampler(configuration.sampling.percentage, configuration));
     } else {
       // in Azure Functions, we configure later on, once we know user has opted in to tracing
       // (note: the default for DelegatingPropagator is to not propagate anything
@@ -80,7 +81,7 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
     }
 
     List<ProcessorConfig> processors =
-        config.preview.processors.stream()
+        configuration.preview.processors.stream()
             .filter(processor -> processor.type != Configuration.ProcessorType.METRIC_FILTER)
             .collect(Collectors.toCollection(ArrayList::new));
     // Reversing the order of processors before passing it to SpanProcessor
@@ -115,13 +116,13 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
     // inherited attributes span processor is only applied on span start, so doesn't need to be
     // chained with the batch span processor
     tracerProvider.addSpanProcessor(
-        new InheritedAttributesSpanProcessor(config.preview.inheritedAttributes));
+        new InheritedAttributesSpanProcessor(configuration.preview.inheritedAttributes));
     // legacy span processor is only applied on span start, so doesn't need to be chained with the
     // batch span processor
     // it is used to pass legacy attributes from the context (extracted by the AiLegacyPropagator)
     // to the span attributes (since there is no way to update attributes on span directly from
     // propagator)
-    if (config.preview.legacyRequestIdPropagation.enabled) {
+    if (configuration.preview.legacyRequestIdPropagation.enabled) {
       tracerProvider.addSpanProcessor(new AiLegacyHeaderSpanProcessor());
     }
     // using BatchSpanProcessor in order to get off of the application thread as soon as possible
