@@ -9,6 +9,7 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import io.opentelemetry.instrumentation.api.instrumenter.SpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.SpanStatusExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.appid.TargetAppIdAttributeExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientMetrics;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanNameExtractor;
@@ -40,6 +41,7 @@ public final class AsyncHttpClientSingletons {
             .addAttributesExtractor(netAttributesExtractor)
             .addAttributesExtractor(PeerServiceAttributesExtractor.create(netAttributesExtractor))
             .addAttributesExtractor(new AsyncHttpClientAdditionalAttributesExtractor())
+            .addAttributesExtractor(new TargetAppIdAttributeExtractor<>(Response::getHeader))
             .addRequestMetrics(HttpClientMetrics.get())
             .newClientInstrumenter(new HttpHeaderSetter());
   }
