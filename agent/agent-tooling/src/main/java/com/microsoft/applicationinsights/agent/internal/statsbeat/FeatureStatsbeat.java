@@ -33,7 +33,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class FeatureStatsbeat extends BaseStatsbeat {
 
   private static final String FEATURE_METRIC_NAME = "Feature";
-  private static final String INSTRUMENTATION_METRIC_NAME = "Instrumentation";
 
   private final Set<Feature> featureList = Collections.newSetFromMap(new ConcurrentHashMap<>());
   private final Set<String> instrumentationList =
@@ -68,18 +67,16 @@ public class FeatureStatsbeat extends BaseStatsbeat {
 
   @Override
   protected void send(TelemetryClient telemetryClient) {
-    String metricName;
+    String metricName = FEATURE_METRIC_NAME;
     long encodedLong;
     String featureType;
 
     if (type == FeatureType.FEATURE) {
-      metricName = FEATURE_METRIC_NAME;
       encodedLong = getFeature();
-      featureType = "feature";
+      featureType = "0";
     } else {
-      metricName = INSTRUMENTATION_METRIC_NAME;
       encodedLong = getInstrumentation();
-      featureType = "instrumentation";
+      featureType = "1";
     }
 
     TelemetryItem telemetryItem = createStatsbeatTelemetry(telemetryClient, metricName, 0);
