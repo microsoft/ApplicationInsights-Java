@@ -50,7 +50,7 @@ public class Servlet3HttpServerTracer extends JavaxServletHttpServerTracer<HttpS
         context,
         servlet ? SERVLET : FILTER,
         () -> SPAN_NAME_PROVIDER.getSpanNameOrNull(mappingResolver, request));
-    return updateContext(context, request);
+    return addServletContextPath(context, request);
   }
 
   @Override
