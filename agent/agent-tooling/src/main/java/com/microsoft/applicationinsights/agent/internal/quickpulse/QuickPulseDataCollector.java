@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -94,8 +95,12 @@ public enum QuickPulseDataCollector {
       this.rdds = countAndDuration.count;
       this.rddsDuration = countAndDuration.duration;
       this.unsuccessfulRdds = currentCounters.unsuccessfulRdds.get();
+      int documentListSize = 0;
       synchronized (currentCounters.documentList) {
-        this.documentList.addAll(currentCounters.documentList);
+        documentListSize = currentCounters.documentList.size();
+      }
+      for (int i = 0; i < documentListSize; i++) {
+        this.documentList.add(currentCounters.documentList.poll());
       }
     }
   }
@@ -121,7 +126,8 @@ public enum QuickPulseDataCollector {
 
     final AtomicLong rddsAndDuations = new AtomicLong(0);
     final AtomicInteger unsuccessfulRdds = new AtomicInteger(0);
-    final List<QuickPulseDocument> documentList = new ArrayList<>();
+    final ArrayBlockingQueue<QuickPulseDocument> documentList =
+        new ArrayBlockingQueue<>(1000, true);
 
     static long encodeCountAndDuration(long count, long duration) {
       if (count > MAX_COUNT || duration > MAX_DURATION) {
@@ -139,6 +145,7 @@ public enum QuickPulseDataCollector {
   private final AtomicReference<Counters> counters = new AtomicReference<>(null);
   private final MemoryMXBean memory;
   private final CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator;
+  private volatile QuickPulseHeaderInfo quickPulseHeaderInfo;
 
   QuickPulseDataCollector() {
     CpuPerformanceCounterCalculator temp;
@@ -162,15 +169,21 @@ public enum QuickPulseDataCollector {
     }
     cpuPerformanceCounterCalculator = temp;
     memory = ManagementFactory.getMemoryMXBean();
+    quickPulseHeaderInfo = new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_OFF);
   }
 
   public synchronized void disable() {
     counters.set(null);
+    quickPulseHeaderInfo = new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_OFF);
   }
 
   public synchronized void enable(TelemetryClient telemetryClient) {
     this.telemetryClient = telemetryClient;
     counters.set(new Counters());
+  }
+
+  public synchronized void setQuickPulseHeaderInfo(QuickPulseHeaderInfo quickPulseHeaderInfo) {
+    this.quickPulseHeaderInfo = quickPulseHeaderInfo;
   }
 
   @Nullable
@@ -194,8 +207,9 @@ public enum QuickPulseDataCollector {
   }
 
   public void add(TelemetryItem telemetryItem) {
-    if (telemetryClient == null) {
-      // quick pulse is not enabled
+    if (telemetryClient == null
+        || quickPulseHeaderInfo.getQuickPulseStatus() != QuickPulseStatus.QP_IS_ON) {
+      // quick pulse is not enabled or quick pulse data sender is not enabled
       return;
     }
 
@@ -251,7 +265,8 @@ public enum QuickPulseDataCollector {
     quickPulseDependencyDocument.setDependencyTypeName(telemetry.getType());
     quickPulseDependencyDocument.setProperties(
         aggregateProperties(telemetry.getProperties(), telemetry.getMeasurements()));
-    synchronized (counters.documentList) {
+    if (!counters.documentList.offer(quickPulseDependencyDocument)) {
+      counters.documentList.poll();
       counters.documentList.add(quickPulseDependencyDocument);
     }
   }
@@ -286,7 +301,8 @@ public enum QuickPulseDataCollector {
       quickPulseExceptionDocument.setExceptionMessage(exceptionList.get(0).getMessage());
       quickPulseExceptionDocument.setExceptionType(exceptionList.get(0).getTypeName());
     }
-    synchronized (counters.documentList) {
+    if (!counters.documentList.offer(quickPulseExceptionDocument)) {
+      counters.documentList.poll();
       counters.documentList.add(quickPulseExceptionDocument);
     }
   }
@@ -314,7 +330,8 @@ public enum QuickPulseDataCollector {
     quickPulseRequestDocument.setOperationName(requestTelemetry.getName());
     quickPulseRequestDocument.setProperties(
         aggregateProperties(requestTelemetry.getProperties(), requestTelemetry.getMeasurements()));
-    synchronized (counters.documentList) {
+    if (!counters.documentList.offer(quickPulseRequestDocument)) {
+      counters.documentList.poll();
       counters.documentList.add(quickPulseRequestDocument);
     }
   }

@@ -110,6 +110,8 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
     telemetryClient.setConnectionString(connectionString);
     QuickPulseDataFetcher dataFetcher =
         new QuickPulseDataFetcher(sendQueue, telemetryClient, "machine1", "instance1", null);
+    QuickPulseDataCollector.INSTANCE.setQuickPulseHeaderInfo(
+        new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_ON));
     QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
     final long duration = 112233L;
     // Request Telemetry

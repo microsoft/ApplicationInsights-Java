@@ -78,6 +78,8 @@ class QuickPulseDataCollectorTests {
   void requestTelemetryIsCounted_DurationIsSum() {
     TelemetryClient telemetryClient = new TelemetryClient();
     telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+    QuickPulseDataCollector.INSTANCE.setQuickPulseHeaderInfo(
+        new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_ON));
     QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
 
     // add a success and peek
@@ -120,6 +122,8 @@ class QuickPulseDataCollectorTests {
   void dependencyTelemetryIsCounted_DurationIsSum() {
     TelemetryClient telemetryClient = new TelemetryClient();
     telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+    QuickPulseDataCollector.INSTANCE.setQuickPulseHeaderInfo(
+        new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_ON));
     QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
 
     // add a success and peek.
@@ -162,6 +166,8 @@ class QuickPulseDataCollectorTests {
   void exceptionTelemetryIsCounted() {
     TelemetryClient telemetryClient = new TelemetryClient();
     telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+    QuickPulseDataCollector.INSTANCE.setQuickPulseHeaderInfo(
+        new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_ON));
     QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
 
     TelemetryItem telemetry = createExceptionTelemetry(new Exception());
