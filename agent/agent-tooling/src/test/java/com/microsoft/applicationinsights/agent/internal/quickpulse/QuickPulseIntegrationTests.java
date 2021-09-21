@@ -150,6 +150,8 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
     Thread.sleep(50);
     assertTrue(pingCountDown.await(1, TimeUnit.SECONDS));
     assertThat(quickPulseHeaderInfo.getQuickPulseStatus()).isEqualTo(QuickPulseStatus.QP_IS_ON);
+    assertThat(QuickPulseDataCollector.INSTANCE.getQuickPulseHeaderInfo().getQuickPulseStatus())
+        .isEqualTo(QuickPulseStatus.QP_IS_ON);
     assertTrue(postCountDown.await(1, TimeUnit.SECONDS));
     senderThread.interrupt();
     coordinatorThread.interrupt();

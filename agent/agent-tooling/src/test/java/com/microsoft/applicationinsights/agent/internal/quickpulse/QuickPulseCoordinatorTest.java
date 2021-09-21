@@ -21,15 +21,29 @@
 
 package com.microsoft.applicationinsights.agent.internal.quickpulse;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.mock;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 class QuickPulseCoordinatorTest {
+
+  @BeforeEach
+  void setup() {
+    QuickPulseDataCollector.INSTANCE.disable();
+  }
+
+  @AfterEach
+  void tearDown() {
+    QuickPulseDataCollector.INSTANCE.disable();
+  }
+
   @Test
   void testOnlyPings() throws InterruptedException {
     QuickPulseDataFetcher mockFetcher = mock(QuickPulseDataFetcher.class);
@@ -65,6 +79,9 @@ class QuickPulseCoordinatorTest {
     Mockito.verify(mockSender, Mockito.never()).getQuickPulseHeaderInfo();
 
     Mockito.verify(mockPingSender, Mockito.atLeast(1)).ping(null);
+    // make sure QP_IS_OFF after ping
+    assertThat(QuickPulseDataCollector.INSTANCE.getQuickPulseHeaderInfo().getQuickPulseStatus())
+        .isEqualTo(QuickPulseStatus.QP_IS_OFF);
   }
 
   @Test
@@ -107,6 +124,9 @@ class QuickPulseCoordinatorTest {
     Mockito.verify(mockSender, Mockito.times(1)).getQuickPulseHeaderInfo();
 
     Mockito.verify(mockPingSender, Mockito.atLeast(1)).ping(null);
+    // Make sure QP_IS_OFF after one post and ping
+    assertThat(QuickPulseDataCollector.INSTANCE.getQuickPulseHeaderInfo().getQuickPulseStatus())
+        .isEqualTo(QuickPulseStatus.QP_IS_OFF);
   }
 
   // FIXME (trask) sporadically failing on CI

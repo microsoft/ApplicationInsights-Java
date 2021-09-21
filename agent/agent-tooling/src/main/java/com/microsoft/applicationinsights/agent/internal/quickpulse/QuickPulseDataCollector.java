@@ -186,6 +186,11 @@ public enum QuickPulseDataCollector {
     this.quickPulseHeaderInfo = quickPulseHeaderInfo;
   }
 
+  // Used only in tests
+  public synchronized QuickPulseHeaderInfo getQuickPulseHeaderInfo() {
+    return this.quickPulseHeaderInfo;
+  }
+
   @Nullable
   public synchronized FinalCounters getAndRestart() {
     Counters currentCounters = counters.getAndSet(new Counters());
