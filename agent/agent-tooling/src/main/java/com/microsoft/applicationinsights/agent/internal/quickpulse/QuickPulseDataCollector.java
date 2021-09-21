@@ -40,7 +40,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -95,12 +94,8 @@ public enum QuickPulseDataCollector {
       this.rdds = countAndDuration.count;
       this.rddsDuration = countAndDuration.duration;
       this.unsuccessfulRdds = currentCounters.unsuccessfulRdds.get();
-      int documentListSize = 0;
       synchronized (currentCounters.documentList) {
-        documentListSize = currentCounters.documentList.size();
-      }
-      for (int i = 0; i < documentListSize; i++) {
-        this.documentList.add(currentCounters.documentList.poll());
+        this.documentList.addAll(currentCounters.documentList);
       }
     }
   }
@@ -118,6 +113,7 @@ public enum QuickPulseDataCollector {
   static class Counters {
     private static final long MAX_COUNT = 524287L;
     private static final long MAX_DURATION = 17592186044415L;
+    private static final int MAX_DOCUMENTS_SIZE = 1000;
 
     public final AtomicInteger exceptions = new AtomicInteger(0);
 
@@ -126,8 +122,7 @@ public enum QuickPulseDataCollector {
 
     final AtomicLong rddsAndDuations = new AtomicLong(0);
     final AtomicInteger unsuccessfulRdds = new AtomicInteger(0);
-    final ArrayBlockingQueue<QuickPulseDocument> documentList =
-        new ArrayBlockingQueue<>(1000, true);
+    final List<QuickPulseDocument> documentList = new ArrayList<>();
 
     static long encodeCountAndDuration(long count, long duration) {
       if (count > MAX_COUNT || duration > MAX_DURATION) {
@@ -270,9 +265,10 @@ public enum QuickPulseDataCollector {
     quickPulseDependencyDocument.setDependencyTypeName(telemetry.getType());
     quickPulseDependencyDocument.setProperties(
         aggregateProperties(telemetry.getProperties(), telemetry.getMeasurements()));
-    if (!counters.documentList.offer(quickPulseDependencyDocument)) {
-      counters.documentList.poll();
-      counters.documentList.add(quickPulseDependencyDocument);
+    synchronized (counters.documentList) {
+      if (counters.documentList.size() < Counters.MAX_DOCUMENTS_SIZE) {
+        counters.documentList.add(quickPulseDependencyDocument);
+      }
     }
   }
 
@@ -306,9 +302,10 @@ public enum QuickPulseDataCollector {
       quickPulseExceptionDocument.setExceptionMessage(exceptionList.get(0).getMessage());
       quickPulseExceptionDocument.setExceptionType(exceptionList.get(0).getTypeName());
     }
-    if (!counters.documentList.offer(quickPulseExceptionDocument)) {
-      counters.documentList.poll();
-      counters.documentList.add(quickPulseExceptionDocument);
+    synchronized (counters.documentList) {
+      if (counters.documentList.size() < Counters.MAX_DOCUMENTS_SIZE) {
+        counters.documentList.add(quickPulseExceptionDocument);
+      }
     }
   }
 
@@ -335,9 +332,10 @@ public enum QuickPulseDataCollector {
     quickPulseRequestDocument.setOperationName(requestTelemetry.getName());
     quickPulseRequestDocument.setProperties(
         aggregateProperties(requestTelemetry.getProperties(), requestTelemetry.getMeasurements()));
-    if (!counters.documentList.offer(quickPulseRequestDocument)) {
-      counters.documentList.poll();
-      counters.documentList.add(quickPulseRequestDocument);
+    synchronized (counters.documentList) {
+      if (counters.documentList.size() < Counters.MAX_DOCUMENTS_SIZE) {
+        counters.documentList.add(quickPulseRequestDocument);
+      }
     }
   }
 
