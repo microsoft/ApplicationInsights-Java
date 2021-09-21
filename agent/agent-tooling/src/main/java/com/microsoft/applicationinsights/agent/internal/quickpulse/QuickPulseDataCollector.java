@@ -140,7 +140,7 @@ public enum QuickPulseDataCollector {
   private final AtomicReference<Counters> counters = new AtomicReference<>(null);
   private final MemoryMXBean memory;
   private final CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator;
-  private volatile QuickPulseHeaderInfo quickPulseHeaderInfo;
+  private volatile QuickPulseStatus quickPulseStatus;
 
   QuickPulseDataCollector() {
     CpuPerformanceCounterCalculator temp;
@@ -164,12 +164,12 @@ public enum QuickPulseDataCollector {
     }
     cpuPerformanceCounterCalculator = temp;
     memory = ManagementFactory.getMemoryMXBean();
-    quickPulseHeaderInfo = new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_OFF);
+    quickPulseStatus = QuickPulseStatus.QP_IS_OFF;
   }
 
   public synchronized void disable() {
     counters.set(null);
-    quickPulseHeaderInfo = new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_OFF);
+    quickPulseStatus = QuickPulseStatus.QP_IS_OFF;
   }
 
   public synchronized void enable(TelemetryClient telemetryClient) {
@@ -177,13 +177,13 @@ public enum QuickPulseDataCollector {
     counters.set(new Counters());
   }
 
-  public synchronized void setQuickPulseHeaderInfo(QuickPulseHeaderInfo quickPulseHeaderInfo) {
-    this.quickPulseHeaderInfo = quickPulseHeaderInfo;
+  public synchronized void setQuickPulseStatus(QuickPulseStatus quickPulseStatus) {
+    this.quickPulseStatus = quickPulseStatus;
   }
 
   // Used only in tests
-  public synchronized QuickPulseHeaderInfo getQuickPulseHeaderInfo() {
-    return this.quickPulseHeaderInfo;
+  public synchronized QuickPulseStatus getQuickPulseStatus() {
+    return this.quickPulseStatus;
   }
 
   @Nullable
@@ -207,8 +207,7 @@ public enum QuickPulseDataCollector {
   }
 
   public void add(TelemetryItem telemetryItem) {
-    if (telemetryClient == null
-        || quickPulseHeaderInfo.getQuickPulseStatus() != QuickPulseStatus.QP_IS_ON) {
+    if (telemetryClient == null || quickPulseStatus != QuickPulseStatus.QP_IS_ON) {
       // quick pulse is not enabled or quick pulse data sender is not enabled
       return;
     }

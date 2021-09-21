@@ -80,7 +80,8 @@ final class QuickPulseCoordinator implements Runnable {
     QuickPulseHeaderInfo currentQuickPulseHeaderInfo = dataSender.getQuickPulseHeaderInfo();
 
     this.handleReceivedHeaders(currentQuickPulseHeaderInfo);
-    QuickPulseDataCollector.INSTANCE.setQuickPulseHeaderInfo(currentQuickPulseHeaderInfo);
+    QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(
+        currentQuickPulseHeaderInfo.getQuickPulseStatus());
     switch (currentQuickPulseHeaderInfo.getQuickPulseStatus()) {
       case ERROR:
         pingMode = true;
@@ -105,7 +106,7 @@ final class QuickPulseCoordinator implements Runnable {
   private long ping() {
     QuickPulseHeaderInfo pingResult = pingSender.ping(qpsServiceRedirectedEndpoint);
     this.handleReceivedHeaders(pingResult);
-    QuickPulseDataCollector.INSTANCE.setQuickPulseHeaderInfo(pingResult);
+    QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(pingResult.getQuickPulseStatus());
     switch (pingResult.getQuickPulseStatus()) {
       case ERROR:
         return waitOnErrorInMillis;

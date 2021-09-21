@@ -80,7 +80,7 @@ class QuickPulseCoordinatorTest {
 
     Mockito.verify(mockPingSender, Mockito.atLeast(1)).ping(null);
     // make sure QP_IS_OFF after ping
-    assertThat(QuickPulseDataCollector.INSTANCE.getQuickPulseHeaderInfo().getQuickPulseStatus())
+    assertThat(QuickPulseDataCollector.INSTANCE.getQuickPulseStatus())
         .isEqualTo(QuickPulseStatus.QP_IS_OFF);
   }
 
@@ -125,7 +125,7 @@ class QuickPulseCoordinatorTest {
 
     Mockito.verify(mockPingSender, Mockito.atLeast(1)).ping(null);
     // Make sure QP_IS_OFF after one post and ping
-    assertThat(QuickPulseDataCollector.INSTANCE.getQuickPulseHeaderInfo().getQuickPulseStatus())
+    assertThat(QuickPulseDataCollector.INSTANCE.getQuickPulseStatus())
         .isEqualTo(QuickPulseStatus.QP_IS_OFF);
   }
 
