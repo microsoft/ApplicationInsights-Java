@@ -56,6 +56,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -264,7 +265,7 @@ public class Exporter implements SpanExporter {
 
     // set dependency-specific properties
     data.setId(span.getSpanId());
-    data.setName(span.getName());
+    data.setName(getDependencyName(span));
     data.setDuration(
         FormattedDuration.fromNanos(span.getEndEpochNanos() - span.getStartEpochNanos()));
     data.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
@@ -278,6 +279,37 @@ public class Exporter implements SpanExporter {
     // export
     telemetryClient.trackAsync(telemetry);
     exportEvents(span, null, samplingPercentage);
+  }
+
+  private static final Set<String> DEFAULT_HTTP_SPAN_NAMES =
+      new HashSet<>(
+          Arrays.asList(
+              "HTTP OPTIONS",
+              "HTTP GET",
+              "HTTP HEAD",
+              "HTTP POST",
+              "HTTP PUT",
+              "HTTP DELETE",
+              "HTTP TRACE",
+              "HTTP CONNECT",
+              "HTTP PATCH"));
+
+  // the backend product prefers more detailed (but possibly infinite cardinality) name for http
+  // dependencies
+  private static String getDependencyName(SpanData span) {
+    String name = span.getName();
+
+    if (!DEFAULT_HTTP_SPAN_NAMES.contains(name)) {
+      return name;
+    }
+
+    String url = span.getAttributes().get(SemanticAttributes.HTTP_URL);
+    if (url == null) {
+      return name;
+    }
+
+    String path = UrlParser.getPathFromUrl(url);
+    return path != null ? path : name;
   }
 
   private static void applySemanticConventions(
