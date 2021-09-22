@@ -34,7 +34,8 @@ import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampl
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.opentelemetry.sdk.autoconfigure.spi.SdkTracerProviderConfigurer;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -50,6 +51,9 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
   private static volatile BatchSpanProcessor batchSpanProcessor;
 
   public static CompletableResultCode flush() {
+    if (batchSpanProcessor == null) {
+      return CompletableResultCode.ofSuccess();
+    }
     return batchSpanProcessor.forceFlush();
   }
 
@@ -57,30 +61,54 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
   @SuppressFBWarnings(
       value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
       justification = "this method is only called once during initialization")
-  public void configure(SdkTracerProviderBuilder tracerProvider) {
+  public void configure(SdkTracerProviderBuilder tracerProvider, ConfigProperties config) {
     TelemetryClient telemetryClient = TelemetryClient.getActive();
     if (telemetryClient == null) {
       // agent failed during startup
       return;
     }
 
-    Configuration config = MainEntryPoint.getConfiguration();
+    Configuration configuration = MainEntryPoint.getConfiguration();
 
     tracerProvider.setSampler(DelegatingSampler.getInstance());
 
-    if (config.connectionString != null) {
+    if (configuration.connectionString != null) {
       DelegatingPropagator.getInstance()
-          .setUpStandardDelegate(config.preview.legacyRequestIdPropagation.enabled);
+          .setUpStandardDelegate(configuration.preview.legacyRequestIdPropagation.enabled);
       DelegatingSampler.getInstance()
-          .setDelegate(Samplers.getSampler(config.sampling.percentage, config));
+          .setDelegate(Samplers.getSampler(configuration.sampling.percentage, configuration));
     } else {
       // in Azure Functions, we configure later on, once we know user has opted in to tracing
       // (note: the default for DelegatingPropagator is to not propagate anything
       // and the default for DelegatingSampler is to not sample anything)
     }
 
+    // operation name span processor is only applied on span start, so doesn't need to be chained
+    // with the batch span processor
+    tracerProvider.addSpanProcessor(new AiOperationNameSpanProcessor());
+    // inherited attributes span processor is only applied on span start, so doesn't need to be
+    // chained with the batch span processor
+    tracerProvider.addSpanProcessor(
+        new InheritedAttributesSpanProcessor(configuration.preview.inheritedAttributes));
+    // legacy span processor is only applied on span start, so doesn't need to be chained with the
+    // batch span processor
+    // it is used to pass legacy attributes from the context (extracted by the AiLegacyPropagator)
+    // to the span attributes (since there is no way to update attributes on span directly from
+    // propagator)
+    if (configuration.preview.legacyRequestIdPropagation.enabled) {
+      tracerProvider.addSpanProcessor(new AiLegacyHeaderSpanProcessor());
+    }
+
+    String tracesExporter = config.getString("otel.traces.exporter");
+    if ("none".equals(tracesExporter)) {
+      batchSpanProcessor = createExporter(configuration);
+      tracerProvider.addSpanProcessor(batchSpanProcessor);
+    }
+  }
+
+  private static BatchSpanProcessor createExporter(Configuration configuration) {
     List<ProcessorConfig> processors =
-        config.preview.processors.stream()
+        configuration.preview.processors.stream()
             .filter(processor -> processor.type != Configuration.ProcessorType.METRIC_FILTER)
             .collect(Collectors.toCollection(ArrayList::new));
     // Reversing the order of processors before passing it to SpanProcessor
@@ -109,25 +137,9 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
       }
     }
 
-    // operation name span processor is only applied on span start, so doesn't need to be chained
-    // with the batch span processor
-    tracerProvider.addSpanProcessor(new AiOperationNameSpanProcessor());
-    // inherited attributes span processor is only applied on span start, so doesn't need to be
-    // chained with the batch span processor
-    tracerProvider.addSpanProcessor(
-        new InheritedAttributesSpanProcessor(config.preview.inheritedAttributes));
-    // legacy span processor is only applied on span start, so doesn't need to be chained with the
-    // batch span processor
-    // it is used to pass legacy attributes from the context (extracted by the AiLegacyPropagator)
-    // to the span attributes (since there is no way to update attributes on span directly from
-    // propagator)
-    if (config.preview.legacyRequestIdPropagation.enabled) {
-      tracerProvider.addSpanProcessor(new AiLegacyHeaderSpanProcessor());
-    }
     // using BatchSpanProcessor in order to get off of the application thread as soon as possible
     // using batch size 1 because need to convert to SpanData as soon as possible to grab data for
     // live metrics. the real batching is done at a lower level
-    batchSpanProcessor = BatchSpanProcessor.builder(currExporter).setMaxExportBatchSize(1).build();
-    tracerProvider.addSpanProcessor(batchSpanProcessor);
+    return BatchSpanProcessor.builder(currExporter).setMaxExportBatchSize(1).build();
   }
 }

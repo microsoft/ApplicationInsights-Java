@@ -90,12 +90,37 @@ class ConfigOverride {
     if (!config.preview.captureControllerSpans) {
       properties.put("otel.instrumentation.common.experimental.suppress-controller-spans", "true");
     }
+    properties.put(
+        "otel.instrumentation.common.experimental.suppress-messaging-receive-spans", "true");
+    // this is needed to capture kafka.record.queue_time_ms
+    properties.put("otel.instrumentation.kafka.experimental-span-attributes", "true");
 
     properties.put("otel.propagators", DelegatingPropagatorProvider.NAME);
-    // AI exporter is configured manually
-    properties.put("otel.traces.exporter", "none");
-    // this should be none, but see comment in TemporaryNoopMeterConfigurer
-    properties.put("otel.metrics.exporter", "noop");
+
+    String tracesExporter = System.getProperty("otel.traces.exporter");
+    if (tracesExporter == null) {
+      tracesExporter = System.getenv("OTEL_TRACES_EXPORTER");
+    }
+    if (tracesExporter == null) {
+      // currently Application Insights Exporter has to be configured manually because it relies on
+      // using a BatchSpanProcessor with queue size 1 due to live metrics (this will change in the
+      // future)
+      properties.put("otel.traces.exporter", "none");
+    } else {
+      properties.put("otel.traces.exporter", tracesExporter);
+    }
+
+    String metricsExporter = System.getProperty("otel.metrics.exporter");
+    if (metricsExporter == null) {
+      metricsExporter = System.getenv("OTEL_METRICS_EXPORTER");
+    }
+    if (metricsExporter == null) {
+      // currently Application Insights exports metrics directly, not through OpenTelemetry
+      // exporter (this will change in the future)
+      properties.put("otel.metrics.exporter", "none");
+    } else {
+      properties.put("otel.metrics.exporter", metricsExporter);
+    }
 
     return new ConfigBuilder().readProperties(properties).build();
   }

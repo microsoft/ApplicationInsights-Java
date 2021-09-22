@@ -19,25 +19,19 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.legacyheaders;
+package com.microsoft.applicationinsights.agent.internal.exporter;
 
-import com.google.auto.service.AutoService;
-import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
+class UrlParser {
 
-@AutoService(ConfigurablePropagatorProvider.class)
-public class DelegatingPropagatorProvider implements ConfigurablePropagatorProvider {
-
-  public static final String NAME = "lazyinit";
-
-  @Override
-  public TextMapPropagator getPropagator(ConfigProperties config) {
-    return DelegatingPropagator.getInstance();
+  /**
+   * Returns the path portion of the url.
+   *
+   * <p>Returns {@code null} if the path cannot be extracted from url for any reason.
+   */
+  static String getPathFromUrl(String url) {
+    // TODO implement something efficient and add tests
+    return null;
   }
 
-  @Override
-  public String getName() {
-    return NAME;
-  }
+  private UrlParser() {}
 }

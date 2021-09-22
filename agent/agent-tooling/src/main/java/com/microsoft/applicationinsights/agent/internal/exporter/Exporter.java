@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
+import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -41,6 +42,7 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
@@ -54,6 +56,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -79,10 +82,8 @@ public class Exporter implements SpanExporter {
   private static final AttributeKey<Boolean> AI_LOG_KEY =
       AttributeKey.booleanKey("applicationinsights.internal.log");
 
-  private static final AttributeKey<String> AI_SPAN_SOURCE_APP_ID_KEY =
-      AttributeKey.stringKey(AiAppId.SPAN_SOURCE_APP_ID_ATTRIBUTE_NAME);
   private static final AttributeKey<String> AI_SPAN_TARGET_APP_ID_KEY =
-      AttributeKey.stringKey(AiAppId.SPAN_TARGET_APP_ID_ATTRIBUTE_NAME);
+      AttributeKey.stringKey("applicationinsights.internal.target_app_id");
 
   public static final AttributeKey<String> AI_LEGACY_PARENT_ID_KEY =
       AttributeKey.stringKey("applicationinsights.internal.legacy_parent_id");
@@ -109,6 +110,10 @@ public class Exporter implements SpanExporter {
       AttributeKey.stringKey("message_bus.destination");
   private static final AttributeKey<Long> AZURE_SDK_ENQUEUED_TIME =
       AttributeKey.longKey("x-opt-enqueued-time");
+
+  private static final AttributeKey<Long> KAFKA_RECORD_QUEUE_TIME_MS =
+      longKey("kafka.record.queue_time_ms");
+  private static final AttributeKey<Long> KAFKA_OFFSET = longKey("kafka.offset");
 
   private static final OperationLogger exportingSpanLogger =
       new OperationLogger(Exporter.class, "Exporting span");
@@ -260,7 +265,7 @@ public class Exporter implements SpanExporter {
 
     // set dependency-specific properties
     data.setId(span.getSpanId());
-    data.setName(span.getName());
+    data.setName(getDependencyName(span));
     data.setDuration(
         FormattedDuration.fromNanos(span.getEndEpochNanos() - span.getStartEpochNanos()));
     data.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
@@ -274,6 +279,37 @@ public class Exporter implements SpanExporter {
     // export
     telemetryClient.trackAsync(telemetry);
     exportEvents(span, null, samplingPercentage);
+  }
+
+  private static final Set<String> DEFAULT_HTTP_SPAN_NAMES =
+      new HashSet<>(
+          Arrays.asList(
+              "HTTP OPTIONS",
+              "HTTP GET",
+              "HTTP HEAD",
+              "HTTP POST",
+              "HTTP PUT",
+              "HTTP DELETE",
+              "HTTP TRACE",
+              "HTTP CONNECT",
+              "HTTP PATCH"));
+
+  // the backend product prefers more detailed (but possibly infinite cardinality) name for http
+  // dependencies
+  private static String getDependencyName(SpanData span) {
+    String name = span.getName();
+
+    if (!DEFAULT_HTTP_SPAN_NAMES.contains(name)) {
+      return name;
+    }
+
+    String url = span.getAttributes().get(SemanticAttributes.HTTP_URL);
+    if (url == null) {
+      return name;
+    }
+
+    String path = UrlParser.getPathFromUrl(url);
+    return path != null ? path : name;
   }
 
   private static void applySemanticConventions(
@@ -572,9 +608,18 @@ public class Exporter implements SpanExporter {
   private static void applyDatabaseClientSpan(
       Attributes attributes, RemoteDependencyData telemetry, String dbSystem) {
     String dbStatement = attributes.get(SemanticAttributes.DB_STATEMENT);
+    if (dbStatement == null) {
+      dbStatement = attributes.get(SemanticAttributes.DB_OPERATION);
+    }
     String type;
     if (SQL_DB_SYSTEMS.contains(dbSystem)) {
-      type = "SQL";
+      if (dbSystem.equals(SemanticAttributes.DbSystemValues.MYSQL)) {
+        type = "mysql"; // this has special icon in portal
+      } else if (dbSystem.equals(SemanticAttributes.DbSystemValues.POSTGRESQL)) {
+        type = "postgresql"; // this has special icon in portal
+      } else {
+        type = "SQL";
+      }
       // keeping existing behavior that was release in 3.0.0 for now
       // not going with new jdbc instrumentation span name of
       // "<db.operation> <db.name>.<db.sql.table>" for now just in case this behavior is reversed
@@ -741,23 +786,26 @@ public class Exporter implements SpanExporter {
       telemetry.getTags().put(ContextTagKeys.AI_LOCATION_IP.toString(), locationIp);
     }
 
-    data.setSource(getSource(attributes));
+    data.setSource(getSource(attributes, span.getSpanContext()));
 
-    if (isAzureQueue(attributes)) {
-      // TODO(trask): for batch consumer, enqueuedTime should be the average of this attribute
-      //  across all links
-      Long enqueuedTime = attributes.get(AZURE_SDK_ENQUEUED_TIME);
-      if (enqueuedTime != null) {
-        long timeSinceEnqueued =
-            NANOSECONDS.toMillis(span.getStartEpochNanos()) - SECONDS.toMillis(enqueuedTime);
-        if (timeSinceEnqueued < 0) {
-          timeSinceEnqueued = 0;
-        }
-        if (data.getMeasurements() == null) {
-          data.setMeasurements(new HashMap<>());
-        }
-        data.getMeasurements().put("timeSinceEnqueued", (double) timeSinceEnqueued);
+    // TODO(trask)? for batch consumer, enqueuedTime should be the average of this attribute
+    //  across all links
+    Long enqueuedTime = attributes.get(AZURE_SDK_ENQUEUED_TIME);
+    if (enqueuedTime != null) {
+      long timeSinceEnqueuedMillis =
+          Math.max(
+              0L, NANOSECONDS.toMillis(span.getStartEpochNanos()) - SECONDS.toMillis(enqueuedTime));
+      if (data.getMeasurements() == null) {
+        data.setMeasurements(new HashMap<>());
       }
+      data.getMeasurements().put("timeSinceEnqueued", (double) timeSinceEnqueuedMillis);
+    }
+    Long timeSinceEnqueuedMillis = attributes.get(KAFKA_RECORD_QUEUE_TIME_MS);
+    if (timeSinceEnqueuedMillis != null) {
+      if (data.getMeasurements() == null) {
+        data.setMeasurements(new HashMap<>());
+      }
+      data.getMeasurements().put("timeSinceEnqueued", (double) timeSinceEnqueuedMillis);
     }
 
     // export
@@ -766,14 +814,16 @@ public class Exporter implements SpanExporter {
   }
 
   @Nullable
-  private static String getSource(Attributes attributes) {
+  private static String getSource(Attributes attributes, SpanContext spanContext) {
     // this is only used by the 2.x web interop bridge
     // for ThreadContext.getRequestTelemetryContext().getRequestTelemetry().setSource()
     String source = attributes.get(AI_SPAN_SOURCE_KEY);
     if (source != null) {
       return source;
     }
-    source = attributes.get(AI_SPAN_SOURCE_APP_ID_KEY);
+
+    source = spanContext.getTraceState().get("az");
+
     if (source != null && !AiAppId.getAppId().equals(source)) {
       return source;
     }
@@ -828,10 +878,18 @@ public class Exporter implements SpanExporter {
   private void exportEvents(
       SpanData span, @Nullable String operationName, float samplingPercentage) {
     for (EventData event : span.getEvents()) {
-      boolean lettuce51 =
-          span.getInstrumentationLibraryInfo().getName().equals("io.opentelemetry.lettuce-5.1");
+      String instrumentationLibraryName = span.getInstrumentationLibraryInfo().getName();
+      boolean lettuce51 = instrumentationLibraryName.equals("io.opentelemetry.lettuce-5.1");
       if (lettuce51 && event.getName().startsWith("redis.encode.")) {
         // special case as these are noisy and come from the underlying library itself
+        continue;
+      }
+      boolean grpc16 = instrumentationLibraryName.equals("io.opentelemetry.grpc-1.6");
+      if (grpc16 && event.getName().equals("message")) {
+        // OpenTelemetry semantic conventions define semi-noisy grpc events
+        // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/rpc.md#events
+        //
+        // we want to suppress these (at least by default)
         continue;
       }
 
@@ -942,6 +1000,10 @@ public class Exporter implements SpanExporter {
               || stringKey.equals(AZURE_SDK_ENQUEUED_TIME.getKey())) {
             // these are from azure SDK (AZURE_SDK_PEER_ADDRESS gets filtered out automatically
             // since it uses the otel "peer." prefix)
+            return;
+          }
+          if (stringKey.equals(KAFKA_RECORD_QUEUE_TIME_MS.getKey())
+              || stringKey.equals(KAFKA_OFFSET.getKey())) {
             return;
           }
           // special case mappings
