@@ -103,6 +103,9 @@ public class ConfigurationBuilder {
   private static final String APPLICATIONINSIGHTS_AUTHENTICATION_STRING =
       "APPLICATIONINSIGHTS_AUTHENTICATION_STRING";
 
+  private static final String APPLICATIONINSIGHTS_STATSBEAT_DISABLED =
+      "APPLICATIONINSIGHTS_STATSBEAT_DISABLED";
+
   // cannot use logger before loading configuration, so need to store warning messages locally until
   // logger is initialized
   private static final ConfigurationLogger configurationLogger = new ConfigurationLogger();
@@ -395,6 +398,10 @@ public class ConfigurationBuilder {
     config.preview.liveMetrics.enabled =
         overlayWithEnvVar(
             APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED, config.preview.liveMetrics.enabled);
+
+    config.preview.statsbeat.disabled =
+        overlayWithEnvVar(
+            APPLICATIONINSIGHTS_STATSBEAT_DISABLED, config.preview.statsbeat.disabled);
 
     loadLogCaptureEnvVar(config);
     loadJmxMetricsEnvVar(config);

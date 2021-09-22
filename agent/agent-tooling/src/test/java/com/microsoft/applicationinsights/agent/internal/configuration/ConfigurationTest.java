@@ -636,6 +636,26 @@ class ConfigurationTest {
   }
 
   @Test
+  void shouldOverrideStatsbeatDisabledConfig() throws IOException {
+    envVars.set("APPLICATIONINSIGHTS_STATSBEAT_DISABLED", "true");
+
+    Configuration configuration =
+        loadConfiguration("applicationinsights_statsbeatdisabledenv.json");
+    assertThat(configuration.preview.statsbeat.disabled).isFalse();
+
+    ConfigurationBuilder.overlayEnvVars(configuration);
+    assertThat(configuration.preview.statsbeat.disabled).isTrue();
+
+    envVars.set("APPLICATIONINSIGHTS_STATSBEAT_DISABLED", "false");
+    Configuration configuration2 =
+        loadConfiguration("applicationinsights_statsbeatdisabledenv.json");
+    assertThat(configuration2.preview.statsbeat.disabled).isFalse();
+
+    ConfigurationBuilder.overlayEnvVars(configuration2);
+    assertThat(configuration2.preview.statsbeat.disabled).isFalse();
+  }
+
+  @Test
   void shouldUseRpConfigRole() {
     Configuration configuration = new Configuration();
     RpConfiguration rpConfiguration = new RpConfiguration();

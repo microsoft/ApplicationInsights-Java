@@ -78,6 +78,7 @@ class QuickPulseDataCollectorTests {
   void requestTelemetryIsCounted_DurationIsSum() {
     TelemetryClient telemetryClient = new TelemetryClient();
     telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+    QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
     QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
 
     // add a success and peek
@@ -120,6 +121,7 @@ class QuickPulseDataCollectorTests {
   void dependencyTelemetryIsCounted_DurationIsSum() {
     TelemetryClient telemetryClient = new TelemetryClient();
     telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+    QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
     QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
 
     // add a success and peek.
@@ -162,6 +164,7 @@ class QuickPulseDataCollectorTests {
   void exceptionTelemetryIsCounted() {
     TelemetryClient telemetryClient = new TelemetryClient();
     telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+    QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
     QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
 
     TelemetryItem telemetry = createExceptionTelemetry(new Exception());
@@ -252,5 +255,31 @@ class QuickPulseDataCollectorTests {
     assertThat(counters.unsuccessfulRequests).isEqualTo(0);
 
     assertThat(counters.exceptions).isEqualTo(0);
+  }
+
+  @Test
+  void checkDocumentsListSize() {
+    TelemetryClient telemetryClient = new TelemetryClient();
+    telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+    QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
+    QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
+
+    final long duration = 112233L;
+    TelemetryItem telemetry =
+        createRequestTelemetry("request-test", new Date(), duration, "200", true);
+    telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+    for (int i = 0; i < 1005; i++) {
+      QuickPulseDataCollector.INSTANCE.add(telemetry);
+    }
+    // check max documentList size
+    assertThat(QuickPulseDataCollector.INSTANCE.getAndRestart().documentList.size())
+        .isEqualTo(1000);
+
+    QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_OFF);
+    for (int i = 0; i < 5; i++) {
+      QuickPulseDataCollector.INSTANCE.add(telemetry);
+    }
+    // no telemetry items are added when QP_IS_OFF
+    assertThat(QuickPulseDataCollector.INSTANCE.getAndRestart().documentList.size()).isEqualTo(0);
   }
 }
