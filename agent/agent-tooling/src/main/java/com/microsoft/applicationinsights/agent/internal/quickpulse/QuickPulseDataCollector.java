@@ -113,6 +113,7 @@ public enum QuickPulseDataCollector {
   static class Counters {
     private static final long MAX_COUNT = 524287L;
     private static final long MAX_DURATION = 17592186044415L;
+    private static final int MAX_DOCUMENTS_SIZE = 1000;
 
     public final AtomicInteger exceptions = new AtomicInteger(0);
 
@@ -139,6 +140,7 @@ public enum QuickPulseDataCollector {
   private final AtomicReference<Counters> counters = new AtomicReference<>(null);
   private final MemoryMXBean memory;
   private final CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator;
+  private volatile QuickPulseStatus quickPulseStatus;
 
   QuickPulseDataCollector() {
     CpuPerformanceCounterCalculator temp;
@@ -162,15 +164,26 @@ public enum QuickPulseDataCollector {
     }
     cpuPerformanceCounterCalculator = temp;
     memory = ManagementFactory.getMemoryMXBean();
+    quickPulseStatus = QuickPulseStatus.QP_IS_OFF;
   }
 
   public synchronized void disable() {
     counters.set(null);
+    quickPulseStatus = QuickPulseStatus.QP_IS_OFF;
   }
 
   public synchronized void enable(TelemetryClient telemetryClient) {
     this.telemetryClient = telemetryClient;
     counters.set(new Counters());
+  }
+
+  public synchronized void setQuickPulseStatus(QuickPulseStatus quickPulseStatus) {
+    this.quickPulseStatus = quickPulseStatus;
+  }
+
+  // Used only in tests
+  public synchronized QuickPulseStatus getQuickPulseStatus() {
+    return this.quickPulseStatus;
   }
 
   @Nullable
@@ -194,8 +207,8 @@ public enum QuickPulseDataCollector {
   }
 
   public void add(TelemetryItem telemetryItem) {
-    if (telemetryClient == null) {
-      // quick pulse is not enabled
+    if (telemetryClient == null || quickPulseStatus != QuickPulseStatus.QP_IS_ON) {
+      // quick pulse is not enabled or quick pulse data sender is not enabled
       return;
     }
 
@@ -252,7 +265,9 @@ public enum QuickPulseDataCollector {
     quickPulseDependencyDocument.setProperties(
         aggregateProperties(telemetry.getProperties(), telemetry.getMeasurements()));
     synchronized (counters.documentList) {
-      counters.documentList.add(quickPulseDependencyDocument);
+      if (counters.documentList.size() < Counters.MAX_DOCUMENTS_SIZE) {
+        counters.documentList.add(quickPulseDependencyDocument);
+      }
     }
   }
 
@@ -287,7 +302,9 @@ public enum QuickPulseDataCollector {
       quickPulseExceptionDocument.setExceptionType(exceptionList.get(0).getTypeName());
     }
     synchronized (counters.documentList) {
-      counters.documentList.add(quickPulseExceptionDocument);
+      if (counters.documentList.size() < Counters.MAX_DOCUMENTS_SIZE) {
+        counters.documentList.add(quickPulseExceptionDocument);
+      }
     }
   }
 
@@ -315,7 +332,9 @@ public enum QuickPulseDataCollector {
     quickPulseRequestDocument.setProperties(
         aggregateProperties(requestTelemetry.getProperties(), requestTelemetry.getMeasurements()));
     synchronized (counters.documentList) {
-      counters.documentList.add(quickPulseRequestDocument);
+      if (counters.documentList.size() < Counters.MAX_DOCUMENTS_SIZE) {
+        counters.documentList.add(quickPulseRequestDocument);
+      }
     }
   }
 
