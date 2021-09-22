@@ -51,6 +51,9 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
   private static volatile BatchSpanProcessor batchSpanProcessor;
 
   public static CompletableResultCode flush() {
+    if (batchSpanProcessor == null) {
+      return CompletableResultCode.ofSuccess();
+    }
     return batchSpanProcessor.forceFlush();
   }
 
