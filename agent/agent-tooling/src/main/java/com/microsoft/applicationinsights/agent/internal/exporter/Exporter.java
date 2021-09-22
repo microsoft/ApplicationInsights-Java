@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
+import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -108,6 +109,10 @@ public class Exporter implements SpanExporter {
       AttributeKey.stringKey("message_bus.destination");
   private static final AttributeKey<Long> AZURE_SDK_ENQUEUED_TIME =
       AttributeKey.longKey("x-opt-enqueued-time");
+
+  private static final AttributeKey<Long> KAFKA_RECORD_QUEUE_TIME_MS =
+      longKey("kafka.record.queue_time_ms");
+  private static final AttributeKey<Long> KAFKA_OFFSET = longKey("kafka.offset");
 
   private static final OperationLogger exportingSpanLogger =
       new OperationLogger(Exporter.class, "Exporting span");
@@ -748,21 +753,24 @@ public class Exporter implements SpanExporter {
 
     data.setSource(getSource(attributes, span.getSpanContext()));
 
-    if (isAzureQueue(attributes)) {
-      // TODO(trask): for batch consumer, enqueuedTime should be the average of this attribute
-      //  across all links
-      Long enqueuedTime = attributes.get(AZURE_SDK_ENQUEUED_TIME);
-      if (enqueuedTime != null) {
-        long timeSinceEnqueued =
-            NANOSECONDS.toMillis(span.getStartEpochNanos()) - SECONDS.toMillis(enqueuedTime);
-        if (timeSinceEnqueued < 0) {
-          timeSinceEnqueued = 0;
-        }
-        if (data.getMeasurements() == null) {
-          data.setMeasurements(new HashMap<>());
-        }
-        data.getMeasurements().put("timeSinceEnqueued", (double) timeSinceEnqueued);
+    // TODO(trask)? for batch consumer, enqueuedTime should be the average of this attribute
+    //  across all links
+    Long enqueuedTime = attributes.get(AZURE_SDK_ENQUEUED_TIME);
+    if (enqueuedTime != null) {
+      long timeSinceEnqueuedMillis =
+          Math.max(
+              0L, NANOSECONDS.toMillis(span.getStartEpochNanos()) - SECONDS.toMillis(enqueuedTime));
+      if (data.getMeasurements() == null) {
+        data.setMeasurements(new HashMap<>());
       }
+      data.getMeasurements().put("timeSinceEnqueued", (double) timeSinceEnqueuedMillis);
+    }
+    Long timeSinceEnqueuedMillis = attributes.get(KAFKA_RECORD_QUEUE_TIME_MS);
+    if (timeSinceEnqueuedMillis != null) {
+      if (data.getMeasurements() == null) {
+        data.setMeasurements(new HashMap<>());
+      }
+      data.getMeasurements().put("timeSinceEnqueued", (double) timeSinceEnqueuedMillis);
     }
 
     // export
@@ -954,6 +962,10 @@ public class Exporter implements SpanExporter {
               || stringKey.equals(AZURE_SDK_ENQUEUED_TIME.getKey())) {
             // these are from azure SDK (AZURE_SDK_PEER_ADDRESS gets filtered out automatically
             // since it uses the otel "peer." prefix)
+            return;
+          }
+          if (stringKey.equals(KAFKA_RECORD_QUEUE_TIME_MS.getKey())
+              || stringKey.equals(KAFKA_OFFSET.getKey())) {
             return;
           }
           // special case mappings

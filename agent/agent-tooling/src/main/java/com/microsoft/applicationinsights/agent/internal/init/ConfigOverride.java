@@ -90,6 +90,10 @@ class ConfigOverride {
     if (!config.preview.captureControllerSpans) {
       properties.put("otel.instrumentation.common.experimental.suppress-controller-spans", "true");
     }
+    properties.put(
+        "otel.instrumentation.common.experimental.suppress-messaging-receive-spans", "true");
+    // this is needed to capture kafka.record.queue_time_ms
+    properties.put("otel.instrumentation.kafka.experimental-span-attributes", "true");
 
     properties.put("otel.propagators", DelegatingPropagatorProvider.NAME);
     // AI exporter is configured manually

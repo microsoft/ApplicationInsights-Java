@@ -105,6 +105,7 @@ public class SpringCloudStreamTest extends AiSmokeTest {
     assertEquals("greetings", rd2.getSource());
     assertTrue(rd2.getProperties().isEmpty());
     assertTrue(rd2.getSuccess());
+    assertTrue(rd2.getMeasurements().containsKey("timeSinceEnqueued"));
 
     assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
     assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /sendMessage");

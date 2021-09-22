@@ -99,6 +99,7 @@ public class KafkaTest extends AiSmokeTest {
     assertEquals("mytopic", rd2.getSource());
     assertTrue(rd2.getProperties().isEmpty());
     assertTrue(rd2.getSuccess());
+    assertTrue(rd2.getMeasurements().containsKey("timeSinceEnqueued"));
 
     assertEquals("HTTP GET", rdd3.getName());
     assertEquals("https://www.bing.com", rdd3.getData());
