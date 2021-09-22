@@ -886,7 +886,10 @@ public class Exporter implements SpanExporter {
       }
       boolean grpc16 = instrumentationLibraryName.equals("io.opentelemetry.grpc-1.6");
       if (grpc16 && event.getName().equals("message")) {
-        // special case as these are semi-noisy auto-collected events
+        // OpenTelemetry semantic conventions define semi-noisy grpc events
+        // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/rpc.md#events
+        //
+        // we want to suppress these (at least by default)
         continue;
       }
 

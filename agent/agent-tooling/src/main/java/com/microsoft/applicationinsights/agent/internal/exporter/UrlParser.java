@@ -21,9 +21,14 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
-public class UrlParser {
+class UrlParser {
 
-  public static String getPathFromUrl(String url) {
+  /**
+   * Returns the path portion of the url.
+   *
+   * <p>Returns {@code null} if the path cannot be extracted from url for any reason.
+   */
+  static String getPathFromUrl(String url) {
     // TODO implement something efficient and add tests
     return null;
   }
