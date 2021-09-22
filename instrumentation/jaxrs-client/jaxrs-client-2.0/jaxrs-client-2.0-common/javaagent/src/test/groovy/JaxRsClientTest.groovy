@@ -109,6 +109,7 @@ abstract class JaxRsClientTest extends HttpClientTest<Invocation.Builder> implem
             "${SemanticAttributes.HTTP_SCHEME.key}" "http"
             "${SemanticAttributes.HTTP_TARGET.key}" path
             "${SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH.key}" Long
+            "applicationinsights.internal.target_app_id" "1234"
           }
         }
         serverSpan(it, 1, span(0))
