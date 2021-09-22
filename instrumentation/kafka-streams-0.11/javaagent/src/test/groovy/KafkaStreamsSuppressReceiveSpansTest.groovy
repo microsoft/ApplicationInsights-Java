@@ -10,92 +10,91 @@ import io.opentelemetry.context.propagation.TextMapGetter
 import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
 import io.opentelemetry.sdk.trace.data.SpanData
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
-import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.apache.kafka.clients.admin.AdminClient
+import org.apache.kafka.clients.admin.NewTopic
+import org.apache.kafka.clients.consumer.Consumer
+import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.Producer
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.TopicPartition
+import org.apache.kafka.common.header.Headers
+import org.apache.kafka.common.serialization.IntegerDeserializer
+import org.apache.kafka.common.serialization.IntegerSerializer
 import org.apache.kafka.common.serialization.Serdes
+import org.apache.kafka.common.serialization.StringDeserializer
+import org.apache.kafka.common.serialization.StringSerializer
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.ValueMapper
-import org.junit.ClassRule
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory
-import org.springframework.kafka.core.DefaultKafkaProducerFactory
-import org.springframework.kafka.core.KafkaTemplate
-import org.springframework.kafka.listener.KafkaMessageListenerContainer
-import org.springframework.kafka.listener.MessageListener
-import org.springframework.kafka.test.rule.EmbeddedKafkaRule
-import org.springframework.kafka.test.utils.ContainerTestUtils
-import org.springframework.kafka.test.utils.KafkaTestUtils
+import org.testcontainers.containers.KafkaContainer
 import spock.lang.Shared
 
-import java.util.concurrent.LinkedBlockingQueue
+import java.time.Duration
 import java.util.concurrent.TimeUnit
 
 import static io.opentelemetry.api.trace.SpanKind.CONSUMER
 import static io.opentelemetry.api.trace.SpanKind.PRODUCER
 
-class KafkaStreamsTest extends AgentInstrumentationSpecification {
+class KafkaStreamsSuppressReceiveSpansTest extends AgentInstrumentationSpecification {
 
   static final STREAM_PENDING = "test.pending"
   static final STREAM_PROCESSED = "test.processed"
 
   @Shared
-  @ClassRule
-  EmbeddedKafkaRule embeddedKafka = new EmbeddedKafkaRule(1, true, STREAM_PENDING, STREAM_PROCESSED)
+  static KafkaContainer kafka
+  @Shared
+  static Producer<Integer, String> producer
+  @Shared
+  static Consumer<Integer, String> consumer
 
-  Map<String, Object> senderProps() {
-    return KafkaTestUtils.producerProps(embeddedKafka.getEmbeddedKafka().getBrokersAsString())
+
+  def setupSpec() {
+    kafka = new KafkaContainer()
+    kafka.start()
+
+    // create test topic
+    AdminClient.create(["bootstrap.servers": kafka.bootstrapServers]).withCloseable { admin ->
+      admin.createTopics([
+        new NewTopic(STREAM_PENDING, 1, (short) 1),
+        new NewTopic(STREAM_PROCESSED, 1, (short) 1),
+      ]).all().get(10, TimeUnit.SECONDS)
+    }
+
+    producer = new KafkaProducer<>(producerProps(kafka.bootstrapServers))
+
+    // values copied from spring's KafkaTestUtils
+    def consumerProps = [
+      "bootstrap.servers"      : kafka.bootstrapServers,
+      "group.id"               : "test",
+      "enable.auto.commit"     : "false",
+      "auto.commit.interval.ms": "10",
+      "session.timeout.ms"     : "60000",
+      "key.deserializer"       : IntegerDeserializer,
+      "value.deserializer"     : StringDeserializer
+    ]
+    consumer = new KafkaConsumer<>(consumerProps)
+
+    // assign topic partitions
+    consumer.assign([
+      new TopicPartition(STREAM_PROCESSED, 0)
+    ])
   }
 
-  Map<String, Object> consumerProps(String group, String autoCommit) {
-    return KafkaTestUtils.consumerProps(group, autoCommit, embeddedKafka.getEmbeddedKafka())
-  }
-
-  void waitForAssignment(Object container) {
-    ContainerTestUtils.waitForAssignment(container, embeddedKafka.getEmbeddedKafka().getPartitionsPerTopic())
-  }
-
-  def stopProducerFactory(DefaultKafkaProducerFactory producerFactory) {
-    producerFactory.destroy()
+  def cleanupSpec() {
+    consumer?.close()
+    producer?.close()
+    kafka.stop()
   }
 
   def "test kafka produce and consume with streams in-between"() {
     setup:
     def config = new Properties()
-    def senderProps = senderProps()
-    config.putAll(senderProps)
+    config.putAll(producerProps(kafka.bootstrapServers))
     config.put(StreamsConfig.APPLICATION_ID_CONFIG, "test-application")
-    config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName())
+    config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass().getName())
     config.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName())
-
-    // CONFIGURE CONSUMER
-    def consumerFactory = new DefaultKafkaConsumerFactory<String, String>(consumerProps("sender", "false"))
-
-    def containerProperties
-    try {
-      // Different class names for test and latestDepTest.
-      containerProperties = Class.forName("org.springframework.kafka.listener.config.ContainerProperties").newInstance(STREAM_PROCESSED)
-    } catch (ClassNotFoundException | NoClassDefFoundError e) {
-      containerProperties = Class.forName("org.springframework.kafka.listener.ContainerProperties").newInstance(STREAM_PROCESSED)
-    }
-    def consumerContainer = new KafkaMessageListenerContainer<>(consumerFactory, containerProperties)
-
-    // create a thread safe queue to store the processed message
-    def records = new LinkedBlockingQueue<ConsumerRecord<String, String>>()
-
-    // setup a Kafka message listener
-    consumerContainer.setupMessageListener(new MessageListener<String, String>() {
-      @Override
-      void onMessage(ConsumerRecord<String, String> record) {
-        Span.current().setAttribute("testing", 123)
-        records.add(record)
-      }
-    })
-
-    // start the container and underlying message listener
-    consumerContainer.start()
-
-    // wait until the container has the required number of assigned partitions
-    waitForAssignment(consumerContainer)
 
     // CONFIGURE PROCESSOR
     def builder
@@ -128,29 +127,29 @@ class KafkaStreamsTest extends AgentInstrumentationSpecification {
     }
     streams.start()
 
-    // CONFIGURE PRODUCER
-    def producerFactory = new DefaultKafkaProducerFactory<String, String>(senderProps)
-    def kafkaTemplate = new KafkaTemplate<String, String>(producerFactory)
-
     when:
     String greeting = "TESTING TESTING 123!"
-    kafkaTemplate.send(STREAM_PENDING, greeting)
+    producer.send(new ProducerRecord<>(STREAM_PENDING, greeting))
 
     then:
     // check that the message was received
-    def received = records.poll(10, TimeUnit.SECONDS)
-    received.value() == greeting.toLowerCase()
-    received.key() == null
+    def records = consumer.poll(Duration.ofSeconds(10).toMillis())
+    Headers receivedHeaders = null
+    for (record in records) {
+      Span.current().setAttribute("testing", 123)
 
-    assertTraces(3) {
-      traces.sort(orderByRootSpanName(
-        STREAM_PENDING + " send",
-        STREAM_PENDING + " receive",
-        STREAM_PROCESSED + " receive"))
+      assert record.value() == greeting.toLowerCase()
+      assert record.key() == null
 
-      SpanData producerPending, producerProcessed
+      if (receivedHeaders == null) {
+        receivedHeaders = record.headers()
+      }
+    }
 
-      trace(0, 1) {
+    SpanData streamSendSpan
+
+    assertTraces(1) {
+      trace(0, 4) {
         // kafka-clients PRODUCER
         span(0) {
           name STREAM_PENDING + " send"
@@ -162,28 +161,11 @@ class KafkaStreamsTest extends AgentInstrumentationSpecification {
             "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" "topic"
           }
         }
-
-        producerPending = span(0)
-      }
-      trace(1, 3) {
-        // kafka-clients CONSUMER receive
-        span(0) {
-          name STREAM_PENDING + " receive"
-          kind CONSUMER
-          hasNoParent()
-          attributes {
-            "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
-            "${SemanticAttributes.MESSAGING_DESTINATION.key}" STREAM_PENDING
-            "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" "topic"
-            "${SemanticAttributes.MESSAGING_OPERATION.key}" "receive"
-          }
-        }
         // kafka-stream CONSUMER
         span(1) {
           name STREAM_PENDING + " process"
           kind CONSUMER
           childOf span(0)
-          hasLink producerPending
           attributes {
             "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
             "${SemanticAttributes.MESSAGING_DESTINATION.key}" STREAM_PENDING
@@ -196,6 +178,9 @@ class KafkaStreamsTest extends AgentInstrumentationSpecification {
             "asdf" "testing"
           }
         }
+
+        streamSendSpan = span(2)
+
         // kafka-clients PRODUCER
         span(2) {
           name STREAM_PROCESSED + " send"
@@ -207,28 +192,11 @@ class KafkaStreamsTest extends AgentInstrumentationSpecification {
             "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" "topic"
           }
         }
-
-        producerProcessed = span(2)
-      }
-      trace(2, 2) {
-        // kafka-clients CONSUMER receive
-        span(0) {
-          name STREAM_PROCESSED + " receive"
-          kind CONSUMER
-          hasNoParent()
-          attributes {
-            "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
-            "${SemanticAttributes.MESSAGING_DESTINATION.key}" STREAM_PROCESSED
-            "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" "topic"
-            "${SemanticAttributes.MESSAGING_OPERATION.key}" "receive"
-          }
-        }
         // kafka-clients CONSUMER process
-        span(1) {
+        span(3) {
           name STREAM_PROCESSED + " process"
           kind CONSUMER
-          childOf span(0)
-          hasLink producerProcessed
+          childOf span(2)
           attributes {
             "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
             "${SemanticAttributes.MESSAGING_DESTINATION.key}" STREAM_PROCESSED
@@ -244,9 +212,8 @@ class KafkaStreamsTest extends AgentInstrumentationSpecification {
       }
     }
 
-    def headers = received.headers()
-    headers.iterator().hasNext()
-    def traceparent = new String(headers.headers("traceparent").iterator().next().value())
+    receivedHeaders.iterator().hasNext()
+    def traceparent = new String(receivedHeaders.headers("traceparent").iterator().next().value())
     Context context = W3CTraceContextPropagator.instance.extract(Context.root(), "", new TextMapGetter<String>() {
       @Override
       Iterable<String> keys(String carrier) {
@@ -262,15 +229,20 @@ class KafkaStreamsTest extends AgentInstrumentationSpecification {
       }
     })
     def spanContext = Span.fromContext(context).getSpanContext()
-    def streamTrace = traces.find { it.size() == 3 }
-    def streamSendSpan = streamTrace[2]
     spanContext.traceId == streamSendSpan.traceId
     spanContext.spanId == streamSendSpan.spanId
+  }
 
-
-    cleanup:
-    stopProducerFactory(producerFactory)
-    streams?.close()
-    consumerContainer?.stop()
+  private static Map<String, Object> producerProps(String servers) {
+    // values copied from spring's KafkaTestUtils
+    return [
+      "bootstrap.servers": servers,
+      "retries"          : 0,
+      "batch.size"       : "16384",
+      "linger.ms"        : 1,
+      "buffer.memory"    : "33554432",
+      "key.serializer"   : IntegerSerializer,
+      "value.serializer" : StringSerializer
+    ]
   }
 }
