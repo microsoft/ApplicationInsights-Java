@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
+import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.heartbeat.HeartBeatModule;
@@ -75,8 +76,10 @@ public class TelemetryClientInitializer {
     PerformanceCounterContainer.INSTANCE.register(new ProcessMemoryPerformanceCounter());
     PerformanceCounterContainer.INSTANCE.register(new FreeMemoryPerformanceCounter());
 
-    // system cpu and process disk i/o
-    PerformanceCounterContainer.INSTANCE.register(new OshiPerformanceCounter());
+    if (!isAgentRunningInSandboxEnvWindows()) {
+      // system cpu and process disk i/o
+      PerformanceCounterContainer.INSTANCE.register(new OshiPerformanceCounter());
+    }
 
     ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
     if (threadBean.isSynchronizerUsageSupported()) {
@@ -93,6 +96,11 @@ public class TelemetryClientInitializer {
         Constants.PROCESS_IO_PC_METRIC_NAME);
 
     setQuickPulse(configuration, telemetryClient);
+  }
+
+  private static boolean isAgentRunningInSandboxEnvWindows() {
+    String qualifiedSdkVersion = PropertyHelper.getQualifiedSdkVersionString();
+    return qualifiedSdkVersion.startsWith("awr") || qualifiedSdkVersion.startsWith("fwr");
   }
 
   private static void setQuickPulse(Configuration configuration, TelemetryClient telemetryClient) {
