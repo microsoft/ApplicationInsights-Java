@@ -31,6 +31,9 @@ dependencies {
   // Needs to be api dependency due to Spock restriction.
   api("org.awaitility:awaitility")
 
+  compileOnly("com.google.auto.value:auto-value-annotations")
+  annotationProcessor("com.google.auto.value:auto-value")
+
   compileOnly(project(path = ":testing:armeria-shaded-for-testing", configuration = "shadow"))
 
   implementation("io.opentelemetry:opentelemetry-proto") {
