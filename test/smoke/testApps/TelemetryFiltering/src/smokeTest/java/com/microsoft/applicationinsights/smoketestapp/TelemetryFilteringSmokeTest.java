@@ -96,7 +96,7 @@ public class TelemetryFilteringSmokeTest extends AiSmokeTest {
     assertTrue(rd.getSuccess());
     assertEquals("SQL", rdd.getType());
     assertEquals("testdb", rdd.getTarget());
-    assertEquals("select * from abc", rdd.getName());
+    assertEquals("SELECT testdb.abc", rdd.getName());
     assertEquals("select * from abc", rdd.getData());
     assertTrue(rdd.getSuccess());
 

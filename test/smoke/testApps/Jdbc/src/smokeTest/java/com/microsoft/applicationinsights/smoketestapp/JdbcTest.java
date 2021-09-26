@@ -60,7 +60,7 @@ public class JdbcTest extends AiSmokeTest {
     assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
 
-    assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getName());
+    assertEquals("SELECT testdb.abc", telemetry.rdd1.getName());
     assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getData());
     assertEquals("SQL", telemetry.rdd1.getType());
     assertEquals("testdb", telemetry.rdd1.getTarget());
@@ -78,7 +78,7 @@ public class JdbcTest extends AiSmokeTest {
     assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
 
-    assertEquals("select * from abc", telemetry.rdd1.getName());
+    assertEquals("SELECT testdb.abc", telemetry.rdd1.getName());
     assertEquals("select * from abc", telemetry.rdd1.getData());
     assertEquals("SQL", telemetry.rdd1.getType());
     assertEquals("testdb", telemetry.rdd1.getTarget());
@@ -104,7 +104,7 @@ public class JdbcTest extends AiSmokeTest {
     String query = "select * from abc" + largeStr;
     String truncatedQuery = query.substring(0, Math.min(query.length(), 1024));
 
-    assertEquals(truncatedQuery, telemetry.rdd1.getName());
+    assertEquals("SELECT testdb.abc", telemetry.rdd1.getName());
     assertEquals(query, telemetry.rdd1.getData());
     assertEquals("SQL", telemetry.rdd1.getType());
     assertEquals("testdb", telemetry.rdd1.getTarget());
@@ -122,7 +122,7 @@ public class JdbcTest extends AiSmokeTest {
     assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
 
-    assertEquals("insert into abc (xyz) values (?)", telemetry.rdd1.getName());
+    assertEquals("INSERT testdb.abc", telemetry.rdd1.getName());
     assertEquals("insert into abc (xyz) values (?)", telemetry.rdd1.getData());
     assertEquals("SQL", telemetry.rdd1.getType());
     assertEquals("testdb", telemetry.rdd1.getTarget());
@@ -143,10 +143,7 @@ public class JdbcTest extends AiSmokeTest {
     assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
 
-    assertEquals(
-        "insert into abc (xyz) values ('t'); insert into abc (xyz) values ('u');"
-            + " insert into abc (xyz) values ('v')",
-        telemetry.rdd1.getName());
+    assertEquals("insert testdb.abc", telemetry.rdd1.getName());
     assertEquals(
         "insert into abc (xyz) values ('t'); insert into abc (xyz) values ('u');"
             + " insert into abc (xyz) values ('v')",
@@ -170,7 +167,7 @@ public class JdbcTest extends AiSmokeTest {
     assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
 
-    assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getName());
+    assertEquals("SELECT mysql.abc", telemetry.rdd1.getName());
     assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getData());
     assertEquals("mysql", telemetry.rdd1.getType());
     // not the best test, because this is both the db.name and db.system
@@ -191,7 +188,7 @@ public class JdbcTest extends AiSmokeTest {
     assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
 
-    assertEquals("select * from abc", telemetry.rdd1.getName());
+    assertEquals("SELECT mysql.abc", telemetry.rdd1.getName());
     assertEquals("select * from abc", telemetry.rdd1.getData());
     assertEquals("mysql", telemetry.rdd1.getType());
     // not the best test, because this is both the db.name and db.system
@@ -210,7 +207,7 @@ public class JdbcTest extends AiSmokeTest {
     assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
 
-    assertTrue(telemetry.rdd1.getName().startsWith("select * from abc where xyz = ?"));
+    assertEquals("SELECT postgres.abc", telemetry.rdd1.getName());
     assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getData());
     assertEquals("postgresql", telemetry.rdd1.getType());
     // not the best test, because this is both the db.name and db.system
@@ -229,7 +226,7 @@ public class JdbcTest extends AiSmokeTest {
     assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
 
-    assertTrue(telemetry.rdd1.getName().startsWith("select * from abc"));
+    assertEquals("SELECT postgres.abc", telemetry.rdd1.getName());
     assertEquals("select * from abc", telemetry.rdd1.getData());
     assertEquals("postgresql", telemetry.rdd1.getType());
     // not the best test, because this is both the db.name and db.system
@@ -248,7 +245,7 @@ public class JdbcTest extends AiSmokeTest {
     assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
 
-    assertTrue(telemetry.rdd1.getName().startsWith("select * from abc where xyz = ?"));
+    assertEquals("SELECT abc", telemetry.rdd1.getName());
     assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getData());
     assertEquals("SQL", telemetry.rdd1.getType());
     assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+"));
@@ -266,7 +263,7 @@ public class JdbcTest extends AiSmokeTest {
     assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
 
-    assertTrue(telemetry.rdd1.getName().startsWith("select * from abc"));
+    assertEquals("SELECT abc", telemetry.rdd1.getName());
     assertEquals("select * from abc", telemetry.rdd1.getData());
     assertEquals("SQL", telemetry.rdd1.getType());
     assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+"));
@@ -285,7 +282,7 @@ public class JdbcTest extends AiSmokeTest {
     assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
 
-    assertTrue(telemetry.rdd1.getName().startsWith("select * from abc where xyz = ?"));
+    assertEquals("SELECT abc", telemetry.rdd1.getName());
     assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getData());
     assertEquals("SQL", telemetry.rdd1.getType());
     assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+"));
@@ -304,7 +301,7 @@ public class JdbcTest extends AiSmokeTest {
     assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
 
-    assertTrue(telemetry.rdd1.getName().startsWith("select * from abc"));
+    assertEquals("SELECT abc", telemetry.rdd1.getName());
     assertEquals("select * from abc", telemetry.rdd1.getData());
     assertEquals("SQL", telemetry.rdd1.getType());
     assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+"));
