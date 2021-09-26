@@ -42,7 +42,7 @@ dependencies {
 
   implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.4")
   implementation("com.azure:azure-core")
-  implementation("com.azure:azure-identity:1.2.4") {
+  implementation("com.azure:azure-identity") {
     // "This dependency can be excluded if IntelliJ Credential is not being used for authentication
     //  via `IntelliJCredential` or `DefaultAzureCredential`"
     // NOTE this exclusion saves 6.5 mb !!!!
