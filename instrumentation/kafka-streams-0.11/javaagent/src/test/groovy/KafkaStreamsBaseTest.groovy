@@ -11,7 +11,6 @@ import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.Producer
-import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.IntegerDeserializer
 import org.apache.kafka.common.serialization.IntegerSerializer
@@ -19,18 +18,14 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.testcontainers.containers.KafkaContainer
 import spock.lang.Shared
-import spock.lang.Unroll
 
-import java.time.Duration
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
-abstract class KafkaClientBaseTest extends AgentInstrumentationSpecification {
+class KafkaStreamsBaseTest extends AgentInstrumentationSpecification {
 
-  protected static final SHARED_TOPIC = "shared.topic"
-
-  private static final boolean propagationEnabled = Boolean.parseBoolean(
-    System.getProperty("otel.instrumentation.kafka.client-propagation.enabled", "true"))
+  protected static final STREAM_PENDING = "test.pending"
+  protected static final STREAM_PROCESSED = "test.processed"
 
   @Shared
   static KafkaContainer kafka
@@ -47,20 +42,13 @@ abstract class KafkaClientBaseTest extends AgentInstrumentationSpecification {
 
     // create test topic
     AdminClient.create(["bootstrap.servers": kafka.bootstrapServers]).withCloseable { admin ->
-      admin.createTopics([new NewTopic(SHARED_TOPIC, 1, (short) 1)]).all().get(10, TimeUnit.SECONDS)
+      admin.createTopics([
+        new NewTopic(STREAM_PENDING, 1, (short) 1),
+        new NewTopic(STREAM_PROCESSED, 1, (short) 1),
+      ]).all().get(10, TimeUnit.SECONDS)
     }
 
-    // values copied from spring's KafkaTestUtils
-    def producerProps = [
-      "bootstrap.servers": kafka.bootstrapServers,
-      "retries"          : 0,
-      "batch.size"       : "16384",
-      "linger.ms"        : 1,
-      "buffer.memory"    : "33554432",
-      "key.serializer"   : IntegerSerializer,
-      "value.serializer" : StringSerializer
-    ]
-    producer = new KafkaProducer<>(producerProps)
+    producer = new KafkaProducer<>(producerProps(kafka.bootstrapServers))
 
     def consumerProps = [
       "bootstrap.servers"      : kafka.bootstrapServers,
@@ -73,7 +61,7 @@ abstract class KafkaClientBaseTest extends AgentInstrumentationSpecification {
     ]
     consumer = new KafkaConsumer<>(consumerProps)
 
-    consumer.subscribe([SHARED_TOPIC], new ConsumerRebalanceListener() {
+    consumer.subscribe([STREAM_PROCESSED], new ConsumerRebalanceListener() {
       @Override
       void onPartitionsRevoked(Collection<TopicPartition> collection) {
       }
@@ -91,21 +79,17 @@ abstract class KafkaClientBaseTest extends AgentInstrumentationSpecification {
     kafka.stop()
   }
 
-  @Unroll
-  def "test kafka client header propagation manual config"() {
-    when:
-    String message = "Testing without headers"
-    producer.send(new ProducerRecord<>(SHARED_TOPIC, message))
-      .get(5, TimeUnit.SECONDS)
-
-    then:
-    awaitUntilConsumerIsReady()
-
-    def records = consumer.poll(Duration.ofSeconds(1).toMillis())
-    records.count() == 1
-    for (record in records) {
-      assert record.headers().iterator().hasNext() == propagationEnabled
-    }
+  static Map<String, Object> producerProps(String servers) {
+    // values copied from spring's KafkaTestUtils
+    return [
+      "bootstrap.servers": servers,
+      "retries"          : 0,
+      "batch.size"       : "16384",
+      "linger.ms"        : 1,
+      "buffer.memory"    : "33554432",
+      "key.serializer"   : IntegerSerializer,
+      "value.serializer" : StringSerializer
+    ]
   }
 
   // Kafka's eventual consistency behavior forces us to do a couple of empty poll() calls until it gets properly assigned a topic partition
