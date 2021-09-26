@@ -629,7 +629,7 @@ public class Exporter implements SpanExporter {
         nullAwareConcat(
             getTargetFromPeerAttributes(attributes, getDefaultPortForDbSystem(dbSystem)),
             attributes.get(SemanticAttributes.DB_NAME),
-            "/");
+            " | ");
     if (target == null) {
       target = dbSystem;
     }
