@@ -32,7 +32,7 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
 import org.junit.Test;
 
-@UseAgent("controller_spans_disabled_default")
+@UseAgent("controller_spans_disabled")
 @WithDependencyContainers({
   @DependencyContainer(
       value = "confluentinc/cp-zookeeper",

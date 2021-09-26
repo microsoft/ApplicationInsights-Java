@@ -481,26 +481,6 @@ class ConfigurationTest {
   }
 
   @Test
-  void shouldOverridePreviewOtelApiSupport() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT", "true");
-
-    Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayEnvVars(configuration);
-
-    assertThat(configuration.preview.openTelemetryApiSupport).isTrue();
-  }
-
-  @Test
-  void shouldOverridePreviewAzureSdkInstrumentation() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_AZURE_SDK_ENABLED", "true");
-
-    Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayEnvVars(configuration);
-
-    assertThat(configuration.preview.instrumentation.azureSdk.enabled).isTrue();
-  }
-
-  @Test
   void shouldOverridePreviewSpringIntegrationInstrumentation() throws IOException {
     envVars.set("APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_SPRING_INTEGRATION_ENABLED", "true");
 
@@ -518,6 +498,16 @@ class ConfigurationTest {
     ConfigurationBuilder.overlayEnvVars(configuration);
 
     assertThat(configuration.preview.liveMetrics.enabled).isFalse();
+  }
+
+  @Test
+  void shouldOverrideInstrumentationAzureSdkEnabled() throws IOException {
+    envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_AZURE_SDK_ENABLED", "false");
+
+    Configuration configuration = loadConfiguration();
+    ConfigurationBuilder.overlayEnvVars(configuration);
+
+    assertThat(configuration.instrumentation.azureSdk.enabled).isFalse();
   }
 
   @Test

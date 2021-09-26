@@ -29,7 +29,7 @@ import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import org.junit.Test;
 
-@UseAgent("azuresdk")
+@UseAgent
 public class AzureSdkTest extends AiSmokeTest {
 
   @Test

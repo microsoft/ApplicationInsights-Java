@@ -134,6 +134,7 @@ public class Configuration {
 
   public static class Instrumentation {
 
+    public EnabledByDefaultInstrumentation azureSdk = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation cassandra = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation jdbc = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation jms = new EnabledByDefaultInstrumentation();
@@ -184,7 +185,8 @@ public class Configuration {
 
     public SamplingPreview sampling = new SamplingPreview();
     public List<ProcessorConfig> processors = new ArrayList<>();
-    public boolean openTelemetryApiSupport;
+    // this is just here to detect if using this old setting in order to give a helpful message
+    @Deprecated public boolean openTelemetryApiSupport;
     public PreviewInstrumentation instrumentation = new PreviewInstrumentation();
     // applies to perf counters, default custom metrics, jmx metrics, and micrometer metrics
     // not sure if we'll be able to have different metric intervals in future OpenTelemetry metrics
@@ -264,6 +266,8 @@ public class Configuration {
   }
 
   public static class PreviewInstrumentation {
+    // this is just here to detect if using this old setting in order to give a helpful message
+    @Deprecated
     public DisabledByDefaultInstrumentation azureSdk = new DisabledByDefaultInstrumentation();
 
     public DisabledByDefaultInstrumentation grizzly = new DisabledByDefaultInstrumentation();

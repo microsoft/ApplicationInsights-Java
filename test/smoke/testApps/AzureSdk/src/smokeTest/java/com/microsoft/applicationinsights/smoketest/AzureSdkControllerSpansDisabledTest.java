@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-@UseAgent("controller_spans_disabled_azuresdk")
+@UseAgent("controller_spans_disabled")
 public class AzureSdkControllerSpansDisabledTest extends AiSmokeTest {
 
   @Test

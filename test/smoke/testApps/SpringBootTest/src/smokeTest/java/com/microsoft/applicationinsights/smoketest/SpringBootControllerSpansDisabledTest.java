@@ -43,7 +43,7 @@ import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
 
-@UseAgent("controller_spans_disabled_default")
+@UseAgent("controller_spans_disabled")
 public class SpringBootControllerSpansDisabledTest extends AiSmokeTest {
 
   @Test

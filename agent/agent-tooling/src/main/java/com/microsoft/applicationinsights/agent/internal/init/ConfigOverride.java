@@ -42,6 +42,9 @@ class ConfigOverride {
       properties.put("otel.instrumentation.micrometer.enabled", "false");
       properties.put("otel.instrumentation.actuator-metrics.enabled", "false");
     }
+    if (!config.instrumentation.azureSdk.enabled) {
+      properties.put("otel.instrumentation.azure-core.enabled", "false");
+    }
     if (!config.instrumentation.cassandra.enabled) {
       properties.put("otel.instrumentation.cassandra.enabled", "false");
     }
@@ -67,17 +70,6 @@ class ConfigOverride {
     }
     if (!config.instrumentation.springScheduling.enabled) {
       properties.put("otel.instrumentation.spring-scheduling.enabled", "false");
-    }
-    if (!config.preview.openTelemetryApiSupport) {
-      properties.put("otel.instrumentation.opentelemetry-api.enabled", "false");
-      properties.put("otel.instrumentation.opentelemetry-api-metrics.enabled", "false");
-      // TODO (trask) this is old name, remove after updating to version that has
-      //  this: https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/3611
-      properties.put("otel.instrumentation.opentelemetry-metrics-api.enabled", "false");
-      properties.put("otel.instrumentation.opentelemetry-annotations.enabled", "false");
-    }
-    if (!config.preview.instrumentation.azureSdk.enabled) {
-      properties.put("otel.instrumentation.azure-core.enabled", "false");
     }
     if (config.preview.instrumentation.grizzly.enabled) {
       // grizzly instrumentation is off by default

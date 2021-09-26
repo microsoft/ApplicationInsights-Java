@@ -80,10 +80,6 @@ public class ConfigurationBuilder {
   public static final String APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH =
       "APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH";
 
-  private static final String APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT =
-      "APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT";
-  private static final String APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_AZURE_SDK_ENABLED =
-      "APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_AZURE_SDK_ENABLED";
   private static final String
       APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_SPRING_INTEGRATION_ENABLED =
           "APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_SPRING_INTEGRATION_ENABLED";
@@ -125,7 +121,19 @@ public class ConfigurationBuilder {
     }
     if (config.preview.httpMethodInOperationName) {
       configurationLogger.warn(
-          "\"httpMethodInOperationName\" preview setting is now the (one and only) default behavior");
+          "\"httpMethodInOperationName\" is no longer in preview and it is now the"
+              + " (one and only) default behavior");
+    }
+    if (config.preview.openTelemetryApiSupport) {
+      configurationLogger.warn(
+          "\"openTelemetryApiSupport\" is no longer in preview and it is now the"
+              + " (one and only) default behavior");
+    }
+    if (config.preview.instrumentation.azureSdk.enabled) {
+      configurationLogger.warn(
+          "\"azureSdk\" instrumentation is no longer in preview"
+              + " and it is now enabled by default,"
+              + " so no need to enable it under preview configuration");
     }
     if (config.preview.instrumentation.javaHttpClient.enabled) {
       configurationLogger.warn(
@@ -145,6 +153,7 @@ public class ConfigurationBuilder {
               + " and it is now enabled by default,"
               + " so no need to enable it under preview configuration");
     }
+
     overlayEnvVars(config);
     applySamplingPercentageRounding(config);
     // rp configuration should always be last (so it takes precedence)
@@ -249,6 +258,10 @@ public class ConfigurationBuilder {
   }
 
   private static void overlayInstrumentationEnabledEnvVars(Configuration config) {
+    config.instrumentation.azureSdk.enabled =
+        overlayWithEnvVar(
+            "APPLICATIONINSIGHTS_INSTRUMENTATION_AZURE_SDK_ENABLED",
+            config.instrumentation.azureSdk.enabled);
     config.instrumentation.cassandra.enabled =
         overlayWithEnvVar(
             "APPLICATIONINSIGHTS_INSTRUMENTATION_CASSANDRA_ENABLED",
@@ -383,13 +396,6 @@ public class ConfigurationBuilder {
                 APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS,
                 config.preview.metricIntervalSeconds);
 
-    config.preview.openTelemetryApiSupport =
-        overlayWithEnvVar(
-            APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT, config.preview.openTelemetryApiSupport);
-    config.preview.instrumentation.azureSdk.enabled =
-        overlayWithEnvVar(
-            APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_AZURE_SDK_ENABLED,
-            config.preview.instrumentation.azureSdk.enabled);
     config.preview.instrumentation.springIntegration.enabled =
         overlayWithEnvVar(
             APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_SPRING_INTEGRATION_ENABLED,

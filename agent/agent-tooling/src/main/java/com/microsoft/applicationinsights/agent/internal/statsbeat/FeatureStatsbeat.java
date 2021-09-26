@@ -97,6 +97,9 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     }
 
     // disabled instrumentations
+    if (!config.instrumentation.azureSdk.enabled) {
+      featureList.add(Feature.AZURE_SDK_DISABLED);
+    }
     if (!config.instrumentation.cassandra.enabled) {
       featureList.add(Feature.CASSANDRA_DISABLED);
     }
@@ -126,9 +129,6 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     }
 
     // preview instrumentation
-    if (!config.preview.instrumentation.azureSdk.enabled) {
-      featureList.add(Feature.AZURE_SDK_DISABLED);
-    }
     if (!config.preview.instrumentation.grizzly.enabled) {
       featureList.add(Feature.GRIZZLY_DISABLED);
     }

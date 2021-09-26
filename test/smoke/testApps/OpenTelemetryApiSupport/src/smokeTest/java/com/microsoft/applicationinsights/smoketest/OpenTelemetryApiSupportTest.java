@@ -29,7 +29,7 @@ import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import org.junit.Test;
 
-@UseAgent("opentelemetryapisupport")
+@UseAgent
 public class OpenTelemetryApiSupportTest extends AiSmokeTest {
 
   @Test
