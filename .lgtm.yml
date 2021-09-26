@@ -2,8 +2,3 @@ extraction:
   java:
     index:
       java_version: 11
-      build_command: |
-        # needs Java 11, otherwise this could be done in before_index
-        ./gradlew --project-dir gradle-plugins publishToMavenLocal
-        ./gradlew :muzzle:publishToMavenLocal
-        ./gradlew testClasses
