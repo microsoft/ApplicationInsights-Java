@@ -25,7 +25,7 @@ public class AkkaActorCellInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
-    return named("akka.actor.ActorCell");
+    return named("akka.actor.ActorCell").or(named("testing123deleteme321"));
   }
 
   @Override
