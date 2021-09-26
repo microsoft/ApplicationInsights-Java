@@ -167,7 +167,7 @@ public class SpringBootControllerSpansDisabledTest extends AiSmokeTest {
     assertTrue(rd.getProperties().isEmpty());
     assertTrue(rd.getSuccess());
 
-    assertEquals("HTTP GET", rdd1.getName());
+    assertEquals("GET /", rdd1.getName());
     assertEquals("https://www.bing.com", rdd1.getData());
     assertEquals("www.bing.com", rdd1.getTarget());
     assertTrue(rdd1.getProperties().isEmpty());

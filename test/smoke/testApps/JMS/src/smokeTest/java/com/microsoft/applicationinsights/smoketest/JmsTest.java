@@ -49,7 +49,7 @@ public class JmsTest extends AiSmokeTest {
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "message process");
     Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "HelloController.sendMessage");
     Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "message send");
-    Envelope rddEnvelope3 = getDependencyEnvelope(rddList, "HTTP GET");
+    Envelope rddEnvelope3 = getDependencyEnvelope(rddList, "GET /");
 
     RequestData rd1 = (RequestData) ((Data<?>) rdEnvelope1.getData()).getBaseData();
     RequestData rd2 = (RequestData) ((Data<?>) rdEnvelope2.getData()).getBaseData();
@@ -84,7 +84,7 @@ public class JmsTest extends AiSmokeTest {
     assertTrue(rd2.getProperties().isEmpty());
     assertTrue(rd2.getSuccess());
 
-    assertEquals("HTTP GET", rdd3.getName());
+    assertEquals("GET /", rdd3.getName());
     assertEquals("https://www.bing.com", rdd3.getData());
     assertEquals("Http", rdd3.getType());
     assertEquals("www.bing.com", rdd3.getTarget());

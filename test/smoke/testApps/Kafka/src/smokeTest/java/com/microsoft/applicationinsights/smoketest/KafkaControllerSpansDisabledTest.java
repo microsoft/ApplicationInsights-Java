@@ -64,7 +64,7 @@ public class KafkaControllerSpansDisabledTest extends AiSmokeTest {
 
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "mytopic process");
     Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "mytopic send");
-    Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "HTTP GET");
+    Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "GET /");
 
     RequestData rd1 = (RequestData) ((Data<?>) rdEnvelope1.getData()).getBaseData();
     RequestData rd2 = (RequestData) ((Data<?>) rdEnvelope2.getData()).getBaseData();
@@ -90,7 +90,7 @@ public class KafkaControllerSpansDisabledTest extends AiSmokeTest {
     assertTrue(rd2.getProperties().isEmpty());
     assertTrue(rd2.getSuccess());
 
-    assertEquals("HTTP GET", rdd2.getName());
+    assertEquals("GET /", rdd2.getName());
     assertEquals("https://www.bing.com", rdd2.getData());
     assertEquals("Http", rdd2.getType());
     assertEquals("www.bing.com", rdd2.getTarget());

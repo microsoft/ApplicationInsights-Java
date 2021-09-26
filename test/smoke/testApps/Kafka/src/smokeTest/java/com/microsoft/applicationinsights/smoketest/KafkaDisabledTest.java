@@ -83,7 +83,7 @@ public class KafkaDisabledTest extends AiSmokeTest {
     }
     rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-    assertEquals("HTTP GET", rdd.getName());
+    assertEquals("GET /", rdd.getName());
     assertEquals("https://www.bing.com", rdd.getData());
     assertTrue(rdd.getProperties().isEmpty());
     assertTrue(rdd.getSuccess());

@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 class UrlParser {
 
   /**
@@ -28,9 +30,59 @@ class UrlParser {
    *
    * <p>Returns {@code null} if the path cannot be extracted from url for any reason.
    */
+  @Nullable
   static String getPathFromUrl(String url) {
-    // TODO implement something efficient and add tests
-    return null;
+
+    int schemeEndIndex = url.indexOf(':');
+    if (schemeEndIndex == -1) {
+      // not a valid url
+      return null;
+    }
+
+    int len = url.length();
+    if (schemeEndIndex + 2 < len
+        && url.charAt(schemeEndIndex + 1) == '/'
+        && url.charAt(schemeEndIndex + 2) == '/') {
+      // has authority component
+      // look for
+      //   '/' - start of path
+      //   '?' or end of string - empty path
+      int pathStartIndex = -1;
+      for (int i = schemeEndIndex + 3; i < len; i++) {
+        char c = url.charAt(i);
+        if (c == '/') {
+          pathStartIndex = i;
+          break;
+        } else if (c == '?' || c == '#') {
+          // empty path
+          return "";
+        }
+      }
+      if (pathStartIndex == -1) {
+        // end of the url was reached while scanning for the beginning of the path
+        // which means the path is empty
+        return "";
+      }
+      int pathEndIndex = getPathEndIndex(url, pathStartIndex + 1);
+      return url.substring(pathStartIndex, pathEndIndex);
+    } else {
+      // has no authority, path starts right away
+      int pathStartIndex = schemeEndIndex + 1;
+      int pathEndIndex = getPathEndIndex(url, pathStartIndex);
+      return url.substring(pathStartIndex, pathEndIndex);
+    }
+  }
+
+  // returns the ending index of the path component (exclusive)
+  private static int getPathEndIndex(String url, int startIndex) {
+    int len = url.length();
+    for (int i = startIndex; i < len; i++) {
+      char c = url.charAt(i);
+      if (c == '?' || c == '#') {
+        return i;
+      }
+    }
+    return len;
   }
 
   private UrlParser() {}

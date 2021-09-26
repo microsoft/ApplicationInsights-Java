@@ -299,6 +299,11 @@ public class Exporter implements SpanExporter {
   private static String getDependencyName(SpanData span) {
     String name = span.getName();
 
+    String method = span.getAttributes().get(SemanticAttributes.HTTP_METHOD);
+    if (method == null) {
+      return name;
+    }
+
     if (!DEFAULT_HTTP_SPAN_NAMES.contains(name)) {
       return name;
     }
@@ -309,7 +314,10 @@ public class Exporter implements SpanExporter {
     }
 
     String path = UrlParser.getPathFromUrl(url);
-    return path != null ? path : name;
+    if (path == null) {
+      return name;
+    }
+    return path.isEmpty() ? method + " /" : method + " " + path;
   }
 
   private static void applySemanticConventions(
