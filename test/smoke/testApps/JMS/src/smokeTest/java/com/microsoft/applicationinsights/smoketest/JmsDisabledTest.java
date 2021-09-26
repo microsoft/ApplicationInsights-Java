@@ -41,31 +41,18 @@ public class JmsDisabledTest extends AiSmokeTest {
     Envelope rdEnvelope = rdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-    String operationId = rdEnvelope.getTags().get("ai.operation.id");
-    List<Envelope> rddList =
-        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
     assertEquals(0, mockedIngestion.getCountForType("EventData"));
-
-    Envelope rddEnvelope = rddList.get(0);
-    RemoteDependencyData rdd =
-        (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
     assertEquals("GET /sendMessage", rd.getName());
     assertEquals("200", rd.getResponseCode());
     assertTrue(rd.getProperties().isEmpty());
     assertTrue(rd.getSuccess());
 
-    assertEquals("HelloController.sendMessage", rdd.getName());
-
-    assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /sendMessage");
-
     // verify the downstream http dependency that is no longer part of the same trace
-    rddList = mockedIngestion.waitForItems("RemoteDependencyData", 2);
-    rddEnvelope = rddList.get(0);
-    if (operationId.equals(rddEnvelope.getTags().get("ai.operation.id"))) {
-      rddEnvelope = rddList.get(1);
-    }
-    rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
+    List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+    Envelope rddEnvelope = rddList.get(0);
+    RemoteDependencyData rdd =
+        (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
     assertEquals("GET /", rdd.getName());
     assertEquals("https://www.bing.com", rdd.getData());
@@ -75,6 +62,6 @@ public class JmsDisabledTest extends AiSmokeTest {
     // sleep a bit and make sure no kafka "requests" or dependencies are reported
     Thread.sleep(5000);
     assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-    assertEquals(2, mockedIngestion.getCountForType("RemoteDependencyData"));
+    assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
   }
 }

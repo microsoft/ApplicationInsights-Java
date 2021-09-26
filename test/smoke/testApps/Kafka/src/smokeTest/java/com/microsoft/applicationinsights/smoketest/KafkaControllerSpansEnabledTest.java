@@ -32,7 +32,7 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
 import org.junit.Test;
 
-@UseAgent("controller_spans_disabled")
+@UseAgent("controller_spans_enabled")
 @WithDependencyContainers({
   @DependencyContainer(
       value = "confluentinc/cp-zookeeper",
@@ -49,7 +49,7 @@ import org.junit.Test;
       },
       hostnameEnvironmentVariable = "KAFKA")
 })
-public class KafkaControllerSpansDisabledTest extends AiSmokeTest {
+public class KafkaControllerSpansEnabledTest extends AiSmokeTest {
 
   @Test
   @TargetUri("/sendMessage")
@@ -59,12 +59,13 @@ public class KafkaControllerSpansDisabledTest extends AiSmokeTest {
     Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /sendMessage");
     String operationId = rdEnvelope1.getTags().get("ai.operation.id");
     List<Envelope> rddList =
-        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 2, operationId);
+        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 3, operationId);
     assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "mytopic process");
-    Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "mytopic send");
-    Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "GET /");
+    Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "HelloController.sendMessage");
+    Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "mytopic send");
+    Envelope rddEnvelope3 = getDependencyEnvelope(rddList, "GET /");
 
     RequestData rd1 = (RequestData) ((Data<?>) rdEnvelope1.getData()).getBaseData();
     RequestData rd2 = (RequestData) ((Data<?>) rdEnvelope2.getData()).getBaseData();
@@ -73,35 +74,46 @@ public class KafkaControllerSpansDisabledTest extends AiSmokeTest {
         (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
     RemoteDependencyData rdd2 =
         (RemoteDependencyData) ((Data<?>) rddEnvelope2.getData()).getBaseData();
+    RemoteDependencyData rdd3 =
+        (RemoteDependencyData) ((Data<?>) rddEnvelope3.getData()).getBaseData();
 
     assertEquals("GET /sendMessage", rd1.getName());
     assertTrue(rd1.getProperties().isEmpty());
     assertTrue(rd1.getSuccess());
 
-    assertEquals("mytopic send", rdd1.getName());
+    assertEquals("HelloController.sendMessage", rdd1.getName());
     assertNull(rdd1.getData());
-    assertEquals("Queue Message | kafka", rdd1.getType());
-    assertEquals("mytopic", rdd1.getTarget());
+    assertEquals("InProc", rdd1.getType());
+    assertNull(rdd1.getTarget());
     assertTrue(rdd1.getProperties().isEmpty());
     assertTrue(rdd1.getSuccess());
+
+    assertEquals("mytopic send", rdd2.getName());
+    assertNull(rdd2.getData());
+    assertEquals("Queue Message | kafka", rdd2.getType());
+    assertEquals("mytopic", rdd2.getTarget());
+    assertTrue(rdd2.getProperties().isEmpty());
+    assertTrue(rdd2.getSuccess());
 
     assertEquals("mytopic process", rd2.getName());
     assertEquals("mytopic", rd2.getSource());
     assertTrue(rd2.getProperties().isEmpty());
     assertTrue(rd2.getSuccess());
+    assertTrue(rd2.getMeasurements().containsKey("timeSinceEnqueued"));
 
-    assertEquals("GET /", rdd2.getName());
-    assertEquals("https://www.bing.com", rdd2.getData());
-    assertEquals("Http", rdd2.getType());
-    assertEquals("www.bing.com", rdd2.getTarget());
-    assertTrue(rdd2.getProperties().isEmpty());
-    assertTrue(rdd2.getSuccess());
+    assertEquals("GET /", rdd3.getName());
+    assertEquals("https://www.bing.com", rdd3.getData());
+    assertEquals("Http", rdd3.getType());
+    assertEquals("www.bing.com", rdd3.getTarget());
+    assertTrue(rdd3.getProperties().isEmpty());
+    assertTrue(rdd3.getSuccess());
 
     assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
+    assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /sendMessage");
     assertParentChild(
-        rdd1.getId(), rddEnvelope1, rdEnvelope2, "GET /sendMessage", "mytopic process", false);
+        rdd2.getId(), rddEnvelope2, rdEnvelope2, "GET /sendMessage", "mytopic process", false);
     assertParentChild(
-        rd2.getId(), rdEnvelope2, rddEnvelope2, "mytopic process", "mytopic process", false);
+        rd2.getId(), rdEnvelope2, rddEnvelope3, "mytopic process", "mytopic process", false);
   }
 
   private static Envelope getRequestEnvelope(List<Envelope> envelopes, String name) {

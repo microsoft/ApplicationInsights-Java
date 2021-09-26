@@ -34,7 +34,7 @@ public class SpringBootAutoTest extends AiSmokeTest {
   @Test
   @TargetUri("/test")
   public void doMostBasicTest() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+    Telemetry telemetry = getTelemetry(0);
 
     // TODO verify browser and other envelope tags somewhere else
     assertTrue(

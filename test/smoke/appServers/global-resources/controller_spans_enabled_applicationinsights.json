@@ -5,6 +5,6 @@
     "instance": "testroleinstance"
   },
   "preview": {
-    "captureControllerSpans": false
+    "captureControllerSpans": true
   }
 }

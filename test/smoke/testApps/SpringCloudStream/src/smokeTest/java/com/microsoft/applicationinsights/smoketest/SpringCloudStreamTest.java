@@ -59,57 +59,35 @@ public class SpringCloudStreamTest extends AiSmokeTest {
     Envelope rdEnvelope1 = rdList.get(0);
     String operationId = rdEnvelope1.getTags().get("ai.operation.id");
     List<Envelope> rddList =
-        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 2, operationId);
+        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
     assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
     Envelope rdEnvelope2 = rdList.get(1);
     Envelope rddEnvelope1 = rddList.get(0);
-    Envelope rddEnvelope2 = rddList.get(1);
 
     RequestData rd1 = (RequestData) ((Data<?>) rdEnvelope1.getData()).getBaseData();
     RequestData rd2 = (RequestData) ((Data<?>) rdEnvelope2.getData()).getBaseData();
     RemoteDependencyData rdd1 =
         (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
-    RemoteDependencyData rdd2 =
-        (RemoteDependencyData) ((Data<?>) rddEnvelope2.getData()).getBaseData();
-
-    if (!rdd1.getName().equals("GreetingsController.sendMessage")) {
-      RemoteDependencyData rddTemp = rdd1;
-      rdd1 = rdd2;
-      rdd2 = rddTemp;
-
-      Envelope rddEnvelopeTemp = rddEnvelope1;
-      rddEnvelope1 = rddEnvelope2;
-      rddEnvelope2 = rddEnvelopeTemp;
-    }
 
     assertEquals("GET /sendMessage", rd1.getName());
     assertTrue(rd1.getProperties().isEmpty());
     assertTrue(rd1.getSuccess());
 
-    assertEquals("GreetingsController.sendMessage", rdd1.getName());
+    assertEquals("greetings send", rdd1.getName());
     assertNull(rdd1.getData());
-    assertEquals("InProc", rdd1.getType());
-    assertNull(rdd1.getTarget());
+    assertEquals("Queue Message | kafka", rdd1.getType());
+    assertEquals("greetings", rdd1.getTarget());
     assertTrue(rdd1.getProperties().isEmpty());
     assertTrue(rdd1.getSuccess());
-
-    assertEquals("greetings send", rdd2.getName());
-    assertNull(rdd2.getData());
-    assertEquals("Queue Message | kafka", rdd2.getType());
-    assertEquals("greetings", rdd2.getTarget());
-    assertTrue(rdd2.getProperties().isEmpty());
-    assertTrue(rdd2.getSuccess());
 
     assertEquals("greetings process", rd2.getName());
     assertEquals("greetings", rd2.getSource());
     assertTrue(rd2.getProperties().isEmpty());
     assertTrue(rd2.getSuccess());
-    assertTrue(rd2.getMeasurements().containsKey("timeSinceEnqueued"));
 
     assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
-    assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /sendMessage");
     assertParentChild(
-        rdd2.getId(), rddEnvelope2, rdEnvelope2, "GET /sendMessage", "greetings process", false);
+        rdd1.getId(), rddEnvelope1, rdEnvelope2, "GET /sendMessage", "greetings process", false);
   }
 }
