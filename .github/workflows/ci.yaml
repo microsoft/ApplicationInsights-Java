@@ -37,7 +37,8 @@ jobs:
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
       - name: Build otel-fork
         working-directory: otel
-        run: ./gradlew publishToMavenLocal --stacktrace
+        # javadoc fails sporadically fetching https://docs.oracle.com/javase/8/docs/api/
+        run: ./gradlew publishToMavenLocal -x javadoc --stacktrace
       - name: Test
         # TODO enable build cache, either --build-cache here, or org.gradle.caching=true in gradle.properties
         run: ./gradlew check --stacktrace
@@ -89,7 +90,8 @@ jobs:
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
       - name: Build otel-fork
         working-directory: otel
-        run: ./gradlew publishToMavenLocal --stacktrace
+        # javadoc fails sporadically fetching https://docs.oracle.com/javase/8/docs/api/
+        run: ./gradlew publishToMavenLocal -x javadoc --stacktrace
       - name: Test
         # TODO enable build cache, either --build-cache here, or org.gradle.caching=true in gradle.properties
         run: ./gradlew ${{ matrix.module }}:smokeTest
