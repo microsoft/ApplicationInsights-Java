@@ -91,7 +91,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
     assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
 
-    assertEquals("HTTP GET", telemetry.rdd1.getName());
+    assertEquals("GET /search", telemetry.rdd1.getName());
     assertEquals(capturedUrl, telemetry.rdd1.getData());
     assertEquals("Http", telemetry.rdd1.getType());
     assertEquals("www.bing.com", telemetry.rdd1.getTarget());

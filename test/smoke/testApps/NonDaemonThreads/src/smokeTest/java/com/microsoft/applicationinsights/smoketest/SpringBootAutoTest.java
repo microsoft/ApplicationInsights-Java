@@ -47,7 +47,7 @@ public class SpringBootAutoTest extends AiSmokeTest {
     RemoteDependencyData rdd =
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-    if (!rdd.getName().equals("HTTP GET")) {
+    if (!rdd.getName().equals("GET /search")) {
       rddEnvelope = rddList.get(0);
       rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
     }
@@ -55,7 +55,7 @@ public class SpringBootAutoTest extends AiSmokeTest {
     assertTrue(rd.getProperties().isEmpty());
     assertTrue(rd.getSuccess());
 
-    assertEquals("HTTP GET", rdd.getName());
+    assertEquals("GET /search", rdd.getName());
     assertEquals("Http", rdd.getType());
     assertEquals("www.bing.com", rdd.getTarget());
     assertEquals("https://www.bing.com/search?q=test", rdd.getData());

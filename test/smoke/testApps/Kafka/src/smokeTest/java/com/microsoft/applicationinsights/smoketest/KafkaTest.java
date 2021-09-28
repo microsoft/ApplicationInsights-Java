@@ -65,7 +65,7 @@ public class KafkaTest extends AiSmokeTest {
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "mytopic process");
     Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "HelloController.sendMessage");
     Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "mytopic send");
-    Envelope rddEnvelope3 = getDependencyEnvelope(rddList, "HTTP GET");
+    Envelope rddEnvelope3 = getDependencyEnvelope(rddList, "GET /");
 
     RequestData rd1 = (RequestData) ((Data<?>) rdEnvelope1.getData()).getBaseData();
     RequestData rd2 = (RequestData) ((Data<?>) rdEnvelope2.getData()).getBaseData();
@@ -101,7 +101,7 @@ public class KafkaTest extends AiSmokeTest {
     assertTrue(rd2.getSuccess());
     assertTrue(rd2.getMeasurements().containsKey("timeSinceEnqueued"));
 
-    assertEquals("HTTP GET", rdd3.getName());
+    assertEquals("GET /", rdd3.getName());
     assertEquals("https://www.bing.com", rdd3.getData());
     assertEquals("Http", rdd3.getType());
     assertEquals("www.bing.com", rdd3.getTarget());

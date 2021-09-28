@@ -194,7 +194,7 @@ public class SpringBootTest extends AiSmokeTest {
     assertTrue(rdd1.getProperties().isEmpty());
     assertTrue(rdd1.getSuccess());
 
-    assertEquals("HTTP GET", rdd2.getName());
+    assertEquals("GET /", rdd2.getName());
     assertEquals("https://www.bing.com", rdd2.getData());
     assertEquals("www.bing.com", rdd2.getTarget());
     assertTrue(rdd2.getProperties().isEmpty());
