@@ -2,7 +2,7 @@
 
 # Version 3.2.0-BETA.4
 * Update database mappings based on common-schema change [#286](https://github.com/microsoft/common-schema/pull/286).
-* Update http dependency name based on common-schema change [#285](https://github.com/microsoft/common-schema/pull/285/files).
+* Update http dependency name based on common-schema change [#285](https://github.com/microsoft/common-schema/pull/285).
 * Update default configuration:
     - 'azuresdk' configuration moved out of preview configuration and is now enabled by default.
     - Deprecated 'openTelemetryApiSupport' configuration and is now the one and only default behavior.
