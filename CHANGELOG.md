@@ -1,5 +1,15 @@
 # CHANGELOG
 
+# Version 3.2.0-BETA.4
+* Update database mappings based on common-schema change [#286](https://github.com/microsoft/common-schema/pull/286).
+* Update http dependency name based on common-schema change [#285](https://github.com/microsoft/common-schema/pull/285/files).
+* Update default configuration:
+    - 'azuresdk' configuration moved out of preview configuration and is now enabled by default.
+    - Deprecated 'openTelemetryApiSupport' configuration and is now the one and only default behavior.
+    - Deprecated 'httpMethodInOperationName' configuration and is now the one and only default behavior.
+* Fix quick pulse memory leak.
+
+
 # Version 3.2.0-BETA.3
 * Log all available jmx metrics at debug level.
 * Misc logging improvements [#1828](https://github.com/microsoft/ApplicationInsights-Java/pull/1828).
