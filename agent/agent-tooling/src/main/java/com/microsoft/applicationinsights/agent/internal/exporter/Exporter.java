@@ -628,21 +628,6 @@ public class Exporter implements SpanExporter {
       } else {
         type = "SQL";
       }
-      // keeping existing behavior that was release in 3.0.0 for now
-      // not going with new jdbc instrumentation span name of
-      // "<db.operation> <db.name>.<db.sql.table>" for now just in case this behavior is reversed
-      // due to spec:
-      // "It is not recommended to attempt any client-side parsing of `db.statement` just to get
-      // these properties, they should only be used if the library being instrumented already
-      // provides them."
-      // also need to discuss with other AI language exporters
-      //
-      // if we go to shorter span name now, and it gets reverted, no way for customers to get the
-      // shorter name back
-      // whereas if we go to shorter span name in the future, and they still prefer more
-      // cardinality, they can get that back using telemetry processor to copy db.statement into
-      // span name
-      telemetry.setName(dbStatement);
     } else {
       type = dbSystem;
     }
@@ -652,7 +637,7 @@ public class Exporter implements SpanExporter {
         nullAwareConcat(
             getTargetFromPeerAttributes(attributes, getDefaultPortForDbSystem(dbSystem)),
             attributes.get(SemanticAttributes.DB_NAME),
-            "/");
+            " | ");
     if (target == null) {
       target = dbSystem;
     }

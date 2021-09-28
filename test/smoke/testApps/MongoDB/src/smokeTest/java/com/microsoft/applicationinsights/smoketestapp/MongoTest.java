@@ -56,7 +56,7 @@ public class MongoTest extends AiSmokeTest {
     assertEquals("find testdb.test", telemetry.rdd1.getName());
     assertEquals("{\"find\": \"test\", \"$db\": \"?\"}", telemetry.rdd1.getData());
     assertEquals("mongodb", telemetry.rdd1.getType());
-    assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+/testdb"));
+    assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+ \\| testdb"));
     assertTrue(telemetry.rdd1.getProperties().isEmpty());
     assertTrue(telemetry.rdd1.getSuccess());
 
