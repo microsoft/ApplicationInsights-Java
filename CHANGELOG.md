@@ -1,10 +1,8 @@
 # CHANGELOG
 
 # Version 3.2.0-BETA.4
-* Update database mappings as follows:
- - Use span name as remote dependency `name`
- - Use span database statement as remote dependency `data`. If database statement is not present use `operation name`.
- - If target derived from `peerService` or `net*` attributes is not null, then append span database name (if present) using ` | ` delimiter to form remote dependency target.    
+* Database dependency names are now more concise, e.g. `SELECT mydatabase.mytable` instead of `SELECT x, y, z, ... from ... where ...........` (the full sanitized query is still captured in the dependency data field)
+* Database dependency target field slightly updated to enable better U/X integration
 * Update http dependency name as follows:
     - Use Http method + " " + extracted path from Url as http dependency name. If extracted path is empty, use "/" e.g. "`GET /`"
 * Update default configuration:
