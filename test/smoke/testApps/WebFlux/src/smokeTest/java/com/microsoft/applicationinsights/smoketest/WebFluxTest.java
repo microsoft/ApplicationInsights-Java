@@ -34,7 +34,7 @@ public class WebFluxTest extends AiSmokeTest {
   @Test
   @TargetUri("/test")
   public void doMostBasicTest() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+    Telemetry telemetry = getTelemetry(0);
 
     assertEquals("GET /test/**", telemetry.rd.getName());
     assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/test"));
@@ -43,14 +43,12 @@ public class WebFluxTest extends AiSmokeTest {
     assertNull(telemetry.rd.getSource());
     assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getMeasurements().isEmpty());
-
-    // TODO (trask): assert on rdd1
   }
 
   @Test
   @TargetUri("/exception")
   public void testException() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+    Telemetry telemetry = getTelemetry(0);
 
     assertEquals("GET /exception", telemetry.rd.getName());
     assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/exception"));
@@ -59,14 +57,12 @@ public class WebFluxTest extends AiSmokeTest {
     assertNull(telemetry.rd.getSource());
     assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getMeasurements().isEmpty());
-
-    // TODO (trask): assert on rdd1
   }
 
   @Test
   @TargetUri("/futureException")
   public void testFutureException() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+    Telemetry telemetry = getTelemetry(0);
 
     assertEquals("GET /futureException", telemetry.rd.getName());
     assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/futureException"));
@@ -75,7 +71,5 @@ public class WebFluxTest extends AiSmokeTest {
     assertNull(telemetry.rd.getSource());
     assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getMeasurements().isEmpty());
-
-    // TODO (trask): assert on rdd1
   }
 }

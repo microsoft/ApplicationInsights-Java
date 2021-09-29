@@ -25,6 +25,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
@@ -43,8 +44,8 @@ import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
 
-@UseAgent("controller_spans_disabled_default")
-public class SpringBootControllerSpansDisabledTest extends AiSmokeTest {
+@UseAgent("controller_spans_enabled")
+public class SpringBootControllerSpansEnabledTest extends AiSmokeTest {
 
   @Test
   @TargetUri("/basic/trackEvent")
@@ -112,6 +113,8 @@ public class SpringBootControllerSpansDisabledTest extends AiSmokeTest {
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
+    List<Envelope> rddList =
+        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
     List<Envelope> edList =
         mockedIngestion.waitForItems(
             new Predicate<Envelope>() {
@@ -128,21 +131,32 @@ public class SpringBootControllerSpansDisabledTest extends AiSmokeTest {
                 return !data.getProperties().containsKey("LoggerName");
               }
             },
-            1,
+            2,
             10,
             TimeUnit.SECONDS);
     assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
+    Envelope rddEnvelope1 = rddList.get(0);
     Envelope edEnvelope1 = edList.get(0);
 
     RequestData rd = getTelemetryDataForType(0, "RequestData");
+    RemoteDependencyData rdd1 =
+        (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
 
     assertEquals("GET /SpringBootTest/throwsException", rd.getName());
     assertEquals("500", rd.getResponseCode());
     assertTrue(rd.getProperties().isEmpty());
     assertFalse(rd.getSuccess());
 
-    assertParentChild(rd, rdEnvelope, edEnvelope1, "GET /SpringBootTest/throwsException");
+    assertEquals("TestController.resultCodeTest", rdd1.getName());
+    assertNull(rdd1.getData());
+    assertEquals("InProc", rdd1.getType());
+    assertNull(rdd1.getTarget());
+    assertTrue(rdd1.getProperties().isEmpty());
+    assertFalse(rdd1.getSuccess());
+
+    assertParentChild(rd, rdEnvelope, rddEnvelope1, "GET /SpringBootTest/throwsException");
+    assertParentChild(rdd1, rddEnvelope1, edEnvelope1, "GET /SpringBootTest/throwsException");
   }
 
   @Test
@@ -153,26 +167,46 @@ public class SpringBootControllerSpansDisabledTest extends AiSmokeTest {
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     List<Envelope> rddList =
-        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 3, operationId);
     assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
     Envelope rddEnvelope1 = rddList.get(0);
+    Envelope rddEnvelope2 = rddList.get(1);
+    Envelope rddEnvelope3 = rddList.get(2);
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     RemoteDependencyData rdd1 =
         (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
+    RemoteDependencyData rdd2 =
+        (RemoteDependencyData) ((Data<?>) rddEnvelope2.getData()).getBaseData();
+    RemoteDependencyData rdd3 =
+        (RemoteDependencyData) ((Data<?>) rddEnvelope3.getData()).getBaseData();
 
     assertEquals("GET /SpringBootTest/asyncDependencyCall", rd.getName());
     assertEquals("200", rd.getResponseCode());
     assertTrue(rd.getProperties().isEmpty());
     assertTrue(rd.getSuccess());
 
-    assertEquals("GET /", rdd1.getName());
-    assertEquals("https://www.bing.com", rdd1.getData());
-    assertEquals("www.bing.com", rdd1.getTarget());
+    assertEquals("TestController.asyncDependencyCall", rdd1.getName());
+    assertNull(rdd1.getData());
+    assertEquals("InProc", rdd1.getType());
+    assertNull(rdd1.getTarget());
     assertTrue(rdd1.getProperties().isEmpty());
     assertTrue(rdd1.getSuccess());
 
+    assertEquals("GET /", rdd2.getName());
+    assertEquals("https://www.bing.com", rdd2.getData());
+    assertEquals("www.bing.com", rdd2.getTarget());
+    assertTrue(rdd2.getProperties().isEmpty());
+    assertTrue(rdd2.getSuccess());
+
+    // TODO (trask): why is spring-webmvc instrumentation capturing this twice?
+    assertEquals("TestController.asyncDependencyCall", rdd3.getName());
+    assertTrue(rdd3.getProperties().isEmpty());
+    assertTrue(rdd3.getSuccess());
+
     assertParentChild(rd, rdEnvelope, rddEnvelope1, "GET /SpringBootTest/asyncDependencyCall");
+    assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /SpringBootTest/asyncDependencyCall");
+    assertParentChild(rdd1, rddEnvelope1, rddEnvelope3, "GET /SpringBootTest/asyncDependencyCall");
   }
 }

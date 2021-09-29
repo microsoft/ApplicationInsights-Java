@@ -26,21 +26,15 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-@UseAgent
+@UseAgent("disabled_azuresdk")
 public class AzureSdkDisabledTest extends AiSmokeTest {
 
   @Test
   @TargetUri("/test")
   public void test() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+    Telemetry telemetry = getTelemetry(0);
 
     assertEquals("GET /AzureSdk/test", telemetry.rd.getName());
     assertTrue(telemetry.rd.getSuccess());
-
-    assertEquals("TestController.test", telemetry.rdd1.getName());
-    assertTrue(telemetry.rdd1.getSuccess());
-
-    assertParentChild(
-        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /AzureSdk/test");
   }
 }

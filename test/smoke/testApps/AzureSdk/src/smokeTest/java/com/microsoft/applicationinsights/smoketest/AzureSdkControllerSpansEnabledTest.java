@@ -25,15 +25,27 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import org.junit.Test;
 
-@UseAgent("controller_spans_disabled_azuresdk")
-public class AzureSdkControllerSpansDisabledTest extends AiSmokeTest {
+@UseAgent("controller_spans_enabled")
+public class AzureSdkControllerSpansEnabledTest extends AiSmokeTest {
 
   @Test
   @TargetUri("/test")
   public void test() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+    Telemetry telemetry = getTelemetry(2);
+
+    if (!telemetry.rdd1.getName().equals("TestController.test")) {
+      RemoteDependencyData rddTemp = telemetry.rdd1;
+      telemetry.rdd1 = telemetry.rdd2;
+      telemetry.rdd2 = rddTemp;
+
+      Envelope rddEnvelopeTemp = telemetry.rddEnvelope1;
+      telemetry.rddEnvelope1 = telemetry.rddEnvelope2;
+      telemetry.rddEnvelope2 = rddEnvelopeTemp;
+    }
 
     assertEquals("GET /AzureSdk/test", telemetry.rd.getName());
     assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/AzureSdk/test"));
@@ -43,14 +55,23 @@ public class AzureSdkControllerSpansDisabledTest extends AiSmokeTest {
     assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getMeasurements().isEmpty());
 
-    assertEquals("hello", telemetry.rdd1.getName());
+    assertEquals("TestController.test", telemetry.rdd1.getName());
     assertNull(telemetry.rdd1.getData());
     assertEquals("InProc", telemetry.rdd1.getType());
     assertNull(telemetry.rdd1.getTarget());
     assertTrue(telemetry.rdd1.getProperties().isEmpty());
     assertTrue(telemetry.rdd1.getSuccess());
 
+    assertEquals("hello", telemetry.rdd2.getName());
+    assertNull(telemetry.rdd2.getData());
+    assertEquals("InProc", telemetry.rdd2.getType());
+    assertNull(telemetry.rdd2.getTarget());
+    assertTrue(telemetry.rdd2.getProperties().isEmpty());
+    assertTrue(telemetry.rdd2.getSuccess());
+
     assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /AzureSdk/test");
+    assertParentChild(
+        telemetry.rdd1, telemetry.rddEnvelope1, telemetry.rddEnvelope2, "GET /AzureSdk/test");
   }
 }

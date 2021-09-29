@@ -44,38 +44,31 @@ public class GrpcTest extends AiSmokeTest {
     String operationId = rdEnvelope1.getTags().get("ai.operation.id");
 
     List<Envelope> rddList =
-        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 2, operationId);
+        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
     // auto-collected grpc events are suppressed by exporter because they are noisy
     assertEquals(0, mockedIngestion.getCountForType("MessageData", operationId));
 
-    Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "HelloController.simple");
-    Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "example.Greeter/SayHello");
+    Envelope rddEnvelope = getDependencyEnvelope(rddList, "example.Greeter/SayHello");
 
     RequestData rd1 = (RequestData) ((Data<?>) rdEnvelope1.getData()).getBaseData();
-    RemoteDependencyData rdd1 =
-        (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
-    RemoteDependencyData rdd2 =
-        (RemoteDependencyData) ((Data<?>) rddEnvelope2.getData()).getBaseData();
+    RemoteDependencyData rdd =
+        (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
     // TODO this is not correct (or at least not ideal)
     //  see https://msazure.visualstudio.com/One/_workitems/edit/8687985
-    assertEquals("grpc", rdd2.getTarget());
+    assertEquals("grpc", rdd.getTarget());
 
     assertTrue(rd1.getProperties().isEmpty());
     assertTrue(rd1.getSuccess());
 
-    assertTrue(rdd1.getProperties().isEmpty());
-    assertTrue(rdd1.getSuccess());
-
-    assertTrue(rdd2.getProperties().isEmpty());
-    assertTrue(rdd2.getSuccess());
+    assertTrue(rdd.getProperties().isEmpty());
+    assertTrue(rdd.getSuccess());
 
     // TODO (trask): verify rd2
 
-    assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /simple");
-    assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /simple");
+    assertParentChild(rd1, rdEnvelope1, rddEnvelope, "GET /simple");
     assertParentChild(
-        rdd2.getId(), rddEnvelope2, rdEnvelope2, "GET /simple", "example.Greeter/SayHello", false);
+        rdd.getId(), rddEnvelope, rdEnvelope2, "GET /simple", "example.Greeter/SayHello", false);
   }
 
   @Test
@@ -88,37 +81,30 @@ public class GrpcTest extends AiSmokeTest {
     String operationId = rdEnvelope1.getTags().get("ai.operation.id");
 
     List<Envelope> rddList =
-        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 2, operationId);
+        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
     // auto-collected grpc events are suppressed by exporter because they are noisy
     assertEquals(0, mockedIngestion.getCountForType("MessageData", operationId));
 
-    Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "HelloController.conversation");
-    Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "example.Greeter/Conversation");
+    Envelope rddEnvelope = getDependencyEnvelope(rddList, "example.Greeter/Conversation");
 
     RequestData rd1 = (RequestData) ((Data<?>) rdEnvelope1.getData()).getBaseData();
-    RemoteDependencyData rdd1 =
-        (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
-    RemoteDependencyData rdd2 =
-        (RemoteDependencyData) ((Data<?>) rddEnvelope2.getData()).getBaseData();
+    RemoteDependencyData rdd =
+        (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-    assertEquals("grpc", rdd2.getTarget());
+    assertEquals("grpc", rdd.getTarget());
 
     assertTrue(rd1.getProperties().isEmpty());
     assertTrue(rd1.getSuccess());
 
-    assertTrue(rdd1.getProperties().isEmpty());
-    assertTrue(rdd1.getSuccess());
-
-    assertTrue(rdd2.getProperties().isEmpty());
-    assertTrue(rdd2.getSuccess());
+    assertTrue(rdd.getProperties().isEmpty());
+    assertTrue(rdd.getSuccess());
 
     // TODO (trask): verify rd2
 
-    assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /conversation");
-    assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /conversation");
+    assertParentChild(rd1, rdEnvelope1, rddEnvelope, "GET /conversation");
     assertParentChild(
-        rdd2.getId(),
-        rddEnvelope2,
+        rdd.getId(),
+        rddEnvelope,
         rdEnvelope2,
         "GET /conversation",
         "example.Greeter/Conversation",

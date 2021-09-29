@@ -38,7 +38,7 @@ public class SpringBootAutoTest extends AiSmokeTest {
   @TargetUri("/spawn-another-java-process")
   public void spawnAnotherJavaProcess() throws Exception {
     List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-    List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 2);
+    List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     Envelope rddEnvelope = rddList.get(0);
@@ -46,11 +46,6 @@ public class SpringBootAutoTest extends AiSmokeTest {
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     RemoteDependencyData rdd =
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
-
-    if (!rdd.getName().equals("GET /search")) {
-      rddEnvelope = rddList.get(0);
-      rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
-    }
 
     assertTrue(rd.getProperties().isEmpty());
     assertTrue(rd.getSuccess());

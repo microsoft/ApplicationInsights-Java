@@ -43,13 +43,12 @@ public class JmsTest extends AiSmokeTest {
     Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /sendMessage");
     String operationId = rdEnvelope1.getTags().get("ai.operation.id");
     List<Envelope> rddList =
-        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 3, operationId);
+        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 2, operationId);
     assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "message process");
-    Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "HelloController.sendMessage");
-    Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "message send");
-    Envelope rddEnvelope3 = getDependencyEnvelope(rddList, "GET /");
+    Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "message send");
+    Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "GET /");
 
     RequestData rd1 = (RequestData) ((Data<?>) rdEnvelope1.getData()).getBaseData();
     RequestData rd2 = (RequestData) ((Data<?>) rdEnvelope2.getData()).getBaseData();
@@ -58,45 +57,35 @@ public class JmsTest extends AiSmokeTest {
         (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
     RemoteDependencyData rdd2 =
         (RemoteDependencyData) ((Data<?>) rddEnvelope2.getData()).getBaseData();
-    RemoteDependencyData rdd3 =
-        (RemoteDependencyData) ((Data<?>) rddEnvelope3.getData()).getBaseData();
 
     assertEquals("GET /sendMessage", rd1.getName());
     assertTrue(rd1.getProperties().isEmpty());
     assertTrue(rd1.getSuccess());
 
-    assertEquals("HelloController.sendMessage", rdd1.getName());
+    assertEquals("message send", rdd1.getName());
     assertNull(rdd1.getData());
-    assertEquals("InProc", rdd1.getType());
-    assertNull(rdd1.getTarget());
+    assertEquals("Queue Message | jms", rdd1.getType());
+    assertEquals("message", rdd1.getTarget());
     assertTrue(rdd1.getProperties().isEmpty());
     assertTrue(rdd1.getSuccess());
-
-    assertEquals("message send", rdd2.getName());
-    assertNull(rdd2.getData());
-    assertEquals("Queue Message | jms", rdd2.getType());
-    assertEquals("message", rdd2.getTarget());
-    assertTrue(rdd2.getProperties().isEmpty());
-    assertTrue(rdd2.getSuccess());
 
     assertEquals("message process", rd2.getName());
     assertEquals("message", rd2.getSource());
     assertTrue(rd2.getProperties().isEmpty());
     assertTrue(rd2.getSuccess());
 
-    assertEquals("GET /", rdd3.getName());
-    assertEquals("https://www.bing.com", rdd3.getData());
-    assertEquals("Http", rdd3.getType());
-    assertEquals("www.bing.com", rdd3.getTarget());
-    assertTrue(rdd3.getProperties().isEmpty());
-    assertTrue(rdd3.getSuccess());
+    assertEquals("GET /", rdd2.getName());
+    assertEquals("https://www.bing.com", rdd2.getData());
+    assertEquals("Http", rdd2.getType());
+    assertEquals("www.bing.com", rdd2.getTarget());
+    assertTrue(rdd2.getProperties().isEmpty());
+    assertTrue(rdd2.getSuccess());
 
     assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
-    assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /sendMessage");
     assertParentChild(
-        rdd2.getId(), rddEnvelope2, rdEnvelope2, "GET /sendMessage", "message process", false);
+        rdd1.getId(), rddEnvelope1, rdEnvelope2, "GET /sendMessage", "message process", false);
     assertParentChild(
-        rd2.getId(), rdEnvelope2, rddEnvelope3, "message process", "message process", false);
+        rd2.getId(), rdEnvelope2, rddEnvelope2, "message process", "message process", false);
   }
 
   private static Envelope getRequestEnvelope(List<Envelope> envelopes, String name) {
