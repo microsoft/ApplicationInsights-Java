@@ -1,12 +1,16 @@
 # CHANGELOG
 
 # Version 3.2.0-BETA.4
-* Update database mappings based on common-schema change [#286](https://github.com/microsoft/common-schema/pull/286).
-* Update http dependency name based on common-schema change [#285](https://github.com/microsoft/common-schema/pull/285).
+* Update database mappings as follows:
+ - Use span name as remote dependency `name`
+ - Use span database statement as remote dependency `data`. If database statement is not present use `operation name`.
+ - If target derived from `peerService` or `net*` attributes is not null, then append span database name (if present) using ` | ` delimiter to form remote dependency target.    
+* Update http dependency name as follows:
+    - Use Http method + " " + extracted path from Url as http dependency name. If extracted path is empty, use "/" e.g. "`GET /`"
 * Update default configuration:
     - 'azuresdk' configuration moved out of preview configuration and is now enabled by default.
-    - Deprecated 'openTelemetryApiSupport' configuration and is now the one and only default behavior.
-    - Deprecated 'httpMethodInOperationName' configuration and is now the one and only default behavior.
+    - 'openTelemetryApiSupport' moved out of preview configuration and is now enabled by default.
+    - 'httpMethodInOperationName' moved out of preview configuration and is now enabled by default.
 * Fix quick pulse memory leak.
 
 
