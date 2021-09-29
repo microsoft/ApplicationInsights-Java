@@ -3,8 +3,7 @@
 # Version 3.2.0-BETA.4
 * Database dependency names are now more concise, e.g. `SELECT mydatabase.mytable` instead of `SELECT x, y, z, ... from ... where ...........` (the full sanitized query is still captured in the dependency data field)
 * Database dependency target field slightly updated to enable better U/X integration
-* Update http dependency name as follows:
-    - Use Http method + " " + extracted path from Url as http dependency name. If extracted path is empty, use "/" e.g. "`GET /`"
+* HTTP dependency names are now more descriptive, e.g. `GET /the/path` instead of `HTTP GET`
 * Update default configuration:
     - 'azuresdk' configuration moved out of preview configuration and is now enabled by default.
     - 'openTelemetryApiSupport' moved out of preview configuration and is now enabled by default.
