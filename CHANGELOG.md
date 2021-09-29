@@ -1,5 +1,16 @@
 # CHANGELOG
 
+# Version 3.2.0-BETA.4
+* Database dependency names are now more concise, e.g. `SELECT mydatabase.mytable` instead of `SELECT x, y, z, ... from ... where ...........` (the full sanitized query is still captured in the dependency data field)
+* Database dependency target field slightly updated to enable better U/X integration
+* HTTP dependency names are now more descriptive, e.g. `GET /the/path` instead of `HTTP GET`
+* Update default configuration:
+    - 'azuresdk' configuration moved out of preview configuration and is now enabled by default.
+    - 'openTelemetryApiSupport' moved out of preview configuration and is now enabled by default.
+    - 'httpMethodInOperationName' moved out of preview configuration and is now enabled by default.
+* Fix quick pulse memory leak.
+
+
 # Version 3.2.0-BETA.3
 * Log all available jmx metrics at debug level.
 * Misc logging improvements [#1828](https://github.com/microsoft/ApplicationInsights-Java/pull/1828).
