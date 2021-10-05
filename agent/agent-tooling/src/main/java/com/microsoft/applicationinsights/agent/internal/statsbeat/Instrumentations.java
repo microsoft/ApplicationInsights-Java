@@ -118,6 +118,8 @@ class Instrumentations {
     INSTRUMENTATION_MAP.put("io.opentelemetry.jaxrs-client-2.0", 67);
     INSTRUMENTATION_MAP.put("io.opentelemetry.jaxrs-client-2.0-resteasy-3.0", 68);
     INSTRUMENTATION_MAP.put("io.opentelemetry.grizzly-2.0", 69);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.quartz-2.0", 70);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.apache-camel-2.20", 71);
   }
 
   // encode BitSet to a long
