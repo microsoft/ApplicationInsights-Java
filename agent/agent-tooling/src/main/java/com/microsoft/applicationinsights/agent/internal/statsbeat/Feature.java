@@ -46,12 +46,12 @@ enum Feature {
   // JAVA_HTTP_CLIENT_DISABLED(16), no longer used
   // JAXWS_DISABLED(17), no longer used
   RABBITMQ_DISABLED(18),
-  SPRING_INTEGRATION_DISABLED(19),
+  SPRING_INTEGRATION_ENABLED(19), // preview instrumentation
   LEGACY_PROPAGATION_DISABLED(20),
-  GRIZZLY_DISABLED(21), // preview instrumentation
+  GRIZZLY_ENABLED(21), // preview instrumentation
   STATSBEAT_DISABLED(22), // disable non-essential statsbeat
-  QUARTZ_DISABLED(23), // preview instrumentation
-  APACHE_CAMEL_DISABLED(24); // preview instrumentation
+  QUARTZ_ENABLED(23), // preview instrumentation
+  APACHE_CAMEL_ENABLED(24); // preview instrumentation
 
   private static final Map<String, Feature> javaVendorFeatureMap;
 
