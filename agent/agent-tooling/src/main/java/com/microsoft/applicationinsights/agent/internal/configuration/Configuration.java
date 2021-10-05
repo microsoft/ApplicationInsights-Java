@@ -280,6 +280,8 @@ public class Configuration {
     @Deprecated
     public DisabledByDefaultInstrumentation jaxws = new DisabledByDefaultInstrumentation();
 
+    public DisabledByDefaultInstrumentation quartz = new DisabledByDefaultInstrumentation();
+
     // this is just here to detect if using this old setting in order to give a helpful message
     @Deprecated
     public DisabledByDefaultInstrumentation rabbitmq = new DisabledByDefaultInstrumentation();

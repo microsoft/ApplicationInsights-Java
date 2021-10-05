@@ -106,6 +106,7 @@ dependencies {
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-opentelemetry-annotations-1.0:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-opentelemetry-api-1.0:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-opentelemetry-api-metrics-1.0:$otelInstrumentationAlphaVersion")
+  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-quartz-2.0:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-rabbitmq-2.7:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-reactor-3.1:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-reactor-netty-0.9:$otelInstrumentationAlphaVersion")

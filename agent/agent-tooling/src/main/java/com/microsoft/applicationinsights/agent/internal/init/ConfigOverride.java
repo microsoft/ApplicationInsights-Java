@@ -76,6 +76,9 @@ class ConfigOverride {
       // TODO (trask) investigate if grizzly instrumentation can be enabled upstream by default now
       properties.put("otel.instrumentation.grizzly.enabled", "true");
     }
+    if (!config.preview.instrumentation.quartz.enabled) {
+      properties.put("otel.instrumentation.quartz.enabled", "false");
+    }
     if (!config.preview.instrumentation.springIntegration.enabled) {
       properties.put("otel.instrumentation.spring-integration.enabled", "false");
     }
