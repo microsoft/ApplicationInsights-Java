@@ -129,8 +129,14 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     }
 
     // preview instrumentation
+    if (!config.preview.instrumentation.apacheCamel.enabled) {
+      featureList.add(Feature.APACHE_CAMEL_DISABLED);
+    }
     if (!config.preview.instrumentation.grizzly.enabled) {
       featureList.add(Feature.GRIZZLY_DISABLED);
+    }
+    if (!config.preview.instrumentation.quartz.enabled) {
+      featureList.add(Feature.QUARTZ_DISABLED);
     }
     if (!config.preview.instrumentation.springIntegration.enabled) {
       featureList.add(Feature.SPRING_INTEGRATION_DISABLED);

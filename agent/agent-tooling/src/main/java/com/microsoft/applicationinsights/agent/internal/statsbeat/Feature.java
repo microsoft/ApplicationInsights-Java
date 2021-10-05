@@ -49,7 +49,9 @@ enum Feature {
   SPRING_INTEGRATION_DISABLED(19),
   LEGACY_PROPAGATION_DISABLED(20),
   GRIZZLY_DISABLED(21), // preview instrumentation
-  STATSBEAT_DISABLED(22); // disable non-essential statsbeat
+  STATSBEAT_DISABLED(22), // disable non-essential statsbeat
+  QUARTZ_DISABLED(23), // preview instrumentation
+  APACHE_CAMEL_DISABLED(24); // preview instrumentation
 
   private static final Map<String, Feature> javaVendorFeatureMap;
 
