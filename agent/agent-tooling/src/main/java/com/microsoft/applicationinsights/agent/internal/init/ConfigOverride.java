@@ -71,22 +71,22 @@ class ConfigOverride {
     if (!config.instrumentation.springScheduling.enabled) {
       properties.put("otel.instrumentation.spring-scheduling.enabled", "false");
     }
-    if (config.preview.instrumentation.apacheCamel.enabled) {
-      // apache-camel instrumentation is off by default
-      properties.put("otel.instrumentation.apache-camel.enabled", "true");
+    if (!config.preview.instrumentation.apacheCamel.enabled) {
+      // apache-camel instrumentation is ON by default in OTEL
+      properties.put("otel.instrumentation.apache-camel.enabled", "false");
     }
     if (config.preview.instrumentation.grizzly.enabled) {
       // grizzly instrumentation is off by default
       // TODO (trask) investigate if grizzly instrumentation can be enabled upstream by default now
       properties.put("otel.instrumentation.grizzly.enabled", "true");
     }
-    if (config.preview.instrumentation.quartz.enabled) {
-      // quartz instrumentation is off by default
-      properties.put("otel.instrumentation.quartz.enabled", "true");
+    if (!config.preview.instrumentation.quartz.enabled) {
+      // quartz instrumentation is ON by default in OTEL
+      properties.put("otel.instrumentation.quartz.enabled", "false");
     }
-    if (config.preview.instrumentation.springIntegration.enabled) {
-      // springIntegration instrumentation is off by default
-      properties.put("otel.instrumentation.spring-integration.enabled", "true");
+    if (!config.preview.instrumentation.springIntegration.enabled) {
+      // springIntegration instrumentation is ON by default in OTEL
+      properties.put("otel.instrumentation.spring-integration.enabled", "false");
     }
     if (!config.preview.captureControllerSpans) {
       properties.put("otel.instrumentation.common.experimental.suppress-controller-spans", "true");
