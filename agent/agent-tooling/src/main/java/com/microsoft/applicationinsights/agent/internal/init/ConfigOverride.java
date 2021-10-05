@@ -71,6 +71,9 @@ class ConfigOverride {
     if (!config.instrumentation.springScheduling.enabled) {
       properties.put("otel.instrumentation.spring-scheduling.enabled", "false");
     }
+    if (!config.preview.instrumentation.apacheCamel.enabled) {
+      properties.put("otel.instrumentation.apache-camel.enabled", "false");
+    }
     if (config.preview.instrumentation.grizzly.enabled) {
       // grizzly instrumentation is off by default
       // TODO (trask) investigate if grizzly instrumentation can be enabled upstream by default now

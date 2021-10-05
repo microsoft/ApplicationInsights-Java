@@ -39,6 +39,7 @@ dependencies {
     exclude("ch.qos.logback", "logback-core")
   }
 
+  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-camel-2.20:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpasyncclient-4.1:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpclient-2.0:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpclient-4.0:$otelInstrumentationAlphaVersion")
