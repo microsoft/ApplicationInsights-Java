@@ -1,5 +1,8 @@
 # CHANGELOG
 
+# Version 3.2.0 GA
+* Add Quartz and Apache Camel instrumentations to preview [#1899](https://github.com/microsoft/ApplicationInsights-Java/pull/1899).
+
 # Version 3.2.0-BETA.4
 * Database dependency names are now more concise, e.g. `SELECT mydatabase.mytable` instead of `SELECT x, y, z, ... from ... where ...........` (the full sanitized query is still captured in the dependency data field)
 * Database dependency target field slightly updated to enable better U/X integration
