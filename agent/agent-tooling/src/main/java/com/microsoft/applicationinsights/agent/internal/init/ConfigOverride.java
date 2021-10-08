@@ -91,6 +91,7 @@ class ConfigOverride {
     if (!config.preview.captureControllerSpans) {
       properties.put("otel.instrumentation.common.experimental.suppress-controller-spans", "true");
     }
+    properties.put("otel.instrumentation.common.experimental.suppress-view-spans", "true");
     properties.put(
         "otel.instrumentation.common.experimental.suppress-messaging-receive-spans", "true");
     // this is needed to capture kafka.record.queue_time_ms
