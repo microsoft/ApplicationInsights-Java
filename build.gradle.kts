@@ -4,8 +4,8 @@ plugins {
   id("idea")
 
   id("com.github.ben-manes.versions")
-  id("com.diffplug.spotless")
   id("io.github.gradle-nexus.publish-plugin")
+  id("otel.spotless-conventions")
 }
 
 allprojects {
@@ -37,14 +37,3 @@ nexusPublishing {
 // tasks.release.finalizedBy tasks.closeAndReleaseRepository
 
 description = "OpenTelemetry instrumentations for Java"
-
-spotless {
-  // this formatting is applied at the root level, as some of these files are not in a submodules
-  // and would be missed otherwise
-  format("misc") {
-    target(".gitignore", "*.md", "docs/**/*.md")
-    indentWithSpaces()
-    trimTrailingWhitespace()
-    endWithNewline()
-  }
-}
