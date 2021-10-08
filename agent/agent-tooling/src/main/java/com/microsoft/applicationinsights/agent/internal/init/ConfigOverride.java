@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.agent.internal.legacyheaders.Delegating
 import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.instrumentation.api.config.ConfigBuilder;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 class ConfigOverride {
@@ -98,10 +99,7 @@ class ConfigOverride {
 
     properties.put("otel.propagators", DelegatingPropagatorProvider.NAME);
 
-    String tracesExporter = System.getProperty("otel.traces.exporter");
-    if (tracesExporter == null) {
-      tracesExporter = System.getenv("OTEL_TRACES_EXPORTER");
-    }
+    String tracesExporter = getProperty("otel.traces.exporter");
     if (tracesExporter == null) {
       // currently Application Insights Exporter has to be configured manually because it relies on
       // using a BatchSpanProcessor with queue size 1 due to live metrics (this will change in the
@@ -109,6 +107,14 @@ class ConfigOverride {
       properties.put("otel.traces.exporter", "none");
     } else {
       properties.put("otel.traces.exporter", tracesExporter);
+      // when using another exporter, populate otel.service.name and otel.resource.attributes
+      if (config.role.name != null) {
+        properties.put("otel.service.name", config.role.name);
+      }
+      String resourceAttributes = getProperty("otel.resource.attributes");
+      if (resourceAttributes != null) {
+        properties.put("otel.resource.attributes", resourceAttributes);
+      }
     }
 
     String metricsExporter = System.getProperty("otel.metrics.exporter");
@@ -124,6 +130,15 @@ class ConfigOverride {
     }
 
     return new ConfigBuilder().readProperties(properties).build();
+  }
+
+  private static String getProperty(String propertyName) {
+    String value = System.getProperty(propertyName);
+    if (value != null) {
+      return value;
+    }
+    String envVarName = propertyName.replace('.', '_').toUpperCase(Locale.ROOT);
+    return System.getenv(envVarName);
   }
 
   private ConfigOverride() {}
