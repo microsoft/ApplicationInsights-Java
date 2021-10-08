@@ -1,5 +1,4 @@
 import java.time.Duration
-import nebula.plugin.release.git.opinion.Strategies
 
 plugins {
   id("idea")
@@ -7,15 +6,10 @@ plugins {
   id("com.github.ben-manes.versions")
   id("com.diffplug.spotless")
   id("io.github.gradle-nexus.publish-plugin")
-  id("nebula.release")
 }
 
-release {
-  defaultVersionStrategy = Strategies.getSNAPSHOT()
-}
-
-nebulaRelease {
-  addReleaseBranchPattern("""v\d+\.\d+\.x""")
+allprojects {
+  version = "1.6.0+ai.patches"
 }
 
 nexusPublishing {
