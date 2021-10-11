@@ -6,6 +6,10 @@ do
   sleep 1
 done
 
+# need to give time for app.jar to be completely copied, otherwise sporadic
+# Error: Invalid or corrupt jarfile app.jar
+sleep 5
+
 if [ ! -z "$AI_AGENT_MODE" ]; then
 
     echo "AI_AGENT_MODE=$AI_AGENT_MODE"
