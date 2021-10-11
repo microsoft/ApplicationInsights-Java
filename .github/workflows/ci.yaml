@@ -1,4 +1,4 @@
-name: PR build
+name: CI build
 
 on:
   push:
