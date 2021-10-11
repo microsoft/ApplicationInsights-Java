@@ -180,15 +180,25 @@ public class AiDockerClient {
         p,
         10,
         TimeUnit.SECONDS,
-        String.format("executing command on container %s: '%s'", id, Joiner.on(' ').join(cmdList)));
+        String.format("executing command on container %s: '%s'", id, Joiner.on(' ').join(cmdList)),
+        id);
     flushStdout(p);
   }
 
   private static void waitAndCheckCodeForProcess(
       Process p, long timeout, TimeUnit unit, String actionName)
       throws IOException, InterruptedException {
+    waitAndCheckCodeForProcess(p, timeout, unit, actionName, null);
+  }
+
+  private static void waitAndCheckCodeForProcess(
+      Process p, long timeout, TimeUnit unit, String actionName, String containerId)
+      throws IOException, InterruptedException {
     waitForProcessToReturn(p, timeout, unit, actionName);
     if (p.exitValue() != 0) {
+      if (containerId != null) {
+        printContainerLogs(containerId);
+      }
       flushStdout(p);
       throw new SmokeTestException(
           String.format(
