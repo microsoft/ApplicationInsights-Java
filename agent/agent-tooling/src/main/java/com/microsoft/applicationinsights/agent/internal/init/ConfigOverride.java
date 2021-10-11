@@ -72,7 +72,7 @@ class ConfigOverride {
       properties.put("otel.instrumentation.spring-scheduling.enabled", "false");
     }
     if (!config.preview.instrumentation.akka.enabled) {
-      // apache-camel instrumentation is ON by default in OTEL
+      // akka instrumentation is ON by default in OTEL
       properties.put("otel.instrumentation.akka-actor.enabled", "false");
       properties.put("otel.instrumentation.akka-http.enabled", "false");
     }
