@@ -98,7 +98,7 @@ val DEPENDENCIES = listOf(
   "org.apache.commons:commons-lang3:3.7",
   "org.apache.commons:commons-text:1.9",
   "com.google.code.gson:gson:2.8.2",
-  "com.azure:azure-core:1.20.0",
+  "com.azure:azure-core:1.21.0",
   "com.azure:azure-storage-blob:12.14.0",
   "com.azure:azure-identity:1.3.6",
   "com.github.oshi:oshi-core:5.8.0",
