@@ -129,6 +129,9 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     }
 
     // preview instrumentation
+    if (!config.preview.instrumentation.akka.enabled) {
+      featureList.add(Feature.AKKA_DISABLED);
+    }
     if (!config.preview.instrumentation.apacheCamel.enabled) {
       featureList.add(Feature.APACHE_CAMEL_DISABLED);
     }

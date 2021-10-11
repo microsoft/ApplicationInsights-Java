@@ -267,6 +267,8 @@ public class Configuration {
 
   public static class PreviewInstrumentation {
 
+    public DisabledByDefaultInstrumentation akka = new DisabledByDefaultInstrumentation();
+
     public DisabledByDefaultInstrumentation apacheCamel = new DisabledByDefaultInstrumentation();
 
     // this is just here to detect if using this old setting in order to give a helpful message
