@@ -100,6 +100,7 @@ io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-http-url-conn
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-class-loader:1.6.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-eclipse-osgi-3.6:1.6.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-proxy:1.6.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-reflection:1.6.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-url-class-loader:1.6.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-http-client:1.6.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging-spans:1.6.0+ai.patches-alpha=runtimeClasspath
