@@ -18,6 +18,7 @@ rootProject.extra["otelVersion"] = otelVersion
 val otelInstrumentationVersionAlpha = "1.6.0+ai.patches-alpha"
 
 val DEPENDENCY_BOMS = listOf(
+  "com.azure:azure-sdk-bom:1.0.4",
   "com.google.guava:guava-bom:30.1.1-jre",
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
@@ -98,9 +99,9 @@ val DEPENDENCIES = listOf(
   "org.apache.commons:commons-lang3:3.7",
   "org.apache.commons:commons-text:1.9",
   "com.google.code.gson:gson:2.8.2",
-  "com.azure:azure-core:1.21.0",
-  "com.azure:azure-storage-blob:12.14.0",
-  "com.azure:azure-identity:1.3.6",
+//  "com.azure:azure-core:1.21.0",
+//  "com.azure:azure-storage-blob:12.14.0",
+//  "com.azure:azure-identity:1.3.6",
   "com.github.oshi:oshi-core:5.8.0",
   "org.assertj:assertj-core:3.19.0",
   "org.awaitility:awaitility:4.1.0",
