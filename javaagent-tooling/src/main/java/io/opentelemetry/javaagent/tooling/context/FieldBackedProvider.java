@@ -995,9 +995,17 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
         .makeInterface()
         .merge(SyntheticState.SYNTHETIC)
         .name(getContextAccessorInterfaceName(keyClassName, contextClassName))
-        .defineMethod(getContextGetterName(keyClassName), contextType, Visibility.PUBLIC)
+        .defineMethod(
+            getContextGetterName(keyClassName),
+            contextType,
+            Visibility.PUBLIC,
+            SyntheticState.SYNTHETIC)
         .withoutCode()
-        .defineMethod(getContextSetterName(keyClassName), TypeDescription.VOID, Visibility.PUBLIC)
+        .defineMethod(
+            getContextSetterName(keyClassName),
+            TypeDescription.VOID,
+            Visibility.PUBLIC,
+            SyntheticState.SYNTHETIC)
         .withParameter(contextType, "value")
         .withoutCode()
         .make();

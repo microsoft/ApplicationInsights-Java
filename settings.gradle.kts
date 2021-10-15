@@ -9,6 +9,7 @@ pluginManagement {
     id("org.unbroken-dome.test-sets") version "4.0.0"
     id("org.xbib.gradle.plugin.jflex") version "1.5.0"
     id("nebula.release") version "15.3.1"
+    id("com.github.johnrengelman.shadow") version "7.0.0"
   }
 }
 
@@ -49,6 +50,8 @@ buildCache {
 }
 
 rootProject.name = "opentelemetry-java-instrumentation"
+
+includeBuild("conventions")
 
 include(":muzzle")
 
@@ -218,7 +221,6 @@ include(":instrumentation:jsf:mojarra-1.2:javaagent")
 include(":instrumentation:jsf:myfaces-1.2:javaagent")
 include(":instrumentation:jsp-2.3:javaagent")
 include(":instrumentation:kafka-clients:kafka-clients-0.11:javaagent")
-include(":instrumentation:kafka-clients:kafka-clients-2.4.0-testing")
 include(":instrumentation:kafka-clients:kafka-clients-common:javaagent")
 include(":instrumentation:kafka-streams-0.11:javaagent")
 include(":instrumentation:kotlinx-coroutines:javaagent")
