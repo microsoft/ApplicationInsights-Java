@@ -46,6 +46,8 @@ public class LoggingLevelConfigurator {
     updateLoggerLevel(loggerContext.getLogger("io.grpc.Context"));
     updateLoggerLevel(loggerContext.getLogger("io.opentelemetry"));
     updateLoggerLevel(loggerContext.getLogger("muzzleMatcher"));
+    updateLoggerLevel(
+        loggerContext.getLogger("com.azure.core.implementation.jackson.JacksonVersion"));
     updateLoggerLevel(loggerContext.getLogger("com.microsoft.applicationinsights"));
     updateLoggerLevel(loggerContext.getLogger(ROOT_LOGGER_NAME));
   }
@@ -67,6 +69,10 @@ public class LoggingLevelConfigurator {
       // muzzleMatcher logs at WARN level, so by default this is OFF, but enabled when DEBUG logging
       // is enabled
       loggerLevel = getMuzzleMatcherLevel(level);
+    } else if (name.startsWith("com.azure.core.implementation.jackson.JacksonVersion")) {
+      // need to suppress ERROR messages from this class since it cannot find the real jackson
+      // version due to shading
+      loggerLevel = Level.OFF;
     } else if (name.startsWith("com.microsoft.applicationinsights")) {
       loggerLevel = level;
     } else {
