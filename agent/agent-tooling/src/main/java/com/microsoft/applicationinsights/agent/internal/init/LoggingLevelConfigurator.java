@@ -54,8 +54,7 @@ public class LoggingLevelConfigurator {
     Level loggerLevel;
     String name = logger.getName();
     if (name.startsWith("reactor.netty") || name.startsWith("io.netty")) {
-      // never want to log reactor netty or netty at trace or debug, it's just way too verbose
-      loggerLevel = getAtLeastInfoLevel(level);
+      loggerLevel = getNettyLevel(level);
     } else if (name.startsWith("io.grpc.Context")) {
       // never want to log io.grpc.Context at trace or debug, as it logs confusing stack trace that
       // looks like error but isn't
@@ -81,9 +80,27 @@ public class LoggingLevelConfigurator {
     return getMaxLevel(level, Level.INFO);
   }
 
+  private static Level getNettyLevel(Level level) {
+    if (level == Level.DEBUG || level == Level.TRACE) {
+      // never want to log reactor netty or netty at trace or debug, it's just way too verbose
+      return Level.INFO;
+    } else if (level == Level.INFO || level == Level.WARN) {
+      // suppress spammy reactor-netty WARN logs
+      return Level.ERROR;
+    } else {
+      return level;
+    }
+  }
+
   private static Level getOpenTelemetryLevel(Level level) {
-    // bump DEBUG up to INFO, keep all others as-is
-    return level == Level.DEBUG ? Level.INFO : level;
+    if (level == Level.INFO) {
+      return Level.WARN;
+    } else if (level == Level.DEBUG) {
+      // use "trace" level to enable verbose debugging
+      return Level.INFO;
+    } else {
+      return level;
+    }
   }
 
   private static Level getOtherLibLevel(Level level) {
