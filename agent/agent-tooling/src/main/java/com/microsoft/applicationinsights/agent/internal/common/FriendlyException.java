@@ -21,35 +21,42 @@
 
 package com.microsoft.applicationinsights.agent.internal.common;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 public class FriendlyException extends RuntimeException {
-  // TODO (trask) this seems like default for failing to send telemetry, but not necessarily default
-  //  for all friendly exceptions
-  private static final String DEFAULT_BANNER =
-      "ApplicationInsights Java Agent failed to send telemetry data";
 
-  public FriendlyException() {
-    super();
+  public FriendlyException(String description, String action) {
+    this(description, action, null);
   }
 
-  public FriendlyException(String message, String action) {
-    // TODO (trask) can these constructors cascade?
-    super(populateFriendlyMessage(message, action, DEFAULT_BANNER, ""));
-  }
-
-  public FriendlyException(String banner, String action, String message, String note) {
-    super(populateFriendlyMessage(message, action, banner, note));
-  }
-
-  public FriendlyException(String banner, String action, Throwable cause) {
-    super(populateFriendlyMessage("", action, banner, ""), cause);
+  public FriendlyException(String description, String action, @Nullable Throwable cause) {
+    super(buildMessage(description, action), cause);
   }
 
   public String getMessageWithBanner(String banner) {
-    return populateFriendlyMessage(getMessage(), "", banner, "");
+    return System.lineSeparator()
+        + "*************************"
+        + System.lineSeparator()
+        + banner
+        + System.lineSeparator()
+        + "*************************"
+        + System.lineSeparator()
+        + getMessage();
   }
 
-  public static String getMessageWithDefaultBanner(String message) {
-    return populateFriendlyMessage(message, "", DEFAULT_BANNER, "");
+  private static String buildMessage(String description, String action) {
+    StringBuilder messageBuilder = new StringBuilder();
+    if (!Strings.isNullOrEmpty(description)) {
+      messageBuilder.append(System.lineSeparator());
+      messageBuilder.append("Description:").append(System.lineSeparator());
+      messageBuilder.append(description).append(System.lineSeparator());
+    }
+    if (!Strings.isNullOrEmpty(action)) {
+      messageBuilder.append(System.lineSeparator());
+      messageBuilder.append("Action:").append(System.lineSeparator());
+      messageBuilder.append(action).append(System.lineSeparator());
+    }
+    return messageBuilder.toString();
   }
 
   public static String populateFriendlyMessage(

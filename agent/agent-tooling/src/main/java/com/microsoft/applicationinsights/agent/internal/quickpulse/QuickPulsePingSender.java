@@ -27,7 +27,7 @@ import com.azure.core.http.HttpResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.microsoft.applicationinsights.agent.internal.common.ExceptionUtils;
+import com.microsoft.applicationinsights.agent.internal.common.NetworkFriendlyExceptions;
 import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
@@ -135,8 +135,9 @@ class QuickPulsePingSender {
         }
       }
     } catch (Throwable t) {
+      NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
+          t, getQuickPulseEndpoint(), friendlyExceptionThrown, logger);
       operationLogger.recordFailure(t.getMessage(), t);
-      ExceptionUtils.parseError(t, getQuickPulseEndpoint(), friendlyExceptionThrown, logger);
     } finally {
       if (response != null) {
         response.close();
