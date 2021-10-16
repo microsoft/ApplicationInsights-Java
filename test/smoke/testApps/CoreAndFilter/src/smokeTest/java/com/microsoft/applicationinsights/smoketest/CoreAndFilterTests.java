@@ -412,19 +412,15 @@ public class CoreAndFilterTests extends AiSmokeTest {
   }
 
   @Test
-  @TargetUri(
-      value = "/requestSlow?sleeptime=25",
-      timeout = 35_000) // the servlet sleeps for 25 seconds
+  @TargetUri("/requestSlow?sleeptime=20")
   public void testRequestSlowWithResponseTime() throws Exception {
-    validateSlowTest(25, "GET /CoreAndFilter/requestSlow");
+    validateSlowTest(20, "GET /CoreAndFilter/requestSlow");
   }
 
   @Test
-  @TargetUri(
-      value = "/slowLoop?responseTime=25",
-      timeout = 35_000) // the servlet sleeps for 20 seconds
+  @TargetUri("/slowLoop?responseTime=20")
   public void testSlowRequestUsingCpuBoundLoop() throws Exception {
-    validateSlowTest(25, "GET /CoreAndFilter/slowLoop");
+    validateSlowTest(20, "GET /CoreAndFilter/slowLoop");
   }
 
   @Test
