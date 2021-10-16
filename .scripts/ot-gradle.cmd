@@ -11,6 +11,7 @@ set PROJECT_ROOT=%CD%\otel
 pushd %PROJECT_ROOT%
 
 set DEFAULT_OPTIONS=--info --stacktrace --warning-mode=all
+set GRADLE_OPTS=-XX:+PrintFlagsFinal
 set GRADLE_CMD=gradlew.bat %DEFAULT_OPTIONS% %*
 echo Running '%GRADLE_CMD%' in '%PROJECT_ROOT%'
 call %GRADLE_CMD%
