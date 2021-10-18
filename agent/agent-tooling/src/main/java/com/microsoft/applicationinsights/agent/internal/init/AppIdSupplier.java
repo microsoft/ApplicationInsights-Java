@@ -26,7 +26,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
-import com.microsoft.applicationinsights.agent.internal.common.ExceptionUtils;
+import com.microsoft.applicationinsights.agent.internal.common.NetworkFriendlyExceptions;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.common.WarningLogger;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
@@ -125,7 +125,8 @@ public class AppIdSupplier implements AiAppId.Supplier {
       try {
         response = LazyHttpClient.getInstance().send(request).block();
       } catch (RuntimeException ex) {
-        ExceptionUtils.parseError(ex, url.toString(), friendlyExceptionThrown, logger);
+        NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
+            ex, url.toString(), friendlyExceptionThrown, logger);
         warningLogger.recordWarning("exception sending request to " + url, ex);
         backOff();
         return;
