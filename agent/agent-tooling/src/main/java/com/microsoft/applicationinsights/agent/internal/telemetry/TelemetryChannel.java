@@ -32,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.microsoft.applicationinsights.agent.internal.common.ExceptionUtils;
+import com.microsoft.applicationinsights.agent.internal.common.NetworkFriendlyExceptions;
 import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
@@ -137,15 +137,13 @@ public class TelemetryChannel {
     try {
       byteBuffers = encode(telemetryItems);
     } catch (Throwable t) {
-      operationLogger.recordFailure(
-          String.format("Error encoding telemetry items: %s", t.getMessage()), t);
+      operationLogger.recordFailure("Error encoding telemetry items: " + t.getMessage(), t);
       return CompletableResultCode.ofFailure();
     }
     try {
       return internalSend(byteBuffers, instrumentationKey);
     } catch (Throwable t) {
-      operationLogger.recordFailure(
-          String.format("Error sending telemetry items: %s", t.getMessage()), t);
+      operationLogger.recordFailure("Error sending telemetry items: " + t.getMessage(), t);
       return CompletableResultCode.ofFailure();
     }
   }
@@ -218,14 +216,16 @@ public class TelemetryChannel {
               LazyHttpClient.consumeResponseBody(response);
             },
             error -> {
+              NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
+                  error, endpointUrl.toString(), friendlyExceptionThrown, logger);
+              operationLogger.recordFailure(
+                  "Error sending telemetry items: " + error.getMessage(), error);
               if (networkStatsbeat != null) {
                 networkStatsbeat.incrementRequestFailureCount(instrumentationKey);
               }
-              ExceptionUtils.parseError(
-                  error, endpointUrl.toString(), friendlyExceptionThrown, logger);
               // sending raw bytes won't have any instrumentation key
               if (instrumentationKey != null) {
-                writeToDiskOnFailure(byteBuffers, byteBuffers);
+                writeToDiskOnFailure(byteBuffers);
               }
               result.fail();
             },
@@ -234,31 +234,22 @@ public class TelemetryChannel {
                 networkStatsbeat.incrementRequestSuccessCount(
                     System.currentTimeMillis() - startTime, instrumentationKey);
               }
-              if (byteBuffers != null) {
-                byteBufferPool.offer(byteBuffers);
-              }
+              byteBufferPool.offer(byteBuffers);
               result.succeed();
             });
     return result;
   }
 
-  private void writeToDiskOnFailure(
-      List<ByteBuffer> byteBuffers, List<ByteBuffer> finalByteBuffers) {
+  private void writeToDiskOnFailure(List<ByteBuffer> byteBuffers) {
     if (!localFileWriter.writeToDisk(byteBuffers)) {
-      operationLogger.recordFailure(
-          String.format(
-              "Fail to write %s to disk.",
-              (finalByteBuffers != null ? "List<ByteBuffers>" : "byte[]")));
       // TODO (heya) track # of write failure via Statsbeat
     }
 
-    if (finalByteBuffers != null) {
-      byteBufferPool.offer(finalByteBuffers);
-    }
+    byteBufferPool.offer(byteBuffers);
   }
 
   private void parseResponseCode(
-      int statusCode, String instrumentationKey, List<ByteBuffer> finalByteBuffers) {
+      int statusCode, String instrumentationKey, List<ByteBuffer> byteBuffers) {
     switch (statusCode) {
       case 401: // UNAUTHORIZED
       case 403: // FORBIDDEN
@@ -267,7 +258,7 @@ public class TelemetryChannel {
             statusCode);
         // sending raw bytes won't have any instrumentation key
         if (instrumentationKey != null) {
-          writeToDiskOnFailure(finalByteBuffers, finalByteBuffers);
+          writeToDiskOnFailure(byteBuffers);
         }
         break;
       case 408: // REQUEST TIMEOUT

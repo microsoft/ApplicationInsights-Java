@@ -30,12 +30,13 @@ class MainEntryPointTest {
   @Test
   void getFriendlyExceptionTest() {
     FriendlyException friendlyException =
-        MainEntryPoint.getFriendlyException(new FriendlyException());
+        MainEntryPoint.getFriendlyException(new FriendlyException("<message>", "<action>"));
     FriendlyException nonFriendlyException =
         MainEntryPoint.getFriendlyException(new IllegalArgumentException());
     FriendlyException nestedFriendlyException =
         MainEntryPoint.getFriendlyException(
-            new RuntimeException("Run time Exception", new FriendlyException()));
+            new RuntimeException(
+                "Run time Exception", new FriendlyException("<message>", "<action>")));
     FriendlyException nestedNonFriendlyException =
         MainEntryPoint.getFriendlyException(
             new RuntimeException("Run time Exception", new IllegalArgumentException()));

@@ -38,7 +38,4 @@ public @interface TargetUri {
 
   /** The number of times to call the target uri. */
   int callCount() default 1;
-
-  /** The number of milliseconds to wait for a response. */
-  long timeout() default 0L;
 }

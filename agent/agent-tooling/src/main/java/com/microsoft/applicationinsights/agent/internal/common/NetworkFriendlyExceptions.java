@@ -19,35 +19,57 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.httpclient;
+package com.microsoft.applicationinsights.agent.internal.common;
 
-import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.configuration.DefaultEndpoints;
 import java.io.File;
+import java.net.UnknownHostException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.net.ssl.SSLHandshakeException;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.slf4j.Logger;
 
-public class SslUtil {
+public class NetworkFriendlyExceptions {
 
-  public static String friendlyMessage(String url) {
+  public static void logSpecialOneTimeFriendlyException(
+      Throwable error, String url, AtomicBoolean alreadySeen, Logger logger) {
+    if (alreadySeen.get()) {
+      return;
+    }
+    // Handle SSL cert exceptions
+    SSLHandshakeException sslException = getCausedByOfType(error, SSLHandshakeException.class);
+    if (sslException != null && !alreadySeen.getAndSet(true)) {
+      logger.error(getSslFriendlyMessage(url));
+      return;
+    }
+    UnknownHostException unknownHostException =
+        getCausedByOfType(error, UnknownHostException.class);
+    if (unknownHostException != null && !alreadySeen.getAndSet(true)) {
+      // TODO log friendly message with instructions how to troubleshoot
+      //  e.g. wrong host address or cannot reach address due to network issues...
+      return;
+    }
+  }
+
+  private static <T extends Exception> T getCausedByOfType(Throwable throwable, Class<T> type) {
+    if (type.isInstance(throwable)) {
+      @SuppressWarnings("unchecked")
+      T ofType = (T) throwable;
+      return ofType;
+    }
+    Throwable cause = throwable.getCause();
+    if (cause == null) {
+      return null;
+    }
+    return getCausedByOfType(cause, type);
+  }
+
+  private static String getSslFriendlyMessage(String url) {
     return FriendlyException.populateFriendlyMessage(
         getSslFriendlyExceptionBanner(url),
         getSslFriendlyExceptionAction(url),
-        getSslFriendlyExceptionMessage(),
-        getSslFriendlyExceptionNote());
-  }
-
-  private static String getJavaCacertsPath() {
-    String javaHome = System.getProperty("java.home");
-    return new File(javaHome, "lib/security/cacerts").getPath();
-  }
-
-  @Nullable
-  private static String getCustomJavaKeystorePath() {
-    String cacertsPath = System.getProperty("javax.net.ssl.trustStore");
-    if (cacertsPath != null) {
-      return new File(cacertsPath).getPath();
-    }
-    return null;
+        "Unable to find valid certification path to requested target.",
+        "This message is only logged the first time it occurs after startup.");
   }
 
   private static String getSslFriendlyExceptionBanner(String url) {
@@ -55,10 +77,6 @@ public class SslUtil {
       return "ApplicationInsights Java Agent failed to connect to Live metric end point.";
     }
     return "ApplicationInsights Java Agent failed to send telemetry data.";
-  }
-
-  private static String getSslFriendlyExceptionMessage() {
-    return "Unable to find valid certification path to requested target.";
   }
 
   private static String getSslFriendlyExceptionAction(String url) {
@@ -79,9 +97,19 @@ public class SslUtil {
         + "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450";
   }
 
-  private static String getSslFriendlyExceptionNote() {
-    return "This message is only logged the first time it occurs after startup.";
+  private static String getJavaCacertsPath() {
+    String javaHome = System.getProperty("java.home");
+    return new File(javaHome, "lib/security/cacerts").getPath();
   }
 
-  private SslUtil() {}
+  @Nullable
+  private static String getCustomJavaKeystorePath() {
+    String cacertsPath = System.getProperty("javax.net.ssl.trustStore");
+    if (cacertsPath != null) {
+      return new File(cacertsPath).getPath();
+    }
+    return null;
+  }
+
+  private NetworkFriendlyExceptions() {}
 }

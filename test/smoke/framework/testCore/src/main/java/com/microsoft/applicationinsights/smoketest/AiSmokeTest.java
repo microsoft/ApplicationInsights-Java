@@ -188,7 +188,6 @@ public abstract class AiSmokeTest {
   protected String httpMethod;
   protected long targetUriDelayMs;
   protected long targetUriCallCount;
-  protected long targetUriTimeoutMs;
   // endregion
 
   // region: options
@@ -220,7 +219,6 @@ public abstract class AiSmokeTest {
             thiz.httpMethod = null;
             thiz.targetUriDelayMs = 0L;
             thiz.targetUriCallCount = 1;
-            thiz.targetUriTimeoutMs = TELEMETRY_RECEIVE_TIMEOUT_SECONDS * 1000;
           } else {
             thiz.targetUri = targetUri.value();
             if (!thiz.targetUri.startsWith("/")) {
@@ -229,10 +227,6 @@ public abstract class AiSmokeTest {
             thiz.httpMethod = targetUri.method().toUpperCase();
             thiz.targetUriDelayMs = targetUri.delay();
             thiz.targetUriCallCount = targetUri.callCount();
-            thiz.targetUriTimeoutMs =
-                targetUri.timeout() > 0
-                    ? targetUri.timeout()
-                    : TELEMETRY_RECEIVE_TIMEOUT_SECONDS * 1000;
           }
         }
 
@@ -491,12 +485,10 @@ public abstract class AiSmokeTest {
           String.format("Empty response from targetUri: '%s'. %s", targetUri, expectationMessage),
           content.length() > 0);
     }
-    if (this.targetUriTimeoutMs > 0) {
-      Stopwatch sw = Stopwatch.createStarted();
-      mockedIngestion.awaitAnyItems(this.targetUriTimeoutMs, TimeUnit.MILLISECONDS);
-      System.out.printf(
-          "Telemetry received after %.3f seconds.%n", sw.elapsed(TimeUnit.MILLISECONDS) / 1000.0);
-    }
+    Stopwatch sw = Stopwatch.createStarted();
+    mockedIngestion.awaitAnyItems(TELEMETRY_RECEIVE_TIMEOUT_SECONDS * 1000, TimeUnit.MILLISECONDS);
+    System.out.printf(
+        "Telemetry received after %.3f seconds.%n", sw.elapsed(TimeUnit.MILLISECONDS) / 1000.0);
     System.out.println("Starting validation...");
     assertTrue("mocked ingestion has no data", mockedIngestion.hasData());
   }

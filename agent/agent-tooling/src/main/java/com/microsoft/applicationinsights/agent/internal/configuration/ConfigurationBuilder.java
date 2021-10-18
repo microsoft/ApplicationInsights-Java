@@ -567,10 +567,9 @@ public class ConfigurationBuilder {
       }
     } catch (JsonMappingException | JsonParseException ex) {
       throw new FriendlyException(
-          "Application Insights Java agent failed to start",
+          "Error parsing configuration from file: " + configPath.toAbsolutePath(),
           "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358",
-          ex.getMessage(),
-          "Error parsing configuration from file: " + configPath.toAbsolutePath());
+          ex);
     } catch (Exception e) {
       throw new ConfigurationException(
           "Error parsing configuration from file: " + configPath.toAbsolutePath(), e);
