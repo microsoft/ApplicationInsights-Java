@@ -38,7 +38,7 @@ public class NetworkFriendlyExceptions {
     }
     // Handle SSL cert exceptions
     SSLHandshakeException sslException = getCausedByOfType(error, SSLHandshakeException.class);
-    if (sslException != null && alreadySeen.getAndSet(true)) {
+    if (sslException != null && !alreadySeen.getAndSet(true)) {
       logger.error(getSslFriendlyMessage(url));
       return;
     }
