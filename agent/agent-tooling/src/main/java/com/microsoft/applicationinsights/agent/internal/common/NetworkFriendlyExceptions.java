@@ -44,7 +44,7 @@ public class NetworkFriendlyExceptions {
     }
     UnknownHostException unknownHostException =
         getCausedByOfType(error, UnknownHostException.class);
-    if (unknownHostException != null && alreadySeen.getAndSet(true)) {
+    if (unknownHostException != null && !alreadySeen.getAndSet(true)) {
       // TODO log friendly message with instructions how to troubleshoot
       //  e.g. wrong host address or cannot reach address due to network issues...
       return;
