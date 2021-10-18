@@ -159,6 +159,7 @@ public class ConfigurationBuilder {
     // rp configuration should always be last (so it takes precedence)
     // currently applicationinsights-rp.json is only used by Azure Spring Cloud
     if (rpConfiguration != null) {
+      overlayWithEnvVarAndSysProp(rpConfiguration);
       overlayRpConfiguration(config, rpConfiguration);
     }
     // only set role instance to host name as a last resort
@@ -345,23 +346,37 @@ public class ConfigurationBuilder {
     configurationLogger.log(LoggerFactory.getLogger(ConfigurationBuilder.class));
   }
 
-  // visible for testing
-  static void overlayEnvVars(Configuration config) throws IOException {
-    config.connectionString =
-        overlayWithSysPropEnvVar(
-            APPLICATIONINSIGHTS_CONNECTION_STRING_SYS,
-            APPLICATIONINSIGHTS_CONNECTION_STRING_ENV,
-            config.connectionString);
-    if (config.connectionString == null) {
+  public static void overlayWithEnvVarAndSysProp(RpConfiguration config) {
+    config.connectionString = overlayConnectionStringEnvVarAndSysProp(config.connectionString);
+    config.sampling.percentage = overlaySamplingPercentageEnvVar(config.sampling.percentage);
+  }
+
+  private static String overlayConnectionStringEnvVarAndSysProp(String connectionString) {
+    String overlayConnectionString = overlayWithSysPropEnvVar(
+        APPLICATIONINSIGHTS_CONNECTION_STRING_SYS, APPLICATIONINSIGHTS_CONNECTION_STRING_ENV,
+        connectionString);
+
+    if (overlayConnectionString == null) {
       // this is for backwards compatibility only
       String instrumentationKey = getEnvVar(APPINSIGHTS_INSTRUMENTATIONKEY);
       if (instrumentationKey != null) {
         configurationLogger.warn(
             "APPINSIGHTS_INSTRUMENTATIONKEY is only supported for backwards compatibility,"
                 + " please consider using APPLICATIONINSIGHTS_CONNECTION_STRING instead");
-        config.connectionString = "InstrumentationKey=" + instrumentationKey;
+        overlayConnectionString = String.format("InstrumentationKey=%s", instrumentationKey);
       }
     }
+
+    return overlayConnectionString;
+  }
+
+  private static float overlaySamplingPercentageEnvVar(float samplingPercentage) {
+    return overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, samplingPercentage);
+  }
+
+  // visible for testing
+  static void overlayEnvVars(Configuration config) throws IOException {
+    config.connectionString = overlayConnectionStringEnvVarAndSysProp(config.connectionString);
 
     if (isTrimEmpty(config.role.name)) {
       // only use WEBSITE_SITE_NAME as a fallback
@@ -381,8 +396,7 @@ public class ConfigurationBuilder {
             APPLICATIONINSIGHTS_ROLE_INSTANCE_ENV,
             config.role.instance);
 
-    config.sampling.percentage =
-        overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, config.sampling.percentage);
+    config.sampling.percentage = overlaySamplingPercentageEnvVar(config.sampling.percentage);
 
     config.selfDiagnostics.level =
         overlayWithEnvVar(APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL, config.selfDiagnostics.level);

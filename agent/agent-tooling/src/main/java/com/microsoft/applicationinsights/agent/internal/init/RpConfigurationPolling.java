@@ -95,6 +95,8 @@ public class RpConfigurationPolling implements Runnable {
         RpConfiguration newRpConfiguration =
             RpConfigurationBuilder.loadJsonConfigFile(rpConfiguration.configPath);
 
+        ConfigurationBuilder.overlayWithEnvVarAndSysProp(newRpConfiguration);
+
         if (!newRpConfiguration.connectionString.equals(rpConfiguration.connectionString)) {
           logger.debug(
               "Connection string from the JSON config file is overriding the previously configured connection string.");
