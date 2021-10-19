@@ -95,7 +95,7 @@ public class RpConfigurationPolling implements Runnable {
         RpConfiguration newRpConfiguration =
             RpConfigurationBuilder.loadJsonConfigFile(rpConfiguration.configPath);
 
-        ConfigurationBuilder.overlayWithEnvVarAndSysProp(newRpConfiguration);
+        ConfigurationBuilder.overlayFromEnv(newRpConfiguration);
 
         if (!newRpConfiguration.connectionString.equals(rpConfiguration.connectionString)) {
           logger.debug(

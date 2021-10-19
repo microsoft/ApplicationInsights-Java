@@ -109,7 +109,7 @@ class ConfigurationBuilderTest {
     config.connectionString = testConnectionString;
     config.sampling.percentage = testSamplingPercentage;
 
-    ConfigurationBuilder.overlayWithEnvVarAndSysProp(config);
+    ConfigurationBuilder.overlayFromEnv(config);
 
     assertThat(config.connectionString).isEqualTo(testConnectionString);
     assertThat(config.sampling.percentage).isEqualTo(testSamplingPercentage);
@@ -129,7 +129,7 @@ class ConfigurationBuilderTest {
               config.connectionString = String.format("original-%s", testConnectionString);
               config.sampling.percentage = testSamplingPercentage + 1.0f;
 
-              ConfigurationBuilder.overlayWithEnvVarAndSysProp(config);
+              ConfigurationBuilder.overlayFromEnv(config);
 
               assertThat(config.connectionString).isEqualTo(testConnectionString);
               assertThat(config.sampling.percentage).isEqualTo(testSamplingPercentage);

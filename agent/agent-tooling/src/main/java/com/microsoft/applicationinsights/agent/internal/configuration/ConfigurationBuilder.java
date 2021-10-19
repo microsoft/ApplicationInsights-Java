@@ -154,12 +154,15 @@ public class ConfigurationBuilder {
               + " so no need to enable it under preview configuration");
     }
 
-    overlayEnvVars(config);
-    applySamplingPercentageRounding(config);
+    overlayFromEnv(config);
+    config.sampling.percentage = roundToNearest(config.sampling.percentage, true);
+    for (SamplingOverride override : config.preview.sampling.overrides) {
+      override.percentage = roundToNearest(override.percentage, true);
+    }
     // rp configuration should always be last (so it takes precedence)
     // currently applicationinsights-rp.json is only used by Azure Spring Cloud
     if (rpConfiguration != null) {
-      overlayWithEnvVarAndSysProp(rpConfiguration);
+      overlayFromEnv(rpConfiguration);
       overlayRpConfiguration(config, rpConfiguration);
     }
     // only set role instance to host name as a last resort
@@ -346,39 +349,9 @@ public class ConfigurationBuilder {
     configurationLogger.log(LoggerFactory.getLogger(ConfigurationBuilder.class));
   }
 
-  public static void overlayWithEnvVarAndSysProp(RpConfiguration config) {
-    config.connectionString = overlayConnectionStringEnvVarAndSysProp(config.connectionString);
-    config.sampling.percentage = overlaySamplingPercentageEnvVar(config.sampling.percentage);
-  }
-
-  private static String overlayConnectionStringEnvVarAndSysProp(String connectionString) {
-    String overlayConnectionString =
-        overlayWithSysPropEnvVar(
-            APPLICATIONINSIGHTS_CONNECTION_STRING_SYS,
-            APPLICATIONINSIGHTS_CONNECTION_STRING_ENV,
-            connectionString);
-
-    if (overlayConnectionString == null) {
-      // this is for backwards compatibility only
-      String instrumentationKey = getEnvVar(APPINSIGHTS_INSTRUMENTATIONKEY);
-      if (instrumentationKey != null) {
-        configurationLogger.warn(
-            "APPINSIGHTS_INSTRUMENTATIONKEY is only supported for backwards compatibility,"
-                + " please consider using APPLICATIONINSIGHTS_CONNECTION_STRING instead");
-        overlayConnectionString = "InstrumentationKey=" + instrumentationKey;
-      }
-    }
-
-    return overlayConnectionString;
-  }
-
-  private static float overlaySamplingPercentageEnvVar(float samplingPercentage) {
-    return overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, samplingPercentage);
-  }
-
   // visible for testing
-  static void overlayEnvVars(Configuration config) throws IOException {
-    config.connectionString = overlayConnectionStringEnvVarAndSysProp(config.connectionString);
+  static void overlayFromEnv(Configuration config) throws IOException {
+    config.connectionString = overlayConnectionStringFromEnv(config.connectionString);
 
     if (isTrimEmpty(config.role.name)) {
       // only use WEBSITE_SITE_NAME as a fallback
@@ -398,7 +371,8 @@ public class ConfigurationBuilder {
             APPLICATIONINSIGHTS_ROLE_INSTANCE_ENV,
             config.role.instance);
 
-    config.sampling.percentage = overlaySamplingPercentageEnvVar(config.sampling.percentage);
+    config.sampling.percentage =
+        overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, config.sampling.percentage);
 
     config.selfDiagnostics.level =
         overlayWithEnvVar(APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL, config.selfDiagnostics.level);
@@ -434,11 +408,31 @@ public class ConfigurationBuilder {
     overlayInstrumentationEnabledEnvVars(config);
   }
 
-  public static void applySamplingPercentageRounding(Configuration config) {
-    config.sampling.percentage = roundToNearest(config.sampling.percentage, true);
-    for (SamplingOverride override : config.preview.sampling.overrides) {
-      override.percentage = roundToNearest(override.percentage, true);
+  public static void overlayFromEnv(RpConfiguration config) {
+    config.connectionString = overlayConnectionStringFromEnv(config.connectionString);
+    config.sampling.percentage =
+        overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, config.sampling.percentage);
+  }
+
+  private static String overlayConnectionStringFromEnv(String connectionString) {
+    String overlayConnectionString =
+        overlayWithSysPropEnvVar(
+            APPLICATIONINSIGHTS_CONNECTION_STRING_SYS,
+            APPLICATIONINSIGHTS_CONNECTION_STRING_ENV,
+            connectionString);
+
+    if (overlayConnectionString == null) {
+      // this is for backwards compatibility only
+      String instrumentationKey = getEnvVar(APPINSIGHTS_INSTRUMENTATIONKEY);
+      if (instrumentationKey != null) {
+        configurationLogger.warn(
+            "APPINSIGHTS_INSTRUMENTATIONKEY is only supported for backwards compatibility,"
+                + " please consider using APPLICATIONINSIGHTS_CONNECTION_STRING instead");
+        overlayConnectionString = "InstrumentationKey=" + instrumentationKey;
+      }
     }
+
+    return overlayConnectionString;
   }
 
   // visible for testing
