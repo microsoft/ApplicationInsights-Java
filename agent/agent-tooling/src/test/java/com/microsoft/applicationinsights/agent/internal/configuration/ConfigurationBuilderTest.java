@@ -121,17 +121,18 @@ class ConfigurationBuilderTest {
     float testSamplingPercentage = 10.0f;
 
     withEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING", testConnectionString)
-        .and("APPLICATIONINSIGHTS_SAMPLING_PERCENTAG", String.valueOf(testSamplingPercentage))
-        .execute(() -> {
-          RpConfiguration config = new RpConfiguration();
+        .and("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", String.valueOf(testSamplingPercentage))
+        .execute(
+            () -> {
+              RpConfiguration config = new RpConfiguration();
 
-          config.connectionString = String.format("original-%s", testConnectionString);
-          config.sampling.percentage = testSamplingPercentage + 1.0f;
+              config.connectionString = String.format("original-%s", testConnectionString);
+              config.sampling.percentage = testSamplingPercentage + 1.0f;
 
-          ConfigurationBuilder.overlayWithEnvVarAndSysProp(config);
+              ConfigurationBuilder.overlayWithEnvVarAndSysProp(config);
 
-          assertThat(config.connectionString).isEqualTo(testConnectionString);
-          assertThat(config.sampling.percentage).isEqualTo(testSamplingPercentage);
-        });
+              assertThat(config.connectionString).isEqualTo(testConnectionString);
+              assertThat(config.sampling.percentage).isEqualTo(testSamplingPercentage);
+            });
   }
 }
