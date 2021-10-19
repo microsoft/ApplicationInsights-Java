@@ -365,7 +365,7 @@ public class ConfigurationBuilder {
         configurationLogger.warn(
             "APPINSIGHTS_INSTRUMENTATIONKEY is only supported for backwards compatibility,"
                 + " please consider using APPLICATIONINSIGHTS_CONNECTION_STRING instead");
-        overlayConnectionString = String.format("InstrumentationKey=%s", instrumentationKey);
+        overlayConnectionString = "InstrumentationKey=" + instrumentationKey;
       }
     }
 
