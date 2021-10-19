@@ -40,6 +40,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.LoggerFactory;
 
 public class ConfigurationBuilder {
@@ -414,6 +415,7 @@ public class ConfigurationBuilder {
         overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, config.sampling.percentage);
   }
 
+  @Nullable
   private static String overlayConnectionStringFromEnv(String connectionString) {
     String value =
         overlayWithSysPropEnvVar(
