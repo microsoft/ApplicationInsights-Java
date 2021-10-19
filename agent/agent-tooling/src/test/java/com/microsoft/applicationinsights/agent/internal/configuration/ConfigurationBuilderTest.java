@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static uk.org.webcompere.systemstubs.SystemStubs.withEnvironmentVariable;
 
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import java.io.File;
@@ -97,5 +98,41 @@ class ConfigurationBuilderTest {
     assertThat(pathEmpty)
         .isEqualTo(
             "Application Insights Java agent's configuration file path/to/file has a malformed JSON\n");
+  }
+
+  @Test
+  void testRpConfigurationOverlayWithEnvVarAndSysPropUnchanged() {
+    String testConnectionString = "test-connection-string";
+    float testSamplingPercentage = 10.0f;
+    RpConfiguration config = new RpConfiguration();
+
+    config.connectionString = testConnectionString;
+    config.sampling.percentage = testSamplingPercentage;
+
+    ConfigurationBuilder.overlayFromEnv(config);
+
+    assertThat(config.connectionString).isEqualTo(testConnectionString);
+    assertThat(config.sampling.percentage).isEqualTo(testSamplingPercentage);
+  }
+
+  @Test
+  void testRpConfigurationOverlayWithEnvVarAndSysPropPopulated() throws Exception {
+    String testConnectionString = "test-connection-string";
+    float testSamplingPercentage = 10.0f;
+
+    withEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING", testConnectionString)
+        .and("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", String.valueOf(testSamplingPercentage))
+        .execute(
+            () -> {
+              RpConfiguration config = new RpConfiguration();
+
+              config.connectionString = String.format("original-%s", testConnectionString);
+              config.sampling.percentage = testSamplingPercentage + 1.0f;
+
+              ConfigurationBuilder.overlayFromEnv(config);
+
+              assertThat(config.connectionString).isEqualTo(testConnectionString);
+              assertThat(config.sampling.percentage).isEqualTo(testSamplingPercentage);
+            });
   }
 }

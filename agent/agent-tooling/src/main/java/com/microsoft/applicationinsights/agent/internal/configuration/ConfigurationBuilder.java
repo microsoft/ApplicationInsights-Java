@@ -40,6 +40,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.LoggerFactory;
 
 public class ConfigurationBuilder {
@@ -154,11 +155,15 @@ public class ConfigurationBuilder {
               + " so no need to enable it under preview configuration");
     }
 
-    overlayEnvVars(config);
-    applySamplingPercentageRounding(config);
+    overlayFromEnv(config);
+    config.sampling.percentage = roundToNearest(config.sampling.percentage, true);
+    for (SamplingOverride override : config.preview.sampling.overrides) {
+      override.percentage = roundToNearest(override.percentage, true);
+    }
     // rp configuration should always be last (so it takes precedence)
     // currently applicationinsights-rp.json is only used by Azure Spring Cloud
     if (rpConfiguration != null) {
+      overlayFromEnv(rpConfiguration);
       overlayRpConfiguration(config, rpConfiguration);
     }
     // only set role instance to host name as a last resort
@@ -346,22 +351,8 @@ public class ConfigurationBuilder {
   }
 
   // visible for testing
-  static void overlayEnvVars(Configuration config) throws IOException {
-    config.connectionString =
-        overlayWithSysPropEnvVar(
-            APPLICATIONINSIGHTS_CONNECTION_STRING_SYS,
-            APPLICATIONINSIGHTS_CONNECTION_STRING_ENV,
-            config.connectionString);
-    if (config.connectionString == null) {
-      // this is for backwards compatibility only
-      String instrumentationKey = getEnvVar(APPINSIGHTS_INSTRUMENTATIONKEY);
-      if (instrumentationKey != null) {
-        configurationLogger.warn(
-            "APPINSIGHTS_INSTRUMENTATIONKEY is only supported for backwards compatibility,"
-                + " please consider using APPLICATIONINSIGHTS_CONNECTION_STRING instead");
-        config.connectionString = "InstrumentationKey=" + instrumentationKey;
-      }
-    }
+  static void overlayFromEnv(Configuration config) throws IOException {
+    config.connectionString = overlayConnectionStringFromEnv(config.connectionString);
 
     if (isTrimEmpty(config.role.name)) {
       // only use WEBSITE_SITE_NAME as a fallback
@@ -418,11 +409,34 @@ public class ConfigurationBuilder {
     overlayInstrumentationEnabledEnvVars(config);
   }
 
-  public static void applySamplingPercentageRounding(Configuration config) {
-    config.sampling.percentage = roundToNearest(config.sampling.percentage, true);
-    for (SamplingOverride override : config.preview.sampling.overrides) {
-      override.percentage = roundToNearest(override.percentage, true);
+  public static void overlayFromEnv(RpConfiguration config) {
+    config.connectionString = overlayConnectionStringFromEnv(config.connectionString);
+    config.sampling.percentage =
+        overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, config.sampling.percentage);
+  }
+
+  @Nullable
+  private static String overlayConnectionStringFromEnv(String connectionString) {
+    String value =
+        overlayWithSysPropEnvVar(
+            APPLICATIONINSIGHTS_CONNECTION_STRING_SYS,
+            APPLICATIONINSIGHTS_CONNECTION_STRING_ENV,
+            connectionString);
+
+    if (value != null) {
+      return value;
     }
+
+    // this is for backwards compatibility only
+    String instrumentationKey = getEnvVar(APPINSIGHTS_INSTRUMENTATIONKEY);
+    if (instrumentationKey != null) {
+      configurationLogger.warn(
+          "APPINSIGHTS_INSTRUMENTATIONKEY is only supported for backwards compatibility,"
+              + " please consider using APPLICATIONINSIGHTS_CONNECTION_STRING instead");
+      return "InstrumentationKey=" + instrumentationKey;
+    }
+
+    return null;
   }
 
   // visible for testing

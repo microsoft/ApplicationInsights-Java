@@ -102,7 +102,7 @@ class RpConfigurationPollingTest {
   }
 
   @Test
-  void shouldUpdateEvenOverEnvVars() throws URISyntaxException {
+  void shouldBePopulatedByEnvVars() throws URISyntaxException {
     // given
     RpConfiguration rpConfiguration = new RpConfiguration();
     rpConfiguration.connectionString = "InstrumentationKey=11111111-1111-1111-1111-111111111111";
@@ -136,8 +136,8 @@ class RpConfigurationPollingTest {
     // then
     assertThat(telemetryClient.getInstrumentationKey())
         .isEqualTo("00000000-0000-0000-0000-000000000000");
-    assertThat(BytecodeUtilImpl.samplingPercentage).isEqualTo(10);
-    assertThat(getCurrentSamplingPercentage()).isEqualTo(10);
+    assertThat(BytecodeUtilImpl.samplingPercentage).isEqualTo(100);
+    assertThat(getCurrentSamplingPercentage()).isEqualTo(100);
   }
 
   private static double getCurrentSamplingPercentage() {
