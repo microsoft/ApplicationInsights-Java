@@ -352,9 +352,11 @@ public class ConfigurationBuilder {
   }
 
   private static String overlayConnectionStringEnvVarAndSysProp(String connectionString) {
-    String overlayConnectionString = overlayWithSysPropEnvVar(
-        APPLICATIONINSIGHTS_CONNECTION_STRING_SYS, APPLICATIONINSIGHTS_CONNECTION_STRING_ENV,
-        connectionString);
+    String overlayConnectionString =
+        overlayWithSysPropEnvVar(
+            APPLICATIONINSIGHTS_CONNECTION_STRING_SYS,
+            APPLICATIONINSIGHTS_CONNECTION_STRING_ENV,
+            connectionString);
 
     if (overlayConnectionString == null) {
       // this is for backwards compatibility only
