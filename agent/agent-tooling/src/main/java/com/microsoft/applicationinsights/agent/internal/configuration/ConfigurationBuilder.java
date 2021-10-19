@@ -415,24 +415,24 @@ public class ConfigurationBuilder {
   }
 
   private static String overlayConnectionStringFromEnv(String connectionString) {
-    String overlayConnectionString =
+    String value =
         overlayWithSysPropEnvVar(
             APPLICATIONINSIGHTS_CONNECTION_STRING_SYS,
             APPLICATIONINSIGHTS_CONNECTION_STRING_ENV,
             connectionString);
 
-    if (overlayConnectionString == null) {
+    if (value == null) {
       // this is for backwards compatibility only
       String instrumentationKey = getEnvVar(APPINSIGHTS_INSTRUMENTATIONKEY);
       if (instrumentationKey != null) {
         configurationLogger.warn(
             "APPINSIGHTS_INSTRUMENTATIONKEY is only supported for backwards compatibility,"
                 + " please consider using APPLICATIONINSIGHTS_CONNECTION_STRING instead");
-        overlayConnectionString = "InstrumentationKey=" + instrumentationKey;
+        value = "InstrumentationKey=" + instrumentationKey;
       }
     }
 
-    return overlayConnectionString;
+    return value;
   }
 
   // visible for testing
