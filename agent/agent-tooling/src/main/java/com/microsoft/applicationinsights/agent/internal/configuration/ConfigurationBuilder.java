@@ -421,18 +421,18 @@ public class ConfigurationBuilder {
             APPLICATIONINSIGHTS_CONNECTION_STRING_ENV,
             connectionString);
 
-    if (value == null) {
-      // this is for backwards compatibility only
-      String instrumentationKey = getEnvVar(APPINSIGHTS_INSTRUMENTATIONKEY);
-      if (instrumentationKey != null) {
-        configurationLogger.warn(
-            "APPINSIGHTS_INSTRUMENTATIONKEY is only supported for backwards compatibility,"
-                + " please consider using APPLICATIONINSIGHTS_CONNECTION_STRING instead");
-        value = "InstrumentationKey=" + instrumentationKey;
-      }
+    if (value != null) {
+      return value;
     }
 
-    return value;
+    // this is for backwards compatibility only
+    String instrumentationKey = getEnvVar(APPINSIGHTS_INSTRUMENTATIONKEY);
+    if (instrumentationKey != null) {
+      configurationLogger.warn(
+          "APPINSIGHTS_INSTRUMENTATIONKEY is only supported for backwards compatibility,"
+              + " please consider using APPLICATIONINSIGHTS_CONNECTION_STRING instead");
+      value = "InstrumentationKey=" + instrumentationKey;
+    }
   }
 
   // visible for testing
