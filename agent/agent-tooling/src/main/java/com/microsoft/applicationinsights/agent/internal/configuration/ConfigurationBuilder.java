@@ -431,8 +431,10 @@ public class ConfigurationBuilder {
       configurationLogger.warn(
           "APPINSIGHTS_INSTRUMENTATIONKEY is only supported for backwards compatibility,"
               + " please consider using APPLICATIONINSIGHTS_CONNECTION_STRING instead");
-      value = "InstrumentationKey=" + instrumentationKey;
+      return "InstrumentationKey=" + instrumentationKey;
     }
+
+    return null;
   }
 
   // visible for testing
