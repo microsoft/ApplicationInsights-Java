@@ -769,7 +769,7 @@ public class Exporter implements SpanExporter {
     data.setDuration(FormattedDuration.fromNanos(span.getEndEpochNanos() - startEpochNanos));
     data.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
 
-    String httpUrl = attributes.get(SemanticAttributes.HTTP_URL);
+    String httpUrl = getHttpUrlFromServerSpan(attributes);
     if (httpUrl != null) {
       data.setUrl(httpUrl);
     }
@@ -818,6 +818,24 @@ public class Exporter implements SpanExporter {
     // export
     telemetryClient.trackAsync(telemetry);
     exportEvents(span, operationName, samplingPercentage);
+  }
+
+  @Nullable
+  private static String getHttpUrlFromServerSpan(Attributes attributes) {
+    String scheme = attributes.get(SemanticAttributes.HTTP_SCHEME);
+    if (scheme == null) {
+      // TODO (trask) netty is not capturing scheme currently
+      scheme = "http";
+    }
+    String host = attributes.get(SemanticAttributes.HTTP_HOST);
+    if (host == null) {
+      return null;
+    }
+    String target = attributes.get(SemanticAttributes.HTTP_TARGET);
+    if (target == null) {
+      return null;
+    }
+    return scheme + "://" + host + target;
   }
 
   @Nullable
