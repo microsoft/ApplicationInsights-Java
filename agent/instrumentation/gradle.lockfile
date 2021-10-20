@@ -134,6 +134,8 @@ io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-kotlinx-corou
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-lettuce-4.0:1.7.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-lettuce-5.0:1.7.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-lettuce-5.1:1.7.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-liberty-dispatcher:1.7.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-liberty:1.7.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-spans-1.2:1.7.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-spans-2.0:1.7.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-spans-1.0:1.7.0+ai.patches-alpha=runtimeClasspath
@@ -169,6 +171,7 @@ io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spring-webmvc
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-tomcat-10.0:1.7.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-tomcat-7.0:1.7.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-tomcat-common:1.7.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-undertow-1.4:1.7.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:1.7.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent:opentelemetry-javaagent-tooling-java9:1.7.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:1.7.0+ai.patches-alpha=runtimeClasspath
