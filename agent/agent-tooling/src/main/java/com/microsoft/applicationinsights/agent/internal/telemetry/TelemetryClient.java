@@ -106,7 +106,7 @@ public class TelemetryClient {
     this(
         new HashMap<>(),
         new ArrayList<>(),
-        Cache.newBuilder().build(),
+        Cache.builder().build(),
         new StatsbeatModule(null),
         null);
   }

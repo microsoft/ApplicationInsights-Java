@@ -43,8 +43,7 @@ public final class RedirectPolicy implements HttpPipelinePolicy {
   private static final Logger logger = LoggerFactory.getLogger(RedirectPolicy.class);
   public static final String INSTRUMENTATION_KEY = "instrumentationKey";
 
-  private final Cache<URL, String> redirectMappings =
-      Cache.newBuilder().setMaximumSize(100).build();
+  private final Cache<URL, String> redirectMappings = Cache.builder().setMaximumSize(100).build();
 
   @Nullable private final Cache<String, String> ikeyRedirectCache;
 

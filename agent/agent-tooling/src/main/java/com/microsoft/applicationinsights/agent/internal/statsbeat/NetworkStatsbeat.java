@@ -51,7 +51,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   // only used by tests
   public NetworkStatsbeat() {
     super(new CustomDimensions());
-    this.ikeyEndpointMap = Cache.newBuilder().build();
+    this.ikeyEndpointMap = Cache.builder().build();
   }
 
   public NetworkStatsbeat(
