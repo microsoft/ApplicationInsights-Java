@@ -9,6 +9,7 @@ import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import io.dropwizard.testing.ConfigOverride
 import io.dropwizard.testing.DropwizardTestSupport
+import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.instrumentation.test.AgentTestTrait
 import io.opentelemetry.instrumentation.test.asserts.TraceAssert
@@ -18,13 +19,14 @@ import io.opentelemetry.sdk.trace.data.SpanData
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
 
 import javax.ws.rs.GET
+import javax.ws.rs.HeaderParam
 import javax.ws.rs.Path
 import javax.ws.rs.PathParam
 import javax.ws.rs.QueryParam
 import javax.ws.rs.core.Response
 
 import static io.opentelemetry.api.trace.SpanKind.INTERNAL
-import static io.opentelemetry.api.trace.SpanKind.SERVER
+import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.CAPTURE_HEADERS
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.ERROR
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.EXCEPTION
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.NOT_FOUND
@@ -57,6 +59,21 @@ class DropwizardTest extends HttpServerTest<DropwizardTestSupport> implements Ag
   @Override
   void stopServer(DropwizardTestSupport testSupport) {
     testSupport.after()
+  }
+
+  @Override
+  List<AttributeKey<?>> extraAttributes() {
+    [
+      SemanticAttributes.HTTP_SERVER_NAME,
+      SemanticAttributes.NET_PEER_NAME,
+      SemanticAttributes.NET_TRANSPORT
+    ]
+  }
+
+  // this override is needed because dropwizard reports peer ip as the client ip
+  @Override
+  String peerIp(ServerEndpoint endpoint) {
+    TEST_CLIENT_IP
   }
 
   @Override
@@ -96,35 +113,6 @@ class DropwizardTest extends HttpServerTest<DropwizardTestSupport> implements Ag
         errorEvent(Exception, EXCEPTION.body)
       }
       childOf((SpanData) parent)
-    }
-  }
-
-  // this override is needed because dropwizard reports peer ip as the client ip
-  @Override
-  void serverSpan(TraceAssert trace, int index, String traceID = null, String parentID = null, String method = "GET", Long responseContentLength = null, ServerEndpoint endpoint = SUCCESS) {
-    trace.span(index) {
-      name expectedServerSpanName(endpoint)
-      kind SERVER
-      if (endpoint.errored) {
-        status StatusCode.ERROR
-      }
-      if (parentID != null) {
-        traceId traceID
-        parentSpanId parentID
-      } else {
-        hasNoParent()
-      }
-      attributes {
-        // dropwizard reports peer ip as the client ip
-        "${SemanticAttributes.NET_PEER_IP.key}" TEST_CLIENT_IP
-        "${SemanticAttributes.NET_PEER_PORT.key}" Long
-        "${SemanticAttributes.HTTP_URL.key}" { it == "${endpoint.resolve(address)}" || it == "${endpoint.resolveWithoutFragment(address)}" }
-        "${SemanticAttributes.HTTP_METHOD.key}" method
-        "${SemanticAttributes.HTTP_STATUS_CODE.key}" endpoint.status
-        "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
-        "${SemanticAttributes.HTTP_USER_AGENT.key}" TEST_USER_AGENT
-        "${SemanticAttributes.HTTP_CLIENT_IP.key}" TEST_CLIENT_IP
-      }
     }
   }
 
@@ -195,6 +183,17 @@ class DropwizardTest extends HttpServerTest<DropwizardTestSupport> implements Ag
     Response path_param(@PathParam("id") int param) {
       controller(PATH_PARAM) {
         Response.status(PATH_PARAM.status).entity(param.toString()).build()
+      }
+    }
+
+    @GET
+    @Path("captureHeaders")
+    Response capture_headers(@HeaderParam("X-Test-Request") String header) {
+      controller(CAPTURE_HEADERS) {
+        Response.status(CAPTURE_HEADERS.status)
+          .header("X-Test-Response", header)
+          .entity(CAPTURE_HEADERS.body)
+          .build()
       }
     }
   }

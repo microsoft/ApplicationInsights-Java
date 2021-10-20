@@ -77,12 +77,9 @@ public class ClassLoaderMatcher {
       List<Mismatch> mismatches) {
     try {
       // verify helper injector works
-      List<String> allHelperClasses = instrumentationModule.getMuzzleHelperClassNames();
+      List<String> allHelperClasses =
+          InstrumentationModuleMuzzle.getHelperClassNames(instrumentationModule);
       HelperResourceBuilderImpl helperResourceBuilder = new HelperResourceBuilderImpl();
-      List<String> helperResourceNames = instrumentationModule.helperResourceNames();
-      for (String helperResourceName : helperResourceNames) {
-        helperResourceBuilder.register(helperResourceName);
-      }
       instrumentationModule.registerHelperResources(helperResourceBuilder);
       if (!allHelperClasses.isEmpty()) {
         new HelperInjector(

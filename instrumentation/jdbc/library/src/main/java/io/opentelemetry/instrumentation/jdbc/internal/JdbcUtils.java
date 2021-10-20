@@ -10,7 +10,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +65,16 @@ public final class JdbcUtils {
   }
 
   public static DbInfo extractDbInfo(Connection connection) {
-    return JdbcData.connectionInfo.computeIfAbsent(connection, JdbcUtils::computeDbInfo);
+    // intentionally not using computeIfAbsent() since that would perform computeDbInfo() under a
+    // lock, and computeDbInfo() calls back to the application code via Connection.getMetaData()
+    // which could then result in a deadlock
+    // (e.g. https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/4188)
+    DbInfo dbInfo = JdbcData.connectionInfo.get(connection);
+    if (dbInfo == null) {
+      dbInfo = computeDbInfo(connection);
+      JdbcData.connectionInfo.set(connection, JdbcData.intern(dbInfo));
+    }
+    return dbInfo;
   }
 
   public static DbInfo computeDbInfo(Connection connection) {

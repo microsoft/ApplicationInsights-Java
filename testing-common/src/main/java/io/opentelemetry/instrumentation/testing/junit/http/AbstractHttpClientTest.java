@@ -37,7 +37,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -190,9 +190,6 @@ public abstract class AbstractHttpClientTest<REQUEST> {
     }
     if (!testErrorWithCallback()) {
       options.disableTestErrorWithCallback();
-    }
-    if (!capturesAiTargetAppId()) {
-      options.disableCapturesAiTargetAppId();
     }
 
     configure(options);
@@ -956,14 +953,6 @@ public abstract class AbstractHttpClientTest<REQUEST> {
                           actual -> assertThat(actual).startsWith(userAgent));
                 }
               }
-              if (httpClientAttributes.contains(SemanticAttributes.HTTP_HOST)) {
-                // TODO(anuraaga): It's not well defined when instrumentation records with and
-                // without port. We should make this more uniform
-                assertThat(attrs)
-                    .hasEntrySatisfying(
-                        SemanticAttributes.HTTP_HOST,
-                        host -> assertThat(host).startsWith(uri.getHost()));
-              }
               if (httpClientAttributes.contains(SemanticAttributes.HTTP_REQUEST_CONTENT_LENGTH)) {
                 assertThat(attrs)
                     .hasEntrySatisfying(
@@ -976,35 +965,10 @@ public abstract class AbstractHttpClientTest<REQUEST> {
                         SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH,
                         length -> assertThat(length).isNotNegative());
               }
-              if (httpClientAttributes.contains(SemanticAttributes.HTTP_SCHEME)) {
-                assertThat(attrs).containsEntry(SemanticAttributes.HTTP_SCHEME, uri.getScheme());
-              }
-              if (httpClientAttributes.contains(SemanticAttributes.HTTP_TARGET)) {
-                String target = uri.getPath();
-                if (uri.getQuery() != null) {
-                  target += '?' + uri.getQuery();
-                }
-                assertThat(attrs).containsEntry(SemanticAttributes.HTTP_TARGET, target);
-              }
 
               if (responseCode != null) {
                 assertThat(attrs)
                     .containsEntry(SemanticAttributes.HTTP_STATUS_CODE, (long) responseCode);
-              }
-
-              if (options.capturesAiTargetAppId
-                  && !uri.getPath().equals("/circular-redirect")
-                  && !uri.getPath().equals("/read-timeout")
-                  && uri.getPort() != PortUtils.UNUSABLE_PORT
-                  && !uri.getHost().equals("192.0.2.1")
-                  && !uri.getHost().equals("www.google.com")) {
-                assertThat(attrs)
-                    .containsEntry("applicationinsights.internal.target_app_id", "1234");
-              }
-              if (!options.capturesAiTargetAppId) {
-                assertThat(attrs.asMap().keySet())
-                    .doesNotContain(
-                        AttributeKey.stringKey("applicationinsights.internal.target_app_id"));
               }
             });
   }
@@ -1104,10 +1068,6 @@ public abstract class AbstractHttpClientTest<REQUEST> {
   }
 
   protected boolean testErrorWithCallback() {
-    return true;
-  }
-
-  protected boolean capturesAiTargetAppId() {
     return true;
   }
 

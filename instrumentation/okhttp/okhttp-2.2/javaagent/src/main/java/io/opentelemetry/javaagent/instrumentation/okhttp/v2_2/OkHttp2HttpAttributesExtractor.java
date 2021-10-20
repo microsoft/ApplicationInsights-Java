@@ -7,11 +7,13 @@ package io.opentelemetry.javaagent.instrumentation.okhttp.v2_2;
 
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import java.util.List;
+import javax.annotation.Nullable;
 
-final class OkHttp2HttpAttributesExtractor extends HttpAttributesExtractor<Request, Response> {
+final class OkHttp2HttpAttributesExtractor
+    extends HttpClientAttributesExtractor<Request, Response> {
 
   @Override
   protected String method(Request request) {
@@ -24,26 +26,8 @@ final class OkHttp2HttpAttributesExtractor extends HttpAttributesExtractor<Reque
   }
 
   @Override
-  protected String target(Request request) {
-    return null;
-  }
-
-  @Override
-  @Nullable
-  protected String host(Request request) {
-    return request.url().getHost();
-  }
-
-  @Override
-  @Nullable
-  protected String scheme(Request request) {
-    return request.url().getProtocol();
-  }
-
-  @Override
-  @Nullable
-  protected String userAgent(Request request) {
-    return request.header("User-Agent");
+  protected List<String> requestHeader(Request request, String name) {
+    return request.headers(name);
   }
 
   @Override
@@ -96,14 +80,7 @@ final class OkHttp2HttpAttributesExtractor extends HttpAttributesExtractor<Reque
   }
 
   @Override
-  @Nullable
-  protected String serverName(Request request, @Nullable Response response) {
-    return null;
-  }
-
-  @Override
-  @Nullable
-  protected String route(Request request) {
-    return null;
+  protected List<String> responseHeader(Request request, Response response, String name) {
+    return response.headers(name);
   }
 }

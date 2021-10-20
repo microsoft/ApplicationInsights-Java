@@ -7,23 +7,20 @@ muzzle {
   pass {
     group.set("org.apache.kafka")
     module.set("kafka-streams")
-    versions.set("[0.11.0.0,3)")
+    versions.set("[0.11.0.0,)")
   }
 }
 
-val versions: Map<String, String> by project
-
 dependencies {
-  implementation(project(":instrumentation:kafka-clients:kafka-clients-common:javaagent"))
+  compileOnly(project(":instrumentation:kafka-clients:kafka-clients-0.11:bootstrap"))
+  implementation(project(":instrumentation:kafka-clients:kafka-clients-common:library"))
 
   library("org.apache.kafka:kafka-streams:0.11.0.0")
 
   // Include kafka-clients instrumentation for tests.
   testInstrumentation(project(":instrumentation:kafka-clients:kafka-clients-0.11:javaagent"))
 
-  testImplementation("org.testcontainers:kafka:${versions["org.testcontainers"]}")
-
-  latestDepTestLibrary("org.apache.kafka:kafka-streams:2.+")
+  testImplementation("org.testcontainers:kafka")
 }
 
 tasks {

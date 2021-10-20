@@ -7,8 +7,8 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
-
 import javax.ws.rs.GET
+import javax.ws.rs.HeaderParam
 import javax.ws.rs.Path
 import javax.ws.rs.PathParam
 import javax.ws.rs.QueryParam
@@ -17,6 +17,7 @@ import javax.ws.rs.container.Suspended
 import javax.ws.rs.core.Response
 import java.util.concurrent.Executors
 
+import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.CAPTURE_HEADERS
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.ERROR
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.EXCEPTION
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.PATH_PARAM
@@ -32,6 +33,12 @@ class DropwizardAsyncTest extends DropwizardTest {
 
   Class testResource() {
     AsyncServiceResource
+  }
+
+  @Override
+  boolean verifyServerSpanEndTime() {
+    // server spans are ended inside of the JAX-RS controller spans
+    return false
   }
 
   static class AsyncTestApp extends Application<Configuration> {
@@ -108,6 +115,18 @@ class DropwizardAsyncTest extends DropwizardTest {
         controller(PATH_PARAM) {
           asyncResponse.resume(Response.status(PATH_PARAM.status).entity(param.toString()).build())
         }
+      }
+    }
+
+    @GET
+    @Path("captureHeaders")
+    void capture_headers(@HeaderParam("X-Test-Request") String header,
+                         @Suspended final AsyncResponse asyncResponse) {
+      controller(CAPTURE_HEADERS) {
+        asyncResponse.resume(Response.status(CAPTURE_HEADERS.status)
+          .header("X-Test-Response", header)
+          .entity(CAPTURE_HEADERS.body)
+          .build())
       }
     }
   }

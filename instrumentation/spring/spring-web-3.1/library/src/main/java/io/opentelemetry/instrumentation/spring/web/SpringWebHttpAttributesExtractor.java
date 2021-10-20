@@ -5,71 +5,57 @@
 
 package io.opentelemetry.instrumentation.spring.web;
 
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
+import static java.util.Collections.emptyList;
+
+import io.opentelemetry.instrumentation.api.instrumenter.http.CapturedHttpHeaders;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
 import java.io.IOException;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import java.util.List;
+import javax.annotation.Nullable;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 
 final class SpringWebHttpAttributesExtractor
-    extends HttpAttributesExtractor<HttpRequest, ClientHttpResponse> {
+    extends HttpClientAttributesExtractor<HttpRequest, ClientHttpResponse> {
+
+  SpringWebHttpAttributesExtractor(CapturedHttpHeaders capturedHttpHeaders) {
+    super(capturedHttpHeaders);
+  }
+
   @Override
   protected String method(HttpRequest httpRequest) {
     return httpRequest.getMethod().name();
   }
 
   @Override
-  protected @Nullable String url(HttpRequest httpRequest) {
+  @Nullable
+  protected String url(HttpRequest httpRequest) {
     return httpRequest.getURI().toString();
   }
 
   @Override
-  protected @Nullable String target(HttpRequest httpRequest) {
-    return null;
+  protected List<String> requestHeader(HttpRequest httpRequest, String name) {
+    return httpRequest.getHeaders().getOrDefault(name, emptyList());
   }
 
   @Override
-  protected @Nullable String host(HttpRequest httpRequest) {
-    return httpRequest.getHeaders().getFirst("host");
-  }
-
-  @Override
-  protected @Nullable String route(HttpRequest httpRequest) {
-    return null;
-  }
-
-  @Override
-  protected @Nullable String scheme(HttpRequest httpRequest) {
-    return httpRequest.getURI().getScheme();
-  }
-
-  @Override
-  protected @Nullable String userAgent(HttpRequest httpRequest) {
-    // using lowercase header name intentionally to ensure extraction is not case-sensitive
-    return httpRequest.getHeaders().getFirst("user-agent");
-  }
-
-  @Override
-  protected @Nullable Long requestContentLength(
+  @Nullable
+  protected Long requestContentLength(
       HttpRequest httpRequest, @Nullable ClientHttpResponse clientHttpResponse) {
     return null;
   }
 
   @Override
-  protected @Nullable Long requestContentLengthUncompressed(
+  @Nullable
+  protected Long requestContentLengthUncompressed(
       HttpRequest httpRequest, @Nullable ClientHttpResponse clientHttpResponse) {
     return null;
   }
 
   @Override
-  protected @Nullable String flavor(
-      HttpRequest httpRequest, @Nullable ClientHttpResponse clientHttpResponse) {
-    return null;
-  }
-
-  @Override
-  protected @Nullable String serverName(
+  @Nullable
+  protected String flavor(
       HttpRequest httpRequest, @Nullable ClientHttpResponse clientHttpResponse) {
     return null;
   }
@@ -84,14 +70,22 @@ final class SpringWebHttpAttributesExtractor
   }
 
   @Override
-  protected @Nullable Long responseContentLength(
+  @Nullable
+  protected Long responseContentLength(
       HttpRequest httpRequest, ClientHttpResponse clientHttpResponse) {
     return null;
   }
 
   @Override
-  protected @Nullable Long responseContentLengthUncompressed(
+  @Nullable
+  protected Long responseContentLengthUncompressed(
       HttpRequest httpRequest, ClientHttpResponse clientHttpResponse) {
     return null;
+  }
+
+  @Override
+  protected List<String> responseHeader(
+      HttpRequest httpRequest, ClientHttpResponse clientHttpResponse, String name) {
+    return clientHttpResponse.getHeaders().getOrDefault(name, emptyList());
   }
 }

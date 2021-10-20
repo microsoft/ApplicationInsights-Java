@@ -5,17 +5,21 @@
 
 package io.opentelemetry.javaagent.instrumentation.apachehttpclient.v2_0;
 
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.List;
+import javax.annotation.Nullable;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.StatusLine;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 final class ApacheHttpClientHttpAttributesExtractor
-    extends HttpAttributesExtractor<HttpMethod, HttpMethod> {
+    extends HttpClientAttributesExtractor<HttpMethod, HttpMethod> {
 
   @Override
   protected String method(HttpMethod request) {
@@ -28,37 +32,9 @@ final class ApacheHttpClientHttpAttributesExtractor
   }
 
   @Override
-  protected String target(HttpMethod request) {
-    String queryString = request.getQueryString();
-    return queryString != null ? request.getPath() + "?" + queryString : request.getPath();
-  }
-
-  @Override
-  @Nullable
-  protected String host(HttpMethod request) {
-    Header header = request.getRequestHeader("Host");
-    if (header != null) {
-      return header.getValue();
-    }
-    HostConfiguration hostConfiguration = request.getHostConfiguration();
-    if (hostConfiguration != null) {
-      return hostConfiguration.getVirtualHost();
-    }
-    return null;
-  }
-
-  @Override
-  @Nullable
-  protected String scheme(HttpMethod request) {
-    HostConfiguration hostConfiguration = request.getHostConfiguration();
-    return hostConfiguration != null ? hostConfiguration.getProtocol().getScheme() : null;
-  }
-
-  @Override
-  @Nullable
-  protected String userAgent(HttpMethod request) {
-    Header header = request.getRequestHeader("User-Agent");
-    return header != null ? header.getValue() : null;
+  protected List<String> requestHeader(HttpMethod request, String name) {
+    Header header = request.getRequestHeader(name);
+    return header == null ? emptyList() : singletonList(header.getValue());
   }
 
   @Override
@@ -105,15 +81,9 @@ final class ApacheHttpClientHttpAttributesExtractor
   }
 
   @Override
-  @Nullable
-  protected String serverName(HttpMethod request, @Nullable HttpMethod response) {
-    return null;
-  }
-
-  @Override
-  @Nullable
-  protected String route(HttpMethod request) {
-    return null;
+  protected List<String> responseHeader(HttpMethod request, HttpMethod response, String name) {
+    Header header = response.getResponseHeader(name);
+    return header == null ? emptyList() : singletonList(header.getValue());
   }
 
   // mirroring implementation HttpMethodBase.getURI(), to avoid converting to URI and back to String

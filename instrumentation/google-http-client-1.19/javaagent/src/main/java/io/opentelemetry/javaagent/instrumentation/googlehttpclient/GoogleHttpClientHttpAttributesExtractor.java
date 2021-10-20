@@ -7,15 +7,17 @@ package io.opentelemetry.javaagent.instrumentation.googlehttpclient;
 
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpResponse;
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import java.util.List;
+import javax.annotation.Nullable;
 
 final class GoogleHttpClientHttpAttributesExtractor
-    extends HttpAttributesExtractor<HttpRequest, HttpResponse> {
+    extends HttpClientAttributesExtractor<HttpRequest, HttpResponse> {
 
   @Override
-  protected @Nullable String method(HttpRequest httpRequest) {
+  @Nullable
+  protected String method(HttpRequest httpRequest) {
     return httpRequest.getRequestMethod();
   }
 
@@ -25,33 +27,20 @@ final class GoogleHttpClientHttpAttributesExtractor
   }
 
   @Override
-  protected String target(HttpRequest httpRequest) {
-    return httpRequest.getUrl().buildRelativeUrl();
+  protected List<String> requestHeader(HttpRequest httpRequest, String name) {
+    return httpRequest.getHeaders().getHeaderStringValues(name);
   }
 
   @Override
-  protected String host(HttpRequest httpRequest) {
-    return httpRequest.getUrl().getHost();
-  }
-
-  @Override
-  protected String scheme(HttpRequest httpRequest) {
-    return httpRequest.getUrl().getScheme();
-  }
-
-  @Override
-  protected @Nullable String userAgent(HttpRequest httpRequest) {
-    return httpRequest.getHeaders().getUserAgent();
-  }
-
-  @Override
-  protected @Nullable Long requestContentLength(
+  @Nullable
+  protected Long requestContentLength(
       HttpRequest httpRequest, @Nullable HttpResponse httpResponse) {
     return null;
   }
 
   @Override
-  protected @Nullable Long requestContentLengthUncompressed(
+  @Nullable
+  protected Long requestContentLengthUncompressed(
       HttpRequest httpRequest, @Nullable HttpResponse httpResponse) {
     return null;
   }
@@ -62,30 +51,27 @@ final class GoogleHttpClientHttpAttributesExtractor
   }
 
   @Override
-  protected @Nullable Integer statusCode(HttpRequest httpRequest, HttpResponse httpResponse) {
+  @Nullable
+  protected Integer statusCode(HttpRequest httpRequest, HttpResponse httpResponse) {
     return httpResponse.getStatusCode();
   }
 
   @Override
-  protected @Nullable Long responseContentLength(
+  @Nullable
+  protected Long responseContentLength(HttpRequest httpRequest, HttpResponse httpResponse) {
+    return null;
+  }
+
+  @Override
+  @Nullable
+  protected Long responseContentLengthUncompressed(
       HttpRequest httpRequest, HttpResponse httpResponse) {
     return null;
   }
 
   @Override
-  protected @Nullable Long responseContentLengthUncompressed(
-      HttpRequest httpRequest, HttpResponse httpResponse) {
-    return null;
-  }
-
-  @Override
-  protected @Nullable String route(HttpRequest httpRequest) {
-    return null;
-  }
-
-  @Override
-  protected @Nullable String serverName(
-      HttpRequest httpRequest, @Nullable HttpResponse httpResponse) {
-    return null;
+  protected List<String> responseHeader(
+      HttpRequest httpRequest, HttpResponse httpResponse, String name) {
+    return httpResponse.getHeaders().getHeaderStringValues(name);
   }
 }

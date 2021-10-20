@@ -18,9 +18,9 @@ import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.T
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.util.function.BiConsumer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -71,10 +71,9 @@ public class RequestTelemetryContextInstrumentation implements TypeInstrumentati
         @Advice.This RequestTelemetryContext requestTelemetryContext,
         @Advice.Return RequestTelemetry requestTelemetry) {
       Span span =
-          InstrumentationContext.get(RequestTelemetryContext.class, Span.class)
-              .get(requestTelemetryContext);
+          VirtualField.find(RequestTelemetryContext.class, Span.class).get(requestTelemetryContext);
       if (span != null) {
-        InstrumentationContext.get(RequestTelemetry.class, Span.class).put(requestTelemetry, span);
+        VirtualField.find(RequestTelemetry.class, Span.class).set(requestTelemetry, span);
       }
     }
   }
@@ -85,8 +84,7 @@ public class RequestTelemetryContextInstrumentation implements TypeInstrumentati
         @Advice.This RequestTelemetryContext requestTelemetryContext,
         @Advice.Return(readOnly = false) Tracestate tracestate) {
       Span span =
-          InstrumentationContext.get(RequestTelemetryContext.class, Span.class)
-              .get(requestTelemetryContext);
+          VirtualField.find(RequestTelemetryContext.class, Span.class).get(requestTelemetryContext);
       if (span != null) {
         TraceState traceState = span.getSpanContext().getTraceState();
         Tracestate parent;
@@ -132,8 +130,7 @@ public class RequestTelemetryContextInstrumentation implements TypeInstrumentati
         @Advice.This RequestTelemetryContext requestTelemetryContext,
         @Advice.Return(readOnly = false) int traceflag) {
       Span span =
-          InstrumentationContext.get(RequestTelemetryContext.class, Span.class)
-              .get(requestTelemetryContext);
+          VirtualField.find(RequestTelemetryContext.class, Span.class).get(requestTelemetryContext);
       if (span != null) {
         traceflag = span.getSpanContext().getTraceFlags().asByte();
       }
@@ -146,8 +143,7 @@ public class RequestTelemetryContextInstrumentation implements TypeInstrumentati
         @Advice.This RequestTelemetryContext requestTelemetryContext,
         @Advice.Origin("#m") String methodName) {
       Span span =
-          InstrumentationContext.get(RequestTelemetryContext.class, Span.class)
-              .get(requestTelemetryContext);
+          VirtualField.find(RequestTelemetryContext.class, Span.class).get(requestTelemetryContext);
       if (span != null) {
         LogOnce.logOnce(
             "ThreadContext.getRequestTelemetryContext()."

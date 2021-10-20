@@ -3,10 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.instrumentation.test.AgentTestTrait
 import io.opentelemetry.instrumentation.test.asserts.TraceAssert
 import io.opentelemetry.instrumentation.test.base.HttpServerTest
 import io.opentelemetry.sdk.trace.data.SpanData
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.handler.ErrorHandler
 import org.eclipse.jetty.servlet.ServletContextHandler
@@ -68,7 +70,21 @@ class JettyServlet2Test extends HttpServerTest<Server> implements AgentTestTrait
   }
 
   @Override
+  List<AttributeKey<?>> extraAttributes() {
+    [
+      SemanticAttributes.HTTP_SERVER_NAME,
+      SemanticAttributes.NET_TRANSPORT
+    ]
+  }
+
+  @Override
   boolean testNotFound() {
+    false
+  }
+
+  // servlet 2 does not expose a way to retrieve response headers
+  @Override
+  boolean testCapturedHttpHeaders() {
     false
   }
 

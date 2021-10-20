@@ -5,13 +5,13 @@
 
 package io.opentelemetry.javaagent.instrumentation.servlet;
 
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
-import io.opentelemetry.instrumentation.api.internal.UriBuilder;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpServerAttributesExtractor;
 import io.opentelemetry.instrumentation.servlet.ServletAccessor;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import java.util.List;
+import javax.annotation.Nullable;
 
 public class ServletHttpAttributesExtractor<REQUEST, RESPONSE>
-    extends HttpAttributesExtractor<
+    extends HttpServerAttributesExtractor<
         ServletRequestContext<REQUEST>, ServletResponseContext<RESPONSE>> {
   protected final ServletAccessor<REQUEST, RESPONSE> accessor;
 
@@ -20,79 +20,57 @@ public class ServletHttpAttributesExtractor<REQUEST, RESPONSE>
   }
 
   @Override
-  protected @Nullable String method(ServletRequestContext<REQUEST> requestContext) {
+  @Nullable
+  protected String method(ServletRequestContext<REQUEST> requestContext) {
     return accessor.getRequestMethod(requestContext.request());
   }
 
   @Override
-  protected @Nullable String url(ServletRequestContext<REQUEST> requestContext) {
+  @Nullable
+  protected String target(ServletRequestContext<REQUEST> requestContext) {
     REQUEST request = requestContext.request();
-
-    return UriBuilder.uri(
-        accessor.getRequestScheme(request),
-        accessor.getRequestServerName(request),
-        accessor.getRequestServerPort(request),
-        accessor.getRequestUri(request),
-        accessor.getRequestQueryString(request));
-  }
-
-  @Override
-  protected @Nullable String target(ServletRequestContext<REQUEST> requestContext) {
-    /*
-    String target = httpServletRequest.getRequestURI();
-    String queryString = httpServletRequest.getQueryString();
+    String target = accessor.getRequestUri(request);
+    String queryString = accessor.getRequestQueryString(request);
     if (queryString != null) {
       target += "?" + queryString;
     }
     return target;
-     */
-    return null;
   }
 
   @Override
-  protected @Nullable String host(ServletRequestContext<REQUEST> requestContext) {
-    /*
-    REQUEST request = requestContext.request();
-    return accessor.getRequestServerName(request) + ":" + accessor.getRequestServerPort(request);
-     */
-    return null;
+  @Nullable
+  protected String scheme(ServletRequestContext<REQUEST> requestContext) {
+    return accessor.getRequestScheme(requestContext.request());
   }
 
   @Override
-  protected @Nullable String scheme(ServletRequestContext<REQUEST> requestContext) {
-    // return accessor.getRequestScheme(requestContext.request());
-    return null;
+  protected List<String> requestHeader(ServletRequestContext<REQUEST> requestContext, String name) {
+    return accessor.getRequestHeaderValues(requestContext.request(), name);
   }
 
   @Override
-  protected @Nullable String userAgent(ServletRequestContext<REQUEST> requestContext) {
-    return accessor.getRequestHeader(requestContext.request(), "User-Agent");
-  }
-
-  @Override
-  protected @Nullable Long requestContentLength(
+  @Nullable
+  protected Long requestContentLength(
       ServletRequestContext<REQUEST> requestContext,
       @Nullable ServletResponseContext<RESPONSE> responseContext) {
-    /*
     int contentLength = accessor.getRequestContentLength(requestContext.request());
     if (contentLength > -1) {
       return (long) contentLength;
     }
-     */
     return null;
   }
 
   @Override
-  protected @Nullable Long requestContentLengthUncompressed(
+  @Nullable
+  protected Long requestContentLengthUncompressed(
       ServletRequestContext<REQUEST> requestContext,
       @Nullable ServletResponseContext<RESPONSE> responseContext) {
     return null;
   }
 
   @Override
-  protected @Nullable String flavor(
-      ServletRequestContext<REQUEST> requestContext,
-      @Nullable ServletResponseContext<RESPONSE> responseContext) {
+  @Nullable
+  protected String flavor(ServletRequestContext<REQUEST> requestContext) {
     String flavor = accessor.getRequestProtocol(requestContext.request());
     if (flavor != null) {
       // remove HTTP/ prefix to comply with semantic conventions
@@ -104,7 +82,8 @@ public class ServletHttpAttributesExtractor<REQUEST, RESPONSE>
   }
 
   @Override
-  protected @Nullable Integer statusCode(
+  @Nullable
+  protected Integer statusCode(
       ServletRequestContext<REQUEST> requestContext,
       ServletResponseContext<RESPONSE> responseContext) {
     RESPONSE response = responseContext.response();
@@ -121,11 +100,11 @@ public class ServletHttpAttributesExtractor<REQUEST, RESPONSE>
   }
 
   @Override
-  protected @Nullable Long responseContentLength(
+  @Nullable
+  protected Long responseContentLength(
       ServletRequestContext<REQUEST> requestContext,
       ServletResponseContext<RESPONSE> responseContext) {
-    /*
-    String contentLength = servletAccessor.getResponseHeader(responseContext.response(), "Content-Length");
+    String contentLength = accessor.getResponseHeader(responseContext.response(), "Content-Length");
     if (contentLength != null) {
       try {
         return Long.valueOf(contentLength);
@@ -133,27 +112,36 @@ public class ServletHttpAttributesExtractor<REQUEST, RESPONSE>
         // ignore
       }
     }
-     */
     return null;
   }
 
   @Override
-  protected @Nullable Long responseContentLengthUncompressed(
+  @Nullable
+  protected Long responseContentLengthUncompressed(
       ServletRequestContext<REQUEST> requestContext,
       ServletResponseContext<RESPONSE> responseContext) {
     return null;
   }
 
   @Override
-  protected @Nullable String route(ServletRequestContext<REQUEST> requestContext) {
+  protected List<String> responseHeader(
+      ServletRequestContext<REQUEST> requestContext,
+      ServletResponseContext<RESPONSE> responseContext,
+      String name) {
+    return accessor.getResponseHeaderValues(responseContext.response(), name);
+  }
+
+  @Override
+  @Nullable
+  protected String route(ServletRequestContext<REQUEST> requestContext) {
     return null;
   }
 
   @Override
-  protected @Nullable String serverName(
+  @Nullable
+  protected String serverName(
       ServletRequestContext<REQUEST> requestContext,
       @Nullable ServletResponseContext<RESPONSE> responseContext) {
-    // return servletAccessor.getRequestServerName(requestContext.request());
-    return null;
+    return accessor.getRequestServerName(requestContext.request());
   }
 }

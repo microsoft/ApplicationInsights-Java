@@ -12,8 +12,8 @@ plugins {
    */
   id "com.github.johnrengelman.shadow" version "6.1.0"
 
-  id "io.opentelemetry.instrumentation.muzzle-generation" version "0.7.0"
-  id "io.opentelemetry.instrumentation.muzzle-check" version "0.7.0"
+  id "io.opentelemetry.instrumentation.muzzle-generation" version "0.8.0"
+  id "io.opentelemetry.instrumentation.muzzle-check" version "0.8.0"
 }
 
 group 'io.opentelemetry.example'
@@ -23,8 +23,8 @@ ext {
   versions = [
     opentelemetry              : "1.6.0",
     opentelemetryAlpha         : "1.6.0-alpha",
-    opentelemetryJavaagent     : "1.6.0-SNAPSHOT",
-    opentelemetryJavaagentAlpha: "1.6.0-alpha-SNAPSHOT",
+    opentelemetryJavaagent     : "1.7.0-SNAPSHOT",
+    opentelemetryJavaagentAlpha: "1.7.0-alpha-SNAPSHOT",
   ]
 
   deps = [
@@ -92,11 +92,11 @@ dependencies {
   testRuntimeOnly("ch.qos.logback:logback-classic:1.2.3")
 
   //Otel Java instrumentation that we use and extend during integration tests
-  otel("io.opentelemetry.javaagent:opentelemetry-javaagent:${versions.opentelemetryJavaagent}:all")
+  otel("io.opentelemetry.javaagent:opentelemetry-javaagent:${versions.opentelemetryJavaagent}")
 
   //TODO remove when start using io.opentelemetry.instrumentation.javaagent-instrumentation plugin
-  add("muzzleTooling", "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${versions.opentelemetryJavaagentAlpha}")
-  add("muzzleTooling", "ch.qos.logback:logback-classic:1.2.3")
+  add("codegen", "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${versions.opentelemetryJavaagentAlpha}")
+  add("codegen", "ch.qos.logback:logback-classic:1.2.3")
 }
 
 //Extracts manifest from OpenTelemetry Java agent to reuse it later
@@ -111,7 +111,7 @@ task agentManifest(type: Copy) {
 //The location of extension directory inside agent jar is hard-coded in the agent source code
 task extendedAgent(type: Jar) {
   dependsOn agentManifest
-  archiveFileName = "opentelemetry-javaagent-all.jar"
+  archiveFileName = "opentelemetry-javaagent.jar"
   manifest.from "$buildDir/META-INF/MANIFEST.MF"
   from zipTree(configurations.otel.singleFile)
   from(tasks.shadowJar.archiveFile) {

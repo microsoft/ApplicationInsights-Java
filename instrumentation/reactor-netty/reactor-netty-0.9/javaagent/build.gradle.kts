@@ -36,15 +36,11 @@ tasks {
     jvmArgs("-Dotel.instrumentation.netty.always-create-connect-span=true")
   }
 
-  named<Test>("test") {
+  test {
     dependsOn(testConnectionSpan)
     filter {
       excludeTestsMatching("ReactorNettyConnectionSpanTest")
       isFailOnNoMatchingTests = false
     }
   }
-}
-
-tasks.withType<Test>().configureEach {
-  jvmArgs("-Dio.opentelemetry.javaagent.shaded.io.opentelemetry.context.enableStrictContext=false")
 }

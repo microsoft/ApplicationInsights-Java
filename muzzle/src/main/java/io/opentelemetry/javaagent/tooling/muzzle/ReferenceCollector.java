@@ -34,10 +34,9 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.jar.asm.ClassReader;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * {@link LinkedHashMap} is used for reference map to guarantee a deterministic order of iteration,
@@ -50,10 +49,10 @@ public final class ReferenceCollector {
 
   private final Map<String, ClassRef> references = new LinkedHashMap<>();
   private final MutableGraph<String> helperSuperClassGraph = GraphBuilder.directed().build();
-  private final InstrumentationContextBuilderImpl contextStoreMappingsBuilder =
-      new InstrumentationContextBuilderImpl();
+  private final VirtualFieldMappingsBuilderImpl virtualFieldMappingsBuilder =
+      new VirtualFieldMappingsBuilderImpl();
   private final Set<String> visitedClasses = new HashSet<>();
-  private final InstrumentationClassPredicate instrumentationClassPredicate;
+  private final HelperClassPredicate helperClassPredicate;
   private final ClassLoader resourceLoader;
 
   // only used by tests
@@ -63,8 +62,7 @@ public final class ReferenceCollector {
 
   public ReferenceCollector(
       Predicate<String> libraryInstrumentationPredicate, ClassLoader resourceLoader) {
-    this.instrumentationClassPredicate =
-        new InstrumentationClassPredicate(libraryInstrumentationPredicate);
+    this.helperClassPredicate = new HelperClassPredicate(libraryInstrumentationPredicate);
     this.resourceLoader = resourceLoader;
   }
 
@@ -74,22 +72,7 @@ public final class ReferenceCollector {
    * implementation as a reference, traversing the graph of classes until a non-instrumentation
    * (external) class is encountered.
    *
-   * @param resource path to the resource file, same as in {@link ClassLoader#getResource(String)}
-   * @see InstrumentationClassPredicate
-   * @deprecated Use {@link #collectReferencesFromResource(HelperResource)} instead.
-   */
-  @Deprecated
-  public void collectReferencesFromResource(String resource) {
-    collectReferencesFromResource(HelperResource.create(resource, resource));
-  }
-
-  /**
-   * If passed {@code resource} path points to an SPI file (either Java {@link
-   * java.util.ServiceLoader} or AWS SDK {@code ExecutionInterceptor}) reads the file and adds every
-   * implementation as a reference, traversing the graph of classes until a non-instrumentation
-   * (external) class is encountered.
-   *
-   * @see InstrumentationClassPredicate
+   * @see HelperClassPredicate
    */
   public void collectReferencesFromResource(HelperResource helperResource) {
     if (!isSpiFile(helperResource.getApplicationPath())) {
@@ -134,7 +117,7 @@ public final class ReferenceCollector {
    * encountered.
    *
    * @param adviceClassName Starting point for generating references.
-   * @see InstrumentationClassPredicate
+   * @see HelperClassPredicate
    */
   public void collectReferencesFromAdvice(String adviceClassName) {
     visitClassesAndCollectReferences(singleton(adviceClassName), /* startsFromAdviceClass= */ true);
@@ -152,7 +135,7 @@ public final class ReferenceCollector {
       try (InputStream in = getClassFileStream(visitedClassName)) {
         // only start from method bodies for the advice class (skips class/method references)
         ReferenceCollectingClassVisitor cv =
-            new ReferenceCollectingClassVisitor(instrumentationClassPredicate, isAdviceClass);
+            new ReferenceCollectingClassVisitor(helperClassPredicate, isAdviceClass);
         ClassReader reader = new ClassReader(in);
         reader.accept(cv, ClassReader.SKIP_FRAMES);
 
@@ -162,7 +145,7 @@ public final class ReferenceCollector {
 
           // Don't generate references created outside of the instrumentation package.
           if (!visitedClasses.contains(refClassName)
-              && instrumentationClassPredicate.isInstrumentationClass(refClassName)) {
+              && helperClassPredicate.isHelperClass(refClassName)) {
             instrumentationQueue.add(refClassName);
           }
           addReference(refClassName, reference);
@@ -170,7 +153,7 @@ public final class ReferenceCollector {
         collectHelperClasses(
             isAdviceClass, visitedClassName, cv.getHelperClasses(), cv.getHelperSuperClasses());
 
-        contextStoreMappingsBuilder.registerAll(cv.getContextStoreMappings());
+        virtualFieldMappingsBuilder.registerAll(cv.getVirtualFieldMappings());
       } catch (IOException e) {
         throw new IllegalStateException("Error reading class " + visitedClassName, e);
       }
@@ -239,7 +222,7 @@ public final class ReferenceCollector {
 
     for (Iterator<ClassRef> i = references.values().iterator(); i.hasNext(); ) {
       ClassRef reference = i.next();
-      if (instrumentationClassPredicate.isProvidedByLibrary(reference.getClassName())) {
+      if (helperClassPredicate.isLibraryClass(reference.getClassName())) {
         // these are the references to library classes which need to be checked at runtime
         continue;
       }
@@ -274,7 +257,7 @@ public final class ReferenceCollector {
   private Set<ClassRef> getHelperClassesWithLibrarySuperType() {
     Set<ClassRef> helperClassesWithLibrarySuperType = new HashSet<>();
     for (ClassRef reference : references.values()) {
-      if (instrumentationClassPredicate.isInstrumentationClass(reference.getClassName())
+      if (helperClassPredicate.isHelperClass(reference.getClassName())
           && hasLibrarySuperType(reference.getClassName())) {
         helperClassesWithLibrarySuperType.add(reference);
       }
@@ -284,7 +267,7 @@ public final class ReferenceCollector {
 
   private void addSuperTypesThatAreAlsoHelperClasses(
       @Nullable String className, Set<ClassRef> superTypes) {
-    if (className != null && instrumentationClassPredicate.isInstrumentationClass(className)) {
+    if (className != null && helperClassPredicate.isHelperClass(className)) {
       ClassRef reference = references.get(className);
       superTypes.add(reference);
 
@@ -300,7 +283,7 @@ public final class ReferenceCollector {
     if (typeName == null || typeName.startsWith("java.")) {
       return false;
     }
-    if (instrumentationClassPredicate.isProvidedByLibrary(typeName)) {
+    if (helperClassPredicate.isLibraryClass(typeName)) {
       return true;
     }
     ClassRef reference = references.get(typeName);
@@ -349,18 +332,7 @@ public final class ReferenceCollector {
     return helpersWithNoDeps;
   }
 
-  public ContextStoreMappings getContextStoreMappings() {
-    return contextStoreMappingsBuilder.build();
-  }
-
-  /**
-   * Returns a map of {@link io.opentelemetry.javaagent.instrumentation.api.ContextStore} mappings.
-   *
-   * @deprecated Use {@link #getContextStoreMappings()} instead.
-   */
-  @Deprecated
-  public Map<String, String> getContextStoreClasses() {
-    return getContextStoreMappings().entrySet().stream()
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+  public VirtualFieldMappings getVirtualFieldMappings() {
+    return virtualFieldMappingsBuilder.build();
   }
 }

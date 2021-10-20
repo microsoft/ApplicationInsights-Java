@@ -12,10 +12,10 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.instrumentation.api.tracer.ServerSpan;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -44,8 +44,8 @@ public class ThreadContextInstrumentation implements TypeInstrumentation {
       }
       requestTelemetryContext = new RequestTelemetryContext(0);
       Span serverSpan = ServerSpan.fromContextOrNull(Java8BytecodeBridge.currentContext());
-      InstrumentationContext.get(RequestTelemetryContext.class, Span.class)
-          .put(requestTelemetryContext, serverSpan);
+      VirtualField.find(RequestTelemetryContext.class, Span.class)
+          .set(requestTelemetryContext, serverSpan);
     }
   }
 }

@@ -8,18 +8,29 @@ package io.opentelemetry.javaagent.instrumentation.servlet;
 import io.opentelemetry.instrumentation.api.instrumenter.SpanNameExtractor;
 import io.opentelemetry.instrumentation.api.servlet.MappingResolver;
 import io.opentelemetry.instrumentation.servlet.ServletAccessor;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import java.util.function.Function;
+import javax.annotation.Nullable;
 
 public class ServletSpanNameExtractor<REQUEST, RESPONSE>
     implements SpanNameExtractor<ServletRequestContext<REQUEST>> {
   private final ServletAccessor<REQUEST, RESPONSE> accessor;
 
-  public ServletSpanNameExtractor(ServletAccessor<REQUEST, RESPONSE> accessor) {
+  @Nullable
+  private final Function<ServletRequestContext<REQUEST>, MappingResolver> mappingResolverFunction;
+
+  public ServletSpanNameExtractor(
+      ServletAccessor<REQUEST, RESPONSE> accessor,
+      @Nullable Function<ServletRequestContext<REQUEST>, MappingResolver> mappingResolverFunction) {
     this.accessor = accessor;
+    this.mappingResolverFunction = mappingResolverFunction;
   }
 
-  private @Nullable String route(ServletRequestContext<REQUEST> requestContext) {
-    MappingResolver mappingResolver = requestContext.mappingResolver();
+  @Nullable
+  private String route(ServletRequestContext<REQUEST> requestContext) {
+    if (mappingResolverFunction == null) {
+      return null;
+    }
+    MappingResolver mappingResolver = mappingResolverFunction.apply(requestContext);
     if (mappingResolver == null) {
       return null;
     }
@@ -31,7 +42,7 @@ public class ServletSpanNameExtractor<REQUEST, RESPONSE>
     boolean hasContextPath =
         contextPath != null && !contextPath.isEmpty() && !contextPath.equals("/");
 
-    String route = requestContext.mappingResolver().resolve(servletPath, pathInfo);
+    String route = mappingResolver.resolve(servletPath, pathInfo);
     if (route == null) {
       if (hasContextPath) {
         return contextPath + "/*";

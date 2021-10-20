@@ -20,12 +20,14 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.instrumentation.api.instrumenter.db.DbAttributesExtractor;
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpServerAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.messaging.MessageOperation;
 import io.opentelemetry.instrumentation.api.instrumenter.messaging.MessagingAttributesExtractor;
-import io.opentelemetry.instrumentation.api.instrumenter.net.NetAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.net.NetServerAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.rpc.RpcAttributesExtractor;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
@@ -58,8 +60,7 @@ class InstrumenterTest {
                   entry("req2_2", "req2_2_value"),
                   entry("req3", "req3_value"),
                   entry("linkTraceId", LINK_TRACE_ID),
-                  entry("linkSpanId", LINK_SPAN_ID),
-                  entry("Forwarded", "for=1.1.1.1"))
+                  entry("linkSpanId", LINK_SPAN_ID))
               .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
   private static final Map<String, String> RESPONSE =
@@ -72,16 +73,16 @@ class InstrumenterTest {
               .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
   static class AttributesExtractor1
-      extends AttributesExtractor<Map<String, String>, Map<String, String>> {
+      implements AttributesExtractor<Map<String, String>, Map<String, String>> {
 
     @Override
-    protected void onStart(AttributesBuilder attributes, Map<String, String> request) {
+    public void onStart(AttributesBuilder attributes, Map<String, String> request) {
       attributes.put("req1", request.get("req1"));
       attributes.put("req2", request.get("req2"));
     }
 
     @Override
-    protected void onEnd(
+    public void onEnd(
         AttributesBuilder attributes,
         Map<String, String> request,
         Map<String, String> response,
@@ -92,16 +93,16 @@ class InstrumenterTest {
   }
 
   static class AttributesExtractor2
-      extends AttributesExtractor<Map<String, String>, Map<String, String>> {
+      implements AttributesExtractor<Map<String, String>, Map<String, String>> {
 
     @Override
-    protected void onStart(AttributesBuilder attributes, Map<String, String> request) {
+    public void onStart(AttributesBuilder attributes, Map<String, String> request) {
       attributes.put("req3", request.get("req3"));
       attributes.put("req2", request.get("req2_2"));
     }
 
     @Override
-    protected void onEnd(
+    public void onEnd(
         AttributesBuilder attributes,
         Map<String, String> request,
         Map<String, String> response,
@@ -141,14 +142,19 @@ class InstrumenterTest {
   @RegisterExtension
   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
-  @Mock HttpAttributesExtractor<Map<String, String>, Map<String, String>> mockHttpAttributes;
+  @Mock
+  HttpClientAttributesExtractor<Map<String, String>, Map<String, String>> mockHttpClientAttributes;
+
+  @Mock
+  HttpServerAttributesExtractor<Map<String, String>, Map<String, String>> mockHttpServerAttributes;
+
   @Mock DbAttributesExtractor<Map<String, String>, Map<String, String>> mockDbAttributes;
 
   @Mock
   MessagingAttributesExtractor<Map<String, String>, Map<String, String>> mockMessagingAttributes;
 
   @Mock RpcAttributesExtractor<Map<String, String>, Map<String, String>> mockRpcAttributes;
-  @Mock NetAttributesExtractor<Map<String, String>, Map<String, String>> mockNetAttributes;
+  @Mock NetServerAttributesExtractor<Map<String, String>, Map<String, String>> mockNetAttributes;
 
   @Test
   void server() {
@@ -265,15 +271,12 @@ class InstrumenterTest {
         Instrumenter.<Map<String, String>, Map<String, String>>newBuilder(
                 otelTesting.getOpenTelemetry(), "test", unused -> "span")
             .addAttributesExtractors(
-                mockHttpAttributes,
-                mockNetAttributes,
+                mockHttpServerAttributes,
+                new ConstantNetPeerIpExtractor<>("2.2.2.2"),
                 new AttributesExtractor1(),
                 new AttributesExtractor2())
             .addSpanLinksExtractor(new LinksExtractor())
             .newServerInstrumenter(new MapGetter());
-
-    when(mockNetAttributes.peerIp(REQUEST, null)).thenReturn("2.2.2.2");
-    when(mockNetAttributes.peerIp(REQUEST, RESPONSE)).thenReturn("2.2.2.2");
 
     Context context = instrumenter.start(Context.root(), REQUEST);
     SpanContext spanContext = Span.fromContext(context).getSpanContext();
@@ -293,52 +296,8 @@ class InstrumenterTest {
                             .hasAttributesSatisfying(
                                 attributes ->
                                     assertThat(attributes)
-                                        .containsEntry(SemanticAttributes.NET_PEER_IP, "2.2.2.2")
                                         .containsEntry(
-                                            SemanticAttributes.HTTP_CLIENT_IP, "1.1.1.1"))));
-  }
-
-  @Test
-  void server_http_xForwardedFor() {
-    Instrumenter<Map<String, String>, Map<String, String>> instrumenter =
-        Instrumenter.<Map<String, String>, Map<String, String>>newBuilder(
-                otelTesting.getOpenTelemetry(), "test", unused -> "span")
-            .addAttributesExtractors(
-                mockHttpAttributes,
-                mockNetAttributes,
-                new AttributesExtractor1(),
-                new AttributesExtractor2())
-            .addSpanLinksExtractor(new LinksExtractor())
-            .newServerInstrumenter(new MapGetter());
-
-    Map<String, String> request = new HashMap<>(REQUEST);
-    request.remove("Forwarded");
-    request.put("X-Forwarded-For", "1.1.1.1");
-
-    when(mockNetAttributes.peerIp(request, null)).thenReturn("2.2.2.2");
-    when(mockNetAttributes.peerIp(request, RESPONSE)).thenReturn("2.2.2.2");
-
-    Context context = instrumenter.start(Context.root(), request);
-    SpanContext spanContext = Span.fromContext(context).getSpanContext();
-
-    assertThat(spanContext.isValid()).isTrue();
-    assertThat(SpanKey.SERVER.fromContextOrNull(context).getSpanContext()).isEqualTo(spanContext);
-
-    instrumenter.end(context, request, RESPONSE, null);
-
-    otelTesting
-        .assertTraces()
-        .hasTracesSatisfyingExactly(
-            trace ->
-                trace.hasSpansSatisfyingExactly(
-                    span ->
-                        span.hasName("span")
-                            .hasAttributesSatisfying(
-                                attributes ->
-                                    assertThat(attributes)
-                                        .containsEntry(SemanticAttributes.NET_PEER_IP, "2.2.2.2")
-                                        .containsEntry(
-                                            SemanticAttributes.HTTP_CLIENT_IP, "1.1.1.1"))));
+                                            SemanticAttributes.NET_PEER_IP, "2.2.2.2"))));
   }
 
   @Test
@@ -499,217 +458,21 @@ class InstrumenterTest {
   }
 
   @Test
-  void extractForwarded() {
-    assertThat(ServerInstrumenter.extractForwarded("for=1.1.1.1")).isEqualTo("1.1.1.1");
-  }
+  void shouldUseContextCustomizer() {
+    // given
+    ContextKey<String> testKey = ContextKey.named("test");
+    Instrumenter<String, String> instrumenter =
+        Instrumenter.<String, String>newBuilder(
+                otelTesting.getOpenTelemetry(), "test", request -> "test span")
+            .addContextCustomizer(
+                (context, request, attributes) -> context.with(testKey, "testVal"))
+            .newInstrumenter();
 
-  @Test
-  void extractForwardedIpv6() {
-    assertThat(
-            ServerInstrumenter.extractForwarded(
-                "for=\"[1111:1111:1111:1111:1111:1111:1111:1111]\""))
-        .isEqualTo("1111:1111:1111:1111:1111:1111:1111:1111");
-  }
+    // when
+    Context context = instrumenter.start(Context.root(), "request");
 
-  @Test
-  void extractForwardedWithPort() {
-    assertThat(ServerInstrumenter.extractForwarded("for=\"1.1.1.1:2222\"")).isEqualTo("1.1.1.1");
-  }
-
-  @Test
-  void extractForwardedIpv6WithPort() {
-    assertThat(
-            ServerInstrumenter.extractForwarded(
-                "for=\"[1111:1111:1111:1111:1111:1111:1111:1111]:2222\""))
-        .isEqualTo("1111:1111:1111:1111:1111:1111:1111:1111");
-  }
-
-  @Test
-  void extractForwardedCaps() {
-    assertThat(ServerInstrumenter.extractForwarded("For=1.1.1.1")).isEqualTo("1.1.1.1");
-  }
-
-  @Test
-  void extractForwardedMalformed() {
-    assertThat(ServerInstrumenter.extractForwarded("for=;for=1.1.1.1")).isNull();
-  }
-
-  @Test
-  void extractForwardedEmpty() {
-    assertThat(ServerInstrumenter.extractForwarded("")).isNull();
-  }
-
-  @Test
-  void extractForwardedEmptyValue() {
-    assertThat(ServerInstrumenter.extractForwarded("for=")).isNull();
-  }
-
-  @Test
-  void extractForwardedEmptyValueWithSemicolon() {
-    assertThat(ServerInstrumenter.extractForwarded("for=;")).isNull();
-  }
-
-  @Test
-  void extractForwardedNoFor() {
-    assertThat(ServerInstrumenter.extractForwarded("by=1.1.1.1;test=1.1.1.1")).isNull();
-  }
-
-  @Test
-  void extractForwardedMultiple() {
-    assertThat(ServerInstrumenter.extractForwarded("for=1.1.1.1;for=1.2.3.4")).isEqualTo("1.1.1.1");
-  }
-
-  @Test
-  void extractForwardedMultipleIpV6() {
-    assertThat(
-            ServerInstrumenter.extractForwarded(
-                "for=\"[1111:1111:1111:1111:1111:1111:1111:1111]\";for=1.2.3.4"))
-        .isEqualTo("1111:1111:1111:1111:1111:1111:1111:1111");
-  }
-
-  @Test
-  void extractForwardedMultipleWithPort() {
-    assertThat(ServerInstrumenter.extractForwarded("for=\"1.1.1.1:2222\";for=1.2.3.4"))
-        .isEqualTo("1.1.1.1");
-  }
-
-  @Test
-  void extractForwardedMultipleIpV6WithPort() {
-    assertThat(
-            ServerInstrumenter.extractForwarded(
-                "for=\"[1111:1111:1111:1111:1111:1111:1111:1111]:2222\";for=1.2.3.4"))
-        .isEqualTo("1111:1111:1111:1111:1111:1111:1111:1111");
-  }
-
-  @Test
-  void extractForwardedMixedSplitter() {
-    assertThat(
-            ServerInstrumenter.extractForwarded("test=abcd; by=1.2.3.4, for=1.1.1.1;for=1.2.3.4"))
-        .isEqualTo("1.1.1.1");
-  }
-
-  @Test
-  void extractForwardedMixedSplitterIpv6() {
-    assertThat(
-            ServerInstrumenter.extractForwarded(
-                "test=abcd; by=1.2.3.4, for=\"[1111:1111:1111:1111:1111:1111:1111:1111]\";for=1.2.3.4"))
-        .isEqualTo("1111:1111:1111:1111:1111:1111:1111:1111");
-  }
-
-  @Test
-  void extractForwardedMixedSplitterWithPort() {
-    assertThat(
-            ServerInstrumenter.extractForwarded(
-                "test=abcd; by=1.2.3.4, for=\"1.1.1.1:2222\";for=1.2.3.4"))
-        .isEqualTo("1.1.1.1");
-  }
-
-  @Test
-  void extractForwardedMixedSplitterIpv6WithPort() {
-    assertThat(
-            ServerInstrumenter.extractForwarded(
-                "test=abcd; by=1.2.3.4, for=\"[1111:1111:1111:1111:1111:1111:1111:1111]:2222\";for=1.2.3.4"))
-        .isEqualTo("1111:1111:1111:1111:1111:1111:1111:1111");
-  }
-
-  @Test
-  void extractForwardedFor() {
-    assertThat(ServerInstrumenter.extractForwardedFor("1.1.1.1")).isEqualTo("1.1.1.1");
-  }
-
-  @Test
-  void extractForwardedForIpv6() {
-    assertThat(
-            ServerInstrumenter.extractForwardedFor("\"[1111:1111:1111:1111:1111:1111:1111:1111]\""))
-        .isEqualTo("1111:1111:1111:1111:1111:1111:1111:1111");
-  }
-
-  @Test
-  void extractForwardedForIpv6Unquoted() {
-    assertThat(ServerInstrumenter.extractForwardedFor("[1111:1111:1111:1111:1111:1111:1111:1111]"))
-        .isEqualTo("1111:1111:1111:1111:1111:1111:1111:1111");
-  }
-
-  @Test
-  void extractForwardedForIpv6Unbracketed() {
-    assertThat(ServerInstrumenter.extractForwardedFor("1111:1111:1111:1111:1111:1111:1111:1111"))
-        .isEqualTo("1111:1111:1111:1111:1111:1111:1111:1111");
-  }
-
-  @Test
-  void extractForwardedForWithPort() {
-    assertThat(ServerInstrumenter.extractForwardedFor("1.1.1.1:2222")).isEqualTo("1.1.1.1");
-  }
-
-  @Test
-  void extractForwardedForIpv6WithPort() {
-    assertThat(
-            ServerInstrumenter.extractForwardedFor(
-                "\"[1111:1111:1111:1111:1111:1111:1111:1111]:2222\""))
-        .isEqualTo("1111:1111:1111:1111:1111:1111:1111:1111");
-  }
-
-  @Test
-  void extractForwardedForIpv6UnquotedWithPort() {
-    assertThat(
-            ServerInstrumenter.extractForwardedFor(
-                "[1111:1111:1111:1111:1111:1111:1111:1111]:2222"))
-        .isEqualTo("1111:1111:1111:1111:1111:1111:1111:1111");
-  }
-
-  @Test
-  void extractForwardedForEmpty() {
-    assertThat(ServerInstrumenter.extractForwardedFor("")).isNull();
-  }
-
-  @Test
-  void extractForwardedForMultiple() {
-    assertThat(ServerInstrumenter.extractForwardedFor("1.1.1.1,1.2.3.4")).isEqualTo("1.1.1.1");
-  }
-
-  @Test
-  void extractForwardedForMultipleIpv6() {
-    assertThat(
-            ServerInstrumenter.extractForwardedFor(
-                "\"[1111:1111:1111:1111:1111:1111:1111:1111]\",1.2.3.4"))
-        .isEqualTo("1111:1111:1111:1111:1111:1111:1111:1111");
-  }
-
-  @Test
-  void extractForwardedForMultipleIpv6Unquoted() {
-    assertThat(
-            ServerInstrumenter.extractForwardedFor(
-                "[1111:1111:1111:1111:1111:1111:1111:1111],1.2.3.4"))
-        .isEqualTo("1111:1111:1111:1111:1111:1111:1111:1111");
-  }
-
-  @Test
-  void extractForwardedForMultipleIpv6Unbracketed() {
-    assertThat(
-            ServerInstrumenter.extractForwardedFor(
-                "1111:1111:1111:1111:1111:1111:1111:1111,1.2.3.4"))
-        .isEqualTo("1111:1111:1111:1111:1111:1111:1111:1111");
-  }
-
-  @Test
-  void extractForwardedForMultipleWithPort() {
-    assertThat(ServerInstrumenter.extractForwardedFor("1.1.1.1:2222,1.2.3.4")).isEqualTo("1.1.1.1");
-  }
-
-  @Test
-  void extractForwardedForMultipleIpv6WithPort() {
-    assertThat(
-            ServerInstrumenter.extractForwardedFor(
-                "\"[1111:1111:1111:1111:1111:1111:1111:1111]:2222\",1.2.3.4"))
-        .isEqualTo("1111:1111:1111:1111:1111:1111:1111:1111");
-  }
-
-  @Test
-  void extractForwardedForMultipleIpv6UnquotedWithPort() {
-    assertThat(
-            ServerInstrumenter.extractForwardedFor(
-                "[1111:1111:1111:1111:1111:1111:1111:1111]:2222,1.2.3.4"))
-        .isEqualTo("1111:1111:1111:1111:1111:1111:1111:1111");
+    // then
+    assertThat(context.get(testKey)).isEqualTo("testVal");
   }
 
   @Test
@@ -732,7 +495,7 @@ class InstrumenterTest {
     Instrumenter<Map<String, String>, Map<String, String>> instrumenterOuter =
         getInstrumenterWithType(false, mockDbAttributes);
     Instrumenter<Map<String, String>, Map<String, String>> instrumenterInner =
-        getInstrumenterWithType(false, mockHttpAttributes);
+        getInstrumenterWithType(false, mockHttpClientAttributes);
 
     Map<String, String> request = new HashMap<>(REQUEST);
 
@@ -761,7 +524,7 @@ class InstrumenterTest {
     Instrumenter<Map<String, String>, Map<String, String>> instrumenterOuter =
         getInstrumenterWithType(true, mockDbAttributes);
     Instrumenter<Map<String, String>, Map<String, String>> instrumenterInner =
-        getInstrumenterWithType(true, mockHttpAttributes);
+        getInstrumenterWithType(true, mockHttpClientAttributes);
 
     Map<String, String> request = new HashMap<>(REQUEST);
 
@@ -799,7 +562,7 @@ class InstrumenterTest {
   @Test
   void instrumentationTypeDetected_http() {
     Instrumenter<Map<String, String>, Map<String, String>> instrumenter =
-        getInstrumenterWithType(true, mockHttpAttributes, new AttributesExtractor1());
+        getInstrumenterWithType(true, mockHttpClientAttributes, new AttributesExtractor1());
 
     Map<String, String> request = new HashMap<>(REQUEST);
 
@@ -902,5 +665,35 @@ class InstrumenterTest {
     return LinkData.create(
         SpanContext.create(
             LINK_TRACE_ID, LINK_SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault()));
+  }
+
+  private static final class ConstantNetPeerIpExtractor<REQUEST, RESPONSE>
+      extends NetServerAttributesExtractor<REQUEST, RESPONSE> {
+
+    private final String peerIp;
+
+    private ConstantNetPeerIpExtractor(String peerIp) {
+      this.peerIp = peerIp;
+    }
+
+    @Override
+    public String transport(REQUEST request) {
+      return null;
+    }
+
+    @Override
+    public String peerName(REQUEST request) {
+      return null;
+    }
+
+    @Override
+    public Integer peerPort(REQUEST request) {
+      return null;
+    }
+
+    @Override
+    public String peerIp(REQUEST request) {
+      return peerIp;
+    }
   }
 }

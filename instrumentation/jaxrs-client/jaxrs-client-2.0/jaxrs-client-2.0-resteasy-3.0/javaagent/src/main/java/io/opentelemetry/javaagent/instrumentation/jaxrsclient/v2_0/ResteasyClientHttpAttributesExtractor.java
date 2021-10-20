@@ -5,17 +5,22 @@
 
 package io.opentelemetry.javaagent.instrumentation.jaxrsclient.v2_0;
 
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
+import static java.util.Collections.emptyList;
+
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.ArrayList;
+import java.util.List;
+import javax.annotation.Nullable;
 import javax.ws.rs.core.Response;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jboss.resteasy.client.jaxrs.internal.ClientInvocation;
 
 final class ResteasyClientHttpAttributesExtractor
-    extends HttpAttributesExtractor<ClientInvocation, Response> {
+    extends HttpClientAttributesExtractor<ClientInvocation, Response> {
 
   @Override
-  protected @Nullable String method(ClientInvocation httpRequest) {
+  @Nullable
+  protected String method(ClientInvocation httpRequest) {
     return httpRequest.getMethod();
   }
 
@@ -25,48 +30,28 @@ final class ResteasyClientHttpAttributesExtractor
   }
 
   @Override
-  protected @Nullable String target(ClientInvocation httpRequest) {
-    StringBuilder result = new StringBuilder();
-    String path = httpRequest.getUri().getPath();
-    if (path != null) {
-      result.append(path);
+  protected List<String> requestHeader(ClientInvocation httpRequest, String name) {
+    List<Object> rawHeaders = httpRequest.getHeaders().getHeaders().getOrDefault(name, emptyList());
+    if (rawHeaders.isEmpty()) {
+      return emptyList();
     }
-    String query = httpRequest.getUri().getQuery();
-    if (query != null) {
-      result.append('?');
-      result.append(query);
+    List<String> stringHeaders = new ArrayList<>(rawHeaders.size());
+    for (Object headerValue : rawHeaders) {
+      stringHeaders.add(String.valueOf(headerValue));
     }
-    String fragment = httpRequest.getUri().getFragment();
-    if (fragment != null) {
-      result.append('#');
-      result.append(fragment);
-    }
-    return result.length() > 0 ? result.toString() : null;
+    return stringHeaders;
   }
 
   @Override
-  protected @Nullable String host(ClientInvocation httpRequest) {
-    return httpRequest.getUri().getHost();
-  }
-
-  @Override
-  protected @Nullable String scheme(ClientInvocation httpRequest) {
-    return httpRequest.getUri().getScheme();
-  }
-
-  @Override
-  protected @Nullable String userAgent(ClientInvocation httpRequest) {
-    return httpRequest.getHeaders().getHeader("User-Agent");
-  }
-
-  @Override
-  protected @Nullable Long requestContentLength(
+  @Nullable
+  protected Long requestContentLength(
       ClientInvocation httpRequest, @Nullable Response httpResponse) {
     return null;
   }
 
   @Override
-  protected @Nullable Long requestContentLengthUncompressed(
+  @Nullable
+  protected Long requestContentLengthUncompressed(
       ClientInvocation httpRequest, @Nullable Response httpResponse) {
     return null;
   }
@@ -77,31 +62,28 @@ final class ResteasyClientHttpAttributesExtractor
   }
 
   @Override
-  protected @Nullable Integer statusCode(ClientInvocation httpRequest, Response httpResponse) {
+  @Nullable
+  protected Integer statusCode(ClientInvocation httpRequest, Response httpResponse) {
     return httpResponse.getStatus();
   }
 
   @Override
-  protected @Nullable Long responseContentLength(
-      ClientInvocation httpRequest, Response httpResponse) {
+  @Nullable
+  protected Long responseContentLength(ClientInvocation httpRequest, Response httpResponse) {
     int length = httpResponse.getLength();
     return length != -1 ? (long) length : null;
   }
 
   @Override
-  protected @Nullable Long responseContentLengthUncompressed(
+  @Nullable
+  protected Long responseContentLengthUncompressed(
       ClientInvocation httpRequest, Response httpResponse) {
     return null;
   }
 
   @Override
-  protected @Nullable String route(ClientInvocation httpRequest) {
-    return null;
-  }
-
-  @Override
-  protected @Nullable String serverName(
-      ClientInvocation httpRequest, @Nullable Response httpResponse) {
-    return null;
+  protected List<String> responseHeader(
+      ClientInvocation clientInvocation, Response response, String name) {
+    return response.getStringHeaders().getOrDefault(name, emptyList());
   }
 }

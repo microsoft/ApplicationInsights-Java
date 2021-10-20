@@ -5,7 +5,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.internal.reflection;
 
-import io.opentelemetry.javaagent.bootstrap.FieldBackedContextStoreAppliedMarker;
+import io.opentelemetry.javaagent.bootstrap.VirtualFieldInstalledMarker;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -17,13 +17,13 @@ public final class ReflectionHelper {
 
   public static Field[] filterFields(Class<?> containingClass, Field[] fields) {
     if (fields.length == 0
-        || !FieldBackedContextStoreAppliedMarker.class.isAssignableFrom(containingClass)) {
+        || !VirtualFieldInstalledMarker.class.isAssignableFrom(containingClass)) {
       return fields;
     }
     List<Field> result = new ArrayList<>(fields.length);
     for (Field field : fields) {
-      // FieldBackedProvider marks added fields as synthetic
-      if (field.isSynthetic() && field.getName().startsWith("__opentelemetryContext$")) {
+      // virtual fields are marked as synthetic
+      if (field.isSynthetic() && field.getName().startsWith("__opentelemetryVirtualField$")) {
         continue;
       }
       result.add(field);
@@ -36,10 +36,10 @@ public final class ReflectionHelper {
       return methods;
     } else if (containingClass.isInterface()
         && containingClass.isSynthetic()
-        && containingClass.getName().contains("FieldBackedProvider$")) {
+        && containingClass.getName().contains("VirtualFieldAccessor$")) {
       // hide all methods from virtual field accessor interfaces
       return new Method[0];
-    } else if (!FieldBackedContextStoreAppliedMarker.class.isAssignableFrom(containingClass)) {
+    } else if (!VirtualFieldInstalledMarker.class.isAssignableFrom(containingClass)) {
       // nothing to filter when class does not have any added virtual fields
       return methods;
     }
@@ -47,8 +47,8 @@ public final class ReflectionHelper {
     for (Method method : methods) {
       // virtual field accessor methods are marked as synthetic
       if (method.isSynthetic()
-          && (method.getName().startsWith("get__opentelemetryContext$")
-              || method.getName().startsWith("set__opentelemetryContext$"))) {
+          && (method.getName().startsWith("__get__opentelemetryVirtualField$")
+              || method.getName().startsWith("__set__opentelemetryVirtualField$"))) {
         continue;
       }
       result.add(method);

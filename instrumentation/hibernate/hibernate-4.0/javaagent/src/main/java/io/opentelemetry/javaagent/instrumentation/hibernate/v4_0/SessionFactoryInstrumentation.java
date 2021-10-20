@@ -7,7 +7,7 @@ package io.opentelemetry.javaagent.instrumentation.hibernate.v4_0;
 
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasClassesNamed;
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.implementsInterface;
-import static io.opentelemetry.javaagent.instrumentation.hibernate.HibernateTracer.tracer;
+import static io.opentelemetry.javaagent.instrumentation.hibernate.HibernateSingletons.instrumenter;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.namedOneOf;
@@ -15,10 +15,9 @@ import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -55,11 +54,11 @@ public class SessionFactoryInstrumentation implements TypeInstrumentation {
     public static void openSession(@Advice.Return SharedSessionContract session) {
 
       Context parentContext = Java8BytecodeBridge.currentContext();
-      Context context = tracer().startSpan(parentContext, "Session");
+      Context context = instrumenter().start(parentContext, "Session");
 
-      ContextStore<SharedSessionContract, Context> contextStore =
-          InstrumentationContext.get(SharedSessionContract.class, Context.class);
-      contextStore.putIfAbsent(session, context);
+      VirtualField<SharedSessionContract, Context> virtualField =
+          VirtualField.find(SharedSessionContract.class, Context.class);
+      virtualField.set(session, context);
     }
   }
 }

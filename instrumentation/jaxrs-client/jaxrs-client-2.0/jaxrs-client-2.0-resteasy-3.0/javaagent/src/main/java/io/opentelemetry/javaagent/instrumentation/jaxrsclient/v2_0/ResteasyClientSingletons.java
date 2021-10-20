@@ -8,14 +8,13 @@ package io.opentelemetry.javaagent.instrumentation.jaxrsclient.v2_0;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.instrumentation.api.instrumenter.ErrorCauseExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
+import io.opentelemetry.instrumentation.api.instrumenter.PeerServiceAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.SpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.SpanStatusExtractor;
-import io.opentelemetry.instrumentation.api.instrumenter.appid.TargetAppIdAttributeExtractor;
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientMetrics;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanStatusExtractor;
-import io.opentelemetry.javaagent.instrumentation.api.instrumenter.PeerServiceAttributesExtractor;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.Response;
 import org.jboss.resteasy.client.jaxrs.internal.ClientInvocation;
@@ -27,7 +26,7 @@ public class ResteasyClientSingletons {
   private static final Instrumenter<ClientInvocation, Response> INSTRUMENTER;
 
   static {
-    HttpAttributesExtractor<ClientInvocation, Response> httpAttributesExtractor =
+    HttpClientAttributesExtractor<ClientInvocation, Response> httpAttributesExtractor =
         new ResteasyClientHttpAttributesExtractor();
     SpanNameExtractor<? super ClientInvocation> spanNameExtractor =
         HttpSpanNameExtractor.create(httpAttributesExtractor);
@@ -50,7 +49,6 @@ public class ResteasyClientSingletons {
             .addAttributesExtractor(httpAttributesExtractor)
             .addAttributesExtractor(netAttributesExtractor)
             .addAttributesExtractor(PeerServiceAttributesExtractor.create(netAttributesExtractor))
-            .addAttributesExtractor(new TargetAppIdAttributeExtractor<>(Response::getHeaderString))
             .addRequestMetrics(HttpClientMetrics.get())
             .newClientInstrumenter(new ResteasyInjectAdapter());
   }

@@ -9,15 +9,18 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.instrumentation.servlet.ServletAccessor;
-import io.opentelemetry.instrumentation.servlet.ServletHttpServerTracer;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.security.Principal;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 public class ServletAdditionalAttributesExtractor<REQUEST, RESPONSE>
-    extends AttributesExtractor<ServletRequestContext<REQUEST>, ServletResponseContext<RESPONSE>> {
+    implements AttributesExtractor<
+        ServletRequestContext<REQUEST>, ServletResponseContext<RESPONSE>> {
+  private static final boolean CAPTURE_EXPERIMENTAL_SPAN_ATTRIBUTES =
+      Config.get().getBoolean("otel.instrumentation.servlet.experimental-span-attributes", false);
   private static final AttributeKey<Long> SERVLET_TIMEOUT = longKey("servlet.timeout");
 
   private final ServletAccessor<REQUEST, RESPONSE> accessor;
@@ -27,11 +30,11 @@ public class ServletAdditionalAttributesExtractor<REQUEST, RESPONSE>
   }
 
   @Override
-  protected void onStart(
+  public void onStart(
       AttributesBuilder attributes, ServletRequestContext<REQUEST> requestContext) {}
 
   @Override
-  protected void onEnd(
+  public void onEnd(
       AttributesBuilder attributes,
       ServletRequestContext<REQUEST> requestContext,
       @Nullable ServletResponseContext<RESPONSE> responseContext,
@@ -40,7 +43,7 @@ public class ServletAdditionalAttributesExtractor<REQUEST, RESPONSE>
     if (principal != null) {
       set(attributes, SemanticAttributes.ENDUSER_ID, principal.getName());
     }
-    if (!ServletHttpServerTracer.CAPTURE_EXPERIMENTAL_SPAN_ATTRIBUTES) {
+    if (!CAPTURE_EXPERIMENTAL_SPAN_ATTRIBUTES) {
       return;
     }
     if (responseContext != null && responseContext.hasTimeout()) {

@@ -10,7 +10,6 @@ import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.bootstrap.AgentClassLoader;
 import io.opentelemetry.javaagent.extension.ignore.IgnoredTypesBuilder;
 import io.opentelemetry.javaagent.extension.ignore.IgnoredTypesConfigurer;
-import io.opentelemetry.javaagent.tooling.ExporterClassLoader;
 import io.opentelemetry.javaagent.tooling.ExtensionClassLoader;
 
 @AutoService(IgnoredTypesConfigurer.class)
@@ -56,12 +55,14 @@ public class GlobalIgnoredTypesConfigurer implements IgnoredTypesConfigurer {
     // clojure
     builder.ignoreClass("clojure.").ignoreClass("$fn__");
 
-    builder
-        .ignoreClass("io.opentelemetry.javaagent.")
-        // FIXME: We should remove this once
-        // https://github.com/raphw/byte-buddy/issues/558 is fixed
-        .allowClass("io.opentelemetry.javaagent.instrumentation.api.concurrent.RunnableWrapper")
-        .allowClass("io.opentelemetry.javaagent.instrumentation.api.concurrent.CallableWrapper");
+    // all classes in the AgentClassLoader are ignored separately
+    // this is used to ignore agent classes that are in the bootstrap class loader
+    // the reason not to use "io.opentelemetry.javaagent." is so that javaagent instrumentation
+    // tests under "io.opentelemetry.javaagent." will still be instrumented
+    builder.ignoreClass("io.opentelemetry.javaagent.bootstrap.");
+    builder.ignoreClass("io.opentelemetry.javaagent.instrumentation.api.");
+    builder.ignoreClass("io.opentelemetry.javaagent.shaded.");
+    builder.ignoreClass("io.opentelemetry.javaagent.slf4j.");
 
     builder
         .ignoreClass("java.")
@@ -72,6 +73,7 @@ public class GlobalIgnoredTypesConfigurer implements IgnoredTypesConfigurer {
         .allowClass("java.util.concurrent.")
         .allowClass("java.lang.reflect.Proxy")
         .allowClass("java.lang.ClassLoader")
+        .allowClass("java.lang.invoke.InnerClassLambdaMetafactory")
         // Concurrent instrumentation modifies the structure of
         // Cleaner class incompatibly with java9+ modules.
         // Working around until a long-term fix for modules can be
@@ -113,7 +115,6 @@ public class GlobalIgnoredTypesConfigurer implements IgnoredTypesConfigurer {
         .ignoreClassLoader("org.apache.cxf.common.util.ASMHelper$TypeHelperClassLoader")
         .ignoreClassLoader("sun.misc.Launcher$ExtClassLoader")
         .ignoreClassLoader(AgentClassLoader.class.getName())
-        .ignoreClassLoader(ExporterClassLoader.class.getName())
         .ignoreClassLoader(ExtensionClassLoader.class.getName());
 
     builder

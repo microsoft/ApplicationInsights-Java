@@ -5,13 +5,11 @@
 
 package io.opentelemetry.javaagent.instrumentation.tomcat.common;
 
-import static io.opentelemetry.instrumentation.api.servlet.ServerSpanNaming.Source.CONTAINER;
-
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import io.opentelemetry.instrumentation.api.servlet.AppServerBridge;
-import io.opentelemetry.instrumentation.api.servlet.ServerSpanNaming;
+import io.opentelemetry.instrumentation.api.tracer.HttpServerTracer;
 import io.opentelemetry.javaagent.instrumentation.servlet.ServletHelper;
 import org.apache.coyote.Request;
 import org.apache.coyote.Response;
@@ -36,9 +34,8 @@ public class TomcatHelper<REQUEST, RESPONSE> {
 
   public Context start(Context parentContext, Request request) {
     Context context = instrumenter.start(parentContext, request);
-
-    context = ServerSpanNaming.init(context, CONTAINER);
-    return AppServerBridge.init(context);
+    request.setAttribute(HttpServerTracer.CONTEXT_ATTRIBUTE, context);
+    return context;
   }
 
   public void end(

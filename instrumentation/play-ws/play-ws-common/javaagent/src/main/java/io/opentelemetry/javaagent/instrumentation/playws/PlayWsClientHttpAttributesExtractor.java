@@ -5,14 +5,15 @@
 
 package io.opentelemetry.javaagent.instrumentation.playws;
 
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import java.util.List;
+import javax.annotation.Nullable;
 import play.shaded.ahc.org.asynchttpclient.Request;
 import play.shaded.ahc.org.asynchttpclient.Response;
-import play.shaded.ahc.org.asynchttpclient.uri.Uri;
 
-final class PlayWsClientHttpAttributesExtractor extends HttpAttributesExtractor<Request, Response> {
+final class PlayWsClientHttpAttributesExtractor
+    extends HttpClientAttributesExtractor<Request, Response> {
 
   @Override
   protected String method(Request request) {
@@ -25,32 +26,8 @@ final class PlayWsClientHttpAttributesExtractor extends HttpAttributesExtractor<
   }
 
   @Override
-  protected String target(Request request) {
-    Uri uri = request.getUri();
-    String query = uri.getQuery();
-    return query != null ? uri.getPath() + "?" + query : uri.getPath();
-  }
-
-  @Override
-  @Nullable
-  protected String host(Request request) {
-    String host = request.getHeaders().get("Host");
-    if (host != null) {
-      return host;
-    }
-    return request.getVirtualHost();
-  }
-
-  @Override
-  @Nullable
-  protected String scheme(Request request) {
-    return request.getUri().getScheme();
-  }
-
-  @Override
-  @Nullable
-  protected String userAgent(Request request) {
-    return null;
+  protected List<String> requestHeader(Request request, String name) {
+    return request.getHeaders().getAll(name);
   }
 
   @Override
@@ -88,14 +65,7 @@ final class PlayWsClientHttpAttributesExtractor extends HttpAttributesExtractor<
   }
 
   @Override
-  @Nullable
-  protected String serverName(Request request, @Nullable Response response) {
-    return null;
-  }
-
-  @Override
-  @Nullable
-  protected String route(Request request) {
-    return null;
+  protected List<String> responseHeader(Request request, Response response, String name) {
+    return response.getHeaders().getAll(name);
   }
 }

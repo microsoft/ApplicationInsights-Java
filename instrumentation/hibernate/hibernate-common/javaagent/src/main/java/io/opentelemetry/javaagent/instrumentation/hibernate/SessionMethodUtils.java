@@ -5,48 +5,60 @@
 
 package io.opentelemetry.javaagent.instrumentation.hibernate;
 
-import static io.opentelemetry.javaagent.instrumentation.hibernate.HibernateTracer.tracer;
+import static io.opentelemetry.javaagent.instrumentation.hibernate.HibernateSingletons.instrumenter;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.db.SqlStatementInfo;
 import io.opentelemetry.instrumentation.api.db.SqlStatementSanitizer;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 public final class SessionMethodUtils {
 
   public static final Set<String> SCOPE_ONLY_METHODS =
       new HashSet<>(Arrays.asList("immediateLoad", "internalLoad"));
 
-  public static <TARGET, ENTITY> Context startSpanFrom(
-      ContextStore<TARGET, Context> contextStore,
+  public static <TARGET> Context startSpanFrom(
+      VirtualField<TARGET, Context> virtualField,
       TARGET spanKey,
       String operationName,
       String entityName) {
-    return startSpanFrom(contextStore, spanKey, () -> operationName, entityName);
+    return startSpanFrom(virtualField, spanKey, () -> operationName, entityName);
   }
 
-  private static <TARGET, ENTITY> Context startSpanFrom(
-      ContextStore<TARGET, Context> contextStore,
+  private static <TARGET> Context startSpanFrom(
+      VirtualField<TARGET, Context> virtualField,
       TARGET spanKey,
       Supplier<String> operationNameSupplier,
       String entityName) {
 
-    Context sessionContext = contextStore.get(spanKey);
+    Context sessionContext = virtualField.get(spanKey);
     if (sessionContext == null) {
       return null; // No state found. We aren't in a Session.
     }
 
-    return tracer().startSpan(sessionContext, operationNameSupplier.get(), entityName);
+    return startSpanFrom(sessionContext, operationNameSupplier.get(), entityName);
+  }
+
+  public static Context startSpanFrom(
+      Context sessionContext, String operationName, String entityName) {
+    return instrumenter().start(sessionContext, spanNameForOperation(operationName, entityName));
+  }
+
+  private static String spanNameForOperation(String operationName, String entityName) {
+    if (entityName != null) {
+      return operationName + " " + entityName;
+    }
+    return operationName;
   }
 
   public static <TARGET> Context startSpanFromQuery(
-      ContextStore<TARGET, Context> contextStore, TARGET spanKey, String query) {
+      VirtualField<TARGET, Context> virtualField, TARGET spanKey, String query) {
     Supplier<String> operationNameSupplier =
         () -> {
           // set operation to default value that is used when sql sanitizer fails to extract
@@ -61,36 +73,31 @@ public final class SessionMethodUtils {
           }
           return operation;
         };
-    return startSpanFrom(contextStore, spanKey, operationNameSupplier, null);
+    return startSpanFrom(virtualField, spanKey, operationNameSupplier, null);
   }
 
   public static void end(@Nullable Context context, Throwable throwable) {
-
     if (context == null) {
       return;
     }
 
-    if (throwable != null) {
-      tracer().endExceptionally(context, throwable);
-    } else {
-      tracer().end(context);
-    }
+    instrumenter().end(context, null, null, throwable);
   }
 
-  // Copies a span from the given Session ContextStore into the targetContextStore. Used to
+  // Copies a span from the given Session VirtualField into the targetVirtualField. Used to
   // propagate a Span from a Session to transient Session objects such as Transaction and Query.
   public static <S, T> void attachSpanFromStore(
-      ContextStore<S, Context> sourceContextStore,
+      VirtualField<S, Context> sourceVirtualField,
       S source,
-      ContextStore<T, Context> targetContextStore,
+      VirtualField<T, Context> targetVirtualField,
       T target) {
 
-    Context sessionContext = sourceContextStore.get(source);
+    Context sessionContext = sourceVirtualField.get(source);
     if (sessionContext == null) {
       return;
     }
 
-    targetContextStore.putIfAbsent(target, sessionContext);
+    targetVirtualField.set(target, sessionContext);
   }
 
   public static String getSessionMethodSpanName(String methodName) {

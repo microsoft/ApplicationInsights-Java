@@ -5,13 +5,20 @@
 
 package io.opentelemetry.instrumentation.okhttp.v3_0;
 
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.http.CapturedHttpHeaders;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.List;
+import javax.annotation.Nullable;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
-final class OkHttpAttributesExtractor extends HttpAttributesExtractor<Request, Response> {
+final class OkHttpAttributesExtractor extends HttpClientAttributesExtractor<Request, Response> {
+
+  OkHttpAttributesExtractor(CapturedHttpHeaders capturedHttpHeaders) {
+    super(capturedHttpHeaders);
+  }
+
   @Override
   protected String method(Request request) {
     return request.method();
@@ -23,45 +30,26 @@ final class OkHttpAttributesExtractor extends HttpAttributesExtractor<Request, R
   }
 
   @Override
-  protected @Nullable String target(Request request) {
+  protected List<String> requestHeader(Request request, String name) {
+    return request.headers(name);
+  }
+
+  @Override
+  @Nullable
+  protected Long requestContentLength(Request request, @Nullable Response response) {
     return null;
   }
 
   @Override
-  protected String host(Request request) {
-    return request.url().host();
-  }
-
-  @Override
-  protected @Nullable String route(Request request) {
-    return null;
-  }
-
-  @Override
-  protected String scheme(Request request) {
-    return request.url().scheme();
-  }
-
-  @Override
-  protected @Nullable String userAgent(Request request) {
-    // using lowercase header name intentionally to ensure extraction is not case-sensitive
-    return request.header("user-agent");
-  }
-
-  @Override
-  protected @Nullable Long requestContentLength(Request request, @Nullable Response response) {
-    return null;
-  }
-
-  @Override
-  protected @Nullable Long requestContentLengthUncompressed(
-      Request request, @Nullable Response response) {
+  @Nullable
+  protected Long requestContentLengthUncompressed(Request request, @Nullable Response response) {
     return null;
   }
 
   @Override
   @SuppressWarnings("UnnecessaryDefaultInEnumSwitch")
-  protected @Nullable String flavor(Request request, @Nullable Response response) {
+  @Nullable
+  protected String flavor(Request request, @Nullable Response response) {
     if (response == null) {
       return null;
     }
@@ -81,22 +69,24 @@ final class OkHttpAttributesExtractor extends HttpAttributesExtractor<Request, R
   }
 
   @Override
-  protected @Nullable String serverName(Request request, @Nullable Response response) {
-    return null;
-  }
-
-  @Override
   protected Integer statusCode(Request request, Response response) {
     return response.code();
   }
 
   @Override
-  protected @Nullable Long responseContentLength(Request request, Response response) {
+  @Nullable
+  protected Long responseContentLength(Request request, Response response) {
     return null;
   }
 
   @Override
-  protected @Nullable Long responseContentLengthUncompressed(Request request, Response response) {
+  @Nullable
+  protected Long responseContentLengthUncompressed(Request request, Response response) {
     return null;
+  }
+
+  @Override
+  protected List<String> responseHeader(Request request, Response response, String name) {
+    return response.headers(name);
   }
 }

@@ -5,12 +5,10 @@
 
 package io.opentelemetry.javaagent.instrumentation.netty.v3_8.client;
 
-import static io.opentelemetry.javaagent.instrumentation.netty.v3_8.client.NettyHttpClientTracer.tracer;
+import static io.opentelemetry.javaagent.instrumentation.netty.v3_8.client.NettyClientSingletons.instrumenter;
 
-import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.netty.v3_8.ChannelTraceContext;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.MessageEvent;
@@ -19,34 +17,30 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 
 public class HttpClientResponseTracingHandler extends SimpleChannelUpstreamHandler {
 
-  private final ContextStore<Channel, ChannelTraceContext> contextStore;
-
-  public HttpClientResponseTracingHandler(ContextStore<Channel, ChannelTraceContext> contextStore) {
-    this.contextStore = contextStore;
-  }
+  private static final VirtualField<Channel, NettyClientRequestAndContexts> requestContextsField =
+      VirtualField.find(Channel.class, NettyClientRequestAndContexts.class);
 
   @Override
   public void messageReceived(ChannelHandlerContext ctx, MessageEvent msg) {
-    ChannelTraceContext channelTraceContext =
-        contextStore.putIfAbsent(ctx.getChannel(), ChannelTraceContext.FACTORY);
+    NettyClientRequestAndContexts requestAndContexts = requestContextsField.get(ctx.getChannel());
 
-    Context context = channelTraceContext.getContext();
-    if (context == null) {
+    if (requestAndContexts == null) {
       ctx.sendUpstream(msg);
       return;
     }
 
     if (msg.getMessage() instanceof HttpResponse) {
-      tracer().end(context, (HttpResponse) msg.getMessage());
+      instrumenter()
+          .end(
+              requestAndContexts.context(),
+              requestAndContexts.request(),
+              (HttpResponse) msg.getMessage(),
+              null);
+      requestContextsField.set(ctx.getChannel(), null);
     }
 
     // We want the callback in the scope of the parent, not the client span
-    Context parentContext = channelTraceContext.getClientParentContext();
-    if (parentContext != null) {
-      try (Scope ignored = parentContext.makeCurrent()) {
-        ctx.sendUpstream(msg);
-      }
-    } else {
+    try (Scope ignored = requestAndContexts.parentContext().makeCurrent()) {
       ctx.sendUpstream(msg);
     }
   }

@@ -65,6 +65,17 @@ class GrizzlyFilterchainServerTest extends HttpServerTest<HttpServer> implements
     false
   }
 
+  @Override
+  boolean testCapturedHttpHeaders() {
+    false
+  }
+
+  @Override
+  boolean verifyServerSpanEndTime() {
+    // server spans are ended inside of the controller spans
+    return false
+  }
+
   void setUpTransport(FilterChain filterChain) {
     TCPNIOTransportBuilder transportBuilder = TCPNIOTransportBuilder.newInstance()
       .setOptimizedForMultiplexing(true)
@@ -201,6 +212,6 @@ class GrizzlyFilterchainServerTest extends HttpServerTest<HttpServer> implements
 
   @Override
   String expectedServerSpanName(ServerEndpoint endpoint) {
-    return "HttpCodecFilter.handleRead"
+    return "HTTP GET"
   }
 }

@@ -23,6 +23,10 @@ dependencies {
   testInstrumentation(project(":instrumentation:reactor-netty:reactor-netty-0.9:javaagent"))
   testInstrumentation(project(":instrumentation:netty:netty-4.1:javaagent"))
   testInstrumentation(project(":instrumentation:reactor-3.1:javaagent"))
+
+  testLibrary("io.projectreactor:reactor-test:3.1.0.RELEASE")
+  testImplementation("io.opentelemetry:opentelemetry-extension-annotations")
+  testInstrumentation(project(":instrumentation:opentelemetry-annotations-1.0:javaagent"))
 }
 
 tasks {
@@ -35,15 +39,11 @@ tasks {
     jvmArgs("-Dotel.instrumentation.reactor-netty.always-create-connect-span=true")
   }
 
-  named<Test>("test") {
+  test {
     dependsOn(testConnectionSpan)
     filter {
       excludeTestsMatching("ReactorNettyConnectionSpanTest")
       isFailOnNoMatchingTests = false
     }
   }
-}
-
-tasks.withType<Test>().configureEach {
-  jvmArgs("-Dio.opentelemetry.javaagent.shaded.io.opentelemetry.context.enableStrictContext=false")
 }

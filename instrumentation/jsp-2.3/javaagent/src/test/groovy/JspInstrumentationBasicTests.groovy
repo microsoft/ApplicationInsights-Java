@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NetTransportValues.IP_TCP
+
 import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
 import io.opentelemetry.instrumentation.test.utils.PortUtils
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
@@ -89,11 +91,16 @@ class JspInstrumentationBasicTests extends AgentInstrumentationSpecification {
           attributes {
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" Long
-            "${SemanticAttributes.HTTP_URL.key}" "http://localhost:$port/$jspWebappContext/$jspFileName"
+            "${SemanticAttributes.HTTP_SCHEME.key}" "http"
+            "${SemanticAttributes.HTTP_HOST.key}" "localhost:$port"
+            "${SemanticAttributes.HTTP_TARGET.key}" "/$jspWebappContext/$jspFileName"
             "${SemanticAttributes.HTTP_METHOD.key}" "GET"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 200
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
             "${SemanticAttributes.HTTP_USER_AGENT.key}" String
+            "${SemanticAttributes.HTTP_SERVER_NAME}" String
+            "${SemanticAttributes.NET_TRANSPORT}" IP_TCP
+            "${SemanticAttributes.HTTP_REQUEST_CONTENT_LENGTH}" { it == null || it instanceof Long } // Optional
           }
         }
         span(1) {
@@ -139,11 +146,15 @@ class JspInstrumentationBasicTests extends AgentInstrumentationSpecification {
           attributes {
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" Long
-            "${SemanticAttributes.HTTP_URL.key}" "http://localhost:$port/$jspWebappContext/getQuery.jsp?$queryString"
+            "${SemanticAttributes.HTTP_SCHEME.key}" "http"
+            "${SemanticAttributes.HTTP_HOST.key}" "localhost:$port"
+            "${SemanticAttributes.HTTP_TARGET.key}" "/$jspWebappContext/getQuery.jsp?$queryString"
             "${SemanticAttributes.HTTP_METHOD.key}" "GET"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 200
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
             "${SemanticAttributes.HTTP_USER_AGENT.key}" String
+            "${SemanticAttributes.HTTP_SERVER_NAME}" String
+            "${SemanticAttributes.NET_TRANSPORT}" IP_TCP
           }
         }
         span(1) {
@@ -185,11 +196,16 @@ class JspInstrumentationBasicTests extends AgentInstrumentationSpecification {
           attributes {
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" Long
-            "${SemanticAttributes.HTTP_URL.key}" "http://localhost:$port/$jspWebappContext/post.jsp"
+            "${SemanticAttributes.HTTP_SCHEME.key}" "http"
+            "${SemanticAttributes.HTTP_HOST.key}" "localhost:$port"
+            "${SemanticAttributes.HTTP_TARGET.key}" "/$jspWebappContext/post.jsp"
             "${SemanticAttributes.HTTP_METHOD.key}" "POST"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 200
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
             "${SemanticAttributes.HTTP_USER_AGENT.key}" String
+            "${SemanticAttributes.HTTP_SERVER_NAME}" String
+            "${SemanticAttributes.NET_TRANSPORT}" IP_TCP
+            "${SemanticAttributes.HTTP_REQUEST_CONTENT_LENGTH}" Long
           }
         }
         span(1) {
@@ -240,11 +256,15 @@ class JspInstrumentationBasicTests extends AgentInstrumentationSpecification {
           attributes {
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" Long
-            "${SemanticAttributes.HTTP_URL.key}" "http://localhost:$port/$jspWebappContext/$jspFileName"
+            "${SemanticAttributes.HTTP_SCHEME.key}" "http"
+            "${SemanticAttributes.HTTP_HOST.key}" "localhost:$port"
+            "${SemanticAttributes.HTTP_TARGET.key}" "/$jspWebappContext/$jspFileName"
             "${SemanticAttributes.HTTP_METHOD.key}" "GET"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 500
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
             "${SemanticAttributes.HTTP_USER_AGENT.key}" String
+            "${SemanticAttributes.HTTP_SERVER_NAME}" String
+            "${SemanticAttributes.NET_TRANSPORT}" IP_TCP
           }
         }
         span(1) {
@@ -300,11 +320,15 @@ class JspInstrumentationBasicTests extends AgentInstrumentationSpecification {
           attributes {
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" Long
-            "${SemanticAttributes.HTTP_URL.key}" "http://localhost:$port/$jspWebappContext/includes/includeHtml.jsp"
+            "${SemanticAttributes.HTTP_SCHEME.key}" "http"
+            "${SemanticAttributes.HTTP_HOST.key}" "localhost:$port"
+            "${SemanticAttributes.HTTP_TARGET.key}" "/$jspWebappContext/includes/includeHtml.jsp"
             "${SemanticAttributes.HTTP_METHOD.key}" "GET"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 200
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
             "${SemanticAttributes.HTTP_USER_AGENT.key}" String
+            "${SemanticAttributes.HTTP_SERVER_NAME}" String
+            "${SemanticAttributes.NET_TRANSPORT}" IP_TCP
           }
         }
         span(1) {
@@ -341,11 +365,15 @@ class JspInstrumentationBasicTests extends AgentInstrumentationSpecification {
           attributes {
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" Long
-            "${SemanticAttributes.HTTP_URL.key}" "http://localhost:$port/$jspWebappContext/includes/includeMulti.jsp"
+            "${SemanticAttributes.HTTP_SCHEME.key}" "http"
+            "${SemanticAttributes.HTTP_HOST.key}" "localhost:$port"
+            "${SemanticAttributes.HTTP_TARGET.key}" "/$jspWebappContext/includes/includeMulti.jsp"
             "${SemanticAttributes.HTTP_METHOD.key}" "GET"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 200
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
             "${SemanticAttributes.HTTP_USER_AGENT.key}" String
+            "${SemanticAttributes.HTTP_SERVER_NAME}" String
+            "${SemanticAttributes.NET_TRANSPORT}" IP_TCP
           }
         }
         span(1) {
@@ -414,11 +442,15 @@ class JspInstrumentationBasicTests extends AgentInstrumentationSpecification {
           attributes {
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" Long
-            "${SemanticAttributes.HTTP_URL.key}" "http://localhost:$port/$jspWebappContext/$jspFileName"
+            "${SemanticAttributes.HTTP_SCHEME.key}" "http"
+            "${SemanticAttributes.HTTP_HOST.key}" "localhost:$port"
+            "${SemanticAttributes.HTTP_TARGET.key}" "/$jspWebappContext/$jspFileName"
             "${SemanticAttributes.HTTP_METHOD.key}" "GET"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 500
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
             "${SemanticAttributes.HTTP_USER_AGENT.key}" String
+            "${SemanticAttributes.HTTP_SERVER_NAME}" String
+            "${SemanticAttributes.NET_TRANSPORT}" IP_TCP
           }
         }
         span(1) {
@@ -456,11 +488,15 @@ class JspInstrumentationBasicTests extends AgentInstrumentationSpecification {
           attributes {
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" Long
-            "${SemanticAttributes.HTTP_URL.key}" "http://localhost:$port/$jspWebappContext/$staticFile"
+            "${SemanticAttributes.HTTP_SCHEME.key}" "http"
+            "${SemanticAttributes.HTTP_HOST.key}" "localhost:$port"
+            "${SemanticAttributes.HTTP_TARGET.key}" "/$jspWebappContext/$staticFile"
             "${SemanticAttributes.HTTP_METHOD.key}" "GET"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 200
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
             "${SemanticAttributes.HTTP_USER_AGENT.key}" String
+            "${SemanticAttributes.HTTP_SERVER_NAME}" String
+            "${SemanticAttributes.NET_TRANSPORT}" IP_TCP
           }
         }
       }

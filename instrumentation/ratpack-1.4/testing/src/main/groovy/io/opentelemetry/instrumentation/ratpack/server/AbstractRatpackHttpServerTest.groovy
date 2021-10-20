@@ -5,6 +5,7 @@
 
 package io.opentelemetry.instrumentation.ratpack.server
 
+
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.instrumentation.test.asserts.TraceAssert
 import io.opentelemetry.instrumentation.test.base.HttpServerTest
@@ -15,6 +16,7 @@ import ratpack.server.RatpackServer
 import ratpack.server.RatpackServerSpec
 
 import static io.opentelemetry.api.trace.SpanKind.INTERNAL
+import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.CAPTURE_HEADERS
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.ERROR
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.EXCEPTION
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.INDEXED_CHILD
@@ -88,6 +90,15 @@ abstract class AbstractRatpackHttpServerTest extends HttpServerTest<RatpackServe
             }
           }
         }
+        it.prefix(CAPTURE_HEADERS.rawPath()) {
+          it.all { context ->
+            controller(CAPTURE_HEADERS) {
+              context.response.status(CAPTURE_HEADERS.status)
+              context.response.headers.set("X-Test-Response", context.request.headers.get("X-Test-Request"))
+              context.response.send(CAPTURE_HEADERS.body)
+            }
+          }
+        }
       }
       configure(it)
     }
@@ -124,6 +135,12 @@ abstract class AbstractRatpackHttpServerTest extends HttpServerTest<RatpackServe
   @Override
   boolean testConcurrency() {
     true
+  }
+
+  @Override
+  boolean verifyServerSpanEndTime() {
+    // server spans are ended inside of the controller spans
+    return false
   }
 
   @Override

@@ -5,12 +5,20 @@
 
 package io.opentelemetry.instrumentation.apachehttpclient.v4_3;
 
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
+import static io.opentelemetry.instrumentation.apachehttpclient.v4_3.ApacheHttpClientRequest.headersToList;
+
+import io.opentelemetry.instrumentation.api.instrumenter.http.CapturedHttpHeaders;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
+import java.util.List;
+import javax.annotation.Nullable;
 import org.apache.http.HttpResponse;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 final class ApacheHttpClientHttpAttributesExtractor
-    extends HttpAttributesExtractor<ApacheHttpClientRequest, HttpResponse> {
+    extends HttpClientAttributesExtractor<ApacheHttpClientRequest, HttpResponse> {
+
+  ApacheHttpClientHttpAttributesExtractor(CapturedHttpHeaders capturedHttpHeaders) {
+    super(capturedHttpHeaders);
+  }
 
   @Override
   protected String method(ApacheHttpClientRequest request) {
@@ -24,27 +32,8 @@ final class ApacheHttpClientHttpAttributesExtractor
   }
 
   @Override
-  @Nullable
-  protected String target(ApacheHttpClientRequest request) {
-    return request.getTarget();
-  }
-
-  @Override
-  @Nullable
-  protected String host(ApacheHttpClientRequest request) {
-    return request.getHeader("Host");
-  }
-
-  @Override
-  @Nullable
-  protected String scheme(ApacheHttpClientRequest request) {
-    return request.getScheme();
-  }
-
-  @Override
-  @Nullable
-  protected String userAgent(ApacheHttpClientRequest request) {
-    return request.getHeader("User-Agent");
+  protected List<String> requestHeader(ApacheHttpClientRequest request, String name) {
+    return request.getHeader(name);
   }
 
   @Override
@@ -86,14 +75,8 @@ final class ApacheHttpClientHttpAttributesExtractor
   }
 
   @Override
-  @Nullable
-  protected String serverName(ApacheHttpClientRequest request, @Nullable HttpResponse response) {
-    return null;
-  }
-
-  @Override
-  @Nullable
-  protected String route(ApacheHttpClientRequest request) {
-    return null;
+  protected List<String> responseHeader(
+      ApacheHttpClientRequest request, HttpResponse response, String name) {
+    return headersToList(response.getHeaders(name));
   }
 }

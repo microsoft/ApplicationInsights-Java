@@ -38,7 +38,7 @@ class ReflectionTest extends AgentInstrumentationSpecification {
 
     and:
     def interfaceClass = TestClass.getInterfaces().find {
-      it.getName().contains("FieldBackedProvider\$")
+      it.getName().contains("VirtualFieldAccessor\$")
     }
     interfaceClass != null
     def interfaceMethodFound = false

@@ -39,7 +39,7 @@ tasks {
   val jmhStartFlightRecording = gradle.startParameter.projectProperties.get("jmh.startFlightRecording")
 
   named<JMHTask>("jmh") {
-    val shadowTask = project(":javaagent").tasks.named<ShadowJar>("fullJavaagentJar").get()
+    val shadowTask = project(":javaagent").tasks.named<ShadowJar>("shadowJar").get()
     inputs.files(layout.files(shadowTask))
 
     // note: without an exporter, toSpanData() won't even be called
@@ -53,13 +53,15 @@ tasks {
       "-Dotel.instrumentation.http-url-connection.enabled=false"
     )
     if (jmhStartFlightRecording != null) {
-      args.addAll(listOf(
-        "-XX:+FlightRecorder",
-        "-XX:StartFlightRecording=$jmhStartFlightRecording",
-        // enabling profiling at non-safepoints helps with micro-profiling
-        "-XX:+UnlockDiagnosticVMOptions",
-        "-XX:+DebugNonSafepoints"
-      ))
+      args.addAll(
+        listOf(
+          "-XX:+FlightRecorder",
+          "-XX:StartFlightRecording=$jmhStartFlightRecording",
+          // enabling profiling at non-safepoints helps with micro-profiling
+          "-XX:+UnlockDiagnosticVMOptions",
+          "-XX:+DebugNonSafepoints"
+        )
+      )
     }
     // see https://github.com/melix/jmh-gradle-plugin/issues/200
     jvmArgsPrepend.add(args.joinToString(" "))

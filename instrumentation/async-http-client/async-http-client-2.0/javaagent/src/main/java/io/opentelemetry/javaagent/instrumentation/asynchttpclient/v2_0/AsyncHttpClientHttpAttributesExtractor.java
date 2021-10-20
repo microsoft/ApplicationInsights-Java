@@ -5,16 +5,15 @@
 
 package io.opentelemetry.javaagent.instrumentation.asynchttpclient.v2_0;
 
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import org.asynchttpclient.Request;
+import java.util.List;
+import javax.annotation.Nullable;
 import org.asynchttpclient.Response;
 import org.asynchttpclient.netty.request.NettyRequest;
-import org.asynchttpclient.uri.Uri;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 final class AsyncHttpClientHttpAttributesExtractor
-    extends HttpAttributesExtractor<RequestContext, Response> {
+    extends HttpClientAttributesExtractor<RequestContext, Response> {
 
   @Override
   protected String method(RequestContext requestContext) {
@@ -27,33 +26,8 @@ final class AsyncHttpClientHttpAttributesExtractor
   }
 
   @Override
-  protected String target(RequestContext requestContext) {
-    Uri uri = requestContext.getRequest().getUri();
-    String query = uri.getQuery();
-    return query != null ? uri.getPath() + "?" + query : uri.getPath();
-  }
-
-  @Override
-  @Nullable
-  protected String host(RequestContext requestContext) {
-    Request request = requestContext.getRequest();
-    String host = request.getHeaders().get("Host");
-    if (host != null) {
-      return host;
-    }
-    return request.getVirtualHost();
-  }
-
-  @Override
-  @Nullable
-  protected String scheme(RequestContext requestContext) {
-    return requestContext.getRequest().getUri().getScheme();
-  }
-
-  @Override
-  @Nullable
-  protected String userAgent(RequestContext requestContext) {
-    return null;
+  protected List<String> requestHeader(RequestContext requestContext, String name) {
+    return requestContext.getRequest().getHeaders().getAll(name);
   }
 
   @Override
@@ -112,14 +86,8 @@ final class AsyncHttpClientHttpAttributesExtractor
   }
 
   @Override
-  @Nullable
-  protected String serverName(RequestContext requestContext, @Nullable Response response) {
-    return null;
-  }
-
-  @Override
-  @Nullable
-  protected String route(RequestContext requestContext) {
-    return null;
+  protected List<String> responseHeader(
+      RequestContext requestContext, Response response, String name) {
+    return response.getHeaders().getAll(name);
   }
 }

@@ -5,13 +5,18 @@
 
 package io.opentelemetry.javaagent.instrumentation.kubernetesclient;
 
-import io.kubernetes.client.openapi.ApiResponse;
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import okhttp3.Request;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import static java.util.Collections.emptyList;
 
-class KubernetesHttpAttributesExtractor extends HttpAttributesExtractor<Request, ApiResponse<?>> {
+import io.kubernetes.client.openapi.ApiResponse;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.List;
+import javax.annotation.Nullable;
+import okhttp3.Request;
+
+class KubernetesHttpAttributesExtractor
+    extends HttpClientAttributesExtractor<Request, ApiResponse<?>> {
+
   @Override
   protected String method(Request request) {
     return request.method();
@@ -23,38 +28,19 @@ class KubernetesHttpAttributesExtractor extends HttpAttributesExtractor<Request,
   }
 
   @Override
-  protected @Nullable String target(Request request) {
+  protected List<String> requestHeader(Request request, String name) {
+    return request.headers(name);
+  }
+
+  @Nullable
+  @Override
+  protected Long requestContentLength(Request request, @Nullable ApiResponse<?> apiResponse) {
     return null;
   }
 
+  @Nullable
   @Override
-  protected @Nullable String host(Request request) {
-    return null;
-  }
-
-  @Override
-  protected @Nullable String route(Request request) {
-    return null;
-  }
-
-  @Override
-  protected @Nullable String scheme(Request request) {
-    return null;
-  }
-
-  @Override
-  protected @Nullable String userAgent(Request request) {
-    return request.header("user-agent");
-  }
-
-  @Override
-  protected @Nullable Long requestContentLength(
-      Request request, @Nullable ApiResponse<?> apiResponse) {
-    return null;
-  }
-
-  @Override
-  protected @Nullable Long requestContentLengthUncompressed(
+  protected Long requestContentLengthUncompressed(
       Request request, @Nullable ApiResponse<?> apiResponse) {
     return null;
   }
@@ -65,23 +51,24 @@ class KubernetesHttpAttributesExtractor extends HttpAttributesExtractor<Request,
   }
 
   @Override
-  protected @Nullable String serverName(Request request, @Nullable ApiResponse<?> apiResponse) {
-    return null;
-  }
-
-  @Override
   protected Integer statusCode(Request request, ApiResponse<?> apiResponse) {
     return apiResponse.getStatusCode();
   }
 
+  @Nullable
   @Override
-  protected @Nullable Long responseContentLength(Request request, ApiResponse<?> apiResponse) {
+  protected Long responseContentLength(Request request, ApiResponse<?> apiResponse) {
+    return null;
+  }
+
+  @Nullable
+  @Override
+  protected Long responseContentLengthUncompressed(Request request, ApiResponse<?> apiResponse) {
     return null;
   }
 
   @Override
-  protected @Nullable Long responseContentLengthUncompressed(
-      Request request, ApiResponse<?> apiResponse) {
-    return null;
+  protected List<String> responseHeader(Request request, ApiResponse<?> apiResponse, String name) {
+    return apiResponse.getHeaders().getOrDefault(name, emptyList());
   }
 }

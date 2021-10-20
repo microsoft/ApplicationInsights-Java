@@ -16,7 +16,7 @@ import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 // TODO In search for a better home package
 
@@ -30,7 +30,11 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *     and HTTP flavor.
  * @param <STORAGE> - Implementation specific storage type for attaching/getting the server context.
  *     Use Void if your subclass does not have an implementation specific storage need.
+ * @deprecated Use {@link io.opentelemetry.instrumentation.api.instrumenter.Instrumenter} and
+ *     {@linkplain io.opentelemetry.instrumentation.api.instrumenter.http the HTTP semantic
+ *     convention utilities package} instead.
  */
+@Deprecated
 public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> extends BaseTracer {
 
   // the class name is part of the attribute name, so that it will be shaded when used in javaagent
@@ -169,24 +173,15 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
     spanBuilder.setAttribute(
         SemanticAttributes.HTTP_USER_AGENT, requestHeader(request, USER_AGENT));
 
-    setUrl(spanBuilder, request);
-
-    // TODO set resource name from URL.
-  }
-
-  /*
-  https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/semantic_conventions/http.md
-
-  HTTP semantic convention recommends setting http.scheme, http.host, http.target attributes
-  instead of http.url because it "is usually not readily available on the server side but would have
-  to be assembled in a cumbersome and sometimes lossy process from other information".
-
-  But in Java world there is no standard way to access "The full request target as passed in a HTTP request line or equivalent"
-  which is the recommended value for http.target attribute. Therefore we cannot use any of the
-  recommended combinations of attributes and are forced to use http.url.
-   */
-  private void setUrl(SpanBuilder spanBuilder, REQUEST request) {
-    spanBuilder.setAttribute(SemanticAttributes.HTTP_URL, url(request));
+    String url = url(request);
+    if (url != null) {
+      // netty instrumentation uses this
+      spanBuilder.setAttribute(SemanticAttributes.HTTP_URL, url);
+    } else {
+      spanBuilder.setAttribute(SemanticAttributes.HTTP_SCHEME, scheme(request));
+      spanBuilder.setAttribute(SemanticAttributes.HTTP_HOST, host(request));
+      spanBuilder.setAttribute(SemanticAttributes.HTTP_TARGET, target(request));
+    }
   }
 
   protected void onConnectionAndRequest(
@@ -297,7 +292,17 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
 
   protected abstract TextMapGetter<REQUEST> getGetter();
 
-  protected abstract String url(REQUEST request);
+  // netty still uses this, otherwise should prefer scheme/host/target
+  @Nullable
+  protected String url(REQUEST request) {
+    return null;
+  }
+
+  protected abstract String scheme(REQUEST request);
+
+  protected abstract String host(REQUEST request);
+
+  protected abstract String target(REQUEST request);
 
   protected abstract String method(REQUEST request);
 

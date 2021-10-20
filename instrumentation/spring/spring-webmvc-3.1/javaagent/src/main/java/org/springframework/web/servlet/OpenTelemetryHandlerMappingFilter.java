@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import javax.annotation.Nullable;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -23,7 +24,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.core.Ordered;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
@@ -53,13 +53,15 @@ public class OpenTelemetryHandlerMappingFilter implements Filter, Ordered {
       return;
     }
 
-    if (handlerMappings != null) {
-      Context context = Context.current();
-      ServerSpanNaming.updateServerSpanName(
-          context, CONTROLLER, serverSpanName, (HttpServletRequest) request);
+    try {
+      filterChain.doFilter(request, response);
+    } finally {
+      if (handlerMappings != null) {
+        Context context = Context.current();
+        ServerSpanNaming.updateServerSpanName(
+            context, CONTROLLER, serverSpanName, (HttpServletRequest) request);
+      }
     }
-
-    filterChain.doFilter(request, response);
   }
 
   @Override

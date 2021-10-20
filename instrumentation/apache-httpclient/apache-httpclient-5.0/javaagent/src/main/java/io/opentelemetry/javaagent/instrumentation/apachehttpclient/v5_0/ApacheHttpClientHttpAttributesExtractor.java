@@ -5,19 +5,22 @@
 
 package io.opentelemetry.javaagent.instrumentation.apachehttpclient.v5_0;
 
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.annotation.Nullable;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.ProtocolVersion;
 import org.apache.hc.core5.net.URIAuthority;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 final class ApacheHttpClientHttpAttributesExtractor
-    extends HttpAttributesExtractor<ClassicHttpRequest, HttpResponse> {
+    extends HttpClientAttributesExtractor<ClassicHttpRequest, HttpResponse> {
 
   private static final Logger logger =
       LoggerFactory.getLogger(ApacheHttpClientHttpAttributesExtractor.class);
@@ -61,31 +64,8 @@ final class ApacheHttpClientHttpAttributesExtractor
   }
 
   @Override
-  protected String target(ClassicHttpRequest request) {
-    return request.getRequestUri();
-  }
-
-  @Override
-  @Nullable
-  protected String host(ClassicHttpRequest request) {
-    Header header = request.getFirstHeader("Host");
-    if (header != null) {
-      return header.getValue();
-    }
-    return null;
-  }
-
-  @Override
-  protected String scheme(ClassicHttpRequest request) {
-    String scheme = request.getScheme();
-    return scheme != null ? scheme : "http";
-  }
-
-  @Override
-  @Nullable
-  protected String userAgent(ClassicHttpRequest request) {
-    Header header = request.getFirstHeader("User-Agent");
-    return header != null ? header.getValue() : null;
+  protected List<String> requestHeader(ClassicHttpRequest request, String name) {
+    return headersToList(request.getHeaders(name));
   }
 
   @Override
@@ -146,14 +126,20 @@ final class ApacheHttpClientHttpAttributesExtractor
   }
 
   @Override
-  @Nullable
-  protected String serverName(ClassicHttpRequest request, @Nullable HttpResponse response) {
-    return null;
+  protected List<String> responseHeader(
+      ClassicHttpRequest request, HttpResponse response, String name) {
+    return headersToList(response.getHeaders(name));
   }
 
-  @Override
-  @Nullable
-  protected String route(ClassicHttpRequest request) {
-    return null;
+  // minimize memory overhead by not using streams
+  private static List<String> headersToList(Header[] headers) {
+    if (headers.length == 0) {
+      return Collections.emptyList();
+    }
+    List<String> headersList = new ArrayList<>(headers.length);
+    for (int i = 0; i < headers.length; ++i) {
+      headersList.set(i, headers[i].getValue());
+    }
+    return headersList;
   }
 }

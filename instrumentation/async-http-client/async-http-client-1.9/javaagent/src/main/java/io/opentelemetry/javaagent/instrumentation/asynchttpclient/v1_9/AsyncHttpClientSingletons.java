@@ -9,14 +9,13 @@ import com.ning.http.client.Request;
 import com.ning.http.client.Response;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
+import io.opentelemetry.instrumentation.api.instrumenter.PeerServiceAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.SpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.SpanStatusExtractor;
-import io.opentelemetry.instrumentation.api.instrumenter.appid.TargetAppIdAttributeExtractor;
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientMetrics;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanStatusExtractor;
-import io.opentelemetry.javaagent.instrumentation.api.instrumenter.PeerServiceAttributesExtractor;
 
 public final class AsyncHttpClientSingletons {
   private static final String INSTRUMENTATION_NAME = "io.opentelemetry.async-http-client-1.9";
@@ -24,7 +23,7 @@ public final class AsyncHttpClientSingletons {
   private static final Instrumenter<Request, Response> INSTRUMENTER;
 
   static {
-    HttpAttributesExtractor<Request, Response> httpAttributesExtractor =
+    HttpClientAttributesExtractor<Request, Response> httpAttributesExtractor =
         new AsyncHttpClientHttpAttributesExtractor();
     SpanNameExtractor<? super Request> spanNameExtractor =
         HttpSpanNameExtractor.create(httpAttributesExtractor);
@@ -40,7 +39,6 @@ public final class AsyncHttpClientSingletons {
             .addAttributesExtractor(httpAttributesExtractor)
             .addAttributesExtractor(netAttributesExtractor)
             .addAttributesExtractor(PeerServiceAttributesExtractor.create(netAttributesExtractor))
-            .addAttributesExtractor(new TargetAppIdAttributeExtractor<>(Response::getHeader))
             .addRequestMetrics(HttpClientMetrics.get())
             .newClientInstrumenter(new HttpHeaderSetter());
   }

@@ -7,21 +7,22 @@ muzzle {
     group.set("org.apache.kafka")
     module.set("kafka-clients")
     versions.set("[0.11.0.0,)")
+    extraDependency(project(":instrumentation:kafka-clients:kafka-clients-0.11:bootstrap"))
     assertInverse.set(true)
   }
 }
-
-val versions: Map<String, String> by project
 
 dependencies {
   compileOnly("com.google.auto.value:auto-value-annotations")
   annotationProcessor("com.google.auto.value:auto-value")
 
-  implementation(project(":instrumentation:kafka-clients:kafka-clients-common:javaagent"))
+  compileOnly(project(":instrumentation:kafka-clients:kafka-clients-0.11:bootstrap"))
+  implementation(project(":instrumentation:kafka-clients:kafka-clients-common:library"))
 
   library("org.apache.kafka:kafka-clients:0.11.0.0")
 
-  testImplementation("org.testcontainers:kafka:${versions["org.testcontainers"]}")
+  testImplementation("org.testcontainers:kafka")
+  testImplementation(project(":instrumentation:kafka-clients:kafka-clients-0.11:testing"))
 }
 
 tasks {

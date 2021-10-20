@@ -12,19 +12,20 @@ import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapSetter;
 import io.opentelemetry.instrumentation.api.annotations.UnstableApi;
 import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.instrumentation.api.instrumenter.db.DbAttributesExtractor;
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.messaging.MessagingAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.rpc.RpcAttributesExtractor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 /**
  * A builder of {@link Instrumenter}. Instrumentation libraries should generally expose their own
@@ -46,6 +47,7 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
   final List<SpanLinksExtractor<? super REQUEST>> spanLinksExtractors = new ArrayList<>();
   final List<AttributesExtractor<? super REQUEST, ? super RESPONSE>> attributesExtractors =
       new ArrayList<>();
+  final List<ContextCustomizer<? super REQUEST>> contextCustomizers = new ArrayList<>();
   final List<RequestListener> requestListeners = new ArrayList<>();
 
   SpanKindExtractor<? super REQUEST> spanKindExtractor = SpanKindExtractor.alwaysInternal();
@@ -106,6 +108,16 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
     return this;
   }
 
+  /**
+   * Adds a {@link ContextCustomizer} to customize the context during {@link
+   * Instrumenter#start(Context, Object)}.
+   */
+  public InstrumenterBuilder<REQUEST, RESPONSE> addContextCustomizer(
+      ContextCustomizer<? super REQUEST> contextCustomizer) {
+    contextCustomizers.add(contextCustomizer);
+    return this;
+  }
+
   /** Adds a {@link RequestMetrics} whose metrics will be recorded for request start and stop. */
   @UnstableApi
   public InstrumenterBuilder<REQUEST, RESPONSE> addRequestMetrics(RequestMetrics factory) {
@@ -149,9 +161,9 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
    *
    * <ul>
    *   <li>CLIENT nested spans are suppressed depending on their type: {@linkplain
-   *       HttpAttributesExtractor HTTP}, {@linkplain RpcAttributesExtractor RPC} or {@linkplain
-   *       DbAttributesExtractor database} clients. If a span with the same type is present in the
-   *       parent context object, new span of the same type will not be started.
+   *       HttpClientAttributesExtractor HTTP}, {@linkplain RpcAttributesExtractor RPC} or
+   *       {@linkplain DbAttributesExtractor database} clients. If a span with the same type is
+   *       present in the parent context object, new span of the same type will not be started.
    * </ul>
    *
    * <p><strong>When disabled:</strong>
