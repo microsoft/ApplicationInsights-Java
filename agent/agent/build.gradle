@@ -46,7 +46,6 @@ shadowJar {
 
   // TEMPORARY until optimization lands upstream
   exclude "io/opentelemetry/api/common/AttributeKeyImpl.class"
-  relocate "patched.io.opentelemetry.api.common.AttributeKeyImpl", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api.common.AttributeKeyImpl"
 
   // Prevents conflict with other SLF4J instances. Important for premain.
   relocate "org.slf4j", "io.opentelemetry.javaagent.slf4j"
@@ -102,8 +101,9 @@ whenPomConfigured = { p ->
 // endregion Publishing properties
 
 
-import java.util.jar.JarFile
 import org.apache.tools.ant.taskdefs.condition.Os
+
+import java.util.jar.JarFile
 
 task verifyAgentJarContents {
   dependsOn jar
