@@ -64,9 +64,8 @@ public class TraceLog4j12Test extends AiSmokeTest {
     assertEquals("WARN", md1.getProperties().get("LoggingLevel"));
     assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
     assertNotNull(md1.getProperties().get("ThreadName"));
-    // TODO (trask) revisit after Java 17 release
-    //  MDC.getContext() always returns null on Java 17-ea
-    if (!currentImageName.contains("_openjdk_17")) {
+    // Log4j 1.2 doesn't support Java 17 and MDC.getContext() always returns null
+    if (!currentImageName.contains("openjdk_17")) {
       assertEquals("MDC value", md1.getProperties().get("MDC key"));
       assertEquals(5, md1.getProperties().size());
     } else {
@@ -120,9 +119,8 @@ public class TraceLog4j12Test extends AiSmokeTest {
     assertEquals("ERROR", ed.getProperties().get("LoggingLevel"));
     assertEquals("smoketestapp", ed.getProperties().get("LoggerName"));
     assertNotNull(ed.getProperties().get("ThreadName"));
-    // TODO (trask) revisit after Java 17 release
-    //  MDC.getContext() always returns null on Java 17-ea
-    if (!currentImageName.contains("_openjdk_17")) {
+    // Log4j 1.2 doesn't support Java 17 and MDC.getContext() always returns null
+    if (!currentImageName.contains("openjdk_17")) {
       assertEquals("MDC value", ed.getProperties().get("MDC key"));
       assertEquals(6, ed.getProperties().size());
     } else {
