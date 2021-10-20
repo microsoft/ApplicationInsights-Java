@@ -23,7 +23,6 @@ import server.FooModel
 import server.SpringWebFluxTestApplication
 import server.TestController
 import spock.lang.Unroll
-import util.SpringWebfluxTestUtil
 
 import static io.opentelemetry.api.trace.SpanKind.INTERNAL
 import static io.opentelemetry.api.trace.SpanKind.SERVER
@@ -64,10 +63,6 @@ class SpringWebfluxTest extends AgentInstrumentationSpecification {
       .build()
   }
 
-  def cleanup() {
-    SpringWebfluxTestUtil.waitForRequestsToComplete()
-  }
-
   @Unroll
   def "Basic GET test #testName"() {
     when:
@@ -83,9 +78,11 @@ class SpringWebfluxTest extends AgentInstrumentationSpecification {
           kind SERVER
           hasNoParent()
           attributes {
+            "${SemanticAttributes.NET_PEER_NAME}" { it == null || it == "localhost" }
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" Long
-            "${SemanticAttributes.HTTP_URL.key}" "http://localhost:$port$urlPath"
+            "${SemanticAttributes.HTTP_HOST}" { it == "localhost" || it == "localhost:${port}" }
+            "${SemanticAttributes.HTTP_TARGET}" urlPath
             "${SemanticAttributes.HTTP_METHOD.key}" "GET"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 200
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
@@ -145,9 +142,11 @@ class SpringWebfluxTest extends AgentInstrumentationSpecification {
           kind SERVER
           hasNoParent()
           attributes {
+            "${SemanticAttributes.NET_PEER_NAME}" { it == null || it == "localhost" }
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" Long
-            "${SemanticAttributes.HTTP_URL.key}" "http://localhost:$port$urlPath"
+            "${SemanticAttributes.HTTP_HOST}" { it == "localhost" || it == "localhost:${port}" }
+            "${SemanticAttributes.HTTP_TARGET}" urlPath
             "${SemanticAttributes.HTTP_METHOD.key}" "GET"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 200
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
@@ -227,9 +226,11 @@ class SpringWebfluxTest extends AgentInstrumentationSpecification {
           kind SERVER
           hasNoParent()
           attributes {
+            "${SemanticAttributes.NET_PEER_NAME}" { it == null || it == "localhost" }
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" Long
-            "${SemanticAttributes.HTTP_URL.key}" "http://localhost:$port$urlPath"
+            "${SemanticAttributes.HTTP_HOST}" { it == "localhost" || it == "localhost:${port}" }
+            "${SemanticAttributes.HTTP_TARGET}" urlPath
             "${SemanticAttributes.HTTP_METHOD.key}" "GET"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 200
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
@@ -287,9 +288,11 @@ class SpringWebfluxTest extends AgentInstrumentationSpecification {
           hasNoParent()
           status ERROR
           attributes {
+            "${SemanticAttributes.NET_PEER_NAME}" { it == null || it == "localhost" }
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" Long
-            "${SemanticAttributes.HTTP_URL.key}" "http://localhost:$port/notfoundgreet"
+            "${SemanticAttributes.HTTP_HOST}" { it == "localhost" || it == "localhost:${port}" }
+            "${SemanticAttributes.HTTP_TARGET}" "/notfoundgreet"
             "${SemanticAttributes.HTTP_METHOD.key}" "GET"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 404
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
@@ -326,9 +329,11 @@ class SpringWebfluxTest extends AgentInstrumentationSpecification {
           kind SERVER
           hasNoParent()
           attributes {
+            "${SemanticAttributes.NET_PEER_NAME}" { it == null || it == "localhost" }
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" Long
-            "${SemanticAttributes.HTTP_URL.key}" "http://localhost:$port/echo"
+            "${SemanticAttributes.HTTP_HOST}" { it == "localhost" || it == "localhost:${port}" }
+            "${SemanticAttributes.HTTP_TARGET}" "/echo"
             "${SemanticAttributes.HTTP_METHOD.key}" "POST"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 202
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
@@ -370,9 +375,11 @@ class SpringWebfluxTest extends AgentInstrumentationSpecification {
           status ERROR
           hasNoParent()
           attributes {
+            "${SemanticAttributes.NET_PEER_NAME}" { it == null || it == "localhost" }
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" Long
-            "${SemanticAttributes.HTTP_URL.key}" "http://localhost:$port$urlPath"
+            "${SemanticAttributes.HTTP_HOST}" { it == "localhost" || it == "localhost:${port}" }
+            "${SemanticAttributes.HTTP_TARGET}" urlPath
             "${SemanticAttributes.HTTP_METHOD.key}" "GET"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 500
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
@@ -416,9 +423,6 @@ class SpringWebfluxTest extends AgentInstrumentationSpecification {
   }
 
   def "Redirect test"() {
-    setup:
-    String finalUrl = "http://localhost:$port/double-greet"
-
     when:
     def response = client.get("/double-greet-redirect").aggregate().join()
 
@@ -432,9 +436,11 @@ class SpringWebfluxTest extends AgentInstrumentationSpecification {
           kind SERVER
           hasNoParent()
           attributes {
+            "${SemanticAttributes.NET_PEER_NAME}" { it == null || it == "localhost" }
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" Long
-            "${SemanticAttributes.HTTP_URL.key}" "http://localhost:$port/double-greet-redirect"
+            "${SemanticAttributes.HTTP_HOST}" { it == "localhost" || it == "localhost:${port}" }
+            "${SemanticAttributes.HTTP_TARGET}" "/double-greet-redirect"
             "${SemanticAttributes.HTTP_METHOD.key}" "GET"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 307
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
@@ -459,9 +465,11 @@ class SpringWebfluxTest extends AgentInstrumentationSpecification {
           kind SERVER
           hasNoParent()
           attributes {
+            "${SemanticAttributes.NET_PEER_NAME}" { it == null || it == "localhost" }
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" Long
-            "${SemanticAttributes.HTTP_URL.key}" finalUrl
+            "${SemanticAttributes.HTTP_HOST}" { it == "localhost" || it == "localhost:${port}" }
+            "${SemanticAttributes.HTTP_TARGET}" "/double-greet"
             "${SemanticAttributes.HTTP_METHOD.key}" "GET"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 200
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
@@ -486,7 +494,7 @@ class SpringWebfluxTest extends AgentInstrumentationSpecification {
   def "Multiple GETs to delaying route #testName"() {
     setup:
     def requestsCount = 50 // Should be more than 2x CPUs to fish out some bugs
-    def url = "http://localhost:$port$urlPath"
+
     when:
     def responses = (0..requestsCount - 1).collect { client.get(urlPath).aggregate().join() }
 
@@ -501,9 +509,11 @@ class SpringWebfluxTest extends AgentInstrumentationSpecification {
             kind SERVER
             hasNoParent()
             attributes {
+              "${SemanticAttributes.NET_PEER_NAME}" { it == null || it == "localhost" }
               "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
               "${SemanticAttributes.NET_PEER_PORT.key}" Long
-              "${SemanticAttributes.HTTP_URL.key}" url
+              "${SemanticAttributes.HTTP_HOST}" { it == "localhost" || it == "localhost:${port}" }
+              "${SemanticAttributes.HTTP_TARGET}" urlPath
               "${SemanticAttributes.HTTP_METHOD.key}" "GET"
               "${SemanticAttributes.HTTP_STATUS_CODE.key}" 200
               "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"

@@ -14,7 +14,9 @@ import ratpack.server.RatpackServerSpec
 class RatpackHttpServerTest extends AbstractRatpackHttpServerTest implements LibraryTestTrait {
   @Override
   void configure(RatpackServerSpec serverSpec) {
-    RatpackTracing tracing = RatpackTracing.create(openTelemetry)
+    RatpackTracing tracing = RatpackTracing.newBuilder(openTelemetry)
+      .captureHttpHeaders(capturedHttpHeadersForTesting())
+      .build()
     serverSpec.registryOf {
       tracing.configureServerRegistry(it)
     }
@@ -29,8 +31,7 @@ class RatpackHttpServerTest extends AbstractRatpackHttpServerTest implements Lib
   List<AttributeKey<?>> extraAttributes() {
     return [
       SemanticAttributes.HTTP_ROUTE,
-      SemanticAttributes.HTTP_TARGET,
-      SemanticAttributes.NET_TRANSPORT,
+      SemanticAttributes.NET_TRANSPORT
     ]
   }
 }

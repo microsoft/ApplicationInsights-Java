@@ -64,11 +64,6 @@ class SpringWebInstrumentationTest extends HttpClientTest<HttpEntity<String>> im
   }
 
   @Override
-  boolean capturesAiTargetAppId() {
-    false
-  }
-
-  @Override
   Set<AttributeKey<?>> httpAttributes(URI uri) {
     def attributes = super.httpAttributes(uri)
     attributes.remove(SemanticAttributes.HTTP_FLAVOR)

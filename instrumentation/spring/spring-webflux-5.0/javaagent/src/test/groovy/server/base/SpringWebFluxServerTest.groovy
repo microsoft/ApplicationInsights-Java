@@ -5,11 +5,11 @@
 
 package server.base
 
+
 import io.opentelemetry.instrumentation.test.AgentTestTrait
 import io.opentelemetry.instrumentation.test.base.HttpServerTest
 import org.springframework.boot.SpringApplication
 import org.springframework.context.ConfigurableApplicationContext
-import util.SpringWebfluxTestUtil
 
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.NOT_FOUND
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.PATH_PARAM
@@ -32,10 +32,6 @@ abstract class SpringWebFluxServerTest extends HttpServerTest<ConfigurableApplic
   @Override
   void stopServer(ConfigurableApplicationContext ctx) {
     ctx.close()
-  }
-
-  def cleanup() {
-    SpringWebfluxTestUtil.waitForRequestsToComplete()
   }
 
   @Override

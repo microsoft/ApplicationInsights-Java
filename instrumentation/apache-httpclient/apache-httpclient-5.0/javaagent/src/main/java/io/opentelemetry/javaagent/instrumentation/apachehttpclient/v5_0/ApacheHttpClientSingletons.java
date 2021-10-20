@@ -7,16 +7,14 @@ package io.opentelemetry.javaagent.instrumentation.apachehttpclient.v5_0;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
+import io.opentelemetry.instrumentation.api.instrumenter.PeerServiceAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.SpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.SpanStatusExtractor;
-import io.opentelemetry.instrumentation.api.instrumenter.appid.TargetAppIdAttributeExtractor;
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientMetrics;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanStatusExtractor;
-import io.opentelemetry.javaagent.instrumentation.api.instrumenter.PeerServiceAttributesExtractor;
 import org.apache.hc.core5.http.ClassicHttpRequest;
-import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpResponse;
 
 public final class ApacheHttpClientSingletons {
@@ -25,7 +23,7 @@ public final class ApacheHttpClientSingletons {
   private static final Instrumenter<ClassicHttpRequest, HttpResponse> INSTRUMENTER;
 
   static {
-    HttpAttributesExtractor<ClassicHttpRequest, HttpResponse> httpAttributesExtractor =
+    HttpClientAttributesExtractor<ClassicHttpRequest, HttpResponse> httpAttributesExtractor =
         new ApacheHttpClientHttpAttributesExtractor();
     SpanNameExtractor<? super ClassicHttpRequest> spanNameExtractor =
         HttpSpanNameExtractor.create(httpAttributesExtractor);
@@ -41,12 +39,6 @@ public final class ApacheHttpClientSingletons {
             .addAttributesExtractor(httpAttributesExtractor)
             .addAttributesExtractor(netAttributesExtractor)
             .addAttributesExtractor(PeerServiceAttributesExtractor.create(netAttributesExtractor))
-            .addAttributesExtractor(
-                new TargetAppIdAttributeExtractor<>(
-                    (response, headerName) -> {
-                      Header responseHeader = response.getFirstHeader(headerName);
-                      return responseHeader == null ? null : responseHeader.getValue();
-                    }))
             .addRequestMetrics(HttpClientMetrics.get())
             .newClientInstrumenter(new HttpHeaderSetter());
   }

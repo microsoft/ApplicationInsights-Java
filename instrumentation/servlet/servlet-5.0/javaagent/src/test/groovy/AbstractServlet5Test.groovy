@@ -3,22 +3,22 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.instrumentation.test.AgentTestTrait
 import io.opentelemetry.instrumentation.test.asserts.TraceAssert
 import io.opentelemetry.instrumentation.test.base.HttpServerTest
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
 import io.opentelemetry.testing.internal.armeria.common.AggregatedHttpRequest
 import jakarta.servlet.Servlet
 
-import java.util.concurrent.TimeUnit
-
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.AUTH_REQUIRED
+import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.CAPTURE_HEADERS
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.ERROR
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.EXCEPTION
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.INDEXED_CHILD
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.QUERY_PARAM
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.REDIRECT
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.SUCCESS
-import static org.awaitility.Awaitility.await
 
 abstract class AbstractServlet5Test<SERVER, CONTEXT> extends HttpServerTest<SERVER> implements AgentTestTrait {
   @Override
@@ -46,24 +46,7 @@ abstract class AbstractServlet5Test<SERVER, CONTEXT> extends HttpServerTest<SERV
     addServlet(context, REDIRECT.path, servlet)
     addServlet(context, AUTH_REQUIRED.path, servlet)
     addServlet(context, INDEXED_CHILD.path, servlet)
-  }
-
-  def cleanup() {
-    // wait for async request threads to complete
-    await()
-      .atMost(15, TimeUnit.SECONDS)
-      .until({ !isRequestRunning() })
-  }
-
-  static boolean isRequestRunning() {
-    def result = Thread.getAllStackTraces().values().find { stackTrace ->
-      def element = stackTrace.find {
-        return ((it.className == "org.apache.catalina.core.AsyncContextImpl\$RunnableWrapper" && it.methodName == "run")
-          || ((it.className == "org.eclipse.jetty.server.AsyncContextState\$1" && it.methodName == "run")))
-      }
-      element != null
-    }
-    return result != null
+    addServlet(context, CAPTURE_HEADERS.path, servlet)
   }
 
   protected ServerEndpoint lastRequest
@@ -81,6 +64,14 @@ abstract class AbstractServlet5Test<SERVER, CONTEXT> extends HttpServerTest<SERV
 
   boolean errorEndpointUsesSendError() {
     true
+  }
+
+  @Override
+  List<AttributeKey<?>> extraAttributes() {
+    [
+      SemanticAttributes.HTTP_SERVER_NAME,
+      SemanticAttributes.NET_TRANSPORT
+    ]
   }
 
   @Override

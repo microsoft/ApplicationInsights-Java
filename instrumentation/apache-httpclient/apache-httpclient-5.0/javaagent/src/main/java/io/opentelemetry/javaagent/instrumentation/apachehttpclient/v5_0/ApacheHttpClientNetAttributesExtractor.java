@@ -5,27 +5,28 @@
 
 package io.opentelemetry.javaagent.instrumentation.apachehttpclient.v5_0;
 
-import io.opentelemetry.instrumentation.api.instrumenter.net.NetAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.net.NetClientAttributesExtractor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import javax.annotation.Nullable;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.HttpResponse;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 final class ApacheHttpClientNetAttributesExtractor
-    extends NetAttributesExtractor<ClassicHttpRequest, HttpResponse> {
+    extends NetClientAttributesExtractor<ClassicHttpRequest, HttpResponse> {
 
   private static final Logger logger =
       LoggerFactory.getLogger(ApacheHttpClientNetAttributesExtractor.class);
 
   @Override
-  public String transport(ClassicHttpRequest request) {
+  public String transport(ClassicHttpRequest request, @Nullable HttpResponse response) {
     return SemanticAttributes.NetTransportValues.IP_TCP;
   }
 
   @Override
-  public @Nullable String peerName(ClassicHttpRequest request, @Nullable HttpResponse response) {
+  @Nullable
+  public String peerName(ClassicHttpRequest request, @Nullable HttpResponse response) {
     return request.getAuthority().getHostName();
   }
 
@@ -51,7 +52,8 @@ final class ApacheHttpClientNetAttributesExtractor
   }
 
   @Override
-  public @Nullable String peerIp(ClassicHttpRequest request, @Nullable HttpResponse response) {
+  @Nullable
+  public String peerIp(ClassicHttpRequest request, @Nullable HttpResponse response) {
     return null;
   }
 }

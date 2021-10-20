@@ -1,5 +1,6 @@
 plugins {
   id("otel.java-conventions")
+  id("otel.japicmp-conventions")
   id("otel.publish-conventions")
 }
 
@@ -12,6 +13,7 @@ dependencies {
   implementation(project(":instrumentation-api"))
   implementation(project(":javaagent-instrumentation-api"))
   implementation("org.slf4j:slf4j-api")
+  implementation("com.google.code.findbugs:jsr305:3.0.2")
 
   // metrics are unstable, do not expose as api
   implementation("io.opentelemetry:opentelemetry-sdk-metrics")

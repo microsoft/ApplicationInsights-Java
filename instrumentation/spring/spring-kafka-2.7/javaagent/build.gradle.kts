@@ -11,26 +11,25 @@ muzzle {
   }
 }
 
-val versions: Map<String, String> by project
-
 dependencies {
   compileOnly("com.google.auto.value:auto-value-annotations")
   annotationProcessor("com.google.auto.value:auto-value")
 
-  implementation(project(":instrumentation:kafka-clients:kafka-clients-common:javaagent"))
+  compileOnly(project(":instrumentation:kafka-clients:kafka-clients-0.11:bootstrap"))
+  implementation(project(":instrumentation:kafka-clients:kafka-clients-common:library"))
 
   library("org.springframework.kafka:spring-kafka:2.7.0")
 
   testInstrumentation(project(":instrumentation:kafka-clients:kafka-clients-0.11:javaagent"))
 
-  testImplementation("org.testcontainers:kafka:${versions["org.testcontainers"]}")
+  testImplementation("org.testcontainers:kafka")
 
   testLibrary("org.springframework.boot:spring-boot-starter-test:2.5.3")
   testLibrary("org.springframework.boot:spring-boot-starter:2.5.3")
 }
 
 tasks {
-  named<Test>("test") {
+  test {
     usesService(gradle.sharedServices.registrations["testcontainersBuildService"].service)
 
     // TODO run tests both with and without experimental span attributes

@@ -5,64 +5,78 @@
 
 package io.opentelemetry.instrumentation.restlet.v1_0;
 
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
+import static io.opentelemetry.instrumentation.restlet.v1_0.RestletHeadersGetter.getHeaders;
+
+import io.opentelemetry.instrumentation.api.instrumenter.http.CapturedHttpHeaders;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpServerAttributesExtractor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.annotation.Nullable;
+import org.restlet.data.Form;
+import org.restlet.data.Parameter;
 import org.restlet.data.Reference;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
+import org.restlet.util.Series;
 
-final class RestletHttpAttributesExtractor extends HttpAttributesExtractor<Request, Response> {
+final class RestletHttpAttributesExtractor
+    extends HttpServerAttributesExtractor<Request, Response> {
+
+  RestletHttpAttributesExtractor(CapturedHttpHeaders capturedHttpHeaders) {
+    super(capturedHttpHeaders);
+  }
+
   @Override
   protected String method(Request request) {
     return request.getMethod().toString();
   }
 
   @Override
-  protected String url(Request request) {
-    return request.getOriginalRef().toString();
-  }
-
-  @Override
-  protected @Nullable String target(Request request) {
+  @Nullable
+  protected String target(Request request) {
     Reference ref = request.getOriginalRef();
     String path = ref.getPath();
     return ref.hasQuery() ? path + "?" + ref.getQuery() : path;
   }
 
   @Override
-  protected @Nullable String host(Request request) {
+  @Nullable
+  protected String route(Request request) {
     return null;
   }
 
   @Override
-  protected @Nullable String route(Request request) {
-    return null;
-  }
-
-  @Override
-  protected @Nullable String scheme(Request request) {
+  @Nullable
+  protected String scheme(Request request) {
     return request.getOriginalRef().getScheme();
   }
 
   @Override
-  protected @Nullable String userAgent(Request request) {
-    return request.getClientInfo().getAgent();
+  protected List<String> requestHeader(Request request, String name) {
+    Form headers = getHeaders(request);
+    if (headers == null) {
+      return Collections.emptyList();
+    }
+    return parametersToList(headers.subList(name, /* ignoreCase = */ true));
   }
 
   @Override
-  protected @Nullable Long requestContentLength(Request request, @Nullable Response response) {
+  @Nullable
+  protected Long requestContentLength(Request request, @Nullable Response response) {
     return null;
   }
 
   @Override
-  protected @Nullable Long requestContentLengthUncompressed(
-      Request request, @Nullable Response response) {
+  @Nullable
+  protected Long requestContentLengthUncompressed(Request request, @Nullable Response response) {
     return null;
   }
 
   @Override
-  protected @Nullable String flavor(Request request, @Nullable Response response) {
+  @Nullable
+  protected String flavor(Request request) {
     String version = (String) request.getAttributes().get("org.restlet.http.version");
     switch (version) {
       case "HTTP/1.0":
@@ -78,7 +92,8 @@ final class RestletHttpAttributesExtractor extends HttpAttributesExtractor<Reque
   }
 
   @Override
-  protected @Nullable String serverName(Request request, @Nullable Response response) {
+  @Nullable
+  protected String serverName(Request request, @Nullable Response response) {
     return null;
   }
 
@@ -88,12 +103,35 @@ final class RestletHttpAttributesExtractor extends HttpAttributesExtractor<Reque
   }
 
   @Override
-  protected @Nullable Long responseContentLength(Request request, Response response) {
+  @Nullable
+  protected Long responseContentLength(Request request, Response response) {
     return null;
   }
 
   @Override
-  protected @Nullable Long responseContentLengthUncompressed(Request request, Response response) {
+  @Nullable
+  protected Long responseContentLengthUncompressed(Request request, Response response) {
     return null;
+  }
+
+  @Override
+  protected List<String> responseHeader(Request request, Response response, String name) {
+    Form headers = getHeaders(response);
+    if (headers == null) {
+      return Collections.emptyList();
+    }
+    return parametersToList(headers.subList(name, /* ignoreCase = */ true));
+  }
+
+  // minimize memory overhead by not using streams
+  private static List<String> parametersToList(Series<Parameter> headers) {
+    if (headers.isEmpty()) {
+      return Collections.emptyList();
+    }
+    List<String> stringHeaders = new ArrayList<>(headers.size());
+    for (Parameter header : headers) {
+      stringHeaders.add(header.getValue());
+    }
+    return stringHeaders;
   }
 }

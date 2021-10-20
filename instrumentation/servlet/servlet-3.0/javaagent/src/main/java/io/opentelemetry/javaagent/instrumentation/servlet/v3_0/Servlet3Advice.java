@@ -14,10 +14,8 @@ import io.opentelemetry.instrumentation.api.servlet.AppServerBridge;
 import io.opentelemetry.instrumentation.api.servlet.MappingResolver;
 import io.opentelemetry.instrumentation.api.tracer.ServerSpan;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepth;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.instrumentation.servlet.ServletRequestContext;
-import javax.servlet.Filter;
 import javax.servlet.Servlet;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -39,31 +37,21 @@ public class Servlet3Advice {
       @Advice.Local("otelContext") Context context,
       @Advice.Local("otelScope") Scope scope) {
 
-    callDepth = CallDepth.forClass(AppServerBridge.getCallDepthKey());
-    callDepth.getAndIncrement();
-
     if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
       return;
     }
 
+    callDepth = CallDepth.forClass(AppServerBridge.getCallDepthKey());
+    callDepth.getAndIncrement();
+
     HttpServletRequest httpServletRequest = (HttpServletRequest) request;
     HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-
-    boolean servlet = servletOrFilter instanceof Servlet;
-    MappingResolver mappingResolver;
-    if (servlet) {
-      mappingResolver =
-          InstrumentationContext.get(Servlet.class, MappingResolver.class)
-              .get((Servlet) servletOrFilter);
-    } else {
-      mappingResolver =
-          InstrumentationContext.get(Filter.class, MappingResolver.class)
-              .get((Filter) servletOrFilter);
-    }
 
     Context currentContext = Java8BytecodeBridge.currentContext();
     Context attachedContext = helper().getServerContext(httpServletRequest);
     if (attachedContext != null && helper().needsRescoping(currentContext, attachedContext)) {
+      MappingResolver mappingResolver = Servlet3Singletons.getMappingResolver(servletOrFilter);
+      boolean servlet = servletOrFilter instanceof Servlet;
       attachedContext =
           helper().updateContext(attachedContext, httpServletRequest, mappingResolver, servlet);
       scope = attachedContext.makeCurrent();
@@ -77,6 +65,8 @@ public class Servlet3Advice {
       // In case server span was created by app server instrumentations calling updateContext
       // returns a new context that contains servlet context path that is used in other
       // instrumentations for naming server span.
+      MappingResolver mappingResolver = Servlet3Singletons.getMappingResolver(servletOrFilter);
+      boolean servlet = servletOrFilter instanceof Servlet;
       Context updatedContext =
           helper().updateContext(currentContext, httpServletRequest, mappingResolver, servlet);
       if (currentContext != updatedContext) {
@@ -87,7 +77,7 @@ public class Servlet3Advice {
       return;
     }
 
-    requestContext = new ServletRequestContext<>(httpServletRequest, mappingResolver);
+    requestContext = new ServletRequestContext<>(httpServletRequest, servletOrFilter);
 
     if (!helper().shouldStart(currentContext, requestContext)) {
       return;
@@ -98,7 +88,7 @@ public class Servlet3Advice {
       httpServletResponse.setHeader(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
     }
 
-    context = helper().start(currentContext, requestContext, servlet);
+    context = helper().start(currentContext, requestContext);
     scope = context.makeCurrent();
 
     helper().setAsyncListenerResponse(httpServletRequest, (HttpServletResponse) response);

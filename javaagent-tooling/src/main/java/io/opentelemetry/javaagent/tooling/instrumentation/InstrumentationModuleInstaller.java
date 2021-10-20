@@ -12,17 +12,14 @@ import static net.bytebuddy.matcher.ElementMatchers.not;
 
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.tooling.HelperInjector;
 import io.opentelemetry.javaagent.tooling.TransformSafeLogger;
 import io.opentelemetry.javaagent.tooling.Utils;
 import io.opentelemetry.javaagent.tooling.bytebuddy.LoggingFailSafeMatcher;
-import io.opentelemetry.javaagent.tooling.context.FieldBackedProvider;
-import io.opentelemetry.javaagent.tooling.context.InstrumentationContextProvider;
-import io.opentelemetry.javaagent.tooling.context.NoopContextProvider;
-import io.opentelemetry.javaagent.tooling.muzzle.ContextStoreMappings;
+import io.opentelemetry.javaagent.tooling.field.VirtualFieldImplementationInstaller;
+import io.opentelemetry.javaagent.tooling.field.VirtualFieldImplementationInstallerFactory;
 import io.opentelemetry.javaagent.tooling.muzzle.HelperResourceBuilderImpl;
-import io.opentelemetry.javaagent.tooling.muzzle.InstrumentationContextBuilderImpl;
+import io.opentelemetry.javaagent.tooling.muzzle.InstrumentationModuleMuzzle;
 import io.opentelemetry.javaagent.tooling.muzzle.Mismatch;
 import io.opentelemetry.javaagent.tooling.muzzle.ReferenceMatcher;
 import java.lang.instrument.Instrumentation;
@@ -41,12 +38,15 @@ public final class InstrumentationModuleInstaller {
   private static final TransformSafeLogger logger =
       TransformSafeLogger.getLogger(InstrumentationModule.class);
   private static final Logger muzzleLogger = LoggerFactory.getLogger("muzzleMatcher");
-  private final Instrumentation instrumentation;
 
   // Added here instead of AgentInstaller's ignores because it's relatively
   // expensive. https://github.com/DataDog/dd-trace-java/pull/1045
   public static final ElementMatcher.Junction<AnnotationSource> NOT_DECORATOR_MATCHER =
       not(isAnnotatedWith(named("javax.decorator.Decorator")));
+
+  private final Instrumentation instrumentation;
+  private final VirtualFieldImplementationInstallerFactory virtualFieldInstallerFactory =
+      new VirtualFieldImplementationInstallerFactory();
 
   public InstrumentationModuleInstaller(Instrumentation instrumentation) {
     this.instrumentation = instrumentation;
@@ -58,12 +58,9 @@ public final class InstrumentationModuleInstaller {
       logger.debug("Instrumentation {} is disabled", instrumentationModule.instrumentationName());
       return parentAgentBuilder;
     }
-    List<String> helperClassNames = instrumentationModule.getMuzzleHelperClassNames();
+    List<String> helperClassNames =
+        InstrumentationModuleMuzzle.getHelperClassNames(instrumentationModule);
     HelperResourceBuilderImpl helperResourceBuilder = new HelperResourceBuilderImpl();
-    List<String> helperResourceNames = instrumentationModule.helperResourceNames();
-    for (String helperResourceName : helperResourceNames) {
-      helperResourceBuilder.register(helperResourceName);
-    }
     instrumentationModule.registerHelperResources(helperResourceBuilder);
     List<TypeInstrumentation> typeInstrumentations = instrumentationModule.typeInstrumentations();
     if (typeInstrumentations.isEmpty()) {
@@ -86,8 +83,8 @@ public final class InstrumentationModuleInstaller {
             helperResourceBuilder.getResources(),
             Utils.getExtensionsClassLoader(),
             instrumentation);
-    InstrumentationContextProvider contextProvider =
-        createInstrumentationContextProvider(instrumentationModule);
+    VirtualFieldImplementationInstaller contextProvider =
+        virtualFieldInstallerFactory.create(instrumentationModule);
 
     AgentBuilder agentBuilder = parentAgentBuilder;
     for (TypeInstrumentation typeInstrumentation : typeInstrumentations) {
@@ -106,40 +103,16 @@ public final class InstrumentationModuleInstaller {
               .and(muzzleMatcher)
               .transform(ConstantAdjuster.instance())
               .transform(helperInjector);
-      extendableAgentBuilder = contextProvider.instrumentationTransformer(extendableAgentBuilder);
+      extendableAgentBuilder = contextProvider.rewriteVirtualFieldsCalls(extendableAgentBuilder);
       TypeTransformerImpl typeTransformer = new TypeTransformerImpl(extendableAgentBuilder);
       typeInstrumentation.transform(typeTransformer);
       extendableAgentBuilder = typeTransformer.getAgentBuilder();
-      extendableAgentBuilder = contextProvider.additionalInstrumentation(extendableAgentBuilder);
+      extendableAgentBuilder = contextProvider.injectFields(extendableAgentBuilder);
 
       agentBuilder = extendableAgentBuilder;
     }
 
     return agentBuilder;
-  }
-
-  private static InstrumentationContextProvider createInstrumentationContextProvider(
-      InstrumentationModule instrumentationModule) {
-    InstrumentationContextBuilderImpl builder = new InstrumentationContextBuilderImpl();
-    instrumentationModule.registerMuzzleContextStoreClasses(builder);
-    ContextStoreMappings mappings = builder.build();
-    if (!mappings.isEmpty()) {
-      return FieldBackedProviderFactory.get(instrumentationModule.getClass(), mappings);
-    } else {
-      return NoopContextProvider.INSTANCE;
-    }
-  }
-
-  private static class FieldBackedProviderFactory {
-    static {
-      InstrumentationContext.internalSetContextStoreSupplier(
-          (keyClass, contextClass) -> FieldBackedProvider.getContextStore(keyClass, contextClass));
-    }
-
-    static FieldBackedProvider get(
-        Class<?> instrumenterClass, ContextStoreMappings contextStoreMappings) {
-      return new FieldBackedProvider(instrumenterClass, contextStoreMappings);
-    }
   }
 
   /**

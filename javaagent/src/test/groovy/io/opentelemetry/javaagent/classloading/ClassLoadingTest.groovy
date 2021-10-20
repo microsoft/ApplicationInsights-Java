@@ -5,9 +5,9 @@
 
 package io.opentelemetry.javaagent.classloading
 
+import io.opentelemetry.javaagent.ClassToInstrument
+import io.opentelemetry.javaagent.ClassToInstrumentChild
 import io.opentelemetry.javaagent.util.GcUtils
-import io.opentelemetry.test.ClassToInstrument
-import io.opentelemetry.test.ClassToInstrumentChild
 import spock.lang.Specification
 
 import java.lang.ref.WeakReference
@@ -109,8 +109,8 @@ class ClassLoadingTest extends Specification {
 
 
     where:
-    name                                                                    | onTestClasspath
-    "io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext" | true
+    name                                                                 | onTestClasspath
+    "io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge" | true
     // This test case fails on ibm j9.  Perhaps this rule only applies to OpenJdk based jvms?
 //    "io.opentelemetry.javaagent.instrumentation.api.concurrent.State" | false
     resource = name.replace(".", "/") + ".class"

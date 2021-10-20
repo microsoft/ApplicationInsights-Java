@@ -8,7 +8,7 @@ package io.opentelemetry.javaagent.instrumentation.lettuce.v4_0;
 import com.lambdaworks.redis.protocol.RedisCommand;
 import io.opentelemetry.instrumentation.api.instrumenter.db.DbAttributesExtractor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 final class LettuceDbAttributesExtractor
     extends DbAttributesExtractor<RedisCommand<?, ?, ?>, Void> {
@@ -37,7 +37,7 @@ final class LettuceDbAttributesExtractor
 
   @Override
   protected String statement(RedisCommand<?, ?, ?> request) {
-    return request.getType().name();
+    return null;
   }
 
   @Override

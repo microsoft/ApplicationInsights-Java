@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import net.bytebuddy.matcher.ElementMatcher;
 
@@ -116,16 +115,6 @@ public abstract class InstrumentationModule implements Ordered {
     return false;
   }
 
-  /**
-   * Returns a list of resource names to inject into the user's class loader.
-   *
-   * @deprecated use {@link #registerHelperResources(HelperResourceBuilder)} instead.
-   */
-  @Deprecated
-  public List<String> helperResourceNames() {
-    return Collections.emptyList();
-  }
-
   /** Register resource names to inject into the user's class loader. */
   public void registerHelperResources(HelperResourceBuilder helperResourceBuilder) {}
 
@@ -148,49 +137,17 @@ public abstract class InstrumentationModule implements Ordered {
   public abstract List<TypeInstrumentation> typeInstrumentations();
 
   /**
-   * Returns a list of instrumentation helper classes, automatically detected by muzzle during
-   * compilation. Those helpers will be injected into the application classloader.
+   * Returns a list of additional instrumentation helper classes, which are not automatically
+   * detected during compile time.
    *
-   * <p>The actual implementation of this method is generated automatically during compilation by
-   * the {@code io.opentelemetry.instrumentation.javaagent-codegen} Gradle plugin.
+   * <p>If your instrumentation module does not apply and you see warnings about missing classes in
+   * the logs, you may need to override this method and provide fully qualified classes names of
+   * helper classes that your instrumentation uses.
    *
-   * <p><b>This method is generated automatically</b>: if you override it, the muzzle compile plugin
-   * will not generate a new implementation, it will leave the existing one.
+   * <p>These helper classes will be injected into the application classloader after automatically
+   * detected ones.
    */
-  public List<String> getMuzzleHelperClassNames() {
+  public List<String> getAdditionalHelperClassNames() {
     return Collections.emptyList();
-  }
-
-  /**
-   * Returns a map of {@code class-name to context-class-name}. Keys (and their subclasses) will be
-   * associated with a context class stored in the value.
-   *
-   * <p>The actual implementation of this method is generated automatically during compilation by
-   * the {@code io.opentelemetry.instrumentation.javaagent-codegen} Gradle plugin.
-   *
-   * <p><b>This method is generated automatically</b>: if you override it, the muzzle compile plugin
-   * will not generate a new implementation, it will leave the existing one.
-   *
-   * @deprecated Use {@link #registerMuzzleContextStoreClasses(InstrumentationContextBuilder)}
-   *     instead.
-   */
-  @Deprecated
-  public Map<String, String> getMuzzleContextStoreClasses() {
-    return Collections.emptyMap();
-  }
-
-  /**
-   * Builds the associations between instrumented library classes and instrumentation context
-   * classes. Keys (and their subclasses) will be associated with a context class stored in the
-   * value.
-   *
-   * <p>The actual implementation of this method is generated automatically during compilation by
-   * the {@code io.opentelemetry.instrumentation.javaagent-codegen} Gradle plugin.
-   *
-   * <p><b>This method is generated automatically</b>: if you override it, the muzzle compile plugin
-   * will not generate a new implementation, it will leave the existing one.
-   */
-  public void registerMuzzleContextStoreClasses(InstrumentationContextBuilder builder) {
-    getMuzzleContextStoreClasses().forEach(builder::register);
   }
 }

@@ -21,7 +21,7 @@ import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 /**
  * Classloader used to run the core agent.
@@ -145,11 +145,15 @@ public class AgentClassLoader extends URLClassLoader {
       }
 
       definePackageIfNeeded(name);
-      return defineClass(name, bytes, 0, bytes.length, codeSource);
+      return defineClass(name, bytes);
     }
 
     // find class from agent initializer jar
     return super.findClass(name);
+  }
+
+  public Class<?> defineClass(String name, byte[] bytes) {
+    return defineClass(name, bytes, 0, bytes.length, codeSource);
   }
 
   private byte[] getJarEntryBytes(JarEntry jarEntry) throws IOException {

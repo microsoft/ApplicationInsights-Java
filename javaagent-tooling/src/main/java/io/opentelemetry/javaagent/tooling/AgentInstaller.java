@@ -16,21 +16,21 @@ import io.opentelemetry.context.ContextStorage;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.bootstrap.AgentClassLoader;
-import io.opentelemetry.javaagent.extension.AgentExtension;
+import io.opentelemetry.javaagent.bootstrap.BootstrapPackagePrefixesHolder;
+import io.opentelemetry.javaagent.bootstrap.ClassFileTransformerHolder;
 import io.opentelemetry.javaagent.extension.AgentListener;
 import io.opentelemetry.javaagent.extension.bootstrap.BootstrapPackagesConfigurer;
 import io.opentelemetry.javaagent.extension.ignore.IgnoredTypesConfigurer;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
-import io.opentelemetry.javaagent.instrumentation.api.internal.BootstrapPackagePrefixesHolder;
 import io.opentelemetry.javaagent.instrumentation.api.internal.InstrumentedTaskClasses;
 import io.opentelemetry.javaagent.tooling.asyncannotationsupport.WeakRefAsyncOperationEndStrategies;
 import io.opentelemetry.javaagent.tooling.bootstrap.BootstrapPackagesBuilderImpl;
 import io.opentelemetry.javaagent.tooling.config.ConfigInitializer;
-import io.opentelemetry.javaagent.tooling.context.FieldBackedProvider;
 import io.opentelemetry.javaagent.tooling.ignore.IgnoredClassLoadersMatcher;
 import io.opentelemetry.javaagent.tooling.ignore.IgnoredTypesBuilderImpl;
 import io.opentelemetry.javaagent.tooling.ignore.IgnoredTypesMatcher;
 import io.opentelemetry.javaagent.tooling.muzzle.AgentTooling;
+import io.opentelemetry.javaagent.tooling.util.Trie;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
@@ -42,13 +42,13 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import javax.annotation.Nullable;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.ResettableClassFileTransformer;
 import net.bytebuddy.description.type.TypeDefinition;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.utility.JavaModule;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,6 +117,7 @@ public class AgentInstaller {
 
     logVersionInfo();
     if (Config.get().getBoolean(JAVAAGENT_ENABLED_CONFIG, true)) {
+      setupUnsafe(inst);
       List<AgentListener> agentListeners = loadOrdered(AgentListener.class);
       installBytebuddyAgent(inst, agentListeners);
     } else {
@@ -142,8 +143,6 @@ public class AgentInstaller {
 
     runBeforeAgentListeners(agentListeners, config);
 
-    FieldBackedProvider.resetContextMatchers();
-
     AgentBuilder agentBuilder =
         new AgentBuilder.Default()
             .disableClassFormatChanges()
@@ -153,9 +152,6 @@ public class AgentInstaller {
             .with(AgentTooling.poolStrategy())
             .with(new ClassLoadListener())
             .with(AgentTooling.locationStrategy(Utils.getBootstrapProxy()));
-    // FIXME: we cannot enable it yet due to BB/JVM bug, see
-    // https://github.com/raphw/byte-buddy/issues/558
-    // .with(AgentBuilder.LambdaInstrumentationStrategy.ENABLED)
 
     agentBuilder = configureIgnoredTypes(config, agentBuilder);
 
@@ -188,8 +184,17 @@ public class AgentInstaller {
     logger.debug("Installed {} extension(s)", numberOfLoadedExtensions);
 
     ResettableClassFileTransformer resettableClassFileTransformer = agentBuilder.installOn(inst);
+    ClassFileTransformerHolder.setClassFileTransformer(resettableClassFileTransformer);
     runAfterAgentListeners(agentListeners, config);
     return resettableClassFileTransformer;
+  }
+
+  private static void setupUnsafe(Instrumentation inst) {
+    try {
+      UnsafeInitializer.initialize(inst, AgentInstaller.class.getClassLoader());
+    } catch (UnsupportedClassVersionError exception) {
+      // ignore
+    }
   }
 
   private static void setBootstrapPackages(Config config) {
@@ -213,7 +218,8 @@ public class AgentInstaller {
       configurer.configure(config, builder);
     }
 
-    InstrumentedTaskClasses.setIgnoredTaskClasses(builder.buildIgnoredTasksTrie());
+    Trie<Boolean> ignoredTasksTrie = builder.buildIgnoredTasksTrie();
+    InstrumentedTaskClasses.setIgnoredTaskClassesPredicate(ignoredTasksTrie::contains);
 
     return agentBuilder
         .ignore(any(), new IgnoredClassLoadersMatcher(builder.buildIgnoredClassLoadersTrie()))

@@ -5,6 +5,7 @@
 
 package server
 
+
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.instrumentation.test.AgentTestTrait
 import io.opentelemetry.instrumentation.test.asserts.TraceAssert
@@ -17,6 +18,7 @@ import play.server.Server
 import java.util.function.Supplier
 
 import static io.opentelemetry.api.trace.SpanKind.INTERNAL
+import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.CAPTURE_HEADERS
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.ERROR
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.EXCEPTION
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.INDEXED_CHILD
@@ -51,6 +53,12 @@ class PlayServerTest extends HttpServerTest<Server> implements AgentTestTrait {
           Results.found(REDIRECT.getBody())
         }
       } as Supplier)
+        .GET(CAPTURE_HEADERS.getPath()).routeTo({
+        controller(CAPTURE_HEADERS) {
+          Results.status(CAPTURE_HEADERS.getStatus(), CAPTURE_HEADERS.getBody())
+            .withHeader("X-Test-Response", request().getHeader("X-Test-Request"))
+        }
+      } as Supplier)
         .GET(ERROR.getPath()).routeTo({
         controller(ERROR) {
           Results.status(ERROR.getStatus(), ERROR.getBody())
@@ -78,6 +86,12 @@ class PlayServerTest extends HttpServerTest<Server> implements AgentTestTrait {
   @Override
   boolean testConcurrency() {
     return true
+  }
+
+  @Override
+  boolean verifyServerSpanEndTime() {
+    // server spans are ended inside of the controller spans
+    return false
   }
 
   @Override

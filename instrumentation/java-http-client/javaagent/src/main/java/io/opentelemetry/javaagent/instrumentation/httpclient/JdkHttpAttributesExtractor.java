@@ -5,14 +5,16 @@
 
 package io.opentelemetry.javaagent.instrumentation.httpclient;
 
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import java.util.List;
+import javax.annotation.Nullable;
 
-class JdkHttpAttributesExtractor extends HttpAttributesExtractor<HttpRequest, HttpResponse<?>> {
+class JdkHttpAttributesExtractor
+    extends HttpClientAttributesExtractor<HttpRequest, HttpResponse<?>> {
 
   @Override
   protected String method(HttpRequest httpRequest) {
@@ -25,33 +27,20 @@ class JdkHttpAttributesExtractor extends HttpAttributesExtractor<HttpRequest, Ht
   }
 
   @Override
-  protected @Nullable String target(HttpRequest httpRequest) {
-    return null;
+  protected List<String> requestHeader(HttpRequest httpRequest, String name) {
+    return httpRequest.headers().allValues(name);
   }
 
   @Override
-  protected @Nullable String host(HttpRequest httpRequest) {
-    return httpRequest.uri().getHost();
-  }
-
-  @Override
-  protected @Nullable String scheme(HttpRequest httpRequest) {
-    return httpRequest.uri().getScheme();
-  }
-
-  @Override
-  protected @Nullable String userAgent(HttpRequest httpRequest) {
-    return httpRequest.headers().firstValue("User-Agent").orElse(null);
-  }
-
-  @Override
-  protected @Nullable Long requestContentLength(
+  @Nullable
+  protected Long requestContentLength(
       HttpRequest httpRequest, @Nullable HttpResponse<?> httpResponse) {
     return null;
   }
 
   @Override
-  protected @Nullable Long requestContentLengthUncompressed(
+  @Nullable
+  protected Long requestContentLengthUncompressed(
       HttpRequest httpRequest, @Nullable HttpResponse<?> httpResponse) {
     return null;
   }
@@ -70,25 +59,21 @@ class JdkHttpAttributesExtractor extends HttpAttributesExtractor<HttpRequest, Ht
   }
 
   @Override
-  protected @Nullable Long responseContentLength(
+  @Nullable
+  protected Long responseContentLength(HttpRequest httpRequest, HttpResponse<?> httpResponse) {
+    return null;
+  }
+
+  @Override
+  @Nullable
+  protected Long responseContentLengthUncompressed(
       HttpRequest httpRequest, HttpResponse<?> httpResponse) {
     return null;
   }
 
   @Override
-  protected @Nullable Long responseContentLengthUncompressed(
-      HttpRequest httpRequest, HttpResponse<?> httpResponse) {
-    return null;
-  }
-
-  @Override
-  protected @Nullable String serverName(
-      HttpRequest httpRequest, @Nullable HttpResponse<?> httpResponse) {
-    return null;
-  }
-
-  @Override
-  protected @Nullable String route(HttpRequest httpRequest) {
-    return null;
+  protected List<String> responseHeader(
+      HttpRequest httpRequest, HttpResponse<?> httpResponse, String name) {
+    return httpResponse.headers().allValues(name);
   }
 }

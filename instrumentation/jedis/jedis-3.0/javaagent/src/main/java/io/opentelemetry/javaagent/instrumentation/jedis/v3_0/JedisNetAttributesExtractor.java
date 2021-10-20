@@ -5,17 +5,18 @@
 
 package io.opentelemetry.javaagent.instrumentation.jedis.v3_0;
 
-import io.opentelemetry.instrumentation.api.instrumenter.net.InetSocketAddressNetAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.net.InetSocketAddressNetClientAttributesExtractor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 final class JedisNetAttributesExtractor
-    extends InetSocketAddressNetAttributesExtractor<JedisRequest, Void> {
+    extends InetSocketAddressNetClientAttributesExtractor<JedisRequest, Void> {
 
   @Override
-  public @Nullable InetSocketAddress getAddress(JedisRequest jedisRequest, @Nullable Void unused) {
+  @Nullable
+  public InetSocketAddress getAddress(JedisRequest jedisRequest, @Nullable Void unused) {
     Socket socket = jedisRequest.getConnection().getSocket();
     if (socket != null && socket.getRemoteSocketAddress() instanceof InetSocketAddress) {
       return (InetSocketAddress) socket.getRemoteSocketAddress();
@@ -24,7 +25,7 @@ final class JedisNetAttributesExtractor
   }
 
   @Override
-  public String transport(JedisRequest jedisRequest) {
+  public String transport(JedisRequest jedisRequest, @Nullable Void unused) {
     return SemanticAttributes.NetTransportValues.IP_TCP;
   }
 }

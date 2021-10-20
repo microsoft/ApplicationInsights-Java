@@ -14,10 +14,9 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
@@ -60,17 +59,19 @@ public class ChannelFutureListenerInstrumentation implements TypeInstrumentation
         return null;
       }
 
-      ContextStore<Channel, ChannelTraceContext> contextStore =
-          InstrumentationContext.get(Channel.class, ChannelTraceContext.class);
+      VirtualField<Channel, NettyConnectionContext> virtualField =
+          VirtualField.find(Channel.class, NettyConnectionContext.class);
 
-      ChannelTraceContext channelTraceContext =
-          contextStore.putIfAbsent(future.getChannel(), ChannelTraceContext.FACTORY);
-      Context parentContext = channelTraceContext.getConnectionContext();
+      NettyConnectionContext connectionContext = virtualField.get(future.getChannel());
+      if (connectionContext == null) {
+        return null;
+      }
+      Context parentContext = connectionContext.get();
       if (parentContext == null) {
         return null;
       }
       Scope parentScope = parentContext.makeCurrent();
-      if (channelTraceContext.createConnectionSpan()) {
+      if (connectionContext.createConnectionSpan()) {
         tracer().connectionFailure(parentContext, future.getChannel(), cause);
       }
       return parentScope;

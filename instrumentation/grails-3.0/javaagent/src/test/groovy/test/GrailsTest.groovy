@@ -8,16 +8,19 @@ package test
 import grails.boot.GrailsApp
 import grails.boot.config.GrailsAutoConfiguration
 import groovy.transform.CompileStatic
+import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.instrumentation.test.AgentTestTrait
 import io.opentelemetry.instrumentation.test.asserts.TraceAssert
 import io.opentelemetry.instrumentation.test.base.HttpServerTest
 import io.opentelemetry.sdk.trace.data.SpanData
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.web.ServerProperties
 import org.springframework.context.ConfigurableApplicationContext
 
 import static io.opentelemetry.api.trace.SpanKind.INTERNAL
+import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.CAPTURE_HEADERS
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.ERROR
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.EXCEPTION
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.NOT_FOUND
@@ -50,6 +53,15 @@ class GrailsTest extends HttpServerTest<ConfigurableApplicationContext> implemen
     Collection<Class> classes() {
       return Arrays.asList(TestController, ErrorController, UrlMappings)
     }
+  }
+
+  @Override
+  List<AttributeKey<?>> extraAttributes() {
+    [
+      SemanticAttributes.HTTP_SERVER_NAME,
+      SemanticAttributes.NET_PEER_NAME,
+      SemanticAttributes.NET_TRANSPORT
+    ]
   }
 
   @Override
@@ -146,6 +158,8 @@ class GrailsTest extends HttpServerTest<ConfigurableApplicationContext> implemen
         name "TestController.query"
       } else if (endpoint == PATH_PARAM) {
         name "TestController.path"
+      } else if (endpoint == CAPTURE_HEADERS) {
+        name "TestController.captureHeaders"
       } else if (endpoint == NOT_FOUND) {
         name "ResourceHttpRequestHandler.handleRequest"
       } else {

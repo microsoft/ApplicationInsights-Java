@@ -13,10 +13,9 @@ import static net.bytebuddy.matcher.ElementMatchers.returns;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -51,15 +50,16 @@ public class NettyChannelInstrumentation implements TypeInstrumentation {
     public static void onEnter(@Advice.This Channel channel) {
       Context context = Java8BytecodeBridge.currentContext();
       Span span = Java8BytecodeBridge.spanFromContext(context);
-      if (span.getSpanContext().isValid()) {
-        ContextStore<Channel, ChannelTraceContext> contextStore =
-            InstrumentationContext.get(Channel.class, ChannelTraceContext.class);
-
-        if (contextStore.putIfAbsent(channel, ChannelTraceContext.FACTORY).getConnectionContext()
-            == null) {
-          contextStore.get(channel).setConnectionContext(context);
-        }
+      if (!span.getSpanContext().isValid()) {
+        return;
       }
+
+      VirtualField<Channel, NettyConnectionContext> virtualField =
+          VirtualField.find(Channel.class, NettyConnectionContext.class);
+      if (virtualField.get(channel) != null) {
+        return;
+      }
+      virtualField.set(channel, new NettyConnectionContext(context));
     }
   }
 }

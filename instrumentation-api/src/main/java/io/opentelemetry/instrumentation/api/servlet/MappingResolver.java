@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nullable;
 
 /**
  * Helper class for finding a mapping that matches current request from a collection of mappings.
@@ -55,7 +56,8 @@ public final class MappingResolver {
   }
 
   /** Find mapping for requested path. */
-  public String resolve(String servletPath, String pathInfo) {
+  @Nullable
+  public String resolve(@Nullable String servletPath, @Nullable String pathInfo) {
     if (servletPath == null) {
       return null;
     }
@@ -136,5 +138,16 @@ public final class MappingResolver {
     public String getMapping() {
       return mapping;
     }
+  }
+
+  /**
+   * Factory interface for creating {@link MappingResolver} instances. The main reason this class is
+   * here is that we need to ensure that the class used for {@code VirtualField} lookup is always
+   * the same. If we would use an injected class it could be different in different class loaders.
+   */
+  public interface Factory {
+
+    @Nullable
+    MappingResolver get();
   }
 }

@@ -16,9 +16,9 @@ import com.microsoft.applicationinsights.extensibility.context.OperationContext;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
@@ -58,10 +58,9 @@ public class TelemetryContextInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodExit
     public static void methodExit(
         @Advice.This TelemetryContext telemetryContext, @Advice.Return UserContext userContext) {
-      Span span =
-          InstrumentationContext.get(TelemetryContext.class, Span.class).get(telemetryContext);
+      Span span = VirtualField.find(TelemetryContext.class, Span.class).get(telemetryContext);
       if (span != null) {
-        InstrumentationContext.get(UserContext.class, Span.class).put(userContext, span);
+        VirtualField.find(UserContext.class, Span.class).set(userContext, span);
       }
     }
   }
@@ -71,10 +70,9 @@ public class TelemetryContextInstrumentation implements TypeInstrumentation {
     public static void methodExit(
         @Advice.This TelemetryContext telemetryContext,
         @Advice.Return OperationContext operationContext) {
-      Span span =
-          InstrumentationContext.get(TelemetryContext.class, Span.class).get(telemetryContext);
+      Span span = VirtualField.find(TelemetryContext.class, Span.class).get(telemetryContext);
       if (span != null) {
-        InstrumentationContext.get(OperationContext.class, Span.class).put(operationContext, span);
+        VirtualField.find(OperationContext.class, Span.class).set(operationContext, span);
       }
     }
   }
@@ -83,8 +81,7 @@ public class TelemetryContextInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter
     public static void methodEnter(
         @Advice.This TelemetryContext telemetryContext, @Advice.Origin("#m") String methodName) {
-      Span span =
-          InstrumentationContext.get(TelemetryContext.class, Span.class).get(telemetryContext);
+      Span span = VirtualField.find(TelemetryContext.class, Span.class).get(telemetryContext);
       if (span != null) {
         LogOnce.logOnce(
             "ThreadContext.getRequestTelemetryContext().getRequestTelemetry().getContext()."

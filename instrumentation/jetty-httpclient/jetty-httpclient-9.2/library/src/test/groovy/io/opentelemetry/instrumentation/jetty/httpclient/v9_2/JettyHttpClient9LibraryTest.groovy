@@ -12,20 +12,14 @@ import org.eclipse.jetty.util.ssl.SslContextFactory
 
 class JettyHttpClient9LibraryTest extends AbstractJettyClient9Test implements LibraryTestTrait {
 
-  boolean capturesAiTargetAppId() {
-    false
-  }
-
   @Override
   HttpClient createStandardClient() {
-    JettyClientTracingBuilder jettyClientTracingBuilder = new JettyClientTracingBuilder(getOpenTelemetry())
-    return jettyClientTracingBuilder.build().getHttpClient()
+    return JettyClientTracing.create(getOpenTelemetry()).getHttpClient()
   }
 
   @Override
   HttpClient createHttpsClient(SslContextFactory sslContextFactory) {
-    JettyClientTracingBuilder jettyClientTracingBuilder = new JettyClientTracingBuilder(getOpenTelemetry())
-    return jettyClientTracingBuilder
+    return JettyClientTracing.newBuilder(getOpenTelemetry())
       .setSslContextFactory(sslContextFactory)
       .build()
       .getHttpClient()

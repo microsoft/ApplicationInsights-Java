@@ -5,17 +5,21 @@
 
 package io.opentelemetry.javaagent.instrumentation.jaxrsclient.v2_0;
 
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
+import static java.util.Collections.emptyList;
+
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.List;
+import javax.annotation.Nullable;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientResponseContext;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 final class JaxRsClientHttpAttributesExtractor
-    extends HttpAttributesExtractor<ClientRequestContext, ClientResponseContext> {
+    extends HttpClientAttributesExtractor<ClientRequestContext, ClientResponseContext> {
 
   @Override
-  protected @Nullable String method(ClientRequestContext httpRequest) {
+  @Nullable
+  protected String method(ClientRequestContext httpRequest) {
     return httpRequest.getMethod();
   }
 
@@ -25,48 +29,20 @@ final class JaxRsClientHttpAttributesExtractor
   }
 
   @Override
-  protected @Nullable String target(ClientRequestContext httpRequest) {
-    StringBuilder result = new StringBuilder();
-    String path = httpRequest.getUri().getPath();
-    if (path != null) {
-      result.append(path);
-    }
-    String query = httpRequest.getUri().getQuery();
-    if (query != null) {
-      result.append('?');
-      result.append(query);
-    }
-    String fragment = httpRequest.getUri().getFragment();
-    if (fragment != null) {
-      result.append('#');
-      result.append(fragment);
-    }
-    return result.length() > 0 ? result.toString() : null;
+  protected List<String> requestHeader(ClientRequestContext httpRequest, String name) {
+    return httpRequest.getStringHeaders().getOrDefault(name, emptyList());
   }
 
   @Override
-  protected @Nullable String host(ClientRequestContext httpRequest) {
-    return httpRequest.getUri().getHost();
-  }
-
-  @Override
-  protected @Nullable String scheme(ClientRequestContext httpRequest) {
-    return httpRequest.getUri().getScheme();
-  }
-
-  @Override
-  protected @Nullable String userAgent(ClientRequestContext httpRequest) {
-    return httpRequest.getHeaderString("User-Agent");
-  }
-
-  @Override
-  protected @Nullable Long requestContentLength(
+  @Nullable
+  protected Long requestContentLength(
       ClientRequestContext httpRequest, @Nullable ClientResponseContext httpResponse) {
     return null;
   }
 
   @Override
-  protected @Nullable Long requestContentLengthUncompressed(
+  @Nullable
+  protected Long requestContentLengthUncompressed(
       ClientRequestContext httpRequest, @Nullable ClientResponseContext httpResponse) {
     return null;
   }
@@ -78,32 +54,29 @@ final class JaxRsClientHttpAttributesExtractor
   }
 
   @Override
-  protected @Nullable Integer statusCode(
+  protected Integer statusCode(
       ClientRequestContext httpRequest, ClientResponseContext httpResponse) {
     return httpResponse.getStatus();
   }
 
   @Override
-  protected @Nullable Long responseContentLength(
+  @Nullable
+  protected Long responseContentLength(
       ClientRequestContext httpRequest, ClientResponseContext httpResponse) {
     int length = httpResponse.getLength();
     return length != -1 ? (long) length : null;
   }
 
   @Override
-  protected @Nullable Long responseContentLengthUncompressed(
+  @Nullable
+  protected Long responseContentLengthUncompressed(
       ClientRequestContext httpRequest, ClientResponseContext httpResponse) {
     return null;
   }
 
   @Override
-  protected @Nullable String route(ClientRequestContext httpRequest) {
-    return null;
-  }
-
-  @Override
-  protected @Nullable String serverName(
-      ClientRequestContext httpRequest, @Nullable ClientResponseContext httpResponse) {
-    return null;
+  protected List<String> responseHeader(
+      ClientRequestContext httpRequest, ClientResponseContext httpResponse, String name) {
+    return httpResponse.getHeaders().getOrDefault(name, emptyList());
   }
 }

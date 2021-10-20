@@ -14,9 +14,9 @@ import static net.bytebuddy.matcher.ElementMatchers.takesNoArguments;
 
 import com.microsoft.applicationinsights.extensibility.context.OperationContext;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
@@ -42,8 +42,7 @@ public class OperationContextInstrumentation implements TypeInstrumentation {
     public static void methodExit(
         @Advice.This OperationContext operationContext,
         @Advice.Return(readOnly = false) String id) {
-      Span span =
-          InstrumentationContext.get(OperationContext.class, Span.class).get(operationContext);
+      Span span = VirtualField.find(OperationContext.class, Span.class).get(operationContext);
       if (span != null) {
         id = span.getSpanContext().getTraceId();
       }
@@ -54,8 +53,7 @@ public class OperationContextInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter
     public static void methodEnter(
         @Advice.This OperationContext operationContext, @Advice.Origin("#m") String methodName) {
-      Span span =
-          InstrumentationContext.get(OperationContext.class, Span.class).get(operationContext);
+      Span span = VirtualField.find(OperationContext.class, Span.class).get(operationContext);
       if (span != null) {
         LogOnce.logOnce(
             "ThreadContext.getRequestTelemetryContext().getRequestTelemetry().getContext().getOperation()."

@@ -24,11 +24,7 @@ dependencies {
 }
 
 tasks {
-  named<Test>("test") {
+  test {
     usesService(gradle.sharedServices.registrations["testcontainersBuildService"].getService())
   }
-}
-
-tasks.withType<Test>().configureEach {
-  jvmArgs("-Dio.opentelemetry.javaagent.shaded.io.opentelemetry.context.enableStrictContext=false")
 }

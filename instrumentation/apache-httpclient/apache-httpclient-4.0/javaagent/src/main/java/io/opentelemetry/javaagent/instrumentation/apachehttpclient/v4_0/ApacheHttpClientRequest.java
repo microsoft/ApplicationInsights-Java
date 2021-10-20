@@ -8,12 +8,15 @@ package io.opentelemetry.javaagent.instrumentation.apachehttpclient.v4_0;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.annotation.Nullable;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,9 +43,20 @@ public final class ApacheHttpClientRequest {
     delegate = httpRequest;
   }
 
-  public String getHeader(String name) {
-    Header header = delegate.getFirstHeader(name);
-    return header != null ? header.getValue() : null;
+  public List<String> getHeader(String name) {
+    return headersToList(delegate.getHeaders(name));
+  }
+
+  // minimize memory overhead by not using streams
+  static List<String> headersToList(Header[] headers) {
+    if (headers.length == 0) {
+      return Collections.emptyList();
+    }
+    List<String> headersList = new ArrayList<>(headers.length);
+    for (int i = 0; i < headers.length; ++i) {
+      headersList.set(i, headers[i].getValue());
+    }
+    return headersList;
   }
 
   public void setHeader(String name, String value) {
@@ -55,25 +69,6 @@ public final class ApacheHttpClientRequest {
 
   public String getUrl() {
     return uri != null ? uri.toString() : null;
-  }
-
-  public String getTarget() {
-    if (uri == null) {
-      return null;
-    }
-    String pathString = uri.getPath();
-    String queryString = uri.getQuery();
-    if (pathString != null && queryString != null) {
-      return pathString + "?" + queryString;
-    } else if (queryString != null) {
-      return "?" + queryString;
-    } else {
-      return pathString;
-    }
-  }
-
-  public String getScheme() {
-    return uri != null ? uri.getScheme() : null;
   }
 
   public String getFlavor() {

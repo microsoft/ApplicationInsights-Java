@@ -7,8 +7,8 @@ package io.opentelemetry.javaagent.instrumentation.api.concurrent;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
+import javax.annotation.Nullable;
 
 /** Advice helper methods for concurrent task (e.g. {@link Runnable}) instrumentations. */
 public final class TaskAdviceHelper {
@@ -19,8 +19,8 @@ public final class TaskAdviceHelper {
    */
   @Nullable
   public static <T> Scope makePropagatedContextCurrent(
-      ContextStore<T, PropagatedContext> contextStore, T task) {
-    PropagatedContext propagatedContext = contextStore.get(task);
+      VirtualField<T, PropagatedContext> virtualField, T task) {
+    PropagatedContext propagatedContext = virtualField.get(task);
     if (propagatedContext != null) {
       Context context = propagatedContext.getAndClear();
       if (context != null) {

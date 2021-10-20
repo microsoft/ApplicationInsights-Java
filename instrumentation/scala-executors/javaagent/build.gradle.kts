@@ -44,11 +44,7 @@ tasks {
     classpath = classpath.plus(files(sourceSets["slickTest"].scala.classesDirectory))
   }
 
-  named<Test>("test") {
+  test {
     dependsOn(slickTest)
   }
-}
-
-tasks.withType<Test>().configureEach {
-  jvmArgs("-Dio.opentelemetry.javaagent.shaded.io.opentelemetry.context.enableStrictContext=false")
 }

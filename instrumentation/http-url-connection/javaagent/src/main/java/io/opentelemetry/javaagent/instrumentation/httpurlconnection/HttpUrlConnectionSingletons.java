@@ -9,11 +9,10 @@ import static io.opentelemetry.javaagent.instrumentation.httpurlconnection.Heade
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
+import io.opentelemetry.instrumentation.api.instrumenter.PeerServiceAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.SpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanNameExtractor;
-import io.opentelemetry.javaagent.instrumentation.api.instrumenter.PeerServiceAttributesExtractor;
 import java.net.HttpURLConnection;
-import java.net.URLConnection;
 
 public class HttpUrlConnectionSingletons {
 
@@ -33,8 +32,6 @@ public class HttpUrlConnectionSingletons {
             .addAttributesExtractor(httpAttributesExtractor)
             .addAttributesExtractor(netAttributesExtractor)
             .addAttributesExtractor(PeerServiceAttributesExtractor.create(netAttributesExtractor))
-            .addAttributesExtractor(
-                new TargetAppIdAttributeExtractor<>(URLConnection::getHeaderField))
             .newClientInstrumenter(SETTER);
   }
 

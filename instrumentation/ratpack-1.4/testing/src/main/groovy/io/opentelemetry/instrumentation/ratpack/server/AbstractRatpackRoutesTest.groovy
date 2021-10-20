@@ -102,17 +102,27 @@ abstract class AbstractRatpackRoutesTest extends InstrumentationSpecification {
           kind SERVER
           hasNoParent()
           attributes {
+            if (extraAttributes.contains(SemanticAttributes.NET_TRANSPORT)) {
+              "${SemanticAttributes.NET_TRANSPORT}" IP_TCP
+            }
+            // net.peer.name resolves to "127.0.0.1" on windows which is same as net.peer.ip so then not captured
+            "${SemanticAttributes.NET_PEER_NAME.key}" { it == null || it == "localhost" }
             "${SemanticAttributes.NET_PEER_IP.key}" { it == null || it == "127.0.0.1" }
             "${SemanticAttributes.NET_PEER_PORT.key}" Long
-            "${SemanticAttributes.HTTP_URL.key}" "http://localhost:${app.bindPort}/${path}"
             "${SemanticAttributes.HTTP_METHOD.key}" "GET"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 200
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
             "${SemanticAttributes.HTTP_USER_AGENT.key}" String
 
-            if (extraAttributes.contains(SemanticAttributes.HTTP_HOST)) {
+            if (extraAttributes.contains(SemanticAttributes.HTTP_URL)) {
+              "${SemanticAttributes.HTTP_URL.key}" "http://localhost:${app.bindPort}/${path}"
+            } else {
+              // TODO netty does not set http.scheme - refactor HTTP server tests so that it's possible to specify extracted attributes, like in HTTP client tests
+              "${SemanticAttributes.HTTP_SCHEME}" { it == "http" || it == null }
               "${SemanticAttributes.HTTP_HOST}" "localhost:${app.bindPort}"
+              "${SemanticAttributes.HTTP_TARGET}" "/$path"
             }
+
             if (extraAttributes.contains(SemanticAttributes.HTTP_REQUEST_CONTENT_LENGTH)) {
               "${SemanticAttributes.HTTP_REQUEST_CONTENT_LENGTH}" Long
             }
@@ -124,20 +134,8 @@ abstract class AbstractRatpackRoutesTest extends InstrumentationSpecification {
               // currently reports '/*' which is a fallback route.
               "${SemanticAttributes.HTTP_ROUTE}" String
             }
-            if (extraAttributes.contains(SemanticAttributes.HTTP_SCHEME)) {
-              "${SemanticAttributes.HTTP_SCHEME}" "http"
-            }
             if (extraAttributes.contains(SemanticAttributes.HTTP_SERVER_NAME)) {
               "${SemanticAttributes.HTTP_SERVER_NAME}" String
-            }
-            if (extraAttributes.contains(SemanticAttributes.HTTP_TARGET)) {
-              "${SemanticAttributes.HTTP_TARGET}" "/$path"
-            }
-            if (extraAttributes.contains(SemanticAttributes.NET_PEER_NAME)) {
-              "${SemanticAttributes.NET_PEER_NAME}" "localhost"
-            }
-            if (extraAttributes.contains(SemanticAttributes.NET_TRANSPORT)) {
-              "${SemanticAttributes.NET_TRANSPORT}" IP_TCP
             }
           }
         }

@@ -9,8 +9,10 @@ import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.HttpF
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.HttpFlavorValues.HTTP_1_1;
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.HttpFlavorValues.HTTP_2_0;
 
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import io.opentelemetry.instrumentation.api.instrumenter.http.CapturedHttpHeaders;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
+import java.util.List;
+import javax.annotation.Nullable;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.http.HttpField;
@@ -19,9 +21,15 @@ import org.eclipse.jetty.http.HttpVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class JettyClientHttpAttributesExtractor extends HttpAttributesExtractor<Request, Response> {
+final class JettyClientHttpAttributesExtractor
+    extends HttpClientAttributesExtractor<Request, Response> {
+
   private static final Logger logger =
       LoggerFactory.getLogger(JettyClientHttpAttributesExtractor.class);
+
+  JettyClientHttpAttributesExtractor(CapturedHttpHeaders capturedHttpHeaders) {
+    super(capturedHttpHeaders);
+  }
 
   @Override
   @Nullable
@@ -36,35 +44,8 @@ final class JettyClientHttpAttributesExtractor extends HttpAttributesExtractor<R
   }
 
   @Override
-  @Nullable
-  protected String target(Request request) {
-    String queryString = request.getQuery();
-    return queryString != null ? request.getPath() + "?" + queryString : request.getPath();
-  }
-
-  @Override
-  @Nullable
-  protected String host(Request request) {
-    return request.getHost();
-  }
-
-  @Override
-  @Nullable
-  protected String route(Request request) {
-    return null;
-  }
-
-  @Override
-  @Nullable
-  protected String scheme(Request request) {
-    return request.getScheme();
-  }
-
-  @Override
-  @Nullable
-  protected String userAgent(Request request) {
-    HttpField agentField = request.getHeaders().getField(HttpHeader.USER_AGENT);
-    return agentField != null ? agentField.getValue() : null;
+  protected List<String> requestHeader(Request request, String name) {
+    return request.getHeaders().getValuesList(name);
   }
 
   @Override
@@ -81,7 +62,6 @@ final class JettyClientHttpAttributesExtractor extends HttpAttributesExtractor<R
   }
 
   @Override
-  @Nullable
   protected String flavor(Request request, @Nullable Response response) {
 
     if (response == null) {
@@ -106,13 +86,6 @@ final class JettyClientHttpAttributesExtractor extends HttpAttributesExtractor<R
   }
 
   @Override
-  @Nullable
-  protected String serverName(Request request, @Nullable Response response) {
-    return null;
-  }
-
-  @Override
-  @Nullable
   protected Integer statusCode(Request request, Response response) {
     return response.getStatus();
   }
@@ -133,6 +106,11 @@ final class JettyClientHttpAttributesExtractor extends HttpAttributesExtractor<R
   @Nullable
   protected Long responseContentLengthUncompressed(Request request, Response response) {
     return null;
+  }
+
+  @Override
+  protected List<String> responseHeader(Request request, Response response, String name) {
+    return response.getHeaders().getValuesList(name);
   }
 
   private static Long getLongFromJettyHttpField(HttpField httpField) {

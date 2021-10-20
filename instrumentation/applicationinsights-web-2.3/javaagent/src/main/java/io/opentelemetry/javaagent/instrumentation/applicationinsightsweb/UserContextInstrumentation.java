@@ -14,9 +14,9 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -42,7 +42,7 @@ public class UserContextInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter
     public static void methodEnter(
         @Advice.This UserContext userContext, @Advice.Argument(0) String name) {
-      Span span = InstrumentationContext.get(UserContext.class, Span.class).get(userContext);
+      Span span = VirtualField.find(UserContext.class, Span.class).get(userContext);
       if (span != null) {
         span.setAttribute(SemanticAttributes.ENDUSER_ID, name);
       }
@@ -53,7 +53,7 @@ public class UserContextInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter
     public static void methodEnter(
         @Advice.This UserContext userContext, @Advice.Origin("#m") String methodName) {
-      Span span = InstrumentationContext.get(UserContext.class, Span.class).get(userContext);
+      Span span = VirtualField.find(UserContext.class, Span.class).get(userContext);
       if (span != null) {
         LogOnce.logOnce(
             "ThreadContext.getRequestTelemetryContext().getRequestTelemetry().getContext().getUser()."

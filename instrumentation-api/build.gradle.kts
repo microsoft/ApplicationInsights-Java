@@ -3,6 +3,7 @@ plugins {
 
   id("otel.java-conventions")
   id("otel.jacoco-conventions")
+  id("otel.japicmp-conventions")
   id("otel.publish-conventions")
 }
 
@@ -29,6 +30,7 @@ dependencies {
 
   implementation("io.opentelemetry:opentelemetry-api-metrics")
   implementation("org.slf4j:slf4j-api")
+  implementation("com.google.code.findbugs:jsr305:3.0.2")
 
   compileOnly("com.google.auto.value:auto-value-annotations")
   annotationProcessor("com.google.auto.value:auto-value")
@@ -41,4 +43,28 @@ dependencies {
   testImplementation("org.awaitility:awaitility")
   testImplementation("io.opentelemetry:opentelemetry-sdk-metrics")
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
+}
+
+tasks {
+  sourcesJar {
+    dependsOn("generateJflex")
+  }
+
+  val testStatementSanitizerConfig by registering(Test::class) {
+    filter {
+      includeTestsMatching("StatementSanitizationConfigTest")
+      isFailOnNoMatchingTests = false
+    }
+    include("**/StatementSanitizationConfigTest.*")
+    jvmArgs("-Dotel.instrumentation.common.db-statement-sanitizer.enabled=false")
+  }
+
+  test {
+    dependsOn(testStatementSanitizerConfig)
+
+    filter {
+      excludeTestsMatching("StatementSanitizationConfigTest")
+      isFailOnNoMatchingTests = false
+    }
+  }
 }

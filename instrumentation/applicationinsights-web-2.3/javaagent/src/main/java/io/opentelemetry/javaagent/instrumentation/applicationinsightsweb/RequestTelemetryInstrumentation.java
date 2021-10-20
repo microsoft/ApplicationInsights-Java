@@ -16,9 +16,9 @@ import static net.bytebuddy.matcher.ElementMatchers.takesNoArguments;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
@@ -70,8 +70,7 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter
     public static void methodEnter(
         @Advice.This RequestTelemetry requestTelemetry, @Advice.Argument(0) String name) {
-      Span span =
-          InstrumentationContext.get(RequestTelemetry.class, Span.class).get(requestTelemetry);
+      Span span = VirtualField.find(RequestTelemetry.class, Span.class).get(requestTelemetry);
       if (span != null) {
         span.updateName(name);
       }
@@ -82,8 +81,7 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter
     public static void methodEnter(
         @Advice.This RequestTelemetry requestTelemetry, @Advice.Argument(0) boolean success) {
-      Span span =
-          InstrumentationContext.get(RequestTelemetry.class, Span.class).get(requestTelemetry);
+      Span span = VirtualField.find(RequestTelemetry.class, Span.class).get(requestTelemetry);
       if (span != null) {
         span.setStatus(success ? StatusCode.OK : StatusCode.ERROR);
       }
@@ -94,8 +92,7 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter
     public static void methodEnter(
         @Advice.This RequestTelemetry requestTelemetry, @Advice.Argument(0) String source) {
-      Span span =
-          InstrumentationContext.get(RequestTelemetry.class, Span.class).get(requestTelemetry);
+      Span span = VirtualField.find(RequestTelemetry.class, Span.class).get(requestTelemetry);
       if (span != null) {
         span.setAttribute("applicationinsights.internal.source", source);
       }
@@ -107,8 +104,7 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
     public static void methodExit(
         @Advice.This RequestTelemetry requestTelemetry,
         @Advice.Return(readOnly = false) String id) {
-      Span span =
-          InstrumentationContext.get(RequestTelemetry.class, Span.class).get(requestTelemetry);
+      Span span = VirtualField.find(RequestTelemetry.class, Span.class).get(requestTelemetry);
       if (span != null) {
         id = span.getSpanContext().getSpanId();
       }
@@ -119,8 +115,7 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter
     public static void methodEnter(
         @Advice.This RequestTelemetry requestTelemetry, @Advice.Origin("#m") String methodName) {
-      Span span =
-          InstrumentationContext.get(RequestTelemetry.class, Span.class).get(requestTelemetry);
+      Span span = VirtualField.find(RequestTelemetry.class, Span.class).get(requestTelemetry);
       if (span != null) {
         LogOnce.logOnce(
             "ThreadContext.getRequestTelemetryContext().getRequestTelemetry()."

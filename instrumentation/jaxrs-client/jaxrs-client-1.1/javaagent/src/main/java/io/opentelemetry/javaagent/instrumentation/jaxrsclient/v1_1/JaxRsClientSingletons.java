@@ -9,14 +9,13 @@ import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
+import io.opentelemetry.instrumentation.api.instrumenter.PeerServiceAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.SpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.SpanStatusExtractor;
-import io.opentelemetry.instrumentation.api.instrumenter.appid.TargetAppIdAttributeExtractor;
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientMetrics;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanStatusExtractor;
-import io.opentelemetry.javaagent.instrumentation.api.instrumenter.PeerServiceAttributesExtractor;
 
 public class JaxRsClientSingletons {
   private static final String INSTRUMENTATION_NAME = "io.opentelemetry.jaxrs-client-1.1";
@@ -24,7 +23,7 @@ public class JaxRsClientSingletons {
   private static final Instrumenter<ClientRequest, ClientResponse> INSTRUMENTER;
 
   static {
-    HttpAttributesExtractor<ClientRequest, ClientResponse> httpAttributesExtractor =
+    HttpClientAttributesExtractor<ClientRequest, ClientResponse> httpAttributesExtractor =
         new JaxRsClientHttpAttributesExtractor();
     SpanNameExtractor<? super ClientRequest> spanNameExtractor =
         HttpSpanNameExtractor.create(httpAttributesExtractor);
@@ -40,9 +39,6 @@ public class JaxRsClientSingletons {
             .addAttributesExtractor(httpAttributesExtractor)
             .addAttributesExtractor(netAttributesExtractor)
             .addAttributesExtractor(PeerServiceAttributesExtractor.create(netAttributesExtractor))
-            .addAttributesExtractor(
-                new TargetAppIdAttributeExtractor<>(
-                    (response, headerName) -> response.getHeaders().getFirst(headerName)))
             .addRequestMetrics(HttpClientMetrics.get())
             .newClientInstrumenter(new InjectAdapter());
   }

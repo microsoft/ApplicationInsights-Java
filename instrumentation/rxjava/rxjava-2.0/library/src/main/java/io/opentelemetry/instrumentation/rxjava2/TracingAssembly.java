@@ -39,8 +39,8 @@ import io.reactivex.functions.Function;
 import io.reactivex.internal.fuseable.ConditionalSubscriber;
 import io.reactivex.parallel.ParallelFlowable;
 import io.reactivex.plugins.RxJavaPlugins;
+import javax.annotation.Nullable;
 import org.checkerframework.checker.lock.qual.GuardedBy;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.reactivestreams.Subscriber;
 
 /**
@@ -97,10 +97,10 @@ public final class TracingAssembly {
   private static boolean enabled;
 
   public static TracingAssembly create() {
-    return newBuilder().build();
+    return builder().build();
   }
 
-  public static TracingAssemblyBuilder newBuilder() {
+  public static TracingAssemblyBuilder builder() {
     return new TracingAssemblyBuilder();
   }
 
@@ -249,7 +249,7 @@ public final class TracingAssembly {
 
   private static void enableWithSpanStrategy(boolean captureExperimentalSpanAttributes) {
     asyncOperationEndStrategy =
-        RxJava2AsyncOperationEndStrategy.newBuilder()
+        RxJava2AsyncOperationEndStrategy.builder()
             .setCaptureExperimentalSpanAttributes(captureExperimentalSpanAttributes)
             .build();
 

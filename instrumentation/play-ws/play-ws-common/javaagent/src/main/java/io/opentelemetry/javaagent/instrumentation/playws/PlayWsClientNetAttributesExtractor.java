@@ -5,23 +5,24 @@
 
 package io.opentelemetry.javaagent.instrumentation.playws;
 
-import io.opentelemetry.instrumentation.api.instrumenter.net.InetSocketAddressNetAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.net.InetSocketAddressNetClientAttributesExtractor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.net.InetSocketAddress;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 import play.shaded.ahc.org.asynchttpclient.Request;
 import play.shaded.ahc.org.asynchttpclient.Response;
 
 final class PlayWsClientNetAttributesExtractor
-    extends InetSocketAddressNetAttributesExtractor<Request, Response> {
+    extends InetSocketAddressNetClientAttributesExtractor<Request, Response> {
 
   @Override
-  public String transport(Request request) {
+  public String transport(Request request, @Nullable Response response) {
     return SemanticAttributes.NetTransportValues.IP_TCP;
   }
 
   @Override
-  public @Nullable InetSocketAddress getAddress(Request request, @Nullable Response response) {
+  @Nullable
+  public InetSocketAddress getAddress(Request request, @Nullable Response response) {
     if (response != null && response.getRemoteAddress() instanceof InetSocketAddress) {
       return (InetSocketAddress) response.getRemoteAddress();
     }

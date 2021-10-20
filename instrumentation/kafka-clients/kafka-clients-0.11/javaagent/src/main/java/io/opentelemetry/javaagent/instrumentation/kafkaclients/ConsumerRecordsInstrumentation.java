@@ -13,9 +13,9 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.util.Iterator;
 import java.util.List;
 import net.bytebuddy.asm.Advice;
@@ -60,13 +60,13 @@ public class ConsumerRecordsInstrumentation implements TypeInstrumentation {
   public static class IterableAdvice {
 
     @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void wrap(
+    public static <K, V> void wrap(
         @Advice.This ConsumerRecords<?, ?> records,
-        @Advice.Return(readOnly = false) Iterable<ConsumerRecord<?, ?>> iterable) {
+        @Advice.Return(readOnly = false) Iterable<ConsumerRecord<K, V>> iterable) {
       if (iterable != null) {
         SpanContext receiveSpanContext =
-            InstrumentationContext.get(ConsumerRecords.class, SpanContext.class).get(records);
-        iterable = new TracingIterable(iterable, receiveSpanContext);
+            VirtualField.find(ConsumerRecords.class, SpanContext.class).get(records);
+        iterable = TracingIterable.wrap(iterable, receiveSpanContext);
       }
     }
   }
@@ -75,13 +75,13 @@ public class ConsumerRecordsInstrumentation implements TypeInstrumentation {
   public static class ListAdvice {
 
     @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void wrap(
+    public static <K, V> void wrap(
         @Advice.This ConsumerRecords<?, ?> records,
-        @Advice.Return(readOnly = false) List<ConsumerRecord<?, ?>> list) {
+        @Advice.Return(readOnly = false) List<ConsumerRecord<K, V>> list) {
       if (list != null) {
         SpanContext receiveSpanContext =
-            InstrumentationContext.get(ConsumerRecords.class, SpanContext.class).get(records);
-        list = new TracingList(list, receiveSpanContext);
+            VirtualField.find(ConsumerRecords.class, SpanContext.class).get(records);
+        list = TracingList.wrap(list, receiveSpanContext);
       }
     }
   }
@@ -90,13 +90,13 @@ public class ConsumerRecordsInstrumentation implements TypeInstrumentation {
   public static class IteratorAdvice {
 
     @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void wrap(
+    public static <K, V> void wrap(
         @Advice.This ConsumerRecords<?, ?> records,
-        @Advice.Return(readOnly = false) Iterator<ConsumerRecord<?, ?>> iterator) {
+        @Advice.Return(readOnly = false) Iterator<ConsumerRecord<K, V>> iterator) {
       if (iterator != null) {
         SpanContext receiveSpanContext =
-            InstrumentationContext.get(ConsumerRecords.class, SpanContext.class).get(records);
-        iterator = new TracingIterator(iterator, receiveSpanContext);
+            VirtualField.find(ConsumerRecords.class, SpanContext.class).get(records);
+        iterator = TracingIterator.wrap(iterator, receiveSpanContext);
       }
     }
   }

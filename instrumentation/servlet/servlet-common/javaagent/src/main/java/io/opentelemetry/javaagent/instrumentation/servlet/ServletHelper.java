@@ -5,28 +5,21 @@
 
 package io.opentelemetry.javaagent.instrumentation.servlet;
 
-import static io.opentelemetry.instrumentation.api.servlet.ServerSpanNaming.Source.FILTER;
-import static io.opentelemetry.instrumentation.api.servlet.ServerSpanNaming.Source.SERVLET;
-
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
-import io.opentelemetry.instrumentation.api.servlet.ServerSpanNaming;
 import io.opentelemetry.instrumentation.servlet.ServletAccessor;
-import io.opentelemetry.instrumentation.servlet.ServletHttpServerTracer;
 
 public class ServletHelper<REQUEST, RESPONSE> extends BaseServletHelper<REQUEST, RESPONSE> {
+  private static final String ASYNC_LISTENER_ATTRIBUTE =
+      ServletHelper.class.getName() + ".AsyncListener";
+  private static final String ASYNC_LISTENER_RESPONSE_ATTRIBUTE =
+      ServletHelper.class.getName() + ".AsyncListenerResponse";
 
   public ServletHelper(
       Instrumenter<ServletRequestContext<REQUEST>, ServletResponseContext<RESPONSE>> instrumenter,
       ServletAccessor<REQUEST, RESPONSE> accessor) {
     super(instrumenter, accessor);
-  }
-
-  public Context start(
-      Context parentContext, ServletRequestContext<REQUEST> requestContext, boolean servlet) {
-    ServerSpanNaming.Source namingSource = servlet ? SERVLET : FILTER;
-    return start(parentContext, requestContext, namingSource);
   }
 
   public void end(
@@ -57,13 +50,8 @@ public class ServletHelper<REQUEST, RESPONSE> extends BaseServletHelper<REQUEST,
 
     ServletResponseContext<RESPONSE> responseContext =
         new ServletResponseContext<>(response, throwable);
-    if (throwable != null) {
+    if (throwable != null || mustEndOnHandlerMethodExit(request)) {
       instrumenter.end(context, requestContext, responseContext, throwable);
-      return;
-    }
-
-    if (mustEndOnHandlerMethodExit(request)) {
-      instrumenter.end(context, requestContext, responseContext, null);
     }
   }
 
@@ -91,14 +79,11 @@ public class ServletHelper<REQUEST, RESPONSE> extends BaseServletHelper<REQUEST,
    * is not possible to access response from async event in listeners.
    */
   public void setAsyncListenerResponse(REQUEST request, RESPONSE response) {
-    accessor.setRequestAttribute(
-        request, ServletHttpServerTracer.ASYNC_LISTENER_RESPONSE_ATTRIBUTE, response);
+    accessor.setRequestAttribute(request, ASYNC_LISTENER_RESPONSE_ATTRIBUTE, response);
   }
 
   public RESPONSE getAsyncListenerResponse(REQUEST request) {
-    return (RESPONSE)
-        accessor.getRequestAttribute(
-            request, ServletHttpServerTracer.ASYNC_LISTENER_RESPONSE_ATTRIBUTE);
+    return (RESPONSE) accessor.getRequestAttribute(request, ASYNC_LISTENER_RESPONSE_ATTRIBUTE);
   }
 
   public void attachAsyncListener(REQUEST request) {
@@ -117,12 +102,11 @@ public class ServletHelper<REQUEST, RESPONSE> extends BaseServletHelper<REQUEST,
           request,
           new AsyncRequestCompletionListener<>(this, instrumenter, requestContext, context),
           response);
-      accessor.setRequestAttribute(request, ServletHttpServerTracer.ASYNC_LISTENER_ATTRIBUTE, true);
+      accessor.setRequestAttribute(request, ASYNC_LISTENER_ATTRIBUTE, true);
     }
   }
 
   public boolean isAsyncListenerAttached(REQUEST request) {
-    return accessor.getRequestAttribute(request, ServletHttpServerTracer.ASYNC_LISTENER_ATTRIBUTE)
-        != null;
+    return accessor.getRequestAttribute(request, ASYNC_LISTENER_ATTRIBUTE) != null;
   }
 }

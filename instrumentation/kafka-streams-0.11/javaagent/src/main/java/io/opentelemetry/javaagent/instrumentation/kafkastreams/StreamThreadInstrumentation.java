@@ -10,12 +10,10 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
 
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
+import io.opentelemetry.javaagent.bootstrap.kafka.KafkaClientsConsumerProcessTracing;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
-import io.opentelemetry.javaagent.instrumentation.kafka.KafkaConsumerIteratorWrapper;
-import java.util.Iterator;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
@@ -38,6 +36,7 @@ public class StreamThreadInstrumentation implements TypeInstrumentation {
             .and(isPrivate())
             .and(returns(named("org.apache.kafka.clients.consumer.ConsumerRecords"))),
         this.getClass().getName() + "$PollRecordsAdvice");
+    transformer.applyAdviceToMethod(named("runLoop"), this.getClass().getName() + "$RunLoopAdvice");
   }
 
   @SuppressWarnings("unused")
@@ -49,25 +48,31 @@ public class StreamThreadInstrumentation implements TypeInstrumentation {
       }
 
       SpanContext receiveSpanContext =
-          InstrumentationContext.get(ConsumerRecords.class, SpanContext.class).get(records);
+          VirtualField.find(ConsumerRecords.class, SpanContext.class).get(records);
       if (receiveSpanContext == null) {
         return;
       }
 
-      ContextStore<ConsumerRecord, SpanContext> singleRecordReceiveSpan =
-          InstrumentationContext.get(ConsumerRecord.class, SpanContext.class);
+      VirtualField<ConsumerRecord<?, ?>, SpanContext> singleRecordReceiveSpan =
+          VirtualField.find(ConsumerRecord.class, SpanContext.class);
 
-      Iterator<? extends ConsumerRecord<?, ?>> it = records.iterator();
-      // this will forcefully suppress the kafka-clients CONSUMER instrumentation even though
-      // there's no current CONSUMER span
-      if (it instanceof KafkaConsumerIteratorWrapper) {
-        it = ((KafkaConsumerIteratorWrapper<?, ?>) it).unwrap();
+      for (ConsumerRecord<?, ?> record : records) {
+        singleRecordReceiveSpan.set(record, receiveSpanContext);
       }
+    }
+  }
 
-      while (it.hasNext()) {
-        ConsumerRecord<?, ?> record = it.next();
-        singleRecordReceiveSpan.put(record, receiveSpanContext);
-      }
+  // this advice suppresses the CONSUMER spans created by the kafka-clients instrumentation
+  @SuppressWarnings("unused")
+  public static class RunLoopAdvice {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static void onEnter() {
+      KafkaClientsConsumerProcessTracing.disableWrapping();
+    }
+
+    @Advice.OnMethodExit(suppress = Throwable.class)
+    public static void onExit() {
+      KafkaClientsConsumerProcessTracing.enableWrapping();
     }
   }
 }

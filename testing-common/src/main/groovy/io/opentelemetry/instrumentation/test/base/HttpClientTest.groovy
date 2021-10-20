@@ -205,10 +205,6 @@ abstract class HttpClientTest<REQUEST> extends InstrumentationSpecification {
     protected boolean testErrorWithCallback() {
       return HttpClientTest.this.testErrorWithCallback()
     }
-
-    boolean capturesAiTargetAppId() {
-      return HttpClientTest.this.capturesAiTargetAppId()
-    }
   }
 
   @Shared
@@ -483,10 +479,6 @@ abstract class HttpClientTest<REQUEST> extends InstrumentationSpecification {
 
   boolean testErrorWithCallback() {
     return true
-  }
-
-  boolean capturesAiTargetAppId() {
-    true
   }
 
   Throwable clientSpanError(URI uri, Throwable exception) {

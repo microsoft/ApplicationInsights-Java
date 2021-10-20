@@ -16,9 +16,9 @@ import com.microsoft.applicationinsights.telemetry.BaseTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.util.Map;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -64,8 +64,7 @@ public class BaseTelemetryInstrumentation implements TypeInstrumentation {
         return;
       }
       Span span =
-          InstrumentationContext.get(RequestTelemetry.class, Span.class)
-              .get((RequestTelemetry) telemetry);
+          VirtualField.find(RequestTelemetry.class, Span.class).get((RequestTelemetry) telemetry);
       if (span != null) {
         properties = new SpanAttributeProperties(span);
       }
@@ -80,10 +79,9 @@ public class BaseTelemetryInstrumentation implements TypeInstrumentation {
         return;
       }
       Span span =
-          InstrumentationContext.get(RequestTelemetry.class, Span.class)
-              .get((RequestTelemetry) telemetry);
+          VirtualField.find(RequestTelemetry.class, Span.class).get((RequestTelemetry) telemetry);
       if (span != null) {
-        InstrumentationContext.get(TelemetryContext.class, Span.class).put(telemetryContext, span);
+        VirtualField.find(TelemetryContext.class, Span.class).set(telemetryContext, span);
       }
     }
   }
@@ -96,8 +94,7 @@ public class BaseTelemetryInstrumentation implements TypeInstrumentation {
         return;
       }
       Span span =
-          InstrumentationContext.get(RequestTelemetry.class, Span.class)
-              .get((RequestTelemetry) telemetry);
+          VirtualField.find(RequestTelemetry.class, Span.class).get((RequestTelemetry) telemetry);
       if (span != null) {
         LogOnce.logOnce(
             "ThreadContext.getRequestTelemetryContext().getRequestTelemetry()."

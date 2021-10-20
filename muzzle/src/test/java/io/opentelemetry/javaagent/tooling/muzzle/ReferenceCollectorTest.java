@@ -14,7 +14,7 @@ import external.instrumentation.ExternalHelper;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.OtherTestHelperClasses;
 import io.opentelemetry.instrumentation.TestHelperClasses;
-import io.opentelemetry.javaagent.tooling.muzzle.InstrumentationContextTestClasses.State;
+import io.opentelemetry.javaagent.tooling.muzzle.VirtualFieldTestClasses.State;
 import io.opentelemetry.javaagent.tooling.muzzle.references.ClassRef;
 import io.opentelemetry.javaagent.tooling.muzzle.references.FieldRef;
 import io.opentelemetry.javaagent.tooling.muzzle.references.Flag;
@@ -29,6 +29,7 @@ import muzzle.TestClasses;
 import muzzle.TestClasses.HelperAdvice;
 import muzzle.TestClasses.LdcAdvice;
 import muzzle.TestClasses.MethodBodyAdvice;
+import net.bytebuddy.jar.asm.Type;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -264,7 +265,7 @@ class ReferenceCollectorTest {
   public void shouldCollectHelperClassesFromResourceFile(
       @SuppressWarnings("unused") String desc, String resource) {
     ReferenceCollector collector = new ReferenceCollector(s -> false);
-    collector.collectReferencesFromResource(resource);
+    collector.collectReferencesFromResource(HelperResource.create(resource, resource));
     collector.prune();
 
     List<String> helperClasses = collector.getSortedHelperClasses();
@@ -307,7 +308,8 @@ class ReferenceCollectorTest {
   @Test
   public void shouldIgnoreArbitraryResourceFile() {
     ReferenceCollector collector = new ReferenceCollector(s -> false);
-    collector.collectReferencesFromResource("application.properties");
+    collector.collectReferencesFromResource(
+        HelperResource.create("application.properties", "application.properties"));
     collector.prune();
 
     assertThat(collector.getReferences()).isEmpty();
@@ -315,36 +317,35 @@ class ReferenceCollectorTest {
   }
 
   @Test
-  public void shouldCollectContextStoreClasses() {
+  public void shouldCollectVirtualFields() {
     ReferenceCollector collector = new ReferenceCollector(s -> false);
-    collector.collectReferencesFromAdvice(
-        InstrumentationContextTestClasses.ValidAdvice.class.getName());
+    collector.collectReferencesFromAdvice(VirtualFieldTestClasses.ValidAdvice.class.getName());
     collector.prune();
 
-    ContextStoreMappings contextStoreMappings = collector.getContextStoreMappings();
-    assertThat(contextStoreMappings.entrySet())
+    VirtualFieldMappings virtualFieldMappings = collector.getVirtualFieldMappings();
+    assertThat(virtualFieldMappings.entrySet())
         .containsExactlyInAnyOrder(
-            entry(InstrumentationContextTestClasses.Key1.class.getName(), Context.class.getName()),
-            entry(InstrumentationContextTestClasses.Key2.class.getName(), Context.class.getName()));
+            entry(VirtualFieldTestClasses.Key1.class.getName(), Context.class.getName()),
+            entry(VirtualFieldTestClasses.Key2.class.getName(), Context.class.getName()));
   }
 
   @Test
-  public void shouldCollectMultipleContextClassesForSingleKey() {
+  public void shouldCollectMultipleVirtualFieldsForSingleClass() {
     ReferenceCollector collector = new ReferenceCollector(s -> false);
     collector.collectReferencesFromAdvice(
-        InstrumentationContextTestClasses.TwoContextStoresAdvice.class.getName());
+        VirtualFieldTestClasses.TwoVirtualFieldsInTheSameClassAdvice.class.getName());
     collector.prune();
 
-    ContextStoreMappings contextStoreMappings = collector.getContextStoreMappings();
-    assertThat(contextStoreMappings.entrySet())
+    VirtualFieldMappings virtualFieldMappings = collector.getVirtualFieldMappings();
+    assertThat(virtualFieldMappings.entrySet())
         .containsExactlyInAnyOrder(
-            entry(InstrumentationContextTestClasses.Key1.class.getName(), Context.class.getName()),
-            entry(InstrumentationContextTestClasses.Key1.class.getName(), State.class.getName()));
+            entry(VirtualFieldTestClasses.Key1.class.getName(), Context.class.getName()),
+            entry(VirtualFieldTestClasses.Key1.class.getName(), State.class.getName()));
   }
 
   @ParameterizedTest(name = "{0}")
   @MethodSource
-  public void shouldNotCollectContextStoreClassesForInvalidScenario(
+  public void shouldNotCollectVirtualFieldsForInvalidScenario(
       @SuppressWarnings("unused") String desc, String adviceClassName) {
     ReferenceCollector collector = new ReferenceCollector(s -> false);
 
@@ -357,14 +358,38 @@ class ReferenceCollectorTest {
   }
 
   @SuppressWarnings("unused")
-  private static List<Arguments> shouldNotCollectContextStoreClassesForInvalidScenario() {
+  private static List<Arguments> shouldNotCollectVirtualFieldsForInvalidScenario() {
     return Arrays.asList(
         Arguments.of(
-            "passing arbitrary variables or parameters to InstrumentationContext.get()",
-            InstrumentationContextTestClasses.NotUsingClassRefAdvice.class.getName()),
+            "passing arbitrary variables or parameters to VirtualField.find()",
+            VirtualFieldTestClasses.NotUsingClassRefAdvice.class.getName()),
         Arguments.of(
             "storing class ref in a local var",
-            InstrumentationContextTestClasses.PassingVariableAdvice.class.getName()));
+            VirtualFieldTestClasses.PassingVariableAdvice.class.getName()),
+        Arguments.of(
+            "using array type as the field owner type",
+            VirtualFieldTestClasses.UsingArrayAsOwnerAdvice.class.getName()),
+        Arguments.of(
+            "using primitive type as the field owner type",
+            VirtualFieldTestClasses.UsingPrimitiveAsOwnerAdvice.class.getName()),
+        Arguments.of(
+            "using primitive type as the field type",
+            VirtualFieldTestClasses.UsingPrimitiveAsFieldAdvice.class.getName()));
+  }
+
+  @Test
+  public void shouldCollectArrayVirtualField() {
+    ReferenceCollector collector = new ReferenceCollector(s -> false);
+    collector.collectReferencesFromAdvice(
+        VirtualFieldTestClasses.UsingArrayAsFieldAdvice.class.getName());
+    collector.prune();
+
+    VirtualFieldMappings virtualFieldMappings = collector.getVirtualFieldMappings();
+    assertThat(virtualFieldMappings.entrySet())
+        .containsExactly(
+            entry(
+                VirtualFieldTestClasses.Key1.class.getName(),
+                Type.getType(Context[].class).getClassName()));
   }
 
   private static void assertHelperSuperClassMethod(ClassRef reference, boolean isAbstract) {

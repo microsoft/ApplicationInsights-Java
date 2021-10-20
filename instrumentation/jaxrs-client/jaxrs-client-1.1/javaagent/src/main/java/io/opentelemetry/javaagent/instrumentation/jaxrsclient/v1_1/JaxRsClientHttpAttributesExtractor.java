@@ -5,17 +5,22 @@
 
 package io.opentelemetry.javaagent.instrumentation.jaxrsclient.v1_1;
 
+import static java.util.Collections.emptyList;
+
 import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import javax.annotation.Nullable;
 
 final class JaxRsClientHttpAttributesExtractor
-    extends HttpAttributesExtractor<ClientRequest, ClientResponse> {
+    extends HttpClientAttributesExtractor<ClientRequest, ClientResponse> {
 
   @Override
-  protected @Nullable String method(ClientRequest httpRequest) {
+  @Nullable
+  protected String method(ClientRequest httpRequest) {
     return httpRequest.getMethod();
   }
 
@@ -25,49 +30,28 @@ final class JaxRsClientHttpAttributesExtractor
   }
 
   @Override
-  protected @Nullable String target(ClientRequest httpRequest) {
-    StringBuilder result = new StringBuilder();
-    String path = httpRequest.getURI().getPath();
-    if (path != null) {
-      result.append(path);
+  protected List<String> requestHeader(ClientRequest httpRequest, String name) {
+    List<Object> rawHeaders = httpRequest.getHeaders().getOrDefault(name, emptyList());
+    if (rawHeaders.isEmpty()) {
+      return emptyList();
     }
-    String query = httpRequest.getURI().getQuery();
-    if (query != null) {
-      result.append('?');
-      result.append(query);
+    List<String> stringHeaders = new ArrayList<>(rawHeaders.size());
+    for (Object headerValue : rawHeaders) {
+      stringHeaders.add(String.valueOf(headerValue));
     }
-    String fragment = httpRequest.getURI().getFragment();
-    if (fragment != null) {
-      result.append('#');
-      result.append(fragment);
-    }
-    return result.length() > 0 ? result.toString() : null;
+    return stringHeaders;
   }
 
   @Override
-  protected @Nullable String host(ClientRequest httpRequest) {
-    return httpRequest.getURI().getHost();
-  }
-
-  @Override
-  protected @Nullable String scheme(ClientRequest httpRequest) {
-    return httpRequest.getURI().getScheme();
-  }
-
-  @Override
-  protected @Nullable String userAgent(ClientRequest httpRequest) {
-    Object header = httpRequest.getHeaders().getFirst("User-Agent");
-    return header != null ? header.toString() : null;
-  }
-
-  @Override
-  protected @Nullable Long requestContentLength(
+  @Nullable
+  protected Long requestContentLength(
       ClientRequest httpRequest, @Nullable ClientResponse httpResponse) {
     return null;
   }
 
   @Override
-  protected @Nullable Long requestContentLengthUncompressed(
+  @Nullable
+  protected Long requestContentLengthUncompressed(
       ClientRequest httpRequest, @Nullable ClientResponse httpResponse) {
     return null;
   }
@@ -78,31 +62,28 @@ final class JaxRsClientHttpAttributesExtractor
   }
 
   @Override
-  protected @Nullable Integer statusCode(ClientRequest httpRequest, ClientResponse httpResponse) {
+  @Nullable
+  protected Integer statusCode(ClientRequest httpRequest, ClientResponse httpResponse) {
     return httpResponse.getStatus();
   }
 
   @Override
-  protected @Nullable Long responseContentLength(
-      ClientRequest httpRequest, ClientResponse httpResponse) {
+  @Nullable
+  protected Long responseContentLength(ClientRequest httpRequest, ClientResponse httpResponse) {
     int length = httpResponse.getLength();
     return length != -1 ? (long) length : null;
   }
 
   @Override
-  protected @Nullable Long responseContentLengthUncompressed(
+  @Nullable
+  protected Long responseContentLengthUncompressed(
       ClientRequest httpRequest, ClientResponse httpResponse) {
     return null;
   }
 
   @Override
-  protected @Nullable String route(ClientRequest httpRequest) {
-    return null;
-  }
-
-  @Override
-  protected @Nullable String serverName(
-      ClientRequest httpRequest, @Nullable ClientResponse httpResponse) {
-    return null;
+  protected List<String> responseHeader(
+      ClientRequest httpRequest, ClientResponse httpResponse, String name) {
+    return httpResponse.getHeaders().getOrDefault(name, emptyList());
   }
 }

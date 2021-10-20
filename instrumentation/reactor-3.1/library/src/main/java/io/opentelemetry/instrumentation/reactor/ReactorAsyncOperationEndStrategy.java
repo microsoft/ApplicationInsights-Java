@@ -23,10 +23,10 @@ public final class ReactorAsyncOperationEndStrategy implements AsyncOperationEnd
       AttributeKey.booleanKey("reactor.canceled");
 
   public static ReactorAsyncOperationEndStrategy create() {
-    return newBuilder().build();
+    return builder().build();
   }
 
-  public static ReactorAsyncOperationEndStrategyBuilder newBuilder() {
+  public static ReactorAsyncOperationEndStrategyBuilder builder() {
     return new ReactorAsyncOperationEndStrategyBuilder();
   }
 
@@ -59,12 +59,15 @@ public final class ReactorAsyncOperationEndStrategy implements AsyncOperationEnd
 
     if (asyncValue instanceof Mono) {
       Mono<?> mono = (Mono<?>) asyncValue;
-      return mono.doOnError(notificationConsumer)
+
+      return ContextPropagationOperator.runWithContext(mono, context)
+          .doOnError(notificationConsumer)
           .doOnSuccess(notificationConsumer::onSuccess)
           .doOnCancel(notificationConsumer::onCancel);
     } else {
       Flux<?> flux = Flux.from((Publisher<?>) asyncValue);
-      return flux.doOnError(notificationConsumer)
+      return ContextPropagationOperator.runWithContext(flux, context)
+          .doOnError(notificationConsumer)
           .doOnComplete(notificationConsumer)
           .doOnCancel(notificationConsumer::onCancel);
     }

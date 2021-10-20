@@ -5,55 +5,43 @@
 
 package io.opentelemetry.instrumentation.jdbc.internal;
 
-import io.opentelemetry.instrumentation.api.caching.Cache;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
+import java.lang.ref.WeakReference;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 /** Holds info associated with JDBC connections and prepared statements. */
 public final class JdbcData {
-  private static final Logger logger = LoggerFactory.getLogger(JdbcData.class);
 
-  private static final CacheFactory cacheFactory = getCacheFactory();
-
-  public static Cache<Connection, DbInfo> connectionInfo = cacheFactory.connectionInfoCache();
-  public static Cache<PreparedStatement, String> preparedStatement =
-      cacheFactory.preparedStatementCache();
+  private static final Map<DbInfo, WeakReference<DbInfo>> dbInfos = new WeakHashMap<>();
+  public static VirtualField<Connection, DbInfo> connectionInfo =
+      VirtualField.find(Connection.class, DbInfo.class);
+  public static VirtualField<PreparedStatement, String> preparedStatement =
+      VirtualField.find(PreparedStatement.class, String.class);
 
   private JdbcData() {}
 
-  private static CacheFactory getCacheFactory() {
-    try {
-      // this class is provided by jdbc javaagent instrumentation
-      Class<?> clazz =
-          Class.forName("io.opentelemetry.javaagent.instrumentation.jdbc.AgentCacheFactory");
-      return (CacheFactory) clazz.getConstructor().newInstance();
-    } catch (ClassNotFoundException ignored) {
-      // ignored, this is expected when running as library instrumentation
-    } catch (Exception exception) {
-      logger.error("Failed to instantiate AgentCacheFactory", exception);
-    }
-
-    return new DefaultCacheFactory();
-  }
-
-  public interface CacheFactory {
-    Cache<Connection, DbInfo> connectionInfoCache();
-
-    Cache<PreparedStatement, String> preparedStatementCache();
-  }
-
-  private static class DefaultCacheFactory implements CacheFactory {
-
-    @Override
-    public Cache<Connection, DbInfo> connectionInfoCache() {
-      return Cache.newBuilder().setWeakKeys().build();
-    }
-
-    @Override
-    public Cache<PreparedStatement, String> preparedStatementCache() {
-      return Cache.newBuilder().setWeakKeys().build();
+  /**
+   * Returns canonical representation of db info.
+   *
+   * @param dbInfo db info to canonicalize
+   * @return db info with same content as input db info. If two equal inputs are given to this
+   *     method, both calls will return the same instance. This method may return one instance now
+   *     and a different instance later if the original interned instance was garbage collected.
+   */
+  public static DbInfo intern(DbInfo dbInfo) {
+    synchronized (dbInfos) {
+      WeakReference<DbInfo> reference = dbInfos.get(dbInfo);
+      if (reference != null) {
+        DbInfo result = reference.get();
+        if (result != null) {
+          return result;
+        }
+      }
+      dbInfos.put(dbInfo, new WeakReference<>(dbInfo));
+      return dbInfo;
     }
   }
 }

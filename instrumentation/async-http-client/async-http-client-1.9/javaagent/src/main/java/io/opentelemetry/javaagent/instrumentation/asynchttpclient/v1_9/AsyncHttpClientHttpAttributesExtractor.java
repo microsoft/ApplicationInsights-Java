@@ -7,13 +7,14 @@ package io.opentelemetry.javaagent.instrumentation.asynchttpclient.v1_9;
 
 import com.ning.http.client.Request;
 import com.ning.http.client.Response;
-import com.ning.http.client.uri.Uri;
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import java.util.Collections;
+import java.util.List;
+import javax.annotation.Nullable;
 
 final class AsyncHttpClientHttpAttributesExtractor
-    extends HttpAttributesExtractor<Request, Response> {
+    extends HttpClientAttributesExtractor<Request, Response> {
 
   @Override
   protected String method(Request request) {
@@ -26,32 +27,8 @@ final class AsyncHttpClientHttpAttributesExtractor
   }
 
   @Override
-  protected String target(Request request) {
-    Uri uri = request.getUri();
-    String query = uri.getQuery();
-    return query != null ? uri.getPath() + "?" + query : uri.getPath();
-  }
-
-  @Override
-  @Nullable
-  protected String host(Request request) {
-    String host = request.getHeaders().getFirstValue("Host");
-    if (host != null) {
-      return host;
-    }
-    return request.getVirtualHost();
-  }
-
-  @Override
-  @Nullable
-  protected String scheme(Request request) {
-    return request.getUri().getScheme();
-  }
-
-  @Override
-  @Nullable
-  protected String userAgent(Request request) {
-    return null;
+  protected List<String> requestHeader(Request request, String name) {
+    return request.getHeaders().getOrDefault(name, Collections.emptyList());
   }
 
   @Override
@@ -89,14 +66,7 @@ final class AsyncHttpClientHttpAttributesExtractor
   }
 
   @Override
-  @Nullable
-  protected String serverName(Request request, @Nullable Response response) {
-    return null;
-  }
-
-  @Override
-  @Nullable
-  protected String route(Request request) {
-    return null;
+  protected List<String> responseHeader(Request request, Response response, String name) {
+    return response.getHeaders().getOrDefault(name, Collections.emptyList());
   }
 }

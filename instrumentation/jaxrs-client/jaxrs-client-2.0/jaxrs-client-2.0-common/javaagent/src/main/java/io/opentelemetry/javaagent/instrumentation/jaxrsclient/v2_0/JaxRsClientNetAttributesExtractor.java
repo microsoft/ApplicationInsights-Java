@@ -5,23 +5,23 @@
 
 package io.opentelemetry.javaagent.instrumentation.jaxrsclient.v2_0;
 
-import io.opentelemetry.instrumentation.api.instrumenter.net.NetAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.net.NetClientAttributesExtractor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import javax.annotation.Nullable;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientResponseContext;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 final class JaxRsClientNetAttributesExtractor
-    extends NetAttributesExtractor<ClientRequestContext, ClientResponseContext> {
+    extends NetClientAttributesExtractor<ClientRequestContext, ClientResponseContext> {
 
   @Override
-  public String transport(ClientRequestContext request) {
+  public String transport(ClientRequestContext request, @Nullable ClientResponseContext response) {
     return SemanticAttributes.NetTransportValues.IP_TCP;
   }
 
   @Override
-  public @Nullable String peerName(
-      ClientRequestContext request, @Nullable ClientResponseContext response) {
+  @Nullable
+  public String peerName(ClientRequestContext request, @Nullable ClientResponseContext response) {
     return request.getUri().getHost();
   }
 
@@ -35,8 +35,8 @@ final class JaxRsClientNetAttributesExtractor
   }
 
   @Override
-  public @Nullable String peerIp(
-      ClientRequestContext request, @Nullable ClientResponseContext response) {
+  @Nullable
+  public String peerIp(ClientRequestContext request, @Nullable ClientResponseContext response) {
     return null;
   }
 }
