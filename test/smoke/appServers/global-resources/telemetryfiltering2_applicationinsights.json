@@ -9,7 +9,7 @@
         {
           "attributes": [
             {
-              "key": "http.url",
+              "key": "http.target",
               "value": ".*/login",
               "matchType": "regexp"
             }

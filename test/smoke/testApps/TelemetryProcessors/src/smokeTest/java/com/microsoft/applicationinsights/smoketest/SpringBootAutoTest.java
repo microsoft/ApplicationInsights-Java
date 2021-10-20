@@ -39,7 +39,7 @@ public class SpringBootAutoTest extends AiSmokeTest {
     assertEquals("testValue1", telemetry.rd.getProperties().get("attribute1"));
     assertEquals("testValue2", telemetry.rd.getProperties().get("attribute2"));
     assertEquals("sensitiveData1", telemetry.rd.getProperties().get("sensitiveAttribute1"));
-    assertEquals("/TelemetryProcessors/test", telemetry.rd.getProperties().get("httpPath"));
+    assertEquals("/TelemetryProcessors", telemetry.rd.getProperties().get("contextPath"));
     assertEquals(4, telemetry.rd.getProperties().size());
     assertTrue(telemetry.rd.getSuccess());
     // Log processor test
@@ -57,8 +57,7 @@ public class SpringBootAutoTest extends AiSmokeTest {
     assertEquals("testValue1", telemetry.rd.getProperties().get("attribute1"));
     assertEquals("testValue2", telemetry.rd.getProperties().get("attribute2"));
     assertEquals("redacted", telemetry.rd.getProperties().get("sensitiveAttribute1"));
-    assertEquals(
-        "/TelemetryProcessors/sensitivedata", telemetry.rd.getProperties().get("httpPath"));
+    assertEquals("/TelemetryProcessors", telemetry.rd.getProperties().get("contextPath"));
     assertEquals(4, telemetry.rd.getProperties().size());
     assertTrue(telemetry.rd.getSuccess());
   }

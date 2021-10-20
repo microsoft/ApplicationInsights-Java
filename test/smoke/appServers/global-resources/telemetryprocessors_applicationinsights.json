@@ -72,8 +72,8 @@
         "type": "attribute",
         "actions": [
           {
-            "key": "http.url",
-            "pattern": "https?://[^/]+(?<httpPath>/[^?]*)",
+            "key": "http.target",
+            "pattern": "(?<contextPath>/[^/]*).*",
             "action": "extract"
           }
         ],
