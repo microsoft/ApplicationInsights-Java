@@ -70,6 +70,7 @@ shadowJar {
   relocate "ch.qos.logback", "${shadowPrefix}.ch.qos.logback"
   relocate "com.squareup.moshi", "${shadowPrefix}.com.squareup.moshi"
   relocate "okio", "${shadowPrefix}.okio"
+  relocate "javax.annotation", "${shadowPrefix}.javax.annotation"
 
   relocate("logback.configurationFile", "applicationinsights.logback.configurationFile")
   relocate("logback.xml", "applicationinsights.logback.xml")
