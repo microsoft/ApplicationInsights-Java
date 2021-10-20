@@ -111,6 +111,11 @@ class ConfigOverride {
       // using a BatchSpanProcessor with queue size 1 due to live metrics (this will change in the
       // future)
       properties.put("otel.traces.exporter", "none");
+
+      // TODO (trask) this can go away once new indexer is rolled out to gov clouds
+      properties.put(
+          "otel.instrumentation.common.experimental.capture-http-headers.client.response",
+          "Request-Context");
     } else {
       properties.put("otel.traces.exporter", tracesExporter);
       // when using another exporter, populate otel.service.name and otel.resource.attributes
