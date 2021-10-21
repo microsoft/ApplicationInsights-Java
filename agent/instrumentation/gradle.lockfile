@@ -147,6 +147,7 @@ io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-mongo-async-3
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4-common:1.7.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.0:1.7.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:1.7.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-common:1.7.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-okhttp-2.2:1.7.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-okhttp-3.0:1.7.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-opentelemetry-annotations-1.0:1.7.0+ai.patches-alpha=runtimeClasspath

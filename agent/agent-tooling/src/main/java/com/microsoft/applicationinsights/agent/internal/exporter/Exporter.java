@@ -828,8 +828,7 @@ public class Exporter implements SpanExporter {
     }
     String scheme = attributes.get(SemanticAttributes.HTTP_SCHEME);
     if (scheme == null) {
-      // TODO (trask) netty is not capturing scheme currently
-      scheme = "http";
+      return null;
     }
     String host = attributes.get(SemanticAttributes.HTTP_HOST);
     if (host == null) {
