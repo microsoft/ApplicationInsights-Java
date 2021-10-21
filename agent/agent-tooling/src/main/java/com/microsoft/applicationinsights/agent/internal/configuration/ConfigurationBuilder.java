@@ -567,7 +567,11 @@ public class ConfigurationBuilder {
       }
     } catch (JsonMappingException | JsonParseException ex) {
       throw new FriendlyException(
-          "Error parsing configuration from file: " + configPath.toAbsolutePath(),
+          "Error parsing configuration from file: "
+              + configPath.toAbsolutePath()
+              + System.lineSeparator()
+              + System.lineSeparator()
+              + ex.getMessage(),
           "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358",
           ex);
     } catch (Exception e) {
