@@ -821,7 +821,7 @@ public class Exporter implements SpanExporter {
   }
 
   @Nullable
-  private static String getHttpUrlFromServerSpan(Attributes attributes) {
+  public static String getHttpUrlFromServerSpan(Attributes attributes) {
     String scheme = attributes.get(SemanticAttributes.HTTP_SCHEME);
     if (scheme == null) {
       // TODO (trask) netty is not capturing scheme currently
