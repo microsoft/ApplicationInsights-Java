@@ -36,7 +36,7 @@ public class NonessentialStatsbeat extends BaseStatsbeat {
     writeFailureCount.set(0L);
   }
 
-  void incrementReadFailureCount() {
+  public void incrementReadFailureCount() {
     readFailureCount.incrementAndGet();
   }
 
@@ -44,7 +44,7 @@ public class NonessentialStatsbeat extends BaseStatsbeat {
     return readFailureCount.get();
   }
 
-  void incrementWriteFailureCount() {
+  public void incrementWriteFailureCount() {
     writeFailureCount.incrementAndGet();
   }
 

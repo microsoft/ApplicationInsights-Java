@@ -46,6 +46,7 @@ public class StatsbeatModule {
   private final AttachStatsbeat attachStatsbeat;
   private final FeatureStatsbeat featureStatsbeat;
   private final FeatureStatsbeat instrumentationStatsbeat;
+  private final NonessentialStatsbeat nonessentialStatsbeat;
 
   private final AtomicBoolean started = new AtomicBoolean();
 
@@ -55,6 +56,7 @@ public class StatsbeatModule {
     attachStatsbeat = new AttachStatsbeat(customDimensions);
     featureStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.FEATURE);
     instrumentationStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.INSTRUMENTATION);
+    nonessentialStatsbeat = new NonessentialStatsbeat(customDimensions);
   }
 
   public void start(TelemetryClient telemetryClient, Configuration config) {
@@ -105,7 +107,6 @@ public class StatsbeatModule {
     featureStatsbeat.trackConfigurationOptions(config);
 
     if (!config.preview.statsbeat.disabled) {
-      NonessentialStatsbeat nonessentialStatsbeat = new NonessentialStatsbeat(customDimensions);
       scheduledExecutor.scheduleWithFixedDelay(new StatsbeatSender(nonessentialStatsbeat, telemetryClient), longIntervalSeconds, longIntervalSeconds, TimeUnit.SECONDS);
     } else {
       logger.debug("Non-essential Statsbeat is disabled.");
@@ -121,6 +122,10 @@ public class StatsbeatModule {
 
   public FeatureStatsbeat getInstrumentationStatsbeat() {
     return instrumentationStatsbeat;
+  }
+
+  public NonessentialStatsbeat getNonessentialStatsbeat() {
+    return nonessentialStatsbeat;
   }
 
   /** Runnable which is responsible for calling the send method to transmit Statsbeat telemetry. */

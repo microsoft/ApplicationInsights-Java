@@ -29,6 +29,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Collection;
 import java.util.List;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -41,14 +42,16 @@ public final class LocalFileWriter {
 
   private final LocalFileCache localFileCache;
   private final File telemetryFolder;
+  private final NonessentialStatsbeat nonessentialStatsbeat;
 
   private static final OperationLogger operationLogger =
       new OperationLogger(
           LocalFileWriter.class, "Writing telemetry to disk (telemetry is discarded on failure)");
 
-  public LocalFileWriter(LocalFileCache localFileCache, File telemetryFolder) {
+  public LocalFileWriter(LocalFileCache localFileCache, File telemetryFolder, NonessentialStatsbeat nonessentialStatsbeat) {
     this.telemetryFolder = telemetryFolder;
     this.localFileCache = localFileCache;
+    this.nonessentialStatsbeat = nonessentialStatsbeat;
   }
 
   public boolean writeToDisk(List<ByteBuffer> buffers) {
@@ -58,6 +61,9 @@ public final class LocalFileWriter {
           "Local persistent storage capacity has been reached. It's currently at ("
               + (size / 1024)
               + "KB). Telemetry will be lost");
+      if (nonessentialStatsbeat != null) {
+        nonessentialStatsbeat.incrementWriteFailureCount();
+      }
       return false;
     }
 
@@ -66,7 +72,9 @@ public final class LocalFileWriter {
       tempFile = createTempFile(telemetryFolder);
     } catch (IOException e) {
       operationLogger.recordFailure("unable to create temporary file: " + e, e);
-      // TODO (heya) track number of failures to create a temp file via Statsbeat
+      if (nonessentialStatsbeat != null) {
+        nonessentialStatsbeat.incrementWriteFailureCount();
+      }
       return false;
     }
 
@@ -74,7 +82,9 @@ public final class LocalFileWriter {
       write(tempFile, buffers);
     } catch (IOException e) {
       operationLogger.recordFailure(String.format("unable to write to file: %s", e), e);
-      // TODO (heya) track IO write failure via Statsbeat
+      if (nonessentialStatsbeat != null) {
+        nonessentialStatsbeat.incrementReadFailureCount();
+      }
       return false;
     }
 
@@ -93,13 +103,14 @@ public final class LocalFileWriter {
               + PERMANENT_FILE_EXTENSION
               + " extension: ",
           e);
-      // TODO (heya) track number of failures to rename a file via Statsbeat
+      if (nonessentialStatsbeat != null) {
+        nonessentialStatsbeat.incrementWriteFailureCount();
+      }
       return false;
     }
 
     localFileCache.addPersistedFilenameToMap(permanentFile.getName());
 
-    // TODO (heya) track data persistence success via Statsbeat
     operationLogger.recordSuccess();
     return true;
   }
