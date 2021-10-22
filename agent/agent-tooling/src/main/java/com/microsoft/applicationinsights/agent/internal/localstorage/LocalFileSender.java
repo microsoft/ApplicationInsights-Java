@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryChannel;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.concurrent.Executors;
@@ -63,11 +64,15 @@ public class LocalFileSender implements Runnable {
         CompletableResultCode resultCode = telemetryChannel.sendRawBytes(persistedFile.rawBytes);
         resultCode.join(30, TimeUnit.SECONDS); // wait max 30 seconds for request to be completed.
         localFileLoader.updateProcessedFileStatus(resultCode.isSuccess(), persistedFile.file);
+      } else {
+        NonessentialStatsbeat nonessentialStatsbeat = telemetryChannel.getNonessentialStatsbeat();
+        if (nonessentialStatsbeat != null) {
+          nonessentialStatsbeat.incrementReadFailureCount();
+        }
       }
     } catch (RuntimeException ex) {
       logger.error(
           "Unexpected error occurred while sending telemetries from the local storage.", ex);
-      // TODO (heya) track sending persisted telemetries failure via Statsbeat.
     }
   }
 }

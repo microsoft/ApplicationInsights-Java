@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import javax.annotation.Nullable;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -38,15 +37,13 @@ public class LocalFileLoader {
 
   private final LocalFileCache localFileCache;
   private final File telemetryFolder;
-  private final NonessentialStatsbeat nonessentialStatsbeat;
 
   private static final OperationLogger operationLogger =
       new OperationLogger(LocalFileLoader.class, "Loading telemetry from disk");
 
-  public LocalFileLoader(LocalFileCache localFileCache, File telemetryFolder, NonessentialStatsbeat nonessentialStatsbeat) {
+  public LocalFileLoader(LocalFileCache localFileCache, File telemetryFolder) {
     this.localFileCache = localFileCache;
     this.telemetryFolder = telemetryFolder;
-    this.nonessentialStatsbeat = nonessentialStatsbeat;
   }
 
   // Load ByteBuffer from persisted files on disk in FIFO order.
@@ -84,9 +81,6 @@ public class LocalFileLoader {
               + TEMPORARY_FILE_EXTENSION
               + " extension: ",
           e);
-      if (nonessentialStatsbeat != null) {
-        nonessentialStatsbeat.incrementReadFailureCount();
-      }
 
       return null;
     }
@@ -97,9 +91,6 @@ public class LocalFileLoader {
       result = Files.readAllBytes(tempFile.toPath());
     } catch (IOException ex) {
       operationLogger.recordFailure("Fail to read telemetry from " + tempFile.getName(), ex);
-      if (nonessentialStatsbeat != null) {
-        nonessentialStatsbeat.incrementReadFailureCount();
-      }
 
       return null;
     }

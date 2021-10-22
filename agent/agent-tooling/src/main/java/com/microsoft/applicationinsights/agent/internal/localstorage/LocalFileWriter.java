@@ -42,16 +42,14 @@ public final class LocalFileWriter {
 
   private final LocalFileCache localFileCache;
   private final File telemetryFolder;
-  private final NonessentialStatsbeat nonessentialStatsbeat;
 
   private static final OperationLogger operationLogger =
       new OperationLogger(
           LocalFileWriter.class, "Writing telemetry to disk (telemetry is discarded on failure)");
 
-  public LocalFileWriter(LocalFileCache localFileCache, File telemetryFolder, NonessentialStatsbeat nonessentialStatsbeat) {
+  public LocalFileWriter(LocalFileCache localFileCache, File telemetryFolder) {
     this.telemetryFolder = telemetryFolder;
     this.localFileCache = localFileCache;
-    this.nonessentialStatsbeat = nonessentialStatsbeat;
   }
 
   public boolean writeToDisk(List<ByteBuffer> buffers) {
@@ -61,9 +59,6 @@ public final class LocalFileWriter {
           "Local persistent storage capacity has been reached. It's currently at ("
               + (size / 1024)
               + "KB). Telemetry will be lost");
-      if (nonessentialStatsbeat != null) {
-        nonessentialStatsbeat.incrementWriteFailureCount();
-      }
       return false;
     }
 
@@ -72,9 +67,6 @@ public final class LocalFileWriter {
       tempFile = createTempFile(telemetryFolder);
     } catch (IOException e) {
       operationLogger.recordFailure("unable to create temporary file: " + e, e);
-      if (nonessentialStatsbeat != null) {
-        nonessentialStatsbeat.incrementWriteFailureCount();
-      }
       return false;
     }
 
@@ -82,9 +74,6 @@ public final class LocalFileWriter {
       write(tempFile, buffers);
     } catch (IOException e) {
       operationLogger.recordFailure(String.format("unable to write to file: %s", e), e);
-      if (nonessentialStatsbeat != null) {
-        nonessentialStatsbeat.incrementReadFailureCount();
-      }
       return false;
     }
 
@@ -103,9 +92,6 @@ public final class LocalFileWriter {
               + PERMANENT_FILE_EXTENSION
               + " extension: ",
           e);
-      if (nonessentialStatsbeat != null) {
-        nonessentialStatsbeat.incrementWriteFailureCount();
-      }
       return false;
     }
 

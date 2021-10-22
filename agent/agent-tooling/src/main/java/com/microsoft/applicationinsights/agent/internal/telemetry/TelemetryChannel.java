@@ -40,6 +40,7 @@ import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClien
 import com.microsoft.applicationinsights.agent.internal.httpclient.RedirectPolicy;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeat;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
 import io.opentelemetry.instrumentation.api.caching.Cache;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.IOException;
@@ -86,15 +87,17 @@ public class TelemetryChannel {
   private final LocalFileWriter localFileWriter;
   // this is null for the statsbeat channel
   @Nullable private final NetworkStatsbeat networkStatsbeat;
+  @Nullable private final NonessentialStatsbeat nonessentialStatsbeat;
 
   public static TelemetryChannel create(
       URL endpointUrl,
       LocalFileWriter localFileWriter,
       Cache<String, String> ikeyEndpointMap,
       @Nullable NetworkStatsbeat networkStatsbeat,
+      @Nullable NonessentialStatsbeat nonessentialStatsbeat,
       @Nullable Configuration.AadAuthentication aadAuthentication) {
     HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(aadAuthentication, ikeyEndpointMap);
-    return new TelemetryChannel(httpPipeline, endpointUrl, localFileWriter, networkStatsbeat);
+    return new TelemetryChannel(httpPipeline, endpointUrl, localFileWriter, networkStatsbeat, nonessentialStatsbeat);
   }
 
   public CompletableResultCode sendRawBytes(ByteBuffer buffer) {
@@ -106,11 +109,17 @@ public class TelemetryChannel {
       HttpPipeline pipeline,
       URL endpointUrl,
       LocalFileWriter localFileWriter,
-      @Nullable NetworkStatsbeat networkStatsbeat) {
+      @Nullable NetworkStatsbeat networkStatsbeat,
+      @Nullable NonessentialStatsbeat nonessentialStatsbeat) {
     this.pipeline = pipeline;
     this.endpointUrl = endpointUrl;
     this.localFileWriter = localFileWriter;
     this.networkStatsbeat = networkStatsbeat;
+    this.nonessentialStatsbeat = nonessentialStatsbeat;
+  }
+
+  public NonessentialStatsbeat getNonessentialStatsbeat() {
+    return nonessentialStatsbeat;
   }
 
   public CompletableResultCode send(List<TelemetryItem> telemetryItems) {
@@ -241,8 +250,8 @@ public class TelemetryChannel {
   }
 
   private void writeToDiskOnFailure(List<ByteBuffer> byteBuffers) {
-    if (!localFileWriter.writeToDisk(byteBuffers)) {
-      // TODO (heya) track # of write failure via Statsbeat
+    if (!localFileWriter.writeToDisk(byteBuffers) && nonessentialStatsbeat != null) {
+      nonessentialStatsbeat.incrementWriteFailureCount();
     }
 
     byteBufferPool.offer(byteBuffers);
