@@ -82,7 +82,7 @@ public class TelemetryChannelTest {
         pipelineBuilder.build(),
         new URL(END_POINT_URL),
         new LocalFileWriter(localFileCache, tempFolder),
-        null);
+        null, null);
   }
 
   @Nullable
