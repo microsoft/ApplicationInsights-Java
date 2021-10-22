@@ -42,26 +42,14 @@ public class StatsbeatSmokeTest extends AiSmokeTest {
         mockedIngestion.waitForItems(getMetricPredicate("Feature"), 2, 70, TimeUnit.SECONDS);
 
     MetricData data = (MetricData) ((Data<?>) metrics.get(0).getData()).getBaseData();
-    assertNotNull(data.getProperties().get("rp"));
-    assertNotNull(data.getProperties().get("attach"));
-    assertNotNull(data.getProperties().get("cikey"));
-    assertNotNull(data.getProperties().get("runtimeVersion"));
-    assertNotNull(data.getProperties().get("os"));
-    assertNotNull(data.getProperties().get("language"));
-    assertNotNull(data.getProperties().get("version"));
+    assertCommon(data);
     assertNotNull(data.getProperties().get("feature"));
     assertNotNull(data.getProperties().get("type"));
     assertEquals("0", data.getProperties().get("type"));
     assertEquals(9, data.getProperties().size());
 
     MetricData instrumentationData = (MetricData) ((Data<?>) metrics.get(1).getData()).getBaseData();
-    assertNotNull(instrumentationData.getProperties().get("rp"));
-    assertNotNull(instrumentationData.getProperties().get("attach"));
-    assertNotNull(instrumentationData.getProperties().get("cikey"));
-    assertNotNull(instrumentationData.getProperties().get("runtimeVersion"));
-    assertNotNull(instrumentationData.getProperties().get("os"));
-    assertNotNull(instrumentationData.getProperties().get("language"));
-    assertNotNull(instrumentationData.getProperties().get("version"));
+    assertCommon(instrumentationData);
     assertNotNull(instrumentationData.getProperties().get("feature"));
     assertNotNull(instrumentationData.getProperties().get("type"));
     assertEquals("1", instrumentationData.getProperties().get("type"));
@@ -71,13 +59,7 @@ public class StatsbeatSmokeTest extends AiSmokeTest {
         mockedIngestion.waitForItems(getMetricPredicate("Attach"), 1, 70, TimeUnit.SECONDS);
 
     MetricData attachData = (MetricData) ((Data<?>) attachMetrics.get(0).getData()).getBaseData();
-    assertNotNull(attachData.getProperties().get("rp"));
-    assertNotNull(attachData.getProperties().get("attach"));
-    assertNotNull(attachData.getProperties().get("cikey"));
-    assertNotNull(attachData.getProperties().get("runtimeVersion"));
-    assertNotNull(attachData.getProperties().get("os"));
-    assertNotNull(attachData.getProperties().get("language"));
-    assertNotNull(attachData.getProperties().get("version"));
+    assertCommon(attachData);
     assertNotNull(attachData.getProperties().get("rpId"));
     assertEquals(8, attachData.getProperties().size());
 
@@ -87,13 +69,7 @@ public class StatsbeatSmokeTest extends AiSmokeTest {
 
     MetricData requestSuccessCountData =
         (MetricData) ((Data<?>) requestSuccessCountMetrics.get(0).getData()).getBaseData();
-    assertNotNull(requestSuccessCountData.getProperties().get("rp"));
-    assertNotNull(requestSuccessCountData.getProperties().get("attach"));
-    assertNotNull(requestSuccessCountData.getProperties().get("cikey"));
-    assertNotNull(requestSuccessCountData.getProperties().get("runtimeVersion"));
-    assertNotNull(requestSuccessCountData.getProperties().get("os"));
-    assertNotNull(requestSuccessCountData.getProperties().get("language"));
-    assertNotNull(requestSuccessCountData.getProperties().get("version"));
+    assertCommon(requestSuccessCountData);
     assertNotNull(requestSuccessCountData.getProperties().get("endpoint"));
     assertNotNull(requestSuccessCountData.getProperties().get("host"));
     assertEquals(9, requestSuccessCountData.getProperties().size());
@@ -104,16 +80,34 @@ public class StatsbeatSmokeTest extends AiSmokeTest {
 
     MetricData requestDurationData =
         (MetricData) ((Data<?>) requestDurationMetrics.get(0).getData()).getBaseData();
-    assertNotNull(requestDurationData.getProperties().get("rp"));
-    assertNotNull(requestDurationData.getProperties().get("attach"));
-    assertNotNull(requestDurationData.getProperties().get("cikey"));
-    assertNotNull(requestDurationData.getProperties().get("runtimeVersion"));
-    assertNotNull(requestDurationData.getProperties().get("os"));
-    assertNotNull(requestDurationData.getProperties().get("language"));
-    assertNotNull(requestDurationData.getProperties().get("version"));
+    assertCommon(requestDurationData);
     assertNotNull(requestSuccessCountData.getProperties().get("endpoint"));
     assertNotNull(requestSuccessCountData.getProperties().get("host"));
     assertEquals(9, requestDurationData.getProperties().size());
+
+    List<Envelope> readFailureCountMetrics =
+        mockedIngestion.waitForItems(getMetricPredicate("Read Failure Count"), 1, 70, TimeUnit.SECONDS);
+    MetricData readFailureCountData =
+        (MetricData) ((Data<?>) readFailureCountMetrics.get(0).getData()).getBaseData();
+    assertCommon(readFailureCountData);
+    assertEquals(7, requestSuccessCountData.getProperties().size());
+
+    List<Envelope> writeFailureCountMetrics =
+        mockedIngestion.waitForItems(getMetricPredicate("Write Failure Count"), 1, 70, TimeUnit.SECONDS);
+    MetricData writeFailureCountData =
+        (MetricData) ((Data<?>) writeFailureCountMetrics.get(0).getData()).getBaseData();
+    assertCommon(writeFailureCountData);
+    assertEquals(7, requestSuccessCountData.getProperties().size());
+  }
+
+  private void assertCommon(MetricData metricData) {
+    assertNotNull(metricData.getProperties().get("rp"));
+    assertNotNull(metricData.getProperties().get("attach"));
+    assertNotNull(metricData.getProperties().get("cikey"));
+    assertNotNull(metricData.getProperties().get("runtimeVersion"));
+    assertNotNull(metricData.getProperties().get("os"));
+    assertNotNull(metricData.getProperties().get("language"));
+    assertNotNull(metricData.getProperties().get("version"));
   }
 
   private static Predicate<Envelope> getMetricPredicate(String name) {
