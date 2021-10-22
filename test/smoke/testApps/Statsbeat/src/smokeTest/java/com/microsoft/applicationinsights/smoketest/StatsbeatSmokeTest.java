@@ -90,14 +90,14 @@ public class StatsbeatSmokeTest extends AiSmokeTest {
     MetricData readFailureCountData =
         (MetricData) ((Data<?>) readFailureCountMetrics.get(0).getData()).getBaseData();
     assertCommon(readFailureCountData);
-    assertEquals(7, requestSuccessCountData.getProperties().size());
+    assertEquals(7, readFailureCountData.getProperties().size());
 
     List<Envelope> writeFailureCountMetrics =
         mockedIngestion.waitForItems(getMetricPredicate("Write Failure Count"), 1, 70, TimeUnit.SECONDS);
     MetricData writeFailureCountData =
         (MetricData) ((Data<?>) writeFailureCountMetrics.get(0).getData()).getBaseData();
     assertCommon(writeFailureCountData);
-    assertEquals(7, requestSuccessCountData.getProperties().size());
+    assertEquals(7, writeFailureCountData.getProperties().size());
   }
 
   private void assertCommon(MetricData metricData) {
