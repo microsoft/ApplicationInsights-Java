@@ -1,6 +1,6 @@
 # CHANGELOG
 
-# Version 3.2.1-BETA
+# Version 3.2.1 GA
 * Add Akka preview instrumentation [#1901](https://github.com/microsoft/ApplicationInsights-Java/issues/1901).
 * Add internal-reflection instrumentation.
 * Reduce spammy logging.
