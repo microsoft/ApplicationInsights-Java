@@ -33,6 +33,11 @@ public class NonessentialStatsbeat extends BaseStatsbeat {
   private final AtomicLong readFailureCount = new AtomicLong();
   private final AtomicLong writeFailureCount = new AtomicLong();
 
+  // only used by tests
+  public NonessentialStatsbeat() {
+    super(new CustomDimensions());
+  }
+
   protected NonessentialStatsbeat(CustomDimensions customDimensions) {
     super(customDimensions);
   }
