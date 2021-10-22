@@ -104,11 +104,14 @@ public class StatsbeatModule {
 
     featureStatsbeat.trackConfigurationOptions(config);
 
-    if (config.preview.statsbeat.disabled) {
+    if (!config.preview.statsbeat.disabled) {
+      NonessentialStatsbeat nonessentialStatsbeat = new NonessentialStatsbeat(customDimensions);
+      scheduledExecutor.scheduleWithFixedDelay(new StatsbeatSender(nonessentialStatsbeat, telemetryClient), longIntervalSeconds, longIntervalSeconds, TimeUnit.SECONDS);
+    } else {
+      logger.debug("Non-essential Statsbeat is disabled.");
       // disabled will disable non-essentials Statsbeat, such as tracking failure or success of disk
       // persistence operations, optional network statsbeat, live metric,
       // azure metadata service failure, profile endpoint, etc.
-      // TODO stop sending non-essential Statsbeat when applicable
     }
   }
 
