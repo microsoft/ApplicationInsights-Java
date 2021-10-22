@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# Version 3.2.1 GA
+* Add Akka preview instrumentation [#1911](https://github.com/microsoft/ApplicationInsights-Java/pull/1911).
+* Add internal-reflection instrumentation [#1912](https://github.com/microsoft/ApplicationInsights-Java/pull/1912).
+* Reduce spammy logging [#1915](https://github.com/microsoft/ApplicationInsights-Java/pull/1915).
+
 # Version 3.2.0 GA
 * Add Quartz and Apache Camel instrumentations to preview [#1899](https://github.com/microsoft/ApplicationInsights-Java/pull/1899).
 
