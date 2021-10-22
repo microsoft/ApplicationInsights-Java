@@ -107,7 +107,11 @@ public class StatsbeatModule {
     featureStatsbeat.trackConfigurationOptions(config);
 
     if (!config.preview.statsbeat.disabled) {
-      scheduledExecutor.scheduleWithFixedDelay(new StatsbeatSender(nonessentialStatsbeat, telemetryClient), longIntervalSeconds, longIntervalSeconds, TimeUnit.SECONDS);
+      scheduledExecutor.scheduleWithFixedDelay(
+          new StatsbeatSender(nonessentialStatsbeat, telemetryClient),
+          longIntervalSeconds,
+          longIntervalSeconds,
+          TimeUnit.SECONDS);
     } else {
       logger.debug("Non-essential Statsbeat is disabled.");
       // disabled will disable non-essentials Statsbeat, such as tracking failure or success of disk

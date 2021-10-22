@@ -97,7 +97,8 @@ public class TelemetryChannel {
       @Nullable NonessentialStatsbeat nonessentialStatsbeat,
       @Nullable Configuration.AadAuthentication aadAuthentication) {
     HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(aadAuthentication, ikeyEndpointMap);
-    return new TelemetryChannel(httpPipeline, endpointUrl, localFileWriter, networkStatsbeat, nonessentialStatsbeat);
+    return new TelemetryChannel(
+        httpPipeline, endpointUrl, localFileWriter, networkStatsbeat, nonessentialStatsbeat);
   }
 
   public CompletableResultCode sendRawBytes(ByteBuffer buffer) {

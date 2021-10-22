@@ -29,7 +29,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Collection;
 import java.util.List;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
