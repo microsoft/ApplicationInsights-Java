@@ -13,6 +13,7 @@ import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesNoArguments;
 
 import com.microsoft.applicationinsights.extensibility.context.OperationContext;
+import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import io.opentelemetry.api.trace.Span;
@@ -49,8 +50,16 @@ public class TelemetryContextInstrumentation implements TypeInstrumentation {
         isMethod()
             .and(isPublic())
             .and(not(isStatic()))
+            .and(named("getSession"))
+            .and(takesNoArguments()),
+        TelemetryContextInstrumentation.class.getName() + "$GetSessionAdvice");
+    transformer.applyAdviceToMethod(
+        isMethod()
+            .and(isPublic())
+            .and(not(isStatic()))
             .and(not(named("getUser")))
-            .and(not(named("getOperation"))),
+            .and(not(named("getOperation")))
+            .and(not(named("getSession"))),
         TelemetryContextInstrumentation.class.getName() + "$OtherMethodsAdvice");
   }
 
@@ -73,6 +82,18 @@ public class TelemetryContextInstrumentation implements TypeInstrumentation {
       Span span = VirtualField.find(TelemetryContext.class, Span.class).get(telemetryContext);
       if (span != null) {
         VirtualField.find(OperationContext.class, Span.class).set(operationContext, span);
+      }
+    }
+  }
+
+  public static class GetSessionAdvice {
+    @Advice.OnMethodExit
+    public static void methodExit(
+        @Advice.This TelemetryContext telemetryContext,
+        @Advice.Return SessionContext sessionContext) {
+      Span span = VirtualField.find(TelemetryContext.class, Span.class).get(telemetryContext);
+      if (span != null) {
+        VirtualField.find(SessionContext.class, Span.class).set(sessionContext, span);
       }
     }
   }

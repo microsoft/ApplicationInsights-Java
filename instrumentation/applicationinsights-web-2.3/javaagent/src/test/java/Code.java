@@ -63,6 +63,11 @@ public class Code {
     return internalGetOperationId();
   }
 
+  @WithSpan(kind = SpanKind.SERVER)
+  public static void setSessionId() {
+    internalSetSessionId();
+  }
+
   @WithSpan
   private static void internalSetName() {
     ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setName("new name");
@@ -92,6 +97,15 @@ public class Code {
         .getId();
   }
 
+  @WithSpan
+  private static void internalSetSessionId() {
+    ThreadContext.getRequestTelemetryContext()
+        .getHttpRequestTelemetry()
+        .getContext()
+        .getSession()
+        .setId("the session id");
+  }
+
   @WithSpan(kind = SpanKind.SERVER)
   public static void otherRequestTelemetryContextMethods() {
     ThreadContext.getRequestTelemetryContext().getCorrelationContext();
@@ -109,7 +123,7 @@ public class Code {
 
   @WithSpan(kind = SpanKind.SERVER)
   public static void otherTelemetryContextMethods() {
-    ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getSession();
+    ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getDevice();
   }
 
   @WithSpan(kind = SpanKind.SERVER)
@@ -128,6 +142,15 @@ public class Code {
         .getContext()
         .getOperation()
         .setId("xyz");
+  }
+
+  @WithSpan(kind = SpanKind.SERVER)
+  public static void otherSessionContextMethods() {
+    ThreadContext.getRequestTelemetryContext()
+        .getHttpRequestTelemetry()
+        .getContext()
+        .getSession()
+        .getId();
   }
 
   @WithSpan(kind = SpanKind.SERVER)
