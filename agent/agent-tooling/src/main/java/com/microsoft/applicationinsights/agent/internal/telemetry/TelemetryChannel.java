@@ -118,10 +118,12 @@ public class TelemetryChannel {
     List<CompletableResultCode> resultCodeList = new ArrayList<>();
     for (TelemetryItem telemetryItem : telemetryItems) {
       String instrumentationKey = telemetryItem.getInstrumentationKey();
-      if (!instrumentationKeyMap.containsKey(instrumentationKey)) {
-        instrumentationKeyMap.put(instrumentationKey, new ArrayList<>());
+      if (instrumentationKey != null) {
+        if (!instrumentationKeyMap.containsKey(instrumentationKey)) {
+          instrumentationKeyMap.put(instrumentationKey, new ArrayList<>());
+        }
+        instrumentationKeyMap.get(instrumentationKey).add(telemetryItem);
       }
-      instrumentationKeyMap.get(instrumentationKey).add(telemetryItem);
     }
     for (String instrumentationKey : instrumentationKeyMap.keySet()) {
       resultCodeList.add(
