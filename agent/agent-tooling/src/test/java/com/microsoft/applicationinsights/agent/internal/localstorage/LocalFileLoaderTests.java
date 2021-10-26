@@ -225,7 +225,8 @@ public class LocalFileLoaderTests {
 
     // send persisted files one by one and then delete it permanently.
     for (int i = 0; i < 10; i++) {
-      LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
+      LocalFileLoader.PersistedFile persistedFile =
+          localFileLoader.loadTelemetriesFromDisk(localFileLoader.getFileNameToBeLoaded());
       CompletableResultCode completableResultCode =
           telemetryChannel.sendRawBytes(persistedFile.rawBytes);
       completableResultCode.join(10, SECONDS);
@@ -271,7 +272,8 @@ public class LocalFileLoaderTests {
 
     // fail to send persisted files and expect them to be kept on disk
     for (int i = 0; i < 10; i++) {
-      LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
+      LocalFileLoader.PersistedFile persistedFile =
+          localFileLoader.loadTelemetriesFromDisk(localFileLoader.getFileNameToBeLoaded());
       CompletableResultCode completableResultCode =
           telemetryChannel.sendRawBytes(persistedFile.rawBytes);
       completableResultCode.join(10, SECONDS);
@@ -461,7 +463,8 @@ public class LocalFileLoaderTests {
   }
 
   private static byte[] readTelemetriesFromDiskToBytes(LocalFileLoader localFileLoader) {
-    LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
+    LocalFileLoader.PersistedFile persistedFile =
+        localFileLoader.loadTelemetriesFromDisk(localFileLoader.getFileNameToBeLoaded());
     byte[] bytes = new byte[persistedFile.rawBytes.remaining()];
     persistedFile.rawBytes.get(bytes);
     return bytes;

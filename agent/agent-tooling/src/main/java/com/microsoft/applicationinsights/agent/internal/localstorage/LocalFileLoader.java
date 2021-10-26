@@ -46,13 +46,14 @@ public class LocalFileLoader {
     this.telemetryFolder = telemetryFolder;
   }
 
+  String getFileNameToBeLoaded() {
+    return localFileCache.poll();
+  }
+
   // Load ByteBuffer from persisted files on disk in FIFO order.
   @Nullable
-  PersistedFile loadTelemetriesFromDisk() {
-    String filenameToBeLoaded = localFileCache.poll();
-    if (filenameToBeLoaded == null) {
-      return null;
-    }
+  PersistedFile loadTelemetriesFromDisk(String filenameToBeLoaded) {
+    assert (filenameToBeLoaded != null);
 
     // when reading a file from the disk, loader renames the source file to "*.tmp" to prevent other
     // threads from processing the same file over and over again. this will prevent same data gets

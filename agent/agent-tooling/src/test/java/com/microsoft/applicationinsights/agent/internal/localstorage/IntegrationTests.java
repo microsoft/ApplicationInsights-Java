@@ -99,7 +99,7 @@ public class IntegrationTests {
 
     for (int i = 100; i > 0; i--) {
       // need to convert ByteBuffer back to TelemetryItem and then compare
-      localFileLoader.loadTelemetriesFromDisk();
+      localFileLoader.loadTelemetriesFromDisk(localFileLoader.getFileNameToBeLoaded());
       assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(i - 1);
     }
 
