@@ -41,6 +41,7 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -95,6 +96,8 @@ public class Exporter implements SpanExporter {
   // for ThreadContext.getRequestTelemetryContext().getRequestTelemetry().setSource()
   private static final AttributeKey<String> AI_SPAN_SOURCE_KEY =
       AttributeKey.stringKey("applicationinsights.internal.source");
+  private static final AttributeKey<String> AI_SESSION_ID_KEY =
+      AttributeKey.stringKey("applicationinsights.internal.session_id");
 
   private static final AttributeKey<String> AI_LOG_LEVEL_KEY =
       AttributeKey.stringKey("applicationinsights.internal.log_level");
@@ -795,6 +798,13 @@ public class Exporter implements SpanExporter {
 
     data.setSource(getSource(attributes, span.getSpanContext()));
 
+    String sessionId = attributes.get(AI_SESSION_ID_KEY);
+    if (sessionId != null) {
+      // this is only used by the 2.x web interop bridge for
+      // ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getSession().setId()
+      telemetry.getTags().put(ContextTagKeys.AI_SESSION_ID.toString(), sessionId);
+    }
+
     // TODO(trask)? for batch consumer, enqueuedTime should be the average of this attribute
     //  across all links
     Long enqueuedTime = attributes.get(AZURE_SDK_ENQUEUED_TIME);
@@ -844,7 +854,7 @@ public class Exporter implements SpanExporter {
   @Nullable
   private static String getSource(Attributes attributes, SpanContext spanContext) {
     // this is only used by the 2.x web interop bridge
-    // for ThreadContext.getRequestTelemetryContext().getRequestTelemetry().setSource()
+    // for ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setSource()
     String source = attributes.get(AI_SPAN_SOURCE_KEY);
     if (source != null) {
       return source;
@@ -1035,11 +1045,12 @@ public class Exporter implements SpanExporter {
             return;
           }
           // special case mappings
-          if (key.equals(SemanticAttributes.ENDUSER_ID) && value instanceof String) {
+          if (stringKey.equals(SemanticAttributes.ENDUSER_ID.getKey()) && value instanceof String) {
             telemetry.getTags().put(ContextTagKeys.AI_USER_ID.toString(), (String) value);
             return;
           }
-          if (key.equals(SemanticAttributes.HTTP_USER_AGENT) && value instanceof String) {
+          if (stringKey.equals(SemanticAttributes.HTTP_USER_AGENT.getKey())
+              && value instanceof String) {
             telemetry.getTags().put("ai.user.userAgent", (String) value);
             return;
           }
@@ -1064,7 +1075,7 @@ public class Exporter implements SpanExporter {
           if (STANDARD_ATTRIBUTE_PREFIXES.getOrDefault(stringKey, false)) {
             return;
           }
-          String val = getStringValue(key, value);
+          String val = convertToString(value, key.getType());
           if (value != null) {
             TelemetryUtil.getProperties(data).put(key.getKey(), val);
           }
@@ -1072,8 +1083,8 @@ public class Exporter implements SpanExporter {
   }
 
   @Nullable
-  private static String getStringValue(AttributeKey<?> attributeKey, Object value) {
-    switch (attributeKey.getType()) {
+  private static String convertToString(Object value, AttributeType type) {
+    switch (type) {
       case STRING:
       case BOOLEAN:
       case LONG:
@@ -1085,7 +1096,7 @@ public class Exporter implements SpanExporter {
       case DOUBLE_ARRAY:
         return join((List<?>) value);
     }
-    logger.warn("unexpected attribute type: {}", attributeKey.getType());
+    logger.warn("unexpected attribute type: {}", type);
     return null;
   }
 
