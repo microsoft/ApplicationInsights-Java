@@ -3,9 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import static io.opentelemetry.api.trace.SpanKind.INTERNAL
-import static io.opentelemetry.api.trace.SpanKind.SERVER
-
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.trace.Span
@@ -16,6 +13,9 @@ import io.opentelemetry.api.trace.TraceState
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.Scope
 import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
+
+import static io.opentelemetry.api.trace.SpanKind.INTERNAL
+import static io.opentelemetry.api.trace.SpanKind.SERVER
 
 class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
 
@@ -180,6 +180,30 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
     getTraces().get(0).get(0).traceId == traceId
   }
 
+  def "set session id"() {
+    when:
+    new Code().setSessionId()
+
+    then:
+    assertTraces(1) {
+      trace(0, 2) {
+        span(0) {
+          name "Code.setSessionId"
+          kind SERVER
+          hasNoParent()
+          attributes {
+            "applicationinsights.internal.session_id" "the session id"
+          }
+        }
+        span(1) {
+          name "Code.internalSetSessionId"
+          kind INTERNAL
+          childOf span(0)
+        }
+      }
+    }
+  }
+
   def "get tracestate"() {
     def spanContext = SpanContext.create(
       "12341234123412341234123412341234",
@@ -290,5 +314,10 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
   def "should not throw on other OperationContext methods"() {
     expect:
     new Code().otherOperationContextMethods()
+  }
+
+  def "should not throw on other SessionContext methods"() {
+    expect:
+    new Code().otherSessionContextMethods()
   }
 }
