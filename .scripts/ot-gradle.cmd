@@ -12,7 +12,9 @@ pushd %PROJECT_ROOT%
 
 set DEFAULT_OPTIONS=--info --stacktrace --warning-mode=all
 rem one branch build has been getting sporadic metaspace out of memory errors 
-set GRADLE_OPTS=-XX:MaxMetaspaceSize=768m
+powershell -Command "(gc gradle.properties) -replace '-XX:MaxMetaspaceSize=512m', '-XX:MaxMetaspaceSize=768m' | Out-File -encoding ASCII gradle.properties"
+rem this is just for debugging
+type gradle.properties
 set GRADLE_CMD=gradlew.bat %DEFAULT_OPTIONS% %*
 echo Running '%GRADLE_CMD%' in '%PROJECT_ROOT%'
 call %GRADLE_CMD%

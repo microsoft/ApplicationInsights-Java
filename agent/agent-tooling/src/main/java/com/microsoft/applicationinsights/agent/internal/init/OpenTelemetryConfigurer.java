@@ -30,17 +30,23 @@ import com.microsoft.applicationinsights.agent.internal.legacyheaders.Delegating
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithLogProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
+import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -135,11 +141,58 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
                 "Not an expected ProcessorType: " + processorConfig.type);
         }
       }
+
+      // this is temporary until semantic attributes stabilize and we make breaking change
+      // then can use java.util.functions.Predicate<Attributes>
+      currExporter = new BackCompatHttpUrlProcessor(currExporter);
     }
 
     // using BatchSpanProcessor in order to get off of the application thread as soon as possible
     // using batch size 1 because need to convert to SpanData as soon as possible to grab data for
     // live metrics. the real batching is done at a lower level
     return BatchSpanProcessor.builder(currExporter).setMaxExportBatchSize(1).build();
+  }
+
+  private static class BackCompatHttpUrlProcessor implements SpanExporter {
+
+    private final SpanExporter delegate;
+
+    private BackCompatHttpUrlProcessor(SpanExporter delegate) {
+      this.delegate = delegate;
+    }
+
+    @Override
+    public CompletableResultCode export(Collection<SpanData> spans) {
+      List<SpanData> copy = new ArrayList<>();
+      for (SpanData span : spans) {
+        copy.add(addBackCompatHttpUrl(span));
+      }
+      return delegate.export(copy);
+    }
+
+    private static SpanData addBackCompatHttpUrl(SpanData span) {
+      Attributes attributes = span.getAttributes();
+      if (attributes.get(SemanticAttributes.HTTP_URL) != null) {
+        // already has http.url
+        return span;
+      }
+      String httpUrl = Exporter.getHttpUrlFromServerSpan(attributes);
+      if (httpUrl == null) {
+        return span;
+      }
+      AttributesBuilder builder = attributes.toBuilder();
+      builder.put(SemanticAttributes.HTTP_URL, httpUrl);
+      return new MySpanData(span, builder.build());
+    }
+
+    @Override
+    public CompletableResultCode flush() {
+      return delegate.flush();
+    }
+
+    @Override
+    public CompletableResultCode shutdown() {
+      return delegate.shutdown();
+    }
   }
 }

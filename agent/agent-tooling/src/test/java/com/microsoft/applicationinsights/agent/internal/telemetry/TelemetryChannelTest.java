@@ -72,7 +72,7 @@ public class TelemetryChannelTest {
   private TelemetryChannel getTelemetryChannel() throws MalformedURLException {
     List<HttpPipelinePolicy> policies = new ArrayList<>();
 
-    policies.add(new RedirectPolicy(Cache.newBuilder().setMaximumSize(5).build()));
+    policies.add(new RedirectPolicy(Cache.builder().setMaximumSize(5).build()));
     HttpPipelineBuilder pipelineBuilder =
         new HttpPipelineBuilder()
             .policies(policies.toArray(new HttpPipelinePolicy[0]))

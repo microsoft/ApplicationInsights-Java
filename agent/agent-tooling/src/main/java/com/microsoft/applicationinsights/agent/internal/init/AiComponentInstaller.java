@@ -168,7 +168,7 @@ public class AiComponentInstaller implements AgentListener {
             .map(MetricFilter::new)
             .collect(Collectors.toList());
 
-    Cache<String, String> ikeyEndpointMap = Cache.newBuilder().setMaximumSize(100).build();
+    Cache<String, String> ikeyEndpointMap = Cache.builder().setMaximumSize(100).build();
     StatsbeatModule statsbeatModule = new StatsbeatModule(ikeyEndpointMap);
     // TODO (heya) apply Builder design pattern to TelemetryClient
     TelemetryClient telemetryClient =

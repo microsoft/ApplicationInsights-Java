@@ -257,7 +257,7 @@ public class TelemetryUtil {
   public static final String SAMPLING_PERCENTAGE_TRACE_STATE = "ai-internal-sp";
 
   private static final Cache<String, OptionalFloat> parsedSamplingPercentageCache =
-      Cache.newBuilder().setMaximumSize(100).build();
+      Cache.builder().setMaximumSize(100).build();
 
   private static final AtomicBoolean alreadyLoggedSamplingPercentageMissing = new AtomicBoolean();
   private static final AtomicBoolean alreadyLoggedSamplingPercentageParseError =

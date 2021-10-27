@@ -76,14 +76,15 @@ public class Exporter implements SpanExporter {
 
   private static final Trie<Boolean> STANDARD_ATTRIBUTE_PREFIXES;
 
+  // TODO (trask) this can go away once new indexer is rolled out to gov clouds
+  private static final AttributeKey<String> AI_REQUEST_CONTEXT_KEY =
+      AttributeKey.stringKey("http.response.header.request_context");
+
   public static final AttributeKey<String> AI_OPERATION_NAME_KEY =
       AttributeKey.stringKey("applicationinsights.internal.operation_name");
 
   private static final AttributeKey<Boolean> AI_LOG_KEY =
       AttributeKey.booleanKey("applicationinsights.internal.log");
-
-  private static final AttributeKey<String> AI_SPAN_TARGET_APP_ID_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.target_app_id");
 
   public static final AttributeKey<String> AI_LEGACY_PARENT_ID_KEY =
       AttributeKey.stringKey("applicationinsights.internal.legacy_parent_id");
@@ -482,7 +483,7 @@ public class Exporter implements SpanExporter {
 
     String target = getTargetForHttpClientSpan(attributes);
 
-    String targetAppId = attributes.get(AI_SPAN_TARGET_APP_ID_KEY);
+    String targetAppId = getTargetAppId(attributes);
 
     if (targetAppId == null || AiAppId.getAppId().equals(targetAppId)) {
       telemetry.setType("Http");
@@ -503,6 +504,19 @@ public class Exporter implements SpanExporter {
 
     String url = attributes.get(SemanticAttributes.HTTP_URL);
     telemetry.setData(url);
+  }
+
+  @Nullable
+  private static String getTargetAppId(Attributes attributes) {
+    String requestContext = attributes.get(AI_REQUEST_CONTEXT_KEY);
+    if (requestContext == null) {
+      return null;
+    }
+    int index = requestContext.indexOf('=');
+    if (index == -1) {
+      return null;
+    }
+    return requestContext.substring(index + 1);
   }
 
   private static String getTargetForHttpClientSpan(Attributes attributes) {
@@ -755,7 +769,7 @@ public class Exporter implements SpanExporter {
     data.setDuration(FormattedDuration.fromNanos(span.getEndEpochNanos() - startEpochNanos));
     data.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
 
-    String httpUrl = attributes.get(SemanticAttributes.HTTP_URL);
+    String httpUrl = getHttpUrlFromServerSpan(attributes);
     if (httpUrl != null) {
       data.setUrl(httpUrl);
     }
@@ -804,6 +818,27 @@ public class Exporter implements SpanExporter {
     // export
     telemetryClient.trackAsync(telemetry);
     exportEvents(span, operationName, samplingPercentage);
+  }
+
+  @Nullable
+  public static String getHttpUrlFromServerSpan(Attributes attributes) {
+    String httpUrl = attributes.get(SemanticAttributes.HTTP_URL);
+    if (httpUrl != null) {
+      return httpUrl;
+    }
+    String scheme = attributes.get(SemanticAttributes.HTTP_SCHEME);
+    if (scheme == null) {
+      return null;
+    }
+    String host = attributes.get(SemanticAttributes.HTTP_HOST);
+    if (host == null) {
+      return null;
+    }
+    String target = attributes.get(SemanticAttributes.HTTP_TARGET);
+    if (target == null) {
+      return null;
+    }
+    return scheme + "://" + host + target;
   }
 
   @Nullable
