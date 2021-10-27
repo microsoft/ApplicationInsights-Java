@@ -66,7 +66,8 @@ public class LocalFileSender implements Runnable {
       }
     } catch (RuntimeException ex) {
       logger.error(
-          "Unexpected error occurred while sending telemetries from the local storage '{}'", ex.toString());
+          "Unexpected error occurred while sending telemetries from the local storage '{}'",
+          ex.toString());
       // TODO (heya) track sending persisted telemetries failure via Statsbeat.
     }
   }

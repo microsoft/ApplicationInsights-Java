@@ -91,7 +91,8 @@ public final class LocalFileWriter {
               + tempFile.getName()
               + " to have "
               + PERMANENT_FILE_EXTENSION
-              + " extension: " + e.toString(),
+              + " extension: "
+              + e.toString(),
           e);
       // TODO (heya) track number of failures to rename a file via Statsbeat
       return false;
