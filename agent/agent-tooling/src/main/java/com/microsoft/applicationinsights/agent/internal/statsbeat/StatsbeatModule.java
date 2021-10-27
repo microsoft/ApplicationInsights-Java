@@ -84,12 +84,12 @@ public class StatsbeatModule {
         TimeUnit.SECONDS);
     scheduledExecutor.scheduleWithFixedDelay(
         new StatsbeatSender(featureStatsbeat, telemetryClient),
-        longIntervalSeconds,
+        60,
         longIntervalSeconds,
         TimeUnit.SECONDS);
     scheduledExecutor.scheduleWithFixedDelay(
         new StatsbeatSender(instrumentationStatsbeat, telemetryClient),
-        longIntervalSeconds,
+        60,
         longIntervalSeconds,
         TimeUnit.SECONDS);
 
