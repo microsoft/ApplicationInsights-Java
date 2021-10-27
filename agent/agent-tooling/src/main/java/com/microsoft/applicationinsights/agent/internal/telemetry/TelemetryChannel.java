@@ -222,16 +222,19 @@ public class TelemetryChannel {
                   error, endpointUrl.toString(), friendlyExceptionThrown, logger);
               operationLogger.recordFailure(
                   "Error sending telemetry items: " + error.getMessage(), error);
+
+              // we don't track statsbeat requests failure count via Statsbeat
               if (networkStatsbeat != null && instrumentationKey != null) {
                 networkStatsbeat.incrementRequestFailureCount(instrumentationKey);
               }
-              // sending raw bytes won't have any instrumentation key
+              // sending Statsbeat raw bytes won't have any instrumentation key
               if (instrumentationKey != null) {
                 writeToDiskOnFailure(byteBuffers);
               }
               result.fail();
             },
             () -> {
+              // we don't track statsbeat request success count via Statsbeat
               if (networkStatsbeat != null && instrumentationKey != null) {
                 networkStatsbeat.incrementRequestSuccessCount(
                     System.currentTimeMillis() - startTime, instrumentationKey);
@@ -270,6 +273,7 @@ public class TelemetryChannel {
       case 439: // Breeze-specific: THROTTLED OVER EXTENDED TIME
         // TODO handle throttling
         // TODO (heya) track throttling count via Statsbeat
+        // we don't track statsbeat throttling count via Statsbeat
         if (networkStatsbeat != null && instrumentationKey != null) {
           networkStatsbeat.incrementThrottlingCount(instrumentationKey);
         }
@@ -283,6 +287,7 @@ public class TelemetryChannel {
       case 0: // client-side exception
         // TODO exponential backoff and retry to a limit
         // TODO (heya) track failure count via Statsbeat
+        // we don't track statsbeat retry count via Statsbeat
         if (networkStatsbeat != null && instrumentationKey != null) {
           networkStatsbeat.incrementRetryCount(instrumentationKey);
         }
