@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# Version 3.2.2 GA
+* Bridge session id from 2.x SDK [#1930](https://github.com/microsoft/ApplicationInsights-Java/pull/1930)
+* Fix NullPointerException when sending raw bytes from persisted files on disk [#1931](https://github.com/microsoft/ApplicationInsights-Java/pull/1931).
+* Add non-essential Statsbeat [#1925](https://github.com/microsoft/ApplicationInsights-Java/pull/1925)
+
 # Version 3.2.1 GA
 * Add Akka preview instrumentation [#1911](https://github.com/microsoft/ApplicationInsights-Java/pull/1911).
 * Add internal-reflection instrumentation [#1912](https://github.com/microsoft/ApplicationInsights-Java/pull/1912).
