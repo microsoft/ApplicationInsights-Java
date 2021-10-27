@@ -38,6 +38,7 @@ public class LocalFileLoader {
 
   private final LocalFileCache localFileCache;
   private final File telemetryFolder;
+    // this is null for Statsbeat telemetry
   @Nullable private final NonessentialStatsbeat nonessentialStatsbeat;
 
   private static final OperationLogger operationLogger =
@@ -78,7 +79,6 @@ public class LocalFileLoader {
           new File(
               telemetryFolder,
               FilenameUtils.getBaseName(filenameToBeLoaded) + TEMPORARY_FILE_EXTENSION);
-      incrementReadFailureCount();
       FileUtils.moveFile(sourceFile, tempFile);
     } catch (IOException e) {
       operationLogger.recordFailure(
