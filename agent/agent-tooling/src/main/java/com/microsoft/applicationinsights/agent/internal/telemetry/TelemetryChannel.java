@@ -226,7 +226,7 @@ public class TelemetryChannel {
               if (networkStatsbeat != null && instrumentationKey != null) {
                 networkStatsbeat.incrementRequestFailureCount(instrumentationKey);
               }
-              // sending Statsbeat raw bytes won't have any instrumentation key
+              // instrumentationKey is null when sending persisted file's raw bytes.
               if (instrumentationKey != null) {
                 writeToDiskOnFailure(byteBuffers);
               }
