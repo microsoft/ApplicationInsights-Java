@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import javax.annotation.Nullable;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -37,23 +38,24 @@ public class LocalFileLoader {
 
   private final LocalFileCache localFileCache;
   private final File telemetryFolder;
+  private final NonessentialStatsbeat nonessentialStatsbeat;
 
   private static final OperationLogger operationLogger =
       new OperationLogger(LocalFileLoader.class, "Loading telemetry from disk");
 
-  public LocalFileLoader(LocalFileCache localFileCache, File telemetryFolder) {
+  public LocalFileLoader(LocalFileCache localFileCache, File telemetryFolder, NonessentialStatsbeat nonessentialStatsbeat) {
     this.localFileCache = localFileCache;
     this.telemetryFolder = telemetryFolder;
-  }
-
-  String getFileNameToBeLoaded() {
-    return localFileCache.poll();
+    this.nonessentialStatsbeat = nonessentialStatsbeat;
   }
 
   // Load ByteBuffer from persisted files on disk in FIFO order.
   @Nullable
-  PersistedFile loadTelemetriesFromDisk(String filenameToBeLoaded) {
-    assert (filenameToBeLoaded != null);
+  PersistedFile loadTelemetriesFromDisk() {
+    String filenameToBeLoaded = localFileCache.poll();
+    if (filenameToBeLoaded == null) {
+      return null;
+    }
 
     // when reading a file from the disk, loader renames the source file to "*.tmp" to prevent other
     // threads from processing the same file over and over again. this will prevent same data gets
@@ -73,6 +75,7 @@ public class LocalFileLoader {
           new File(
               telemetryFolder,
               FilenameUtils.getBaseName(filenameToBeLoaded) + TEMPORARY_FILE_EXTENSION);
+      incrementReadFailureCount();
       FileUtils.moveFile(sourceFile, tempFile);
     } catch (IOException e) {
       operationLogger.recordFailure(
@@ -82,7 +85,7 @@ public class LocalFileLoader {
               + TEMPORARY_FILE_EXTENSION
               + " extension: ",
           e);
-
+      incrementReadFailureCount();
       return null;
     }
 
@@ -92,7 +95,7 @@ public class LocalFileLoader {
       result = Files.readAllBytes(tempFile.toPath());
     } catch (IOException ex) {
       operationLogger.recordFailure("Fail to read telemetry from " + tempFile.getName(), ex);
-
+      incrementReadFailureCount();
       return null;
     }
 
@@ -133,9 +136,16 @@ public class LocalFileLoader {
 
   private static void deleteFile(File file) {
     if (!LocalStorageUtils.deleteFileWithRetries(file)) {
+      // TODO (heya) track file deletion failure via Statsbeat
       operationLogger.recordFailure("Fail to delete " + file.getName());
     } else {
       operationLogger.recordSuccess();
+    }
+  }
+
+  private void incrementReadFailureCount() {
+    if (nonessentialStatsbeat != null) {
+      nonessentialStatsbeat.incrementReadFailureCount();
     }
   }
 

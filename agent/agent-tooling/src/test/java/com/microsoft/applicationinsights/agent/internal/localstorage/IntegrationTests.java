@@ -64,7 +64,7 @@ public class IntegrationTests {
     when(mockedClient.send(mockedRequest)).thenReturn(Mono.just(mockedResponse));
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
     localFileCache = new LocalFileCache();
-    localFileLoader = new LocalFileLoader(localFileCache, tempFolder);
+    localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
 
     telemetryChannel =
         new TelemetryChannel(
@@ -99,7 +99,7 @@ public class IntegrationTests {
 
     for (int i = 100; i > 0; i--) {
       // need to convert ByteBuffer back to TelemetryItem and then compare
-      localFileLoader.loadTelemetriesFromDisk(localFileLoader.getFileNameToBeLoaded());
+      localFileLoader.loadTelemetriesFromDisk();
       assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(i - 1);
     }
 
