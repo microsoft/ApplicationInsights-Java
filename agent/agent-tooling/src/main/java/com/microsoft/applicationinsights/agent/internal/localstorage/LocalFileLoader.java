@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
 import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -37,13 +38,19 @@ public class LocalFileLoader {
 
   private final LocalFileCache localFileCache;
   private final File telemetryFolder;
+  // this is null for Statsbeat telemetry
+  @Nullable private final NonessentialStatsbeat nonessentialStatsbeat;
 
   private static final OperationLogger operationLogger =
       new OperationLogger(LocalFileLoader.class, "Loading telemetry from disk");
 
-  public LocalFileLoader(LocalFileCache localFileCache, File telemetryFolder) {
+  public LocalFileLoader(
+      LocalFileCache localFileCache,
+      File telemetryFolder,
+      @Nullable NonessentialStatsbeat nonessentialStatsbeat) {
     this.localFileCache = localFileCache;
     this.telemetryFolder = telemetryFolder;
+    this.nonessentialStatsbeat = nonessentialStatsbeat;
   }
 
   // Load ByteBuffer from persisted files on disk in FIFO order.
@@ -81,7 +88,7 @@ public class LocalFileLoader {
               + TEMPORARY_FILE_EXTENSION
               + " extension: ",
           e);
-      // TODO (heya) track number of failures to create a temp file via Statsbeat
+      incrementReadFailureCount();
       return null;
     }
 
@@ -90,8 +97,8 @@ public class LocalFileLoader {
       // TODO (trask) optimization: read this directly into ByteBuffer(s)
       result = Files.readAllBytes(tempFile.toPath());
     } catch (IOException ex) {
-      // TODO (heya) track deserialization failure via Statsbeat
       operationLogger.recordFailure("Fail to read telemetry from " + tempFile.getName(), ex);
+      incrementReadFailureCount();
       return null;
     }
 
@@ -136,6 +143,12 @@ public class LocalFileLoader {
       operationLogger.recordFailure("Fail to delete " + file.getName());
     } else {
       operationLogger.recordSuccess();
+    }
+  }
+
+  private void incrementReadFailureCount() {
+    if (nonessentialStatsbeat != null) {
+      nonessentialStatsbeat.incrementReadFailureCount();
     }
   }
 

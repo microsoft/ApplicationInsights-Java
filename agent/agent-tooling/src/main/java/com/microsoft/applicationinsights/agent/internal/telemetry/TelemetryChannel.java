@@ -246,10 +246,7 @@ public class TelemetryChannel {
   }
 
   private void writeToDiskOnFailure(List<ByteBuffer> byteBuffers) {
-    if (!localFileWriter.writeToDisk(byteBuffers)) {
-      // TODO (heya) track # of write failure via Statsbeat
-    }
-
+    localFileWriter.writeToDisk(byteBuffers);
     byteBufferPool.offer(byteBuffers);
   }
 

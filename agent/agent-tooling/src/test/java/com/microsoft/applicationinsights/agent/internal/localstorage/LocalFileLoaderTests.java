@@ -77,7 +77,7 @@ public class LocalFileLoaderTests {
     LocalFileCache localFileCache = new LocalFileCache();
     localFileCache.addPersistedFilenameToMap(BYTE_BUFFERS_TEST_FILE);
 
-    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder);
+    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
     String bytesString = readTelemetriesFromDiskToString(localFileLoader);
 
     String[] stringArray = bytesString.split("\n");
@@ -150,10 +150,10 @@ public class LocalFileLoaderTests {
   public void testWriteAndReadRandomText() {
     String text = "hello world";
     LocalFileCache cache = new LocalFileCache();
-    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder);
+    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder, null);
     writer.writeToDisk(singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))));
 
-    LocalFileLoader loader = new LocalFileLoader(cache, tempFolder);
+    LocalFileLoader loader = new LocalFileLoader(cache, tempFolder, null);
     String bytesString = readTelemetriesFromDiskToString(loader);
     assertThat(bytesString).isEqualTo(text);
   }
@@ -179,11 +179,11 @@ public class LocalFileLoaderTests {
     // write gzipped bytes[] to disk
     byte[] result = byteArrayOutputStream.toByteArray();
     LocalFileCache cache = new LocalFileCache();
-    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder);
+    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder, null);
     writer.writeToDisk(singletonList(ByteBuffer.wrap(result)));
 
     // read gzipped byte[] from disk
-    LocalFileLoader loader = new LocalFileLoader(cache, tempFolder);
+    LocalFileLoader loader = new LocalFileLoader(cache, tempFolder, null);
     byte[] bytes = readTelemetriesFromDiskToBytes(loader);
 
     // ungzip
@@ -204,8 +204,8 @@ public class LocalFileLoaderTests {
     HttpClient mockedClient = getMockHttpClientSuccess();
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
     LocalFileCache localFileCache = new LocalFileCache();
-    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder);
-    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder);
+    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder, null);
+    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
 
     TelemetryChannel telemetryChannel =
         new TelemetryChannel(
@@ -252,8 +252,8 @@ public class LocalFileLoaderTests {
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
     LocalFileCache localFileCache = new LocalFileCache();
 
-    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder);
-    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder);
+    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
+    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder, null);
 
     TelemetryChannel telemetryChannel =
         new TelemetryChannel(

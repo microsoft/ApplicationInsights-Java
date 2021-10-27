@@ -220,8 +220,12 @@ public class TelemetryClient {
         if (channelBatcher == null) {
           LocalFileCache localFileCache = new LocalFileCache();
           File telemetryFolder = LocalStorageUtils.getOfflineTelemetryFolder();
-          LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, telemetryFolder);
-          LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, telemetryFolder);
+          LocalFileLoader localFileLoader =
+              new LocalFileLoader(
+                  localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
+          LocalFileWriter localFileWriter =
+              new LocalFileWriter(
+                  localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
           TelemetryChannel channel =
               TelemetryChannel.create(
                   endpointProvider.getIngestionEndpointUrl(),
@@ -243,8 +247,10 @@ public class TelemetryClient {
         if (statsbeatChannelBatcher == null) {
           LocalFileCache localFileCache = new LocalFileCache();
           File statsbeatFolder = LocalStorageUtils.getOfflineStatsbeatFolder();
-          LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, statsbeatFolder);
-          LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, statsbeatFolder);
+          LocalFileLoader localFileLoader =
+              new LocalFileLoader(localFileCache, statsbeatFolder, null);
+          LocalFileWriter localFileWriter =
+              new LocalFileWriter(localFileCache, statsbeatFolder, null);
           TelemetryChannel channel =
               TelemetryChannel.create(
                   endpointProvider.getStatsbeatEndpointUrl(),

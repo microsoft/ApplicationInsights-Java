@@ -19,43 +19,37 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.localstorage;
+package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
-import java.nio.ByteBuffer;
-import java.util.Collection;
-import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
-public class LocalFilePurgerTests {
+public class NonessentialStatsbeatTest {
 
-  @TempDir File tempFolder;
+  private NonessentialStatsbeat nonessentialStatsbeat;
+
+  @BeforeEach
+  public void init() {
+    nonessentialStatsbeat = new NonessentialStatsbeat();
+  }
 
   @Test
-  public void testPurgedExpiredFiles() throws InterruptedException {
-    String text = "hello world";
-    LocalFileCache cache = new LocalFileCache();
-    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder, null);
-
-    // run purge task every second to delete files that are 5 seconds old
-    LocalFilePurger.startPurging(1L, 5L, tempFolder);
-
-    // persist 100 files to disk
+  public void testIncrementReadFailureCount() {
+    assertThat(nonessentialStatsbeat.getReadFailureCount()).isEqualTo(0);
     for (int i = 0; i < 100; i++) {
-      writer.writeToDisk(singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))));
+      nonessentialStatsbeat.incrementReadFailureCount();
     }
+    assertThat(nonessentialStatsbeat.getReadFailureCount()).isEqualTo(100);
+  }
 
-    Collection<File> files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);
-    assertThat(files.size()).isEqualTo(100);
-
-    Thread.sleep(10000); // wait 10 seconds
-
-    files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);
-    assertThat(files.size()).isEqualTo(0);
+  @Test
+  public void testIncrementWriteFailureCount() {
+    assertThat(nonessentialStatsbeat.getWriteFailureCount()).isEqualTo(0);
+    for (int i = 0; i < 100; i++) {
+      nonessentialStatsbeat.incrementWriteFailureCount();
+    }
+    assertThat(nonessentialStatsbeat.getWriteFailureCount()).isEqualTo(100);
   }
 }
