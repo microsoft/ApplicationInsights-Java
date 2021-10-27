@@ -22,12 +22,12 @@
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
 import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import javax.annotation.Nullable;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -38,12 +38,15 @@ public class LocalFileLoader {
 
   private final LocalFileCache localFileCache;
   private final File telemetryFolder;
-  private final NonessentialStatsbeat nonessentialStatsbeat;
+  @Nullable private final NonessentialStatsbeat nonessentialStatsbeat;
 
   private static final OperationLogger operationLogger =
       new OperationLogger(LocalFileLoader.class, "Loading telemetry from disk");
 
-  public LocalFileLoader(LocalFileCache localFileCache, File telemetryFolder, NonessentialStatsbeat nonessentialStatsbeat) {
+  public LocalFileLoader(
+      LocalFileCache localFileCache,
+      File telemetryFolder,
+      @Nullable NonessentialStatsbeat nonessentialStatsbeat) {
     this.localFileCache = localFileCache;
     this.telemetryFolder = telemetryFolder;
     this.nonessentialStatsbeat = nonessentialStatsbeat;

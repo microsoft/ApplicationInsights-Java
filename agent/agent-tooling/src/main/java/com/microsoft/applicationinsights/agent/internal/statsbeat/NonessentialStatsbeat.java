@@ -65,7 +65,7 @@ public class NonessentialStatsbeat extends BaseStatsbeat {
   }
 
   // used by tests only
-  long getReadFailureCount() {
+  public long getReadFailureCount() {
     return readFailureCount.get();
   }
 
@@ -74,7 +74,7 @@ public class NonessentialStatsbeat extends BaseStatsbeat {
   }
 
   // used by tests only
-  long getWriteFailureCount() {
+  public long getWriteFailureCount() {
     return writeFailureCount.get();
   }
 }

@@ -150,7 +150,7 @@ public class LocalFileLoaderTests {
   public void testWriteAndReadRandomText() {
     String text = "hello world";
     LocalFileCache cache = new LocalFileCache();
-    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder);
+    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder, null);
     writer.writeToDisk(singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))));
 
     LocalFileLoader loader = new LocalFileLoader(cache, tempFolder, null);
@@ -179,7 +179,7 @@ public class LocalFileLoaderTests {
     // write gzipped bytes[] to disk
     byte[] result = byteArrayOutputStream.toByteArray();
     LocalFileCache cache = new LocalFileCache();
-    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder);
+    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder, null);
     writer.writeToDisk(singletonList(ByteBuffer.wrap(result)));
 
     // read gzipped byte[] from disk
@@ -204,12 +204,12 @@ public class LocalFileLoaderTests {
     HttpClient mockedClient = getMockHttpClientSuccess();
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
     LocalFileCache localFileCache = new LocalFileCache();
-    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder);
+    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder, null);
     LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
 
     TelemetryChannel telemetryChannel =
         new TelemetryChannel(
-            pipelineBuilder.build(), new URL("http://foo.bar"), localFileWriter, null, null);
+            pipelineBuilder.build(), new URL("http://foo.bar"), localFileWriter, null);
 
     // persist 10 files to disk
     for (int i = 0; i < 10; i++) {
@@ -225,8 +225,7 @@ public class LocalFileLoaderTests {
 
     // send persisted files one by one and then delete it permanently.
     for (int i = 0; i < 10; i++) {
-      LocalFileLoader.PersistedFile persistedFile =
-          localFileLoader.loadTelemetriesFromDisk();
+      LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
       CompletableResultCode completableResultCode =
           telemetryChannel.sendRawBytes(persistedFile.rawBytes);
       completableResultCode.join(10, SECONDS);
@@ -254,11 +253,11 @@ public class LocalFileLoaderTests {
     LocalFileCache localFileCache = new LocalFileCache();
 
     LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
-    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder);
+    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder, null);
 
     TelemetryChannel telemetryChannel =
         new TelemetryChannel(
-            pipelineBuilder.build(), new URL("http://foo.bar"), localFileWriter, null, null);
+            pipelineBuilder.build(), new URL("http://foo.bar"), localFileWriter, null);
 
     // persist 10 files to disk
     for (int i = 0; i < 10; i++) {
@@ -272,8 +271,7 @@ public class LocalFileLoaderTests {
 
     // fail to send persisted files and expect them to be kept on disk
     for (int i = 0; i < 10; i++) {
-      LocalFileLoader.PersistedFile persistedFile =
-          localFileLoader.loadTelemetriesFromDisk();
+      LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
       CompletableResultCode completableResultCode =
           telemetryChannel.sendRawBytes(persistedFile.rawBytes);
       completableResultCode.join(10, SECONDS);
@@ -463,8 +461,7 @@ public class LocalFileLoaderTests {
   }
 
   private static byte[] readTelemetriesFromDiskToBytes(LocalFileLoader localFileLoader) {
-    LocalFileLoader.PersistedFile persistedFile =
-        localFileLoader.loadTelemetriesFromDisk();
+    LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
     byte[] bytes = new byte[persistedFile.rawBytes.remaining()];
     persistedFile.rawBytes.get(bytes);
     return bytes;

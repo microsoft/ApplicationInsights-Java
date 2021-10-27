@@ -220,15 +220,18 @@ public class TelemetryClient {
         if (channelBatcher == null) {
           LocalFileCache localFileCache = new LocalFileCache();
           File telemetryFolder = LocalStorageUtils.getOfflineTelemetryFolder();
-          LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
-          LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, telemetryFolder);
+          LocalFileLoader localFileLoader =
+              new LocalFileLoader(
+                  localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
+          LocalFileWriter localFileWriter =
+              new LocalFileWriter(
+                  localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
           TelemetryChannel channel =
               TelemetryChannel.create(
                   endpointProvider.getIngestionEndpointUrl(),
                   localFileWriter,
                   ikeyEndpointMap,
                   statsbeatModule.getNetworkStatsbeat(),
-                  statsbeatModule.getNonessentialStatsbeat(),
                   aadAuthentication);
           LocalFileSender.start(localFileLoader, channel);
           channelBatcher = BatchSpanProcessor.builder(channel).build();
@@ -244,14 +247,15 @@ public class TelemetryClient {
         if (statsbeatChannelBatcher == null) {
           LocalFileCache localFileCache = new LocalFileCache();
           File statsbeatFolder = LocalStorageUtils.getOfflineStatsbeatFolder();
-          LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, statsbeatFolder, null);
-          LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, statsbeatFolder);
+          LocalFileLoader localFileLoader =
+              new LocalFileLoader(localFileCache, statsbeatFolder, null);
+          LocalFileWriter localFileWriter =
+              new LocalFileWriter(localFileCache, statsbeatFolder, null);
           TelemetryChannel channel =
               TelemetryChannel.create(
                   endpointProvider.getStatsbeatEndpointUrl(),
                   localFileWriter,
                   ikeyEndpointMap,
-                  null,
                   null,
                   null);
           LocalFileSender.start(localFileLoader, channel);

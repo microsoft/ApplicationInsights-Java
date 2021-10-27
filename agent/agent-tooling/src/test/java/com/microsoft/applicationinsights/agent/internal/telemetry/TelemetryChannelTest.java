@@ -81,8 +81,7 @@ public class TelemetryChannelTest {
     return new TelemetryChannel(
         pipelineBuilder.build(),
         new URL(END_POINT_URL),
-        new LocalFileWriter(localFileCache, tempFolder),
-        null,
+        new LocalFileWriter(localFileCache, tempFolder, null),
         null);
   }
 

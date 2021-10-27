@@ -70,8 +70,7 @@ public class IntegrationTests {
         new TelemetryChannel(
             pipelineBuilder.build(),
             new URL("http://foo.bar"),
-            new LocalFileWriter(localFileCache, tempFolder),
-            null,
+            new LocalFileWriter(localFileCache, tempFolder, null),
             null);
   }
 
