@@ -65,7 +65,7 @@ public final class LocalFileWriter {
     try {
       tempFile = createTempFile(telemetryFolder);
     } catch (IOException e) {
-      operationLogger.recordFailure("unable to create temporary file: " + e, e);
+      operationLogger.recordFailure("unable to create temporary file: " + e.toString(), e);
       // TODO (heya) track number of failures to create a temp file via Statsbeat
       return false;
     }
@@ -91,7 +91,7 @@ public final class LocalFileWriter {
               + tempFile.getName()
               + " to have "
               + PERMANENT_FILE_EXTENSION
-              + " extension: ",
+              + " extension: " + e.toString(),
           e);
       // TODO (heya) track number of failures to rename a file via Statsbeat
       return false;
