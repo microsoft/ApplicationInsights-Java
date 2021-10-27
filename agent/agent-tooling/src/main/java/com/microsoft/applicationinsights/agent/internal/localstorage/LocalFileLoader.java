@@ -38,6 +38,7 @@ public class LocalFileLoader {
 
   private final LocalFileCache localFileCache;
   private final File telemetryFolder;
+    // this is null for Statsbeat telemetry
   @Nullable private final NonessentialStatsbeat nonessentialStatsbeat;
 
   private static final OperationLogger operationLogger =
