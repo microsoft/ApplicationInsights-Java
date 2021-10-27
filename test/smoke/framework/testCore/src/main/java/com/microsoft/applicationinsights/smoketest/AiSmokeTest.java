@@ -563,8 +563,14 @@ public abstract class AiSmokeTest {
       System.out.printf("Deleting network '%s'...%n", networkName);
       docker.deleteNetwork(networkName);
     } catch (Exception e) {
-      System.err.printf("Error deleting network named '%s' (%s)%n", networkName, networkId);
-      e.printStackTrace();
+      try {
+        // try once more since this has sporadically failed before
+        docker.deleteNetwork(networkName);
+      } catch (Exception ignored) {
+        System.err.printf("Error deleting network named '%s' (%s)%n", networkName, networkId);
+        // log original exception
+        e.printStackTrace();
+      }
     } finally {
       networkId = null;
     }
