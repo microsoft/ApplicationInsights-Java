@@ -118,12 +118,10 @@ public class TelemetryChannel {
     List<CompletableResultCode> resultCodeList = new ArrayList<>();
     for (TelemetryItem telemetryItem : telemetryItems) {
       String instrumentationKey = telemetryItem.getInstrumentationKey();
-      if (instrumentationKey != null) {
-        if (!instrumentationKeyMap.containsKey(instrumentationKey)) {
-          instrumentationKeyMap.put(instrumentationKey, new ArrayList<>());
-        }
-        instrumentationKeyMap.get(instrumentationKey).add(telemetryItem);
+      if (!instrumentationKeyMap.containsKey(instrumentationKey)) {
+        instrumentationKeyMap.put(instrumentationKey, new ArrayList<>());
       }
+      instrumentationKeyMap.get(instrumentationKey).add(telemetryItem);
     }
     for (String instrumentationKey : instrumentationKeyMap.keySet()) {
       resultCodeList.add(
@@ -223,7 +221,8 @@ public class TelemetryChannel {
               operationLogger.recordFailure(
                   "Error sending telemetry items: " + error.getMessage(), error);
 
-              // we don't track statsbeat requests failure count via Statsbeat
+              // networkStatsbeat is null when it's sending a Statsbeat request.
+              // instrumentationKey is null when sending persisted file's raw bytes.
               if (networkStatsbeat != null && instrumentationKey != null) {
                 networkStatsbeat.incrementRequestFailureCount(instrumentationKey);
               }
@@ -234,7 +233,8 @@ public class TelemetryChannel {
               result.fail();
             },
             () -> {
-              // we don't track statsbeat request success count via Statsbeat
+              // networkStatsbeat is null when it's sending a Statsbeat request.
+              // instrumentationKey is null when sending persisted file's raw bytes.
               if (networkStatsbeat != null && instrumentationKey != null) {
                 networkStatsbeat.incrementRequestSuccessCount(
                     System.currentTimeMillis() - startTime, instrumentationKey);
@@ -273,7 +273,8 @@ public class TelemetryChannel {
       case 439: // Breeze-specific: THROTTLED OVER EXTENDED TIME
         // TODO handle throttling
         // TODO (heya) track throttling count via Statsbeat
-        // we don't track statsbeat throttling count via Statsbeat
+        // networkStatsbeat is null when it's sending a Statsbeat request.
+        // instrumentationKey is null when sending persisted file's raw bytes.
         if (networkStatsbeat != null && instrumentationKey != null) {
           networkStatsbeat.incrementThrottlingCount(instrumentationKey);
         }
@@ -287,7 +288,8 @@ public class TelemetryChannel {
       case 0: // client-side exception
         // TODO exponential backoff and retry to a limit
         // TODO (heya) track failure count via Statsbeat
-        // we don't track statsbeat retry count via Statsbeat
+        // networkStatsbeat is null when it's sending a Statsbeat request.
+        // instrumentationKey is null when sending persisted file's raw bytes.
         if (networkStatsbeat != null && instrumentationKey != null) {
           networkStatsbeat.incrementRetryCount(instrumentationKey);
         }
