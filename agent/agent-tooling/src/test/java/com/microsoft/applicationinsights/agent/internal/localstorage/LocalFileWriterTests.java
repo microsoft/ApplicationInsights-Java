@@ -92,6 +92,7 @@ public class LocalFileWriterTests {
     assertThat(byteBuffers.size()).isEqualTo(10);
 
     LocalFileWriter writer = new LocalFileWriter(localFileCache, tempFolder, nonessentialStatsbeat);
+    writer.writeToDisk(byteBuffers);
     assertThat(nonessentialStatsbeat.getWriteFailureCount()).isEqualTo(0);
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(1);
   }
@@ -99,6 +100,7 @@ public class LocalFileWriterTests {
   @Test
   public void testWriteRawByteArray() {
     LocalFileWriter writer = new LocalFileWriter(localFileCache, tempFolder, nonessentialStatsbeat);
+    writer.writeToDisk(singletonList(buffer));
     assertThat(nonessentialStatsbeat.getWriteFailureCount()).isEqualTo(0);
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(1);
   }
