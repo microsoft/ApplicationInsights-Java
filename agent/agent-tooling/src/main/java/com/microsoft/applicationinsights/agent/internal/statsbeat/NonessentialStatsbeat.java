@@ -47,13 +47,13 @@ public class NonessentialStatsbeat extends BaseStatsbeat {
 
   @Override
   protected void send(TelemetryClient telemetryClient) {
-    if (this.readFailureCount.get() != 0) {
+    if (readFailureCount.get() != 0) {
       TelemetryItem telemetryItem =
           createStatsbeatTelemetry(telemetryClient, READ_FAILURE_COUNT, readFailureCount.get());
       telemetryClient.trackStatsbeatAsync(telemetryItem);
     }
 
-    if (this.writeFailureCount.get() != 0) {
+    if (writeFailureCount.get() != 0) {
       TelemetryItem telemetryItem =
           createStatsbeatTelemetry(telemetryClient, WRITE_FAILURE_COUNT, writeFailureCount.get());
       telemetryClient.trackStatsbeatAsync(telemetryItem);
