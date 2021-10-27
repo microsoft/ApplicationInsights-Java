@@ -27,6 +27,9 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class NonessentialStatsbeat extends BaseStatsbeat {
 
+  // TODO when there are more non-essential statsbeat(s) in the future, try to separate different
+  // kinds of non-essential statsbeat into different classes.
+
   // Track local storage IO success and failure
   private static final String READ_FAILURE_COUNT = "Read Failure Count";
   private static final String WRITE_FAILURE_COUNT = "Write Failure Count";
