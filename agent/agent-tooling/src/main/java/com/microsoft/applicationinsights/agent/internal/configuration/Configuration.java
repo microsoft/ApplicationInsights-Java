@@ -201,6 +201,7 @@ public class Configuration {
     @Deprecated public boolean httpMethodInOperationName;
     public LiveMetrics liveMetrics = new LiveMetrics();
     public LegacyRequestIdPropagation legacyRequestIdPropagation = new LegacyRequestIdPropagation();
+    public boolean disablePropagation;
 
     public List<InheritedAttribute> inheritedAttributes = new ArrayList<>();
 
