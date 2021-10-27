@@ -79,7 +79,6 @@ public class LocalFileLoader {
           new File(
               telemetryFolder,
               FilenameUtils.getBaseName(filenameToBeLoaded) + TEMPORARY_FILE_EXTENSION);
-      incrementReadFailureCount();
       FileUtils.moveFile(sourceFile, tempFile);
     } catch (IOException e) {
       operationLogger.recordFailure(
