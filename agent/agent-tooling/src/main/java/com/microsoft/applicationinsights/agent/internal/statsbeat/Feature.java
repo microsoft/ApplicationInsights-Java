@@ -53,7 +53,8 @@ enum Feature {
   STATSBEAT_DISABLED(22), // disable non-essential statsbeat
   QUARTZ_DISABLED(23), // preview instrumentation, quartz is ON by default in OTEL
   APACHE_CAMEL_DISABLED(24), // preview instrumentation, apache camel is ON by default in OTEL
-  AKKA_DISABLED(25); // preview instrumentation, akka is ON by default in OTEL
+  AKKA_DISABLED(25), // preview instrumentation, akka is ON by default in OTEL
+  PROPAGATION_DISABLED(26);
 
   private static final Map<String, Feature> javaVendorFeatureMap;
 

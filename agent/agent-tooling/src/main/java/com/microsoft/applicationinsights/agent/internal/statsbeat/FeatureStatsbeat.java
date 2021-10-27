@@ -149,5 +149,9 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     if (config.preview.statsbeat.disabled) {
       featureList.add(Feature.STATSBEAT_DISABLED);
     }
+
+    if (config.preview.disablePropagation) {
+      featureList.add(Feature.PROPAGATION_DISABLED);
+    }
   }
 }

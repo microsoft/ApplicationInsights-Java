@@ -201,6 +201,8 @@ public class Configuration {
     @Deprecated public boolean httpMethodInOperationName;
     public LiveMetrics liveMetrics = new LiveMetrics();
     public LegacyRequestIdPropagation legacyRequestIdPropagation = new LegacyRequestIdPropagation();
+    // this is needed to unblock customer, but is not the ideal long-term solution
+    // https://portal.microsofticm.com/imp/v3/incidents/details/266992200/home
     public boolean disablePropagation;
 
     public List<InheritedAttribute> inheritedAttributes = new ArrayList<>();
