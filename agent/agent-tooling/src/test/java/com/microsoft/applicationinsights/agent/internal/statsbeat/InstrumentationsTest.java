@@ -46,7 +46,9 @@ public class InstrumentationsTest {
               + Math.pow(2, 13)
               + Math.pow(2, 21)
               + Math.pow(2, 42)
-              + Math.pow(2, 47)); // Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP.)
+              + Math.pow(
+                  2,
+                  47)); // Exponents are keys from StatsbeatTestUtils.INSTRUMENTATION_MAP_DECODING.)
 
   @Test
   public void testEncodeAndDecodeInstrumentations() {

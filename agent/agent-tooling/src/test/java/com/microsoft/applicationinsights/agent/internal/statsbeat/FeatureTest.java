@@ -23,15 +23,33 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 public class FeatureTest {
 
-  private static final Set<Feature> features = Collections.singleton(Feature.JAVA_VENDOR_ZULU);
+  private static final Set<Feature> features;
 
-  private static final long EXPECTED_FEATURE = 2L;
+  static {
+    features = new HashSet<>();
+    features.add(Feature.JAVA_VENDOR_ZULU);
+    features.add(Feature.AAD);
+    features.add(Feature.AZURE_SDK_DISABLED);
+    features.add(Feature.JDBC_DISABLED);
+    features.add(Feature.SPRING_INTEGRATION_DISABLED);
+    features.add(Feature.STATSBEAT_DISABLED);
+  }
+
+  private static final long EXPECTED_FEATURE =
+      (long)
+          (Math.pow(2, 1)
+              + Math.pow(2, 6)
+              + Math.pow(2, 8)
+              + Math.pow(2, 15)
+              + Math.pow(2, 17)
+              + Math.pow(
+                  2, 20)); // Exponents are keys from StatsbeatTestUtils.FEATURE_MAP_DECODING.)
 
   @Test
   public void tesEncodeAndDecodeFeature() {

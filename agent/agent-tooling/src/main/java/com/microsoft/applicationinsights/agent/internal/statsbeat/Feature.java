@@ -43,17 +43,15 @@ enum Feature {
   REDIS_DISABLED(13),
   SPRING_SCHEDULING_DISABLED(14),
   AZURE_SDK_DISABLED(15),
-  // JAVA_HTTP_CLIENT_DISABLED(16), no longer used
-  // JAXWS_DISABLED(17), no longer used
-  RABBITMQ_DISABLED(18),
+  RABBITMQ_DISABLED(16),
   SPRING_INTEGRATION_DISABLED(
-      19), // preview instrumentation, spring-integration is ON by default in OTEL
-  LEGACY_PROPAGATION_DISABLED(20),
-  GRIZZLY_ENABLED(21), // preview instrumentation, grizzly is OFF by default in OTEL
-  STATSBEAT_DISABLED(22), // disable non-essential statsbeat
-  QUARTZ_DISABLED(23), // preview instrumentation, quartz is ON by default in OTEL
-  APACHE_CAMEL_DISABLED(24), // preview instrumentation, apache camel is ON by default in OTEL
-  AKKA_DISABLED(25); // preview instrumentation, akka is ON by default in OTEL
+      17), // preview instrumentation, spring-integration is ON by default in OTEL
+  LEGACY_PROPAGATION_DISABLED(18),
+  GRIZZLY_ENABLED(19), // preview instrumentation, grizzly is OFF by default in OTEL
+  STATSBEAT_DISABLED(20), // disable non-essential statsbeat
+  QUARTZ_DISABLED(21), // preview instrumentation, quartz is ON by default in OTEL
+  APACHE_CAMEL_DISABLED(22), // preview instrumentation, apache camel is ON by default in OTEL
+  AKKA_DISABLED(23); // preview instrumentation, akka is ON by default in OTEL
 
   private static final Map<String, Feature> javaVendorFeatureMap;
 
