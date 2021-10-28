@@ -21,17 +21,22 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverrideAttribute;
+import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 // TODO find a better name for this class (and MatcherGroup too)
@@ -48,7 +53,7 @@ class SamplingOverrides {
 
   @Nullable
   MatcherGroup getOverride(Attributes attributes) {
-    AttributeMatchers.LazyHttpUrl lazyHttpUrl = new AttributeMatchers.LazyHttpUrl(attributes);
+    LazyHttpUrl lazyHttpUrl = new LazyHttpUrl(attributes);
     for (MatcherGroup matcherGroups : matcherGroups) {
       if (matcherGroups.matches(attributes, lazyHttpUrl)) {
         return matcherGroups;
@@ -138,14 +143,14 @@ class SamplingOverrides {
   }
 
   static class MatcherGroup {
-    private final List<AttributeMatchers.Matcher> matchers;
+    private final List<TempPredicate> predicates;
     private final double percentage;
     private final SamplingResult recordAndSampleAndOverwriteTraceState;
 
     private MatcherGroup(SamplingOverride override) {
-      matchers = new ArrayList<>();
+      predicates = new ArrayList<>();
       for (SamplingOverrideAttribute attribute : override.attributes) {
-        matchers.add(AttributeMatchers.toPredicate(attribute));
+        predicates.add(toPredicate(attribute));
       }
       percentage = override.percentage;
       recordAndSampleAndOverwriteTraceState =
@@ -160,13 +165,86 @@ class SamplingOverrides {
       return recordAndSampleAndOverwriteTraceState;
     }
 
-    private boolean matches(Attributes attributes, AttributeMatchers.LazyHttpUrl lazyHttpUrl) {
-      for (AttributeMatchers.Matcher matcher : matchers) {
-        if (!matcher.matches(attributes, lazyHttpUrl)) {
+    private boolean matches(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
+      for (TempPredicate predicate : predicates) {
+        if (!predicate.test(attributes, lazyHttpUrl)) {
           return false;
         }
       }
       return true;
     }
+
+    private static TempPredicate toPredicate(SamplingOverrideAttribute attribute) {
+      if (attribute.matchType == MatchType.STRICT) {
+        return new StrictMatcher(attribute.key, attribute.value);
+      } else if (attribute.matchType == MatchType.REGEXP) {
+        return new RegexpMatcher(attribute.key, attribute.value);
+      } else {
+        throw new IllegalStateException("Unexpected match type: " + attribute.matchType);
+      }
+    }
+  }
+
+  private static class StrictMatcher implements TempPredicate {
+    private final AttributeKey<String> key;
+    private final String value;
+
+    private StrictMatcher(String key, String value) {
+      this.key = AttributeKey.stringKey(key);
+      this.value = value;
+    }
+
+    @Override
+    public boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
+      String val = attributes.get(key);
+      if (val == null && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())) {
+        val = lazyHttpUrl.get();
+      }
+      return value.equals(val);
+    }
+  }
+
+  private static class RegexpMatcher implements TempPredicate {
+    private final AttributeKey<String> key;
+    private final Pattern value;
+
+    private RegexpMatcher(String key, String value) {
+      this.key = AttributeKey.stringKey(key);
+      this.value = Pattern.compile(value);
+    }
+
+    @Override
+    public boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
+      String val = attributes.get(key);
+      if (val == null && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())) {
+        val = lazyHttpUrl.get();
+      }
+      return val != null && value.matcher(val).matches();
+    }
+  }
+
+  // this is temporary until semantic attributes stabilize and we make breaking change
+  private static class LazyHttpUrl {
+    private final Attributes attributes;
+    private boolean initialized;
+    @Nullable private String value;
+
+    private LazyHttpUrl(Attributes attributes) {
+      this.attributes = attributes;
+    }
+
+    private String get() {
+      if (!initialized) {
+        value = Exporter.getHttpUrlFromServerSpan(attributes);
+        initialized = true;
+      }
+      return value;
+    }
+  }
+
+  // this is temporary until semantic attributes stabilize and we make breaking change
+  // then can use java.util.functions.Predicate<Attributes>
+  private interface TempPredicate {
+    boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl);
   }
 }

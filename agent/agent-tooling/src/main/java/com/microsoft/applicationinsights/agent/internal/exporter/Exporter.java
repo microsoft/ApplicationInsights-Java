@@ -50,7 +50,6 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -846,27 +845,6 @@ public class Exporter implements SpanExporter {
       return null;
     }
     String target = attributes.get(SemanticAttributes.HTTP_TARGET);
-    if (target == null) {
-      return null;
-    }
-    return scheme + "://" + host + target;
-  }
-
-  @Nullable
-  public static String getHttpUrlFromServerSpan(ReadWriteSpan span) {
-    String httpUrl = span.getAttribute(SemanticAttributes.HTTP_URL);
-    if (httpUrl != null) {
-      return httpUrl;
-    }
-    String scheme = span.getAttribute(SemanticAttributes.HTTP_SCHEME);
-    if (scheme == null) {
-      return null;
-    }
-    String host = span.getAttribute(SemanticAttributes.HTTP_HOST);
-    if (host == null) {
-      return null;
-    }
-    String target = span.getAttribute(SemanticAttributes.HTTP_TARGET);
     if (target == null) {
       return null;
     }

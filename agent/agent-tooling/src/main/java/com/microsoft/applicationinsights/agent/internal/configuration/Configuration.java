@@ -307,24 +307,21 @@ public class Configuration {
   }
 
   public static class InstrumentationKeyOverride {
-    public List<SamplingOverrideAttribute> attributes = new ArrayList<>();
+    public String httpPathPrefix;
     public String instrumentationKey;
 
     public void validate() {
-      if (attributes.isEmpty()) {
+      if (httpPathPrefix == null) {
         // TODO add doc and go link, similar to telemetry processors
         throw new FriendlyException(
-            "A instrumentation key override configuration has no attributes.",
-            "Please provide one or more attributes for the instrumentation key override configuration.");
+            "A instrumentation key override configuration is missing an \"httpPathPrefix\".",
+            "Please provide an \"httpPathPrefix\" for the instrumentation key override configuration.");
       }
       if (instrumentationKey == null) {
         // TODO add doc and go link, similar to telemetry processors
         throw new FriendlyException(
             "An instrumentation key override configuration is missing an \"instrumentationKey\".",
             "Please provide an \"instrumentationKey\" for the instrumentation key configuration.");
-      }
-      for (SamplingOverrideAttribute attribute : attributes) {
-        attribute.validate("sampling override");
       }
     }
   }
@@ -401,7 +398,7 @@ public class Configuration {
             "Please provide a \"percentage\" that is between 0 and 100 for the sampling override configuration.");
       }
       for (SamplingOverrideAttribute attribute : attributes) {
-        attribute.validate("sampling override");
+        attribute.validate();
       }
     }
   }
@@ -411,36 +408,24 @@ public class Configuration {
     public String value;
     public MatchType matchType;
 
-    private void validate(String type) {
+    private void validate() {
       if (isEmpty(key)) {
-        // TODO add doc and go links for both sampling overrides and instrumentation key overrides
-        //  (similar to telemetry processors)
+        // TODO add doc and go link, similar to telemetry processors
         throw new FriendlyException(
-            "A " + type + " configuration has an attribute section that is missing a \"key\".",
-            "Please provide a \"key\" under the attribute section of the "
-                + type
-                + " configuration.");
+            "A sampling override configuration has an attribute section that is missing a \"key\".",
+            "Please provide a \"key\" under the attribute section of the sampling override configuration.");
       }
       if (matchType == null) {
         throw new FriendlyException(
-            "A "
-                + type
-                + " configuration has an attribute section that is missing a \"matchType\".",
-            "Please provide a \"matchType\" under the attribute section of the "
-                + type
-                + " configuration.");
+            "A sampling override configuration has an attribute section that is missing a \"matchType\".",
+            "Please provide a \"matchType\" under the attribute section of the sampling override configuration.");
       }
       if (matchType == MatchType.REGEXP) {
         if (isEmpty(value)) {
-          // TODO add doc and go links for both sampling overrides and instrumentation key overrides
-          //  (similar to telemetry processors)
+          // TODO add doc and go link, similar to telemetry processors
           throw new FriendlyException(
-              "A "
-                  + type
-                  + " configuration has an attribute with matchType regexp that is missing a \"value\".",
-              "Please provide a key under the attribute section of the "
-                  + type
-                  + " configuration.");
+              "Asampling override configuration has an attribute with matchType regexp that is missing a \"value\".",
+              "Please provide a key under the attribute section of the sampling override configuration.");
         }
         validateRegex(value);
       }
