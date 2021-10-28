@@ -29,6 +29,9 @@ tasks.withType<ShadowJar>().configureEach {
   relocate("io.opentelemetry.extension.aws", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.aws")
   relocate("io.opentelemetry.extension.kotlin", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.kotlin")
 
-  // this is for instrumentation on opentelemetry-api itself
+  // this is for instrumentation of opentelemetry-api itself
   relocate("application.io.opentelemetry", "io.opentelemetry")
+
+  // this is for instrumentation of java.util.logging.Logger itself
+  relocate("application.java.util.logging.Logger", "java.util.logging.Logger")
 }
