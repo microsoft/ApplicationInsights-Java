@@ -61,7 +61,7 @@ public class AiOperationNameSpanProcessor implements SpanProcessor {
 
   public static String getOperationName(ReadableSpan serverSpan) {
     String spanName = serverSpan.getName();
-    String httpMethod = TempGetAttribute.getAttribute(serverSpan, SemanticAttributes.HTTP_METHOD);
+    String httpMethod = serverSpan.getAttribute(SemanticAttributes.HTTP_METHOD);
     if (Strings.isNullOrEmpty(httpMethod)) {
       return spanName;
     }

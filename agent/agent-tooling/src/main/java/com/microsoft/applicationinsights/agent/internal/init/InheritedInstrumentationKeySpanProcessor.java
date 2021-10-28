@@ -22,25 +22,30 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.sampling.AttributeMatchers;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-public class InheritedAttributesSpanProcessor implements SpanProcessor {
+public class InheritedInstrumentationKeySpanProcessor implements SpanProcessor {
 
-  private final List<AttributeKey<?>> inheritAttributeKeys;
+  private static final AttributeKey<String> INSTRUMENTATION_KEY_KEY =
+      AttributeKey.stringKey("ai.preview.instrumentation_key");
 
-  public InheritedAttributesSpanProcessor(
-      List<Configuration.InheritedAttribute> inheritedAttributes) {
-    this.inheritAttributeKeys =
-        inheritedAttributes.stream()
-            .map(Configuration.InheritedAttribute::getAttributeKey)
-            .collect(Collectors.toList());
+  private final List<MatcherGroup> matcherGroups;
+
+  public InheritedInstrumentationKeySpanProcessor(
+      List<Configuration.InstrumentationKeyOverride> instrumentationKeys) {
+
+    matcherGroups =
+        instrumentationKeys.stream().map(MatcherGroup::new).collect(Collectors.toList());
   }
 
   @Override
@@ -48,6 +53,11 @@ public class InheritedAttributesSpanProcessor implements SpanProcessor {
   public void onStart(Context parentContext, ReadWriteSpan span) {
     Span parentSpan = Span.fromContextOrNull(parentContext);
     if (parentSpan == null) {
+      // setting this attribute on the local root span could be moved to Sampler
+      MatcherGroup matcherGroup = getMatcherGroup(span);
+      if (matcherGroup != null) {
+        span.setAttribute(INSTRUMENTATION_KEY_KEY, matcherGroup.instrumentationKey);
+      }
       return;
     }
     if (!(parentSpan instanceof ReadableSpan)) {
@@ -55,11 +65,9 @@ public class InheritedAttributesSpanProcessor implements SpanProcessor {
     }
     ReadableSpan parentReadableSpan = (ReadableSpan) parentSpan;
 
-    for (AttributeKey<?> inheritAttributeKey : inheritAttributeKeys) {
-      Object value = parentReadableSpan.getAttribute(inheritAttributeKey);
-      if (value != null) {
-        span.setAttribute((AttributeKey<Object>) inheritAttributeKey, value);
-      }
+    String instrumentationKey = parentReadableSpan.getAttribute(INSTRUMENTATION_KEY_KEY);
+    if (instrumentationKey != null) {
+      span.setAttribute(INSTRUMENTATION_KEY_KEY, instrumentationKey);
     }
   }
 
@@ -74,5 +82,38 @@ public class InheritedAttributesSpanProcessor implements SpanProcessor {
   @Override
   public boolean isEndRequired() {
     return false;
+  }
+
+  @Nullable
+  MatcherGroup getMatcherGroup(ReadWriteSpan span) {
+    AttributeMatchers.LazyHttpUrl lazyHttpUrl = new AttributeMatchers.LazyHttpUrl(span);
+    for (MatcherGroup matcherGroups : matcherGroups) {
+      if (matcherGroups.matches(span, lazyHttpUrl)) {
+        return matcherGroups;
+      }
+    }
+    return null;
+  }
+
+  private static class MatcherGroup {
+    private final List<AttributeMatchers.Matcher> matchers;
+    private final String instrumentationKey;
+
+    private MatcherGroup(Configuration.InstrumentationKeyOverride override) {
+      matchers = new ArrayList<>();
+      for (Configuration.SamplingOverrideAttribute attribute : override.attributes) {
+        matchers.add(AttributeMatchers.toPredicate(attribute));
+      }
+      instrumentationKey = override.instrumentationKey;
+    }
+
+    private boolean matches(ReadWriteSpan span, AttributeMatchers.LazyHttpUrl lazyHttpUrl) {
+      for (AttributeMatchers.Matcher matcher : matchers) {
+        if (!matcher.matches(span, lazyHttpUrl)) {
+          return false;
+        }
+      }
+      return true;
+    }
   }
 }
