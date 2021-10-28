@@ -36,13 +36,17 @@ public class InstrumentationsTest {
     instrumentations.add("io.opentelemetry.jdbc");
     instrumentations.add("io.opentelemetry.tomcat-7.0");
     instrumentations.add("io.opentelemetry.http-url-connection");
+    instrumentations.add("io.opentelemetry.apache-camel-2.20");
+    instrumentations.add("io.opentelemetry.akka-http-10.0");
   }
 
   private static final long EXPECTED_INSTRUMENTATION =
       (long)
           (Math.pow(2, 5)
               + Math.pow(2, 13)
-              + Math.pow(2, 21)); // Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP.)
+              + Math.pow(2, 21)
+              + Math.pow(2, 42)
+              + Math.pow(2, 47)); // Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP.)
 
   @Test
   public void testEncodeAndDecodeInstrumentations() {
