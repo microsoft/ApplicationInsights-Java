@@ -24,7 +24,7 @@ public class LogbackSpans {
   private static final Logger logger = LoggerFactory.getLogger(LogbackSpans.class);
 
   private static final Tracer TRACER =
-      GlobalOpenTelemetry.getTracer("io.opentelemetry.javaagent.logback-spans-1.0");
+      GlobalOpenTelemetry.getTracer("io.opentelemetry.logback-spans-1.0");
 
   public static void capture(final ILoggingEvent event) {
 
