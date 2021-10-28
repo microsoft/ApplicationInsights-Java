@@ -40,9 +40,9 @@ public class InstrumentationsTest {
 
   private static final long EXPECTED_INSTRUMENTATION =
       (long)
-          (Math.pow(2, 13)
-              + Math.pow(2, 21)
-              + Math.pow(2, 57)); // Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP.)
+          (Math.pow(2, 5)
+              + Math.pow(2, 13)
+              + Math.pow(2, 21)); // Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP.)
 
   @Test
   public void testEncodeAndDecodeInstrumentations() {
