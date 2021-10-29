@@ -99,8 +99,7 @@ class ApplicationInsightsJsonLayoutTests {
     verify(mockFinder, atLeastOnce()).getName();
     verify(mockFinder, atLeastOnce()).getValue();
     assertThat(propertyMap).containsEntry(key, value);
-    assertThat(propertyMap).containsKey("language");
-    assertThat(propertyMap.get("language")).isEqualTo("java");
+    assertThat(propertyMap).containsEntry("language", "java");
   }
 
   @Test
