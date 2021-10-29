@@ -21,28 +21,56 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.instrumentation.api.tracer.ConsumerSpan;
-import io.opentelemetry.instrumentation.api.tracer.ServerSpan;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.List;
 
-public class AiOperationNameSpanProcessor implements SpanProcessor {
+public class InheritedInstrumentationKeySpanProcessor implements SpanProcessor {
+
+  private static final AttributeKey<String> INSTRUMENTATION_KEY_KEY =
+      AttributeKey.stringKey("ai.preview.instrumentation_key");
+
+  private final List<Configuration.InstrumentationKeyOverride> overrides;
+
+  public InheritedInstrumentationKeySpanProcessor(
+      List<Configuration.InstrumentationKeyOverride> overrides) {
+
+    this.overrides = overrides;
+  }
 
   @Override
+  @SuppressWarnings("unchecked")
   public void onStart(Context parentContext, ReadWriteSpan span) {
-    Span localRootSpan = ServerSpan.fromContextOrNull(parentContext);
-    if (localRootSpan == null) {
-      localRootSpan = ConsumerSpan.fromContextOrNull(parentContext);
+    Span parentSpan = Span.fromContextOrNull(parentContext);
+    if (parentSpan == null) {
+      // this part (setting the attribute on the local root span) could be moved to Sampler
+
+      String target = span.getAttribute(SemanticAttributes.HTTP_TARGET);
+      if (target == null) {
+        return;
+      }
+      for (Configuration.InstrumentationKeyOverride override : overrides) {
+        if (target.startsWith(override.httpPathPrefix)) {
+          span.setAttribute(INSTRUMENTATION_KEY_KEY, override.instrumentationKey);
+          break;
+        }
+      }
+      return;
     }
-    if (localRootSpan instanceof ReadableSpan) {
-      span.setAttribute(
-          Exporter.AI_OPERATION_NAME_KEY, getOperationName((ReadableSpan) localRootSpan));
+    if (!(parentSpan instanceof ReadableSpan)) {
+      return;
+    }
+    ReadableSpan parentReadableSpan = (ReadableSpan) parentSpan;
+
+    String instrumentationKey = parentReadableSpan.getAttribute(INSTRUMENTATION_KEY_KEY);
+    if (instrumentationKey != null) {
+      span.setAttribute(INSTRUMENTATION_KEY_KEY, instrumentationKey);
     }
   }
 
@@ -57,14 +85,5 @@ public class AiOperationNameSpanProcessor implements SpanProcessor {
   @Override
   public boolean isEndRequired() {
     return false;
-  }
-
-  public static String getOperationName(ReadableSpan serverSpan) {
-    String spanName = serverSpan.getName();
-    String httpMethod = serverSpan.getAttribute(SemanticAttributes.HTTP_METHOD);
-    if (Strings.isNullOrEmpty(httpMethod)) {
-      return spanName;
-    }
-    return httpMethod + " " + spanName;
   }
 }

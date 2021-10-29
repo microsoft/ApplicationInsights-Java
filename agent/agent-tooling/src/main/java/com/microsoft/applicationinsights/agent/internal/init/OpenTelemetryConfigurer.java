@@ -96,8 +96,10 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
     tracerProvider.addSpanProcessor(new AiOperationNameSpanProcessor());
     // inherited attributes span processor is only applied on span start, so doesn't need to be
     // chained with the batch span processor
-    tracerProvider.addSpanProcessor(
-        new InheritedAttributesSpanProcessor(configuration.preview.inheritedAttributes));
+    if (!configuration.preview.inheritedAttributes.isEmpty()) {
+      tracerProvider.addSpanProcessor(
+          new InheritedAttributesSpanProcessor(configuration.preview.inheritedAttributes));
+    }
     // legacy span processor is only applied on span start, so doesn't need to be chained with the
     // batch span processor
     // it is used to pass legacy attributes from the context (extracted by the AiLegacyPropagator)
@@ -105,6 +107,13 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
     // propagator)
     if (configuration.preview.legacyRequestIdPropagation.enabled) {
       tracerProvider.addSpanProcessor(new AiLegacyHeaderSpanProcessor());
+    }
+    // instrumentation key overrides span processor is only applied on span start, so doesn't need
+    // to be chained with the batch span processor
+    if (!configuration.preview.instrumentationKeyOverrides.isEmpty()) {
+      tracerProvider.addSpanProcessor(
+          new InheritedInstrumentationKeySpanProcessor(
+              configuration.preview.instrumentationKeyOverrides));
     }
 
     String tracesExporter = config.getString("otel.traces.exporter");

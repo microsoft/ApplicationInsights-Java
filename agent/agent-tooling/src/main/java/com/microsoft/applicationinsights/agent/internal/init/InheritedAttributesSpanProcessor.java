@@ -56,7 +56,7 @@ public class InheritedAttributesSpanProcessor implements SpanProcessor {
     ReadableSpan parentReadableSpan = (ReadableSpan) parentSpan;
 
     for (AttributeKey<?> inheritAttributeKey : inheritAttributeKeys) {
-      Object value = TempGetAttribute.getAttribute(parentReadableSpan, inheritAttributeKey);
+      Object value = parentReadableSpan.getAttribute(inheritAttributeKey);
       if (value != null) {
         span.setAttribute((AttributeKey<Object>) inheritAttributeKey, value);
       }

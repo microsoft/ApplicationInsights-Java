@@ -211,6 +211,8 @@ public class Configuration {
     public GcEventConfiguration gcEvents = new GcEventConfiguration();
     public AadAuthentication authentication = new AadAuthentication();
     public PreviewStatsbeat statsbeat = new PreviewStatsbeat();
+
+    public List<InstrumentationKeyOverride> instrumentationKeyOverrides = new ArrayList<>();
   }
 
   public static class InheritedAttribute {
@@ -304,6 +306,26 @@ public class Configuration {
     public boolean disabled = false;
   }
 
+  public static class InstrumentationKeyOverride {
+    public String httpPathPrefix;
+    public String instrumentationKey;
+
+    public void validate() {
+      if (httpPathPrefix == null) {
+        // TODO add doc and go link, similar to telemetry processors
+        throw new FriendlyException(
+            "A instrumentation key override configuration is missing an \"httpPathPrefix\".",
+            "Please provide an \"httpPathPrefix\" for the instrumentation key override configuration.");
+      }
+      if (instrumentationKey == null) {
+        // TODO add doc and go link, similar to telemetry processors
+        throw new FriendlyException(
+            "An instrumentation key override configuration is missing an \"instrumentationKey\".",
+            "Please provide an \"instrumentationKey\" for the instrumentation key configuration.");
+      }
+    }
+  }
+
   public static class EnabledByDefaultInstrumentation {
     public boolean enabled = true;
   }
@@ -390,20 +412,20 @@ public class Configuration {
       if (isEmpty(key)) {
         // TODO add doc and go link, similar to telemetry processors
         throw new FriendlyException(
-            "A telemetry filter configuration has an attribute section that is missing a \"key\".",
-            "Please provide a \"key\" under the attribute section of the telemetry filter configuration.");
+            "A sampling override configuration has an attribute section that is missing a \"key\".",
+            "Please provide a \"key\" under the attribute section of the sampling override configuration.");
       }
       if (matchType == null) {
         throw new FriendlyException(
-            "A telemetry filter configuration has an attribute section that is missing a \"matchType\".",
-            "Please provide a \"matchType\" under the attribute section of the telemetry filter configuration.");
+            "A sampling override configuration has an attribute section that is missing a \"matchType\".",
+            "Please provide a \"matchType\" under the attribute section of the sampling override configuration.");
       }
       if (matchType == MatchType.REGEXP) {
         if (isEmpty(value)) {
           // TODO add doc and go link, similar to telemetry processors
           throw new FriendlyException(
-              "A telemetry filter configuration has an attribute with matchType regexp that is missing a \"value\".",
-              "Please provide a key under the attribute section of the filter configuration.");
+              "Asampling override configuration has an attribute with matchType regexp that is missing a \"value\".",
+              "Please provide a key under the attribute section of the sampling override configuration.");
         }
         validateRegex(value);
       }

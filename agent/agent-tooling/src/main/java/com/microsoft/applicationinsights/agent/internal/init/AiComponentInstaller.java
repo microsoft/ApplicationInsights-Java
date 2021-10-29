@@ -142,8 +142,16 @@ public class AiComponentInstaller implements AgentListener {
       }
     }
     // TODO (trask) should configuration validation be performed earlier?
-    // Function to validate user provided processor configuration
-    validateProcessorConfiguration(config);
+    for (Configuration.SamplingOverride samplingOverride : config.preview.sampling.overrides) {
+      samplingOverride.validate();
+    }
+    for (Configuration.InstrumentationKeyOverride instrumentationKeyOverride :
+        config.preview.instrumentationKeyOverrides) {
+      instrumentationKeyOverride.validate();
+    }
+    for (ProcessorConfig processorConfig : config.preview.processors) {
+      processorConfig.validate();
+    }
     // validate authentication configuration
     config.preview.authentication.validate();
 
@@ -261,15 +269,6 @@ public class AiComponentInstaller implements AgentListener {
         configuration.memoryTriggeredSettings,
         configuration.cpuTriggeredSettings,
         tempDirectory);
-  }
-
-  private static void validateProcessorConfiguration(Configuration config) {
-    if (config.preview == null || config.preview.processors == null) {
-      return;
-    }
-    for (ProcessorConfig processorConfig : config.preview.processors) {
-      processorConfig.validate();
-    }
   }
 
   @Nullable
