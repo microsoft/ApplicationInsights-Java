@@ -48,7 +48,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import reactor.core.publisher.Mono;
-import reactor.netty.resources.ConnectionProvider;
+import reactor.netty.resources.LoopResources;
 
 public class LazyHttpClient implements HttpClient {
 
@@ -56,7 +56,6 @@ public class LazyHttpClient implements HttpClient {
       "https://monitor.azure.com//.default";
 
   private static final HttpClient INSTANCE = new LazyHttpClient();
-  private static final int DEFAULT_MAX_TOTAL_CONNECTIONS = 200;
 
   public static volatile CountDownLatch safeToInitLatch;
   public static volatile String proxyHost;
@@ -108,17 +107,16 @@ public class LazyHttpClient implements HttpClient {
       }
     }
 
-    ConnectionProvider connectionProvider =
-        ConnectionProvider.builder("fixed").maxConnections(DEFAULT_MAX_TOTAL_CONNECTIONS).build();
+    NettyAsyncHttpClientBuilder builder = new NettyAsyncHttpClientBuilder();
     if (proxyHost != null && proxyPortNumber != null) {
-      return new NettyAsyncHttpClientBuilder()
-          .proxy(
-              new ProxyOptions(
-                  ProxyOptions.Type.HTTP, new InetSocketAddress(proxyHost, proxyPortNumber)))
-          .connectionProvider(connectionProvider)
-          .build();
+      builder.proxy(
+          new ProxyOptions(
+              ProxyOptions.Type.HTTP, new InetSocketAddress(proxyHost, proxyPortNumber)));
     }
-    return new NettyAsyncHttpClientBuilder().connectionProvider(connectionProvider).build();
+    // keeping the thread count to 1 keeps the number of 16mb io.netty.buffer.PoolChunk to 1 also
+    return builder
+        .eventLoopGroup(LoopResources.create("reactor-http", 1, true).onClient(true))
+        .build();
   }
 
   // pass non-null ikeyRedirectCache if you want to use ikey-specific redirect policy
