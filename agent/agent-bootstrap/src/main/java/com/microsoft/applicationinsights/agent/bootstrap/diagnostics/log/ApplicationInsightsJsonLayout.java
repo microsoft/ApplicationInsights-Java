@@ -75,6 +75,7 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
           value == null || value.isEmpty() ? UNKNOWN_VALUE : value,
           jsonMap);
     }
+    jsonMap.put("language", "java");
     return jsonMap;
   }
 
