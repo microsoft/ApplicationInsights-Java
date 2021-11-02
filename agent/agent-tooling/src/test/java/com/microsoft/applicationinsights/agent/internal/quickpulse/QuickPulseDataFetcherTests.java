@@ -40,7 +40,8 @@ class QuickPulseDataFetcherTests {
   @Test
   void testGetCurrentSdkVersion() {
     QuickPulseDataFetcher dataFetcher =
-        new QuickPulseDataFetcher(null, new TelemetryClient(), null, null, null);
+        new QuickPulseDataFetcher(
+            null, TelemetryClient.createTelemetryClientForTest(), null, null, null);
     String sdkVersion = dataFetcher.getCurrentSdkVersion();
     assertThat(sdkVersion).isNotNull();
     assertThat(sdkVersion).isNotEqualTo("java:unknown");
@@ -48,7 +49,7 @@ class QuickPulseDataFetcherTests {
 
   @Test
   void endpointIsFormattedCorrectlyWhenUsingConfig() throws URISyntaxException {
-    TelemetryClient telemetryClient = new TelemetryClient();
+    TelemetryClient telemetryClient = TelemetryClient.createTelemetryClientForTest();
     telemetryClient.setConnectionString("InstrumentationKey=testing-123");
     QuickPulseDataFetcher quickPulseDataFetcher =
         new QuickPulseDataFetcher(null, telemetryClient, null, null, null);
@@ -64,7 +65,8 @@ class QuickPulseDataFetcherTests {
   @Test
   void endpointIsFormattedCorrectlyWhenConfigIsNull() throws URISyntaxException {
     QuickPulseDataFetcher quickPulseDataFetcher =
-        new QuickPulseDataFetcher(null, new TelemetryClient(), null, null, null);
+        new QuickPulseDataFetcher(
+            null, TelemetryClient.createTelemetryClientForTest(), null, null, null);
     String quickPulseEndpoint = quickPulseDataFetcher.getQuickPulseEndpoint();
     String endpointUrl = quickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);
     URI uri = new URI(endpointUrl);
@@ -86,7 +88,11 @@ class QuickPulseDataFetcherTests {
             .build();
     QuickPulsePingSender quickPulsePingSender =
         new QuickPulsePingSender(
-            httpPipeline, new TelemetryClient(), "machine1", "instance1", "qpid123");
+            httpPipeline,
+            TelemetryClient.createTelemetryClientForTest(),
+            "machine1",
+            "instance1",
+            "qpid123");
 
     QuickPulseHeaderInfo quickPulseHeaderInfo = quickPulsePingSender.ping(null);
     assertThat(QuickPulseStatus.QP_IS_ON).isEqualTo(quickPulseHeaderInfo.getQuickPulseStatus());

@@ -86,23 +86,41 @@ public class TelemetryClient {
   // * cloud role instance
   // * sdk version
   // * application version (if provided in customDimensions)
-  private Map<String, String> globalTags;
+  private final Map<String, String> globalTags;
   // contains customDimensions from json configuration
-  private Map<String, String> globalProperties;
+  private final Map<String, String> globalProperties;
 
-  private List<MetricFilter> metricFilters;
+  private final List<MetricFilter> metricFilters;
 
-  private Cache<String, String> ikeyEndpointMap;
-  private StatsbeatModule statsbeatModule;
-  private boolean readonly;
+  private final Cache<String, String> ikeyEndpointMap;
+  private final StatsbeatModule statsbeatModule;
+  private final boolean readonly;
 
-  @Nullable private Configuration.AadAuthentication aadAuthentication;
+  @Nullable private final Configuration.AadAuthentication aadAuthentication;
 
   private final Object channelInitLock = new Object();
   private volatile @MonotonicNonNull BatchSpanProcessor channelBatcher;
   private volatile @MonotonicNonNull BatchSpanProcessor statsbeatChannelBatcher;
 
-  private TelemetryClient(Builder builder) {
+  public static TelemetryClient.Builder builder() {
+    return new TelemetryClient.Builder();
+  }
+
+  // only used by tests
+  public static TelemetryClient.Builder createBuilderForTest() {
+    return builder().
+        setCustomDimensions(new HashMap<>())
+        .setMetricFilters(new ArrayList<>())
+        .setIkeyEndpointMap(Cache.builder().build())
+        .setStatsbeatModule(new StatsbeatModule(null));
+  }
+
+  // only used by tests
+  public static TelemetryClient createTelemetryClientForTest() {
+    return createBuilderForTest().build();
+  }
+
+  public TelemetryClient(Builder builder) {
     this.globalTags = builder.globalTags;
     this.globalProperties = builder.globalProperties;
     this.metricFilters = builder.metricFilters;
@@ -110,17 +128,6 @@ public class TelemetryClient {
     this.statsbeatModule = builder.statsbeatModule;
     this.readonly = builder.readonly;
     this.aadAuthentication = builder.aadAuthentication;
-  }
-
-  // only used by tests
-  public TelemetryClient() {
-    new TelemetryClient.Builder()
-        .setCustomDimensions(new HashMap<>())
-        .setMetricFilters(new ArrayList<>())
-        .setIkeyEndpointMap(Cache.builder().build())
-        .setStatsbeatModule(new StatsbeatModule(null))
-        .setReadonly(false)
-        .build();
   }
 
   public static TelemetryClient getActive() {

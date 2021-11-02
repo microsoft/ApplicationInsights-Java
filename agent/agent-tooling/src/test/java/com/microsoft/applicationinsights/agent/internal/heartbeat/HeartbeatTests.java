@@ -71,7 +71,7 @@ class HeartbeatTests {
   @Test
   void canExtendHeartBeatPayload() throws Exception {
     HeartBeatModule module = new HeartBeatModule();
-    module.initialize(new TelemetryClient());
+    module.initialize(TelemetryClient.createTelemetryClientForTest());
 
     Field field = module.getClass().getDeclaredField("heartBeatProvider");
     field.setAccessible(true);
@@ -83,7 +83,7 @@ class HeartbeatTests {
   void heartBeatPayloadContainsDataByDefault() throws InterruptedException {
     // given
     HeartBeatProvider provider = new HeartBeatProvider();
-    provider.initialize(new TelemetryClient());
+    provider.initialize(TelemetryClient.createTelemetryClientForTest());
 
     // some of the initialization above happens in a separate thread
     Thread.sleep(100);
@@ -98,7 +98,7 @@ class HeartbeatTests {
   void heartBeatPayloadContainsSpecificProperties() {
     // given
     HeartBeatProvider provider = new HeartBeatProvider();
-    provider.initialize(new TelemetryClient());
+    provider.initialize(TelemetryClient.createTelemetryClientForTest());
 
     // then
     assertThat(provider.addHeartBeatProperty("test", "testVal", true)).isTrue();
@@ -111,7 +111,7 @@ class HeartbeatTests {
   void heartbeatMetricIsNonZeroWhenFailureConditionPresent() {
     // given
     HeartBeatProvider provider = new HeartBeatProvider();
-    provider.initialize(new TelemetryClient());
+    provider.initialize(TelemetryClient.createTelemetryClientForTest());
 
     // then
     assertThat(provider.addHeartBeatProperty("test", "testVal", false)).isTrue();
@@ -124,7 +124,7 @@ class HeartbeatTests {
   void heartbeatMetricCountsForAllFailures() {
     // given
     HeartBeatProvider provider = new HeartBeatProvider();
-    provider.initialize(new TelemetryClient());
+    provider.initialize(TelemetryClient.createTelemetryClientForTest());
 
     // then
     assertThat(provider.addHeartBeatProperty("test", "testVal", false)).isTrue();
@@ -165,7 +165,7 @@ class HeartbeatTests {
   void heartBeatProviderDoesNotAllowDuplicateProperties() {
     // given
     HeartBeatProvider provider = new HeartBeatProvider();
-    provider.initialize(new TelemetryClient());
+    provider.initialize(TelemetryClient.createTelemetryClientForTest());
 
     // then
     provider.addHeartBeatProperty("test01", "test val", true);
@@ -183,7 +183,7 @@ class HeartbeatTests {
     defaultFields.add(testKey);
 
     HeartBeatProvider provider = new HeartBeatProvider();
-    provider.initialize(new TelemetryClient());
+    provider.initialize(TelemetryClient.createTelemetryClientForTest());
 
     base.setDefaultPayload(provider).call();
     MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();

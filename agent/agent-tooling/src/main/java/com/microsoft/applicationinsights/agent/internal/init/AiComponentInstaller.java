@@ -191,7 +191,7 @@ public class AiComponentInstaller implements AgentListener {
     Cache<String, String> ikeyEndpointMap = Cache.builder().setMaximumSize(100).build();
     StatsbeatModule statsbeatModule = new StatsbeatModule(ikeyEndpointMap);
     TelemetryClient telemetryClient =
-        new TelemetryClient.Builder()
+        TelemetryClient.builder()
             .setCustomDimensions(config.customDimensions)
             .setMetricFilters(metricFilters)
             .setIkeyEndpointMap(ikeyEndpointMap)

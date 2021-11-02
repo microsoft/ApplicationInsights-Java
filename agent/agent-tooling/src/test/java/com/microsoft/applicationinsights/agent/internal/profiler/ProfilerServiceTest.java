@@ -78,7 +78,8 @@ class ProfilerServiceTest {
   void endToEndAlertTriggerCpu() throws Exception {
     endToEndAlertTriggerCycle(
         false,
-        createMetricsTelemetry(new TelemetryClient(), TOTAL_CPU_PC_METRIC_NAME, 100.0),
+        createMetricsTelemetry(
+            TelemetryClient.createTelemetryClientForTest(), TOTAL_CPU_PC_METRIC_NAME, 100.0),
         telemetry -> {
           assertThat(telemetry.getProperties().get("Source")).isEqualTo("JFR-CPU");
           assertThat(telemetry.getMeasurements().get("AverageCPUUsage")).isEqualTo(100.0);
@@ -90,7 +91,8 @@ class ProfilerServiceTest {
   void endToEndAlertTriggerManual() throws Exception {
     endToEndAlertTriggerCycle(
         true,
-        createMetricsTelemetry(new TelemetryClient(), HEAP_MEM_USED_PERCENTAGE, 0.0),
+        createMetricsTelemetry(
+            TelemetryClient.createTelemetryClientForTest(), HEAP_MEM_USED_PERCENTAGE, 0.0),
         telemetry -> {
           assertThat(telemetry.getProperties().get("Source")).isEqualTo("JFR-MANUAL");
           assertThat(telemetry.getMeasurements().get("AverageCPUUsage")).isEqualTo(0.0);
@@ -119,8 +121,7 @@ class ProfilerServiceTest {
 
     Object monitor = new Object();
 
-    TelemetryClient client =
-        new TelemetryClient() {
+    TelemetryClient client = new TelemetryClient(TelemetryClient.createBuilderForTest()) {
           @Override
           public void trackAsync(TelemetryItem telemetry) {
             MonitorDomain data = telemetry.getData().getBaseData();
