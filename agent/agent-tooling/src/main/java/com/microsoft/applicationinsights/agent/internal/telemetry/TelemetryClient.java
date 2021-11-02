@@ -115,11 +115,11 @@ public class TelemetryClient {
   // only used by tests
   public TelemetryClient() {
     new TelemetryClient.Builder()
-        .withCustomDimensions(new HashMap<>())
-        .withMetricFilters(new ArrayList<>())
-        .withIkeyEndpointMap(Cache.builder().build())
-        .withStatsbeatModule(new StatsbeatModule(null))
-        .withReadonly(false)
+        .setCustomDimensions(new HashMap<>())
+        .setMetricFilters(new ArrayList<>())
+        .setIkeyEndpointMap(Cache.builder().build())
+        .setStatsbeatModule(new StatsbeatModule(null))
+        .setReadonly(false)
         .build();
   }
 
@@ -480,7 +480,7 @@ public class TelemetryClient {
     private boolean readonly;
     @Nullable private Configuration.AadAuthentication aadAuthentication;
 
-    public Builder withCustomDimensions(Map<String, String> customDimensions) {
+    public Builder setCustomDimensions(Map<String, String> customDimensions) {
       StringSubstitutor substitutor = new StringSubstitutor(System.getenv());
       Map<String, String> globalProperties = new HashMap<>();
       Map<String, String> globalTags = new HashMap<>();
@@ -504,27 +504,27 @@ public class TelemetryClient {
       return this;
     }
 
-    public Builder withMetricFilters(List<MetricFilter> metricFilters) {
+    public Builder setMetricFilters(List<MetricFilter> metricFilters) {
       this.metricFilters = metricFilters;
       return this;
     }
 
-    public Builder withIkeyEndpointMap(Cache<String, String> ikeyEndpointMap) {
+    public Builder setIkeyEndpointMap(Cache<String, String> ikeyEndpointMap) {
       this.ikeyEndpointMap = ikeyEndpointMap;
       return this;
     }
 
-    public Builder withStatsbeatModule(StatsbeatModule statsbeatModule) {
+    public Builder setStatsbeatModule(StatsbeatModule statsbeatModule) {
       this.statsbeatModule = statsbeatModule;
       return this;
     }
 
-    public Builder withReadonly(boolean readonly) {
+    public Builder setReadonly(boolean readonly) {
       this.readonly = readonly;
       return this;
     }
 
-    public Builder withAadAuthentication(Configuration.AadAuthentication aadAuthentication) {
+    public Builder setAadAuthentication(Configuration.AadAuthentication aadAuthentication) {
       this.aadAuthentication = aadAuthentication;
       return this;
     }

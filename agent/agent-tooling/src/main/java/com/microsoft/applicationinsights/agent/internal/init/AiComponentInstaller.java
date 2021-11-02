@@ -192,12 +192,12 @@ public class AiComponentInstaller implements AgentListener {
     StatsbeatModule statsbeatModule = new StatsbeatModule(ikeyEndpointMap);
     TelemetryClient telemetryClient =
         new TelemetryClient.Builder()
-            .withCustomDimensions(config.customDimensions)
-            .withMetricFilters(metricFilters)
-            .withIkeyEndpointMap(ikeyEndpointMap)
-            .withStatsbeatModule(statsbeatModule)
-            .withReadonly(readonly)
-            .withAadAuthentication(config.preview.authentication)
+            .setCustomDimensions(config.customDimensions)
+            .setMetricFilters(metricFilters)
+            .setIkeyEndpointMap(ikeyEndpointMap)
+            .setStatsbeatModule(statsbeatModule)
+            .setReadonly(readonly)
+            .setAadAuthentication(config.preview.authentication)
             .build();
 
     TelemetryClientInitializer.initialize(telemetryClient, config);
