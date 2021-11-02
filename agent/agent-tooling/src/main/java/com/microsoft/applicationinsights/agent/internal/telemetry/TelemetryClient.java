@@ -114,7 +114,8 @@ public class TelemetryClient {
   public TelemetryClient() {
     new TelemetryClient.Builder()
         .withCustomDimensions(new HashMap<>())
-        .withMetricFilters(new ArrayList<>()).withIkeyEndpointMap(Cache.builder().build())
+        .withMetricFilters(new ArrayList<>())
+        .withIkeyEndpointMap(Cache.builder().build())
         .withStatsbeatModule(new StatsbeatModule(null))
         .build();
   }
