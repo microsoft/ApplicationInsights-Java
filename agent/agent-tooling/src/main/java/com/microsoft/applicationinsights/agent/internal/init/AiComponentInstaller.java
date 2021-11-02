@@ -136,10 +136,13 @@ public class AiComponentInstaller implements AgentListener {
     File tmpDir = new File(javaTmpDir, "applicationinsights-java");
     if (!readonly) {
       if (!tmpDir.exists() && !tmpDir.mkdirs()) {
-        throw new IllegalStateException("tmp directory is NOT readonly. Could not create directory: " + tmpDir.getAbsolutePath());
+        throw new IllegalStateException(
+            "tmp directory is NOT readonly. Could not create directory: "
+                + tmpDir.getAbsolutePath());
       }
     } else {
-      startupLogger.warn("tmp directory is readonly. Could not create directory: " + tmpDir.getAbsolutePath());
+      startupLogger.warn(
+          "tmp directory is readonly. Could not create directory: " + tmpDir.getAbsolutePath());
     }
 
     Configuration config = MainEntryPoint.getConfiguration();

@@ -239,10 +239,8 @@ public class TelemetryClient {
           if (!readonly) {
             LocalFileCache localFileCache = new LocalFileCache();
             File statsbeatFolder = LocalStorageUtils.getOfflineStatsbeatFolder();
-            localFileLoader =
-                new LocalFileLoader(localFileCache, statsbeatFolder, null);
-            localFileWriter =
-                new LocalFileWriter(localFileCache, statsbeatFolder, null);
+            localFileLoader = new LocalFileLoader(localFileCache, statsbeatFolder, null);
+            localFileWriter = new LocalFileWriter(localFileCache, statsbeatFolder, null);
           }
 
           TelemetryChannel channel =
@@ -326,7 +324,9 @@ public class TelemetryClient {
     return statsbeatModule;
   }
 
-  public boolean readonly() { return readonly; }
+  public boolean readonly() {
+    return readonly;
+  }
 
   public void addNonFilterableMetricNames(String... metricNames) {
     nonFilterableMetricNames.addAll(asList(metricNames));
