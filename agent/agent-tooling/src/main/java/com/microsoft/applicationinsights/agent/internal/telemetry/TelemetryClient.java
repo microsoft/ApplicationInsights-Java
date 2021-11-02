@@ -86,60 +86,37 @@ public class TelemetryClient {
   // * cloud role instance
   // * sdk version
   // * application version (if provided in customDimensions)
-  private final Map<String, String> globalTags;
+  private Map<String, String> globalTags;
   // contains customDimensions from json configuration
-  private final Map<String, String> globalProperties;
+  private Map<String, String> globalProperties;
 
-  private final List<MetricFilter> metricFilters;
+  private List<MetricFilter> metricFilters;
 
-  private final Cache<String, String> ikeyEndpointMap;
-  private final StatsbeatModule statsbeatModule;
+  private Cache<String, String> ikeyEndpointMap;
+  private StatsbeatModule statsbeatModule;
 
-  @Nullable private final Configuration.AadAuthentication aadAuthentication;
+  @Nullable private Configuration.AadAuthentication aadAuthentication;
 
   private final Object channelInitLock = new Object();
   private volatile @MonotonicNonNull BatchSpanProcessor channelBatcher;
   private volatile @MonotonicNonNull BatchSpanProcessor statsbeatChannelBatcher;
 
-  // only used by tests
-  public TelemetryClient() {
-    this(
-        new HashMap<>(),
-        new ArrayList<>(),
-        Cache.builder().build(),
-        new StatsbeatModule(null),
-        null);
+  private TelemetryClient(Builder builder) {
+    this.globalTags = builder.globalTags;
+    this.globalProperties = builder.globalProperties;
+    this.metricFilters = builder.metricFilters;
+    this.ikeyEndpointMap = builder.ikeyEndpointMap;
+    this.statsbeatModule = builder.statsbeatModule;
+    this.aadAuthentication = builder.aadAuthentication;
   }
 
-  public TelemetryClient(
-      Map<String, String> customDimensions,
-      List<MetricFilter> metricFilters,
-      Cache<String, String> ikeyEndpointMap,
-      StatsbeatModule statsbeatModule,
-      @Nullable Configuration.AadAuthentication aadAuthentication) {
-    StringSubstitutor substitutor = new StringSubstitutor(System.getenv());
-    Map<String, String> globalProperties = new HashMap<>();
-    Map<String, String> globalTags = new HashMap<>();
-    for (Map.Entry<String, String> entry : customDimensions.entrySet()) {
-      String key = entry.getKey();
-      if (key.equals("service.version")) {
-        globalTags.put(
-            ContextTagKeys.AI_APPLICATION_VER.toString(), substitutor.replace(entry.getValue()));
-      } else {
-        globalProperties.put(key, substitutor.replace(entry.getValue()));
-      }
-    }
-
-    globalTags.put(
-        ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(),
-        PropertyHelper.getQualifiedSdkVersionString());
-
-    this.globalProperties = globalProperties;
-    this.globalTags = globalTags;
-    this.metricFilters = metricFilters;
-    this.ikeyEndpointMap = ikeyEndpointMap;
-    this.statsbeatModule = statsbeatModule;
-    this.aadAuthentication = aadAuthentication;
+  // only used by tests
+  public TelemetryClient() {
+    new TelemetryClient.Builder()
+        .withCustomDimensions(new HashMap<>())
+        .withMetricFilters(new ArrayList<>()).withIkeyEndpointMap(Cache.builder().build())
+        .withStatsbeatModule(new StatsbeatModule(null))
+        .build();
   }
 
   public static TelemetryClient getActive() {
@@ -469,5 +446,64 @@ public class TelemetryClient {
     telemetry.setData(monitorBase);
     monitorBase.setBaseType(baseType);
     monitorBase.setBaseData(data);
+  }
+
+  public static class Builder {
+
+    private Map<String, String> globalTags;
+    private Map<String, String> globalProperties;
+    private List<MetricFilter> metricFilters;
+    private Cache<String, String> ikeyEndpointMap;
+    private StatsbeatModule statsbeatModule;
+    @Nullable private Configuration.AadAuthentication aadAuthentication;
+
+    public Builder withCustomDimensions(Map<String, String> customDimensions) {
+      StringSubstitutor substitutor = new StringSubstitutor(System.getenv());
+      Map<String, String> globalProperties = new HashMap<>();
+      Map<String, String> globalTags = new HashMap<>();
+      for (Map.Entry<String, String> entry : customDimensions.entrySet()) {
+        String key = entry.getKey();
+        if (key.equals("service.version")) {
+          globalTags.put(
+              ContextTagKeys.AI_APPLICATION_VER.toString(), substitutor.replace(entry.getValue()));
+        } else {
+          globalProperties.put(key, substitutor.replace(entry.getValue()));
+        }
+      }
+
+      globalTags.put(
+          ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(),
+          PropertyHelper.getQualifiedSdkVersionString());
+
+      this.globalProperties = globalProperties;
+      this.globalTags = globalTags;
+
+      return this;
+    }
+
+    public Builder withMetricFilters(List<MetricFilter> metricFilters) {
+      this.metricFilters = metricFilters;
+      return this;
+    }
+
+    public Builder withIkeyEndpointMap(Cache<String, String> ikeyEndpointMap) {
+      this.ikeyEndpointMap = ikeyEndpointMap;
+      return this;
+    }
+
+    public Builder withStatsbeatModule(StatsbeatModule statsbeatModule) {
+      this.statsbeatModule = statsbeatModule;
+      return this;
+    }
+
+    public Builder withAadAuthentication(Configuration.AadAuthentication aadAuthentication) {
+      this.aadAuthentication = aadAuthentication;
+      return this;
+    }
+
+    public TelemetryClient build() {
+      TelemetryClient telemetryClient = new TelemetryClient(this);
+      return telemetryClient;
+    }
   }
 }
