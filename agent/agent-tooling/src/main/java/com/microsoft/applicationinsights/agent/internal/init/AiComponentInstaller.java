@@ -246,7 +246,9 @@ public class AiComponentInstaller implements AgentListener {
     statsbeatModule.start(telemetryClient, config);
 
     // start local File purger scheduler task
-    LocalFilePurger.startPurging(readonly);
+    if (!readonly) {
+      LocalFilePurger.startPurging();
+    }
   }
 
   private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(
