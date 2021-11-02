@@ -76,7 +76,7 @@ class GcEventMonitorTest {
 
     GcEventMonitor.init(
         alertingSubsystem,
-        TelemetryClient.createTelemetryClientForTest(),
+        TelemetryClient.createForTest(),
         Executors.newSingleThreadExecutor(),
         new GcEventMonitor.GcEventMonitorConfiguration(GcReportingLevel.NONE),
         factory);

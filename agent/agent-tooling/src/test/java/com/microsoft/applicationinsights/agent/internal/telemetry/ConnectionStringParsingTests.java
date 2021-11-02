@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 
 class ConnectionStringParsingTests {
 
-  private final TelemetryClient telemetryClient = TelemetryClient.createTelemetryClientForTest();
+  private final TelemetryClient telemetryClient = TelemetryClient.createForTest();
 
   @Test
   void minimalString() throws Exception {
@@ -343,7 +343,7 @@ class ConnectionStringParsingTests {
     final String cs2 =
         "instRUMentationkEY=" + ikey + ";LivEEndPOINT=" + live + ";ProFILErEndPOinT=" + profiler;
 
-    TelemetryClient telemetryClient2 = TelemetryClient.createTelemetryClientForTest();
+    TelemetryClient telemetryClient2 = TelemetryClient.createForTest();
 
     ConnectionString.parseInto(cs1, telemetryClient);
     ConnectionString.parseInto(cs2, telemetryClient2);
@@ -387,7 +387,7 @@ class ConnectionStringParsingTests {
             + ";LiveEndpoint="
             + live;
 
-    TelemetryClient telemetryClient2 = TelemetryClient.createTelemetryClientForTest();
+    TelemetryClient telemetryClient2 = TelemetryClient.createForTest();
 
     ConnectionString.parseInto(cs1, telemetryClient);
     ConnectionString.parseInto(cs2, telemetryClient2);

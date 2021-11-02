@@ -94,7 +94,7 @@ public class QuickPulseTestBase extends TestBase {
       String name, Date timestamp, long durationMillis, String responseCode, boolean success) {
     TelemetryItem telemetry = new TelemetryItem();
     RequestData data = new RequestData();
-    TelemetryClient.createTelemetryClientForTest().initRequestTelemetry(telemetry, data);
+    TelemetryClient.createForTest().initRequestTelemetry(telemetry, data);
     Map<String, String> properties = new HashMap<>();
     properties.put("customProperty", "customValue");
     data.setProperties(properties);
@@ -110,7 +110,7 @@ public class QuickPulseTestBase extends TestBase {
       String name, String command, long durationMillis, boolean success) {
     TelemetryItem telemetry = new TelemetryItem();
     RemoteDependencyData data = new RemoteDependencyData();
-    TelemetryClient.createTelemetryClientForTest().initRemoteDependencyTelemetry(telemetry, data);
+    TelemetryClient.createForTest().initRemoteDependencyTelemetry(telemetry, data);
     Map<String, String> properties = new HashMap<>();
     properties.put("customProperty", "customValue");
     data.setProperties(properties);
@@ -124,7 +124,7 @@ public class QuickPulseTestBase extends TestBase {
   public static TelemetryItem createExceptionTelemetry(Exception exception) {
     TelemetryItem telemetry = new TelemetryItem();
     TelemetryExceptionData data = new TelemetryExceptionData();
-    TelemetryClient.createTelemetryClientForTest().initExceptionTelemetry(telemetry, data);
+    TelemetryClient.createForTest().initExceptionTelemetry(telemetry, data);
     data.setExceptions(getExceptions(exception));
     return telemetry;
   }

@@ -107,17 +107,13 @@ public class TelemetryClient {
   }
 
   // only used by tests
-  public static TelemetryClient.Builder createBuilderForTest() {
+  public static TelemetryClient createForTest() {
     return builder()
         .setCustomDimensions(new HashMap<>())
         .setMetricFilters(new ArrayList<>())
         .setIkeyEndpointMap(Cache.builder().build())
-        .setStatsbeatModule(new StatsbeatModule(null));
-  }
-
-  // only used by tests
-  public static TelemetryClient createTelemetryClientForTest() {
-    return createBuilderForTest().build();
+        .setStatsbeatModule(new StatsbeatModule(null))
+        .build();
   }
 
   public TelemetryClient(Builder builder) {
