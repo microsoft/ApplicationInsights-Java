@@ -108,8 +108,8 @@ public class TelemetryClient {
 
   // only used by tests
   public static TelemetryClient.Builder createBuilderForTest() {
-    return builder().
-        setCustomDimensions(new HashMap<>())
+    return builder()
+        .setCustomDimensions(new HashMap<>())
         .setMetricFilters(new ArrayList<>())
         .setIkeyEndpointMap(Cache.builder().build())
         .setStatsbeatModule(new StatsbeatModule(null));

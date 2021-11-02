@@ -121,7 +121,8 @@ class ProfilerServiceTest {
 
     Object monitor = new Object();
 
-    TelemetryClient client = new TelemetryClient(TelemetryClient.createBuilderForTest()) {
+    TelemetryClient client =
+        new TelemetryClient(TelemetryClient.createBuilderForTest()) {
           @Override
           public void trackAsync(TelemetryItem telemetry) {
             MonitorDomain data = telemetry.getData().getBaseData();
