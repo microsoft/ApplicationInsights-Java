@@ -48,7 +48,7 @@ public class LocalFileSystemUtils {
     String currentUserName = determineCurrentUserName();
 
     File result = getTempDir(tempDirectory, currentUserName);
-    if (!result.isDirectory()) {
+    if (!result.isDirectory() && result.canWrite()) {
       // Noinspection ResultOfMethodCallIgnored
       result.mkdirs();
     }

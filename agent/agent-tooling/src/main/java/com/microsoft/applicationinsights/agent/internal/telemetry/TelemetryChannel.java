@@ -83,7 +83,7 @@ public class TelemetryChannel {
 
   private final HttpPipeline pipeline;
   private final URL endpointUrl;
-  private final LocalFileWriter localFileWriter;
+  @Nullable private final LocalFileWriter localFileWriter;
   // this is null for the statsbeat channel
   @Nullable private final NetworkStatsbeat networkStatsbeat;
 
@@ -246,8 +246,10 @@ public class TelemetryChannel {
   }
 
   private void writeToDiskOnFailure(List<ByteBuffer> byteBuffers) {
-    localFileWriter.writeToDisk(byteBuffers);
-    byteBufferPool.offer(byteBuffers);
+    if (localFileWriter != null) {
+      localFileWriter.writeToDisk(byteBuffers);
+      byteBufferPool.offer(byteBuffers);
+    }
   }
 
   private void parseResponseCode(

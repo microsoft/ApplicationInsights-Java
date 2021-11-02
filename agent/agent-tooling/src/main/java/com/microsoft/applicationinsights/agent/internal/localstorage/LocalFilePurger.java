@@ -44,12 +44,14 @@ public class LocalFilePurger implements Runnable {
   private final long expiredInterval;
   private final File[] folders;
 
-  public static void startPurging() {
-    startPurging(
-        TimeUnit.DAYS.toSeconds(1),
-        TimeUnit.DAYS.toSeconds(2),
-        LocalStorageUtils.getOfflineTelemetryFolder(),
-        LocalStorageUtils.getOfflineStatsbeatFolder());
+  public static void startPurging(boolean readonly) {
+    if (!readonly) {
+      startPurging(
+          TimeUnit.DAYS.toSeconds(1),
+          TimeUnit.DAYS.toSeconds(2),
+          LocalStorageUtils.getOfflineTelemetryFolder(),
+          LocalStorageUtils.getOfflineStatsbeatFolder());
+    }
   }
 
   // this is used by tests to configure purge interval, expired interval and the test folder which

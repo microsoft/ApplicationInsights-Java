@@ -94,6 +94,7 @@ public class TelemetryClient {
 
   private Cache<String, String> ikeyEndpointMap;
   private StatsbeatModule statsbeatModule;
+  private boolean readonly;
 
   @Nullable private Configuration.AadAuthentication aadAuthentication;
 
@@ -107,6 +108,7 @@ public class TelemetryClient {
     this.metricFilters = builder.metricFilters;
     this.ikeyEndpointMap = builder.ikeyEndpointMap;
     this.statsbeatModule = builder.statsbeatModule;
+    this.readonly = builder.readonly;
     this.aadAuthentication = builder.aadAuthentication;
   }
 
@@ -117,6 +119,7 @@ public class TelemetryClient {
         .withMetricFilters(new ArrayList<>())
         .withIkeyEndpointMap(Cache.builder().build())
         .withStatsbeatModule(new StatsbeatModule(null))
+        .withReadonly(false)
         .build();
   }
 
@@ -196,14 +199,19 @@ public class TelemetryClient {
     if (channelBatcher == null) {
       synchronized (channelInitLock) {
         if (channelBatcher == null) {
-          LocalFileCache localFileCache = new LocalFileCache();
-          File telemetryFolder = LocalStorageUtils.getOfflineTelemetryFolder();
-          LocalFileLoader localFileLoader =
-              new LocalFileLoader(
-                  localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
-          LocalFileWriter localFileWriter =
-              new LocalFileWriter(
-                  localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
+          LocalFileLoader localFileLoader = null;
+          LocalFileWriter localFileWriter = null;
+          if (!readonly) {
+            LocalFileCache localFileCache = new LocalFileCache();
+            File telemetryFolder = LocalStorageUtils.getOfflineTelemetryFolder();
+            localFileLoader =
+                new LocalFileLoader(
+                    localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
+            localFileWriter =
+                new LocalFileWriter(
+                    localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
+          }
+
           TelemetryChannel channel =
               TelemetryChannel.create(
                   endpointProvider.getIngestionEndpointUrl(),
@@ -211,7 +219,10 @@ public class TelemetryClient {
                   ikeyEndpointMap,
                   statsbeatModule.getNetworkStatsbeat(),
                   aadAuthentication);
-          LocalFileSender.start(localFileLoader, channel);
+
+          if (!readonly) {
+            LocalFileSender.start(localFileLoader, channel);
+          }
           channelBatcher = BatchSpanProcessor.builder(channel).build();
         }
       }
@@ -223,12 +234,17 @@ public class TelemetryClient {
     if (statsbeatChannelBatcher == null) {
       synchronized (channelInitLock) {
         if (statsbeatChannelBatcher == null) {
-          LocalFileCache localFileCache = new LocalFileCache();
-          File statsbeatFolder = LocalStorageUtils.getOfflineStatsbeatFolder();
-          LocalFileLoader localFileLoader =
-              new LocalFileLoader(localFileCache, statsbeatFolder, null);
-          LocalFileWriter localFileWriter =
-              new LocalFileWriter(localFileCache, statsbeatFolder, null);
+          LocalFileLoader localFileLoader = null;
+          LocalFileWriter localFileWriter = null;
+          if (!readonly) {
+            LocalFileCache localFileCache = new LocalFileCache();
+            File statsbeatFolder = LocalStorageUtils.getOfflineStatsbeatFolder();
+            localFileLoader =
+                new LocalFileLoader(localFileCache, statsbeatFolder, null);
+            localFileWriter =
+                new LocalFileWriter(localFileCache, statsbeatFolder, null);
+          }
+
           TelemetryChannel channel =
               TelemetryChannel.create(
                   endpointProvider.getStatsbeatEndpointUrl(),
@@ -236,7 +252,10 @@ public class TelemetryClient {
                   ikeyEndpointMap,
                   null,
                   null);
-          LocalFileSender.start(localFileLoader, channel);
+
+          if (!readonly) {
+            LocalFileSender.start(localFileLoader, channel);
+          }
           statsbeatChannelBatcher = BatchSpanProcessor.builder(channel).build();
         }
       }
@@ -306,6 +325,8 @@ public class TelemetryClient {
   public StatsbeatModule getStatsbeatModule() {
     return statsbeatModule;
   }
+
+  public boolean readonly() { return readonly; }
 
   public void addNonFilterableMetricNames(String... metricNames) {
     nonFilterableMetricNames.addAll(asList(metricNames));
@@ -456,6 +477,7 @@ public class TelemetryClient {
     private List<MetricFilter> metricFilters;
     private Cache<String, String> ikeyEndpointMap;
     private StatsbeatModule statsbeatModule;
+    private boolean readonly;
     @Nullable private Configuration.AadAuthentication aadAuthentication;
 
     public Builder withCustomDimensions(Map<String, String> customDimensions) {
@@ -494,6 +516,11 @@ public class TelemetryClient {
 
     public Builder withStatsbeatModule(StatsbeatModule statsbeatModule) {
       this.statsbeatModule = statsbeatModule;
+      return this;
+    }
+
+    public Builder withReadonly(boolean readonly) {
+      this.readonly = readonly;
       return this;
     }
 
