@@ -21,6 +21,9 @@
 
 package com.microsoft.applicationinsights.agent.internal.common;
 
+import jdk.vm.ci.meta.Local;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,6 +32,7 @@ import java.util.List;
 /** Helper methods for dealing with files and folders. */
 public class LocalFileSystemUtils {
 
+  private static final Logger logger = LoggerFactory.getLogger(LocalFileSystemUtils.class);
   private static final List<String> CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES =
       Collections.unmodifiableList(Arrays.asList("USER", "LOGNAME", "USERNAME"));
 
@@ -51,6 +55,8 @@ public class LocalFileSystemUtils {
     if (!result.isDirectory() && result.canWrite()) {
       // Noinspection ResultOfMethodCallIgnored
       result.mkdirs();
+    } else {
+      logger.info("Profiler is not supported in a read-only file system.");
     }
     return result;
   }
