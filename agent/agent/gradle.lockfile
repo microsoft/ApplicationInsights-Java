@@ -3,8 +3,8 @@
 # This file is expected to be part of source control.
 ch.qos.logback.contrib:logback-json-classic:0.1.5=runtimeClasspath
 ch.qos.logback.contrib:logback-json-core:0.1.5=runtimeClasspath
-ch.qos.logback:logback-classic:1.2.3=runtimeClasspath
-ch.qos.logback:logback-core:1.2.3=runtimeClasspath
+ch.qos.logback:logback-classic:1.2.6=runtimeClasspath
+ch.qos.logback:logback-core:1.2.6=runtimeClasspath
 com.google.code.findbugs:jsr305:3.0.2=runtimeClasspath
 com.google.guava:guava-bom:30.1.1-jre=runtimeClasspath
 com.squareup.moshi:moshi:1.11.0=runtimeClasspath
@@ -24,5 +24,5 @@ io.opentelemetry:opentelemetry-bom:1.7.0=runtimeClasspath
 io.opentelemetry:opentelemetry-context:1.7.0=runtimeClasspath
 io.opentelemetry:opentelemetry-semconv:1.7.0-alpha=runtimeClasspath
 org.junit:junit-bom:5.7.2=runtimeClasspath
-org.slf4j:slf4j-api:1.7.30=runtimeClasspath
+org.slf4j:slf4j-api:1.7.32=runtimeClasspath
 empty=
