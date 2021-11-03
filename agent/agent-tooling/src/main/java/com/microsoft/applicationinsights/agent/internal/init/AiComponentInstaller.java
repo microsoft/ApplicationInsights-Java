@@ -137,12 +137,11 @@ public class AiComponentInstaller implements AgentListener {
     if (!readOnlyFileSystem) {
       if (!tmpDir.exists() && !tmpDir.mkdirs()) {
         throw new IllegalStateException(
-            "tmp directory is NOT readOnlyFileSystem. Could not create directory: "
-                + tmpDir.getAbsolutePath());
+            "Could not create directory: " + tmpDir.getAbsolutePath());
       }
     } else {
-      startupLogger.warn(
-          "tmp directory is readOnlyFileSystem. Could not create directory: " + tmpDir.getAbsolutePath());
+      startupLogger.info(
+          "Could not create directory in a read only file system: " + tmpDir.getAbsolutePath());
     }
 
     Configuration config = MainEntryPoint.getConfiguration();
