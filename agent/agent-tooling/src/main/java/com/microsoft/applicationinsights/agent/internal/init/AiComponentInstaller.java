@@ -128,21 +128,21 @@ public class AiComponentInstaller implements AgentListener {
     }
 
     File javaTmpDir = new File(System.getProperty("java.io.tmpdir"));
-    boolean readonly = false;
+    boolean readOnlyFileSystem = false;
     if (javaTmpDir.canRead() && !javaTmpDir.canWrite()) {
-      readonly = true;
+      readOnlyFileSystem = true;
     }
 
     File tmpDir = new File(javaTmpDir, "applicationinsights-java");
-    if (!readonly) {
+    if (!readOnlyFileSystem) {
       if (!tmpDir.exists() && !tmpDir.mkdirs()) {
         throw new IllegalStateException(
-            "tmp directory is NOT readonly. Could not create directory: "
+            "tmp directory is NOT readOnlyFileSystem. Could not create directory: "
                 + tmpDir.getAbsolutePath());
       }
     } else {
       startupLogger.warn(
-          "tmp directory is readonly. Could not create directory: " + tmpDir.getAbsolutePath());
+          "tmp directory is readOnlyFileSystem. Could not create directory: " + tmpDir.getAbsolutePath());
     }
 
     Configuration config = MainEntryPoint.getConfiguration();
@@ -196,7 +196,7 @@ public class AiComponentInstaller implements AgentListener {
             .setMetricFilters(metricFilters)
             .setIkeyEndpointMap(ikeyEndpointMap)
             .setStatsbeatModule(statsbeatModule)
-            .setReadonly(readonly)
+            .setReadOnlyFileSystem(readOnlyFileSystem)
             .setAadAuthentication(config.preview.authentication)
             .build();
 
@@ -246,7 +246,7 @@ public class AiComponentInstaller implements AgentListener {
     statsbeatModule.start(telemetryClient, config);
 
     // start local File purger scheduler task
-    if (!readonly) {
+    if (!readOnlyFileSystem) {
       LocalFilePurger.startPurging();
     }
   }
