@@ -81,7 +81,9 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
     if (configuration.connectionString != null) {
       if (!configuration.preview.disablePropagation) {
         DelegatingPropagator.getInstance()
-            .setUpStandardDelegate(configuration.preview.legacyRequestIdPropagation.enabled);
+            .setUpStandardDelegate(
+                configuration.preview.additionalPropagators,
+                configuration.preview.legacyRequestIdPropagation.enabled);
       }
       DelegatingSampler.getInstance()
           .setDelegate(Samplers.getSampler(configuration.sampling.percentage, configuration));
