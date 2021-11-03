@@ -136,8 +136,7 @@ public class AiComponentInstaller implements AgentListener {
     File tmpDir = new File(javaTmpDir, "applicationinsights-java");
     if (!readOnlyFileSystem) {
       if (!tmpDir.exists() && !tmpDir.mkdirs()) {
-        throw new IllegalStateException(
-            "Could not create directory: " + tmpDir.getAbsolutePath());
+        throw new IllegalStateException("Could not create directory: " + tmpDir.getAbsolutePath());
       }
     } else {
       startupLogger.info(
