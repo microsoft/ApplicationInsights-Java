@@ -21,13 +21,12 @@
 
 package com.microsoft.applicationinsights.agent.internal.common;
 
-import jdk.vm.ci.meta.Local;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Helper methods for dealing with files and folders. */
 public class LocalFileSystemUtils {
