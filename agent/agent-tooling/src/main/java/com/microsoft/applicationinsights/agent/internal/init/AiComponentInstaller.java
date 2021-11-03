@@ -140,7 +140,8 @@ public class AiComponentInstaller implements AgentListener {
       }
     } else {
       startupLogger.info(
-          "Could not create directory in a read only file system: " + tmpDir.getAbsolutePath());
+          "Disk persistence and profiler are not supported in a read-only file system: "
+              + tmpDir.getAbsolutePath());
     }
 
     Configuration config = MainEntryPoint.getConfiguration();
