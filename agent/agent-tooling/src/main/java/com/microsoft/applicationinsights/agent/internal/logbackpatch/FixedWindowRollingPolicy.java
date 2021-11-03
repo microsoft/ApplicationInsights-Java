@@ -31,6 +31,7 @@
  * <p>under the terms of the GNU Lesser General Public License version 2.1 as published by the Free
  * Software Foundation.
  */
+
 package com.microsoft.applicationinsights.agent.internal.logbackpatch;
 
 import static ch.qos.logback.core.CoreConstants.CODES_URL;
@@ -134,8 +135,6 @@ public class FixedWindowRollingPolicy extends RollingPolicyBase {
   /**
    * Subclasses can override this method to increase the max window size, if required. This is to
    * address LOGBACK-266.
-   *
-   * @return
    */
   protected int getMaxWindowSize() {
     return MAX_WINDOW_SIZE;
