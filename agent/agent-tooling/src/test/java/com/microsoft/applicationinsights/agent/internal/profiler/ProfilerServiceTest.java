@@ -170,7 +170,6 @@ class ProfilerServiceTest {
                     2,
                     3,
                     new URL("http://localhost"),
-                    true,
                     null,
                     null,
                     LocalFileSystemUtils.getTempDir()),
@@ -227,14 +226,7 @@ class ProfilerServiceTest {
   private JfrProfiler getJfrDaemon(AtomicBoolean profileInvoked) throws MalformedURLException {
     return new JfrProfiler(
         new ServiceProfilerServiceConfig(
-            1,
-            2,
-            3,
-            new URL("http://localhost"),
-            false,
-            null,
-            null,
-            LocalFileSystemUtils.getTempDir())) {
+            1, 2, 3, new URL("http://localhost"), null, null, LocalFileSystemUtils.getTempDir())) {
       @Override
       protected void profileAndUpload(AlertBreach alertBreach, Duration duration) {
         profileInvoked.set(true);

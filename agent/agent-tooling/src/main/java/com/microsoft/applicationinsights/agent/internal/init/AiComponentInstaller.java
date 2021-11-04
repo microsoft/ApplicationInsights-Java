@@ -133,15 +133,16 @@ public class AiComponentInstaller implements AgentListener {
       readOnlyFileSystem = true;
     }
 
-    File tmpDir = new File(javaTmpDir, "applicationinsights-java");
     if (!readOnlyFileSystem) {
+      File tmpDir = new File(javaTmpDir, "applicationinsights-java");
+
       if (!tmpDir.exists() && !tmpDir.mkdirs()) {
         throw new IllegalStateException("Could not create directory: " + tmpDir.getAbsolutePath());
       }
     } else {
       startupLogger.info(
-          "Disk persistence and profiler are not supported in a read-only file system: "
-              + tmpDir.getAbsolutePath());
+          "Detected running on a read-only file system, telemetry will not be stored to disk or retried later on sporadic network failures. If this is unexpected, please check that the process has write access to the temp directory: "
+              + javaTmpDir.getAbsolutePath());
     }
 
     Configuration config = MainEntryPoint.getConfiguration();
@@ -216,15 +217,23 @@ public class AiComponentInstaller implements AgentListener {
     appIdSupplier = new AppIdSupplier(telemetryClient);
     AiAppId.setSupplier(appIdSupplier);
 
-    ProfilerServiceInitializer.initialize(
-        appIdSupplier::get,
-        SystemInformation.getProcessId(),
-        formServiceProfilerConfig(config.preview.profiler),
-        config.role.instance,
-        config.role.name,
-        telemetryClient,
-        formApplicationInsightsUserAgent(),
-        formGcEventMonitorConfiguration(config.preview.gcEvents));
+    if (config.preview.profiler.enabled) {
+      if (readOnlyFileSystem) {
+        throw new FriendlyException(
+            "Profile is not supported in a read-only file system.",
+            "disable profiler or use a writable file system");
+      }
+
+      ProfilerServiceInitializer.initialize(
+          appIdSupplier::get,
+          SystemInformation.getProcessId(),
+          formServiceProfilerConfig(config.preview.profiler),
+          config.role.instance,
+          config.role.name,
+          telemetryClient,
+          formApplicationInsightsUserAgent(),
+          formGcEventMonitorConfiguration(config.preview.gcEvents));
+    }
 
     // this is for Azure Function Linux consumption plan support.
     if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
@@ -280,7 +289,6 @@ public class AiComponentInstaller implements AgentListener {
         configuration.periodicRecordingDurationSeconds,
         configuration.periodicRecordingIntervalSeconds,
         serviceProfilerFrontEndPoint,
-        configuration.enabled,
         configuration.memoryTriggeredSettings,
         configuration.cpuTriggeredSettings,
         tempDirectory);
