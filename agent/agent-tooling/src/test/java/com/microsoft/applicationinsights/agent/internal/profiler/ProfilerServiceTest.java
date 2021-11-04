@@ -25,6 +25,9 @@ import static com.microsoft.applicationinsights.agent.internal.perfcounter.Const
 import static com.microsoft.applicationinsights.agent.internal.perfcounter.JvmHeapMemoryUsedPerformanceCounter.HEAP_MEM_USED_PERCENTAGE;
 import static com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil.createMetricsTelemetry;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.spy;
 
 import com.microsoft.applicationinsights.agent.internal.common.LocalFileSystemUtils;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
@@ -55,6 +58,7 @@ import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -78,7 +82,7 @@ class ProfilerServiceTest {
   void endToEndAlertTriggerCpu() throws Exception {
     endToEndAlertTriggerCycle(
         false,
-        createMetricsTelemetry(new TelemetryClient(), TOTAL_CPU_PC_METRIC_NAME, 100.0),
+        createMetricsTelemetry(TelemetryClient.createForTest(), TOTAL_CPU_PC_METRIC_NAME, 100.0),
         telemetry -> {
           assertThat(telemetry.getProperties().get("Source")).isEqualTo("JFR-CPU");
           assertThat(telemetry.getMeasurements().get("AverageCPUUsage")).isEqualTo(100.0);
@@ -90,7 +94,7 @@ class ProfilerServiceTest {
   void endToEndAlertTriggerManual() throws Exception {
     endToEndAlertTriggerCycle(
         true,
-        createMetricsTelemetry(new TelemetryClient(), HEAP_MEM_USED_PERCENTAGE, 0.0),
+        createMetricsTelemetry(TelemetryClient.createForTest(), HEAP_MEM_USED_PERCENTAGE, 0.0),
         telemetry -> {
           assertThat(telemetry.getProperties().get("Source")).isEqualTo("JFR-MANUAL");
           assertThat(telemetry.getMeasurements().get("AverageCPUUsage")).isEqualTo(0.0);
@@ -120,20 +124,23 @@ class ProfilerServiceTest {
     Object monitor = new Object();
 
     TelemetryClient client =
-        new TelemetryClient() {
-          @Override
-          public void trackAsync(TelemetryItem telemetry) {
-            MonitorDomain data = telemetry.getData().getBaseData();
-            if (data instanceof TelemetryEventData) {
-              if ("ServiceProfilerIndex".equals(((TelemetryEventData) data).getName())) {
-                serviceProfilerIndex.set((TelemetryEventData) data);
+        spy(TelemetryClient.builder().setCustomDimensions(new HashMap<>()).build());
+    doAnswer(
+            invocation -> {
+              TelemetryItem telemetry = invocation.getArgument(0);
+              MonitorDomain data = telemetry.getData().getBaseData();
+              if (data instanceof TelemetryEventData) {
+                if ("ServiceProfilerIndex".equals(((TelemetryEventData) data).getName())) {
+                  serviceProfilerIndex.set((TelemetryEventData) data);
+                }
+                synchronized (monitor) {
+                  monitor.notifyAll();
+                }
               }
-              synchronized (monitor) {
-                monitor.notifyAll();
-              }
-            }
-          }
-        };
+              return null;
+            })
+        .when(client)
+        .trackAsync(any(TelemetryItem.class));
 
     ScheduledExecutorService serviceProfilerExecutorService =
         Executors.newScheduledThreadPool(
@@ -163,7 +170,6 @@ class ProfilerServiceTest {
                     2,
                     3,
                     new URL("http://localhost"),
-                    true,
                     null,
                     null,
                     LocalFileSystemUtils.getTempDir()),
@@ -220,14 +226,7 @@ class ProfilerServiceTest {
   private JfrProfiler getJfrDaemon(AtomicBoolean profileInvoked) throws MalformedURLException {
     return new JfrProfiler(
         new ServiceProfilerServiceConfig(
-            1,
-            2,
-            3,
-            new URL("http://localhost"),
-            false,
-            null,
-            null,
-            LocalFileSystemUtils.getTempDir())) {
+            1, 2, 3, new URL("http://localhost"), null, null, LocalFileSystemUtils.getTempDir())) {
       @Override
       protected void profileAndUpload(AlertBreach alertBreach, Duration duration) {
         profileInvoked.set(true);

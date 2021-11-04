@@ -58,7 +58,7 @@ class QuickPulseDataCollectorTests {
 
   @Test
   void emptyCountsAndDurationsAfterEnable() {
-    TelemetryClient telemetryClient = new TelemetryClient();
+    TelemetryClient telemetryClient = TelemetryClient.createForTest();
     telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
     QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
     FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
@@ -67,7 +67,7 @@ class QuickPulseDataCollectorTests {
 
   @Test
   void nullCountersAfterDisable() {
-    TelemetryClient telemetryClient = new TelemetryClient();
+    TelemetryClient telemetryClient = TelemetryClient.createForTest();
     telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
     QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
     QuickPulseDataCollector.INSTANCE.disable();
@@ -76,7 +76,7 @@ class QuickPulseDataCollectorTests {
 
   @Test
   void requestTelemetryIsCounted_DurationIsSum() {
-    TelemetryClient telemetryClient = new TelemetryClient();
+    TelemetryClient telemetryClient = TelemetryClient.createForTest();
     telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
     QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
     QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
@@ -119,7 +119,7 @@ class QuickPulseDataCollectorTests {
 
   @Test
   void dependencyTelemetryIsCounted_DurationIsSum() {
-    TelemetryClient telemetryClient = new TelemetryClient();
+    TelemetryClient telemetryClient = TelemetryClient.createForTest();
     telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
     QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
     QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
@@ -162,7 +162,7 @@ class QuickPulseDataCollectorTests {
 
   @Test
   void exceptionTelemetryIsCounted() {
-    TelemetryClient telemetryClient = new TelemetryClient();
+    TelemetryClient telemetryClient = TelemetryClient.createForTest();
     telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
     QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
     QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
@@ -259,7 +259,7 @@ class QuickPulseDataCollectorTests {
 
   @Test
   void checkDocumentsListSize() {
-    TelemetryClient telemetryClient = new TelemetryClient();
+    TelemetryClient telemetryClient = TelemetryClient.createForTest();
     telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
     QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
     QuickPulseDataCollector.INSTANCE.enable(telemetryClient);

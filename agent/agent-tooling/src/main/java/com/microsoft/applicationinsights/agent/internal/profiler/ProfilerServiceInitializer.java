@@ -99,7 +99,7 @@ public class ProfilerServiceInitializer {
       String userAgent,
       GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration,
       HttpPipeline httpPipeline) {
-    if (!initialized && config.enabled()) {
+    if (!initialized) {
       initialized = true;
       ProfilerServiceFactory factory = null;
 

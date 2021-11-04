@@ -94,6 +94,7 @@ public class TelemetryClient {
 
   private final Cache<String, String> ikeyEndpointMap;
   private final StatsbeatModule statsbeatModule;
+  private final boolean readOnlyFileSystem;
 
   @Nullable private final Configuration.AadAuthentication aadAuthentication;
 
@@ -101,45 +102,28 @@ public class TelemetryClient {
   private volatile @MonotonicNonNull BatchSpanProcessor channelBatcher;
   private volatile @MonotonicNonNull BatchSpanProcessor statsbeatChannelBatcher;
 
-  // only used by tests
-  public TelemetryClient() {
-    this(
-        new HashMap<>(),
-        new ArrayList<>(),
-        Cache.builder().build(),
-        new StatsbeatModule(null),
-        null);
+  public static TelemetryClient.Builder builder() {
+    return new TelemetryClient.Builder();
   }
 
-  public TelemetryClient(
-      Map<String, String> customDimensions,
-      List<MetricFilter> metricFilters,
-      Cache<String, String> ikeyEndpointMap,
-      StatsbeatModule statsbeatModule,
-      @Nullable Configuration.AadAuthentication aadAuthentication) {
-    StringSubstitutor substitutor = new StringSubstitutor(System.getenv());
-    Map<String, String> globalProperties = new HashMap<>();
-    Map<String, String> globalTags = new HashMap<>();
-    for (Map.Entry<String, String> entry : customDimensions.entrySet()) {
-      String key = entry.getKey();
-      if (key.equals("service.version")) {
-        globalTags.put(
-            ContextTagKeys.AI_APPLICATION_VER.toString(), substitutor.replace(entry.getValue()));
-      } else {
-        globalProperties.put(key, substitutor.replace(entry.getValue()));
-      }
-    }
+  // only used by tests
+  public static TelemetryClient createForTest() {
+    return builder()
+        .setCustomDimensions(new HashMap<>())
+        .setMetricFilters(new ArrayList<>())
+        .setIkeyEndpointMap(Cache.builder().build())
+        .setStatsbeatModule(new StatsbeatModule(null))
+        .build();
+  }
 
-    globalTags.put(
-        ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(),
-        PropertyHelper.getQualifiedSdkVersionString());
-
-    this.globalProperties = globalProperties;
-    this.globalTags = globalTags;
-    this.metricFilters = metricFilters;
-    this.ikeyEndpointMap = ikeyEndpointMap;
-    this.statsbeatModule = statsbeatModule;
-    this.aadAuthentication = aadAuthentication;
+  public TelemetryClient(Builder builder) {
+    this.globalTags = builder.globalTags;
+    this.globalProperties = builder.globalProperties;
+    this.metricFilters = builder.metricFilters;
+    this.ikeyEndpointMap = builder.ikeyEndpointMap;
+    this.statsbeatModule = builder.statsbeatModule;
+    this.readOnlyFileSystem = builder.readOnlyFileSystem;
+    this.aadAuthentication = builder.aadAuthentication;
   }
 
   public static TelemetryClient getActive() {
@@ -218,14 +202,19 @@ public class TelemetryClient {
     if (channelBatcher == null) {
       synchronized (channelInitLock) {
         if (channelBatcher == null) {
-          LocalFileCache localFileCache = new LocalFileCache();
-          File telemetryFolder = LocalStorageUtils.getOfflineTelemetryFolder();
-          LocalFileLoader localFileLoader =
-              new LocalFileLoader(
-                  localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
-          LocalFileWriter localFileWriter =
-              new LocalFileWriter(
-                  localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
+          LocalFileLoader localFileLoader = null;
+          LocalFileWriter localFileWriter = null;
+          if (!readOnlyFileSystem) {
+            LocalFileCache localFileCache = new LocalFileCache();
+            File telemetryFolder = LocalStorageUtils.getOfflineTelemetryFolder();
+            localFileLoader =
+                new LocalFileLoader(
+                    localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
+            localFileWriter =
+                new LocalFileWriter(
+                    localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
+          }
+
           TelemetryChannel channel =
               TelemetryChannel.create(
                   endpointProvider.getIngestionEndpointUrl(),
@@ -233,7 +222,10 @@ public class TelemetryClient {
                   ikeyEndpointMap,
                   statsbeatModule.getNetworkStatsbeat(),
                   aadAuthentication);
-          LocalFileSender.start(localFileLoader, channel);
+
+          if (!readOnlyFileSystem) {
+            LocalFileSender.start(localFileLoader, channel);
+          }
           channelBatcher = BatchSpanProcessor.builder(channel).build();
         }
       }
@@ -245,12 +237,15 @@ public class TelemetryClient {
     if (statsbeatChannelBatcher == null) {
       synchronized (channelInitLock) {
         if (statsbeatChannelBatcher == null) {
-          LocalFileCache localFileCache = new LocalFileCache();
-          File statsbeatFolder = LocalStorageUtils.getOfflineStatsbeatFolder();
-          LocalFileLoader localFileLoader =
-              new LocalFileLoader(localFileCache, statsbeatFolder, null);
-          LocalFileWriter localFileWriter =
-              new LocalFileWriter(localFileCache, statsbeatFolder, null);
+          LocalFileLoader localFileLoader = null;
+          LocalFileWriter localFileWriter = null;
+          if (!readOnlyFileSystem) {
+            LocalFileCache localFileCache = new LocalFileCache();
+            File statsbeatFolder = LocalStorageUtils.getOfflineStatsbeatFolder();
+            localFileLoader = new LocalFileLoader(localFileCache, statsbeatFolder, null);
+            localFileWriter = new LocalFileWriter(localFileCache, statsbeatFolder, null);
+          }
+
           TelemetryChannel channel =
               TelemetryChannel.create(
                   endpointProvider.getStatsbeatEndpointUrl(),
@@ -258,7 +253,10 @@ public class TelemetryClient {
                   ikeyEndpointMap,
                   null,
                   null);
-          LocalFileSender.start(localFileLoader, channel);
+
+          if (!readOnlyFileSystem) {
+            LocalFileSender.start(localFileLoader, channel);
+          }
           statsbeatChannelBatcher = BatchSpanProcessor.builder(channel).build();
         }
       }
@@ -469,5 +467,69 @@ public class TelemetryClient {
     telemetry.setData(monitorBase);
     monitorBase.setBaseType(baseType);
     monitorBase.setBaseData(data);
+  }
+
+  public static class Builder {
+
+    private Map<String, String> globalTags;
+    private Map<String, String> globalProperties;
+    private List<MetricFilter> metricFilters;
+    private Cache<String, String> ikeyEndpointMap;
+    private StatsbeatModule statsbeatModule;
+    private boolean readOnlyFileSystem;
+    @Nullable private Configuration.AadAuthentication aadAuthentication;
+
+    public Builder setCustomDimensions(Map<String, String> customDimensions) {
+      StringSubstitutor substitutor = new StringSubstitutor(System.getenv());
+      Map<String, String> globalProperties = new HashMap<>();
+      Map<String, String> globalTags = new HashMap<>();
+      for (Map.Entry<String, String> entry : customDimensions.entrySet()) {
+        String key = entry.getKey();
+        if (key.equals("service.version")) {
+          globalTags.put(
+              ContextTagKeys.AI_APPLICATION_VER.toString(), substitutor.replace(entry.getValue()));
+        } else {
+          globalProperties.put(key, substitutor.replace(entry.getValue()));
+        }
+      }
+
+      globalTags.put(
+          ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(),
+          PropertyHelper.getQualifiedSdkVersionString());
+
+      this.globalProperties = globalProperties;
+      this.globalTags = globalTags;
+
+      return this;
+    }
+
+    public Builder setMetricFilters(List<MetricFilter> metricFilters) {
+      this.metricFilters = metricFilters;
+      return this;
+    }
+
+    public Builder setIkeyEndpointMap(Cache<String, String> ikeyEndpointMap) {
+      this.ikeyEndpointMap = ikeyEndpointMap;
+      return this;
+    }
+
+    public Builder setStatsbeatModule(StatsbeatModule statsbeatModule) {
+      this.statsbeatModule = statsbeatModule;
+      return this;
+    }
+
+    public Builder setReadOnlyFileSystem(boolean readOnlyFileSystem) {
+      this.readOnlyFileSystem = readOnlyFileSystem;
+      return this;
+    }
+
+    public Builder setAadAuthentication(Configuration.AadAuthentication aadAuthentication) {
+      this.aadAuthentication = aadAuthentication;
+      return this;
+    }
+
+    public TelemetryClient build() {
+      return new TelemetryClient(this);
+    }
   }
 }

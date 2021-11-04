@@ -39,21 +39,21 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
   private static final String instrumentationKey = "ikey123";
 
   private QuickPulsePingSender getQuickPulsePingSender() {
-    TelemetryClient telemetryClient = new TelemetryClient();
+    TelemetryClient telemetryClient = TelemetryClient.createForTest();
     telemetryClient.setConnectionString(connectionString);
     return new QuickPulsePingSender(
         getHttpPipeline(), telemetryClient, "machine1", "instance1", "qpid123");
   }
 
   private QuickPulsePingSender getQuickPulsePingSenderWithAuthentication() {
-    TelemetryClient telemetryClient = new TelemetryClient();
+    TelemetryClient telemetryClient = TelemetryClient.createForTest();
     telemetryClient.setConnectionString(connectionString);
     return new QuickPulsePingSender(
         getHttpPipelineWithAuthentication(), telemetryClient, "machine1", "instance1", "qpid123");
   }
 
   private QuickPulsePingSender getQuickPulsePingSenderWithValidator(HttpPipelinePolicy validator) {
-    TelemetryClient telemetryClient = new TelemetryClient();
+    TelemetryClient telemetryClient = TelemetryClient.createForTest();
     telemetryClient.setConnectionString(connectionString);
     return new QuickPulsePingSender(
         getHttpPipeline(validator), telemetryClient, "machine1", "instance1", "qpid123");
@@ -106,7 +106,7 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
         new QuickPulseDataSender(
             getHttpPipeline(new ValidationPolicy(postCountDown, expectedPostRequestBody)),
             sendQueue);
-    TelemetryClient telemetryClient = new TelemetryClient();
+    TelemetryClient telemetryClient = TelemetryClient.createForTest();
     telemetryClient.setConnectionString(connectionString);
     QuickPulseDataFetcher dataFetcher =
         new QuickPulseDataFetcher(sendQueue, telemetryClient, "machine1", "instance1", null);
