@@ -52,7 +52,6 @@ public class LocalFileSystemUtils {
       // Noinspection ResultOfMethodCallIgnored
       result.mkdirs();
     }
-
     return result;
   }
 
