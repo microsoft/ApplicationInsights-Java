@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
 import java.io.File;
@@ -59,7 +61,7 @@ public final class LocalFileWriter {
     this.nonessentialStatsbeat = nonessentialStatsbeat;
   }
 
-  public void writeToDisk(List<ByteBuffer> buffers) {
+  public void writeToDisk(List<ByteBuffer> buffers, String instrumentationKey) {
     long size = getTotalSizeOfPersistedFiles(telemetryFolder);
     if (size >= MAX_FILE_SIZE_IN_BYTES) {
       operationLogger.recordFailure(
@@ -80,7 +82,7 @@ public final class LocalFileWriter {
     }
 
     try {
-      write(tempFile, buffers);
+      write(tempFile, buffers, instrumentationKey);
     } catch (IOException e) {
       operationLogger.recordFailure(String.format("unable to write to file: %s", e), e);
       incrementWriteFailureCount();
@@ -117,8 +119,10 @@ public final class LocalFileWriter {
     }
   }
 
-  private static void write(File file, List<ByteBuffer> buffers) throws IOException {
+  private static void write(File file, List<ByteBuffer> buffers, String instrumentationKey)
+      throws IOException {
     try (FileChannel channel = new FileOutputStream(file).getChannel()) {
+      channel.write(ByteBuffer.wrap(instrumentationKey.getBytes(UTF_8)));
       for (ByteBuffer byteBuffer : buffers) {
         channel.write(byteBuffer);
       }

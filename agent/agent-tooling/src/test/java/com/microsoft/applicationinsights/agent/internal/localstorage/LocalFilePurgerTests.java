@@ -47,7 +47,9 @@ public class LocalFilePurgerTests {
 
     // persist 100 files to disk
     for (int i = 0; i < 100; i++) {
-      writer.writeToDisk(singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))));
+      writer.writeToDisk(
+          singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))),
+          "00000000-0000-0000-0000-0FEEDDADBEE");
     }
 
     Collection<File> files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);

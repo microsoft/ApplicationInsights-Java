@@ -21,12 +21,15 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
+import java.nio.channels.FileChannel;
 import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -92,10 +95,13 @@ public class LocalFileLoader {
       return null;
     }
 
-    byte[] result;
-    try {
-      // TODO (trask) optimization: read this directly into ByteBuffer(s)
-      result = Files.readAllBytes(tempFile.toPath());
+    ByteBuffer ikeyByteBuffer;
+    ByteBuffer result;
+    try (FileChannel channel = new FileInputStream(tempFile).getChannel()) {
+      ikeyByteBuffer = ByteBuffer.allocate(36);
+      result = ByteBuffer.allocate((int) (tempFile.length() - 36));
+      channel.read(ikeyByteBuffer);
+      channel.read(result);
     } catch (IOException ex) {
       operationLogger.recordFailure("Fail to read telemetry from " + tempFile.getName(), ex);
       incrementReadFailureCount();
@@ -103,7 +109,7 @@ public class LocalFileLoader {
     }
 
     operationLogger.recordSuccess();
-    return new PersistedFile(tempFile, ByteBuffer.wrap(result));
+    return new PersistedFile(tempFile, new String(ikeyByteBuffer.array(), UTF_8), result);
   }
 
   // either delete it permanently on success or add it back to cache to be processed again later on
@@ -154,10 +160,12 @@ public class LocalFileLoader {
 
   static class PersistedFile {
     final File file;
+    final String instrumentationKey;
     final ByteBuffer rawBytes;
 
-    PersistedFile(File file, ByteBuffer byteBuffer) {
+    PersistedFile(File file, String instrumentationKey, ByteBuffer byteBuffer) {
       this.file = file;
+      this.instrumentationKey = instrumentationKey;
       this.rawBytes = byteBuffer;
     }
   }
