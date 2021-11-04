@@ -220,15 +220,7 @@ public class Exporter implements SpanExporter {
     } else if (kind == SpanKind.CLIENT || kind == SpanKind.PRODUCER) {
       exportRemoteDependency(span, false);
     } else if (kind == SpanKind.CONSUMER
-        && !span.getParentSpanContext().isRemote()
-        && !span.getName().equals("EventHubs.process")
-        && !span.getName().equals("ServiceBus.process")) {
-      // earlier versions of the azure sdk opentelemetry shim did not set remote parent
-      // see https://github.com/Azure/azure-sdk-for-java/pull/21667
-
-      // TODO need spec clarification, but it seems polling for messages can be CONSUMER also
-      //  in which case the span will not have a remote parent and should be treated as a dependency
-      // instead of a request
+        && "receive".equals(span.getAttributes().get(SemanticAttributes.MESSAGING_OPERATION))) {
       exportRemoteDependency(span, false);
     } else if (kind == SpanKind.SERVER || kind == SpanKind.CONSUMER) {
       exportRequest(span);
