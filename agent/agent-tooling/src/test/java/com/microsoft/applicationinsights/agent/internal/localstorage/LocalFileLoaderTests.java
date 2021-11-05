@@ -75,7 +75,7 @@ public class LocalFileLoaderTests {
     FileUtils.copyFile(sourceFile, persistedFile);
     assertThat(persistedFile.exists()).isTrue();
 
-    LocalFileCache localFileCache = new LocalFileCache();
+    LocalFileCache localFileCache = new LocalFileCache(tempFolder);
     localFileCache.addPersistedFilenameToMap(BYTE_BUFFERS_TEST_FILE);
 
     LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
@@ -152,7 +152,7 @@ public class LocalFileLoaderTests {
   @Test
   public void testWriteAndReadRandomText() {
     String text = "hello world";
-    LocalFileCache cache = new LocalFileCache();
+    LocalFileCache cache = new LocalFileCache(tempFolder);
     LocalFileWriter writer = new LocalFileWriter(cache, tempFolder, null);
     writer.writeToDisk(singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))), INSTRUMENTATION_KEY);
 
@@ -182,7 +182,7 @@ public class LocalFileLoaderTests {
 
     // write gzipped bytes[] to disk
     byte[] result = byteArrayOutputStream.toByteArray();
-    LocalFileCache cache = new LocalFileCache();
+    LocalFileCache cache = new LocalFileCache(tempFolder);
     LocalFileWriter writer = new LocalFileWriter(cache, tempFolder, null);
     writer.writeToDisk(singletonList(ByteBuffer.wrap(result)), INSTRUMENTATION_KEY);
 
@@ -209,7 +209,7 @@ public class LocalFileLoaderTests {
   public void testDeleteFilePermanentlyOnSuccess() throws Exception {
     HttpClient mockedClient = getMockHttpClientSuccess();
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
-    LocalFileCache localFileCache = new LocalFileCache();
+    LocalFileCache localFileCache = new LocalFileCache(tempFolder);
     LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder, null);
     LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
 
@@ -257,7 +257,7 @@ public class LocalFileLoaderTests {
     when(mockedResponse.getStatusCode()).thenReturn(500);
     when(mockedClient.send(mockedRequest)).thenReturn(Mono.just(mockedResponse));
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
-    LocalFileCache localFileCache = new LocalFileCache();
+    LocalFileCache localFileCache = new LocalFileCache(tempFolder);
 
     LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
     LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder, null);

@@ -55,7 +55,7 @@ public class LocalFileWriterTests {
 
   @BeforeEach
   public void setup() {
-    localFileCache = new LocalFileCache();
+    localFileCache = new LocalFileCache(tempFolder);
     nonessentialStatsbeat = new NonessentialStatsbeat();
 
     Path path =

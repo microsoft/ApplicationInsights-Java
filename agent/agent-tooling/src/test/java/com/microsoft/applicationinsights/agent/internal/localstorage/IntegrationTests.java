@@ -63,7 +63,7 @@ public class IntegrationTests {
     when(mockedResponse.getStatusCode()).thenReturn(500);
     when(mockedClient.send(mockedRequest)).thenReturn(Mono.just(mockedResponse));
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
-    localFileCache = new LocalFileCache();
+    localFileCache = new LocalFileCache(tempFolder);
     localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
 
     telemetryChannel =

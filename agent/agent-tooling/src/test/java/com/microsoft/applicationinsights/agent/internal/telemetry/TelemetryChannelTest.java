@@ -77,7 +77,7 @@ public class TelemetryChannelTest {
         new HttpPipelineBuilder()
             .policies(policies.toArray(new HttpPipelinePolicy[0]))
             .httpClient(recordingHttpClient);
-    LocalFileCache localFileCache = new LocalFileCache();
+    LocalFileCache localFileCache = new LocalFileCache(tempFolder);
     return new TelemetryChannel(
         pipelineBuilder.build(),
         new URL(END_POINT_URL),
