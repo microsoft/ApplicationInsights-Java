@@ -25,11 +25,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -98,10 +98,9 @@ public class LocalFileLoader {
     byte[] ikeyBytes = new byte[36];
     int rawByteLength = (int) tempFile.length() - 36;
     byte[] telemetryBytes = new byte[rawByteLength];
-    try (FileInputStream fileInputStream = new FileInputStream(tempFile);
-        FileChannel channel = fileInputStream.getChannel()) {
-      fileInputStream.read(ikeyBytes, 0, 36);
-      fileInputStream.read(telemetryBytes, 0, rawByteLength);
+    try (FileInputStream fileInputStream = new FileInputStream(tempFile)) {
+      readFully(fileInputStream, ikeyBytes, 0, 36);
+      readFully(fileInputStream, telemetryBytes, 0, rawByteLength);
     } catch (IOException ex) {
       operationLogger.recordFailure("Fail to read telemetry from " + tempFile.getName(), ex);
       incrementReadFailureCount();
@@ -111,6 +110,25 @@ public class LocalFileLoader {
     operationLogger.recordSuccess();
     return new PersistedFile(
         tempFile, new String(ikeyBytes, UTF_8), ByteBuffer.wrap(telemetryBytes));
+  }
+
+  // reads bytes from a FileInputStream and allocates those into the buffer array byteArray.
+  private static void readFully(
+      FileInputStream fileInputStream, byte[] byteArray, int offset, int length)
+      throws IOException {
+    if (length < 0) {
+      throw new IndexOutOfBoundsException();
+    }
+
+    int i = 0;
+    while (i < length) {
+      int count = fileInputStream.read(byteArray, offset + i, length - i);
+      if (count < 0) {
+        throw new EOFException();
+      }
+
+      i += count;
+    }
   }
 
   // either delete it permanently on success or add it back to cache to be processed again later on
