@@ -97,7 +97,8 @@ public class LocalFileLoader {
 
     ByteBuffer ikeyByteBuffer;
     ByteBuffer result;
-    try (FileChannel channel = new FileInputStream(tempFile).getChannel()) {
+    try (FileInputStream fileInputStream = new FileInputStream(tempFile);
+        FileChannel channel = fileInputStream.getChannel()) {
       ikeyByteBuffer = ByteBuffer.allocate(36);
       result = ByteBuffer.allocate((int) (tempFile.length() - 36));
       channel.read(ikeyByteBuffer);
