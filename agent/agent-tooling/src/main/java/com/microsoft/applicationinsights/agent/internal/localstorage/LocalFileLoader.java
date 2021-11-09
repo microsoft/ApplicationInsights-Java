@@ -205,6 +205,10 @@ public class LocalFileLoader {
     final ByteBuffer rawBytes;
 
     PersistedFile(File file, String instrumentationKey, ByteBuffer byteBuffer) {
+      if (instrumentationKey == null) {
+        throw new IllegalArgumentException("instrumentation key can not be null.");
+      }
+
       this.file = file;
       this.instrumentationKey = instrumentationKey;
       this.rawBytes = byteBuffer;
