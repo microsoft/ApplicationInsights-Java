@@ -115,8 +115,8 @@ public class IntegrationTests {
 
     for (int i = 100; i > 0; i--) {
       LocalFileLoader.PersistedFile file = localFileLoader.loadTelemetriesFromDisk();
-      assertThat(ungzip(file.rawBytes.array())).isEqualTo(new String(getBytebufferFromFile(
-          "ungzip-source.txt").array(), UTF_8));
+      assertThat(ungzip(file.rawBytes.array()))
+          .isEqualTo(new String(getBytebufferFromFile("ungzip-source.txt").array(), UTF_8));
       assertThat(file.instrumentationKey).isEqualTo(INSTRUMENTATION_KEY);
       assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(i - 1);
     }
@@ -151,9 +151,7 @@ public class IntegrationTests {
   }
 
   private ByteBuffer getBytebufferFromFile(String filename) throws Exception {
-    Path path =
-        new File(getClass().getClassLoader().getResource(filename).getPath())
-            .toPath();
+    Path path = new File(getClass().getClassLoader().getResource(filename).getPath()).toPath();
 
     InputStream in = Files.newInputStream(path);
     BufferedSource source = Okio.buffer(Okio.source(in));
@@ -165,15 +163,16 @@ public class IntegrationTests {
   }
 
   private static String ungzip(byte[] rawBytes) throws Exception {
-    if (rawBytes == null ) {
+    if (rawBytes == null) {
       return null;
     }
 
     GZIPInputStream gzipInputStream = new GZIPInputStream(new ByteArrayInputStream(rawBytes));
-    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(gzipInputStream, "UTF-8"));
+    BufferedReader bufferedReader =
+        new BufferedReader(new InputStreamReader(gzipInputStream, "UTF-8"));
     String result = "";
     String line;
-    while ((line = bufferedReader.readLine())!=null) {
+    while ((line = bufferedReader.readLine()) != null) {
       result += line;
     }
 
