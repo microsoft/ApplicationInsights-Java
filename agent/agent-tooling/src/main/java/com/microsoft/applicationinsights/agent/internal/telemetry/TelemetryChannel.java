@@ -177,7 +177,7 @@ public class TelemetryChannel {
    * sent as {@code List<ByteBuffer>}. Persisted telemetries will be sent as byte[]
    */
   private CompletableResultCode internalSend(
-      List<ByteBuffer> byteBuffers, @Nullable String instrumentationKey, boolean persisted) {
+      List<ByteBuffer> byteBuffers, String instrumentationKey, boolean persisted) {
     HttpRequest request = new HttpRequest(HttpMethod.POST, endpointUrl);
 
     request.setBody(Flux.fromIterable(byteBuffers));

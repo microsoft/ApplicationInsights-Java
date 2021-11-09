@@ -141,10 +141,10 @@ public class IntegrationTests {
 
     ByteBuffer expectedGzipByteBuffer = getBytebufferFromFile(PERSISTED_FILENAME);
     byte[] ikeyBytes = new byte[36];
-    int length = expectedGzipByteBuffer.remaining() - 36;
-    byte[] telemetryBytes = new byte[length];
     expectedGzipByteBuffer.get(ikeyBytes, 0, 36);
     assertThat(new String(ikeyBytes, UTF_8)).isEqualTo(INSTRUMENTATION_KEY);
+    int length = expectedGzipByteBuffer.remaining();
+    byte[] telemetryBytes = new byte[length];
 
     expectedGzipByteBuffer.get(telemetryBytes, 0, length);
     assertThat(loadedPersistedFile.rawBytes).isEqualTo(ByteBuffer.wrap(telemetryBytes));
