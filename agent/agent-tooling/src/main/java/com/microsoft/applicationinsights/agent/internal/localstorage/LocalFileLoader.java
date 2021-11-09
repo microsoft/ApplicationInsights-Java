@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -37,6 +38,8 @@ import org.apache.commons.io.FilenameUtils;
 /** This class manages loading a list of {@link ByteBuffer} from the disk. */
 public class LocalFileLoader {
 
+  // A regex to validate that an instrumentation key is well-formed. It's copied straight from the Breeze repo.
+  static final String INSTRUMENTATION_KEY_REGEX = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
   private static final String TEMPORARY_FILE_EXTENSION = ".tmp";
 
   private final LocalFileCache localFileCache;
@@ -98,8 +101,17 @@ public class LocalFileLoader {
     byte[] ikeyBytes = new byte[36];
     int rawByteLength = (int) tempFile.length() - 36;
     byte[] telemetryBytes = new byte[rawByteLength];
+    String instrumentationKey = null;
     try (FileInputStream fileInputStream = new FileInputStream(tempFile)) {
       readFully(fileInputStream, ikeyBytes, 0, 36);
+      instrumentationKey = new String(ikeyBytes, UTF_8);
+      if (!Pattern.matches(INSTRUMENTATION_KEY_REGEX, instrumentationKey.toLowerCase())) {
+        if (!LocalStorageUtils.deleteFileWithRetries(tempFile)) {
+          operationLogger.recordFailure("Fail to delete the old persisted file with an invalid instrumentation key " + tempFile.getName());
+        }
+        return null;
+      }
+
       readFully(fileInputStream, telemetryBytes, 0, rawByteLength);
     } catch (IOException ex) {
       operationLogger.recordFailure("Fail to read telemetry from " + tempFile.getName(), ex);
@@ -109,7 +121,7 @@ public class LocalFileLoader {
 
     operationLogger.recordSuccess();
     return new PersistedFile(
-        tempFile, new String(ikeyBytes, UTF_8), ByteBuffer.wrap(telemetryBytes));
+        tempFile, instrumentationKey, ByteBuffer.wrap(telemetryBytes));
   }
 
   // reads bytes from a FileInputStream and allocates those into the buffer array byteArray.

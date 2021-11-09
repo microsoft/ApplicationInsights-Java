@@ -46,6 +46,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.apache.commons.io.FileUtils;
@@ -64,6 +65,15 @@ public class LocalFileLoaderTests {
 
   @AfterEach
   public void cleanup() {}
+
+  @Test
+  public void testInstrumentationKeyRegex() {
+    assertThat(Pattern.matches(LocalFileLoader.INSTRUMENTATION_KEY_REGEX, INSTRUMENTATION_KEY.toLowerCase())).isTrue();
+    assertThat(Pattern.matches(LocalFileLoader.INSTRUMENTATION_KEY_REGEX, "fake-instrumentation-key")).isFalse();
+    assertThat(Pattern.matches(LocalFileLoader.INSTRUMENTATION_KEY_REGEX, "5ED1AE38-41AF-11EC-81D3".toLowerCase())).isFalse();
+    assertThat(Pattern.matches(LocalFileLoader.INSTRUMENTATION_KEY_REGEX, "5ED1AE38-41AF-11EC-81D3-0242AC130003".toLowerCase())).isTrue();
+    assertThat(Pattern.matches(LocalFileLoader.INSTRUMENTATION_KEY_REGEX, "C6864988-6BF8-45EF-8590-1FD3D84E5A4D".toLowerCase())).isTrue();
+  }
 
   @Test
   public void testLoadFile() throws IOException {
