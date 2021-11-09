@@ -102,6 +102,7 @@ public class LocalFileLoader {
       result = ByteBuffer.allocate((int) (tempFile.length() - 36));
       channel.read(ikeyByteBuffer);
       channel.read(result);
+      result.flip();
     } catch (IOException ex) {
       operationLogger.recordFailure("Fail to read telemetry from " + tempFile.getName(), ex);
       incrementReadFailureCount();

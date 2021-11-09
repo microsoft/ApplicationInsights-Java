@@ -204,10 +204,9 @@ public class TelemetryChannel {
     final long startTime = System.currentTimeMillis();
     // Add instrumentation key to context to use in redirectPolicy
     Map<Object, Object> contextKeyValues = new HashMap<>();
-    if (instrumentationKey != null) {
-      contextKeyValues.put(RedirectPolicy.INSTRUMENTATION_KEY, instrumentationKey);
-    }
+    contextKeyValues.put(RedirectPolicy.INSTRUMENTATION_KEY, instrumentationKey);
     contextKeyValues.put(Tracer.DISABLE_TRACING_KEY, true);
+
     pipeline
         .send(request, Context.of(contextKeyValues))
         .subscribe(
