@@ -23,7 +23,7 @@ public class JavaUtilLoggingSpans {
       LoggerFactory.getLogger(JavaUtilLoggingSpans.class);
 
   private static final Tracer TRACER =
-      GlobalOpenTelemetry.getTracer("io.opentelemetry.javaagent.java-util-logging-spans");
+      GlobalOpenTelemetry.getTracer("io.opentelemetry.java-util-logging-spans");
 
   private static final Formatter FORMATTER = new AccessibleFormatter();
 
