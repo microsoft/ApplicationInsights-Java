@@ -1,5 +1,14 @@
 # CHANGELOG
 
+# Version 3.2.3 GA
+* Fix instrumentation key is null when sending persisted files from disk [#1948](https://github.com/microsoft/ApplicationInsights-Java/issues/1948).
+* Fix consumer span exporter mapping [#1952](https://github.com/microsoft/ApplicationInsights-Java/pull/1952).
+* Handle weird folder name like 'test%20-test' [#1946](https://github.com/microsoft/ApplicationInsights-Java/pull/1946).
+* Support read-only file system [#1945](https://github.com/microsoft/ApplicationInsights-Java/pull/1945).
+* Reduce netty pool size [#1944](https://github.com/microsoft/ApplicationInsights-Java/pull/1944).
+* Do not apply sampling to metrics [#1902](https://github.com/microsoft/ApplicationInsights-Java/issues/1902).
+* Support for multiple instrumentation key [#1938](https://github.com/microsoft/ApplicationInsights-Java/pull/1938).
+
 # Version 3.2.2 GA
 * Bridge session id from 2.x SDK [#1930](https://github.com/microsoft/ApplicationInsights-Java/pull/1930)
 * Fix NullPointerException when sending raw bytes from persisted files on disk [#1931](https://github.com/microsoft/ApplicationInsights-Java/pull/1931).
