@@ -105,7 +105,7 @@ public class LocalFileLoader {
     byte[] telemetryBytes = new byte[rawByteLength];
     String instrumentationKey = null;
     try (FileInputStream fileInputStream = new FileInputStream(tempFile)) {
-      readFully(fileInputStream, ikeyBytes, 0, 36);
+      readFully(fileInputStream, ikeyBytes, 36);
       instrumentationKey = new String(ikeyBytes, UTF_8);
       if (!Pattern.matches(INSTRUMENTATION_KEY_REGEX, instrumentationKey.toLowerCase())) {
         if (!LocalStorageUtils.deleteFileWithRetries(tempFile)) {
@@ -116,7 +116,7 @@ public class LocalFileLoader {
         return null;
       }
 
-      readFully(fileInputStream, telemetryBytes, 0, rawByteLength);
+      readFully(fileInputStream, telemetryBytes, rawByteLength);
     } catch (IOException ex) {
       operationLogger.recordFailure("Fail to read telemetry from " + tempFile.getName(), ex);
       incrementReadFailureCount();
@@ -128,21 +128,20 @@ public class LocalFileLoader {
   }
 
   // reads bytes from a FileInputStream and allocates those into the buffer array byteArray.
-  private static void readFully(
-      FileInputStream fileInputStream, byte[] byteArray, int offset, int length)
+  private static void readFully(FileInputStream fileInputStream, byte[] byteArray, int length)
       throws IOException {
     if (length < 0) {
       throw new IndexOutOfBoundsException();
     }
 
-    int i = 0;
-    while (i < length) {
-      int count = fileInputStream.read(byteArray, offset + i, length - i);
-      if (count < 0) {
+    int totalRead = 0;
+    while (totalRead < length) {
+      int numRead = fileInputStream.read(byteArray, totalRead, length - totalRead);
+      if (numRead < 0) {
         throw new EOFException();
       }
 
-      i += count;
+      totalRead += numRead;
     }
   }
 
