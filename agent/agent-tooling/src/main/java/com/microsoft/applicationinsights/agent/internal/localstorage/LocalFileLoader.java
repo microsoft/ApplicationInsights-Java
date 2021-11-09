@@ -95,15 +95,13 @@ public class LocalFileLoader {
       return null;
     }
 
-    ByteBuffer ikeyByteBuffer;
-    ByteBuffer result;
+    byte[] ikeyBytes = new byte[36];
+    int rawByteLength = (int) tempFile.length() - 36;
+    byte[] telemetryBytes = new byte[rawByteLength];
     try (FileInputStream fileInputStream = new FileInputStream(tempFile);
         FileChannel channel = fileInputStream.getChannel()) {
-      ikeyByteBuffer = ByteBuffer.allocate(36);
-      result = ByteBuffer.allocate((int) (tempFile.length() - 36));
-      channel.read(ikeyByteBuffer);
-      channel.read(result);
-      result.flip();
+      fileInputStream.read(ikeyBytes, 0, 36);
+      fileInputStream.read(telemetryBytes, 0, rawByteLength);
     } catch (IOException ex) {
       operationLogger.recordFailure("Fail to read telemetry from " + tempFile.getName(), ex);
       incrementReadFailureCount();
@@ -111,7 +109,8 @@ public class LocalFileLoader {
     }
 
     operationLogger.recordSuccess();
-    return new PersistedFile(tempFile, new String(ikeyByteBuffer.array(), UTF_8), result);
+    return new PersistedFile(
+        tempFile, new String(ikeyBytes, UTF_8), ByteBuffer.wrap(telemetryBytes));
   }
 
   // either delete it permanently on success or add it back to cache to be processed again later on
