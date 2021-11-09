@@ -38,8 +38,10 @@ import org.apache.commons.io.FilenameUtils;
 /** This class manages loading a list of {@link ByteBuffer} from the disk. */
 public class LocalFileLoader {
 
-  // A regex to validate that an instrumentation key is well-formed. It's copied straight from the Breeze repo.
-  static final String INSTRUMENTATION_KEY_REGEX = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
+  // A regex to validate that an instrumentation key is well-formed. It's copied straight from the
+  // Breeze repo.
+  static final String INSTRUMENTATION_KEY_REGEX =
+      "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
   private static final String TEMPORARY_FILE_EXTENSION = ".tmp";
 
   private final LocalFileCache localFileCache;
@@ -107,7 +109,9 @@ public class LocalFileLoader {
       instrumentationKey = new String(ikeyBytes, UTF_8);
       if (!Pattern.matches(INSTRUMENTATION_KEY_REGEX, instrumentationKey.toLowerCase())) {
         if (!LocalStorageUtils.deleteFileWithRetries(tempFile)) {
-          operationLogger.recordFailure("Fail to delete the old persisted file with an invalid instrumentation key " + tempFile.getName());
+          operationLogger.recordFailure(
+              "Fail to delete the old persisted file with an invalid instrumentation key "
+                  + tempFile.getName());
         }
         return null;
       }
@@ -120,8 +124,7 @@ public class LocalFileLoader {
     }
 
     operationLogger.recordSuccess();
-    return new PersistedFile(
-        tempFile, instrumentationKey, ByteBuffer.wrap(telemetryBytes));
+    return new PersistedFile(tempFile, instrumentationKey, ByteBuffer.wrap(telemetryBytes));
   }
 
   // reads bytes from a FileInputStream and allocates those into the buffer array byteArray.
