@@ -96,11 +96,7 @@ public class JfrProfilerService implements ProfilerService {
 
   public Future<ProfilerService> initialize() {
     CompletableFuture<ProfilerService> result = new CompletableFuture<>();
-    if (!config.enabled()) {
-      result.completeExceptionally(new IllegalStateException("Profiler disabled"));
-      return result;
-    }
-    if (initialised || !config.enabled()) {
+    if (initialised) {
       result.complete(this);
       return result;
     }

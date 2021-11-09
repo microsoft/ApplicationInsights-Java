@@ -83,7 +83,7 @@ public class TelemetryChannel {
 
   private final HttpPipeline pipeline;
   private final URL endpointUrl;
-  private final LocalFileWriter localFileWriter;
+  @Nullable private final LocalFileWriter localFileWriter;
   // this is null for the statsbeat channel
   @Nullable private final NetworkStatsbeat networkStatsbeat;
 

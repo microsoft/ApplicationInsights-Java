@@ -128,9 +128,20 @@ public class AiComponentInstaller implements AgentListener {
     }
 
     File javaTmpDir = new File(System.getProperty("java.io.tmpdir"));
-    File tmpDir = new File(javaTmpDir, "applicationinsights-java");
-    if (!tmpDir.exists() && !tmpDir.mkdirs()) {
-      throw new IllegalStateException("Could not create directory: " + tmpDir.getAbsolutePath());
+    boolean readOnlyFileSystem = false;
+    if (javaTmpDir.canRead() && !javaTmpDir.canWrite()) {
+      readOnlyFileSystem = true;
+    }
+
+    if (!readOnlyFileSystem) {
+      File tmpDir = new File(javaTmpDir, "applicationinsights-java");
+      if (!tmpDir.exists() && !tmpDir.mkdirs()) {
+        throw new IllegalStateException("Could not create directory: " + tmpDir.getAbsolutePath());
+      }
+    } else {
+      startupLogger.info(
+          "Detected running on a read-only file system, telemetry will not be stored to disk or retried later on sporadic network failures. If this is unexpected, please check that the process has write access to the temp directory: "
+              + javaTmpDir.getAbsolutePath());
     }
 
     Configuration config = MainEntryPoint.getConfiguration();
@@ -178,14 +189,16 @@ public class AiComponentInstaller implements AgentListener {
 
     Cache<String, String> ikeyEndpointMap = Cache.builder().setMaximumSize(100).build();
     StatsbeatModule statsbeatModule = new StatsbeatModule(ikeyEndpointMap);
-    // TODO (heya) apply Builder design pattern to TelemetryClient
     TelemetryClient telemetryClient =
-        new TelemetryClient(
-            config.customDimensions,
-            metricFilters,
-            ikeyEndpointMap,
-            statsbeatModule,
-            config.preview.authentication);
+        TelemetryClient.builder()
+            .setCustomDimensions(config.customDimensions)
+            .setMetricFilters(metricFilters)
+            .setIkeyEndpointMap(ikeyEndpointMap)
+            .setStatsbeatModule(statsbeatModule)
+            .setReadOnlyFileSystem(readOnlyFileSystem)
+            .setAadAuthentication(config.preview.authentication)
+            .build();
+
     TelemetryClientInitializer.initialize(telemetryClient, config);
     TelemetryClient.setActive(telemetryClient);
 
@@ -203,15 +216,23 @@ public class AiComponentInstaller implements AgentListener {
     appIdSupplier = new AppIdSupplier(telemetryClient);
     AiAppId.setSupplier(appIdSupplier);
 
-    ProfilerServiceInitializer.initialize(
-        appIdSupplier::get,
-        SystemInformation.getProcessId(),
-        formServiceProfilerConfig(config.preview.profiler),
-        config.role.instance,
-        config.role.name,
-        telemetryClient,
-        formApplicationInsightsUserAgent(),
-        formGcEventMonitorConfiguration(config.preview.gcEvents));
+    if (config.preview.profiler.enabled) {
+      if (readOnlyFileSystem) {
+        throw new FriendlyException(
+            "Profile is not supported in a read-only file system.",
+            "disable profiler or use a writable file system");
+      }
+
+      ProfilerServiceInitializer.initialize(
+          appIdSupplier::get,
+          SystemInformation.getProcessId(),
+          formServiceProfilerConfig(config.preview.profiler),
+          config.role.instance,
+          config.role.name,
+          telemetryClient,
+          formApplicationInsightsUserAgent(),
+          formGcEventMonitorConfiguration(config.preview.gcEvents));
+    }
 
     // this is for Azure Function Linux consumption plan support.
     if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
@@ -232,7 +253,9 @@ public class AiComponentInstaller implements AgentListener {
     statsbeatModule.start(telemetryClient, config);
 
     // start local File purger scheduler task
-    LocalFilePurger.startPurging();
+    if (!readOnlyFileSystem) {
+      LocalFilePurger.startPurging();
+    }
   }
 
   private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(
@@ -265,7 +288,6 @@ public class AiComponentInstaller implements AgentListener {
         configuration.periodicRecordingDurationSeconds,
         configuration.periodicRecordingIntervalSeconds,
         serviceProfilerFrontEndPoint,
-        configuration.enabled,
         configuration.memoryTriggeredSettings,
         configuration.cpuTriggeredSettings,
         tempDirectory);
