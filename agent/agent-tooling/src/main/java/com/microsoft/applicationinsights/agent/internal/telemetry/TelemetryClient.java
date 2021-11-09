@@ -203,13 +203,18 @@ public class TelemetryClient {
       synchronized (channelInitLock) {
         if (channelBatcher == null) {
           File telemetryFolder = LocalStorageUtils.getOfflineTelemetryFolder();
-          LocalFileCache localFileCache = new LocalFileCache(telemetryFolder);
-          LocalFileLoader localFileLoader =
-              new LocalFileLoader(
-                  localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
-          LocalFileWriter localFileWriter =
-              new LocalFileWriter(
-                  localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
+          LocalFileLoader localFileLoader = null;
+          LocalFileWriter localFileWriter = null;
+          if (!readOnlyFileSystem) {
+            LocalFileCache localFileCache = new LocalFileCache(telemetryFolder);
+            localFileLoader =
+                new LocalFileLoader(
+                    localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
+            localFileWriter =
+                new LocalFileWriter(
+                    localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
+          }
+
           TelemetryChannel channel =
               TelemetryChannel.create(
                   endpointProvider.getIngestionEndpointUrl(),
@@ -221,6 +226,7 @@ public class TelemetryClient {
           if (!readOnlyFileSystem) {
             LocalFileSender.start(localFileLoader, channel);
           }
+
           channelBatcher = BatchSpanProcessor.builder(channel).build();
         }
       }
@@ -233,11 +239,14 @@ public class TelemetryClient {
       synchronized (channelInitLock) {
         if (statsbeatChannelBatcher == null) {
           File statsbeatFolder = LocalStorageUtils.getOfflineStatsbeatFolder();
-          LocalFileCache localFileCache = new LocalFileCache(statsbeatFolder);
-          LocalFileLoader localFileLoader =
-              new LocalFileLoader(localFileCache, statsbeatFolder, null);
-          LocalFileWriter localFileWriter =
-              new LocalFileWriter(localFileCache, statsbeatFolder, null);
+          LocalFileLoader localFileLoader = null;
+          LocalFileWriter localFileWriter = null;
+          if (!readOnlyFileSystem) {
+            LocalFileCache localFileCache = new LocalFileCache(statsbeatFolder);
+            localFileLoader = new LocalFileLoader(localFileCache, statsbeatFolder, null);
+            localFileWriter = new LocalFileWriter(localFileCache, statsbeatFolder, null);
+          }
+
           TelemetryChannel channel =
               TelemetryChannel.create(
                   endpointProvider.getStatsbeatEndpointUrl(),
@@ -249,6 +258,7 @@ public class TelemetryClient {
           if (!readOnlyFileSystem) {
             LocalFileSender.start(localFileLoader, channel);
           }
+
           statsbeatChannelBatcher = BatchSpanProcessor.builder(channel).build();
         }
       }

@@ -247,8 +247,10 @@ public class TelemetryChannel {
   }
 
   private void writeToDiskOnFailure(List<ByteBuffer> byteBuffers, String instrumentationKey) {
-    localFileWriter.writeToDisk(byteBuffers, instrumentationKey);
-    byteBufferPool.offer(byteBuffers);
+    if (localFileWriter != null) {
+      localFileWriter.writeToDisk(byteBuffers, instrumentationKey);
+      byteBufferPool.offer(byteBuffers);
+    }
   }
 
   private void parseResponseCode(
