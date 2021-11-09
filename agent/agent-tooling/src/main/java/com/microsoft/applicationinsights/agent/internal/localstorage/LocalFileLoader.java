@@ -40,7 +40,7 @@ public class LocalFileLoader {
 
   // A regex to validate that an instrumentation key is well-formed. It's copied straight from the
   // Breeze repo.
-  static final String INSTRUMENTATION_KEY_REGEX =
+  private static final String INSTRUMENTATION_KEY_REGEX =
       "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
   private static final String TEMPORARY_FILE_EXTENSION = ".tmp";
 
@@ -107,7 +107,7 @@ public class LocalFileLoader {
     try (FileInputStream fileInputStream = new FileInputStream(tempFile)) {
       readFully(fileInputStream, ikeyBytes, 36);
       instrumentationKey = new String(ikeyBytes, UTF_8);
-      if (!Pattern.matches(INSTRUMENTATION_KEY_REGEX, instrumentationKey.toLowerCase())) {
+      if (!isInstrumentationKeyValid(instrumentationKey)) {
         if (!LocalStorageUtils.deleteFileWithRetries(tempFile)) {
           operationLogger.recordFailure(
               "Fail to delete the old persisted file with an invalid instrumentation key "
@@ -125,6 +125,14 @@ public class LocalFileLoader {
 
     operationLogger.recordSuccess();
     return new PersistedFile(tempFile, instrumentationKey, ByteBuffer.wrap(telemetryBytes));
+  }
+
+  static boolean isInstrumentationKeyValid(String instrumentationKey) {
+    if (Pattern.matches(INSTRUMENTATION_KEY_REGEX, instrumentationKey.toLowerCase())) {
+      return true;
+    }
+
+    return false;
   }
 
   // reads bytes from a FileInputStream and allocates those into the buffer array byteArray.
