@@ -128,11 +128,7 @@ public class LocalFileLoader {
   }
 
   static boolean isInstrumentationKeyValid(String instrumentationKey) {
-    if (Pattern.matches(INSTRUMENTATION_KEY_REGEX, instrumentationKey.toLowerCase())) {
-      return true;
-    }
-
-    return false;
+    return Pattern.matches(INSTRUMENTATION_KEY_REGEX, instrumentationKey.toLowerCase());
   }
 
   // reads bytes from a FileInputStream and allocates those into the buffer array byteArray.
