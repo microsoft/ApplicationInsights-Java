@@ -108,6 +108,8 @@ public class LocalFileLoader {
       readFully(fileInputStream, ikeyBytes, 36);
       instrumentationKey = new String(ikeyBytes, UTF_8);
       if (!isInstrumentationKeyValid(instrumentationKey)) {
+        fileInputStream
+            .close(); // need to close FileInputStream before delete; otherwise, delete will fail.
         if (!LocalStorageUtils.deleteFileWithRetries(tempFile)) {
           operationLogger.recordFailure(
               "Fail to delete the old persisted file with an invalid instrumentation key "
