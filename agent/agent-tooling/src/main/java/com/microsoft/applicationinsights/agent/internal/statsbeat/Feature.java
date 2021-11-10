@@ -52,7 +52,8 @@ enum Feature {
   QUARTZ_DISABLED(21), // preview instrumentation, quartz is ON by default in OTEL
   APACHE_CAMEL_DISABLED(22), // preview instrumentation, apache camel is ON by default in OTEL
   AKKA_DISABLED(23), // preview instrumentation, akka is ON by default in OTEL
-  PROPAGATION_DISABLED(24);
+  PROPAGATION_DISABLED(24),
+  PLAY_DISABLED(25); // preview instrumentation, play is ON by default in OTEL
 
   private static final Map<String, Feature> javaVendorFeatureMap;
 
