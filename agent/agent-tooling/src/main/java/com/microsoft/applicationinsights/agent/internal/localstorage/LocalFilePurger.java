@@ -92,7 +92,9 @@ public class LocalFilePurger implements Runnable {
     }
     if (numDeleted > 0) {
       logger.warn(
-          "{} telemetry file(s) were unable to be ingested and expired after 48 hours", numDeleted);
+          "{} local telemetry file(s) in folder '{}' expired after 48 hours and were deleted",
+          numDeleted,
+          folder.getName());
     }
   }
 
