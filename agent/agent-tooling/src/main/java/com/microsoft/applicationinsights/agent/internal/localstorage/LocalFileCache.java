@@ -21,8 +21,11 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
+import java.io.File;
+import java.util.Collection;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import org.apache.commons.io.FileUtils;
 
 public class LocalFileCache {
 
@@ -34,6 +37,16 @@ public class LocalFileCache {
    * a system property that can be customized via the command line.
    */
   private final Queue<String> persistedFilesCache = new ConcurrentLinkedDeque<>();
+
+  public LocalFileCache(File folder) {
+    Collection<File> files = FileUtils.listFiles(folder, new String[] {"trn"}, false);
+    // existing files are not older than 48 hours and need to get added to the queue to be
+    // re-processed.
+    // this will avoid data loss in the case of app crashes and restarts.
+    for (File file : files) {
+      persistedFilesCache.add(file.getName());
+    }
+  }
 
   // Track the newly persisted filename to the concurrent hashmap.
   void addPersistedFilenameToMap(String filename) {

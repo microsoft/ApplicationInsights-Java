@@ -97,8 +97,8 @@ public class TelemetryChannel {
     return new TelemetryChannel(httpPipeline, endpointUrl, localFileWriter, networkStatsbeat);
   }
 
-  public CompletableResultCode sendRawBytes(ByteBuffer buffer) {
-    return internalSend(singletonList(buffer), null);
+  public CompletableResultCode sendRawBytes(ByteBuffer buffer, String instrumentationKey) {
+    return internalSend(singletonList(buffer), instrumentationKey, true);
   }
 
   // used by tests only
@@ -141,7 +141,7 @@ public class TelemetryChannel {
       return CompletableResultCode.ofFailure();
     }
     try {
-      return internalSend(byteBuffers, instrumentationKey);
+      return internalSend(byteBuffers, instrumentationKey, false);
     } catch (Throwable t) {
       operationLogger.recordFailure("Error sending telemetry items: " + t.getMessage(), t);
       return CompletableResultCode.ofFailure();
@@ -177,7 +177,7 @@ public class TelemetryChannel {
    * sent as {@code List<ByteBuffer>}. Persisted telemetries will be sent as byte[]
    */
   private CompletableResultCode internalSend(
-      List<ByteBuffer> byteBuffers, @Nullable String instrumentationKey) {
+      List<ByteBuffer> byteBuffers, String instrumentationKey, boolean persisted) {
     HttpRequest request = new HttpRequest(HttpMethod.POST, endpointUrl);
 
     request.setBody(Flux.fromIterable(byteBuffers));
@@ -204,15 +204,15 @@ public class TelemetryChannel {
     final long startTime = System.currentTimeMillis();
     // Add instrumentation key to context to use in redirectPolicy
     Map<Object, Object> contextKeyValues = new HashMap<>();
-    if (instrumentationKey != null) {
-      contextKeyValues.put(RedirectPolicy.INSTRUMENTATION_KEY, instrumentationKey);
-    }
+    contextKeyValues.put(RedirectPolicy.INSTRUMENTATION_KEY, instrumentationKey);
     contextKeyValues.put(Tracer.DISABLE_TRACING_KEY, true);
+
     pipeline
         .send(request, Context.of(contextKeyValues))
         .subscribe(
             response -> {
-              parseResponseCode(response.getStatusCode(), instrumentationKey, byteBuffers);
+              parseResponseCode(
+                  response.getStatusCode(), instrumentationKey, byteBuffers, persisted);
               LazyHttpClient.consumeResponseBody(response);
             },
             error -> {
@@ -226,9 +226,10 @@ public class TelemetryChannel {
               if (networkStatsbeat != null && instrumentationKey != null) {
                 networkStatsbeat.incrementRequestFailureCount(instrumentationKey);
               }
-              // instrumentationKey is null when sending persisted file's raw bytes.
-              if (instrumentationKey != null) {
-                writeToDiskOnFailure(byteBuffers);
+              // no need to write to disk again when failing to send raw bytes from the persisted
+              // file
+              if (!persisted) {
+                writeToDiskOnFailure(byteBuffers, instrumentationKey);
               }
               result.fail();
             },
@@ -245,24 +246,24 @@ public class TelemetryChannel {
     return result;
   }
 
-  private void writeToDiskOnFailure(List<ByteBuffer> byteBuffers) {
+  private void writeToDiskOnFailure(List<ByteBuffer> byteBuffers, String instrumentationKey) {
     if (localFileWriter != null) {
-      localFileWriter.writeToDisk(byteBuffers);
+      localFileWriter.writeToDisk(byteBuffers, instrumentationKey);
       byteBufferPool.offer(byteBuffers);
     }
   }
 
   private void parseResponseCode(
-      int statusCode, String instrumentationKey, List<ByteBuffer> byteBuffers) {
+      int statusCode, String instrumentationKey, List<ByteBuffer> byteBuffers, boolean persisted) {
     switch (statusCode) {
       case 401: // UNAUTHORIZED
       case 403: // FORBIDDEN
         logger.warn(
             "Failed to send telemetry with status code:{}, please check your credentials",
             statusCode);
-        // sending raw bytes won't have any instrumentation key
-        if (instrumentationKey != null) {
-          writeToDiskOnFailure(byteBuffers);
+        // no need to write to disk again when failing to send raw bytes from the persisted file
+        if (!persisted) {
+          writeToDiskOnFailure(byteBuffers, instrumentationKey);
         }
         break;
       case 408: // REQUEST TIMEOUT

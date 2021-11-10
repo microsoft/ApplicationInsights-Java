@@ -21,12 +21,16 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
+import java.io.EOFException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -34,6 +38,10 @@ import org.apache.commons.io.FilenameUtils;
 /** This class manages loading a list of {@link ByteBuffer} from the disk. */
 public class LocalFileLoader {
 
+  // A regex to validate that an instrumentation key is well-formed. It's copied straight from the
+  // Breeze repo.
+  private static final String INSTRUMENTATION_KEY_REGEX =
+      "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
   private static final String TEMPORARY_FILE_EXTENSION = ".tmp";
 
   private final LocalFileCache localFileCache;
@@ -92,10 +100,32 @@ public class LocalFileLoader {
       return null;
     }
 
-    byte[] result;
-    try {
-      // TODO (trask) optimization: read this directly into ByteBuffer(s)
-      result = Files.readAllBytes(tempFile.toPath());
+    if (tempFile.length() <= 36) {
+      if (LocalStorageUtils.deleteFileWithRetries(tempFile)) {
+        operationLogger.recordFailure(
+            "Fail to delete a corrupted persisted file: length is  " + tempFile.length());
+      }
+      return null;
+    }
+
+    byte[] ikeyBytes = new byte[36];
+    int rawByteLength = (int) tempFile.length() - 36;
+    byte[] telemetryBytes = new byte[rawByteLength];
+    String instrumentationKey = null;
+    try (FileInputStream fileInputStream = new FileInputStream(tempFile)) {
+      readFully(fileInputStream, ikeyBytes, 36);
+      instrumentationKey = new String(ikeyBytes, UTF_8);
+      if (!isInstrumentationKeyValid(instrumentationKey)) {
+        fileInputStream.close(); // need to close FileInputStream before delete
+        if (!LocalStorageUtils.deleteFileWithRetries(tempFile)) {
+          operationLogger.recordFailure(
+              "Fail to delete the old persisted file with an invalid instrumentation key "
+                  + tempFile.getName());
+        }
+        return null;
+      }
+
+      readFully(fileInputStream, telemetryBytes, rawByteLength);
     } catch (IOException ex) {
       operationLogger.recordFailure("Fail to read telemetry from " + tempFile.getName(), ex);
       incrementReadFailureCount();
@@ -103,7 +133,29 @@ public class LocalFileLoader {
     }
 
     operationLogger.recordSuccess();
-    return new PersistedFile(tempFile, ByteBuffer.wrap(result));
+    return new PersistedFile(tempFile, instrumentationKey, ByteBuffer.wrap(telemetryBytes));
+  }
+
+  static boolean isInstrumentationKeyValid(String instrumentationKey) {
+    return Pattern.matches(INSTRUMENTATION_KEY_REGEX, instrumentationKey.toLowerCase());
+  }
+
+  // reads bytes from a FileInputStream and allocates those into the buffer array byteArray.
+  private static void readFully(FileInputStream fileInputStream, byte[] byteArray, int length)
+      throws IOException {
+    if (length < 0) {
+      throw new IndexOutOfBoundsException();
+    }
+
+    int totalRead = 0;
+    while (totalRead < length) {
+      int numRead = fileInputStream.read(byteArray, totalRead, length - totalRead);
+      if (numRead < 0) {
+        throw new EOFException();
+      }
+
+      totalRead += numRead;
+    }
   }
 
   // either delete it permanently on success or add it back to cache to be processed again later on
@@ -154,10 +206,16 @@ public class LocalFileLoader {
 
   static class PersistedFile {
     final File file;
+    final String instrumentationKey;
     final ByteBuffer rawBytes;
 
-    PersistedFile(File file, ByteBuffer byteBuffer) {
+    PersistedFile(File file, String instrumentationKey, ByteBuffer byteBuffer) {
+      if (instrumentationKey == null) {
+        throw new IllegalArgumentException("instrumentation key can not be null.");
+      }
+
       this.file = file;
+      this.instrumentationKey = instrumentationKey;
       this.rawBytes = byteBuffer;
     }
   }
