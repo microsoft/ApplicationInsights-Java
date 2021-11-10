@@ -62,7 +62,7 @@ import reactor.core.publisher.Mono;
 public class IntegrationTests {
 
   private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
-  private static final String PERSISTED_FILENAME = "gziped-raw-bytes.trn";
+  private static final String PERSISTED_FILENAME = "gzipped-raw-bytes.trn";
   private TelemetryChannel telemetryChannel;
   private LocalFileCache localFileCache;
   private LocalFileLoader localFileLoader;
@@ -116,7 +116,7 @@ public class IntegrationTests {
     for (int i = 100; i > 0; i--) {
       LocalFileLoader.PersistedFile file = localFileLoader.loadTelemetriesFromDisk();
       assertThat(ungzip(file.rawBytes.array()))
-          .isEqualTo(new String(getBytebufferFromFile("ungzip-source.txt").array(), UTF_8));
+          .isEqualTo(new String(getByteBufferFromFile("ungzip-source.txt").array(), UTF_8));
       assertThat(file.instrumentationKey).isEqualTo(INSTRUMENTATION_KEY);
       assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(i - 1);
     }
@@ -139,7 +139,7 @@ public class IntegrationTests {
     LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
     LocalFileLoader.PersistedFile loadedPersistedFile = localFileLoader.loadTelemetriesFromDisk();
 
-    ByteBuffer expectedGzipByteBuffer = getBytebufferFromFile(PERSISTED_FILENAME);
+    ByteBuffer expectedGzipByteBuffer = getByteBufferFromFile(PERSISTED_FILENAME);
     byte[] ikeyBytes = new byte[36];
     expectedGzipByteBuffer.get(ikeyBytes, 0, 36);
     assertThat(new String(ikeyBytes, UTF_8)).isEqualTo(INSTRUMENTATION_KEY);
@@ -150,7 +150,7 @@ public class IntegrationTests {
     assertThat(loadedPersistedFile.rawBytes).isEqualTo(ByteBuffer.wrap(telemetryBytes));
   }
 
-  private ByteBuffer getBytebufferFromFile(String filename) throws Exception {
+  private ByteBuffer getByteBufferFromFile(String filename) throws Exception {
     Path path = new File(getClass().getClassLoader().getResource(filename).getPath()).toPath();
 
     InputStream in = Files.newInputStream(path);
@@ -163,10 +163,6 @@ public class IntegrationTests {
   }
 
   private static String ungzip(byte[] rawBytes) throws Exception {
-    if (rawBytes == null) {
-      return null;
-    }
-
     GZIPInputStream gzipInputStream = new GZIPInputStream(new ByteArrayInputStream(rawBytes));
     BufferedReader bufferedReader =
         new BufferedReader(new InputStreamReader(gzipInputStream, "UTF-8"));

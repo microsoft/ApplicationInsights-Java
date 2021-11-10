@@ -100,6 +100,14 @@ public class LocalFileLoader {
       return null;
     }
 
+    if (tempFile.length() <= 36) {
+      if (LocalStorageUtils.deleteFileWithRetries(tempFile)) {
+        operationLogger.recordFailure(
+            "Fail to delete a corrupted persisted file: length is  " + tempFile.length());
+      }
+      return null;
+    }
+
     byte[] ikeyBytes = new byte[36];
     int rawByteLength = (int) tempFile.length() - 36;
     byte[] telemetryBytes = new byte[rawByteLength];
@@ -108,8 +116,7 @@ public class LocalFileLoader {
       readFully(fileInputStream, ikeyBytes, 36);
       instrumentationKey = new String(ikeyBytes, UTF_8);
       if (!isInstrumentationKeyValid(instrumentationKey)) {
-        fileInputStream
-            .close(); // need to close FileInputStream before delete; otherwise, delete will fail.
+        fileInputStream.close(); // need to close FileInputStream before delete
         if (!LocalStorageUtils.deleteFileWithRetries(tempFile)) {
           operationLogger.recordFailure(
               "Fail to delete the old persisted file with an invalid instrumentation key "
