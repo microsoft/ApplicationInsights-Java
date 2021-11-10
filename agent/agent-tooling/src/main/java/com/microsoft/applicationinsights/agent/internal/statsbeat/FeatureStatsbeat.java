@@ -138,6 +138,9 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     if (config.preview.instrumentation.grizzly.enabled) {
       featureList.add(Feature.GRIZZLY_ENABLED);
     }
+    if (!config.preview.instrumentation.play.enabled) {
+      featureList.add(Feature.PLAY_DISABLED);
+    }
     if (!config.preview.instrumentation.quartz.enabled) {
       featureList.add(Feature.QUARTZ_DISABLED);
     }

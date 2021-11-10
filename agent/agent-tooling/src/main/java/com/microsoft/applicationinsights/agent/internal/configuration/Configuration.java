@@ -272,6 +272,8 @@ public class Configuration {
 
   public static class PreviewInstrumentation {
 
+    public DisabledByDefaultInstrumentation play = new DisabledByDefaultInstrumentation();
+
     public DisabledByDefaultInstrumentation akka = new DisabledByDefaultInstrumentation();
 
     public DisabledByDefaultInstrumentation apacheCamel = new DisabledByDefaultInstrumentation();

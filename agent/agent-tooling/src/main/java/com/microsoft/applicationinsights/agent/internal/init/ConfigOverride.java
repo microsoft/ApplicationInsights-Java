@@ -77,6 +77,10 @@ class ConfigOverride {
       properties.put("otel.instrumentation.akka-actor.enabled", "false");
       properties.put("otel.instrumentation.akka-http.enabled", "false");
     }
+    if (!config.preview.instrumentation.play.enabled) {
+      // play instrumentation is ON by default in OTEL
+      properties.put("otel.instrumentation.play.enabled", "false");
+    }
     if (!config.preview.instrumentation.apacheCamel.enabled) {
       // apache-camel instrumentation is ON by default in OTEL
       properties.put("otel.instrumentation.apache-camel.enabled", "false");
