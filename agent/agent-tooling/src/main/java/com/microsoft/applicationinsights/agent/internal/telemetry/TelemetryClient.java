@@ -202,10 +202,11 @@ public class TelemetryClient {
     if (channelBatcher == null) {
       synchronized (channelInitLock) {
         if (channelBatcher == null) {
-          File telemetryFolder = LocalStorageUtils.getOfflineTelemetryFolder();
+          File telemetryFolder;
           LocalFileLoader localFileLoader = null;
           LocalFileWriter localFileWriter = null;
           if (!readOnlyFileSystem) {
+            telemetryFolder = LocalStorageUtils.getOfflineTelemetryFolder();
             LocalFileCache localFileCache = new LocalFileCache(telemetryFolder);
             localFileLoader =
                 new LocalFileLoader(
@@ -238,10 +239,11 @@ public class TelemetryClient {
     if (statsbeatChannelBatcher == null) {
       synchronized (channelInitLock) {
         if (statsbeatChannelBatcher == null) {
-          File statsbeatFolder = LocalStorageUtils.getOfflineStatsbeatFolder();
+          File statsbeatFolder;
           LocalFileLoader localFileLoader = null;
           LocalFileWriter localFileWriter = null;
           if (!readOnlyFileSystem) {
+            statsbeatFolder = LocalStorageUtils.getOfflineStatsbeatFolder();
             LocalFileCache localFileCache = new LocalFileCache(statsbeatFolder);
             localFileLoader = new LocalFileLoader(localFileCache, statsbeatFolder, null);
             localFileWriter = new LocalFileWriter(localFileCache, statsbeatFolder, null);
