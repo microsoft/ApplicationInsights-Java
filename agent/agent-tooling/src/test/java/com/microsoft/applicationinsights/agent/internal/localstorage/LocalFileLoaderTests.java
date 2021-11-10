@@ -56,6 +56,7 @@ import reactor.core.publisher.Mono;
 
 public class LocalFileLoaderTests {
 
+  private static final String GZIPPED_RAW_BYTES_WITHOUT_IKEY = "gzipped-raw-bytes-without-ikey.trn";
   private static final String BYTE_BUFFERS_TEST_FILE = "read-transmission.txt";
   private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
   private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -74,6 +75,25 @@ public class LocalFileLoaderTests {
         .isTrue();
     assertThat(LocalFileLoader.isInstrumentationKeyValid("C6864988-6BF8-45EF-8590-1FD3D84E5A4D"))
         .isTrue();
+  }
+
+  @Test
+  public void testPersistedFileWithoutInstrumentationKey() throws IOException {
+    File sourceFile =
+        new File(getClass().getClassLoader().getResource(GZIPPED_RAW_BYTES_WITHOUT_IKEY).getPath());
+
+    File persistedFile = new File(tempFolder, GZIPPED_RAW_BYTES_WITHOUT_IKEY);
+    FileUtils.copyFile(sourceFile, persistedFile);
+    assertThat(persistedFile.exists()).isTrue();
+
+    LocalFileCache localFileCache = new LocalFileCache(tempFolder);
+    localFileCache.addPersistedFilenameToMap(GZIPPED_RAW_BYTES_WITHOUT_IKEY);
+
+    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
+    LocalFileLoader.PersistedFile loadedPersistedFile = localFileLoader.loadTelemetriesFromDisk();
+    assertThat(loadedPersistedFile).isNull();
+    assertThat(persistedFile.exists())
+        .isFalse(); // verify the old formatted trn is deleted successfully.
   }
 
   @Test
