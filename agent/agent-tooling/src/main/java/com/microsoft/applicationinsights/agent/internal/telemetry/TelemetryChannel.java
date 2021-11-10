@@ -69,7 +69,7 @@ public class TelemetryChannel {
   private static final OperationLogger operationLogger =
       new OperationLogger(
           TelemetryChannel.class,
-          "Sending telemetry to the ingestion service (telemetry will be stored to disk on failure):");
+          "Sending telemetry to the ingestion service (telemetry will be stored to disk on failure and retried later):");
 
   // TODO (kryalama) do we still need this AtomicBoolean, or can we use throttling built in to the
   //  operationLogger?
