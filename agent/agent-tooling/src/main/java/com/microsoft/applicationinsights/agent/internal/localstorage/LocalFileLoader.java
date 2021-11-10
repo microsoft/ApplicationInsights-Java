@@ -52,6 +52,9 @@ public class LocalFileLoader {
   private static final OperationLogger operationLogger =
       new OperationLogger(LocalFileLoader.class, "Loading telemetry from disk");
 
+  private static final OperationLogger updateOperationLogger =
+      new OperationLogger(LocalFileLoader.class, "Updating local telemetry on disk");
+
   public LocalFileLoader(
       LocalFileCache localFileCache,
       File telemetryFolder,
@@ -161,8 +164,19 @@ public class LocalFileLoader {
   // either delete it permanently on success or add it back to cache to be processed again later on
   // failure
   public void updateProcessedFileStatus(boolean success, File file) {
+    if (!file.exists()) {
+      // not sure why this would happen
+      updateOperationLogger.recordFailure("File no longer exists: " + file.getName());
+      return;
+    }
     if (success) {
-      deleteFilePermanentlyOnSuccess(file);
+      // delete a file on the queue permanently when http response returns success.
+      if (!LocalStorageUtils.deleteFileWithRetries(file)) {
+        // TODO (heya) track file deletion failure via Statsbeat
+        updateOperationLogger.recordFailure("Fail to delete " + file.getName());
+      } else {
+        updateOperationLogger.recordSuccess();
+      }
     } else {
       // rename the temp file back to .trn source file extension
       File sourceFile =
@@ -170,31 +184,14 @@ public class LocalFileLoader {
       try {
         FileUtils.moveFile(file, sourceFile);
       } catch (IOException ex) {
-        operationLogger.recordFailure(
+        updateOperationLogger.recordFailure(
             "Fail to rename " + file.getName() + " to have a .trn extension.", ex);
         return;
       }
+      updateOperationLogger.recordSuccess();
 
       // add the source filename back to local file cache to be processed later.
       localFileCache.addPersistedFilenameToMap(sourceFile.getName());
-    }
-  }
-
-  // delete a file on the queue permanently when http response returns success.
-  private static void deleteFilePermanentlyOnSuccess(File file) {
-    if (!file.exists()) {
-      return;
-    }
-
-    deleteFile(file);
-  }
-
-  private static void deleteFile(File file) {
-    if (!LocalStorageUtils.deleteFileWithRetries(file)) {
-      // TODO (heya) track file deletion failure via Statsbeat
-      operationLogger.recordFailure("Fail to delete " + file.getName());
-    } else {
-      operationLogger.recordSuccess();
     }
   }
 
