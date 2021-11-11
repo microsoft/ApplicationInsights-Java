@@ -51,13 +51,6 @@ public class FeatureStatsbeatTest {
   }
 
   @Test
-  public void testHttpClientEnabled() {
-    testFeatureTrackingDisablement(
-        (config, enabled) -> config.instrumentation.httpClient.enabled = enabled,
-        Feature.HTTP_CLIENT_DISABLED);
-  }
-
-  @Test
   public void testJdbcEnabled() {
     testFeatureTrackingDisablement(
         (config, enabled) -> config.instrumentation.jdbc.enabled = enabled, Feature.JDBC_DISABLED);

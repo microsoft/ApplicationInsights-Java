@@ -136,7 +136,6 @@ public class Configuration {
 
     public EnabledByDefaultInstrumentation azureSdk = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation cassandra = new EnabledByDefaultInstrumentation();
-    public EnabledByDefaultInstrumentation httpClient = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation jdbc = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation jms = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation kafka = new EnabledByDefaultInstrumentation();

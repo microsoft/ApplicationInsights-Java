@@ -271,10 +271,6 @@ public class ConfigurationBuilder {
         overlayWithEnvVar(
             "APPLICATIONINSIGHTS_INSTRUMENTATION_CASSANDRA_ENABLED",
             config.instrumentation.cassandra.enabled);
-    config.instrumentation.httpClient.enabled =
-        overlayWithEnvVar(
-            "APPLICATIONINSIGHTS_INSTRUMENTATION_HTTP_CLIENT_ENABLED",
-            config.instrumentation.httpClient.enabled);
     config.instrumentation.jdbc.enabled =
         overlayWithEnvVar(
             "APPLICATIONINSIGHTS_INSTRUMENTATION_JDBC_ENABLED",

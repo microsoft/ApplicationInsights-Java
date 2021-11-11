@@ -103,9 +103,6 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     if (!config.instrumentation.cassandra.enabled) {
       featureList.add(Feature.CASSANDRA_DISABLED);
     }
-    if (!config.instrumentation.httpClient.enabled) {
-      featureList.add(Feature.HTTP_CLIENT_DISABLED);
-    }
     if (!config.instrumentation.jdbc.enabled) {
       featureList.add(Feature.JDBC_DISABLED);
     }

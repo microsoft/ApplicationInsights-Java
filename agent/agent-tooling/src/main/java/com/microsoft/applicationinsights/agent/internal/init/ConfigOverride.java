@@ -49,25 +49,6 @@ class ConfigOverride {
     if (!config.instrumentation.cassandra.enabled) {
       properties.put("otel.instrumentation.cassandra.enabled", "false");
     }
-    if (!config.instrumentation.httpClient.enabled) {
-      // some of these haven't been included yet, but is trying to be a bit future-proof
-      // note: there's currently no way to disable netty client or ameria client instrumentation
-      // separate from their respective server instrumentation
-      properties.put("otel.instrumentation.akka-http-client.enabled", "false");
-      properties.put("otel.instrumentation.apache-httpasyncclient.enabled", "false");
-      properties.put("otel.instrumentation.apache-httpclient.enabled", "false");
-      properties.put("otel.instrumentation.async-http-client.enabled", "false");
-      properties.put("otel.instrumentation.google-http-client.enabled", "false");
-      properties.put("otel.instrumentation.http-url-connection.enabled", "false");
-      properties.put("otel.instrumentation.java-http-client.enabled", "false");
-      properties.put("otel.instrumentation.jaxrs-client.enabled", "false");
-      properties.put("otel.instrumentation.jetty-httpclient.enabled", "false");
-      properties.put("otel.instrumentation.okhttp.enabled", "false");
-      properties.put("otel.instrumentation.play-ws.enabled", "false");
-      properties.put("otel.instrumentation.spring-web.enabled", "false");
-      properties.put("otel.instrumentation.spring-webflux-client.enabled", "false");
-      properties.put("otel.instrumentation.vertx-client.enabled", "false");
-    }
     if (!config.instrumentation.jdbc.enabled) {
       properties.put("otel.instrumentation.jdbc.enabled", "false");
     }

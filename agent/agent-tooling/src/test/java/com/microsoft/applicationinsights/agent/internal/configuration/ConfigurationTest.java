@@ -521,16 +521,6 @@ class ConfigurationTest {
   }
 
   @Test
-  void shouldOverrideInstrumentationHttpClientEnabled() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_HTTP_CLIENT_ENABLED", "false");
-
-    Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
-
-    assertThat(configuration.instrumentation.httpClient.enabled).isFalse();
-  }
-
-  @Test
   void shouldOverrideInstrumentationJdbcEnabled() throws IOException {
     envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_JDBC_ENABLED", "false");
 
