@@ -223,7 +223,10 @@ public class TelemetryChannel {
                   networkStatsbeat.incrementRequestFailureCount(instrumentationKey);
                 }
               }
-              byteBufferPool.offer(byteBuffers);
+              if (!persisted) {
+                // persisted byte buffers don't come from the pool so shouldn't go back to the pool
+                byteBufferPool.offer(byteBuffers);
+              }
               if (response.getStatusCode() == 200) {
                 result.succeed();
               } else {
@@ -245,7 +248,10 @@ public class TelemetryChannel {
               if (!persisted) {
                 writeToDiskOnFailure(byteBuffers, instrumentationKey);
               }
-              byteBufferPool.offer(byteBuffers);
+              if (!persisted) {
+                // persisted byte buffers don't come from the pool so shouldn't go back to the pool
+                byteBufferPool.offer(byteBuffers);
+              }
               result.fail();
             });
     return result;
