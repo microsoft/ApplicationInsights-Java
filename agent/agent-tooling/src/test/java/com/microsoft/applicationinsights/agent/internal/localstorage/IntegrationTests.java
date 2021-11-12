@@ -24,13 +24,15 @@ package com.microsoft.applicationinsights.agent.internal.localstorage;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.azure.core.http.HttpClient;
 import com.azure.core.http.HttpPipelineBuilder;
 import com.azure.core.http.HttpRequest;
-import com.azure.core.http.HttpResponse;
+import com.azure.core.test.http.MockHttpResponse;
+import com.azure.core.util.Context;
 import com.microsoft.applicationinsights.agent.internal.common.TestUtils;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryChannel;
@@ -69,13 +71,27 @@ public class IntegrationTests {
 
   @TempDir File tempFolder;
 
+  // TODO (trask) test with both
+  private static final boolean testWithException = true;
+
   @BeforeEach
   public void setup() throws Exception {
     HttpClient mockedClient = mock(HttpClient.class);
-    HttpRequest mockedRequest = mock(HttpRequest.class);
-    HttpResponse mockedResponse = mock(HttpResponse.class);
-    when(mockedResponse.getStatusCode()).thenReturn(500);
-    when(mockedClient.send(mockedRequest)).thenReturn(Mono.just(mockedResponse));
+    if (testWithException) {
+      when(mockedClient.send(any(HttpRequest.class), any(Context.class)))
+          .then(
+              invocation ->
+                  Mono.error(
+                      () ->
+                          new Exception("this is expected to be logged by the operation logger")));
+    } else {
+      // 401 and 403 response codes are the only ones the result in storing to disk
+      when(mockedClient.send(any(HttpRequest.class), any(Context.class)))
+          .then(
+              invocation ->
+                  Mono.just(
+                      new MockHttpResponse(invocation.getArgument(0, HttpRequest.class), 401)));
+    }
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
     localFileCache = new LocalFileCache(tempFolder);
     localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
@@ -104,7 +120,7 @@ public class IntegrationTests {
             for (int j = 0; j < 10; j++) {
               CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
               completableResultCode.join(10, SECONDS);
-              assertThat(completableResultCode.isSuccess()).isEqualTo(false);
+              assertThat(completableResultCode.isSuccess()).isFalse();
             }
           });
     }

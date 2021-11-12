@@ -214,6 +214,22 @@ public class TelemetryChannel {
               parseResponseCode(
                   response.getStatusCode(), instrumentationKey, byteBuffers, persisted);
               LazyHttpClient.consumeResponseBody(response);
+              if (response.getStatusCode() == 200) {
+                result.succeed();
+              } else {
+                result.fail();
+              }
+              // networkStatsbeat is null when it's sending a Statsbeat request.
+              if (networkStatsbeat != null) {
+                if (response.getStatusCode() == 200) {
+                  networkStatsbeat.incrementRequestSuccessCount(
+                      System.currentTimeMillis() - startTime, instrumentationKey);
+                } else {
+                  networkStatsbeat.incrementRequestFailureCount(instrumentationKey);
+                }
+              }
+              byteBufferPool.offer(byteBuffers);
+              result.succeed();
             },
             error -> {
               NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
@@ -222,8 +238,7 @@ public class TelemetryChannel {
                   "Error sending telemetry items: " + error.getMessage(), error);
 
               // networkStatsbeat is null when it's sending a Statsbeat request.
-              // instrumentationKey is null when sending persisted file's raw bytes.
-              if (networkStatsbeat != null && instrumentationKey != null) {
+              if (networkStatsbeat != null) {
                 networkStatsbeat.incrementRequestFailureCount(instrumentationKey);
               }
               // no need to write to disk again when failing to send raw bytes from the persisted
@@ -231,17 +246,8 @@ public class TelemetryChannel {
               if (!persisted) {
                 writeToDiskOnFailure(byteBuffers, instrumentationKey);
               }
-              result.fail();
-            },
-            () -> {
-              // networkStatsbeat is null when it's sending a Statsbeat request.
-              // instrumentationKey is null when sending persisted file's raw bytes.
-              if (networkStatsbeat != null && instrumentationKey != null) {
-                networkStatsbeat.incrementRequestSuccessCount(
-                    System.currentTimeMillis() - startTime, instrumentationKey);
-              }
               byteBufferPool.offer(byteBuffers);
-              result.succeed();
+              result.fail();
             });
     return result;
   }
@@ -249,7 +255,6 @@ public class TelemetryChannel {
   private void writeToDiskOnFailure(List<ByteBuffer> byteBuffers, String instrumentationKey) {
     if (localFileWriter != null) {
       localFileWriter.writeToDisk(byteBuffers, instrumentationKey);
-      byteBufferPool.offer(byteBuffers);
     }
   }
 
@@ -275,7 +280,7 @@ public class TelemetryChannel {
         // TODO (heya) track throttling count via Statsbeat
         // networkStatsbeat is null when it's sending a Statsbeat request.
         // instrumentationKey is null when sending persisted file's raw bytes.
-        if (networkStatsbeat != null && instrumentationKey != null) {
+        if (networkStatsbeat != null) {
           networkStatsbeat.incrementThrottlingCount(instrumentationKey);
         }
         break;
@@ -290,7 +295,7 @@ public class TelemetryChannel {
         // TODO (heya) track failure count via Statsbeat
         // networkStatsbeat is null when it's sending a Statsbeat request.
         // instrumentationKey is null when sending persisted file's raw bytes.
-        if (networkStatsbeat != null && instrumentationKey != null) {
+        if (networkStatsbeat != null) {
           networkStatsbeat.incrementRetryCount(instrumentationKey);
         }
         break;
