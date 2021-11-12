@@ -50,17 +50,6 @@ class SamplingOverridesTest {
   }
 
   @Test
-  void shouldNotFilterByNullSpanKind() {
-    // given
-    List<SamplingOverride> overrides = singletonList(newOverride(null, 0));
-    SamplingOverrides sampler = new SamplingOverrides(overrides);
-    Attributes attributes = Attributes.empty();
-
-    // expect
-    assertThat(sampler.getOverride(SpanKind.SERVER, attributes)).isNull();
-  }
-
-  @Test
   void shouldFilterBySpanKind() {
     // given
     List<SamplingOverride> overrides = singletonList(newOverride(Configuration.SpanKind.SERVER, 0));
@@ -88,6 +77,18 @@ class SamplingOverridesTest {
     List<SamplingOverride> overrides =
         singletonList(
             newOverride(Configuration.SpanKind.SERVER, 0, newStrictAttribute("one", "1")));
+    SamplingOverrides sampler = new SamplingOverrides(overrides);
+    Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "1");
+
+    // expect
+    assertThat(sampler.getOverride(SpanKind.SERVER, attributes).getPercentage()).isEqualTo(0);
+  }
+
+  @Test
+  void shouldFilterStrictMatchWithNullSpanKind() {
+    // given
+    List<SamplingOverride> overrides =
+        singletonList(newOverride(null, 0, newStrictAttribute("one", "1")));
     SamplingOverrides sampler = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "1");
 
