@@ -174,6 +174,30 @@ class SamplingOverridesTest {
   }
 
   @Test
+  void shouldFilterKeyOnlyMatch() {
+    // given
+    List<SamplingOverride> overrides =
+        singletonList(newOverride(Configuration.SpanKind.SERVER, 0, newKeyOnlyAttribute("one")));
+    SamplingOverrides sampler = new SamplingOverrides(overrides);
+    Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "11");
+
+    // expect
+    assertThat(sampler.getOverride(SpanKind.SERVER, attributes).getPercentage()).isEqualTo(0);
+  }
+
+  @Test
+  void shouldNotFilterKeyOnlyMatch() {
+    // given
+    List<SamplingOverride> overrides =
+        singletonList(newOverride(Configuration.SpanKind.SERVER, 0, newKeyOnlyAttribute("one")));
+    SamplingOverrides sampler = new SamplingOverrides(overrides);
+    Attributes attributes = Attributes.of(AttributeKey.stringKey("two"), "22");
+
+    // expect
+    assertThat(sampler.getOverride(SpanKind.SERVER, attributes)).isNull();
+  }
+
+  @Test
   void shouldFilterMultiAttributes() {
     // given
     List<SamplingOverride> overrides =
@@ -276,6 +300,12 @@ class SamplingOverridesTest {
     attribute.key = key;
     attribute.value = value;
     attribute.matchType = MatchType.REGEXP;
+    return attribute;
+  }
+
+  private static SamplingOverrideAttribute newKeyOnlyAttribute(String key) {
+    SamplingOverrideAttribute attribute = new SamplingOverrideAttribute();
+    attribute.key = key;
     return attribute;
   }
 }

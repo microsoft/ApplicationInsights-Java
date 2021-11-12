@@ -185,6 +185,8 @@ class SamplingOverrides {
         return new StrictMatcher(attribute.key, attribute.value);
       } else if (attribute.matchType == MatchType.REGEXP) {
         return new RegexpMatcher(attribute.key, attribute.value);
+      } else if (attribute.matchType == null) {
+        return new KeyOnlyMatcher(attribute.key);
       } else {
         throw new IllegalStateException("Unexpected match type: " + attribute.matchType);
       }
@@ -226,6 +228,23 @@ class SamplingOverrides {
         val = lazyHttpUrl.get();
       }
       return val != null && value.matcher(val).matches();
+    }
+  }
+
+  private static class KeyOnlyMatcher implements TempPredicate {
+    private final AttributeKey<String> key;
+
+    private KeyOnlyMatcher(String key) {
+      this.key = AttributeKey.stringKey(key);
+    }
+
+    @Override
+    public boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
+      String val = attributes.get(key);
+      if (val == null && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())) {
+        val = lazyHttpUrl.get();
+      }
+      return val != null;
     }
   }
 

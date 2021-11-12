@@ -429,8 +429,8 @@ public class Configuration {
 
   public static class SamplingOverrideAttribute {
     public String key;
-    public String value;
-    public MatchType matchType;
+    @Nullable public String value;
+    @Nullable public MatchType matchType;
 
     private void validate() {
       if (isEmpty(key)) {
@@ -439,9 +439,9 @@ public class Configuration {
             "A sampling override configuration has an attribute section that is missing a \"key\".",
             "Please provide a \"key\" under the attribute section of the sampling override configuration.");
       }
-      if (matchType == null) {
+      if (matchType == null && value != null) {
         throw new FriendlyException(
-            "A sampling override configuration has an attribute section that is missing a \"matchType\".",
+            "A sampling override configuration has an attribute section with a \"value\" that is missing a \"matchType\".",
             "Please provide a \"matchType\" under the attribute section of the sampling override configuration.");
       }
       if (matchType == MatchType.REGEXP) {
