@@ -169,7 +169,7 @@ class SamplingOverrides {
     }
 
     private boolean matches(SpanKind spanKind, Attributes attributes, LazyHttpUrl lazyHttpUrl) {
-      if (!spanKind.equals(this.spanKind)) {
+      if (this.spanKind != null && !this.spanKind.equals(spanKind)) {
         return false;
       }
       for (TempPredicate predicate : predicates) {
