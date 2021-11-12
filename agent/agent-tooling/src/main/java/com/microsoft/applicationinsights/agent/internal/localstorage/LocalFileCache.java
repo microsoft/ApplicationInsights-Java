@@ -22,10 +22,16 @@
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.LoggerFactory;
+import javax.annotation.Nullable;
 
 public class LocalFileCache {
 
@@ -39,7 +45,7 @@ public class LocalFileCache {
   private final Queue<String> persistedFilesCache = new ConcurrentLinkedDeque<>();
 
   public LocalFileCache(File folder) {
-    Collection<File> files = FileUtils.listFiles(folder, new String[] {"trn"}, false);
+    List<File> files = sortPersistedFiles(folder);
     // existing files are not older than 48 hours and need to get added to the queue to be
     // re-processed.
     // this will avoid data loss in the case of app crashes and restarts.
@@ -60,5 +66,34 @@ public class LocalFileCache {
   // only used by tests
   Queue<String> getPersistedFilesCache() {
     return persistedFilesCache;
+  }
+
+  @Nullable
+  private static List<File> sortPersistedFiles(File folder) {
+    Collection<File> files = FileUtils.listFiles(folder, new String[] {"trn"}, false);
+    Comparator<File> comparator = new Comparator<File>() {
+      @Override
+      public int compare(File file1, File file2) {
+        long file1MilliSeconds = Long.parseLong(file1.getName().substring(0, file1.getName().lastIndexOf('-')));
+        long file2MilliSeconds = Long.parseLong(file2.getName().substring(0, file2.getName().lastIndexOf('-')));
+        if (file1MilliSeconds > file2MilliSeconds) {
+          return 1;
+        } else if (file1MilliSeconds < file2MilliSeconds) {
+          return -1;
+        }
+
+        return 0;
+      }
+    };
+
+    List<File> result = new ArrayList<File>(files);
+    try {
+      Collections.sort(result, comparator);
+    } catch (RuntimeException ex) {
+      LoggerFactory.getLogger(LocalFileCache.class).error("Fail to sort a list of persisted files on disk", ex);
+      return null;
+    }
+
+    return result;
   }
 }
