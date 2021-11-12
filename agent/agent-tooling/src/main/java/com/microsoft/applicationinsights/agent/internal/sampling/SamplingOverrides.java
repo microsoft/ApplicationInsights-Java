@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
@@ -37,7 +38,7 @@ import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 // TODO find a better name for this class (and MatcherGroup too)
 class SamplingOverrides {
@@ -52,10 +53,10 @@ class SamplingOverrides {
   }
 
   @Nullable
-  MatcherGroup getOverride(Attributes attributes) {
+  MatcherGroup getOverride(SpanKind spanKind, Attributes attributes) {
     LazyHttpUrl lazyHttpUrl = new LazyHttpUrl(attributes);
     for (MatcherGroup matcherGroups : matcherGroups) {
-      if (matcherGroups.matches(attributes, lazyHttpUrl)) {
+      if (matcherGroups.matches(spanKind, attributes, lazyHttpUrl)) {
         return matcherGroups;
       }
     }
@@ -143,11 +144,13 @@ class SamplingOverrides {
   }
 
   static class MatcherGroup {
+    @Nullable private final SpanKind spanKind;
     private final List<TempPredicate> predicates;
     private final double percentage;
     private final SamplingResult recordAndSampleAndOverwriteTraceState;
 
     private MatcherGroup(SamplingOverride override) {
+      spanKind = override.spanKind != null ? override.spanKind.otelSpanKind : null;
       predicates = new ArrayList<>();
       for (SamplingOverrideAttribute attribute : override.attributes) {
         predicates.add(toPredicate(attribute));
@@ -165,7 +168,10 @@ class SamplingOverrides {
       return recordAndSampleAndOverwriteTraceState;
     }
 
-    private boolean matches(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
+    private boolean matches(SpanKind spanKind, Attributes attributes, LazyHttpUrl lazyHttpUrl) {
+      if (!spanKind.equals(this.spanKind)) {
+        return false;
+      }
       for (TempPredicate predicate : predicates) {
         if (!predicate.test(attributes, lazyHttpUrl)) {
           return false;

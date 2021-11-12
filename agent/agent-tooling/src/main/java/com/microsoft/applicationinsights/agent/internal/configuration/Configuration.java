@@ -37,6 +37,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 // an assumption is made throughout this file that user will not explicitly use `null` value in json
 // file
@@ -60,6 +61,25 @@ public class Configuration {
 
   private static boolean isEmpty(String str) {
     return str == null || str.trim().isEmpty();
+  }
+
+  public enum SpanKind {
+    @JsonProperty("server")
+    SERVER(io.opentelemetry.api.trace.SpanKind.SERVER),
+    @JsonProperty("client")
+    CLIENT(io.opentelemetry.api.trace.SpanKind.CLIENT),
+    @JsonProperty("consumer")
+    CONSUMER(io.opentelemetry.api.trace.SpanKind.CONSUMER),
+    @JsonProperty("producer")
+    PRODUCER(io.opentelemetry.api.trace.SpanKind.PRODUCER),
+    @JsonProperty("internal")
+    INTERNAL(io.opentelemetry.api.trace.SpanKind.INTERNAL);
+
+    public final io.opentelemetry.api.trace.SpanKind otelSpanKind;
+
+    SpanKind(io.opentelemetry.api.trace.SpanKind otelSpanKind) {
+      this.otelSpanKind = otelSpanKind;
+    }
   }
 
   public enum MatchType {
@@ -373,6 +393,8 @@ public class Configuration {
   }
 
   public static class SamplingOverride {
+    // TODO (trask) consider making this required when moving out of preview
+    @Nullable public SpanKind spanKind;
     // not using include/exclude, because you can still get exclude with this by adding a second
     // (exclude) override above it
     // (since only the first matching override is used)
@@ -381,11 +403,11 @@ public class Configuration {
     public String id; // optional, used for debugging purposes only
 
     public void validate() {
-      if (attributes.isEmpty()) {
+      if (spanKind == null && attributes.isEmpty()) {
         // TODO add doc and go link, similar to telemetry processors
         throw new FriendlyException(
-            "A sampling override configuration has no attributes.",
-            "Please provide one or more attributes for the sampling override configuration.");
+            "A sampling override configuration is missing \"spanKind\" and has no attributes.",
+            "Please provide at least one of \"spanKind\" or \"attributes\" for the sampling override configuration.");
       }
       if (percentage == null) {
         // TODO add doc and go link, similar to telemetry processors
