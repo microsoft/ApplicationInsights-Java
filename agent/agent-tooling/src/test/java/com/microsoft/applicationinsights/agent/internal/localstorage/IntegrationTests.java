@@ -72,7 +72,7 @@ public class IntegrationTests {
   @TempDir File tempFolder;
 
   // TODO (trask) test with both
-  private static final boolean testWithException = true;
+  private static final boolean testWithException = false;
 
   @BeforeEach
   public void setup() throws Exception {

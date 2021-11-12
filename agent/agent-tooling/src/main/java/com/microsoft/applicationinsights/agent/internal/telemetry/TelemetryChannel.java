@@ -214,11 +214,6 @@ public class TelemetryChannel {
               parseResponseCode(
                   response.getStatusCode(), instrumentationKey, byteBuffers, persisted);
               LazyHttpClient.consumeResponseBody(response);
-              if (response.getStatusCode() == 200) {
-                result.succeed();
-              } else {
-                result.fail();
-              }
               // networkStatsbeat is null when it's sending a Statsbeat request.
               if (networkStatsbeat != null) {
                 if (response.getStatusCode() == 200) {
@@ -229,7 +224,11 @@ public class TelemetryChannel {
                 }
               }
               byteBufferPool.offer(byteBuffers);
-              result.succeed();
+              if (response.getStatusCode() == 200) {
+                result.succeed();
+              } else {
+                result.fail();
+              }
             },
             error -> {
               NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
