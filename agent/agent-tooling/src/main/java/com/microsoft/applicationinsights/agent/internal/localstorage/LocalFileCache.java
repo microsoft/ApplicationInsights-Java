@@ -29,9 +29,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
-import javax.annotation.Nullable;
 
 public class LocalFileCache {
 
@@ -71,26 +71,30 @@ public class LocalFileCache {
   @Nullable
   private static List<File> sortPersistedFiles(File folder) {
     Collection<File> files = FileUtils.listFiles(folder, new String[] {"trn"}, false);
-    Comparator<File> comparator = new Comparator<File>() {
-      @Override
-      public int compare(File file1, File file2) {
-        long file1MilliSeconds = Long.parseLong(file1.getName().substring(0, file1.getName().lastIndexOf('-')));
-        long file2MilliSeconds = Long.parseLong(file2.getName().substring(0, file2.getName().lastIndexOf('-')));
-        if (file1MilliSeconds > file2MilliSeconds) {
-          return 1;
-        } else if (file1MilliSeconds < file2MilliSeconds) {
-          return -1;
-        }
+    Comparator<File> comparator =
+        new Comparator<File>() {
+          @Override
+          public int compare(File file1, File file2) {
+            long file1MilliSeconds =
+                Long.parseLong(file1.getName().substring(0, file1.getName().lastIndexOf('-')));
+            long file2MilliSeconds =
+                Long.parseLong(file2.getName().substring(0, file2.getName().lastIndexOf('-')));
+            if (file1MilliSeconds > file2MilliSeconds) {
+              return 1;
+            } else if (file1MilliSeconds < file2MilliSeconds) {
+              return -1;
+            }
 
-        return 0;
-      }
-    };
+            return 0;
+          }
+        };
 
     List<File> result = new ArrayList<File>(files);
     try {
       Collections.sort(result, comparator);
     } catch (RuntimeException ex) {
-      LoggerFactory.getLogger(LocalFileCache.class).error("Fail to sort a list of persisted files on disk", ex);
+      LoggerFactory.getLogger(LocalFileCache.class)
+          .error("Fail to sort a list of persisted files on disk", ex);
       return null;
     }
 

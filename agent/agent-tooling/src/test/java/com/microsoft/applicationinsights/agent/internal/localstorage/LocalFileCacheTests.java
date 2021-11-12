@@ -21,11 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,8 +31,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 public class LocalFileCacheTests {
 
@@ -52,12 +52,13 @@ public class LocalFileCacheTests {
       File trnFile = new File(tempFolder, FilenameUtils.getBaseName(tempFile.getName()) + ".trn");
       tempFile.renameTo(trnFile);
       unsortedFileNames.add(trnFile.getName());
-      unsortedMilliseconds.add(Long.parseLong(trnFile.getName().substring(0, trnFile.getName().lastIndexOf('-'))));
+      unsortedMilliseconds.add(
+          Long.parseLong(trnFile.getName().substring(0, trnFile.getName().lastIndexOf('-'))));
     }
 
     List<String> tmpList = new ArrayList<>(unsortedFileNames);
     Collections.sort(tmpList);
-    for (String filename: tmpList) {
+    for (String filename : tmpList) {
       sortedFileNames.add(filename);
     }
 
@@ -80,12 +81,15 @@ public class LocalFileCacheTests {
     assertThat(sortedPersistedFile.size()).isEqualTo(sortedFileNames.size());
     assertThat(sortedPersistedFile.size()).isEqualTo(sortedMilliseconds.size());
 
-    while (sortedPersistedFile.peek() != null && sortedFileNames.peek() != null && sortedMilliseconds.peek() != null) {
+    while (sortedPersistedFile.peek() != null
+        && sortedFileNames.peek() != null
+        && sortedMilliseconds.peek() != null) {
       String actualFilename = sortedPersistedFile.poll();
       String expectedFilename = sortedFileNames.poll();
       assertThat(actualFilename).isEqualTo(expectedFilename);
 
-      Long actualMilliseconds = Long.parseLong(actualFilename.substring(0, actualFilename.lastIndexOf('-')));
+      Long actualMilliseconds =
+          Long.parseLong(actualFilename.substring(0, actualFilename.lastIndexOf('-')));
       Long expectedMilliseconds = sortedMilliseconds.poll();
       assertThat(actualMilliseconds).isEqualTo(expectedMilliseconds);
     }
