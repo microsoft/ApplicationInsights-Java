@@ -145,11 +145,11 @@ class AggregatingLogger {
         AggregatingLogger.this.failureMessages = new HashMap<>();
       }
 
-      StringBuilder message = new StringBuilder();
-      long numMinutes = AggregatingLogger.this.intervalSeconds / 60;
       if (!failureMessages.isEmpty()) {
         long numWarnings = getTotalFailures(failureMessages);
+        long numMinutes = AggregatingLogger.this.intervalSeconds / 60;
         long total = numSuccesses + numWarnings;
+        StringBuilder message = new StringBuilder();
         message.append("In the last ");
         message.append(numMinutes);
         message.append(" minutes, the following");
@@ -177,17 +177,6 @@ class AggregatingLogger {
                   message.append(" times)");
                 });
         logger.warn(message.toString());
-      }
-
-      if (numSuccesses != 0) {
-        message.append("In the last ");
-        message.append(numMinutes);
-        message.append(" minutes, the following");
-        if (trackingOperations) {
-          message.append(" operation has succeeded ");
-          message.append(numSuccesses);
-          message.append(" times");
-        }
       }
     }
   }
