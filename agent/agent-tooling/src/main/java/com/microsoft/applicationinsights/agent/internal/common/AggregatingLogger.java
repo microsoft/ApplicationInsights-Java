@@ -144,7 +144,6 @@ class AggregatingLogger {
         AggregatingLogger.this.numSuccesses = 0;
         AggregatingLogger.this.failureMessages = new HashMap<>();
       }
-
       if (!failureMessages.isEmpty()) {
         long numWarnings = getTotalFailures(failureMessages);
         long numMinutes = AggregatingLogger.this.intervalSeconds / 60;
