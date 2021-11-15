@@ -27,7 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -39,38 +39,27 @@ import org.junit.jupiter.api.io.TempDir;
 
 public class LocalFileCacheTests {
 
-  private static final Queue<String> sortedFileNames = new ConcurrentLinkedDeque<>();
-  private static final Queue<Long> sortedMilliseconds = new ConcurrentLinkedDeque<>();
+  private static final Queue<Long> sortedLastModified = new ConcurrentLinkedDeque<>();
   @TempDir File tempFolder;
 
   @BeforeEach
   public void setup() throws Exception {
-    List<String> unsortedFileNames = new ArrayList<>();
-    List<Long> unsortedMilliseconds = new ArrayList<>();
+    List<File> unsortedFiles = new ArrayList<>();
     for (int i = 0; i < 100; i++) {
       File tempFile = createTempFile(tempFolder);
       File trnFile = new File(tempFolder, FilenameUtils.getBaseName(tempFile.getName()) + ".trn");
       tempFile.renameTo(trnFile);
-      unsortedFileNames.add(trnFile.getName());
-      unsortedMilliseconds.add(
-          Long.parseLong(trnFile.getName().substring(0, trnFile.getName().lastIndexOf('-'))));
+      unsortedFiles.add(trnFile);
     }
 
-    List<String> tmpList = new ArrayList<>(unsortedFileNames);
-    Collections.sort(tmpList);
-    for (String filename : tmpList) {
-      sortedFileNames.add(filename);
-    }
-
-    List<Long> tmpMillisecondList = new ArrayList<>(unsortedMilliseconds);
-    Collections.sort(tmpMillisecondList);
-    for (Long l : tmpMillisecondList) {
-      sortedMilliseconds.add(l);
+    unsortedFiles.sort(Comparator.comparing(File::lastModified));
+    for (File file : unsortedFiles) {
+      sortedLastModified.add(file.lastModified());
     }
 
     Collection<File> files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);
     assertThat(files.size()).isEqualTo(100);
-    assertThat(sortedFileNames.size()).isEqualTo(sortedMilliseconds.size());
+    assertThat(files.size()).isEqualTo(sortedLastModified.size());
   }
 
   @Test
@@ -78,20 +67,13 @@ public class LocalFileCacheTests {
     LocalFileCache cache = new LocalFileCache(tempFolder);
     Queue<String> sortedPersistedFile = cache.getPersistedFilesCache();
 
-    assertThat(sortedPersistedFile.size()).isEqualTo(sortedFileNames.size());
-    assertThat(sortedPersistedFile.size()).isEqualTo(sortedMilliseconds.size());
+    assertThat(sortedPersistedFile.size()).isEqualTo(sortedLastModified.size());
 
-    while (sortedPersistedFile.peek() != null
-        && sortedFileNames.peek() != null
-        && sortedMilliseconds.peek() != null) {
+    while (sortedPersistedFile.peek() != null && sortedLastModified.peek() != null) {
       String actualFilename = sortedPersistedFile.poll();
-      String expectedFilename = sortedFileNames.poll();
-      assertThat(actualFilename).isEqualTo(expectedFilename);
-
-      Long actualMilliseconds =
-          Long.parseLong(actualFilename.substring(0, actualFilename.lastIndexOf('-')));
-      Long expectedMilliseconds = sortedMilliseconds.poll();
-      assertThat(actualMilliseconds).isEqualTo(expectedMilliseconds);
+      Long actualLastModified = new File(tempFolder, actualFilename).lastModified();
+      Long expectedLastModified = sortedLastModified.poll();
+      assertThat(actualLastModified).isEqualTo(expectedLastModified);
     }
   }
 
