@@ -63,6 +63,7 @@ public class Configuration {
     return str == null || str.trim().isEmpty();
   }
 
+  // TODO (trask) investigate options for mapping lowercase values to otel enum directly
   public enum SpanKind {
     @JsonProperty("server")
     SERVER(io.opentelemetry.api.trace.SpanKind.SERVER),
