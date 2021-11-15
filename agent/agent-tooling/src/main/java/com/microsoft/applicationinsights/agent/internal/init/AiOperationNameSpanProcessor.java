@@ -25,8 +25,6 @@ import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.instrumentation.api.tracer.ConsumerSpan;
-import io.opentelemetry.instrumentation.api.tracer.ServerSpan;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
@@ -36,14 +34,14 @@ public class AiOperationNameSpanProcessor implements SpanProcessor {
 
   @Override
   public void onStart(Context parentContext, ReadWriteSpan span) {
-    Span localRootSpan = ServerSpan.fromContextOrNull(parentContext);
-    if (localRootSpan == null) {
-      localRootSpan = ConsumerSpan.fromContextOrNull(parentContext);
+    Span parentSpan = Span.fromContextOrNull(parentContext);
+    if (parentSpan == null) {
+      return;
     }
-    if (localRootSpan instanceof ReadableSpan) {
-      span.setAttribute(
-          Exporter.AI_OPERATION_NAME_KEY, getOperationName((ReadableSpan) localRootSpan));
+    if (!(parentSpan instanceof ReadableSpan)) {
+      return;
     }
+    span.setAttribute(Exporter.AI_OPERATION_NAME_KEY, getOperationName((ReadableSpan) parentSpan));
   }
 
   @Override
@@ -60,6 +58,17 @@ public class AiOperationNameSpanProcessor implements SpanProcessor {
   }
 
   public static String getOperationName(ReadableSpan serverSpan) {
+
+    String operationName = serverSpan.getAttribute(Exporter.AI_OPERATION_NAME_KEY);
+    if (operationName != null) {
+      return operationName;
+    }
+
+    // TODO (kryalama) remove before committing
+    // if (!serverSpan.getParentSpanContext().isRemote()) {
+    //  System.out.println("something weird happened");
+    // }
+
     String spanName = serverSpan.getName();
     String httpMethod = serverSpan.getAttribute(SemanticAttributes.HTTP_METHOD);
     if (Strings.isNullOrEmpty(httpMethod)) {
