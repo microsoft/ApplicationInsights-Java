@@ -87,7 +87,7 @@ class AiSampler implements Sampler {
       Attributes attributes,
       List<LinkData> parentLinks) {
 
-    MatcherGroup override = samplingOverrides.getOverride(attributes);
+    MatcherGroup override = samplingOverrides.getOverride(spanKind, attributes);
 
     if (override != null) {
       return getSamplingResult(

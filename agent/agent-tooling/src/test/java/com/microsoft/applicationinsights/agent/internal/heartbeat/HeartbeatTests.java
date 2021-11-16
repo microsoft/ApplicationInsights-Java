@@ -86,7 +86,7 @@ class HeartbeatTests {
     provider.initialize(TelemetryClient.createForTest());
 
     // some of the initialization above happens in a separate thread
-    Thread.sleep(100);
+    Thread.sleep(500);
 
     // then
     MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();

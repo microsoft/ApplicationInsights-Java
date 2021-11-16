@@ -7,6 +7,7 @@
     "sampling": {
       "overrides": [
         {
+          "spanKind": "server",
           "attributes": [
             {
               "key": "http.url",
@@ -18,6 +19,7 @@
           "id": "filter out health check"
         },
         {
+          "spanKind": "client",
           "attributes": [
             {
               "key": "db.statement",
