@@ -22,9 +22,12 @@
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
 import java.io.File;
-import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
 
 public class LocalFileCache {
@@ -39,7 +42,7 @@ public class LocalFileCache {
   private final Queue<String> persistedFilesCache = new ConcurrentLinkedDeque<>();
 
   public LocalFileCache(File folder) {
-    Collection<File> files = FileUtils.listFiles(folder, new String[] {"trn"}, false);
+    List<File> files = sortPersistedFiles(folder);
     // existing files are not older than 48 hours and need to get added to the queue to be
     // re-processed.
     // this will avoid data loss in the case of app crashes and restarts.
@@ -60,5 +63,12 @@ public class LocalFileCache {
   // only used by tests
   Queue<String> getPersistedFilesCache() {
     return persistedFilesCache;
+  }
+
+  @Nullable
+  private static List<File> sortPersistedFiles(File folder) {
+    return FileUtils.listFiles(folder, new String[] {"trn"}, false).stream()
+        .sorted(Comparator.comparing(File::lastModified))
+        .collect(Collectors.toList());
   }
 }
