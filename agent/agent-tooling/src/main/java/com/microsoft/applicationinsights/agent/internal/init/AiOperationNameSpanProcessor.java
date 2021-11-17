@@ -64,11 +64,6 @@ public class AiOperationNameSpanProcessor implements SpanProcessor {
       return operationName;
     }
 
-    // TODO (kryalama) remove before committing
-    // if (!serverSpan.getParentSpanContext().isRemote()) {
-    //  System.out.println("something weird happened");
-    // }
-
     String spanName = serverSpan.getName();
     String httpMethod = serverSpan.getAttribute(SemanticAttributes.HTTP_METHOD);
     if (Strings.isNullOrEmpty(httpMethod)) {
