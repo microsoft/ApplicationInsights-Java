@@ -140,7 +140,12 @@ public class StatusFile {
 
   // visible for testing
   static boolean shouldWrite() {
-    return DiagnosticsHelper.useAppSvcRpIntegrationLogging();
+    return DiagnosticsHelper.useAppSvcRpIntegrationLogging() && !isReadOnlyFileSystem();
+  }
+
+  private static boolean isReadOnlyFileSystem() {
+    File dir = new File(directory);
+    return dir.canRead() && !dir.canWrite();
   }
 
   public static <T> void putValueAndWrite(String key, T value) {
