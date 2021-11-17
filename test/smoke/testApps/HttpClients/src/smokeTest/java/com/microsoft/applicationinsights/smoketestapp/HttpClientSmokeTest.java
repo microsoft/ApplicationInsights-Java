@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.smoketestapp;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
@@ -91,6 +92,8 @@ public class HttpClientSmokeTest extends AiSmokeTest {
 
     assertTrue(telemetry.rd.getProperties().isEmpty());
     assertTrue(telemetry.rd.getSuccess());
+    // TODO (trask) add this check in all smoke tests?
+    assertNull(telemetry.rdEnvelope.getSampleRate());
 
     assertEquals("GET /200", telemetry.rdd1.getName());
     assertEquals(successUrlWithQueryString, telemetry.rdd1.getData());
@@ -99,6 +102,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
     assertEquals("200", telemetry.rdd1.getResultCode());
     assertTrue(telemetry.rdd1.getProperties().isEmpty());
     assertTrue(telemetry.rdd1.getSuccess());
+    assertNull(telemetry.rddEnvelope1.getSampleRate());
 
     assertEquals("GET /404", telemetry.rdd2.getName());
     assertEquals("https://mock.codes/404", telemetry.rdd2.getData());
@@ -107,6 +111,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
     assertEquals("404", telemetry.rdd2.getResultCode());
     assertTrue(telemetry.rdd2.getProperties().isEmpty());
     assertFalse(telemetry.rdd2.getSuccess());
+    assertNull(telemetry.rddEnvelope2.getSampleRate());
 
     assertEquals("GET /500", telemetry.rdd3.getName());
     assertEquals("https://mock.codes/500", telemetry.rdd3.getData());
@@ -115,6 +120,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
     assertEquals("500", telemetry.rdd3.getResultCode());
     assertTrue(telemetry.rdd3.getProperties().isEmpty());
     assertFalse(telemetry.rdd3.getSuccess());
+    assertNull(telemetry.rddEnvelope3.getSampleRate());
 
     assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /HttpClients/*");
