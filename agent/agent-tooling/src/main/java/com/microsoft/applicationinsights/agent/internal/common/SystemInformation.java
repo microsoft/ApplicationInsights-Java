@@ -58,7 +58,6 @@ public class SystemInformation {
         String processIdAsString = rawName.substring(0, i);
         try {
           Integer.parseInt(processIdAsString);
-          logger.debug("Current PID: " + processIdAsString);
           return processIdAsString;
         } catch (RuntimeException e) {
           logger.error("Failed to fetch process id: '{}'", e.toString());
