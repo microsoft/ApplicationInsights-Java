@@ -113,10 +113,10 @@ public class IntegrationTests {
     }
 
     ExecutorService executorService = Executors.newFixedThreadPool(10);
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 10; i++) {
       executorService.execute(
           () -> {
-            for (int j = 0; j < 1; j++) {
+            for (int j = 0; j < 10; j++) {
               CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
               completableResultCode.join(10, SECONDS);
               assertThat(completableResultCode.isSuccess()).isFalse();
@@ -126,9 +126,9 @@ public class IntegrationTests {
 
     executorService.shutdown();
     executorService.awaitTermination(10, TimeUnit.MINUTES);
-    assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(1);
+    assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(100);
 
-    for (int i = 1; i > 0; i--) {
+    for (int i = 100; i > 0; i--) {
       LocalFileLoader.PersistedFile file = localFileLoader.loadTelemetriesFromDisk();
       assertThat(ungzip(file.rawBytes.array()))
           .isEqualTo(new String(getByteBufferFromFile("ungzip-source.txt").array(), UTF_8));
