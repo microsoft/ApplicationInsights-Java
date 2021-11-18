@@ -34,7 +34,7 @@ public class Envelope {
   private String time;
 
   /** Backing field for property SampleRate. */
-  private double sampleRate = 100.0;
+  private Float sampleRate;
 
   /** Backing field for property IKey. */
   @SuppressWarnings("checkstyle:MemberName")
@@ -64,11 +64,11 @@ public class Envelope {
   }
 
   /** Sets the SampleRate property. */
-  public void setSampleRate(double value) {
+  public void setSampleRate(Float value) {
     this.sampleRate = value;
   }
 
-  public double getSampleRate() {
+  public Float getSampleRate() {
     return sampleRate;
   }
 

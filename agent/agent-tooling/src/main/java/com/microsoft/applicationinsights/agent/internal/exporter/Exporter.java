@@ -988,7 +988,9 @@ public class Exporter implements SpanExporter {
   }
 
   private static void setSampleRate(TelemetryItem telemetry, float samplingPercentage) {
-    telemetry.setSampleRate(samplingPercentage);
+    if (samplingPercentage != 100) {
+      telemetry.setSampleRate(samplingPercentage);
+    }
   }
 
   private static float getSamplingPercentage(TraceState traceState) {
