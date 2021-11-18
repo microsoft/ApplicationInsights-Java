@@ -121,9 +121,11 @@ public class MainEntryPoint {
           StatusFile.putValueAndWrite(
               "AgentInitializedSuccessfully", success, startupLogger != null);
         } else {
-          startupLogger.info(
-              "Detected running on a read-only file system. Status json file won't be created. If this is unexpected, please check that process has write access to the directory: {}",
-              StatusFile.directory);
+          if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
+            startupLogger.info(
+                "Detected running on a read-only file system. Status json file won't be created. If this is unexpected, please check that process has write access to the directory: {}",
+                StatusFile.directory);
+          }
         }
       } catch (Throwable t) {
         if (startupLogger != null) {
