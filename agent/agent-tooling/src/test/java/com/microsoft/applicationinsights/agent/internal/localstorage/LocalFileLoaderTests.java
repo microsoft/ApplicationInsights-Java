@@ -25,6 +25,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -32,6 +33,7 @@ import com.azure.core.http.HttpClient;
 import com.azure.core.http.HttpPipelineBuilder;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
+import com.azure.core.util.Context;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.agent.internal.MockHttpResponse;
@@ -283,10 +285,11 @@ public class LocalFileLoaderTests {
   @Test
   public void testDeleteFilePermanentlyOnFailure() throws Exception {
     HttpClient mockedClient = mock(HttpClient.class);
-    HttpRequest mockedRequest = mock(HttpRequest.class);
-    HttpResponse mockedResponse = mock(HttpResponse.class);
-    when(mockedResponse.getStatusCode()).thenReturn(500);
-    when(mockedClient.send(mockedRequest)).thenReturn(Mono.just(mockedResponse));
+    when(mockedClient.send(any(HttpRequest.class), any(Context.class)))
+        .then(
+            invocation ->
+                Mono.error(
+                    () -> new Exception("this is expected to be logged by the operation logger")));
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
     LocalFileCache localFileCache = new LocalFileCache(tempFolder);
 

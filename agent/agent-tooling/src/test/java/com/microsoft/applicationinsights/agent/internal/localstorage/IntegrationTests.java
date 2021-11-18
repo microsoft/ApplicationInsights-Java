@@ -37,13 +37,12 @@ import com.microsoft.applicationinsights.agent.internal.common.TestUtils;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryChannel;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
@@ -179,17 +178,9 @@ public class IntegrationTests {
   }
 
   private static String ungzip(byte[] rawBytes) throws Exception {
-    GZIPInputStream gzipInputStream = new GZIPInputStream(new ByteArrayInputStream(rawBytes));
-    BufferedReader bufferedReader =
-        new BufferedReader(new InputStreamReader(gzipInputStream, "UTF-8"));
-    String result = "";
-    String line;
-    while ((line = bufferedReader.readLine()) != null) {
-      result += line;
+    try (GZIPInputStream in = new GZIPInputStream(new ByteArrayInputStream(rawBytes))) {
+      BufferedSource source = Okio.buffer(Okio.source(in));
+      return source.readString(StandardCharsets.UTF_8);
     }
-
-    bufferedReader.close();
-    gzipInputStream.close();
-    return result;
   }
 }

@@ -30,6 +30,7 @@ import com.azure.core.util.Context;
 import com.azure.core.util.tracing.Tracer;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.microsoft.applicationinsights.agent.internal.common.NetworkFriendlyExceptions;
@@ -43,11 +44,11 @@ import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbe
 import io.opentelemetry.instrumentation.api.caching.Cache;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -149,15 +150,19 @@ public class TelemetryChannel {
   }
 
   List<ByteBuffer> encode(List<TelemetryItem> telemetryItems) throws IOException {
+
+    if (logger.isDebugEnabled()) {
+      StringWriter debug = new StringWriter();
+      try (JsonGenerator jg = mapper.createGenerator(debug)) {
+        writeTelemetryItems(jg, telemetryItems);
+      }
+      logger.debug("sending telemetry to ingestion service:\n{}", debug);
+    }
+
     ByteBufferOutputStream out = new ByteBufferOutputStream(byteBufferPool);
 
     try (JsonGenerator jg = mapper.createGenerator(new GZIPOutputStream(out))) {
-      for (Iterator<TelemetryItem> i = telemetryItems.iterator(); i.hasNext(); ) {
-        mapper.writeValue(jg, i.next());
-        if (i.hasNext()) {
-          jg.writeRaw('\n');
-        }
-      }
+      writeTelemetryItems(jg, telemetryItems);
     } catch (IOException e) {
       byteBufferPool.offer(out.getByteBuffers());
       throw e;
@@ -170,6 +175,14 @@ public class TelemetryChannel {
       byteBuffer.flip();
     }
     return byteBuffers;
+  }
+
+  private static void writeTelemetryItems(JsonGenerator jg, List<TelemetryItem> telemetryItems)
+      throws IOException {
+    jg.setRootValueSeparator(new SerializedString("\n"));
+    for (TelemetryItem telemetryItem : telemetryItems) {
+      mapper.writeValue(jg, telemetryItem);
+    }
   }
 
   /**
