@@ -175,10 +175,16 @@ class StatusFileTests {
     StatusFile.directory = tempFolder.getAbsolutePath();
     assertThat(tempFolder.isDirectory()).isTrue();
     assertThat(tempFolder.list()).isEmpty();
-    StatusFile.write();
+    StatusFile.shouldWrite =
+        DiagnosticsHelper.useAppSvcRpIntegrationLogging() && tempFolder.canWrite();
+    if (StatusFile.shouldWrite) {
+      StatusFile.write();
+    }
     pauseForFileWrite();
     assertThat(tempFolder.list()).isEmpty();
-    StatusFile.putValueAndWrite("shouldNot", "write");
+    if (StatusFile.shouldWrite) {
+      StatusFile.putValueAndWrite("shouldNot", "write");
+    }
     pauseForFileWrite();
     assertThat(tempFolder.list()).isEmpty();
   }

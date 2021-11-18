@@ -81,11 +81,9 @@ public class StatusFile {
   // visible for testing
   static String logDir;
 
-  // visible for testing
-  static String directory;
+  public static String directory;
 
-  // visible for testing
-  static boolean shouldWrite;
+  public static boolean shouldWrite;
 
   private static final Object lock = new Object();
 
@@ -114,12 +112,6 @@ public class StatusFile {
     directory = logDir + STATUS_FILE_DIRECTORY;
     shouldWrite =
         DiagnosticsHelper.useAppSvcRpIntegrationLogging() && new File(directory).canWrite();
-    if (!shouldWrite) {
-      LoggerFactory.getLogger(StatusFile.class)
-          .info(
-              "Detected running on a read-only file system. Status json file won't be created. If this is unexpected, please check that process has write access to the directory: {}",
-              directory);
-    }
   }
 
   private static Thread newThread(Runnable r) {
@@ -154,17 +146,11 @@ public class StatusFile {
   }
 
   public static <T> void putValueAndWrite(String key, T value, boolean loggingInitialized) {
-    if (!shouldWrite) {
-      return;
-    }
     CONSTANT_VALUES.put(key, value);
     write(loggingInitialized);
   }
 
   public static <T> void putValue(String key, T value) {
-    if (!shouldWrite) {
-      return;
-    }
     CONSTANT_VALUES.put(key, value);
   }
 
@@ -174,9 +160,6 @@ public class StatusFile {
 
   @SuppressWarnings("SystemOut")
   private static void write(boolean loggingInitialized) {
-    if (!shouldWrite) {
-      return;
-    }
     WRITER_THREAD.submit(
         new Runnable() {
           @Override
