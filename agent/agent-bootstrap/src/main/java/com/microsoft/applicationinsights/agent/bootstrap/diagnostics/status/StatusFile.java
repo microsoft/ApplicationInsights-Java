@@ -84,6 +84,9 @@ public class StatusFile {
   // visible for testing
   static String directory;
 
+  // visible for testing
+  static boolean shouldWrite;
+
   private static final Object lock = new Object();
 
   // guarded by lock
@@ -109,6 +112,14 @@ public class StatusFile {
 
     logDir = initLogDir();
     directory = logDir + STATUS_FILE_DIRECTORY;
+    shouldWrite =
+        DiagnosticsHelper.useAppSvcRpIntegrationLogging() && new File(directory).canWrite();
+    if (!shouldWrite) {
+      LoggerFactory.getLogger(StatusFile.class)
+          .info(
+              "Detected running on a read-only file system. Status json file won't be created. If this is unexpected, please check that process has write access to the directory: {}",
+              directory);
+    }
   }
 
   private static Thread newThread(Runnable r) {
@@ -138,22 +149,12 @@ public class StatusFile {
 
   private StatusFile() {}
 
-  // visible for testing
-  static boolean shouldWrite() {
-    return DiagnosticsHelper.useAppSvcRpIntegrationLogging() && !isReadOnlyFileSystem();
-  }
-
-  private static boolean isReadOnlyFileSystem() {
-    File dir = new File(directory);
-    return dir.canRead() && !dir.canWrite();
-  }
-
   public static <T> void putValueAndWrite(String key, T value) {
     putValueAndWrite(key, value, true);
   }
 
   public static <T> void putValueAndWrite(String key, T value, boolean loggingInitialized) {
-    if (!shouldWrite()) {
+    if (!shouldWrite) {
       return;
     }
     CONSTANT_VALUES.put(key, value);
@@ -161,7 +162,7 @@ public class StatusFile {
   }
 
   public static <T> void putValue(String key, T value) {
-    if (!shouldWrite()) {
+    if (!shouldWrite) {
       return;
     }
     CONSTANT_VALUES.put(key, value);
@@ -173,7 +174,7 @@ public class StatusFile {
 
   @SuppressWarnings("SystemOut")
   private static void write(boolean loggingInitialized) {
-    if (!shouldWrite()) {
+    if (!shouldWrite) {
       return;
     }
     WRITER_THREAD.submit(
