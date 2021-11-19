@@ -177,14 +177,10 @@ class StatusFileTests {
     assertThat(tempFolder.list()).isEmpty();
     StatusFile.shouldWrite =
         DiagnosticsHelper.useAppSvcRpIntegrationLogging() && tempFolder.canWrite();
-    if (StatusFile.shouldWrite) {
-      StatusFile.write();
-    }
+    StatusFile.write();
     pauseForFileWrite();
     assertThat(tempFolder.list()).isEmpty();
-    if (StatusFile.shouldWrite) {
-      StatusFile.putValueAndWrite("shouldNot", "write");
-    }
+    StatusFile.putValueAndWrite("shouldNot", "write");
     pauseForFileWrite();
     assertThat(tempFolder.list()).isEmpty();
   }
