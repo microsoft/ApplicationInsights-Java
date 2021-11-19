@@ -85,8 +85,7 @@ public class StatusFile {
   // visible for testing
   static String directory;
 
-  // visible for testing
-  static boolean shouldWrite;
+  private static final boolean isReadOnly;
 
   private static final AtomicBoolean alreadyLogged = new AtomicBoolean();
 
@@ -117,8 +116,8 @@ public class StatusFile {
 
     logDir = initLogDir();
     directory = logDir + STATUS_FILE_DIRECTORY;
-    shouldWrite =
-        DiagnosticsHelper.useAppSvcRpIntegrationLogging() && new File(directory).canWrite();
+    File dir = new File(directory);
+    isReadOnly = dir.canRead() && !dir.canWrite();
   }
 
   private static Thread newThread(Runnable r) {
@@ -159,12 +158,16 @@ public class StatusFile {
     }
   }
 
+  private static boolean shouldWrite() {
+    return DiagnosticsHelper.useAppSvcRpIntegrationLogging() && !isReadOnly;
+  }
+
   public static <T> void putValueAndWrite(String key, T value) {
     putValueAndWrite(key, value, true);
   }
 
   public static <T> void putValueAndWrite(String key, T value, boolean loggingInitialized) {
-    if (!shouldWrite) {
+    if (!shouldWrite()) {
       logReadOnlyOnce();
       return;
     }
@@ -173,7 +176,7 @@ public class StatusFile {
   }
 
   public static <T> void putValue(String key, T value) {
-    if (!shouldWrite) {
+    if (!shouldWrite()) {
       logReadOnlyOnce();
       return;
     }
@@ -186,7 +189,7 @@ public class StatusFile {
 
   @SuppressWarnings("SystemOut")
   private static void write(boolean loggingInitialized) {
-    if (!shouldWrite) {
+    if (!shouldWrite()) {
       logReadOnlyOnce();
       return;
     }

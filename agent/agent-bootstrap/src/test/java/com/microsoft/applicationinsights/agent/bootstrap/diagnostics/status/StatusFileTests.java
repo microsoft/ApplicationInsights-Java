@@ -142,8 +142,6 @@ class StatusFileTests {
     assertThat(tempFolder.list()).isEmpty();
 
     StatusFile.directory = tempFolder.getAbsolutePath();
-    StatusFile.shouldWrite =
-        DiagnosticsHelper.useAppSvcRpIntegrationLogging() && tempFolder.canWrite();
     StatusFile.write();
     pauseForFileWrite();
 
@@ -175,8 +173,6 @@ class StatusFileTests {
     StatusFile.directory = tempFolder.getAbsolutePath();
     assertThat(tempFolder.isDirectory()).isTrue();
     assertThat(tempFolder.list()).isEmpty();
-    StatusFile.shouldWrite =
-        DiagnosticsHelper.useAppSvcRpIntegrationLogging() && tempFolder.canWrite();
     StatusFile.write();
     pauseForFileWrite();
     assertThat(tempFolder.list()).isEmpty();
@@ -192,8 +188,6 @@ class StatusFileTests {
       DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(true);
 
       StatusFile.directory = tempFolder.getAbsolutePath();
-      StatusFile.shouldWrite =
-          DiagnosticsHelper.useAppSvcRpIntegrationLogging() && tempFolder.canWrite();
       assertThat(tempFolder.isDirectory()).isTrue();
       assertThat(tempFolder.list()).isEmpty();
       StatusFile.write();
