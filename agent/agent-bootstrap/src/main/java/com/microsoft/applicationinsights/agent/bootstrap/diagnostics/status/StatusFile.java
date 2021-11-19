@@ -147,19 +147,20 @@ public class StatusFile {
 
   private StatusFile() {}
 
-  private static void logReadOnlyOnce() {
-    if (!alreadyLogged.get()) {
-      if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
-        startupLogger.info(
-            "Detected running on a read-only file system. Status json file won't be created. If this is unexpected, please check that process has write access to the directory: {}",
-            directory);
-        alreadyLogged.set(true);
-      }
-    }
-  }
-
   private static boolean shouldWrite() {
-    return DiagnosticsHelper.useAppSvcRpIntegrationLogging() && !isReadOnly;
+    if (!DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
+      return false;
+    }
+    if (!isReadOnly) {
+      return true;
+    }
+    // read-only app services, want to log warning once in this case
+    if (!alreadyLogged.getAndSet(true)) {
+      startupLogger.info(
+          "Detected running on a read-only file system. Status json file won't be created. If this is unexpected, please check that process has write access to the directory: {}",
+          directory);
+    }
+    return false;
   }
 
   public static <T> void putValueAndWrite(String key, T value) {
@@ -168,7 +169,6 @@ public class StatusFile {
 
   public static <T> void putValueAndWrite(String key, T value, boolean loggingInitialized) {
     if (!shouldWrite()) {
-      logReadOnlyOnce();
       return;
     }
     CONSTANT_VALUES.put(key, value);
@@ -177,7 +177,6 @@ public class StatusFile {
 
   public static <T> void putValue(String key, T value) {
     if (!shouldWrite()) {
-      logReadOnlyOnce();
       return;
     }
     CONSTANT_VALUES.put(key, value);
@@ -190,7 +189,6 @@ public class StatusFile {
   @SuppressWarnings("SystemOut")
   private static void write(boolean loggingInitialized) {
     if (!shouldWrite()) {
-      logReadOnlyOnce();
       return;
     }
     WRITER_THREAD.submit(
