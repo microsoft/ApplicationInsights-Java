@@ -82,8 +82,10 @@ public class StatusFile {
   // visible for testing
   static String logDir;
 
-  public static String directory;
+  // visible for testing
+  static String directory;
 
+  // visible for testing
   static boolean shouldWrite;
 
   private static final AtomicBoolean alreadyLogged = new AtomicBoolean();
