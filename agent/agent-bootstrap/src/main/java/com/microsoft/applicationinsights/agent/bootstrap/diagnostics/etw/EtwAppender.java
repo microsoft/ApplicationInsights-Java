@@ -62,33 +62,14 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
       LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME).error(message, e);
       addError(message, e);
 
-      if (StatusFile.shouldWrite) {
-        StatusFile.putValue("EtwProviderInitialized", "false");
-        StatusFile.putValue("EtwProviderError", e.getLocalizedMessage());
-        StatusFile.write();
-      } else {
-        if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
-          LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
-              .info(
-                  "Detected running on a read-only file system. Status json file won't be created. If this is unexpected, please check that process has write access to the directory: {}",
-                  StatusFile.directory);
-        }
-      }
+      StatusFile.putValue("EtwProviderInitialized", "false");
+      StatusFile.putValue("EtwProviderError", e.getLocalizedMessage());
+      StatusFile.write();
 
       return; // appender fails to start
     }
 
-    if (StatusFile.shouldWrite) {
-      StatusFile.putValueAndWrite("EtwProviderInitialized", "true");
-    } else {
-      if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
-        LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
-            .info(
-                "Detected running on a read-only file system. Status json file won't be created. If this is unexpected, please check that process has write access to the directory: {}",
-                StatusFile.directory);
-      }
-    }
-
+    StatusFile.putValueAndWrite("EtwProviderInitialized", "true");
     super.start();
   }
 

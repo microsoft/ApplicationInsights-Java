@@ -89,6 +89,7 @@ public class MainEntryPoint {
       rpConfiguration = RpConfigurationBuilder.create(agentPath);
       configuration = ConfigurationBuilder.create(agentPath, rpConfiguration);
       startupLogger = configureLogging(configuration.selfDiagnostics, agentPath);
+      StatusFile.startupLogger = startupLogger;
       ConfigurationBuilder.logConfigurationWarnMessages();
       MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
       // TODO convert to agent builder concept
@@ -117,16 +118,7 @@ public class MainEntryPoint {
 
     } finally {
       try {
-        if (StatusFile.shouldWrite) {
-          StatusFile.putValueAndWrite(
-              "AgentInitializedSuccessfully", success, startupLogger != null);
-        } else {
-          if (DiagnosticsHelper.useAppSvcRpIntegrationLogging() && startupLogger != null) {
-            startupLogger.info(
-                "Detected running on a read-only file system. Status json file won't be created. If this is unexpected, please check that process has write access to the directory: {}",
-                StatusFile.directory);
-          }
-        }
+        StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success, startupLogger != null);
       } catch (Throwable t) {
         if (startupLogger != null) {
           startupLogger.error("Error writing status.json", t);

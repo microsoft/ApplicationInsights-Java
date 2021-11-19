@@ -47,7 +47,6 @@ import static net.bytebuddy.jar.asm.Opcodes.ISTORE;
 import static net.bytebuddy.jar.asm.Opcodes.NEW;
 import static net.bytebuddy.jar.asm.Opcodes.RETURN;
 
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
@@ -87,16 +86,9 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       return null;
     }
 
-    if (StatusFile.shouldWrite) {
-      StatusFile.putValueAndWrite(
-          "SDKPresent", true); // TODO (heya) track this via FeatureStatsbeat
-    } else {
-      if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
-        logger.info(
-            "Detected running on a read-only file system. Status json file won't be created. If this is unexpected, please check that process has write access to the directory: {}",
-            StatusFile.directory);
-      }
-    }
+    // TODO (heya) track this via FeatureStatsbeat
+    StatusFile.putValueAndWrite("SDKPresent", true);
+
     try {
       ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
       TelemetryClientClassVisitor cv = new TelemetryClientClassVisitor(cw);

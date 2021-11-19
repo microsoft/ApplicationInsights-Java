@@ -41,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import okio.BufferedSink;
 import okio.Okio;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -83,7 +84,9 @@ public class StatusFile {
 
   public static String directory;
 
-  public static boolean shouldWrite;
+  static boolean shouldWrite;
+
+  private static final AtomicBoolean alreadyLogged = new AtomicBoolean();
 
   private static final Object lock = new Object();
 
@@ -92,6 +95,8 @@ public class StatusFile {
 
   // guarded by lock
   private static BufferedSink buffer;
+
+  public static Logger startupLogger;
 
   private static final ThreadPoolExecutor WRITER_THREAD =
       new ThreadPoolExecutor(
@@ -141,16 +146,35 @@ public class StatusFile {
 
   private StatusFile() {}
 
+  private static void logReadOnlyOnce() {
+    if (!alreadyLogged.get()) {
+      if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
+        startupLogger.info(
+            "Detected running on a read-only file system. Status json file won't be created. If this is unexpected, please check that process has write access to the directory: {}",
+            directory);
+        alreadyLogged.set(true);
+      }
+    }
+  }
+
   public static <T> void putValueAndWrite(String key, T value) {
     putValueAndWrite(key, value, true);
   }
 
   public static <T> void putValueAndWrite(String key, T value, boolean loggingInitialized) {
+    if (!shouldWrite) {
+      logReadOnlyOnce();
+      return;
+    }
     CONSTANT_VALUES.put(key, value);
     write(loggingInitialized);
   }
 
   public static <T> void putValue(String key, T value) {
+    if (!shouldWrite) {
+      logReadOnlyOnce();
+      return;
+    }
     CONSTANT_VALUES.put(key, value);
   }
 
@@ -160,6 +184,10 @@ public class StatusFile {
 
   @SuppressWarnings("SystemOut")
   private static void write(boolean loggingInitialized) {
+    if (!shouldWrite) {
+      logReadOnlyOnce();
+      return;
+    }
     WRITER_THREAD.submit(
         new Runnable() {
           @Override
