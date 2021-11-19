@@ -35,7 +35,7 @@ import org.checkerframework.checker.lock.qual.GuardedBy;
 public class NetworkStatsbeat extends BaseStatsbeat {
 
   private static final String REQUEST_SUCCESS_COUNT_METRIC_NAME = "Request Success Count";
-  private static final String REQUEST_FAILURE_COUNT_METRIC_NAME = "Requests Failure Count ";
+  private static final String REQUEST_FAILURE_COUNT_METRIC_NAME = "Requests Failure Count";
   private static final String REQUEST_DURATION_METRIC_NAME = "Request Duration";
   private static final String RETRY_COUNT_METRIC_NAME = "Retry Count";
   private static final String THROTTLE_COUNT_METRIC_NAME = "Throttle Count";
