@@ -116,7 +116,7 @@ public class StatusFile {
 
     logDir = initLogDir();
     directory = logDir + STATUS_FILE_DIRECTORY;
-    File dir = new File(directory);
+    File dir = new File(logDir);
     isReadOnly = dir.canRead() && !dir.canWrite();
   }
 
