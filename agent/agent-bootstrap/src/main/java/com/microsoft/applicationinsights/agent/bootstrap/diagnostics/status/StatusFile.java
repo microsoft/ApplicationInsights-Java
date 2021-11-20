@@ -97,7 +97,7 @@ public class StatusFile {
   // guarded by lock
   private static BufferedSink buffer;
 
-  public static Logger startupLogger;
+  @Nullable public static Logger startupLogger;
 
   private static final ThreadPoolExecutor WRITER_THREAD =
       new ThreadPoolExecutor(
@@ -155,7 +155,7 @@ public class StatusFile {
       return true;
     }
     // read-only app services, want to log warning once in this case
-    if (!alreadyLogged.getAndSet(true)) {
+    if (startupLogger != null && !alreadyLogged.getAndSet(true)) {
       startupLogger.info(
           "Detected running on a read-only file system. Status json file won't be created. If this is unexpected, please check that process has write access to the directory: {}",
           directory);
