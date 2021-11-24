@@ -247,10 +247,11 @@ public class TelemetryChannel {
               }
             },
             error -> {
-              NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
-                  error, endpointUrl.toString(), friendlyExceptionThrown, logger);
-              operationLogger.recordFailure(
-                  "Error sending telemetry items: " + error.getMessage(), error);
+              if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
+                  error, endpointUrl.toString(), friendlyExceptionThrown, logger)) {
+                operationLogger.recordFailure(
+                    "Error sending telemetry items: " + error.getMessage(), error);
+              }
 
               // networkStatsbeat is null when it's sending a Statsbeat request.
               if (networkStatsbeat != null) {
