@@ -83,9 +83,9 @@
         "type": "attribute",
         "actions": [
           {
-            "key": "http.url",
-            "pattern": "https?://[^/]+(?<httpPath>/[^?]*)",
-            "replace": "$httpPath",
+            "key": "httpPath",
+            "pattern": "(?<httpPath>.*)",
+            "replace": "*$httpPath*",
             "action": "mask"
           }
         ],
