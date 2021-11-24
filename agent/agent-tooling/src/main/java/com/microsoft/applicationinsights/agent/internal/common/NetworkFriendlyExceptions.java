@@ -31,24 +31,25 @@ import org.slf4j.Logger;
 
 public class NetworkFriendlyExceptions {
 
-  public static void logSpecialOneTimeFriendlyException(
+  // returns true if the exception was "handled" and the caller should not log it
+  public static boolean logSpecialOneTimeFriendlyException(
       Throwable error, String url, AtomicBoolean alreadySeen, Logger logger) {
-    if (alreadySeen.get()) {
-      return;
-    }
     // Handle SSL cert exceptions
     SSLHandshakeException sslException = getCausedByOfType(error, SSLHandshakeException.class);
-    if (sslException != null && !alreadySeen.getAndSet(true)) {
-      logger.error(getSslFriendlyMessage(url));
-      return;
+    if (sslException != null) {
+      if (!alreadySeen.getAndSet(true)) {
+        logger.error(getSslFriendlyMessage(url));
+      }
+      return true;
     }
     UnknownHostException unknownHostException =
         getCausedByOfType(error, UnknownHostException.class);
     if (unknownHostException != null && !alreadySeen.getAndSet(true)) {
       // TODO log friendly message with instructions how to troubleshoot
       //  e.g. wrong host address or cannot reach address due to network issues...
-      return;
+      return false;
     }
+    return false;
   }
 
   private static <T extends Exception> T getCausedByOfType(Throwable throwable, Class<T> type) {
