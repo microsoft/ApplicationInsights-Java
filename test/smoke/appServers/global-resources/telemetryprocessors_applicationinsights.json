@@ -80,6 +80,18 @@
         "id": "attributes/extract"
       },
       {
+        "type": "attribute",
+        "actions": [
+          {
+            "key": "http.url",
+            "pattern": "https?://[^/]+(?<httpPath>/[^?]*)",
+            "replace": "$httpPath",
+            "action": "mask"
+          }
+        ],
+        "id": "attributes/mask"
+      },
+      {
         "type": "log",
         "body": {
           "fromAttributes": [

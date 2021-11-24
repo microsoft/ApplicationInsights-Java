@@ -59,6 +59,7 @@ public class SpringBootAutoTest extends AiSmokeTest {
     assertEquals("redacted", telemetry.rd.getProperties().get("sensitiveAttribute1"));
     assertEquals(
         "/TelemetryProcessors/sensitivedata", telemetry.rd.getProperties().get("httpPath"));
+    assertEquals("/TelemetryProcessors/sensitivedata", telemetry.rd.getUrl());
     assertEquals(4, telemetry.rd.getProperties().size());
     assertTrue(telemetry.rd.getSuccess());
   }

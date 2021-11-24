@@ -70,7 +70,7 @@ class ExporterWithAttributeProcessorTest {
     config.include.matchType = MatchType.STRICT;
     config.include.spanNames = asList("svcA", "svcB");
     ProcessorAction action =
-        new ProcessorAction("testKey", ProcessorActionType.UPDATE, null, null, null);
+        new ProcessorAction("testKey", ProcessorActionType.UPDATE, null, null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
@@ -89,7 +89,7 @@ class ExporterWithAttributeProcessorTest {
     config.include.matchType = MatchType.STRICT;
     config.include.spanNames = asList("svcA", "svcB");
     ProcessorAction action =
-        new ProcessorAction("testKey", ProcessorActionType.UPDATE, null, null, null);
+        new ProcessorAction("testKey", ProcessorActionType.UPDATE, null, null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
@@ -105,7 +105,7 @@ class ExporterWithAttributeProcessorTest {
     config.type = ProcessorType.ATTRIBUTE;
     config.id = "actionDelete";
     ProcessorAction action =
-        new ProcessorAction("testKey", ProcessorActionType.DELETE, null, null, null);
+        new ProcessorAction("testKey", ProcessorActionType.DELETE, null, null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
@@ -142,7 +142,8 @@ class ExporterWithAttributeProcessorTest {
     config.type = ProcessorType.ATTRIBUTE;
     config.id = "actionInsert";
     ProcessorAction action =
-        new ProcessorAction("testNewKey", ProcessorActionType.INSERT, "testNewValue", null, null);
+        new ProcessorAction(
+            "testNewKey", ProcessorActionType.INSERT, "testNewValue", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
@@ -179,9 +180,11 @@ class ExporterWithAttributeProcessorTest {
     config.type = ProcessorType.ATTRIBUTE;
     config.id = "actionInsertAndUpdate";
     ProcessorAction action =
-        new ProcessorAction("testNewKey", ProcessorActionType.INSERT, "testNewValue", null, null);
+        new ProcessorAction(
+            "testNewKey", ProcessorActionType.INSERT, "testNewValue", null, null, null);
     ProcessorAction updateAction =
-        new ProcessorAction("testKey", ProcessorActionType.UPDATE, "testNewValue2", null, null);
+        new ProcessorAction(
+            "testKey", ProcessorActionType.UPDATE, "testNewValue2", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     actions.add(updateAction);
@@ -221,9 +224,11 @@ class ExporterWithAttributeProcessorTest {
     config.type = ProcessorType.ATTRIBUTE;
     config.id = "actionInsertAndUpdate";
     ProcessorAction action =
-        new ProcessorAction("testNewKey", ProcessorActionType.INSERT, "testNewValue", null, null);
+        new ProcessorAction(
+            "testNewKey", ProcessorActionType.INSERT, "testNewValue", null, null, null);
     ProcessorAction updateAction =
-        new ProcessorAction("testNewKey", ProcessorActionType.UPDATE, "testNewValue2", null, null);
+        new ProcessorAction(
+            "testNewKey", ProcessorActionType.UPDATE, "testNewValue2", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     actions.add(updateAction);
@@ -261,7 +266,8 @@ class ExporterWithAttributeProcessorTest {
     config.type = ProcessorType.ATTRIBUTE;
     config.id = "actionInsertWithDuplicate";
     ProcessorAction action =
-        new ProcessorAction("testNewKey", ProcessorActionType.INSERT, "testNewValue", null, null);
+        new ProcessorAction(
+            "testNewKey", ProcessorActionType.INSERT, "testNewValue", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
@@ -300,7 +306,7 @@ class ExporterWithAttributeProcessorTest {
     config.type = ProcessorType.ATTRIBUTE;
     config.id = "actionInsertFromAttribute";
     ProcessorAction action =
-        new ProcessorAction("testKey3", ProcessorActionType.INSERT, null, "testKey2", null);
+        new ProcessorAction("testKey3", ProcessorActionType.INSERT, null, "testKey2", null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
@@ -340,7 +346,7 @@ class ExporterWithAttributeProcessorTest {
     config.type = ProcessorType.ATTRIBUTE;
     config.id = "actionSimpleUpdate";
     ProcessorAction action =
-        new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null);
+        new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
@@ -391,7 +397,7 @@ class ExporterWithAttributeProcessorTest {
     config.type = ProcessorType.ATTRIBUTE;
     config.id = "actionUpdateFromAttributeUpdate";
     ProcessorAction action =
-        new ProcessorAction("testKey", ProcessorActionType.UPDATE, null, "testKey2", null);
+        new ProcessorAction("testKey", ProcessorActionType.UPDATE, null, "testKey2", null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
@@ -427,9 +433,9 @@ class ExporterWithAttributeProcessorTest {
     config.type = ProcessorType.ATTRIBUTE;
     config.id = "complexAction";
     ProcessorAction updateAction =
-        new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null);
+        new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null, null);
     ProcessorAction deleteAction =
-        new ProcessorAction("testKey2", ProcessorActionType.DELETE, null, null, null);
+        new ProcessorAction("testKey2", ProcessorActionType.DELETE, null, null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(updateAction);
     actions.add(deleteAction);
@@ -470,7 +476,7 @@ class ExporterWithAttributeProcessorTest {
     config.include.matchType = MatchType.STRICT;
     config.include.spanNames = asList("svcA", "svcB");
     ProcessorAction action =
-        new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null);
+        new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
@@ -539,7 +545,7 @@ class ExporterWithAttributeProcessorTest {
     config.include.matchType = MatchType.STRICT;
     config.include.spanNames = asList("svcA", "svcB");
     ProcessorAction action =
-        new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null);
+        new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
@@ -622,7 +628,7 @@ class ExporterWithAttributeProcessorTest {
     config.include.matchType = MatchType.REGEXP;
     config.include.spanNames = asList("svc.*", "test.*");
     ProcessorAction action =
-        new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null);
+        new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
@@ -691,7 +697,7 @@ class ExporterWithAttributeProcessorTest {
     config.include.matchType = MatchType.REGEXP;
     config.include.spanNames = Collections.singletonList("***");
     ProcessorAction action =
-        new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null);
+        new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
@@ -715,7 +721,7 @@ class ExporterWithAttributeProcessorTest {
     config.include.attributes = new ArrayList<>();
     config.include.attributes.add(attributeWithValue);
     ProcessorAction action =
-        new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null);
+        new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
@@ -799,7 +805,7 @@ class ExporterWithAttributeProcessorTest {
     config.include.attributes = new ArrayList<>();
     config.include.attributes.add(attributeWithNoValue);
     ProcessorAction action =
-        new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null);
+        new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
@@ -879,7 +885,7 @@ class ExporterWithAttributeProcessorTest {
     config.include.matchType = MatchType.STRICT;
     config.include.spanNames = asList("svcA", "svcB", "svcC");
     ProcessorAction action =
-        new ProcessorAction("testKey", ProcessorActionType.HASH, null, null, null);
+        new ProcessorAction("testKey", ProcessorActionType.HASH, null, null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
@@ -948,7 +954,7 @@ class ExporterWithAttributeProcessorTest {
     config.exclude.matchType = MatchType.STRICT;
     config.exclude.spanNames = asList("svcA", "svcB");
     ProcessorAction action =
-        new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null);
+        new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
@@ -1017,7 +1023,7 @@ class ExporterWithAttributeProcessorTest {
     config.exclude.matchType = MatchType.REGEXP;
     config.exclude.spanNames = Collections.singletonList("svc.*");
     ProcessorAction action =
-        new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null);
+        new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
@@ -1097,7 +1103,7 @@ class ExporterWithAttributeProcessorTest {
     config.include.attributes.add(attributeWithValue);
     config.include.attributes.add(attributeWithNoValue);
     ProcessorAction action =
-        new ProcessorAction("testKey", ProcessorActionType.DELETE, null, null, null);
+        new ProcessorAction("testKey", ProcessorActionType.DELETE, null, null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
@@ -1173,7 +1179,7 @@ class ExporterWithAttributeProcessorTest {
     attributeWithNoValue.key = "testKey2";
     config.exclude.attributes.add(attributeWithNoValue);
     ProcessorAction action =
-        new ProcessorAction("testKey", ProcessorActionType.DELETE, null, null, null);
+        new ProcessorAction("testKey", ProcessorActionType.DELETE, null, null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
@@ -1249,7 +1255,7 @@ class ExporterWithAttributeProcessorTest {
     attributeWithValue.value = "testValue";
     config.exclude.attributes.add(attributeWithValue);
     ProcessorAction action =
-        new ProcessorAction("testKey2", ProcessorActionType.DELETE, null, null, null);
+        new ProcessorAction("testKey2", ProcessorActionType.DELETE, null, null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
@@ -1316,7 +1322,7 @@ class ExporterWithAttributeProcessorTest {
     String regex =
         "^(?<httpProtocol>.*)://(?<httpDomain>.*)/(?<httpPath>.*)([?&])(?<httpQueryParams>.*)";
     ProcessorAction action =
-        new ProcessorAction("testKey", ProcessorActionType.EXTRACT, null, null, regex);
+        new ProcessorAction("testKey", ProcessorActionType.EXTRACT, null, null, regex, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
@@ -1363,7 +1369,7 @@ class ExporterWithAttributeProcessorTest {
     String regex =
         "^(?<httpProtocol>.*)://(?<httpDomain>.*)/(?<httpPath>.*)([?&])(?<httpQueryParams>.*)";
     ProcessorAction action =
-        new ProcessorAction("testKey", ProcessorActionType.EXTRACT, null, null, regex);
+        new ProcessorAction("testKey", ProcessorActionType.EXTRACT, null, null, regex, null);
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
@@ -1401,5 +1407,65 @@ class ExporterWithAttributeProcessorTest {
         .isEqualTo("queryParam1=value1,queryParam2=value2");
     assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("http://example.com/path?queryParam1=value1,queryParam2=value2");
+  }
+
+  @Test
+  void actionInsertWithMaskTest() {
+    MockExporter mockExporter = new MockExporter();
+    ProcessorConfig config = new ProcessorConfig();
+    config.type = ProcessorType.ATTRIBUTE;
+    config.id = "actionMask";
+    String regex =
+        "^(?<uriNoCard>.*\\/cardid\\/)(?<cardStart>[0-9]{6})[0-9]{6}(?<cardEnd>[0-9]{4,6}).*";
+    ProcessorAction action =
+        new ProcessorAction(
+            "testKey", ProcessorActionType.MASK, null, null, regex, "$uriNoCard****$cardEnd");
+    ProcessorAction action2 =
+        new ProcessorAction(
+            "testKey2",
+            ProcessorActionType.MASK,
+            null,
+            null,
+            regex,
+            "$uriNoCard$cardStart****$cardEnd");
+    ProcessorAction action3 =
+        new ProcessorAction(
+            "testKey3", ProcessorActionType.MASK, null, null, regex, "$cardStart****$cardStart");
+    List<ProcessorAction> actions = new ArrayList<>();
+    actions.add(action);
+    actions.add(action2);
+    actions.add(action3);
+    config.actions = actions;
+    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
+
+    Span span =
+        tracer
+            .spanBuilder("my span")
+            .setAttribute("one", "1")
+            .setAttribute("two", 2L)
+            .setAttribute("testKey", "http://example.com/cardid/1234562222227899")
+            .setAttribute("testKey2", "http://example.com/cardid/1234562222227899")
+            .setAttribute("testKey3", "http://example.com/cardid/1234562222227899")
+            .setAttribute("TESTKEY2", "testValue2")
+            .startSpan();
+
+    SpanData spanData = ((ReadableSpan) span).toSpanData();
+
+    List<SpanData> spans = new ArrayList<>();
+    spans.add(spanData);
+    exampleExporter.export(spans);
+
+    // verify that resulting spans are filtered in the way we want
+    List<SpanData> result = mockExporter.getSpans();
+    SpanData resultSpan = result.get(0);
+
+    assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey")))
+        .isEqualTo("http://example.com/cardid/****7899");
+    assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey2")))
+        .isEqualTo("http://example.com/cardid/123456****7899");
+    assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey3")))
+        .isEqualTo("123456****123456");
+    assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("TESTKEY2")))
+        .isEqualTo("testValue2");
   }
 }

@@ -86,9 +86,11 @@ public class AttributeProcessor extends AgentProcessor {
       case DELETE:
         return processDeleteAction(span, actionObj);
       case HASH:
-        return procesHashAction(span, actionObj);
+        return processHashAction(span, actionObj);
       case EXTRACT:
         return processExtractAction(span, actionObj);
+      case MASK:
+        return processMaskAction(span, actionObj);
     }
     return span;
   }
@@ -152,7 +154,7 @@ public class AttributeProcessor extends AgentProcessor {
     return new MySpanData(span, builder.build());
   }
 
-  private static SpanData procesHashAction(SpanData span, ProcessorAction actionObj) {
+  private static SpanData processHashAction(SpanData span, ProcessorAction actionObj) {
     // Currently we only support String
     String existingValue = getAttribute(span.getAttributes(), actionObj.key);
     if (existingValue == null) {
@@ -177,6 +179,26 @@ public class AttributeProcessor extends AgentProcessor {
     for (String groupName : actionObj.extractAttribute.groupNames) {
       builder.put(groupName, matcher.group(groupName));
     }
+    return new MySpanData(span, builder.build());
+  }
+
+  private static SpanData processMaskAction(SpanData span, ProcessorAction actionObj) {
+    // Currently we only support String
+    String existingValue = getAttribute(span.getAttributes(), actionObj.key);
+    if (existingValue == null) {
+      return span;
+    }
+    Matcher matcher = actionObj.maskAttribute.pattern.matcher(existingValue);
+    if (!matcher.matches()) {
+      return span;
+    }
+    AttributesBuilder builder = span.getAttributes().toBuilder();
+    String newValue = actionObj.maskAttribute.replace;
+    for (String groupName : actionObj.maskAttribute.groupNames) {
+      newValue = newValue.replaceAll(groupName, matcher.group(groupName));
+    }
+    newValue = newValue.replaceAll("\\$", "");
+    builder.put(actionObj.key, newValue);
     return new MySpanData(span, builder.build());
   }
 
