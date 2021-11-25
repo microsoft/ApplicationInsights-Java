@@ -81,22 +81,32 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
   }
 
   private void trackTimer(final Timer timer) {
+    long count = timer.count();
+    if (count == 0) {
+      // important not to send explicit count of 0 because breeze converts that to 1
+      return;
+    }
     // min is not supported, see https://github.com/micrometer-metrics/micrometer/issues/457
     trackMetric(
         getName(timer),
         timer.totalTime(getBaseTimeUnit()),
-        castCountToInt(timer.count()),
+        castCountToInt(count),
         null,
         timer.max(getBaseTimeUnit()),
         getProperties(timer));
   }
 
   private void trackDistributionSummary(final DistributionSummary summary) {
+    long count = summary.count();
+    if (count == 0) {
+      // important not to send explicit count of 0 because breeze converts that to 1
+      return;
+    }
     // min is not supported, see https://github.com/micrometer-metrics/micrometer/issues/457
     trackMetric(
         getName(summary),
         summary.totalAmount(),
-        castCountToInt(summary.count()),
+        castCountToInt(count),
         null,
         summary.max(),
         getProperties(summary));
@@ -119,10 +129,15 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
   }
 
   private void trackFunctionTimer(final FunctionTimer timer) {
+    double count = timer.count();
+    if (count == 0) {
+      // important not to send explicit count of 0 because breeze converts that to 1
+      return;
+    }
     trackMetric(
         getName(timer),
         timer.totalTime(getBaseTimeUnit()),
-        castCountToInt(timer.count()),
+        castCountToInt(count),
         null,
         null,
         getProperties(timer));
