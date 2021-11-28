@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
+import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
+import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
@@ -111,6 +113,9 @@ public final class BatchSpanProcessor {
     private volatile boolean continueWork = true;
     private final ArrayList<TelemetryItem> batch;
 
+    private static final OperationLogger queuingSpanLogger =
+        new OperationLogger(Exporter.class, "Queuing span");
+
     private Worker(
         TelemetryChannel spanExporter,
         long scheduleDelayNanos,
@@ -127,10 +132,10 @@ public final class BatchSpanProcessor {
     }
 
     private void addSpan(TelemetryItem span) {
-      if (queue.offer(span)) {
-        // FIXME (trask) log dropped span
-        // droppedSpans.add(1);
+      if (!queue.offer(span)) {
+        queuingSpanLogger.recordFailure("Queue is full");
       } else {
+        queuingSpanLogger.recordSuccess();
         if (queue.size() >= spansNeeded.get()) {
           signal.offer(true);
         }
