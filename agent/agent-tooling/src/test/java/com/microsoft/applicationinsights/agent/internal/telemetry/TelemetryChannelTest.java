@@ -36,7 +36,7 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.Telemetr
 import com.microsoft.applicationinsights.agent.internal.httpclient.RedirectPolicy;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileCache;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
-import io.opentelemetry.instrumentation.api.caching.Cache;
+import io.opentelemetry.instrumentation.api.cache.Cache;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -72,7 +72,7 @@ public class TelemetryChannelTest {
   private TelemetryChannel getTelemetryChannel() throws MalformedURLException {
     List<HttpPipelinePolicy> policies = new ArrayList<>();
 
-    policies.add(new RedirectPolicy(Cache.builder().setMaximumSize(5).build()));
+    policies.add(new RedirectPolicy(Cache.bounded(5)));
     HttpPipelineBuilder pipelineBuilder =
         new HttpPipelineBuilder()
             .policies(policies.toArray(new HttpPipelinePolicy[0]))

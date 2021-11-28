@@ -41,7 +41,7 @@ import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClien
 import com.microsoft.applicationinsights.agent.internal.httpclient.RedirectPolicy;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeat;
-import io.opentelemetry.instrumentation.api.caching.Cache;
+import io.opentelemetry.instrumentation.api.cache.Cache;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.IOException;
 import java.io.StringWriter;
