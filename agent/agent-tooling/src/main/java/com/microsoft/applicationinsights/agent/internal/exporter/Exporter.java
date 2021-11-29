@@ -264,7 +264,7 @@ public class Exporter implements SpanExporter {
     data.setName(getDependencyName(span));
     data.setDuration(
         FormattedDuration.fromNanos(span.getEndEpochNanos() - span.getStartEpochNanos()));
-    data.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
+    data.setSuccess(getSuccess(span));
 
     if (inProc) {
       data.setType("InProc");
@@ -762,7 +762,7 @@ public class Exporter implements SpanExporter {
     // set request-specific properties
     data.setName(operationName);
     data.setDuration(FormattedDuration.fromNanos(span.getEndEpochNanos() - startEpochNanos));
-    data.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
+    data.setSuccess(getSuccess(span));
 
     String httpUrl = getHttpUrlFromServerSpan(attributes);
     if (httpUrl != null) {
@@ -820,6 +820,22 @@ public class Exporter implements SpanExporter {
     // export
     telemetryClient.trackAsync(telemetry);
     exportEvents(span, operationName, samplingPercentage);
+  }
+
+  private static boolean getSuccess(SpanData span) {
+    if (span.getStatus().getStatusCode() == StatusCode.ERROR) {
+      return false;
+    }
+    if (span.getStatus().getStatusCode() == StatusCode.OK) {
+      // auto-instrumentation never sets OK, so this is explicit user override
+      return true;
+    }
+    Long statusCode = span.getAttributes().get(SemanticAttributes.HTTP_STATUS_CODE);
+    if (statusCode == null) {
+      return true;
+    }
+    // override default OpenTelemetry mapping of status codes 4xx
+    return statusCode < 400;
   }
 
   @Nullable
