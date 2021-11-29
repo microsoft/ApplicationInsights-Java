@@ -7,6 +7,7 @@ package io.opentelemetry.instrumentation.ratpack;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
+import ratpack.exec.ExecInterceptor;
 import ratpack.handling.HandlerDecorator;
 import ratpack.http.Request;
 import ratpack.http.Response;
@@ -30,13 +31,13 @@ public final class RatpackTracing {
 
   /** Returns a new {@link RatpackTracing} configured with the given {@link OpenTelemetry}. */
   public static RatpackTracing create(OpenTelemetry openTelemetry) {
-    return newBuilder(openTelemetry).build();
+    return builder(openTelemetry).build();
   }
 
   /**
    * Returns a new {@link RatpackTracingBuilder} configured with the given {@link OpenTelemetry}.
    */
-  public static RatpackTracingBuilder newBuilder(OpenTelemetry openTelemetry) {
+  public static RatpackTracingBuilder builder(OpenTelemetry openTelemetry) {
     return new RatpackTracingBuilder(openTelemetry);
   }
 
@@ -44,6 +45,16 @@ public final class RatpackTracing {
 
   RatpackTracing(Instrumenter<Request, Response> serverInstrumenter) {
     serverHandler = new OpenTelemetryServerHandler(serverInstrumenter);
+  }
+
+  /** Returns instance of {@link OpenTelemetryServerHandler} to support Ratpack Registry binding. */
+  public OpenTelemetryServerHandler getOpenTelemetryServerHandler() {
+    return serverHandler;
+  }
+
+  /** Returns instance of {@link ExecInterceptor} to support Ratpack Registry binding. */
+  public ExecInterceptor getOpenTelemetryExecInterceptor() {
+    return OpenTelemetryExecInterceptor.INSTANCE;
   }
 
   /** Configures the {@link RegistrySpec} with OpenTelemetry. */

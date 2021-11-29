@@ -17,7 +17,12 @@ muzzle {
 }
 
 dependencies {
-  implementation(project(":instrumentation:netty:netty-4.1:library"))
+  compileOnly("com.google.auto.value:auto-value-annotations")
+  annotationProcessor("com.google.auto.value:auto-value")
+
+  implementation(project(":instrumentation:netty:netty-4.1-common:javaagent"))
+  implementation(project(":instrumentation:reactor-3.1:library"))
+
   library("io.projectreactor.netty:reactor-netty-http:1.0.0")
 
   testInstrumentation(project(":instrumentation:reactor-netty:reactor-netty-0.9:javaagent"))
@@ -33,9 +38,11 @@ tasks {
   val testConnectionSpan by registering(Test::class) {
     filter {
       includeTestsMatching("ReactorNettyConnectionSpanTest")
+      includeTestsMatching("ReactorNettyClientSslTest")
       isFailOnNoMatchingTests = false
     }
-    include("**/ReactorNettyConnectionSpanTest.*")
+    include("**/ReactorNettyConnectionSpanTest.*", "**/ReactorNettyClientSslTest.*")
+    jvmArgs("-Dotel.instrumentation.netty.ssl-telemetry.enabled=true")
     jvmArgs("-Dotel.instrumentation.reactor-netty.always-create-connect-span=true")
   }
 
@@ -43,6 +50,7 @@ tasks {
     dependsOn(testConnectionSpan)
     filter {
       excludeTestsMatching("ReactorNettyConnectionSpanTest")
+      excludeTestsMatching("ReactorNettyClientSslTest")
       isFailOnNoMatchingTests = false
     }
   }

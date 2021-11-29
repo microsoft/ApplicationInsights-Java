@@ -29,7 +29,7 @@ dependencies {
   // Other exporters are in javaagent-exporters
   implementation("io.opentelemetry:opentelemetry-exporter-logging")
 
-  api("net.bytebuddy:byte-buddy")
+  api("net.bytebuddy:byte-buddy-dep")
   implementation("org.slf4j:slf4j-api")
 
   annotationProcessor("com.google.auto.service:auto-service")
@@ -40,10 +40,6 @@ dependencies {
   testImplementation("org.assertj:assertj-core")
   testImplementation("org.mockito:mockito-core")
   testImplementation("org.mockito:mockito-junit-jupiter")
-
-  // this only exists to make Intellij happy since it doesn't (currently at least) understand our
-  // inclusion of this artifact inside of :instrumentation-api
-  compileOnly(project(":instrumentation-api-caching"))
 }
 
 // Here we only include autoconfigure but don"t include OTLP exporters to ensure they are only in

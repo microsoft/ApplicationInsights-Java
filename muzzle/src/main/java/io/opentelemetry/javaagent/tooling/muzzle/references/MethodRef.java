@@ -12,7 +12,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.bytebuddy.jar.asm.Type;
+import org.objectweb.asm.Type;
 
 /**
  * Represents a reference to a method used in the instrumentation advice or helper class code. Part
@@ -52,6 +52,10 @@ public final class MethodRef {
   /** Returns this method's type descriptor. */
   public String getDescriptor() {
     return descriptor;
+  }
+
+  public boolean isConstructor() {
+    return "<init>".equals(name);
   }
 
   MethodRef merge(MethodRef anotherMethod) {

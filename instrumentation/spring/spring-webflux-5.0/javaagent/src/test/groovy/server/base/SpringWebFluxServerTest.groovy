@@ -57,11 +57,6 @@ abstract class SpringWebFluxServerTest extends HttpServerTest<ConfigurableApplic
   }
 
   @Override
-  boolean testConcurrency() {
-    return true
-  }
-
-  @Override
   boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
     true
   }

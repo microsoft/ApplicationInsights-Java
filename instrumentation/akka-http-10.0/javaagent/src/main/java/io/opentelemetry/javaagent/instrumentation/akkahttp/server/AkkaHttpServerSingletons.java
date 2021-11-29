@@ -21,14 +21,14 @@ public class AkkaHttpServerSingletons {
     AkkaHttpServerAttributesExtractor httpAttributesExtractor =
         new AkkaHttpServerAttributesExtractor();
     INSTRUMENTER =
-        Instrumenter.<HttpRequest, HttpResponse>newBuilder(
+        Instrumenter.<HttpRequest, HttpResponse>builder(
                 GlobalOpenTelemetry.get(),
                 AkkaHttpUtil.instrumentationName(),
                 unused -> "akka.request")
             .setSpanStatusExtractor(HttpSpanStatusExtractor.create(httpAttributesExtractor))
             .addAttributesExtractor(httpAttributesExtractor)
             .addRequestMetrics(HttpServerMetrics.get())
-            .newServerInstrumenter(new AkkaHttpServerHeaders());
+            .newServerInstrumenter(AkkaHttpServerHeaders.INSTANCE);
   }
 
   public static Instrumenter<HttpRequest, HttpResponse> instrumenter() {

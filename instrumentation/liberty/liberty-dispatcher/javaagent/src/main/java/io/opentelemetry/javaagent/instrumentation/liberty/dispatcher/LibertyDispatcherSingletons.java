@@ -34,7 +34,7 @@ public final class LibertyDispatcherSingletons {
         new LibertyDispatcherNetAttributesExtractor();
 
     INSTRUMENTER =
-        Instrumenter.<LibertyRequest, LibertyResponse>newBuilder(
+        Instrumenter.<LibertyRequest, LibertyResponse>builder(
                 GlobalOpenTelemetry.get(), INSTRUMENTATION_NAME, spanNameExtractor)
             .setSpanStatusExtractor(spanStatusExtractor)
             .addAttributesExtractor(httpAttributesExtractor)
@@ -42,7 +42,7 @@ public final class LibertyDispatcherSingletons {
             .addContextCustomizer(
                 (context, request, attributes) -> ServerSpanNaming.init(context, CONTAINER))
             .addRequestMetrics(HttpServerMetrics.get())
-            .newServerInstrumenter(LibertyDispatcherRequestGetter.GETTER);
+            .newServerInstrumenter(LibertyDispatcherRequestGetter.INSTANCE);
   }
 
   public static Instrumenter<LibertyRequest, LibertyResponse> instrumenter() {

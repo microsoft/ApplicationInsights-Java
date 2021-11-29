@@ -23,7 +23,7 @@ public final class NettyServerInstrumenterFactory {
     final NettyHttpServerAttributesExtractor httpAttributesExtractor =
         new NettyHttpServerAttributesExtractor();
 
-    return Instrumenter.<HttpRequestAndChannel, HttpResponse>newBuilder(
+    return Instrumenter.<HttpRequestAndChannel, HttpResponse>builder(
             GlobalOpenTelemetry.get(),
             instrumentationName,
             HttpSpanNameExtractor.create(httpAttributesExtractor))
@@ -37,7 +37,7 @@ public final class NettyServerInstrumenterFactory {
               // netty is not exactly a "container", but it's the best match out of these
               return ServerSpanNaming.init(context, ServerSpanNaming.Source.CONTAINER);
             })
-        .newServerInstrumenter(new HttpRequestHeadersGetter());
+        .newServerInstrumenter(HttpRequestHeadersGetter.INSTANCE);
   }
 
   private NettyServerInstrumenterFactory() {}

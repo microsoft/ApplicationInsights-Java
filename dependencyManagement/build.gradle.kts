@@ -11,17 +11,11 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-// IMPORTANT when updating otelVersion, make sure that grpcVersion below is >= the grpc version
-// used by that otel version
-val otelVersion = "1.7.0"
-val grpcVersion = "1.41.0"
+val otelVersion = "1.9.1"
 rootProject.extra["otelVersion"] = otelVersion
 
 // Need both BOM and -all
-val groovyVersion = "2.5.11"
-
-rootProject.extra["caffeine2Version"] = "2.9.2"
-rootProject.extra["caffeine3Version"] = "3.0.4"
+val groovyVersion = "2.5.14"
 
 // We don't force libraries we instrument to new versions since we compile and test against specific
 // old baseline versions
@@ -57,14 +51,14 @@ val DEPENDENCY_SETS = listOf(
   ),
   DependencySet(
     "io.prometheus",
-    "0.11.0",
+    "0.12.0",
     listOf("simpleclient", "simpleclient_common", "simpleclient_httpserver")
   ),
   DependencySet(
     "net.bytebuddy",
-    // When updating, also update buildSrc/build.gradle.kts
-    "1.11.18",
-    listOf("byte-buddy", "byte-buddy-agent", "byte-buddy-gradle-plugin")
+    // When updating, also update conventions/build.gradle.kts
+    "1.11.22",
+    listOf("byte-buddy", "byte-buddy-dep", "byte-buddy-agent", "byte-buddy-gradle-plugin")
   ),
   DependencySet(
     "org.openjdk.jmh",
@@ -90,7 +84,6 @@ val DEPENDENCY_SETS = listOf(
 
 val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.2.3",
-  "com.blogspot.mydailyjava:weak-lock-free:0.18",
   "com.github.stefanbirkner:system-lambda:1.2.0",
   "com.github.stefanbirkner:system-rules:1.19.0",
   "com.google.auto.service:auto-service:1.0",
@@ -105,17 +98,17 @@ val DEPENDENCIES = listOf(
   "commons-lang:commons-lang:2.6",
   "commons-logging:commons-logging:1.2",
   "commons-validator:commons-validator:1.7",
-  "info.solidsoft.spock:spock-global-unroll:0.5.1",
   "io.netty:netty:3.10.6.Final",
+  "io.opentelemetry.proto:opentelemetry-proto:0.11.0-alpha",
   "org.assertj:assertj-core:3.21.0",
   "org.awaitility:awaitility:4.1.0",
-  "org.checkerframework:checker-qual:3.14.0",
+  "com.google.code.findbugs:jsr305:3.0.2",
   "org.codehaus.groovy:groovy-all:${groovyVersion}",
   "org.objenesis:objenesis:3.2",
-  "org.spockframework:spock-core:1.3-groovy-2.5",
+  "org.spockframework:spock-core:2.0-groovy-2.5",
+  "org.spockframework:spock-junit4:2.0-groovy-2.5",
   "org.scala-lang:scala-library:2.11.12",
   "org.springframework.boot:spring-boot-dependencies:2.3.1.RELEASE",
-  "io.grpc:grpc-netty-shaded:${grpcVersion}"
 )
 
 javaPlatform {

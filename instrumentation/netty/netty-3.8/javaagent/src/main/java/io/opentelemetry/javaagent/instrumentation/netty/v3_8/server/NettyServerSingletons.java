@@ -23,7 +23,7 @@ final class NettyServerSingletons {
         new NettyHttpServerAttributesExtractor();
 
     INSTRUMENTER =
-        Instrumenter.<HttpRequestAndChannel, HttpResponse>newBuilder(
+        Instrumenter.<HttpRequestAndChannel, HttpResponse>builder(
                 GlobalOpenTelemetry.get(),
                 "io.opentelemetry.netty-3.8",
                 HttpSpanNameExtractor.create(httpServerAttributesExtractor))
@@ -33,7 +33,7 @@ final class NettyServerSingletons {
             .addRequestMetrics(HttpServerMetrics.get())
             .addContextCustomizer(
                 (context, requestAndChannel, startAttributes) -> NettyErrorHolder.init(context))
-            .newServerInstrumenter(new NettyHeadersGetter());
+            .newServerInstrumenter(NettyHeadersGetter.INSTANCE);
   }
 
   public static Instrumenter<HttpRequestAndChannel, HttpResponse> instrumenter() {

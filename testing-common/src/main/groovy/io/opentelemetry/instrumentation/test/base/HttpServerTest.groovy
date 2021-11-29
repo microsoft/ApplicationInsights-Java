@@ -38,13 +38,21 @@ import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEn
 import static io.opentelemetry.instrumentation.test.utils.TraceUtils.runUnderTrace
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NetTransportValues.IP_TCP
 import static java.util.Collections.singletonList
-import static org.junit.Assume.assumeTrue
+import static org.junit.jupiter.api.Assumptions.assumeTrue
 
 @Unroll
 abstract class HttpServerTest<SERVER> extends InstrumentationSpecification implements HttpServerTestTrait<SERVER> {
 
   static final String TEST_REQUEST_HEADER = "X-Test-Request"
   static final String TEST_RESPONSE_HEADER = "X-Test-Response"
+
+  def setupSpec() {
+    setupServer()
+  }
+
+  def cleanupSpec() {
+    cleanupServer()
+  }
 
   static CapturedHttpHeaders capturedHttpHeadersForTesting() {
     CapturedHttpHeaders.create(
@@ -131,10 +139,6 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
     true
   }
 
-  boolean testConcurrency() {
-    false
-  }
-
   boolean verifyServerSpanEndTime() {
     return true
   }
@@ -164,7 +168,7 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
     AUTH_REQUIRED("authRequired", 200, null),
     LOGIN("login", 302, null),
     AUTH_ERROR("basicsecured/endpoint", 401, null),
-    INDEXED_CHILD("child", 200, null),
+    INDEXED_CHILD("child", 200, ""),
 
     public static final String ID_ATTRIBUTE_NAME = "test.request.id"
     public static final String ID_PARAMETER_NAME = "id"
@@ -175,7 +179,6 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
     final String fragment
     final int status
     final String body
-    final Boolean errored
 
     ServerEndpoint(String uri, int status, String body) {
       this.uriObj = URI.create(uri)
@@ -184,7 +187,6 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
       this.fragment = uriObj.fragment
       this.status = status
       this.body = body
-      this.errored = status >= 400
     }
 
     String getPath() {
@@ -440,7 +442,6 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
 
   def "high concurrency test"() {
     setup:
-    assumeTrue(testConcurrency())
     int count = 100
     def endpoint = INDEXED_CHILD
 
@@ -606,7 +607,7 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
     trace.span(index) {
       name expectedServerSpanName(endpoint)
       kind SpanKind.SERVER // can't use static import because of SERVER type parameter
-      if (endpoint.errored) {
+      if (endpoint.status >= 500) {
         status StatusCode.ERROR
       }
       if (parentID != null) {
@@ -696,8 +697,7 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
         "${SemanticAttributes.HTTP_USER_AGENT.key}" TEST_USER_AGENT
 
         "${SemanticAttributes.HTTP_HOST}" { it == "localhost" || it == "localhost:${port}" }
-        // TODO netty does not set http.scheme - refactor HTTP server tests so that it's possible to specify extracted attributes, like in HTTP client tests
-        "${SemanticAttributes.HTTP_SCHEME}" { it == "http" || it == null }
+        "${SemanticAttributes.HTTP_SCHEME}" "http"
         "${SemanticAttributes.HTTP_TARGET}" endpoint.resolvePath(address).getPath() + "?id=$requestId"
 
         if (extraAttributes.contains(SemanticAttributes.HTTP_REQUEST_CONTENT_LENGTH)) {
