@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
+import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingOverrides.MatcherGroup;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
@@ -86,6 +87,13 @@ class AiSampler implements Sampler {
       SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
+
+    if (attributes.get(Exporter.AI_LOG_KEY) != null) {
+      // for root - want to capture all logs that are not part of trace
+      // for remoteParentSampled and localParentSampled - want to capture all logs that are part of
+      // sampled trace
+      return SamplingResult.recordAndSample();
+    }
 
     MatcherGroup override = samplingOverrides.getOverride(spanKind, attributes);
 

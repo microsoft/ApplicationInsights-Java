@@ -84,7 +84,7 @@ public class Exporter implements SpanExporter {
   public static final AttributeKey<String> AI_OPERATION_NAME_KEY =
       AttributeKey.stringKey("applicationinsights.internal.operation_name");
 
-  private static final AttributeKey<Boolean> AI_LOG_KEY =
+  public static final AttributeKey<Boolean> AI_LOG_KEY =
       AttributeKey.booleanKey("applicationinsights.internal.log");
 
   public static final AttributeKey<String> AI_LEGACY_PARENT_ID_KEY =
