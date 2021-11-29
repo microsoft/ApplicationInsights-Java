@@ -114,7 +114,7 @@ public final class BatchSpanProcessor {
     private final ArrayList<TelemetryItem> batch;
 
     private static final OperationLogger queuingSpanLogger =
-        new OperationLogger(Exporter.class, "Queuing span");
+        new OperationLogger(BatchSpanProcessor.class, "Queuing span");
 
     private Worker(
         TelemetryChannel spanExporter,
