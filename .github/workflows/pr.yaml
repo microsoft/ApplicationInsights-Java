@@ -44,6 +44,10 @@ jobs:
       - name: Test
         # TODO enable build cache, either --build-cache here, or org.gradle.caching=true in gradle.properties
         run: ./gradlew check --stacktrace
+      - name: Upload snapshot
+        uses: actions/upload-artifact@v2
+        with:
+          path: agent/agent/build/libs/applicationinsights-agent-*-SNAPSHOT.jar
 
   setup-smoke-test-matrix:
     runs-on: ubuntu-latest
