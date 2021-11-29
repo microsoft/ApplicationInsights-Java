@@ -137,9 +137,4 @@ class Netty40ServerTest extends HttpServerTest<EventLoopGroup> implements AgentT
   String expectedServerSpanName(ServerEndpoint endpoint) {
     return "HTTP GET"
   }
-
-  @Override
-  boolean testConcurrency() {
-    return true
-  }
 }

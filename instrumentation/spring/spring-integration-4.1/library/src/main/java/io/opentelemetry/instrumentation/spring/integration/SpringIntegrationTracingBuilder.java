@@ -13,7 +13,7 @@ import java.util.List;
 
 /** A builder of {@link SpringIntegrationTracing}. */
 public final class SpringIntegrationTracingBuilder {
-  private static final String INSTRUMENTATION_NAME = "io.opentelemetry.spring-integration-core-4.1";
+  private static final String INSTRUMENTATION_NAME = "io.opentelemetry.spring-integration-4.1";
 
   private final OpenTelemetry openTelemetry;
   private final List<AttributesExtractor<MessageWithChannel, Void>> additionalAttributeExtractors =
@@ -39,7 +39,7 @@ public final class SpringIntegrationTracingBuilder {
    */
   public SpringIntegrationTracing build() {
     Instrumenter<MessageWithChannel, Void> instrumenter =
-        Instrumenter.<MessageWithChannel, Void>newBuilder(
+        Instrumenter.<MessageWithChannel, Void>builder(
                 openTelemetry, INSTRUMENTATION_NAME, new MessageChannelSpanNameExtractor())
             .addAttributesExtractors(additionalAttributeExtractors)
             .addAttributesExtractor(new SpringMessagingAttributesExtractor())

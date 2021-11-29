@@ -28,12 +28,12 @@ use the `@WithSpan` annotation, also include the `opentelemetry-extension-annota
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
-      <version>1.0.0</version>
+      <version>1.7.0</version>
     </dependency>
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-extension-annotations</artifactId>
-      <version>1.0.0</version>
+      <version>1.7.0</version>
     </dependency>
   </dependencies>
 ```
@@ -42,8 +42,8 @@ use the `@WithSpan` annotation, also include the `opentelemetry-extension-annota
 
 ```groovy
 dependencies {
-    implementation('io.opentelemetry:opentelemetry-api:1.0.0')
-    implementation('io.opentelemetry:opentelemetry-extension-annotations:1.0.0')
+    implementation('io.opentelemetry:opentelemetry-api:1.7.0')
+    implementation('io.opentelemetry:opentelemetry-extension-annotations:1.7.0')
 }
 ```
 
@@ -133,7 +133,7 @@ that can be used to [manually create spans](https://github.com/open-telemetry/op
 and execute code within the scope of that span.
 
 See the [OpenTelemetry Java
-QuickStart](https://github.com/open-telemetry/opentelemetry-java/blob/master/QUICKSTART.md#tracing)
+QuickStart](https://github.com/open-telemetry/opentelemetry-java/blob/main/QUICKSTART.md#tracing)
 for a detailed en example of how to configure OpenTelemetry with code and
 how to use the `Tracer`, `Scope` and `Span` interfaces to
 instrument your application.

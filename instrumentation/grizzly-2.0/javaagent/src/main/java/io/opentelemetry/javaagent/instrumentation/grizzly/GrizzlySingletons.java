@@ -23,7 +23,7 @@ public final class GrizzlySingletons {
     GrizzlyNetAttributesExtractor netAttributesExtractor = new GrizzlyNetAttributesExtractor();
 
     INSTRUMENTER =
-        Instrumenter.<HttpRequestPacket, HttpResponsePacket>newBuilder(
+        Instrumenter.<HttpRequestPacket, HttpResponsePacket>builder(
                 GlobalOpenTelemetry.get(),
                 "io.opentelemetry.grizzly-2.0",
                 HttpSpanNameExtractor.create(httpAttributesExtractor))
@@ -36,7 +36,7 @@ public final class GrizzlySingletons {
                   context = GrizzlyErrorHolder.init(context);
                   return ServerSpanNaming.init(context, ServerSpanNaming.Source.CONTAINER);
                 })
-            .newServerInstrumenter(new HttpRequestHeadersGetter());
+            .newServerInstrumenter(HttpRequestHeadersGetter.INSTANCE);
   }
 
   public static Instrumenter<HttpRequestPacket, HttpResponsePacket> instrumenter() {

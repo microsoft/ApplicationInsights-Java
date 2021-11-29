@@ -43,7 +43,7 @@ public final class TomcatInstrumenterFactory {
     AttributesExtractor<Request, Response> additionalAttributeExtractor =
         new TomcatAdditionalAttributesExtractor<>(accessor, servletEntityProvider);
 
-    return Instrumenter.<Request, Response>newBuilder(
+    return Instrumenter.<Request, Response>builder(
             GlobalOpenTelemetry.get(), instrumentationName, spanNameExtractor)
         .setSpanStatusExtractor(spanStatusExtractor)
         .setErrorCauseExtractor(new ServletErrorCauseExtractor<>(accessor))
@@ -56,6 +56,6 @@ public final class TomcatInstrumenterFactory {
               return AppServerBridge.init(context);
             })
         .addRequestMetrics(HttpServerMetrics.get())
-        .newServerInstrumenter(TomcatRequestGetter.GETTER);
+        .newServerInstrumenter(TomcatRequestGetter.INSTANCE);
   }
 }

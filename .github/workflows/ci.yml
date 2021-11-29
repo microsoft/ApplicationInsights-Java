@@ -33,9 +33,10 @@ jobs:
 
       - name: Build
         env:
-          S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.S3_BUILD_CACHE_ACCESS_KEY_ID }}
-          S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.S3_BUILD_CACHE_SECRET_KEY }}
-        run: ./gradlew build --stacktrace
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+          GE_CACHE_USERNAME: ${{ secrets.GE_CACHE_USERNAME }}
+          GE_CACHE_PASSWORD: ${{ secrets.GE_CACHE_PASSWORD }}
+        run: ./gradlew build
 
   build-gradle-plugins:
     runs-on: ubuntu-latest
@@ -57,7 +58,7 @@ jobs:
           key: ${{ runner.os }}-gradle-wrapper-cache-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
 
       - name: Build
-        run: ../gradlew build --stacktrace
+        run: ../gradlew build
         working-directory: gradle-plugins
 
   test:
@@ -104,9 +105,10 @@ jobs:
 
       - name: Test
         env:
-          S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.S3_BUILD_CACHE_ACCESS_KEY_ID }}
-          S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.S3_BUILD_CACHE_SECRET_KEY }}
-        run: ./gradlew test -PtestJavaVersion=${{ matrix.test-java-version }} -PtestJavaVM=${{ matrix.vm }} --stacktrace -Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }} -Porg.gradle.java.installations.auto-download=false
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+          GE_CACHE_USERNAME: ${{ secrets.GE_CACHE_USERNAME }}
+          GE_CACHE_PASSWORD: ${{ secrets.GE_CACHE_PASSWORD }}
+        run: ./gradlew test -PtestJavaVersion=${{ matrix.test-java-version }} -PtestJavaVM=${{ matrix.vm }} -Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }} -Porg.gradle.java.installations.auto-download=false
 
   testLatestDeps:
     runs-on: ubuntu-latest
@@ -141,9 +143,10 @@ jobs:
 
       - name: Test
         env:
-          S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.S3_BUILD_CACHE_ACCESS_KEY_ID }}
-          S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.S3_BUILD_CACHE_SECRET_KEY }}
-        run: ./gradlew test -PtestLatestDeps=true --stacktrace
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+          GE_CACHE_USERNAME: ${{ secrets.GE_CACHE_USERNAME }}
+          GE_CACHE_PASSWORD: ${{ secrets.GE_CACHE_PASSWORD }}
+        run: ./gradlew test -PtestLatestDeps=true
 
   smoke-test:
     runs-on: ${{ matrix.os }}
@@ -158,8 +161,12 @@ jobs:
           - liberty
           - tomcat
           - tomee
+          - websphere
           - wildfly
           - other
+        exclude:
+          - os: windows-latest
+            smoke-test-suite: websphere
       fail-fast: false
     steps:
       - name: Support longpaths
@@ -190,8 +197,9 @@ jobs:
 
       - name: Test
         env:
-          S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.S3_BUILD_CACHE_ACCESS_KEY_ID }}
-          S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.S3_BUILD_CACHE_SECRET_KEY }}
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+          GE_CACHE_USERNAME: ${{ secrets.GE_CACHE_USERNAME }}
+          GE_CACHE_PASSWORD: ${{ secrets.GE_CACHE_PASSWORD }}
         run: ./gradlew :smoke-tests:test -PsmokeTestSuite=${{ matrix.smoke-test-suite }}
 
   setup-muzzle-matrix:
@@ -245,7 +253,7 @@ jobs:
 
       - name: Run muzzle
         # using retry because of sporadic gradle download failures
-        uses: nick-invision/retry@v2.5.0
+        uses: nick-invision/retry@v2.5.1
         with:
           # timing out has not been a problem, these jobs typically finish in 2-3 minutes
           timeout_minutes: 15
@@ -271,9 +279,14 @@ jobs:
           path: ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-wrapper-cache-${{ hashFiles('examples/distro/gradle/wrapper/gradle-wrapper.properties') }}
 
-      - name: Local publish
+      - name: Local publish of artifacts
         # javadoc task fails sporadically fetching https://docs.oracle.com/javase/8/docs/api/
         run: ./gradlew publishToMavenLocal -x javadoc
+
+      - name: Local publish of gradle plugins
+        # javadoc task fails sporadically fetching https://docs.oracle.com/javase/8/docs/api/
+        run: ../gradlew publishToMavenLocal -x javadoc
+        working-directory: gradle-plugins
 
       - name: Build distro
         run: ./gradlew build --init-script ../../.github/scripts/local.init.gradle.kts
@@ -285,7 +298,11 @@ jobs:
 
   snapshot:
     runs-on: ubuntu-latest
-    needs: [ build, test, testLatestDeps, smoke-test, examples, muzzle ]
+    # intentionally not blocking snapshot publishing on testLatestDeps
+    # because any time a new library version is released to maven central
+    # it can fail due to test code incompatibility with the new library version,
+    # or due to slight changes in emitted telemetry
+    needs: [ build, test, smoke-test, examples, muzzle ]
     if: github.repository == 'open-telemetry/opentelemetry-java-instrumentation'
     steps:
       - uses: actions/checkout@v2.3.4
@@ -310,12 +327,21 @@ jobs:
           path: ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-wrapper-cache-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
 
-      - name: Publish snapshot
+      - name: Build and publish artifact snapshots
         env:
-          S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.S3_BUILD_CACHE_ACCESS_KEY_ID }}
-          S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.S3_BUILD_CACHE_SECRET_KEY }}
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
           SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
-        run: ./gradlew snapshot --stacktrace
+        run: ./gradlew assemble publishToSonatype
+
+      - name: Build and publish gradle plugin snapshots
+        env:
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+          SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
+          SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
+        run: ../gradlew build publishToSonatype
+        working-directory: gradle-plugins
