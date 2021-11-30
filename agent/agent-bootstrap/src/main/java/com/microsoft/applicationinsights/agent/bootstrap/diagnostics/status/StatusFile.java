@@ -41,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import okio.BufferedSink;
 import okio.Okio;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -84,6 +85,10 @@ public class StatusFile {
   // visible for testing
   static String directory;
 
+  private static final boolean writable;
+
+  private static final AtomicBoolean alreadyLogged = new AtomicBoolean();
+
   private static final Object lock = new Object();
 
   // guarded by lock
@@ -91,6 +96,8 @@ public class StatusFile {
 
   // guarded by lock
   private static BufferedSink buffer;
+
+  @Nullable public static Logger startupLogger;
 
   private static final ThreadPoolExecutor WRITER_THREAD =
       new ThreadPoolExecutor(
@@ -109,6 +116,8 @@ public class StatusFile {
 
     logDir = initLogDir();
     directory = logDir + STATUS_FILE_DIRECTORY;
+    File dir = new File(logDir);
+    writable = dir.canWrite();
   }
 
   private static Thread newThread(Runnable r) {
@@ -138,9 +147,20 @@ public class StatusFile {
 
   private StatusFile() {}
 
-  // visible for testing
-  static boolean shouldWrite() {
-    return DiagnosticsHelper.useAppSvcRpIntegrationLogging();
+  private static boolean shouldWrite() {
+    if (!DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
+      return false;
+    }
+    if (writable) {
+      return true;
+    }
+    // read-only app services, want to log warning once in this case
+    if (startupLogger != null && !alreadyLogged.getAndSet(true)) {
+      startupLogger.info(
+          "Detected running on a read-only file system. Status json file won't be created. If this is unexpected, please check that process has write access to the directory: {}",
+          directory);
+    }
+    return false;
   }
 
   public static <T> void putValueAndWrite(String key, T value) {
