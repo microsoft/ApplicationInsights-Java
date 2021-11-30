@@ -85,7 +85,7 @@ public class StatusFile {
   // visible for testing
   static String directory;
 
-  private static final boolean isReadOnly;
+  private static final boolean writable;
 
   private static final AtomicBoolean alreadyLogged = new AtomicBoolean();
 
@@ -117,7 +117,7 @@ public class StatusFile {
     logDir = initLogDir();
     directory = logDir + STATUS_FILE_DIRECTORY;
     File dir = new File(logDir);
-    isReadOnly = dir.canRead() && !dir.canWrite();
+    writable = dir.canWrite();
   }
 
   private static Thread newThread(Runnable r) {
@@ -151,7 +151,7 @@ public class StatusFile {
     if (!DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
       return false;
     }
-    if (!isReadOnly) {
+    if (!writable) {
       return true;
     }
     // read-only app services, want to log warning once in this case
