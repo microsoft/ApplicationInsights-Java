@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.legacysdk;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.ContextTagKeys;
@@ -438,7 +440,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
   public void flush() {
     // this is not null because sdk instrumentation is not added until TelemetryClient.setActive()
     // is called
-    TelemetryClient.getActive().flushChannelBatcher();
+    TelemetryClient.getActive().flushChannelBatcher().join(10, SECONDS);
   }
 
   @Override

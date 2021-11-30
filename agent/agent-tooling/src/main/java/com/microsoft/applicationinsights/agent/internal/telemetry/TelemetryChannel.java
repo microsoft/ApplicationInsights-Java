@@ -63,7 +63,7 @@ public class TelemetryChannel {
 
   private static final Logger logger = LoggerFactory.getLogger(TelemetryChannel.class);
 
-  private static final ObjectMapper mapper = new ObjectMapper();
+  private static final ObjectMapper mapper = createObjectMapper();
 
   private static final AppInsightsByteBufferPool byteBufferPool = new AppInsightsByteBufferPool();
 
@@ -76,10 +76,16 @@ public class TelemetryChannel {
   //  operationLogger?
   private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
-  static {
+  @SuppressWarnings("CatchAndPrintStackTrace")
+  private static ObjectMapper createObjectMapper() {
+    ObjectMapper mapper = new ObjectMapper();
     mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-    mapper.findAndRegisterModules();
+    // it's important to pass in the "agent class loader" since TelemetryChannel is initialized
+    // lazily and can be initialized via an application thread, in which case the thread context
+    // class loader is used to look up jsr305 module and its not found
+    mapper.registerModules(ObjectMapper.findModules(TelemetryChannel.class.getClassLoader()));
     mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+    return mapper;
   }
 
   private final HttpPipeline pipeline;
