@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
-import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
