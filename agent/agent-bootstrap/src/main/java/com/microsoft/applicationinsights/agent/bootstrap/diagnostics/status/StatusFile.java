@@ -151,7 +151,7 @@ public class StatusFile {
     if (!DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
       return false;
     }
-    if (!writable) {
+    if (writable) {
       return true;
     }
     // read-only app services, want to log warning once in this case
