@@ -25,7 +25,7 @@ import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
-import io.opentelemetry.instrumentation.api.caching.Cache;
+import io.opentelemetry.instrumentation.api.cache.Cache;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -51,7 +51,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   // only used by tests
   public NetworkStatsbeat() {
     super(new CustomDimensions());
-    this.ikeyEndpointMap = Cache.builder().build();
+    this.ikeyEndpointMap = Cache.bounded(100);
   }
 
   public NetworkStatsbeat(

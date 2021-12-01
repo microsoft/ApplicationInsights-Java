@@ -58,7 +58,7 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
-import io.opentelemetry.instrumentation.api.caching.Cache;
+import io.opentelemetry.instrumentation.api.cache.Cache;
 import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.extension.AgentListener;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -187,7 +187,7 @@ public class AiComponentInstaller implements AgentListener {
             .map(MetricFilter::new)
             .collect(Collectors.toList());
 
-    Cache<String, String> ikeyEndpointMap = Cache.builder().setMaximumSize(100).build();
+    Cache<String, String> ikeyEndpointMap = Cache.bounded(100);
     StatsbeatModule statsbeatModule = new StatsbeatModule(ikeyEndpointMap);
     TelemetryClient telemetryClient =
         TelemetryClient.builder()

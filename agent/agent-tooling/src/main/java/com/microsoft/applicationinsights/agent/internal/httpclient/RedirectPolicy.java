@@ -26,7 +26,7 @@ import com.azure.core.http.HttpPipelineNextPolicy;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.http.policy.HttpPipelinePolicy;
-import io.opentelemetry.instrumentation.api.caching.Cache;
+import io.opentelemetry.instrumentation.api.cache.Cache;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -43,7 +43,7 @@ public final class RedirectPolicy implements HttpPipelinePolicy {
   private static final Logger logger = LoggerFactory.getLogger(RedirectPolicy.class);
   public static final String INSTRUMENTATION_KEY = "instrumentationKey";
 
-  private final Cache<URL, String> redirectMappings = Cache.builder().setMaximumSize(100).build();
+  private final Cache<URL, String> redirectMappings = Cache.bounded(100);
 
   @Nullable private final Cache<String, String> ikeyRedirectCache;
 
