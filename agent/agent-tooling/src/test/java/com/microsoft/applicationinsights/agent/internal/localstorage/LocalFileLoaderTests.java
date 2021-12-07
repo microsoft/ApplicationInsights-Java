@@ -255,7 +255,7 @@ public class LocalFileLoaderTests {
             new URL("http://foo.bar"),
             localFileWriter,
             mockedStatsbeatModule,
-            false);
+            true);
 
     // persist 10 files to disk
     for (int i = 0; i < 10; i++) {

@@ -86,7 +86,7 @@ public class TelemetryChannelTest {
         new URL(END_POINT_URL),
         new LocalFileWriter(localFileCache, tempFolder, null),
         mockedStatsModule,
-        false);
+        true);
   }
 
   @Nullable
@@ -256,6 +256,9 @@ public class TelemetryChannelTest {
     assertThat(completableResultCode.isSuccess()).isEqualTo(true);
     assertThat(recordingHttpClient.getCount()).isEqualTo(5);
   }
+
+  @Test
+  public void testUnknownHostException() {}
 
   static class RecordingHttpClient implements HttpClient {
 
