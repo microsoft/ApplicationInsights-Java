@@ -37,6 +37,7 @@ import com.azure.core.util.Context;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.agent.internal.MockHttpResponse;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryChannel;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
@@ -54,6 +55,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
 public class LocalFileLoaderTests {
@@ -246,9 +248,14 @@ public class LocalFileLoaderTests {
     LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder, null);
     LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
 
+    StatsbeatModule mockedStatsbeatModule = Mockito.mock(StatsbeatModule.class);
     TelemetryChannel telemetryChannel =
         new TelemetryChannel(
-            pipelineBuilder.build(), new URL("http://foo.bar"), localFileWriter, null, false);
+            pipelineBuilder.build(),
+            new URL("http://foo.bar"),
+            localFileWriter,
+            mockedStatsbeatModule,
+            false);
 
     // persist 10 files to disk
     for (int i = 0; i < 10; i++) {
