@@ -257,9 +257,6 @@ public class TelemetryChannelTest {
     assertThat(recordingHttpClient.getCount()).isEqualTo(5);
   }
 
-  @Test
-  public void testUnknownHostException() {}
-
   static class RecordingHttpClient implements HttpClient {
 
     private final AtomicInteger count = new AtomicInteger();
