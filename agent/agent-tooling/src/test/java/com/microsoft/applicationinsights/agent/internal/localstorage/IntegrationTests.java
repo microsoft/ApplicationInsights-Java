@@ -100,7 +100,8 @@ public class IntegrationTests {
             pipelineBuilder.build(),
             new URL("http://foo.bar"),
             new LocalFileWriter(localFileCache, tempFolder, null),
-            null);
+            null,
+            false);
   }
 
   @Test

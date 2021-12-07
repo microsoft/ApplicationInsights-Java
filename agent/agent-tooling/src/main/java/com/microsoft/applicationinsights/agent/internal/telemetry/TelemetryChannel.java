@@ -40,12 +40,13 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.Telemetr
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.httpclient.RedirectPolicy;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeat;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import io.opentelemetry.instrumentation.api.cache.Cache;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -91,17 +92,19 @@ public class TelemetryChannel {
   private final HttpPipeline pipeline;
   private final URL endpointUrl;
   @Nullable private final LocalFileWriter localFileWriter;
-  // this is null for the statsbeat channel
-  @Nullable private final NetworkStatsbeat networkStatsbeat;
+  private final StatsbeatModule statsbeatModule;
+  private final boolean isStatsbeat;
 
   public static TelemetryChannel create(
       URL endpointUrl,
       LocalFileWriter localFileWriter,
       Cache<String, String> ikeyEndpointMap,
-      @Nullable NetworkStatsbeat networkStatsbeat,
+      StatsbeatModule statsbeatModule,
+      boolean isStatsbeat,
       @Nullable Configuration.AadAuthentication aadAuthentication) {
     HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(aadAuthentication, ikeyEndpointMap);
-    return new TelemetryChannel(httpPipeline, endpointUrl, localFileWriter, networkStatsbeat);
+    return new TelemetryChannel(
+        httpPipeline, endpointUrl, localFileWriter, statsbeatModule, isStatsbeat);
   }
 
   public CompletableResultCode sendRawBytes(ByteBuffer buffer, String instrumentationKey) {
@@ -113,11 +116,13 @@ public class TelemetryChannel {
       HttpPipeline pipeline,
       URL endpointUrl,
       LocalFileWriter localFileWriter,
-      @Nullable NetworkStatsbeat networkStatsbeat) {
+      StatsbeatModule statsbeatModule,
+      boolean isStatsbeat) {
     this.pipeline = pipeline;
     this.endpointUrl = endpointUrl;
     this.localFileWriter = localFileWriter;
-    this.networkStatsbeat = networkStatsbeat;
+    this.statsbeatModule = statsbeatModule;
+    this.isStatsbeat = isStatsbeat;
   }
 
   public CompletableResultCode send(List<TelemetryItem> telemetryItems) {
@@ -233,13 +238,16 @@ public class TelemetryChannel {
               parseResponseCode(
                   response.getStatusCode(), instrumentationKey, byteBuffers, persisted);
               LazyHttpClient.consumeResponseBody(response);
-              // networkStatsbeat is null when it's sending a Statsbeat request.
-              if (networkStatsbeat != null) {
+              if (!isStatsbeat) {
                 if (response.getStatusCode() == 200) {
-                  networkStatsbeat.incrementRequestSuccessCount(
-                      System.currentTimeMillis() - startTime, instrumentationKey);
+                  statsbeatModule
+                      .getNetworkStatsbeat()
+                      .incrementRequestSuccessCount(
+                          System.currentTimeMillis() - startTime, instrumentationKey);
                 } else {
-                  networkStatsbeat.incrementRequestFailureCount(instrumentationKey);
+                  statsbeatModule
+                      .getNetworkStatsbeat()
+                      .incrementRequestFailureCount(instrumentationKey);
                 }
               }
               if (!persisted) {
@@ -253,21 +261,32 @@ public class TelemetryChannel {
               }
             },
             error -> {
-              if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
-                  error, endpointUrl.toString(), friendlyExceptionThrown, logger)) {
-                operationLogger.recordFailure(
-                    "Error sending telemetry items: " + error.getMessage(), error);
+              // AMPLS
+              if (isStatsbeat && error instanceof UnknownHostException) {
+                // when sending a Statsbeat request and server returns an UnknownHostException, it's
+                // likely that
+                // it's using a virtual network. In that case, we use the kill-switch to turn off
+                // Statsbeat.
+                statsbeatModule.shutdown();
+              } else {
+                if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
+                    error, endpointUrl.toString(), friendlyExceptionThrown, logger)) {
+                  operationLogger.recordFailure(
+                      "Error sending telemetry items: " + error.getMessage(), error);
+                }
+
+                if (!isStatsbeat) {
+                  statsbeatModule
+                      .getNetworkStatsbeat()
+                      .incrementRequestFailureCount(instrumentationKey);
+                }
+                // no need to write to disk again when failing to send raw bytes from the persisted
+                // file
+                if (!persisted) {
+                  writeToDiskOnFailure(byteBuffers, instrumentationKey);
+                }
               }
 
-              // networkStatsbeat is null when it's sending a Statsbeat request.
-              if (networkStatsbeat != null) {
-                networkStatsbeat.incrementRequestFailureCount(instrumentationKey);
-              }
-              // no need to write to disk again when failing to send raw bytes from the persisted
-              // file
-              if (!persisted) {
-                writeToDiskOnFailure(byteBuffers, instrumentationKey);
-              }
               if (!persisted) {
                 // persisted byte buffers don't come from the pool so shouldn't go back to the pool
                 byteBufferPool.offer(byteBuffers);
@@ -303,10 +322,9 @@ public class TelemetryChannel {
       case 439: // Breeze-specific: THROTTLED OVER EXTENDED TIME
         // TODO handle throttling
         // TODO (heya) track throttling count via Statsbeat
-        // networkStatsbeat is null when it's sending a Statsbeat request.
         // instrumentationKey is null when sending persisted file's raw bytes.
-        if (networkStatsbeat != null) {
-          networkStatsbeat.incrementThrottlingCount(instrumentationKey);
+        if (!isStatsbeat) {
+          statsbeatModule.getNetworkStatsbeat().incrementThrottlingCount(instrumentationKey);
         }
         break;
       case 200: // SUCCESS
@@ -318,10 +336,9 @@ public class TelemetryChannel {
       case 0: // client-side exception
         // TODO exponential backoff and retry to a limit
         // TODO (heya) track failure count via Statsbeat
-        // networkStatsbeat is null when it's sending a Statsbeat request.
         // instrumentationKey is null when sending persisted file's raw bytes.
-        if (networkStatsbeat != null) {
-          networkStatsbeat.incrementRetryCount(instrumentationKey);
+        if (!isStatsbeat) {
+          statsbeatModule.getNetworkStatsbeat().incrementRetryCount(instrumentationKey);
         }
         break;
       default:
