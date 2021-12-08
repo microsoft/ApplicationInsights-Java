@@ -37,6 +37,7 @@ import com.azure.core.util.Context;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.agent.internal.MockHttpResponse;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeat;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryChannel;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -249,13 +250,15 @@ public class LocalFileLoaderTests {
     LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
 
     StatsbeatModule mockedStatsbeatModule = Mockito.mock(StatsbeatModule.class);
+    when(mockedStatsbeatModule.getNetworkStatsbeat())
+        .thenReturn(Mockito.mock(NetworkStatsbeat.class));
     TelemetryChannel telemetryChannel =
         new TelemetryChannel(
             pipelineBuilder.build(),
             new URL("http://foo.bar"),
             localFileWriter,
             mockedStatsbeatModule,
-            true);
+            false);
 
     // persist 10 files to disk
     for (int i = 0; i < 10; i++) {
@@ -305,7 +308,11 @@ public class LocalFileLoaderTests {
 
     TelemetryChannel telemetryChannel =
         new TelemetryChannel(
-            pipelineBuilder.build(), new URL("http://foo.bar"), localFileWriter, null, false);
+            pipelineBuilder.build(),
+            new URL("http://foo.bar"),
+            localFileWriter,
+            Mockito.mock(StatsbeatModule.class),
+            false);
 
     // persist 10 files to disk
     for (int i = 0; i < 10; i++) {
