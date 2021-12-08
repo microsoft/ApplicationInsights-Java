@@ -46,7 +46,7 @@ import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWr
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalStorageUtils;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
-import io.opentelemetry.instrumentation.api.caching.Cache;
+import io.opentelemetry.instrumentation.api.cache.Cache;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.File;
 import java.util.ArrayList;
@@ -111,7 +111,7 @@ public class TelemetryClient {
     return builder()
         .setCustomDimensions(new HashMap<>())
         .setMetricFilters(new ArrayList<>())
-        .setIkeyEndpointMap(Cache.builder().build())
+        .setIkeyEndpointMap(Cache.bounded(100))
         .setStatsbeatModule(new StatsbeatModule(null))
         .build();
   }

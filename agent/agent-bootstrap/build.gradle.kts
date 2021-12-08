@@ -3,7 +3,7 @@ plugins {
   id("ai.sdk-version-file")
 }
 
-val otelInstrumentationAlphaVersion = "1.7.0+ai.patches-alpha"
+val otelInstrumentationAlphaVersion = "1.9.0+ai.patches-alpha"
 
 dependencies {
   implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap") {
@@ -15,7 +15,7 @@ dependencies {
   implementation("ch.qos.logback:logback-classic")
   implementation("ch.qos.logback.contrib:logback-json-classic")
 
-  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-bootstrap:$otelInstrumentationAlphaVersion")
+  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-common-bootstrap:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-kafka-clients-0.11-bootstrap:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-undertow-1.4-bootstrap:$otelInstrumentationAlphaVersion")
 

@@ -89,6 +89,7 @@ public class MainEntryPoint {
       rpConfiguration = RpConfigurationBuilder.create(agentPath);
       configuration = ConfigurationBuilder.create(agentPath, rpConfiguration);
       startupLogger = configureLogging(configuration.selfDiagnostics, agentPath);
+      StatusFile.startupLogger = startupLogger;
       ConfigurationBuilder.logConfigurationWarnMessages();
       MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
       // TODO convert to agent builder concept
