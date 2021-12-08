@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.quickpulse;
 
+import com.microsoft.applicationinsights.agent.internal.exporter.models.ContextTagKeys;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorDomain;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDependencyData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
@@ -226,7 +227,10 @@ public enum QuickPulseDataCollector {
     MonitorDomain data = telemetryItem.getData().getBaseData();
     if (data instanceof RequestData) {
       RequestData requestTelemetry = (RequestData) data;
-      addRequest(requestTelemetry, itemCount);
+      addRequest(
+          requestTelemetry,
+          itemCount,
+          telemetryItem.getTags().get(ContextTagKeys.AI_OPERATION_NAME.toString()));
     } else if (data instanceof RemoteDependencyData) {
       addDependency((RemoteDependencyData) data, itemCount);
     } else if (data instanceof TelemetryExceptionData) {
@@ -308,7 +312,7 @@ public enum QuickPulseDataCollector {
     }
   }
 
-  private void addRequest(RequestData requestTelemetry, int itemCount) {
+  private void addRequest(RequestData requestTelemetry, int itemCount, String operationName) {
     Counters counters = this.counters.get();
     if (counters == null) {
       return;
@@ -328,7 +332,9 @@ public enum QuickPulseDataCollector {
     quickPulseRequestDocument.setSuccess(requestTelemetry.isSuccess());
     quickPulseRequestDocument.setDuration(requestTelemetry.getDuration());
     quickPulseRequestDocument.setResponseCode(requestTelemetry.getResponseCode());
-    quickPulseRequestDocument.setOperationName(requestTelemetry.getName());
+    quickPulseRequestDocument.setOperationName(operationName);
+    quickPulseRequestDocument.setName(requestTelemetry.getName());
+    quickPulseRequestDocument.setUrl(requestTelemetry.getUrl());
     quickPulseRequestDocument.setProperties(
         aggregateProperties(requestTelemetry.getProperties(), requestTelemetry.getMeasurements()));
     synchronized (counters.documentList) {
