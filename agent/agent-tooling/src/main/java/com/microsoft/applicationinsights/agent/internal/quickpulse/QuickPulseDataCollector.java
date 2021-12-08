@@ -37,6 +37,7 @@ import com.microsoft.applicationinsights.agent.internal.quickpulse.model.QuickPu
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -247,8 +248,8 @@ public enum QuickPulseDataCollector {
     if (counters == null) {
       return;
     }
-    counters.rddsAndDuations.addAndGet(
-        Counters.encodeCountAndDuration(itemCount, parseDurationToMillis(telemetry.getDuration())));
+    long durationMillis = parseDurationToMillis(telemetry.getDuration());
+    counters.rddsAndDuations.addAndGet(Counters.encodeCountAndDuration(itemCount, durationMillis));
     Boolean success = telemetry.isSuccess();
     if (success != null && !success) { // success should not be null
       counters.unsuccessfulRdds.incrementAndGet();
@@ -262,7 +263,7 @@ public enum QuickPulseDataCollector {
     quickPulseDependencyDocument.setCommandName(telemetry.getData());
     quickPulseDependencyDocument.setTarget(telemetry.getTarget());
     quickPulseDependencyDocument.setSuccess(telemetry.isSuccess());
-    quickPulseDependencyDocument.setDuration(telemetry.getDuration());
+    quickPulseDependencyDocument.setDuration(Duration.ofMillis(durationMillis).toString());
     quickPulseDependencyDocument.setResultCode(telemetry.getResultCode());
     quickPulseDependencyDocument.setOperationName(telemetry.getId());
     quickPulseDependencyDocument.setDependencyTypeName(telemetry.getType());
@@ -317,10 +318,9 @@ public enum QuickPulseDataCollector {
     if (counters == null) {
       return;
     }
-
+    long durationMillis = parseDurationToMillis(requestTelemetry.getDuration());
     counters.requestsAndDurations.addAndGet(
-        Counters.encodeCountAndDuration(
-            itemCount, parseDurationToMillis(requestTelemetry.getDuration())));
+        Counters.encodeCountAndDuration(itemCount, durationMillis));
     if (!requestTelemetry.isSuccess()) {
       counters.unsuccessfulRequests.incrementAndGet();
     }
@@ -330,7 +330,7 @@ public enum QuickPulseDataCollector {
     quickPulseRequestDocument.setOperationId(requestTelemetry.getId());
     quickPulseRequestDocument.setVersion("1.0");
     quickPulseRequestDocument.setSuccess(requestTelemetry.isSuccess());
-    quickPulseRequestDocument.setDuration(requestTelemetry.getDuration());
+    quickPulseRequestDocument.setDuration(Duration.ofMillis(durationMillis).toString());
     quickPulseRequestDocument.setResponseCode(requestTelemetry.getResponseCode());
     quickPulseRequestDocument.setOperationName(operationName);
     quickPulseRequestDocument.setName(requestTelemetry.getName());
