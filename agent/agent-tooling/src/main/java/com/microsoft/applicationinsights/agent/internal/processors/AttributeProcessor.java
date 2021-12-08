@@ -171,7 +171,7 @@ public class AttributeProcessor extends AgentProcessor {
 
   private static SpanData processMaskAction(SpanData span, ProcessorAction actionObj) {
     // Currently we only support String
-    String existingValue = getAttribute(span.getAttributes(), actionObj.key);
+    String existingValue = span.getAttributes().get(actionObj.key);
     if (existingValue == null) {
       return span;
     }
