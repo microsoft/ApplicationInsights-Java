@@ -5,7 +5,7 @@
 * Add span kind to sampling overrides [#1960](https://github.com/microsoft/ApplicationInsights-Java/pull/1960).
 * Don't send sampleRate 100, can reduce ingestion cost by not sending it [#1966](https://github.com/microsoft/ApplicationInsights-Java/pull/1966).
 * Fix jackson initialization [#1984](https://github.com/microsoft/ApplicationInsights-Java/pull/1984).
-* Add url, name and fix operation name to request document in quick pulse sample telemetry [#1993](https://github.com/microsoft/ApplicationInsights-Java/pull/1993).
+* Add url, name and fix operation name to request document in live metrics sample telemetry [#1993](https://github.com/microsoft/ApplicationInsights-Java/pull/1993).
 * Fix duration in live metrics sample telemetry feature. [#1996](https://github.com/microsoft/ApplicationInsights-Java/pull/1996).
 
 # Version 3.2.3 GA
