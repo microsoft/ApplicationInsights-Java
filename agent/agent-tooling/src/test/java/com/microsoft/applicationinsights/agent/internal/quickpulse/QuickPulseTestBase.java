@@ -40,10 +40,10 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDe
 import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedDuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -99,7 +99,7 @@ public class QuickPulseTestBase extends TestBase {
     properties.put("customProperty", "customValue");
     data.setProperties(properties);
     data.setName(name);
-    data.setDuration(FormattedDuration.fromMillis(durationMillis));
+    data.setDuration(Duration.ofMillis(durationMillis).toString());
     data.setResponseCode(responseCode);
     data.setSuccess(success);
     data.setUrl("foo");
@@ -117,7 +117,7 @@ public class QuickPulseTestBase extends TestBase {
     data.setProperties(properties);
     data.setName(name);
     data.setData(command);
-    data.setDuration(FormattedDuration.fromMillis(durationMillis));
+    data.setDuration(Duration.ofMillis(durationMillis).toString());
     data.setSuccess(success);
     return telemetry;
   }

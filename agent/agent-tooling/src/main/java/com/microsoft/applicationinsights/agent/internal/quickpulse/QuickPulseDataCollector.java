@@ -248,7 +248,7 @@ public enum QuickPulseDataCollector {
     if (counters == null) {
       return;
     }
-    long durationMillis = parseDurationToMillis(telemetry.getDuration());
+    long durationMillis = Duration.parse(telemetry.getDuration()).toMillis();
     counters.rddsAndDuations.addAndGet(Counters.encodeCountAndDuration(itemCount, durationMillis));
     Boolean success = telemetry.isSuccess();
     if (success != null && !success) { // success should not be null
@@ -263,7 +263,7 @@ public enum QuickPulseDataCollector {
     quickPulseDependencyDocument.setCommandName(telemetry.getData());
     quickPulseDependencyDocument.setTarget(telemetry.getTarget());
     quickPulseDependencyDocument.setSuccess(telemetry.isSuccess());
-    quickPulseDependencyDocument.setDuration(Duration.ofMillis(durationMillis).toString());
+    quickPulseDependencyDocument.setDuration(telemetry.getDuration());
     quickPulseDependencyDocument.setResultCode(telemetry.getResultCode());
     quickPulseDependencyDocument.setOperationName(telemetry.getId());
     quickPulseDependencyDocument.setDependencyTypeName(telemetry.getType());
@@ -318,7 +318,7 @@ public enum QuickPulseDataCollector {
     if (counters == null) {
       return;
     }
-    long durationMillis = parseDurationToMillis(requestTelemetry.getDuration());
+    long durationMillis = Duration.parse(requestTelemetry.getDuration()).toMillis();
     counters.requestsAndDurations.addAndGet(
         Counters.encodeCountAndDuration(itemCount, durationMillis));
     if (!requestTelemetry.isSuccess()) {
@@ -330,7 +330,7 @@ public enum QuickPulseDataCollector {
     quickPulseRequestDocument.setOperationId(requestTelemetry.getId());
     quickPulseRequestDocument.setVersion("1.0");
     quickPulseRequestDocument.setSuccess(requestTelemetry.isSuccess());
-    quickPulseRequestDocument.setDuration(Duration.ofMillis(durationMillis).toString());
+    quickPulseRequestDocument.setDuration(requestTelemetry.getDuration());
     quickPulseRequestDocument.setResponseCode(requestTelemetry.getResponseCode());
     quickPulseRequestDocument.setOperationName(operationName);
     quickPulseRequestDocument.setName(requestTelemetry.getName());

@@ -40,7 +40,6 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.Telemetr
 import com.microsoft.applicationinsights.agent.internal.init.AiOperationNameSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyPropagator;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingScoreGeneratorV2;
-import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedDuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
@@ -51,6 +50,7 @@ import io.opentelemetry.instrumentation.api.tracer.ServerSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import java.net.URI;
 import java.net.URL;
+import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -197,7 +197,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
     data.setResultCode(resultCode);
     if (totalMillis != null) {
-      data.setDuration(FormattedDuration.fromMillis(totalMillis));
+      data.setDuration(Duration.ofMillis(totalMillis).toString());
     }
     data.setSuccess(success);
     data.setData(commandName);
@@ -249,7 +249,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     if (uri != null) {
       data.setUrl(uri.toString());
     }
-    data.setDuration(FormattedDuration.fromMillis(totalMillis));
+    data.setDuration(Duration.ofMillis(totalMillis).toString());
     data.setMeasurements(metrics);
 
     if (!properties.isEmpty()) {
@@ -347,7 +347,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       data.setUrl(url.toString());
     }
     if (duration != null) {
-      data.setDuration(FormattedDuration.fromMillis(duration));
+      data.setDuration(Duration.ofMillis(duration).toString());
     }
     data.setResponseCode(responseCode);
     data.setSuccess(success);

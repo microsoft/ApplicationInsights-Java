@@ -36,7 +36,6 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.Severity
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedDuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
@@ -57,6 +56,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -263,7 +263,7 @@ public class Exporter implements SpanExporter {
     data.setId(span.getSpanId());
     data.setName(getDependencyName(span));
     data.setDuration(
-        FormattedDuration.fromNanos(span.getEndEpochNanos() - span.getStartEpochNanos()));
+        Duration.ofNanos(span.getEndEpochNanos() - span.getStartEpochNanos()).toString());
     data.setSuccess(getSuccess(span));
 
     if (inProc) {
@@ -761,7 +761,7 @@ public class Exporter implements SpanExporter {
 
     // set request-specific properties
     data.setName(operationName);
-    data.setDuration(FormattedDuration.fromNanos(span.getEndEpochNanos() - startEpochNanos));
+    data.setDuration(Duration.ofNanos(span.getEndEpochNanos() - startEpochNanos).toString());
     data.setSuccess(getSuccess(span));
 
     String httpUrl = getHttpUrlFromServerSpan(attributes);
