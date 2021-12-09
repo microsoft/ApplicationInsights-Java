@@ -41,12 +41,12 @@ public class StatsbeatModule {
           ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
 
   private final CustomDimensions customDimensions;
-
   private final NetworkStatsbeat networkStatsbeat;
   private final AttachStatsbeat attachStatsbeat;
   private final FeatureStatsbeat featureStatsbeat;
   private final FeatureStatsbeat instrumentationStatsbeat;
   private final NonessentialStatsbeat nonessentialStatsbeat;
+  private final AzureMetadataService azureMetadataService;
 
   private final AtomicBoolean started = new AtomicBoolean();
 
@@ -57,6 +57,7 @@ public class StatsbeatModule {
     featureStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.FEATURE);
     instrumentationStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.INSTRUMENTATION);
     nonessentialStatsbeat = new NonessentialStatsbeat(customDimensions);
+    azureMetadataService = new AzureMetadataService(attachStatsbeat, customDimensions);
   }
 
   public void start(TelemetryClient telemetryClient, Configuration config) {
@@ -99,9 +100,7 @@ public class StatsbeatModule {
     // only turn on AzureMetadataService when the resource provider is VM or UNKNOWN.
     if (rp == ResourceProvider.RP_VM || rp == ResourceProvider.UNKNOWN) {
       // will only reach here the first time, after instance has been instantiated
-      AzureMetadataService metadataService =
-          new AzureMetadataService(attachStatsbeat, customDimensions);
-      metadataService.scheduleWithFixedDelay(longIntervalSeconds);
+      azureMetadataService.scheduleWithFixedDelay(longIntervalSeconds);
     }
 
     featureStatsbeat.trackConfigurationOptions(config);
@@ -115,6 +114,12 @@ public class StatsbeatModule {
     } else {
       logger.debug("Non-essential Statsbeat is disabled.");
     }
+  }
+
+  public void shutdown() {
+    logger.debug("Shutting down Statsbeat scheduler.");
+    scheduledExecutor.shutdown();
+    azureMetadataService.shutdown();
   }
 
   public NetworkStatsbeat getNetworkStatsbeat() {

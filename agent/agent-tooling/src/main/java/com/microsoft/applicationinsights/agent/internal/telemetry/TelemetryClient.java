@@ -221,7 +221,8 @@ public class TelemetryClient {
                   endpointProvider.getIngestionEndpointUrl(),
                   localFileWriter,
                   ikeyEndpointMap,
-                  statsbeatModule.getNetworkStatsbeat(),
+                  statsbeatModule,
+                  false,
                   aadAuthentication);
 
           if (!readOnlyFileSystem) {
@@ -254,7 +255,8 @@ public class TelemetryClient {
                   endpointProvider.getStatsbeatEndpointUrl(),
                   localFileWriter,
                   ikeyEndpointMap,
-                  null,
+                  statsbeatModule,
+                  true,
                   null);
 
           if (!readOnlyFileSystem) {

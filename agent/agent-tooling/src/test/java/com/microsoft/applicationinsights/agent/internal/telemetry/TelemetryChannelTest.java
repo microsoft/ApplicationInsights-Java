@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 import com.azure.core.http.HttpClient;
 import com.azure.core.http.HttpHeaders;
@@ -36,6 +37,8 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.Telemetr
 import com.microsoft.applicationinsights.agent.internal.httpclient.RedirectPolicy;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileCache;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeat;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import io.opentelemetry.instrumentation.api.cache.Cache;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
@@ -57,6 +60,7 @@ import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mockito;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -78,11 +82,14 @@ public class TelemetryChannelTest {
             .policies(policies.toArray(new HttpPipelinePolicy[0]))
             .httpClient(recordingHttpClient);
     LocalFileCache localFileCache = new LocalFileCache(tempFolder);
+    StatsbeatModule mockedStatsModule = Mockito.mock(StatsbeatModule.class);
+    when(mockedStatsModule.getNetworkStatsbeat()).thenReturn(Mockito.mock(NetworkStatsbeat.class));
     return new TelemetryChannel(
         pipelineBuilder.build(),
         new URL(END_POINT_URL),
         new LocalFileWriter(localFileCache, tempFolder, null),
-        null);
+        mockedStatsModule,
+        false);
   }
 
   @Nullable
