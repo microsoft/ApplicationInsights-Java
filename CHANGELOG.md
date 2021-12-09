@@ -6,7 +6,7 @@
 * Fix status exception in a readonly file system [#1967](https://github.com/microsoft/ApplicationInsights-Java/pull/1967). 
 * Reduce noisy truncation logging [#1968](https://github.com/microsoft/ApplicationInsights-Java/pull/1968).
 * Fix jackson initialization [#1984](https://github.com/microsoft/ApplicationInsights-Java/pull/1984).
-* Add url, name and fix operation name to request document in quick pulse sample telemetry [#1993](https://github.com/microsoft/ApplicationInsights-Java/pull/1993).
+* Add url, name and fix operation name to request document in live metrics sample telemetry [#1993](https://github.com/microsoft/ApplicationInsights-Java/pull/1993).
 * Fix duration in live metrics sample telemetry feature. [#1996](https://github.com/microsoft/ApplicationInsights-Java/pull/1996).
 
 # Version 3.2.3 GA
