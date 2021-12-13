@@ -5,7 +5,7 @@ dependencies {
     compile aiWebJar
 
     compile group: 'org.hsqldb', name: 'hsqldb', version: '2.3.6' // 2.4.0+ requires Java 8+
-    compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.43' // the old agent did not support 8.x
+    compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.49' // the old agent did not support 8.x
     compile group: 'org.postgresql', name: 'postgresql', version: '42.2.5.jre7'
     compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '6.4.0.jre7' // 6.5.0+ requires Java 8+
 
