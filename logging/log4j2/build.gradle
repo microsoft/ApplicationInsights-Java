@@ -33,6 +33,6 @@ projectPomDescription = "This module provides a $project.msftAppInsights appende
 // endregion Publishing properties
 
 dependencies {
-    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.15.0'
+    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'
     annotationProcessor group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'
 }
