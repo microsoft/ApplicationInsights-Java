@@ -1,5 +1,8 @@
 # CHANGELOG
 
+# Version 2.6.4
+* Upgrade log4j2 appender from 2.11.0 to 2.15.0.
+
 # Version 2.6.3
 * Update xstream dependency [#1580](https://github.com/microsoft/ApplicationInsights-Java/issues/1479)
 * Upgrade gradle from 5.5.1 to 6.8.3
