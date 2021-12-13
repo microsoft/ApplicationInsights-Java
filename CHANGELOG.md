@@ -1,7 +1,7 @@
 # CHANGELOG
 
 # Version 2.6.4
-* Upgrade log4j2 appender from 2.11.0 to 2.15.0.
+* Mitigate a critical Log4j RCE vulnerability[CVE-2021-44228](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228).
 
 # Version 2.6.3
 * Update xstream dependency [#1580](https://github.com/microsoft/ApplicationInsights-Java/issues/1479)
