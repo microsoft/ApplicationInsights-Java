@@ -1,7 +1,7 @@
 # CHANGELOG
 
 # Version 2.6.4
-* Update `applicationinsights-logging-log4j2` artifact to not pull in log4j2 dependency on its own. Users should already be bringing their own version of log4j2 (and should be upgrading that version or applying the mitigation steps from [CVE-2021-44228](https://msrc-blog.microsoft.com/2021/12/11/microsofts-response-to-cve-2021-44228-apache-log4j2/)). The update ensures that users *have* to bring their own version of log4j.
+* Update `applicationinsights-logging-log4j2` artifact to not pull in log4j2 dependency on its own. Users should already be bringing their own version of log4j2 (and should be upgrading that version or applying the mitigation steps from [CVE-2021-44228](https://msrc-blog.microsoft.com/2021/12/11/microsofts-response-to-cve-2021-44228-apache-log4j2/)). The update ensures that users *have* to bring their own version of log4j2.
   ([#2002](https://github.com/microsoft/ApplicationInsights-Java/issues/2002))
 
 # Version 2.6.3
