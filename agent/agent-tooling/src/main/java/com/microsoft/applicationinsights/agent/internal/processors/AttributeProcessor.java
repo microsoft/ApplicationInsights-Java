@@ -171,20 +171,16 @@ public class AttributeProcessor extends AgentProcessor {
 
   private static SpanData processMaskAction(SpanData span, ProcessorAction actionObj) {
     // Currently we only support String
-    String existingValue = getAttribute(span.getAttributes(), actionObj.key);
+    String existingValue = span.getAttributes().get(actionObj.key);
     if (existingValue == null) {
       return span;
     }
     Matcher matcher = actionObj.maskAttribute.pattern.matcher(existingValue);
-    if (!matcher.matches()) {
+    String newValue = matcher.replaceAll(actionObj.maskAttribute.replace);
+    if (newValue.equals(existingValue)) {
       return span;
     }
     AttributesBuilder builder = span.getAttributes().toBuilder();
-    String newValue = actionObj.maskAttribute.replace;
-    for (String groupName : actionObj.maskAttribute.groupNames) {
-      newValue = newValue.replaceAll(groupName, matcher.group(groupName));
-    }
-    newValue = newValue.replaceAll("\\$", "");
     builder.put(actionObj.key, newValue);
     return new MySpanData(span, builder.build());
   }

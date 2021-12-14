@@ -232,7 +232,7 @@ class ConfigurationTest {
     assertThat(attributesMaskConfig.actions.get(0).maskAttribute.groupNames.get(0))
         .isEqualTo("uriNoCard");
     assertThat(attributesMaskConfig.actions.get(0).maskAttribute.replace)
-        .isEqualTo("$uriNoCard****$cardEnd");
+        .isEqualTo("${uriNoCard}****${cardEnd}");
   }
 
   @Test

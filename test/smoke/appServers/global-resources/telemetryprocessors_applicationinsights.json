@@ -85,7 +85,7 @@
           {
             "key": "httpPath",
             "pattern": "(?<httpPath>.*)",
-            "replace": "*$httpPath*",
+            "replace": "*${httpPath}*",
             "action": "mask"
           }
         ],

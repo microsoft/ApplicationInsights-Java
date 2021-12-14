@@ -851,7 +851,7 @@ public class Configuration {
   }
 
   public static class MaskAttribute {
-    private static final Pattern replacePattern = Pattern.compile("\\$[A-Za-z1-9]*");
+    private static final Pattern replacePattern = Pattern.compile("\\$\\{[A-Za-z1-9]*\\}*");
     public final Pattern pattern;
     public final List<String> groupNames;
     public final String replace;
@@ -875,12 +875,17 @@ public class Configuration {
 
       Matcher maskMatcher = replacePattern.matcher(replace);
       while (maskMatcher.find()) {
-        String replacedString = maskMatcher.group().substring(1);
+        String groupName = maskMatcher.group();
+        String replacedString = "";
+        if (groupName.length() > 3) {
+          // to extract string of format ${foo}
+          replacedString = groupName.substring(2, groupName.length() - 1);
+        }
         if (replacedString.isEmpty()) {
           throw new FriendlyException(
               "An attribute processor configuration does not have valid `replace` value to mask attributes: "
                   + replace,
-              "Please provide a valid replace value of the form ($foo***$bar). "
+              "Please provide a valid replace value of the form (${foo}***${bar}). "
                   + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
         }
         if (!groupNames.contains(replacedString)) {

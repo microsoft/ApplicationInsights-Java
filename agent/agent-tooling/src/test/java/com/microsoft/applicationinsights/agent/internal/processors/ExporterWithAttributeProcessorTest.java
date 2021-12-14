@@ -1419,7 +1419,7 @@ class ExporterWithAttributeProcessorTest {
         "^(?<uriNoCard>.*\\/cardid\\/)(?<cardStart>[0-9]{6})[0-9]{6}(?<cardEnd>[0-9]{4,6}).*";
     ProcessorAction action =
         new ProcessorAction(
-            "testKey", ProcessorActionType.MASK, null, null, regex, "$uriNoCard****$cardEnd");
+            "testKey", ProcessorActionType.MASK, null, null, regex, "${uriNoCard}****${cardEnd}");
     ProcessorAction action2 =
         new ProcessorAction(
             "testKey2",
@@ -1427,10 +1427,15 @@ class ExporterWithAttributeProcessorTest {
             null,
             null,
             regex,
-            "$uriNoCard$cardStart****$cardEnd");
+            "${uriNoCard}${cardStart}****${cardEnd}");
     ProcessorAction action3 =
         new ProcessorAction(
-            "testKey3", ProcessorActionType.MASK, null, null, regex, "$cardStart****$cardStart");
+            "testKey3",
+            ProcessorActionType.MASK,
+            null,
+            null,
+            regex,
+            "${cardStart}****${cardStart}");
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     actions.add(action2);

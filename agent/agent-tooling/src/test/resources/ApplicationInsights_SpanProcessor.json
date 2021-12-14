@@ -140,7 +140,7 @@
           {
             "key": "http.url",
             "pattern": "^(?<uriNoCard>.*\\/cardid\\/)(?<cardStart>[0-9]{6})[0-9]{6}(?<cardEnd>[0-9]{4,6}).*",
-            "replace": "$uriNoCard****$cardEnd",
+            "replace": "${uriNoCard}****${cardEnd}",
             "action": "mask"
           }
         ],
