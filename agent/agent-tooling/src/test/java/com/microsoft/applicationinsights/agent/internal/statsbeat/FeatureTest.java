@@ -49,8 +49,7 @@ public class FeatureTest {
               + Math.pow(2, 8)
               + Math.pow(2, 15)
               + Math.pow(2, 17)
-              + Math.pow(
-                  2, 20) // Exponents are keys from StatsbeatTestUtils.FEATURE_MAP_DECODING.)
+              + Math.pow(2, 20) // Exponents are keys from StatsbeatTestUtils.FEATURE_MAP_DECODING.)
               + Math.pow(2, 26));
 
   @Test

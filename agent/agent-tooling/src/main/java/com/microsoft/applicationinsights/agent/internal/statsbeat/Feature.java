@@ -56,7 +56,6 @@ enum Feature {
   PLAY_DISABLED(25), // preview instrumentation, play is ON by default in OTEL
   JAVA_VERSION(26);
 
-
   private static final Map<String, Feature> javaVendorFeatureMap;
 
   static {
