@@ -39,6 +39,7 @@ public class FeatureTest {
     features.add(Feature.JDBC_DISABLED);
     features.add(Feature.SPRING_INTEGRATION_DISABLED);
     features.add(Feature.STATSBEAT_DISABLED);
+    features.add(Feature.JAVA_VERSION);
   }
 
   private static final long EXPECTED_FEATURE =
@@ -49,7 +50,8 @@ public class FeatureTest {
               + Math.pow(2, 15)
               + Math.pow(2, 17)
               + Math.pow(
-                  2, 20)); // Exponents are keys from StatsbeatTestUtils.FEATURE_MAP_DECODING.)
+                  2, 20) // Exponents are keys from StatsbeatTestUtils.FEATURE_MAP_DECODING.)
+              + Math.pow(2, 26));
 
   @Test
   public void tesEncodeAndDecodeFeature() {

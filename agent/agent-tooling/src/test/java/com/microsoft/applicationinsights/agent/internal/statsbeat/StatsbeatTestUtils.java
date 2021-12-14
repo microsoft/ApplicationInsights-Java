@@ -115,6 +115,9 @@ public final class StatsbeatTestUtils {
     FEATURE_MAP_DECODING.put(21, Feature.QUARTZ_DISABLED);
     FEATURE_MAP_DECODING.put(22, Feature.APACHE_CAMEL_DISABLED);
     FEATURE_MAP_DECODING.put(23, Feature.AKKA_DISABLED);
+    FEATURE_MAP_DECODING.put(24, Feature.PROPAGATION_DISABLED);
+    FEATURE_MAP_DECODING.put(25, Feature.PLAY_DISABLED);
+    FEATURE_MAP_DECODING.put(26, Feature.JAVA_VERSION);
   }
 
   static Set<String> decodeInstrumentations(long number) {

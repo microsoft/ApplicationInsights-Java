@@ -43,8 +43,8 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     // track java distribution
     super(customDimensions);
     this.type = type;
-    String javaVendor = System.getProperty("java.vendor");
-    featureList.add(Feature.fromJavaVendor(javaVendor));
+    featureList.add(Feature.fromJavaVendor(System.getProperty("java.vendor")));
+    featureList.add(Feature.fromJavaVendor(System.getProperty("java.specification.version")));
   }
 
   /** Returns a long that represents a list of features enabled. Each bitfield maps to a feature. */
