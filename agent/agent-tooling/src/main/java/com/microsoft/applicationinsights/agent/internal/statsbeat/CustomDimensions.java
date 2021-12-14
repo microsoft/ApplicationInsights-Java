@@ -63,7 +63,7 @@ class CustomDimensions {
     }
 
     sdkVersion = qualifiedSdkVersion.substring(qualifiedSdkVersion.lastIndexOf(':') + 1);
-    runtimeVersion = System.getProperty("java.version");
+    runtimeVersion = System.getProperty("java.specification.version");
 
     attachType = "codeless";
     language = "java";
