@@ -102,6 +102,7 @@ public class QuickPulseTestBase extends TestBase {
     data.setDuration(FormattedDuration.fromMillis(durationMillis));
     data.setResponseCode(responseCode);
     data.setSuccess(success);
+    data.setUrl("foo");
     telemetry.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
     return telemetry;
   }

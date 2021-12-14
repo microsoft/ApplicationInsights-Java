@@ -40,6 +40,9 @@ public class QuickPulseRequestDocument extends QuickPulseDocument {
   @JsonProperty(value = "OperationName")
   private String operationName;
 
+  @JsonProperty(value = "Url")
+  private String url;
+
   public boolean isSuccess() {
     return success;
   }
@@ -78,5 +81,13 @@ public class QuickPulseRequestDocument extends QuickPulseDocument {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public String getUrl() {
+    return url;
+  }
+
+  public void setUrl(String url) {
+    this.url = url;
   }
 }

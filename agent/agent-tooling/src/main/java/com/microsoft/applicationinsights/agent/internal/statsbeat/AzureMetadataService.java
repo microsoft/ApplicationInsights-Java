@@ -71,6 +71,11 @@ class AzureMetadataService implements Runnable {
     scheduledExecutor.scheduleWithFixedDelay(this, 60, interval, TimeUnit.SECONDS);
   }
 
+  void shutdown() {
+    logger.info("Shutting down Azure Metadata Service.");
+    scheduledExecutor.shutdown();
+  }
+
   // only used by tests
   void updateMetadata(String response) throws IOException {
     updateMetadata(mapper.readValue(response, MetadataInstanceResponse.class));

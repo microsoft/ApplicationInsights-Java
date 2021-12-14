@@ -38,7 +38,7 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.Telemetr
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.instrumentation.api.caching.Cache;
+import io.opentelemetry.instrumentation.api.cache.Cache;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -257,7 +257,7 @@ public class TelemetryUtil {
   public static final String SAMPLING_PERCENTAGE_TRACE_STATE = "ai-internal-sp";
 
   private static final Cache<String, OptionalFloat> parsedSamplingPercentageCache =
-      Cache.builder().setMaximumSize(100).build();
+      Cache.bounded(100);
 
   private static final AtomicBoolean alreadyLoggedSamplingPercentageMissing = new AtomicBoolean();
   private static final AtomicBoolean alreadyLoggedSamplingPercentageParseError =

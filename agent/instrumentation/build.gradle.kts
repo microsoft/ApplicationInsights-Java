@@ -3,7 +3,7 @@ plugins {
   id("com.github.johnrengelman.shadow")
 }
 
-val otelInstrumentationAlphaVersion = "1.7.0+ai.patches-alpha"
+val otelInstrumentationAlphaVersion = "1.9.0+ai.patches-alpha"
 
 configurations {
   // exclude bootstrap dependencies from shadowJar

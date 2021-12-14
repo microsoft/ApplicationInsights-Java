@@ -55,19 +55,6 @@ public class AttributeProcessor extends AgentProcessor {
     return new AttributeProcessor(config.actions, normalizedInclude, normalizedExclude);
   }
 
-  // this won't be needed once we update to 0.13.0
-  // see https://github.com/open-telemetry/opentelemetry-java/pull/2284
-  @Nullable
-  public static String getAttribute(Attributes attributes, AttributeKey<String> key) {
-    Object existingValueObj = attributes.get(key);
-    // checking the return type won't be needed once we update to 0.13.0
-    // see https://github.com/open-telemetry/opentelemetry-java/pull/2284
-    if (existingValueObj instanceof String) {
-      return (String) existingValueObj;
-    }
-    return null;
-  }
-
   // Function to process actions
   public SpanData processActions(SpanData span) {
     SpanData updatedSpan = span;
@@ -105,7 +92,7 @@ public class AttributeProcessor extends AgentProcessor {
       builder.putAll(existingSpanAttributes);
       return new MySpanData(span, builder.build());
     }
-    String fromAttributeValue = getAttribute(existingSpanAttributes, actionObj.fromAttribute);
+    String fromAttributeValue = existingSpanAttributes.get(actionObj.fromAttribute);
     if (fromAttributeValue != null) {
       AttributesBuilder builder = Attributes.builder();
       builder.put(actionObj.key, fromAttributeValue);
@@ -117,7 +104,7 @@ public class AttributeProcessor extends AgentProcessor {
 
   private static SpanData processUpdateAction(SpanData span, ProcessorAction actionObj) {
     // Currently we only support String
-    String existingValue = getAttribute(span.getAttributes(), actionObj.key);
+    String existingValue = span.getAttributes().get(actionObj.key);
     if (existingValue == null) {
       return span;
     }
@@ -128,7 +115,7 @@ public class AttributeProcessor extends AgentProcessor {
       builder.put(actionObj.key, actionObj.value);
       return new MySpanData(span, builder.build());
     }
-    String fromAttributeValue = getAttribute(span.getAttributes(), actionObj.fromAttribute);
+    String fromAttributeValue = span.getAttributes().get(actionObj.fromAttribute);
     if (fromAttributeValue != null) {
       AttributesBuilder builder = span.getAttributes().toBuilder();
       builder.put(actionObj.key, fromAttributeValue);
@@ -139,7 +126,7 @@ public class AttributeProcessor extends AgentProcessor {
 
   private static SpanData processDeleteAction(SpanData span, ProcessorAction actionObj) {
     // Currently we only support String
-    String existingValue = getAttribute(span.getAttributes(), actionObj.key);
+    String existingValue = span.getAttributes().get(actionObj.key);
     if (existingValue == null) {
       return span;
     }
@@ -156,7 +143,7 @@ public class AttributeProcessor extends AgentProcessor {
 
   private static SpanData processHashAction(SpanData span, ProcessorAction actionObj) {
     // Currently we only support String
-    String existingValue = getAttribute(span.getAttributes(), actionObj.key);
+    String existingValue = span.getAttributes().get(actionObj.key);
     if (existingValue == null) {
       return span;
     }
@@ -167,7 +154,7 @@ public class AttributeProcessor extends AgentProcessor {
 
   private static SpanData processExtractAction(SpanData span, ProcessorAction actionObj) {
     // Currently we only support String
-    String existingValue = getAttribute(span.getAttributes(), actionObj.key);
+    String existingValue = span.getAttributes().get(actionObj.key);
     if (existingValue == null) {
       return span;
     }
