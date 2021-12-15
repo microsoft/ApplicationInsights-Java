@@ -35,12 +35,16 @@ import org.junit.Test;
 @UseAgent
 @WithDependencyContainers({
   @DependencyContainer(
-      value = "confluentinc/cp-zookeeper",
+      // TODO (trask) update back to "latest" after
+      //  https://github.com/confluentinc/kafka-images/issues/127 is fixed
+      value = "confluentinc/cp-zookeeper:6.2.1",
       portMapping = "2181",
       environmentVariables = {"ZOOKEEPER_CLIENT_PORT=2181"},
       hostnameEnvironmentVariable = "ZOOKEEPER"),
   @DependencyContainer(
-      value = "confluentinc/cp-kafka",
+      // TODO (trask) update back to "latest" after
+      //  https://github.com/confluentinc/kafka-images/issues/127 is fixed
+      value = "confluentinc/cp-kafka:6.2.1",
       portMapping = "9092",
       environmentVariables = {
         "KAFKA_ZOOKEEPER_CONNECT=${ZOOKEEPER}:2181",
