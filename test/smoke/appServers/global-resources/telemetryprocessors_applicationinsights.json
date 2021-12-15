@@ -84,7 +84,7 @@
         "actions": [
           {
             "key": "httpPath",
-            "pattern": "(?<httpPath>.*)",
+            "pattern": "(?<httpPath>.+)",
             "replace": "*${httpPath}*",
             "action": "mask"
           }

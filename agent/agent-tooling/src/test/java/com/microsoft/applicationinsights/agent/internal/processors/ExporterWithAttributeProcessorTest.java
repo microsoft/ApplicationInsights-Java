@@ -1417,6 +1417,7 @@ class ExporterWithAttributeProcessorTest {
     config.id = "actionMask";
     String regex =
         "^(?<uriNoCard>.*\\/cardid\\/)(?<cardStart>[0-9]{6})[0-9]{6}(?<cardEnd>[0-9]{4,6}).*";
+    String regex2 = "(?<httpPath>.+)";
     ProcessorAction action =
         new ProcessorAction(
             "testKey", ProcessorActionType.MASK, null, null, regex, "${uriNoCard}****${cardEnd}");
@@ -1436,10 +1437,14 @@ class ExporterWithAttributeProcessorTest {
             null,
             regex,
             "${cardStart}****${cardStart}");
+    ProcessorAction action4 =
+        new ProcessorAction(
+            "testKey4", ProcessorActionType.MASK, null, null, regex2, "*${httpPath}*");
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     actions.add(action2);
     actions.add(action3);
+    actions.add(action4);
     config.actions = actions;
     SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
@@ -1452,6 +1457,7 @@ class ExporterWithAttributeProcessorTest {
             .setAttribute("testKey2", "http://example.com/cardid/1234562222227899")
             .setAttribute("testKey3", "http://example.com/cardid/1234562222227899")
             .setAttribute("TESTKEY2", "testValue2")
+            .setAttribute("testKey4", "/TelemetryProcessors/test")
             .startSpan();
 
     SpanData spanData = ((ReadableSpan) span).toSpanData();
@@ -1472,5 +1478,7 @@ class ExporterWithAttributeProcessorTest {
         .isEqualTo("123456****123456");
     assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("TESTKEY2")))
         .isEqualTo("testValue2");
+    assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey4")))
+        .isEqualTo("*/TelemetryProcessors/test*");
   }
 }
