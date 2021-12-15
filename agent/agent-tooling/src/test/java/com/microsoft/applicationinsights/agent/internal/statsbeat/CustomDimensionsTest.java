@@ -80,6 +80,7 @@ public class CustomDimensionsTest {
     Map<String, String> properties = new HashMap<>();
     customDimensions.populateProperties(properties, null);
 
-    assertThat(properties.get("runtimeVersion")).isEqualTo(System.getProperty("java.version"));
+    assertThat(properties.get("runtimeVersion"))
+        .isEqualTo(System.getProperty("java.specification.version"));
   }
 }
