@@ -21,7 +21,7 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
 
   def "set request property"() {
     when:
-    new Code().setProperty()
+    Code.setProperty()
 
     then:
     assertTraces(1) {
@@ -45,7 +45,7 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
 
   def "set request user"() {
     when:
-    new Code().setUser()
+    Code.setUser()
 
     then:
     assertTraces(1) {
@@ -69,7 +69,7 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
 
   def "set request name"() {
     when:
-    new Code().setName()
+    Code.setName()
 
     then:
     assertTraces(1) {
@@ -90,7 +90,7 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
 
   def "set success"() {
     when:
-    new Code().setSuccess()
+    Code.setSuccess()
 
     then:
     assertTraces(1) {
@@ -112,7 +112,7 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
 
   def "set source"() {
     when:
-    new Code().setSource()
+    Code.setSource()
 
     then:
     assertTraces(1) {
@@ -136,7 +136,7 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
 
   def "get request id"() {
     when:
-    def spanId = new Code().getId()
+    def spanId = Code.getId()
 
     then:
     assertTraces(1) {
@@ -159,7 +159,7 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
 
   def "get operation id"() {
     when:
-    def traceId = new Code().getOperationId()
+    def traceId = Code.getOperationId()
 
     then:
     assertTraces(1) {
@@ -182,7 +182,7 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
 
   def "set session id"() {
     when:
-    new Code().setSessionId()
+    Code.setSessionId()
 
     then:
     assertTraces(1) {
@@ -204,6 +204,54 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
     }
   }
 
+  def "set operating system"() {
+    when:
+    Code.setOperatingSystem()
+
+    then:
+    assertTraces(1) {
+      trace(0, 2) {
+        span(0) {
+          name "Code.setOperatingSystem"
+          kind SERVER
+          hasNoParent()
+          attributes {
+            "applicationinsights.internal.operating_system" "the operating system"
+          }
+        }
+        span(1) {
+          name "Code.internalSetOperatingSystem"
+          kind INTERNAL
+          childOf span(0)
+        }
+      }
+    }
+  }
+
+  def "set operating system version"() {
+    when:
+    Code.setOperatingSystemVersion()
+
+    then:
+    assertTraces(1) {
+      trace(0, 2) {
+        span(0) {
+          name "Code.setOperatingSystemVersion"
+          kind SERVER
+          hasNoParent()
+          attributes {
+            "applicationinsights.internal.operating_system_version" "the operating system version"
+          }
+        }
+        span(1) {
+          name "Code.internalSetOperatingSystemVersion"
+          kind INTERNAL
+          childOf span(0)
+        }
+      }
+    }
+  }
+
   def "get tracestate"() {
     def spanContext = SpanContext.create(
       "12341234123412341234123412341234",
@@ -213,7 +261,7 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
 
     when:
     def scope = Context.root().with(Span.wrap(spanContext)).makeCurrent()
-    def tracestate = new Code().getTracestate()
+    def tracestate = Code.getTracestate()
     scope.close()
 
     then:
@@ -230,7 +278,7 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
 
     when:
     def scope = Context.root().with(Span.wrap(spanContext)).makeCurrent()
-    def traceflag = new Code().getTraceflag()
+    def traceflag = Code.getTraceflag()
     scope.close()
 
     then:
@@ -274,7 +322,7 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
 
     when:
     def scope = Context.root().with(Span.wrap(spanContext)).makeCurrent()
-    def traceparent = new Code().retriveTracestate()
+    def traceparent = Code.retriveTracestate()
     scope.close()
 
     then:
@@ -288,36 +336,41 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
 
   def "should not throw on other RequestTelemetryContext methods"() {
     expect:
-    new Code().otherRequestTelemetryContextMethods()
+    Code.otherRequestTelemetryContextMethods()
   }
 
   def "should not throw on other RequestTelemetry methods"() {
     expect:
-    new Code().otherRequestTelemetryMethods()
+    Code.otherRequestTelemetryMethods()
   }
 
   def "should not throw on other BaseTelemetry methods"() {
     expect:
-    new Code().otherBaseTelemetryMethods()
+    Code.otherBaseTelemetryMethods()
   }
 
   def "should not throw on other TelemetryContext methods"() {
     expect:
-    new Code().otherTelemetryContextMethods()
+    Code.otherTelemetryContextMethods()
   }
 
   def "should not throw on other UserContext methods"() {
     expect:
-    new Code().otherUserContextMethods()
+    Code.otherUserContextMethods()
   }
 
   def "should not throw on other OperationContext methods"() {
     expect:
-    new Code().otherOperationContextMethods()
+    Code.otherOperationContextMethods()
   }
 
   def "should not throw on other SessionContext methods"() {
     expect:
-    new Code().otherSessionContextMethods()
+    Code.otherSessionContextMethods()
+  }
+
+  def "should not throw on other DeviceContext methods"() {
+    expect:
+    Code.otherDeviceContextMethods()
   }
 }

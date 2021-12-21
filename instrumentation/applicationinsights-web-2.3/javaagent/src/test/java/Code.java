@@ -43,34 +43,14 @@ public class Code {
     internalSetName();
   }
 
-  @WithSpan(kind = SpanKind.SERVER)
-  public static void setSuccess() {
-    internalSetSuccess();
-  }
-
-  @WithSpan(kind = SpanKind.SERVER)
-  public static void setSource() {
-    internalSetSource();
-  }
-
-  @WithSpan(kind = SpanKind.SERVER)
-  public static String getId() {
-    return internalGetId();
-  }
-
-  @WithSpan(kind = SpanKind.SERVER)
-  public static String getOperationId() {
-    return internalGetOperationId();
-  }
-
-  @WithSpan(kind = SpanKind.SERVER)
-  public static void setSessionId() {
-    internalSetSessionId();
-  }
-
   @WithSpan
   private static void internalSetName() {
     ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setName("new name");
+  }
+
+  @WithSpan(kind = SpanKind.SERVER)
+  public static void setSuccess() {
+    internalSetSuccess();
   }
 
   @WithSpan
@@ -78,14 +58,29 @@ public class Code {
     ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setSuccess(false);
   }
 
+  @WithSpan(kind = SpanKind.SERVER)
+  public static void setSource() {
+    internalSetSource();
+  }
+
   @WithSpan
   private static void internalSetSource() {
     ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setSource("the source");
   }
 
+  @WithSpan(kind = SpanKind.SERVER)
+  public static String getId() {
+    return internalGetId();
+  }
+
   @WithSpan
   private static String internalGetId() {
     return ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getId();
+  }
+
+  @WithSpan(kind = SpanKind.SERVER)
+  public static String getOperationId() {
+    return internalGetOperationId();
   }
 
   @WithSpan
@@ -97,6 +92,11 @@ public class Code {
         .getId();
   }
 
+  @WithSpan(kind = SpanKind.SERVER)
+  public static void setSessionId() {
+    internalSetSessionId();
+  }
+
   @WithSpan
   private static void internalSetSessionId() {
     ThreadContext.getRequestTelemetryContext()
@@ -104,6 +104,34 @@ public class Code {
         .getContext()
         .getSession()
         .setId("the session id");
+  }
+
+  @WithSpan(kind = SpanKind.SERVER)
+  public static void setOperatingSystem() {
+    internalSetOperatingSystem();
+  }
+
+  @WithSpan
+  private static void internalSetOperatingSystem() {
+    ThreadContext.getRequestTelemetryContext()
+        .getHttpRequestTelemetry()
+        .getContext()
+        .getDevice()
+        .setOperatingSystem("the operating system");
+  }
+
+  @WithSpan(kind = SpanKind.SERVER)
+  public static void setOperatingSystemVersion() {
+    internalSetOperatingSystemVersion();
+  }
+
+  @WithSpan
+  private static void internalSetOperatingSystemVersion() {
+    ThreadContext.getRequestTelemetryContext()
+        .getHttpRequestTelemetry()
+        .getContext()
+        .getDevice()
+        .setOperatingSystemVersion("the operating system version");
   }
 
   @WithSpan(kind = SpanKind.SERVER)
@@ -123,7 +151,7 @@ public class Code {
 
   @WithSpan(kind = SpanKind.SERVER)
   public static void otherTelemetryContextMethods() {
-    ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getDevice();
+    ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getLocation();
   }
 
   @WithSpan(kind = SpanKind.SERVER)
@@ -150,6 +178,15 @@ public class Code {
         .getHttpRequestTelemetry()
         .getContext()
         .getSession()
+        .getId();
+  }
+
+  @WithSpan(kind = SpanKind.SERVER)
+  public static void otherDeviceContextMethods() {
+    ThreadContext.getRequestTelemetryContext()
+        .getHttpRequestTelemetry()
+        .getContext()
+        .getDevice()
         .getId();
   }
 

@@ -120,7 +120,7 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
         LogOnce.logOnce(
             "ThreadContext.getRequestTelemetryContext().getRequestTelemetry()."
                 + methodName
-                + "() is not supported by the Application Insights for Java 3.0 agent");
+                + "() is not supported by the Application Insights for Java 3.x agent");
       }
     }
   }
