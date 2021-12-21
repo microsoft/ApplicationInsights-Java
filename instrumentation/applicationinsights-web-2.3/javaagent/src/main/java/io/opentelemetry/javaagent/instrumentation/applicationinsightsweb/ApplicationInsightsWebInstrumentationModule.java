@@ -28,6 +28,7 @@ public class ApplicationInsightsWebInstrumentationModule extends Instrumentation
         new TelemetryContextInstrumentation(),
         new UserContextInstrumentation(),
         new OperationContextInstrumentation(),
-        new SessionContextInstrumentation());
+        new SessionContextInstrumentation(),
+        new DeviceContextInstrumentation());
   }
 }

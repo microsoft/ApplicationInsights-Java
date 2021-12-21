@@ -12,6 +12,7 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesNoArguments;
 
+import com.microsoft.applicationinsights.extensibility.context.DeviceContext;
 import com.microsoft.applicationinsights.extensibility.context.OperationContext;
 import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
@@ -57,9 +58,17 @@ public class TelemetryContextInstrumentation implements TypeInstrumentation {
         isMethod()
             .and(isPublic())
             .and(not(isStatic()))
+            .and(named("getDevice"))
+            .and(takesNoArguments()),
+        TelemetryContextInstrumentation.class.getName() + "$GetDeviceAdvice");
+    transformer.applyAdviceToMethod(
+        isMethod()
+            .and(isPublic())
+            .and(not(isStatic()))
             .and(not(named("getUser")))
             .and(not(named("getOperation")))
-            .and(not(named("getSession"))),
+            .and(not(named("getSession")))
+            .and(not(named("getDevice"))),
         TelemetryContextInstrumentation.class.getName() + "$OtherMethodsAdvice");
   }
 
@@ -98,6 +107,18 @@ public class TelemetryContextInstrumentation implements TypeInstrumentation {
     }
   }
 
+  public static class GetDeviceAdvice {
+    @Advice.OnMethodExit
+    public static void methodExit(
+        @Advice.This TelemetryContext telemetryContext,
+        @Advice.Return DeviceContext deviceContext) {
+      Span span = VirtualField.find(TelemetryContext.class, Span.class).get(telemetryContext);
+      if (span != null) {
+        VirtualField.find(DeviceContext.class, Span.class).set(deviceContext, span);
+      }
+    }
+  }
+
   public static class OtherMethodsAdvice {
     @Advice.OnMethodEnter
     public static void methodEnter(
@@ -107,7 +128,7 @@ public class TelemetryContextInstrumentation implements TypeInstrumentation {
         LogOnce.logOnce(
             "ThreadContext.getRequestTelemetryContext().getRequestTelemetry().getContext()."
                 + methodName
-                + "() is not supported by the Application Insights for Java 3.0 agent");
+                + "() is not supported by the Application Insights for Java 3.x agent");
       }
     }
   }
