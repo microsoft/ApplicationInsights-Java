@@ -133,6 +133,18 @@
           ]
         },
         "id": "metric-filter/exclude-two-metrics"
+      },
+      {
+        "type": "attribute",
+        "actions": [
+          {
+            "key": "http.url",
+            "pattern": "^(?<uriNoCard>.*\\/cardid\\/)(?<cardStart>[0-9]{6})[0-9]{6}(?<cardEnd>[0-9]{4,6}).*",
+            "replace": "${uriNoCard}****${cardEnd}",
+            "action": "mask"
+          }
+        ],
+        "id": "attributes/mask"
       }
     ]
   }
