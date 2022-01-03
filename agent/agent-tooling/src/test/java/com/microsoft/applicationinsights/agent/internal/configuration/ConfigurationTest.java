@@ -132,7 +132,7 @@ class ConfigurationTest {
     PreviewConfiguration preview = configuration.preview;
     assertThat(configuration.connectionString)
         .isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
-    assertThat(preview.processors.size()).isEqualTo(9);
+    assertThat(preview.processors.size()).isEqualTo(10);
     // insert config test
     ProcessorConfig insertConfig = preview.processors.get(0);
     assertThat(insertConfig.id).isEqualTo("attributes/insert");
@@ -204,7 +204,6 @@ class ConfigurationTest {
         .isEqualTo(ProcessorActionType.EXTRACT);
     assertThat(attributesExtractConfig.actions.get(0).key)
         .isEqualTo(AttributeKey.stringKey("http.url"));
-    assertThat(attributesExtractConfig.actions.size()).isEqualTo(1);
     assertThat(attributesExtractConfig.actions.get(0).extractAttribute).isNotNull();
     assertThat(attributesExtractConfig.actions.get(0).extractAttribute.pattern).isNotNull();
     assertThat(attributesExtractConfig.actions.get(0).extractAttribute.groupNames.size())
@@ -219,6 +218,21 @@ class ConfigurationTest {
     assertThat(metricFilterConfig.exclude.metricNames.size()).isEqualTo(2);
     assertThat(metricFilterConfig.exclude.metricNames.get(0)).isEqualTo("a_test_metric");
     assertThat(metricFilterConfig.exclude.metricNames.get(1)).isEqualTo("another_test_metric");
+    // attribute/mask
+    ProcessorConfig attributesMaskConfig = preview.processors.get(9);
+    assertThat(attributesMaskConfig.type).isEqualTo(ProcessorType.ATTRIBUTE);
+    assertThat(attributesMaskConfig.id).isEqualTo("attributes/mask");
+    assertThat(attributesMaskConfig.actions.size()).isEqualTo(1);
+    assertThat(attributesMaskConfig.actions.get(0).action).isEqualTo(ProcessorActionType.MASK);
+    assertThat(attributesMaskConfig.actions.get(0).key)
+        .isEqualTo(AttributeKey.stringKey("http.url"));
+    assertThat(attributesMaskConfig.actions.get(0).maskAttribute).isNotNull();
+    assertThat(attributesMaskConfig.actions.get(0).maskAttribute.pattern).isNotNull();
+    assertThat(attributesMaskConfig.actions.get(0).maskAttribute.groupNames.size()).isEqualTo(3);
+    assertThat(attributesMaskConfig.actions.get(0).maskAttribute.groupNames.get(0))
+        .isEqualTo("uriNoCard");
+    assertThat(attributesMaskConfig.actions.get(0).maskAttribute.replace)
+        .isEqualTo("${uriNoCard}****${cardEnd}");
   }
 
   @Test

@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -100,7 +101,9 @@ public class Configuration {
     @JsonProperty("hash")
     HASH,
     @JsonProperty("extract")
-    EXTRACT
+    EXTRACT,
+    @JsonProperty("mask")
+    MASK
   }
 
   public enum ProcessorType {
@@ -847,12 +850,62 @@ public class Configuration {
     }
   }
 
+  public static class MaskAttribute {
+    private static final Pattern replacePattern = Pattern.compile("\\$\\{[A-Za-z1-9]*\\}*");
+    public final Pattern pattern;
+    public final List<String> groupNames;
+    public final String replace;
+
+    // visible for testing
+    public MaskAttribute(Pattern pattern, List<String> groupNames, String replace) {
+      this.pattern = pattern;
+      this.groupNames = groupNames;
+      this.replace = replace;
+    }
+
+    // TODO: Handle empty patterns or groupNames are not populated gracefully
+    public void validate() {
+      if (groupNames.isEmpty()) {
+        throw new FriendlyException(
+            "An attribute processor configuration does not have valid regex to mask attributes: "
+                + pattern,
+            "Please provide a valid regex of the form (?<name>X) where X is the usual regular expression. "
+                + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+      }
+
+      Matcher maskMatcher = replacePattern.matcher(replace);
+      while (maskMatcher.find()) {
+        String groupName = maskMatcher.group();
+        String replacedString = "";
+        if (groupName.length() > 3) {
+          // to extract string of format ${foo}
+          replacedString = groupName.substring(2, groupName.length() - 1);
+        }
+        if (replacedString.isEmpty()) {
+          throw new FriendlyException(
+              "An attribute processor configuration does not have valid `replace` value to mask attributes: "
+                  + replace,
+              "Please provide a valid replace value of the form (${foo}***${bar}). "
+                  + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+        }
+        if (!groupNames.contains(replacedString)) {
+          throw new FriendlyException(
+              "An attribute processor configuration does not have valid `replace` value to mask attributes: "
+                  + replace,
+              "Please make sure the replace value matches group names used in the `pattern` regex. "
+                  + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+        }
+      }
+    }
+  }
+
   public static class ProcessorAction {
     public final AttributeKey<String> key;
     public final ProcessorActionType action;
     public final String value;
     public final AttributeKey<String> fromAttribute;
     public final ExtractAttribute extractAttribute;
+    public final MaskAttribute maskAttribute;
 
     @JsonCreator
     public ProcessorAction(
@@ -862,7 +915,8 @@ public class Configuration {
         @JsonProperty("value") String value,
         // TODO (trask) should this take attribute type, e.g. "key:type"
         @JsonProperty("fromAttribute") String fromAttribute,
-        @JsonProperty("pattern") String pattern) {
+        @JsonProperty("pattern") String pattern,
+        @JsonProperty("replace") String replace) {
       this.key = isEmpty(key) ? null : AttributeKey.stringKey(key);
       this.action = action;
       this.value = value;
@@ -870,6 +924,7 @@ public class Configuration {
 
       if (pattern == null) {
         extractAttribute = null;
+        maskAttribute = null;
       } else {
         Pattern regexPattern;
         try {
@@ -882,7 +937,13 @@ public class Configuration {
               e);
         }
         List<String> groupNames = Patterns.getGroupNames(pattern);
-        extractAttribute = new Configuration.ExtractAttribute(regexPattern, groupNames);
+        if (replace != null) {
+          extractAttribute = null;
+          maskAttribute = new Configuration.MaskAttribute(regexPattern, groupNames, replace);
+        } else {
+          maskAttribute = null;
+          extractAttribute = new Configuration.ExtractAttribute(regexPattern, groupNames);
+        }
       }
     }
 
@@ -925,8 +986,18 @@ public class Configuration {
           throw new FriendlyException(
               "An attribute processor configuration has an "
                   + action
-                  + " action with an \"extractAttribute\" section.",
-              "Please do not provide an \"extractAttribute\" under the "
+                  + " action with an \"pattern\" section.",
+              "Please do not provide an \"pattern\" under the "
+                  + action
+                  + " action. "
+                  + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+        }
+        if (maskAttribute != null) {
+          throw new FriendlyException(
+              "An attribute processor configuration has an "
+                  + action
+                  + " action with an \"replace\" section.",
+              "Please do not provide an \"replace\" under the "
                   + action
                   + " action. "
                   + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
@@ -936,8 +1007,8 @@ public class Configuration {
       if (action == ProcessorActionType.EXTRACT) {
         if (extractAttribute == null) {
           throw new FriendlyException(
-              "An attribute processor configuration has an extract action that is missing an \"extractAttributes\" section.",
-              "Please provide an \"extractAttributes\" section under the extract action. "
+              "An attribute processor configuration has an extract action that is missing an \"pattern\" section.",
+              "Please provide an \"pattern\" section under the extract action. "
                   + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
         }
         if (!isEmpty(value)) {
@@ -959,6 +1030,34 @@ public class Configuration {
                   + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
         }
         extractAttribute.validate();
+      }
+
+      if (action == ProcessorActionType.MASK) {
+        if (maskAttribute == null) {
+          throw new FriendlyException(
+              "An attribute processor configuration has an mask action that is missing an \"pattern\" or \"replace\" section.",
+              "Please provide an \"pattern\" section and \"replace\" section under the mask action. "
+                  + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+        }
+        if (!isEmpty(value)) {
+          throw new FriendlyException(
+              "An attribute processor configuration has an " + action + " action with a \"value\".",
+              "Please do not provide a \"value\" under the "
+                  + action
+                  + " action. "
+                  + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+        }
+        if (fromAttribute != null) {
+          throw new FriendlyException(
+              "An attribute processor configuration has an "
+                  + action
+                  + " action with a \"fromAttribute\".",
+              "Please do not provide a \"fromAttribute\" under the "
+                  + action
+                  + " action. "
+                  + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+        }
+        maskAttribute.validate();
       }
     }
   }
