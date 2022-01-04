@@ -42,7 +42,8 @@ public class DeviceContextInstrumentation implements TypeInstrumentation {
         ElementMatchers.isMethod()
             .and(ElementMatchers.isPublic())
             .and(ElementMatchers.not(ElementMatchers.isStatic()))
-            .and(ElementMatchers.not(ElementMatchers.named("setId"))),
+            .and(ElementMatchers.not(ElementMatchers.named("setOperatingSystem")))
+            .and(ElementMatchers.not(ElementMatchers.named("setOperatingSystemVersion"))),
         DeviceContextInstrumentation.class.getName() + "$OtherMethodsAdvice");
   }
 
@@ -77,7 +78,7 @@ public class DeviceContextInstrumentation implements TypeInstrumentation {
       Span span = VirtualField.find(DeviceContext.class, Span.class).get(deviceContext);
       if (span != null) {
         LogOnce.logOnce(
-            "ThreadContext.getRequestTelemetryContext().getRequestTelemetry().getContext().getSession()."
+            "ThreadContext.getRequestTelemetryContext().getRequestTelemetry().getContext().getDevice()."
                 + methodName
                 + "() is not supported by the Application Insights for Java 3.x agent");
       }
