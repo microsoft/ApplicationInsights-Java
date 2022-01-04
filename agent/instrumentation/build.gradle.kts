@@ -3,14 +3,13 @@ plugins {
   id("com.github.johnrengelman.shadow")
 }
 
-val otelInstrumentationAlphaVersion = "1.9.0+ai.patches-alpha"
+val otelInstrumentationAlphaVersion = "1.10.0+ai.patches-alpha"
 
 configurations {
   // exclude bootstrap dependencies from shadowJar
   implementation {
     exclude("org.slf4j")
     exclude("io.opentelemetry", "opentelemetry-api")
-    exclude("io.opentelemetry", "opentelemetry-api-metrics")
     exclude("io.opentelemetry", "opentelemetry-context")
     exclude("io.opentelemetry", "opentelemetry-context-prop")
     exclude("io.opentelemetry", "opentelemetry-semconv")
@@ -64,7 +63,6 @@ dependencies {
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-class-loader:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-eclipse-osgi-3.6:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-lambda:$otelInstrumentationAlphaVersion")
-  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-proxy:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-reflection:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-url-class-loader:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-http-client:$otelInstrumentationAlphaVersion")
@@ -111,7 +109,6 @@ dependencies {
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-okhttp-3.0:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-opentelemetry-annotations-1.0:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-opentelemetry-api-1.0:$otelInstrumentationAlphaVersion")
-  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-opentelemetry-api-metrics-1.0:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-play-2.4:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-play-2.6:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-quartz-2.0:$otelInstrumentationAlphaVersion")
