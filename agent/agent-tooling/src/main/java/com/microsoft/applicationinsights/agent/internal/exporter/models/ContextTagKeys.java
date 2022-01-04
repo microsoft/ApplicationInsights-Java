@@ -42,6 +42,9 @@ public final class ContextTagKeys extends ExpandableStringEnum<ContextTagKeys> {
   /** Static value ai.device.oemName for ContextTagKeys. */
   public static final ContextTagKeys AI_DEVICE_OEM_NAME = fromString("ai.device.oemName");
 
+  /** Static value ai.device.os for ContextTagKeys. */
+  public static final ContextTagKeys AI_DEVICE_OS = fromString("ai.device.os");
+
   /** Static value ai.device.osVersion for ContextTagKeys. */
   public static final ContextTagKeys AI_DEVICE_OS_VERSION = fromString("ai.device.osVersion");
 
