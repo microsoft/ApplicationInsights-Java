@@ -98,6 +98,10 @@ public class Exporter implements SpanExporter {
       AttributeKey.stringKey("applicationinsights.internal.source");
   private static final AttributeKey<String> AI_SESSION_ID_KEY =
       AttributeKey.stringKey("applicationinsights.internal.session_id");
+  private static final AttributeKey<String> AI_DEVICE_OS_KEY =
+      AttributeKey.stringKey("applicationinsights.internal.operating_system");
+  private static final AttributeKey<String> AI_DEVICE_OS_VERSION_KEY =
+      AttributeKey.stringKey("applicationinsights.internal.operating_system_version");
 
   private static final AttributeKey<String> AI_LOG_LEVEL_KEY =
       AttributeKey.stringKey("applicationinsights.internal.log_level");
@@ -795,6 +799,18 @@ public class Exporter implements SpanExporter {
       // this is only used by the 2.x web interop bridge for
       // ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getSession().setId()
       telemetry.getTags().put(ContextTagKeys.AI_SESSION_ID.toString(), sessionId);
+    }
+    String deviceOs = attributes.get(AI_DEVICE_OS_KEY);
+    if (deviceOs != null) {
+      // this is only used by the 2.x web interop bridge for
+      // ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getDevice().setOperatingSystem()
+      telemetry.getTags().put(ContextTagKeys.AI_DEVICE_OS.toString(), deviceOs);
+    }
+    String deviceOsVersion = attributes.get(AI_DEVICE_OS_VERSION_KEY);
+    if (deviceOsVersion != null) {
+      // this is only used by the 2.x web interop bridge for
+      // ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getDevice().setOperatingSystemVersion()
+      telemetry.getTags().put(ContextTagKeys.AI_DEVICE_OS_VERSION.toString(), deviceOsVersion);
     }
 
     // TODO(trask)? for batch consumer, enqueuedTime should be the average of this attribute
