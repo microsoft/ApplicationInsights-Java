@@ -31,6 +31,7 @@ import io.opentelemetry.instrumentation.api.instrumenter.messaging.MessageOperat
 import io.opentelemetry.instrumentation.api.instrumenter.messaging.MessagingAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.net.NetServerAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.rpc.RpcAttributesExtractor;
+import io.opentelemetry.instrumentation.api.internal.SpanKey;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.LinkData;
@@ -126,6 +127,20 @@ class InstrumenterTest {
               request.get("linkSpanId"),
               TraceFlags.getSampled(),
               TraceState.getDefault()));
+    }
+  }
+
+  static class TestTimeExtractor implements TimeExtractor<Instant, Instant> {
+
+    @Override
+    public Instant extractStartTime(Instant request) {
+      return request;
+    }
+
+    @Override
+    public Instant extractEndTime(
+        Instant request, @Nullable Instant response, @Nullable Throwable error) {
+      return response;
     }
   }
 
@@ -450,7 +465,7 @@ class InstrumenterTest {
     Instrumenter<Instant, Instant> instrumenter =
         Instrumenter.<Instant, Instant>builder(
                 otelTesting.getOpenTelemetry(), "test", request -> "test span")
-            .setTimeExtractors(request -> request, (request, response, error) -> response)
+            .setTimeExtractor(new TestTimeExtractor())
             .newInstrumenter();
 
     Instant startTime = Instant.ofEpochSecond(100);

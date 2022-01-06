@@ -11,11 +11,13 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.9.1"
+val otelVersion = "1.10.0-rc.1"
+val otelAlphaVersion = "1.10.0-alpha-rc.1"
 rootProject.extra["otelVersion"] = otelVersion
+rootProject.extra["otelAlphaVersion"] = otelAlphaVersion
 
 // Need both BOM and -all
-val groovyVersion = "2.5.14"
+val groovyVersion = "3.0.9"
 
 // We don't force libraries we instrument to new versions since we compile and test against specific
 // old baseline versions
@@ -30,12 +32,14 @@ val groovyVersion = "2.5.14"
 // configurations.testRuntimeClasspath.resolutionStrategy.force "com.google.guava:guava:19.0"
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.12.3",
-  "com.google.guava:guava-bom:30.1.1-jre",
+  // wait to upgrade to jackson 2.13.x until after 2.13.1 is released
+  // due to https://github.com/FasterXML/jackson-databind/issues/3328
+  "com.fasterxml.jackson:jackson-bom:2.12.6",
+  "com.google.guava:guava-bom:31.0.1-jre",
   "org.codehaus.groovy:groovy-bom:${groovyVersion}",
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
-  "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
-  "org.junit:junit-bom:5.7.2"
+  "io.opentelemetry:opentelemetry-bom-alpha:${otelAlphaVersion}",
+  "org.junit:junit-bom:5.8.2"
 )
 
 val DEPENDENCY_SETS = listOf(
@@ -57,7 +61,7 @@ val DEPENDENCY_SETS = listOf(
   DependencySet(
     "net.bytebuddy",
     // When updating, also update conventions/build.gradle.kts
-    "1.11.22",
+    "1.12.3",
     listOf("byte-buddy", "byte-buddy-dep", "byte-buddy-agent", "byte-buddy-gradle-plugin")
   ),
   DependencySet(
@@ -77,7 +81,7 @@ val DEPENDENCY_SETS = listOf(
   ),
   DependencySet(
     "org.testcontainers",
-    "1.15.3",
+    "1.16.2",
     listOf("testcontainers", "junit-jupiter", "cassandra", "couchbase", "elasticsearch", "kafka", "localstack", "selenium")
   )
 )
@@ -105,8 +109,8 @@ val DEPENDENCIES = listOf(
   "com.google.code.findbugs:jsr305:3.0.2",
   "org.codehaus.groovy:groovy-all:${groovyVersion}",
   "org.objenesis:objenesis:3.2",
-  "org.spockframework:spock-core:2.0-groovy-2.5",
-  "org.spockframework:spock-junit4:2.0-groovy-2.5",
+  "org.spockframework:spock-core:2.0-groovy-3.0",
+  "org.spockframework:spock-junit4:2.0-groovy-3.0",
   "org.scala-lang:scala-library:2.11.12",
   "org.springframework.boot:spring-boot-dependencies:2.3.1.RELEASE",
 )

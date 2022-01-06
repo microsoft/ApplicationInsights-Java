@@ -5,8 +5,6 @@
 
 package io.opentelemetry.javaagent.instrumentation.tomcat.common;
 
-import static io.opentelemetry.instrumentation.api.servlet.ServerSpanNaming.Source.CONTAINER;
-
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
@@ -17,9 +15,9 @@ import io.opentelemetry.instrumentation.api.instrumenter.http.HttpServerMetrics;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanStatusExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.net.NetServerAttributesExtractor;
-import io.opentelemetry.instrumentation.api.servlet.AppServerBridge;
 import io.opentelemetry.instrumentation.api.servlet.ServerSpanNaming;
-import io.opentelemetry.instrumentation.servlet.ServletAccessor;
+import io.opentelemetry.javaagent.bootstrap.servlet.AppServerBridge;
+import io.opentelemetry.javaagent.instrumentation.servlet.ServletAccessor;
 import io.opentelemetry.javaagent.instrumentation.servlet.ServletErrorCauseExtractor;
 import org.apache.coyote.Request;
 import org.apache.coyote.Response;
@@ -50,11 +48,13 @@ public final class TomcatInstrumenterFactory {
         .addAttributesExtractor(httpAttributesExtractor)
         .addAttributesExtractor(netAttributesExtractor)
         .addAttributesExtractor(additionalAttributeExtractor)
+        .addContextCustomizer(ServerSpanNaming.get())
         .addContextCustomizer(
-            (context, request, attributes) -> {
-              context = ServerSpanNaming.init(context, CONTAINER);
-              return AppServerBridge.init(context);
-            })
+            (context, request, attributes) ->
+                new AppServerBridge.Builder()
+                    .captureServletAttributes()
+                    .recordException()
+                    .init(context))
         .addRequestMetrics(HttpServerMetrics.get())
         .newServerInstrumenter(TomcatRequestGetter.INSTANCE);
   }

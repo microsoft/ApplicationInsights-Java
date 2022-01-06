@@ -27,7 +27,7 @@ class HttpClientMetricsTest {
 
   @Test
   void collectsMetrics() {
-    InMemoryMetricReader metricReader = new InMemoryMetricReader();
+    InMemoryMetricReader metricReader = InMemoryMetricReader.create();
     SdkMeterProvider meterProvider =
         SdkMeterProvider.builder().registerMetricReader(metricReader).build();
 
@@ -93,6 +93,7 @@ class HttpClientMetricsTest {
                       metric ->
                           assertThat(metric)
                               .hasName("http.client.duration")
+                              .hasUnit("ms")
                               .hasDoubleHistogram()
                               .points()
                               .satisfiesExactly(

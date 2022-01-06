@@ -20,30 +20,14 @@ jobs:
           distribution: adopt
           java-version: 11
 
-      - name: Restore cache
-        uses: actions/cache@v2
-        # configuration from https://github.com/actions/cache/blob/main/examples.md#java---gradle
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: otel-fork-build-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          # the cache with the most recent creation date matching this will be used
-          restore-keys: |
-            otel-fork-build-
-            otel-fork-
-
-      - name: Cache Gradle Wrapper
-        uses: actions/cache@v2
-        with:
-          path: ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-wrapper-cache-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-
       - name: Start deadlock detector
         run: .github/scripts/deadlock-detector.sh
 
       - name: Build
-        run: ./gradlew build
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: build
+          cache-read-only: true
 
       - name: Upload deadlock detector artifacts if any
         if: always()
@@ -74,15 +58,13 @@ jobs:
           distribution: adopt
           java-version: 11
 
-      - name: Cache Gradle Wrapper
-        uses: actions/cache@v2
-        with:
-          path: ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-wrapper-cache-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-
       - name: Build
-        run: ../gradlew build
-        working-directory: gradle-plugins
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-read-only: true
+          arguments: build
+          build-root-directory: gradle-plugins
+          gradle-executable: ./gradlew
 
   test:
     runs-on: ubuntu-latest
@@ -114,30 +96,14 @@ jobs:
           distribution: adopt
           java-version: 11
 
-      - name: Restore cache
-        uses: actions/cache@v2
-        # configuration from https://github.com/actions/cache/blob/main/examples.md#java---gradle
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: otel-fork-build-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          # the cache with the most recent creation date matching this will be used
-          restore-keys: |
-            otel-fork-test-
-            otel-fork-
-
-      - name: Cache Gradle Wrapper
-        uses: actions/cache@v2
-        with:
-          path: ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-wrapper-cache-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-
       - name: Start deadlock detector
         run: .github/scripts/deadlock-detector.sh
 
       - name: Test
-        run: ./gradlew test -PtestJavaVersion=${{ matrix.test-java-version }} -PtestJavaVM=${{ matrix.vm }} -Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }} -Porg.gradle.java.installations.auto-download=false
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: test -PtestJavaVersion=${{ matrix.test-java-version }} -PtestJavaVM=${{ matrix.vm }} -Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }} -Porg.gradle.java.installations.auto-download=false
+          cache-read-only: true
 
       - name: Upload deadlock detector artifacts if any
         if: always()
@@ -170,9 +136,9 @@ jobs:
           - windows-latest
           - ubuntu-latest
         smoke-test-suite:
-          - glassfish
           - jetty
           - liberty
+          - payara
           - tomcat
           - tomee
           - websphere
@@ -197,27 +163,11 @@ jobs:
           distribution: adopt
           java-version: 11
 
-      - name: Restore cache
-        uses: actions/cache@v2
-        # configuration from https://github.com/actions/cache/blob/main/examples.md#java---gradle
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: otel-fork-build-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          # the cache with the most recent creation date matching this will be used
-          restore-keys: |
-            otel-fork-smoke-test-
-            otel-fork-
-
-      - name: Cache Gradle Wrapper
-        uses: actions/cache@v2
-        with:
-          path: ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-wrapper-cache-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-
       - name: Test
-        run: ./gradlew :smoke-tests:test -PsmokeTestSuite=${{ matrix.smoke-test-suite }}
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-read-only: true
+          arguments: :smoke-tests:test -PsmokeTestSuite=${{ matrix.smoke-test-suite }}
 
   setup-muzzle-matrix:
     runs-on: ubuntu-latest
@@ -262,15 +212,9 @@ jobs:
           distribution: adopt
           java-version: 11
 
-      - name: Cache Gradle Wrapper
-        uses: actions/cache@v2
-        with:
-          path: ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-wrapper-cache-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-
       - name: Run muzzle
         # using retry because of sporadic gradle download failures
-        uses: nick-invision/retry@v2.5.1
+        uses: nick-invision/retry@v2.6.0
         with:
           # timing out has not been a problem, these jobs typically finish in 2-3 minutes
           timeout_minutes: 15
@@ -290,28 +234,42 @@ jobs:
           distribution: adopt
           java-version: 11
 
-      - name: Cache Gradle Wrapper
-        uses: actions/cache@v2
-        with:
-          path: ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-wrapper-cache-${{ hashFiles('examples/distro/gradle/wrapper/gradle-wrapper.properties') }}
-
       - name: Local publish of artifacts
-        # javadoc task fails sporadically fetching https://docs.oracle.com/javase/8/docs/api/
-        run: ./gradlew publishToMavenLocal -x javadoc
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-read-only: true
+          # javadoc task fails sporadically fetching https://docs.oracle.com/javase/8/docs/api/
+          arguments: publishToMavenLocal -x javadoc
 
       - name: Local publish of gradle plugins
-        # javadoc task fails sporadically fetching https://docs.oracle.com/javase/8/docs/api/
-        run: ../gradlew publishToMavenLocal -x javadoc
-        working-directory: gradle-plugins
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-read-only: true
+          # javadoc task fails sporadically fetching https://docs.oracle.com/javase/8/docs/api/
+          arguments: publishToMavenLocal -x javadoc
+          build-root-directory: gradle-plugins
+          gradle-executable: ./gradlew
 
       - name: Build distro
-        run: ./gradlew build --init-script ../../.github/scripts/local.init.gradle.kts
-        working-directory: examples/distro
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-read-only: true
+          arguments: build --init-script ../../.github/scripts/local.init.gradle.kts
+          build-root-directory: examples/distro
 
       - name: Build extension
-        run: ./gradlew build --init-script ../../.github/scripts/local.init.gradle.kts
-        working-directory: examples/extension
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-read-only: true
+          arguments: build --init-script ../../.github/scripts/local.init.gradle.kts
+          build-root-directory: examples/extension
+
+      - name: Run muzzle check against extension
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-read-only: true
+          arguments: muzzle --init-script ../../.github/scripts/local.init.gradle.kts
+          build-root-directory: examples/extension
 
   accept-pr:
     needs: [ build, test, smoke-test, muzzle, examples ]

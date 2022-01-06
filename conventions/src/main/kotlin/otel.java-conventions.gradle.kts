@@ -121,6 +121,9 @@ dependencies {
   testImplementation("org.slf4j:jcl-over-slf4j")
   testImplementation("org.slf4j:jul-to-slf4j")
   testImplementation("com.github.stefanbirkner:system-rules")
+
+  codenarc("org.codenarc:CodeNarc:2.2.0")
+  codenarc(platform("org.codehaus.groovy:groovy-bom:3.0.9"))
 }
 
 tasks {
@@ -213,11 +216,9 @@ tasks.withType<Test>().configureEach {
   jvmArgs("-Dotel.java.disabled.resource.providers=${resourceClassesCsv}")
 
   val trustStore = project(":testing-common").file("src/misc/testing-keystore.p12")
-  inputs.file(trustStore)
   // Work around payara not working when this is set for some reason.
   if (project.name != "jaxrs-2.0-payara-testing") {
-    jvmArgs("-Djavax.net.ssl.trustStore=${trustStore.absolutePath}")
-    jvmArgs("-Djavax.net.ssl.trustStorePassword=testing")
+    jvmArgumentProviders.add(KeystoreArgumentsProvider(trustStore))
   }
 
   // All tests must complete within 15 minutes.
@@ -225,8 +226,9 @@ tasks.withType<Test>().configureEach {
   timeout.set(Duration.ofMinutes(15))
 
   retry {
+    val retryTests = System.getenv("CI") != null || rootProject.hasProperty("retryTests")
     // You can see tests that were retried by this mechanism in the collected test reports and build scans.
-    maxRetries.set(if (System.getenv("CI") != null) 5 else 0)
+    maxRetries.set(if (retryTests) 5 else 0)
   }
 
   reports {
@@ -236,6 +238,16 @@ tasks.withType<Test>().configureEach {
   testLogging {
     exceptionFormat = TestExceptionFormat.FULL
   }
+}
+
+class KeystoreArgumentsProvider(
+  @InputFile
+  @PathSensitive(PathSensitivity.RELATIVE)
+  val trustStore: File
+) : CommandLineArgumentProvider {
+  override fun asArguments(): Iterable<String> = listOf(
+    "-Djavax.net.ssl.trustStore=${trustStore.absolutePath}",
+    "-Djavax.net.ssl.trustStorePassword=testing")
 }
 
 afterEvaluate {
@@ -274,7 +286,6 @@ afterEvaluate {
 
 codenarc {
   configFile = rootProject.file("buildscripts/codenarc.groovy")
-  toolVersion = "2.0.0"
 }
 
 checkstyle {
@@ -292,7 +303,7 @@ idea {
 }
 
 when (projectDir.name) {
-  "bootstrap", "javaagent", "library", "testing" -> {
+  "bootstrap", "javaagent", "library", "library-autoconfigure", "testing" -> {
     // We don't use this group anywhere in our config, but we need to make sure it is unique per
     // instrumentation so Gradle doesn't merge projects with same name due to a bug in Gradle.
     // https://github.com/gradle/gradle/issues/847
@@ -310,6 +321,7 @@ configurations.configureEach {
     dependencySubstitution {
       substitute(module("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")).using(project(":instrumentation-api"))
       substitute(module("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support")).using(project(":instrumentation-api-annotation-support"))
+      substitute(module("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-appender")).using(project(":instrumentation-api-appender"))
       substitute(module("io.opentelemetry.javaagent:opentelemetry-javaagent-instrumentation-api")).using(project(":javaagent-instrumentation-api"))
       substitute(module("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")).using(project(":javaagent-bootstrap"))
       substitute(module("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api")).using(project(":javaagent-extension-api"))

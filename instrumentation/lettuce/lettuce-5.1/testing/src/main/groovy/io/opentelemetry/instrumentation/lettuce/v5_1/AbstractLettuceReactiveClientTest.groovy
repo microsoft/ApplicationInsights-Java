@@ -23,13 +23,14 @@ import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NetTr
 
 abstract class AbstractLettuceReactiveClientTest extends InstrumentationSpecification {
   public static final int DB_INDEX = 0
+  public static final String loopback = "127.0.0.1"
 
   private static GenericContainer redisServer = new GenericContainer<>("redis:6.2.3-alpine").withExposedPorts(6379)
 
   abstract RedisClient createClient(String uri)
 
   @Shared
-  String host
+  String expectedHostAttributeValue
   @Shared
   int port
   @Shared
@@ -43,12 +44,13 @@ abstract class AbstractLettuceReactiveClientTest extends InstrumentationSpecific
   def setup() {
     redisServer.start()
 
-    host = redisServer.getHost()
     port = redisServer.getMappedPort(6379)
+    String host = redisServer.getHost()
     String dbAddr = host + ":" + port + "/" + DB_INDEX
     embeddedDbUri = "redis://" + dbAddr
-    redisClient = createClient(embeddedDbUri)
+    expectedHostAttributeValue = host == loopback ? null : host
 
+    redisClient = createClient(embeddedDbUri)
     redisClient.setOptions(LettuceTestUtil.CLIENT_OPTIONS)
 
     connection = redisClient.connect()
@@ -100,12 +102,12 @@ abstract class AbstractLettuceReactiveClientTest extends InstrumentationSpecific
           kind CLIENT
           childOf(span(0))
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
-            "${SemanticAttributes.NET_PEER_NAME.key}" host
-            "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
-            "${SemanticAttributes.NET_PEER_PORT.key}" port
-            "${SemanticAttributes.DB_SYSTEM.key}" "redis"
-            "${SemanticAttributes.DB_STATEMENT.key}" "SET TESTSETKEY ?"
+            "$SemanticAttributes.NET_TRANSPORT" IP_TCP
+            "$SemanticAttributes.NET_PEER_NAME" expectedHostAttributeValue
+            "$SemanticAttributes.NET_PEER_IP" loopback
+            "$SemanticAttributes.NET_PEER_PORT" port
+            "$SemanticAttributes.DB_SYSTEM" "redis"
+            "$SemanticAttributes.DB_STATEMENT" "SET TESTSETKEY ?"
           }
           event(0) {
             eventName "redis.encode.start"
@@ -138,12 +140,12 @@ abstract class AbstractLettuceReactiveClientTest extends InstrumentationSpecific
           name "GET"
           kind CLIENT
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
-            "${SemanticAttributes.NET_PEER_NAME.key}" host
-            "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
-            "${SemanticAttributes.NET_PEER_PORT.key}" port
-            "${SemanticAttributes.DB_SYSTEM.key}" "redis"
-            "${SemanticAttributes.DB_STATEMENT.key}" "GET TESTKEY"
+            "$SemanticAttributes.NET_TRANSPORT" IP_TCP
+            "$SemanticAttributes.NET_PEER_NAME" expectedHostAttributeValue
+            "$SemanticAttributes.NET_PEER_IP" loopback
+            "$SemanticAttributes.NET_PEER_PORT" port
+            "$SemanticAttributes.DB_SYSTEM" "redis"
+            "$SemanticAttributes.DB_STATEMENT" "GET TESTKEY"
           }
           event(0) {
             eventName "redis.encode.start"
@@ -189,12 +191,12 @@ abstract class AbstractLettuceReactiveClientTest extends InstrumentationSpecific
           kind CLIENT
           childOf(span(0))
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
-            "${SemanticAttributes.NET_PEER_NAME.key}" host
-            "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
-            "${SemanticAttributes.NET_PEER_PORT.key}" port
-            "${SemanticAttributes.DB_SYSTEM.key}" "redis"
-            "${SemanticAttributes.DB_STATEMENT.key}" "GET NON_EXISTENT_KEY"
+            "$SemanticAttributes.NET_TRANSPORT" IP_TCP
+            "$SemanticAttributes.NET_PEER_NAME" expectedHostAttributeValue
+            "$SemanticAttributes.NET_PEER_IP" loopback
+            "$SemanticAttributes.NET_PEER_PORT" port
+            "$SemanticAttributes.DB_SYSTEM" "redis"
+            "$SemanticAttributes.DB_STATEMENT" "GET NON_EXISTENT_KEY"
           }
           event(0) {
             eventName "redis.encode.start"
@@ -233,12 +235,12 @@ abstract class AbstractLettuceReactiveClientTest extends InstrumentationSpecific
           name "RANDOMKEY"
           kind CLIENT
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
-            "${SemanticAttributes.NET_PEER_NAME.key}" host
-            "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
-            "${SemanticAttributes.NET_PEER_PORT.key}" port
-            "${SemanticAttributes.DB_STATEMENT.key}" "RANDOMKEY"
-            "${SemanticAttributes.DB_SYSTEM.key}" "redis"
+            "$SemanticAttributes.NET_TRANSPORT" IP_TCP
+            "$SemanticAttributes.NET_PEER_NAME" expectedHostAttributeValue
+            "$SemanticAttributes.NET_PEER_IP" loopback
+            "$SemanticAttributes.NET_PEER_PORT" port
+            "$SemanticAttributes.DB_STATEMENT" "RANDOMKEY"
+            "$SemanticAttributes.DB_SYSTEM" "redis"
           }
           event(0) {
             eventName "redis.encode.start"
@@ -262,12 +264,12 @@ abstract class AbstractLettuceReactiveClientTest extends InstrumentationSpecific
           name "COMMAND"
           kind CLIENT
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
-            "${SemanticAttributes.NET_PEER_NAME.key}" host
-            "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
-            "${SemanticAttributes.NET_PEER_PORT.key}" port
-            "${SemanticAttributes.DB_STATEMENT.key}" "COMMAND"
-            "${SemanticAttributes.DB_SYSTEM.key}" "redis"
+            "$SemanticAttributes.NET_TRANSPORT" IP_TCP
+            "$SemanticAttributes.NET_PEER_NAME" expectedHostAttributeValue
+            "$SemanticAttributes.NET_PEER_IP" loopback
+            "$SemanticAttributes.NET_PEER_PORT" port
+            "$SemanticAttributes.DB_STATEMENT" "COMMAND"
+            "$SemanticAttributes.DB_SYSTEM" "redis"
           }
           event(0) {
             eventName "redis.encode.start"
@@ -310,12 +312,12 @@ abstract class AbstractLettuceReactiveClientTest extends InstrumentationSpecific
           kind CLIENT
           childOf span(0)
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
-            "${SemanticAttributes.NET_PEER_NAME.key}" host
-            "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
-            "${SemanticAttributes.NET_PEER_PORT.key}" port
-            "${SemanticAttributes.DB_SYSTEM.key}" "redis"
-            "${SemanticAttributes.DB_STATEMENT.key}" "SET a ?"
+            "$SemanticAttributes.NET_TRANSPORT" IP_TCP
+            "$SemanticAttributes.NET_PEER_NAME" expectedHostAttributeValue
+            "$SemanticAttributes.NET_PEER_IP" loopback
+            "$SemanticAttributes.NET_PEER_PORT" port
+            "$SemanticAttributes.DB_SYSTEM" "redis"
+            "$SemanticAttributes.DB_STATEMENT" "SET a ?"
           }
           event(0) {
             eventName "redis.encode.start"
@@ -329,12 +331,12 @@ abstract class AbstractLettuceReactiveClientTest extends InstrumentationSpecific
           kind CLIENT
           childOf span(0)
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
-            "${SemanticAttributes.NET_PEER_NAME.key}" host
-            "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
-            "${SemanticAttributes.NET_PEER_PORT.key}" port
-            "${SemanticAttributes.DB_SYSTEM.key}" "redis"
-            "${SemanticAttributes.DB_STATEMENT.key}" "GET a"
+            "$SemanticAttributes.NET_TRANSPORT" IP_TCP
+            "$SemanticAttributes.NET_PEER_NAME" expectedHostAttributeValue
+            "$SemanticAttributes.NET_PEER_IP" loopback
+            "$SemanticAttributes.NET_PEER_PORT" port
+            "$SemanticAttributes.DB_SYSTEM" "redis"
+            "$SemanticAttributes.DB_STATEMENT" "GET a"
           }
           event(0) {
             eventName "redis.encode.start"
@@ -368,12 +370,12 @@ abstract class AbstractLettuceReactiveClientTest extends InstrumentationSpecific
           kind CLIENT
           childOf span(0)
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
-            "${SemanticAttributes.NET_PEER_NAME.key}" host
-            "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
-            "${SemanticAttributes.NET_PEER_PORT.key}" port
-            "${SemanticAttributes.DB_SYSTEM.key}" "redis"
-            "${SemanticAttributes.DB_STATEMENT.key}" "SET a ?"
+            "$SemanticAttributes.NET_TRANSPORT" IP_TCP
+            "$SemanticAttributes.NET_PEER_NAME" expectedHostAttributeValue
+            "$SemanticAttributes.NET_PEER_IP" loopback
+            "$SemanticAttributes.NET_PEER_PORT" port
+            "$SemanticAttributes.DB_SYSTEM" "redis"
+            "$SemanticAttributes.DB_STATEMENT" "SET a ?"
           }
           event(0) {
             eventName "redis.encode.start"
@@ -387,12 +389,12 @@ abstract class AbstractLettuceReactiveClientTest extends InstrumentationSpecific
           kind CLIENT
           childOf span(0)
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
-            "${SemanticAttributes.NET_PEER_NAME.key}" host
-            "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
-            "${SemanticAttributes.NET_PEER_PORT.key}" port
-            "${SemanticAttributes.DB_SYSTEM.key}" "redis"
-            "${SemanticAttributes.DB_STATEMENT.key}" "GET a"
+            "$SemanticAttributes.NET_TRANSPORT" IP_TCP
+            "$SemanticAttributes.NET_PEER_NAME" expectedHostAttributeValue
+            "$SemanticAttributes.NET_PEER_IP" loopback
+            "$SemanticAttributes.NET_PEER_PORT" port
+            "$SemanticAttributes.DB_SYSTEM" "redis"
+            "$SemanticAttributes.DB_STATEMENT" "GET a"
           }
           event(0) {
             eventName "redis.encode.start"

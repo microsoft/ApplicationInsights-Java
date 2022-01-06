@@ -8,7 +8,7 @@ package io.opentelemetry.instrumentation.api.tracer;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.instrumentation.api.instrumenter.SpanKey;
+import io.opentelemetry.instrumentation.api.internal.SpanKey;
 import javax.annotation.Nullable;
 
 /**
@@ -17,7 +17,14 @@ import javax.annotation.Nullable;
  */
 public final class ServerSpan {
 
-  /** Returns true when a {@link SpanKind#SERVER} span is present in the passed {@code context}. */
+  /**
+   * Returns true when a {@link SpanKind#SERVER} span is present in the passed {@code context}.
+   *
+   * @deprecated This method should not be used directly; it's functionality is encapsulated inside
+   *     the {@linkplain io.opentelemetry.instrumentation.api.instrumenter.Instrumenter Instrumenter
+   *     API}.
+   */
+  @Deprecated
   public static boolean exists(Context context) {
     return fromContextOrNull(context) != null;
   }
@@ -31,6 +38,14 @@ public final class ServerSpan {
     return SpanKey.SERVER.fromContextOrNull(context);
   }
 
+  /**
+   * Marks the span as the server span in the passed context.
+   *
+   * @deprecated This method should not be used directly; it's functionality is encapsulated inside
+   *     the {@linkplain io.opentelemetry.instrumentation.api.instrumenter.Instrumenter Instrumenter
+   *     API}.
+   */
+  @Deprecated
   public static Context with(Context context, Span serverSpan) {
     return SpanKey.SERVER.storeInContext(context, serverSpan);
   }
