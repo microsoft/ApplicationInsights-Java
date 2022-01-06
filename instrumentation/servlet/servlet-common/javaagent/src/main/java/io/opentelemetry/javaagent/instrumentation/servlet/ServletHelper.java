@@ -8,7 +8,6 @@ package io.opentelemetry.javaagent.instrumentation.servlet;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
-import io.opentelemetry.instrumentation.servlet.ServletAccessor;
 
 public class ServletHelper<REQUEST, RESPONSE> extends BaseServletHelper<REQUEST, RESPONSE> {
   private static final String ASYNC_LISTENER_ATTRIBUTE =
@@ -50,6 +49,8 @@ public class ServletHelper<REQUEST, RESPONSE> extends BaseServletHelper<REQUEST,
           recordAsyncException(request, throwable);
         }
       }
+      // also capture request parameters as servlet attributes
+      captureServletAttributes(currentContext, request);
     }
 
     if (scope == null || context == null) {

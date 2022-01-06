@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.CAPTURE_PARAMETERS
+
 import io.opentelemetry.instrumentation.test.base.HttpServerTest
 import jakarta.servlet.RequestDispatcher
 import jakarta.servlet.ServletException
@@ -52,6 +54,15 @@ class TestServlet5 {
             break
           case CAPTURE_HEADERS:
             resp.setHeader("X-Test-Response", req.getHeader("X-Test-Request"))
+            resp.status = endpoint.status
+            resp.writer.print(endpoint.body)
+            break
+          case CAPTURE_PARAMETERS:
+            req.setCharacterEncoding("UTF8")
+            def value = req.getParameter("test-parameter")
+            if (value != "test value õäöü") {
+              throw new ServletException("request parameter does not have expected value " + value)
+            }
             resp.status = endpoint.status
             resp.writer.print(endpoint.body)
             break
@@ -105,6 +116,16 @@ class TestServlet5 {
                 resp.writer.print(endpoint.body)
                 context.complete()
                 break
+              case CAPTURE_PARAMETERS:
+                req.setCharacterEncoding("UTF8")
+                def value = req.getParameter("test-parameter")
+                if (value != "test value õäöü") {
+                  throw new ServletException("request parameter does not have expected value " + value)
+                }
+                resp.status = endpoint.status
+                resp.writer.print(endpoint.body)
+                context.complete()
+                break
               case ERROR:
                 resp.status = endpoint.status
                 resp.writer.print(endpoint.body)
@@ -113,7 +134,13 @@ class TestServlet5 {
                 break
               case EXCEPTION:
                 resp.status = endpoint.status
-                resp.writer.print(endpoint.body)
+                def writer = resp.writer
+                writer.print(endpoint.body)
+                if (req.getClass().getName().contains("catalina")) {
+                  // on tomcat close the writer to ensure response is sent immediately, otherwise
+                  // there is a chance that tomcat resets the connection before the response is sent
+                  writer.close()
+                }
                 throw new ServletException(endpoint.body)
             }
           }
@@ -152,6 +179,15 @@ class TestServlet5 {
               break
             case CAPTURE_HEADERS:
               resp.setHeader("X-Test-Response", req.getHeader("X-Test-Request"))
+              resp.status = endpoint.status
+              resp.writer.print(endpoint.body)
+              break
+            case CAPTURE_PARAMETERS:
+              req.setCharacterEncoding("UTF8")
+              def value = req.getParameter("test-parameter")
+              if (value != "test value õäöü") {
+                throw new ServletException("request parameter does not have expected value " + value)
+              }
               resp.status = endpoint.status
               resp.writer.print(endpoint.body)
               break

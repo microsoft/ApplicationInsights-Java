@@ -38,7 +38,7 @@ public final class ClassPathResourceInstrumentation implements TypeInstrumentati
     public static InputStream onEnter(@Advice.This final ClassPathResource resource) {
       if ("io/opentelemetry/javaagent/instrumentation/micrometer/AzureMonitorAutoConfiguration.class"
           .equals(resource.getPath())) {
-        ClassLoader agentClassLoader = AgentInitializer.getAgentClassLoader();
+        ClassLoader agentClassLoader = AgentInitializer.getExtensionsClassLoader();
         if (agentClassLoader != null) {
           return agentClassLoader.getResourceAsStream(
               "io/opentelemetry/javaagent/instrumentation/micrometer/AzureMonitorAutoConfiguration.class");

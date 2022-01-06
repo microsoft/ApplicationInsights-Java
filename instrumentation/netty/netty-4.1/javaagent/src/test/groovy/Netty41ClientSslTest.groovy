@@ -60,8 +60,8 @@ class Netty41ClientSslTest extends AgentInstrumentationSpecification {
     def bootstrap = createBootstrap(eventLoopGroup, ["SSLv3"])
 
     def uri = server.resolveHttpsAddress("/success")
-    def request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri.toString(), Unpooled.EMPTY_BUFFER)
-    request.headers().set(HttpHeaderNames.HOST, uri.host)
+    def request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri.path, Unpooled.EMPTY_BUFFER)
+    request.headers().set(HttpHeaderNames.HOST, uri.host + ":" + uri.port)
 
     when:
     Channel channel = null
@@ -91,9 +91,9 @@ class Netty41ClientSslTest extends AgentInstrumentationSpecification {
           kind INTERNAL
           childOf span(0)
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
-            "${SemanticAttributes.NET_PEER_NAME.key}" uri.host
-            "${SemanticAttributes.NET_PEER_PORT.key}" uri.port
+            "$SemanticAttributes.NET_TRANSPORT" IP_TCP
+            "$SemanticAttributes.NET_PEER_NAME" uri.host
+            "$SemanticAttributes.NET_PEER_PORT" uri.port
           }
         }
         span(2) {
@@ -101,10 +101,10 @@ class Netty41ClientSslTest extends AgentInstrumentationSpecification {
           kind INTERNAL
           childOf span(0)
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
-            "${SemanticAttributes.NET_PEER_NAME.key}" uri.host
-            "${SemanticAttributes.NET_PEER_PORT.key}" uri.port
-            "${SemanticAttributes.NET_PEER_IP.key}" { it == null || it == "127.0.0.1" }
+            "$SemanticAttributes.NET_TRANSPORT" IP_TCP
+            "$SemanticAttributes.NET_PEER_NAME" uri.host
+            "$SemanticAttributes.NET_PEER_PORT" uri.port
+            "$SemanticAttributes.NET_PEER_IP" { it == null || it == "127.0.0.1" }
           }
         }
         span(3) {
@@ -115,10 +115,10 @@ class Netty41ClientSslTest extends AgentInstrumentationSpecification {
           // netty swallows the exception, it doesn't make any sense to hard-code the message
           errorEventWithAnyMessage(SSLHandshakeException)
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
-            "${SemanticAttributes.NET_PEER_NAME.key}" uri.host
-            "${SemanticAttributes.NET_PEER_PORT.key}" uri.port
-            "${SemanticAttributes.NET_PEER_IP.key}" { it == null || it == "127.0.0.1" }
+            "$SemanticAttributes.NET_TRANSPORT" IP_TCP
+            "$SemanticAttributes.NET_PEER_NAME" uri.host
+            "$SemanticAttributes.NET_PEER_PORT" uri.port
+            "$SemanticAttributes.NET_PEER_IP" { it == null || it == "127.0.0.1" }
           }
         }
       }
@@ -133,8 +133,8 @@ class Netty41ClientSslTest extends AgentInstrumentationSpecification {
     def bootstrap = createBootstrap(eventLoopGroup)
 
     def uri = server.resolveHttpsAddress("/success")
-    def request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri.toString(), Unpooled.EMPTY_BUFFER)
-    request.headers().set(HttpHeaderNames.HOST, uri.host)
+    def request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri.path, Unpooled.EMPTY_BUFFER)
+    request.headers().set(HttpHeaderNames.HOST, uri.host + ":" + uri.port)
 
     when:
     Channel channel = null
@@ -157,9 +157,9 @@ class Netty41ClientSslTest extends AgentInstrumentationSpecification {
           kind INTERNAL
           childOf span(0)
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
-            "${SemanticAttributes.NET_PEER_NAME.key}" uri.host
-            "${SemanticAttributes.NET_PEER_PORT.key}" uri.port
+            "$SemanticAttributes.NET_TRANSPORT" IP_TCP
+            "$SemanticAttributes.NET_PEER_NAME" uri.host
+            "$SemanticAttributes.NET_PEER_PORT" uri.port
           }
         }
         span(2) {
@@ -167,10 +167,10 @@ class Netty41ClientSslTest extends AgentInstrumentationSpecification {
           kind INTERNAL
           childOf span(0)
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
-            "${SemanticAttributes.NET_PEER_NAME.key}" uri.host
-            "${SemanticAttributes.NET_PEER_PORT.key}" uri.port
-            "${SemanticAttributes.NET_PEER_IP.key}" { it == null || it == "127.0.0.1" }
+            "$SemanticAttributes.NET_TRANSPORT" IP_TCP
+            "$SemanticAttributes.NET_PEER_NAME" uri.host
+            "$SemanticAttributes.NET_PEER_PORT" uri.port
+            "$SemanticAttributes.NET_PEER_IP" { it == null || it == "127.0.0.1" }
           }
         }
         span(3) {
@@ -178,10 +178,10 @@ class Netty41ClientSslTest extends AgentInstrumentationSpecification {
           kind INTERNAL
           childOf span(0)
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
-            "${SemanticAttributes.NET_PEER_NAME.key}" uri.host
-            "${SemanticAttributes.NET_PEER_PORT.key}" uri.port
-            "${SemanticAttributes.NET_PEER_IP.key}" { it == null || it == "127.0.0.1" }
+            "$SemanticAttributes.NET_TRANSPORT" IP_TCP
+            "$SemanticAttributes.NET_PEER_NAME" uri.host
+            "$SemanticAttributes.NET_PEER_PORT" uri.port
+            "$SemanticAttributes.NET_PEER_IP" { it == null || it == "127.0.0.1" }
           }
         }
         span(4) {
