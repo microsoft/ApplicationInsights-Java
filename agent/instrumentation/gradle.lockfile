@@ -69,7 +69,9 @@ io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0:1.10.0+ai.patches-alph
 io.opentelemetry.instrumentation:opentelemetry-quartz-2.0:1.10.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-reactor-3.1:1.10.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-rxjava-2.0:1.10.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.instrumentation:opentelemetry-rxjava-3-common:1.10.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-rxjava-3.0:1.10.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.instrumentation:opentelemetry-rxjava-3.1.1:1.10.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-spring-integration-4.1:1.10.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-spring-webflux-5.0:1.10.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-akka-actor-2.5:1.10.0+ai.patches-alpha=runtimeClasspath
@@ -160,6 +162,7 @@ io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-reactor-netty
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-reactor-netty-1.0:1.10.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-rxjava-2.0:1.10.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-rxjava-3.0:1.10.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-rxjava-3.1.1:1.10.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-2.2:1.10.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:1.10.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-5.0:1.10.0+ai.patches-alpha=runtimeClasspath
