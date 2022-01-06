@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
 
 public class AgentInstaller {
 
-  private static final Logger logger;
+  private static Logger logger;
 
   static final String JAVAAGENT_ENABLED_CONFIG = "otel.javaagent.enabled";
   static final String JAVAAGENT_NOOP_CONFIG = "otel.javaagent.experimental.use-noop-api";
@@ -72,25 +72,36 @@ public class AgentInstaller {
 
   private static final Map<String, List<Runnable>> CLASS_LOAD_CALLBACKS = new HashMap<>();
 
-  static {
-    LoggingConfigurer.configureLogger();
+  public static void installBytebuddyAgent(Instrumentation inst) {
+    installBytebuddyAgent(inst, null, /* setUpLogging= */ true);
+  }
+
+  // this exists for vendors who wish to completely override config and logging
+  public static void installBytebuddyAgent(
+      Instrumentation inst, Config config, boolean setUpLogging) {
+
+    // two most important things to set up are config and then logging
+    if (config != null) {
+      Config.internalInitializeConfig(config);
+    } else {
+      ConfigInitializer.initialize();
+    }
+    if (setUpLogging) {
+      LoggingConfigurer.configureLogger();
+    }
+
     logger = LoggerFactory.getLogger(AgentInstaller.class);
 
     addByteBuddyRawSetting();
-    // this needs to be done as early as possible - before the first Config.get() call
-    ConfigInitializer.initialize();
 
     Integer strictContextStressorMillis = Integer.getInteger(STRICT_CONTEXT_STRESSOR_MILLIS);
     if (strictContextStressorMillis != null) {
       io.opentelemetry.context.ContextStorage.addWrapper(
           storage -> new StrictContextStressor(storage, strictContextStressorMillis));
     }
-  }
 
-  public static void installBytebuddyAgent(Instrumentation inst) {
     logVersionInfo();
-    Config config = Config.get();
-    if (config.getBoolean(JAVAAGENT_ENABLED_CONFIG, true)) {
+    if (Config.get().getBoolean(JAVAAGENT_ENABLED_CONFIG, true)) {
       setupUnsafe(inst);
       List<AgentListener> agentListeners = loadOrdered(AgentListener.class);
       installBytebuddyAgent(inst, agentListeners);
