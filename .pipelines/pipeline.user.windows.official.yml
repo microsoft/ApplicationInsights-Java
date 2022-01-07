@@ -17,8 +17,6 @@ globalSdl: # https://aka.ms/obpipelines/sdl
     scanOutputDirectoryOnly: true
   policheck:
     break: true
-  roslyn:
-    break: true
   credscan:
     break: true
     suppressionFile: $(Build.SourcesDirectory)\.config\CredScanSuppressions.json
