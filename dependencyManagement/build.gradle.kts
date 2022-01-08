@@ -11,8 +11,7 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.10.0-rc.1"
-val otelAlphaVersion = "1.10.0-alpha-rc.1"
+val otelVersion = "1.10.0"
 rootProject.extra["otelVersion"] = otelVersion
 
 // IMPORTANT when updating opentelemetry version, be sure to update bytebuddy version to match
@@ -21,7 +20,7 @@ val otelInstrumentationVersionAlpha = "1.10.0+ai.patches-alpha"
 val DEPENDENCY_BOMS = listOf(
   "com.google.guava:guava-bom:30.1.1-jre",
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
-  "io.opentelemetry:opentelemetry-bom-alpha:${otelAlphaVersion}",
+  "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationVersionAlpha}",
   "org.junit:junit-bom:5.7.2"
 )
