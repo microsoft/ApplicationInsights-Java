@@ -58,23 +58,22 @@ public class AzureFunctionsInstrumentationModule extends InstrumentationModule {
 
     public static class InvocationRequestAdvice {
       @Advice.OnMethodEnter(suppress = Throwable.class)
-      public static Scope methodEnter(@Advice.Argument(0) final Object request)
+      public static Scope methodEnter(@Advice.Argument(0) Object request)
           throws ReflectiveOperationException {
         AiLazyConfiguration.lazyLoad();
 
-        final Object traceContext =
-            InvocationRequestExtractAdapter.getTraceContextMethod.invoke(request);
-        final Context extractedContext =
+        Object traceContext = InvocationRequestExtractAdapter.getTraceContextMethod.invoke(request);
+        Context extractedContext =
             GlobalOpenTelemetry.getPropagators()
                 .getTextMapPropagator()
                 .extract(Context.root(), traceContext, GETTER);
-        final SpanContext spanContext = Span.fromContext(extractedContext).getSpanContext();
+        SpanContext spanContext = Span.fromContext(extractedContext).getSpanContext();
 
         return Context.current().with(Span.wrap(spanContext)).makeCurrent();
       }
 
       @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
-      public static void methodExit(@Advice.Enter final Scope scope) {
+      public static void methodExit(@Advice.Enter Scope scope) {
         scope.close();
       }
     }

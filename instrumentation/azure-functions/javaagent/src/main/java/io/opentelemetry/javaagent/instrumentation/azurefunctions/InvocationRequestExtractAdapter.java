@@ -29,14 +29,14 @@ public class InvocationRequestExtractAdapter implements TextMapGetter<Object> {
     Method getTraceParentMethodLocal = null;
     Method getTraceStateMethodLocal = null;
     try {
-      final Class<?> invocationRequestClass =
+      Class<?> invocationRequestClass =
           Class.forName("com.microsoft.azure.functions.rpc.messages.InvocationRequest");
-      final Class<?> rpcTraceContextClass =
+      Class<?> rpcTraceContextClass =
           Class.forName("com.microsoft.azure.functions.rpc.messages.RpcTraceContext");
       getTraceContextMethodLocal = invocationRequestClass.getMethod("getTraceContext");
       getTraceParentMethodLocal = rpcTraceContextClass.getMethod("getTraceParent");
       getTraceStateMethodLocal = rpcTraceContextClass.getMethod("getTraceState");
-    } catch (final ReflectiveOperationException e) {
+    } catch (ReflectiveOperationException e) {
       logger.error(e.getMessage(), e);
     }
     getTraceContextMethod = getTraceContextMethodLocal;
@@ -50,7 +50,7 @@ public class InvocationRequestExtractAdapter implements TextMapGetter<Object> {
   }
 
   @Override
-  public String get(final Object carrier, final String key) {
+  public String get(Object carrier, String key) {
     try {
       // only supports W3C propagator
       switch (key) {
@@ -61,7 +61,7 @@ public class InvocationRequestExtractAdapter implements TextMapGetter<Object> {
         default:
           return null;
       }
-    } catch (final ReflectiveOperationException e) {
+    } catch (ReflectiveOperationException e) {
       logger.debug(e.getMessage(), e);
       return null;
     }
