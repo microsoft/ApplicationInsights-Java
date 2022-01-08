@@ -110,6 +110,8 @@ dependencies {
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-okhttp-3.0:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-opentelemetry-annotations-1.0:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-opentelemetry-api-1.0:$otelInstrumentationAlphaVersion")
+  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-opentelemetry-api-1.4:$otelInstrumentationAlphaVersion")
+  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-opentelemetry-api-1.10:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-play-2.4:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-play-2.6:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-quartz-2.0:$otelInstrumentationAlphaVersion")

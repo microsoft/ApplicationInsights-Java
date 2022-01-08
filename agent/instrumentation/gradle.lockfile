@@ -153,6 +153,8 @@ io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-okhttp-2.2:1.
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-okhttp-3.0:1.10.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-opentelemetry-annotations-1.0:1.10.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-opentelemetry-api-1.0:1.10.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-opentelemetry-api-1.10:1.10.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-opentelemetry-api-1.4:1.10.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-play-2.4:1.10.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-play-2.6:1.10.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-quartz-2.0:1.10.0+ai.patches-alpha=runtimeClasspath
