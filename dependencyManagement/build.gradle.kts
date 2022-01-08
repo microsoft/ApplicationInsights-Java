@@ -11,10 +11,8 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.10.0-rc.1"
-val otelAlphaVersion = "1.10.0-alpha-rc.1"
+val otelVersion = "1.10.0"
 rootProject.extra["otelVersion"] = otelVersion
-rootProject.extra["otelAlphaVersion"] = otelAlphaVersion
 
 // Need both BOM and -all
 val groovyVersion = "3.0.9"
@@ -38,7 +36,7 @@ val DEPENDENCY_BOMS = listOf(
   "com.google.guava:guava-bom:31.0.1-jre",
   "org.codehaus.groovy:groovy-bom:${groovyVersion}",
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
-  "io.opentelemetry:opentelemetry-bom-alpha:${otelAlphaVersion}",
+  "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "org.junit:junit-bom:5.8.2"
 )
 
@@ -50,7 +48,7 @@ val DEPENDENCY_SETS = listOf(
   ),
   DependencySet(
     "com.google.errorprone",
-    "2.7.1",
+    "2.10.0",
     listOf("error_prone_annotations", "error_prone_core")
   ),
   DependencySet(
@@ -61,7 +59,7 @@ val DEPENDENCY_SETS = listOf(
   DependencySet(
     "net.bytebuddy",
     // When updating, also update conventions/build.gradle.kts
-    "1.12.3",
+    "1.12.6",
     listOf("byte-buddy", "byte-buddy-dep", "byte-buddy-agent", "byte-buddy-gradle-plugin")
   ),
   DependencySet(
@@ -104,7 +102,7 @@ val DEPENDENCIES = listOf(
   "commons-validator:commons-validator:1.7",
   "io.netty:netty:3.10.6.Final",
   "io.opentelemetry.proto:opentelemetry-proto:0.11.0-alpha",
-  "org.assertj:assertj-core:3.21.0",
+  "org.assertj:assertj-core:3.22.0",
   "org.awaitility:awaitility:4.1.0",
   "com.google.code.findbugs:jsr305:3.0.2",
   "org.codehaus.groovy:groovy-all:${groovyVersion}",

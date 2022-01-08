@@ -35,7 +35,7 @@ public final class ClassPathResourceInstrumentation implements TypeInstrumentati
 
   public static class GetInputStreamAdvice {
     @Advice.OnMethodEnter(skipOn = Advice.OnNonDefaultValue.class)
-    public static InputStream onEnter(@Advice.This final ClassPathResource resource) {
+    public static InputStream onEnter(@Advice.This ClassPathResource resource) {
       if ("io/opentelemetry/javaagent/instrumentation/micrometer/AzureMonitorAutoConfiguration.class"
           .equals(resource.getPath())) {
         ClassLoader agentClassLoader = AgentInitializer.getExtensionsClassLoader();
@@ -50,7 +50,7 @@ public final class ClassPathResourceInstrumentation implements TypeInstrumentati
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void onExit(
         @Advice.Return(readOnly = false) InputStream result,
-        @Advice.Enter final InputStream resultFromAgentLoader) {
+        @Advice.Enter InputStream resultFromAgentLoader) {
 
       if (resultFromAgentLoader != null) {
         result = resultFromAgentLoader;

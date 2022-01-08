@@ -27,7 +27,7 @@ public class JavaUtilLoggingSpans {
 
   private static final Formatter FORMATTER = new AccessibleFormatter();
 
-  public static void capture(final Logger logger, final LogRecord logRecord) {
+  public static void capture(Logger logger, LogRecord logRecord) {
 
     Level level = logRecord.getLevel();
     if (!logger.isLoggable(level)) {
@@ -52,7 +52,7 @@ public class JavaUtilLoggingSpans {
     span.end();
   }
 
-  private static String toString(final Throwable t) {
+  private static String toString(Throwable t) {
     StringWriter out = new StringWriter();
     t.printStackTrace(new PrintWriter(out));
     return out.toString();
@@ -97,7 +97,7 @@ public class JavaUtilLoggingSpans {
   public static class AccessibleFormatter extends Formatter {
 
     @Override
-    public String format(final LogRecord record) {
+    public String format(LogRecord record) {
       throw new UnsupportedOperationException();
     }
   }

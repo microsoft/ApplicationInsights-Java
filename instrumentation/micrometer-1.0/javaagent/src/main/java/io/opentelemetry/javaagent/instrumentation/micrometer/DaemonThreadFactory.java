@@ -19,13 +19,13 @@ public final class DaemonThreadFactory implements ThreadFactory {
    *
    * @param threadName used to prefix all thread names.
    */
-  public DaemonThreadFactory(final String threadName) {
+  public DaemonThreadFactory(String threadName) {
     this.threadName = threadName;
   }
 
   @Override
-  public Thread newThread(final Runnable r) {
-    final Thread thread = new Thread(r, threadName);
+  public Thread newThread(Runnable r) {
+    Thread thread = new Thread(r, threadName);
     thread.setDaemon(true);
     thread.setContextClassLoader(null);
     return thread;

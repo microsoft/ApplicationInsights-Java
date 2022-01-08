@@ -26,8 +26,7 @@ public class Log4jSpans {
   private static final Tracer TRACER =
       GlobalOpenTelemetry.getTracer("io.opentelemetry.log4j-spans-2.0");
 
-  public static void capture(
-      final Logger logger, final Level level, final Message message, final Throwable t) {
+  public static void capture(Logger logger, Level level, Message message, Throwable t) {
 
     if (level.intLevel() > getThreshold().intLevel()) {
       return;
@@ -49,7 +48,7 @@ public class Log4jSpans {
     span.end();
   }
 
-  private static String toString(final Throwable t) {
+  private static String toString(Throwable t) {
     StringWriter out = new StringWriter();
     t.printStackTrace(new PrintWriter(out));
     return out.toString();

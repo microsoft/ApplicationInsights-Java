@@ -54,8 +54,8 @@ final class JavaUtilLoggingSpansInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void methodEnter(
-        @Advice.This final Logger logger,
-        @Advice.Argument(0) final LogRecord logRecord,
+        @Advice.This Logger logger,
+        @Advice.Argument(0) LogRecord logRecord,
         @Advice.Local("otelCallDepth") CallDepth callDepth) {
       // need to track call depth across all loggers in order to avoid double capture when one
       // logging framework delegates to another
