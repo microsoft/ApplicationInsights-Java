@@ -26,7 +26,7 @@ public class LogbackSpans {
   private static final Tracer TRACER =
       GlobalOpenTelemetry.getTracer("io.opentelemetry.logback-spans-1.0");
 
-  public static void capture(final ILoggingEvent event) {
+  public static void capture(ILoggingEvent event) {
 
     Level level = event.getLevel();
     if (level.toInt() < getThreshold().toInt()) {
@@ -58,7 +58,7 @@ public class LogbackSpans {
     span.end();
   }
 
-  private static String toString(final Throwable t) {
+  private static String toString(Throwable t) {
     StringWriter out = new StringWriter();
     t.printStackTrace(new PrintWriter(out));
     return out.toString();

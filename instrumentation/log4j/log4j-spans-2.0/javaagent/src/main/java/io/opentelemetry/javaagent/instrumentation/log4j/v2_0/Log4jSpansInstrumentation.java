@@ -70,10 +70,10 @@ final class Log4jSpansInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void methodEnter(
-        @Advice.This final Logger logger,
-        @Advice.Argument(1) final Level level,
-        @Advice.Argument(3) final Message message,
-        @Advice.Argument(4) final Throwable t,
+        @Advice.This Logger logger,
+        @Advice.Argument(1) Level level,
+        @Advice.Argument(3) Message message,
+        @Advice.Argument(4) Throwable t,
         @Advice.Local("otelCallDepth") CallDepth callDepth) {
       // need to track call depth across all loggers in order to avoid double capture when one
       // logging framework delegates to another
@@ -94,10 +94,10 @@ final class Log4jSpansInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void methodEnter(
-        @Advice.This final Logger logger,
-        @Advice.Argument(0) final Level level,
-        @Advice.Argument(4) final Message message,
-        @Advice.Argument(5) final Throwable t,
+        @Advice.This Logger logger,
+        @Advice.Argument(0) Level level,
+        @Advice.Argument(4) Message message,
+        @Advice.Argument(5) Throwable t,
         @Advice.Local("otelCallDepth") CallDepth callDepth) {
       // need to track call depth across all loggers in order to avoid double capture when one
       // logging framework delegates to another

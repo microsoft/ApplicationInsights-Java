@@ -43,7 +43,7 @@ class LogbackSpansInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void methodEnter(
-        @Advice.Argument(0) final ILoggingEvent event,
+        @Advice.Argument(0) ILoggingEvent event,
         @Advice.Local("otelCallDepth") CallDepth callDepth) {
       // need to track call depth across all loggers in order to avoid double capture when one
       // logging framework delegates to another
