@@ -89,7 +89,7 @@ val DEPENDENCY_SETS = listOf(
 )
 
 val DEPENDENCIES = listOf(
-  "ch.qos.logback:logback-classic:1.2.6",
+  "ch.qos.logback:logback-classic:1.2.8",
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
   "com.google.auto.service:auto-service:1.0",
   "com.uber.nullaway:nullaway:0.9.1",
