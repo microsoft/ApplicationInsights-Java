@@ -38,8 +38,7 @@ public class Log4jSpans {
   private static final int TRACE_INT = 5000;
   private static final int ALL_INT = Integer.MIN_VALUE;
 
-  public static void capture(
-      final Category logger, final Priority level, final Object message, final Throwable t) {
+  public static void capture(Category logger, Priority level, Object message, Throwable t) {
 
     if (level.toInt() < getThreshold()) {
       return;
@@ -64,7 +63,7 @@ public class Log4jSpans {
     span.end();
   }
 
-  private static String toString(final Throwable t) {
+  private static String toString(Throwable t) {
     StringWriter out = new StringWriter();
     t.printStackTrace(new PrintWriter(out));
     return out.toString();

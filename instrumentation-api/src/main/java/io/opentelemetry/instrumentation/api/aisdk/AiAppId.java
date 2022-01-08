@@ -19,7 +19,7 @@ public class AiAppId {
     }
   }
 
-  public static void setSupplier(final Supplier supplier) {
+  public static void setSupplier(Supplier supplier) {
     AiAppId.supplier = supplier;
   }
 

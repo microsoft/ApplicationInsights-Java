@@ -25,18 +25,18 @@ public class AzureMonitorNamingConvention implements NamingConvention {
     this(NamingConvention.snakeCase);
   }
 
-  public AzureMonitorNamingConvention(final NamingConvention delegate) {
+  public AzureMonitorNamingConvention(NamingConvention delegate) {
     this.delegate = delegate;
   }
 
   /** Trimming takes place in App Insights core SDK. */
   @Override
-  public String name(final String name, final Meter.Type type, @Nullable final String baseUnit) {
+  public String name(String name, Meter.Type type, @Nullable String baseUnit) {
     return NAME_AND_TAG_KEY_PATTERN.matcher(delegate.name(name, type, baseUnit)).replaceAll("_");
   }
 
   @Override
-  public String tagKey(final String key) {
+  public String tagKey(String key) {
     return NAME_AND_TAG_KEY_PATTERN.matcher(delegate.tagKey(key)).replaceAll("_");
   }
 }

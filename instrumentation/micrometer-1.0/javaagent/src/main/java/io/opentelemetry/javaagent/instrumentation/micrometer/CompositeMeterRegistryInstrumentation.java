@@ -37,7 +37,7 @@ public final class CompositeMeterRegistryInstrumentation implements TypeInstrume
   public static class AddAdvice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
-    public static boolean onEnter(@Advice.Argument(0) final MeterRegistry registry) {
+    public static boolean onEnter(@Advice.Argument(0) MeterRegistry registry) {
       return registry
           .getClass()
           .getName()

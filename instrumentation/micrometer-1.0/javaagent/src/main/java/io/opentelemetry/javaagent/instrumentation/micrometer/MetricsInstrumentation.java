@@ -32,7 +32,7 @@ public final class MetricsInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void onExit(
-        @Advice.FieldValue("globalRegistry") final CompositeMeterRegistry globalRegistry) {
+        @Advice.FieldValue("globalRegistry") CompositeMeterRegistry globalRegistry) {
       globalRegistry.add(AzureMonitorMeterRegistry.INSTANCE);
     }
   }

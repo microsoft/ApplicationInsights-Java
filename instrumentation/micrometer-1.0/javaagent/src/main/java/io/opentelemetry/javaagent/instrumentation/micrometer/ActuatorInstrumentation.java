@@ -36,7 +36,7 @@ public final class ActuatorInstrumentation implements TypeInstrumentation {
     public static void onExit(@Advice.Return(readOnly = false) List<String> configurations) {
       if (configurations.contains(
           "org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration")) {
-        final List<String> configs = new ArrayList<>(configurations.size() + 1);
+        List<String> configs = new ArrayList<>(configurations.size() + 1);
         configs.addAll(configurations);
         // using class reference here so that muzzle will consider it a dependency of this advice
         configs.add(AzureMonitorAutoConfiguration.class.getName());
