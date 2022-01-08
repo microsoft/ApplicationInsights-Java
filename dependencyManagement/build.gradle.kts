@@ -18,7 +18,7 @@ rootProject.extra["otelVersion"] = otelVersion
 val otelInstrumentationVersionAlpha = "1.10.0+ai.patches-alpha"
 
 val DEPENDENCY_BOMS = listOf(
-  "com.google.guava:guava-bom:30.1.1-jre",
+  "com.google.guava:guava-bom:31.0.1-jre",
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationVersionAlpha}",
@@ -42,8 +42,8 @@ val DEPENDENCY_SETS = listOf(
   DependencySet(
     "net.bytebuddy",
     // When updating, also update buildSrc/build.gradle.kts
-    "1.11.2",
-    listOf("byte-buddy", "byte-buddy-agent", "byte-buddy-gradle-plugin")
+    "1.12.6",
+    listOf("byte-buddy", "byte-buddy-dep", "byte-buddy-agent", "byte-buddy-gradle-plugin")
   ),
   DependencySet(
     "org.mockito",
@@ -76,7 +76,7 @@ val DEPENDENCY_SETS = listOf(
   ),
   DependencySet(
     "com.microsoft.azure",
-    "2.6.3", // need the latest version for Java 16+ support without having to use --illegal-access=permit
+    "2.6.4", // need the latest version for Java 16+ support without having to use --illegal-access=permit
     listOf(
       "applicationinsights-core",
       "applicationinsights-logging-log4j1_2",
