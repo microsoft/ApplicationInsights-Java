@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
@@ -59,8 +58,6 @@ import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceC
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
 import io.opentelemetry.instrumentation.api.cache.Cache;
-import io.opentelemetry.instrumentation.api.config.Config;
-import io.opentelemetry.javaagent.extension.AgentListener;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.File;
 import java.lang.instrument.Instrumentation;
@@ -72,28 +69,17 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@AutoService(AgentListener.class)
-public class AiComponentInstaller implements AgentListener {
+class AiComponentInstaller {
 
   private static final Logger startupLogger =
       LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
 
-  // TODO move to "agent builder" and then can inject this in the constructor
-  //  or convert to ByteBuddy and use ByteBuddyAgentCustomizer
-  private static volatile Instrumentation instrumentation;
-
-  public static void setInstrumentation(Instrumentation inst) {
-    instrumentation = inst;
-  }
-
-  private volatile AppIdSupplier appIdSupplier;
-
   private static final File tempDirectory =
       new File(LocalFileSystemUtils.getTempDir(), "applicationinsights/profiles");
 
-  @Override
-  public void beforeAgent(Config config) {
-    start(instrumentation);
+  static AppIdSupplier beforeAgent(Instrumentation instrumentation) {
+    AppIdSupplier appIdSupplier = start(instrumentation);
+
     // add sdk instrumentation after ensuring Global.getTelemetryClient() will not return null
     instrumentation.addTransformer(new TelemetryClientClassFileTransformer());
     instrumentation.addTransformer(new DependencyTelemetryClassFileTransformer());
@@ -105,22 +91,11 @@ public class AiComponentInstaller implements AgentListener {
     instrumentation.addTransformer(new WebRequestTrackingFilterClassFileTransformer());
     instrumentation.addTransformer(new RequestNameHandlerClassFileTransformer());
     instrumentation.addTransformer(new DuplicateAgentClassFileTransformer());
+
+    return appIdSupplier;
   }
 
-  @Override
-  public void afterAgent(Config config) {
-    // only safe now to resolve app id because SSL initialization
-    // triggers loading of java.util.logging (starting with Java 8u231)
-    // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized.
-
-    if (!"java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
-      // Delay registering and starting AppId retrieval until the connection string becomes
-      // available for Linux Consumption Plan.
-      appIdSupplier.startAppIdRetrieval();
-    }
-  }
-
-  private void start(Instrumentation instrumentation) {
+  private static AppIdSupplier start(Instrumentation instrumentation) {
 
     String codelessSdkNamePrefix = getCodelessSdkNamePrefix();
     if (codelessSdkNamePrefix != null) {
@@ -213,7 +188,7 @@ public class AiComponentInstaller implements AgentListener {
 
     BytecodeUtilImpl.samplingPercentage = config.sampling.percentage;
 
-    appIdSupplier = new AppIdSupplier(telemetryClient);
+    AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient);
     AiAppId.setSupplier(appIdSupplier);
 
     if (config.preview.profiler.enabled) {
@@ -256,6 +231,8 @@ public class AiComponentInstaller implements AgentListener {
     if (!readOnlyFileSystem) {
       LocalFilePurger.startPurging();
     }
+
+    return appIdSupplier;
   }
 
   private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(
@@ -351,4 +328,6 @@ public class AiComponentInstaller implements AgentListener {
       }
     }
   }
+
+  private AiComponentInstaller() {}
 }

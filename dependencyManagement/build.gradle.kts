@@ -11,14 +11,14 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.9.1"
+val otelVersion = "1.10.0"
 rootProject.extra["otelVersion"] = otelVersion
 
 // IMPORTANT when updating opentelemetry version, be sure to update bytebuddy version to match
-val otelInstrumentationVersionAlpha = "1.9.0+ai.patches-alpha"
+val otelInstrumentationVersionAlpha = "1.10.0+ai.patches-alpha"
 
 val DEPENDENCY_BOMS = listOf(
-  "com.google.guava:guava-bom:30.1.1-jre",
+  "com.google.guava:guava-bom:31.0.1-jre",
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationVersionAlpha}",
@@ -42,8 +42,8 @@ val DEPENDENCY_SETS = listOf(
   DependencySet(
     "net.bytebuddy",
     // When updating, also update buildSrc/build.gradle.kts
-    "1.11.2",
-    listOf("byte-buddy", "byte-buddy-agent", "byte-buddy-gradle-plugin")
+    "1.12.6",
+    listOf("byte-buddy", "byte-buddy-dep", "byte-buddy-agent", "byte-buddy-gradle-plugin")
   ),
   DependencySet(
     "org.mockito",
@@ -76,7 +76,7 @@ val DEPENDENCY_SETS = listOf(
   ),
   DependencySet(
     "com.microsoft.azure",
-    "2.6.3", // need the latest version for Java 16+ support without having to use --illegal-access=permit
+    "2.6.4", // need the latest version for Java 16+ support without having to use --illegal-access=permit
     listOf(
       "applicationinsights-core",
       "applicationinsights-logging-log4j1_2",
@@ -102,7 +102,7 @@ val DEPENDENCIES = listOf(
   "com.azure:azure-storage-blob:12.14.0",
   "com.azure:azure-identity:1.3.6",
   "com.github.oshi:oshi-core:5.8.0",
-  "org.assertj:assertj-core:3.19.0",
+  "org.assertj:assertj-core:3.22.0",
   "org.awaitility:awaitility:4.1.0",
   "io.github.hakky54:logcaptor:2.5.0",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
