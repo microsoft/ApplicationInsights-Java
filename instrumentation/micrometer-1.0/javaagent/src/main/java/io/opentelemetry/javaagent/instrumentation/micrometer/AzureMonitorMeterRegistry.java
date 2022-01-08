@@ -31,7 +31,7 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
       new AzureMonitorMeterRegistry(Clock.SYSTEM);
 
   // visible for testing
-  public AzureMonitorMeterRegistry(final Clock clock) {
+  public AzureMonitorMeterRegistry(Clock clock) {
     super(new AzureMonitorRegistryConfig(), clock);
     config().namingConvention(new AzureMonitorNamingConvention());
     start(new DaemonThreadFactory("azure-micrometer-publisher"));
@@ -44,7 +44,7 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
 
   @Override
   protected void publish() {
-    for (final Meter meter : getMeters()) {
+    for (Meter meter : getMeters()) {
       if (meter instanceof TimeGauge) {
         trackTimeGauge((TimeGauge) meter);
       } else if (meter instanceof Gauge) {
@@ -67,20 +67,20 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
     }
   }
 
-  private void trackTimeGauge(final TimeGauge gauge) {
+  private void trackTimeGauge(TimeGauge gauge) {
     trackMetric(
         getName(gauge), gauge.value(getBaseTimeUnit()), null, null, null, getProperties(gauge));
   }
 
-  private void trackGauge(final Gauge gauge) {
+  private void trackGauge(Gauge gauge) {
     trackMetric(getName(gauge), gauge.value(), null, null, null, getProperties(gauge));
   }
 
-  private void trackCounter(final Counter counter) {
+  private void trackCounter(Counter counter) {
     trackMetric(getName(counter), counter.count(), null, null, null, getProperties(counter));
   }
 
-  private void trackTimer(final Timer timer) {
+  private void trackTimer(Timer timer) {
     long count = timer.count();
     if (count == 0) {
       // important not to send explicit count of 0 because breeze converts that to 1
@@ -96,7 +96,7 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
         getProperties(timer));
   }
 
-  private void trackDistributionSummary(final DistributionSummary summary) {
+  private void trackDistributionSummary(DistributionSummary summary) {
     long count = summary.count();
     if (count == 0) {
       // important not to send explicit count of 0 because breeze converts that to 1
@@ -112,8 +112,8 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
         getProperties(summary));
   }
 
-  private void trackLongTaskTimer(final LongTaskTimer timer) {
-    final Map<String, String> properties = getProperties(timer);
+  private void trackLongTaskTimer(LongTaskTimer timer) {
+    Map<String, String> properties = getProperties(timer);
     trackMetric(getName(timer, "active"), timer.activeTasks(), null, null, null, properties);
     trackMetric(
         getName(timer, "duration"),
@@ -124,11 +124,11 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
         properties);
   }
 
-  private void trackFunctionCounter(final FunctionCounter counter) {
+  private void trackFunctionCounter(FunctionCounter counter) {
     trackMetric(getName(counter), counter.count(), null, null, null, getProperties(counter));
   }
 
-  private void trackFunctionTimer(final FunctionTimer timer) {
+  private void trackFunctionTimer(FunctionTimer timer) {
     double count = timer.count();
     if (count == 0) {
       // important not to send explicit count of 0 because breeze converts that to 1
@@ -143,9 +143,9 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
         getProperties(timer));
   }
 
-  private void trackMeter(final Meter meter) {
-    final Map<String, String> properties = getProperties(meter);
-    for (final Measurement measurement : meter.measure()) {
+  private void trackMeter(Meter meter) {
+    Map<String, String> properties = getProperties(meter);
+    for (Measurement measurement : meter.measure()) {
       trackMetric(
           getName(meter, measurement.getStatistic().toString().toLowerCase()),
           measurement.getValue(),
@@ -156,12 +156,12 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
     }
   }
 
-  private String getName(final Meter meter) {
+  private String getName(Meter meter) {
     return getName(meter, null);
   }
 
-  private String getName(final Meter meter, @Nullable final String suffix) {
-    final Meter.Id meterId = meter.getId();
+  private String getName(Meter meter, @Nullable String suffix) {
+    Meter.Id meterId = meter.getId();
     return config()
         .namingConvention()
         .name(
@@ -170,19 +170,19 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
             meterId.getBaseUnit());
   }
 
-  private Map<String, String> getProperties(final Meter meter) {
-    final Map<String, String> properties = new HashMap<>();
-    for (final Tag tag : getConventionTags(meter.getId())) {
+  private Map<String, String> getProperties(Meter meter) {
+    Map<String, String> properties = new HashMap<>();
+    for (Tag tag : getConventionTags(meter.getId())) {
       properties.put(tag.getKey(), tag.getValue());
     }
     return properties;
   }
 
-  private static int castCountToInt(final long count) {
+  private static int castCountToInt(long count) {
     return count < Integer.MAX_VALUE ? (int) count : Integer.MAX_VALUE;
   }
 
-  private static int castCountToInt(final double count) {
+  private static int castCountToInt(double count) {
     return count < Integer.MAX_VALUE ? (int) count : Integer.MAX_VALUE;
   }
 }

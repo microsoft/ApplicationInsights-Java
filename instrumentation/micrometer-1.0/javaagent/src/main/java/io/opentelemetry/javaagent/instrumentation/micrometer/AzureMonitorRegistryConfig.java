@@ -23,7 +23,7 @@ public class AzureMonitorRegistryConfig implements StepRegistryConfig {
   }
 
   @Override
-  public String get(final String key) {
+  public String get(String key) {
     return null;
   }
 
