@@ -228,6 +228,7 @@ public class Configuration {
     // this is needed to unblock customer, but is not the ideal long-term solution
     // https://portal.microsofticm.com/imp/v3/incidents/details/266992200/home
     public boolean disablePropagation;
+    public boolean captureHttpServer4xxAsError = true;
 
     public List<InheritedAttribute> inheritedAttributes = new ArrayList<>();
 

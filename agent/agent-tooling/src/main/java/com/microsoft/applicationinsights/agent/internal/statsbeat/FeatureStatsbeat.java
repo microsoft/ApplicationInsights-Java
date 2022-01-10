@@ -156,5 +156,8 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     if (config.preview.disablePropagation) {
       featureList.add(Feature.PROPAGATION_DISABLED);
     }
+    if (!config.preview.captureHttpServer4xxAsError) {
+      featureList.add(Feature.CAPTURE_HTTP_SERVER_4XX_AS_SUCCESS);
+    }
   }
 }

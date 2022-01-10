@@ -46,7 +46,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -163,9 +162,11 @@ public class Exporter implements SpanExporter {
   }
 
   private final TelemetryClient telemetryClient;
+  private final boolean captureHttpServer4xxAsError;
 
-  public Exporter(TelemetryClient telemetryClient) {
+  public Exporter(TelemetryClient telemetryClient, boolean captureHttpServer4xxAsError) {
     this.telemetryClient = telemetryClient;
+    this.captureHttpServer4xxAsError = captureHttpServer4xxAsError;
   }
 
   @Override
@@ -839,20 +840,21 @@ public class Exporter implements SpanExporter {
     exportEvents(span, operationName, samplingPercentage);
   }
 
-  private static boolean getSuccess(SpanData span) {
-    if (span.getStatus().getStatusCode() == StatusCode.ERROR) {
-      return false;
+  private boolean getSuccess(SpanData span) {
+    switch (span.getStatus().getStatusCode()) {
+      case ERROR:
+        return false;
+      case OK:
+        // auto-instrumentation never sets OK, so this is explicit user override
+        return true;
+      case UNSET:
+        if (captureHttpServer4xxAsError) {
+          Long statusCode = span.getAttributes().get(SemanticAttributes.HTTP_STATUS_CODE);
+          return statusCode == null || statusCode < 400;
+        }
+        return true;
     }
-    if (span.getStatus().getStatusCode() == StatusCode.OK) {
-      // auto-instrumentation never sets OK, so this is explicit user override
-      return true;
-    }
-    Long statusCode = span.getAttributes().get(SemanticAttributes.HTTP_STATUS_CODE);
-    if (statusCode == null) {
-      return true;
-    }
-    // override default OpenTelemetry mapping of status codes 4xx
-    return statusCode < 400;
+    return true;
   }
 
   @Nullable
