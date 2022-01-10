@@ -19,33 +19,33 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.processors;
+package com.microsoft.applicationinsights.agent.internal.init;
 
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.trace.data.DelegatingSpanData;
-import io.opentelemetry.sdk.trace.data.SpanData;
+import com.google.auto.service.AutoService;
+import io.opentelemetry.instrumentation.api.config.Config;
+import io.opentelemetry.javaagent.extension.AgentListener;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 
-public class MySpanData extends DelegatingSpanData {
-  private final Attributes attributes;
-  private final String spanName;
+@AutoService(AgentListener.class)
+public class StartAppIdRetrieval implements AgentListener {
 
-  public MySpanData(SpanData delegate, Attributes attributes) {
-    this(delegate, attributes, delegate.getName());
-  }
+  private static volatile AppIdSupplier appIdSupplier;
 
-  public MySpanData(SpanData delegate, Attributes attributes, String spanName) {
-    super(delegate);
-    this.attributes = attributes;
-    this.spanName = spanName;
+  public static void setAppIdSupplier(AppIdSupplier appIdSupplier) {
+    StartAppIdRetrieval.appIdSupplier = appIdSupplier;
   }
 
   @Override
-  public String getName() {
-    return spanName;
-  }
+  public void afterAgent(
+      Config config, AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk) {
+    // only safe now to resolve app id because SSL initialization
+    // triggers loading of java.util.logging (starting with Java 8u231)
+    // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized.
 
-  @Override
-  public Attributes getAttributes() {
-    return attributes;
+    if (!"java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+      // Delay registering and starting AppId retrieval until the connection string becomes
+      // available for Linux Consumption Plan.
+      appIdSupplier.startAppIdRetrieval();
+    }
   }
 }

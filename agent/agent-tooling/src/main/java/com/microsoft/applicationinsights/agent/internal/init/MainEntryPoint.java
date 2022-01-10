@@ -93,7 +93,8 @@ public class MainEntryPoint {
       ConfigurationBuilder.logConfigurationWarnMessages();
       MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
       // TODO convert to agent builder concept
-      AiComponentInstaller.setInstrumentation(instrumentation);
+      AppIdSupplier appIdSupplier = AiComponentInstaller.beforeAgent(instrumentation);
+      StartAppIdRetrieval.setAppIdSupplier(appIdSupplier);
       AgentInstaller.installBytebuddyAgent(
           instrumentation, ConfigOverride.getConfig(configuration), false);
       startupLogger.info(
