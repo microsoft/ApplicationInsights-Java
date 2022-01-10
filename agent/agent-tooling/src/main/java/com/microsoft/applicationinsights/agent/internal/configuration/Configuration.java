@@ -237,6 +237,8 @@ public class Configuration {
     public PreviewStatsbeat statsbeat = new PreviewStatsbeat();
 
     public List<InstrumentationKeyOverride> instrumentationKeyOverrides = new ArrayList<>();
+
+    public int exportQueueCapacity = 2048;
   }
 
   public static class InheritedAttribute {

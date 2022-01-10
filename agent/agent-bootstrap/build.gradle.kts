@@ -3,7 +3,7 @@ plugins {
   id("ai.sdk-version-file")
 }
 
-val otelInstrumentationAlphaVersion = "1.9.0+ai.patches-alpha"
+val otelInstrumentationAlphaVersion = "1.10.0+ai.patches-alpha"
 
 dependencies {
   implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap") {
