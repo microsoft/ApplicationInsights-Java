@@ -95,6 +95,7 @@ public class TelemetryClient {
   private final Cache<String, String> ikeyEndpointMap;
   private final StatsbeatModule statsbeatModule;
   private final boolean readOnlyFileSystem;
+  private final int exportQueueCapacity;
 
   @Nullable private final Configuration.AadAuthentication aadAuthentication;
 
@@ -123,6 +124,7 @@ public class TelemetryClient {
     this.ikeyEndpointMap = builder.ikeyEndpointMap;
     this.statsbeatModule = builder.statsbeatModule;
     this.readOnlyFileSystem = builder.readOnlyFileSystem;
+    this.exportQueueCapacity = builder.exportQueueCapacity;
     this.aadAuthentication = builder.aadAuthentication;
   }
 
@@ -229,7 +231,8 @@ public class TelemetryClient {
             LocalFileSender.start(localFileLoader, channel);
           }
 
-          channelBatcher = BatchSpanProcessor.builder(channel).build();
+          channelBatcher =
+              BatchSpanProcessor.builder(channel).setMaxQueueSize(exportQueueCapacity).build();
         }
       }
     }
@@ -483,6 +486,7 @@ public class TelemetryClient {
     private Cache<String, String> ikeyEndpointMap;
     private StatsbeatModule statsbeatModule;
     private boolean readOnlyFileSystem;
+    private int exportQueueCapacity;
     @Nullable private Configuration.AadAuthentication aadAuthentication;
 
     public Builder setCustomDimensions(Map<String, String> customDimensions) {
@@ -526,6 +530,11 @@ public class TelemetryClient {
 
     public Builder setReadOnlyFileSystem(boolean readOnlyFileSystem) {
       this.readOnlyFileSystem = readOnlyFileSystem;
+      return this;
+    }
+
+    public Builder setMaxExportQueueSize(int exportQueueCapacity) {
+      this.exportQueueCapacity = exportQueueCapacity;
       return this;
     }
 
