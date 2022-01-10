@@ -232,12 +232,17 @@ public class Configuration {
 
     public List<InheritedAttribute> inheritedAttributes = new ArrayList<>();
 
+    public HttpHeadersConfiguration captureHttpServerHeaders = new HttpHeadersConfiguration();
+    public HttpHeadersConfiguration captureHttpClientHeaders = new HttpHeadersConfiguration();
+
     public ProfilerConfiguration profiler = new ProfilerConfiguration();
     public GcEventConfiguration gcEvents = new GcEventConfiguration();
     public AadAuthentication authentication = new AadAuthentication();
     public PreviewStatsbeat statsbeat = new PreviewStatsbeat();
 
     public List<InstrumentationKeyOverride> instrumentationKeyOverrides = new ArrayList<>();
+
+    public int exportQueueCapacity = 2048;
   }
 
   public static class InheritedAttribute {
@@ -265,6 +270,11 @@ public class Configuration {
       }
       throw new IllegalStateException("Unexpected attribute key type: " + type);
     }
+  }
+
+  public static class HttpHeadersConfiguration {
+    public List<String> requestHeaders = new ArrayList<>();
+    public List<String> responseHeaders = new ArrayList<>();
   }
 
   public enum SpanAttributeType {

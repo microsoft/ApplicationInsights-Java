@@ -19,26 +19,16 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.smoketest;
+package com.microsoft.applicationinsights.smoketestapp;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
-import org.junit.Test;
-
-@UseAgent("customdimensions")
-public class CustomDimensionsTest extends AiSmokeTest {
-
-  @Test
-  @TargetUri("/test")
-  public void doMostBasicTest() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
-
-    assertEquals("value", telemetry.rd.getProperties().get("test"));
-    assertEquals("/root", telemetry.rd.getProperties().get("home"));
-    assertEquals(2, telemetry.rd.getProperties().size());
-    assertTrue(telemetry.rd.getSuccess());
-
-    assertEquals("123", telemetry.rdEnvelope.getTags().get("ai.application.ver"));
+@SpringBootApplication
+public class SpringBootApp extends SpringBootServletInitializer {
+  @Override
+  protected SpringApplicationBuilder configure(SpringApplicationBuilder applicationBuilder) {
+    return applicationBuilder.sources(SpringBootApp.class);
   }
 }

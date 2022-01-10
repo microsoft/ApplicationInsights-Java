@@ -21,9 +21,11 @@
 
 package com.microsoft.applicationinsights.smoketestapp;
 
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.extension.annotations.SpanAttribute;
-import io.opentelemetry.extension.annotations.WithSpan;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import javax.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,32 +37,27 @@ public class TestController {
     return "OK";
   }
 
-  @GetMapping("/test-api")
-  public String testApi() {
-    Span.current().setAttribute("myattr1", "myvalue1");
-    Span.current().setAttribute("myattr2", "myvalue2");
-    Span.current().setAttribute("enduser.id", "myuser");
-    Span.current().updateName("myspanname");
+  @GetMapping("/serverHeaders")
+  public String serverHeaders(HttpServletResponse response) {
+    response.setHeader("abc", "testing123");
     return "OK!";
   }
 
-  @GetMapping("/test-overriding-ikey-etc")
-  public String testOverridingIkeyEtc() {
-    Span.current()
-        .setAttribute("ai.preview.instrumentation_key", "12341234-1234-1234-1234-123412341234");
-    Span.current().setAttribute("ai.preview.service_name", "role-name-here");
-    Span.current().setAttribute("ai.preview.service_instance_id", "role-instance-here");
-    Span.current().setAttribute("ai.preview.service_version", "application-version-here");
-    return "OK!";
-  }
+  @GetMapping("/clientHeaders")
+  public String clientHeaders() throws IOException {
+    URL obj = new URL("https://mock.codes/200");
 
-  @GetMapping("/test-annotations")
-  public String testAnnotations() {
-    return underAnnotation("a message");
-  }
+    HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
+    connection.setRequestProperty("abc", "testing123");
+    // calling getContentType() first, since this triggered a bug previously in the instrumentation
+    // previously
+    connection.getContentType();
+    InputStream content = connection.getInputStream();
+    // drain the content
+    byte[] buffer = new byte[1024];
+    while (content.read(buffer) != -1) {}
+    content.close();
 
-  @WithSpan
-  private String underAnnotation(@SpanAttribute("message") String msg) {
     return "OK!";
   }
 }

@@ -74,11 +74,11 @@ public class Exporter implements SpanExporter {
 
   private static final Set<String> SQL_DB_SYSTEMS;
 
-  private static final Trie<Boolean> STANDARD_ATTRIBUTE_PREFIXES;
+  private static final Trie<Boolean> STANDARD_ATTRIBUTE_PREFIX_TRIE;
 
   // TODO (trask) this can go away once new indexer is rolled out to gov clouds
-  private static final AttributeKey<String> AI_REQUEST_CONTEXT_KEY =
-      AttributeKey.stringKey("http.response.header.request_context");
+  private static final AttributeKey<List<String>> AI_REQUEST_CONTEXT_KEY =
+      AttributeKey.stringArrayKey("http.response.header.request_context");
 
   public static final AttributeKey<String> AI_OPERATION_NAME_KEY =
       AttributeKey.stringKey("applicationinsights.internal.operation_name");
@@ -145,7 +145,7 @@ public class Exporter implements SpanExporter {
     SQL_DB_SYSTEMS = Collections.unmodifiableSet(dbSystems);
 
     // TODO need to keep this list in sync as new semantic conventions are defined
-    STANDARD_ATTRIBUTE_PREFIXES =
+    STANDARD_ATTRIBUTE_PREFIX_TRIE =
         Trie.<Boolean>newBuilder()
             .put("http.", true)
             .put("db.", true)
@@ -508,10 +508,11 @@ public class Exporter implements SpanExporter {
 
   @Nullable
   private static String getTargetAppId(Attributes attributes) {
-    String requestContext = attributes.get(AI_REQUEST_CONTEXT_KEY);
-    if (requestContext == null) {
+    List<String> requestContextList = attributes.get(AI_REQUEST_CONTEXT_KEY);
+    if (requestContextList == null || requestContextList.isEmpty()) {
       return null;
     }
+    String requestContext = requestContextList.get(0);
     int index = requestContext.indexOf('=');
     if (index == -1) {
       return null;
@@ -1072,6 +1073,9 @@ public class Exporter implements SpanExporter {
               || stringKey.equals(KAFKA_OFFSET.getKey())) {
             return;
           }
+          if (stringKey.equals(AI_REQUEST_CONTEXT_KEY.getKey())) {
+            return;
+          }
           // special case mappings
           if (stringKey.equals(SemanticAttributes.ENDUSER_ID.getKey()) && value instanceof String) {
             telemetry.getTags().put(ContextTagKeys.AI_USER_ID.toString(), (String) value);
@@ -1100,7 +1104,9 @@ public class Exporter implements SpanExporter {
             telemetry.getTags().put(ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
             return;
           }
-          if (STANDARD_ATTRIBUTE_PREFIXES.getOrDefault(stringKey, false)) {
+          if (STANDARD_ATTRIBUTE_PREFIX_TRIE.getOrDefault(stringKey, false)
+              && !stringKey.startsWith("http.request.header.")
+              && !stringKey.startsWith("http.response.header.")) {
             return;
           }
           String val = convertToString(value, key.getType());
