@@ -58,6 +58,13 @@ dependencies {
   implementation("io.opentelemetry:opentelemetry-api")
   implementation("org.jctools:jctools-core:3.3.0")
 
+  implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+  implementation("io.opentelemetry:opentelemetry-exporter-otlp-metrics")
+  implementation("io.opentelemetry:opentelemetry-exporter-otlp-logs")
+  implementation("io.opentelemetry:opentelemetry-exporter-otlp-http-trace")
+  implementation("io.opentelemetry:opentelemetry-exporter-otlp-http-metrics")
+  implementation("io.opentelemetry:opentelemetry-exporter-otlp-http-logs")
+
   compileOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
   // TODO(trask): update tests, no need to use this anymore
   testImplementation("com.squareup.okio:okio:2.8.0")
