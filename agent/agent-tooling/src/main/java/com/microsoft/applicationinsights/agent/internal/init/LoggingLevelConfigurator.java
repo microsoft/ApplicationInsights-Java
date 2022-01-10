@@ -46,6 +46,7 @@ public class LoggingLevelConfigurator {
     updateLoggerLevel(loggerContext.getLogger("io.netty"));
     updateLoggerLevel(loggerContext.getLogger("io.grpc.Context"));
     updateLoggerLevel(loggerContext.getLogger("io.opentelemetry.javaagent.tooling.VersionLogger"));
+    updateLoggerLevel(loggerContext.getLogger("io.opentelemetry.exporter.logging"));
     updateLoggerLevel(loggerContext.getLogger("io.opentelemetry"));
     updateLoggerLevel(loggerContext.getLogger("muzzleMatcher"));
     updateLoggerLevel(
@@ -72,6 +73,10 @@ public class LoggingLevelConfigurator {
     } else if (name.equals("io.opentelemetry.javaagent.tooling.VersionLogger")) {
       // TODO (trask) currently otel version relies on manifest so incorrect in this distro
       loggerLevel = getAtLeastWarnLevel(level);
+    } else if (name.startsWith("io.opentelemetry.exporter.logging")) {
+      // in case user enables OpenTelemetry logging exporters via otel.traces.exporter,
+      // otel.metrics.exporter, or otel.logs.exporter
+      loggerLevel = level;
     } else if (name.startsWith("io.opentelemetry")) {
       // OpenTelemetry instrumentation debug log has lots of things that look like errors
       // which has been confusing customers, so only enable it when user configures "trace" level

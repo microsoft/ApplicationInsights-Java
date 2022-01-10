@@ -122,26 +122,29 @@ class ConfigOverride {
           "Request-Context");
     } else {
       properties.put("otel.traces.exporter", tracesExporter);
-      // when using another exporter, populate otel.service.name and otel.resource.attributes
-      if (config.role.name != null) {
-        properties.put("otel.service.name", config.role.name);
-      }
-      String resourceAttributes = getProperty("otel.resource.attributes");
-      if (resourceAttributes != null) {
-        properties.put("otel.resource.attributes", resourceAttributes);
-      }
     }
 
-    String metricsExporter = System.getProperty("otel.metrics.exporter");
-    if (metricsExporter == null) {
-      metricsExporter = System.getenv("OTEL_METRICS_EXPORTER");
-    }
+    String metricsExporter = getProperty("otel.metrics.exporter");
     if (metricsExporter == null) {
       // currently Application Insights exports metrics directly, not through OpenTelemetry
       // exporter (this will change in the future)
       properties.put("otel.metrics.exporter", "none");
     } else {
       properties.put("otel.metrics.exporter", metricsExporter);
+    }
+
+    String logsExporter = getProperty("otel.logs.exporter");
+    if (logsExporter == null) {
+      // currently Application Insights exports logs directly, not through OpenTelemetry
+      // exporter (this will change in the future)
+      properties.put("otel.logs.exporter", "none");
+    } else {
+      properties.put("otel.logs.exporter", logsExporter);
+    }
+
+    if (config.role.name != null) {
+      // in case using another exporter
+      properties.put("otel.service.name", config.role.name);
     }
 
     return new ConfigBuilder().readProperties(properties).build();
