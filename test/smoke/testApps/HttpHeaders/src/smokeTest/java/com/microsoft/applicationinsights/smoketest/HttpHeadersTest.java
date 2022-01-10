@@ -22,23 +22,37 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-@UseAgent("customdimensions")
-public class CustomDimensionsTest extends AiSmokeTest {
+@UseAgent("httpheaders")
+public class HttpHeadersTest extends AiSmokeTest {
 
   @Test
-  @TargetUri("/test")
-  public void doMostBasicTest() throws Exception {
+  @TargetUri("/serverHeaders")
+  public void testServerHeaders() throws Exception {
     Telemetry telemetry = getTelemetry(0);
 
-    assertEquals("value", telemetry.rd.getProperties().get("test"));
-    assertEquals("/root", telemetry.rd.getProperties().get("home"));
+    assertEquals("testing123", telemetry.rd.getProperties().get("http.response.header.abc"));
+    assertNotNull(telemetry.rd.getProperties().get("http.request.header.host"));
     assertEquals(2, telemetry.rd.getProperties().size());
     assertTrue(telemetry.rd.getSuccess());
+  }
 
-    assertEquals("123", telemetry.rdEnvelope.getTags().get("ai.application.ver"));
+  @Test
+  @TargetUri("/clientHeaders")
+  public void testClientHeaders() throws Exception {
+    Telemetry telemetry = getTelemetry(1);
+
+    assertNotNull(telemetry.rd.getProperties().get("http.request.header.host"));
+    assertEquals(1, telemetry.rd.getProperties().size());
+    assertTrue(telemetry.rd.getSuccess());
+
+    assertEquals("testing123", telemetry.rdd1.getProperties().get("http.request.header.abc"));
+    assertNotNull(telemetry.rdd1.getProperties().get("http.response.header.date"));
+    assertEquals(2, telemetry.rdd1.getProperties().size());
+    assertTrue(telemetry.rdd1.getSuccess());
   }
 }
