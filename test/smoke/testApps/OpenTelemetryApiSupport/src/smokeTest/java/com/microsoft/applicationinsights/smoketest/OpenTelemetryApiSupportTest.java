@@ -107,7 +107,8 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
     assertNull(telemetry.rdd1.getData());
     assertEquals("InProc", telemetry.rdd1.getType());
     assertNull(telemetry.rdd1.getTarget());
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
+    assertEquals("a message", telemetry.rdd1.getProperties().get("message"));
+    assertEquals(1, telemetry.rdd1.getProperties().size());
     assertTrue(telemetry.rdd1.getSuccess());
 
     assertParentChild(
