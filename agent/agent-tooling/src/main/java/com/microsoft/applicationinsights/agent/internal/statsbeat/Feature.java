@@ -54,7 +54,9 @@ enum Feature {
   AKKA_DISABLED(23), // preview instrumentation, akka is ON by default in OTEL
   PROPAGATION_DISABLED(24),
   PLAY_DISABLED(25), // preview instrumentation, play is ON by default in OTEL
-  CAPTURE_HTTP_SERVER_4XX_AS_SUCCESS(26);
+  CAPTURE_HTTP_SERVER_4XX_AS_SUCCESS(26),
+  CAPTURE_HTTP_SERVER_HEADERS(27),
+  CAPTURE_HTTP_CLIENT_HEADERS(28);
 
   private static final Map<String, Feature> javaVendorFeatureMap;
 
