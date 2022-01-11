@@ -8,6 +8,7 @@ ch.qos.logback:logback-core:1.2.8=runtimeClasspath
 com.google.guava:guava-bom:31.0.1-jre=runtimeClasspath
 com.squareup.moshi:moshi:1.11.0=runtimeClasspath
 com.squareup.okio:okio:1.17.5=runtimeClasspath
+io.netty:netty-bom:4.1.72.Final=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support:1.10.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:1.10.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.10.0+ai.patches-alpha=runtimeClasspath

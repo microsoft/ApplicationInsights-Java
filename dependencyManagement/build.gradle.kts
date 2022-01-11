@@ -22,8 +22,9 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationVersionAlpha}",
-  "org.junit:junit-bom:5.7.2"
-)
+  "org.junit:junit-bom:5.7.2",
+  "io.netty:netty-bom:4.1.72.Final",
+  )
 
 // TODO consolidate to just one json library
 // TODO remove dependencies on apache commons
