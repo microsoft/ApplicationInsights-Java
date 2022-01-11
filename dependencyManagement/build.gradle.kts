@@ -89,7 +89,7 @@ val DEPENDENCY_SETS = listOf(
 )
 
 val DEPENDENCIES = listOf(
-  "ch.qos.logback:logback-classic:1.2.6",
+  "ch.qos.logback:logback-classic:1.2.8",
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
   "com.google.auto.service:auto-service:1.0",
   "com.uber.nullaway:nullaway:0.9.1",
@@ -99,7 +99,7 @@ val DEPENDENCIES = listOf(
   "org.apache.commons:commons-text:1.9",
   "com.google.code.gson:gson:2.8.2",
   "com.azure:azure-core:1.21.0",
-  "com.azure:azure-storage-blob:12.14.0",
+  "com.azure:azure-storage-blob:12.14.2",
   "com.azure:azure-identity:1.3.6",
   "com.github.oshi:oshi-core:5.8.0",
   "org.assertj:assertj-core:3.22.0",
