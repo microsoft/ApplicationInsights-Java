@@ -154,6 +154,8 @@ class AiComponentInstaller {
     if (config.proxy.host != null) {
       LazyHttpClient.proxyHost = config.proxy.host;
       LazyHttpClient.proxyPortNumber = config.proxy.port;
+      LazyHttpClient.proxyUsername = config.proxy.username;
+      LazyHttpClient.proxyPassword = config.proxy.password;
     }
 
     List<MetricFilter> metricFilters =

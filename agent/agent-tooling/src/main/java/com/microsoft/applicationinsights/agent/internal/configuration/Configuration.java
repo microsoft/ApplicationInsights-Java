@@ -203,6 +203,8 @@ public class Configuration {
 
     public String host;
     public int port = 80;
+    public String username;
+    public String password;
   }
 
   public static class PreviewConfiguration {
