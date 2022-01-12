@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.perfcounter;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oshi.SystemInfo;
@@ -31,7 +32,6 @@ import oshi.hardware.CentralProcessor;
 import oshi.hardware.CentralProcessor.TickType;
 import oshi.software.os.OSProcess;
 import oshi.software.os.OperatingSystem;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class OshiPerformanceCounter implements PerformanceCounter {
 
