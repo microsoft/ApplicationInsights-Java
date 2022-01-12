@@ -31,6 +31,7 @@ import oshi.hardware.CentralProcessor;
 import oshi.hardware.CentralProcessor.TickType;
 import oshi.software.os.OSProcess;
 import oshi.software.os.OperatingSystem;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class OshiPerformanceCounter implements PerformanceCounter {
 
@@ -45,6 +46,7 @@ public class OshiPerformanceCounter implements PerformanceCounter {
 
   private volatile OSProcess processInfo;
   private volatile CentralProcessor processor;
+  private static final AtomicBoolean hasError = new AtomicBoolean();
 
   @Override
   public String getId() {
@@ -55,10 +57,22 @@ public class OshiPerformanceCounter implements PerformanceCounter {
   public void report(TelemetryClient telemetryClient) {
     if (processInfo == null || processor == null) {
       // lazy initializing these because they add to slowness during startup
-      SystemInfo systemInfo = new SystemInfo();
-      OperatingSystem osInfo = systemInfo.getOperatingSystem();
-      processInfo = osInfo.getProcess(osInfo.getProcessId());
-      processor = systemInfo.getHardware().getProcessor();
+      try {
+        SystemInfo systemInfo = new SystemInfo();
+        OperatingSystem osInfo = systemInfo.getOperatingSystem();
+        processInfo = osInfo.getProcess(osInfo.getProcessId());
+        processor = systemInfo.getHardware().getProcessor();
+      } catch (Error ex) {
+        // e.g. icm 253155448: NoClassDefFoundError
+        // e.g. icm 276640835: ExceptionInInitializerError
+        hasError.set(true);
+        return;
+      }
+    }
+
+    // stop collecting oshi perf counters when initialization fails.
+    if (hasError.get()) {
+      return;
     }
 
     long currCollectionTimeMillis = System.currentTimeMillis();
