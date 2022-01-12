@@ -55,6 +55,11 @@ public class OshiPerformanceCounter implements PerformanceCounter {
 
   @Override
   public void report(TelemetryClient telemetryClient) {
+    // stop collecting oshi perf counters when initialization fails.
+    if (hasError.get()) {
+      return;
+    }
+
     if (processInfo == null || processor == null) {
       // lazy initializing these because they add to slowness during startup
       try {
@@ -68,11 +73,6 @@ public class OshiPerformanceCounter implements PerformanceCounter {
         hasError.set(true);
         return;
       }
-    }
-
-    // stop collecting oshi perf counters when initialization fails.
-    if (hasError.get()) {
-      return;
     }
 
     long currCollectionTimeMillis = System.currentTimeMillis();
