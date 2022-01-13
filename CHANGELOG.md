@@ -9,7 +9,6 @@
 * Enable configuration for capturing HTTP headers [#2036](https://github.com/microsoft/ApplicationInsights-Java/pull/2036).
 * Update OpenTelemetry to the latest [#2030](https://github.com/microsoft/ApplicationInsights-Java/pull/2030).
 * Fix device instrumentation [#2027](https://github.com/microsoft/ApplicationInsights-Java/pull/2027).
-* Update Log4j to 2.17.1 to address CVE-2021-44832 [#2023](https://github.com/microsoft/ApplicationInsights-Java/pull/2023).
 
 # Version 3.2.4 GA
 * Add play framework preview instrumentation [#1958](https://github.com/microsoft/ApplicationInsights-Java/pull/1958).
