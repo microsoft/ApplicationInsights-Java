@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.smoketestapp;
 
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.extension.annotations.SpanAttribute;
 import io.opentelemetry.extension.annotations.WithSpan;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -55,11 +56,11 @@ public class TestController {
 
   @GetMapping("/test-annotations")
   public String testAnnotations() {
-    return underAnnotation();
+    return underAnnotation("a message");
   }
 
   @WithSpan
-  private String underAnnotation() {
+  private String underAnnotation(@SpanAttribute("message") String msg) {
     return "OK!";
   }
 }

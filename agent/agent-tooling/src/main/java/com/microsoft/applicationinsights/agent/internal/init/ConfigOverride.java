@@ -27,7 +27,9 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagatorProvider;
 import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.instrumentation.api.config.ConfigBuilder;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -107,6 +109,23 @@ class ConfigOverride {
     // this is needed to capture kafka.record.queue_time_ms
     properties.put("otel.instrumentation.kafka.experimental-span-attributes", "true");
 
+    setHttpHeaderConfiguration(
+        properties,
+        "otel.instrumentation.http.capture-headers.server.request",
+        config.preview.captureHttpServerHeaders.requestHeaders);
+    setHttpHeaderConfiguration(
+        properties,
+        "otel.instrumentation.http.capture-headers.server.response",
+        config.preview.captureHttpServerHeaders.responseHeaders);
+    setHttpHeaderConfiguration(
+        properties,
+        "otel.instrumentation.http.capture-headers.client.request",
+        config.preview.captureHttpClientHeaders.requestHeaders);
+    setHttpHeaderConfiguration(
+        properties,
+        "otel.instrumentation.http.capture-headers.client.response",
+        config.preview.captureHttpClientHeaders.responseHeaders);
+
     properties.put("otel.propagators", DelegatingPropagatorProvider.NAME);
 
     String tracesExporter = getProperty("otel.traces.exporter");
@@ -117,25 +136,18 @@ class ConfigOverride {
       properties.put("otel.traces.exporter", "none");
 
       // TODO (trask) this can go away once new indexer is rolled out to gov clouds
-      properties.put(
-          "otel.instrumentation.common.experimental.capture-http-headers.client.response",
-          "Request-Context");
+      List<String> httpClientResponseHeaders = new ArrayList<>();
+      httpClientResponseHeaders.add("request-context");
+      httpClientResponseHeaders.addAll(config.preview.captureHttpClientHeaders.responseHeaders);
+      setHttpHeaderConfiguration(
+          properties,
+          "otel.instrumentation.http.capture-headers.client.response",
+          httpClientResponseHeaders);
     } else {
       properties.put("otel.traces.exporter", tracesExporter);
-      // when using another exporter, populate otel.service.name and otel.resource.attributes
-      if (config.role.name != null) {
-        properties.put("otel.service.name", config.role.name);
-      }
-      String resourceAttributes = getProperty("otel.resource.attributes");
-      if (resourceAttributes != null) {
-        properties.put("otel.resource.attributes", resourceAttributes);
-      }
     }
 
-    String metricsExporter = System.getProperty("otel.metrics.exporter");
-    if (metricsExporter == null) {
-      metricsExporter = System.getenv("OTEL_METRICS_EXPORTER");
-    }
+    String metricsExporter = getProperty("otel.metrics.exporter");
     if (metricsExporter == null) {
       // currently Application Insights exports metrics directly, not through OpenTelemetry
       // exporter (this will change in the future)
@@ -144,7 +156,28 @@ class ConfigOverride {
       properties.put("otel.metrics.exporter", metricsExporter);
     }
 
+    String logsExporter = getProperty("otel.logs.exporter");
+    if (logsExporter == null) {
+      // currently Application Insights exports logs directly, not through OpenTelemetry
+      // exporter (this will change in the future)
+      properties.put("otel.logs.exporter", "none");
+    } else {
+      properties.put("otel.logs.exporter", logsExporter);
+    }
+
+    if (config.role.name != null) {
+      // in case using another exporter
+      properties.put("otel.service.name", config.role.name);
+    }
+
     return new ConfigBuilder().readProperties(properties).build();
+  }
+
+  private static void setHttpHeaderConfiguration(
+      Map<String, String> properties, String propertyName, List<String> headers) {
+    if (!headers.isEmpty()) {
+      properties.put(propertyName, join(headers, ','));
+    }
   }
 
   private static String getProperty(String propertyName) {
@@ -154,6 +187,17 @@ class ConfigOverride {
     }
     String envVarName = propertyName.replace('.', '_').toUpperCase(Locale.ROOT);
     return System.getenv(envVarName);
+  }
+
+  private static <T> String join(List<T> values, char separator) {
+    StringBuilder sb = new StringBuilder();
+    for (Object val : values) {
+      if (sb.length() > 0) {
+        sb.append(separator);
+      }
+      sb.append(val);
+    }
+    return sb.toString();
   }
 
   private ConfigOverride() {}

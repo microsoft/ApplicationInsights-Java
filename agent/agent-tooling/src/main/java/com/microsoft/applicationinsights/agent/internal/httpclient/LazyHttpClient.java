@@ -60,6 +60,8 @@ public class LazyHttpClient implements HttpClient {
   public static volatile CountDownLatch safeToInitLatch;
   public static volatile String proxyHost;
   public static volatile Integer proxyPortNumber;
+  public static volatile String proxyUsername;
+  public static volatile String proxyPassword;
 
   public static HttpClient getInstance() {
     return INSTANCE;
@@ -109,9 +111,13 @@ public class LazyHttpClient implements HttpClient {
 
     NettyAsyncHttpClientBuilder builder = new NettyAsyncHttpClientBuilder();
     if (proxyHost != null && proxyPortNumber != null) {
-      builder.proxy(
+      ProxyOptions proxyOptions =
           new ProxyOptions(
-              ProxyOptions.Type.HTTP, new InetSocketAddress(proxyHost, proxyPortNumber)));
+              ProxyOptions.Type.HTTP, new InetSocketAddress(proxyHost, proxyPortNumber));
+      if (proxyUsername != null) {
+        proxyOptions.setCredentials(proxyUsername, proxyPassword);
+      }
+      builder.proxy(proxyOptions);
     }
     // keeping the thread count to 1 keeps the number of 16mb io.netty.buffer.PoolChunk to 1 also
     return builder

@@ -40,7 +40,5 @@ public class CustomDimensionsTest extends AiSmokeTest {
     assertTrue(telemetry.rd.getSuccess());
 
     assertEquals("123", telemetry.rdEnvelope.getTags().get("ai.application.ver"));
-
-    assertTrue(telemetry.rd.getSuccess());
   }
 }

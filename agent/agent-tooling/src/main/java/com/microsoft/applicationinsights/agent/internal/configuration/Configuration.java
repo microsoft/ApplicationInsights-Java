@@ -203,6 +203,8 @@ public class Configuration {
 
     public String host;
     public int port = 80;
+    public String username;
+    public String password;
   }
 
   public static class PreviewConfiguration {
@@ -228,8 +230,12 @@ public class Configuration {
     // this is needed to unblock customer, but is not the ideal long-term solution
     // https://portal.microsofticm.com/imp/v3/incidents/details/266992200/home
     public boolean disablePropagation;
+    public boolean captureHttpServer4xxAsError = true;
 
     public List<InheritedAttribute> inheritedAttributes = new ArrayList<>();
+
+    public HttpHeadersConfiguration captureHttpServerHeaders = new HttpHeadersConfiguration();
+    public HttpHeadersConfiguration captureHttpClientHeaders = new HttpHeadersConfiguration();
 
     public ProfilerConfiguration profiler = new ProfilerConfiguration();
     public GcEventConfiguration gcEvents = new GcEventConfiguration();
@@ -237,6 +243,8 @@ public class Configuration {
     public PreviewStatsbeat statsbeat = new PreviewStatsbeat();
 
     public List<InstrumentationKeyOverride> instrumentationKeyOverrides = new ArrayList<>();
+
+    public int exportQueueCapacity = 2048;
   }
 
   public static class InheritedAttribute {
@@ -264,6 +272,11 @@ public class Configuration {
       }
       throw new IllegalStateException("Unexpected attribute key type: " + type);
     }
+  }
+
+  public static class HttpHeadersConfiguration {
+    public List<String> requestHeaders = new ArrayList<>();
+    public List<String> responseHeaders = new ArrayList<>();
   }
 
   public enum SpanAttributeType {

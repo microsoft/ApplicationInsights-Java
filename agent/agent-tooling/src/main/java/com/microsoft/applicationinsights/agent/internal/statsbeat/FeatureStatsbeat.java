@@ -156,5 +156,16 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     if (config.preview.disablePropagation) {
       featureList.add(Feature.PROPAGATION_DISABLED);
     }
+    if (!config.preview.captureHttpServer4xxAsError) {
+      featureList.add(Feature.CAPTURE_HTTP_SERVER_4XX_AS_SUCCESS);
+    }
+    if (!config.preview.captureHttpServerHeaders.requestHeaders.isEmpty()
+        || !config.preview.captureHttpServerHeaders.responseHeaders.isEmpty()) {
+      featureList.add(Feature.CAPTURE_HTTP_SERVER_HEADERS);
+    }
+    if (!config.preview.captureHttpClientHeaders.requestHeaders.isEmpty()
+        || !config.preview.captureHttpClientHeaders.responseHeaders.isEmpty()) {
+      featureList.add(Feature.CAPTURE_HTTP_CLIENT_HEADERS);
+    }
   }
 }

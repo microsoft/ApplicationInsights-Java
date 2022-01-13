@@ -62,13 +62,15 @@ public final class BatchSpanProcessor {
       int maxQueueSize,
       int maxExportBatchSize,
       long exporterTimeoutNanos) {
+    MpscArrayQueue<TelemetryItem> queue = new MpscArrayQueue<>(maxQueueSize);
     this.worker =
         new Worker(
             spanExporter,
             scheduleDelayNanos,
             maxExportBatchSize,
             exporterTimeoutNanos,
-            new MpscArrayQueue<>(maxQueueSize));
+            queue,
+            queue.capacity());
     Thread workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
     workerThread.start();
   }
@@ -100,6 +102,7 @@ public final class BatchSpanProcessor {
     private long nextExportTime;
 
     private final Queue<TelemetryItem> queue;
+    private final int queueCapacity;
     // When waiting on the spans queue, exporter thread sets this atomic to the number of more
     // spans it needs before doing an export. Writer threads would then wait for the queue to reach
     // spansNeeded size before notifying the exporter thread about new entries.
@@ -120,19 +123,28 @@ public final class BatchSpanProcessor {
         long scheduleDelayNanos,
         int maxExportBatchSize,
         long exporterTimeoutNanos,
-        Queue<TelemetryItem> queue) {
+        Queue<TelemetryItem> queue,
+        int queueCapacity) {
       this.spanExporter = spanExporter;
       this.scheduleDelayNanos = scheduleDelayNanos;
       this.maxExportBatchSize = maxExportBatchSize;
       this.exporterTimeoutNanos = exporterTimeoutNanos;
       this.queue = queue;
+      this.queueCapacity = queueCapacity;
       this.signal = new ArrayBlockingQueue<>(1);
       this.batch = new ArrayList<>(this.maxExportBatchSize);
     }
 
     private void addSpan(TelemetryItem span) {
       if (!queue.offer(span)) {
-        queuingSpanLogger.recordFailure("Queue is full");
+        queuingSpanLogger.recordFailure(
+            "Max export queue size of "
+                + queueCapacity
+                + " has been hit, dropping a span (max export queue size can be increased"
+                + " in the applicationinsights.json configuration file, e.g."
+                + " { \"preview\": { \"exportQueueCapacity\": "
+                + (queueCapacity * 2)
+                + " } }");
       } else {
         queuingSpanLogger.recordSuccess();
         if (queue.size() >= spansNeeded.get()) {

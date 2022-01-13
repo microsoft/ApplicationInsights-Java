@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.processors;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.extension.incubator.trace.data.DelegatingSpanData;
+import io.opentelemetry.sdk.trace.data.DelegatingSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 
 public class MySpanData extends DelegatingSpanData {

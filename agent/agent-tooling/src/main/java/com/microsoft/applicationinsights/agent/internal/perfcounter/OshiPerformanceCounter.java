@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.perfcounter;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oshi.SystemInfo;
@@ -45,6 +46,7 @@ public class OshiPerformanceCounter implements PerformanceCounter {
 
   private volatile OSProcess processInfo;
   private volatile CentralProcessor processor;
+  private static final AtomicBoolean hasError = new AtomicBoolean();
 
   @Override
   public String getId() {
@@ -53,12 +55,25 @@ public class OshiPerformanceCounter implements PerformanceCounter {
 
   @Override
   public void report(TelemetryClient telemetryClient) {
+    // stop collecting oshi perf counters when initialization fails.
+    if (hasError.get()) {
+      return;
+    }
+
     if (processInfo == null || processor == null) {
       // lazy initializing these because they add to slowness during startup
-      SystemInfo systemInfo = new SystemInfo();
-      OperatingSystem osInfo = systemInfo.getOperatingSystem();
-      processInfo = osInfo.getProcess(osInfo.getProcessId());
-      processor = systemInfo.getHardware().getProcessor();
+      try {
+        SystemInfo systemInfo = new SystemInfo();
+        OperatingSystem osInfo = systemInfo.getOperatingSystem();
+        processInfo = osInfo.getProcess(osInfo.getProcessId());
+        processor = systemInfo.getHardware().getProcessor();
+      } catch (Error ex) {
+        // e.g. icm 253155448: NoClassDefFoundError
+        // e.g. icm 276640835: ExceptionInInitializerError
+        hasError.set(true);
+        logger.debug("Fail to initialize OSProcess and CentralProcessor", ex);
+        return;
+      }
     }
 
     long currCollectionTimeMillis = System.currentTimeMillis();
