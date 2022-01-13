@@ -4,24 +4,27 @@ version:
   name: 'ApplicationInsights-Java'
   system: 'custom'
 
-globalSdl: # https://aka.ms/obpipelines/sdl
-  cg: # component-governance
-    failOnAlert: true
-    alertWarningLevel: Critical
-  antimalwareScan:
-    enabled: true
-  tsa:
-    enabled: true
-  binskim:
-    break: true
-    scanOutputDirectoryOnly: true
-  policheck:
-    break: true
-  credscan:
-    break: true
-    suppressionFile: $(Build.SourcesDirectory)\.config\CredScanSuppressions.json
-  codeql: # aka semmle
-    break: true
+extends:
+  template: v2/OneBranch.Official.CrossPlat.yml@templates # https://aka.ms/obpipelines/templates
+  parameters:
+    globalSdl: # https://aka.ms/obpipelines/sdl
+      cg: # component-governance
+        failOnAlert: true
+        alertWarningLevel: Critical
+      antimalwareScan:
+        enabled: true
+      tsa:
+        enabled: true
+      binskim:
+        break: true
+        scanOutputDirectoryOnly: true
+      policheck:
+        break: true
+      credscan:
+        break: true
+        suppressionFile: $(Build.SourcesDirectory)\.config\CredScanSuppressions.json
+      codeql: # aka semmle
+        break: true
 
 build:
   commands:
