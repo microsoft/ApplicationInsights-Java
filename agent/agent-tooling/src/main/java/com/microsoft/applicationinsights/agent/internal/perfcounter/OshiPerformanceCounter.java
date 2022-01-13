@@ -71,6 +71,7 @@ public class OshiPerformanceCounter implements PerformanceCounter {
         // e.g. icm 253155448: NoClassDefFoundError
         // e.g. icm 276640835: ExceptionInInitializerError
         hasError.set(true);
+        logger.debug("Fail to initialize OSProcess and CentralProcessor", ex);
         return;
       }
     }
