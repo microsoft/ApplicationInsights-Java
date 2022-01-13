@@ -94,6 +94,8 @@ class Instrumentations {
     INSTRUMENTATION_MAP.put("io.opentelemetry.spring-scheduling-3.1", 54);
     INSTRUMENTATION_MAP.put("io.opentelemetry.play-2.4", 55);
     INSTRUMENTATION_MAP.put("io.opentelemetry.play-2.6", 56);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.vertx-http-client-3.0", 57);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.vertx-http-client-4.0", 58);
   }
 
   // encode BitSet to a long
