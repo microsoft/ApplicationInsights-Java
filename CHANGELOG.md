@@ -1,6 +1,7 @@
 # CHANGELOG
 
 # Version 3.2.5-BETA
+* Add vertx instrumentation [#1990](https://github.com/microsoft/ApplicationInsights-Java/pull/1990).
 * Clean up Oshi logging [#2047](https://github.com/microsoft/ApplicationInsights-Java/pull/2047).
 * Support proxy username and password [#2044](https://github.com/microsoft/ApplicationInsights-Java/pull/2044).
 * Add configuration for export queue capacity [#2039](https://github.com/microsoft/ApplicationInsights-Java/pull/2039).
