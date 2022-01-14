@@ -1,5 +1,15 @@
 # CHANGELOG
 
+# Version 3.2.5-BETA
+* Add vertx instrumentation [#1990](https://github.com/microsoft/ApplicationInsights-Java/pull/1990).
+* Clean up Oshi logging [#2047](https://github.com/microsoft/ApplicationInsights-Java/pull/2047).
+* Support proxy username and password [#2044](https://github.com/microsoft/ApplicationInsights-Java/pull/2044).
+* Add configuration for export queue capacity [#2039](https://github.com/microsoft/ApplicationInsights-Java/pull/2039).
+* Add configuration for capturing HTTP server 4xx as error [#2037](https://github.com/microsoft/ApplicationInsights-Java/pull/2037).
+* Add configuration for capturing HTTP headers [#2036](https://github.com/microsoft/ApplicationInsights-Java/pull/2036).
+* Update OpenTelemetry to the latest [#2030](https://github.com/microsoft/ApplicationInsights-Java/pull/2030).
+* Fix device instrumentation [#2027](https://github.com/microsoft/ApplicationInsights-Java/pull/2027).
+
 # Version 3.2.4 GA
 * Add play framework preview instrumentation [#1958](https://github.com/microsoft/ApplicationInsights-Java/pull/1958).
 * Add span kind to sampling overrides [#1960](https://github.com/microsoft/ApplicationInsights-Java/pull/1960).
