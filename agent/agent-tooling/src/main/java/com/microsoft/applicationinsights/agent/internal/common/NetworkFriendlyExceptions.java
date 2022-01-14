@@ -23,9 +23,16 @@ package com.microsoft.applicationinsights.agent.internal.common;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.DefaultEndpoints;
 import java.io.File;
+import java.io.IOException;
+import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLSocketFactory;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 
@@ -49,7 +56,57 @@ public class NetworkFriendlyExceptions {
       //  e.g. wrong host address or cannot reach address due to network issues...
       return false;
     }
+
+    IOException ioException = getCausedByOfType(error, IOException.class);
+    SocketException socketException = getCausedByOfType(error, SocketException.class);
+    if (ioException != null || socketException != null) {
+      if (!alreadySeen.getAndSet(true)) {
+        List<String> missingCiphers = getMissingCiphers(logger);
+        if (missingCiphers.size() == 0) {
+          return false;
+        }
+        logger.error(getCipherFriendlyMessage(url, missingCiphers));
+      }
+      return true;
+    }
     return false;
+  }
+
+  private static List<String> getMissingCiphers(Logger logger) {
+    final List<String> missingCiphers = new ArrayList<>();
+    final List<String> expectedCiphers =
+        Arrays.asList(
+            "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+            "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+            "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
+            "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
+            "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
+            "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
+            "TLS_RSA_WITH_AES_256_GCM_SHA384",
+            "TLS_RSA_WITH_AES_128_GCM_SHA256",
+            "TLS_RSA_WITH_AES_256_CBC_SHA256",
+            "TLS_RSA_WITH_AES_128_CBC_SHA256",
+            "TLS_RSA_WITH_AES_256_CBC_SHA",
+            "TLS_RSA_WITH_AES_128_CBC_SHA");
+    final List<String> ciphersFromJvm = new ArrayList<>();
+    final SSLContext context;
+    try {
+      context = SSLContext.getDefault();
+      SSLSocketFactory socketFactory = context.getSocketFactory();
+      String[] cipherSuites = socketFactory.getSupportedCipherSuites();
+      for (String s : cipherSuites) {
+        ciphersFromJvm.add(s);
+      }
+    } catch (Exception e) {
+      logger.error(e.getMessage(), e);
+    }
+
+    for (String cipher : expectedCiphers) {
+      if (!ciphersFromJvm.contains(cipher)) {
+        missingCiphers.add(cipher);
+      }
+    }
+    return missingCiphers;
   }
 
   private static <T extends Exception> T getCausedByOfType(Throwable throwable, Class<T> type) {
@@ -67,17 +124,42 @@ public class NetworkFriendlyExceptions {
 
   private static String getSslFriendlyMessage(String url) {
     return FriendlyException.populateFriendlyMessage(
-        getSslFriendlyExceptionBanner(url),
-        getSslFriendlyExceptionAction(url),
         "Unable to find valid certification path to requested target.",
+        getSslFriendlyExceptionAction(url),
+        getFriendlyExceptionBanner(url),
         "This message is only logged the first time it occurs after startup.");
   }
 
-  private static String getSslFriendlyExceptionBanner(String url) {
-    if (url.equals(DefaultEndpoints.LIVE_ENDPOINT)) {
+  private static String getCipherFriendlyMessage(String url, List<String> missingCiphers) {
+    return FriendlyException.populateFriendlyMessage(
+        "Probable root cause may be : missing cipher suites which are expected by the requested target.",
+        getCipherFriendlyExceptionAction(url, missingCiphers),
+        getFriendlyExceptionBanner(url),
+        "This message is only logged the first time it occurs after startup.");
+  }
+
+  private static String getFriendlyExceptionBanner(String url) {
+    if (url.contains(DefaultEndpoints.LIVE_ENDPOINT)) {
       return "ApplicationInsights Java Agent failed to connect to Live metric end point.";
     }
     return "ApplicationInsights Java Agent failed to send telemetry data.";
+  }
+
+  private static String getCipherFriendlyExceptionAction(String url, List<String> missingCiphers) {
+    StringBuilder actionBuilder = new StringBuilder();
+    actionBuilder
+        .append(
+            "The following cipher suites which are expected from endpoint "
+                + url
+                + " are missing from java runtime:")
+        .append("\n");
+    if (missingCiphers.size() > 0) {
+      for (String missingCipher : missingCiphers) {
+        actionBuilder.append(missingCipher).append("\n");
+      }
+    }
+    actionBuilder.append("Please add the required java modules to include these cipher suites!");
+    return actionBuilder.toString();
   }
 
   private static String getSslFriendlyExceptionAction(String url) {
