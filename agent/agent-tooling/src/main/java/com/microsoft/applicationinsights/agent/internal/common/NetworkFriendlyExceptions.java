@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.net.ssl.SSLContext;
@@ -61,33 +60,18 @@ public class NetworkFriendlyExceptions {
     SocketException socketException = getCausedByOfType(error, SocketException.class);
     if (ioException != null || socketException != null) {
       if (!alreadySeen.getAndSet(true)) {
-        List<String> missingCiphers = getMissingCiphers(logger);
-        if (missingCiphers.size() == 0) {
+        List<String> existingCiphers = getCiphersFromJvm(logger);
+        if (existingCiphers.size() == 0) {
           return false;
         }
-        logger.error(getCipherFriendlyMessage(url, missingCiphers));
+        logger.error(getCipherFriendlyMessage(url, existingCiphers));
       }
       return true;
     }
     return false;
   }
 
-  private static List<String> getMissingCiphers(Logger logger) {
-    final List<String> missingCiphers = new ArrayList<>();
-    final List<String> expectedCiphers =
-        Arrays.asList(
-            "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
-            "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
-            "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
-            "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
-            "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
-            "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
-            "TLS_RSA_WITH_AES_256_GCM_SHA384",
-            "TLS_RSA_WITH_AES_128_GCM_SHA256",
-            "TLS_RSA_WITH_AES_256_CBC_SHA256",
-            "TLS_RSA_WITH_AES_128_CBC_SHA256",
-            "TLS_RSA_WITH_AES_256_CBC_SHA",
-            "TLS_RSA_WITH_AES_128_CBC_SHA");
+  private static List<String> getCiphersFromJvm(Logger logger) {
     final List<String> ciphersFromJvm = new ArrayList<>();
     final SSLContext context;
     try {
@@ -97,16 +81,11 @@ public class NetworkFriendlyExceptions {
       for (String s : cipherSuites) {
         ciphersFromJvm.add(s);
       }
+      return ciphersFromJvm;
     } catch (Exception e) {
       logger.error(e.getMessage(), e);
+      return ciphersFromJvm;
     }
-
-    for (String cipher : expectedCiphers) {
-      if (!ciphersFromJvm.contains(cipher)) {
-        missingCiphers.add(cipher);
-      }
-    }
-    return missingCiphers;
   }
 
   private static <T extends Exception> T getCausedByOfType(Throwable throwable, Class<T> type) {
@@ -147,18 +126,18 @@ public class NetworkFriendlyExceptions {
 
   private static String getCipherFriendlyExceptionAction(String url, List<String> missingCiphers) {
     StringBuilder actionBuilder = new StringBuilder();
-    actionBuilder
-        .append(
-            "The following cipher suites which are expected from endpoint "
-                + url
-                + " are missing from java runtime:")
-        .append("\n");
+    actionBuilder.append("The following are the cipher suites from Java runtime: ").append("\n");
     if (missingCiphers.size() > 0) {
       for (String missingCipher : missingCiphers) {
         actionBuilder.append(missingCipher).append("\n");
       }
     }
-    actionBuilder.append("Please add the required java modules to include these cipher suites!");
+    actionBuilder
+        .append(
+            "Please add the required java modules to include the missing cipher suites that are expected from the target endpoint!")
+        .append("\n");
+    actionBuilder.append(
+        "Learn more about handling cipher suites here: https://go.microsoft.com/fwlink/?linkid=2151450");
     return actionBuilder.toString();
   }
 
