@@ -134,10 +134,11 @@ public class NetworkFriendlyExceptions {
     }
     actionBuilder
         .append(
-            "Please add the required java modules to include the missing cipher suites that are expected from the target endpoint!")
+            "Please add the required java modules to include the missing cipher suites that are expected from the target endpoint:"
+                + url)
         .append("\n");
     actionBuilder.append(
-        "Learn more about handling cipher suites here: https://go.microsoft.com/fwlink/?linkid=2151450");
+        "Learn more about handling cipher suites here: https://go.microsoft.com/fwlink/?linkid=2185426");
     return actionBuilder.toString();
   }
 
