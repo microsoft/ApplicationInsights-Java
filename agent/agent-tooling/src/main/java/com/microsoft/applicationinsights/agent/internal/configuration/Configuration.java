@@ -337,6 +337,8 @@ public class Configuration {
 
     public DisabledByDefaultInstrumentation springIntegration =
         new DisabledByDefaultInstrumentation();
+
+    public DisabledByDefaultInstrumentation vertx = new DisabledByDefaultInstrumentation();
   }
 
   public static class PreviewStatsbeat {
