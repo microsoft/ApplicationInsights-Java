@@ -142,7 +142,7 @@ public class NetworkFriendlyExceptions {
     }
     actionBuilder
         .append(
-            "Please add the missing cipher suites that are expected from the target endpoint:"
+            "Please add at least one of the missing cipher suites that are expected from the target endpoint:"
                 + url)
         .append("\n");
     actionBuilder.append(
