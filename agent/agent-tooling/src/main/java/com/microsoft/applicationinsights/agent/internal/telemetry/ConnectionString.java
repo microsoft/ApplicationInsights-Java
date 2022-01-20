@@ -42,7 +42,7 @@ public class ConnectionString {
   public static void parseInto(String connectionString, TelemetryClient telemetryClient)
       throws InvalidConnectionStringException, MalformedURLException {
     if (Strings.isNullOrEmpty(connectionString)) {
-      telemetryClient.setInstrumentationKey(connectionString);
+      telemetryClient.setInstrumentationKey(null);
       // reset endpoint to default for ingestion, live metric and profiler
       telemetryClient.getEndpointProvider().resetEndpointUrls();
     } else {
