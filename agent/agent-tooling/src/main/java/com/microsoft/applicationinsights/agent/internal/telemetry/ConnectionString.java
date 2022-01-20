@@ -26,6 +26,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 import java.util.TreeMap;
+import com.microsoft.applicationinsights.agent.internal.configuration.DefaultEndpoints;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,9 +40,17 @@ public class ConnectionString {
 
   private ConnectionString() {}
 
-  public static void parseInto(String connectionString, TelemetryClient targetConfig)
+  public static void parseInto(String connectionString, TelemetryClient telemetryClient)
       throws InvalidConnectionStringException {
-    mapToConnectionConfiguration(getKeyValuePairs(connectionString), targetConfig);
+    if (Strings.isNullOrEmpty(connectionString)) {
+      telemetryClient.setInstrumentationKey(connectionString);
+      EndpointProvider endpointProvider = telemetryClient.getEndpointProvider();
+      endpointProvider.setIngestionEndpoint(endpointProvider.getIngestionEndpoint());
+      endpointProvider.setLiveEndpoint(endpointProvider.getLiveEndpointUrl());
+      endpointProvider.setProfilerEndpoint(endpointProvider.getProfilerEndpoint());
+    } else {
+      mapToConnectionConfiguration(getKeyValuePairs(connectionString), telemetryClient);
+    }
   }
 
   public static void updateStatsbeatConnectionString(
@@ -87,7 +96,7 @@ public class ConnectionString {
     // get ikey
     String instrumentationKey = kvps.get(Keywords.INSTRUMENTATION_KEY);
     if (Strings.isNullOrEmpty(instrumentationKey)) {
-      logger.warn("New connection string is null or empty");
+      throw new InvalidConnectionStringException("Missing '" + Keywords.INSTRUMENTATION_KEY + "'");
     }
     if (!Strings.isNullOrEmpty(telemetryClient.getInstrumentationKey())) {
       logger.warn("Connection string is overriding previously configured instrumentation key.");
