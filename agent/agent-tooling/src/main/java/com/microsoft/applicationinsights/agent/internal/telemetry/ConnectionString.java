@@ -43,6 +43,8 @@ public class ConnectionString {
       throws InvalidConnectionStringException {
     if (Strings.isNullOrEmpty(connectionString)) {
       telemetryClient.setInstrumentationKey(connectionString);
+
+      // reset endpoint to default for ingestion, live metric and profiler
       EndpointProvider endpointProvider = telemetryClient.getEndpointProvider();
       endpointProvider.setIngestionEndpoint(endpointProvider.getIngestionEndpoint());
       endpointProvider.setLiveEndpoint(endpointProvider.getLiveEndpointUrl());
