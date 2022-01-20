@@ -284,7 +284,7 @@ public class TelemetryClient {
   }
 
   /** Gets or sets the default instrumentation key for the application. */
-  public void setInstrumentationKey(String key) {
+  public void setInstrumentationKey(@Nullable String key) {
     instrumentationKey = key;
   }
 
