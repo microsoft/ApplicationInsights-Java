@@ -49,6 +49,7 @@ import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModul
 import io.opentelemetry.instrumentation.api.cache.Cache;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -319,6 +320,8 @@ public class TelemetryClient {
       ConnectionString.parseInto(connectionString, this);
     } catch (InvalidConnectionStringException e) {
       throw new IllegalArgumentException("Invalid connection string", e);
+    } catch (MalformedURLException e) {
+      throw new IllegalStateException("Invalid endpoint urls.", e);
     }
   }
 

@@ -40,15 +40,11 @@ public class ConnectionString {
   private ConnectionString() {}
 
   public static void parseInto(String connectionString, TelemetryClient telemetryClient)
-      throws InvalidConnectionStringException {
+      throws InvalidConnectionStringException, MalformedURLException {
     if (Strings.isNullOrEmpty(connectionString)) {
       telemetryClient.setInstrumentationKey(connectionString);
-
       // reset endpoint to default for ingestion, live metric and profiler
-      EndpointProvider endpointProvider = telemetryClient.getEndpointProvider();
-      endpointProvider.setIngestionEndpoint(endpointProvider.getIngestionEndpoint());
-      endpointProvider.setLiveEndpoint(endpointProvider.getLiveEndpointUrl());
-      endpointProvider.setProfilerEndpoint(endpointProvider.getProfilerEndpoint());
+      telemetryClient.getEndpointProvider().resetEndpointUrls();
     } else {
       mapToConnectionConfiguration(getKeyValuePairs(connectionString), telemetryClient);
     }
