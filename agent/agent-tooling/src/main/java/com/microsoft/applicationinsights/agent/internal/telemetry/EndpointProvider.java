@@ -57,7 +57,7 @@ public class EndpointProvider {
     return buildUrl(baseUri, INGESTION_URL_PATH);
   }
 
-  public URL buildLiveUri(URL baseUri) throws MalformedURLException {
+  private URL buildLiveUri(URL baseUri) throws MalformedURLException {
     return buildUrl(baseUri, LIVE_URL_PATH);
   }
 
