@@ -91,7 +91,7 @@ class QuickPulsePingSender {
 
   public QuickPulseHeaderInfo ping(String redirectedEndpoint) {
     String instrumentationKey = getInstrumentationKey();
-    if (instrumentationKey == null && "java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+    if (Strings.isNullOrEmpty(instrumentationKey)) {
       // Quick Pulse Ping uri will be null when the instrumentation key is null. When that happens,
       // turn off quick pulse.
       return new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_OFF);
