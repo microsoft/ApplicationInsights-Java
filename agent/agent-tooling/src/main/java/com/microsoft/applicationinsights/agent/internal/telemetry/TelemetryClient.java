@@ -74,8 +74,7 @@ public class TelemetryClient {
 
   private final Set<String> nonFilterableMetricNames = new HashSet<>();
 
-  @Nullable
-  private volatile String instrumentationKey;
+  @Nullable private volatile String instrumentationKey;
   private volatile @MonotonicNonNull String roleName;
   private volatile @MonotonicNonNull String roleInstance;
   private volatile @MonotonicNonNull String statsbeatInstrumentationKey;

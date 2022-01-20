@@ -137,7 +137,8 @@ class SamplingOverrides {
       if (existingSamplingPercentage != null && !overwriteExisting) {
         return parentTraceState;
       }
-      return parentTraceState.toBuilder()
+      return parentTraceState
+          .toBuilder()
           .put(TelemetryUtil.SAMPLING_PERCENTAGE_TRACE_STATE, samplingPercentage)
           .build();
     }
