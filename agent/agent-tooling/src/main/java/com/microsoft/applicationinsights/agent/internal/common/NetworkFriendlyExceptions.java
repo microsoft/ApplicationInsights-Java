@@ -22,11 +22,11 @@
 package com.microsoft.applicationinsights.agent.internal.common;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.DefaultEndpoints;
+import io.netty.handler.ssl.SslHandshakeTimeoutException;
 import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,12 +37,21 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 
 public class NetworkFriendlyExceptions {
+  public static final List<String> expectedCiphers =
+      Arrays.asList(
+          "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+          "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+          "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
+          "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256");
 
   // returns true if the exception was "handled" and the caller should not log it
   public static boolean logSpecialOneTimeFriendlyException(
       Throwable error, String url, AtomicBoolean alreadySeen, Logger logger) {
     // Handle SSL cert exceptions
     SSLHandshakeException sslException = getCausedByOfType(error, SSLHandshakeException.class);
+    if (error instanceof SslHandshakeTimeoutException) {
+      return false;
+    }
     if (sslException != null) {
       if (!alreadySeen.getAndSet(true)) {
         logger.error(getSslFriendlyMessage(url));
@@ -60,15 +69,15 @@ public class NetworkFriendlyExceptions {
     IOException ioException = getCausedByOfType(error, IOException.class);
     if (ioException != null) {
       if (!alreadySeen.getAndSet(true)) {
-        List<String> missingCiphers;
+        boolean foundCiphers = true;
         try {
-          missingCiphers = getMissingCiphers();
+          foundCiphers = hasExpectedCiphers();
         } catch (NoSuchAlgorithmException e) {
           logger.error(e.getMessage(), e);
           return false;
         }
-        if (missingCiphers != null && missingCiphers.size() > 0) {
-          logger.error(getCipherFriendlyMessage(url, missingCiphers));
+        if (!foundCiphers) {
+          logger.error(getCipherFriendlyMessage(url));
         } else {
           return false;
         }
@@ -78,22 +87,15 @@ public class NetworkFriendlyExceptions {
     return false;
   }
 
-  private static List<String> getMissingCiphers() throws NoSuchAlgorithmException {
-    final List<String> missingCiphers = new ArrayList<>();
-    final List<String> expectedCiphers =
-        Arrays.asList(
-            "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
-            "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
-            "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
-            "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256");
+  private static boolean hasExpectedCiphers() throws NoSuchAlgorithmException {
     SSLSocketFactory socketFactory = SSLContext.getDefault().getSocketFactory();
     List<String> cipherSuitesFromJvm = Arrays.asList(socketFactory.getSupportedCipherSuites());
     for (String cipher : expectedCiphers) {
-      if (!cipherSuitesFromJvm.contains(cipher)) {
-        missingCiphers.add(cipher);
+      if (cipherSuitesFromJvm.contains(cipher)) {
+        return true;
       }
     }
-    return missingCiphers;
+    return false;
   }
 
   private static <T extends Exception> T getCausedByOfType(Throwable throwable, Class<T> type) {
@@ -117,10 +119,10 @@ public class NetworkFriendlyExceptions {
         "This message is only logged the first time it occurs after startup.");
   }
 
-  private static String getCipherFriendlyMessage(String url, List<String> missingCiphers) {
+  private static String getCipherFriendlyMessage(String url) {
     return FriendlyException.populateFriendlyMessage(
         "Probable root cause may be : missing cipher suites which are expected by the requested target.",
-        getCipherFriendlyExceptionAction(url, missingCiphers),
+        getCipherFriendlyExceptionAction(url),
         getFriendlyExceptionBanner(url),
         "This message is only logged the first time it occurs after startup.");
   }
@@ -132,19 +134,16 @@ public class NetworkFriendlyExceptions {
     return "ApplicationInsights Java Agent failed to send telemetry data.";
   }
 
-  private static String getCipherFriendlyExceptionAction(String url, List<String> missingCiphers) {
+  private static String getCipherFriendlyExceptionAction(String url) {
     StringBuilder actionBuilder = new StringBuilder();
     actionBuilder
-        .append("The following are the cipher suites missing from Java runtime: ")
-        .append("\n");
-    for (String missingCipher : missingCiphers) {
-      actionBuilder.append(missingCipher).append("\n");
-    }
-    actionBuilder
         .append(
-            "Please add the missing cipher suites that are expected from the target endpoint:"
+            "The Application Insights Java agent detects that you do not have any of the following cipher suites that are supported by the endpoint it connects to: "
                 + url)
         .append("\n");
+    for (String missingCipher : expectedCiphers) {
+      actionBuilder.append(missingCipher).append("\n");
+    }
     actionBuilder.append(
         "Learn more about troubleshooting this network issue related to cipher suites here: https://go.microsoft.com/fwlink/?linkid=2185426");
     return actionBuilder.toString();
