@@ -87,7 +87,7 @@ public class ConnectionString {
     // get ikey
     String instrumentationKey = kvps.get(Keywords.INSTRUMENTATION_KEY);
     if (Strings.isNullOrEmpty(instrumentationKey)) {
-      throw new InvalidConnectionStringException("Missing '" + Keywords.INSTRUMENTATION_KEY + "'");
+      logger.warn("New connection string is null or empty");
     }
     if (!Strings.isNullOrEmpty(telemetryClient.getInstrumentationKey())) {
       logger.warn("Connection string is overriding previously configured instrumentation key.");
