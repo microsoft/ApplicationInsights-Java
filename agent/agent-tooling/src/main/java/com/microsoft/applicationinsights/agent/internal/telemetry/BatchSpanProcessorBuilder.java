@@ -129,8 +129,13 @@ final class BatchSpanProcessorBuilder {
    * @return a new {@link io.opentelemetry.sdk.trace.export.BatchSpanProcessor}.
    * @throws NullPointerException if the {@code spanExporter} is {@code null}.
    */
-  public BatchSpanProcessor build() {
+  public BatchSpanProcessor build(String queueName) {
     return new BatchSpanProcessor(
-        spanExporter, scheduleDelayNanos, maxQueueSize, maxExportBatchSize, exporterTimeoutNanos);
+        spanExporter,
+        scheduleDelayNanos,
+        maxQueueSize,
+        maxExportBatchSize,
+        exporterTimeoutNanos,
+        queueName);
   }
 }
