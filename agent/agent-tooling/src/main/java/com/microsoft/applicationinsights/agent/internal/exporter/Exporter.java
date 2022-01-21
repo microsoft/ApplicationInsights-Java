@@ -236,18 +236,33 @@ public class Exporter implements SpanExporter {
 
   private static List<TelemetryExceptionDetails> minimalParse(String errorStack) {
     TelemetryExceptionDetails details = new TelemetryExceptionDetails();
-    String line = errorStack.split(System.lineSeparator())[0];
+    String line = getFirstLine(errorStack);
     int index = line.indexOf(": ");
-
     if (index != -1) {
-      details.setTypeName(line.substring(0, index));
-      details.setMessage(line.substring(index + 2));
+      String typeName = line.substring(0, index);
+      details.setTypeName(typeName);
+      String message = line.substring(index + 2).trim();
+      if (message.isEmpty()) {
+        details.setMessage(typeName);
+      } else {
+        details.setMessage(message);
+      }
     } else {
       details.setTypeName(line);
+      details.setMessage(line);
     }
     // TODO (trask): map OpenTelemetry exception to Application Insights exception better
     details.setStack(errorStack);
     return Collections.singletonList(details);
+  }
+
+  private static String getFirstLine(String errorStack) {
+    int index = errorStack.indexOf(System.lineSeparator());
+    if (index != -1) {
+      return errorStack.substring(0, index);
+    } else {
+      return errorStack;
+    }
   }
 
   private void exportRemoteDependency(SpanData span, boolean inProc) {
