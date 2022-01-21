@@ -458,12 +458,6 @@ class ConnectionStringParsingTests {
   }
 
   @Test
-  void emptyStringIsInvalid() {
-    assertThatThrownBy(() -> ConnectionString.parseInto("", telemetryClient))
-        .isInstanceOf(InvalidConnectionStringException.class);
-  }
-
-  @Test
   void nonKeyValueStringIsInvalid() {
     assertThatThrownBy(
             () -> ConnectionString.parseInto(UUID.randomUUID().toString(), telemetryClient))
