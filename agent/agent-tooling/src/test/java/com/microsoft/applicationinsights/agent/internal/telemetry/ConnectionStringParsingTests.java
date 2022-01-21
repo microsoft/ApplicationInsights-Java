@@ -528,5 +528,14 @@ class ConnectionStringParsingTests {
         .isEqualTo("https://new-ingestion.example.com/v2.1/track");
     assertThat(telemetryClient.getEndpointProvider().getLiveEndpointUrl().toString())
         .isEqualTo("https://new-live.example.com/QuickPulseService.svc");
+
+    String newerFakeConnectionString =
+        "InstrumentationKey=newer-fake-key;IngestionEndpoint=https://newer-ingestion.example.com/;LiveEndpoint=https://newer-live.example.com/";
+    ConnectionString.parseInto(newerFakeConnectionString, telemetryClient);
+
+    assertThat(telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString())
+        .isEqualTo("https://newer-ingestion.example.com/v2.1/track");
+    assertThat(telemetryClient.getEndpointProvider().getLiveEndpointUrl().toString())
+        .isEqualTo("https://newer-live.example.com/QuickPulseService.svc");
   }
 }
