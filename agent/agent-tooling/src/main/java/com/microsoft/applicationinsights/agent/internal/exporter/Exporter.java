@@ -54,8 +54,6 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -124,9 +122,6 @@ public class Exporter implements SpanExporter {
 
   private static final OperationLogger exportingSpanLogger =
       new OperationLogger(Exporter.class, "Exporting span");
-
-  private static final OperationLogger parsingHttpUrlLogger =
-      new OperationLogger(Exporter.class, "Parsing http.url");
 
   static {
     Set<String> dbSystems = new HashSet<>();
@@ -547,18 +542,8 @@ public class Exporter implements SpanExporter {
     }
     String url = attributes.get(SemanticAttributes.HTTP_URL);
     if (url != null) {
-      URI uri;
-      try {
-        uri = new URI(url);
-      } catch (URISyntaxException e) {
-        parsingHttpUrlLogger.recordFailure(e.getMessage(), e);
-        uri = null;
-      }
-      if (uri != null) {
-        target = uri.getHost();
-        if (uri.getPort() != 80 && uri.getPort() != 443 && uri.getPort() != -1) {
-          target += ":" + uri.getPort();
-        }
+      target = UrlParser.getTargetFromUrl(url);
+      if (target != null) {
         return target;
       }
     }
