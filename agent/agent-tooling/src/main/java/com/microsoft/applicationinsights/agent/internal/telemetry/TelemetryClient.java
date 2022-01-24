@@ -49,6 +49,7 @@ import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModul
 import io.opentelemetry.instrumentation.api.cache.Cache;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -74,7 +75,7 @@ public class TelemetryClient {
 
   private final Set<String> nonFilterableMetricNames = new HashSet<>();
 
-  private volatile @MonotonicNonNull String instrumentationKey;
+  @Nullable private volatile String instrumentationKey;
   private volatile @MonotonicNonNull String roleName;
   private volatile @MonotonicNonNull String roleInstance;
   private volatile @MonotonicNonNull String statsbeatInstrumentationKey;
@@ -147,6 +148,10 @@ public class TelemetryClient {
   }
 
   public void trackAsync(TelemetryItem telemetry) {
+    if (Strings.isNullOrEmpty(instrumentationKey)) {
+      return;
+    }
+
     MonitorDomain data = telemetry.getData().getBaseData();
     if (data instanceof MetricsData) {
       MetricsData metricsData = (MetricsData) data;
@@ -305,13 +310,7 @@ public class TelemetryClient {
   }
 
   /** Gets or sets the default instrumentation key for the application. */
-  public void setInstrumentationKey(String key) {
-
-    // A non null, non empty instrumentation key is a must
-    if (Strings.isNullOrEmpty(key)) {
-      throw new IllegalArgumentException("key");
-    }
-
+  public void setInstrumentationKey(@Nullable String key) {
     instrumentationKey = key;
   }
 
@@ -347,6 +346,8 @@ public class TelemetryClient {
       ConnectionString.parseInto(connectionString, this);
     } catch (InvalidConnectionStringException e) {
       throw new IllegalArgumentException("Invalid connection string", e);
+    } catch (MalformedURLException e) {
+      throw new IllegalStateException("Invalid endpoint urls.", e);
     }
   }
 
