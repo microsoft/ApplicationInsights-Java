@@ -173,7 +173,8 @@ class AiComponentInstaller {
             .setIkeyEndpointMap(ikeyEndpointMap)
             .setStatsbeatModule(statsbeatModule)
             .setReadOnlyFileSystem(readOnlyFileSystem)
-            .setMaxExportQueueSize(config.preview.exportQueueCapacity)
+            .setGeneralExportQueueSize(config.preview.generalExportQueueCapacity)
+            .setMetricsExportQueueSize(config.preview.metricsExportQueueCapacity)
             .setAadAuthentication(config.preview.authentication)
             .build();
 

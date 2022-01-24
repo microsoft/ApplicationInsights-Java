@@ -403,7 +403,11 @@ public abstract class AiSmokeTest {
       System.out.println("Test app health check complete.");
       waitForHealthCheckTelemetryIfNeeded(contextRootUrl);
     } catch (Exception e) {
-      AiDockerClient.printContainerLogs(containerInfo.getContainerId());
+      for (ContainerInfo container : allContainers) {
+        System.out.println("========== dumping container log: " + container.getContainerId());
+        AiDockerClient.printContainerLogs(containerInfo.getContainerId());
+        System.out.println("end of container log ==========");
+      }
       throw e;
     } finally {
       mockedIngestion.resetData();
