@@ -26,6 +26,7 @@ import static java.util.Collections.singletonList;
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
+import com.azure.core.http.HttpResponse;
 import com.azure.core.util.Context;
 import com.azure.core.util.tracing.Tracer;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -55,6 +56,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.zip.GZIPOutputStream;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -71,9 +73,11 @@ public class TelemetryChannel {
   private static final AppInsightsByteBufferPool byteBufferPool = new AppInsightsByteBufferPool();
 
   private static final OperationLogger operationLogger =
+      new OperationLogger(TelemetryChannel.class, "Sending telemetry to the ingestion service");
+
+  private static final OperationLogger retryOperationLogger =
       new OperationLogger(
-          TelemetryChannel.class,
-          "Sending telemetry to the ingestion service (telemetry will be stored to disk on failure and retried later)");
+          TelemetryChannel.class, "Sending telemetry to the ingestion service (retry)");
 
   // TODO (kryalama) do we still need this AtomicBoolean, or can we use throttling built in to the
   //  operationLogger?
@@ -93,7 +97,7 @@ public class TelemetryChannel {
 
   private final HttpPipeline pipeline;
   private final URL endpointUrl;
-  @Nullable private final LocalFileWriter localFileWriter;
+  private final LocalFileWriter localFileWriter;
   private final StatsbeatModule statsbeatModule;
   private final boolean isStatsbeat;
 
@@ -109,8 +113,10 @@ public class TelemetryChannel {
         httpPipeline, endpointUrl, localFileWriter, statsbeatModule, isStatsbeat);
   }
 
-  public CompletableResultCode sendRawBytes(ByteBuffer buffer, String instrumentationKey) {
-    return internalSend(singletonList(buffer), instrumentationKey, true);
+  public CompletableResultCode sendRawBytes(
+      ByteBuffer buffer, String instrumentationKey, CompletionListener completionListener) {
+    return internalSend(
+        singletonList(buffer), instrumentationKey, completionListener, retryOperationLogger);
   }
 
   // used by tests only
@@ -155,7 +161,8 @@ public class TelemetryChannel {
       return CompletableResultCode.ofFailure();
     }
     try {
-      return internalSend(byteBuffers, instrumentationKey, false);
+      return internalSend(
+          byteBuffers, instrumentationKey, new ReturnByteBuffers(byteBuffers), operationLogger);
     } catch (Throwable t) {
       operationLogger.recordFailure("Error sending telemetry items: " + t.getMessage(), t);
       return CompletableResultCode.ofFailure();
@@ -203,7 +210,10 @@ public class TelemetryChannel {
    * sent as {@code List<ByteBuffer>}. Persisted telemetries will be sent as byte[]
    */
   private CompletableResultCode internalSend(
-      List<ByteBuffer> byteBuffers, String instrumentationKey, boolean persisted) {
+      List<ByteBuffer> byteBuffers,
+      String instrumentationKey,
+      CompletionListener completionListener,
+      OperationLogger operationLogger) {
     HttpRequest request = new HttpRequest(HttpMethod.POST, endpointUrl);
 
     request.setBody(Flux.fromIterable(byteBuffers));
@@ -236,108 +246,101 @@ public class TelemetryChannel {
     pipeline
         .send(request, Context.of(contextKeyValues))
         .subscribe(
-            response -> {
-              response
-                  .getBodyAsString()
-                  .subscribe(
-                      body -> {
-                        parseResponseCode(response.getStatusCode(), body, instrumentationKey);
-                        LazyHttpClient.consumeResponseBody(response);
-                        if (!isStatsbeat) {
-                          if (response.getStatusCode() == 200) {
-                            statsbeatModule
-                                .getNetworkStatsbeat()
-                                .incrementRequestSuccessCount(
-                                    System.currentTimeMillis() - startTime, instrumentationKey);
-                          } else {
-                            statsbeatModule
-                                .getNetworkStatsbeat()
-                                .incrementRequestFailureCount(instrumentationKey);
-                          }
-                        }
-                        if (!persisted) {
-                          // persisted byte buffers don't come from the pool so shouldn't go back to
-                          // the pool
-                          byteBufferPool.offer(byteBuffers);
-                        }
-                        if (response.getStatusCode() == 200) {
-                          result.succeed();
-                        } else {
-                          result.fail();
-                        }
-                      });
-            },
-            error -> {
-              // AMPLS
-              if (isStatsbeat && error instanceof UnknownHostException) {
-                // when sending a Statsbeat request and server returns an UnknownHostException, it's
-                // likely that
-                // it's using a virtual network. In that case, we use the kill-switch to turn off
-                // Statsbeat.
-                statsbeatModule.shutdown();
-              } else {
-                if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
-                    error, endpointUrl.toString(), friendlyExceptionThrown, logger)) {
-                  operationLogger.recordFailure(
-                      "Error sending telemetry items: " + error.getMessage(), error);
-                }
-
-                if (!isStatsbeat) {
-                  statsbeatModule
-                      .getNetworkStatsbeat()
-                      .incrementRequestFailureCount(instrumentationKey);
-                }
-                // no need to write to disk again when failing to send raw bytes from the persisted
-                // file
-                if (!persisted) {
-                  writeToDiskOnFailure(byteBuffers, instrumentationKey);
-                }
-              }
-
-              if (!persisted) {
-                // persisted byte buffers don't come from the pool so shouldn't go back to the pool
-                byteBufferPool.offer(byteBuffers);
-              }
-              result.fail();
-            });
+            responseHandler(instrumentationKey, startTime, completionListener, operationLogger),
+            errorHandler(instrumentationKey, completionListener, operationLogger));
     return result;
   }
 
-  private void writeToDiskOnFailure(List<ByteBuffer> byteBuffers, String instrumentationKey) {
-    if (localFileWriter != null) {
-      localFileWriter.writeToDisk(byteBuffers, instrumentationKey);
+  private Consumer<HttpResponse> responseHandler(
+      String instrumentationKey,
+      long startTime,
+      CompletionListener completionListener,
+      OperationLogger operationLogger) {
+
+    return response ->
+        response
+            .getBodyAsString()
+            .subscribe(
+                body -> {
+                  int statusCode = response.getStatusCode();
+                  switch (statusCode) {
+                    case 200: // SUCCESS
+                      operationLogger.recordSuccess();
+                      completionListener.onSuccess();
+                      break;
+                    case 206: // PARTIAL CONTENT, Breeze-specific: PARTIAL SUCCESS
+                      operationLogger.recordFailure(
+                          getErrorMessageFromPartialSuccessResponse(body));
+                      completionListener.onError(false);
+                      break;
+                    case 408: // REQUEST TIMEOUT
+                    case 429: // TOO MANY REQUESTS
+                    case 500: // INTERNAL SERVER ERROR
+                    case 503: // SERVICE UNAVAILABLE
+                      operationLogger.recordFailure(
+                          "received response code "
+                              + statusCode
+                              + " (telemetry will be stored to disk and retried later)");
+                      completionListener.onError(true);
+                      break;
+                    case 439: // Breeze-specific: THROTTLED OVER EXTENDED TIME
+                      // TODO handle throttling
+                      operationLogger.recordFailure(
+                          "received response code 439 (throttled over extended time)");
+                      completionListener.onError(false);
+                      break;
+                    default:
+                      operationLogger.recordFailure("received response code: " + statusCode);
+                      completionListener.onError(false);
+                  }
+                  LazyHttpClient.consumeResponseBody(response);
+                  if (!isStatsbeat) {
+                    handleStatsbeatOnResponse(instrumentationKey, startTime, statusCode);
+                  }
+                });
+  }
+
+  private void handleStatsbeatOnResponse(
+      String instrumentationKey, long startTime, int statusCode) {
+    if (statusCode == 200) {
+      statsbeatModule
+          .getNetworkStatsbeat()
+          .incrementRequestSuccessCount(System.currentTimeMillis() - startTime, instrumentationKey);
+    } else {
+      statsbeatModule.getNetworkStatsbeat().incrementRequestFailureCount(instrumentationKey);
+    }
+    if (statusCode == 439) {
+      statsbeatModule.getNetworkStatsbeat().incrementThrottlingCount(instrumentationKey);
     }
   }
 
-  private void parseResponseCode(int statusCode, String body, String instrumentationKey) {
-    switch (statusCode) {
-      case 200: // SUCCESS
-        operationLogger.recordSuccess();
-        break;
-      case 206: // PARTIAL CONTENT, Breeze-specific: PARTIAL SUCCESS
-        operationLogger.recordFailure(getErrorMessageFromPartialSuccessResponse(body));
-        break;
-      case 401: // UNAUTHORIZED
-      case 403: // FORBIDDEN
-      case 408: // REQUEST TIMEOUT
-      case 500: // INTERNAL SERVER ERROR
-      case 503: // SERVICE UNAVAILABLE
-      case 429: // TOO MANY REQUESTS
-        // TODO (heya) should we write to disk on any of these response codes?
-        operationLogger.recordFailure("received response code " + statusCode);
-        break;
-      case 439: // Breeze-specific: THROTTLED OVER EXTENDED TIME
-        operationLogger.recordFailure("received response code 439 (throttled over extended time)");
-        // TODO handle throttling
-        // TODO (heya) track throttling count via Statsbeat
-        // instrumentationKey is null when sending persisted file's raw bytes.
-        if (!isStatsbeat) {
-          statsbeatModule.getNetworkStatsbeat().incrementThrottlingCount(instrumentationKey);
-        }
-        break;
-      default:
-        operationLogger.recordFailure("received response code: " + statusCode);
-    }
+  private Consumer<Throwable> errorHandler(
+      String instrumentationKey,
+      CompletionListener completionListener,
+      OperationLogger operationLogger) {
+
+    return error -> {
+      // AMPLS
+      if (isStatsbeat && error instanceof UnknownHostException) {
+        // when sending a Statsbeat request and server returns an UnknownHostException, it's
+        // likely that it's using a virtual network. In that case, we use the kill-switch to
+        // turn off Statsbeat.
+        statsbeatModule.shutdown();
+        completionListener.onError(false);
+      } else if (NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
+          error, endpointUrl.toString(), friendlyExceptionThrown, logger)) {
+        // don't log failure as that happened in logSpecialOneTimeFriendlyException
+        completionListener.onError(true);
+      } else {
+        operationLogger.recordFailure(
+            "Error sending telemetry items: " + error.getMessage(), error);
+        completionListener.onError(true);
+      }
+
+      if (!isStatsbeat) {
+        statsbeatModule.getNetworkStatsbeat().incrementRequestFailureCount(instrumentationKey);
+      }
+    };
   }
 
   private static String getErrorMessageFromPartialSuccessResponse(String body) {
@@ -356,5 +359,83 @@ public class TelemetryChannel {
       message.append(" (and ").append(moreErrors).append(" more)");
     }
     return message.toString();
+  }
+
+  public interface CompletionListener {
+    void onSuccess();
+
+    void onError(boolean retryable);
+  }
+
+  public static class NoopCompletionListener implements CompletionListener {
+
+    @Override
+    public void onSuccess() {}
+
+    @Override
+    public void onError(boolean retryable) {}
+  }
+
+  public static class CompositeCompletionListener implements CompletionListener {
+
+    private final List<CompletionListener> delegates;
+
+    public CompositeCompletionListener(List<CompletionListener> delegates) {
+      this.delegates = delegates;
+    }
+
+    @Override
+    public void onSuccess() {
+      for (CompletionListener delegate : delegates) {
+        delegate.onSuccess();
+      }
+    }
+
+    @Override
+    public void onError(boolean retryable) {
+      for (CompletionListener delegate : delegates) {
+        delegate.onError(retryable);
+      }
+    }
+  }
+
+  public static class ReturnByteBuffers implements CompletionListener {
+
+    private final List<ByteBuffer> byteBuffers;
+
+    public ReturnByteBuffers(List<ByteBuffer> byteBuffers) {
+      this.byteBuffers = byteBuffers;
+    }
+
+    @Override
+    public void onSuccess() {
+      byteBufferPool.offer(byteBuffers);
+    }
+
+    @Override
+    public void onError(boolean retryable) {
+      byteBufferPool.offer(byteBuffers);
+    }
+  }
+
+  public class WriteToDiskOnRetryableFailure implements CompletionListener {
+
+    private final List<ByteBuffer> byteBuffers;
+    private final String instrumentationKey;
+
+    public WriteToDiskOnRetryableFailure(List<ByteBuffer> byteBuffers, String instrumentationKey) {
+      this.byteBuffers = byteBuffers;
+      this.instrumentationKey = instrumentationKey;
+    }
+
+    @Override
+    public void onSuccess() {}
+
+    @Override
+    public void onError(boolean retryable) {
+      if (retryable) {
+        localFileWriter.writeToDisk(byteBuffers, instrumentationKey);
+      }
+    }
   }
 }

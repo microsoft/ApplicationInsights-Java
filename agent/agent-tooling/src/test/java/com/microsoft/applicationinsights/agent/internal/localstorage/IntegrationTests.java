@@ -35,6 +35,8 @@ import com.azure.core.test.http.MockHttpResponse;
 import com.azure.core.util.Context;
 import com.microsoft.applicationinsights.agent.internal.common.TestUtils;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeat;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryChannel;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
@@ -58,6 +60,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
 public class IntegrationTests {
@@ -84,23 +87,26 @@ public class IntegrationTests {
                       () ->
                           new Exception("this is expected to be logged by the operation logger")));
     } else {
-      // 401 and 403 response codes are the only ones the result in storing to disk
+      // 408, 429, 500, and 503 response codes are the only ones the result in storing to disk
       when(mockedClient.send(any(HttpRequest.class), any(Context.class)))
           .then(
               invocation ->
                   Mono.just(
-                      new MockHttpResponse(invocation.getArgument(0, HttpRequest.class), 401)));
+                      new MockHttpResponse(invocation.getArgument(0, HttpRequest.class), 500)));
     }
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
     localFileCache = new LocalFileCache(tempFolder);
     localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
+
+    StatsbeatModule statsbeatModule = Mockito.mock(StatsbeatModule.class);
+    when(statsbeatModule.getNetworkStatsbeat()).thenReturn(Mockito.mock(NetworkStatsbeat.class));
 
     telemetryChannel =
         new TelemetryChannel(
             pipelineBuilder.build(),
             new URL("http://foo.bar"),
             new LocalFileWriter(localFileCache, tempFolder, null),
-            null,
+            statsbeatModule,
             false);
   }
 
@@ -127,6 +133,9 @@ public class IntegrationTests {
 
     executorService.shutdown();
     executorService.awaitTermination(10, TimeUnit.MINUTES);
+
+    Thread.sleep(1000);
+
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(100);
 
     for (int i = 100; i > 0; i--) {

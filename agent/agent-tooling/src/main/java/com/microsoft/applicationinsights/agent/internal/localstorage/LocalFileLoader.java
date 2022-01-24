@@ -163,13 +163,13 @@ public class LocalFileLoader {
 
   // either delete it permanently on success or add it back to cache to be processed again later on
   // failure
-  public void updateProcessedFileStatus(boolean success, File file) {
+  public void updateProcessedFileStatus(boolean successOrNonRetryableError, File file) {
     if (!file.exists()) {
       // not sure why this would happen
       updateOperationLogger.recordFailure("File no longer exists: " + file.getName());
       return;
     }
-    if (success) {
+    if (successOrNonRetryableError) {
       // delete a file on the queue permanently when http response returns success.
       if (!LocalStorageUtils.deleteFileWithRetries(file)) {
         // TODO (heya) track file deletion failure via Statsbeat
