@@ -114,7 +114,7 @@ public class LocalFileLoader {
     byte[] ikeyBytes = new byte[36];
     int rawByteLength = (int) tempFile.length() - 36;
     byte[] telemetryBytes = new byte[rawByteLength];
-    String instrumentationKey = null;
+    String instrumentationKey;
     try (FileInputStream fileInputStream = new FileInputStream(tempFile)) {
       readFully(fileInputStream, ikeyBytes, 36);
       instrumentationKey = new String(ikeyBytes, UTF_8);

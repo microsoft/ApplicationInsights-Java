@@ -114,9 +114,12 @@ public class TelemetryChannel {
   }
 
   public CompletableResultCode sendRawBytes(
-      ByteBuffer buffer, String instrumentationKey, CompletionListener completionListener) {
+      ByteBuffer buffer,
+      String instrumentationKey,
+      Runnable onSuccess,
+      Consumer<Boolean> onFailure) {
     return internalSend(
-        singletonList(buffer), instrumentationKey, completionListener, retryOperationLogger);
+        singletonList(buffer), instrumentationKey, onSuccess, onFailure, retryOperationLogger);
   }
 
   // used by tests only
@@ -162,7 +165,14 @@ public class TelemetryChannel {
     }
     try {
       return internalSend(
-          byteBuffers, instrumentationKey, new ReturnByteBuffers(byteBuffers), operationLogger);
+          byteBuffers,
+          instrumentationKey,
+          () -> byteBufferPool.offer(byteBuffers),
+          retryable -> {
+            localFileWriter.writeToDisk(byteBuffers, instrumentationKey);
+            byteBufferPool.offer(byteBuffers);
+          },
+          operationLogger);
     } catch (Throwable t) {
       operationLogger.recordFailure("Error sending telemetry items: " + t.getMessage(), t);
       return CompletableResultCode.ofFailure();
@@ -212,7 +222,8 @@ public class TelemetryChannel {
   private CompletableResultCode internalSend(
       List<ByteBuffer> byteBuffers,
       String instrumentationKey,
-      CompletionListener completionListener,
+      Runnable onSuccess,
+      Consumer<Boolean> onFailure,
       OperationLogger operationLogger) {
     HttpRequest request = new HttpRequest(HttpMethod.POST, endpointUrl);
 
@@ -246,15 +257,33 @@ public class TelemetryChannel {
     pipeline
         .send(request, Context.of(contextKeyValues))
         .subscribe(
-            responseHandler(instrumentationKey, startTime, completionListener, operationLogger),
-            errorHandler(instrumentationKey, completionListener, operationLogger));
+            responseHandler(
+                instrumentationKey,
+                startTime,
+                () -> {
+                  onSuccess.run();
+                  result.succeed();
+                },
+                retryable -> {
+                  onFailure.accept(retryable);
+                  result.fail();
+                },
+                operationLogger),
+            errorHandler(
+                instrumentationKey,
+                retryable -> {
+                  onFailure.accept(retryable);
+                  result.fail();
+                },
+                operationLogger));
     return result;
   }
 
   private Consumer<HttpResponse> responseHandler(
       String instrumentationKey,
       long startTime,
-      CompletionListener completionListener,
+      Runnable onSuccess,
+      Consumer<Boolean> onFailure,
       OperationLogger operationLogger) {
 
     return response ->
@@ -266,12 +295,12 @@ public class TelemetryChannel {
                   switch (statusCode) {
                     case 200: // SUCCESS
                       operationLogger.recordSuccess();
-                      completionListener.onSuccess();
+                      onSuccess.run();
                       break;
                     case 206: // PARTIAL CONTENT, Breeze-specific: PARTIAL SUCCESS
                       operationLogger.recordFailure(
                           getErrorMessageFromPartialSuccessResponse(body));
-                      completionListener.onError(false);
+                      onFailure.accept(false);
                       break;
                     case 408: // REQUEST TIMEOUT
                     case 429: // TOO MANY REQUESTS
@@ -281,17 +310,17 @@ public class TelemetryChannel {
                           "received response code "
                               + statusCode
                               + " (telemetry will be stored to disk and retried later)");
-                      completionListener.onError(true);
+                      onFailure.accept(true);
                       break;
                     case 439: // Breeze-specific: THROTTLED OVER EXTENDED TIME
                       // TODO handle throttling
                       operationLogger.recordFailure(
                           "received response code 439 (throttled over extended time)");
-                      completionListener.onError(false);
+                      onFailure.accept(false);
                       break;
                     default:
                       operationLogger.recordFailure("received response code: " + statusCode);
-                      completionListener.onError(false);
+                      onFailure.accept(false);
                   }
                   LazyHttpClient.consumeResponseBody(response);
                   if (!isStatsbeat) {
@@ -315,31 +344,28 @@ public class TelemetryChannel {
   }
 
   private Consumer<Throwable> errorHandler(
-      String instrumentationKey,
-      CompletionListener completionListener,
-      OperationLogger operationLogger) {
+      String instrumentationKey, Consumer<Boolean> onFailure, OperationLogger operationLogger) {
 
     return error -> {
-      // AMPLS
       if (isStatsbeat && error instanceof UnknownHostException) {
         // when sending a Statsbeat request and server returns an UnknownHostException, it's
-        // likely that it's using a virtual network. In that case, we use the kill-switch to
-        // turn off Statsbeat.
+        // likely that it's using AMPLS. In that case, we use the kill-switch to turn off Statsbeat.
         statsbeatModule.shutdown();
-        completionListener.onError(false);
-      } else if (NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
+        onFailure.accept(false);
+        return;
+      }
+
+      if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
           error, endpointUrl.toString(), friendlyExceptionThrown, logger)) {
-        // don't log failure as that happened in logSpecialOneTimeFriendlyException
-        completionListener.onError(true);
-      } else {
         operationLogger.recordFailure(
             "Error sending telemetry items: " + error.getMessage(), error);
-        completionListener.onError(true);
       }
 
       if (!isStatsbeat) {
         statsbeatModule.getNetworkStatsbeat().incrementRequestFailureCount(instrumentationKey);
       }
+
+      onFailure.accept(true);
     };
   }
 
@@ -359,83 +385,5 @@ public class TelemetryChannel {
       message.append(" (and ").append(moreErrors).append(" more)");
     }
     return message.toString();
-  }
-
-  public interface CompletionListener {
-    void onSuccess();
-
-    void onError(boolean retryable);
-  }
-
-  public static class NoopCompletionListener implements CompletionListener {
-
-    @Override
-    public void onSuccess() {}
-
-    @Override
-    public void onError(boolean retryable) {}
-  }
-
-  public static class CompositeCompletionListener implements CompletionListener {
-
-    private final List<CompletionListener> delegates;
-
-    public CompositeCompletionListener(List<CompletionListener> delegates) {
-      this.delegates = delegates;
-    }
-
-    @Override
-    public void onSuccess() {
-      for (CompletionListener delegate : delegates) {
-        delegate.onSuccess();
-      }
-    }
-
-    @Override
-    public void onError(boolean retryable) {
-      for (CompletionListener delegate : delegates) {
-        delegate.onError(retryable);
-      }
-    }
-  }
-
-  public static class ReturnByteBuffers implements CompletionListener {
-
-    private final List<ByteBuffer> byteBuffers;
-
-    public ReturnByteBuffers(List<ByteBuffer> byteBuffers) {
-      this.byteBuffers = byteBuffers;
-    }
-
-    @Override
-    public void onSuccess() {
-      byteBufferPool.offer(byteBuffers);
-    }
-
-    @Override
-    public void onError(boolean retryable) {
-      byteBufferPool.offer(byteBuffers);
-    }
-  }
-
-  public class WriteToDiskOnRetryableFailure implements CompletionListener {
-
-    private final List<ByteBuffer> byteBuffers;
-    private final String instrumentationKey;
-
-    public WriteToDiskOnRetryableFailure(List<ByteBuffer> byteBuffers, String instrumentationKey) {
-      this.byteBuffers = byteBuffers;
-      this.instrumentationKey = instrumentationKey;
-    }
-
-    @Override
-    public void onSuccess() {}
-
-    @Override
-    public void onError(boolean retryable) {
-      if (retryable) {
-        localFileWriter.writeToDisk(byteBuffers, instrumentationKey);
-      }
-    }
   }
 }
