@@ -29,9 +29,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class TestController {
 
-  private final Counter counter = Metrics.counter("test_counter");
-  private final Counter excludedCounter = Metrics.counter("test_counter_exclude_me");
-  private final Counter anotherExcludedCounter = Metrics.counter("exclude_me_test_counter");
+  private final Counter counter = Metrics.counter("test.counter", "tag1", "value1");
+  private final Counter excludedCounter = Metrics.counter("test.counter.exclude.me");
+  private final Counter anotherExcludedCounter = Metrics.counter("exclude.me.test.counter");
 
   @GetMapping("/")
   public String root() {
