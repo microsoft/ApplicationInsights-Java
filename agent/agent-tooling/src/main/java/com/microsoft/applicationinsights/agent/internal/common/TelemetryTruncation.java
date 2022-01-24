@@ -37,12 +37,12 @@ public class TelemetryTruncation {
     if (value == null || value.length() <= maxLength) {
       return value;
     }
-    if (!alreadyLoggedAttributeNames.add(attributeName)) {
+    if (alreadyLoggedAttributeNames.add(attributeName)) {
       // this can be expected, so don't want to flood the logs with a lot of these
       // (and don't want to log the full value, e.g. sql text > 8192 characters)
       logger.warn(
           "truncated {} attribute value to {} characters (this message will only be logged once"
-              + " per attribute name, and only for at most 10 different attribute names): {}",
+              + " per attribute name): {}",
           attributeName,
           maxLength,
           trimTo80(value));
@@ -56,7 +56,7 @@ public class TelemetryTruncation {
     if (value == null || value.length() <= maxLength) {
       return value;
     }
-    if (alreadyLoggedPropertyKeys.size() < 10 && !alreadyLoggedPropertyKeys.add(propertyKey)) {
+    if (alreadyLoggedPropertyKeys.size() < 10 && alreadyLoggedPropertyKeys.add(propertyKey)) {
       // this can be expected, so don't want to flood the logs with a lot of these
       logger.warn(
           "truncated {} property value to {} characters (this message will only be logged once"
