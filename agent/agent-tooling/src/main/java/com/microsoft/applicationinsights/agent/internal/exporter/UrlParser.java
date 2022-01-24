@@ -26,6 +26,43 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 class UrlParser {
 
   /**
+   * Returns the "target" (host:port) portion of the url.
+   *
+   * <p>Returns {@code null} if the target cannot be extracted from url for any reason.
+   */
+  @Nullable
+  static String getTargetFromUrl(String url) {
+
+    int schemeEndIndex = url.indexOf(':');
+    if (schemeEndIndex == -1) {
+      // not a valid url
+      return null;
+    }
+
+    int len = url.length();
+    if (schemeEndIndex + 2 < len
+        && url.charAt(schemeEndIndex + 1) == '/'
+        && url.charAt(schemeEndIndex + 2) == '/') {
+      // has authority component
+      // look for
+      //   '/' - start of path
+      //   '?' or end of string - empty path
+      int index;
+      for (index = schemeEndIndex + 3; index < len; index++) {
+        char c = url.charAt(index);
+        if (c == '/' || c == '?' || c == '#') {
+          break;
+        }
+      }
+      String target = url.substring(schemeEndIndex + 3, index);
+      return target.isEmpty() ? null : target;
+    } else {
+      // has no authority
+      return null;
+    }
+  }
+
+  /**
    * Returns the path portion of the url.
    *
    * <p>Returns {@code null} if the path cannot be extracted from url for any reason.
