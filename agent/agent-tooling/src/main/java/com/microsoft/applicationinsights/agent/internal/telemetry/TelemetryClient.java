@@ -95,12 +95,14 @@ public class TelemetryClient {
   private final Cache<String, String> ikeyEndpointMap;
   private final StatsbeatModule statsbeatModule;
   private final boolean readOnlyFileSystem;
-  private final int exportQueueCapacity;
+  private final int generalExportQueueCapacity;
+  private final int metricsExportQueueCapacity;
 
   @Nullable private final Configuration.AadAuthentication aadAuthentication;
 
   private final Object channelInitLock = new Object();
-  private volatile @MonotonicNonNull BatchSpanProcessor channelBatcher;
+  private volatile @MonotonicNonNull BatchSpanProcessor generalChannelBatcher;
+  private volatile @MonotonicNonNull BatchSpanProcessor metricsChannelBatcher;
   private volatile @MonotonicNonNull BatchSpanProcessor statsbeatChannelBatcher;
 
   public static TelemetryClient.Builder builder() {
@@ -124,7 +126,8 @@ public class TelemetryClient {
     this.ikeyEndpointMap = builder.ikeyEndpointMap;
     this.statsbeatModule = builder.statsbeatModule;
     this.readOnlyFileSystem = builder.readOnlyFileSystem;
-    this.exportQueueCapacity = builder.exportQueueCapacity;
+    this.generalExportQueueCapacity = builder.generalExportQueueCapacity;
+    this.metricsExportQueueCapacity = builder.metricsExportQueueCapacity;
     this.aadAuthentication = builder.aadAuthentication;
   }
 
@@ -182,7 +185,11 @@ public class TelemetryClient {
     // batching, retry, throttling, and writing to disk on failure occur downstream
     // for simplicity not reporting back success/failure from this layer
     // only that it was successfully delivered to the next layer
-    getChannelBatcher().trackAsync(telemetry);
+    if (data instanceof MetricsData) {
+      getMetricsChannelBatcher().trackAsync(telemetry);
+    } else {
+      getGeneralChannelBatcher().trackAsync(telemetry);
+    }
   }
 
   public void trackStatsbeatAsync(TelemetryItem telemetry) {
@@ -193,50 +200,69 @@ public class TelemetryClient {
   }
 
   public CompletableResultCode flushChannelBatcher() {
-    if (channelBatcher != null) {
-      return channelBatcher.forceFlush();
+    if (generalChannelBatcher != null) {
+      return generalChannelBatcher.forceFlush();
     } else {
       return CompletableResultCode.ofSuccess();
     }
   }
 
-  public BatchSpanProcessor getChannelBatcher() {
-    if (channelBatcher == null) {
+  private BatchSpanProcessor getGeneralChannelBatcher() {
+    if (generalChannelBatcher == null) {
       synchronized (channelInitLock) {
-        if (channelBatcher == null) {
-          File telemetryFolder;
-          LocalFileLoader localFileLoader = null;
-          LocalFileWriter localFileWriter = null;
-          if (!readOnlyFileSystem) {
-            telemetryFolder = LocalStorageUtils.getOfflineTelemetryFolder();
-            LocalFileCache localFileCache = new LocalFileCache(telemetryFolder);
-            localFileLoader =
-                new LocalFileLoader(
-                    localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
-            localFileWriter =
-                new LocalFileWriter(
-                    localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
-          }
-
-          TelemetryChannel channel =
-              TelemetryChannel.create(
-                  endpointProvider.getIngestionEndpointUrl(),
-                  localFileWriter,
-                  ikeyEndpointMap,
-                  statsbeatModule,
-                  false,
-                  aadAuthentication);
-
-          if (!readOnlyFileSystem) {
-            LocalFileSender.start(localFileLoader, channel);
-          }
-
-          channelBatcher =
-              BatchSpanProcessor.builder(channel).setMaxQueueSize(exportQueueCapacity).build();
+        if (generalChannelBatcher == null) {
+          generalChannelBatcher = initChannelBatcher(generalExportQueueCapacity, 512, "general");
         }
       }
     }
-    return channelBatcher;
+    return generalChannelBatcher;
+  }
+
+  // metrics get flooded every 60 seconds by default, so need much larger queue size to avoid
+  // dropping telemetry (they are much smaller so a larger queue size and larger batch size are ok)
+  private BatchSpanProcessor getMetricsChannelBatcher() {
+    if (metricsChannelBatcher == null) {
+      synchronized (channelInitLock) {
+        if (metricsChannelBatcher == null) {
+          metricsChannelBatcher = initChannelBatcher(metricsExportQueueCapacity, 2048, "metrics");
+        }
+      }
+    }
+    return metricsChannelBatcher;
+  }
+
+  private BatchSpanProcessor initChannelBatcher(
+      int exportQueueCapacity, int maxExportBatchSize, String queueName) {
+    LocalFileLoader localFileLoader = null;
+    LocalFileWriter localFileWriter = null;
+    if (!readOnlyFileSystem) {
+      File telemetryFolder = LocalStorageUtils.getOfflineTelemetryFolder();
+      LocalFileCache localFileCache = new LocalFileCache(telemetryFolder);
+      localFileLoader =
+          new LocalFileLoader(
+              localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
+      localFileWriter =
+          new LocalFileWriter(
+              localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
+    }
+
+    TelemetryChannel channel =
+        TelemetryChannel.create(
+            endpointProvider.getIngestionEndpointUrl(),
+            localFileWriter,
+            ikeyEndpointMap,
+            statsbeatModule,
+            false,
+            aadAuthentication);
+
+    if (!readOnlyFileSystem) {
+      LocalFileSender.start(localFileLoader, channel);
+    }
+
+    return BatchSpanProcessor.builder(channel)
+        .setMaxQueueSize(exportQueueCapacity)
+        .setMaxExportBatchSize(maxExportBatchSize)
+        .build(queueName);
   }
 
   public BatchSpanProcessor getStatsbeatChannelBatcher() {
@@ -266,7 +292,7 @@ public class TelemetryClient {
             LocalFileSender.start(localFileLoader, channel);
           }
 
-          statsbeatChannelBatcher = BatchSpanProcessor.builder(channel).build();
+          statsbeatChannelBatcher = BatchSpanProcessor.builder(channel).build("statsbeat");
         }
       }
     }
@@ -486,7 +512,8 @@ public class TelemetryClient {
     private Cache<String, String> ikeyEndpointMap;
     private StatsbeatModule statsbeatModule;
     private boolean readOnlyFileSystem;
-    private int exportQueueCapacity;
+    private int generalExportQueueCapacity;
+    private int metricsExportQueueCapacity;
     @Nullable private Configuration.AadAuthentication aadAuthentication;
 
     public Builder setCustomDimensions(Map<String, String> customDimensions) {
@@ -533,8 +560,13 @@ public class TelemetryClient {
       return this;
     }
 
-    public Builder setMaxExportQueueSize(int exportQueueCapacity) {
-      this.exportQueueCapacity = exportQueueCapacity;
+    public Builder setGeneralExportQueueSize(int generalExportQueueCapacity) {
+      this.generalExportQueueCapacity = generalExportQueueCapacity;
+      return this;
+    }
+
+    public Builder setMetricsExportQueueSize(int metricsExportQueueCapacity) {
+      this.metricsExportQueueCapacity = metricsExportQueueCapacity;
       return this;
     }
 
