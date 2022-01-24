@@ -405,7 +405,7 @@ public abstract class AiSmokeTest {
     } catch (Exception e) {
       for (ContainerInfo container : allContainers) {
         System.out.println("========== dumping container log: " + container.getContainerId());
-        AiDockerClient.printContainerLogs(containerInfo.getContainerId());
+        AiDockerClient.printContainerLogs(container.getContainerId());
         System.out.println("end of container log ==========");
       }
       throw e;
