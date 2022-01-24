@@ -77,6 +77,7 @@ public class MicrometerTest extends AiSmokeTest {
     assertNull("getMin was non-null", point.getMin());
     assertNull("getMax was non-null", point.getMax());
     assertNull("getStdDev was non-null", point.getStdDev());
-    assertTrue(data.getProperties().isEmpty());
+    assertEquals(1, data.getProperties().size());
+    assertEquals("value1", data.getProperties().get("tag1"));
   }
 }
