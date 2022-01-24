@@ -61,7 +61,8 @@ public final class BatchSpanProcessor {
       long scheduleDelayNanos,
       int maxQueueSize,
       int maxExportBatchSize,
-      long exporterTimeoutNanos) {
+      long exporterTimeoutNanos,
+      String queueName) {
     MpscArrayQueue<TelemetryItem> queue = new MpscArrayQueue<>(maxQueueSize);
     this.worker =
         new Worker(
@@ -70,7 +71,8 @@ public final class BatchSpanProcessor {
             maxExportBatchSize,
             exporterTimeoutNanos,
             queue,
-            queue.capacity());
+            queue.capacity(),
+            queueName);
     Thread workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
     workerThread.start();
   }
@@ -103,6 +105,7 @@ public final class BatchSpanProcessor {
 
     private final Queue<TelemetryItem> queue;
     private final int queueCapacity;
+    private final String queueName;
     // When waiting on the spans queue, exporter thread sets this atomic to the number of more
     // spans it needs before doing an export. Writer threads would then wait for the queue to reach
     // spansNeeded size before notifying the exporter thread about new entries.
@@ -124,13 +127,15 @@ public final class BatchSpanProcessor {
         int maxExportBatchSize,
         long exporterTimeoutNanos,
         Queue<TelemetryItem> queue,
-        int queueCapacity) {
+        int queueCapacity,
+        String queueName) {
       this.spanExporter = spanExporter;
       this.scheduleDelayNanos = scheduleDelayNanos;
       this.maxExportBatchSize = maxExportBatchSize;
       this.exporterTimeoutNanos = exporterTimeoutNanos;
       this.queue = queue;
       this.queueCapacity = queueCapacity;
+      this.queueName = queueName;
       this.signal = new ArrayBlockingQueue<>(1);
       this.batch = new ArrayList<>(this.maxExportBatchSize);
     }
@@ -138,11 +143,16 @@ public final class BatchSpanProcessor {
     private void addSpan(TelemetryItem span) {
       if (!queue.offer(span)) {
         queuingSpanLogger.recordFailure(
-            "Max export queue size of "
+            "Max "
+                + queueName
+                + " export queue capacity of "
                 + queueCapacity
-                + " has been hit, dropping a span (max export queue size can be increased"
-                + " in the applicationinsights.json configuration file, e.g."
-                + " { \"preview\": { \"exportQueueCapacity\": "
+                + " has been hit, dropping a telemetry record (max "
+                + queueName
+                + " export queue capacity can be increased in the applicationinsights.json"
+                + " configuration file, e.g. { \"preview\": { \""
+                + queueName
+                + "ExportQueueCapacity\": "
                 + (queueCapacity * 2)
                 + " } }");
       } else {

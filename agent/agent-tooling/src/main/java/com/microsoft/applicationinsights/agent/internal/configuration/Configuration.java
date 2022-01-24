@@ -244,7 +244,10 @@ public class Configuration {
 
     public List<InstrumentationKeyOverride> instrumentationKeyOverrides = new ArrayList<>();
 
-    public int exportQueueCapacity = 2048;
+    public int generalExportQueueCapacity = 2048;
+    // metrics get flooded every 60 seconds by default, so need larger queue size to avoid dropping
+    // telemetry (they are much smaller so a larger queue size is ok)
+    public int metricsExportQueueCapacity = 65536;
   }
 
   public static class InheritedAttribute {
