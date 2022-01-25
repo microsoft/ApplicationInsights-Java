@@ -87,12 +87,12 @@ public class IntegrationTests {
                       () ->
                           new Exception("this is expected to be logged by the operation logger")));
     } else {
-      // 408, 429, 500, and 503 response codes are the only ones the result in storing to disk
+      // 401, 403, 408, 429, 500, and 503 response codes result in storing to disk
       when(mockedClient.send(any(HttpRequest.class), any(Context.class)))
           .then(
               invocation ->
                   Mono.just(
-                      new MockHttpResponse(invocation.getArgument(0, HttpRequest.class), 500)));
+                      new MockHttpResponse(invocation.getArgument(0, HttpRequest.class), 401)));
     }
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
     localFileCache = new LocalFileCache(tempFolder);
