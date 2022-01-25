@@ -37,7 +37,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 
 public class NetworkFriendlyExceptions {
-  public static final List<String> expectedCiphers =
+  public static final List<String> EXPECTED_CIPHERS =
       Arrays.asList(
           "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
           "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
@@ -68,19 +68,19 @@ public class NetworkFriendlyExceptions {
 
     IOException ioException = getCausedByOfType(error, IOException.class);
     if (ioException != null) {
-      if (!alreadySeen.getAndSet(true)) {
-        boolean foundCiphers = true;
-        try {
-          foundCiphers = hasExpectedCiphers();
-        } catch (NoSuchAlgorithmException e) {
-          logger.error(e.getMessage(), e);
-          return false;
-        }
-        if (!foundCiphers) {
+      boolean foundCiphers = true;
+      try {
+        foundCiphers = hasExpectedCiphers();
+      } catch (NoSuchAlgorithmException e) {
+        logger.debug(e.getMessage(), e);
+        return false;
+      }
+      if (!foundCiphers) {
+        if (!alreadySeen.getAndSet(true)) {
           logger.error(getCipherFriendlyMessage(url));
-        } else {
-          return false;
         }
+      } else {
+        return false;
       }
       return true;
     }
@@ -90,7 +90,7 @@ public class NetworkFriendlyExceptions {
   private static boolean hasExpectedCiphers() throws NoSuchAlgorithmException {
     SSLSocketFactory socketFactory = SSLContext.getDefault().getSocketFactory();
     List<String> cipherSuitesFromJvm = Arrays.asList(socketFactory.getSupportedCipherSuites());
-    for (String cipher : expectedCiphers) {
+    for (String cipher : EXPECTED_CIPHERS) {
       if (cipherSuitesFromJvm.contains(cipher)) {
         return true;
       }
@@ -141,7 +141,7 @@ public class NetworkFriendlyExceptions {
             "The Application Insights Java agent detects that you do not have any of the following cipher suites that are supported by the endpoint it connects to: "
                 + url)
         .append("\n");
-    for (String missingCipher : expectedCiphers) {
+    for (String missingCipher : EXPECTED_CIPHERS) {
       actionBuilder.append(missingCipher).append("\n");
     }
     actionBuilder.append(
