@@ -305,6 +305,7 @@ public class TelemetryChannel {
                           getErrorMessageFromPartialSuccessResponse(body));
                       onFailure.accept(false);
                       break;
+                    case 403: // AUTHORIZATION (AAD)
                     case 408: // REQUEST TIMEOUT
                     case 429: // TOO MANY REQUESTS
                     case 500: // INTERNAL SERVER ERROR
