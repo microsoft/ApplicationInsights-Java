@@ -52,7 +52,7 @@ public class NetworkFriendlyExceptionsTest {
   }
 
   @Test
-  public void testSSLExceptionDetector() {
+  public void testSslExceptionDetector() {
     Exception sslException = new SSLHandshakeException("sample");
     NetworkFriendlyExceptions.SslExceptionDetector sslExceptionDetector =
         new NetworkFriendlyExceptions.SslExceptionDetector();
