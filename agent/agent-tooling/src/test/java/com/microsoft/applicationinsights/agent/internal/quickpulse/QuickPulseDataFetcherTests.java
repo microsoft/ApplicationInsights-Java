@@ -80,14 +80,14 @@ class QuickPulseDataFetcherTests {
     headers.put("x-ms-qps-service-endpoint-redirect", "https://new.endpoint.com");
     headers.put("x-ms-qps-subscribed", "true");
     HttpHeaders httpHeaders = new HttpHeaders(headers);
+    TelemetryClient telemetryClient = TelemetryClient.createForTest();
+    telemetryClient.setInstrumentationKey("fake-key");
     HttpPipeline httpPipeline =
         new HttpPipelineBuilder()
             .httpClient(request -> Mono.just(new MockHttpResponse(request, 200, httpHeaders)))
             .build();
     QuickPulsePingSender quickPulsePingSender =
-        new QuickPulsePingSender(
-            httpPipeline, TelemetryClient.createForTest(), "machine1", "instance1", "qpid123");
-
+        new QuickPulsePingSender(httpPipeline, telemetryClient, "machine1", "instance1", "qpid123");
     QuickPulseHeaderInfo quickPulseHeaderInfo = quickPulsePingSender.ping(null);
     assertThat(QuickPulseStatus.QP_IS_ON).isEqualTo(quickPulseHeaderInfo.getQuickPulseStatus());
     assertThat(1000).isEqualTo(quickPulseHeaderInfo.getQpsServicePollingInterval());

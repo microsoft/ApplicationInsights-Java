@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-public class UrlParserTest {
+public class UrlParserPathTest {
 
   @Test
   public void testGetPathFromUrl() {
