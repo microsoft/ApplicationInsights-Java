@@ -48,7 +48,7 @@ public class NetworkFriendlyExceptions {
     try {
       // Note this order is important to determine the right exception!
       // For example SSLHandshakeException extends IOException
-      DETECTORS.add(SSLExceptionDetector.create());
+      DETECTORS.add(SslExceptionDetector.create());
       DETECTORS.add(UnknownHostExceptionDetector.create());
       DETECTORS.add(CipherExceptionDetector.create());
     } catch (NoSuchAlgorithmException e) {
@@ -106,10 +106,10 @@ public class NetworkFriendlyExceptions {
     String message(String url);
   }
 
-  static class SSLExceptionDetector implements FriendlyExceptionDetector {
+  static class SslExceptionDetector implements FriendlyExceptionDetector {
 
-    static SSLExceptionDetector create() {
-      return new SSLExceptionDetector();
+    static SslExceptionDetector create() {
+      return new SslExceptionDetector();
     }
 
     @Override
