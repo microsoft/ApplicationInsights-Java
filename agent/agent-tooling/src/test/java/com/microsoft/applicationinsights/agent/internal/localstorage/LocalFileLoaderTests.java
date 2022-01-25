@@ -277,7 +277,8 @@ public class LocalFileLoaderTests {
     for (int i = 0; i < 10; i++) {
       LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
       CompletableResultCode completableResultCode =
-          telemetryChannel.sendRawBytes(persistedFile.rawBytes, persistedFile.instrumentationKey);
+          telemetryChannel.sendRawBytes(
+              persistedFile.rawBytes, persistedFile.instrumentationKey, () -> {}, retryable -> {});
       completableResultCode.join(10, SECONDS);
       assertThat(completableResultCode.isSuccess()).isEqualTo(true);
       localFileLoader.updateProcessedFileStatus(true, persistedFile.file);
@@ -331,7 +332,8 @@ public class LocalFileLoaderTests {
       assertThat(persistedFile.instrumentationKey).isEqualTo(INSTRUMENTATION_KEY);
 
       CompletableResultCode completableResultCode =
-          telemetryChannel.sendRawBytes(persistedFile.rawBytes, persistedFile.instrumentationKey);
+          telemetryChannel.sendRawBytes(
+              persistedFile.rawBytes, persistedFile.instrumentationKey, () -> {}, retryable -> {});
       completableResultCode.join(10, SECONDS);
       assertThat(completableResultCode.isSuccess()).isEqualTo(false);
       localFileLoader.updateProcessedFileStatus(false, persistedFile.file);

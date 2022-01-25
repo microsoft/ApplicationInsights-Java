@@ -67,9 +67,13 @@ public class LocalFileSender implements Runnable {
       LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
       if (persistedFile != null) {
         CompletableResultCode resultCode =
-            telemetryChannel.sendRawBytes(persistedFile.rawBytes, persistedFile.instrumentationKey);
+            telemetryChannel.sendRawBytes(
+                persistedFile.rawBytes,
+                persistedFile.instrumentationKey,
+                () -> localFileLoader.updateProcessedFileStatus(true, persistedFile.file),
+                retryable ->
+                    localFileLoader.updateProcessedFileStatus(!retryable, persistedFile.file));
         resultCode.join(30, TimeUnit.SECONDS); // wait max 30 seconds for request to be completed.
-        localFileLoader.updateProcessedFileStatus(resultCode.isSuccess(), persistedFile.file);
       }
     } catch (RuntimeException ex) {
       logger.error(
