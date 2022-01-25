@@ -62,6 +62,7 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 // TODO performance testing
 public class TelemetryChannel {
@@ -72,6 +73,7 @@ public class TelemetryChannel {
 
   private static final AppInsightsByteBufferPool byteBufferPool = new AppInsightsByteBufferPool();
 
+  // TODO (heya) should we suppress logging statsbeat telemetry ingestion issues?
   private static final OperationLogger operationLogger =
       new OperationLogger(TelemetryChannel.class, "Sending telemetry to the ingestion service");
 
@@ -81,7 +83,7 @@ public class TelemetryChannel {
 
   // TODO (kryalama) do we still need this AtomicBoolean, or can we use throttling built in to the
   //  operationLogger?
-  private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
+  private final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
   @SuppressWarnings("CatchAndPrintStackTrace")
   private static ObjectMapper createObjectMapper() {
@@ -289,6 +291,7 @@ public class TelemetryChannel {
     return response ->
         response
             .getBodyAsString()
+            .switchIfEmpty(Mono.just(""))
             .subscribe(
                 body -> {
                   int statusCode = response.getStatusCode();
@@ -322,10 +325,13 @@ public class TelemetryChannel {
                       operationLogger.recordFailure("received response code: " + statusCode);
                       onFailure.accept(false);
                   }
-                  LazyHttpClient.consumeResponseBody(response);
                   if (!isStatsbeat) {
                     handleStatsbeatOnResponse(instrumentationKey, startTime, statusCode);
                   }
+                },
+                exception -> {
+                  operationLogger.recordFailure("exception retrieving response body", exception);
+                  onFailure.accept(false);
                 });
   }
 
@@ -355,6 +361,7 @@ public class TelemetryChannel {
         return;
       }
 
+      // TODO (trask) only log one-time friendly exception if no prior successes
       if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
           error, endpointUrl.toString(), friendlyExceptionThrown, logger)) {
         operationLogger.recordFailure(
