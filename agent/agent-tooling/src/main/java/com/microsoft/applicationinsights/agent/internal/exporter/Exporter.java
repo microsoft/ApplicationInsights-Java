@@ -34,7 +34,6 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDe
 import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.SeverityLevel;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedDuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
@@ -231,37 +230,6 @@ public class Exporter implements SpanExporter {
       exportRequest(span);
     } else {
       throw new UnsupportedOperationException(kind.name());
-    }
-  }
-
-  private static List<TelemetryExceptionDetails> minimalParse(String errorStack) {
-    TelemetryExceptionDetails details = new TelemetryExceptionDetails();
-    String line = getFirstLine(errorStack);
-    int index = line.indexOf(": ");
-    if (index != -1) {
-      String typeName = line.substring(0, index);
-      details.setTypeName(typeName);
-      String message = line.substring(index + 2).trim();
-      if (message.isEmpty()) {
-        details.setMessage(typeName);
-      } else {
-        details.setMessage(message);
-      }
-    } else {
-      details.setTypeName(line);
-      details.setMessage(line);
-    }
-    // TODO (trask): map OpenTelemetry exception to Application Insights exception better
-    details.setStack(errorStack);
-    return Collections.singletonList(details);
-  }
-
-  private static String getFirstLine(String errorStack) {
-    int index = errorStack.indexOf(System.lineSeparator());
-    if (index != -1) {
-      return errorStack.substring(0, index);
-    } else {
-      return errorStack;
     }
   }
 
@@ -1024,7 +992,7 @@ public class Exporter implements SpanExporter {
     setSampleRate(telemetry, samplingPercentage);
 
     // set exception-specific properties
-    data.setExceptions(minimalParse(errorStack));
+    data.setExceptions(Exceptions.minimalParse(errorStack));
 
     telemetryClient.trackAsync(telemetry);
   }

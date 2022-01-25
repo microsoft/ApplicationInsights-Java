@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agent.internal.exporter;
 
 import static java.util.Collections.singletonList;
 
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,10 +44,17 @@ public class Exceptions {
     }
     // at the end of the loop, current will be end of the first line
     if (separator != -1) {
-      details.setTypeName(str.substring(0, separator));
-      details.setMessage(Strings.trimAndEmptyToNull(str.substring(separator + 1, current)));
+      String typeName = str.substring(0, separator);
+      String message = str.substring(separator + 1, current).trim();
+      if (message.isEmpty()) {
+        message = typeName;
+      }
+      details.setTypeName(typeName);
+      details.setMessage(message);
     } else {
-      details.setTypeName(str.substring(0, current));
+      String typeName = str.substring(0, current);
+      details.setTypeName(typeName);
+      details.setMessage(typeName);
     }
     details.setStack(str);
     return singletonList(details);
@@ -83,10 +89,16 @@ public class Exceptions {
         current = new TelemetryExceptionDetails();
         int index = line.indexOf(':');
         if (index != -1) {
-          current.setTypeName(line.substring(0, index));
-          current.setMessage(Strings.trimAndEmptyToNull(line.substring(index + 1)));
+          String typeName = line.substring(0, index);
+          String message = line.substring(index + 1).trim();
+          if (message.isEmpty()) {
+            message = typeName;
+          }
+          current.setTypeName(typeName);
+          current.setMessage(message);
         } else {
           current.setTypeName(line);
+          current.setMessage(line);
         }
       }
     }
