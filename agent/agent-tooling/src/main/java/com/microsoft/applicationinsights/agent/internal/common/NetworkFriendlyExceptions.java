@@ -45,11 +45,11 @@ public class NetworkFriendlyExceptions {
 
   static {
     DETECTORS = new ArrayList<>();
+    // Note this order is important to determine the right exception!
+    // For example SSLHandshakeException extends IOException
+    DETECTORS.add(SslExceptionDetector.create());
+    DETECTORS.add(UnknownHostExceptionDetector.create());
     try {
-      // Note this order is important to determine the right exception!
-      // For example SSLHandshakeException extends IOException
-      DETECTORS.add(SslExceptionDetector.create());
-      DETECTORS.add(UnknownHostExceptionDetector.create());
       DETECTORS.add(CipherExceptionDetector.create());
     } catch (NoSuchAlgorithmException e) {
       logger.debug(e.getMessage(), e);
@@ -118,10 +118,7 @@ public class NetworkFriendlyExceptions {
         return false;
       }
       SSLHandshakeException sslException = getCausedByOfType(error, SSLHandshakeException.class);
-      if (sslException == null) {
-        return false;
-      }
-      return true;
+      return sslException != null;
     }
 
     @Override
@@ -176,10 +173,7 @@ public class NetworkFriendlyExceptions {
     public boolean detect(Throwable error) {
       UnknownHostException unknownHostException =
           getCausedByOfType(error, UnknownHostException.class);
-      if (unknownHostException == null) {
-        return false;
-      }
-      return true;
+      return unknownHostException != null;
     }
 
     @Override
@@ -200,13 +194,13 @@ public class NetworkFriendlyExceptions {
 
   static class CipherExceptionDetector implements FriendlyExceptionDetector {
 
-    private final List<String> cipherSuitesFromJvm;
     private static final List<String> EXPECTED_CIPHERS =
         Arrays.asList(
             "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
             "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
             "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
             "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256");
+    private final List<String> cipherSuitesFromJvm;
 
     static CipherExceptionDetector create() throws NoSuchAlgorithmException {
       SSLSocketFactory socketFactory = SSLContext.getDefault().getSocketFactory();
