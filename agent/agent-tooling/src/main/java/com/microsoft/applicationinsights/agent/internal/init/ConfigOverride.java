@@ -100,6 +100,10 @@ class ConfigOverride {
       // springIntegration instrumentation is ON by default in OTEL
       properties.put("otel.instrumentation.spring-integration.enabled", "false");
     }
+    if (!config.preview.instrumentation.vertx.enabled) {
+      // vertx instrumentation is ON by default in OTEL
+      properties.put("otel.instrumentation.vertx.enabled", "false");
+    }
     if (!config.preview.captureControllerSpans) {
       properties.put("otel.instrumentation.common.experimental.suppress-controller-spans", "true");
     }

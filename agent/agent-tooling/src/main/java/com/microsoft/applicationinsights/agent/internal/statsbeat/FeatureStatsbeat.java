@@ -147,6 +147,9 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     if (!config.preview.instrumentation.springIntegration.enabled) {
       featureList.add(Feature.SPRING_INTEGRATION_DISABLED);
     }
+    if (!config.preview.instrumentation.vertx.enabled) {
+      featureList.add(Feature.VERTX_DISABLED);
+    }
 
     // Statsbeat
     if (config.preview.statsbeat.disabled) {
