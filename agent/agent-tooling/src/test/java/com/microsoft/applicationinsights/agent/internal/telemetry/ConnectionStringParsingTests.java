@@ -458,12 +458,6 @@ class ConnectionStringParsingTests {
   }
 
   @Test
-  void emptyStringIsInvalid() {
-    assertThatThrownBy(() -> ConnectionString.parseInto("", telemetryClient))
-        .isInstanceOf(InvalidConnectionStringException.class);
-  }
-
-  @Test
   void nonKeyValueStringIsInvalid() {
     assertThatThrownBy(
             () -> ConnectionString.parseInto(UUID.randomUUID().toString(), telemetryClient))
@@ -499,5 +493,43 @@ class ConnectionStringParsingTests {
             () -> ConnectionString.parseInto("InstrumentationKey=" + bigIkey, telemetryClient))
         .isInstanceOf(InvalidConnectionStringException.class)
         .hasMessageContaining(Integer.toString(ConnectionString.CONNECTION_STRING_MAX_LENGTH));
+  }
+
+  @Test
+  void resetEndpointUrlTest() throws MalformedURLException, InvalidConnectionStringException {
+    String fakeConnectionString =
+        "InstrumentationKey=fake-key;IngestionEndpoint=https://ingestion.example.com/;LiveEndpoint=https://live.example.com/";
+    ConnectionString.parseInto(fakeConnectionString, telemetryClient);
+
+    assertThat(telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString())
+        .isEqualTo("https://ingestion.example.com/v2.1/track");
+    assertThat(telemetryClient.getEndpointProvider().getLiveEndpointUrl().toString())
+        .isEqualTo("https://live.example.com/QuickPulseService.svc");
+
+    String emptyConnectionString = "";
+    ConnectionString.parseInto(emptyConnectionString, telemetryClient);
+
+    assertThat(telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString())
+        .isEqualTo("https://dc.services.visualstudio.com/v2.1/track");
+    assertThat(telemetryClient.getEndpointProvider().getLiveEndpointUrl().toString())
+        .isEqualTo("https://rt.services.visualstudio.com/QuickPulseService.svc");
+
+    String newFakeConnectionString =
+        "InstrumentationKey=new-fake-key;IngestionEndpoint=https://new-ingestion.example.com/;LiveEndpoint=https://new-live.example.com/";
+    ConnectionString.parseInto(newFakeConnectionString, telemetryClient);
+
+    assertThat(telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString())
+        .isEqualTo("https://new-ingestion.example.com/v2.1/track");
+    assertThat(telemetryClient.getEndpointProvider().getLiveEndpointUrl().toString())
+        .isEqualTo("https://new-live.example.com/QuickPulseService.svc");
+
+    String newerFakeConnectionString =
+        "InstrumentationKey=newer-fake-key;IngestionEndpoint=https://newer-ingestion.example.com/;LiveEndpoint=https://newer-live.example.com/";
+    ConnectionString.parseInto(newerFakeConnectionString, telemetryClient);
+
+    assertThat(telemetryClient.getEndpointProvider().getIngestionEndpointUrl().toString())
+        .isEqualTo("https://newer-ingestion.example.com/v2.1/track");
+    assertThat(telemetryClient.getEndpointProvider().getLiveEndpointUrl().toString())
+        .isEqualTo("https://newer-live.example.com/QuickPulseService.svc");
   }
 }

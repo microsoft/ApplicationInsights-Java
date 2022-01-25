@@ -39,9 +39,16 @@ public class ConnectionString {
 
   private ConnectionString() {}
 
-  public static void parseInto(String connectionString, TelemetryClient targetConfig)
-      throws InvalidConnectionStringException {
-    mapToConnectionConfiguration(getKeyValuePairs(connectionString), targetConfig);
+  public static void parseInto(String connectionString, TelemetryClient telemetryClient)
+      throws InvalidConnectionStringException, MalformedURLException {
+    // reset endpoint to default for ingestion, live metric and profiler
+    telemetryClient.getEndpointProvider().resetEndpointUrls();
+
+    if (Strings.isNullOrEmpty(connectionString)) {
+      telemetryClient.setInstrumentationKey(null);
+    } else {
+      mapToConnectionConfiguration(getKeyValuePairs(connectionString), telemetryClient);
+    }
   }
 
   public static void updateStatsbeatConnectionString(
