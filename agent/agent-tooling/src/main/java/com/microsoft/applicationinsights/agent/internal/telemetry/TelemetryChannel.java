@@ -307,7 +307,7 @@ public class TelemetryChannel {
                       break;
                     case 401: // breeze returns if aad enabled and no authentication token provided
                     case 403: // breeze returns if aad enabled or disabled (both cases) and
-                              // wrong/expired credentials provided
+                      // wrong/expired credentials provided
                     case 408: // REQUEST TIMEOUT
                     case 429: // TOO MANY REQUESTS
                     case 500: // INTERNAL SERVER ERROR
