@@ -34,7 +34,6 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDe
 import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.SeverityLevel;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedDuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
@@ -227,22 +226,6 @@ public class Exporter implements SpanExporter {
     } else {
       throw new UnsupportedOperationException(kind.name());
     }
-  }
-
-  private static List<TelemetryExceptionDetails> minimalParse(String errorStack) {
-    TelemetryExceptionDetails details = new TelemetryExceptionDetails();
-    String line = errorStack.split(System.lineSeparator())[0];
-    int index = line.indexOf(": ");
-
-    if (index != -1) {
-      details.setTypeName(line.substring(0, index));
-      details.setMessage(line.substring(index + 2));
-    } else {
-      details.setTypeName(line);
-    }
-    // TODO (trask): map OpenTelemetry exception to Application Insights exception better
-    details.setStack(errorStack);
-    return Collections.singletonList(details);
   }
 
   private void exportRemoteDependency(SpanData span, boolean inProc) {
@@ -994,7 +977,7 @@ public class Exporter implements SpanExporter {
     setSampleRate(telemetry, samplingPercentage);
 
     // set exception-specific properties
-    data.setExceptions(minimalParse(errorStack));
+    data.setExceptions(Exceptions.minimalParse(errorStack));
 
     telemetryClient.trackAsync(telemetry);
   }
