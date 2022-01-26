@@ -45,7 +45,7 @@ import org.junit.Test;
       environmentVariables = {"POSTGRES_PASSWORD=passw0rd2"},
       hostnameEnvironmentVariable = "POSTGRES"),
   @DependencyContainer(
-      value = "mcr.microsoft.com/mssql/server:2017-latest",
+      value = "mcr.microsoft.com/mssql/server:2019-latest",
       environmentVariables = {"ACCEPT_EULA=Y", "SA_PASSWORD=Password1"},
       portMapping = "1433",
       hostnameEnvironmentVariable = "SQLSERVER")

@@ -56,7 +56,8 @@ enum Feature {
   PLAY_DISABLED(25), // preview instrumentation, play is ON by default in OTEL
   CAPTURE_HTTP_SERVER_4XX_AS_SUCCESS(26),
   CAPTURE_HTTP_SERVER_HEADERS(27),
-  CAPTURE_HTTP_CLIENT_HEADERS(28);
+  CAPTURE_HTTP_CLIENT_HEADERS(28),
+  VERTX_DISABLED(29); // preview instrumentation, vertx is ON by default in OTEL
 
   private static final Map<String, Feature> javaVendorFeatureMap;
 

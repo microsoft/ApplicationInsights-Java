@@ -60,7 +60,7 @@ class ExceptionsTest {
 
     TelemetryExceptionDetails details = list.get(0);
     assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
-    assertThat(details.getMessage()).isNull();
+    assertThat(details.getMessage()).isEqualTo(IllegalStateException.class.getName());
   }
 
   @Test
@@ -76,7 +76,7 @@ class ExceptionsTest {
 
     TelemetryExceptionDetails details = list.get(0);
     assertThat(details.getTypeName()).isEqualTo(ProblematicException.class.getName());
-    assertThat(details.getMessage()).isNull();
+    assertThat(details.getMessage()).isEqualTo(ProblematicException.class.getName());
   }
 
   @Test
@@ -108,7 +108,7 @@ class ExceptionsTest {
 
     TelemetryExceptionDetails details = list.get(0);
     assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
-    assertThat(details.getMessage()).isNull();
+    assertThat(details.getMessage()).isEqualTo(IllegalStateException.class.getName());
   }
 
   @Test
@@ -124,7 +124,7 @@ class ExceptionsTest {
 
     TelemetryExceptionDetails details = list.get(0);
     assertThat(details.getTypeName()).isEqualTo(ProblematicException.class.getName());
-    assertThat(details.getMessage()).isNull();
+    assertThat(details.getMessage()).isEqualTo(ProblematicException.class.getName());
   }
 
   @Test
