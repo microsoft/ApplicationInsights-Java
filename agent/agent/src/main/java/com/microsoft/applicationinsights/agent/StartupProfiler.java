@@ -21,44 +21,44 @@
 
 package com.microsoft.applicationinsights.agent;
 
-import com.sun.org.slf4j.internal.Logger;
-import com.sun.org.slf4j.internal.LoggerFactory;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 final class StartupProfiler {
 
   private static final String STACKTRACES = "stacktrace.txt";
-  private static final Logger logger = LoggerFactory.getLogger(StartupProfiler.class);
 
   public static void start() {
     if (isReadonly()) {
-      logger.debug("Startup Profiler does nothing in a readonly file system.");
       return;
     }
 
     String startupProfiling = System.getProperty("-Dapplicationinsights.debug.startupProfiling");
     if (!"true".equalsIgnoreCase(startupProfiling)) {
-      logger.debug(
-          "Startup Profiler does nothing when -Dapplicationinsights.debug.startupProfiling is not set to true.");
       return;
     }
 
     String tempDirectory = System.getProperty("java.io.tmpdir");
     File file = new File(tempDirectory, STACKTRACES);
     try {
-      start(new PrintWriter(new FileWriter(file)));
-    } catch (IOException e) {
-      e.printStackTrace();
+      start(new PrintWriter(new PrintWriter(Files.newBufferedWriter(file.toPath(), Charset.defaultCharset()))));
+    } catch (IOException ignore) {
+      // ignore it for now
     }
+  }
+
+  private static void start(PrintWriter out) {
+    Executors.newSingleThreadScheduledExecutor()
+        .scheduleAtFixedRate(new ThreadDump(out), 50, 50, TimeUnit.MILLISECONDS);
   }
 
   private static boolean isReadonly() {
@@ -66,10 +66,7 @@ final class StartupProfiler {
     return tempDir.canRead() && !tempDir.canWrite();
   }
 
-  private static void start(PrintWriter out) {
-    Executors.newSingleThreadScheduledExecutor()
-        .scheduleAtFixedRate(new ThreadDump(out), 50, 50, TimeUnit.MILLISECONDS);
-  }
+  private StartupProfiler() {}
 
   private static class ThreadDump implements Runnable {
 
@@ -108,7 +105,7 @@ final class StartupProfiler {
       out.println();
     }
 
-    private boolean capture(ThreadInfo threadInfo) {
+    private static boolean capture(ThreadInfo threadInfo) {
       if (threadInfo.getThreadName().equals("main")) {
         return true;
       }
