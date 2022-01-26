@@ -2,11 +2,10 @@
 
 # Version 3.2.5 GA
 
-* Log ingestion error on 206 response from Breeze [#2065](https://github.com/microsoft/ApplicationInsights-Java/pull/2065).
+* Log warning on 206 (partial success) response from Breeze [#2065](https://github.com/microsoft/ApplicationInsights-Java/pull/2065).
 * Fix ingestion error on missing exception message [#2064](https://github.com/microsoft/ApplicationInsights-Java/pull/2064).
 * Add separate queue for metrics to avoid dropping telemetry [#2062](https://github.com/microsoft/ApplicationInsights-Java/pull/2062).
-* Stop sending telemetry when ikey is empty [#2061](https://github.com/microsoft/ApplicationInsights-Java/pull/2061).
-* Make vertx opt-in preview instrumentation [#2058](https://github.com/microsoft/ApplicationInsights-Java/pull/2058).
+* Make vertx preview instrumentation opt-in [#2058](https://github.com/microsoft/ApplicationInsights-Java/pull/2058).
 * Add Friendly exception handling for cipher suite issue [#2053](https://github.com/microsoft/ApplicationInsights-Java/pull/2053).
 * Fix URI parse error [#2067](https://github.com/microsoft/ApplicationInsights-Java/pull/2067).
 
