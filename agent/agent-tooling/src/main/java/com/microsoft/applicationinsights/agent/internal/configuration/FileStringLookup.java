@@ -35,12 +35,13 @@ class FileStringLookup implements StringLookup {
 
   private static final Logger logger = LoggerFactory.getLogger(FileStringLookup.class);
   private static final String PREFIX = "${file:";
+  private static final String LESS_STRICT_PREFIX = "file:";
   static final FileStringLookup INSTANCE = new FileStringLookup();
 
   @Override
   @Nullable
   public String lookup(final String key) {
-    if (key == null || !key.startsWith(PREFIX)) {
+    if (key == null || (!key.startsWith(PREFIX) && !key.startsWith(LESS_STRICT_PREFIX))) {
       return null;
     }
 
@@ -50,7 +51,10 @@ class FileStringLookup implements StringLookup {
       --end;
     }
 
-    String filePath = key.substring(PREFIX.length(), end);
+    String filePath =
+        key.startsWith(PREFIX)
+            ? key.substring(PREFIX.length(), end)
+            : key.substring(LESS_STRICT_PREFIX.length(), end);
     try {
       return new String(Files.readAllBytes(Paths.get(filePath)), StandardCharsets.UTF_8);
     } catch (IOException e) {

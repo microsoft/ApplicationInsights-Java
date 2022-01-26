@@ -136,8 +136,9 @@ class ConfigurationBuilderTest {
             });
   }
 
+  // "${file:file-look-up-connection-string.txt}"
   @Test
-  void testFileStringLookupConnectionString() throws Exception {
+  void testConnectionStringFileLookupStrictPrefixAndStrictSuffix() throws Exception {
     File connectionStringFile =
         new File(
             getClass()
@@ -146,16 +147,32 @@ class ConfigurationBuilderTest {
                 .getPath());
     Configuration configuration = new Configuration();
     configuration.connectionString = "${file:" + connectionStringFile.getPath() + "}";
-    assertThat(configuration.connectionString)
-        .isEqualTo("${file:" + connectionStringFile.getPath() + "}");
     ConfigurationBuilder.overlayFromEnv(configuration);
     assertThat(configuration.connectionString)
         .isEqualTo(
             "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://fake-ingestion-endpoint");
   }
 
+  // "file:file-look-up-connection-string.txt"
   @Test
-  void testFileStringLookupConnectionStringLessStrictFormat() throws Exception {
+  void testConnectionStringFileLookupLessStrict() throws Exception {
+    File connectionStringFile =
+        new File(
+            getClass()
+                .getClassLoader()
+                .getResource("file-look-up-connection-string.txt")
+                .getPath());
+    Configuration configuration = new Configuration();
+    configuration.connectionString = "file:" + connectionStringFile.getPath();
+    ConfigurationBuilder.overlayFromEnv(configuration);
+    assertThat(configuration.connectionString)
+        .isEqualTo(
+            "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://fake-ingestion-endpoint");
+  }
+
+  // "${file:file-look-up-connection-string.txt"
+  @Test
+  void testConnectionStringFileLookupStrictPrefixLessStrictSuffix() throws Exception {
     File connectionStringFile =
         new File(
             getClass()
@@ -173,7 +190,7 @@ class ConfigurationBuilderTest {
   }
 
   @Test
-  void testConnectionStringEnvVarHasHigherPrecedenceOverFile() throws Exception {
+  void testConnectionStringEnvVarHasHigherPrecedenceOverFileLookup() throws Exception {
     File connectionStringFile =
         new File(
             getClass()
