@@ -40,18 +40,21 @@ class FileStringLookup implements StringLookup {
   @Override
   @Nullable
   public String lookup(final String key) {
-    if (!key.startsWith(PREFIX)) {
+    if (key == null || !key.startsWith(PREFIX)) {
       return null;
     }
 
     String filePath = key.substring(PREFIX.length(), key.length() - 1);
     try {
       return new String(Files.readAllBytes(Paths.get(filePath)), StandardCharsets.UTF_8);
-    } catch (IOException | InvalidPathException e) {
+    } catch (IOException e) {
       logger.error(
-          "Error occurs when looking up connection string in the file '{}' with UTF-8 encoding.",
-          key,
+          "I/O error occurs when loading connection string from the file '{}' with UTF-8 encoding.",
+          filePath,
           e);
+      return null;
+    } catch (InvalidPathException e) {
+      logger.error("Invalid file path for the connection string '{}'", filePath, e);
       return null;
     }
   }
