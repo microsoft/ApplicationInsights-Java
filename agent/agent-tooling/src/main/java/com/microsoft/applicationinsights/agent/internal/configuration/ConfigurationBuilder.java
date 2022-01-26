@@ -352,8 +352,14 @@ public class ConfigurationBuilder {
 
   // visible for testing
   static void overlayFromEnv(Configuration config) throws IOException {
-    config.connectionString = overlayConnectionStringFromEnv(config.connectionString);
+    // load connection string from a file
+    // connectionString: "${file:mounted_connection_string_file.txt}"
+    String connectionString = FileStringLookup.INSTANCE.lookup(config.connectionString);
+    if (connectionString == null) {
+      connectionString = config.connectionString;
+    }
 
+    config.connectionString = overlayConnectionStringFromEnv(connectionString);
     if (isTrimEmpty(config.role.name)) {
       // only use WEBSITE_SITE_NAME as a fallback
       config.role.name = getWebsiteSiteNameEnvVar();
