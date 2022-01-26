@@ -138,17 +138,30 @@ class ConfigurationBuilderTest {
 
   @Test
   void testFileStringLookupConnectionString() throws Exception {
-    File connectionStringFile = new File(getClass().getClassLoader().getResource("file-look-up-connection-string.txt").getPath());
+    File connectionStringFile =
+        new File(
+            getClass()
+                .getClassLoader()
+                .getResource("file-look-up-connection-string.txt")
+                .getPath());
     Configuration configuration = new Configuration();
     configuration.connectionString = "${file:" + connectionStringFile.getPath() + "}";
-    assertThat(configuration.connectionString).isEqualTo("${file:" + connectionStringFile.getPath() + "}");
+    assertThat(configuration.connectionString)
+        .isEqualTo("${file:" + connectionStringFile.getPath() + "}");
     ConfigurationBuilder.overlayFromEnv(configuration);
-    assertThat(configuration.connectionString).isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://fake-ingestion-endpoint");
+    assertThat(configuration.connectionString)
+        .isEqualTo(
+            "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://fake-ingestion-endpoint");
   }
 
   @Test
   void testConnectionStringEnvVarHasHigherPrecedenceOverFile() throws Exception {
-    File connectionStringFile = new File(getClass().getClassLoader().getResource("file-look-up-connection-string.txt").getPath());
+    File connectionStringFile =
+        new File(
+            getClass()
+                .getClassLoader()
+                .getResource("file-look-up-connection-string.txt")
+                .getPath());
     String testConnectionString = "test-connection-string";
     withEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING", testConnectionString)
         .execute(

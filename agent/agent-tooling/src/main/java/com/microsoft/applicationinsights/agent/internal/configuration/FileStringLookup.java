@@ -21,15 +21,15 @@
 
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
-import org.apache.commons.text.lookup.StringLookup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
+import javax.annotation.Nullable;
+import org.apache.commons.text.lookup.StringLookup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class FileStringLookup implements StringLookup {
 
@@ -48,7 +48,10 @@ class FileStringLookup implements StringLookup {
     try {
       return new String(Files.readAllBytes(Paths.get(filePath)), StandardCharsets.UTF_8);
     } catch (IOException | InvalidPathException e) {
-      logger.error("Error occurs when looking up connection string in the file '{}' with UTF-8 encoding.", key, e);
+      logger.error(
+          "Error occurs when looking up connection string in the file '{}' with UTF-8 encoding.",
+          key,
+          e);
       return null;
     }
   }
