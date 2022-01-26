@@ -42,6 +42,8 @@ public class Agent {
     }
     OpenTelemetryAgent.premain(agentArgs, inst);
     alreadyLoaded = true;
+
+    StartupProfiler.start();
   }
 
   // this is provided only for dynamic attach in the first line of main
