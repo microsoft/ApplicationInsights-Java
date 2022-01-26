@@ -41,11 +41,11 @@ class FileStringLookup implements StringLookup {
   @Override
   @Nullable
   public String lookup(final String key) {
-    if (key == null || (!key.startsWith(PREFIX) && !key.startsWith(LESS_STRICT_PREFIX))) {
+    if (key == null || !(key.startsWith(PREFIX) || key.startsWith(LESS_STRICT_PREFIX))) {
       return null;
     }
 
-    // treat it as valid json when '}' is missing from "${file:file.txt"
+    // treat it as valid json when '}' is missing
     int end = key.length();
     if (key.endsWith("}")) {
       --end;
@@ -57,14 +57,11 @@ class FileStringLookup implements StringLookup {
             : key.substring(LESS_STRICT_PREFIX.length(), end);
     try {
       return new String(Files.readAllBytes(Paths.get(filePath)), StandardCharsets.UTF_8);
-    } catch (IOException e) {
+    } catch (IOException | InvalidPathException e) {
       logger.error(
-          "I/O error occurs when loading connection string from the file '{}' with UTF-8 encoding.",
+          "Error occurs when reading connection string from the file '{}' with UTF-8 encoding.",
           filePath,
           e);
-      return null;
-    } catch (InvalidPathException e) {
-      logger.error("Invalid file path for the connection string '{}'", filePath, e);
       return null;
     }
   }

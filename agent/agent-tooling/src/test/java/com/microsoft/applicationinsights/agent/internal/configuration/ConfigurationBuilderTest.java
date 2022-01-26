@@ -153,23 +153,6 @@ class ConfigurationBuilderTest {
             "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://fake-ingestion-endpoint");
   }
 
-  // "file:file-look-up-connection-string.txt"
-  @Test
-  void testConnectionStringFileLookupLessStrict() throws Exception {
-    File connectionStringFile =
-        new File(
-            getClass()
-                .getClassLoader()
-                .getResource("file-look-up-connection-string.txt")
-                .getPath());
-    Configuration configuration = new Configuration();
-    configuration.connectionString = "file:" + connectionStringFile.getPath();
-    ConfigurationBuilder.overlayFromEnv(configuration);
-    assertThat(configuration.connectionString)
-        .isEqualTo(
-            "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://fake-ingestion-endpoint");
-  }
-
   // "${file:file-look-up-connection-string.txt"
   @Test
   void testConnectionStringFileLookupStrictPrefixLessStrictSuffix() throws Exception {
@@ -183,6 +166,40 @@ class ConfigurationBuilderTest {
     configuration.connectionString = "${file:" + connectionStringFile.getPath();
     assertThat(configuration.connectionString)
         .isEqualTo("${file:" + connectionStringFile.getPath());
+    ConfigurationBuilder.overlayFromEnv(configuration);
+    assertThat(configuration.connectionString)
+        .isEqualTo(
+            "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://fake-ingestion-endpoint");
+  }
+
+  // "file:file-look-up-connection-string.txt}"
+  @Test
+  void testConnectionStringFileLookupLessStrictPrefixAndStrictSuffix() throws Exception {
+    File connectionStringFile =
+        new File(
+            getClass()
+                .getClassLoader()
+                .getResource("file-look-up-connection-string.txt")
+                .getPath());
+    Configuration configuration = new Configuration();
+    configuration.connectionString = "file:" + connectionStringFile.getPath() + '}';
+    ConfigurationBuilder.overlayFromEnv(configuration);
+    assertThat(configuration.connectionString)
+        .isEqualTo(
+            "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://fake-ingestion-endpoint");
+  }
+
+  // "file:file-look-up-connection-string.txt"
+  @Test
+  void testConnectionStringFileLookupLessStrictPrefixAndLessStrictSuffix() throws Exception {
+    File connectionStringFile =
+        new File(
+            getClass()
+                .getClassLoader()
+                .getResource("file-look-up-connection-string.txt")
+                .getPath());
+    Configuration configuration = new Configuration();
+    configuration.connectionString = "file:" + connectionStringFile.getPath();
     ConfigurationBuilder.overlayFromEnv(configuration);
     assertThat(configuration.connectionString)
         .isEqualTo(
