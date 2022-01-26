@@ -44,7 +44,13 @@ class FileStringLookup implements StringLookup {
       return null;
     }
 
-    String filePath = key.substring(PREFIX.length(), key.length() - 1);
+    // treat it as valid json when '}' is missing from "${file:file.txt"
+    int end = key.length();
+    if (key.endsWith("}")) {
+      --end;
+    }
+
+    String filePath = key.substring(PREFIX.length(), end);
     try {
       return new String(Files.readAllBytes(Paths.get(filePath)), StandardCharsets.UTF_8);
     } catch (IOException e) {
