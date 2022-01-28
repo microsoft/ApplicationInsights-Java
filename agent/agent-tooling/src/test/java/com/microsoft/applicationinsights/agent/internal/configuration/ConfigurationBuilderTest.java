@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static uk.org.webcompere.systemstubs.SystemStubs.withEnvironmentVariable;
@@ -28,10 +29,33 @@ import static uk.org.webcompere.systemstubs.SystemStubs.withEnvironmentVariable;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class ConfigurationBuilderTest {
+
+  private static final String CONNECTION_STRING =
+      "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://fake-ingestion-endpoint";
+  private File connectionStringFile;
+  @TempDir File temp;
+
+  @BeforeEach
+  public void setup() throws IOException {
+    connectionStringFile = File.createTempFile("test", "", temp);
+    Writer writer = Files.newBufferedWriter(connectionStringFile.toPath(), UTF_8);
+    writer.write(CONNECTION_STRING);
+    writer.close();
+  }
+
+  @AfterEach
+  public void cleanup() throws IOException {
+    Files.delete(connectionStringFile.toPath());
+  }
 
   Path getConfigFilePath(String resourceName) {
     ClassLoader classLoader = getClass().getClassLoader();
@@ -136,18 +160,8 @@ class ConfigurationBuilderTest {
             });
   }
 
-  private static final String CONNECTION_STRING =
-      "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://fake-ingestion-endpoint";
-
-  // "${file:file-look-up-connection-string.txt}"
   @Test
   void testOverlayWithEnvVarWithGoodFileStringLookupFormat() throws Exception {
-    File connectionStringFile =
-        new File(
-            getClass()
-                .getClassLoader()
-                .getResource("file-look-up-connection-string.txt")
-                .getPath());
     Configuration configuration = new Configuration();
     configuration.connectionString = "${file:" + connectionStringFile.getPath() + "}";
     ConfigurationBuilder.overlayFromEnv(configuration);
@@ -156,12 +170,6 @@ class ConfigurationBuilderTest {
 
   @Test
   void testOverlayWithEnvVarWithBadFileStringLookupFormat() throws Exception {
-    File connectionStringFile =
-        new File(
-            getClass()
-                .getClassLoader()
-                .getResource("file-look-up-connection-string.txt")
-                .getPath());
     Configuration configuration = new Configuration();
     configuration.connectionString = "${file:" + connectionStringFile.getPath();
     ConfigurationBuilder.overlayFromEnv(configuration);
@@ -182,12 +190,6 @@ class ConfigurationBuilderTest {
 
   @Test
   void testConnectionStringEnvVarHasHigherPrecedenceOverFileLookup() throws Exception {
-    File connectionStringFile =
-        new File(
-            getClass()
-                .getClassLoader()
-                .getResource("file-look-up-connection-string.txt")
-                .getPath());
     String testConnectionString = "test-connection-string";
     withEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING", testConnectionString)
         .execute(

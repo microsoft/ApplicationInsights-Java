@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import org.apache.commons.text.StringSubstitutor;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -51,6 +52,11 @@ public class FileStringLookupTest {
 
     stringSubstitutor = new StringSubstitutor(FileStringLookup.INSTANCE);
     stringSubstitutor.setEnableSubstitutionInVariables(true);
+  }
+
+  @AfterEach
+  public void cleanup() throws IOException {
+    Files.delete(file.toPath());
   }
 
   @Test
