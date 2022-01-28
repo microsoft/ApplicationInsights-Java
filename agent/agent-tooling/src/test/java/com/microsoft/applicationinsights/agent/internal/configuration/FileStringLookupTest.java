@@ -29,7 +29,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
+import java.util.Collections;
+import java.util.Map;
 import org.apache.commons.text.StringSubstitutor;
+import org.apache.commons.text.lookup.StringLookup;
+import org.apache.commons.text.lookup.StringLookupFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,12 +50,17 @@ public class FileStringLookupTest {
 
   @BeforeEach
   public void setup() throws IOException {
-    file = File.createTempFile("test", "", tempFolder);
+    file = File.createTempFile("test-", ".txt", tempFolder);
     Writer writer = Files.newBufferedWriter(file.toPath(), UTF_8);
     writer.write(CONNECTION_STRING);
     writer.close();
 
-    stringSubstitutor = new StringSubstitutor(FileStringLookup.INSTANCE);
+    assertThat(file.exists()).isTrue();
+    Map<String, StringLookup> stringLookupMap =
+        Collections.singletonMap(StringLookupFactory.KEY_FILE, FileStringLookup.INSTANCE);
+    StringLookup stringLookup =
+        StringLookupFactory.INSTANCE.interpolatorStringLookup(stringLookupMap, null, false);
+    stringSubstitutor = new StringSubstitutor(stringLookup);
   }
 
   @AfterEach
@@ -64,6 +73,14 @@ public class FileStringLookupTest {
     String connectionString = "${file:" + file.getPath() + "}";
     String value = stringSubstitutor.replace(connectionString);
     assertThat(value).isEqualTo(CONNECTION_STRING);
+  }
+
+  @Test
+  public void testOtherKeyFileLookupWillFail() {
+    String connectionString = "${xyz:" + file.getPath() + "}";
+    String value = stringSubstitutor.replace(connectionString);
+    assertThat(value).isNotEqualTo(CONNECTION_STRING);
+    assertThat(value).isEqualTo(connectionString);
   }
 
   @Test

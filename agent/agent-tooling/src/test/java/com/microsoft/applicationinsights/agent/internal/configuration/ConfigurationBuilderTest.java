@@ -177,6 +177,10 @@ class ConfigurationBuilderTest {
     ConfigurationBuilder.overlayFromEnv(configuration);
     assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);
 
+    configuration.connectionString = "${xyz:" + connectionStringFile.getPath();
+    ConfigurationBuilder.overlayFromEnv(configuration);
+    assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);
+
     configuration.connectionString = "file:" + connectionStringFile.getPath() + "}";
     ConfigurationBuilder.overlayFromEnv(configuration);
     assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);

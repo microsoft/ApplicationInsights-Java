@@ -37,10 +37,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import org.apache.commons.text.StringSubstitutor;
+import org.apache.commons.text.lookup.StringLookup;
+import org.apache.commons.text.lookup.StringLookupFactory;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.LoggerFactory;
 
@@ -355,7 +358,11 @@ public class ConfigurationBuilder {
   static void overlayFromEnv(Configuration config) throws IOException {
     // load connection string from a file if connection string is in the format of
     // "${file:mounted_connection_string_file.txt}"
-    StringSubstitutor stringSubstitutor = new StringSubstitutor(FileStringLookup.INSTANCE);
+    Map<String, StringLookup> stringLookupMap =
+        Collections.singletonMap(StringLookupFactory.KEY_FILE, FileStringLookup.INSTANCE);
+    StringLookup stringLookup =
+        StringLookupFactory.INSTANCE.interpolatorStringLookup(stringLookupMap, null, false);
+    StringSubstitutor stringSubstitutor = new StringSubstitutor(stringLookup);
     config.connectionString =
         overlayConnectionStringFromEnv(stringSubstitutor.replace(config.connectionString));
     if (isTrimEmpty(config.role.name)) {
