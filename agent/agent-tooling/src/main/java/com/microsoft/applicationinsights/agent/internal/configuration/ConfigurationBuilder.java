@@ -353,10 +353,12 @@ public class ConfigurationBuilder {
 
   // visible for testing
   static void overlayFromEnv(Configuration config) throws IOException {
-    // load connection string from a file if connection string is in the format of "${file:mounted_connection_string_file.txt}"
+    // load connection string from a file if connection string is in the format of
+    // "${file:mounted_connection_string_file.txt}"
     StringSubstitutor stringSubstitutor = new StringSubstitutor(FileStringLookup.INSTANCE);
     stringSubstitutor.setEnableSubstitutionInVariables(true);
-    config.connectionString = overlayConnectionStringFromEnv(stringSubstitutor.replace(config.connectionString));
+    config.connectionString =
+        overlayConnectionStringFromEnv(stringSubstitutor.replace(config.connectionString));
     if (isTrimEmpty(config.role.name)) {
       // only use WEBSITE_SITE_NAME as a fallback
       config.role.name = getWebsiteSiteNameEnvVar();

@@ -136,7 +136,8 @@ class ConfigurationBuilderTest {
             });
   }
 
-  private static final String CONNECTION_STRING = "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://fake-ingestion-endpoint";
+  private static final String CONNECTION_STRING =
+      "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://fake-ingestion-endpoint";
 
   // "${file:file-look-up-connection-string.txt}"
   @Test
@@ -150,8 +151,7 @@ class ConfigurationBuilderTest {
     Configuration configuration = new Configuration();
     configuration.connectionString = "${file:" + connectionStringFile.getPath() + "}";
     ConfigurationBuilder.overlayFromEnv(configuration);
-    assertThat(configuration.connectionString)
-        .isEqualTo(CONNECTION_STRING);
+    assertThat(configuration.connectionString).isEqualTo(CONNECTION_STRING);
   }
 
   @Test
