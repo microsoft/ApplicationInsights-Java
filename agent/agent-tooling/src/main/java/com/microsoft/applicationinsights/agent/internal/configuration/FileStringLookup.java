@@ -39,7 +39,7 @@ final class FileStringLookup implements StringLookup {
 
   @Override
   @Nullable
-  public String lookup(final String key) {
+  public String lookup(String key) {
     if (key == null) {
       return null;
     }
