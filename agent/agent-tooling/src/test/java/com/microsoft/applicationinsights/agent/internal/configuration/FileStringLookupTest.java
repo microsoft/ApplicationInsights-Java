@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.configuration;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.IOException;
@@ -85,5 +86,19 @@ public class FileStringLookupTest {
     String connectionString = null;
     String value = stringSubstitutor.replace(connectionString);
     assertThat(value).isNull();
+  }
+
+  @Test
+  public void testValidConnectionString() {
+    String connectionString = "InstrumentationKey=00000-000000-000000-0000;";
+    String value = stringSubstitutor.replace(connectionString);
+    assertThat(value).isEqualTo(connectionString);
+  }
+
+  @Test
+  public void testThrowIllegalArgumentException() {
+    String connectionString = "${file:file.txt}";
+    assertThatThrownBy(() -> stringSubstitutor.replace(connectionString))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 }

@@ -29,12 +29,9 @@ import java.nio.file.Paths;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.lookup.StringLookup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 final class FileStringLookup implements StringLookup {
 
-  private static final Logger logger = LoggerFactory.getLogger(FileStringLookup.class);
   static final FileStringLookup INSTANCE = new FileStringLookup();
 
   @Override
@@ -48,11 +45,11 @@ final class FileStringLookup implements StringLookup {
     try {
       return new String(Files.readAllBytes(Paths.get(fileName)), StandardCharsets.UTF_8);
     } catch (IOException | InvalidPathException e) {
-      logger.error(
-          "Error occurs when reading connection string from the file '{}' with UTF-8 encoding.",
-          fileName,
+      throw new IllegalArgumentException(
+          "Error occurs when reading connection string from the file '"
+              + fileName
+              + "' with UTF-8 encoding.",
           e);
-      return null;
     }
   }
 
