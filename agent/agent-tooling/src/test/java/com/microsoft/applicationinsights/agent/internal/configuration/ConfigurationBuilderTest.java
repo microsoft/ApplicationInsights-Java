@@ -44,6 +44,8 @@ class ConfigurationBuilderTest {
   private File connectionStringFile;
   @TempDir File temp;
 
+  // TODO (heya) clean up the rest of resource files. We can create them at test runtime. Be
+  // consistent with connectionStringFile.
   @BeforeEach
   public void setup() throws IOException {
     connectionStringFile = File.createTempFile("test", "", temp);
