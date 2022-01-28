@@ -44,7 +44,7 @@ final class FileStringLookup implements StringLookup {
       return null;
     }
 
-    final String fileName = StringUtils.substringAfter(key, ":");
+    String fileName = StringUtils.substringAfter(key, ":");
     try {
       return new String(Files.readAllBytes(Paths.get(fileName)), StandardCharsets.UTF_8);
     } catch (IOException | InvalidPathException e) {
