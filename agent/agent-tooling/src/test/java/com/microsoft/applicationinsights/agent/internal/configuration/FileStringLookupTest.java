@@ -51,7 +51,6 @@ public class FileStringLookupTest {
     writer.close();
 
     stringSubstitutor = new StringSubstitutor(FileStringLookup.INSTANCE);
-    stringSubstitutor.setEnableSubstitutionInVariables(true);
   }
 
   @AfterEach

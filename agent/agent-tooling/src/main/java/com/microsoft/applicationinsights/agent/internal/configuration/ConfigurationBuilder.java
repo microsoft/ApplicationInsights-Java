@@ -356,7 +356,6 @@ public class ConfigurationBuilder {
     // load connection string from a file if connection string is in the format of
     // "${file:mounted_connection_string_file.txt}"
     StringSubstitutor stringSubstitutor = new StringSubstitutor(FileStringLookup.INSTANCE);
-    stringSubstitutor.setEnableSubstitutionInVariables(true);
     config.connectionString =
         overlayConnectionStringFromEnv(stringSubstitutor.replace(config.connectionString));
     if (isTrimEmpty(config.role.name)) {
