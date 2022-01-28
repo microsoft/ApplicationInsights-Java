@@ -27,42 +27,34 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.lookup.StringLookup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class FileStringLookup implements StringLookup {
+final class FileStringLookup implements StringLookup {
 
   private static final Logger logger = LoggerFactory.getLogger(FileStringLookup.class);
-  private static final String PREFIX = "${file:";
-  private static final String LESS_STRICT_PREFIX = "file:";
   static final FileStringLookup INSTANCE = new FileStringLookup();
 
   @Override
   @Nullable
   public String lookup(final String key) {
-    if (key == null || !(key.startsWith(PREFIX) || key.startsWith(LESS_STRICT_PREFIX))) {
+    if (key == null) {
       return null;
     }
 
-    // treat it as valid json when '}' is missing
-    int end = key.length();
-    if (key.endsWith("}")) {
-      --end;
-    }
-
-    String filePath =
-        key.startsWith(PREFIX)
-            ? key.substring(PREFIX.length(), end)
-            : key.substring(LESS_STRICT_PREFIX.length(), end);
+    final String fileName = StringUtils.substringAfter(key, ":");
     try {
-      return new String(Files.readAllBytes(Paths.get(filePath)), StandardCharsets.UTF_8);
+      return new String(Files.readAllBytes(Paths.get(fileName)), StandardCharsets.UTF_8);
     } catch (IOException | InvalidPathException e) {
       logger.error(
           "Error occurs when reading connection string from the file '{}' with UTF-8 encoding.",
-          filePath,
+          fileName,
           e);
       return null;
     }
   }
+
+  private FileStringLookup() {}
 }
