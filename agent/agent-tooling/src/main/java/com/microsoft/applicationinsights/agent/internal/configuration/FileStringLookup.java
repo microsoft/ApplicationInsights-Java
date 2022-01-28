@@ -39,12 +39,12 @@ final class FileStringLookup implements StringLookup {
 
   @Override
   @Nullable
-  public String lookup(final String key) {
+  public String lookup(String key) {
     if (key == null) {
       return null;
     }
 
-    final String fileName = StringUtils.substringAfter(key, ":");
+    String fileName = StringUtils.substringAfter(key, ":");
     try {
       return new String(Files.readAllBytes(Paths.get(fileName)), StandardCharsets.UTF_8);
     } catch (IOException | InvalidPathException e) {
