@@ -308,6 +308,10 @@ public class TelemetryChannel {
                     case 401: // breeze returns if aad enabled and no authentication token provided
                     case 403: // breeze returns if aad enabled or disabled (both cases) and
                       // wrong/expired credentials provided
+                      operationLogger.recordFailure(
+                          getErrorMessageFromCredentialRelatedResponse(statusCode, body));
+                      onFailure.accept(true);
+                      break;
                     case 408: // REQUEST TIMEOUT
                     case 429: // TOO MANY REQUESTS
                     case 500: // INTERNAL SERVER ERROR
@@ -394,6 +398,29 @@ public class TelemetryChannel {
     if (moreErrors > 0) {
       message.append(" (and ").append(moreErrors).append(" more)");
     }
+    return message.toString();
+  }
+
+  private static String getErrorMessageFromCredentialRelatedResponse(int statusCode, String body) {
+    JsonNode jsonNode;
+    try {
+      jsonNode = new ObjectMapper().readTree(body);
+    } catch (JsonProcessingException e) {
+      return "ingestion service returned "
+          + statusCode
+          + ", but could not parse response as json: "
+          + body;
+    }
+    String action =
+        statusCode == 401
+            ? ". Please provide Azure Active Directory credentials"
+            : ". Please check your Azure Active Directory credentials, they might be incorrect or expired";
+    List<JsonNode> errors = new ArrayList<>();
+    jsonNode.get("errors").forEach(errors::add);
+    StringBuilder message = new StringBuilder();
+    message.append(errors.get(0).get("message").asText());
+    message.append(action);
+    message.append(" (telemetry will be stored to disk and retried later)");
     return message.toString();
   }
 }
