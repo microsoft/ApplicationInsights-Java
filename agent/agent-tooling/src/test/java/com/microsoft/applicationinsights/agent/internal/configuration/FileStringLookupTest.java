@@ -70,6 +70,7 @@ public class FileStringLookupTest {
 
   @Test
   public void testGoodFileLookupFormat() {
+    System.out.println("###### file.path: " + file.getAbsolutePath());
     String connectionString = "${file:" + file.getAbsolutePath() + "}";
     String value = stringSubstitutor.replace(connectionString);
     assertThat(value).isEqualTo(CONNECTION_STRING);
@@ -77,6 +78,7 @@ public class FileStringLookupTest {
 
   @Test
   public void testOtherKeyFileLookupWillFail() {
+    System.out.println("###### file.path: " + file.getAbsolutePath());
     String connectionString = "${xyz:" + file.getAbsolutePath() + "}";
     String value = stringSubstitutor.replace(connectionString);
     assertThat(value).isNotEqualTo(CONNECTION_STRING);

@@ -52,6 +52,10 @@ class ConfigurationBuilderTest {
     Writer writer = Files.newBufferedWriter(connectionStringFile.toPath(), UTF_8);
     writer.write(CONNECTION_STRING);
     writer.close();
+
+    assertThat(connectionStringFile.exists()).isTrue();
+    System.out.println(
+        "###### connectionStringFile.path: " + connectionStringFile.getAbsolutePath());
   }
 
   @AfterEach
@@ -164,6 +168,8 @@ class ConfigurationBuilderTest {
 
   @Test
   void testOverlayWithEnvVarWithGoodFileStringLookupFormat() throws Exception {
+    System.out.println(
+        "###### connectionStringFile.path: " + connectionStringFile.getAbsolutePath());
     Configuration configuration = new Configuration();
     configuration.connectionString = "${file:" + connectionStringFile.getAbsolutePath() + "}";
     ConfigurationBuilder.overlayFromEnv(configuration);
