@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static uk.org.webcompere.systemstubs.SystemStubs.withEnvironmentVariable;
@@ -28,10 +29,37 @@ import static uk.org.webcompere.systemstubs.SystemStubs.withEnvironmentVariable;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class ConfigurationBuilderTest {
+
+  private static final String CONNECTION_STRING =
+      "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://fake-ingestion-endpoint";
+  private File connectionStringFile;
+  @TempDir File temp;
+
+  // TODO (heya) clean up the rest of resource files. We can create them at test runtime. Be
+  // consistent with connectionStringFile.
+  @BeforeEach
+  public void setup() throws IOException {
+    connectionStringFile = File.createTempFile("test", ".txt", temp);
+    Writer writer = Files.newBufferedWriter(connectionStringFile.toPath(), UTF_8);
+    writer.write(CONNECTION_STRING);
+    writer.close();
+
+    assertThat(connectionStringFile.exists()).isTrue();
+  }
+
+  @AfterEach
+  public void cleanup() throws IOException {
+    Files.delete(connectionStringFile.toPath());
+  }
 
   Path getConfigFilePath(String resourceName) {
     ClassLoader classLoader = getClass().getClassLoader();
@@ -133,6 +161,54 @@ class ConfigurationBuilderTest {
 
               assertThat(config.connectionString).isEqualTo(testConnectionString);
               assertThat(config.sampling.percentage).isEqualTo(testSamplingPercentage);
+            });
+  }
+
+  @Test
+  void testOverlayWithEnvVarWithGoodFileStringLookupFormat() throws Exception {
+    Configuration configuration = new Configuration();
+    configuration.connectionString = "${file:" + connectionStringFile.getAbsolutePath() + "}";
+    ConfigurationBuilder.overlayFromEnv(configuration);
+    assertThat(configuration.connectionString).isEqualTo(CONNECTION_STRING);
+  }
+
+  @Test
+  void testOverlayWithEnvVarWithBadFileStringLookupFormat() throws Exception {
+    Configuration configuration = new Configuration();
+    configuration.connectionString = "${file:" + connectionStringFile.getAbsolutePath();
+    ConfigurationBuilder.overlayFromEnv(configuration);
+    assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);
+
+    configuration.connectionString = "${xyz:" + connectionStringFile.getAbsolutePath() + "}";
+    ConfigurationBuilder.overlayFromEnv(configuration);
+    assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);
+
+    configuration.connectionString = "file:" + connectionStringFile.getAbsolutePath() + "}";
+    ConfigurationBuilder.overlayFromEnv(configuration);
+    assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);
+
+    configuration.connectionString = "file:" + connectionStringFile.getAbsolutePath();
+    ConfigurationBuilder.overlayFromEnv(configuration);
+    assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);
+
+    configuration.connectionString = CONNECTION_STRING;
+    ConfigurationBuilder.overlayFromEnv(configuration);
+    assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);
+  }
+
+  @Test
+  void testConnectionStringEnvVarHasHigherPrecedenceOverFileLookup() throws Exception {
+    String testConnectionString = "test-connection-string";
+    withEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING", testConnectionString)
+        .execute(
+            () -> {
+              Configuration configuration = new Configuration();
+
+              configuration.connectionString =
+                  "${file:" + connectionStringFile.getAbsolutePath() + "}";
+              ConfigurationBuilder.overlayFromEnv(configuration);
+
+              assertThat(configuration.connectionString).isEqualTo(testConnectionString);
             });
   }
 }
