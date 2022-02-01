@@ -48,7 +48,7 @@ class ConfigurationBuilderTest {
   // consistent with connectionStringFile.
   @BeforeEach
   public void setup() throws IOException {
-    connectionStringFile = File.createTempFile("test", "", temp);
+    connectionStringFile = File.createTempFile("test", ".txt", temp);
     Writer writer = Files.newBufferedWriter(connectionStringFile.toPath(), UTF_8);
     writer.write(CONNECTION_STRING);
     writer.close();

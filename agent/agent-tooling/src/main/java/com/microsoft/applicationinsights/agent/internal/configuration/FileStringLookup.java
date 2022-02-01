@@ -36,10 +36,6 @@ final class FileStringLookup implements StringLookup {
   @Override
   @Nullable
   public String lookup(String key) {
-    if (key == null) {
-      return null;
-    }
-
     try {
       return new String(Files.readAllBytes(Paths.get(key)), StandardCharsets.UTF_8);
     } catch (IOException | InvalidPathException e) {
