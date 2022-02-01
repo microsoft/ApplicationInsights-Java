@@ -1,5 +1,15 @@
 # CHANGELOG
 
+# Version 3.2.5 GA
+
+* Log warning on 206 (partial success) response from Breeze [#2065](https://github.com/microsoft/ApplicationInsights-Java/pull/2065).
+* Fix ingestion error on missing exception message [#2064](https://github.com/microsoft/ApplicationInsights-Java/pull/2064).
+* Add separate queue for metrics to avoid dropping telemetry [#2062](https://github.com/microsoft/ApplicationInsights-Java/pull/2062).
+* Make vertx preview instrumentation opt-in [#2058](https://github.com/microsoft/ApplicationInsights-Java/pull/2058).
+* Add Friendly exception handling for cipher suite issue [#2053](https://github.com/microsoft/ApplicationInsights-Java/pull/2053).
+* Fix URI parse error [#2067](https://github.com/microsoft/ApplicationInsights-Java/pull/2067).
+
+
 # Version 3.2.5-BETA
 * Add vertx instrumentation [#1990](https://github.com/microsoft/ApplicationInsights-Java/pull/1990).
 * Clean up Oshi logging [#2047](https://github.com/microsoft/ApplicationInsights-Java/pull/2047).
@@ -9,6 +19,7 @@
 * Add configuration for capturing HTTP headers [#2036](https://github.com/microsoft/ApplicationInsights-Java/pull/2036).
 * Update OpenTelemetry to the latest [#2030](https://github.com/microsoft/ApplicationInsights-Java/pull/2030).
 * Fix device instrumentation [#2027](https://github.com/microsoft/ApplicationInsights-Java/pull/2027).
+* Add telemetry processors masking feature [#1977](https://github.com/microsoft/ApplicationInsights-Java/pull/1977).
 
 # Version 3.2.4 GA
 * Add play framework preview instrumentation [#1958](https://github.com/microsoft/ApplicationInsights-Java/pull/1958).
@@ -17,7 +28,7 @@
 * Reduce noisy truncation logging [#1968](https://github.com/microsoft/ApplicationInsights-Java/pull/1968).
 * Fix jackson initialization [#1984](https://github.com/microsoft/ApplicationInsights-Java/pull/1984).
 * Add url, name and fix operation name to request document in live metrics sample telemetry [#1993](https://github.com/microsoft/ApplicationInsights-Java/pull/1993).
-* Fix duration in live metrics sample telemetry feature. [#1996](https://github.com/microsoft/ApplicationInsights-Java/pull/1996).
+* Fix duration in live metrics sample telemetry feature [#1996](https://github.com/microsoft/ApplicationInsights-Java/pull/1996).
 
 # Version 3.2.3 GA
 * Fix instrumentation key is null when sending persisted files from disk [#1948](https://github.com/microsoft/ApplicationInsights-Java/issues/1948).
