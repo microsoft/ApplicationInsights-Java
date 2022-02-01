@@ -38,7 +38,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.slf4j.LoggerFactory;
 
 public class FileStringLookupTest {
 
@@ -71,8 +70,6 @@ public class FileStringLookupTest {
 
   @Test
   public void testGoodFileLookupFormat() {
-    LoggerFactory.getLogger(FileStringLookupTest.class)
-        .debug("###### file.path: {}", file.getAbsolutePath());
     String connectionString = "${file:" + file.getAbsolutePath() + "}";
     String value = stringSubstitutor.replace(connectionString);
     assertThat(value).isEqualTo(CONNECTION_STRING);
@@ -80,8 +77,6 @@ public class FileStringLookupTest {
 
   @Test
   public void testOtherKeyFileLookupWillFail() {
-    LoggerFactory.getLogger(FileStringLookupTest.class)
-        .debug("###### file.path: {}", file.getAbsolutePath());
     String connectionString = "${xyz:" + file.getAbsolutePath() + "}";
     String value = stringSubstitutor.replace(connectionString);
     assertThat(value).isNotEqualTo(CONNECTION_STRING);

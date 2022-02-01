@@ -27,7 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import javax.annotation.Nullable;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.lookup.StringLookup;
 
 final class FileStringLookup implements StringLookup {
@@ -41,13 +40,12 @@ final class FileStringLookup implements StringLookup {
       return null;
     }
 
-    String fileName = StringUtils.substringAfter(key, ":");
     try {
-      return new String(Files.readAllBytes(Paths.get(fileName)), StandardCharsets.UTF_8);
+      return new String(Files.readAllBytes(Paths.get(key)), StandardCharsets.UTF_8);
     } catch (IOException | InvalidPathException e) {
       throw new IllegalArgumentException(
           "Error occurs when reading connection string from the file '"
-              + fileName
+              + key
               + "' with UTF-8 encoding.",
           e);
     }
