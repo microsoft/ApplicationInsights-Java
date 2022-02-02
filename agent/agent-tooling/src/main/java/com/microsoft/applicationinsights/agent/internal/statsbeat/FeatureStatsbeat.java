@@ -170,5 +170,10 @@ public class FeatureStatsbeat extends BaseStatsbeat {
         || !config.preview.captureHttpClientHeaders.responseHeaders.isEmpty()) {
       featureList.add(Feature.CAPTURE_HTTP_CLIENT_HEADERS);
     }
+
+    // customDimensions
+    if (config.customDimensions.size() != 0) {
+      featureList.add(Feature.CUSTOM_DIMENSIONS_ENABLED);
+    }
   }
 }
