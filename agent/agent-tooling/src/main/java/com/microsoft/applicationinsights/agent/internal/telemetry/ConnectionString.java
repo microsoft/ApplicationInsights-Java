@@ -52,16 +52,16 @@ public class ConnectionString {
   }
 
   public static void updateStatsbeatConnectionString(
-      String ikey, String endpoint, TelemetryClient config)
+      String ikey, String endpoint, TelemetryClient telemetryClient)
       throws InvalidConnectionStringException {
     if (Strings.isNullOrEmpty(ikey)) {
       logger.warn("Missing Statsbeat '" + Keywords.INSTRUMENTATION_KEY + "'");
     }
 
-    config.setStatsbeatInstrumentationKey(ikey);
+    telemetryClient.setStatsbeatInstrumentationKey(StatsbeatConnectionString.getInstrumentationKey(telemetryClient));
 
     if (!Strings.isNullOrEmpty(endpoint)) {
-      config
+      telemetryClient
           .getEndpointProvider()
           .setStatsbeatEndpoint(toUrlOrThrow(endpoint, Keywords.INGESTION_ENDPOINT));
     }
