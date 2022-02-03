@@ -46,10 +46,8 @@ final class StatsbeatConnectionString {
     EU_REGION_GEO_SET.add("switzerlandwest");
   }
 
-  static String getInstrumentationKey(
-      String ikey, String endpoint, TelemetryClient telemetryClient) {
-    String customerEndpoint =
-        telemetryClient.getEndpointProvider().getIngestionEndpoint().toString();
+  // visible for testing
+  static String getInstrumentationKey(String ikey, String endpoint, String customerEndpoint) {
     String geo = getGeoWithoutStampSpecific(customerEndpoint);
     if (EU_REGION_GEO_SET.contains(geo.toLowerCase())) {
       if (ikey != null && !ikey.isEmpty() && endpoint != null && !endpoint.isEmpty()) {
@@ -69,8 +67,8 @@ final class StatsbeatConnectionString {
     return ikey;
   }
 
+  // visible for testing
   static String getGeoWithoutStampSpecific(String endpointUrl) {
-    assert (endpointUrl != null && !endpointUrl.isEmpty());
     int start = endpointUrl.indexOf("://");
     int i = 0;
     if (start != -1) {
