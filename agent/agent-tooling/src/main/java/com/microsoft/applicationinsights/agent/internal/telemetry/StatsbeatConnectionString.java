@@ -46,7 +46,7 @@ final class StatsbeatConnectionString {
 
   static String getInstrumentationKey(TelemetryClient telemetryClient) {
     String geo = getGeoWithoutStampSpecific(telemetryClient);
-    if (EU_REGION_GEO_SET.contains(geo)) {
+    if (EU_REGION_GEO_SET.contains(geo.toLowerCase())) {
       return EU_REGION_STATSBEAT_IKEY;
     } else {
       return NON_EU_REGION_STATSBEAT_IKEY;
