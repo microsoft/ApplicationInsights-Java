@@ -309,6 +309,10 @@ public class TelemetryClient {
     return instrumentationKey;
   }
 
+  public Map<String, String> getGlobalTags() {
+    return globalTags;
+  }
+
   /** Gets or sets the default instrumentation key for the application. */
   public void setInstrumentationKey(@Nullable String key) {
     instrumentationKey = key;
