@@ -34,13 +34,12 @@ public final class MessageTelemetry extends Telemetry {
 
   private final MessageData data;
 
-  public static MessageTelemetry create(String instrumentationKey, Map<String, String> globalTags) {
-    return new MessageTelemetry(instrumentationKey, new MessageData(), globalTags);
+  public static MessageTelemetry create() {
+    return new MessageTelemetry(new MessageData());
   }
 
-  private MessageTelemetry(
-      String instrumentationKey, MessageData data, Map<String, String> globalTags) {
-    super(data, "Message", "MessageData", instrumentationKey, globalTags);
+  private MessageTelemetry(MessageData data) {
+    super(data, "Message", "MessageData");
     this.data = data;
   }
 

@@ -37,14 +37,12 @@ public final class ExceptionTelemetry extends Telemetry {
 
   private final TelemetryExceptionData data;
 
-  public static ExceptionTelemetry create(
-      String instrumentationKey, Map<String, String> globalTags) {
-    return new ExceptionTelemetry(instrumentationKey, new TelemetryExceptionData(), globalTags);
+  public static ExceptionTelemetry create() {
+    return new ExceptionTelemetry(new TelemetryExceptionData());
   }
 
-  private ExceptionTelemetry(
-      String instrumentationKey, TelemetryExceptionData data, Map<String, String> globalTags) {
-    super(data, "Exception", "ExceptionData", instrumentationKey, globalTags);
+  private ExceptionTelemetry(TelemetryExceptionData data) {
+    super(data, "Exception", "ExceptionData");
     this.data = data;
   }
 

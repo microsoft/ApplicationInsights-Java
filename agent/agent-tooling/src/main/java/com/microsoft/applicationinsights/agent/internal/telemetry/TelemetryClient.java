@@ -152,7 +152,29 @@ public class TelemetryClient {
       return;
     }
 
+    // populate default instrumentationKey
+    if (telemetry.getInstrumentationKey() == null) {
+      telemetry.setInstrumentationKey(instrumentationKey);
+    }
+
+    // populate global tags
+    Map<String, String> tags = telemetry.getTags();
+    if (tags == null) {
+      tags = new HashMap<>();
+      telemetry.setTags(tags);
+    }
+    tags.putAll(globalTags);
+
     MonitorDomain data = telemetry.getData().getBaseData();
+
+    // populate global properties
+    Map<String, String> properties = TelemetryUtil.getProperties(data);
+    for (Map.Entry<String, String> entry : globalProperties.entrySet()) {
+      if (!properties.containsKey(entry.getKey())) {
+        properties.put(entry.getKey(), entry.getValue());
+      }
+    }
+
     if (data instanceof MetricsData) {
       MetricsData metricsData = (MetricsData) data;
       List<MetricDataPoint> filteredPoints =
@@ -307,10 +329,6 @@ public class TelemetryClient {
   /** Gets or sets the default instrumentation key for the application. */
   public String getInstrumentationKey() {
     return instrumentationKey;
-  }
-
-  public Map<String, String> getGlobalTags() {
-    return globalTags;
   }
 
   /** Gets or sets the default instrumentation key for the application. */

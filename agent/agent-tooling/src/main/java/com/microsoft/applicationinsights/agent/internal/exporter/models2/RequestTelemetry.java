@@ -36,13 +36,12 @@ public final class RequestTelemetry extends Telemetry {
 
   private final RequestData data;
 
-  public static RequestTelemetry create(String instrumentationKey, Map<String, String> globalTags) {
-    return new RequestTelemetry(instrumentationKey, new RequestData(), globalTags);
+  public static RequestTelemetry create() {
+    return new RequestTelemetry(new RequestData());
   }
 
-  private RequestTelemetry(
-      String instrumentationKey, RequestData data, Map<String, String> globalTags) {
-    super(data, "Request", "RequestData", instrumentationKey, globalTags);
+  private RequestTelemetry(RequestData data) {
+    super(data, "Request", "RequestData");
     this.data = data;
   }
 

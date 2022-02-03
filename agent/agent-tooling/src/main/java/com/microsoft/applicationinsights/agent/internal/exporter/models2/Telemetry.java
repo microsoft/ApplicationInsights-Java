@@ -40,18 +40,11 @@ public abstract class Telemetry {
 
   private final TelemetryItem telemetryItem;
 
-  protected Telemetry(
-      MonitorDomain data,
-      String telemetryName,
-      String baseType,
-      String instrumentationKey,
-      Map<String, String> globalTags) {
+  protected Telemetry(MonitorDomain data, String telemetryName, String baseType) {
 
     telemetryItem = new TelemetryItem();
     telemetryItem.setVersion(1);
     telemetryItem.setName(telemetryName);
-    telemetryItem.setInstrumentationKey(instrumentationKey);
-    telemetryItem.setTags(new HashMap<>(globalTags));
 
     data.setVersion(2);
 

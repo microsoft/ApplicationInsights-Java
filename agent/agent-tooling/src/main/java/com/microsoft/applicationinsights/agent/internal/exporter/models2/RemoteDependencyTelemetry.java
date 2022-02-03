@@ -38,15 +38,12 @@ public final class RemoteDependencyTelemetry extends Telemetry {
 
   private final RemoteDependencyData data;
 
-  public static RemoteDependencyTelemetry create(
-      String instrumentationKey, Map<String, String> globalTags) {
-    return new RemoteDependencyTelemetry(
-        instrumentationKey, new RemoteDependencyData(), globalTags);
+  public static RemoteDependencyTelemetry create() {
+    return new RemoteDependencyTelemetry(new RemoteDependencyData());
   }
 
-  private RemoteDependencyTelemetry(
-      String instrumentationKey, RemoteDependencyData data, Map<String, String> globalTags) {
-    super(data, "RemoteDependency", "RemoteDependencyData", instrumentationKey, globalTags);
+  private RemoteDependencyTelemetry(RemoteDependencyData data) {
+    super(data, "RemoteDependency", "RemoteDependencyData");
     this.data = data;
   }
 

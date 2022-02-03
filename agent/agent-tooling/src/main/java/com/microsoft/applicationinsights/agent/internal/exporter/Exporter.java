@@ -225,9 +225,7 @@ public class Exporter implements SpanExporter {
   }
 
   private void exportRemoteDependency(SpanData span, boolean inProc) {
-    RemoteDependencyTelemetry telemetry =
-        RemoteDependencyTelemetry.create(
-            telemetryClient.getInstrumentationKey(), telemetryClient.getGlobalTags());
+    RemoteDependencyTelemetry telemetry = RemoteDependencyTelemetry.create();
 
     float samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
 
@@ -354,9 +352,7 @@ public class Exporter implements SpanExporter {
   }
 
   private void trackMessage(SpanData span) {
-    MessageTelemetry telemetry =
-        MessageTelemetry.create(
-            telemetryClient.getInstrumentationKey(), telemetryClient.getGlobalTags());
+    MessageTelemetry telemetry = MessageTelemetry.create();
 
     Attributes attributes = span.getAttributes();
 
@@ -381,9 +377,7 @@ public class Exporter implements SpanExporter {
   }
 
   private void trackTraceAsException(SpanData span, String errorStack) {
-    ExceptionTelemetry telemetry =
-        ExceptionTelemetry.create(
-            telemetryClient.getInstrumentationKey(), telemetryClient.getGlobalTags());
+    ExceptionTelemetry telemetry = ExceptionTelemetry.create();
 
     Attributes attributes = span.getAttributes();
 
@@ -694,9 +688,7 @@ public class Exporter implements SpanExporter {
   }
 
   private void exportRequest(SpanData span) {
-    RequestTelemetry telemetry =
-        RequestTelemetry.create(
-            telemetryClient.getInstrumentationKey(), telemetryClient.getGlobalTags());
+    RequestTelemetry telemetry = RequestTelemetry.create();
 
     Attributes attributes = span.getAttributes();
     long startEpochNanos = span.getStartEpochNanos();
@@ -922,9 +914,7 @@ public class Exporter implements SpanExporter {
         return;
       }
 
-      MessageTelemetry telemetry =
-          MessageTelemetry.create(
-              telemetryClient.getInstrumentationKey(), telemetryClient.getGlobalTags());
+      MessageTelemetry telemetry = MessageTelemetry.create();
 
       // set standard properties
       setOperationId(telemetry, span.getTraceId());
@@ -947,9 +937,7 @@ public class Exporter implements SpanExporter {
 
   private void trackException(
       String errorStack, SpanData span, @Nullable String operationName, float samplingPercentage) {
-    ExceptionTelemetry telemetry =
-        ExceptionTelemetry.create(
-            telemetryClient.getInstrumentationKey(), telemetryClient.getGlobalTags());
+    ExceptionTelemetry telemetry = ExceptionTelemetry.create();
 
     // set standard properties
     setOperationId(telemetry, span.getTraceId());
