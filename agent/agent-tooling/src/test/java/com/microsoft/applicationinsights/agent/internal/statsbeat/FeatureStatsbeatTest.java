@@ -38,9 +38,9 @@ public class FeatureStatsbeatTest {
 
   @Test
   public void testLegacyPropagationEnabled() {
-    testFeatureTrackingDisablement(
+    testFeatureTrackingEnablement(
         (config, value) -> config.preview.legacyRequestIdPropagation.enabled = value,
-        Feature.LEGACY_PROPAGATION_DISABLED);
+        Feature.LEGACY_PROPAGATION_ENABLED);
   }
 
   @Test

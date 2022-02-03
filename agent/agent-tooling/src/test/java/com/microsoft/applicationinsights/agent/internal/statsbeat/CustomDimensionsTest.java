@@ -25,6 +25,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -81,5 +85,44 @@ public class CustomDimensionsTest {
     customDimensions.populateProperties(properties, null);
 
     assertThat(properties.get("runtimeVersion")).isEqualTo(System.getProperty("java.version"));
+  }
+
+  @Test
+  public void testCustomDimensionsConfigShouldNotImpactStatsbeatCustomDimensions() {
+    Configuration configuration = new Configuration();
+    configuration.customDimensions.put("firstTag", "abc");
+    configuration.customDimensions.put("secondTag", "def");
+    TelemetryClient telemetryClient =
+        TelemetryClient.builder().setCustomDimensions(configuration.customDimensions).build();
+    NetworkStatsbeat networkStatsbeat = new NetworkStatsbeat();
+    TelemetryItem networkItem =
+        networkStatsbeat.createStatsbeatTelemetry(telemetryClient, "test-network", 0.0);
+    assertThat(networkItem.getTags()).doesNotContainKey("firstTag");
+    assertThat(networkItem.getTags()).doesNotContainKey("secondTag");
+    assertThat(((MetricsData) networkItem.getData().getBaseData()).getProperties())
+        .doesNotContainKey("firstTag");
+    assertThat(((MetricsData) networkItem.getData().getBaseData()).getProperties())
+        .doesNotContainKey("secondTag");
+
+    AttachStatsbeat attachStatsbeat = new AttachStatsbeat(new CustomDimensions());
+    TelemetryItem attachItem =
+        attachStatsbeat.createStatsbeatTelemetry(telemetryClient, "test-attach", 0.0);
+    assertThat(attachItem.getTags()).doesNotContainKey("firstTag");
+    assertThat(attachItem.getTags()).doesNotContainKey("secondTag");
+    assertThat(((MetricsData) attachItem.getData().getBaseData()).getProperties())
+        .doesNotContainKey("firstTag");
+    assertThat(((MetricsData) attachItem.getData().getBaseData()).getProperties())
+        .doesNotContainKey("secondTag");
+
+    FeatureStatsbeat featureStatsbeat =
+        new FeatureStatsbeat(new CustomDimensions(), FeatureType.FEATURE);
+    TelemetryItem featureItem =
+        featureStatsbeat.createStatsbeatTelemetry(telemetryClient, "test-feature", 0.0);
+    assertThat(featureItem.getTags()).doesNotContainKey("firstTag");
+    assertThat(featureItem.getTags()).doesNotContainKey("secondTag");
+    assertThat(((MetricsData) featureItem.getData().getBaseData()).getProperties())
+        .doesNotContainKey("firstTag");
+    assertThat(((MetricsData) featureItem.getData().getBaseData()).getProperties())
+        .doesNotContainKey("secondTag");
   }
 }

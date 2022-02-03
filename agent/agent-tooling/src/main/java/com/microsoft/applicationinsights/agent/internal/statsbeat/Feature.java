@@ -46,7 +46,7 @@ enum Feature {
   RABBITMQ_DISABLED(16),
   SPRING_INTEGRATION_DISABLED(
       17), // preview instrumentation, spring-integration is ON by default in OTEL
-  LEGACY_PROPAGATION_DISABLED(18),
+  LEGACY_PROPAGATION_ENABLED(18), // legacy propagation is disabled by default
   GRIZZLY_ENABLED(19), // preview instrumentation, grizzly is OFF by default in OTEL
   STATSBEAT_DISABLED(20), // disable non-essential statsbeat
   QUARTZ_DISABLED(21), // preview instrumentation, quartz is ON by default in OTEL
@@ -57,7 +57,8 @@ enum Feature {
   CAPTURE_HTTP_SERVER_4XX_AS_SUCCESS(26),
   CAPTURE_HTTP_SERVER_HEADERS(27),
   CAPTURE_HTTP_CLIENT_HEADERS(28),
-  VERTX_DISABLED(29); // preview instrumentation, vertx is ON by default in OTEL
+  VERTX_DISABLED(29), // preview instrumentation, vertx is ON by default in OTEL
+  CUSTOM_DIMENSIONS_ENABLED(30); // enable customDimensions
 
   private static final Map<String, Feature> javaVendorFeatureMap;
 

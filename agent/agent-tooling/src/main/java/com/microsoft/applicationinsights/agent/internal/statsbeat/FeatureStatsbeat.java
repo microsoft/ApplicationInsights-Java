@@ -92,8 +92,8 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     if (config.preview.authentication.enabled) {
       featureList.add(Feature.AAD);
     }
-    if (!config.preview.legacyRequestIdPropagation.enabled) {
-      featureList.add(Feature.LEGACY_PROPAGATION_DISABLED);
+    if (config.preview.legacyRequestIdPropagation.enabled) {
+      featureList.add(Feature.LEGACY_PROPAGATION_ENABLED);
     }
 
     // disabled instrumentations
@@ -169,6 +169,11 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     if (!config.preview.captureHttpClientHeaders.requestHeaders.isEmpty()
         || !config.preview.captureHttpClientHeaders.responseHeaders.isEmpty()) {
       featureList.add(Feature.CAPTURE_HTTP_CLIENT_HEADERS);
+    }
+
+    // customDimensions
+    if (!config.customDimensions.isEmpty()) {
+      featureList.add(Feature.CUSTOM_DIMENSIONS_ENABLED);
     }
   }
 }
