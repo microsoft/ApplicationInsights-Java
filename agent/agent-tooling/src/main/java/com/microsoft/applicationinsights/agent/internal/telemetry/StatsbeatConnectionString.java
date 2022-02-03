@@ -28,8 +28,12 @@ final class StatsbeatConnectionString {
 
   static final String EU_REGION_STATSBEAT_IKEY =
       "7dc56bab-3c0c-4e9f-9ebb-d1acadee8d0f"; // westeu-aistatsbeat
+  static final String EU_REGION_STATSBEAT_ENDPOINT =
+      "https://westeurope-5.in.applicationinsights.azure.com/";
   static final String NON_EU_REGION_STATSBEAT_IKEY =
       "c4a29126-a7cb-47e5-b348-11414998b11e"; // workspace-aistatsbeat
+  static final String NON_EU_REGION_STATSBEAT_ENDPOINT =
+      "https://westus-0.in.applicationinsights.azure.com/";
 
   private static final Set<String> EU_REGION_GEO_SET = new HashSet<>(10);
 
@@ -46,17 +50,30 @@ final class StatsbeatConnectionString {
     EU_REGION_GEO_SET.add("switzerlandwest");
   }
 
-  static String getInstrumentationKey(TelemetryClient telemetryClient) {
-    String geo = getGeoWithoutStampSpecific(telemetryClient);
+  static String getInstrumentationKey(
+      String ikey, String endpoint, TelemetryClient telemetryClient) {
+    String customerEndpoint =
+        telemetryClient.getEndpointProvider().getIngestionEndpoint().toString();
+    String geo = getGeoWithoutStampSpecific(customerEndpoint);
     if (EU_REGION_GEO_SET.contains(geo.toLowerCase())) {
+      if (ikey != null && !ikey.isEmpty() && endpoint != null && !endpoint.isEmpty()) {
+        geo = getGeoWithoutStampSpecific(endpoint);
+        if (EU_REGION_GEO_SET.contains(geo.toLowerCase())) {
+          return ikey;
+        }
+      }
+
       return EU_REGION_STATSBEAT_IKEY;
-    } else {
+    }
+
+    if (ikey == null || ikey.isEmpty()) {
       return NON_EU_REGION_STATSBEAT_IKEY;
     }
+
+    return ikey;
   }
 
-  static String getGeoWithoutStampSpecific(TelemetryClient telemetryClient) {
-    String endpointUrl = telemetryClient.getEndpointProvider().getIngestionEndpoint().toString();
+  static String getGeoWithoutStampSpecific(String endpointUrl) {
     assert (endpointUrl != null && !endpointUrl.isEmpty());
     int start = endpointUrl.indexOf("://");
     int i = 0;

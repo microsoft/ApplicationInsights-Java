@@ -59,7 +59,7 @@ public class ConnectionString {
     }
 
     telemetryClient.setStatsbeatInstrumentationKey(
-        StatsbeatConnectionString.getInstrumentationKey(telemetryClient));
+        StatsbeatConnectionString.getInstrumentationKey(ikey, endpoint, telemetryClient));
 
     if (!Strings.isNullOrEmpty(endpoint)) {
       telemetryClient
