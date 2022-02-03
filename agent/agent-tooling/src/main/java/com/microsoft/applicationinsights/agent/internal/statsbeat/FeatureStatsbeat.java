@@ -92,8 +92,8 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     if (config.preview.authentication.enabled) {
       featureList.add(Feature.AAD);
     }
-    if (!config.preview.legacyRequestIdPropagation.enabled) {
-      featureList.add(Feature.LEGACY_PROPAGATION_DISABLED);
+    if (config.preview.legacyRequestIdPropagation.enabled) {
+      featureList.add(Feature.LEGACY_PROPAGATION_ENABLED);
     }
 
     // disabled instrumentations
