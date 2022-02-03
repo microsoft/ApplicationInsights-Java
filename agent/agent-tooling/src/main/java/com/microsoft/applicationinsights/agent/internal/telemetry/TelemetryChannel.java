@@ -348,11 +348,10 @@ public class TelemetryChannel {
       statsbeatModule
           .getNetworkStatsbeat()
           .incrementRequestSuccessCount(System.currentTimeMillis() - startTime, instrumentationKey);
+    } else if (statusCode == 439) {
+      statsbeatModule.getNetworkStatsbeat().incrementThrottlingCount(instrumentationKey);
     } else {
       statsbeatModule.getNetworkStatsbeat().incrementRequestFailureCount(instrumentationKey);
-    }
-    if (statusCode == 439) {
-      statsbeatModule.getNetworkStatsbeat().incrementThrottlingCount(instrumentationKey);
     }
   }
 
