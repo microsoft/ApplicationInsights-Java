@@ -172,7 +172,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     }
 
     // customDimensions
-    if (config.customDimensions.size() != 0) {
+    if (!config.customDimensions.isEmpty()) {
       featureList.add(Feature.CUSTOM_DIMENSIONS_ENABLED);
     }
   }
