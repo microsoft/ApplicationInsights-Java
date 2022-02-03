@@ -210,8 +210,7 @@ public class Exporter implements SpanExporter {
       } else if (instrumentationName.startsWith("io.opentelemetry.spring-scheduling-")
           && !span.getParentSpanContext().isValid()) {
         // TODO (trask) AI mapping: need semantic convention for determining whether to map INTERNAL
-        // to request or
-        //  dependency (or need clarification to use SERVER for this)
+        // to request or dependency (or need clarification to use SERVER for this)
         exportRequest(span);
       } else {
         exportRemoteDependency(span, true);
@@ -318,11 +317,11 @@ public class Exporter implements SpanExporter {
       return;
     }
     String azureNamespace = attributes.get(AZURE_NAMESPACE);
-    if (azureNamespace != null && azureNamespace.equals("Microsoft.EventHub")) {
+    if ("Microsoft.EventHub".equals(azureNamespace)) {
       applyEventHubsSpan(attributes, remoteDependencyData);
       return;
     }
-    if (azureNamespace != null && azureNamespace.equals("Microsoft.ServiceBus")) {
+    if ("Microsoft.ServiceBus".equals(azureNamespace)) {
       applyServiceBusSpan(attributes, remoteDependencyData);
       return;
     }
@@ -668,7 +667,8 @@ public class Exporter implements SpanExporter {
   private static int getDefaultPortForDbSystem(String dbSystem) {
     // jdbc default ports are from
     // io.opentelemetry.javaagent.instrumentation.jdbc.JdbcConnectionUrlParser
-    // TODO make the ports constants (at least in JdbcConnectionUrlParser) so they can be used here
+    // TODO (trask) make the ports constants (at least in JdbcConnectionUrlParser) so they can be
+    // used here
     switch (dbSystem) {
       case SemanticAttributes.DbSystemValues.MONGODB:
         return 27017;
@@ -813,7 +813,7 @@ public class Exporter implements SpanExporter {
       case ERROR:
         return false;
       case OK:
-        // auto-instrumentation never sets OK, so this is explicit user override
+        // instrumentation never sets OK, so this is explicit user override
         return true;
       case UNSET:
         if (captureHttpServer4xxAsError) {
@@ -882,17 +882,14 @@ public class Exporter implements SpanExporter {
 
   private static boolean isAzureQueue(Attributes attributes) {
     String azureNamespace = attributes.get(AZURE_NAMESPACE);
-    if (azureNamespace == null) {
-      return false;
-    }
-    return azureNamespace.equals("Microsoft.EventHub")
-        || azureNamespace.equals("Microsoft.ServiceBus");
+    return "Microsoft.EventHub".equals(azureNamespace)
+        || "Microsoft.ServiceBus".equals(azureNamespace);
   }
 
   private static String getOperationName(SpanData span) {
     String spanName = span.getName();
     String httpMethod = span.getAttributes().get(SemanticAttributes.HTTP_METHOD);
-    if (!Strings.isNullOrEmpty(httpMethod) && spanName.startsWith("/")) {
+    if (httpMethod != null && !httpMethod.isEmpty() && spanName.startsWith("/")) {
       return httpMethod + " " + spanName;
     }
     return spanName;
@@ -928,7 +925,7 @@ public class Exporter implements SpanExporter {
 
       if (event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE) != null
           || event.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE) != null) {
-        // TODO map OpenTelemetry exception to Application Insights exception better
+        // TODO (trask) map OpenTelemetry exception to Application Insights exception better
         String stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
         if (stacktrace != null) {
           trackException(stacktrace, span, operationName, samplingPercentage);
