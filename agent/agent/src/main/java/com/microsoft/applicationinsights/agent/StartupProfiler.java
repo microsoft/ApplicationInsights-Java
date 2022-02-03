@@ -50,7 +50,9 @@ final class StartupProfiler {
     String tempDirectory = System.getProperty("java.io.tmpdir");
     File file = new File(tempDirectory, STACKTRACES);
     try {
-      start(new PrintWriter(new PrintWriter(Files.newBufferedWriter(file.toPath(), Charset.defaultCharset()))));
+      start(
+          new PrintWriter(
+              new PrintWriter(Files.newBufferedWriter(file.toPath(), Charset.defaultCharset()))));
     } catch (IOException ignore) {
       // ignore it for now
     }
