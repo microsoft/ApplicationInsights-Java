@@ -58,7 +58,8 @@ public class ConnectionString {
       logger.warn("Missing Statsbeat '" + Keywords.INSTRUMENTATION_KEY + "'");
     }
 
-    telemetryClient.setStatsbeatInstrumentationKey(StatsbeatConnectionString.getInstrumentationKey(telemetryClient));
+    telemetryClient.setStatsbeatInstrumentationKey(
+        StatsbeatConnectionString.getInstrumentationKey(telemetryClient));
 
     if (!Strings.isNullOrEmpty(endpoint)) {
       telemetryClient

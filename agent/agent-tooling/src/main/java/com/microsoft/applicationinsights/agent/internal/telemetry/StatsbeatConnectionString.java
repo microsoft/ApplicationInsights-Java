@@ -26,8 +26,10 @@ import java.util.Set;
 
 final class StatsbeatConnectionString {
 
-  static final String EU_REGION_STATSBEAT_IKEY = "7dc56bab-3c0c-4e9f-9ebb-d1acadee8d0f"; // westeu-aistatsbeat
-  static final String NON_EU_REGION_STATSBEAT_IKEY = "c4a29126-a7cb-47e5-b348-11414998b11e"; // workspace-aistatsbeat
+  static final String EU_REGION_STATSBEAT_IKEY =
+      "7dc56bab-3c0c-4e9f-9ebb-d1acadee8d0f"; // westeu-aistatsbeat
+  static final String NON_EU_REGION_STATSBEAT_IKEY =
+      "c4a29126-a7cb-47e5-b348-11414998b11e"; // workspace-aistatsbeat
 
   private static final Set<String> EU_REGION_GEO_SET = new HashSet<>(10);
 
@@ -68,7 +70,7 @@ final class StatsbeatConnectionString {
     }
 
     int end = endpointUrl.indexOf("-");
-    if (end != -1){
+    if (end != -1) {
       return endpointUrl.substring(i, end);
     }
 
