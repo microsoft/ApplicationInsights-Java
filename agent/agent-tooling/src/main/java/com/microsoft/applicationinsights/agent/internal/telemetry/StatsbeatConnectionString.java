@@ -49,9 +49,12 @@ final class StatsbeatConnectionString {
   // visible for testing
   static String getInstrumentationKey(String ikey, String endpoint, String customerEndpoint) {
     String geo = getGeoWithoutStampSpecific(customerEndpoint);
+    // check if customer's region is in EU
     if (EU_REGION_GEO_SET.contains(geo.toLowerCase())) {
+      // check if there is custom Statsbeat config
       if (ikey != null && !ikey.isEmpty() && endpoint != null && !endpoint.isEmpty()) {
         geo = getGeoWithoutStampSpecific(endpoint);
+        // check if Statsbeat config setting is in EU
         if (EU_REGION_GEO_SET.contains(geo.toLowerCase())) {
           return ikey;
         }
@@ -60,6 +63,7 @@ final class StatsbeatConnectionString {
       return EU_REGION_STATSBEAT_IKEY;
     }
 
+    // use Statsbeat non-eu ikey if there is no custom config
     if (ikey == null || ikey.isEmpty()) {
       return NON_EU_REGION_STATSBEAT_IKEY;
     }
