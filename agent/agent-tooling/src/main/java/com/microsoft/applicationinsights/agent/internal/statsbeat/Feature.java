@@ -57,7 +57,8 @@ enum Feature {
   CAPTURE_HTTP_SERVER_4XX_AS_SUCCESS(26),
   CAPTURE_HTTP_SERVER_HEADERS(27),
   CAPTURE_HTTP_CLIENT_HEADERS(28),
-  VERTX_DISABLED(29); // preview instrumentation, vertx is ON by default in OTEL
+  VERTX_DISABLED(29), // preview instrumentation, vertx is ON by default in OTEL
+  CUSTOM_DIMENSIONS_ENABLED(30); // enable customDimensions
 
   private static final Map<String, Feature> javaVendorFeatureMap;
 
