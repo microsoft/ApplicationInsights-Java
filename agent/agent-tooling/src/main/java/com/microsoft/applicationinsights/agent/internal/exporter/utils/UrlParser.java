@@ -68,7 +68,7 @@ public class UrlParser {
    * <p>Returns {@code null} if the path cannot be extracted from url for any reason.
    */
   @Nullable
-  static String getPathFromUrl(String url) {
+  public static String getPathFromUrl(String url) {
 
     int schemeEndIndex = url.indexOf(':');
     if (schemeEndIndex == -1) {
