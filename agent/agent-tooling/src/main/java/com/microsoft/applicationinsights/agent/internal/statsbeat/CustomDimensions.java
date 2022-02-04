@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
-import java.util.Map;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.StatsbeatTelemetry;
 
 class CustomDimensions {
 
@@ -85,14 +85,14 @@ class CustomDimensions {
     this.operatingSystem = operatingSystem;
   }
 
-  void populateProperties(Map<String, String> properties, String customerIkey) {
-    properties.put("rp", resourceProvider.getValue());
-    properties.put("os", operatingSystem.getValue());
-    properties.put("attach", attachType);
-    properties.put("cikey", customerIkey);
-    properties.put("runtimeVersion", runtimeVersion);
-    properties.put("language", language);
-    properties.put("version", sdkVersion);
+  void populateProperties(StatsbeatTelemetry telemetry, String customerIkey) {
+    telemetry.addProperty("rp", resourceProvider.getValue());
+    telemetry.addProperty("os", operatingSystem.getValue());
+    telemetry.addProperty("attach", attachType);
+    telemetry.addProperty("cikey", customerIkey);
+    telemetry.addProperty("runtimeVersion", runtimeVersion);
+    telemetry.addProperty("language", language);
+    telemetry.addProperty("version", sdkVersion);
   }
 
   private static OperatingSystem initOperatingSystem() {

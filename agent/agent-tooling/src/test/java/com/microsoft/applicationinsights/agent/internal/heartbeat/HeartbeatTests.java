@@ -89,7 +89,7 @@ class HeartbeatTests {
     Thread.sleep(500);
 
     // then
-    MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
+    MetricsData t = (MetricsData) provider.gatherData().getTelemetryItem().getData().getBaseData();
     assertThat(t).isNotNull();
     assertThat(t.getProperties().size() > 0).isTrue();
   }
@@ -103,7 +103,7 @@ class HeartbeatTests {
     // then
     assertThat(provider.addHeartBeatProperty("test", "testVal", true)).isTrue();
 
-    MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
+    MetricsData t = (MetricsData) provider.gatherData().getTelemetryItem().getData().getBaseData();
     assertThat(t.getProperties().get("test")).isEqualTo("testVal");
   }
 
@@ -116,7 +116,7 @@ class HeartbeatTests {
     // then
     assertThat(provider.addHeartBeatProperty("test", "testVal", false)).isTrue();
 
-    MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
+    MetricsData t = (MetricsData) provider.gatherData().getTelemetryItem().getData().getBaseData();
     assertThat(t.getMetrics().get(0).getValue()).isEqualTo(1);
   }
 
@@ -130,7 +130,7 @@ class HeartbeatTests {
     assertThat(provider.addHeartBeatProperty("test", "testVal", false)).isTrue();
     assertThat(provider.addHeartBeatProperty("test1", "testVal1", false)).isTrue();
 
-    MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
+    MetricsData t = (MetricsData) provider.gatherData().getTelemetryItem().getData().getBaseData();
     assertThat(t.getMetrics().get(0).getValue()).isEqualTo(2);
   }
 
@@ -186,7 +186,7 @@ class HeartbeatTests {
     provider.initialize(TelemetryClient.createForTest());
 
     base.setDefaultPayload(provider).call();
-    MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
+    MetricsData t = (MetricsData) provider.gatherData().getTelemetryItem().getData().getBaseData();
     assertThat(t.getProperties().containsKey("testKey")).isFalse();
   }
 }

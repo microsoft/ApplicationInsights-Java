@@ -25,8 +25,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
-import java.util.HashMap;
-import java.util.Map;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.StatsbeatTelemetry;
 import org.junit.jupiter.api.Test;
 
 public class CustomDimensionsTest {
@@ -55,31 +55,35 @@ public class CustomDimensionsTest {
   public void testCustomerIkey() {
     CustomDimensions customDimensions = new CustomDimensions();
 
-    Map<String, String> properties = new HashMap<>();
-    customDimensions.populateProperties(properties, null);
-
-    assertThat(properties.get("cikey")).isNull();
+    StatsbeatTelemetry telemetry = StatsbeatTelemetry.create("test", 1);
+    customDimensions.populateProperties(telemetry, null);
+    MetricsData data = (MetricsData) telemetry.getTelemetryItem().getData().getBaseData();
+    assertThat(data.getProperties().get("cikey")).isNull();
   }
 
   @Test
   public void testVersion() {
     CustomDimensions customDimensions = new CustomDimensions();
 
-    Map<String, String> properties = new HashMap<>();
-    customDimensions.populateProperties(properties, null);
+    StatsbeatTelemetry telemetry = StatsbeatTelemetry.create("test", 1);
+    customDimensions.populateProperties(telemetry, null);
 
     String sdkVersion = PropertyHelper.getQualifiedSdkVersionString();
     String version = sdkVersion.substring(sdkVersion.lastIndexOf(':') + 1);
-    assertThat(properties.get("version")).isEqualTo(version);
+
+    MetricsData data = (MetricsData) telemetry.getTelemetryItem().getData().getBaseData();
+    assertThat(data.getProperties().get("version")).isEqualTo(version);
   }
 
   @Test
   public void testRuntimeVersion() {
     CustomDimensions customDimensions = new CustomDimensions();
 
-    Map<String, String> properties = new HashMap<>();
-    customDimensions.populateProperties(properties, null);
+    StatsbeatTelemetry telemetry = StatsbeatTelemetry.create("test", 1);
+    customDimensions.populateProperties(telemetry, null);
 
-    assertThat(properties.get("runtimeVersion")).isEqualTo(System.getProperty("java.version"));
+    MetricsData data = (MetricsData) telemetry.getTelemetryItem().getData().getBaseData();
+    assertThat(data.getProperties().get("runtimeVersion"))
+        .isEqualTo(System.getProperty("java.version"));
   }
 }

@@ -36,20 +36,17 @@ import com.azure.core.test.TestBase;
 import com.azure.core.test.TestMode;
 import com.azure.core.util.FluxUtil;
 import com.azure.identity.ClientSecretCredentialBuilder;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDependencyData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.ExceptionTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.RemoteDependencyTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.RequestTelemetry;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedDuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Pattern;
 import reactor.core.publisher.Mono;
@@ -92,41 +89,31 @@ public class QuickPulseTestBase extends TestBase {
 
   public static TelemetryItem createRequestTelemetry(
       String name, Date timestamp, long durationMillis, String responseCode, boolean success) {
-    TelemetryItem telemetry = new TelemetryItem();
-    RequestData data = new RequestData();
-    TelemetryClient.createForTest().initRequestTelemetry(telemetry, data);
-    Map<String, String> properties = new HashMap<>();
-    properties.put("customProperty", "customValue");
-    data.setProperties(properties);
-    data.setName(name);
-    data.setDuration(FormattedDuration.fromMillis(durationMillis));
-    data.setResponseCode(responseCode);
-    data.setSuccess(success);
-    data.setUrl("foo");
+    RequestTelemetry telemetry = RequestTelemetry.create();
+    telemetry.addProperty("customProperty", "customValue");
+    telemetry.setName(name);
+    telemetry.setDuration(FormattedDuration.fromMillis(durationMillis));
+    telemetry.setResponseCode(responseCode);
+    telemetry.setSuccess(success);
+    telemetry.setUrl("foo");
     telemetry.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
-    return telemetry;
+    return telemetry.getTelemetryItem();
   }
 
   public static TelemetryItem createRemoteDependencyTelemetry(
       String name, String command, long durationMillis, boolean success) {
-    TelemetryItem telemetry = new TelemetryItem();
-    RemoteDependencyData data = new RemoteDependencyData();
-    TelemetryClient.createForTest().initRemoteDependencyTelemetry(telemetry, data);
-    Map<String, String> properties = new HashMap<>();
-    properties.put("customProperty", "customValue");
-    data.setProperties(properties);
-    data.setName(name);
-    data.setData(command);
-    data.setDuration(FormattedDuration.fromMillis(durationMillis));
-    data.setSuccess(success);
-    return telemetry;
+    RemoteDependencyTelemetry telemetry = RemoteDependencyTelemetry.create();
+    telemetry.addProperty("customProperty", "customValue");
+    telemetry.setName(name);
+    telemetry.setData(command);
+    telemetry.setDuration(FormattedDuration.fromMillis(durationMillis));
+    telemetry.setSuccess(success);
+    return telemetry.getTelemetryItem();
   }
 
-  public static TelemetryItem createExceptionTelemetry(Exception exception) {
-    TelemetryItem telemetry = new TelemetryItem();
-    TelemetryExceptionData data = new TelemetryExceptionData();
-    TelemetryClient.createForTest().initExceptionTelemetry(telemetry, data);
-    data.setExceptions(getExceptions(exception));
+  public static ExceptionTelemetry createExceptionTelemetry(Exception exception) {
+    ExceptionTelemetry telemetry = ExceptionTelemetry.create();
+    telemetry.setExceptions(getExceptions(exception));
     return telemetry;
   }
 

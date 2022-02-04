@@ -307,12 +307,15 @@ public class LocalFileLoaderTests {
     LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
     LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder, null);
 
+    StatsbeatModule mockedStatsbeatModule = Mockito.mock(StatsbeatModule.class);
+    when(mockedStatsbeatModule.getNetworkStatsbeat())
+        .thenReturn(Mockito.mock(NetworkStatsbeat.class));
     TelemetryChannel telemetryChannel =
         new TelemetryChannel(
             pipelineBuilder.build(),
             new URL("http://foo.bar"),
             localFileWriter,
-            Mockito.mock(StatsbeatModule.class),
+            mockedStatsbeatModule,
             false);
 
     // persist 10 files to disk

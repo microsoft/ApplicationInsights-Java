@@ -23,8 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import com.azure.core.http.HttpPipeline;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.EventTelemetry;
 import com.microsoft.applicationinsights.agent.internal.exporter.models2.MessageTelemetry;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
@@ -37,8 +36,10 @@ import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
 import com.microsoft.applicationinsights.profiler.config.AlertConfigParser;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
+import com.microsoft.applicationinsights.profiler.uploader.ServiceProfilerIndex;
 import com.microsoft.applicationinsights.profiler.uploader.UploadCompleteHandler;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -182,13 +183,16 @@ public class ProfilerServiceInitializer {
 
   static UploadCompleteHandler sendServiceProfilerIndex(TelemetryClient telemetryClient) {
     return done -> {
-      TelemetryItem telemetry = new TelemetryItem();
-      TelemetryEventData data = new TelemetryEventData();
-      telemetryClient.initEventTelemetry(telemetry, data);
+      EventTelemetry telemetry = EventTelemetry.create();
+      telemetry.setName("ServiceProfilerIndex");
 
-      data.setName("ServiceProfilerIndex");
-      data.setProperties(done.getServiceProfilerIndex().getProperties());
-      data.setMeasurements(done.getServiceProfilerIndex().getMetrics());
+      ServiceProfilerIndex serviceProfilerIndex = done.getServiceProfilerIndex();
+      for (Map.Entry<String, String> entry : serviceProfilerIndex.getProperties().entrySet()) {
+        telemetry.addProperty(entry.getKey(), entry.getValue());
+      }
+      for (Map.Entry<String, Double> entry : serviceProfilerIndex.getMetrics().entrySet()) {
+        telemetry.addMeasurement(entry.getKey(), entry.getValue());
+      }
 
       telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
 

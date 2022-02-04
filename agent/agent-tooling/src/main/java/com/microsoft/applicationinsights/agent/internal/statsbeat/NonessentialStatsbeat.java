@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.StatsbeatTelemetry;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -48,15 +48,15 @@ public class NonessentialStatsbeat extends BaseStatsbeat {
   @Override
   protected void send(TelemetryClient telemetryClient) {
     if (readFailureCount.get() != 0) {
-      TelemetryItem telemetryItem =
+      StatsbeatTelemetry telemetryItem =
           createStatsbeatTelemetry(telemetryClient, READ_FAILURE_COUNT, readFailureCount.get());
-      telemetryClient.trackStatsbeatAsync(telemetryItem);
+      telemetryClient.trackStatsbeatAsync(telemetryItem.getTelemetryItem());
     }
 
     if (writeFailureCount.get() != 0) {
-      TelemetryItem telemetryItem =
+      StatsbeatTelemetry telemetryItem =
           createStatsbeatTelemetry(telemetryClient, WRITE_FAILURE_COUNT, writeFailureCount.get());
-      telemetryClient.trackStatsbeatAsync(telemetryItem);
+      telemetryClient.trackStatsbeatAsync(telemetryItem.getTelemetryItem());
     }
 
     readFailureCount.set(0L);

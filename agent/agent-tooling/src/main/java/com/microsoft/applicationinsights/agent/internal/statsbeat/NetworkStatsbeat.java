@@ -22,9 +22,8 @@
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.StatsbeatTelemetry;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import io.opentelemetry.instrumentation.api.cache.Cache;
 import java.util.HashMap;
 import java.util.Map;
@@ -164,60 +163,58 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   private void sendIntervalMetric(
       TelemetryClient telemetryClient, String ikey, IntervalMetrics local, String host) {
     if (local.requestSuccessCount.get() != 0) {
-      TelemetryItem requestSuccessCountSt =
+      StatsbeatTelemetry requestSuccessCountSt =
           createStatsbeatTelemetry(
               telemetryClient, REQUEST_SUCCESS_COUNT_METRIC_NAME, local.requestSuccessCount.get());
       addCommonProperties(requestSuccessCountSt, ikey, host);
-      telemetryClient.trackStatsbeatAsync(requestSuccessCountSt);
+      telemetryClient.trackStatsbeatAsync(requestSuccessCountSt.getTelemetryItem());
     }
 
     if (local.requestFailureCount.get() != 0) {
-      TelemetryItem requestFailureCountSt =
+      StatsbeatTelemetry requestFailureCountSt =
           createStatsbeatTelemetry(
               telemetryClient, REQUEST_FAILURE_COUNT_METRIC_NAME, local.requestFailureCount.get());
       addCommonProperties(requestFailureCountSt, ikey, host);
-      telemetryClient.trackStatsbeatAsync(requestFailureCountSt);
+      telemetryClient.trackStatsbeatAsync(requestFailureCountSt.getTelemetryItem());
     }
 
     double durationAvg = local.getRequestDurationAvg();
     if (durationAvg != 0) {
-      TelemetryItem requestDurationSt =
+      StatsbeatTelemetry requestDurationSt =
           createStatsbeatTelemetry(telemetryClient, REQUEST_DURATION_METRIC_NAME, durationAvg);
       addCommonProperties(requestDurationSt, ikey, host);
-      telemetryClient.trackStatsbeatAsync(requestDurationSt);
+      telemetryClient.trackStatsbeatAsync(requestDurationSt.getTelemetryItem());
     }
 
     if (local.retryCount.get() != 0) {
-      TelemetryItem retryCountSt =
+      StatsbeatTelemetry retryCountSt =
           createStatsbeatTelemetry(
               telemetryClient, RETRY_COUNT_METRIC_NAME, local.retryCount.get());
       addCommonProperties(retryCountSt, ikey, host);
-      telemetryClient.trackStatsbeatAsync(retryCountSt);
+      telemetryClient.trackStatsbeatAsync(retryCountSt.getTelemetryItem());
     }
 
     if (local.throttlingCount.get() != 0) {
-      TelemetryItem throttleCountSt =
+      StatsbeatTelemetry throttleCountSt =
           createStatsbeatTelemetry(
               telemetryClient, THROTTLE_COUNT_METRIC_NAME, local.throttlingCount.get());
       addCommonProperties(throttleCountSt, ikey, host);
-      telemetryClient.trackStatsbeatAsync(throttleCountSt);
+      telemetryClient.trackStatsbeatAsync(throttleCountSt.getTelemetryItem());
     }
 
     if (local.exceptionCount.get() != 0) {
-      TelemetryItem exceptionCountSt =
+      StatsbeatTelemetry exceptionCountSt =
           createStatsbeatTelemetry(
               telemetryClient, EXCEPTION_COUNT_METRIC_NAME, local.exceptionCount.get());
       addCommonProperties(exceptionCountSt, ikey, host);
-      telemetryClient.trackStatsbeatAsync(exceptionCountSt);
+      telemetryClient.trackStatsbeatAsync(exceptionCountSt.getTelemetryItem());
     }
   }
 
-  private static void addCommonProperties(TelemetryItem telemetryItem, String ikey, String host) {
-    Map<String, String> properties =
-        TelemetryUtil.getProperties(telemetryItem.getData().getBaseData());
-    properties.put("endpoint", BREEZE_ENDPOINT);
-    properties.put("cikey", ikey);
-    properties.put("host", host);
+  private static void addCommonProperties(StatsbeatTelemetry telemetry, String ikey, String host) {
+    telemetry.addProperty("endpoint", BREEZE_ENDPOINT);
+    telemetry.addProperty("cikey", ikey);
+    telemetry.addProperty("host", host);
   }
 
   private static class IntervalMetrics {

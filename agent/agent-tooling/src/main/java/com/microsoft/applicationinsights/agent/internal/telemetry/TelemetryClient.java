@@ -22,22 +22,14 @@
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
 
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.ContextTagKeys;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MessageData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDataPoint;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorBase;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorDomain;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.PageViewData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDependencyData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.exporter.models2.Telemetry;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileCache;
@@ -63,14 +55,6 @@ import org.apache.commons.text.StringSubstitutor;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
 public class TelemetryClient {
-
-  private static final String EVENT_TELEMETRY_NAME = "Event";
-  private static final String EXCEPTION_TELEMETRY_NAME = "Exception";
-  private static final String MESSAGE_TELEMETRY_NAME = "Message";
-  private static final String METRIC_TELEMETRY_NAME = "Metric";
-  private static final String PAGE_VIEW_TELEMETRY_NAME = "PageView";
-  private static final String REMOTE_DEPENDENCY_TELEMETRY_NAME = "RemoteDependency";
-  private static final String REQUEST_TELEMETRY_NAME = "Request";
 
   private static volatile @MonotonicNonNull TelemetryClient active;
 
@@ -395,144 +379,6 @@ public class TelemetryClient {
 
   public void addNonFilterableMetricNames(String... metricNames) {
     nonFilterableMetricNames.addAll(asList(metricNames));
-  }
-
-  // must be called before setting any telemetry tags or data properties
-  //
-  // telemetry tags will be non-null after this call
-  // data properties may or may not be non-null after this call
-  public void initEventTelemetry(TelemetryItem telemetry, TelemetryEventData data) {
-    if (telemetry.getTags() != null) {
-      throw new AssertionError("must not set telemetry tags before calling init");
-    }
-    if (data.getProperties() != null) {
-      throw new AssertionError("must not set data properties before calling init");
-    }
-    initTelemetry(telemetry, data, EVENT_TELEMETRY_NAME, "EventData");
-    if (!globalProperties.isEmpty()) {
-      data.setProperties(new HashMap<>(globalProperties));
-    }
-  }
-
-  // must be called before setting any telemetry tags or data properties
-  //
-  // telemetry tags will be non-null after this call
-  // data properties may or may not be non-null after this call
-  public void initExceptionTelemetry(TelemetryItem telemetry, TelemetryExceptionData data) {
-    if (telemetry.getTags() != null) {
-      throw new AssertionError("must not set telemetry tags before calling init");
-    }
-    if (data.getProperties() != null) {
-      throw new AssertionError("must not set data properties before calling init");
-    }
-    initTelemetry(telemetry, data, EXCEPTION_TELEMETRY_NAME, "ExceptionData");
-    if (!globalProperties.isEmpty()) {
-      data.setProperties(new HashMap<>(globalProperties));
-    }
-  }
-
-  // must be called before setting any telemetry tags or data properties
-  //
-  // telemetry tags will be non-null after this call
-  // data properties may or may not be non-null after this call
-  public void initMessageTelemetry(TelemetryItem telemetry, MessageData data) {
-    if (telemetry.getTags() != null) {
-      throw new AssertionError("must not set telemetry tags before calling init");
-    }
-    if (data.getProperties() != null) {
-      throw new AssertionError("must not set data properties before calling init");
-    }
-    initTelemetry(telemetry, data, MESSAGE_TELEMETRY_NAME, "MessageData");
-    if (!globalProperties.isEmpty()) {
-      data.setProperties(new HashMap<>(globalProperties));
-    }
-  }
-
-  // must be called before setting any telemetry tags or data properties
-  //
-  // telemetry tags will be non-null after this call
-  // data properties may or may not be non-null after this call
-  // FIXME (trask) azure sdk exporter: rename MetricsData to MetricData to match the telemetryName
-  //  and baseType?
-  public void initMetricTelemetry(
-      TelemetryItem telemetry, MetricsData data, MetricDataPoint point) {
-    if (telemetry.getTags() != null) {
-      throw new AssertionError("must not set telemetry tags before calling init");
-    }
-    if (data.getProperties() != null) {
-      throw new AssertionError("must not set data properties before calling init");
-    }
-    initTelemetry(telemetry, data, METRIC_TELEMETRY_NAME, "MetricData");
-    if (!globalProperties.isEmpty()) {
-      data.setProperties(new HashMap<>(globalProperties));
-    }
-    data.setMetrics(singletonList(point));
-  }
-
-  // must be called before setting any telemetry tags or data properties
-  //
-  // telemetry tags will be non-null after this call
-  // data properties may or may not be non-null after this call
-  public void initPageViewTelemetry(TelemetryItem telemetry, PageViewData data) {
-    if (telemetry.getTags() != null) {
-      throw new AssertionError("must not set telemetry tags before calling init");
-    }
-    if (data.getProperties() != null) {
-      throw new AssertionError("must not set data properties before calling init");
-    }
-    initTelemetry(telemetry, data, PAGE_VIEW_TELEMETRY_NAME, "PageViewData");
-    if (!globalProperties.isEmpty()) {
-      data.setProperties(new HashMap<>(globalProperties));
-    }
-  }
-
-  // must be called before setting any telemetry tags or data properties
-  //
-  // telemetry tags will be non-null after this call
-  // data properties may or may not be non-null after this call
-  public void initRemoteDependencyTelemetry(TelemetryItem telemetry, RemoteDependencyData data) {
-    if (telemetry.getTags() != null) {
-      throw new AssertionError("must not set telemetry tags before calling init");
-    }
-    if (data.getProperties() != null) {
-      throw new AssertionError("must not set data properties before calling init");
-    }
-    initTelemetry(telemetry, data, REMOTE_DEPENDENCY_TELEMETRY_NAME, "RemoteDependencyData");
-    if (!globalProperties.isEmpty()) {
-      data.setProperties(new HashMap<>(globalProperties));
-    }
-  }
-
-  // must be called before setting any telemetry tags or data properties
-  //
-  // telemetry tags will be non-null after this call
-  // data properties may or may not be non-null after this call
-  public void initRequestTelemetry(TelemetryItem telemetry, RequestData data) {
-    if (telemetry.getTags() != null) {
-      throw new AssertionError("must not set telemetry tags before calling init");
-    }
-    if (data.getProperties() != null) {
-      throw new AssertionError("must not set data properties before calling init");
-    }
-    initTelemetry(telemetry, data, REQUEST_TELEMETRY_NAME, "RequestData");
-    if (!globalProperties.isEmpty()) {
-      data.setProperties(new HashMap<>(globalProperties));
-    }
-  }
-
-  private void initTelemetry(
-      TelemetryItem telemetry, MonitorDomain data, String telemetryName, String baseType) {
-    telemetry.setVersion(1);
-    telemetry.setName(telemetryName);
-    telemetry.setInstrumentationKey(instrumentationKey);
-    telemetry.setTags(new HashMap<>(globalTags));
-
-    data.setVersion(2);
-
-    MonitorBase monitorBase = new MonitorBase();
-    telemetry.setData(monitorBase);
-    monitorBase.setBaseType(baseType);
-    monitorBase.setBaseData(data);
   }
 
   public static class Builder {

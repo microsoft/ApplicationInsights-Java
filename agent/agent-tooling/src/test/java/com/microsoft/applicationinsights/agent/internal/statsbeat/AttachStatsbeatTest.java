@@ -23,13 +23,13 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.StatsbeatTelemetry;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
 import okio.BufferedSource;
 import okio.Okio;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,9 +68,10 @@ public class AttachStatsbeatTest {
     assertThat("2a1216c3-a2a0-4fc5-a941-b1f5acde7051/65b2f83e-7bf1-4be3-bafc-3a4163265a52")
         .isEqualTo(attachStatsbeat.getResourceProviderId());
 
-    Map<String, String> properties = new HashMap<>();
-    customDimensions.populateProperties(properties, null);
-    assertThat(properties.get("os")).isEqualTo("Linux");
+    StatsbeatTelemetry telemetry = StatsbeatTelemetry.create("test", 1);
+    customDimensions.populateProperties(telemetry, null);
+    MetricsData data = (MetricsData) telemetry.getTelemetryItem().getData().getBaseData();
+    assertThat(data.getProperties().get("os")).isEqualTo("Linux");
   }
 
   @Test

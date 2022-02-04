@@ -30,16 +30,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class MetricTelemetry extends Telemetry {
+public final class StatsbeatTelemetry extends Telemetry {
 
   private final MetricsData data;
 
-  public static MetricTelemetry create() {
-    return new MetricTelemetry(new MetricsData());
-  }
-
-  public static MetricTelemetry create(String name, double value) {
-    MetricTelemetry telemetry = new MetricTelemetry(new MetricsData());
+  public static StatsbeatTelemetry create(String name, double value) {
+    StatsbeatTelemetry telemetry = new StatsbeatTelemetry(new MetricsData());
 
     MetricDataPoint point = new MetricDataPoint();
     point.setName(name);
@@ -52,8 +48,8 @@ public final class MetricTelemetry extends Telemetry {
     return telemetry;
   }
 
-  private MetricTelemetry(MetricsData data) {
-    super(data, "Metric", "MetricData");
+  private StatsbeatTelemetry(MetricsData data) {
+    super(data, "Statsbeat", "MetricData");
     this.data = data;
   }
 
