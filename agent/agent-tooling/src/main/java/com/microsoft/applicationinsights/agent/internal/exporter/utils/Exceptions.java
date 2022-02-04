@@ -58,4 +58,6 @@ public class Exceptions {
     builder.setStack(str);
     return singletonList(builder);
   }
+
+  private Exceptions() {}
 }
