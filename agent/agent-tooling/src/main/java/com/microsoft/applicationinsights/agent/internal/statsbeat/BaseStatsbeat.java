@@ -37,12 +37,12 @@ abstract class BaseStatsbeat {
   protected StatsbeatTelemetryBuilder createStatsbeatTelemetry(
       TelemetryClient telemetryClient, String name, double value) {
 
-    StatsbeatTelemetryBuilder telemetry = StatsbeatTelemetryBuilder.create(name, value);
+    StatsbeatTelemetryBuilder telemetryBuilder = StatsbeatTelemetryBuilder.create(name, value);
 
-    telemetry.setInstrumentationKey(telemetryClient.getStatsbeatInstrumentationKey());
+    telemetryBuilder.setInstrumentationKey(telemetryClient.getStatsbeatInstrumentationKey());
 
-    customDimensions.populateProperties(telemetry, telemetryClient.getInstrumentationKey());
+    customDimensions.populateProperties(telemetryBuilder, telemetryClient.getInstrumentationKey());
 
-    return telemetry;
+    return telemetryBuilder;
   }
 }

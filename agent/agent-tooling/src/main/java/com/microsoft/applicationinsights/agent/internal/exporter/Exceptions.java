@@ -30,7 +30,7 @@ import java.util.List;
 public class Exceptions {
 
   public static List<ExceptionDetailBuilder> minimalParse(String str) {
-    ExceptionDetailBuilder detail = new ExceptionDetailBuilder();
+    ExceptionDetailBuilder builder = new ExceptionDetailBuilder();
     int separator = -1;
     int length = str.length();
     int current;
@@ -49,15 +49,15 @@ public class Exceptions {
       if (message.isEmpty()) {
         message = typeName;
       }
-      detail.setTypeName(typeName);
-      detail.setMessage(message);
+      builder.setTypeName(typeName);
+      builder.setMessage(message);
     } else {
       String typeName = str.substring(0, current);
-      detail.setTypeName(typeName);
-      detail.setMessage(typeName);
+      builder.setTypeName(typeName);
+      builder.setMessage(typeName);
     }
-    detail.setStack(str);
-    return singletonList(detail);
+    builder.setStack(str);
+    return singletonList(builder);
   }
 
   // THIS IS UNFINISHED WORK
@@ -68,12 +68,12 @@ public class Exceptions {
     for (String line : str.split("\r?\n")) {
       parser.process(line);
     }
-    return parser.getDetails();
+    return parser.getDetailBuilders();
   }
 
   private Exceptions() {}
 
-  static class Parser {
+  private static class Parser {
 
     private ExceptionDetailBuilder current;
     private final List<ExceptionDetailBuilder> list = new ArrayList<>();
@@ -103,7 +103,7 @@ public class Exceptions {
       }
     }
 
-    public List<ExceptionDetailBuilder> getDetails() {
+    private List<ExceptionDetailBuilder> getDetailBuilders() {
       if (current != null) {
         list.add(current);
       }

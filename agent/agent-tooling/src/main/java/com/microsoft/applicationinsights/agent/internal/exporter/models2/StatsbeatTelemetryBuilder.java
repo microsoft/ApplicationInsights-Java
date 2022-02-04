@@ -35,17 +35,17 @@ public final class StatsbeatTelemetryBuilder extends AbstractTelemetryBuilder {
   private final MetricsData data;
 
   public static StatsbeatTelemetryBuilder create(String name, double value) {
-    StatsbeatTelemetryBuilder telemetry = new StatsbeatTelemetryBuilder(new MetricsData());
+    StatsbeatTelemetryBuilder telemetryBuilder = new StatsbeatTelemetryBuilder(new MetricsData());
 
     MetricDataPoint point = new MetricDataPoint();
     point.setName(name);
     point.setValue(value);
     point.setDataPointType(DataPointType.MEASUREMENT);
-    telemetry.setMetricDataPoint(point);
+    telemetryBuilder.setMetricDataPoint(point);
 
-    telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
+    telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
 
-    return telemetry;
+    return telemetryBuilder;
   }
 
   private StatsbeatTelemetryBuilder(MetricsData data) {

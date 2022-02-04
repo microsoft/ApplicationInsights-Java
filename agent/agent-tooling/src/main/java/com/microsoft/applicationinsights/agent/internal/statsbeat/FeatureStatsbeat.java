@@ -76,12 +76,12 @@ public class FeatureStatsbeat extends BaseStatsbeat {
       featureType = "1";
     }
 
-    StatsbeatTelemetryBuilder telemetry =
+    StatsbeatTelemetryBuilder telemetryBuilder =
         createStatsbeatTelemetry(telemetryClient, FEATURE_METRIC_NAME, 0);
-    telemetry.addProperty("feature", String.valueOf(encodedLong));
-    telemetry.addProperty("type", featureType);
+    telemetryBuilder.addProperty("feature", String.valueOf(encodedLong));
+    telemetryBuilder.addProperty("type", featureType);
 
-    telemetryClient.trackStatsbeatAsync(telemetry.build());
+    telemetryClient.trackStatsbeatAsync(telemetryBuilder.build());
   }
 
   void trackConfigurationOptions(Configuration config) {

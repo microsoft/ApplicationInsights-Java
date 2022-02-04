@@ -68,9 +68,9 @@ public class AttachStatsbeatTest {
     assertThat("2a1216c3-a2a0-4fc5-a941-b1f5acde7051/65b2f83e-7bf1-4be3-bafc-3a4163265a52")
         .isEqualTo(attachStatsbeat.getResourceProviderId());
 
-    StatsbeatTelemetryBuilder telemetry = StatsbeatTelemetryBuilder.create("test", 1);
-    customDimensions.populateProperties(telemetry, null);
-    MetricsData data = (MetricsData) telemetry.build().getData().getBaseData();
+    StatsbeatTelemetryBuilder telemetryBuilder = StatsbeatTelemetryBuilder.create("test", 1);
+    customDimensions.populateProperties(telemetryBuilder, null);
+    MetricsData data = (MetricsData) telemetryBuilder.build().getData().getBaseData();
     assertThat(data.getProperties().get("os")).isEqualTo("Linux");
   }
 

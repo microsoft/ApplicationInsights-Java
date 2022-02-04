@@ -27,7 +27,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.ExceptionTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -125,9 +124,9 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
     dependencyTelemetry.setInstrumentationKey(instrumentationKey);
     QuickPulseDataCollector.INSTANCE.add(dependencyTelemetry);
     // Exception Telemetry
-    ExceptionTelemetryBuilder exceptionTelemetry = createExceptionTelemetry(new Exception("test"));
+    TelemetryItem exceptionTelemetry = createExceptionTelemetry(new Exception("test"));
     exceptionTelemetry.setInstrumentationKey(instrumentationKey);
-    QuickPulseDataCollector.INSTANCE.add(exceptionTelemetry.build());
+    QuickPulseDataCollector.INSTANCE.add(exceptionTelemetry);
 
     QuickPulseCoordinatorInitData initData =
         new QuickPulseCoordinatorInitDataBuilder()

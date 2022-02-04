@@ -58,9 +58,9 @@ public class CustomDimensionsTest {
   public void testCustomerIkey() {
     CustomDimensions customDimensions = new CustomDimensions();
 
-    StatsbeatTelemetryBuilder telemetry = StatsbeatTelemetryBuilder.create("test", 1);
-    customDimensions.populateProperties(telemetry, null);
-    MetricsData data = (MetricsData) telemetry.build().getData().getBaseData();
+    StatsbeatTelemetryBuilder telemetryBuilder = StatsbeatTelemetryBuilder.create("test", 1);
+    customDimensions.populateProperties(telemetryBuilder, null);
+    MetricsData data = (MetricsData) telemetryBuilder.build().getData().getBaseData();
     assertThat(data.getProperties().get("cikey")).isNull();
   }
 
@@ -68,13 +68,13 @@ public class CustomDimensionsTest {
   public void testVersion() {
     CustomDimensions customDimensions = new CustomDimensions();
 
-    StatsbeatTelemetryBuilder telemetry = StatsbeatTelemetryBuilder.create("test", 1);
-    customDimensions.populateProperties(telemetry, null);
+    StatsbeatTelemetryBuilder telemetryBuilder = StatsbeatTelemetryBuilder.create("test", 1);
+    customDimensions.populateProperties(telemetryBuilder, null);
 
     String sdkVersion = PropertyHelper.getQualifiedSdkVersionString();
     String version = sdkVersion.substring(sdkVersion.lastIndexOf(':') + 1);
 
-    MetricsData data = (MetricsData) telemetry.build().getData().getBaseData();
+    MetricsData data = (MetricsData) telemetryBuilder.build().getData().getBaseData();
     assertThat(data.getProperties().get("version")).isEqualTo(version);
   }
 
@@ -82,10 +82,10 @@ public class CustomDimensionsTest {
   public void testRuntimeVersion() {
     CustomDimensions customDimensions = new CustomDimensions();
 
-    StatsbeatTelemetryBuilder telemetry = StatsbeatTelemetryBuilder.create("test", 1);
-    customDimensions.populateProperties(telemetry, null);
+    StatsbeatTelemetryBuilder telemetryBuilder = StatsbeatTelemetryBuilder.create("test", 1);
+    customDimensions.populateProperties(telemetryBuilder, null);
 
-    MetricsData data = (MetricsData) telemetry.build().getData().getBaseData();
+    MetricsData data = (MetricsData) telemetryBuilder.build().getData().getBaseData();
     assertThat(data.getProperties().get("runtimeVersion"))
         .isEqualTo(System.getProperty("java.version"));
   }

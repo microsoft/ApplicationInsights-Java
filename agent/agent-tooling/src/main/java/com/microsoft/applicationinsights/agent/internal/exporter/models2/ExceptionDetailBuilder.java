@@ -31,11 +31,7 @@ import java.util.List;
 
 public final class ExceptionDetailBuilder {
 
-  private final TelemetryExceptionDetails data;
-
-  public ExceptionDetailBuilder() {
-    data = new TelemetryExceptionDetails();
-  }
+  private final TelemetryExceptionDetails data = new TelemetryExceptionDetails();
 
   public void setId(Integer id) {
     data.setId(id);

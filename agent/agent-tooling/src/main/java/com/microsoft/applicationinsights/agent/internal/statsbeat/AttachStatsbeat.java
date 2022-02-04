@@ -51,10 +51,10 @@ class AttachStatsbeat extends BaseStatsbeat {
       resourceProviderId = initResourceProviderId(customDimensions.getResourceProvider(), null);
     }
 
-    StatsbeatTelemetryBuilder telemetry =
+    StatsbeatTelemetryBuilder telemetryBuilder =
         createStatsbeatTelemetry(telemetryClient, ATTACH_METRIC_NAME, 0);
-    telemetry.addProperty("rpId", resourceProviderId);
-    telemetryClient.trackStatsbeatAsync(telemetry.build());
+    telemetryBuilder.addProperty("rpId", resourceProviderId);
+    telemetryClient.trackStatsbeatAsync(telemetryBuilder.build());
   }
 
   /** Returns the unique identifier of the resource provider. */

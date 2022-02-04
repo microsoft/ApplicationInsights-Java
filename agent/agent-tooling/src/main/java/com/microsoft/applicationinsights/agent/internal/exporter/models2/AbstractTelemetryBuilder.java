@@ -40,9 +40,6 @@ public abstract class AbstractTelemetryBuilder {
 
   private final TelemetryItem telemetryItem;
 
-  // TODO (trask) can remove later, mostly for initial debugging
-  private volatile boolean built;
-
   protected AbstractTelemetryBuilder(MonitorDomain data, String telemetryName, String baseType) {
 
     telemetryItem = new TelemetryItem();
@@ -87,10 +84,6 @@ public abstract class AbstractTelemetryBuilder {
   }
 
   public TelemetryItem build() {
-    if (built) {
-      throw new AssertionError("already built");
-    }
-    built = true;
     return telemetryItem;
   }
 
