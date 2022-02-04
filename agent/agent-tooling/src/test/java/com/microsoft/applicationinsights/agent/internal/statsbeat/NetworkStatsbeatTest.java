@@ -112,22 +112,28 @@ public class NetworkStatsbeatTest {
 
   @Test
   public void testGetHost() {
-    String url = "https://fake-host.applicationinsights.azure.com/v2.1/track";
-    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fake-host.applicationinsights.azure.com");
+    String url = "https://fakehost-1.example.com/";
+    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fakehost-1");
 
-    url = "http://fake-host.example.com/v2/track";
-    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fake-host.example.com");
+    url = "https://fakehost-2.example.com/";
+    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fakehost-2");
 
-    url = "http://www.fake-host.com/v2/track";
-    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("www.fake-host.com");
+    url = "http://www.fakehost-3.example.com/";
+    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fakehost-3");
 
-    url = "www.fake-host.com/";
-    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("www.fake-host.com");
+    url = "http://www.fakehost.com/v2/track";
+    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fakehost");
 
-    url = "http://fake-host.com";
-    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fake-host.com");
+    url = "www.fakehost0-4.com/";
+    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fakehost0-4");
 
-    url = "http://fake-host.com/";
-    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fake-host.com");
+    url = "http://fakehost.com";
+    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fakehost");
+
+    url = "http://fakehost/";
+    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fakehost");
+
+    url = "fakehost.example.com";
+    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fakehost");
   }
 }

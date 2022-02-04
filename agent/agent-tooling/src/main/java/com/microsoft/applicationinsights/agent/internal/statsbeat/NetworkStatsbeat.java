@@ -241,23 +241,33 @@ public class NetworkStatsbeat extends BaseStatsbeat {
 
   /**
    * e.g. endpointUrl 'https://westus-0.in.applicationinsights.azure.com/v2.1/track' host will
-   * return 'westus-0.in.applicationinsights.azure.com'
+   * return 'westus-0'
    */
   static String getHost(String endpointUrl) {
     assert (endpointUrl != null && !endpointUrl.isEmpty());
     int start = endpointUrl.indexOf("://");
+    int index = 0;
     if (start != -1) {
-      int end = endpointUrl.indexOf("/", start + 3);
-      if (end != -1) {
-        return endpointUrl.substring(start + 3, end);
-      }
-
-      return endpointUrl.substring(start + 3);
+      index = start + 3;
     }
 
-    int end = endpointUrl.indexOf("/");
+    start = endpointUrl.indexOf("www.");
+    if (start != -1) {
+      index = start + 4;
+      int end = endpointUrl.indexOf(".", index + 1);
+      if (end != -1) {
+        return endpointUrl.substring(index, end);
+      }
+    }
+
+    int end = endpointUrl.indexOf(".");
     if (end != -1) {
-      return endpointUrl.substring(0, end);
+      return endpointUrl.substring(index, end);
+    }
+
+    end = endpointUrl.indexOf("/", index);
+    if (end != -1) {
+      return endpointUrl.substring(index, end);
     }
 
     return endpointUrl;
