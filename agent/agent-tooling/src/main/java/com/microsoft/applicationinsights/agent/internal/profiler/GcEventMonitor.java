@@ -22,8 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.EventTelemetry;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
@@ -34,8 +33,6 @@ import com.microsoft.gcmonitor.GcMonitorFactory;
 import com.microsoft.gcmonitor.UnableToMonitorMemoryException;
 import com.microsoft.gcmonitor.memorypools.MemoryPool;
 import java.lang.management.MemoryUsage;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -141,42 +138,36 @@ public class GcEventMonitor {
       return;
     }
 
-    TelemetryItem telemetry = new TelemetryItem();
-    TelemetryEventData data = new TelemetryEventData();
-    TelemetryClient.getActive().initEventTelemetry(telemetry, data);
+    EventTelemetry telemetry = EventTelemetry.create();
 
-    data.setName("GcEvent");
+    telemetry.setName("GcEvent");
 
-    Map<String, String> properties = new HashMap<>();
-    properties.put("collector", event.getCollector().getName());
-    properties.put("type", event.getGcCause());
-    properties.put("action", event.getGcAction());
-    properties.put("jvm_instance_id", JVM_INSTANCE_UID);
-    data.setProperties(properties);
+    telemetry.addProperty("collector", event.getCollector().getName());
+    telemetry.addProperty("type", event.getGcCause());
+    telemetry.addProperty("action", event.getGcAction());
+    telemetry.addProperty("jvm_instance_id", JVM_INSTANCE_UID);
 
-    Map<String, Double> measurements = new HashMap<>();
-    measurements.put("id", (double) event.getId());
-    measurements.put("duration_ms", (double) event.getDuration());
-    measurements.put("end_time_ms", (double) event.getEndTime());
-    measurements.put("thread_count", (double) event.getGcThreadCount());
-    measurements.put("collection_count", (double) event.getCollector().getCollectionCount());
-    measurements.put(
+    telemetry.addMeasurement("id", (double) event.getId());
+    telemetry.addMeasurement("duration_ms", (double) event.getDuration());
+    telemetry.addMeasurement("end_time_ms", (double) event.getEndTime());
+    telemetry.addMeasurement("thread_count", (double) event.getGcThreadCount());
+    telemetry.addMeasurement(
+        "collection_count", (double) event.getCollector().getCollectionCount());
+    telemetry.addMeasurement(
         "cumulative_collector_time_sec", (double) event.getCollector().getCollectionTime());
 
     addMemoryUsage(
-        "young", "before", measurements, event.getMemoryUsageBeforeGc(event.getYoungPools()));
-    addMemoryUsage(
-        "young", "after", measurements, event.getMemoryUsageAfterGc(event.getYoungPools()));
+        "young", "before", telemetry, event.getMemoryUsageBeforeGc(event.getYoungPools()));
+    addMemoryUsage("young", "after", telemetry, event.getMemoryUsageAfterGc(event.getYoungPools()));
 
     Optional<MemoryPool> tenuredPool = event.getTenuredPool();
     if (tenuredPool.isPresent()) {
       MemoryUsage beforeOg = event.getMemoryUsageBeforeGc(tenuredPool.get());
-      addMemoryUsage("tenured", "before", measurements, beforeOg);
+      addMemoryUsage("tenured", "before", telemetry, beforeOg);
 
       MemoryUsage afterOg = event.getMemoryUsageAfterGc(tenuredPool.get());
-      addMemoryUsage("tenured", "after", measurements, afterOg);
+      addMemoryUsage("tenured", "after", telemetry, afterOg);
     }
-    data.setMeasurements(measurements);
 
     telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
 
@@ -184,10 +175,10 @@ public class GcEventMonitor {
   }
 
   private static void addMemoryUsage(
-      String poolName, String when, Map<String, Double> measurements, MemoryUsage memory) {
-    measurements.put(poolName + "_" + when + "_used", (double) memory.getUsed());
-    measurements.put(poolName + "_" + when + "_size", (double) memory.getCommitted());
-    measurements.put(poolName + "_max", (double) memory.getMax());
+      String poolName, String when, EventTelemetry telemetry, MemoryUsage memory) {
+    telemetry.addMeasurement(poolName + "_" + when + "_used", (double) memory.getUsed());
+    telemetry.addMeasurement(poolName + "_" + when + "_size", (double) memory.getCommitted());
+    telemetry.addMeasurement(poolName + "_max", (double) memory.getMax());
   }
 
   private GcEventMonitor() {}

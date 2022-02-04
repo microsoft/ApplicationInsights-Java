@@ -23,9 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.AvailabilityData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.DataPointType;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MessageData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDataPoint;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorDomain;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.PageViewData;
@@ -36,7 +34,6 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.StackFra
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.instrumentation.api.cache.Cache;
 import java.util.ArrayList;
@@ -54,22 +51,6 @@ public class TelemetryUtil {
 
   private static final int MAX_PARSED_STACK_LENGTH =
       32768; // Breeze will reject parsedStack exceeding 65536 bytes. Each char is 2 bytes long.
-
-  public static TelemetryItem createMetricsTelemetry(
-      TelemetryClient telemetryClient, String name, double value) {
-    TelemetryItem telemetry = new TelemetryItem();
-    MetricsData data = new MetricsData();
-    MetricDataPoint point = new MetricDataPoint();
-    telemetryClient.initMetricTelemetry(telemetry, data, point);
-
-    point.setName(name);
-    point.setValue(value);
-    point.setDataPointType(DataPointType.MEASUREMENT);
-
-    telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
-
-    return telemetry;
-  }
 
   public static List<TelemetryExceptionDetails> getExceptions(Throwable throwable) {
     List<TelemetryExceptionDetails> exceptions = new ArrayList<>();

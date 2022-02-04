@@ -39,6 +39,7 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestD
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.Telemetry;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileCache;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileLoader;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileSender;
@@ -147,25 +148,32 @@ public class TelemetryClient {
     TelemetryClient.active = telemetryClient;
   }
 
-  public void trackAsync(TelemetryItem telemetry) {
+  // TODO (trask) change this to accept Telemetry
+  public void trackAsync(Telemetry telemetry) {
+    trackAsync(telemetry.getTelemetryItem());
+  }
+
+  // this is still used by ProfilerServiceInitializer
+  @Deprecated
+  public void trackAsync(TelemetryItem telemetryItem) {
     if (Strings.isNullOrEmpty(instrumentationKey)) {
       return;
     }
 
     // populate default instrumentationKey
-    if (telemetry.getInstrumentationKey() == null) {
-      telemetry.setInstrumentationKey(instrumentationKey);
+    if (telemetryItem.getInstrumentationKey() == null) {
+      telemetryItem.setInstrumentationKey(instrumentationKey);
     }
 
     // populate global tags
-    Map<String, String> tags = telemetry.getTags();
+    Map<String, String> tags = telemetryItem.getTags();
     if (tags == null) {
       tags = new HashMap<>();
-      telemetry.setTags(tags);
+      telemetryItem.setTags(tags);
     }
     tags.putAll(globalTags);
 
-    MonitorDomain data = telemetry.getData().getBaseData();
+    MonitorDomain data = telemetryItem.getData().getBaseData();
 
     // populate global properties
     Map<String, String> properties = TelemetryUtil.getProperties(data);
@@ -200,22 +208,22 @@ public class TelemetryClient {
       metricsData.setMetrics(filteredPoints);
     }
 
-    if (telemetry.getTime() == null) {
+    if (telemetryItem.getTime() == null) {
       // this is easy to forget when adding new telemetry
       throw new AssertionError("telemetry item is missing time");
     }
 
-    QuickPulseDataCollector.INSTANCE.add(telemetry);
+    QuickPulseDataCollector.INSTANCE.add(telemetryItem);
 
-    TelemetryObservers.INSTANCE.getObservers().forEach(consumer -> consumer.accept(telemetry));
+    TelemetryObservers.INSTANCE.getObservers().forEach(consumer -> consumer.accept(telemetryItem));
 
     // batching, retry, throttling, and writing to disk on failure occur downstream
     // for simplicity not reporting back success/failure from this layer
     // only that it was successfully delivered to the next layer
     if (data instanceof MetricsData) {
-      getMetricsChannelBatcher().trackAsync(telemetry);
+      getMetricsChannelBatcher().trackAsync(telemetryItem);
     } else {
-      getGeneralChannelBatcher().trackAsync(telemetry);
+      getGeneralChannelBatcher().trackAsync(telemetryItem);
     }
   }
 

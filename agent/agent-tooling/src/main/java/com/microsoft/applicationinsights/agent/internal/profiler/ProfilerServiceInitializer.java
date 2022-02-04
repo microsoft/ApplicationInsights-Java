@@ -23,9 +23,9 @@ package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import com.azure.core.http.HttpPipeline;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MessageData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.MessageTelemetry;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -225,10 +225,8 @@ public class ProfilerServiceInitializer {
   }
 
   private static void sendMessageTelemetry(TelemetryClient telemetryClient, String message) {
-    TelemetryItem telemetry = new TelemetryItem();
-    MessageData data = new MessageData();
-    telemetryClient.initMessageTelemetry(telemetry, data);
-    data.setMessage(message);
+    MessageTelemetry telemetry = MessageTelemetry.create();
+    telemetry.setMessage(message);
     telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
     telemetryClient.trackAsync(telemetry);
   }

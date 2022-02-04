@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import static com.microsoft.applicationinsights.agent.internal.perfcounter.Constants.TOTAL_CPU_PC_METRIC_NAME;
 import static com.microsoft.applicationinsights.agent.internal.perfcounter.JvmHeapMemoryUsedPerformanceCounter.HEAP_MEM_USED_PERCENTAGE;
-import static com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil.createMetricsTelemetry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -35,6 +34,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.GcReportin
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorDomain;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.MetricTelemetry;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
@@ -82,7 +82,7 @@ class ProfilerServiceTest {
   void endToEndAlertTriggerCpu() throws Exception {
     endToEndAlertTriggerCycle(
         false,
-        createMetricsTelemetry(TelemetryClient.createForTest(), TOTAL_CPU_PC_METRIC_NAME, 100.0),
+        MetricTelemetry.create(TOTAL_CPU_PC_METRIC_NAME, 100.0),
         telemetry -> {
           assertThat(telemetry.getProperties().get("Source")).isEqualTo("JFR-CPU");
           assertThat(telemetry.getMeasurements().get("AverageCPUUsage")).isEqualTo(100.0);
@@ -94,7 +94,7 @@ class ProfilerServiceTest {
   void endToEndAlertTriggerManual() throws Exception {
     endToEndAlertTriggerCycle(
         true,
-        createMetricsTelemetry(TelemetryClient.createForTest(), HEAP_MEM_USED_PERCENTAGE, 0.0),
+        MetricTelemetry.create(HEAP_MEM_USED_PERCENTAGE, 0.0),
         telemetry -> {
           assertThat(telemetry.getProperties().get("Source")).isEqualTo("JFR-MANUAL");
           assertThat(telemetry.getMeasurements().get("AverageCPUUsage")).isEqualTo(0.0);
@@ -104,7 +104,7 @@ class ProfilerServiceTest {
 
   void endToEndAlertTriggerCycle(
       boolean triggerNow,
-      TelemetryItem metricTelemetry,
+      MetricTelemetry metricTelemetry,
       Consumer<TelemetryEventData> assertTelemetry)
       throws Exception {
     AtomicBoolean profileInvoked = new AtomicBoolean(false);
@@ -186,7 +186,8 @@ class ProfilerServiceTest {
     for (int i = 0; i < 100; i++) {
       TelemetryObservers.INSTANCE
           .getObservers()
-          .forEach(telemetryObserver -> telemetryObserver.accept(metricTelemetry));
+          .forEach(
+              telemetryObserver -> telemetryObserver.accept(metricTelemetry.getTelemetryItem()));
 
       synchronized (monitor) {
         if (serviceProfilerIndex.get() != null) {

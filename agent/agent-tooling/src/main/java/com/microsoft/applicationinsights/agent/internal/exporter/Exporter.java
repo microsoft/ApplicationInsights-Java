@@ -250,7 +250,7 @@ public class Exporter implements SpanExporter {
     }
 
     // export
-    telemetryClient.trackAsync(telemetry.getTelemetryItem());
+    telemetryClient.trackAsync(telemetry);
     exportEvents(span, null, samplingPercentage);
   }
 
@@ -373,7 +373,7 @@ public class Exporter implements SpanExporter {
     setLoggerProperties(telemetry, level, loggerName, threadName);
 
     // export
-    telemetryClient.trackAsync(telemetry.getTelemetryItem());
+    telemetryClient.trackAsync(telemetry);
   }
 
   private void trackTraceAsException(SpanData span, String errorStack) {
@@ -398,7 +398,7 @@ public class Exporter implements SpanExporter {
     setLoggerProperties(telemetry, level, loggerName, threadName);
 
     // export
-    telemetryClient.trackAsync(telemetry.getTelemetryItem());
+    telemetryClient.trackAsync(telemetry);
   }
 
   private static void setOperationTags(Telemetry telemetry, SpanData span) {
@@ -785,7 +785,7 @@ public class Exporter implements SpanExporter {
     }
 
     // export
-    telemetryClient.trackAsync(telemetry.getTelemetryItem());
+    telemetryClient.trackAsync(telemetry);
     exportEvents(span, operationName, samplingPercentage);
   }
 
@@ -931,7 +931,7 @@ public class Exporter implements SpanExporter {
       // set message-specific properties
       telemetry.setMessage(event.getName());
 
-      telemetryClient.trackAsync(telemetry.getTelemetryItem());
+      telemetryClient.trackAsync(telemetry);
     }
   }
 
@@ -953,7 +953,7 @@ public class Exporter implements SpanExporter {
     // set exception-specific properties
     telemetry.setExceptions(Exceptions.minimalParse(errorStack));
 
-    telemetryClient.trackAsync(telemetry.getTelemetryItem());
+    telemetryClient.trackAsync(telemetry);
   }
 
   private static void setTime(Telemetry telemetry, long epochNanos) {

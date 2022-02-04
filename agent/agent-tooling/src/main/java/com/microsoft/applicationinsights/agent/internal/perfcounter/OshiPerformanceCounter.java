@@ -21,9 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.MetricTelemetry;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,8 +130,6 @@ public class OshiPerformanceCounter implements PerformanceCounter {
   }
 
   private static void send(TelemetryClient telemetryClient, double value, String metricName) {
-    TelemetryItem telemetry =
-        TelemetryUtil.createMetricsTelemetry(telemetryClient, metricName, value);
-    telemetryClient.trackAsync(telemetry);
+    telemetryClient.trackAsync(MetricTelemetry.create(metricName, value));
   }
 }

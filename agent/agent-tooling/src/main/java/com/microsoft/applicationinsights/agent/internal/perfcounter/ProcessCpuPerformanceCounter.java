@@ -23,9 +23,8 @@ package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
 import static com.microsoft.applicationinsights.agent.internal.perfcounter.Constants.PROCESS_CPU_PC_METRIC_NAME;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.MetricTelemetry;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,9 +69,6 @@ public class ProcessCpuPerformanceCounter implements PerformanceCounter {
     }
 
     logger.trace("Performance Counter: {}: {}", PROCESS_CPU_PC_METRIC_NAME, processCpuUsage);
-    TelemetryItem telemetry =
-        TelemetryUtil.createMetricsTelemetry(
-            telemetryClient, PROCESS_CPU_PC_METRIC_NAME, processCpuUsage);
-    telemetryClient.trackAsync(telemetry);
+    telemetryClient.trackAsync(MetricTelemetry.create(PROCESS_CPU_PC_METRIC_NAME, processCpuUsage));
   }
 }
