@@ -65,7 +65,10 @@ final class StartupProfiler {
       start(printWriter);
     } catch (IOException e) {
       System.out.println(
-          "Error occurred when writing dump to " + dumpFile.getPath() + " \ncause: " + e.getCause());
+          "Error occurred when writing dump to "
+              + dumpFile.getPath()
+              + " \ncause: "
+              + e.getCause());
     } finally {
       if (printWriter != null) {
         printWriter.close();
