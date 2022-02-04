@@ -41,6 +41,7 @@ public class LoggingLevelConfigurator {
   }
 
   public void initLoggerLevels(LoggerContext loggerContext) {
+    updateLoggerLevel(loggerContext.getLogger("oshi"));
     updateLoggerLevel(loggerContext.getLogger("reactor.netty"));
     updateLoggerLevel(loggerContext.getLogger("reactor.util"));
     updateLoggerLevel(loggerContext.getLogger("io.netty"));
@@ -62,7 +63,9 @@ public class LoggingLevelConfigurator {
   public void updateLoggerLevel(Logger logger) {
     Level loggerLevel;
     String name = logger.getName();
-    if (name.startsWith("reactor.netty") || name.startsWith("io.netty")) {
+    if (name.startsWith("oshi")) {
+      loggerLevel = Level.OFF;
+    } else if (name.startsWith("reactor.netty") || name.startsWith("io.netty")) {
       loggerLevel = getNettyLevel(level);
     } else if (name.startsWith("reactor.util")) {
       loggerLevel = getDefaultLibraryLevel(level);
