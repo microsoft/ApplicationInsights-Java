@@ -25,8 +25,6 @@ import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.builders.StatsbeatTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.instrumentation.api.cache.Cache;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -243,7 +241,23 @@ public class NetworkStatsbeat extends BaseStatsbeat {
    * e.g. endpointUrl 'https://westus-0.in.applicationinsights.azure.com/v2.1/track' host will
    * return 'westus-0.in.applicationinsights.azure.com'
    */
-  static String getHost(String endpointUrl) throws MalformedURLException {
-    return new URL(endpointUrl).getHost();
+  static String getHost(String endpointUrl) {
+    assert (endpointUrl != null && !endpointUrl.isEmpty());
+    int start = endpointUrl.indexOf("://");
+    if (start != -1) {
+      int end = endpointUrl.indexOf("/", start + 3);
+      if (end != -1) {
+        return endpointUrl.substring(start + 3, end);
+      }
+
+      return endpointUrl.substring(start + 3);
+    }
+
+    int end = endpointUrl.indexOf("/");
+    if (end != -1) {
+      return endpointUrl.substring(0, end);
+    }
+
+    return endpointUrl;
   }
 }
