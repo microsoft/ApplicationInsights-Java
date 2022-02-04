@@ -69,7 +69,8 @@ public final class ExceptionDetailTelemetry {
     data.setParsedStack(parsedStack);
   }
 
-  TelemetryExceptionDetails getData() {
+  // visible (beyond package protected) for testing
+  public TelemetryExceptionDetails getData() {
     return data;
   }
 }
