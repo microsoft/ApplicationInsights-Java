@@ -132,43 +132,17 @@ public class TelemetryClient {
     TelemetryClient.active = telemetryClient;
   }
 
-  // TODO (trask) change this to accept Telemetry
   public void trackAsync(Telemetry telemetry) {
-    trackAsync(telemetry.getTelemetryItem());
-  }
-
-  // this is still used by ProfilerServiceInitializer
-  @Deprecated
-  public void trackAsync(TelemetryItem telemetryItem) {
     if (Strings.isNullOrEmpty(instrumentationKey)) {
       return;
     }
 
-    // populate default instrumentationKey
-    if (telemetryItem.getInstrumentationKey() == null) {
-      telemetryItem.setInstrumentationKey(instrumentationKey);
-    }
-
-    // populate global tags
-    Map<String, String> tags = telemetryItem.getTags();
-    if (tags == null) {
-      tags = new HashMap<>();
-      telemetryItem.setTags(tags);
-    }
-    tags.putAll(globalTags);
-
+    TelemetryItem telemetryItem = telemetry.getTelemetryItem();
     MonitorDomain data = telemetryItem.getData().getBaseData();
-
-    // populate global properties
-    Map<String, String> properties = TelemetryUtil.getProperties(data);
-    for (Map.Entry<String, String> entry : globalProperties.entrySet()) {
-      if (!properties.containsKey(entry.getKey())) {
-        properties.put(entry.getKey(), entry.getValue());
-      }
-    }
 
     if (data instanceof MetricsData) {
       MetricsData metricsData = (MetricsData) data;
+      // TODO (trask) there can only be a single point so this is excessive
       List<MetricDataPoint> filteredPoints =
           metricsData.getMetrics().stream()
               .filter(
@@ -321,6 +295,16 @@ public class TelemetryClient {
   /** Gets or sets the default instrumentation key for the application. */
   public String getInstrumentationKey() {
     return instrumentationKey;
+  }
+
+  public void populateDefaults(Telemetry telemetry) {
+    telemetry.setInstrumentationKey(instrumentationKey);
+    for (Map.Entry<String, String> entry : globalTags.entrySet()) {
+      telemetry.addTag(entry.getKey(), entry.getValue());
+    }
+    for (Map.Entry<String, String> entry : globalProperties.entrySet()) {
+      telemetry.addProperty(entry.getKey(), entry.getValue());
+    }
   }
 
   /** Gets or sets the default instrumentation key for the application. */

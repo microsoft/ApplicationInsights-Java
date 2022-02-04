@@ -80,6 +80,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       return;
     }
     EventTelemetry telemetry = EventTelemetry.create();
+    TelemetryClient.getActive().populateDefaults(telemetry);
 
     telemetry.setName(name);
     for (Map.Entry<String, Double> entry : measurements.entrySet()) {
@@ -120,6 +121,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       return;
     }
     MetricTelemetry telemetry = MetricTelemetry.create();
+    TelemetryClient.getActive().populateDefaults(telemetry);
 
     MetricDataPoint point = new MetricDataPoint();
     point.setName(name);
@@ -172,6 +174,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       return;
     }
     RemoteDependencyTelemetry telemetry = RemoteDependencyTelemetry.create();
+    TelemetryClient.getActive().populateDefaults(telemetry);
 
     telemetry.setName(name);
     if (id == null) {
@@ -222,6 +225,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       return;
     }
     PageViewTelemetry telemetry = PageViewTelemetry.create();
+    TelemetryClient.getActive().populateDefaults(telemetry);
 
     telemetry.setName(name);
     if (uri != null) {
@@ -260,6 +264,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       return;
     }
     MessageTelemetry telemetry = MessageTelemetry.create();
+    TelemetryClient.getActive().populateDefaults(telemetry);
 
     telemetry.setMessage(message);
     if (severityLevel != -1) {
@@ -301,6 +306,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       return;
     }
     RequestTelemetry telemetry = RequestTelemetry.create();
+    TelemetryClient.getActive().populateDefaults(telemetry);
 
     if (id == null) {
       telemetry.setId(AiLegacyPropagator.generateSpanId());
@@ -349,6 +355,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       return;
     }
     ExceptionTelemetry telemetry = ExceptionTelemetry.create();
+    TelemetryClient.getActive().populateDefaults(telemetry);
 
     telemetry.setExceptions(TelemetryUtil.getExceptions(exception));
     telemetry.setSeverityLevel(SeverityLevel.ERROR);

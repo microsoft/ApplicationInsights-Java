@@ -35,6 +35,7 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorD
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.exporter.models2.MetricTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.Telemetry;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
@@ -127,8 +128,9 @@ class ProfilerServiceTest {
         spy(TelemetryClient.builder().setCustomDimensions(new HashMap<>()).build());
     doAnswer(
             invocation -> {
-              TelemetryItem telemetry = invocation.getArgument(0);
-              MonitorDomain data = telemetry.getData().getBaseData();
+              Telemetry telemetry = invocation.getArgument(0);
+              TelemetryItem telemetryItem = telemetry.getTelemetryItem();
+              MonitorDomain data = telemetryItem.getData().getBaseData();
               if (data instanceof TelemetryEventData) {
                 if ("ServiceProfilerIndex".equals(((TelemetryEventData) data).getName())) {
                   serviceProfilerIndex.set((TelemetryEventData) data);
@@ -140,7 +142,7 @@ class ProfilerServiceTest {
               return null;
             })
         .when(client)
-        .trackAsync(any(TelemetryItem.class));
+        .trackAsync(any(Telemetry.class));
 
     ScheduledExecutorService serviceProfilerExecutorService =
         Executors.newScheduledThreadPool(

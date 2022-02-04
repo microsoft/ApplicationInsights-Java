@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.DataPointType;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDataPoint;
 import com.microsoft.applicationinsights.agent.internal.exporter.models2.MessageTelemetry;
 import com.microsoft.applicationinsights.agent.internal.exporter.models2.MetricTelemetry;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
@@ -60,17 +58,13 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
 
   @Override
   public void report(TelemetryClient telemetryClient) {
-    MetricTelemetry telemetry = MetricTelemetry.create();
-    MetricDataPoint point = new MetricDataPoint();
-
-    point.setName(METRIC_NAME);
-    point.setValue(0);
-    point.setDataPointType(DataPointType.MEASUREMENT);
 
     long[] threadIds = threadBean.findDeadlockedThreads();
     int blockedThreadCount = threadIds == null ? 0 : threadIds.length;
 
-    point.setValue(blockedThreadCount);
+    MetricTelemetry telemetry = MetricTelemetry.create(METRIC_NAME, blockedThreadCount);
+    telemetryClient.populateDefaults(telemetry);
+
     telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
 
     telemetryClient.trackAsync(telemetry);
@@ -83,6 +77,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
   private void sendDetailedMessage(TelemetryClient telemetryClient, long[] threadIds) {
 
     MessageTelemetry telemetry = MessageTelemetry.create();
+    telemetryClient.populateDefaults(telemetry);
 
     StringBuilder sb = new StringBuilder("Suspected deadlocked threads: ");
     for (long threadId : threadIds) {
