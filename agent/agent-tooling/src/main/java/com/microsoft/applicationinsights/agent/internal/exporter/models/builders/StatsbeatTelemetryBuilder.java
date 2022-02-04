@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.exporter.models2;
+package com.microsoft.applicationinsights.agent.internal.exporter.models.builders;
 
 import com.microsoft.applicationinsights.agent.internal.exporter.models.DataPointType;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDataPoint;
@@ -30,42 +30,38 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class MetricTelemetryBuilder extends AbstractTelemetryBuilder {
+public final class StatsbeatTelemetryBuilder extends AbstractTelemetryBuilder {
 
   private final MetricsData data;
 
-  public static MetricTelemetryBuilder create() {
-    return new MetricTelemetryBuilder(new MetricsData());
-  }
+  public static StatsbeatTelemetryBuilder create(String name, double value) {
+    StatsbeatTelemetryBuilder telemetryBuilder = new StatsbeatTelemetryBuilder(new MetricsData());
 
-  public static MetricTelemetryBuilder create(String name, double value) {
-    MetricTelemetryBuilder telemetryBuilder = new MetricTelemetryBuilder(new MetricsData());
-
-    MetricPointBuilder point = new MetricPointBuilder();
-
+    MetricDataPoint point = new MetricDataPoint();
     point.setName(name);
     point.setValue(value);
     point.setDataPointType(DataPointType.MEASUREMENT);
-    telemetryBuilder.setMetricPoint(point);
+    telemetryBuilder.setMetricDataPoint(point);
 
     telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
 
     return telemetryBuilder;
   }
 
-  private MetricTelemetryBuilder(MetricsData data) {
-    super(data, "Metric", "MetricData");
+  private StatsbeatTelemetryBuilder(MetricsData data) {
+    // not using the default telemetry name for metrics (which is "Metric")
+    super(data, "Statsbeat", "MetricData");
     this.data = data;
   }
 
-  public void setMetricPoint(MetricPointBuilder point) {
+  public void setMetricDataPoint(MetricDataPoint point) {
     List<MetricDataPoint> metrics = data.getMetrics();
     if (metrics == null) {
       metrics = new ArrayList<>();
       data.setMetrics(metrics);
     }
     if (metrics.isEmpty()) {
-      metrics.add(point.build());
+      metrics.add(point);
     }
   }
 

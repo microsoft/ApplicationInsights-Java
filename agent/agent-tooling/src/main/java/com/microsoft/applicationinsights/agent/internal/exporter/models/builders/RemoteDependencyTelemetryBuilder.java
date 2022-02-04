@@ -19,59 +19,66 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.exporter.models2;
+package com.microsoft.applicationinsights.agent.internal.exporter.models.builders;
 
 import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
 
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDependencyData;
 import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class RequestTelemetryBuilder extends AbstractTelemetryBuilder {
+public final class RemoteDependencyTelemetryBuilder extends AbstractTelemetryBuilder {
 
-  private static final int MAX_SOURCE_LENGTH = 1024;
-  private static final int MAX_RESPONSE_CODE_LENGTH = 1024;
+  private static final int MAX_DATA_LENGTH = 8192;
+  private static final int MAX_RESULT_CODE_LENGTH = 1024;
+  private static final int MAX_DEPENDENCY_TYPE_LENGTH = 1024;
+  private static final int MAX_TARGET_NAME_LENGTH = 1024;
 
-  private final RequestData data;
+  private final RemoteDependencyData data;
 
-  public static RequestTelemetryBuilder create() {
-    return new RequestTelemetryBuilder(new RequestData());
+  public static RemoteDependencyTelemetryBuilder create() {
+    return new RemoteDependencyTelemetryBuilder(new RemoteDependencyData());
   }
 
-  private RequestTelemetryBuilder(RequestData data) {
-    super(data, "Request", "RequestData");
+  private RemoteDependencyTelemetryBuilder(RemoteDependencyData data) {
+    super(data, "RemoteDependency", "RemoteDependencyData");
     this.data = data;
   }
 
   public void setId(String id) {
-    data.setId(truncateTelemetry(id, SanitizationHelper.MAX_ID_LENGTH, "Request.id"));
+    data.setId(truncateTelemetry(id, SanitizationHelper.MAX_ID_LENGTH, "RemoteDependency.id"));
   }
 
   public void setName(String name) {
-    data.setName(truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "Request.name"));
+    data.setName(
+        truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "RemoteDependency.name"));
+  }
+
+  public void setResultCode(String resultCode) {
+    data.setResultCode(
+        truncateTelemetry(resultCode, MAX_RESULT_CODE_LENGTH, "RemoteDependency.resultCode"));
+  }
+
+  public void setData(String data) {
+    this.data.setData(truncateTelemetry(data, MAX_DATA_LENGTH, "RemoteDependency.data"));
+  }
+
+  public void setType(String type) {
+    data.setType(truncateTelemetry(type, MAX_DEPENDENCY_TYPE_LENGTH, "RemoteDependency.type"));
+  }
+
+  public void setTarget(String target) {
+    data.setTarget(truncateTelemetry(target, MAX_TARGET_NAME_LENGTH, "RemoteDependency.target"));
   }
 
   public void setDuration(String duration) {
     data.setDuration(duration);
   }
 
-  public void setSuccess(boolean success) {
+  public void setSuccess(Boolean success) {
     data.setSuccess(success);
-  }
-
-  public void setResponseCode(String responseCode) {
-    data.setResponseCode(
-        truncateTelemetry(responseCode, MAX_RESPONSE_CODE_LENGTH, "Request.responseCode"));
-  }
-
-  public void setSource(String source) {
-    data.setSource(truncateTelemetry(source, MAX_SOURCE_LENGTH, "Request.source"));
-  }
-
-  public void setUrl(String url) {
-    data.setUrl(truncateTelemetry(url, SanitizationHelper.MAX_URL_LENGTH, "Request.url"));
   }
 
   public void addMeasurement(String key, Double value) {

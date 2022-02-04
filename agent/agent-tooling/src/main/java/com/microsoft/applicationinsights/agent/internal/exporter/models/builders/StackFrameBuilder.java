@@ -19,54 +19,41 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.exporter.models2;
+package com.microsoft.applicationinsights.agent.internal.exporter.models.builders;
 
 import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.DataPointType;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDataPoint;
-import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.StackFrame;
 
-public final class MetricPointBuilder {
+public final class StackFrameBuilder {
 
-  private static final int MAX_METRIC_NAME_SPACE_LENGTH = 256;
+  private static final int MAX_FILE_NAME_LENGTH = 1024;
+  private static final int MAX_METHOD_NAME_LENGTH = 1024;
+  private static final int MAX_ASSEMBLY_NAME_LENGTH = 1024;
 
-  private final MetricDataPoint data = new MetricDataPoint();
+  private final StackFrame data = new StackFrame();
 
-  public void setNamespace(String namespace) {
-    data.setNamespace(
-        truncateTelemetry(namespace, MAX_METRIC_NAME_SPACE_LENGTH, "MetricPoint.namespace"));
+  public void setLevel(int level) {
+    data.setLevel(level);
   }
 
-  public void setName(String name) {
-    data.setName(truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "MetricPoint.name"));
+  public void setMethod(String method) {
+    data.setMethod(truncateTelemetry(method, MAX_METHOD_NAME_LENGTH, "StackFrame.method"));
   }
 
-  public void setDataPointType(DataPointType dataPointType) {
-    data.setDataPointType(dataPointType);
+  public void setAssembly(String assembly) {
+    data.setAssembly(truncateTelemetry(assembly, MAX_ASSEMBLY_NAME_LENGTH, "StackFrame.assembly"));
   }
 
-  public void setValue(double value) {
-    data.setValue(value);
+  public void setFileName(String fileName) {
+    data.setFileName(truncateTelemetry(fileName, MAX_FILE_NAME_LENGTH, "StackFrame.fileName"));
   }
 
-  public void setCount(Integer count) {
-    data.setCount(count);
+  public void setLine(Integer line) {
+    data.setLine(line);
   }
 
-  public void setMin(Double min) {
-    data.setMin(min);
-  }
-
-  public void setMax(Double max) {
-    data.setMax(max);
-  }
-
-  public void setStdDev(Double stdDev) {
-    data.setStdDev(stdDev);
-  }
-
-  MetricDataPoint build() {
+  StackFrame build() {
     return data;
   }
 }

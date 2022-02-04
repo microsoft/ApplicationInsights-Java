@@ -22,8 +22,8 @@
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.ExceptionDetailBuilder;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.StackFrameBuilder;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.builders.ExceptionDetailBuilder;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.builders.StackFrameBuilder;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.instrumentation.api.cache.Cache;
 import java.util.ArrayList;

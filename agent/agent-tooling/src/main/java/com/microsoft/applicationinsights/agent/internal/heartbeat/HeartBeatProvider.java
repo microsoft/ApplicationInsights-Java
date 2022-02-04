@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.heartbeat;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.ContextTagKeys;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.MetricTelemetryBuilder;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.builders.MetricTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.HashMap;
 import java.util.Map;

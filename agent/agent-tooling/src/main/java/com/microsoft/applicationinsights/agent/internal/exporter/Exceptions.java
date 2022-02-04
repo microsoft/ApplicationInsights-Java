@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.exporter;
 
 import static java.util.Collections.singletonList;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.ExceptionDetailBuilder;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.builders.ExceptionDetailBuilder;
 import java.util.ArrayList;
 import java.util.List;
 

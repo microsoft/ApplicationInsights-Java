@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.exporter;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.ExceptionDetailBuilder;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.builders.ExceptionDetailBuilder;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;

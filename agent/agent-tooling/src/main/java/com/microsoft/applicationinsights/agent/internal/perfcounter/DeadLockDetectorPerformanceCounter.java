@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.MessageTelemetryBuilder;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.builders.MessageTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.lang.management.ManagementFactory;

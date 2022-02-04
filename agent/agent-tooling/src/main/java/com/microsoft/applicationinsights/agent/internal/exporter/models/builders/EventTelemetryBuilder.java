@@ -19,48 +19,32 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.exporter.models2;
+package com.microsoft.applicationinsights.agent.internal.exporter.models.builders;
 
 import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
 
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.SeverityLevel;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
-import java.util.ArrayList;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public final class ExceptionTelemetryBuilder extends AbstractTelemetryBuilder {
+public final class EventTelemetryBuilder extends AbstractTelemetryBuilder {
 
-  private static final int MAX_PROBLEM_ID_LENGTH = 1024;
+  private static final int MAX_EVENT_NAME_LENGTH = 512;
 
-  private final TelemetryExceptionData data;
+  private final TelemetryEventData data;
 
-  public static ExceptionTelemetryBuilder create() {
-    return new ExceptionTelemetryBuilder(new TelemetryExceptionData());
+  public static EventTelemetryBuilder create() {
+    return new EventTelemetryBuilder(new TelemetryEventData());
   }
 
-  private ExceptionTelemetryBuilder(TelemetryExceptionData data) {
-    super(data, "Exception", "ExceptionData");
+  private EventTelemetryBuilder(TelemetryEventData data) {
+    super(data, "Event", "EventData");
     this.data = data;
   }
 
-  public void setExceptions(List<ExceptionDetailBuilder> builders) {
-    List<TelemetryExceptionDetails> details = new ArrayList<>();
-    for (ExceptionDetailBuilder builder : builders) {
-      details.add(builder.build());
-    }
-    data.setExceptions(details);
-  }
-
-  public void setSeverityLevel(SeverityLevel severityLevel) {
-    data.setSeverityLevel(severityLevel);
-  }
-
-  public void setProblemId(String problemId) {
-    data.setProblemId(truncateTelemetry(problemId, MAX_PROBLEM_ID_LENGTH, "Exception.problemId"));
+  public void setName(String name) {
+    data.setName(truncateTelemetry(name, MAX_EVENT_NAME_LENGTH, "Event.name"));
   }
 
   public void addMeasurement(String key, Double value) {
