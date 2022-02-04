@@ -44,7 +44,8 @@ final class StartupProfiler {
       return;
     }
 
-    // -Dapplicationinsights.debug.startupProfiling=true
+    // this is used to support -Dapplicationinsights.debug.startupProfiling=true
+    @SuppressWarnings("SystemOut")
     boolean startupProfilingEnabled =
         Boolean.parseBoolean(System.getProperty("applicationinsights.debug.startupProfiling"));
     if (!startupProfilingEnabled) {
