@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadInfo;
@@ -61,14 +62,22 @@ final class StartupProfiler {
     File dumpFile = new File(folder, STACKTRACES);
     System.out.println("Create StartupProfiler dump here: '" + dumpFile.getPath() + "'");
 
+    Writer out = null;
     try {
-      start(
-          new PrintWriter(
-              new PrintWriter(
-                  Files.newBufferedWriter(dumpFile.toPath(), Charset.defaultCharset()))));
+      out = new PrintWriter(Files.newBufferedWriter(dumpFile.toPath(), Charset.defaultCharset()));
+      start(new PrintWriter(out));
     } catch (IOException e) {
       System.out.println(
           "Error occurs when writing dump to " + STACKTRACES + " \ncause: " + e.getCause());
+    } finally {
+      if (out != null) {
+        try {
+          out.close();
+        } catch (IOException e) {
+          System.out.println(
+              "Error occurs when closing PrintWriter. " + " \ncause: " + e.getCause());
+        }
+      }
     }
   }
 
