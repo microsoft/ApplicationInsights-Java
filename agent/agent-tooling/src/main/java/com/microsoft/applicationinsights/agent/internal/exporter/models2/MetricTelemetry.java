@@ -41,11 +41,12 @@ public final class MetricTelemetry extends Telemetry {
   public static MetricTelemetry create(String name, double value) {
     MetricTelemetry telemetry = new MetricTelemetry(new MetricsData());
 
-    MetricDataPoint point = new MetricDataPoint();
+    MetricPointTelemetry point = new MetricPointTelemetry();
+
     point.setName(name);
     point.setValue(value);
     point.setDataPointType(DataPointType.MEASUREMENT);
-    telemetry.setMetricDataPoint(point);
+    telemetry.setMetricPoint(point);
 
     telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
 
@@ -57,14 +58,14 @@ public final class MetricTelemetry extends Telemetry {
     this.data = data;
   }
 
-  public void setMetricDataPoint(MetricDataPoint point) {
+  public void setMetricPoint(MetricPointTelemetry point) {
     List<MetricDataPoint> metrics = data.getMetrics();
     if (metrics == null) {
       metrics = new ArrayList<>();
       data.setMetrics(metrics);
     }
     if (metrics.isEmpty()) {
-      metrics.add(point);
+      metrics.add(point.getData());
     }
   }
 

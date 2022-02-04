@@ -23,14 +23,14 @@ package com.microsoft.applicationinsights.agent.internal.exporter;
 
 import static java.util.Collections.singletonList;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.ExceptionDetailTelemetry;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Exceptions {
 
-  public static List<TelemetryExceptionDetails> minimalParse(String str) {
-    TelemetryExceptionDetails details = new TelemetryExceptionDetails();
+  public static List<ExceptionDetailTelemetry> minimalParse(String str) {
+    ExceptionDetailTelemetry detail = new ExceptionDetailTelemetry();
     int separator = -1;
     int length = str.length();
     int current;
@@ -49,21 +49,21 @@ public class Exceptions {
       if (message.isEmpty()) {
         message = typeName;
       }
-      details.setTypeName(typeName);
-      details.setMessage(message);
+      detail.setTypeName(typeName);
+      detail.setMessage(message);
     } else {
       String typeName = str.substring(0, current);
-      details.setTypeName(typeName);
-      details.setMessage(typeName);
+      detail.setTypeName(typeName);
+      detail.setMessage(typeName);
     }
-    details.setStack(str);
-    return singletonList(details);
+    detail.setStack(str);
+    return singletonList(detail);
   }
 
   // THIS IS UNFINISHED WORK
   // NOT SURE IF IT'S NEEDED
   // TESTING WITH minimalParse() first
-  public static List<TelemetryExceptionDetails> fullParse(String str) {
+  public static List<ExceptionDetailTelemetry> fullParse(String str) {
     Parser parser = new Parser();
     for (String line : str.split("\r?\n")) {
       parser.process(line);
@@ -75,8 +75,8 @@ public class Exceptions {
 
   static class Parser {
 
-    private TelemetryExceptionDetails current;
-    private final List<TelemetryExceptionDetails> list = new ArrayList<>();
+    private ExceptionDetailTelemetry current;
+    private final List<ExceptionDetailTelemetry> list = new ArrayList<>();
 
     void process(String line) {
       if (line.charAt(0) != '\t') {
@@ -86,7 +86,7 @@ public class Exceptions {
         if (line.startsWith("Caused by: ")) {
           line = line.substring("Caused by: ".length());
         }
-        current = new TelemetryExceptionDetails();
+        current = new ExceptionDetailTelemetry();
         int index = line.indexOf(':');
         if (index != -1) {
           String typeName = line.substring(0, index);
@@ -103,7 +103,7 @@ public class Exceptions {
       }
     }
 
-    public List<TelemetryExceptionDetails> getDetails() {
+    public List<ExceptionDetailTelemetry> getDetails() {
       if (current != null) {
         list.add(current);
       }

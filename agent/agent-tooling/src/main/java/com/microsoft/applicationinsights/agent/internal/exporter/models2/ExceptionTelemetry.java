@@ -27,6 +27,7 @@ import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.SeverityLevel;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,8 +47,12 @@ public final class ExceptionTelemetry extends Telemetry {
     this.data = data;
   }
 
-  public void setExceptions(List<TelemetryExceptionDetails> exceptions) {
-    data.setExceptions(exceptions);
+  public void setExceptions(List<ExceptionDetailTelemetry> exceptions) {
+    List<TelemetryExceptionDetails> list = new ArrayList<>();
+    for (ExceptionDetailTelemetry detail : exceptions) {
+      list.add(detail.getData());
+    }
+    data.setExceptions(list);
   }
 
   public void setSeverityLevel(SeverityLevel severityLevel) {

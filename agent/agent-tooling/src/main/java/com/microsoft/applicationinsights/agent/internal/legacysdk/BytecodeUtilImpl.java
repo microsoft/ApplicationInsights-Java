@@ -27,11 +27,11 @@ import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUt
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.ContextTagKeys;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.DataPointType;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDataPoint;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.SeverityLevel;
 import com.microsoft.applicationinsights.agent.internal.exporter.models2.EventTelemetry;
 import com.microsoft.applicationinsights.agent.internal.exporter.models2.ExceptionTelemetry;
 import com.microsoft.applicationinsights.agent.internal.exporter.models2.MessageTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.MetricPointTelemetry;
 import com.microsoft.applicationinsights.agent.internal.exporter.models2.MetricTelemetry;
 import com.microsoft.applicationinsights.agent.internal.exporter.models2.PageViewTelemetry;
 import com.microsoft.applicationinsights.agent.internal.exporter.models2.RemoteDependencyTelemetry;
@@ -123,7 +123,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     MetricTelemetry telemetry = MetricTelemetry.create();
     TelemetryClient.getActive().populateDefaults(telemetry);
 
-    MetricDataPoint point = new MetricDataPoint();
+    MetricPointTelemetry point = new MetricPointTelemetry();
     point.setName(name);
     point.setValue(value);
     point.setCount(count);
@@ -135,7 +135,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     } else {
       point.setDataPointType(DataPointType.MEASUREMENT);
     }
-    telemetry.setMetricDataPoint(point);
+    telemetry.setMetricPoint(point);
 
     for (Map.Entry<String, String> entry : properties.entrySet()) {
       telemetry.addProperty(entry.getKey(), entry.getValue());
