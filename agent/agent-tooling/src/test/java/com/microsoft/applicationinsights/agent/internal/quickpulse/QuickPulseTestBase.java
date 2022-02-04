@@ -89,32 +89,32 @@ public class QuickPulseTestBase extends TestBase {
 
   public static TelemetryItem createRequestTelemetry(
       String name, Date timestamp, long durationMillis, String responseCode, boolean success) {
-    RequestTelemetryBuilder builder = RequestTelemetryBuilder.create();
-    builder.addProperty("customProperty", "customValue");
-    builder.setName(name);
-    builder.setDuration(FormattedDuration.fromMillis(durationMillis));
-    builder.setResponseCode(responseCode);
-    builder.setSuccess(success);
-    builder.setUrl("foo");
-    builder.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
-    return builder.build();
+    RequestTelemetryBuilder telemetryBuilder = RequestTelemetryBuilder.create();
+    telemetryBuilder.addProperty("customProperty", "customValue");
+    telemetryBuilder.setName(name);
+    telemetryBuilder.setDuration(FormattedDuration.fromMillis(durationMillis));
+    telemetryBuilder.setResponseCode(responseCode);
+    telemetryBuilder.setSuccess(success);
+    telemetryBuilder.setUrl("foo");
+    telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
+    return telemetryBuilder.build();
   }
 
   public static TelemetryItem createRemoteDependencyTelemetry(
       String name, String command, long durationMillis, boolean success) {
-    RemoteDependencyTelemetryBuilder builder = RemoteDependencyTelemetryBuilder.create();
-    builder.addProperty("customProperty", "customValue");
-    builder.setName(name);
-    builder.setData(command);
-    builder.setDuration(FormattedDuration.fromMillis(durationMillis));
-    builder.setSuccess(success);
-    return builder.build();
+    RemoteDependencyTelemetryBuilder telemetryBuilder = RemoteDependencyTelemetryBuilder.create();
+    telemetryBuilder.addProperty("customProperty", "customValue");
+    telemetryBuilder.setName(name);
+    telemetryBuilder.setData(command);
+    telemetryBuilder.setDuration(FormattedDuration.fromMillis(durationMillis));
+    telemetryBuilder.setSuccess(success);
+    return telemetryBuilder.build();
   }
 
   public static TelemetryItem createExceptionTelemetry(Exception exception) {
-    ExceptionTelemetryBuilder builder = ExceptionTelemetryBuilder.create();
-    builder.setExceptions(getExceptions(exception));
-    return builder.build();
+    ExceptionTelemetryBuilder telemetryBuilder = ExceptionTelemetryBuilder.create();
+    telemetryBuilder.setExceptions(getExceptions(exception));
+    return telemetryBuilder.build();
   }
 
   static class ValidationPolicy implements HttpPipelinePolicy {

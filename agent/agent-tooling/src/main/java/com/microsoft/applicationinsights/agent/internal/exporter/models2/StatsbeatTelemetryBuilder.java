@@ -49,6 +49,7 @@ public final class StatsbeatTelemetryBuilder extends AbstractTelemetryBuilder {
   }
 
   private StatsbeatTelemetryBuilder(MetricsData data) {
+    // not using the default telemetry name for metrics (which is "Metric")
     super(data, "Statsbeat", "MetricData");
     this.data = data;
   }

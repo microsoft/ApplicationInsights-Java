@@ -349,13 +349,13 @@ public class TelemetryClient {
     return telemetry;
   }
 
-  private void populateDefaults(AbstractTelemetryBuilder telemetry) {
-    telemetry.setInstrumentationKey(instrumentationKey);
+  private void populateDefaults(AbstractTelemetryBuilder telemetryBuilder) {
+    telemetryBuilder.setInstrumentationKey(instrumentationKey);
     for (Map.Entry<String, String> entry : globalTags.entrySet()) {
-      telemetry.addTag(entry.getKey(), entry.getValue());
+      telemetryBuilder.addTag(entry.getKey(), entry.getValue());
     }
     for (Map.Entry<String, String> entry : globalProperties.entrySet()) {
-      telemetry.addProperty(entry.getKey(), entry.getValue());
+      telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
     }
   }
 

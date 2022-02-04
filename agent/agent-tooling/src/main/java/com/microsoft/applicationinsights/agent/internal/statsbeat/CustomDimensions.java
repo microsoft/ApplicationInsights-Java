@@ -85,14 +85,14 @@ class CustomDimensions {
     this.operatingSystem = operatingSystem;
   }
 
-  void populateProperties(StatsbeatTelemetryBuilder telemetry, String customerIkey) {
-    telemetry.addProperty("rp", resourceProvider.getValue());
-    telemetry.addProperty("os", operatingSystem.getValue());
-    telemetry.addProperty("attach", attachType);
-    telemetry.addProperty("cikey", customerIkey);
-    telemetry.addProperty("runtimeVersion", runtimeVersion);
-    telemetry.addProperty("language", language);
-    telemetry.addProperty("version", sdkVersion);
+  void populateProperties(StatsbeatTelemetryBuilder telemetryBuilder, String customerIkey) {
+    telemetryBuilder.addProperty("rp", resourceProvider.getValue());
+    telemetryBuilder.addProperty("os", operatingSystem.getValue());
+    telemetryBuilder.addProperty("attach", attachType);
+    telemetryBuilder.addProperty("cikey", customerIkey);
+    telemetryBuilder.addProperty("runtimeVersion", runtimeVersion);
+    telemetryBuilder.addProperty("language", language);
+    telemetryBuilder.addProperty("version", sdkVersion);
   }
 
   private static OperatingSystem initOperatingSystem() {

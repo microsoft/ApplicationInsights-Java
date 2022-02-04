@@ -39,18 +39,18 @@ public final class MetricTelemetryBuilder extends AbstractTelemetryBuilder {
   }
 
   public static MetricTelemetryBuilder create(String name, double value) {
-    MetricTelemetryBuilder telemetry = new MetricTelemetryBuilder(new MetricsData());
+    MetricTelemetryBuilder telemetryBuilder = new MetricTelemetryBuilder(new MetricsData());
 
     MetricPointBuilder point = new MetricPointBuilder();
 
     point.setName(name);
     point.setValue(value);
     point.setDataPointType(DataPointType.MEASUREMENT);
-    telemetry.setMetricPoint(point);
+    telemetryBuilder.setMetricPoint(point);
 
-    telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
+    telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
 
-    return telemetry;
+    return telemetryBuilder;
   }
 
   private MetricTelemetryBuilder(MetricsData data) {

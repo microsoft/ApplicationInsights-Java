@@ -176,10 +176,11 @@ public class GcEventMonitor {
   }
 
   private static void addMemoryUsage(
-      String poolName, String when, EventTelemetryBuilder telemetry, MemoryUsage memory) {
-    telemetry.addMeasurement(poolName + "_" + when + "_used", (double) memory.getUsed());
-    telemetry.addMeasurement(poolName + "_" + when + "_size", (double) memory.getCommitted());
-    telemetry.addMeasurement(poolName + "_max", (double) memory.getMax());
+      String poolName, String when, EventTelemetryBuilder telemetryBuilder, MemoryUsage memory) {
+    telemetryBuilder.addMeasurement(poolName + "_" + when + "_used", (double) memory.getUsed());
+    telemetryBuilder.addMeasurement(
+        poolName + "_" + when + "_size", (double) memory.getCommitted());
+    telemetryBuilder.addMeasurement(poolName + "_max", (double) memory.getMax());
   }
 
   private GcEventMonitor() {}
