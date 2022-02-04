@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.MetricTelemetry;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.Collection;
 import org.slf4j.Logger;
@@ -39,6 +38,6 @@ public final class JmxMetricPerformanceCounter extends AbstractJmxPerformanceCou
   @Override
   protected void send(TelemetryClient telemetryClient, String displayName, double value) {
     logger.trace("Metric JMX: {}, {}", displayName, value);
-    telemetryClient.trackAsync(MetricTelemetry.create(displayName, value));
+    telemetryClient.trackAsync(telemetryClient.newMetricTelemetry(displayName, value));
   }
 }

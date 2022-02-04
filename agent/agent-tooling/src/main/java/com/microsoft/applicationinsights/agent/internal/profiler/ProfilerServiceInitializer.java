@@ -183,8 +183,7 @@ public class ProfilerServiceInitializer {
 
   static UploadCompleteHandler sendServiceProfilerIndex(TelemetryClient telemetryClient) {
     return done -> {
-      EventTelemetry telemetry = EventTelemetry.create();
-      telemetryClient.populateDefaults(telemetry);
+      EventTelemetry telemetry = telemetryClient.newEventTelemetry();
 
       telemetry.setName("ServiceProfilerIndex");
 
@@ -231,8 +230,7 @@ public class ProfilerServiceInitializer {
   }
 
   private static void sendMessageTelemetry(TelemetryClient telemetryClient, String message) {
-    MessageTelemetry telemetry = MessageTelemetry.create();
-    telemetryClient.populateDefaults(telemetry);
+    MessageTelemetry telemetry = telemetryClient.newMessageTelemetry();
 
     telemetry.setMessage(message);
     telemetry.setTime(FormattedTime.offSetDateTimeFromNow());

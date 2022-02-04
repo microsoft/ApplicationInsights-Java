@@ -138,8 +138,7 @@ public class GcEventMonitor {
       return;
     }
 
-    EventTelemetry telemetry = EventTelemetry.create();
-    telemetryClient.populateDefaults(telemetry);
+    EventTelemetry telemetry = telemetryClient.newEventTelemetry();
 
     telemetry.setName("GcEvent");
 

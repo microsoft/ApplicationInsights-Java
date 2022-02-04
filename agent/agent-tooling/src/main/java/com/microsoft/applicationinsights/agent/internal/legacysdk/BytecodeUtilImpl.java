@@ -79,8 +79,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     if (Strings.isNullOrEmpty(name)) {
       return;
     }
-    EventTelemetry telemetry = EventTelemetry.create();
-    TelemetryClient.getActive().populateDefaults(telemetry);
+    EventTelemetry telemetry = TelemetryClient.getActive().newEventTelemetry();
 
     telemetry.setName(name);
     for (Map.Entry<String, Double> entry : measurements.entrySet()) {
@@ -120,8 +119,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     if (Strings.isNullOrEmpty(name)) {
       return;
     }
-    MetricTelemetry telemetry = MetricTelemetry.create();
-    TelemetryClient.getActive().populateDefaults(telemetry);
+    MetricTelemetry telemetry = TelemetryClient.getActive().newMetricTelemetry();
 
     MetricPointTelemetry point = new MetricPointTelemetry();
     point.setName(name);
@@ -173,8 +171,8 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     if (Strings.isNullOrEmpty(name)) {
       return;
     }
-    RemoteDependencyTelemetry telemetry = RemoteDependencyTelemetry.create();
-    TelemetryClient.getActive().populateDefaults(telemetry);
+    RemoteDependencyTelemetry telemetry =
+        TelemetryClient.getActive().newRemoteDependencyTelemetry();
 
     telemetry.setName(name);
     if (id == null) {
@@ -224,8 +222,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     if (Strings.isNullOrEmpty(name)) {
       return;
     }
-    PageViewTelemetry telemetry = PageViewTelemetry.create();
-    TelemetryClient.getActive().populateDefaults(telemetry);
+    PageViewTelemetry telemetry = TelemetryClient.getActive().newPageViewTelemetry();
 
     telemetry.setName(name);
     if (uri != null) {
@@ -263,8 +260,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     if (Strings.isNullOrEmpty(message)) {
       return;
     }
-    MessageTelemetry telemetry = MessageTelemetry.create();
-    TelemetryClient.getActive().populateDefaults(telemetry);
+    MessageTelemetry telemetry = TelemetryClient.getActive().newMessageTelemetry();
 
     telemetry.setMessage(message);
     if (severityLevel != -1) {
@@ -305,8 +301,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     if (Strings.isNullOrEmpty(name)) {
       return;
     }
-    RequestTelemetry telemetry = RequestTelemetry.create();
-    TelemetryClient.getActive().populateDefaults(telemetry);
+    RequestTelemetry telemetry = TelemetryClient.getActive().newRequestTelemetry();
 
     if (id == null) {
       telemetry.setId(AiLegacyPropagator.generateSpanId());
@@ -354,8 +349,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     if (exception == null) {
       return;
     }
-    ExceptionTelemetry telemetry = ExceptionTelemetry.create();
-    TelemetryClient.getActive().populateDefaults(telemetry);
+    ExceptionTelemetry telemetry = TelemetryClient.getActive().newExceptionTelemetry();
 
     telemetry.setExceptions(TelemetryUtil.getExceptions(exception));
     telemetry.setSeverityLevel(SeverityLevel.ERROR);

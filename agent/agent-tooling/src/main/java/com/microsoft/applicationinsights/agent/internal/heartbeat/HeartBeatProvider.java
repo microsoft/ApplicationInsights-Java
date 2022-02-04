@@ -163,7 +163,8 @@ public class HeartBeatProvider {
       properties.put(entry.getKey(), payload.getPayloadValue());
       numHealthy += payload.isHealthy() ? 0 : 1;
     }
-    MetricTelemetry telemetry = MetricTelemetry.create(HEARTBEAT_SYNTHETIC_METRIC_NAME, numHealthy);
+    MetricTelemetry telemetry =
+        telemetryClient.newMetricTelemetry(HEARTBEAT_SYNTHETIC_METRIC_NAME, numHealthy);
 
     for (Map.Entry<String, String> entry : properties.entrySet()) {
       telemetry.addProperty(entry.getKey(), entry.getValue());

@@ -62,8 +62,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
     long[] threadIds = threadBean.findDeadlockedThreads();
     int blockedThreadCount = threadIds == null ? 0 : threadIds.length;
 
-    MetricTelemetry telemetry = MetricTelemetry.create(METRIC_NAME, blockedThreadCount);
-    telemetryClient.populateDefaults(telemetry);
+    MetricTelemetry telemetry = telemetryClient.newMetricTelemetry(METRIC_NAME, blockedThreadCount);
 
     telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
 
@@ -76,8 +75,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
 
   private void sendDetailedMessage(TelemetryClient telemetryClient, long[] threadIds) {
 
-    MessageTelemetry telemetry = MessageTelemetry.create();
-    telemetryClient.populateDefaults(telemetry);
+    MessageTelemetry telemetry = telemetryClient.newMessageTelemetry();
 
     StringBuilder sb = new StringBuilder("Suspected deadlocked threads: ");
     for (long threadId : threadIds) {

@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
 import static com.microsoft.applicationinsights.agent.internal.perfcounter.Constants.PROCESS_MEM_PC_METRICS_NAME;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.MetricTelemetry;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -55,6 +54,7 @@ public class ProcessMemoryPerformanceCounter implements PerformanceCounter {
     memoryBytes += (double) nonHeapMemoryUsage.getUsed();
 
     logger.trace("Performance Counter: {}: {}", PROCESS_MEM_PC_METRICS_NAME, memoryBytes);
-    telemetryClient.trackAsync(MetricTelemetry.create(PROCESS_MEM_PC_METRICS_NAME, memoryBytes));
+    telemetryClient.trackAsync(
+        telemetryClient.newMetricTelemetry(PROCESS_MEM_PC_METRICS_NAME, memoryBytes));
   }
 }

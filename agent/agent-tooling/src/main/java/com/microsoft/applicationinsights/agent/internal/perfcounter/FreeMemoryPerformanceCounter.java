@@ -58,7 +58,8 @@ public class FreeMemoryPerformanceCounter implements PerformanceCounter {
         Constants.TOTAL_MEMORY_PC_METRIC_NAME,
         freePhysicalMemorySize);
     MetricTelemetry telemetry =
-        MetricTelemetry.create(Constants.TOTAL_MEMORY_PC_METRIC_NAME, freePhysicalMemorySize);
+        telemetryClient.newMetricTelemetry(
+            Constants.TOTAL_MEMORY_PC_METRIC_NAME, freePhysicalMemorySize);
     telemetryClient.trackAsync(telemetry);
   }
 

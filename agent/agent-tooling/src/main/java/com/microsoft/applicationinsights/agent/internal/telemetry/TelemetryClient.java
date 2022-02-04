@@ -31,6 +31,13 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDa
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorDomain;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.EventTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.ExceptionTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.MessageTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.MetricTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.PageViewTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.RemoteDependencyTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.RequestTelemetry;
 import com.microsoft.applicationinsights.agent.internal.exporter.models2.Telemetry;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileCache;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileLoader;
@@ -49,6 +56,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.text.StringSubstitutor;
@@ -297,7 +305,45 @@ public class TelemetryClient {
     return instrumentationKey;
   }
 
-  public void populateDefaults(Telemetry telemetry) {
+  public EventTelemetry newEventTelemetry() {
+    return newTelemetry(EventTelemetry::create);
+  }
+
+  public ExceptionTelemetry newExceptionTelemetry() {
+    return newTelemetry(ExceptionTelemetry::create);
+  }
+
+  public MessageTelemetry newMessageTelemetry() {
+    return newTelemetry(MessageTelemetry::create);
+  }
+
+  public MetricTelemetry newMetricTelemetry() {
+    return newTelemetry(MetricTelemetry::create);
+  }
+
+  public MetricTelemetry newMetricTelemetry(String name, double value) {
+    return newTelemetry(() -> MetricTelemetry.create(name, value));
+  }
+
+  public PageViewTelemetry newPageViewTelemetry() {
+    return newTelemetry(PageViewTelemetry::create);
+  }
+
+  public RemoteDependencyTelemetry newRemoteDependencyTelemetry() {
+    return newTelemetry(RemoteDependencyTelemetry::create);
+  }
+
+  public RequestTelemetry newRequestTelemetry() {
+    return newTelemetry(RequestTelemetry::create);
+  }
+
+  private <T extends Telemetry> T newTelemetry(Supplier<T> creator) {
+    T telemetry = creator.get();
+    populateDefaults(telemetry);
+    return telemetry;
+  }
+
+  private void populateDefaults(Telemetry telemetry) {
     telemetry.setInstrumentationKey(instrumentationKey);
     for (Map.Entry<String, String> entry : globalTags.entrySet()) {
       telemetry.addTag(entry.getKey(), entry.getValue());

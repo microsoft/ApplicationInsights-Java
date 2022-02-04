@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.MetricTelemetry;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
@@ -69,8 +68,8 @@ public final class GcPerformanceCounter implements PerformanceCounter {
       currentTotalCount = totalCollectionCount;
       currentTotalTime = totalCollectionTime;
 
-      telemetryClient.trackAsync(MetricTelemetry.create(GC_TOTAL_COUNT, countToReport));
-      telemetryClient.trackAsync(MetricTelemetry.create(GC_TOTAL_TIME, timeToReport));
+      telemetryClient.trackAsync(telemetryClient.newMetricTelemetry(GC_TOTAL_COUNT, countToReport));
+      telemetryClient.trackAsync(telemetryClient.newMetricTelemetry(GC_TOTAL_TIME, timeToReport));
     }
   }
 }
