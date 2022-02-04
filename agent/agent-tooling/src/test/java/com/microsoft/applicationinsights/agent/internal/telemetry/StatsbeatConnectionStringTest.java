@@ -75,131 +75,78 @@ public class StatsbeatConnectionStringTest {
   }
 
   @Test
-  public void testStatsbeatIkeyInNonEuRegion() {
+  public void testUpdateStatsbeatConnectionString() throws Exception {
     // case 1
-    // customer is in non-eu
-    // Statsbeat config is in eu
-    // use Statsbeat config's ikey
-    String customerEndpoint = "https://westus2-1.example.com/";
-    String ikey = "00000000-0000-0000-0000-000000000001";
-    String endpoint = "https://westeurope-1.example.com/";
-    assertThat(StatsbeatConnectionString.getInstrumentationKey(ikey, endpoint, customerEndpoint))
-        .isEqualTo(ikey);
+    // customer ikey is in non-eu
+    // Statsbeat config ikey is in eu
+    // use Statsbeat config ikey
+    TelemetryClient telemetryClient = TelemetryClient.createForTest();
+    telemetryClient.setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://westus2-1.example.com/");
+    String ikeyConfig = "00000000-0000-0000-0000-000000000001";
+    String endpointConfig = "https://westeurope-2.example.com";
+    ConnectionString.updateStatsbeatConnectionString(ikeyConfig, endpointConfig, telemetryClient);
+    assertThat(telemetryClient.getStatsbeatInstrumentationKey()).isEqualTo(ikeyConfig);
+    assertThat(telemetryClient.getEndpointProvider().getStatsbeatEndpointUrl()).isEqualTo(endpointConfig + "/v2/track");
 
     // case 2
-    // customer is in non-eu
-    // Statsbeat config is in non-eu
-    // use Statsbeat config's ikey
-    customerEndpoint = "https://westus2-2.example.com/";
-    ikey = "00000000-0000-0000-0000-000000000002";
-    endpoint = "https://eastus-1.example.com/";
-    assertThat(StatsbeatConnectionString.getInstrumentationKey(ikey, endpoint, customerEndpoint))
-        .isEqualTo(ikey);
+    // customer ikey is in non-eu
+    // Statsbeat config ikey is in non-eu
+    // use Statsbeat config ikey
+    ikeyConfig = "00000000-0000-0000-0000-000000000002";
+    endpointConfig = "https://westus2-2.example.com";
+    ConnectionString.updateStatsbeatConnectionString(ikeyConfig, endpointConfig, telemetryClient);
+    assertThat(telemetryClient.getStatsbeatInstrumentationKey()).isEqualTo(ikeyConfig);
+    assertThat(telemetryClient.getEndpointProvider().getStatsbeatEndpointUrl()).isEqualTo(endpointConfig + "/v2/track");
 
     // case 3
-    // customer is in non-eu
-    // Statsbeat config has no endpoint, i.e. doesn't know which region it is
-    // use Statsbeat config's ikey
-    customerEndpoint = "https://westus2-3.example.com/";
-    ikey = "00000000-0000-0000-0000-000000000003";
-    endpoint = "";
-    assertThat(StatsbeatConnectionString.getInstrumentationKey(ikey, endpoint, customerEndpoint))
-        .isEqualTo(ikey);
-
-    // case 4
-    // customer is in non-eu
+    // customer ikey is in non-eu
     // no Statsbeat config
     // use Statsbeat non-eu
-    customerEndpoint = "https://westus2-4.example.com/";
-    ikey = "";
-    endpoint = "";
-    assertThat(StatsbeatConnectionString.getInstrumentationKey(ikey, endpoint, customerEndpoint))
-        .isEqualTo(StatsbeatConnectionString.NON_EU_REGION_STATSBEAT_IKEY);
-  }
-
-  @Test
-  public void testStatsbeatIkeyInEuRegion() {
-    // case 1
-    // customer is in eu
-    // Statsbeat config is in non-eu
-    // use Statsbeat eu
-    String customerEndpoint = "https://westeurope-1.example.com/";
-    String ikey = "00000000-0000-0000-0000-000000000001";
-    String endpoint = "https://westus2-1.example.com/";
-    assertThat(StatsbeatConnectionString.getInstrumentationKey(ikey, endpoint, customerEndpoint))
-        .isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_IKEY);
-
-    // case 2
-    // customer is in eu
-    // Statsbeat config is in eu
-    // use Statsbeat config's ikey
-    customerEndpoint = "https://westeurope-2.example.com/";
-    ikey = "00000000-0000-0000-0000-000000000002";
-    endpoint = "https://northeurope-2.example.com/";
-    assertThat(StatsbeatConnectionString.getInstrumentationKey(ikey, endpoint, customerEndpoint))
-        .isEqualTo(ikey);
-
-    // case 3
-    // customer is in eu
-    // Statsbeat config has no endpoint, i.e. doesn't know which region it is
-    // use Statsbeat eu
-    customerEndpoint = "https://westeurope-3.example.com/";
-    ikey = "00000000-0000-0000-0000-000000000003";
-    endpoint = "";
-    assertThat(StatsbeatConnectionString.getInstrumentationKey(ikey, endpoint, customerEndpoint))
-        .isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_IKEY);
+    ConnectionString.updateStatsbeatConnectionString(null, null, telemetryClient);
+    assertThat(telemetryClient.getStatsbeatInstrumentationKey()).isEqualTo(StatsbeatConnectionString.NON_EU_REGION_STATSBEAT_IKEY);
+    assertThat(telemetryClient.getEndpointProvider().getStatsbeatEndpointUrl()).isEqualTo(StatsbeatConnectionString.NON_EU_REGION_STATSBEAT_ENDPOINT + "v2/track");
 
     // case 4
+    // customer is in eu
+    // Statsbeat config ikey is in non-eu
+    // use Statsbeat config's ikey
+    telemetryClient.setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000003;IngestionEndpoint=https://westeurope-1.example.com/");
+    ikeyConfig = "00000000-0000-0000-0000-000000000004";
+    endpointConfig = "https://westus2-4.example.com";
+    ConnectionString.updateStatsbeatConnectionString(ikeyConfig, endpointConfig, telemetryClient);
+    assertThat(telemetryClient.getStatsbeatInstrumentationKey()).isEqualTo(ikeyConfig);
+    assertThat(telemetryClient.getEndpointProvider().getStatsbeatEndpointUrl()).isEqualTo(endpointConfig + "/v2/track");
+
+    // case 5
+    // customer is in eu
+    // Statsbeat config ikey is in eu
+    // use Statsbeat config's ikey
+    ikeyConfig = "00000000-0000-0000-0000-000000000005";
+    endpointConfig = "https://francesouth-1.example.com";
+    ConnectionString.updateStatsbeatConnectionString(ikeyConfig, endpointConfig, telemetryClient);
+    assertThat(telemetryClient.getStatsbeatInstrumentationKey()).isEqualTo(ikeyConfig);
+    assertThat(telemetryClient.getEndpointProvider().getStatsbeatEndpointUrl()).isEqualTo(endpointConfig + "/v2/track");
+
+    // case 6
     // customer is in eu
     // no statsbeat config
     // use Statsbeat eu
-    customerEndpoint = "https://westeurope-4.example.com/";
-    ikey = "";
-    endpoint = "";
-    assertThat(StatsbeatConnectionString.getInstrumentationKey(ikey, endpoint, customerEndpoint))
-        .isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_IKEY);
+    ConnectionString.updateStatsbeatConnectionString(null, null, telemetryClient);
+    assertThat(telemetryClient.getStatsbeatInstrumentationKey()).isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_IKEY);
+    assertThat(telemetryClient.getEndpointProvider().getStatsbeatEndpointUrl()).isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_ENDPOINT + "v2/track");
   }
 
   @Test
-  public void testAllEuRegionsWithoutConfig() {
-    String customerEndpoint = "https://westeurope-1.example.com/";
-    assertThat(StatsbeatConnectionString.getInstrumentationKey("", "", customerEndpoint))
-        .isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_IKEY);
+  public void testGetInstrumentationKeyAndEndpointPairEuRegion() {
+    StatsbeatConnectionString.InstrumentationKeyEndpointPair pair = StatsbeatConnectionString.getInstrumentationKeyAndEndpointPair("https://northeurope-2.example.com/");
+    assertThat(pair.instrumentationKey).isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_IKEY);
+    assertThat(pair.endpoint).isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_ENDPOINT);
+  }
 
-    customerEndpoint = "https://northeurope-2.example.com/";
-    assertThat(StatsbeatConnectionString.getInstrumentationKey("", "", customerEndpoint))
-        .isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_IKEY);
-
-    customerEndpoint = "https://francecentral-3.example.com/";
-    assertThat(StatsbeatConnectionString.getInstrumentationKey("", "", customerEndpoint))
-        .isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_IKEY);
-
-    customerEndpoint = "https://francesouth-4.example.com/";
-    assertThat(StatsbeatConnectionString.getInstrumentationKey("", "", customerEndpoint))
-        .isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_IKEY);
-
-    customerEndpoint = "https://francesouth-5.example.com/";
-    assertThat(StatsbeatConnectionString.getInstrumentationKey("", "", customerEndpoint))
-        .isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_IKEY);
-
-    customerEndpoint = "https://norwayeast-6.example.com/";
-    assertThat(StatsbeatConnectionString.getInstrumentationKey("", "", customerEndpoint))
-        .isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_IKEY);
-
-    customerEndpoint = "https://norwaywest-7.example.com/";
-    assertThat(StatsbeatConnectionString.getInstrumentationKey("", "", customerEndpoint))
-        .isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_IKEY);
-
-    customerEndpoint = "https://swedencentral-8.example.com/";
-    assertThat(StatsbeatConnectionString.getInstrumentationKey("", "", customerEndpoint))
-        .isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_IKEY);
-
-    customerEndpoint = "https://www.switzerlandnorth-9.example.com/";
-    assertThat(StatsbeatConnectionString.getInstrumentationKey("", "", customerEndpoint))
-        .isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_IKEY);
-
-    customerEndpoint = "https://switzerlandwest-10.example.com/";
-    assertThat(StatsbeatConnectionString.getInstrumentationKey("", "", customerEndpoint))
-        .isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_IKEY);
+  @Test
+  public void testGetInstrumentationKeyAndEndpointPairNonEuRegion() {
+    StatsbeatConnectionString.InstrumentationKeyEndpointPair pair = StatsbeatConnectionString.getInstrumentationKeyAndEndpointPair("https://westus2-2.example.com/");
+    assertThat(pair.instrumentationKey).isEqualTo(StatsbeatConnectionString.NON_EU_REGION_STATSBEAT_IKEY);
+    assertThat(pair.endpoint).isEqualTo(StatsbeatConnectionString.NON_EU_REGION_STATSBEAT_ENDPOINT);
   }
 }

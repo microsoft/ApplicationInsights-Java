@@ -26,10 +26,14 @@ import java.util.Set;
 
 final class StatsbeatConnectionString {
 
+  // visible for testing
   static final String EU_REGION_STATSBEAT_IKEY =
       "7dc56bab-3c0c-4e9f-9ebb-d1acadee8d0f"; // westeu-aistatsbeat
+  static final String EU_REGION_STATSBEAT_ENDPOINT =
+      "https://westeurope-5.in.applicationinsights.azure.com/";
   static final String NON_EU_REGION_STATSBEAT_IKEY =
       "c4a29126-a7cb-47e5-b348-11414998b11e"; // workspace-aistatsbeat
+  static final String NON_EU_REGION_STATSBEAT_ENDPOINT = "https://westus-0.in.applicationinsights.azure.com/";
 
   private static final Set<String> EU_REGION_GEO_SET = new HashSet<>(10);
 
@@ -47,28 +51,13 @@ final class StatsbeatConnectionString {
   }
 
   // visible for testing
-  static String getInstrumentationKey(String ikey, String endpoint, String customerEndpoint) {
+  static InstrumentationKeyEndpointPair getInstrumentationKeyAndEndpointPair(String customerEndpoint) {
     String geo = getGeoWithoutStampSpecific(customerEndpoint);
-    // check if customer's region is in EU
     if (EU_REGION_GEO_SET.contains(geo.toLowerCase())) {
-      // check if there is custom Statsbeat config
-      if (ikey != null && !ikey.isEmpty() && endpoint != null && !endpoint.isEmpty()) {
-        geo = getGeoWithoutStampSpecific(endpoint);
-        // check if Statsbeat config setting is in EU
-        if (EU_REGION_GEO_SET.contains(geo.toLowerCase())) {
-          return ikey;
-        }
-      }
-
-      return EU_REGION_STATSBEAT_IKEY;
+      return new InstrumentationKeyEndpointPair(EU_REGION_STATSBEAT_IKEY, EU_REGION_STATSBEAT_ENDPOINT);
     }
 
-    // use Statsbeat non-eu ikey if there is no custom config
-    if (ikey == null || ikey.isEmpty()) {
-      return NON_EU_REGION_STATSBEAT_IKEY;
-    }
-
-    return ikey;
+    return new InstrumentationKeyEndpointPair(NON_EU_REGION_STATSBEAT_IKEY, NON_EU_REGION_STATSBEAT_ENDPOINT);
   }
 
   // visible for testing
@@ -103,4 +92,14 @@ final class StatsbeatConnectionString {
   }
 
   private StatsbeatConnectionString() {}
+
+  static class InstrumentationKeyEndpointPair {
+    public final String instrumentationKey;
+    public final String endpoint;
+
+    public InstrumentationKeyEndpointPair(String instrumentationKey, String endpoint) {
+      this.instrumentationKey = instrumentationKey;
+      this.endpoint = endpoint;
+    }
+  }
 }

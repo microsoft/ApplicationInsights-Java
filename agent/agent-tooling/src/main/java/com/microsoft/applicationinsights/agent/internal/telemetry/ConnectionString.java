@@ -29,6 +29,7 @@ import java.util.TreeMap;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import javax.annotation.Nullable;
 
 public class ConnectionString {
 
@@ -52,17 +53,21 @@ public class ConnectionString {
   }
 
   public static void updateStatsbeatConnectionString(
-      String ikey, String endpoint, TelemetryClient telemetryClient)
+      @Nullable String ikey, @Nullable String endpoint, TelemetryClient telemetryClient)
       throws InvalidConnectionStringException {
     if (Strings.isNullOrEmpty(ikey)) {
       logger.warn("Missing Statsbeat '" + Keywords.INSTRUMENTATION_KEY + "'");
     }
 
-    telemetryClient.setStatsbeatInstrumentationKey(
-        StatsbeatConnectionString.getInstrumentationKey(
-            ikey,
-            endpoint,
-            telemetryClient.getEndpointProvider().getIngestionEndpoint().toString()));
+    // if customer is in EU region and their statsbeat config is not in EU region, customer is responsible for breaking the EU data boundary violation.
+    // Statsbeat config setting has the highest precedence.
+    if (ikey == null || ikey.isEmpty()) {
+      StatsbeatConnectionString.InstrumentationKeyEndpointPair pair = StatsbeatConnectionString.getInstrumentationKeyAndEndpointPair(telemetryClient.getEndpointProvider().getIngestionEndpoint().toString());
+      ikey = pair.instrumentationKey;
+      endpoint = pair.endpoint;
+    }
+
+    telemetryClient.setStatsbeatInstrumentationKey(ikey);
 
     if (!Strings.isNullOrEmpty(endpoint)) {
       telemetryClient
