@@ -22,8 +22,8 @@
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.StackFrame;
 import com.microsoft.applicationinsights.agent.internal.exporter.models2.ExceptionDetailTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.StackFrameTelemetry;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.instrumentation.api.cache.Cache;
 import java.util.ArrayList;
@@ -92,7 +92,7 @@ public class TelemetryUtil {
     exceptionDetails.setHasFullStack(true);
 
     if (trace != null && trace.length > 0) {
-      List<StackFrame> stack = new ArrayList<>();
+      List<StackFrameTelemetry> stack = new ArrayList<>();
 
       // We need to present the stack trace in reverse order.
       int stackLength = 0;
@@ -105,18 +105,20 @@ public class TelemetryUtil {
 
         String className = elem.getClassName();
 
-        StackFrame frame = new StackFrame();
+        StackFrameTelemetry frame = new StackFrameTelemetry();
         frame.setLevel(idx);
         frame.setFileName(elem.getFileName());
         frame.setLine(elem.getLineNumber());
 
+        String method;
         if (!Strings.isNullOrEmpty(className)) {
-          frame.setMethod(elem.getClassName() + "." + elem.getMethodName());
+          method = elem.getClassName() + "." + elem.getMethodName();
         } else {
-          frame.setMethod(elem.getMethodName());
+          method = elem.getMethodName();
         }
+        frame.setMethod(method);
 
-        stackLength += getStackFrameLength(frame);
+        stackLength += getStackFrameLength(method, elem.getFileName(), null);
         if (stackLength > MAX_PARSED_STACK_LENGTH) {
           exceptionDetails.setHasFullStack(false);
           logger.debug(
@@ -137,10 +139,14 @@ public class TelemetryUtil {
 
   /** Returns the stack frame length for only the strings in the stack frame. */
   // this is the same logic used to limit length on the Breeze side
-  private static int getStackFrameLength(StackFrame stackFrame) {
-    return (stackFrame.getMethod() == null ? 0 : stackFrame.getMethod().length())
-        + (stackFrame.getAssembly() == null ? 0 : stackFrame.getAssembly().length())
-        + (stackFrame.getFileName() == null ? 0 : stackFrame.getFileName().length());
+  private static int getStackFrameLength(String method, String fileName, String assembly) {
+    return getStackFrameLength(method)
+        + getStackFrameLength(fileName)
+        + getStackFrameLength(assembly);
+  }
+
+  private static int getStackFrameLength(String text) {
+    return text == null ? 0 : text.length();
   }
 
   public static final String SAMPLING_PERCENTAGE_TRACE_STATE = "ai-internal-sp";

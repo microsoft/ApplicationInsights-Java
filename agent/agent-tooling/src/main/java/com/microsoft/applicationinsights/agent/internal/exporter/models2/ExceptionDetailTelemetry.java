@@ -26,6 +26,7 @@ import static com.microsoft.applicationinsights.agent.internal.common.TelemetryT
 import com.microsoft.applicationinsights.agent.internal.exporter.models.StackFrame;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
 import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
+import java.util.ArrayList;
 import java.util.List;
 
 public final class ExceptionDetailTelemetry {
@@ -65,8 +66,12 @@ public final class ExceptionDetailTelemetry {
         truncateTelemetry(stack, SanitizationHelper.MAX_MESSAGE_LENGTH, "ExceptionDetail.stack"));
   }
 
-  public void setParsedStack(List<StackFrame> parsedStack) {
-    data.setParsedStack(parsedStack);
+  public void setParsedStack(List<StackFrameTelemetry> parsedStack) {
+    List<StackFrame> list = new ArrayList<>();
+    for (StackFrameTelemetry item : parsedStack) {
+      list.add(item.getData());
+    }
+    data.setParsedStack(list);
   }
 
   // visible (beyond package protected) for testing
