@@ -117,7 +117,9 @@ final class StartupProfiler {
     }
 
     private void write(ThreadInfo threadInfo) {
-      if (capture(threadInfo)) {}
+      if (capture(threadInfo)) {
+        // TODO look like this is not used.
+      }
       out.println(threadInfo.getThreadName() + " #" + threadInfo.getThreadId());
       out.println("   java.lang.Thread.State: " + threadInfo.getThreadState());
       for (StackTraceElement ste : threadInfo.getStackTrace()) {
