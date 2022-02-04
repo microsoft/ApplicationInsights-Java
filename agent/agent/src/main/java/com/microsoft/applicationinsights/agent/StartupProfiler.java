@@ -39,17 +39,13 @@ final class StartupProfiler {
 
   @SuppressWarnings("SystemOut")
   public static void start() {
-    if (isReadonly()) {
-      System.out.println("It's a readonly file system. StartupProfiler does nothing in this case.");
+    // this is used to support -Dapplicationinsights.debug.startupProfiling=true
+    if (!Boolean.parseBoolean(System.getProperty("applicationinsights.debug.startupProfiling"))) {
       return;
     }
 
-    // this is used to support -Dapplicationinsights.debug.startupProfiling=true
-    boolean startupProfilingEnabled =
-        Boolean.parseBoolean(System.getProperty("applicationinsights.debug.startupProfiling"));
-    if (!startupProfilingEnabled) {
-      System.out.println(
-          "Exit StartupProfiler - system property 'applicationinsights.debug.startupProfiling' is not set to true.");
+    if (isReadonly()) {
+      System.out.println("It's a readonly file system. StartupProfiler does nothing in this case.");
       return;
     }
 
@@ -60,7 +56,7 @@ final class StartupProfiler {
     }
 
     File dumpFile = new File(folder, STACKTRACES);
-    System.out.println("Create StartupProfiler dump here: '" + dumpFile.getPath() + "'");
+    System.out.println("Writing startup profiler to '" + dumpFile.getPath() + "'");
 
     PrintWriter printWriter = null;
     try (PrintWriter out =
@@ -69,7 +65,7 @@ final class StartupProfiler {
       start(printWriter);
     } catch (IOException e) {
       System.out.println(
-          "Error occurs when writing dump to " + STACKTRACES + " \ncause: " + e.getCause());
+          "Error occurred when writing dump to " + dumpFile.getPath() + " \ncause: " + e.getCause());
     } finally {
       if (printWriter != null) {
         printWriter.close();
@@ -117,24 +113,12 @@ final class StartupProfiler {
     }
 
     private void write(ThreadInfo threadInfo) {
-      if (capture(threadInfo)) {
-        // TODO look like this is not used.
-      }
       out.println(threadInfo.getThreadName() + " #" + threadInfo.getThreadId());
       out.println("   java.lang.Thread.State: " + threadInfo.getThreadState());
       for (StackTraceElement ste : threadInfo.getStackTrace()) {
         out.println("        " + ste);
       }
       out.println();
-    }
-
-    private static boolean capture(ThreadInfo threadInfo) {
-      if (threadInfo.getThreadName().equals("main")) {
-        return true;
-      }
-      // check stack trace length helps to skip "Signal Dispatcher" thread
-      return threadInfo.getThreadState() == Thread.State.RUNNABLE
-          && threadInfo.getStackTrace().length > 0;
     }
   }
 }
