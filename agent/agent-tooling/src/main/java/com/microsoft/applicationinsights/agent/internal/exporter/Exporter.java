@@ -250,7 +250,7 @@ public class Exporter implements SpanExporter {
     if (inProc) {
       telemetryBuilder.setType("InProc");
     } else {
-      applySemanticConventions(span, telemetryBuilder);
+      applySemanticConventions(telemetryBuilder, span);
     }
 
     // export
@@ -298,21 +298,21 @@ public class Exporter implements SpanExporter {
   }
 
   private static void applySemanticConventions(
-      SpanData span, RemoteDependencyTelemetryBuilder telemetryBuilder) {
+      RemoteDependencyTelemetryBuilder telemetryBuilder, SpanData span) {
     Attributes attributes = span.getAttributes();
     String httpMethod = attributes.get(SemanticAttributes.HTTP_METHOD);
     if (httpMethod != null) {
-      applyHttpClientSpan(attributes, telemetryBuilder);
+      applyHttpClientSpan(telemetryBuilder, attributes);
       return;
     }
     String rpcSystem = attributes.get(SemanticAttributes.RPC_SYSTEM);
     if (rpcSystem != null) {
-      applyRpcClientSpan(attributes, telemetryBuilder, rpcSystem);
+      applyRpcClientSpan(telemetryBuilder, rpcSystem, attributes);
       return;
     }
     String dbSystem = attributes.get(SemanticAttributes.DB_SYSTEM);
     if (dbSystem != null) {
-      applyDatabaseClientSpan(attributes, telemetryBuilder, dbSystem);
+      applyDatabaseClientSpan(telemetryBuilder, dbSystem, attributes);
       return;
     }
     String azureNamespace = attributes.get(AZURE_NAMESPACE);
@@ -456,7 +456,7 @@ public class Exporter implements SpanExporter {
   }
 
   private static void applyHttpClientSpan(
-      Attributes attributes, RemoteDependencyTelemetryBuilder telemetryBuilder) {
+      RemoteDependencyTelemetryBuilder telemetryBuilder, Attributes attributes) {
 
     String target = getTargetForHttpClientSpan(attributes);
 
@@ -585,7 +585,7 @@ public class Exporter implements SpanExporter {
   }
 
   private static void applyRpcClientSpan(
-      Attributes attributes, RemoteDependencyTelemetryBuilder telemetryBuilder, String rpcSystem) {
+      RemoteDependencyTelemetryBuilder telemetryBuilder, String rpcSystem, Attributes attributes) {
     telemetryBuilder.setType(rpcSystem);
     String target = getTargetFromPeerAttributes(attributes, 0);
     // not appending /rpc.service for now since that seems too fine-grained
@@ -596,7 +596,7 @@ public class Exporter implements SpanExporter {
   }
 
   private static void applyDatabaseClientSpan(
-      Attributes attributes, RemoteDependencyTelemetryBuilder telemetryBuilder, String dbSystem) {
+      RemoteDependencyTelemetryBuilder telemetryBuilder, String dbSystem, Attributes attributes) {
     String dbStatement = attributes.get(SemanticAttributes.DB_STATEMENT);
     if (dbStatement == null) {
       dbStatement = attributes.get(SemanticAttributes.DB_OPERATION);
