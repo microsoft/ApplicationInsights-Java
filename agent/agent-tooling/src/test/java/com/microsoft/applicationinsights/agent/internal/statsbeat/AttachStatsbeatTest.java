@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.StatsbeatTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.StatsbeatTelemetryBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,9 +68,9 @@ public class AttachStatsbeatTest {
     assertThat("2a1216c3-a2a0-4fc5-a941-b1f5acde7051/65b2f83e-7bf1-4be3-bafc-3a4163265a52")
         .isEqualTo(attachStatsbeat.getResourceProviderId());
 
-    StatsbeatTelemetry telemetry = StatsbeatTelemetry.create("test", 1);
+    StatsbeatTelemetryBuilder telemetry = StatsbeatTelemetryBuilder.create("test", 1);
     customDimensions.populateProperties(telemetry, null);
-    MetricsData data = (MetricsData) telemetry.getTelemetryItem().getData().getBaseData();
+    MetricsData data = (MetricsData) telemetry.build().getData().getBaseData();
     assertThat(data.getProperties().get("os")).isEqualTo("Linux");
   }
 

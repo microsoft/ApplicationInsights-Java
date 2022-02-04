@@ -22,8 +22,8 @@
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.ExceptionDetailTelemetry;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.StackFrameTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.ExceptionDetailBuilder;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.StackFrameBuilder;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.instrumentation.api.cache.Cache;
 import java.util.ArrayList;
@@ -40,16 +40,16 @@ public class TelemetryUtil {
   private static final int MAX_PARSED_STACK_LENGTH =
       32768; // Breeze will reject parsedStack exceeding 65536 bytes. Each char is 2 bytes long.
 
-  public static List<ExceptionDetailTelemetry> getExceptions(Throwable throwable) {
-    List<ExceptionDetailTelemetry> exceptions = new ArrayList<>();
+  public static List<ExceptionDetailBuilder> getExceptions(Throwable throwable) {
+    List<ExceptionDetailBuilder> exceptions = new ArrayList<>();
     convertExceptionTree(throwable, null, exceptions, Integer.MAX_VALUE);
     return exceptions;
   }
 
   private static void convertExceptionTree(
       Throwable exception,
-      ExceptionDetailTelemetry parentExceptionDetails,
-      List<ExceptionDetailTelemetry> exceptions,
+      ExceptionDetailBuilder parentExceptionDetails,
+      List<ExceptionDetailBuilder> exceptions,
       int stackSize) {
     if (exception == null) {
       exception = new Exception("");
@@ -59,7 +59,7 @@ public class TelemetryUtil {
       return;
     }
 
-    ExceptionDetailTelemetry exceptionDetails =
+    ExceptionDetailBuilder exceptionDetails =
         createWithStackInfo(exception, parentExceptionDetails);
     exceptions.add(exceptionDetails);
 
@@ -68,13 +68,13 @@ public class TelemetryUtil {
     }
   }
 
-  private static ExceptionDetailTelemetry createWithStackInfo(
-      Throwable exception, ExceptionDetailTelemetry parentExceptionDetails) {
+  private static ExceptionDetailBuilder createWithStackInfo(
+      Throwable exception, ExceptionDetailBuilder parentExceptionDetails) {
     if (exception == null) {
       throw new IllegalArgumentException("exception cannot be null");
     }
 
-    ExceptionDetailTelemetry exceptionDetails = new ExceptionDetailTelemetry();
+    ExceptionDetailBuilder exceptionDetails = new ExceptionDetailBuilder();
     exceptionDetails.setId(exception.hashCode());
     exceptionDetails.setTypeName(exception.getClass().getName());
 
@@ -92,7 +92,7 @@ public class TelemetryUtil {
     exceptionDetails.setHasFullStack(true);
 
     if (trace != null && trace.length > 0) {
-      List<StackFrameTelemetry> stack = new ArrayList<>();
+      List<StackFrameBuilder> stack = new ArrayList<>();
 
       // We need to present the stack trace in reverse order.
       int stackLength = 0;
@@ -105,7 +105,7 @@ public class TelemetryUtil {
 
         String className = elem.getClassName();
 
-        StackFrameTelemetry frame = new StackFrameTelemetry();
+        StackFrameBuilder frame = new StackFrameBuilder();
         frame.setLevel(idx);
         frame.setFileName(elem.getFileName());
         frame.setLine(elem.getLineNumber());

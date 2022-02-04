@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.MetricTelemetry;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.lang.management.ManagementFactory;
 import javax.management.ObjectName;
@@ -57,10 +56,9 @@ public class FreeMemoryPerformanceCounter implements PerformanceCounter {
         "Performance Counter: {}: {}",
         Constants.TOTAL_MEMORY_PC_METRIC_NAME,
         freePhysicalMemorySize);
-    MetricTelemetry telemetry =
+    telemetryClient.trackAsync(
         telemetryClient.newMetricTelemetry(
-            Constants.TOTAL_MEMORY_PC_METRIC_NAME, freePhysicalMemorySize);
-    telemetryClient.trackAsync(telemetry);
+            Constants.TOTAL_MEMORY_PC_METRIC_NAME, freePhysicalMemorySize));
   }
 
   private long getFreePhysicalMemorySize() throws Exception {

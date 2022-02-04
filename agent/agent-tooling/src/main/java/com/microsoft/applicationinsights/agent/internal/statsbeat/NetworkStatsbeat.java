@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.StatsbeatTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.StatsbeatTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.instrumentation.api.cache.Cache;
 import java.util.HashMap;
@@ -163,55 +163,56 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   private void sendIntervalMetric(
       TelemetryClient telemetryClient, String ikey, IntervalMetrics local, String host) {
     if (local.requestSuccessCount.get() != 0) {
-      StatsbeatTelemetry requestSuccessCountSt =
+      StatsbeatTelemetryBuilder requestSuccessCountSt =
           createStatsbeatTelemetry(
               telemetryClient, REQUEST_SUCCESS_COUNT_METRIC_NAME, local.requestSuccessCount.get());
       addCommonProperties(requestSuccessCountSt, ikey, host);
-      telemetryClient.trackStatsbeatAsync(requestSuccessCountSt.getTelemetryItem());
+      telemetryClient.trackStatsbeatAsync(requestSuccessCountSt.build());
     }
 
     if (local.requestFailureCount.get() != 0) {
-      StatsbeatTelemetry requestFailureCountSt =
+      StatsbeatTelemetryBuilder requestFailureCountSt =
           createStatsbeatTelemetry(
               telemetryClient, REQUEST_FAILURE_COUNT_METRIC_NAME, local.requestFailureCount.get());
       addCommonProperties(requestFailureCountSt, ikey, host);
-      telemetryClient.trackStatsbeatAsync(requestFailureCountSt.getTelemetryItem());
+      telemetryClient.trackStatsbeatAsync(requestFailureCountSt.build());
     }
 
     double durationAvg = local.getRequestDurationAvg();
     if (durationAvg != 0) {
-      StatsbeatTelemetry requestDurationSt =
+      StatsbeatTelemetryBuilder requestDurationSt =
           createStatsbeatTelemetry(telemetryClient, REQUEST_DURATION_METRIC_NAME, durationAvg);
       addCommonProperties(requestDurationSt, ikey, host);
-      telemetryClient.trackStatsbeatAsync(requestDurationSt.getTelemetryItem());
+      telemetryClient.trackStatsbeatAsync(requestDurationSt.build());
     }
 
     if (local.retryCount.get() != 0) {
-      StatsbeatTelemetry retryCountSt =
+      StatsbeatTelemetryBuilder retryCountSt =
           createStatsbeatTelemetry(
               telemetryClient, RETRY_COUNT_METRIC_NAME, local.retryCount.get());
       addCommonProperties(retryCountSt, ikey, host);
-      telemetryClient.trackStatsbeatAsync(retryCountSt.getTelemetryItem());
+      telemetryClient.trackStatsbeatAsync(retryCountSt.build());
     }
 
     if (local.throttlingCount.get() != 0) {
-      StatsbeatTelemetry throttleCountSt =
+      StatsbeatTelemetryBuilder throttleCountSt =
           createStatsbeatTelemetry(
               telemetryClient, THROTTLE_COUNT_METRIC_NAME, local.throttlingCount.get());
       addCommonProperties(throttleCountSt, ikey, host);
-      telemetryClient.trackStatsbeatAsync(throttleCountSt.getTelemetryItem());
+      telemetryClient.trackStatsbeatAsync(throttleCountSt.build());
     }
 
     if (local.exceptionCount.get() != 0) {
-      StatsbeatTelemetry exceptionCountSt =
+      StatsbeatTelemetryBuilder exceptionCountSt =
           createStatsbeatTelemetry(
               telemetryClient, EXCEPTION_COUNT_METRIC_NAME, local.exceptionCount.get());
       addCommonProperties(exceptionCountSt, ikey, host);
-      telemetryClient.trackStatsbeatAsync(exceptionCountSt.getTelemetryItem());
+      telemetryClient.trackStatsbeatAsync(exceptionCountSt.build());
     }
   }
 
-  private static void addCommonProperties(StatsbeatTelemetry telemetry, String ikey, String host) {
+  private static void addCommonProperties(
+      StatsbeatTelemetryBuilder telemetry, String ikey, String host) {
     telemetry.addProperty("endpoint", BREEZE_ENDPOINT);
     telemetry.addProperty("cikey", ikey);
     telemetry.addProperty("host", host);

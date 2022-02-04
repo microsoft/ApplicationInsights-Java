@@ -37,9 +37,9 @@ import com.azure.core.test.TestMode;
 import com.azure.core.util.FluxUtil;
 import com.azure.identity.ClientSecretCredentialBuilder;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.ExceptionTelemetry;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.RemoteDependencyTelemetry;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.RequestTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.ExceptionTelemetryBuilder;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.RemoteDependencyTelemetryBuilder;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.RequestTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedDuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import java.nio.charset.StandardCharsets;
@@ -89,7 +89,7 @@ public class QuickPulseTestBase extends TestBase {
 
   public static TelemetryItem createRequestTelemetry(
       String name, Date timestamp, long durationMillis, String responseCode, boolean success) {
-    RequestTelemetry telemetry = RequestTelemetry.create();
+    RequestTelemetryBuilder telemetry = RequestTelemetryBuilder.create();
     telemetry.addProperty("customProperty", "customValue");
     telemetry.setName(name);
     telemetry.setDuration(FormattedDuration.fromMillis(durationMillis));
@@ -97,22 +97,22 @@ public class QuickPulseTestBase extends TestBase {
     telemetry.setSuccess(success);
     telemetry.setUrl("foo");
     telemetry.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
-    return telemetry.getTelemetryItem();
+    return telemetry.build();
   }
 
   public static TelemetryItem createRemoteDependencyTelemetry(
       String name, String command, long durationMillis, boolean success) {
-    RemoteDependencyTelemetry telemetry = RemoteDependencyTelemetry.create();
+    RemoteDependencyTelemetryBuilder telemetry = RemoteDependencyTelemetryBuilder.create();
     telemetry.addProperty("customProperty", "customValue");
     telemetry.setName(name);
     telemetry.setData(command);
     telemetry.setDuration(FormattedDuration.fromMillis(durationMillis));
     telemetry.setSuccess(success);
-    return telemetry.getTelemetryItem();
+    return telemetry.build();
   }
 
-  public static ExceptionTelemetry createExceptionTelemetry(Exception exception) {
-    ExceptionTelemetry telemetry = ExceptionTelemetry.create();
+  public static ExceptionTelemetryBuilder createExceptionTelemetry(Exception exception) {
+    ExceptionTelemetryBuilder telemetry = ExceptionTelemetryBuilder.create();
     telemetry.setExceptions(getExceptions(exception));
     return telemetry;
   }

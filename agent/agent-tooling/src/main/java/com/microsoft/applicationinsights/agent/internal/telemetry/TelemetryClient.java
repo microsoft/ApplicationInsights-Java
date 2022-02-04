@@ -31,14 +31,14 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDa
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorDomain;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.EventTelemetry;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.ExceptionTelemetry;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.MessageTelemetry;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.MetricTelemetry;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.PageViewTelemetry;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.RemoteDependencyTelemetry;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.RequestTelemetry;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.Telemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.AbstractTelemetryBuilder;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.EventTelemetryBuilder;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.ExceptionTelemetryBuilder;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.MessageTelemetryBuilder;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.MetricTelemetryBuilder;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.PageViewTelemetryBuilder;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.RemoteDependencyTelemetryBuilder;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.RequestTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileCache;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileLoader;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileSender;
@@ -140,12 +140,11 @@ public class TelemetryClient {
     TelemetryClient.active = telemetryClient;
   }
 
-  public void trackAsync(Telemetry telemetry) {
+  public void trackAsync(TelemetryItem telemetryItem) {
     if (Strings.isNullOrEmpty(instrumentationKey)) {
       return;
     }
 
-    TelemetryItem telemetryItem = telemetry.getTelemetryItem();
     MonitorDomain data = telemetryItem.getData().getBaseData();
 
     if (data instanceof MetricsData) {
@@ -305,45 +304,52 @@ public class TelemetryClient {
     return instrumentationKey;
   }
 
-  public EventTelemetry newEventTelemetry() {
-    return newTelemetry(EventTelemetry::create);
+  // convenience
+  public TelemetryItem newMetricTelemetry(String name, double value) {
+    return newMetricTelemetryBuilder(name, value).build();
   }
 
-  public ExceptionTelemetry newExceptionTelemetry() {
-    return newTelemetry(ExceptionTelemetry::create);
+  public EventTelemetryBuilder newEventTelemetryBuilder() {
+    return newTelemetryBuilder(EventTelemetryBuilder::create);
   }
 
-  public MessageTelemetry newMessageTelemetry() {
-    return newTelemetry(MessageTelemetry::create);
+  public ExceptionTelemetryBuilder newExceptionTelemetryBuilder() {
+    return newTelemetryBuilder(ExceptionTelemetryBuilder::create);
   }
 
-  public MetricTelemetry newMetricTelemetry() {
-    return newTelemetry(MetricTelemetry::create);
+  public MessageTelemetryBuilder newMessageTelemetryBuilder() {
+    return newTelemetryBuilder(MessageTelemetryBuilder::create);
   }
 
-  public MetricTelemetry newMetricTelemetry(String name, double value) {
-    return newTelemetry(() -> MetricTelemetry.create(name, value));
+  // this does not populate the time
+  public MetricTelemetryBuilder newMetricTelemetryBuilder() {
+    return newTelemetryBuilder(MetricTelemetryBuilder::create);
   }
 
-  public PageViewTelemetry newPageViewTelemetry() {
-    return newTelemetry(PageViewTelemetry::create);
+  // this _does_ populate the current time
+  public MetricTelemetryBuilder newMetricTelemetryBuilder(String name, double value) {
+    return newTelemetryBuilder(() -> MetricTelemetryBuilder.create(name, value));
   }
 
-  public RemoteDependencyTelemetry newRemoteDependencyTelemetry() {
-    return newTelemetry(RemoteDependencyTelemetry::create);
+  public PageViewTelemetryBuilder newPageViewTelemetryBuilder() {
+    return newTelemetryBuilder(PageViewTelemetryBuilder::create);
   }
 
-  public RequestTelemetry newRequestTelemetry() {
-    return newTelemetry(RequestTelemetry::create);
+  public RemoteDependencyTelemetryBuilder newRemoteDependencyTelemetryBuilder() {
+    return newTelemetryBuilder(RemoteDependencyTelemetryBuilder::create);
   }
 
-  private <T extends Telemetry> T newTelemetry(Supplier<T> creator) {
+  public RequestTelemetryBuilder newRequestTelemetryBuilder() {
+    return newTelemetryBuilder(RequestTelemetryBuilder::create);
+  }
+
+  private <T extends AbstractTelemetryBuilder> T newTelemetryBuilder(Supplier<T> creator) {
     T telemetry = creator.get();
     populateDefaults(telemetry);
     return telemetry;
   }
 
-  private void populateDefaults(Telemetry telemetry) {
+  private void populateDefaults(AbstractTelemetryBuilder telemetry) {
     telemetry.setInstrumentationKey(instrumentationKey);
     for (Map.Entry<String, String> entry : globalTags.entrySet()) {
       telemetry.addTag(entry.getKey(), entry.getValue());

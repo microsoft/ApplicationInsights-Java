@@ -21,8 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.StatsbeatTelemetry;
-import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.StatsbeatTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 
 abstract class BaseStatsbeat {
@@ -35,13 +34,12 @@ abstract class BaseStatsbeat {
 
   protected abstract void send(TelemetryClient telemetryClient);
 
-  protected StatsbeatTelemetry createStatsbeatTelemetry(
+  protected StatsbeatTelemetryBuilder createStatsbeatTelemetry(
       TelemetryClient telemetryClient, String name, double value) {
 
-    StatsbeatTelemetry telemetry = StatsbeatTelemetry.create(name, value);
+    StatsbeatTelemetryBuilder telemetry = StatsbeatTelemetryBuilder.create(name, value);
 
     telemetry.setInstrumentationKey(telemetryClient.getStatsbeatInstrumentationKey());
-    telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
 
     customDimensions.populateProperties(telemetry, telemetryClient.getInstrumentationKey());
 

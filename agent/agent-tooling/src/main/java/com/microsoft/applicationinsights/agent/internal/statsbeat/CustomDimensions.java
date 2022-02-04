@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.StatsbeatTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.StatsbeatTelemetryBuilder;
 
 class CustomDimensions {
 
@@ -85,7 +85,7 @@ class CustomDimensions {
     this.operatingSystem = operatingSystem;
   }
 
-  void populateProperties(StatsbeatTelemetry telemetry, String customerIkey) {
+  void populateProperties(StatsbeatTelemetryBuilder telemetry, String customerIkey) {
     telemetry.addProperty("rp", resourceProvider.getValue());
     telemetry.addProperty("os", operatingSystem.getValue());
     telemetry.addProperty("attach", attachType);

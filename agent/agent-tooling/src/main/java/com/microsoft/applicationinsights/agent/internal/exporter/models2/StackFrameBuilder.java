@@ -25,7 +25,7 @@ import static com.microsoft.applicationinsights.agent.internal.common.TelemetryT
 
 import com.microsoft.applicationinsights.agent.internal.exporter.models.StackFrame;
 
-public final class StackFrameTelemetry {
+public final class StackFrameBuilder {
 
   private static final int MAX_FILE_NAME_LENGTH = 1024;
   private static final int MAX_METHOD_NAME_LENGTH = 1024;
@@ -53,7 +53,7 @@ public final class StackFrameTelemetry {
     data.setLine(line);
   }
 
-  StackFrame getData() {
+  StackFrame build() {
     return data;
   }
 }

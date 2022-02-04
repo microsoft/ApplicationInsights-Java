@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.EventTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.EventTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
@@ -138,44 +138,45 @@ public class GcEventMonitor {
       return;
     }
 
-    EventTelemetry telemetry = telemetryClient.newEventTelemetry();
+    EventTelemetryBuilder telemetryBuilder = telemetryClient.newEventTelemetryBuilder();
 
-    telemetry.setName("GcEvent");
+    telemetryBuilder.setName("GcEvent");
 
-    telemetry.addProperty("collector", event.getCollector().getName());
-    telemetry.addProperty("type", event.getGcCause());
-    telemetry.addProperty("action", event.getGcAction());
-    telemetry.addProperty("jvm_instance_id", JVM_INSTANCE_UID);
+    telemetryBuilder.addProperty("collector", event.getCollector().getName());
+    telemetryBuilder.addProperty("type", event.getGcCause());
+    telemetryBuilder.addProperty("action", event.getGcAction());
+    telemetryBuilder.addProperty("jvm_instance_id", JVM_INSTANCE_UID);
 
-    telemetry.addMeasurement("id", (double) event.getId());
-    telemetry.addMeasurement("duration_ms", (double) event.getDuration());
-    telemetry.addMeasurement("end_time_ms", (double) event.getEndTime());
-    telemetry.addMeasurement("thread_count", (double) event.getGcThreadCount());
-    telemetry.addMeasurement(
+    telemetryBuilder.addMeasurement("id", (double) event.getId());
+    telemetryBuilder.addMeasurement("duration_ms", (double) event.getDuration());
+    telemetryBuilder.addMeasurement("end_time_ms", (double) event.getEndTime());
+    telemetryBuilder.addMeasurement("thread_count", (double) event.getGcThreadCount());
+    telemetryBuilder.addMeasurement(
         "collection_count", (double) event.getCollector().getCollectionCount());
-    telemetry.addMeasurement(
+    telemetryBuilder.addMeasurement(
         "cumulative_collector_time_sec", (double) event.getCollector().getCollectionTime());
 
     addMemoryUsage(
-        "young", "before", telemetry, event.getMemoryUsageBeforeGc(event.getYoungPools()));
-    addMemoryUsage("young", "after", telemetry, event.getMemoryUsageAfterGc(event.getYoungPools()));
+        "young", "before", telemetryBuilder, event.getMemoryUsageBeforeGc(event.getYoungPools()));
+    addMemoryUsage(
+        "young", "after", telemetryBuilder, event.getMemoryUsageAfterGc(event.getYoungPools()));
 
     Optional<MemoryPool> tenuredPool = event.getTenuredPool();
     if (tenuredPool.isPresent()) {
       MemoryUsage beforeOg = event.getMemoryUsageBeforeGc(tenuredPool.get());
-      addMemoryUsage("tenured", "before", telemetry, beforeOg);
+      addMemoryUsage("tenured", "before", telemetryBuilder, beforeOg);
 
       MemoryUsage afterOg = event.getMemoryUsageAfterGc(tenuredPool.get());
-      addMemoryUsage("tenured", "after", telemetry, afterOg);
+      addMemoryUsage("tenured", "after", telemetryBuilder, afterOg);
     }
 
-    telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
+    telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
 
-    telemetryClient.trackAsync(telemetry);
+    telemetryClient.trackAsync(telemetryBuilder.build());
   }
 
   private static void addMemoryUsage(
-      String poolName, String when, EventTelemetry telemetry, MemoryUsage memory) {
+      String poolName, String when, EventTelemetryBuilder telemetry, MemoryUsage memory) {
     telemetry.addMeasurement(poolName + "_" + when + "_used", (double) memory.getUsed());
     telemetry.addMeasurement(poolName + "_" + when + "_size", (double) memory.getCommitted());
     telemetry.addMeasurement(poolName + "_max", (double) memory.getMax());

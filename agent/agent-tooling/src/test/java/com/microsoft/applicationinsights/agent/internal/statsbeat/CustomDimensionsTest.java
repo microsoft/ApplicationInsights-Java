@@ -28,7 +28,7 @@ import com.microsoft.applicationinsights.agent.internal.common.SystemInformation
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.StatsbeatTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.StatsbeatTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import org.junit.jupiter.api.Test;
 
@@ -58,9 +58,9 @@ public class CustomDimensionsTest {
   public void testCustomerIkey() {
     CustomDimensions customDimensions = new CustomDimensions();
 
-    StatsbeatTelemetry telemetry = StatsbeatTelemetry.create("test", 1);
+    StatsbeatTelemetryBuilder telemetry = StatsbeatTelemetryBuilder.create("test", 1);
     customDimensions.populateProperties(telemetry, null);
-    MetricsData data = (MetricsData) telemetry.getTelemetryItem().getData().getBaseData();
+    MetricsData data = (MetricsData) telemetry.build().getData().getBaseData();
     assertThat(data.getProperties().get("cikey")).isNull();
   }
 
@@ -68,13 +68,13 @@ public class CustomDimensionsTest {
   public void testVersion() {
     CustomDimensions customDimensions = new CustomDimensions();
 
-    StatsbeatTelemetry telemetry = StatsbeatTelemetry.create("test", 1);
+    StatsbeatTelemetryBuilder telemetry = StatsbeatTelemetryBuilder.create("test", 1);
     customDimensions.populateProperties(telemetry, null);
 
     String sdkVersion = PropertyHelper.getQualifiedSdkVersionString();
     String version = sdkVersion.substring(sdkVersion.lastIndexOf(':') + 1);
 
-    MetricsData data = (MetricsData) telemetry.getTelemetryItem().getData().getBaseData();
+    MetricsData data = (MetricsData) telemetry.build().getData().getBaseData();
     assertThat(data.getProperties().get("version")).isEqualTo(version);
   }
 
@@ -82,10 +82,10 @@ public class CustomDimensionsTest {
   public void testRuntimeVersion() {
     CustomDimensions customDimensions = new CustomDimensions();
 
-    StatsbeatTelemetry telemetry = StatsbeatTelemetry.create("test", 1);
+    StatsbeatTelemetryBuilder telemetry = StatsbeatTelemetryBuilder.create("test", 1);
     customDimensions.populateProperties(telemetry, null);
 
-    MetricsData data = (MetricsData) telemetry.getTelemetryItem().getData().getBaseData();
+    MetricsData data = (MetricsData) telemetry.build().getData().getBaseData();
     assertThat(data.getProperties().get("runtimeVersion"))
         .isEqualTo(System.getProperty("java.version"));
   }
@@ -99,9 +99,7 @@ public class CustomDimensionsTest {
         TelemetryClient.builder().setCustomDimensions(configuration.customDimensions).build();
     NetworkStatsbeat networkStatsbeat = new NetworkStatsbeat();
     TelemetryItem networkItem =
-        networkStatsbeat
-            .createStatsbeatTelemetry(telemetryClient, "test-network", 0.0)
-            .getTelemetryItem();
+        networkStatsbeat.createStatsbeatTelemetry(telemetryClient, "test-network", 0.0).build();
     assertThat(networkItem.getTags()).isNull();
     assertThat(((MetricsData) networkItem.getData().getBaseData()).getProperties())
         .doesNotContainKey("firstTag");
@@ -110,9 +108,7 @@ public class CustomDimensionsTest {
 
     AttachStatsbeat attachStatsbeat = new AttachStatsbeat(new CustomDimensions());
     TelemetryItem attachItem =
-        attachStatsbeat
-            .createStatsbeatTelemetry(telemetryClient, "test-attach", 0.0)
-            .getTelemetryItem();
+        attachStatsbeat.createStatsbeatTelemetry(telemetryClient, "test-attach", 0.0).build();
     assertThat(networkItem.getTags()).isNull();
     assertThat(((MetricsData) attachItem.getData().getBaseData()).getProperties())
         .doesNotContainKey("firstTag");
@@ -122,9 +118,7 @@ public class CustomDimensionsTest {
     FeatureStatsbeat featureStatsbeat =
         new FeatureStatsbeat(new CustomDimensions(), FeatureType.FEATURE);
     TelemetryItem featureItem =
-        featureStatsbeat
-            .createStatsbeatTelemetry(telemetryClient, "test-feature", 0.0)
-            .getTelemetryItem();
+        featureStatsbeat.createStatsbeatTelemetry(telemetryClient, "test-feature", 0.0).build();
     assertThat(networkItem.getTags()).isNull();
     assertThat(((MetricsData) featureItem.getData().getBaseData()).getProperties())
         .doesNotContainKey("firstTag");

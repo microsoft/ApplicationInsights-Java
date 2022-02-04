@@ -27,7 +27,7 @@ import static com.microsoft.applicationinsights.agent.internal.quickpulse.QuickP
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.ExceptionTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.ExceptionTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector.CountAndDuration;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector.Counters;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector.FinalCounters;
@@ -168,15 +168,15 @@ class QuickPulseDataCollectorTests {
     QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
     QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
 
-    ExceptionTelemetry telemetry = createExceptionTelemetry(new Exception());
+    ExceptionTelemetryBuilder telemetry = createExceptionTelemetry(new Exception());
     telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-    QuickPulseDataCollector.INSTANCE.add(telemetry.getTelemetryItem());
+    QuickPulseDataCollector.INSTANCE.add(telemetry.build());
     FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
     assertThat(counters.exceptions).isEqualTo(1);
 
     telemetry = createExceptionTelemetry(new Exception());
     telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-    QuickPulseDataCollector.INSTANCE.add(telemetry.getTelemetryItem());
+    QuickPulseDataCollector.INSTANCE.add(telemetry.build());
     counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
     assertThat(counters.exceptions).isEqualTo(2);
 

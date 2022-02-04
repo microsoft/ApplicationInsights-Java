@@ -31,7 +31,7 @@ import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class Telemetry {
+public abstract class AbstractTelemetryBuilder {
 
   private static final int MAX_PROPERTY_KEY_LENGTH = 150;
   private static final int MAX_PROPERTY_VALUE_LENGTH = 8192;
@@ -40,7 +40,10 @@ public abstract class Telemetry {
 
   private final TelemetryItem telemetryItem;
 
-  protected Telemetry(MonitorDomain data, String telemetryName, String baseType) {
+  // TODO (trask) can remove later, mostly for initial debugging
+  private volatile boolean built;
+
+  protected AbstractTelemetryBuilder(MonitorDomain data, String telemetryName, String baseType) {
 
     telemetryItem = new TelemetryItem();
     telemetryItem.setVersion(1);
@@ -83,8 +86,11 @@ public abstract class Telemetry {
     getProperties().put(key, truncatePropertyValue(value, MAX_PROPERTY_VALUE_LENGTH, key));
   }
 
-  // should not be used for constructing telemetry, only when sending telemetry
-  public TelemetryItem getTelemetryItem() {
+  public TelemetryItem build() {
+    if (built) {
+      throw new AssertionError("already built");
+    }
+    built = true;
     return telemetryItem;
   }
 

@@ -24,27 +24,32 @@ package com.microsoft.applicationinsights.agent.internal.exporter.models2;
 import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
 
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.MessageData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.SeverityLevel;
+import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class EventTelemetry extends Telemetry {
+public final class MessageTelemetryBuilder extends AbstractTelemetryBuilder {
 
-  private static final int MAX_EVENT_NAME_LENGTH = 512;
+  private final MessageData data;
 
-  private final TelemetryEventData data;
-
-  public static EventTelemetry create() {
-    return new EventTelemetry(new TelemetryEventData());
+  public static MessageTelemetryBuilder create() {
+    return new MessageTelemetryBuilder(new MessageData());
   }
 
-  private EventTelemetry(TelemetryEventData data) {
-    super(data, "Event", "EventData");
+  private MessageTelemetryBuilder(MessageData data) {
+    super(data, "Message", "MessageData");
     this.data = data;
   }
 
-  public void setName(String name) {
-    data.setName(truncateTelemetry(name, MAX_EVENT_NAME_LENGTH, "EventData.name"));
+  public void setMessage(String message) {
+    data.setMessage(
+        truncateTelemetry(message, SanitizationHelper.MAX_MESSAGE_LENGTH, "MessageData.message"));
+  }
+
+  public void setSeverityLevel(SeverityLevel severityLevel) {
+    data.setSeverityLevel(severityLevel);
   }
 
   public void addMeasurement(String key, Double value) {

@@ -23,14 +23,14 @@ package com.microsoft.applicationinsights.agent.internal.exporter;
 
 import static java.util.Collections.singletonList;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.ExceptionDetailTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.ExceptionDetailBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Exceptions {
 
-  public static List<ExceptionDetailTelemetry> minimalParse(String str) {
-    ExceptionDetailTelemetry detail = new ExceptionDetailTelemetry();
+  public static List<ExceptionDetailBuilder> minimalParse(String str) {
+    ExceptionDetailBuilder detail = new ExceptionDetailBuilder();
     int separator = -1;
     int length = str.length();
     int current;
@@ -63,7 +63,7 @@ public class Exceptions {
   // THIS IS UNFINISHED WORK
   // NOT SURE IF IT'S NEEDED
   // TESTING WITH minimalParse() first
-  public static List<ExceptionDetailTelemetry> fullParse(String str) {
+  public static List<ExceptionDetailBuilder> fullParse(String str) {
     Parser parser = new Parser();
     for (String line : str.split("\r?\n")) {
       parser.process(line);
@@ -75,8 +75,8 @@ public class Exceptions {
 
   static class Parser {
 
-    private ExceptionDetailTelemetry current;
-    private final List<ExceptionDetailTelemetry> list = new ArrayList<>();
+    private ExceptionDetailBuilder current;
+    private final List<ExceptionDetailBuilder> list = new ArrayList<>();
 
     void process(String line) {
       if (line.charAt(0) != '\t') {
@@ -86,7 +86,7 @@ public class Exceptions {
         if (line.startsWith("Caused by: ")) {
           line = line.substring("Caused by: ".length());
         }
-        current = new ExceptionDetailTelemetry();
+        current = new ExceptionDetailBuilder();
         int index = line.indexOf(':');
         if (index != -1) {
           String typeName = line.substring(0, index);
@@ -103,7 +103,7 @@ public class Exceptions {
       }
     }
 
-    public List<ExceptionDetailTelemetry> getDetails() {
+    public List<ExceptionDetailBuilder> getDetails() {
       if (current != null) {
         list.add(current);
       }

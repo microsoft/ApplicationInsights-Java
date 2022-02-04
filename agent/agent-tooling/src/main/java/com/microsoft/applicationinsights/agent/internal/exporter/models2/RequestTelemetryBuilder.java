@@ -24,44 +24,54 @@ package com.microsoft.applicationinsights.agent.internal.exporter.models2;
 import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
 
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.PageViewData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
 import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class PageViewTelemetry extends Telemetry {
+public final class RequestTelemetryBuilder extends AbstractTelemetryBuilder {
 
-  private final PageViewData data;
+  private static final int MAX_SOURCE_LENGTH = 1024;
+  private static final int MAX_RESPONSE_CODE_LENGTH = 1024;
 
-  public static PageViewTelemetry create() {
-    return new PageViewTelemetry(new PageViewData());
+  private final RequestData data;
+
+  public static RequestTelemetryBuilder create() {
+    return new RequestTelemetryBuilder(new RequestData());
   }
 
-  private PageViewTelemetry(PageViewData data) {
-    super(data, "PageView", "PageViewData");
+  private RequestTelemetryBuilder(RequestData data) {
+    super(data, "Request", "RequestData");
     this.data = data;
   }
 
   public void setId(String id) {
-    data.setId(truncateTelemetry(id, SanitizationHelper.MAX_ID_LENGTH, "PageViewData.id"));
+    data.setId(truncateTelemetry(id, SanitizationHelper.MAX_ID_LENGTH, "RequestData.id"));
   }
 
   public void setName(String name) {
-    data.setName(truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "PageViewData.name"));
-  }
-
-  public void setUrl(String url) {
-    data.setUrl(truncateTelemetry(url, SanitizationHelper.MAX_URL_LENGTH, "PageViewData.url"));
+    data.setName(truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "RequestData.name"));
   }
 
   public void setDuration(String duration) {
     data.setDuration(duration);
   }
 
-  public void setReferredUri(String referredUri) {
-    data.setReferredUri(
-        truncateTelemetry(
-            referredUri, SanitizationHelper.MAX_URL_LENGTH, "PageViewData.referredUri"));
+  public void setSuccess(boolean success) {
+    data.setSuccess(success);
+  }
+
+  public void setResponseCode(String responseCode) {
+    data.setResponseCode(
+        truncateTelemetry(responseCode, MAX_RESPONSE_CODE_LENGTH, "RequestData.responseCode"));
+  }
+
+  public void setSource(String source) {
+    data.setSource(truncateTelemetry(source, MAX_SOURCE_LENGTH, "RequestData.source"));
+  }
+
+  public void setUrl(String url) {
+    data.setUrl(truncateTelemetry(url, SanitizationHelper.MAX_URL_LENGTH, "RequestData.url"));
   }
 
   public void addMeasurement(String key, Double value) {

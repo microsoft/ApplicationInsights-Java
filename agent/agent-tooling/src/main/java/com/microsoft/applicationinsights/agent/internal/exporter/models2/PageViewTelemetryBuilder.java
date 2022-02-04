@@ -24,62 +24,44 @@ package com.microsoft.applicationinsights.agent.internal.exporter.models2;
 import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
 
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDependencyData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.PageViewData;
 import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class RemoteDependencyTelemetry extends Telemetry {
+public final class PageViewTelemetryBuilder extends AbstractTelemetryBuilder {
 
-  private static final int MAX_DATA_LENGTH = 8192;
-  private static final int MAX_RESULT_CODE_LENGTH = 1024;
-  private static final int MAX_DEPENDENCY_TYPE_LENGTH = 1024;
-  private static final int MAX_TARGET_NAME_LENGTH = 1024;
+  private final PageViewData data;
 
-  private final RemoteDependencyData data;
-
-  public static RemoteDependencyTelemetry create() {
-    return new RemoteDependencyTelemetry(new RemoteDependencyData());
+  public static PageViewTelemetryBuilder create() {
+    return new PageViewTelemetryBuilder(new PageViewData());
   }
 
-  private RemoteDependencyTelemetry(RemoteDependencyData data) {
-    super(data, "RemoteDependency", "RemoteDependencyData");
+  private PageViewTelemetryBuilder(PageViewData data) {
+    super(data, "PageView", "PageViewData");
     this.data = data;
   }
 
   public void setId(String id) {
-    data.setId(truncateTelemetry(id, SanitizationHelper.MAX_ID_LENGTH, "RemoteDependencyData.id"));
+    data.setId(truncateTelemetry(id, SanitizationHelper.MAX_ID_LENGTH, "PageViewData.id"));
   }
 
   public void setName(String name) {
-    data.setName(
-        truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "RemoteDependencyData.name"));
+    data.setName(truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "PageViewData.name"));
   }
 
-  public void setResultCode(String resultCode) {
-    data.setResultCode(
-        truncateTelemetry(resultCode, MAX_RESULT_CODE_LENGTH, "RemoteDependencyData.resultCode"));
-  }
-
-  public void setData(String data) {
-    this.data.setData(truncateTelemetry(data, MAX_DATA_LENGTH, "RemoteDependencyData.data"));
-  }
-
-  public void setType(String type) {
-    data.setType(truncateTelemetry(type, MAX_DEPENDENCY_TYPE_LENGTH, "RemoteDependencyData.type"));
-  }
-
-  public void setTarget(String target) {
-    data.setTarget(
-        truncateTelemetry(target, MAX_TARGET_NAME_LENGTH, "RemoteDependencyData.target"));
+  public void setUrl(String url) {
+    data.setUrl(truncateTelemetry(url, SanitizationHelper.MAX_URL_LENGTH, "PageViewData.url"));
   }
 
   public void setDuration(String duration) {
     data.setDuration(duration);
   }
 
-  public void setSuccess(Boolean success) {
-    data.setSuccess(success);
+  public void setReferredUri(String referredUri) {
+    data.setReferredUri(
+        truncateTelemetry(
+            referredUri, SanitizationHelper.MAX_URL_LENGTH, "PageViewData.referredUri"));
   }
 
   public void addMeasurement(String key, Double value) {

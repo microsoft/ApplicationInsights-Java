@@ -32,25 +32,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class ExceptionTelemetry extends Telemetry {
+public final class ExceptionTelemetryBuilder extends AbstractTelemetryBuilder {
 
   private static final int MAX_PROBLEM_ID_LENGTH = 1024;
 
   private final TelemetryExceptionData data;
 
-  public static ExceptionTelemetry create() {
-    return new ExceptionTelemetry(new TelemetryExceptionData());
+  public static ExceptionTelemetryBuilder create() {
+    return new ExceptionTelemetryBuilder(new TelemetryExceptionData());
   }
 
-  private ExceptionTelemetry(TelemetryExceptionData data) {
+  private ExceptionTelemetryBuilder(TelemetryExceptionData data) {
     super(data, "Exception", "ExceptionData");
     this.data = data;
   }
 
-  public void setExceptions(List<ExceptionDetailTelemetry> exceptions) {
+  public void setExceptions(List<ExceptionDetailBuilder> exceptions) {
     List<TelemetryExceptionDetails> list = new ArrayList<>();
-    for (ExceptionDetailTelemetry detail : exceptions) {
-      list.add(detail.getData());
+    for (ExceptionDetailBuilder detail : exceptions) {
+      list.add(detail.build());
     }
     data.setExceptions(list);
   }

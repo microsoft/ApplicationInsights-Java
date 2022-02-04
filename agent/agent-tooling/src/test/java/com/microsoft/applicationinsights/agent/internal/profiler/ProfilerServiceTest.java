@@ -34,8 +34,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.GcReportin
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorDomain;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.MetricTelemetry;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.Telemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.MetricTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
@@ -83,7 +82,7 @@ class ProfilerServiceTest {
   void endToEndAlertTriggerCpu() throws Exception {
     endToEndAlertTriggerCycle(
         false,
-        MetricTelemetry.create(TOTAL_CPU_PC_METRIC_NAME, 100.0),
+        MetricTelemetryBuilder.create(TOTAL_CPU_PC_METRIC_NAME, 100.0).build(),
         telemetry -> {
           assertThat(telemetry.getProperties().get("Source")).isEqualTo("JFR-CPU");
           assertThat(telemetry.getMeasurements().get("AverageCPUUsage")).isEqualTo(100.0);
@@ -95,7 +94,7 @@ class ProfilerServiceTest {
   void endToEndAlertTriggerManual() throws Exception {
     endToEndAlertTriggerCycle(
         true,
-        MetricTelemetry.create(HEAP_MEM_USED_PERCENTAGE, 0.0),
+        MetricTelemetryBuilder.create(HEAP_MEM_USED_PERCENTAGE, 0.0).build(),
         telemetry -> {
           assertThat(telemetry.getProperties().get("Source")).isEqualTo("JFR-MANUAL");
           assertThat(telemetry.getMeasurements().get("AverageCPUUsage")).isEqualTo(0.0);
@@ -105,7 +104,7 @@ class ProfilerServiceTest {
 
   void endToEndAlertTriggerCycle(
       boolean triggerNow,
-      MetricTelemetry metricTelemetry,
+      TelemetryItem metricTelemetryItem,
       Consumer<TelemetryEventData> assertTelemetry)
       throws Exception {
     AtomicBoolean profileInvoked = new AtomicBoolean(false);
@@ -128,8 +127,7 @@ class ProfilerServiceTest {
         spy(TelemetryClient.builder().setCustomDimensions(new HashMap<>()).build());
     doAnswer(
             invocation -> {
-              Telemetry telemetry = invocation.getArgument(0);
-              TelemetryItem telemetryItem = telemetry.getTelemetryItem();
+              TelemetryItem telemetryItem = invocation.getArgument(0);
               MonitorDomain data = telemetryItem.getData().getBaseData();
               if (data instanceof TelemetryEventData) {
                 if ("ServiceProfilerIndex".equals(((TelemetryEventData) data).getName())) {
@@ -142,7 +140,7 @@ class ProfilerServiceTest {
               return null;
             })
         .when(client)
-        .trackAsync(any(Telemetry.class));
+        .trackAsync(any(TelemetryItem.class));
 
     ScheduledExecutorService serviceProfilerExecutorService =
         Executors.newScheduledThreadPool(
@@ -188,8 +186,7 @@ class ProfilerServiceTest {
     for (int i = 0; i < 100; i++) {
       TelemetryObservers.INSTANCE
           .getObservers()
-          .forEach(
-              telemetryObserver -> telemetryObserver.accept(metricTelemetry.getTelemetryItem()));
+          .forEach(telemetryObserver -> telemetryObserver.accept(metricTelemetryItem));
 
       synchronized (monitor) {
         if (serviceProfilerIndex.get() != null) {

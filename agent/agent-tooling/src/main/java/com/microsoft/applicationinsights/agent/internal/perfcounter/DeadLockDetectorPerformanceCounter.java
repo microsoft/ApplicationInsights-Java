@@ -21,8 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.MessageTelemetry;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.MetricTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.MessageTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.lang.management.ManagementFactory;
@@ -62,11 +61,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
     long[] threadIds = threadBean.findDeadlockedThreads();
     int blockedThreadCount = threadIds == null ? 0 : threadIds.length;
 
-    MetricTelemetry telemetry = telemetryClient.newMetricTelemetry(METRIC_NAME, blockedThreadCount);
-
-    telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
-
-    telemetryClient.trackAsync(telemetry);
+    telemetryClient.trackAsync(telemetryClient.newMetricTelemetry(METRIC_NAME, blockedThreadCount));
 
     if (blockedThreadCount > 0) {
       sendDetailedMessage(telemetryClient, threadIds);
@@ -75,7 +70,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
 
   private void sendDetailedMessage(TelemetryClient telemetryClient, long[] threadIds) {
 
-    MessageTelemetry telemetry = telemetryClient.newMessageTelemetry();
+    MessageTelemetryBuilder telemetryBuilder = telemetryClient.newMessageTelemetryBuilder();
 
     StringBuilder sb = new StringBuilder("Suspected deadlocked threads: ");
     for (long threadId : threadIds) {
@@ -84,9 +79,9 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
         appendThreadInfoAndStack(sb, threadInfo);
       }
     }
-    telemetry.setMessage(sb.toString());
-    telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
-    telemetryClient.trackAsync(telemetry);
+    telemetryBuilder.setMessage(sb.toString());
+    telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
+    telemetryClient.trackAsync(telemetryBuilder.build());
   }
 
   private static void appendThreadInfoAndStack(StringBuilder sb, ThreadInfo threadInfo) {

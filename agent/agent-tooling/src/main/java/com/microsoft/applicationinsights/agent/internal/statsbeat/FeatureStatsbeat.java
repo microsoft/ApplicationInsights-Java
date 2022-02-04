@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.StatsbeatTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.StatsbeatTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.Collections;
 import java.util.Set;
@@ -76,12 +76,12 @@ public class FeatureStatsbeat extends BaseStatsbeat {
       featureType = "1";
     }
 
-    StatsbeatTelemetry telemetry =
+    StatsbeatTelemetryBuilder telemetry =
         createStatsbeatTelemetry(telemetryClient, FEATURE_METRIC_NAME, 0);
     telemetry.addProperty("feature", String.valueOf(encodedLong));
     telemetry.addProperty("type", featureType);
 
-    telemetryClient.trackStatsbeatAsync(telemetry.getTelemetryItem());
+    telemetryClient.trackStatsbeatAsync(telemetry.build());
   }
 
   void trackConfigurationOptions(Configuration config) {

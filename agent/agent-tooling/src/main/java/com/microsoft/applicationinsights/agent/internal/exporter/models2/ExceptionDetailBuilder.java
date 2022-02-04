@@ -23,51 +23,59 @@ package com.microsoft.applicationinsights.agent.internal.exporter.models2;
 
 import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.DataPointType;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDataPoint;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.StackFrame;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
 import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
+import java.util.ArrayList;
+import java.util.List;
 
-public final class MetricPointTelemetry {
+public final class ExceptionDetailBuilder {
 
-  private static final int MAX_METRIC_NAME_SPACE_LENGTH = 256;
+  private final TelemetryExceptionDetails data;
 
-  private final MetricDataPoint data = new MetricDataPoint();
-
-  public void setNamespace(String namespace) {
-    data.setNamespace(
-        truncateTelemetry(namespace, MAX_METRIC_NAME_SPACE_LENGTH, "MetricDataPoint.namespace"));
+  public ExceptionDetailBuilder() {
+    data = new TelemetryExceptionDetails();
   }
 
-  public void setName(String name) {
-    data.setName(
-        truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "MetricDataPoint.name"));
+  public void setId(Integer id) {
+    data.setId(id);
   }
 
-  public void setDataPointType(DataPointType dataPointType) {
-    data.setDataPointType(dataPointType);
+  public void setOuter(ExceptionDetailBuilder outer) {
+    data.setOuterId(outer.data.getId());
   }
 
-  public void setValue(double value) {
-    data.setValue(value);
+  public void setTypeName(String typeName) {
+    data.setTypeName(
+        truncateTelemetry(
+            typeName, SanitizationHelper.MAX_NAME_LENGTH, "ExceptionDetail.typeName"));
   }
 
-  public void setCount(Integer count) {
-    data.setCount(count);
+  public void setMessage(String message) {
+    data.setMessage(
+        truncateTelemetry(
+            message, SanitizationHelper.MAX_MESSAGE_LENGTH, "ExceptionDetail.message"));
   }
 
-  public void setMin(Double min) {
-    data.setMin(min);
+  public void setHasFullStack(Boolean hasFullStack) {
+    data.setHasFullStack(hasFullStack);
   }
 
-  public void setMax(Double max) {
-    data.setMax(max);
+  public void setStack(String stack) {
+    data.setStack(
+        truncateTelemetry(stack, SanitizationHelper.MAX_MESSAGE_LENGTH, "ExceptionDetail.stack"));
   }
 
-  public void setStdDev(Double stdDev) {
-    data.setStdDev(stdDev);
+  public void setParsedStack(List<StackFrameBuilder> parsedStack) {
+    List<StackFrame> list = new ArrayList<>();
+    for (StackFrameBuilder item : parsedStack) {
+      list.add(item.build());
+    }
+    data.setParsedStack(list);
   }
 
-  MetricDataPoint getData() {
+  // visible (beyond package protected) for testing
+  public TelemetryExceptionDetails build() {
     return data;
   }
 }

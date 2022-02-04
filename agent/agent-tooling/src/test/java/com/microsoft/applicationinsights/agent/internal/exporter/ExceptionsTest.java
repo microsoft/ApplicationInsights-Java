@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.exporter;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
-import com.microsoft.applicationinsights.agent.internal.exporter.models2.ExceptionDetailTelemetry;
+import com.microsoft.applicationinsights.agent.internal.exporter.models2.ExceptionDetailBuilder;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
@@ -38,12 +38,12 @@ class ExceptionsTest {
     String str = toString(new IllegalStateException("test"));
 
     // when
-    List<ExceptionDetailTelemetry> list = Exceptions.minimalParse(str);
+    List<ExceptionDetailBuilder> list = Exceptions.minimalParse(str);
 
     // then
     assertThat(list.size()).isEqualTo(1);
 
-    TelemetryExceptionDetails details = list.get(0).getData();
+    TelemetryExceptionDetails details = list.get(0).build();
     assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
     assertThat(details.getMessage()).isEqualTo("test");
   }
@@ -54,12 +54,12 @@ class ExceptionsTest {
     String str = toString(new IllegalStateException());
 
     // when
-    List<ExceptionDetailTelemetry> list = Exceptions.minimalParse(str);
+    List<ExceptionDetailBuilder> list = Exceptions.minimalParse(str);
 
     // then
     assertThat(list.size()).isEqualTo(1);
 
-    TelemetryExceptionDetails details = list.get(0).getData();
+    TelemetryExceptionDetails details = list.get(0).build();
     assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
     assertThat(details.getMessage()).isEqualTo(IllegalStateException.class.getName());
   }
@@ -70,12 +70,12 @@ class ExceptionsTest {
     String str = toString(new ProblematicException());
 
     // when
-    List<ExceptionDetailTelemetry> list = Exceptions.minimalParse(str);
+    List<ExceptionDetailBuilder> list = Exceptions.minimalParse(str);
 
     // then
     assertThat(list.size()).isEqualTo(1);
 
-    TelemetryExceptionDetails details = list.get(0).getData();
+    TelemetryExceptionDetails details = list.get(0).build();
     assertThat(details.getTypeName()).isEqualTo(ProblematicException.class.getName());
     assertThat(details.getMessage()).isEqualTo(ProblematicException.class.getName());
   }
@@ -86,12 +86,12 @@ class ExceptionsTest {
     String str = toString(new IllegalStateException("test"));
 
     // when
-    List<ExceptionDetailTelemetry> list = Exceptions.fullParse(str);
+    List<ExceptionDetailBuilder> list = Exceptions.fullParse(str);
 
     // then
     assertThat(list.size()).isEqualTo(1);
 
-    TelemetryExceptionDetails details = list.get(0).getData();
+    TelemetryExceptionDetails details = list.get(0).build();
     assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
     assertThat(details.getMessage()).isEqualTo("test");
   }
@@ -102,12 +102,12 @@ class ExceptionsTest {
     String str = toString(new IllegalStateException());
 
     // when
-    List<ExceptionDetailTelemetry> list = Exceptions.fullParse(str);
+    List<ExceptionDetailBuilder> list = Exceptions.fullParse(str);
 
     // then
     assertThat(list.size()).isEqualTo(1);
 
-    TelemetryExceptionDetails details = list.get(0).getData();
+    TelemetryExceptionDetails details = list.get(0).build();
     assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
     assertThat(details.getMessage()).isEqualTo(IllegalStateException.class.getName());
   }
@@ -118,12 +118,12 @@ class ExceptionsTest {
     String str = toString(new ProblematicException());
 
     // when
-    List<ExceptionDetailTelemetry> list = Exceptions.fullParse(str);
+    List<ExceptionDetailBuilder> list = Exceptions.fullParse(str);
 
     // then
     assertThat(list.size()).isEqualTo(1);
 
-    TelemetryExceptionDetails details = list.get(0).getData();
+    TelemetryExceptionDetails details = list.get(0).build();
     assertThat(details.getTypeName()).isEqualTo(ProblematicException.class.getName());
     assertThat(details.getMessage()).isEqualTo(ProblematicException.class.getName());
   }
@@ -135,16 +135,16 @@ class ExceptionsTest {
     String str = toString(new IllegalStateException("test", causedBy));
 
     // when
-    List<ExceptionDetailTelemetry> list = Exceptions.fullParse(str);
+    List<ExceptionDetailBuilder> list = Exceptions.fullParse(str);
 
     // then
     assertThat(list.size()).isEqualTo(2);
 
-    TelemetryExceptionDetails details = list.get(0).getData();
+    TelemetryExceptionDetails details = list.get(0).build();
     assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
     assertThat(details.getMessage()).isEqualTo("test");
 
-    TelemetryExceptionDetails causedByDetails = list.get(1).getData();
+    TelemetryExceptionDetails causedByDetails = list.get(1).build();
     assertThat(causedByDetails.getTypeName()).isEqualTo(RuntimeException.class.getName());
     assertThat(causedByDetails.getMessage()).isEqualTo("the cause");
   }
@@ -158,12 +158,12 @@ class ExceptionsTest {
     String str = toString(exception);
 
     // when
-    List<ExceptionDetailTelemetry> list = Exceptions.fullParse(str);
+    List<ExceptionDetailBuilder> list = Exceptions.fullParse(str);
 
     // then
     assertThat(list.size()).isEqualTo(1);
 
-    TelemetryExceptionDetails details = list.get(0).getData();
+    TelemetryExceptionDetails details = list.get(0).build();
     assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
     assertThat(details.getMessage()).isEqualTo("test");
   }

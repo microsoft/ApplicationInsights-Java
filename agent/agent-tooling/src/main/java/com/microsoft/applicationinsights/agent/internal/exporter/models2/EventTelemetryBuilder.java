@@ -21,52 +21,43 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter.models2;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.DataPointType;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDataPoint;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
-import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
-import java.util.ArrayList;
+import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
+
+import com.microsoft.applicationinsights.agent.internal.common.Strings;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public final class MetricTelemetry extends Telemetry {
+public final class EventTelemetryBuilder extends AbstractTelemetryBuilder {
 
-  private final MetricsData data;
+  private static final int MAX_EVENT_NAME_LENGTH = 512;
 
-  public static MetricTelemetry create() {
-    return new MetricTelemetry(new MetricsData());
+  private final TelemetryEventData data;
+
+  public static EventTelemetryBuilder create() {
+    return new EventTelemetryBuilder(new TelemetryEventData());
   }
 
-  public static MetricTelemetry create(String name, double value) {
-    MetricTelemetry telemetry = new MetricTelemetry(new MetricsData());
-
-    MetricPointTelemetry point = new MetricPointTelemetry();
-
-    point.setName(name);
-    point.setValue(value);
-    point.setDataPointType(DataPointType.MEASUREMENT);
-    telemetry.setMetricPoint(point);
-
-    telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
-
-    return telemetry;
-  }
-
-  private MetricTelemetry(MetricsData data) {
-    super(data, "Metric", "MetricData");
+  private EventTelemetryBuilder(TelemetryEventData data) {
+    super(data, "Event", "EventData");
     this.data = data;
   }
 
-  public void setMetricPoint(MetricPointTelemetry point) {
-    List<MetricDataPoint> metrics = data.getMetrics();
-    if (metrics == null) {
-      metrics = new ArrayList<>();
-      data.setMetrics(metrics);
+  public void setName(String name) {
+    data.setName(truncateTelemetry(name, MAX_EVENT_NAME_LENGTH, "EventData.name"));
+  }
+
+  public void addMeasurement(String key, Double value) {
+    if (Strings.isNullOrEmpty(key) || key.length() > MAX_MEASUREMENT_KEY_LENGTH) {
+      // TODO (trask) log
+      return;
     }
-    if (metrics.isEmpty()) {
-      metrics.add(point.getData());
+    Map<String, Double> measurements = data.getMeasurements();
+    if (measurements == null) {
+      measurements = new HashMap<>();
+      data.setMeasurements(measurements);
     }
+    measurements.put(key, value);
   }
 
   @Override

@@ -89,9 +89,9 @@ class HeartbeatTests {
     Thread.sleep(500);
 
     // then
-    MetricsData t = (MetricsData) provider.gatherData().getTelemetryItem().getData().getBaseData();
-    assertThat(t).isNotNull();
-    assertThat(t.getProperties().size() > 0).isTrue();
+    MetricsData data = (MetricsData) provider.gatherData().getData().getBaseData();
+    assertThat(data).isNotNull();
+    assertThat(data.getProperties().size() > 0).isTrue();
   }
 
   @Test
@@ -103,8 +103,8 @@ class HeartbeatTests {
     // then
     assertThat(provider.addHeartBeatProperty("test", "testVal", true)).isTrue();
 
-    MetricsData t = (MetricsData) provider.gatherData().getTelemetryItem().getData().getBaseData();
-    assertThat(t.getProperties().get("test")).isEqualTo("testVal");
+    MetricsData data = (MetricsData) provider.gatherData().getData().getBaseData();
+    assertThat(data.getProperties().get("test")).isEqualTo("testVal");
   }
 
   @Test
@@ -116,8 +116,8 @@ class HeartbeatTests {
     // then
     assertThat(provider.addHeartBeatProperty("test", "testVal", false)).isTrue();
 
-    MetricsData t = (MetricsData) provider.gatherData().getTelemetryItem().getData().getBaseData();
-    assertThat(t.getMetrics().get(0).getValue()).isEqualTo(1);
+    MetricsData data = (MetricsData) provider.gatherData().getData().getBaseData();
+    assertThat(data.getMetrics().get(0).getValue()).isEqualTo(1);
   }
 
   @Test
@@ -130,8 +130,8 @@ class HeartbeatTests {
     assertThat(provider.addHeartBeatProperty("test", "testVal", false)).isTrue();
     assertThat(provider.addHeartBeatProperty("test1", "testVal1", false)).isTrue();
 
-    MetricsData t = (MetricsData) provider.gatherData().getTelemetryItem().getData().getBaseData();
-    assertThat(t.getMetrics().get(0).getValue()).isEqualTo(2);
+    MetricsData data = (MetricsData) provider.gatherData().getData().getBaseData();
+    assertThat(data.getMetrics().get(0).getValue()).isEqualTo(2);
   }
 
   @Test
@@ -186,7 +186,7 @@ class HeartbeatTests {
     provider.initialize(TelemetryClient.createForTest());
 
     base.setDefaultPayload(provider).call();
-    MetricsData t = (MetricsData) provider.gatherData().getTelemetryItem().getData().getBaseData();
-    assertThat(t.getProperties().containsKey("testKey")).isFalse();
+    MetricsData data = (MetricsData) provider.gatherData().getData().getBaseData();
+    assertThat(data.getProperties().containsKey("testKey")).isFalse();
   }
 }

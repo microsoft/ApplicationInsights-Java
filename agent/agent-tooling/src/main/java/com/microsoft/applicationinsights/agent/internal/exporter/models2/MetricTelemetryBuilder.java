@@ -21,48 +21,52 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter.models2;
 
-import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
-
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MessageData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.SeverityLevel;
-import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.DataPointType;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDataPoint;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
+import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public final class MessageTelemetry extends Telemetry {
+public final class MetricTelemetryBuilder extends AbstractTelemetryBuilder {
 
-  private final MessageData data;
+  private final MetricsData data;
 
-  public static MessageTelemetry create() {
-    return new MessageTelemetry(new MessageData());
+  public static MetricTelemetryBuilder create() {
+    return new MetricTelemetryBuilder(new MetricsData());
   }
 
-  private MessageTelemetry(MessageData data) {
-    super(data, "Message", "MessageData");
+  public static MetricTelemetryBuilder create(String name, double value) {
+    MetricTelemetryBuilder telemetry = new MetricTelemetryBuilder(new MetricsData());
+
+    MetricPointBuilder point = new MetricPointBuilder();
+
+    point.setName(name);
+    point.setValue(value);
+    point.setDataPointType(DataPointType.MEASUREMENT);
+    telemetry.setMetricPoint(point);
+
+    telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
+
+    return telemetry;
+  }
+
+  private MetricTelemetryBuilder(MetricsData data) {
+    super(data, "Metric", "MetricData");
     this.data = data;
   }
 
-  public void setMessage(String message) {
-    data.setMessage(
-        truncateTelemetry(message, SanitizationHelper.MAX_MESSAGE_LENGTH, "MessageData.message"));
-  }
-
-  public void setSeverityLevel(SeverityLevel severityLevel) {
-    data.setSeverityLevel(severityLevel);
-  }
-
-  public void addMeasurement(String key, Double value) {
-    if (Strings.isNullOrEmpty(key) || key.length() > MAX_MEASUREMENT_KEY_LENGTH) {
-      // TODO (trask) log
-      return;
+  public void setMetricPoint(MetricPointBuilder point) {
+    List<MetricDataPoint> metrics = data.getMetrics();
+    if (metrics == null) {
+      metrics = new ArrayList<>();
+      data.setMetrics(metrics);
     }
-    Map<String, Double> measurements = data.getMeasurements();
-    if (measurements == null) {
-      measurements = new HashMap<>();
-      data.setMeasurements(measurements);
+    if (metrics.isEmpty()) {
+      metrics.add(point.build());
     }
-    measurements.put(key, value);
   }
 
   @Override
