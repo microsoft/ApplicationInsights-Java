@@ -37,6 +37,7 @@ final class StartupProfiler {
 
   private static final String STACKTRACES = "stacktrace.txt";
 
+  @SuppressWarnings("SystemOut")
   public static void start() {
     if (isReadonly()) {
       System.out.println("It's a readonly file system. StartupProfiler does nothing in this case.");
@@ -44,7 +45,6 @@ final class StartupProfiler {
     }
 
     // this is used to support -Dapplicationinsights.debug.startupProfiling=true
-    @SuppressWarnings("SystemOut")
     boolean startupProfilingEnabled =
         Boolean.parseBoolean(System.getProperty("applicationinsights.debug.startupProfiling"));
     if (!startupProfilingEnabled) {
