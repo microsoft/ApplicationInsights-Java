@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.builders.StatsbeatTelemetryBuilder;
+import com.microsoft.applicationinsights.agent.internal.exporter.builders.StatsbeatTelemetryBuilder;
 
 class CustomDimensions {
 

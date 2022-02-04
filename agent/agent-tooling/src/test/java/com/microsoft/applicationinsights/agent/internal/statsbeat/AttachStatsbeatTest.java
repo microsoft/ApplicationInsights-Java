@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.builders.StatsbeatTelemetryBuilder;
+import com.microsoft.applicationinsights.agent.internal.exporter.builders.StatsbeatTelemetryBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

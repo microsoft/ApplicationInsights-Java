@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.exporter;
+package com.microsoft.applicationinsights.agent.internal.exporter.utils;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,7 +28,7 @@ import java.util.Map;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 // copied from io.opentelemetry.javaagent.instrumentation.api.util.TrieImpl
-final class TrieImpl<V> implements Trie<V> {
+public final class TrieImpl<V> implements Trie<V> {
 
   private final Node<V> root;
 
@@ -66,8 +66,7 @@ final class TrieImpl<V> implements Trie<V> {
       this.value = value;
     }
 
-    @Nullable
-    Node<V> getNext(char c) {
+    @Nullable Node<V> getNext(char c) {
       int index = Arrays.binarySearch(chars, c);
       if (index < 0) {
         return null;

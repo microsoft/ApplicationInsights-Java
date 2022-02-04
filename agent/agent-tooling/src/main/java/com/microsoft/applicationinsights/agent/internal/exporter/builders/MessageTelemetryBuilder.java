@@ -19,48 +19,37 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.exporter.models.builders;
+package com.microsoft.applicationinsights.agent.internal.exporter.builders;
 
 import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
 
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.PageViewData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.MessageData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.SeverityLevel;
 import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class PageViewTelemetryBuilder extends AbstractTelemetryBuilder {
+public final class MessageTelemetryBuilder extends AbstractTelemetryBuilder {
 
-  private final PageViewData data;
+  private final MessageData data;
 
-  public static PageViewTelemetryBuilder create() {
-    return new PageViewTelemetryBuilder(new PageViewData());
+  public static MessageTelemetryBuilder create() {
+    return new MessageTelemetryBuilder(new MessageData());
   }
 
-  private PageViewTelemetryBuilder(PageViewData data) {
-    super(data, "PageView", "PageViewData");
+  private MessageTelemetryBuilder(MessageData data) {
+    super(data, "Message", "MessageData");
     this.data = data;
   }
 
-  public void setId(String id) {
-    data.setId(truncateTelemetry(id, SanitizationHelper.MAX_ID_LENGTH, "PageView.id"));
+  public void setMessage(String message) {
+    data.setMessage(
+        truncateTelemetry(message, SanitizationHelper.MAX_MESSAGE_LENGTH, "Message.message"));
   }
 
-  public void setName(String name) {
-    data.setName(truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "PageView.name"));
-  }
-
-  public void setUrl(String url) {
-    data.setUrl(truncateTelemetry(url, SanitizationHelper.MAX_URL_LENGTH, "PageView.url"));
-  }
-
-  public void setDuration(String duration) {
-    data.setDuration(duration);
-  }
-
-  public void setReferredUri(String referredUri) {
-    data.setReferredUri(
-        truncateTelemetry(referredUri, SanitizationHelper.MAX_URL_LENGTH, "PageView.referredUri"));
+  public void setSeverityLevel(SeverityLevel severityLevel) {
+    data.setSeverityLevel(severityLevel);
   }
 
   public void addMeasurement(String key, Double value) {

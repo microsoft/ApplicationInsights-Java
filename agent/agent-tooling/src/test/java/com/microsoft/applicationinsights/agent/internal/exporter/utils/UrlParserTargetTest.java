@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.exporter;
+package com.microsoft.applicationinsights.agent.internal.exporter.utils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

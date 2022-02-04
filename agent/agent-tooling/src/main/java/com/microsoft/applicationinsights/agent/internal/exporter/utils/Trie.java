@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.exporter;
+package com.microsoft.applicationinsights.agent.internal.exporter.utils;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 

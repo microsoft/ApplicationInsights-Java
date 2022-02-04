@@ -19,66 +19,48 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.exporter.models.builders;
+package com.microsoft.applicationinsights.agent.internal.exporter.builders;
 
 import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
 
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDependencyData;
-import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.SeverityLevel;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public final class RemoteDependencyTelemetryBuilder extends AbstractTelemetryBuilder {
+public final class ExceptionTelemetryBuilder extends AbstractTelemetryBuilder {
 
-  private static final int MAX_DATA_LENGTH = 8192;
-  private static final int MAX_RESULT_CODE_LENGTH = 1024;
-  private static final int MAX_DEPENDENCY_TYPE_LENGTH = 1024;
-  private static final int MAX_TARGET_NAME_LENGTH = 1024;
+  private static final int MAX_PROBLEM_ID_LENGTH = 1024;
 
-  private final RemoteDependencyData data;
+  private final TelemetryExceptionData data;
 
-  public static RemoteDependencyTelemetryBuilder create() {
-    return new RemoteDependencyTelemetryBuilder(new RemoteDependencyData());
+  public static ExceptionTelemetryBuilder create() {
+    return new ExceptionTelemetryBuilder(new TelemetryExceptionData());
   }
 
-  private RemoteDependencyTelemetryBuilder(RemoteDependencyData data) {
-    super(data, "RemoteDependency", "RemoteDependencyData");
+  private ExceptionTelemetryBuilder(TelemetryExceptionData data) {
+    super(data, "Exception", "ExceptionData");
     this.data = data;
   }
 
-  public void setId(String id) {
-    data.setId(truncateTelemetry(id, SanitizationHelper.MAX_ID_LENGTH, "RemoteDependency.id"));
+  public void setExceptions(List<ExceptionDetailBuilder> builders) {
+    List<TelemetryExceptionDetails> details = new ArrayList<>();
+    for (ExceptionDetailBuilder builder : builders) {
+      details.add(builder.build());
+    }
+    data.setExceptions(details);
   }
 
-  public void setName(String name) {
-    data.setName(
-        truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "RemoteDependency.name"));
+  public void setSeverityLevel(SeverityLevel severityLevel) {
+    data.setSeverityLevel(severityLevel);
   }
 
-  public void setResultCode(String resultCode) {
-    data.setResultCode(
-        truncateTelemetry(resultCode, MAX_RESULT_CODE_LENGTH, "RemoteDependency.resultCode"));
-  }
-
-  public void setData(String data) {
-    this.data.setData(truncateTelemetry(data, MAX_DATA_LENGTH, "RemoteDependency.data"));
-  }
-
-  public void setType(String type) {
-    data.setType(truncateTelemetry(type, MAX_DEPENDENCY_TYPE_LENGTH, "RemoteDependency.type"));
-  }
-
-  public void setTarget(String target) {
-    data.setTarget(truncateTelemetry(target, MAX_TARGET_NAME_LENGTH, "RemoteDependency.target"));
-  }
-
-  public void setDuration(String duration) {
-    data.setDuration(duration);
-  }
-
-  public void setSuccess(Boolean success) {
-    data.setSuccess(success);
+  public void setProblemId(String problemId) {
+    data.setProblemId(truncateTelemetry(problemId, MAX_PROBLEM_ID_LENGTH, "Exception.problemId"));
   }
 
   public void addMeasurement(String key, Double value) {

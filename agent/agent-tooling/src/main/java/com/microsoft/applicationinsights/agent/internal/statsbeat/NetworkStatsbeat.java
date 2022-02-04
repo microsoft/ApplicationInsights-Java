@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.builders.StatsbeatTelemetryBuilder;
+import com.microsoft.applicationinsights.agent.internal.exporter.builders.StatsbeatTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.instrumentation.api.cache.Cache;
 import java.net.MalformedURLException;

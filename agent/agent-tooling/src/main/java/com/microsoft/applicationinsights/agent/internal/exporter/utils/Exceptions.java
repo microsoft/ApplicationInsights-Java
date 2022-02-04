@@ -19,12 +19,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.exporter;
+package com.microsoft.applicationinsights.agent.internal.exporter.utils;
 
 import static java.util.Collections.singletonList;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.builders.ExceptionDetailBuilder;
-import java.util.ArrayList;
+import com.microsoft.applicationinsights.agent.internal.exporter.builders.ExceptionDetailBuilder;
 import java.util.List;
 
 public class Exceptions {
@@ -58,56 +57,5 @@ public class Exceptions {
     }
     builder.setStack(str);
     return singletonList(builder);
-  }
-
-  // THIS IS UNFINISHED WORK
-  // NOT SURE IF IT'S NEEDED
-  // TESTING WITH minimalParse() first
-  public static List<ExceptionDetailBuilder> fullParse(String str) {
-    Parser parser = new Parser();
-    for (String line : str.split("\r?\n")) {
-      parser.process(line);
-    }
-    return parser.getDetailBuilders();
-  }
-
-  private Exceptions() {}
-
-  private static class Parser {
-
-    private ExceptionDetailBuilder current;
-    private final List<ExceptionDetailBuilder> list = new ArrayList<>();
-
-    void process(String line) {
-      if (line.charAt(0) != '\t') {
-        if (current != null) {
-          list.add(current);
-        }
-        if (line.startsWith("Caused by: ")) {
-          line = line.substring("Caused by: ".length());
-        }
-        current = new ExceptionDetailBuilder();
-        int index = line.indexOf(':');
-        if (index != -1) {
-          String typeName = line.substring(0, index);
-          String message = line.substring(index + 1).trim();
-          if (message.isEmpty()) {
-            message = typeName;
-          }
-          current.setTypeName(typeName);
-          current.setMessage(message);
-        } else {
-          current.setTypeName(line);
-          current.setMessage(line);
-        }
-      }
-    }
-
-    private List<ExceptionDetailBuilder> getDetailBuilders() {
-      if (current != null) {
-        list.add(current);
-      }
-      return list;
-    }
   }
 }

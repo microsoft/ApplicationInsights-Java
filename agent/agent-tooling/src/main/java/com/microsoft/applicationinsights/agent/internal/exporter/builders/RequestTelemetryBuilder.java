@@ -19,48 +19,59 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.exporter.models.builders;
+package com.microsoft.applicationinsights.agent.internal.exporter.builders;
 
 import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
 
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.SeverityLevel;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
-import java.util.ArrayList;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
+import com.microsoft.applicationinsights.agent.internal.exporter.utils.SanitizationHelper;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public final class ExceptionTelemetryBuilder extends AbstractTelemetryBuilder {
+public final class RequestTelemetryBuilder extends AbstractTelemetryBuilder {
 
-  private static final int MAX_PROBLEM_ID_LENGTH = 1024;
+  private static final int MAX_SOURCE_LENGTH = 1024;
+  private static final int MAX_RESPONSE_CODE_LENGTH = 1024;
 
-  private final TelemetryExceptionData data;
+  private final RequestData data;
 
-  public static ExceptionTelemetryBuilder create() {
-    return new ExceptionTelemetryBuilder(new TelemetryExceptionData());
+  public static RequestTelemetryBuilder create() {
+    return new RequestTelemetryBuilder(new RequestData());
   }
 
-  private ExceptionTelemetryBuilder(TelemetryExceptionData data) {
-    super(data, "Exception", "ExceptionData");
+  private RequestTelemetryBuilder(RequestData data) {
+    super(data, "Request", "RequestData");
     this.data = data;
   }
 
-  public void setExceptions(List<ExceptionDetailBuilder> builders) {
-    List<TelemetryExceptionDetails> details = new ArrayList<>();
-    for (ExceptionDetailBuilder builder : builders) {
-      details.add(builder.build());
-    }
-    data.setExceptions(details);
+  public void setId(String id) {
+    data.setId(truncateTelemetry(id, SanitizationHelper.MAX_ID_LENGTH, "Request.id"));
   }
 
-  public void setSeverityLevel(SeverityLevel severityLevel) {
-    data.setSeverityLevel(severityLevel);
+  public void setName(String name) {
+    data.setName(truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "Request.name"));
   }
 
-  public void setProblemId(String problemId) {
-    data.setProblemId(truncateTelemetry(problemId, MAX_PROBLEM_ID_LENGTH, "Exception.problemId"));
+  public void setDuration(String duration) {
+    data.setDuration(duration);
+  }
+
+  public void setSuccess(boolean success) {
+    data.setSuccess(success);
+  }
+
+  public void setResponseCode(String responseCode) {
+    data.setResponseCode(
+        truncateTelemetry(responseCode, MAX_RESPONSE_CODE_LENGTH, "Request.responseCode"));
+  }
+
+  public void setSource(String source) {
+    data.setSource(truncateTelemetry(source, MAX_SOURCE_LENGTH, "Request.source"));
+  }
+
+  public void setUrl(String url) {
+    data.setUrl(truncateTelemetry(url, SanitizationHelper.MAX_URL_LENGTH, "Request.url"));
   }
 
   public void addMeasurement(String key, Double value) {
