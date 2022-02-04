@@ -39,22 +39,35 @@ final class StartupProfiler {
 
   public static void start() {
     if (isReadonly()) {
+      System.out.println("It's a readonly file system. StartupProfiler does nothing in this case.");
       return;
     }
 
-    String startupProfiling = System.getProperty("-Dapplicationinsights.debug.startupProfiling");
-    if (!"true".equalsIgnoreCase(startupProfiling)) {
+    // -Dapplicationinsights.debug.startupProfiling=true
+    boolean startupProfilingEnabled =
+        Boolean.parseBoolean(System.getProperty("applicationinsights.debug.startupProfiling"));
+    if (!startupProfilingEnabled) {
+      System.out.println(
+          "Exit StartupProfiler - system property 'applicationinsights.debug.startupProfiling' is not set to true.");
       return;
     }
 
     String tempDirectory = System.getProperty("java.io.tmpdir");
-    File file = new File(tempDirectory, STACKTRACES);
+    File folder = new File(tempDirectory, "applicationinsights");
+    if (!folder.exists()) {
+      folder.mkdirs();
+    }
+
+    System.out.println("Create StartupProfiler dump in the temp dir: '" + folder.getPath() + "'");
+    File dumpFile = new File(folder, STACKTRACES);
     try {
       start(
           new PrintWriter(
-              new PrintWriter(Files.newBufferedWriter(file.toPath(), Charset.defaultCharset()))));
-    } catch (IOException ignore) {
-      // ignore it for now
+              new PrintWriter(
+                  Files.newBufferedWriter(dumpFile.toPath(), Charset.defaultCharset()))));
+    } catch (IOException e) {
+      System.out.println(
+          "Error occurs when writing dump to " + STACKTRACES + " \ncause: " + e.getCause());
     }
   }
 
