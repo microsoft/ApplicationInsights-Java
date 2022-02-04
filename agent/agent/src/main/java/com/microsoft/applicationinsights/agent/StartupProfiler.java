@@ -58,8 +58,9 @@ final class StartupProfiler {
       folder.mkdirs();
     }
 
-    System.out.println("Create StartupProfiler dump in the temp dir: '" + folder.getPath() + "'");
     File dumpFile = new File(folder, STACKTRACES);
+    System.out.println("Create StartupProfiler dump here: '" + dumpFile.getPath() + "'");
+
     try {
       start(
           new PrintWriter(
