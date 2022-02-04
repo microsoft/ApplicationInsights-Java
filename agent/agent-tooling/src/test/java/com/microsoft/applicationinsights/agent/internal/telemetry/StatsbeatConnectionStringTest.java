@@ -88,7 +88,7 @@ public class StatsbeatConnectionStringTest {
     ConnectionString.updateStatsbeatConnectionString(ikeyConfig, endpointConfig, telemetryClient);
     assertThat(telemetryClient.getStatsbeatInstrumentationKey()).isEqualTo(ikeyConfig);
     assertThat(telemetryClient.getEndpointProvider().getStatsbeatEndpointUrl())
-        .isEqualTo(endpointConfig + "/v2/track");
+        .isEqualTo(endpointConfig + "/v2.1/track");
 
     // case 2
     // customer ikey is in non-eu
@@ -99,7 +99,7 @@ public class StatsbeatConnectionStringTest {
     ConnectionString.updateStatsbeatConnectionString(ikeyConfig, endpointConfig, telemetryClient);
     assertThat(telemetryClient.getStatsbeatInstrumentationKey()).isEqualTo(ikeyConfig);
     assertThat(telemetryClient.getEndpointProvider().getStatsbeatEndpointUrl())
-        .isEqualTo(endpointConfig + "/v2/track");
+        .isEqualTo(endpointConfig + "/v2.1/track");
 
     // case 3
     // customer ikey is in non-eu
@@ -109,7 +109,7 @@ public class StatsbeatConnectionStringTest {
     assertThat(telemetryClient.getStatsbeatInstrumentationKey())
         .isEqualTo(StatsbeatConnectionString.NON_EU_REGION_STATSBEAT_IKEY);
     assertThat(telemetryClient.getEndpointProvider().getStatsbeatEndpointUrl())
-        .isEqualTo(StatsbeatConnectionString.NON_EU_REGION_STATSBEAT_ENDPOINT + "v2/track");
+        .isEqualTo(StatsbeatConnectionString.NON_EU_REGION_STATSBEAT_ENDPOINT + "v2.1/track");
 
     // case 4
     // customer is in eu
@@ -122,7 +122,7 @@ public class StatsbeatConnectionStringTest {
     ConnectionString.updateStatsbeatConnectionString(ikeyConfig, endpointConfig, telemetryClient);
     assertThat(telemetryClient.getStatsbeatInstrumentationKey()).isEqualTo(ikeyConfig);
     assertThat(telemetryClient.getEndpointProvider().getStatsbeatEndpointUrl())
-        .isEqualTo(endpointConfig + "/v2/track");
+        .isEqualTo(endpointConfig + "/v2.1/track");
 
     // case 5
     // customer is in eu
@@ -133,7 +133,7 @@ public class StatsbeatConnectionStringTest {
     ConnectionString.updateStatsbeatConnectionString(ikeyConfig, endpointConfig, telemetryClient);
     assertThat(telemetryClient.getStatsbeatInstrumentationKey()).isEqualTo(ikeyConfig);
     assertThat(telemetryClient.getEndpointProvider().getStatsbeatEndpointUrl())
-        .isEqualTo(endpointConfig + "/v2/track");
+        .isEqualTo(endpointConfig + "/v2.1/track");
 
     // case 6
     // customer is in eu
@@ -143,7 +143,7 @@ public class StatsbeatConnectionStringTest {
     assertThat(telemetryClient.getStatsbeatInstrumentationKey())
         .isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_IKEY);
     assertThat(telemetryClient.getEndpointProvider().getStatsbeatEndpointUrl())
-        .isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_ENDPOINT + "v2/track");
+        .isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_ENDPOINT + "v2.1/track");
   }
 
   @Test
