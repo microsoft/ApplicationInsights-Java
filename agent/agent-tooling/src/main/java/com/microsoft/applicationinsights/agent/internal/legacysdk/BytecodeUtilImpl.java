@@ -25,9 +25,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.ContextTagKeys;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.DataPointType;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.SeverityLevel;
 import com.microsoft.applicationinsights.agent.internal.exporter.builders.AbstractTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.exporter.builders.EventTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.exporter.builders.ExceptionTelemetryBuilder;
@@ -37,6 +34,9 @@ import com.microsoft.applicationinsights.agent.internal.exporter.builders.Metric
 import com.microsoft.applicationinsights.agent.internal.exporter.builders.PageViewTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.exporter.builders.RemoteDependencyTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.exporter.builders.RequestTelemetryBuilder;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.ContextTagKeys;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.DataPointType;
+import com.microsoft.applicationinsights.agent.internal.exporter.models.SeverityLevel;
 import com.microsoft.applicationinsights.agent.internal.init.AiOperationNameSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyPropagator;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingScoreGeneratorV2;

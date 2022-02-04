@@ -66,7 +66,8 @@ public final class TrieImpl<V> implements Trie<V> {
       this.value = value;
     }
 
-    @Nullable Node<V> getNext(char c) {
+    @Nullable
+    Node<V> getNext(char c) {
       int index = Arrays.binarySearch(chars, c);
       if (index < 0) {
         return null;
