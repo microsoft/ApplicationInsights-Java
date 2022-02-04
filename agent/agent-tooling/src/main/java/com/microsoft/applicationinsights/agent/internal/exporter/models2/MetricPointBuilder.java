@@ -35,12 +35,11 @@ public final class MetricPointBuilder {
 
   public void setNamespace(String namespace) {
     data.setNamespace(
-        truncateTelemetry(namespace, MAX_METRIC_NAME_SPACE_LENGTH, "MetricDataPoint.namespace"));
+        truncateTelemetry(namespace, MAX_METRIC_NAME_SPACE_LENGTH, "MetricPoint.namespace"));
   }
 
   public void setName(String name) {
-    data.setName(
-        truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "MetricDataPoint.name"));
+    data.setName(truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "MetricPoint.name"));
   }
 
   public void setDataPointType(DataPointType dataPointType) {

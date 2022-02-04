@@ -46,11 +46,11 @@ public final class RequestTelemetryBuilder extends AbstractTelemetryBuilder {
   }
 
   public void setId(String id) {
-    data.setId(truncateTelemetry(id, SanitizationHelper.MAX_ID_LENGTH, "RequestData.id"));
+    data.setId(truncateTelemetry(id, SanitizationHelper.MAX_ID_LENGTH, "Request.id"));
   }
 
   public void setName(String name) {
-    data.setName(truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "RequestData.name"));
+    data.setName(truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "Request.name"));
   }
 
   public void setDuration(String duration) {
@@ -63,15 +63,15 @@ public final class RequestTelemetryBuilder extends AbstractTelemetryBuilder {
 
   public void setResponseCode(String responseCode) {
     data.setResponseCode(
-        truncateTelemetry(responseCode, MAX_RESPONSE_CODE_LENGTH, "RequestData.responseCode"));
+        truncateTelemetry(responseCode, MAX_RESPONSE_CODE_LENGTH, "Request.responseCode"));
   }
 
   public void setSource(String source) {
-    data.setSource(truncateTelemetry(source, MAX_SOURCE_LENGTH, "RequestData.source"));
+    data.setSource(truncateTelemetry(source, MAX_SOURCE_LENGTH, "Request.source"));
   }
 
   public void setUrl(String url) {
-    data.setUrl(truncateTelemetry(url, SanitizationHelper.MAX_URL_LENGTH, "RequestData.url"));
+    data.setUrl(truncateTelemetry(url, SanitizationHelper.MAX_URL_LENGTH, "Request.url"));
   }
 
   public void addMeasurement(String key, Double value) {

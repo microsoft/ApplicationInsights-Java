@@ -47,12 +47,12 @@ public final class ExceptionTelemetryBuilder extends AbstractTelemetryBuilder {
     this.data = data;
   }
 
-  public void setExceptions(List<ExceptionDetailBuilder> exceptions) {
-    List<TelemetryExceptionDetails> list = new ArrayList<>();
-    for (ExceptionDetailBuilder detail : exceptions) {
-      list.add(detail.build());
+  public void setExceptions(List<ExceptionDetailBuilder> builders) {
+    List<TelemetryExceptionDetails> details = new ArrayList<>();
+    for (ExceptionDetailBuilder builder : builders) {
+      details.add(builder.build());
     }
-    data.setExceptions(list);
+    data.setExceptions(details);
   }
 
   public void setSeverityLevel(SeverityLevel severityLevel) {
@@ -60,8 +60,7 @@ public final class ExceptionTelemetryBuilder extends AbstractTelemetryBuilder {
   }
 
   public void setProblemId(String problemId) {
-    data.setProblemId(
-        truncateTelemetry(problemId, MAX_PROBLEM_ID_LENGTH, "ExceptionData.problemId"));
+    data.setProblemId(truncateTelemetry(problemId, MAX_PROBLEM_ID_LENGTH, "Exception.problemId"));
   }
 
   public void addMeasurement(String key, Double value) {

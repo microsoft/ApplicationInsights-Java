@@ -45,7 +45,7 @@ public final class MessageTelemetryBuilder extends AbstractTelemetryBuilder {
 
   public void setMessage(String message) {
     data.setMessage(
-        truncateTelemetry(message, SanitizationHelper.MAX_MESSAGE_LENGTH, "MessageData.message"));
+        truncateTelemetry(message, SanitizationHelper.MAX_MESSAGE_LENGTH, "Message.message"));
   }
 
   public void setSeverityLevel(SeverityLevel severityLevel) {

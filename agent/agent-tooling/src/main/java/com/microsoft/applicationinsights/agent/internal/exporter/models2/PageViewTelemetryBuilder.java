@@ -43,15 +43,15 @@ public final class PageViewTelemetryBuilder extends AbstractTelemetryBuilder {
   }
 
   public void setId(String id) {
-    data.setId(truncateTelemetry(id, SanitizationHelper.MAX_ID_LENGTH, "PageViewData.id"));
+    data.setId(truncateTelemetry(id, SanitizationHelper.MAX_ID_LENGTH, "PageView.id"));
   }
 
   public void setName(String name) {
-    data.setName(truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "PageViewData.name"));
+    data.setName(truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "PageView.name"));
   }
 
   public void setUrl(String url) {
-    data.setUrl(truncateTelemetry(url, SanitizationHelper.MAX_URL_LENGTH, "PageViewData.url"));
+    data.setUrl(truncateTelemetry(url, SanitizationHelper.MAX_URL_LENGTH, "PageView.url"));
   }
 
   public void setDuration(String duration) {
@@ -60,8 +60,7 @@ public final class PageViewTelemetryBuilder extends AbstractTelemetryBuilder {
 
   public void setReferredUri(String referredUri) {
     data.setReferredUri(
-        truncateTelemetry(
-            referredUri, SanitizationHelper.MAX_URL_LENGTH, "PageViewData.referredUri"));
+        truncateTelemetry(referredUri, SanitizationHelper.MAX_URL_LENGTH, "PageView.referredUri"));
   }
 
   public void addMeasurement(String key, Double value) {

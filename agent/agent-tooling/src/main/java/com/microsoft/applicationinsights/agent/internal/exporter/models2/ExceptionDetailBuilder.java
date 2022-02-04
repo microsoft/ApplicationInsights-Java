@@ -62,12 +62,12 @@ public final class ExceptionDetailBuilder {
         truncateTelemetry(stack, SanitizationHelper.MAX_MESSAGE_LENGTH, "ExceptionDetail.stack"));
   }
 
-  public void setParsedStack(List<StackFrameBuilder> parsedStack) {
-    List<StackFrame> list = new ArrayList<>();
-    for (StackFrameBuilder item : parsedStack) {
-      list.add(item.build());
+  public void setParsedStack(List<StackFrameBuilder> builders) {
+    List<StackFrame> stackFrames = new ArrayList<>();
+    for (StackFrameBuilder builder : builders) {
+      stackFrames.add(builder.build());
     }
-    data.setParsedStack(list);
+    data.setParsedStack(stackFrames);
   }
 
   // visible (beyond package protected) for testing

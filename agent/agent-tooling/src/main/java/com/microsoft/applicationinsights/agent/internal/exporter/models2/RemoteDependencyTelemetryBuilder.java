@@ -48,30 +48,29 @@ public final class RemoteDependencyTelemetryBuilder extends AbstractTelemetryBui
   }
 
   public void setId(String id) {
-    data.setId(truncateTelemetry(id, SanitizationHelper.MAX_ID_LENGTH, "RemoteDependencyData.id"));
+    data.setId(truncateTelemetry(id, SanitizationHelper.MAX_ID_LENGTH, "RemoteDependency.id"));
   }
 
   public void setName(String name) {
     data.setName(
-        truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "RemoteDependencyData.name"));
+        truncateTelemetry(name, SanitizationHelper.MAX_NAME_LENGTH, "RemoteDependency.name"));
   }
 
   public void setResultCode(String resultCode) {
     data.setResultCode(
-        truncateTelemetry(resultCode, MAX_RESULT_CODE_LENGTH, "RemoteDependencyData.resultCode"));
+        truncateTelemetry(resultCode, MAX_RESULT_CODE_LENGTH, "RemoteDependency.resultCode"));
   }
 
   public void setData(String data) {
-    this.data.setData(truncateTelemetry(data, MAX_DATA_LENGTH, "RemoteDependencyData.data"));
+    this.data.setData(truncateTelemetry(data, MAX_DATA_LENGTH, "RemoteDependency.data"));
   }
 
   public void setType(String type) {
-    data.setType(truncateTelemetry(type, MAX_DEPENDENCY_TYPE_LENGTH, "RemoteDependencyData.type"));
+    data.setType(truncateTelemetry(type, MAX_DEPENDENCY_TYPE_LENGTH, "RemoteDependency.type"));
   }
 
   public void setTarget(String target) {
-    data.setTarget(
-        truncateTelemetry(target, MAX_TARGET_NAME_LENGTH, "RemoteDependencyData.target"));
+    data.setTarget(truncateTelemetry(target, MAX_TARGET_NAME_LENGTH, "RemoteDependency.target"));
   }
 
   public void setDuration(String duration) {
