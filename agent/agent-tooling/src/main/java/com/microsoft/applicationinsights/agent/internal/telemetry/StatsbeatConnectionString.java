@@ -33,7 +33,8 @@ final class StatsbeatConnectionString {
       "https://westeurope-5.in.applicationinsights.azure.com/";
   static final String NON_EU_REGION_STATSBEAT_IKEY =
       "c4a29126-a7cb-47e5-b348-11414998b11e"; // workspace-aistatsbeat
-  static final String NON_EU_REGION_STATSBEAT_ENDPOINT = "https://westus-0.in.applicationinsights.azure.com/";
+  static final String NON_EU_REGION_STATSBEAT_ENDPOINT =
+      "https://westus-0.in.applicationinsights.azure.com/";
 
   private static final Set<String> EU_REGION_GEO_SET = new HashSet<>(10);
 
@@ -51,13 +52,16 @@ final class StatsbeatConnectionString {
   }
 
   // visible for testing
-  static InstrumentationKeyEndpointPair getInstrumentationKeyAndEndpointPair(String customerEndpoint) {
+  static InstrumentationKeyEndpointPair getInstrumentationKeyAndEndpointPair(
+      String customerEndpoint) {
     String geo = getGeoWithoutStampSpecific(customerEndpoint);
     if (EU_REGION_GEO_SET.contains(geo.toLowerCase())) {
-      return new InstrumentationKeyEndpointPair(EU_REGION_STATSBEAT_IKEY, EU_REGION_STATSBEAT_ENDPOINT);
+      return new InstrumentationKeyEndpointPair(
+          EU_REGION_STATSBEAT_IKEY, EU_REGION_STATSBEAT_ENDPOINT);
     }
 
-    return new InstrumentationKeyEndpointPair(NON_EU_REGION_STATSBEAT_IKEY, NON_EU_REGION_STATSBEAT_ENDPOINT);
+    return new InstrumentationKeyEndpointPair(
+        NON_EU_REGION_STATSBEAT_IKEY, NON_EU_REGION_STATSBEAT_ENDPOINT);
   }
 
   // visible for testing

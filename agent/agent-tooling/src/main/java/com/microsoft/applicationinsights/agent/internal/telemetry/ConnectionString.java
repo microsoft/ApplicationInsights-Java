@@ -26,10 +26,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 import java.util.TreeMap;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import javax.annotation.Nullable;
 
 public class ConnectionString {
 
@@ -59,10 +59,13 @@ public class ConnectionString {
       logger.warn("Missing Statsbeat '" + Keywords.INSTRUMENTATION_KEY + "'");
     }
 
-    // if customer is in EU region and their statsbeat config is not in EU region, customer is responsible for breaking the EU data boundary violation.
+    // if customer is in EU region and their statsbeat config is not in EU region, customer is
+    // responsible for breaking the EU data boundary violation.
     // Statsbeat config setting has the highest precedence.
     if (ikey == null || ikey.isEmpty()) {
-      StatsbeatConnectionString.InstrumentationKeyEndpointPair pair = StatsbeatConnectionString.getInstrumentationKeyAndEndpointPair(telemetryClient.getEndpointProvider().getIngestionEndpoint().toString());
+      StatsbeatConnectionString.InstrumentationKeyEndpointPair pair =
+          StatsbeatConnectionString.getInstrumentationKeyAndEndpointPair(
+              telemetryClient.getEndpointProvider().getIngestionEndpoint().toString());
       ikey = pair.instrumentationKey;
       endpoint = pair.endpoint;
     }
