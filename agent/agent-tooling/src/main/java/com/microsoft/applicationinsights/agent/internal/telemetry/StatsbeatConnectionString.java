@@ -39,7 +39,7 @@ final class StatsbeatConnectionString {
   static final String NON_EU_REGION_STATSBEAT_ENDPOINT =
       "https://westus-0.in.applicationinsights.azure.com/";
 
-  private static final Pattern pattern = Pattern.compile("^https?://(?:www\\.)?([^/\\.\\-]+)");
+  private static final Pattern pattern = Pattern.compile("^https?://(?:www\\.)?([^/\\.-]+)");
 
   private static final Set<String> EU_REGION_GEO_SET = new HashSet<>(10);
 
