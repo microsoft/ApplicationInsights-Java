@@ -23,6 +23,9 @@ package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 
 final class StatsbeatConnectionString {
 
@@ -35,6 +38,8 @@ final class StatsbeatConnectionString {
       "c4a29126-a7cb-47e5-b348-11414998b11e"; // workspace-aistatsbeat
   static final String NON_EU_REGION_STATSBEAT_ENDPOINT =
       "https://westus-0.in.applicationinsights.azure.com/";
+
+  private static final Pattern pattern = Pattern.compile("^(?:https?://)?(?:www\\.)?([^/\\.\\-]+)");
 
   private static final Set<String> EU_REGION_GEO_SET = new HashSet<>(10);
 
@@ -65,34 +70,14 @@ final class StatsbeatConnectionString {
   }
 
   // visible for testing
+  @Nullable
   static String getGeoWithoutStampSpecific(String endpointUrl) {
-    int start = endpointUrl.indexOf("://");
-    int i = 0;
-    if (start != -1) {
-      i = start + 3;
+    Matcher matcher = pattern.matcher(endpointUrl);
+    if (matcher.find()) {
+      return matcher.group(1);
     }
 
-    start = endpointUrl.indexOf("www.");
-    if (start != -1) {
-      i = start + 4;
-    }
-
-    int end = endpointUrl.indexOf("-");
-    if (end != -1) {
-      return endpointUrl.substring(i, end);
-    }
-
-    end = endpointUrl.indexOf(".");
-    if (end != -1) {
-      return endpointUrl.substring(i, end);
-    }
-
-    end = endpointUrl.indexOf("/", i);
-    if (end != -1) {
-      return endpointUrl.substring(i, end);
-    }
-
-    return endpointUrl.substring(i);
+    return null;
   }
 
   private StatsbeatConnectionString() {}

@@ -61,9 +61,9 @@ public class StatsbeatConnectionStringTest {
     assertThat(StatsbeatConnectionString.getGeoWithoutStampSpecific(customerIngestionEndpoint))
         .isEqualTo("fakehostabc");
 
-    customerIngestionEndpoint = "https://fakehostabc.1-9.com/";
+    customerIngestionEndpoint = "https://fakehostabc1-9.com/";
     assertThat(StatsbeatConnectionString.getGeoWithoutStampSpecific(customerIngestionEndpoint))
-        .isEqualTo("fakehostabc.1");
+        .isEqualTo("fakehostabc1");
 
     customerIngestionEndpoint = "https://fakehostabc.com/";
     assertThat(StatsbeatConnectionString.getGeoWithoutStampSpecific(customerIngestionEndpoint))
