@@ -39,16 +39,6 @@ final class StartupProfiler {
 
   @SuppressWarnings("SystemOut")
   public static void start() {
-    // this is used to support -Dapplicationinsights.debug.startupProfiling=true
-    if (!Boolean.parseBoolean(System.getProperty("applicationinsights.debug.startupProfiling"))) {
-      return;
-    }
-
-    if (isReadonly()) {
-      System.out.println("It's a readonly file system. StartupProfiler does nothing in this case.");
-      return;
-    }
-
     String tempDirectory = System.getProperty("java.io.tmpdir");
     File folder = new File(tempDirectory, "applicationinsights");
     if (!folder.exists()) {
@@ -62,28 +52,20 @@ final class StartupProfiler {
     try (PrintWriter out =
         new PrintWriter(Files.newBufferedWriter(dumpFile.toPath(), Charset.defaultCharset()))) {
       printWriter = new PrintWriter(out);
-      start(printWriter);
     } catch (IOException e) {
-      System.out.println(
-          "Error occurred when writing dump to "
-              + dumpFile.getPath()
-              + " \ncause: "
-              + e.getCause());
-    } finally {
       if (printWriter != null) {
         printWriter.close();
       }
+      System.out.println("Error occurred when writing dump to " + dumpFile.getPath());
+      e.printStackTrace();
     }
+
+    start(printWriter);
   }
 
   private static void start(PrintWriter out) {
     Executors.newSingleThreadScheduledExecutor()
         .scheduleAtFixedRate(new ThreadDump(out), 50, 50, TimeUnit.MILLISECONDS);
-  }
-
-  private static boolean isReadonly() {
-    File tempDir = new File(System.getProperty("java.io.tmpdir"));
-    return tempDir.canRead() && !tempDir.canWrite();
   }
 
   private StartupProfiler() {}

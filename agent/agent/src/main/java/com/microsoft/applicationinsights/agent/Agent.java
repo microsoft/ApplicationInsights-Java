@@ -40,7 +40,11 @@ public class Agent {
     if (alreadyLoaded) {
       return;
     }
-    StartupProfiler.start();
+
+    // this is used to support -Dapplicationinsights.debug.startupProfiling=true
+    if (Boolean.parseBoolean(System.getProperty("applicationinsights.debug.startupProfiling"))) {
+      StartupProfiler.start();
+    }
 
     OpenTelemetryAgent.premain(agentArgs, inst);
     alreadyLoaded = true;
