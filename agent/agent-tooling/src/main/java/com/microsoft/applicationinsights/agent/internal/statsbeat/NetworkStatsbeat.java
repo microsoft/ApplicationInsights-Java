@@ -44,8 +44,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   private static final String EXCEPTION_COUNT_METRIC_NAME = "Exception Count";
   private static final String BREEZE_ENDPOINT = "breeze";
 
-  private static final Pattern hostPattern =
-      Pattern.compile("^(?:https?://)?(?:www\\.)?([^/\\.]+)");
+  private static final Pattern hostPattern = Pattern.compile("^https?://(?:www\\.)?([^/\\.]+)");
 
   private final Object lock = new Object();
   private final Cache<String, String> ikeyEndpointMap;
