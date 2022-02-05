@@ -58,6 +58,7 @@ final class StartupProfiler {
       }
       System.out.println("Error occurred when writing dump to " + dumpFile.getPath());
       e.printStackTrace();
+      return;
     }
 
     start(printWriter);
