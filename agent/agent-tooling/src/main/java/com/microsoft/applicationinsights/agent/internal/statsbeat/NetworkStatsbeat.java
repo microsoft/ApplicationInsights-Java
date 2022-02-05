@@ -30,6 +30,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 
 public class NetworkStatsbeat extends BaseStatsbeat {
@@ -41,6 +43,8 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   private static final String THROTTLE_COUNT_METRIC_NAME = "Throttle Count";
   private static final String EXCEPTION_COUNT_METRIC_NAME = "Exception Count";
   private static final String BREEZE_ENDPOINT = "breeze";
+
+  private static final Pattern hostPattern = Pattern.compile("^(?:https?://)?(?:www\\.)?([^/\\.]+)");
 
   private final Object lock = new Object();
   private final Cache<String, String> ikeyEndpointMap;
@@ -243,33 +247,14 @@ public class NetworkStatsbeat extends BaseStatsbeat {
    * e.g. endpointUrl 'https://westus-0.in.applicationinsights.azure.com/v2.1/track' host will
    * return 'westus-0'
    */
+  @SuppressWarnings("SystemOut")
   static String getHost(String endpointUrl) {
-    assert (endpointUrl != null && !endpointUrl.isEmpty());
-    int start = endpointUrl.indexOf("://");
-    int index = 0;
-    if (start != -1) {
-      index = start + 3;
+    Matcher matcher = hostPattern.matcher(endpointUrl);
+
+    if (matcher.find()) {
+      return matcher.group(1);
     }
 
-    start = endpointUrl.indexOf("www.");
-    if (start != -1) {
-      index = start + 4;
-      int end = endpointUrl.indexOf(".", index + 1);
-      if (end != -1) {
-        return endpointUrl.substring(index, end);
-      }
-    }
-
-    int end = endpointUrl.indexOf(".");
-    if (end != -1) {
-      return endpointUrl.substring(index, end);
-    }
-
-    end = endpointUrl.indexOf("/", index);
-    if (end != -1) {
-      return endpointUrl.substring(index, end);
-    }
-
-    return endpointUrl;
+    return "";
   }
 }

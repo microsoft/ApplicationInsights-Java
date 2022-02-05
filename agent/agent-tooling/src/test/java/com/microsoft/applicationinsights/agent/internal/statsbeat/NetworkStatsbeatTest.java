@@ -127,13 +127,19 @@ public class NetworkStatsbeatTest {
     url = "www.fakehost0-4.com/";
     assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fakehost0-4");
 
-    url = "http://fakehost.com";
+    url = "https://www.fakehost.com";
+    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fakehost");
+
+    url = "https://fakehost.com";
+    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fakehost");
+
+    url = "fakehost.com";
+    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fakehost");
+
+    url = "fakehost.com/v2/track";
     assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fakehost");
 
     url = "http://fakehost/";
-    assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fakehost");
-
-    url = "fakehost.example.com";
     assertThat(NetworkStatsbeat.getHost(url)).isEqualTo("fakehost");
   }
 }
