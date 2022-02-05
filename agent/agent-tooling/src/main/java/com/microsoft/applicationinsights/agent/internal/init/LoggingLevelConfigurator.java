@@ -64,7 +64,7 @@ public class LoggingLevelConfigurator {
     Level loggerLevel;
     String name = logger.getName();
     if (name.startsWith("oshi")) {
-      loggerLevel = Level.OFF;
+      loggerLevel = getOshiLoggerLevel(level);
     } else if (name.startsWith("reactor.netty") || name.startsWith("io.netty")) {
       loggerLevel = getNettyLevel(level);
     } else if (name.startsWith("reactor.util")) {
@@ -126,6 +126,15 @@ public class LoggingLevelConfigurator {
     } else {
       return level;
     }
+  }
+
+  private static Level getOshiLoggerLevel(Level level) {
+    if (level == Level.INFO || level == Level.WARN || level == Level.ERROR) {
+      return Level.OFF;
+    } else if (level == Level.DEBUG) {
+      return Level.INFO;
+    }
+    return level;
   }
 
   private static Level getDefaultLibraryLevel(Level level) {
