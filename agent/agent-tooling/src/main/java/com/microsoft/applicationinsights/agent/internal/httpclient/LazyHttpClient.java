@@ -128,12 +128,16 @@ public class LazyHttpClient implements HttpClient {
   // pass non-null ikeyRedirectCache if you want to use ikey-specific redirect policy
   public static HttpPipeline newHttpPipeLine(
       @Nullable Configuration.AadAuthentication aadConfiguration,
-      @Nullable Cache<String, String> ikeyRedirectCache) {
+      @Nullable Cache<String, String> ikeyRedirectCache,
+      @Nullable HttpPipelinePolicy additionalPolicy) {
     List<HttpPipelinePolicy> policies = new ArrayList<>();
     // Redirect policy to handle v2.1/track redirects (and other redirects too, e.g. profiler)
     policies.add(new RedirectPolicy(ikeyRedirectCache));
     if (aadConfiguration != null && aadConfiguration.enabled) {
       policies.add(getAuthenticationPolicy(aadConfiguration));
+    }
+    if (additionalPolicy != null) {
+      policies.add(additionalPolicy);
     }
     // Add Logging Policy. Can be enabled using AZURE_LOG_LEVEL.
     // TODO set the logging level based on self diagnostic log level set by user

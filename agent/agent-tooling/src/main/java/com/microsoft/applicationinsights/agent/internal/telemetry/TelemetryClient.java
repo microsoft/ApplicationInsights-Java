@@ -48,6 +48,7 @@ import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWr
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalStorageTelemetryPipelineListener;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalStorageUtils;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatHttpPipelinePolicy;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import io.opentelemetry.instrumentation.api.cache.Cache;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -251,7 +252,11 @@ public class TelemetryClient {
       telemetryPipelineListener = new LocalStorageTelemetryPipelineListener(localFileWriter);
     }
 
-    HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(aadAuthentication, ikeyEndpointMap);
+    HttpPipeline httpPipeline =
+        LazyHttpClient.newHttpPipeLine(
+            aadAuthentication,
+            ikeyEndpointMap,
+            new StatsbeatHttpPipelinePolicy(statsbeatModule.getNetworkStatsbeat()));
     TelemetryPipeline telemetryPipeline =
         new TelemetryPipeline(httpPipeline, endpointProvider.getIngestionEndpointUrl());
 
@@ -284,7 +289,7 @@ public class TelemetryClient {
             telemetryPipelineListener = new LocalStorageTelemetryPipelineListener(localFileWriter);
           }
 
-          HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(null, ikeyEndpointMap);
+          HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(null, ikeyEndpointMap, null);
           TelemetryPipeline telemetryPipeline =
               new TelemetryPipeline(httpPipeline, endpointProvider.getStatsbeatEndpointUrl());
 
