@@ -34,9 +34,7 @@ import com.microsoft.applicationinsights.agent.internal.MockHttpResponse;
 import com.microsoft.applicationinsights.agent.internal.common.TestUtils;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.httpclient.RedirectPolicy;
-import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileCache;
-import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
-import com.microsoft.applicationinsights.agent.internal.localstorage.LocalStorageTelemetryPipelineListener;
+import com.microsoft.applicationinsights.agent.internal.localstorage.LocalStorageSystem;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -77,13 +75,12 @@ public class TelemetryChannelTest {
         new HttpPipelineBuilder()
             .policies(policies.toArray(new HttpPipelinePolicy[0]))
             .httpClient(recordingHttpClient);
-    LocalFileCache localFileCache = new LocalFileCache(tempFolder);
-    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder, null);
+    LocalStorageSystem localStorageSystem = new LocalStorageSystem(tempFolder, null);
 
     TelemetryPipeline telemetryPipeline =
         new TelemetryPipeline(pipelineBuilder.build(), new URL(END_POINT_URL));
     return new TelemetryItemPipeline(
-        telemetryPipeline, new LocalStorageTelemetryPipelineListener(localFileWriter));
+        telemetryPipeline, localStorageSystem.createTelemetryChannelListener());
   }
 
   @Nullable

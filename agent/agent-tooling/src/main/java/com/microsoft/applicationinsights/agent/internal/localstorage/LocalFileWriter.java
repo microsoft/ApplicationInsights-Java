@@ -37,7 +37,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 /** This class manages writing a list of {@link ByteBuffer} to the file system. */
-public final class LocalFileWriter {
+final class LocalFileWriter {
 
   // 50MB per folder for all apps.
   private static final long MAX_FILE_SIZE_IN_BYTES = 52428800; // 50MB
@@ -52,7 +52,7 @@ public final class LocalFileWriter {
       new OperationLogger(
           LocalFileWriter.class, "Writing telemetry to disk (telemetry is discarded on failure)");
 
-  public LocalFileWriter(
+  LocalFileWriter(
       LocalFileCache localFileCache,
       File telemetryFolder,
       @Nullable NonessentialStatsbeat nonessentialStatsbeat) {
@@ -61,7 +61,7 @@ public final class LocalFileWriter {
     this.nonessentialStatsbeat = nonessentialStatsbeat;
   }
 
-  public void writeToDisk(List<ByteBuffer> buffers, String instrumentationKey) {
+  void writeToDisk(List<ByteBuffer> buffers, String instrumentationKey) {
     long size = getTotalSizeOfPersistedFiles(telemetryFolder);
     if (size >= MAX_FILE_SIZE_IN_BYTES) {
       operationLogger.recordFailure(

@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
 
-public class LocalFileCache {
+class LocalFileCache {
 
   /**
    * Track a list of active filenames persisted on disk. FIFO (First-In-First-Out) read will avoid
@@ -41,7 +41,7 @@ public class LocalFileCache {
    */
   private final Queue<String> persistedFilesCache = new ConcurrentLinkedDeque<>();
 
-  public LocalFileCache(File folder) {
+  LocalFileCache(File folder) {
     List<File> files = sortPersistedFiles(folder);
     // existing files are not older than 48 hours and need to get added to the queue to be
     // re-processed.

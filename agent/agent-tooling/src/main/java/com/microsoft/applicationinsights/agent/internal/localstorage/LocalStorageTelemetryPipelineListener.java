@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class LocalStorageTelemetryPipelineListener implements TelemetryPipelineListener {
+class LocalStorageTelemetryPipelineListener implements TelemetryPipelineListener {
 
   static final Set<Integer> RETRYABLE_CODES =
       new HashSet<>(
@@ -23,7 +23,7 @@ public class LocalStorageTelemetryPipelineListener implements TelemetryPipelineL
 
   private final LocalFileWriter localFileWriter;
 
-  public LocalStorageTelemetryPipelineListener(LocalFileWriter localFileWriter) {
+  LocalStorageTelemetryPipelineListener(LocalFileWriter localFileWriter) {
     this.localFileWriter = localFileWriter;
   }
 

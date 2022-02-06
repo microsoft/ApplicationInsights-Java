@@ -36,7 +36,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 /** This class manages loading a list of {@link ByteBuffer} from the disk. */
-public class LocalFileLoader {
+class LocalFileLoader {
 
   // A regex to validate that an instrumentation key is well-formed. It's copied straight from the
   // Breeze repo.
@@ -55,7 +55,7 @@ public class LocalFileLoader {
   private static final OperationLogger updateOperationLogger =
       new OperationLogger(LocalFileLoader.class, "Updating local telemetry on disk");
 
-  public LocalFileLoader(
+  LocalFileLoader(
       LocalFileCache localFileCache,
       File telemetryFolder,
       @Nullable NonessentialStatsbeat nonessentialStatsbeat) {

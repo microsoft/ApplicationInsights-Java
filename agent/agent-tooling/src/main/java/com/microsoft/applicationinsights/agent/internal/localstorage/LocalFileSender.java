@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LocalFileSender implements Runnable {
+class LocalFileSender implements Runnable {
 
   private static final Logger logger = LoggerFactory.getLogger(LocalFileSender.class);
 
@@ -53,7 +53,7 @@ public class LocalFileSender implements Runnable {
       new DiagnosticTelemetryPipelineListener(
           "Sending telemetry to the ingestion service (retry from disk)");
 
-  public static void start(LocalFileLoader localFileLoader, TelemetryPipeline telemetryPipeline) {
+  static void start(LocalFileLoader localFileLoader, TelemetryPipeline telemetryPipeline) {
     LocalFileSender localFileSender = new LocalFileSender(localFileLoader, telemetryPipeline);
     scheduledExecutor.scheduleWithFixedDelay(
         localFileSender, INTERVAL_SECONDS, INTERVAL_SECONDS, TimeUnit.SECONDS);
