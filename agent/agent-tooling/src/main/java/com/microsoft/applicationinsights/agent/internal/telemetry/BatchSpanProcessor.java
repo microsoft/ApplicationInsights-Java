@@ -52,12 +52,12 @@ public final class BatchSpanProcessor {
    * @return a new {@link BatchSpanProcessor}.
    * @throws NullPointerException if the {@code spanExporter} is {@code null}.
    */
-  public static BatchSpanProcessorBuilder builder(TelemetryChannel spanExporter) {
+  public static BatchSpanProcessorBuilder builder(TelemetryItemPipeline spanExporter) {
     return new BatchSpanProcessorBuilder(spanExporter);
   }
 
   BatchSpanProcessor(
-      TelemetryChannel spanExporter,
+      TelemetryItemPipeline spanExporter,
       long scheduleDelayNanos,
       int maxQueueSize,
       int maxExportBatchSize,
@@ -96,7 +96,7 @@ public final class BatchSpanProcessor {
   // the data.
   private static final class Worker implements Runnable {
 
-    private final TelemetryChannel spanExporter;
+    private final TelemetryItemPipeline spanExporter;
     private final long scheduleDelayNanos;
     private final int maxExportBatchSize;
     private final long exporterTimeoutNanos;
@@ -122,7 +122,7 @@ public final class BatchSpanProcessor {
         new OperationLogger(BatchSpanProcessor.class, "Queuing span");
 
     private Worker(
-        TelemetryChannel spanExporter,
+        TelemetryItemPipeline spanExporter,
         long scheduleDelayNanos,
         int maxExportBatchSize,
         long exporterTimeoutNanos,

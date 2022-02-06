@@ -37,9 +37,7 @@ import com.azure.core.util.Context;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.agent.internal.MockHttpResponse;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeat;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryChannel;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipeline;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -56,7 +54,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
 public class LocalFileLoaderTests {
@@ -249,16 +246,8 @@ public class LocalFileLoaderTests {
     LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder, null);
     LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
 
-    StatsbeatModule mockedStatsbeatModule = Mockito.mock(StatsbeatModule.class);
-    when(mockedStatsbeatModule.getNetworkStatsbeat())
-        .thenReturn(Mockito.mock(NetworkStatsbeat.class));
-    TelemetryChannel telemetryChannel =
-        new TelemetryChannel(
-            pipelineBuilder.build(),
-            new URL("http://foo.bar"),
-            localFileWriter,
-            mockedStatsbeatModule,
-            false);
+    TelemetryPipeline telemetryPipeline =
+        new TelemetryPipeline(pipelineBuilder.build(), new URL("http://foo.bar"));
 
     // persist 10 files to disk
     for (int i = 0; i < 10; i++) {
@@ -277,11 +266,12 @@ public class LocalFileLoaderTests {
     for (int i = 0; i < 10; i++) {
       LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
       CompletableResultCode completableResultCode =
-          telemetryChannel.sendRawBytes(
-              persistedFile.rawBytes, persistedFile.instrumentationKey, () -> {}, retryable -> {});
+          telemetryPipeline.send(
+              singletonList(persistedFile.rawBytes),
+              persistedFile.instrumentationKey,
+              new LocalStorageTelemetryPipelineListener2(localFileLoader, persistedFile.file));
       completableResultCode.join(10, SECONDS);
       assertThat(completableResultCode.isSuccess()).isEqualTo(true);
-      localFileLoader.updateProcessedFileStatus(true, persistedFile.file);
 
       // sleep 1 second to wait for delete to complete
       Thread.sleep(1000);
@@ -307,16 +297,8 @@ public class LocalFileLoaderTests {
     LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
     LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder, null);
 
-    StatsbeatModule mockedStatsbeatModule = Mockito.mock(StatsbeatModule.class);
-    when(mockedStatsbeatModule.getNetworkStatsbeat())
-        .thenReturn(Mockito.mock(NetworkStatsbeat.class));
-    TelemetryChannel telemetryChannel =
-        new TelemetryChannel(
-            pipelineBuilder.build(),
-            new URL("http://foo.bar"),
-            localFileWriter,
-            mockedStatsbeatModule,
-            false);
+    TelemetryPipeline telemetryPipeline =
+        new TelemetryPipeline(pipelineBuilder.build(), new URL("http://foo.bar"));
 
     // persist 10 files to disk
     for (int i = 0; i < 10; i++) {
@@ -335,11 +317,12 @@ public class LocalFileLoaderTests {
       assertThat(persistedFile.instrumentationKey).isEqualTo(INSTRUMENTATION_KEY);
 
       CompletableResultCode completableResultCode =
-          telemetryChannel.sendRawBytes(
-              persistedFile.rawBytes, persistedFile.instrumentationKey, () -> {}, retryable -> {});
+          telemetryPipeline.send(
+              singletonList(persistedFile.rawBytes),
+              persistedFile.instrumentationKey,
+              new LocalStorageTelemetryPipelineListener2(localFileLoader, persistedFile.file));
       completableResultCode.join(10, SECONDS);
       assertThat(completableResultCode.isSuccess()).isEqualTo(false);
-      localFileLoader.updateProcessedFileStatus(false, persistedFile.file);
     }
 
     files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);

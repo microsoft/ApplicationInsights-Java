@@ -21,10 +21,14 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
+import static java.util.Collections.singletonList;
+
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryChannel;
+import com.microsoft.applicationinsights.agent.internal.telemetry.DiagnosticTelemetryPipelineListener;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipeline;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipelineListener;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -43,17 +47,21 @@ public class LocalFileSender implements Runnable {
           ThreadPoolUtils.createDaemonThreadFactory(LocalFileLoader.class));
 
   private final LocalFileLoader localFileLoader;
-  private final TelemetryChannel telemetryChannel;
+  private final TelemetryPipeline telemetryChannel;
 
-  public static void start(LocalFileLoader localFileLoader, TelemetryChannel telemetryChannel) {
-    LocalFileSender localFileSender = new LocalFileSender(localFileLoader, telemetryChannel);
+  private final TelemetryPipelineListener diagnosticListener =
+      new DiagnosticTelemetryPipelineListener(
+          "Sending telemetry to the ingestion service (retry from disk)");
+
+  public static void start(LocalFileLoader localFileLoader, TelemetryPipeline telemetryPipeline) {
+    LocalFileSender localFileSender = new LocalFileSender(localFileLoader, telemetryPipeline);
     scheduledExecutor.scheduleWithFixedDelay(
         localFileSender, INTERVAL_SECONDS, INTERVAL_SECONDS, TimeUnit.SECONDS);
   }
 
-  private LocalFileSender(LocalFileLoader localFileLoader, TelemetryChannel telemetryChannel) {
+  private LocalFileSender(LocalFileLoader localFileLoader, TelemetryPipeline telemetryPipeline) {
     this.localFileLoader = localFileLoader;
-    this.telemetryChannel = telemetryChannel;
+    this.telemetryChannel = telemetryPipeline;
   }
 
   @Override
@@ -67,12 +75,13 @@ public class LocalFileSender implements Runnable {
       LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
       if (persistedFile != null) {
         CompletableResultCode resultCode =
-            telemetryChannel.sendRawBytes(
-                persistedFile.rawBytes,
+            telemetryChannel.send(
+                singletonList(persistedFile.rawBytes),
                 persistedFile.instrumentationKey,
-                () -> localFileLoader.updateProcessedFileStatus(true, persistedFile.file),
-                retryable ->
-                    localFileLoader.updateProcessedFileStatus(!retryable, persistedFile.file));
+                TelemetryPipelineListener.composite(
+                    diagnosticListener,
+                    new LocalStorageTelemetryPipelineListener2(
+                        localFileLoader, persistedFile.file)));
         resultCode.join(30, TimeUnit.SECONDS); // wait max 30 seconds for request to be completed.
       }
     } catch (RuntimeException ex) {

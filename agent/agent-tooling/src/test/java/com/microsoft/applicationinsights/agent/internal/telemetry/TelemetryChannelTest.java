@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
 import com.azure.core.http.HttpClient;
 import com.azure.core.http.HttpHeaders;
@@ -37,8 +36,7 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.Telemetr
 import com.microsoft.applicationinsights.agent.internal.httpclient.RedirectPolicy;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileCache;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeat;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
+import com.microsoft.applicationinsights.agent.internal.localstorage.LocalStorageTelemetryPipelineListener;
 import io.opentelemetry.instrumentation.api.cache.Cache;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
@@ -60,7 +58,6 @@ import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -73,7 +70,7 @@ public class TelemetryChannelTest {
 
   @TempDir File tempFolder;
 
-  private TelemetryChannel getTelemetryChannel() throws MalformedURLException {
+  private TelemetryItemPipeline getTelemetryChannel() throws MalformedURLException {
     List<HttpPipelinePolicy> policies = new ArrayList<>();
 
     policies.add(new RedirectPolicy(Cache.bounded(5)));
@@ -82,14 +79,12 @@ public class TelemetryChannelTest {
             .policies(policies.toArray(new HttpPipelinePolicy[0]))
             .httpClient(recordingHttpClient);
     LocalFileCache localFileCache = new LocalFileCache(tempFolder);
-    StatsbeatModule mockedStatsModule = Mockito.mock(StatsbeatModule.class);
-    when(mockedStatsModule.getNetworkStatsbeat()).thenReturn(Mockito.mock(NetworkStatsbeat.class));
-    return new TelemetryChannel(
-        pipelineBuilder.build(),
-        new URL(END_POINT_URL),
-        new LocalFileWriter(localFileCache, tempFolder, null),
-        mockedStatsModule,
-        false);
+    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder, null);
+
+    TelemetryPipeline telemetryPipeline =
+        new TelemetryPipeline(pipelineBuilder.build(), new URL(END_POINT_URL));
+    return new TelemetryItemPipeline(
+        telemetryPipeline, new LocalStorageTelemetryPipelineListener(localFileWriter));
   }
 
   @Nullable
@@ -143,7 +138,7 @@ public class TelemetryChannelTest {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
     telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
-    TelemetryChannel telemetryChannel = getTelemetryChannel();
+    TelemetryItemPipeline telemetryChannel = getTelemetryChannel();
 
     // when
     CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
@@ -160,7 +155,7 @@ public class TelemetryChannelTest {
     telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
     telemetryItems.add(
         TestUtils.createMetricTelemetry("metric" + 2, 2, REDIRECT_INSTRUMENTATION_KEY));
-    TelemetryChannel telemetryChannel = getTelemetryChannel();
+    TelemetryItemPipeline telemetryChannel = getTelemetryChannel();
 
     // when
     CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
@@ -176,7 +171,7 @@ public class TelemetryChannelTest {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
     telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
     telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 2, 2, INSTRUMENTATION_KEY));
-    TelemetryChannel telemetryChannel = getTelemetryChannel();
+    TelemetryItemPipeline telemetryChannel = getTelemetryChannel();
 
     // when
     CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
@@ -196,7 +191,7 @@ public class TelemetryChannelTest {
         TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
     telemetryItems.add(
         TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
-    TelemetryChannel telemetryChannel = getTelemetryChannel();
+    TelemetryItemPipeline telemetryChannel = getTelemetryChannel();
 
     // when
     CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
@@ -216,7 +211,7 @@ public class TelemetryChannelTest {
         TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
     telemetryItems.add(
         TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
-    TelemetryChannel telemetryChannel = getTelemetryChannel();
+    TelemetryItemPipeline telemetryChannel = getTelemetryChannel();
 
     // when
     CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
@@ -243,7 +238,7 @@ public class TelemetryChannelTest {
         TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
     telemetryItems.add(
         TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
-    TelemetryChannel telemetryChannel = getTelemetryChannel();
+    TelemetryItemPipeline telemetryChannel = getTelemetryChannel();
 
     // when
     CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);

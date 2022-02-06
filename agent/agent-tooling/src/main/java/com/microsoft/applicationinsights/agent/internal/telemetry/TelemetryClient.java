@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import static java.util.Arrays.asList;
 
+import com.azure.core.http.HttpPipeline;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -39,10 +40,12 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDa
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorDomain;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileCache;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileLoader;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileSender;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
+import com.microsoft.applicationinsights.agent.internal.localstorage.LocalStorageTelemetryPipelineListener;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalStorageUtils;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
@@ -235,6 +238,7 @@ public class TelemetryClient {
       int exportQueueCapacity, int maxExportBatchSize, String queueName) {
     LocalFileLoader localFileLoader = null;
     LocalFileWriter localFileWriter = null;
+    TelemetryPipelineListener telemetryPipelineListener = TelemetryPipelineListener.noop();
     if (!readOnlyFileSystem) {
       File telemetryFolder = LocalStorageUtils.getOfflineTelemetryFolder();
       LocalFileCache localFileCache = new LocalFileCache(telemetryFolder);
@@ -244,22 +248,21 @@ public class TelemetryClient {
       localFileWriter =
           new LocalFileWriter(
               localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
+      telemetryPipelineListener = new LocalStorageTelemetryPipelineListener(localFileWriter);
     }
 
-    TelemetryChannel channel =
-        TelemetryChannel.create(
-            endpointProvider.getIngestionEndpointUrl(),
-            localFileWriter,
-            ikeyEndpointMap,
-            statsbeatModule,
-            false,
-            aadAuthentication);
+    HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(aadAuthentication, ikeyEndpointMap);
+    TelemetryPipeline telemetryPipeline =
+        new TelemetryPipeline(httpPipeline, endpointProvider.getIngestionEndpointUrl());
+
+    TelemetryItemPipeline telemetryItemPipeline =
+        new TelemetryItemPipeline(telemetryPipeline, telemetryPipelineListener);
 
     if (!readOnlyFileSystem) {
-      LocalFileSender.start(localFileLoader, channel);
+      LocalFileSender.start(localFileLoader, telemetryPipeline);
     }
 
-    return BatchSpanProcessor.builder(channel)
+    return BatchSpanProcessor.builder(telemetryItemPipeline)
         .setMaxQueueSize(exportQueueCapacity)
         .setMaxExportBatchSize(maxExportBatchSize)
         .build(queueName);
@@ -272,27 +275,28 @@ public class TelemetryClient {
           File statsbeatFolder;
           LocalFileLoader localFileLoader = null;
           LocalFileWriter localFileWriter = null;
+          TelemetryPipelineListener telemetryPipelineListener = TelemetryPipelineListener.noop();
           if (!readOnlyFileSystem) {
             statsbeatFolder = LocalStorageUtils.getOfflineStatsbeatFolder();
             LocalFileCache localFileCache = new LocalFileCache(statsbeatFolder);
             localFileLoader = new LocalFileLoader(localFileCache, statsbeatFolder, null);
             localFileWriter = new LocalFileWriter(localFileCache, statsbeatFolder, null);
+            telemetryPipelineListener = new LocalStorageTelemetryPipelineListener(localFileWriter);
           }
 
-          TelemetryChannel channel =
-              TelemetryChannel.create(
-                  endpointProvider.getStatsbeatEndpointUrl(),
-                  localFileWriter,
-                  ikeyEndpointMap,
-                  statsbeatModule,
-                  true,
-                  null);
+          HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(null, ikeyEndpointMap);
+          TelemetryPipeline telemetryPipeline =
+              new TelemetryPipeline(httpPipeline, endpointProvider.getStatsbeatEndpointUrl());
+
+          TelemetryItemPipeline telemetryItemPipeline =
+              new TelemetryItemPipeline(telemetryPipeline, telemetryPipelineListener);
 
           if (!readOnlyFileSystem) {
-            LocalFileSender.start(localFileLoader, channel);
+            LocalFileSender.start(localFileLoader, telemetryPipeline);
           }
 
-          statsbeatChannelBatcher = BatchSpanProcessor.builder(channel).build("statsbeat");
+          statsbeatChannelBatcher =
+              BatchSpanProcessor.builder(telemetryItemPipeline).build("statsbeat");
         }
       }
     }

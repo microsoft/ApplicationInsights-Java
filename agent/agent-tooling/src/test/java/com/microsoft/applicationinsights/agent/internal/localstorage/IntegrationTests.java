@@ -35,9 +35,8 @@ import com.azure.core.test.http.MockHttpResponse;
 import com.azure.core.util.Context;
 import com.microsoft.applicationinsights.agent.internal.common.TestUtils;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeat;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryChannel;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryItemPipeline;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipeline;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -60,14 +59,13 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
 public class IntegrationTests {
 
   private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
   private static final String PERSISTED_FILENAME = "gzipped-raw-bytes.trn";
-  private TelemetryChannel telemetryChannel;
+  private TelemetryItemPipeline telemetryChannel;
   private LocalFileCache localFileCache;
   private LocalFileLoader localFileLoader;
 
@@ -98,16 +96,13 @@ public class IntegrationTests {
     localFileCache = new LocalFileCache(tempFolder);
     localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
 
-    StatsbeatModule statsbeatModule = Mockito.mock(StatsbeatModule.class);
-    when(statsbeatModule.getNetworkStatsbeat()).thenReturn(Mockito.mock(NetworkStatsbeat.class));
-
+    TelemetryPipeline telemetryPipeline =
+        new TelemetryPipeline(pipelineBuilder.build(), new URL("http://foo.bar"));
     telemetryChannel =
-        new TelemetryChannel(
-            pipelineBuilder.build(),
-            new URL("http://foo.bar"),
-            new LocalFileWriter(localFileCache, tempFolder, null),
-            statsbeatModule,
-            false);
+        new TelemetryItemPipeline(
+            telemetryPipeline,
+            new LocalStorageTelemetryPipelineListener(
+                new LocalFileWriter(localFileCache, tempFolder, null)));
   }
 
   @Test
