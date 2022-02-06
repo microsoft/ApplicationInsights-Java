@@ -43,8 +43,8 @@ public class NetworkStatsbeatTest {
   public void testIncrementRequestSuccessCount() {
     assertThat(networkStatsbeat.getRequestSuccessCount(IKEY)).isEqualTo(0);
     assertThat(networkStatsbeat.getRequestDurationAvg(IKEY)).isEqualTo(0);
-    networkStatsbeat.incrementRequestSuccessCount(1000, IKEY);
-    networkStatsbeat.incrementRequestSuccessCount(3000, IKEY);
+    networkStatsbeat.incrementRequestSuccessCount(1000, IKEY, "host");
+    networkStatsbeat.incrementRequestSuccessCount(3000, IKEY, "host");
     assertThat(networkStatsbeat.getRequestSuccessCount(IKEY)).isEqualTo(2);
     assertThat(networkStatsbeat.getRequestDurationAvg(IKEY)).isEqualTo(2000.0);
   }
@@ -52,32 +52,32 @@ public class NetworkStatsbeatTest {
   @Test
   public void testIncrementRequestFailureCount() {
     assertThat(networkStatsbeat.getRequestFailureCount(IKEY)).isEqualTo(0);
-    networkStatsbeat.incrementRequestFailureCount(IKEY);
-    networkStatsbeat.incrementRequestFailureCount(IKEY);
+    networkStatsbeat.incrementRequestFailureCount(IKEY, "host");
+    networkStatsbeat.incrementRequestFailureCount(IKEY, "host");
     assertThat(networkStatsbeat.getRequestFailureCount(IKEY)).isEqualTo(2);
   }
 
   @Test
   public void testIncrementRetryCount() {
     assertThat(networkStatsbeat.getRetryCount(IKEY)).isEqualTo(0);
-    networkStatsbeat.incrementRetryCount(IKEY);
-    networkStatsbeat.incrementRetryCount(IKEY);
+    networkStatsbeat.incrementRetryCount(IKEY, "host");
+    networkStatsbeat.incrementRetryCount(IKEY, "host");
     assertThat(networkStatsbeat.getRetryCount(IKEY)).isEqualTo(2);
   }
 
   @Test
   public void testIncrementThrottlingCount() {
     assertThat(networkStatsbeat.getThrottlingCount(IKEY)).isEqualTo(0);
-    networkStatsbeat.incrementThrottlingCount(IKEY);
-    networkStatsbeat.incrementThrottlingCount(IKEY);
+    networkStatsbeat.incrementThrottlingCount(IKEY, "host");
+    networkStatsbeat.incrementThrottlingCount(IKEY, "host");
     assertThat(networkStatsbeat.getThrottlingCount(IKEY)).isEqualTo(2);
   }
 
   @Test
   public void testIncrementExceptionCount() {
     assertThat(networkStatsbeat.getExceptionCount(IKEY)).isEqualTo(0);
-    networkStatsbeat.incrementExceptionCount(IKEY);
-    networkStatsbeat.incrementExceptionCount(IKEY);
+    networkStatsbeat.incrementExceptionCount(IKEY, "host");
+    networkStatsbeat.incrementExceptionCount(IKEY, "host");
     assertThat(networkStatsbeat.getExceptionCount(IKEY)).isEqualTo(2);
   }
 
@@ -90,11 +90,11 @@ public class NetworkStatsbeatTest {
             @Override
             public void run() {
               for (int j = 0; j < 1000; j++) {
-                networkStatsbeat.incrementRequestSuccessCount(j % 2 == 0 ? 5 : 10, IKEY);
-                networkStatsbeat.incrementRequestFailureCount(IKEY);
-                networkStatsbeat.incrementRetryCount(IKEY);
-                networkStatsbeat.incrementThrottlingCount(IKEY);
-                networkStatsbeat.incrementExceptionCount(IKEY);
+                networkStatsbeat.incrementRequestSuccessCount(j % 2 == 0 ? 5 : 10, IKEY, "host");
+                networkStatsbeat.incrementRequestFailureCount(IKEY, "host");
+                networkStatsbeat.incrementRetryCount(IKEY, "host");
+                networkStatsbeat.incrementThrottlingCount(IKEY, "host");
+                networkStatsbeat.incrementExceptionCount(IKEY, "host");
               }
             }
           });

@@ -21,7 +21,6 @@ public class StatsbeatHttpPipelinePolicy implements HttpPipelinePolicy {
   public Mono<HttpResponse> process(HttpPipelineCallContext context, HttpPipelineNextPolicy next) {
     // using AtomicLong for both mutable holder and volatile (but atomicity is not needed here)
     AtomicLong startTime = new AtomicLong();
-    // TODO (trask) use host here to break sharing of ikey redirect cache!
     String host = context.getHttpRequest().getUrl().getHost();
     String instrumentationKey =
         context.getData(INSTRUMENTATION_KEY_DATA).orElse("unknown").toString();
@@ -32,22 +31,23 @@ public class StatsbeatHttpPipelinePolicy implements HttpPipelinePolicy {
               int statusCode = response.getStatusCode();
               if (statusCode == 200) {
                 networkStatsbeat.incrementRequestSuccessCount(
-                    System.currentTimeMillis() - startTime.get(), instrumentationKey);
+                    System.currentTimeMillis() - startTime.get(), instrumentationKey, host);
               } else if (statusCode == 301
                   || statusCode == 302
                   || statusCode == 307
                   || statusCode == 308) {
-                // these are not tracked as success or failure since they will be retried
+                // these are not tracked as success or failure since they are just redirects
               } else if (statusCode == 439) {
-                networkStatsbeat.incrementThrottlingCount(instrumentationKey);
+                networkStatsbeat.incrementThrottlingCount(instrumentationKey, host);
               } else {
                 // note: 401 and 403 are currently tracked as failures
-                networkStatsbeat.incrementRequestFailureCount(instrumentationKey);
+                networkStatsbeat.incrementRequestFailureCount(instrumentationKey, host);
               }
             })
         .doOnError(
             throwable -> {
-              networkStatsbeat.incrementRequestFailureCount(instrumentationKey);
+              // TODO (heya) should this be incrementExceptionCount()?
+              networkStatsbeat.incrementRequestFailureCount(instrumentationKey, host);
             });
   }
 }

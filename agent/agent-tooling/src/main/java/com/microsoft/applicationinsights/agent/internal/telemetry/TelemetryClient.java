@@ -50,7 +50,6 @@ import com.microsoft.applicationinsights.agent.internal.localstorage.LocalStorag
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatHttpPipelinePolicy;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
-import io.opentelemetry.instrumentation.api.cache.Cache;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.File;
 import java.net.MalformedURLException;
@@ -90,7 +89,6 @@ public class TelemetryClient {
 
   private final List<MetricFilter> metricFilters;
 
-  private final Cache<String, String> ikeyEndpointMap;
   private final StatsbeatModule statsbeatModule;
   private final boolean readOnlyFileSystem;
   private final int generalExportQueueCapacity;
@@ -112,8 +110,7 @@ public class TelemetryClient {
     return builder()
         .setCustomDimensions(new HashMap<>())
         .setMetricFilters(new ArrayList<>())
-        .setIkeyEndpointMap(Cache.bounded(100))
-        .setStatsbeatModule(new StatsbeatModule(null))
+        .setStatsbeatModule(new StatsbeatModule())
         .build();
   }
 
@@ -121,7 +118,6 @@ public class TelemetryClient {
     this.globalTags = builder.globalTags;
     this.globalProperties = builder.globalProperties;
     this.metricFilters = builder.metricFilters;
-    this.ikeyEndpointMap = builder.ikeyEndpointMap;
     this.statsbeatModule = builder.statsbeatModule;
     this.readOnlyFileSystem = builder.readOnlyFileSystem;
     this.generalExportQueueCapacity = builder.generalExportQueueCapacity;
@@ -255,7 +251,7 @@ public class TelemetryClient {
     HttpPipeline httpPipeline =
         LazyHttpClient.newHttpPipeLine(
             aadAuthentication,
-            ikeyEndpointMap,
+            true,
             new StatsbeatHttpPipelinePolicy(statsbeatModule.getNetworkStatsbeat()));
     TelemetryPipeline telemetryPipeline =
         new TelemetryPipeline(httpPipeline, endpointProvider.getIngestionEndpointUrl());
@@ -289,7 +285,7 @@ public class TelemetryClient {
             telemetryPipelineListener = new LocalStorageTelemetryPipelineListener(localFileWriter);
           }
 
-          HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(null, ikeyEndpointMap, null);
+          HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(null, true, null);
           TelemetryPipeline telemetryPipeline =
               new TelemetryPipeline(httpPipeline, endpointProvider.getStatsbeatEndpointUrl());
 
@@ -431,7 +427,6 @@ public class TelemetryClient {
     private Map<String, String> globalTags;
     private Map<String, String> globalProperties;
     private List<MetricFilter> metricFilters;
-    private Cache<String, String> ikeyEndpointMap;
     private StatsbeatModule statsbeatModule;
     private boolean readOnlyFileSystem;
     private int generalExportQueueCapacity;
@@ -464,11 +459,6 @@ public class TelemetryClient {
 
     public Builder setMetricFilters(List<MetricFilter> metricFilters) {
       this.metricFilters = metricFilters;
-      return this;
-    }
-
-    public Builder setIkeyEndpointMap(Cache<String, String> ikeyEndpointMap) {
-      this.ikeyEndpointMap = ikeyEndpointMap;
       return this;
     }
 

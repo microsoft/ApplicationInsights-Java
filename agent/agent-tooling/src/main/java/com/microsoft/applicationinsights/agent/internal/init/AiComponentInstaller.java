@@ -57,7 +57,6 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
-import io.opentelemetry.instrumentation.api.cache.Cache;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.File;
 import java.lang.instrument.Instrumentation;
@@ -164,13 +163,11 @@ class AiComponentInstaller {
             .map(MetricFilter::new)
             .collect(Collectors.toList());
 
-    Cache<String, String> ikeyEndpointMap = Cache.bounded(100);
-    StatsbeatModule statsbeatModule = new StatsbeatModule(ikeyEndpointMap);
+    StatsbeatModule statsbeatModule = new StatsbeatModule();
     TelemetryClient telemetryClient =
         TelemetryClient.builder()
             .setCustomDimensions(config.customDimensions)
             .setMetricFilters(metricFilters)
-            .setIkeyEndpointMap(ikeyEndpointMap)
             .setStatsbeatModule(statsbeatModule)
             .setReadOnlyFileSystem(readOnlyFileSystem)
             .setGeneralExportQueueSize(config.preview.generalExportQueueCapacity)

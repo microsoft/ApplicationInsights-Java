@@ -48,8 +48,8 @@ public final class RedirectPolicy implements HttpPipelinePolicy {
   @Nullable private final Cache<String, String> ikeyRedirectCache;
 
   // pass non-null ikeyRedirectCache if you want to use ikey-specific redirect policy
-  public RedirectPolicy(@Nullable Cache<String, String> ikeyRedirectCache) {
-    this.ikeyRedirectCache = ikeyRedirectCache;
+  public RedirectPolicy(boolean useIkeyRedirect) {
+    this.ikeyRedirectCache = useIkeyRedirect ? Cache.bounded(100) : null;
   }
 
   @Override
