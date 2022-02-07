@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -30,8 +32,6 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 final class StartupProfiler {
 
@@ -41,21 +41,19 @@ final class StartupProfiler {
   public static void start() {
     String tempDirectory = System.getProperty("java.io.tmpdir");
     File folder = new File(tempDirectory, "applicationinsights");
-    if (!folder.exists()) {
-      folder.mkdirs();
+    if (!folder.exists() && !folder.mkdirs()) {
+      System.out.println("Failed to create directory: " + tempDirectory);
+      return;
     }
 
     File dumpFile = new File(folder, STACKTRACES);
     System.out.println("Writing startup profiler to '" + dumpFile.getPath() + "'");
 
-    PrintWriter printWriter = null;
-    try (PrintWriter out =
-        new PrintWriter(Files.newBufferedWriter(dumpFile.toPath(), Charset.defaultCharset()))) {
-      printWriter = new PrintWriter(out);
+    PrintWriter printWriter;
+    try {
+      printWriter =
+          new PrintWriter(Files.newBufferedWriter(dumpFile.toPath(), Charset.defaultCharset()));
     } catch (IOException e) {
-      if (printWriter != null) {
-        printWriter.close();
-      }
       System.out.println("Error occurred when writing dump to " + dumpFile.getPath());
       e.printStackTrace();
       return;
@@ -65,11 +63,10 @@ final class StartupProfiler {
   }
 
   private static void start(PrintWriter out) {
-    Executors.newSingleThreadScheduledExecutor()
-        .scheduleAtFixedRate(new ThreadDump(out), 50, 50, TimeUnit.MILLISECONDS);
+    Thread thread = new Thread(new ThreadDump(out), "StartupProfiler");
+    thread.setDaemon(true);
+    thread.start();
   }
-
-  private StartupProfiler() {}
 
   private static class ThreadDump implements Runnable {
 
@@ -80,9 +77,24 @@ final class StartupProfiler {
     }
 
     @Override
+    @SuppressWarnings("SystemOut")
     public void run() {
+      long start = System.currentTimeMillis();
+      while (System.currentTimeMillis() - start < MINUTES.toMillis(10)) {
+        try {
+          Thread.sleep(50);
+        } catch (InterruptedException e) {
+          System.out.println("Startup profiler interrupted");
+          return;
+        }
+        captureThreadDump();
+      }
+    }
+
+    private void captureThreadDump() {
       out.println("========================================");
       RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
+      out.print("uptime: ");
       out.println(runtimeBean.getUptime());
       out.println();
       ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
@@ -107,4 +119,6 @@ final class StartupProfiler {
       out.println();
     }
   }
+
+  private StartupProfiler() {}
 }
