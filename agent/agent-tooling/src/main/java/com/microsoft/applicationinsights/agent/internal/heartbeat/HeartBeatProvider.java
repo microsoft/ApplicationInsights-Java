@@ -34,7 +34,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,24 +106,19 @@ public class HeartBeatProvider {
   public boolean addHeartBeatProperty(
       String propertyName, String propertyValue, boolean isHealthy) {
 
-    boolean isAdded = false;
-    if (!StringUtils.isEmpty(propertyName)) {
-      if (!heartbeatProperties.containsKey(propertyName)) {
-        HeartBeatPropertyPayload payload = new HeartBeatPropertyPayload();
-        payload.setHealthy(isHealthy);
-        payload.setPayloadValue(propertyValue);
-        heartbeatProperties.put(propertyName, payload);
-        isAdded = true;
-        logger.trace("added heartbeat property {} - {}", propertyName, propertyValue);
-      } else {
-        logger.trace(
-            "heartbeat property {} cannot be added twice. Please use setHeartBeatProperty instead to modify the value",
-            propertyName);
-      }
-    } else {
-      logger.warn("cannot add property without property name");
+    if (heartbeatProperties.containsKey(propertyName)) {
+      logger.trace(
+          "heartbeat property {} cannot be added twice. Please use setHeartBeatProperty instead to modify the value",
+          propertyName);
+      return false;
     }
-    return isAdded;
+
+    HeartBeatPropertyPayload payload = new HeartBeatPropertyPayload();
+    payload.setHealthy(isHealthy);
+    payload.setPayloadValue(propertyValue);
+    heartbeatProperties.put(propertyName, payload);
+    logger.trace("added heartbeat property {} - {}", propertyName, propertyValue);
+    return true;
   }
 
   public long getHeartBeatInterval() {

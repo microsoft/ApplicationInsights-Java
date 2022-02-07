@@ -77,7 +77,7 @@ public class LocalFilePurger implements Runnable {
   }
 
   private void purgedExpiredFiles(File folder) {
-    Collection<File> files = FileUtil.listFiles(folder, new String[] {"trn"}, false);
+    Collection<File> files = FileUtil.listTrnFiles(folder);
     int numDeleted = 0;
     for (File file : files) {
       if (expired(file.getName())) {

@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.common;
 
 import java.lang.management.ManagementFactory;
-import org.apache.commons.lang3.SystemUtils;
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +32,15 @@ public class SystemInformation {
 
   private static final String DEFAULT_PROCESS_NAME = "Java_Process";
 
+  private static final boolean WINDOWS;
+  private static final boolean LINUX;
+
+  static {
+    String os = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
+    WINDOWS = os.contains("win");
+    LINUX = os.contains("nux");
+  }
+
   private static final String processId = initializeProcessId();
 
   public static String getProcessId() {
@@ -39,11 +48,11 @@ public class SystemInformation {
   }
 
   public static boolean isWindows() {
-    return SystemUtils.IS_OS_WINDOWS;
+    return WINDOWS;
   }
 
-  public static boolean isUnix() {
-    return SystemUtils.IS_OS_UNIX;
+  public static boolean isLinux() {
+    return LINUX;
   }
 
   /**

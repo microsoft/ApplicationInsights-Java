@@ -45,12 +45,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 import java.util.function.Function;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -85,11 +85,11 @@ public class LocalFileLoaderTests {
         new File(getClass().getClassLoader().getResource(GZIPPED_RAW_BYTES_WITHOUT_IKEY).getPath());
 
     File persistedFile = new File(tempFolder, GZIPPED_RAW_BYTES_WITHOUT_IKEY);
-    FileUtils.copyFile(sourceFile, persistedFile);
+    Files.copy(sourceFile.toPath(), persistedFile.toPath());
     assertThat(persistedFile.exists()).isTrue();
 
     LocalFileCache localFileCache = new LocalFileCache(tempFolder);
-    localFileCache.addPersistedFilenameToMap(GZIPPED_RAW_BYTES_WITHOUT_IKEY);
+    localFileCache.addPersistedFile(persistedFile);
 
     LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
     LocalFileLoader.PersistedFile loadedPersistedFile = localFileLoader.loadTelemetriesFromDisk();
@@ -105,11 +105,11 @@ public class LocalFileLoaderTests {
 
     File persistedFile = new File(tempFolder, BYTE_BUFFERS_TEST_FILE);
 
-    FileUtils.copyFile(sourceFile, persistedFile);
+    Files.copy(sourceFile.toPath(), persistedFile.toPath());
     assertThat(persistedFile.exists()).isTrue();
 
     LocalFileCache localFileCache = new LocalFileCache(tempFolder);
-    localFileCache.addPersistedFilenameToMap(BYTE_BUFFERS_TEST_FILE);
+    localFileCache.addPersistedFile(persistedFile);
 
     LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
     LocalFileLoader.PersistedFile loadedPersistedFile = localFileLoader.loadTelemetriesFromDisk();
@@ -257,7 +257,7 @@ public class LocalFileLoaderTests {
 
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(10);
 
-    Collection<File> files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);
+    List<File> files = FileUtil.listTrnFiles(tempFolder);
     assertThat(files.size()).isEqualTo(10);
 
     int expectedCount = 10;
@@ -276,7 +276,7 @@ public class LocalFileLoaderTests {
       // sleep 1 second to wait for delete to complete
       Thread.sleep(1000);
 
-      files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);
+      files = FileUtil.listTrnFiles(tempFolder);
       assertThat(files.size()).isEqualTo(--expectedCount);
     }
 
@@ -308,7 +308,7 @@ public class LocalFileLoaderTests {
 
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(10);
 
-    Collection<File> files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);
+    List<File> files = FileUtil.listTrnFiles(tempFolder);
     assertThat(files.size()).isEqualTo(10);
 
     // fail to send persisted files and expect them to be kept on disk
@@ -325,7 +325,7 @@ public class LocalFileLoaderTests {
       assertThat(completableResultCode.isSuccess()).isEqualTo(false);
     }
 
-    files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);
+    files = FileUtil.listTrnFiles(tempFolder);
     assertThat(files.size()).isEqualTo(10);
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(10);
   }

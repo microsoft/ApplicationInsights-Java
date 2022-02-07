@@ -24,7 +24,7 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationVersionAlpha}",
   "org.junit:junit-bom:5.7.2",
   "io.netty:netty-bom:4.1.72.Final",
-  )
+)
 
 // TODO consolidate to just one json library
 // TODO remove dependencies on apache commons
@@ -95,8 +95,6 @@ val DEPENDENCIES = listOf(
   "com.google.auto.service:auto-service:1.0",
   "com.uber.nullaway:nullaway:0.9.1",
   "commons-codec:commons-codec:1.15",
-  "commons-io:commons-io:2.7",
-  "org.apache.commons:commons-lang3:3.7",
   "org.apache.commons:commons-text:1.9",
   "com.google.code.gson:gson:2.8.2",
   "com.azure:azure-core:1.21.0",

@@ -55,7 +55,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
 import okio.BufferedSource;
 import okio.Okio;
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -149,12 +148,12 @@ public class IntegrationTests {
     File sourceFile =
         new File(getClass().getClassLoader().getResource(PERSISTED_FILENAME).getPath());
     File persistedFile = new File(tempFolder, PERSISTED_FILENAME);
-    FileUtils.copyFile(sourceFile, persistedFile);
+    Files.copy(sourceFile.toPath(), persistedFile.toPath());
 
     assertThat(persistedFile.exists()).isTrue();
 
     LocalFileCache localFileCache = new LocalFileCache(tempFolder);
-    localFileCache.addPersistedFilenameToMap(PERSISTED_FILENAME);
+    localFileCache.addPersistedFile(persistedFile);
 
     LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
     LocalFileLoader.PersistedFile loadedPersistedFile = localFileLoader.loadTelemetriesFromDisk();

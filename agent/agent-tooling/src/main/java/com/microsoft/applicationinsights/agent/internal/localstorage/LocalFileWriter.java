@@ -89,15 +89,13 @@ final class LocalFileWriter {
 
     File permanentFile;
     try {
-      String filename = tempFile.getName();
-      File sourceFile = new File(telemetryFolder, filename);
       permanentFile =
-          new File(telemetryFolder, FileUtil.getBaseName(filename) + PERMANENT_FILE_EXTENSION);
-      FileUtil.moveFile(sourceFile, permanentFile);
+          new File(telemetryFolder, FileUtil.getBaseName(tempFile) + PERMANENT_FILE_EXTENSION);
+      FileUtil.moveFile(tempFile, permanentFile);
     } catch (IOException e) {
       operationLogger.recordFailure(
           "Fail to change "
-              + tempFile.getName()
+              + tempFile.getAbsolutePath()
               + " to have "
               + PERMANENT_FILE_EXTENSION
               + " extension: ",
@@ -106,7 +104,7 @@ final class LocalFileWriter {
       return;
     }
 
-    localFileCache.addPersistedFilenameToMap(permanentFile.getName());
+    localFileCache.addPersistedFile(permanentFile);
 
     operationLogger.recordSuccess();
   }
@@ -138,7 +136,7 @@ final class LocalFileWriter {
     }
 
     long sum = 0;
-    Collection<File> files = FileUtil.listFiles(telemetryFolder, new String[] {"trn"}, false);
+    Collection<File> files = FileUtil.listTrnFiles(telemetryFolder);
     for (File file : files) {
       sum += file.length();
     }

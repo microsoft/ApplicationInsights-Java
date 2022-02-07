@@ -65,8 +65,8 @@ class LocalFileLoader {
   // Load ByteBuffer from persisted files on disk in FIFO order.
   @Nullable
   PersistedFile loadTelemetriesFromDisk() {
-    String filenameToBeLoaded = localFileCache.poll();
-    if (filenameToBeLoaded == null) {
+    File fileToBeLoaded = localFileCache.poll();
+    if (fileToBeLoaded == null) {
       return null;
     }
 
@@ -77,21 +77,19 @@ class LocalFileLoader {
     // response confirms it is sent successfully; otherwise, temp file will get renamed back to the
     // source file extension.
     File tempFile;
-    File sourceFile;
     try {
-      sourceFile = new File(telemetryFolder, filenameToBeLoaded);
-      if (!sourceFile.exists()) {
+      if (!fileToBeLoaded.exists()) {
         return null;
       }
 
       tempFile =
           new File(
-              telemetryFolder, FileUtil.getBaseName(filenameToBeLoaded) + TEMPORARY_FILE_EXTENSION);
-      FileUtil.moveFile(sourceFile, tempFile);
+              telemetryFolder, FileUtil.getBaseName(fileToBeLoaded) + TEMPORARY_FILE_EXTENSION);
+      FileUtil.moveFile(fileToBeLoaded, tempFile);
     } catch (IOException e) {
       operationLogger.recordFailure(
           "Failed to change "
-              + filenameToBeLoaded
+              + fileToBeLoaded.getAbsolutePath()
               + " to have "
               + TEMPORARY_FILE_EXTENSION
               + " extension: ",
@@ -176,7 +174,7 @@ class LocalFileLoader {
       }
     } else {
       // rename the temp file back to .trn source file extension
-      File sourceFile = new File(telemetryFolder, FileUtil.getBaseName(file.getName()) + ".trn");
+      File sourceFile = new File(telemetryFolder, FileUtil.getBaseName(file) + ".trn");
       try {
         FileUtil.moveFile(file, sourceFile);
       } catch (IOException ex) {
@@ -187,7 +185,7 @@ class LocalFileLoader {
       updateOperationLogger.recordSuccess();
 
       // add the source filename back to local file cache to be processed later.
-      localFileCache.addPersistedFilenameToMap(sourceFile.getName());
+      localFileCache.addPersistedFile(sourceFile);
     }
   }
 

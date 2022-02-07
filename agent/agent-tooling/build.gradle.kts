@@ -26,8 +26,6 @@ dependencies {
   implementation("net.bytebuddy:byte-buddy")
 
   implementation("commons-codec:commons-codec")
-  implementation("org.apache.commons:commons-lang3")
-  implementation("commons-io:commons-io")
   implementation("org.apache.commons:commons-text")
   // TODO (trask) this is probably still needed for above apache commons projects
   implementation("org.slf4j:jcl-over-slf4j")

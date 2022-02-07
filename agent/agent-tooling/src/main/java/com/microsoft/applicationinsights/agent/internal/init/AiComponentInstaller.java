@@ -280,7 +280,7 @@ class AiComponentInstaller {
     sdkNamePrefix.append(DiagnosticsHelper.rpIntegrationChar());
     if (SystemInformation.isWindows()) {
       sdkNamePrefix.append("w");
-    } else if (SystemInformation.isUnix()) {
+    } else if (SystemInformation.isLinux()) {
       sdkNamePrefix.append("l");
     } else {
       startupLogger.warn("could not detect os: {}", System.getProperty("os.name"));

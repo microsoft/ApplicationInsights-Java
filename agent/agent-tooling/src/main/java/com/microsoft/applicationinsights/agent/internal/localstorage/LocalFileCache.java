@@ -37,7 +37,7 @@ class LocalFileCache {
    * C# uses "User@processName" to identify each app, but Java can't rely on process name since it's
    * a system property that can be customized via the command line.
    */
-  private final Queue<String> persistedFilesCache = new ConcurrentLinkedDeque<>();
+  private final Queue<File> persistedFilesCache = new ConcurrentLinkedDeque<>();
 
   LocalFileCache(File folder) {
     List<File> files = sortPersistedFiles(folder);
@@ -45,26 +45,26 @@ class LocalFileCache {
     // re-processed.
     // this will avoid data loss in the case of app crashes and restarts.
     for (File file : files) {
-      persistedFilesCache.add(file.getName());
+      persistedFilesCache.add(file);
     }
   }
 
   // Track the newly persisted filename to the concurrent hashmap.
-  void addPersistedFilenameToMap(String filename) {
-    persistedFilesCache.add(filename);
+  void addPersistedFile(File file) {
+    persistedFilesCache.add(file);
   }
 
-  String poll() {
+  File poll() {
     return persistedFilesCache.poll();
   }
 
   // only used by tests
-  Queue<String> getPersistedFilesCache() {
+  Queue<File> getPersistedFilesCache() {
     return persistedFilesCache;
   }
 
   private static List<File> sortPersistedFiles(File folder) {
-    return FileUtil.listFiles(folder, new String[] {"trn"}, false).stream()
+    return FileUtil.listTrnFiles(folder).stream()
         .sorted(Comparator.comparing(File::lastModified))
         .collect(Collectors.toList());
   }

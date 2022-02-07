@@ -21,24 +21,30 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
+import static java.util.Arrays.asList;
+
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
+import java.util.Collections;
+import java.util.List;
 
-public class FileUtil {
+class FileUtil {
 
-  public static Collection<File> listFiles(File directory, String[] extensions, boolean recursive) {
-    return FileUtils.listFiles(directory, extensions, recursive);
+  static List<File> listTrnFiles(File directory) {
+    File[] files = directory.listFiles((dir, name) -> name.endsWith(".trn"));
+    return files == null ? Collections.emptyList() : asList(files);
   }
 
-  public static String getBaseName(String fileName) {
-    return FilenameUtils.getBaseName(fileName);
+  static String getBaseName(File file) {
+    String name = file.getName();
+    int index = name.lastIndexOf('.');
+    return index == -1 ? name : name.substring(0, index);
   }
 
-  public static void moveFile(File srcFile, File destFile) throws IOException {
-    FileUtils.moveFile(srcFile, destFile);
+  static void moveFile(File srcFile, File destFile) throws IOException {
+    if (!srcFile.renameTo(destFile)) {
+      throw new IOException("Unable to rename file '" + srcFile + "' to '" + destFile + "'");
+    }
   }
 
   private FileUtil() {}
