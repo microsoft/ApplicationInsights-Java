@@ -254,6 +254,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       return matcher.group(1);
     }
 
-    return "";
+    // it's better to send bad endpointUrl to Statsbeat for troubleshooting.
+    return endpointUrl;
   }
 }
