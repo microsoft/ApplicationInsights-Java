@@ -40,4 +40,6 @@ public class FileUtil {
   public static void moveFile(File srcFile, File destFile) throws IOException {
     FileUtils.moveFile(srcFile, destFile);
   }
+
+  private FileUtil() {}
 }
