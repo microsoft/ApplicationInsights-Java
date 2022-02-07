@@ -28,13 +28,13 @@ import com.azure.core.http.policy.HttpPipelinePolicy;
 import java.util.concurrent.atomic.AtomicLong;
 import reactor.core.publisher.Mono;
 
-public class StatsbeatHttpPipelinePolicy implements HttpPipelinePolicy {
+public class NetworkStatsbeatHttpPipelinePolicy implements HttpPipelinePolicy {
 
   private static final String INSTRUMENTATION_KEY_DATA = "instrumentationKey";
 
   private final NetworkStatsbeat networkStatsbeat;
 
-  public StatsbeatHttpPipelinePolicy(NetworkStatsbeat networkStatsbeat) {
+  public NetworkStatsbeatHttpPipelinePolicy(NetworkStatsbeat networkStatsbeat) {
     this.networkStatsbeat = networkStatsbeat;
   }
 

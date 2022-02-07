@@ -69,10 +69,10 @@ public class TelemetryChannelTest {
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(recordingHttpClient);
     LocalStorageSystem localStorageSystem = new LocalStorageSystem(tempFolder, null);
 
-    TelemetryPipeline telemetryPipeline =
-        new TelemetryPipeline(pipelineBuilder.build(), new URL(END_POINT_URL));
+    TelemetryByteBufferPipeline telemetryByteBufferPipeline =
+        new TelemetryByteBufferPipeline(pipelineBuilder.build(), new URL(END_POINT_URL));
     return new TelemetryItemPipeline(
-        telemetryPipeline, localStorageSystem.createTelemetryChannelListener());
+        telemetryByteBufferPipeline, localStorageSystem.createTelemetryChannelListener());
   }
 
   @Nullable

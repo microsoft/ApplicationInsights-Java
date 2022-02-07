@@ -32,6 +32,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,7 +40,7 @@ import java.util.Map;
 import java.util.Set;
 import reactor.core.publisher.Mono;
 
-public class TelemetryPipeline {
+public class TelemetryByteBufferPipeline {
 
   static final Set<Integer> REDIRECT_RESPONSE_CODES = new HashSet<>(asList(301, 302, 307, 308));
 
@@ -59,7 +60,7 @@ public class TelemetryPipeline {
             }
           });
 
-  public TelemetryPipeline(HttpPipeline pipeline, URL ingestionEndpointUrl) {
+  public TelemetryByteBufferPipeline(HttpPipeline pipeline, URL ingestionEndpointUrl) {
     this.pipeline = pipeline;
     this.ingestionEndpointUrl = ingestionEndpointUrl;
   }
@@ -87,8 +88,13 @@ public class TelemetryPipeline {
       CompletableResultCode result,
       int remainingRedirects) {
 
+    // Add instrumentation key to context to use in StatsbeatHttpPipelinePolicy
+    Map<Object, Object> contextKeyValues = new HashMap<>();
+    contextKeyValues.put("instrumentationKey", request.getInstrumentationKey());
+    contextKeyValues.put(Tracer.DISABLE_TRACING_KEY, true);
+
     pipeline
-        .send(request.createHttpRequest(), new Context(Tracer.DISABLE_TRACING_KEY, true))
+        .send(request.createHttpRequest(), Context.of(contextKeyValues))
         .subscribe(
             response ->
                 response

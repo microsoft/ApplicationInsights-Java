@@ -44,7 +44,7 @@ import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClien
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalStorageSystem;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalStorageUtils;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatHttpPipelinePolicy;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeatHttpPipelinePolicy;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.net.MalformedURLException;
@@ -241,15 +241,15 @@ public class TelemetryClient {
     HttpPipeline httpPipeline =
         LazyHttpClient.newHttpPipeLine(
             aadAuthentication,
-            new StatsbeatHttpPipelinePolicy(statsbeatModule.getNetworkStatsbeat()));
-    TelemetryPipeline telemetryPipeline =
-        new TelemetryPipeline(httpPipeline, endpointProvider.getIngestionEndpointUrl());
+            new NetworkStatsbeatHttpPipelinePolicy(statsbeatModule.getNetworkStatsbeat()));
+    TelemetryByteBufferPipeline telemetryByteBufferPipeline =
+        new TelemetryByteBufferPipeline(httpPipeline, endpointProvider.getIngestionEndpointUrl());
 
     TelemetryItemPipeline telemetryItemPipeline =
-        new TelemetryItemPipeline(telemetryPipeline, telemetryPipelineListener);
+        new TelemetryItemPipeline(telemetryByteBufferPipeline, telemetryPipelineListener);
 
     if (!readOnlyFileSystem) {
-      localStorageSystem.startSendingFromDisk(telemetryPipeline);
+      localStorageSystem.startSendingFromDisk(telemetryByteBufferPipeline);
     }
 
     return BatchSpanProcessor.builder(telemetryItemPipeline)
@@ -271,14 +271,15 @@ public class TelemetryClient {
           }
 
           HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(null);
-          TelemetryPipeline telemetryPipeline =
-              new TelemetryPipeline(httpPipeline, endpointProvider.getStatsbeatEndpointUrl());
+          TelemetryByteBufferPipeline telemetryByteBufferPipeline =
+              new TelemetryByteBufferPipeline(
+                  httpPipeline, endpointProvider.getStatsbeatEndpointUrl());
 
           TelemetryItemPipeline telemetryItemPipeline =
-              new TelemetryItemPipeline(telemetryPipeline, telemetryPipelineListener);
+              new TelemetryItemPipeline(telemetryByteBufferPipeline, telemetryPipelineListener);
 
           if (!readOnlyFileSystem) {
-            localStorageSystem.startSendingFromDisk(telemetryPipeline);
+            localStorageSystem.startSendingFromDisk(telemetryByteBufferPipeline);
           }
 
           statsbeatChannelBatcher =

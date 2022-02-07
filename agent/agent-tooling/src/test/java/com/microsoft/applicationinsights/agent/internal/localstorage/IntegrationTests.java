@@ -35,8 +35,8 @@ import com.azure.core.test.http.MockHttpResponse;
 import com.azure.core.util.Context;
 import com.microsoft.applicationinsights.agent.internal.common.TestUtils;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryByteBufferPipeline;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryItemPipeline;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipeline;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -95,11 +95,11 @@ public class IntegrationTests {
     localFileCache = new LocalFileCache(tempFolder);
     localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
 
-    TelemetryPipeline telemetryPipeline =
-        new TelemetryPipeline(pipelineBuilder.build(), new URL("http://foo.bar"));
+    TelemetryByteBufferPipeline telemetryByteBufferPipeline =
+        new TelemetryByteBufferPipeline(pipelineBuilder.build(), new URL("http://foo.bar"));
     telemetryChannel =
         new TelemetryItemPipeline(
-            telemetryPipeline,
+            telemetryByteBufferPipeline,
             new LocalStorageTelemetryPipelineListener(
                 new LocalFileWriter(localFileCache, tempFolder, null)));
   }

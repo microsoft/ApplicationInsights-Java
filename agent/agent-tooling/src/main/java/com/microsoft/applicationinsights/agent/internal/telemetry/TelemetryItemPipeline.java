@@ -62,11 +62,12 @@ public class TelemetryItemPipeline {
     return mapper;
   }
 
-  private final TelemetryPipeline channel;
+  private final TelemetryByteBufferPipeline channel;
   private final TelemetryPipelineListener listener;
 
   // e.g. construct with diagnostic listener and local storage listener
-  public TelemetryItemPipeline(TelemetryPipeline channel, TelemetryPipelineListener listener) {
+  public TelemetryItemPipeline(
+      TelemetryByteBufferPipeline channel, TelemetryPipelineListener listener) {
     this.channel = channel;
     this.listener = listener;
   }

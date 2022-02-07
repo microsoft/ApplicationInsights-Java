@@ -26,8 +26,8 @@ import static java.util.Collections.singletonList;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.telemetry.DiagnosticTelemetryPipelineListener;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryByteBufferPipeline;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipeline;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipelineListener;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.concurrent.Executors;
@@ -47,21 +47,24 @@ class LocalFileSender implements Runnable {
           ThreadPoolUtils.createDaemonThreadFactory(LocalFileLoader.class));
 
   private final LocalFileLoader localFileLoader;
-  private final TelemetryPipeline telemetryChannel;
+  private final TelemetryByteBufferPipeline telemetryChannel;
 
   private final TelemetryPipelineListener diagnosticListener =
       new DiagnosticTelemetryPipelineListener(
           "Sending telemetry to the ingestion service (retry from disk)");
 
-  static void start(LocalFileLoader localFileLoader, TelemetryPipeline telemetryPipeline) {
-    LocalFileSender localFileSender = new LocalFileSender(localFileLoader, telemetryPipeline);
+  static void start(
+      LocalFileLoader localFileLoader, TelemetryByteBufferPipeline telemetryByteBufferPipeline) {
+    LocalFileSender localFileSender =
+        new LocalFileSender(localFileLoader, telemetryByteBufferPipeline);
     scheduledExecutor.scheduleWithFixedDelay(
         localFileSender, INTERVAL_SECONDS, INTERVAL_SECONDS, TimeUnit.SECONDS);
   }
 
-  private LocalFileSender(LocalFileLoader localFileLoader, TelemetryPipeline telemetryPipeline) {
+  private LocalFileSender(
+      LocalFileLoader localFileLoader, TelemetryByteBufferPipeline telemetryByteBufferPipeline) {
     this.localFileLoader = localFileLoader;
-    this.telemetryChannel = telemetryPipeline;
+    this.telemetryChannel = telemetryByteBufferPipeline;
   }
 
   @Override

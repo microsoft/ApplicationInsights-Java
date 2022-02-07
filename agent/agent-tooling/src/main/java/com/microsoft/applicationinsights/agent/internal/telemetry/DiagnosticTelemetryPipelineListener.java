@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineListener {
 
-  private static final Class<?> FOR_CLASS = TelemetryPipeline.class;
+  private static final Class<?> FOR_CLASS = TelemetryByteBufferPipeline.class;
   private static final Logger logger = LoggerFactory.getLogger(FOR_CLASS);
 
   private final OperationLogger operationLogger;
