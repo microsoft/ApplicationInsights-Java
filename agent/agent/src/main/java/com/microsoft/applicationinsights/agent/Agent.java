@@ -41,8 +41,7 @@ public class Agent {
       return;
     }
 
-    // this is used to support -Dapplicationinsights.debug.startupProfiling=true
-    if (Boolean.parseBoolean(System.getProperty("applicationinsights.debug.startupProfiling"))) {
+    if (Boolean.getBoolean("applicationinsights.debug.startupProfiling")) {
       StartupProfiler.start();
     }
 
