@@ -63,6 +63,11 @@ tasks {
       disable("InlineMeSuggester")
       disable("DoNotCallSuggester")
 
+      // needed temporarily while hosting azure-monitor-opentelemetry-exporter in this repo
+      disable("MissingSummary")
+      disable("UnnecessaryDefaultInEnumSwitch")
+      disable("InconsistentOverloads")
+
       if (name.contains("Jmh") || name.contains("Test")) {
         disable("HashCodeToString")
         disable("MemberName")
