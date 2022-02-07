@@ -3,24 +3,34 @@ package com.microsoft.applicationinsights.agent.internal.telemetry;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.applicationinsights.agent.internal.common.NetworkFriendlyExceptions;
 import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineListener {
 
+  private static final Class<?> FOR_CLASS = TelemetryPipeline.class;
+  private static final Logger logger = LoggerFactory.getLogger(FOR_CLASS);
+
   private final OperationLogger operationLogger;
+
+  private final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
   // e.g. "Sending telemetry to the ingestion service"
   public DiagnosticTelemetryPipelineListener(String operation) {
-    operationLogger = new OperationLogger(TelemetryPipeline.class, operation);
+    operationLogger = new OperationLogger(FOR_CLASS, operation);
   }
 
   @Override
   public void onResponse(
       int responseCode,
       String responseBody,
+      String requestHost,
       List<ByteBuffer> requestBody,
       String instrumentationKey) {
     switch (responseCode) {
@@ -55,10 +65,19 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
   }
 
   @Override
-  public void onError(
-      String reason, Throwable error, List<ByteBuffer> requestBody, String instrumentationKey) {
-    // FIXME (trask) handle one time friendly network error
-    operationLogger.recordFailure("Error sending telemetry items: " + error.getMessage(), error);
+  public void onException(
+      String reason,
+      Throwable throwable,
+      String requestHost,
+      List<ByteBuffer> requestBody,
+      String instrumentationKey) {
+
+    if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
+        throwable, requestHost, friendlyExceptionThrown, logger)) {
+      operationLogger.recordFailure(reason, throwable);
+    }
+
+    operationLogger.recordFailure(reason, throwable);
   }
 
   private static String getErrorMessageFromPartialSuccessResponse(String body) {

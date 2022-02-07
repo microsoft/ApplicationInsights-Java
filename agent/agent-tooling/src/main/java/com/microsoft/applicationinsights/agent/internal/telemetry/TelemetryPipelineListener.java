@@ -10,11 +10,16 @@ public interface TelemetryPipelineListener {
   void onResponse(
       int responseCode,
       String responseBody,
+      String requestHost,
       List<ByteBuffer> requestBody,
       String instrumentationKey);
 
-  void onError(
-      String reason, Throwable error, List<ByteBuffer> requestBody, String instrumentationKey);
+  void onException(
+      String reason,
+      Throwable error,
+      String requestHost,
+      List<ByteBuffer> requestBody,
+      String instrumentationKey);
 
   static TelemetryPipelineListener composite(TelemetryPipelineListener... delegates) {
     return new CompositeTelemetryPipelineListener(asList(delegates));
@@ -36,18 +41,24 @@ public interface TelemetryPipelineListener {
     public void onResponse(
         int responseCode,
         String responseBody,
+        String requestHost,
         List<ByteBuffer> requestBody,
         String instrumentationKey) {
       for (TelemetryPipelineListener delegate : delegates) {
-        delegate.onResponse(responseCode, responseBody, requestBody, instrumentationKey);
+        delegate.onResponse(
+            responseCode, responseBody, requestHost, requestBody, instrumentationKey);
       }
     }
 
     @Override
-    public void onError(
-        String reason, Throwable error, List<ByteBuffer> requestBody, String instrumentationKey) {
+    public void onException(
+        String reason,
+        Throwable error,
+        String requestHost,
+        List<ByteBuffer> requestBody,
+        String instrumentationKey) {
       for (TelemetryPipelineListener delegate : delegates) {
-        delegate.onError(reason, error, requestBody, instrumentationKey);
+        delegate.onException(reason, error, requestHost, requestBody, instrumentationKey);
       }
     }
   }
@@ -60,11 +71,16 @@ public interface TelemetryPipelineListener {
     public void onResponse(
         int responseCode,
         String responseBody,
+        String requestHost,
         List<ByteBuffer> requestBody,
         String instrumentationKey) {}
 
     @Override
-    public void onError(
-        String reason, Throwable error, List<ByteBuffer> requestBody, String instrumentationKey) {}
+    public void onException(
+        String reason,
+        Throwable error,
+        String requestHost,
+        List<ByteBuffer> requestBody,
+        String instrumentationKey) {}
   }
 }

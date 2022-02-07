@@ -51,8 +51,12 @@ public class TelemetryPipeline {
     try {
       return sendInternal(url, telemetry, instrumentationKey, listener);
     } catch (Throwable t) {
-      listener.onError(
-          "Error sending telemetry items: " + t.getMessage(), t, telemetry, instrumentationKey);
+      listener.onException(
+          "Error sending telemetry items: " + t.getMessage(),
+          t,
+          url.getHost(),
+          telemetry,
+          instrumentationKey);
       return CompletableResultCode.ofFailure();
     }
   }
@@ -98,7 +102,11 @@ public class TelemetryPipeline {
                     .subscribe(
                         body -> {
                           listener.onResponse(
-                              response.getStatusCode(), body, telemetry, instrumentationKey);
+                              response.getStatusCode(),
+                              body,
+                              url.getHost(), // TODO (trask) should be final redirect
+                              telemetry,
+                              instrumentationKey);
                           if (response.getStatusCode() == 200) {
                             result.succeed();
                           } else {
@@ -106,17 +114,19 @@ public class TelemetryPipeline {
                           }
                         },
                         throwable -> {
-                          listener.onError(
+                          listener.onException(
                               "Error retrieving response body: " + throwable,
                               throwable,
+                              url.getHost(), // TODO (trask) should be final redirect
                               telemetry,
                               instrumentationKey);
                           result.fail();
                         }),
             throwable -> {
-              listener.onError(
+              listener.onException(
                   "Error sending telemetry items" + throwable,
                   throwable,
+                  url.getHost(), // TODO (trask) should be final redirect
                   telemetry,
                   instrumentationKey);
               result.fail();
