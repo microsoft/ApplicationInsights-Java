@@ -77,6 +77,7 @@ final class StartupProfiler {
     }
 
     @Override
+    @SuppressWarnings("SystemOut")
     public void run() {
       long start = System.currentTimeMillis();
       while (System.currentTimeMillis() - start < MINUTES.toMillis(10)) {
