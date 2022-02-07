@@ -269,7 +269,7 @@ public class LocalFileLoaderTests {
           telemetryPipeline.send(
               singletonList(persistedFile.rawBytes),
               persistedFile.instrumentationKey,
-              new LocalStorageTelemetryPipelineListener2(localFileLoader, persistedFile.file));
+              new LocalFileSenderTelemetryPipelineListener(localFileLoader, persistedFile.file));
       completableResultCode.join(10, SECONDS);
       assertThat(completableResultCode.isSuccess()).isEqualTo(true);
 
@@ -320,7 +320,7 @@ public class LocalFileLoaderTests {
           telemetryPipeline.send(
               singletonList(persistedFile.rawBytes),
               persistedFile.instrumentationKey,
-              new LocalStorageTelemetryPipelineListener2(localFileLoader, persistedFile.file));
+              new LocalFileSenderTelemetryPipelineListener(localFileLoader, persistedFile.file));
       completableResultCode.join(10, SECONDS);
       assertThat(completableResultCode.isSuccess()).isEqualTo(false);
     }

@@ -5,12 +5,12 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipel
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipelineResponse;
 import java.io.File;
 
-class LocalStorageTelemetryPipelineListener2 implements TelemetryPipelineListener {
+class LocalFileSenderTelemetryPipelineListener implements TelemetryPipelineListener {
 
   private final LocalFileLoader localFileLoader;
   private final File file;
 
-  LocalStorageTelemetryPipelineListener2(LocalFileLoader localFileLoader, File file) {
+  LocalFileSenderTelemetryPipelineListener(LocalFileLoader localFileLoader, File file) {
     this.localFileLoader = localFileLoader;
     this.file = file;
   }

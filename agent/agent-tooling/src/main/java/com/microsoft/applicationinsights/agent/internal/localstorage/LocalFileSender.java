@@ -80,7 +80,7 @@ class LocalFileSender implements Runnable {
                 persistedFile.instrumentationKey,
                 TelemetryPipelineListener.composite(
                     diagnosticListener,
-                    new LocalStorageTelemetryPipelineListener2(
+                    new LocalFileSenderTelemetryPipelineListener(
                         localFileLoader, persistedFile.file)));
         resultCode.join(30, TimeUnit.SECONDS); // wait max 30 seconds for request to be completed.
       }
