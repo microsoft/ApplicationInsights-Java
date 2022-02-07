@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-import org.apache.commons.io.FileUtils;
 
 class LocalFileCache {
 
@@ -65,9 +63,8 @@ class LocalFileCache {
     return persistedFilesCache;
   }
 
-  @Nullable
   private static List<File> sortPersistedFiles(File folder) {
-    return FileUtils.listFiles(folder, new String[] {"trn"}, false).stream()
+    return FileUtil.listFiles(folder, new String[] {"trn"}, false).stream()
         .sorted(Comparator.comparing(File::lastModified))
         .collect(Collectors.toList());
   }

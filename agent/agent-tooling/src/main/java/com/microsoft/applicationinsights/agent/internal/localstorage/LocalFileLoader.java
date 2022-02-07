@@ -32,8 +32,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 
 /** This class manages loading a list of {@link ByteBuffer} from the disk. */
 class LocalFileLoader {
@@ -88,9 +86,8 @@ class LocalFileLoader {
 
       tempFile =
           new File(
-              telemetryFolder,
-              FilenameUtils.getBaseName(filenameToBeLoaded) + TEMPORARY_FILE_EXTENSION);
-      FileUtils.moveFile(sourceFile, tempFile);
+              telemetryFolder, FileUtil.getBaseName(filenameToBeLoaded) + TEMPORARY_FILE_EXTENSION);
+      FileUtil.moveFile(sourceFile, tempFile);
     } catch (IOException e) {
       operationLogger.recordFailure(
           "Failed to change "
@@ -179,10 +176,9 @@ class LocalFileLoader {
       }
     } else {
       // rename the temp file back to .trn source file extension
-      File sourceFile =
-          new File(telemetryFolder, FilenameUtils.getBaseName(file.getName()) + ".trn");
+      File sourceFile = new File(telemetryFolder, FileUtil.getBaseName(file.getName()) + ".trn");
       try {
-        FileUtils.moveFile(file, sourceFile);
+        FileUtil.moveFile(file, sourceFile);
       } catch (IOException ex) {
         updateOperationLogger.recordFailure(
             "Fail to rename " + file.getName() + " to have a .trn extension.", ex);

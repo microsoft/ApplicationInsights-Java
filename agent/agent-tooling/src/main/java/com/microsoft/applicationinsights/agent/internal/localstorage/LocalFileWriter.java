@@ -33,8 +33,6 @@ import java.nio.channels.FileChannel;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 
 /** This class manages writing a list of {@link ByteBuffer} to the file system. */
 final class LocalFileWriter {
@@ -94,8 +92,8 @@ final class LocalFileWriter {
       String filename = tempFile.getName();
       File sourceFile = new File(telemetryFolder, filename);
       permanentFile =
-          new File(telemetryFolder, FilenameUtils.getBaseName(filename) + PERMANENT_FILE_EXTENSION);
-      FileUtils.moveFile(sourceFile, permanentFile);
+          new File(telemetryFolder, FileUtil.getBaseName(filename) + PERMANENT_FILE_EXTENSION);
+      FileUtil.moveFile(sourceFile, permanentFile);
     } catch (IOException e) {
       operationLogger.recordFailure(
           "Fail to change "
@@ -140,7 +138,7 @@ final class LocalFileWriter {
     }
 
     long sum = 0;
-    Collection<File> files = FileUtils.listFiles(telemetryFolder, new String[] {"trn"}, false);
+    Collection<File> files = FileUtil.listFiles(telemetryFolder, new String[] {"trn"}, false);
     for (File file : files) {
       sum += file.length();
     }
