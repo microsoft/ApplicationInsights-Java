@@ -1,9 +1,9 @@
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipelineListener;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipelineRequest;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipelineResponse;
 import java.io.File;
-import java.nio.ByteBuffer;
-import java.util.List;
 
 class LocalStorageTelemetryPipelineListener2 implements TelemetryPipelineListener {
 
@@ -16,11 +16,8 @@ class LocalStorageTelemetryPipelineListener2 implements TelemetryPipelineListene
   }
 
   @Override
-  public void onResponse(
-      int responseCode,
-      String responseBody,
-      List<ByteBuffer> requestBody,
-      String instrumentationKey) {
+  public void onResponse(TelemetryPipelineRequest request, TelemetryPipelineResponse response) {
+    int responseCode = response.getStatusCode();
     if (responseCode == 200) {
       localFileLoader.updateProcessedFileStatus(true, file);
     } else {
@@ -30,8 +27,8 @@ class LocalStorageTelemetryPipelineListener2 implements TelemetryPipelineListene
   }
 
   @Override
-  public void onError(
-      String reason, Throwable error, List<ByteBuffer> requestBody, String instrumentationKey) {
+  public void onException(
+      TelemetryPipelineRequest request, String errorMessage, Throwable throwable) {
     localFileLoader.updateProcessedFileStatus(false, file);
   }
 }

@@ -61,7 +61,7 @@ final class LocalFileWriter {
     this.nonessentialStatsbeat = nonessentialStatsbeat;
   }
 
-  void writeToDisk(List<ByteBuffer> buffers, String instrumentationKey) {
+  void writeToDisk(String instrumentationKey, List<ByteBuffer> buffers) {
     long size = getTotalSizeOfPersistedFiles(telemetryFolder);
     if (size >= MAX_FILE_SIZE_IN_BYTES) {
       operationLogger.recordFailure(

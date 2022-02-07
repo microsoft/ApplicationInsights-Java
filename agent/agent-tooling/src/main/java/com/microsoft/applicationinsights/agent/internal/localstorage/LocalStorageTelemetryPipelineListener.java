@@ -3,9 +3,9 @@ package com.microsoft.applicationinsights.agent.internal.localstorage;
 import static java.util.Arrays.asList;
 
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipelineListener;
-import java.nio.ByteBuffer;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipelineRequest;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipelineResponse;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 class LocalStorageTelemetryPipelineListener implements TelemetryPipelineListener {
@@ -28,19 +28,15 @@ class LocalStorageTelemetryPipelineListener implements TelemetryPipelineListener
   }
 
   @Override
-  public void onResponse(
-      int responseCode,
-      String responseBody,
-      List<ByteBuffer> requestBody,
-      String instrumentationKey) {
-    if (RETRYABLE_CODES.contains(responseCode)) {
-      localFileWriter.writeToDisk(requestBody, instrumentationKey);
+  public void onResponse(TelemetryPipelineRequest request, TelemetryPipelineResponse response) {
+    if (RETRYABLE_CODES.contains(response.getStatusCode())) {
+      localFileWriter.writeToDisk(request.getInstrumentationKey(), request.getTelemetry());
     }
   }
 
   @Override
-  public void onError(
-      String reason, Throwable error, List<ByteBuffer> requestBody, String instrumentationKey) {
-    localFileWriter.writeToDisk(requestBody, instrumentationKey);
+  public void onException(
+      TelemetryPipelineRequest request, String errorMessage, Throwable throwable) {
+    localFileWriter.writeToDisk(request.getInstrumentationKey(), request.getTelemetry());
   }
 }

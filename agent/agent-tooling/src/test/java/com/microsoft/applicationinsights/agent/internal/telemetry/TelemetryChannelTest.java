@@ -28,12 +28,10 @@ import com.azure.core.http.HttpHeaders;
 import com.azure.core.http.HttpPipelineBuilder;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
-import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.core.util.FluxUtil;
 import com.microsoft.applicationinsights.agent.internal.MockHttpResponse;
 import com.microsoft.applicationinsights.agent.internal.common.TestUtils;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.httpclient.RedirectPolicy;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalStorageSystem;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
@@ -68,13 +66,7 @@ public class TelemetryChannelTest {
   @TempDir File tempFolder;
 
   private TelemetryItemPipeline getTelemetryChannel() throws MalformedURLException {
-    List<HttpPipelinePolicy> policies = new ArrayList<>();
-
-    policies.add(new RedirectPolicy(true));
-    HttpPipelineBuilder pipelineBuilder =
-        new HttpPipelineBuilder()
-            .policies(policies.toArray(new HttpPipelinePolicy[0]))
-            .httpClient(recordingHttpClient);
+    HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(recordingHttpClient);
     LocalStorageSystem localStorageSystem = new LocalStorageSystem(tempFolder, null);
 
     TelemetryPipeline telemetryPipeline =

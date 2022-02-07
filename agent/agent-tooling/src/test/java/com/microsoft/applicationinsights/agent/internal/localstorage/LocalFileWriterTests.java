@@ -92,7 +92,7 @@ public class LocalFileWriterTests {
     assertThat(byteBuffers.size()).isEqualTo(10);
 
     LocalFileWriter writer = new LocalFileWriter(localFileCache, tempFolder, nonessentialStatsbeat);
-    writer.writeToDisk(byteBuffers, "00000000-0000-0000-0000-0FEEDDADBEEF");
+    writer.writeToDisk("00000000-0000-0000-0000-0FEEDDADBEEF", byteBuffers);
     assertThat(nonessentialStatsbeat.getWriteFailureCount()).isEqualTo(0);
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(1);
   }
@@ -100,7 +100,7 @@ public class LocalFileWriterTests {
   @Test
   public void testWriteRawByteArray() {
     LocalFileWriter writer = new LocalFileWriter(localFileCache, tempFolder, nonessentialStatsbeat);
-    writer.writeToDisk(singletonList(buffer), "00000000-0000-0000-0000-0FEEDDADBEEF");
+    writer.writeToDisk("00000000-0000-0000-0000-0FEEDDADBEEF", singletonList(buffer));
     assertThat(nonessentialStatsbeat.getWriteFailureCount()).isEqualTo(0);
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(1);
   }
@@ -118,8 +118,8 @@ public class LocalFileWriterTests {
               LocalFileWriter writer =
                   new LocalFileWriter(localFileCache, tempFolder, nonessentialStatsbeat);
               writer.writeToDisk(
-                  singletonList(ByteBuffer.wrap(telemetry.getBytes(UTF_8))),
-                  "00000000-0000-0000-0000-0FEEDDADBEEF");
+                  "00000000-0000-0000-0000-0FEEDDADBEEF",
+                  singletonList(ByteBuffer.wrap(telemetry.getBytes(UTF_8))));
             }
           });
     }

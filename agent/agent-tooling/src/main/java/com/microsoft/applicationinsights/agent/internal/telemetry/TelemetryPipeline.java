@@ -21,116 +21,129 @@
 
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
-import com.azure.core.http.HttpMethod;
+import static java.util.Arrays.asList;
+
 import com.azure.core.http.HttpPipeline;
-import com.azure.core.http.HttpRequest;
+import com.azure.core.http.HttpResponse;
 import com.azure.core.util.Context;
 import com.azure.core.util.tracing.Tracer;
-import com.microsoft.applicationinsights.agent.internal.httpclient.RedirectPolicy;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import reactor.core.publisher.Flux;
+import java.util.Set;
 import reactor.core.publisher.Mono;
 
 public class TelemetryPipeline {
 
-  private final HttpPipeline pipeline;
-  private final URL url;
+  static final Set<Integer> REDIRECT_RESPONSE_CODES = new HashSet<>(asList(301, 302, 307, 308));
 
-  public TelemetryPipeline(HttpPipeline pipeline, URL url) {
+  // Based on Stamp specific redirects design doc
+  private static final int MAX_REDIRECTS = 10;
+
+  private final HttpPipeline pipeline;
+  private final URL ingestionEndpointUrl;
+
+  // key is instrumentationKey, value is redirectUrl
+  private final Map<String, URL> redirectCache =
+      Collections.synchronizedMap(
+          new LinkedHashMap<String, URL>() {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry eldest) {
+              return size() > 100;
+            }
+          });
+
+  public TelemetryPipeline(HttpPipeline pipeline, URL ingestionEndpointUrl) {
     this.pipeline = pipeline;
-    this.url = url;
+    this.ingestionEndpointUrl = ingestionEndpointUrl;
   }
 
   public CompletableResultCode send(
       List<ByteBuffer> telemetry, String instrumentationKey, TelemetryPipelineListener listener) {
+
+    URL url = redirectCache.getOrDefault(instrumentationKey, ingestionEndpointUrl);
+    TelemetryPipelineRequest request =
+        new TelemetryPipelineRequest(url, instrumentationKey, telemetry);
+
     try {
-      return sendInternal(url, telemetry, instrumentationKey, listener);
+      CompletableResultCode result = new CompletableResultCode();
+      sendInternal(request, listener, result, MAX_REDIRECTS);
+      return result;
     } catch (Throwable t) {
-      listener.onException(
-          "Error sending telemetry items: " + t.getMessage(),
-          t,
-          url.getHost(),
-          telemetry,
-          instrumentationKey);
+      listener.onException(request, "Error sending telemetry items: " + t.getMessage(), t);
       return CompletableResultCode.ofFailure();
     }
   }
 
-  private CompletableResultCode sendInternal(
-      URL url,
-      List<ByteBuffer> telemetry,
-      String instrumentationKey,
-      TelemetryPipelineListener listener) {
-
-    HttpRequest request = new HttpRequest(HttpMethod.POST, url);
-
-    request.setBody(Flux.fromIterable(telemetry));
-    int contentLength = telemetry.stream().mapToInt(ByteBuffer::limit).sum();
-
-    request.setHeader("Content-Length", Integer.toString(contentLength));
-
-    // need to suppress the default User-Agent "ReactorNetty/dev", otherwise Breeze ingestion
-    // service will put that
-    // User-Agent header into the client_Browser field for all telemetry that doesn't explicitly set
-    // it's own
-    // UserAgent (ideally Breeze would only have this behavior for ingestion directly from browsers)
-    // TODO(trask)
-    //  not setting User-Agent header at all would be a better option, but haven't figured out how
-    // to do that yet
-    request.setHeader("User-Agent", "");
-    request.setHeader("Content-Encoding", "gzip");
-
-    CompletableResultCode result = new CompletableResultCode();
-
-    // Add instrumentation key to context to use in redirectPolicy
-    Map<Object, Object> contextKeyValues = new HashMap<>();
-    contextKeyValues.put(RedirectPolicy.INSTRUMENTATION_KEY, instrumentationKey);
-    contextKeyValues.put(Tracer.DISABLE_TRACING_KEY, true);
+  private void sendInternal(
+      TelemetryPipelineRequest request,
+      TelemetryPipelineListener listener,
+      CompletableResultCode result,
+      int remainingRedirects) {
 
     pipeline
-        .send(request, Context.of(contextKeyValues))
+        .send(request.createHttpRequest(), new Context(Tracer.DISABLE_TRACING_KEY, true))
         .subscribe(
             response ->
                 response
                     .getBodyAsString()
                     .switchIfEmpty(Mono.just(""))
                     .subscribe(
-                        body -> {
-                          listener.onResponse(
-                              response.getStatusCode(),
-                              body,
-                              url.getHost(), // TODO (trask) should be final redirect
-                              telemetry,
-                              instrumentationKey);
-                          if (response.getStatusCode() == 200) {
-                            result.succeed();
-                          } else {
-                            result.fail();
-                          }
-                        },
+                        responseBody ->
+                            onResponseBody(
+                                request,
+                                response,
+                                responseBody,
+                                listener,
+                                result,
+                                remainingRedirects),
                         throwable -> {
                           listener.onException(
-                              "Error retrieving response body: " + throwable,
-                              throwable,
-                              url.getHost(), // TODO (trask) should be final redirect
-                              telemetry,
-                              instrumentationKey);
+                              request, "Error retrieving response body: " + throwable, throwable);
                           result.fail();
                         }),
             throwable -> {
-              listener.onException(
-                  "Error sending telemetry items" + throwable,
-                  throwable,
-                  url.getHost(), // TODO (trask) should be final redirect
-                  telemetry,
-                  instrumentationKey);
+              listener.onException(request, "Error sending telemetry items" + throwable, throwable);
               result.fail();
             });
-    return result;
+  }
+
+  private void onResponseBody(
+      TelemetryPipelineRequest request,
+      HttpResponse response,
+      String responseBody,
+      TelemetryPipelineListener listener,
+      CompletableResultCode result,
+      int remainingRedirects) {
+
+    int responseCode = response.getStatusCode();
+
+    if (REDIRECT_RESPONSE_CODES.contains(responseCode) && remainingRedirects > 0) {
+      String location = response.getHeaderValue("Location");
+      URL locationUrl;
+      try {
+        locationUrl = new URL(location);
+      } catch (MalformedURLException e) {
+        listener.onException(request, "Invalid redirect: " + location, e);
+        return;
+      }
+      redirectCache.put(request.getInstrumentationKey(), locationUrl);
+      request.setUrl(locationUrl);
+      sendInternal(request, listener, result, remainingRedirects - 1);
+      return;
+    }
+
+    listener.onResponse(request, new TelemetryPipelineResponse(responseCode, responseBody));
+    if (responseCode == 200) {
+      result.succeed();
+    } else {
+      result.fail();
+    }
   }
 }

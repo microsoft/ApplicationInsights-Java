@@ -187,7 +187,7 @@ public class LocalFileLoaderTests {
     String text = "hello world";
     LocalFileCache cache = new LocalFileCache(tempFolder);
     LocalFileWriter writer = new LocalFileWriter(cache, tempFolder, null);
-    writer.writeToDisk(singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))), INSTRUMENTATION_KEY);
+    writer.writeToDisk(INSTRUMENTATION_KEY, singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))));
 
     LocalFileLoader loader = new LocalFileLoader(cache, tempFolder, null);
     LocalFileLoader.PersistedFile persistedFile = loader.loadTelemetriesFromDisk();
@@ -217,7 +217,7 @@ public class LocalFileLoaderTests {
     byte[] result = byteArrayOutputStream.toByteArray();
     LocalFileCache cache = new LocalFileCache(tempFolder);
     LocalFileWriter writer = new LocalFileWriter(cache, tempFolder, null);
-    writer.writeToDisk(singletonList(ByteBuffer.wrap(result)), INSTRUMENTATION_KEY);
+    writer.writeToDisk(INSTRUMENTATION_KEY, singletonList(ByteBuffer.wrap(result)));
 
     // read gzipped byte[] from disk
     LocalFileLoader loader = new LocalFileLoader(cache, tempFolder, null);
@@ -252,7 +252,7 @@ public class LocalFileLoaderTests {
     // persist 10 files to disk
     for (int i = 0; i < 10; i++) {
       localFileWriter.writeToDisk(
-          singletonList(ByteBuffer.wrap("hello world".getBytes(UTF_8))), INSTRUMENTATION_KEY);
+          INSTRUMENTATION_KEY, singletonList(ByteBuffer.wrap("hello world".getBytes(UTF_8))));
     }
 
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(10);
@@ -303,7 +303,7 @@ public class LocalFileLoaderTests {
     // persist 10 files to disk
     for (int i = 0; i < 10; i++) {
       localFileWriter.writeToDisk(
-          singletonList(ByteBuffer.wrap("hello world".getBytes(UTF_8))), INSTRUMENTATION_KEY);
+          INSTRUMENTATION_KEY, singletonList(ByteBuffer.wrap("hello world".getBytes(UTF_8))));
     }
 
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(10);

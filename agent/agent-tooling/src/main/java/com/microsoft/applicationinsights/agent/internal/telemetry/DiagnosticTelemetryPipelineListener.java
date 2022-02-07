@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.agent.internal.common.NetworkFriendlyExceptions;
 import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -27,24 +26,27 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
   }
 
   @Override
-  public void onResponse(
-      int responseCode,
-      String responseBody,
-      String requestHost,
-      List<ByteBuffer> requestBody,
-      String instrumentationKey) {
-    switch (responseCode) {
+  public void onResponse(TelemetryPipelineRequest request, TelemetryPipelineResponse response) {
+    switch (response.getStatusCode()) {
       case 200: // SUCCESS
         operationLogger.recordSuccess();
         break;
       case 206: // PARTIAL CONTENT, Breeze-specific: PARTIAL SUCCESS
-        operationLogger.recordFailure(getErrorMessageFromPartialSuccessResponse(responseBody));
+        operationLogger.recordFailure(
+            getErrorMessageFromPartialSuccessResponse(response.getBody()));
+        break;
+      case 301:
+      case 302:
+      case 307:
+      case 308:
+        operationLogger.recordFailure("Too many redirects");
         break;
       case 401: // breeze returns if aad enabled and no authentication token provided
       case 403: // breeze returns if aad enabled or disabled (both cases) and
         // wrong/expired credentials provided
         operationLogger.recordFailure(
-            getErrorMessageFromCredentialRelatedResponse(responseCode, responseBody));
+            getErrorMessageFromCredentialRelatedResponse(
+                response.getStatusCode(), response.getBody()));
         break;
       case 408: // REQUEST TIMEOUT
       case 429: // TOO MANY REQUESTS
@@ -52,7 +54,7 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
       case 503: // SERVICE UNAVAILABLE
         operationLogger.recordFailure(
             "received response code "
-                + responseCode
+                + response.getStatusCode()
                 + " (telemetry will be stored to disk and retried later)");
         break;
       case 439: // Breeze-specific: THROTTLED OVER EXTENDED TIME
@@ -60,20 +62,15 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
         operationLogger.recordFailure("received response code 439 (throttled over extended time)");
         break;
       default:
-        operationLogger.recordFailure("received response code: " + responseCode);
+        operationLogger.recordFailure("received response code: " + response.getStatusCode());
     }
   }
 
   @Override
-  public void onException(
-      String reason,
-      Throwable throwable,
-      String requestHost,
-      List<ByteBuffer> requestBody,
-      String instrumentationKey) {
+  public void onException(TelemetryPipelineRequest request, String reason, Throwable throwable) {
 
     if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
-        throwable, requestHost, friendlyExceptionThrown, logger)) {
+        throwable, request.getUrl().toString(), friendlyExceptionThrown, logger)) {
       operationLogger.recordFailure(reason, throwable);
     }
 
@@ -98,18 +95,19 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
     return message.toString();
   }
 
-  private static String getErrorMessageFromCredentialRelatedResponse(int statusCode, String body) {
+  private static String getErrorMessageFromCredentialRelatedResponse(
+      int responseCode, String responseBody) {
     JsonNode jsonNode;
     try {
-      jsonNode = new ObjectMapper().readTree(body);
+      jsonNode = new ObjectMapper().readTree(responseBody);
     } catch (JsonProcessingException e) {
       return "ingestion service returned "
-          + statusCode
+          + responseCode
           + ", but could not parse response as json: "
-          + body;
+          + responseBody;
     }
     String action =
-        statusCode == 401
+        responseCode == 401
             ? ". Please provide Azure Active Directory credentials"
             : ". Please check your Azure Active Directory credentials, they might be incorrect or expired";
     List<JsonNode> errors = new ArrayList<>();

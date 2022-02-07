@@ -241,7 +241,6 @@ public class TelemetryClient {
     HttpPipeline httpPipeline =
         LazyHttpClient.newHttpPipeLine(
             aadAuthentication,
-            true,
             new StatsbeatHttpPipelinePolicy(statsbeatModule.getNetworkStatsbeat()));
     TelemetryPipeline telemetryPipeline =
         new TelemetryPipeline(httpPipeline, endpointProvider.getIngestionEndpointUrl());
@@ -271,7 +270,7 @@ public class TelemetryClient {
             telemetryPipelineListener = localStorageSystem.createTelemetryChannelListener();
           }
 
-          HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(null, true, null);
+          HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(null);
           TelemetryPipeline telemetryPipeline =
               new TelemetryPipeline(httpPipeline, endpointProvider.getStatsbeatEndpointUrl());
 

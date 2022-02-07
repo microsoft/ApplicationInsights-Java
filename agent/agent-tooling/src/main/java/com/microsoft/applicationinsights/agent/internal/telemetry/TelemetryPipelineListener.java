@@ -2,24 +2,14 @@ package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import static java.util.Arrays.asList;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 
 public interface TelemetryPipelineListener {
 
-  void onResponse(
-      int responseCode,
-      String responseBody,
-      String requestHost,
-      List<ByteBuffer> requestBody,
-      String instrumentationKey);
+  void onResponse(TelemetryPipelineRequest request, TelemetryPipelineResponse response);
 
   void onException(
-      String reason,
-      Throwable error,
-      String requestHost,
-      List<ByteBuffer> requestBody,
-      String instrumentationKey);
+      TelemetryPipelineRequest request, String errorMessage, Throwable throwable);
 
   static TelemetryPipelineListener composite(TelemetryPipelineListener... delegates) {
     return new CompositeTelemetryPipelineListener(asList(delegates));
@@ -38,27 +28,17 @@ public interface TelemetryPipelineListener {
     }
 
     @Override
-    public void onResponse(
-        int responseCode,
-        String responseBody,
-        String requestHost,
-        List<ByteBuffer> requestBody,
-        String instrumentationKey) {
+    public void onResponse(TelemetryPipelineRequest request, TelemetryPipelineResponse response) {
       for (TelemetryPipelineListener delegate : delegates) {
-        delegate.onResponse(
-            responseCode, responseBody, requestHost, requestBody, instrumentationKey);
+        delegate.onResponse(request, response);
       }
     }
 
     @Override
     public void onException(
-        String reason,
-        Throwable error,
-        String requestHost,
-        List<ByteBuffer> requestBody,
-        String instrumentationKey) {
+        TelemetryPipelineRequest request, String errorMessage, Throwable throwable) {
       for (TelemetryPipelineListener delegate : delegates) {
-        delegate.onException(reason, error, requestHost, requestBody, instrumentationKey);
+        delegate.onException(request, errorMessage, throwable);
       }
     }
   }
@@ -68,19 +48,10 @@ public interface TelemetryPipelineListener {
     static final TelemetryPipelineListener INSTANCE = new NoopTelemetryPipelineListener();
 
     @Override
-    public void onResponse(
-        int responseCode,
-        String responseBody,
-        String requestHost,
-        List<ByteBuffer> requestBody,
-        String instrumentationKey) {}
+    public void onResponse(TelemetryPipelineRequest request, TelemetryPipelineResponse response) {}
 
     @Override
     public void onException(
-        String reason,
-        Throwable error,
-        String requestHost,
-        List<ByteBuffer> requestBody,
-        String instrumentationKey) {}
+        TelemetryPipelineRequest request, String errorMessage, Throwable throwable) {}
   }
 }
