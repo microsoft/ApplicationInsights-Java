@@ -316,12 +316,14 @@
     <module name="NonEmptyAtclauseDescription"/>
     <module name="InvalidJavadocPosition"/>
     <module name="JavadocTagContinuationIndentation"/>
-    <module name="SummaryJavadoc">
+    <!-- needed temporarily while hosting azure-monitor-opentelemetry-exporter in this repo -->
+    <!--module name="SummaryJavadoc">
       <property name="forbiddenSummaryFragments"
         value="^@return the *|^This method returns |^A [{]@code [a-zA-Z0-9]+[}]( is a )"/>
-    </module>
+    </module-->
     <module name="JavadocParagraph"/>
-    <module name="RequireEmptyLineBeforeBlockTagGroup"/>
+    <!-- needed temporarily while hosting azure-monitor-opentelemetry-exporter in this repo -->
+    <!--module name="RequireEmptyLineBeforeBlockTagGroup"/-->
     <module name="AtclauseOrder">
       <property name="tagOrder" value="@param, @return, @throws, @deprecated"/>
       <property name="target"
