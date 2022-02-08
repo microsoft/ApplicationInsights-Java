@@ -58,7 +58,7 @@ public class MonitorExporterClientTestBase extends TestBase {
             .policies(new AzureMonitorRedirectPolicy(), interceptorManager.getRecordPolicy())
             .build();
 
-    return new AzureMonitorExporterBuilder().pipeline(httpPipeline);
+    return new AzureMonitorExporterBuilder().httpPipeline(httpPipeline);
   }
 
   List<TelemetryItem> getAllInvalidTelemetryItems() {

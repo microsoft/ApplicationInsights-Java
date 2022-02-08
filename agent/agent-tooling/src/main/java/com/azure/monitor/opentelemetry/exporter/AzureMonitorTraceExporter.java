@@ -25,8 +25,8 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import com.azure.core.http.HttpPipeline;
 import com.azure.core.util.logging.ClientLogger;
-import com.azure.core.util.tracing.Tracer;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.Exceptions;
@@ -35,6 +35,9 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDe
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.UrlParser;
@@ -49,6 +52,7 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -57,7 +61,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import reactor.util.annotation.Nullable;
-import reactor.util.context.Context;
 
 /**
  * This class is an implementation of OpenTelemetry {@link SpanExporter} that allows different
@@ -119,18 +122,21 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
     STANDARD_ATTRIBUTE_PREFIXES = Collections.unmodifiableSet(standardAttributesPrefix);
   }
 
-  private final MonitorExporterAsyncClient client;
+  private final TelemetryItemExporter telemetryItemExporter;
   private final String instrumentationKey;
 
   /**
    * Creates an instance of exporter that is configured with given exporter client that sends
    * telemetry events to Application Insights resource identified by the instrumentation key.
    *
-   * @param client The client used to send data to Azure Monitor.
+   * @param httpPipeline The http pipeline used to send data to Azure Monitor.
+   * @param endpoint the ingestion endpoint used to send data to Azure Monitor.
    * @param instrumentationKey The instrumentation key of Application Insights resource.
    */
-  AzureMonitorTraceExporter(MonitorExporterAsyncClient client, String instrumentationKey) {
-    this.client = client;
+  AzureMonitorTraceExporter(HttpPipeline httpPipeline, URL endpoint, String instrumentationKey) {
+    this.telemetryItemExporter =
+        new TelemetryItemExporter(
+            new TelemetryPipeline(httpPipeline, endpoint), TelemetryPipelineListener.noop());
     this.instrumentationKey = instrumentationKey;
   }
 
@@ -144,12 +150,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
         LOGGER.verbose("exporting span: {}", span);
         exportInternal(span, telemetryItems);
       }
-      client
-          .export(telemetryItems)
-          .subscriberContext(Context.of(Tracer.DISABLE_TRACING_KEY, true))
-          .subscribe(
-              ignored -> {}, error -> completableResultCode.fail(), completableResultCode::succeed);
-      return completableResultCode;
+      return telemetryItemExporter.send(telemetryItems);
     } catch (Throwable t) {
       LOGGER.error(t.getMessage(), t);
       return completableResultCode.fail();
