@@ -23,12 +23,12 @@ package com.microsoft.applicationinsights.agent.internal.localstorage;
 
 import static java.util.Collections.singletonList;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.telemetry.DiagnosticTelemetryPipelineListener;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipeline;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipelineListener;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

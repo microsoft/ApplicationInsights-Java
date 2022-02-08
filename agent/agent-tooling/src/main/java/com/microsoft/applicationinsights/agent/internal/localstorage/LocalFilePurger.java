@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.localstorage;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import java.io.File;
 import java.util.Collection;
 import java.util.Date;

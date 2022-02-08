@@ -21,9 +21,9 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipeline;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipelineListener;
 import java.io.File;
 import org.checkerframework.checker.nullness.qual.Nullable;
 

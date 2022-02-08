@@ -36,7 +36,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLe
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.UrlParser;
-import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
+import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.utils.Trie;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
