@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.exporter;
+package com.microsoft.applicationinsights.agent.internal.exporter.utils;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,7 +28,7 @@ import java.util.Map;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 // copied from io.opentelemetry.javaagent.instrumentation.api.util.TrieImpl
-final class TrieImpl<V> implements Trie<V> {
+public final class TrieImpl<V> implements Trie<V> {
 
   private final Node<V> root;
 

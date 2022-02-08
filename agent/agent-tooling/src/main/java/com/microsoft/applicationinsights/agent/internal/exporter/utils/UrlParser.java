@@ -19,11 +19,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.exporter;
+package com.microsoft.applicationinsights.agent.internal.exporter.utils;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class UrlParser {
+public class UrlParser {
 
   /**
    * Returns the "target" (host:port) portion of the url.
@@ -31,7 +31,7 @@ class UrlParser {
    * <p>Returns {@code null} if the target cannot be extracted from url for any reason.
    */
   @Nullable
-  static String getTargetFromUrl(String url) {
+  public static String getTargetFromUrl(String url) {
 
     int schemeEndIndex = url.indexOf(':');
     if (schemeEndIndex == -1) {
@@ -68,7 +68,7 @@ class UrlParser {
    * <p>Returns {@code null} if the path cannot be extracted from url for any reason.
    */
   @Nullable
-  static String getPathFromUrl(String url) {
+  public static String getPathFromUrl(String url) {
 
     int schemeEndIndex = url.indexOf(':');
     if (schemeEndIndex == -1) {

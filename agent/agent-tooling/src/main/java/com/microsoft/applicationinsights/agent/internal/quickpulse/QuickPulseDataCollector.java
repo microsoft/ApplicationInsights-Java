@@ -228,15 +228,18 @@ public enum QuickPulseDataCollector {
     MonitorDomain data = telemetryItem.getData().getBaseData();
     if (data instanceof RequestData) {
       RequestData requestTelemetry = (RequestData) data;
-      addRequest(
-          requestTelemetry,
-          itemCount,
-          telemetryItem.getTags().get(ContextTagKeys.AI_OPERATION_NAME.toString()));
+      addRequest(requestTelemetry, itemCount, getOperationName(telemetryItem));
     } else if (data instanceof RemoteDependencyData) {
       addDependency((RemoteDependencyData) data, itemCount);
     } else if (data instanceof TelemetryExceptionData) {
       addException((TelemetryExceptionData) data, itemCount);
     }
+  }
+
+  @Nullable
+  private static String getOperationName(TelemetryItem telemetryItem) {
+    Map<String, String> tags = telemetryItem.getTags();
+    return tags == null ? null : tags.get(ContextTagKeys.AI_OPERATION_NAME.toString());
   }
 
   private synchronized String getInstrumentationKey() {

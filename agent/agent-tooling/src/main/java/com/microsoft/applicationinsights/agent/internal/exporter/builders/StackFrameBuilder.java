@@ -19,25 +19,41 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.perfcounter;
+package com.microsoft.applicationinsights.agent.internal.exporter.builders;
 
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import java.util.Collection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.microsoft.applicationinsights.agent.internal.common.TelemetryTruncation.truncateTelemetry;
 
-public final class JmxMetricPerformanceCounter extends AbstractJmxPerformanceCounter {
+import com.microsoft.applicationinsights.agent.internal.exporter.models.StackFrame;
 
-  private static final Logger logger = LoggerFactory.getLogger(JmxMetricPerformanceCounter.class);
+public final class StackFrameBuilder {
 
-  public JmxMetricPerformanceCounter(
-      String id, String objectName, Collection<JmxAttributeData> attributes) {
-    super(id, objectName, attributes);
+  private static final int MAX_FILE_NAME_LENGTH = 1024;
+  private static final int MAX_METHOD_NAME_LENGTH = 1024;
+  private static final int MAX_ASSEMBLY_NAME_LENGTH = 1024;
+
+  private final StackFrame data = new StackFrame();
+
+  public void setLevel(int level) {
+    data.setLevel(level);
   }
 
-  @Override
-  protected void send(TelemetryClient telemetryClient, String displayName, double value) {
-    logger.trace("Metric JMX: {}, {}", displayName, value);
-    telemetryClient.trackAsync(telemetryClient.newMetricTelemetry(displayName, value));
+  public void setMethod(String method) {
+    data.setMethod(truncateTelemetry(method, MAX_METHOD_NAME_LENGTH, "StackFrame.method"));
+  }
+
+  public void setAssembly(String assembly) {
+    data.setAssembly(truncateTelemetry(assembly, MAX_ASSEMBLY_NAME_LENGTH, "StackFrame.assembly"));
+  }
+
+  public void setFileName(String fileName) {
+    data.setFileName(truncateTelemetry(fileName, MAX_FILE_NAME_LENGTH, "StackFrame.fileName"));
+  }
+
+  public void setLine(Integer line) {
+    data.setLine(line);
+  }
+
+  StackFrame build() {
+    return data;
   }
 }

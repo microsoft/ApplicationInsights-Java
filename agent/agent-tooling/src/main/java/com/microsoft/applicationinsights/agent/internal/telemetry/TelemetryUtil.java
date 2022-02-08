@@ -22,27 +22,12 @@
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.AvailabilityData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.DataPointType;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MessageData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDataPoint;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorDomain;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.PageViewData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.PageViewPerfData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDependencyData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.StackFrame;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
+import com.microsoft.applicationinsights.agent.internal.exporter.builders.ExceptionDetailBuilder;
+import com.microsoft.applicationinsights.agent.internal.exporter.builders.StackFrameBuilder;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.instrumentation.api.cache.Cache;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,32 +40,16 @@ public class TelemetryUtil {
   private static final int MAX_PARSED_STACK_LENGTH =
       32768; // Breeze will reject parsedStack exceeding 65536 bytes. Each char is 2 bytes long.
 
-  public static TelemetryItem createMetricsTelemetry(
-      TelemetryClient telemetryClient, String name, double value) {
-    TelemetryItem telemetry = new TelemetryItem();
-    MetricsData data = new MetricsData();
-    MetricDataPoint point = new MetricDataPoint();
-    telemetryClient.initMetricTelemetry(telemetry, data, point);
-
-    point.setName(name);
-    point.setValue(value);
-    point.setDataPointType(DataPointType.MEASUREMENT);
-
-    telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
-
-    return telemetry;
-  }
-
-  public static List<TelemetryExceptionDetails> getExceptions(Throwable throwable) {
-    List<TelemetryExceptionDetails> exceptions = new ArrayList<>();
+  public static List<ExceptionDetailBuilder> getExceptions(Throwable throwable) {
+    List<ExceptionDetailBuilder> exceptions = new ArrayList<>();
     convertExceptionTree(throwable, null, exceptions, Integer.MAX_VALUE);
     return exceptions;
   }
 
   private static void convertExceptionTree(
       Throwable exception,
-      TelemetryExceptionDetails parentExceptionDetails,
-      List<TelemetryExceptionDetails> exceptions,
+      ExceptionDetailBuilder parentExceptionDetails,
+      List<ExceptionDetailBuilder> exceptions,
       int stackSize) {
     if (exception == null) {
       exception = new Exception("");
@@ -90,7 +59,7 @@ public class TelemetryUtil {
       return;
     }
 
-    TelemetryExceptionDetails exceptionDetails =
+    ExceptionDetailBuilder exceptionDetails =
         createWithStackInfo(exception, parentExceptionDetails);
     exceptions.add(exceptionDetails);
 
@@ -99,13 +68,13 @@ public class TelemetryUtil {
     }
   }
 
-  private static TelemetryExceptionDetails createWithStackInfo(
-      Throwable exception, TelemetryExceptionDetails parentExceptionDetails) {
+  private static ExceptionDetailBuilder createWithStackInfo(
+      Throwable exception, ExceptionDetailBuilder parentExceptionDetails) {
     if (exception == null) {
       throw new IllegalArgumentException("exception cannot be null");
     }
 
-    TelemetryExceptionDetails exceptionDetails = new TelemetryExceptionDetails();
+    ExceptionDetailBuilder exceptionDetails = new ExceptionDetailBuilder();
     exceptionDetails.setId(exception.hashCode());
     exceptionDetails.setTypeName(exception.getClass().getName());
 
@@ -116,14 +85,14 @@ public class TelemetryUtil {
     exceptionDetails.setMessage(exceptionMessage);
 
     if (parentExceptionDetails != null) {
-      exceptionDetails.setOuterId(parentExceptionDetails.getId());
+      exceptionDetails.setOuter(parentExceptionDetails);
     }
 
     StackTraceElement[] trace = exception.getStackTrace();
     exceptionDetails.setHasFullStack(true);
 
     if (trace != null && trace.length > 0) {
-      List<StackFrame> stack = new ArrayList<>();
+      List<StackFrameBuilder> stack = new ArrayList<>();
 
       // We need to present the stack trace in reverse order.
       int stackLength = 0;
@@ -136,18 +105,20 @@ public class TelemetryUtil {
 
         String className = elem.getClassName();
 
-        StackFrame frame = new StackFrame();
+        StackFrameBuilder frame = new StackFrameBuilder();
         frame.setLevel(idx);
         frame.setFileName(elem.getFileName());
         frame.setLine(elem.getLineNumber());
 
+        String method;
         if (!Strings.isNullOrEmpty(className)) {
-          frame.setMethod(elem.getClassName() + "." + elem.getMethodName());
+          method = elem.getClassName() + "." + elem.getMethodName();
         } else {
-          frame.setMethod(elem.getMethodName());
+          method = elem.getMethodName();
         }
+        frame.setMethod(method);
 
-        stackLength += getStackFrameLength(frame);
+        stackLength += getStackFrameLength(method, elem.getFileName(), null);
         if (stackLength > MAX_PARSED_STACK_LENGTH) {
           exceptionDetails.setHasFullStack(false);
           logger.debug(
@@ -168,90 +139,14 @@ public class TelemetryUtil {
 
   /** Returns the stack frame length for only the strings in the stack frame. */
   // this is the same logic used to limit length on the Breeze side
-  private static int getStackFrameLength(StackFrame stackFrame) {
-    return (stackFrame.getMethod() == null ? 0 : stackFrame.getMethod().length())
-        + (stackFrame.getAssembly() == null ? 0 : stackFrame.getAssembly().length())
-        + (stackFrame.getFileName() == null ? 0 : stackFrame.getFileName().length());
+  private static int getStackFrameLength(String method, String fileName, String assembly) {
+    return getStackFrameLength(method)
+        + getStackFrameLength(fileName)
+        + getStackFrameLength(assembly);
   }
 
-  // TODO (trask) Azure SDK: can we move getProperties up to MonitorDomain, or if not, a common
-  // interface?
-  public static Map<String, String> getProperties(MonitorDomain data) {
-    if (data instanceof AvailabilityData) {
-      AvailabilityData availabilityData = (AvailabilityData) data;
-      Map<String, String> properties = availabilityData.getProperties();
-      if (properties == null) {
-        properties = new HashMap<>();
-        availabilityData.setProperties(properties);
-      }
-      return properties;
-    } else if (data instanceof MessageData) {
-      MessageData messageData = (MessageData) data;
-      Map<String, String> properties = messageData.getProperties();
-      if (properties == null) {
-        properties = new HashMap<>();
-        messageData.setProperties(properties);
-      }
-      return properties;
-    } else if (data instanceof MetricsData) {
-      MetricsData metricsData = (MetricsData) data;
-      Map<String, String> properties = metricsData.getProperties();
-      if (properties == null) {
-        properties = new HashMap<>();
-        metricsData.setProperties(properties);
-      }
-      return properties;
-    } else if (data instanceof PageViewData) {
-      PageViewData pageViewData = (PageViewData) data;
-      Map<String, String> properties = pageViewData.getProperties();
-      if (properties == null) {
-        properties = new HashMap<>();
-        pageViewData.setProperties(properties);
-      }
-      return properties;
-    } else if (data instanceof PageViewPerfData) {
-      PageViewPerfData pageViewPerfData = (PageViewPerfData) data;
-      Map<String, String> properties = pageViewPerfData.getProperties();
-      if (properties == null) {
-        properties = new HashMap<>();
-        pageViewPerfData.setProperties(properties);
-      }
-      return properties;
-    } else if (data instanceof RemoteDependencyData) {
-      RemoteDependencyData remoteDependencyData = (RemoteDependencyData) data;
-      Map<String, String> properties = remoteDependencyData.getProperties();
-      if (properties == null) {
-        properties = new HashMap<>();
-        remoteDependencyData.setProperties(properties);
-      }
-      return properties;
-    } else if (data instanceof RequestData) {
-      RequestData requestData = (RequestData) data;
-      Map<String, String> properties = requestData.getProperties();
-      if (properties == null) {
-        properties = new HashMap<>();
-        requestData.setProperties(properties);
-      }
-      return properties;
-    } else if (data instanceof TelemetryEventData) {
-      TelemetryEventData eventData = (TelemetryEventData) data;
-      Map<String, String> properties = eventData.getProperties();
-      if (properties == null) {
-        properties = new HashMap<>();
-        eventData.setProperties(properties);
-      }
-      return properties;
-    } else if (data instanceof TelemetryExceptionData) {
-      TelemetryExceptionData exceptionData = (TelemetryExceptionData) data;
-      Map<String, String> properties = exceptionData.getProperties();
-      if (properties == null) {
-        properties = new HashMap<>();
-        exceptionData.setProperties(properties);
-      }
-      return properties;
-    } else {
-      throw new IllegalArgumentException("Unexpected type: " + data.getClass().getName());
-    }
+  private static int getStackFrameLength(String text) {
+    return text == null ? 0 : text.length();
   }
 
   public static final String SAMPLING_PERCENTAGE_TRACE_STATE = "ai-internal-sp";

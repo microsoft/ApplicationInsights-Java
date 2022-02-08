@@ -21,9 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
@@ -61,15 +59,12 @@ public class JvmHeapMemoryUsedPerformanceCounter implements PerformanceCounter {
     MemoryUsage mhu = memory.getHeapMemoryUsage();
     if (mhu != null) {
       long currentHeapUsed = mhu.getUsed() / Megabyte;
-      TelemetryItem memoryHeapUsage =
-          TelemetryUtil.createMetricsTelemetry(telemetryClient, HEAP_MEM_USED, currentHeapUsed);
-      telemetryClient.trackAsync(memoryHeapUsage);
+      telemetryClient.trackAsync(
+          telemetryClient.newMetricTelemetry(HEAP_MEM_USED, currentHeapUsed));
 
       float percentage = 100.0f * (((float) mhu.getUsed()) / ((float) mhu.getMax()));
-      TelemetryItem memoryHeapUsagePercentage =
-          TelemetryUtil.createMetricsTelemetry(
-              telemetryClient, HEAP_MEM_USED_PERCENTAGE, percentage);
-      telemetryClient.trackAsync(memoryHeapUsagePercentage);
+      telemetryClient.trackAsync(
+          telemetryClient.newMetricTelemetry(HEAP_MEM_USED_PERCENTAGE, percentage));
     }
   }
 }

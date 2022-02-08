@@ -19,18 +19,17 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.exporter;
+package com.microsoft.applicationinsights.agent.internal.exporter.utils;
 
 import static java.util.Collections.singletonList;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
-import java.util.ArrayList;
+import com.microsoft.applicationinsights.agent.internal.exporter.builders.ExceptionDetailBuilder;
 import java.util.List;
 
 public class Exceptions {
 
-  public static List<TelemetryExceptionDetails> minimalParse(String str) {
-    TelemetryExceptionDetails details = new TelemetryExceptionDetails();
+  public static List<ExceptionDetailBuilder> minimalParse(String str) {
+    ExceptionDetailBuilder builder = new ExceptionDetailBuilder();
     int separator = -1;
     int length = str.length();
     int current;
@@ -49,65 +48,16 @@ public class Exceptions {
       if (message.isEmpty()) {
         message = typeName;
       }
-      details.setTypeName(typeName);
-      details.setMessage(message);
+      builder.setTypeName(typeName);
+      builder.setMessage(message);
     } else {
       String typeName = str.substring(0, current);
-      details.setTypeName(typeName);
-      details.setMessage(typeName);
+      builder.setTypeName(typeName);
+      builder.setMessage(typeName);
     }
-    details.setStack(str);
-    return singletonList(details);
-  }
-
-  // THIS IS UNFINISHED WORK
-  // NOT SURE IF IT'S NEEDED
-  // TESTING WITH minimalParse() first
-  public static List<TelemetryExceptionDetails> fullParse(String str) {
-    Parser parser = new Parser();
-    for (String line : str.split("\r?\n")) {
-      parser.process(line);
-    }
-    return parser.getDetails();
+    builder.setStack(str);
+    return singletonList(builder);
   }
 
   private Exceptions() {}
-
-  static class Parser {
-
-    private TelemetryExceptionDetails current;
-    private final List<TelemetryExceptionDetails> list = new ArrayList<>();
-
-    void process(String line) {
-      if (line.charAt(0) != '\t') {
-        if (current != null) {
-          list.add(current);
-        }
-        if (line.startsWith("Caused by: ")) {
-          line = line.substring("Caused by: ".length());
-        }
-        current = new TelemetryExceptionDetails();
-        int index = line.indexOf(':');
-        if (index != -1) {
-          String typeName = line.substring(0, index);
-          String message = line.substring(index + 1).trim();
-          if (message.isEmpty()) {
-            message = typeName;
-          }
-          current.setTypeName(typeName);
-          current.setMessage(message);
-        } else {
-          current.setTypeName(line);
-          current.setMessage(line);
-        }
-      }
-    }
-
-    public List<TelemetryExceptionDetails> getDetails() {
-      if (current != null) {
-        list.add(current);
-      }
-      return list;
-    }
-  }
 }

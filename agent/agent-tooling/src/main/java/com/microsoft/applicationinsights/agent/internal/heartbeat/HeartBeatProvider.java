@@ -22,12 +22,9 @@
 package com.microsoft.applicationinsights.agent.internal.heartbeat;
 
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
+import com.microsoft.applicationinsights.agent.internal.exporter.builders.MetricTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.ContextTagKeys;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.DataPointType;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDataPoint;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.HashMap;
 import java.util.Map;
@@ -142,13 +139,7 @@ public class HeartBeatProvider {
   /** Send the heartbeat item synchronously to application insights backend. */
   private void send() {
     try {
-      TelemetryItem telemetry = gatherData();
-      telemetry
-          .getTags()
-          .put(
-              ContextTagKeys.AI_OPERATION_SYNTHETIC_SOURCE.toString(),
-              HEARTBEAT_SYNTHETIC_METRIC_NAME);
-      telemetryClient.trackAsync(telemetry);
+      telemetryClient.trackAsync(gatherData());
       logger.trace("No of heartbeats sent, {}", ++heartbeatsSent);
     } catch (RuntimeException e) {
       logger.warn("Error occured while sending heartbeat");
@@ -169,19 +160,16 @@ public class HeartBeatProvider {
       properties.put(entry.getKey(), payload.getPayloadValue());
       numHealthy += payload.isHealthy() ? 0 : 1;
     }
-    TelemetryItem telemetry = new TelemetryItem();
-    MetricsData data = new MetricsData();
-    MetricDataPoint point = new MetricDataPoint();
-    telemetryClient.initMetricTelemetry(telemetry, data, point);
+    MetricTelemetryBuilder telemetryBuilder =
+        telemetryClient.newMetricTelemetryBuilder(HEARTBEAT_SYNTHETIC_METRIC_NAME, numHealthy);
 
-    point.setName(HEARTBEAT_SYNTHETIC_METRIC_NAME);
-    point.setValue(numHealthy);
-    point.setDataPointType(DataPointType.MEASUREMENT);
+    telemetryBuilder.addTag(
+        ContextTagKeys.AI_OPERATION_SYNTHETIC_SOURCE.toString(), HEARTBEAT_SYNTHETIC_METRIC_NAME);
 
-    data.setProperties(properties);
+    for (Map.Entry<String, String> entry : properties.entrySet()) {
+      telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
+    }
 
-    telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
-
-    return telemetry;
+    return telemetryBuilder.build();
   }
 }
