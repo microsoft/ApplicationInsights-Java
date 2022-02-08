@@ -36,7 +36,6 @@ com.squareup.moshi:moshi:1.11.0=runtimeClasspath
 com.squareup.okhttp3:okhttp:4.9.3=runtimeClasspath
 com.squareup.okio:okio:2.8.0=runtimeClasspath
 commons-codec:commons-codec:1.15=runtimeClasspath
-commons-io:commons-io:2.7=runtimeClasspath
 io.netty:netty-bom:4.1.72.Final=runtimeClasspath
 io.netty:netty-buffer:4.1.72.Final=runtimeClasspath
 io.netty:netty-codec-dns:4.1.72.Final=runtimeClasspath

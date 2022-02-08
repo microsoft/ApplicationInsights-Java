@@ -32,11 +32,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 
 /** This class manages loading a list of {@link ByteBuffer} from the disk. */
-public class LocalFileLoader {
+class LocalFileLoader {
 
   // A regex to validate that an instrumentation key is well-formed. It's copied straight from the
   // Breeze repo.
@@ -55,7 +53,7 @@ public class LocalFileLoader {
   private static final OperationLogger updateOperationLogger =
       new OperationLogger(LocalFileLoader.class, "Updating local telemetry on disk");
 
-  public LocalFileLoader(
+  LocalFileLoader(
       LocalFileCache localFileCache,
       File telemetryFolder,
       @Nullable NonessentialStatsbeat nonessentialStatsbeat) {
@@ -67,8 +65,8 @@ public class LocalFileLoader {
   // Load ByteBuffer from persisted files on disk in FIFO order.
   @Nullable
   PersistedFile loadTelemetriesFromDisk() {
-    String filenameToBeLoaded = localFileCache.poll();
-    if (filenameToBeLoaded == null) {
+    File fileToBeLoaded = localFileCache.poll();
+    if (fileToBeLoaded == null) {
       return null;
     }
 
@@ -79,22 +77,19 @@ public class LocalFileLoader {
     // response confirms it is sent successfully; otherwise, temp file will get renamed back to the
     // source file extension.
     File tempFile;
-    File sourceFile;
     try {
-      sourceFile = new File(telemetryFolder, filenameToBeLoaded);
-      if (!sourceFile.exists()) {
+      if (!fileToBeLoaded.exists()) {
         return null;
       }
 
       tempFile =
           new File(
-              telemetryFolder,
-              FilenameUtils.getBaseName(filenameToBeLoaded) + TEMPORARY_FILE_EXTENSION);
-      FileUtils.moveFile(sourceFile, tempFile);
+              telemetryFolder, FileUtil.getBaseName(fileToBeLoaded) + TEMPORARY_FILE_EXTENSION);
+      FileUtil.moveFile(fileToBeLoaded, tempFile);
     } catch (IOException e) {
       operationLogger.recordFailure(
           "Failed to change "
-              + filenameToBeLoaded
+              + fileToBeLoaded.getAbsolutePath()
               + " to have "
               + TEMPORARY_FILE_EXTENSION
               + " extension: ",
@@ -179,10 +174,9 @@ public class LocalFileLoader {
       }
     } else {
       // rename the temp file back to .trn source file extension
-      File sourceFile =
-          new File(telemetryFolder, FilenameUtils.getBaseName(file.getName()) + ".trn");
+      File sourceFile = new File(telemetryFolder, FileUtil.getBaseName(file) + ".trn");
       try {
-        FileUtils.moveFile(file, sourceFile);
+        FileUtil.moveFile(file, sourceFile);
       } catch (IOException ex) {
         updateOperationLogger.recordFailure(
             "Fail to rename " + file.getName() + " to have a .trn extension.", ex);
@@ -191,7 +185,7 @@ public class LocalFileLoader {
       updateOperationLogger.recordSuccess();
 
       // add the source filename back to local file cache to be processed later.
-      localFileCache.addPersistedFilenameToMap(sourceFile.getName());
+      localFileCache.addPersistedFile(sourceFile);
     }
   }
 

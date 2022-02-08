@@ -26,7 +26,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 import java.util.TreeMap;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,23 +103,26 @@ public class ConnectionString {
     // resolve suffix
     String suffix = kvps.get(Keywords.ENDPOINT_SUFFIX);
     if (!Strings.isNullOrEmpty(suffix)) {
+      if (suffix.startsWith(".")) {
+        suffix = suffix.substring(1);
+      }
       try {
         telemetryClient
             .getEndpointProvider()
             .setIngestionEndpoint(
-                constructSecureEndpoint(EndpointPrefixes.INGESTION_ENDPOINT_PREFIX, suffix));
+                new URL("https://" + EndpointPrefixes.INGESTION_ENDPOINT_PREFIX + "." + suffix));
         telemetryClient
             .getEndpointProvider()
             .setLiveEndpoint(
-                constructSecureEndpoint(EndpointPrefixes.LIVE_ENDPOINT_PREFIX, suffix));
+                new URL("https://" + EndpointPrefixes.LIVE_ENDPOINT_PREFIX + "." + suffix));
         telemetryClient
             .getEndpointProvider()
             .setProfilerEndpoint(
-                constructSecureEndpoint(EndpointPrefixes.PROFILER_ENDPOINT_PREFIX, suffix));
+                new URL("https://" + EndpointPrefixes.PROFILER_ENDPOINT_PREFIX + "." + suffix));
         telemetryClient
             .getEndpointProvider()
             .setSnapshotEndpoint(
-                constructSecureEndpoint(EndpointPrefixes.SNAPSHOT_ENDPOINT_PREFIX, suffix));
+                new URL("https://" + EndpointPrefixes.SNAPSHOT_ENDPOINT_PREFIX + "." + suffix));
       } catch (MalformedURLException e) {
         throw new InvalidConnectionStringException(
             Keywords.ENDPOINT_SUFFIX + " is invalid: " + suffix, e);
@@ -170,12 +172,6 @@ public class ConnectionString {
     } catch (MalformedURLException e) {
       throw new InvalidConnectionStringException(field + " is invalid: \"" + url + "\"", e);
     }
-  }
-
-  // visible for testing
-  static URL constructSecureEndpoint(String prefix, String suffix) throws MalformedURLException {
-    return new URL(
-        "https://" + StringUtils.strip(prefix, ".") + "." + StringUtils.strip(suffix, "."));
   }
 
   /** All tokens are lowercase. Parsing should be case insensitive. */

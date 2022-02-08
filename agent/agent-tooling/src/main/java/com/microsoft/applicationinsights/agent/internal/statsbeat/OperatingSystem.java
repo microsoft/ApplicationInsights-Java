@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 enum OperatingSystem {
   OS_WINDOWS("Windows"),
   OS_LINUX("Linux"),
+  // TODO (heya) should we add Mac/OSX?
   OS_UNKNOWN("unknown");
 
   private final String value;

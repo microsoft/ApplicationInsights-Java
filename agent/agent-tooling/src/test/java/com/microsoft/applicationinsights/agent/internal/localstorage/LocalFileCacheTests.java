@@ -31,8 +31,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -47,7 +45,7 @@ public class LocalFileCacheTests {
     List<File> unsortedFiles = new ArrayList<>();
     for (int i = 0; i < 100; i++) {
       File tempFile = createTempFile(tempFolder);
-      File trnFile = new File(tempFolder, FilenameUtils.getBaseName(tempFile.getName()) + ".trn");
+      File trnFile = new File(tempFolder, FileUtil.getBaseName(tempFile) + ".trn");
       tempFile.renameTo(trnFile);
       unsortedFiles.add(trnFile);
     }
@@ -57,7 +55,7 @@ public class LocalFileCacheTests {
       sortedLastModified.add(file.lastModified());
     }
 
-    Collection<File> files = FileUtils.listFiles(tempFolder, new String[] {"trn"}, false);
+    Collection<File> files = FileUtil.listTrnFiles(tempFolder);
     assertThat(files.size()).isEqualTo(100);
     assertThat(files.size()).isEqualTo(sortedLastModified.size());
   }
@@ -65,13 +63,13 @@ public class LocalFileCacheTests {
   @Test
   public void testSortPersistedFiles() {
     LocalFileCache cache = new LocalFileCache(tempFolder);
-    Queue<String> sortedPersistedFile = cache.getPersistedFilesCache();
+    Queue<File> sortedPersistedFile = cache.getPersistedFilesCache();
 
     assertThat(sortedPersistedFile.size()).isEqualTo(sortedLastModified.size());
 
     while (sortedPersistedFile.peek() != null && sortedLastModified.peek() != null) {
-      String actualFilename = sortedPersistedFile.poll();
-      Long actualLastModified = new File(tempFolder, actualFilename).lastModified();
+      File actualFile = sortedPersistedFile.poll();
+      Long actualLastModified = actualFile.lastModified();
       Long expectedLastModified = sortedLastModified.poll();
       assertThat(actualLastModified).isEqualTo(expectedLastModified);
     }

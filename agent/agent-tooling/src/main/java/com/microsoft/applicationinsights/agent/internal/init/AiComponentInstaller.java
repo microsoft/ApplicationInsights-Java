@@ -57,7 +57,6 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
-import io.opentelemetry.instrumentation.api.cache.Cache;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.File;
 import java.lang.instrument.Instrumentation;
@@ -164,13 +163,11 @@ class AiComponentInstaller {
             .map(MetricFilter::new)
             .collect(Collectors.toList());
 
-    Cache<String, String> ikeyEndpointMap = Cache.bounded(100);
-    StatsbeatModule statsbeatModule = new StatsbeatModule(ikeyEndpointMap);
+    StatsbeatModule statsbeatModule = new StatsbeatModule();
     TelemetryClient telemetryClient =
         TelemetryClient.builder()
             .setCustomDimensions(config.customDimensions)
             .setMetricFilters(metricFilters)
-            .setIkeyEndpointMap(ikeyEndpointMap)
             .setStatsbeatModule(statsbeatModule)
             .setReadOnlyFileSystem(readOnlyFileSystem)
             .setGeneralExportQueueSize(config.preview.generalExportQueueCapacity)
@@ -283,7 +280,7 @@ class AiComponentInstaller {
     sdkNamePrefix.append(DiagnosticsHelper.rpIntegrationChar());
     if (SystemInformation.isWindows()) {
       sdkNamePrefix.append("w");
-    } else if (SystemInformation.isUnix()) {
+    } else if (SystemInformation.isLinux()) {
       sdkNamePrefix.append("l");
     } else {
       startupLogger.warn("could not detect os: {}", System.getProperty("os.name"));
@@ -311,7 +308,7 @@ class AiComponentInstaller {
       CompletableResultCode result = new CompletableResultCode();
       otelFlush.whenComplete(
           () -> {
-            CompletableResultCode batchingClientFlush = telemetryClient.flushChannelBatcher();
+            CompletableResultCode batchingClientFlush = telemetryClient.forceFlush();
             batchingClientFlush.whenComplete(
                 () -> {
                   if (otelFlush.isSuccess() && batchingClientFlush.isSuccess()) {

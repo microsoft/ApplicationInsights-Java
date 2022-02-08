@@ -48,7 +48,7 @@ public class CustomDimensionsTest {
     OperatingSystem os = OperatingSystem.OS_UNKNOWN;
     if (SystemInformation.isWindows()) {
       os = OperatingSystem.OS_WINDOWS;
-    } else if (SystemInformation.isUnix()) {
+    } else if (SystemInformation.isLinux()) {
       os = OperatingSystem.OS_LINUX;
     }
     assertThat(customDimensions.getOperatingSystem()).isEqualTo(os);

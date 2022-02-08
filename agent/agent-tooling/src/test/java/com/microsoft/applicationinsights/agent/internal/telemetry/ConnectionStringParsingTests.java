@@ -29,7 +29,6 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.ConnectionStri
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.UUID;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 
 class ConnectionStringParsingTests {
@@ -487,7 +486,10 @@ class ConnectionStringParsingTests {
 
   @Test
   void giantValuesAreNotAllowed() {
-    String bigIkey = StringUtils.repeat('0', ConnectionString.CONNECTION_STRING_MAX_LENGTH * 2);
+    StringBuilder bigIkey = new StringBuilder();
+    for (int i = 0; i < ConnectionString.CONNECTION_STRING_MAX_LENGTH * 2; i++) {
+      bigIkey.append('0');
+    }
 
     assertThatThrownBy(
             () -> ConnectionString.parseInto("InstrumentationKey=" + bigIkey, telemetryClient))

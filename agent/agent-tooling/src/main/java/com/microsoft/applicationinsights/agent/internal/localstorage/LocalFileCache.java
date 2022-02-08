@@ -27,10 +27,8 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-import org.apache.commons.io.FileUtils;
 
-public class LocalFileCache {
+class LocalFileCache {
 
   /**
    * Track a list of active filenames persisted on disk. FIFO (First-In-First-Out) read will avoid
@@ -39,35 +37,34 @@ public class LocalFileCache {
    * C# uses "User@processName" to identify each app, but Java can't rely on process name since it's
    * a system property that can be customized via the command line.
    */
-  private final Queue<String> persistedFilesCache = new ConcurrentLinkedDeque<>();
+  private final Queue<File> persistedFilesCache = new ConcurrentLinkedDeque<>();
 
-  public LocalFileCache(File folder) {
+  LocalFileCache(File folder) {
     List<File> files = sortPersistedFiles(folder);
     // existing files are not older than 48 hours and need to get added to the queue to be
     // re-processed.
     // this will avoid data loss in the case of app crashes and restarts.
     for (File file : files) {
-      persistedFilesCache.add(file.getName());
+      persistedFilesCache.add(file);
     }
   }
 
   // Track the newly persisted filename to the concurrent hashmap.
-  void addPersistedFilenameToMap(String filename) {
-    persistedFilesCache.add(filename);
+  void addPersistedFile(File file) {
+    persistedFilesCache.add(file);
   }
 
-  String poll() {
+  File poll() {
     return persistedFilesCache.poll();
   }
 
   // only used by tests
-  Queue<String> getPersistedFilesCache() {
+  Queue<File> getPersistedFilesCache() {
     return persistedFilesCache;
   }
 
-  @Nullable
   private static List<File> sortPersistedFiles(File folder) {
-    return FileUtils.listFiles(folder, new String[] {"trn"}, false).stream()
+    return FileUtil.listTrnFiles(folder).stream()
         .sorted(Comparator.comparing(File::lastModified))
         .collect(Collectors.toList());
   }

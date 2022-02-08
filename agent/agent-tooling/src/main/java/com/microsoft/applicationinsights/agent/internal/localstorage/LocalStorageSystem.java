@@ -21,42 +21,33 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThat;
-
+import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipeline;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipelineListener;
 import java.io.File;
-import java.nio.ByteBuffer;
-import java.util.Collection;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-public class LocalFilePurgerTests {
+public class LocalStorageSystem {
 
-  @TempDir File tempFolder;
+  private final LocalFileWriter writer;
+  private final LocalFileLoader loader;
 
-  @Test
-  public void testPurgedExpiredFiles() throws InterruptedException {
-    String text = "hello world";
-    LocalFileCache cache = new LocalFileCache(tempFolder);
-    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder, null);
+  public LocalStorageSystem(
+      File telemetryFolder, @Nullable NonessentialStatsbeat nonessentialStatsbeat) {
+    LocalFileCache localFileCache = new LocalFileCache(telemetryFolder);
+    loader = new LocalFileLoader(localFileCache, telemetryFolder, nonessentialStatsbeat);
+    writer = new LocalFileWriter(localFileCache, telemetryFolder, nonessentialStatsbeat);
+  }
 
-    // run purge task every second to delete files that are 5 seconds old
-    LocalFilePurger.startPurging(1L, 5L, tempFolder);
+  public TelemetryPipelineListener createTelemetryPipelineListener() {
+    return new LocalStorageTelemetryPipelineListener(writer);
+  }
 
-    // persist 100 files to disk
-    for (int i = 0; i < 100; i++) {
-      writer.writeToDisk(
-          "00000000-0000-0000-0000-0FEEDDADBEE",
-          singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))));
-    }
+  public void startSendingFromDisk(TelemetryPipeline pipeline) {
+    LocalFileSender.start(loader, pipeline);
+  }
 
-    Collection<File> files = FileUtil.listTrnFiles(tempFolder);
-    assertThat(files.size()).isEqualTo(100);
-
-    Thread.sleep(10000); // wait 10 seconds
-
-    files = FileUtil.listTrnFiles(tempFolder);
-    assertThat(files.size()).isEqualTo(0);
+  public void stop() {
+    // TODO (trask) this will be needed in azure-monitor-opentelemetry-exporter
   }
 }

@@ -21,42 +21,35 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThat;
-
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipelineListener;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipelineRequest;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipelineResponse;
 import java.io.File;
-import java.nio.ByteBuffer;
-import java.util.Collection;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
-public class LocalFilePurgerTests {
+class LocalFileSenderTelemetryPipelineListener implements TelemetryPipelineListener {
 
-  @TempDir File tempFolder;
+  private final LocalFileLoader localFileLoader;
+  private final File file;
 
-  @Test
-  public void testPurgedExpiredFiles() throws InterruptedException {
-    String text = "hello world";
-    LocalFileCache cache = new LocalFileCache(tempFolder);
-    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder, null);
+  LocalFileSenderTelemetryPipelineListener(LocalFileLoader localFileLoader, File file) {
+    this.localFileLoader = localFileLoader;
+    this.file = file;
+  }
 
-    // run purge task every second to delete files that are 5 seconds old
-    LocalFilePurger.startPurging(1L, 5L, tempFolder);
-
-    // persist 100 files to disk
-    for (int i = 0; i < 100; i++) {
-      writer.writeToDisk(
-          "00000000-0000-0000-0000-0FEEDDADBEE",
-          singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))));
+  @Override
+  public void onResponse(TelemetryPipelineRequest request, TelemetryPipelineResponse response) {
+    int responseCode = response.getStatusCode();
+    if (responseCode == 200) {
+      localFileLoader.updateProcessedFileStatus(true, file);
+    } else {
+      localFileLoader.updateProcessedFileStatus(
+          !LocalStorageTelemetryPipelineListener.RETRYABLE_CODES.contains(responseCode), file);
     }
+  }
 
-    Collection<File> files = FileUtil.listTrnFiles(tempFolder);
-    assertThat(files.size()).isEqualTo(100);
-
-    Thread.sleep(10000); // wait 10 seconds
-
-    files = FileUtil.listTrnFiles(tempFolder);
-    assertThat(files.size()).isEqualTo(0);
+  @Override
+  public void onException(
+      TelemetryPipelineRequest request, String errorMessage, Throwable throwable) {
+    localFileLoader.updateProcessedFileStatus(false, file);
   }
 }

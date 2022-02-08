@@ -19,23 +19,23 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.common;
+package com.microsoft.applicationinsights.agent.internal.telemetry;
 
-import static org.assertj.core.api.Assertions.assertThat;
+public class TelemetryPipelineResponse {
 
-import org.apache.commons.lang3.SystemUtils;
-import org.junit.jupiter.api.Test;
+  private final int statusCode;
+  private final String body;
 
-class SystemInformationTest {
-  @Test
-  void testOs() {
-    assertThat(
-            SystemUtils.IS_OS_WINDOWS ? SystemInformation.isWindows() : SystemInformation.isLinux())
-        .isTrue();
+  TelemetryPipelineResponse(int statusCode, String body) {
+    this.statusCode = statusCode;
+    this.body = body;
   }
 
-  @Test
-  void testProcessId() {
-    Integer.parseInt(SystemInformation.getProcessId());
+  public int getStatusCode() {
+    return statusCode;
+  }
+
+  public String getBody() {
+    return body;
   }
 }

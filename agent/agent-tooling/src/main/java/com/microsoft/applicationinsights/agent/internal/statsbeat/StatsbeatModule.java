@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import io.opentelemetry.instrumentation.api.cache.Cache;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -50,9 +49,9 @@ public class StatsbeatModule {
 
   private final AtomicBoolean started = new AtomicBoolean();
 
-  public StatsbeatModule(Cache<String, String> ikeyEndpointMap) {
+  public StatsbeatModule() {
     customDimensions = new CustomDimensions();
-    networkStatsbeat = new NetworkStatsbeat(customDimensions, ikeyEndpointMap);
+    networkStatsbeat = new NetworkStatsbeat(customDimensions);
     attachStatsbeat = new AttachStatsbeat(customDimensions);
     featureStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.FEATURE);
     instrumentationStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.INSTRUMENTATION);

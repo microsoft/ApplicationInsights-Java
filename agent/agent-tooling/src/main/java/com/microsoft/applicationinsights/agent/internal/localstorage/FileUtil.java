@@ -19,23 +19,38 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.common;
+package com.microsoft.applicationinsights.agent.internal.localstorage;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static java.util.Arrays.asList;
 
-import org.apache.commons.lang3.SystemUtils;
-import org.junit.jupiter.api.Test;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
-class SystemInformationTest {
-  @Test
-  void testOs() {
-    assertThat(
-            SystemUtils.IS_OS_WINDOWS ? SystemInformation.isWindows() : SystemInformation.isLinux())
-        .isTrue();
+class FileUtil {
+
+  static List<File> listTrnFiles(File directory) {
+    File[] files = directory.listFiles((dir, name) -> name.endsWith(".trn"));
+    return files == null ? Collections.emptyList() : asList(files);
   }
 
-  @Test
-  void testProcessId() {
-    Integer.parseInt(SystemInformation.getProcessId());
+  static String getBaseName(File file) {
+    String name = file.getName();
+    int index = name.lastIndexOf('.');
+    return index == -1 ? name : name.substring(0, index);
   }
+
+  static void moveFile(File srcFile, File destFile) throws IOException {
+    if (!srcFile.renameTo(destFile)) {
+      throw new IOException(
+          "Unable to rename file '"
+              + srcFile.getAbsolutePath()
+              + "' to '"
+              + destFile.getAbsolutePath()
+              + "'");
+    }
+  }
+
+  private FileUtil() {}
 }

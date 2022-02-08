@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import static java.util.Arrays.asList;
 
+import com.azure.core.http.HttpPipeline;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -39,16 +40,13 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDa
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorDomain;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileCache;
-import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileLoader;
-import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileSender;
-import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWriter;
+import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
+import com.microsoft.applicationinsights.agent.internal.localstorage.LocalStorageSystem;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalStorageUtils;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeatHttpPipelinePolicy;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
-import io.opentelemetry.instrumentation.api.cache.Cache;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -86,7 +84,6 @@ public class TelemetryClient {
 
   private final List<MetricFilter> metricFilters;
 
-  private final Cache<String, String> ikeyEndpointMap;
   private final StatsbeatModule statsbeatModule;
   private final boolean readOnlyFileSystem;
   private final int generalExportQueueCapacity;
@@ -94,10 +91,10 @@ public class TelemetryClient {
 
   @Nullable private final Configuration.AadAuthentication aadAuthentication;
 
-  private final Object channelInitLock = new Object();
-  private volatile @MonotonicNonNull BatchSpanProcessor generalChannelBatcher;
-  private volatile @MonotonicNonNull BatchSpanProcessor metricsChannelBatcher;
-  private volatile @MonotonicNonNull BatchSpanProcessor statsbeatChannelBatcher;
+  private final Object batchItemProcessorInitLock = new Object();
+  private volatile @MonotonicNonNull BatchItemProcessor generalBatchItemProcessor;
+  private volatile @MonotonicNonNull BatchItemProcessor metricsBatchItemProcessor;
+  private volatile @MonotonicNonNull BatchItemProcessor statsbeatBatchItemProcessor;
 
   public static TelemetryClient.Builder builder() {
     return new TelemetryClient.Builder();
@@ -108,8 +105,7 @@ public class TelemetryClient {
     return builder()
         .setCustomDimensions(new HashMap<>())
         .setMetricFilters(new ArrayList<>())
-        .setIkeyEndpointMap(Cache.bounded(100))
-        .setStatsbeatModule(new StatsbeatModule(null))
+        .setStatsbeatModule(new StatsbeatModule())
         .build();
   }
 
@@ -117,7 +113,6 @@ public class TelemetryClient {
     this.globalTags = builder.globalTags;
     this.globalProperties = builder.globalProperties;
     this.metricFilters = builder.metricFilters;
-    this.ikeyEndpointMap = builder.ikeyEndpointMap;
     this.statsbeatModule = builder.statsbeatModule;
     this.readOnlyFileSystem = builder.readOnlyFileSystem;
     this.generalExportQueueCapacity = builder.generalExportQueueCapacity;
@@ -186,9 +181,9 @@ public class TelemetryClient {
     // for simplicity not reporting back success/failure from this layer
     // only that it was successfully delivered to the next layer
     if (data instanceof MetricsData) {
-      getMetricsChannelBatcher().trackAsync(telemetryItem);
+      getMetricsBatchItemProcessor().trackAsync(telemetryItem);
     } else {
-      getGeneralChannelBatcher().trackAsync(telemetryItem);
+      getGeneralBatchItemProcessor().trackAsync(telemetryItem);
     }
   }
 
@@ -196,107 +191,109 @@ public class TelemetryClient {
     // batching, retry, throttling, and writing to disk on failure occur downstream
     // for simplicity not reporting back success/failure from this layer
     // only that it was successfully delivered to the next layer
-    getStatsbeatChannelBatcher().trackAsync(telemetry);
+    getStatsbeatBatchItemProcessor().trackAsync(telemetry);
   }
 
-  public CompletableResultCode flushChannelBatcher() {
-    if (generalChannelBatcher != null) {
-      return generalChannelBatcher.forceFlush();
-    } else {
-      return CompletableResultCode.ofSuccess();
+  public CompletableResultCode forceFlush() {
+    List<CompletableResultCode> resultCodes = new ArrayList<>();
+    if (generalBatchItemProcessor != null) {
+      resultCodes.add(generalBatchItemProcessor.forceFlush());
     }
+    if (metricsBatchItemProcessor != null) {
+      resultCodes.add(metricsBatchItemProcessor.forceFlush());
+    }
+    if (statsbeatBatchItemProcessor != null) {
+      resultCodes.add(statsbeatBatchItemProcessor.forceFlush());
+    }
+    return CompletableResultCode.ofAll(resultCodes);
   }
 
-  private BatchSpanProcessor getGeneralChannelBatcher() {
-    if (generalChannelBatcher == null) {
-      synchronized (channelInitLock) {
-        if (generalChannelBatcher == null) {
-          generalChannelBatcher = initChannelBatcher(generalExportQueueCapacity, 512, "general");
+  private BatchItemProcessor getGeneralBatchItemProcessor() {
+    if (generalBatchItemProcessor == null) {
+      synchronized (batchItemProcessorInitLock) {
+        if (generalBatchItemProcessor == null) {
+          generalBatchItemProcessor =
+              initBatchItemProcessor(generalExportQueueCapacity, 512, "general");
         }
       }
     }
-    return generalChannelBatcher;
+    return generalBatchItemProcessor;
   }
 
   // metrics get flooded every 60 seconds by default, so need much larger queue size to avoid
   // dropping telemetry (they are much smaller so a larger queue size and larger batch size are ok)
-  private BatchSpanProcessor getMetricsChannelBatcher() {
-    if (metricsChannelBatcher == null) {
-      synchronized (channelInitLock) {
-        if (metricsChannelBatcher == null) {
-          metricsChannelBatcher = initChannelBatcher(metricsExportQueueCapacity, 2048, "metrics");
+  private BatchItemProcessor getMetricsBatchItemProcessor() {
+    if (metricsBatchItemProcessor == null) {
+      synchronized (batchItemProcessorInitLock) {
+        if (metricsBatchItemProcessor == null) {
+          metricsBatchItemProcessor =
+              initBatchItemProcessor(metricsExportQueueCapacity, 2048, "metrics");
         }
       }
     }
-    return metricsChannelBatcher;
+    return metricsBatchItemProcessor;
   }
 
-  private BatchSpanProcessor initChannelBatcher(
+  private BatchItemProcessor initBatchItemProcessor(
       int exportQueueCapacity, int maxExportBatchSize, String queueName) {
-    LocalFileLoader localFileLoader = null;
-    LocalFileWriter localFileWriter = null;
+    LocalStorageSystem localStorageSystem = null;
+    TelemetryPipelineListener telemetryPipelineListener = TelemetryPipelineListener.noop();
     if (!readOnlyFileSystem) {
-      File telemetryFolder = LocalStorageUtils.getOfflineTelemetryFolder();
-      LocalFileCache localFileCache = new LocalFileCache(telemetryFolder);
-      localFileLoader =
-          new LocalFileLoader(
-              localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
-      localFileWriter =
-          new LocalFileWriter(
-              localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
+      localStorageSystem =
+          new LocalStorageSystem(
+              LocalStorageUtils.getOfflineTelemetryFolder(),
+              statsbeatModule.getNonessentialStatsbeat());
+      telemetryPipelineListener = localStorageSystem.createTelemetryPipelineListener();
     }
 
-    TelemetryChannel channel =
-        TelemetryChannel.create(
-            endpointProvider.getIngestionEndpointUrl(),
-            localFileWriter,
-            ikeyEndpointMap,
-            statsbeatModule,
-            false,
-            aadAuthentication);
+    HttpPipeline httpPipeline =
+        LazyHttpClient.newHttpPipeLine(
+            aadAuthentication,
+            new NetworkStatsbeatHttpPipelinePolicy(statsbeatModule.getNetworkStatsbeat()));
+    TelemetryPipeline telemetryPipeline =
+        new TelemetryPipeline(httpPipeline, endpointProvider.getIngestionEndpointUrl());
+
+    TelemetryItemExporter exporter =
+        new TelemetryItemExporter(telemetryPipeline, telemetryPipelineListener);
 
     if (!readOnlyFileSystem) {
-      LocalFileSender.start(localFileLoader, channel);
+      localStorageSystem.startSendingFromDisk(telemetryPipeline);
     }
 
-    return BatchSpanProcessor.builder(channel)
+    return BatchItemProcessor.builder(exporter)
         .setMaxQueueSize(exportQueueCapacity)
         .setMaxExportBatchSize(maxExportBatchSize)
         .build(queueName);
   }
 
-  public BatchSpanProcessor getStatsbeatChannelBatcher() {
-    if (statsbeatChannelBatcher == null) {
-      synchronized (channelInitLock) {
-        if (statsbeatChannelBatcher == null) {
-          File statsbeatFolder;
-          LocalFileLoader localFileLoader = null;
-          LocalFileWriter localFileWriter = null;
+  public BatchItemProcessor getStatsbeatBatchItemProcessor() {
+    if (statsbeatBatchItemProcessor == null) {
+      synchronized (batchItemProcessorInitLock) {
+        if (statsbeatBatchItemProcessor == null) {
+          LocalStorageSystem localStorageSystem = null;
+          TelemetryPipelineListener telemetryPipelineListener = TelemetryPipelineListener.noop();
           if (!readOnlyFileSystem) {
-            statsbeatFolder = LocalStorageUtils.getOfflineStatsbeatFolder();
-            LocalFileCache localFileCache = new LocalFileCache(statsbeatFolder);
-            localFileLoader = new LocalFileLoader(localFileCache, statsbeatFolder, null);
-            localFileWriter = new LocalFileWriter(localFileCache, statsbeatFolder, null);
+            localStorageSystem =
+                new LocalStorageSystem(LocalStorageUtils.getOfflineStatsbeatFolder(), null);
+            telemetryPipelineListener = localStorageSystem.createTelemetryPipelineListener();
           }
 
-          TelemetryChannel channel =
-              TelemetryChannel.create(
-                  endpointProvider.getStatsbeatEndpointUrl(),
-                  localFileWriter,
-                  ikeyEndpointMap,
-                  statsbeatModule,
-                  true,
-                  null);
+          HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(null);
+          TelemetryPipeline telemetryPipeline =
+              new TelemetryPipeline(httpPipeline, endpointProvider.getStatsbeatEndpointUrl());
+
+          TelemetryItemExporter exporter =
+              new TelemetryItemExporter(telemetryPipeline, telemetryPipelineListener);
 
           if (!readOnlyFileSystem) {
-            LocalFileSender.start(localFileLoader, channel);
+            localStorageSystem.startSendingFromDisk(telemetryPipeline);
           }
 
-          statsbeatChannelBatcher = BatchSpanProcessor.builder(channel).build("statsbeat");
+          statsbeatBatchItemProcessor = BatchItemProcessor.builder(exporter).build("statsbeat");
         }
       }
     }
-    return statsbeatChannelBatcher;
+    return statsbeatBatchItemProcessor;
   }
 
   /** Gets or sets the default instrumentation key for the application. */
@@ -422,7 +419,6 @@ public class TelemetryClient {
     private Map<String, String> globalTags;
     private Map<String, String> globalProperties;
     private List<MetricFilter> metricFilters;
-    private Cache<String, String> ikeyEndpointMap;
     private StatsbeatModule statsbeatModule;
     private boolean readOnlyFileSystem;
     private int generalExportQueueCapacity;
@@ -455,11 +451,6 @@ public class TelemetryClient {
 
     public Builder setMetricFilters(List<MetricFilter> metricFilters) {
       this.metricFilters = metricFilters;
-      return this;
-    }
-
-    public Builder setIkeyEndpointMap(Cache<String, String> ikeyEndpointMap) {
-      this.ikeyEndpointMap = ikeyEndpointMap;
       return this;
     }
 

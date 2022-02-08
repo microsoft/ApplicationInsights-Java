@@ -29,7 +29,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +77,7 @@ public class LocalFilePurger implements Runnable {
   }
 
   private void purgedExpiredFiles(File folder) {
-    Collection<File> files = FileUtils.listFiles(folder, new String[] {"trn"}, false);
+    Collection<File> files = FileUtil.listTrnFiles(folder);
     int numDeleted = 0;
     for (File file : files) {
       if (expired(file.getName())) {

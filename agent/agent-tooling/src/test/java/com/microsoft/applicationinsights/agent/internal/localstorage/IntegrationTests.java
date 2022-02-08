@@ -35,9 +35,8 @@ import com.azure.core.test.http.MockHttpResponse;
 import com.azure.core.util.Context;
 import com.microsoft.applicationinsights.agent.internal.common.TestUtils;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeat;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryChannel;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryItemExporter;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipeline;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -56,18 +55,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
 import okio.BufferedSource;
 import okio.Okio;
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
 public class IntegrationTests {
 
   private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
   private static final String PERSISTED_FILENAME = "gzipped-raw-bytes.trn";
-  private TelemetryChannel telemetryChannel;
+  private TelemetryItemExporter telemetryItemExporter;
   private LocalFileCache localFileCache;
   private LocalFileLoader localFileLoader;
 
@@ -98,16 +95,13 @@ public class IntegrationTests {
     localFileCache = new LocalFileCache(tempFolder);
     localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
 
-    StatsbeatModule statsbeatModule = Mockito.mock(StatsbeatModule.class);
-    when(statsbeatModule.getNetworkStatsbeat()).thenReturn(Mockito.mock(NetworkStatsbeat.class));
-
-    telemetryChannel =
-        new TelemetryChannel(
-            pipelineBuilder.build(),
-            new URL("http://foo.bar"),
-            new LocalFileWriter(localFileCache, tempFolder, null),
-            statsbeatModule,
-            false);
+    TelemetryPipeline telemetryPipeline =
+        new TelemetryPipeline(pipelineBuilder.build(), new URL("http://foo.bar"));
+    telemetryItemExporter =
+        new TelemetryItemExporter(
+            telemetryPipeline,
+            new LocalStorageTelemetryPipelineListener(
+                new LocalFileWriter(localFileCache, tempFolder, null)));
   }
 
   @Test
@@ -124,7 +118,8 @@ public class IntegrationTests {
       executorService.execute(
           () -> {
             for (int j = 0; j < 10; j++) {
-              CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
+              CompletableResultCode completableResultCode =
+                  telemetryItemExporter.send(telemetryItems);
               completableResultCode.join(10, SECONDS);
               assertThat(completableResultCode.isSuccess()).isFalse();
             }
@@ -154,12 +149,12 @@ public class IntegrationTests {
     File sourceFile =
         new File(getClass().getClassLoader().getResource(PERSISTED_FILENAME).getPath());
     File persistedFile = new File(tempFolder, PERSISTED_FILENAME);
-    FileUtils.copyFile(sourceFile, persistedFile);
+    Files.copy(sourceFile.toPath(), persistedFile.toPath());
 
     assertThat(persistedFile.exists()).isTrue();
 
     LocalFileCache localFileCache = new LocalFileCache(tempFolder);
-    localFileCache.addPersistedFilenameToMap(PERSISTED_FILENAME);
+    localFileCache.addPersistedFile(persistedFile);
 
     LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
     LocalFileLoader.PersistedFile loadedPersistedFile = localFileLoader.loadTelemetriesFromDisk();

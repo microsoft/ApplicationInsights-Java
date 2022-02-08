@@ -33,11 +33,9 @@ import java.nio.channels.FileChannel;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 
 /** This class manages writing a list of {@link ByteBuffer} to the file system. */
-public final class LocalFileWriter {
+final class LocalFileWriter {
 
   // 50MB per folder for all apps.
   private static final long MAX_FILE_SIZE_IN_BYTES = 52428800; // 50MB
@@ -52,7 +50,7 @@ public final class LocalFileWriter {
       new OperationLogger(
           LocalFileWriter.class, "Writing telemetry to disk (telemetry is discarded on failure)");
 
-  public LocalFileWriter(
+  LocalFileWriter(
       LocalFileCache localFileCache,
       File telemetryFolder,
       @Nullable NonessentialStatsbeat nonessentialStatsbeat) {
@@ -61,7 +59,7 @@ public final class LocalFileWriter {
     this.nonessentialStatsbeat = nonessentialStatsbeat;
   }
 
-  public void writeToDisk(List<ByteBuffer> buffers, String instrumentationKey) {
+  void writeToDisk(String instrumentationKey, List<ByteBuffer> buffers) {
     long size = getTotalSizeOfPersistedFiles(telemetryFolder);
     if (size >= MAX_FILE_SIZE_IN_BYTES) {
       operationLogger.recordFailure(
@@ -91,15 +89,13 @@ public final class LocalFileWriter {
 
     File permanentFile;
     try {
-      String filename = tempFile.getName();
-      File sourceFile = new File(telemetryFolder, filename);
       permanentFile =
-          new File(telemetryFolder, FilenameUtils.getBaseName(filename) + PERMANENT_FILE_EXTENSION);
-      FileUtils.moveFile(sourceFile, permanentFile);
+          new File(telemetryFolder, FileUtil.getBaseName(tempFile) + PERMANENT_FILE_EXTENSION);
+      FileUtil.moveFile(tempFile, permanentFile);
     } catch (IOException e) {
       operationLogger.recordFailure(
           "Fail to change "
-              + tempFile.getName()
+              + tempFile.getAbsolutePath()
               + " to have "
               + PERMANENT_FILE_EXTENSION
               + " extension: ",
@@ -108,7 +104,7 @@ public final class LocalFileWriter {
       return;
     }
 
-    localFileCache.addPersistedFilenameToMap(permanentFile.getName());
+    localFileCache.addPersistedFile(permanentFile);
 
     operationLogger.recordSuccess();
   }
@@ -140,7 +136,7 @@ public final class LocalFileWriter {
     }
 
     long sum = 0;
-    Collection<File> files = FileUtils.listFiles(telemetryFolder, new String[] {"trn"}, false);
+    Collection<File> files = FileUtil.listTrnFiles(telemetryFolder);
     for (File file : files) {
       sum += file.length();
     }
