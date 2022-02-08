@@ -21,6 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.builders;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.builders.TelemetryTruncation.truncateTelemetry;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MessageData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
 import java.util.HashMap;
@@ -42,8 +44,7 @@ public final class MessageTelemetryBuilder extends AbstractTelemetryBuilder {
   }
 
   public void setMessage(String message) {
-    data.setMessage(
-        TelemetryTruncation.truncateTelemetry(message, MAX_MESSAGE_LENGTH, "Message.message"));
+    data.setMessage(truncateTelemetry(message, MAX_MESSAGE_LENGTH, "Message.message"));
   }
 
   public void setSeverityLevel(SeverityLevel severityLevel) {

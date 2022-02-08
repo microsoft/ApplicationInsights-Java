@@ -21,6 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.builders;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.builders.TelemetryTruncation.truncateTelemetry;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.models.PageViewData;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,15 +43,15 @@ public final class PageViewTelemetryBuilder extends AbstractTelemetryBuilder {
   }
 
   public void setId(String id) {
-    data.setId(TelemetryTruncation.truncateTelemetry(id, MAX_ID_LENGTH, "PageView.id"));
+    data.setId(truncateTelemetry(id, MAX_ID_LENGTH, "PageView.id"));
   }
 
   public void setName(String name) {
-    data.setName(TelemetryTruncation.truncateTelemetry(name, MAX_NAME_LENGTH, "PageView.name"));
+    data.setName(truncateTelemetry(name, MAX_NAME_LENGTH, "PageView.name"));
   }
 
   public void setUrl(String url) {
-    data.setUrl(TelemetryTruncation.truncateTelemetry(url, MAX_URL_LENGTH, "PageView.url"));
+    data.setUrl(truncateTelemetry(url, MAX_URL_LENGTH, "PageView.url"));
   }
 
   public void setDuration(String duration) {
@@ -57,8 +59,7 @@ public final class PageViewTelemetryBuilder extends AbstractTelemetryBuilder {
   }
 
   public void setReferredUri(String referredUri) {
-    data.setReferredUri(
-        TelemetryTruncation.truncateTelemetry(referredUri, MAX_URL_LENGTH, "PageView.referredUri"));
+    data.setReferredUri(truncateTelemetry(referredUri, MAX_URL_LENGTH, "PageView.referredUri"));
   }
 
   public void addMeasurement(String key, Double value) {

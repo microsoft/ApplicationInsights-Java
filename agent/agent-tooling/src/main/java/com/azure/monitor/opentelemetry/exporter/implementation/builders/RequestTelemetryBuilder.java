@@ -21,6 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.builders;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.builders.TelemetryTruncation.truncateTelemetry;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestData;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,11 +45,11 @@ public final class RequestTelemetryBuilder extends AbstractTelemetryBuilder {
   }
 
   public void setId(String id) {
-    data.setId(TelemetryTruncation.truncateTelemetry(id, MAX_ID_LENGTH, "Request.id"));
+    data.setId(truncateTelemetry(id, MAX_ID_LENGTH, "Request.id"));
   }
 
   public void setName(String name) {
-    data.setName(TelemetryTruncation.truncateTelemetry(name, MAX_NAME_LENGTH, "Request.name"));
+    data.setName(truncateTelemetry(name, MAX_NAME_LENGTH, "Request.name"));
   }
 
   public void setDuration(String duration) {
@@ -60,17 +62,15 @@ public final class RequestTelemetryBuilder extends AbstractTelemetryBuilder {
 
   public void setResponseCode(String responseCode) {
     data.setResponseCode(
-        TelemetryTruncation.truncateTelemetry(
-            responseCode, MAX_RESPONSE_CODE_LENGTH, "Request.responseCode"));
+        truncateTelemetry(responseCode, MAX_RESPONSE_CODE_LENGTH, "Request.responseCode"));
   }
 
   public void setSource(String source) {
-    data.setSource(
-        TelemetryTruncation.truncateTelemetry(source, MAX_SOURCE_LENGTH, "Request.source"));
+    data.setSource(truncateTelemetry(source, MAX_SOURCE_LENGTH, "Request.source"));
   }
 
   public void setUrl(String url) {
-    data.setUrl(TelemetryTruncation.truncateTelemetry(url, MAX_URL_LENGTH, "Request.url"));
+    data.setUrl(truncateTelemetry(url, MAX_URL_LENGTH, "Request.url"));
   }
 
   public void addMeasurement(String key, Double value) {

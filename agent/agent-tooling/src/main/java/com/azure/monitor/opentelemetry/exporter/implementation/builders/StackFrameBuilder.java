@@ -21,6 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.builders;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.builders.TelemetryTruncation.truncateTelemetry;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.models.StackFrame;
 
 public final class StackFrameBuilder {
@@ -36,20 +38,15 @@ public final class StackFrameBuilder {
   }
 
   public void setMethod(String method) {
-    data.setMethod(
-        TelemetryTruncation.truncateTelemetry(method, MAX_METHOD_NAME_LENGTH, "StackFrame.method"));
+    data.setMethod(truncateTelemetry(method, MAX_METHOD_NAME_LENGTH, "StackFrame.method"));
   }
 
   public void setAssembly(String assembly) {
-    data.setAssembly(
-        TelemetryTruncation.truncateTelemetry(
-            assembly, MAX_ASSEMBLY_NAME_LENGTH, "StackFrame.assembly"));
+    data.setAssembly(truncateTelemetry(assembly, MAX_ASSEMBLY_NAME_LENGTH, "StackFrame.assembly"));
   }
 
   public void setFileName(String fileName) {
-    data.setFileName(
-        TelemetryTruncation.truncateTelemetry(
-            fileName, MAX_FILE_NAME_LENGTH, "StackFrame.fileName"));
+    data.setFileName(truncateTelemetry(fileName, MAX_FILE_NAME_LENGTH, "StackFrame.fileName"));
   }
 
   public void setLine(Integer line) {

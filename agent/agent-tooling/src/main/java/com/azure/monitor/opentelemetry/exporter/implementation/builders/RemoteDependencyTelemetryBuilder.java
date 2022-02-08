@@ -21,6 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.builders;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.builders.TelemetryTruncation.truncateTelemetry;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDependencyData;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,35 +46,28 @@ public final class RemoteDependencyTelemetryBuilder extends AbstractTelemetryBui
   }
 
   public void setId(String id) {
-    data.setId(TelemetryTruncation.truncateTelemetry(id, MAX_ID_LENGTH, "RemoteDependency.id"));
+    data.setId(truncateTelemetry(id, MAX_ID_LENGTH, "RemoteDependency.id"));
   }
 
   public void setName(String name) {
-    data.setName(
-        TelemetryTruncation.truncateTelemetry(name, MAX_NAME_LENGTH, "RemoteDependency.name"));
+    data.setName(truncateTelemetry(name, MAX_NAME_LENGTH, "RemoteDependency.name"));
   }
 
   public void setResultCode(String resultCode) {
     data.setResultCode(
-        TelemetryTruncation.truncateTelemetry(
-            resultCode, MAX_RESULT_CODE_LENGTH, "RemoteDependency.resultCode"));
+        truncateTelemetry(resultCode, MAX_RESULT_CODE_LENGTH, "RemoteDependency.resultCode"));
   }
 
   public void setData(String data) {
-    this.data.setData(
-        TelemetryTruncation.truncateTelemetry(data, MAX_DATA_LENGTH, "RemoteDependency.data"));
+    this.data.setData(truncateTelemetry(data, MAX_DATA_LENGTH, "RemoteDependency.data"));
   }
 
   public void setType(String type) {
-    data.setType(
-        TelemetryTruncation.truncateTelemetry(
-            type, MAX_DEPENDENCY_TYPE_LENGTH, "RemoteDependency.type"));
+    data.setType(truncateTelemetry(type, MAX_DEPENDENCY_TYPE_LENGTH, "RemoteDependency.type"));
   }
 
   public void setTarget(String target) {
-    data.setTarget(
-        TelemetryTruncation.truncateTelemetry(
-            target, MAX_TARGET_NAME_LENGTH, "RemoteDependency.target"));
+    data.setTarget(truncateTelemetry(target, MAX_TARGET_NAME_LENGTH, "RemoteDependency.target"));
   }
 
   public void setDuration(String duration) {

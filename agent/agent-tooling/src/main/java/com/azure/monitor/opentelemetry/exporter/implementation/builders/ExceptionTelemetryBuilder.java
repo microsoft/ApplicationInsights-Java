@@ -21,6 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.builders;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.builders.TelemetryTruncation.truncateTelemetry;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionDetails;
@@ -57,9 +59,7 @@ public final class ExceptionTelemetryBuilder extends AbstractTelemetryBuilder {
   }
 
   public void setProblemId(String problemId) {
-    data.setProblemId(
-        TelemetryTruncation.truncateTelemetry(
-            problemId, MAX_PROBLEM_ID_LENGTH, "Exception.problemId"));
+    data.setProblemId(truncateTelemetry(problemId, MAX_PROBLEM_ID_LENGTH, "Exception.problemId"));
   }
 
   public void addMeasurement(String key, Double value) {

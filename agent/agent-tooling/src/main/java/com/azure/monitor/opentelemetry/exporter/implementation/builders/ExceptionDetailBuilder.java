@@ -21,6 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.builders;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.builders.TelemetryTruncation.truncateTelemetry;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.models.StackFrame;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionDetails;
 import java.util.ArrayList;
@@ -42,15 +44,11 @@ public final class ExceptionDetailBuilder {
   }
 
   public void setTypeName(String typeName) {
-    data.setTypeName(
-        TelemetryTruncation.truncateTelemetry(
-            typeName, MAX_NAME_LENGTH, "ExceptionDetail.typeName"));
+    data.setTypeName(truncateTelemetry(typeName, MAX_NAME_LENGTH, "ExceptionDetail.typeName"));
   }
 
   public void setMessage(String message) {
-    data.setMessage(
-        TelemetryTruncation.truncateTelemetry(
-            message, MAX_MESSAGE_LENGTH, "ExceptionDetail.message"));
+    data.setMessage(truncateTelemetry(message, MAX_MESSAGE_LENGTH, "ExceptionDetail.message"));
   }
 
   public void setHasFullStack(Boolean hasFullStack) {
@@ -58,8 +56,7 @@ public final class ExceptionDetailBuilder {
   }
 
   public void setStack(String stack) {
-    data.setStack(
-        TelemetryTruncation.truncateTelemetry(stack, MAX_MESSAGE_LENGTH, "ExceptionDetail.stack"));
+    data.setStack(truncateTelemetry(stack, MAX_MESSAGE_LENGTH, "ExceptionDetail.stack"));
   }
 
   public void setParsedStack(List<StackFrameBuilder> builders) {

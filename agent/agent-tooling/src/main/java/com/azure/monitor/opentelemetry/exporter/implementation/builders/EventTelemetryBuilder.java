@@ -21,6 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.builders;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.builders.TelemetryTruncation.truncateTelemetry;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,7 +43,7 @@ public final class EventTelemetryBuilder extends AbstractTelemetryBuilder {
   }
 
   public void setName(String name) {
-    data.setName(TelemetryTruncation.truncateTelemetry(name, MAX_EVENT_NAME_LENGTH, "Event.name"));
+    data.setName(truncateTelemetry(name, MAX_EVENT_NAME_LENGTH, "Event.name"));
   }
 
   public void addMeasurement(String key, Double value) {

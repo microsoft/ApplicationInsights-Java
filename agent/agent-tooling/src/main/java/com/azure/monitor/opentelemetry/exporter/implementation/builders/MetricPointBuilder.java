@@ -21,6 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.builders;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.builders.TelemetryTruncation.truncateTelemetry;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 
@@ -33,12 +35,11 @@ public final class MetricPointBuilder {
 
   public void setNamespace(String namespace) {
     data.setNamespace(
-        TelemetryTruncation.truncateTelemetry(
-            namespace, MAX_METRIC_NAME_SPACE_LENGTH, "MetricPoint.namespace"));
+        truncateTelemetry(namespace, MAX_METRIC_NAME_SPACE_LENGTH, "MetricPoint.namespace"));
   }
 
   public void setName(String name) {
-    data.setName(TelemetryTruncation.truncateTelemetry(name, MAX_NAME_LENGTH, "MetricPoint.name"));
+    data.setName(truncateTelemetry(name, MAX_NAME_LENGTH, "MetricPoint.name"));
   }
 
   public void setDataPointType(DataPointType dataPointType) {
