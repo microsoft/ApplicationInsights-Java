@@ -40,16 +40,16 @@ import java.util.zip.GZIPOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TelemetryItemPipeline {
+public class TelemetryItemExporter {
 
-  private static final Logger logger = LoggerFactory.getLogger(TelemetryItemPipeline.class);
+  private static final Logger logger = LoggerFactory.getLogger(TelemetryItemExporter.class);
 
   private static final ObjectMapper mapper = createObjectMapper();
 
   private static final AppInsightsByteBufferPool byteBufferPool = new AppInsightsByteBufferPool();
 
   private static final OperationLogger encodeBatchOperationLogger =
-      new OperationLogger(TelemetryItemPipeline.class, "Encoding telemetry batch into json");
+      new OperationLogger(TelemetryItemExporter.class, "Encoding telemetry batch into json");
 
   private static ObjectMapper createObjectMapper() {
     ObjectMapper mapper = new ObjectMapper();
@@ -57,18 +57,18 @@ public class TelemetryItemPipeline {
     // it's important to pass in the "agent class loader" since TelemetryItemPipeline is initialized
     // lazily and can be initialized via an application thread, in which case the thread context
     // class loader is used to look up jsr305 module and its not found
-    mapper.registerModules(ObjectMapper.findModules(TelemetryItemPipeline.class.getClassLoader()));
+    mapper.registerModules(ObjectMapper.findModules(TelemetryItemExporter.class.getClassLoader()));
     mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     return mapper;
   }
 
-  private final TelemetryByteBufferPipeline channel;
+  private final TelemetryPipeline byteBufferPipeline;
   private final TelemetryPipelineListener listener;
 
   // e.g. construct with diagnostic listener and local storage listener
-  public TelemetryItemPipeline(
-      TelemetryByteBufferPipeline channel, TelemetryPipelineListener listener) {
-    this.channel = channel;
+  public TelemetryItemExporter(
+      TelemetryPipeline byteBufferPipeline, TelemetryPipelineListener listener) {
+    this.byteBufferPipeline = byteBufferPipeline;
     this.listener = listener;
   }
 
@@ -101,7 +101,7 @@ public class TelemetryItemPipeline {
           "Error encoding telemetry items: " + t.getMessage(), t);
       return CompletableResultCode.ofFailure();
     }
-    return channel.send(byteBuffers, instrumentationKey, listener);
+    return byteBufferPipeline.send(byteBuffers, instrumentationKey, listener);
   }
 
   List<ByteBuffer> encode(List<TelemetryItem> telemetryItems) throws IOException {

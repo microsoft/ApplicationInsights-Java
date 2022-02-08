@@ -37,27 +37,27 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.jctools.queues.MpscArrayQueue;
 
 // copied from io.opentelemetry.sdk.trace.export.BatchSpanProcessor
-public final class BatchSpanProcessor {
+public final class BatchItemProcessor {
 
   private static final String WORKER_THREAD_NAME =
-      BatchSpanProcessor.class.getSimpleName() + "_WorkerThread";
+      BatchItemProcessor.class.getSimpleName() + "_WorkerThread";
 
   private final Worker worker;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
   /**
-   * Returns a new Builder for {@link BatchSpanProcessor}.
+   * Returns a new Builder for {@link BatchItemProcessor}.
    *
-   * @param spanExporter the {@code SpanExporter} to where the Spans are pushed.
-   * @return a new {@link BatchSpanProcessor}.
-   * @throws NullPointerException if the {@code spanExporter} is {@code null}.
+   * @param exporter the {@code TelemetryItemExporter} to where the telemetry items are pushed.
+   * @return a new {@link BatchItemProcessor}.
+   * @throws NullPointerException if the {@code exporter} is {@code null}.
    */
-  public static BatchSpanProcessorBuilder builder(TelemetryItemPipeline spanExporter) {
-    return new BatchSpanProcessorBuilder(spanExporter);
+  public static BatchItemProcessorBuilder builder(TelemetryItemExporter exporter) {
+    return new BatchItemProcessorBuilder(exporter);
   }
 
-  BatchSpanProcessor(
-      TelemetryItemPipeline spanExporter,
+  BatchItemProcessor(
+      TelemetryItemExporter exporter,
       long scheduleDelayNanos,
       int maxQueueSize,
       int maxExportBatchSize,
@@ -66,7 +66,7 @@ public final class BatchSpanProcessor {
     MpscArrayQueue<TelemetryItem> queue = new MpscArrayQueue<>(maxQueueSize);
     this.worker =
         new Worker(
-            spanExporter,
+            exporter,
             scheduleDelayNanos,
             maxExportBatchSize,
             exporterTimeoutNanos,
@@ -77,8 +77,8 @@ public final class BatchSpanProcessor {
     workerThread.start();
   }
 
-  public void trackAsync(TelemetryItem span) {
-    worker.addSpan(span);
+  public void trackAsync(TelemetryItem item) {
+    worker.addItem(item);
   }
 
   public CompletableResultCode shutdown() {
@@ -92,11 +92,11 @@ public final class BatchSpanProcessor {
     return worker.forceFlush();
   }
 
-  // Worker is a thread that batches multiple spans and calls the registered SpanExporter to export
-  // the data.
+  // Worker is a thread that batches multiple items and calls the registered TelemetryItemExporter
+  // to export the data.
   private static final class Worker implements Runnable {
 
-    private final TelemetryItemPipeline spanExporter;
+    private final TelemetryItemExporter exporter;
     private final long scheduleDelayNanos;
     private final int maxExportBatchSize;
     private final long exporterTimeoutNanos;
@@ -106,30 +106,30 @@ public final class BatchSpanProcessor {
     private final Queue<TelemetryItem> queue;
     private final int queueCapacity;
     private final String queueName;
-    // When waiting on the spans queue, exporter thread sets this atomic to the number of more
-    // spans it needs before doing an export. Writer threads would then wait for the queue to reach
-    // spansNeeded size before notifying the exporter thread about new entries.
+    // When waiting on the items queue, exporter thread sets this atomic to the number of more
+    // items it needs before doing an export. Writer threads would then wait for the queue to reach
+    // itemsNeeded size before notifying the exporter thread about new entries.
     // Integer.MAX_VALUE is used to imply that exporter thread is not expecting any signal. Since
     // exporter thread doesn't expect any signal initially, this value is initialized to
     // Integer.MAX_VALUE.
-    private final AtomicInteger spansNeeded = new AtomicInteger(Integer.MAX_VALUE);
+    private final AtomicInteger itemsNeeded = new AtomicInteger(Integer.MAX_VALUE);
     private final BlockingQueue<Boolean> signal;
     private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
     private volatile boolean continueWork = true;
     private final ArrayList<TelemetryItem> batch;
 
-    private static final OperationLogger queuingSpanLogger =
-        new OperationLogger(BatchSpanProcessor.class, "Queuing span");
+    private static final OperationLogger queuingItemLogger =
+        new OperationLogger(BatchItemProcessor.class, "Queuing telemetry item");
 
     private Worker(
-        TelemetryItemPipeline spanExporter,
+        TelemetryItemExporter exporter,
         long scheduleDelayNanos,
         int maxExportBatchSize,
         long exporterTimeoutNanos,
         Queue<TelemetryItem> queue,
         int queueCapacity,
         String queueName) {
-      this.spanExporter = spanExporter;
+      this.exporter = exporter;
       this.scheduleDelayNanos = scheduleDelayNanos;
       this.maxExportBatchSize = maxExportBatchSize;
       this.exporterTimeoutNanos = exporterTimeoutNanos;
@@ -140,9 +140,9 @@ public final class BatchSpanProcessor {
       this.batch = new ArrayList<>(this.maxExportBatchSize);
     }
 
-    private void addSpan(TelemetryItem span) {
-      if (!queue.offer(span)) {
-        queuingSpanLogger.recordFailure(
+    private void addItem(TelemetryItem item) {
+      if (!queue.offer(item)) {
+        queuingItemLogger.recordFailure(
             "Max "
                 + queueName
                 + " export queue capacity of "
@@ -156,8 +156,8 @@ public final class BatchSpanProcessor {
                 + (queueCapacity * 2)
                 + " } }");
       } else {
-        queuingSpanLogger.recordSuccess();
-        if (queue.size() >= spansNeeded.get()) {
+        queuingItemLogger.recordSuccess();
+        if (queue.size() >= itemsNeeded.get()) {
           signal.offer(true);
         }
       }
@@ -182,9 +182,9 @@ public final class BatchSpanProcessor {
           try {
             long pollWaitTime = nextExportTime - System.nanoTime();
             if (pollWaitTime > 0) {
-              spansNeeded.set(maxExportBatchSize - batch.size());
+              itemsNeeded.set(maxExportBatchSize - batch.size());
               signal.poll(pollWaitTime, TimeUnit.NANOSECONDS);
-              spansNeeded.set(Integer.MAX_VALUE);
+              itemsNeeded.set(Integer.MAX_VALUE);
             }
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -195,12 +195,12 @@ public final class BatchSpanProcessor {
     }
 
     private void flush() {
-      int spansToFlush = queue.size();
-      while (spansToFlush > 0) {
-        TelemetryItem span = queue.poll();
-        assert span != null;
-        batch.add(span);
-        spansToFlush--;
+      int itemsToFlush = queue.size();
+      while (itemsToFlush > 0) {
+        TelemetryItem item = queue.poll();
+        assert item != null;
+        batch.add(item);
+        itemsToFlush--;
         if (batch.size() >= maxExportBatchSize) {
           exportCurrentBatch();
         }
@@ -251,7 +251,7 @@ public final class BatchSpanProcessor {
 
       try {
         // batching, retry, logging, and writing to disk on failure occur downstream
-        CompletableResultCode result = spanExporter.send(Collections.unmodifiableList(batch));
+        CompletableResultCode result = exporter.send(Collections.unmodifiableList(batch));
         result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
       } finally {
         batch.clear();

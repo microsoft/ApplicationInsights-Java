@@ -56,7 +56,7 @@ import org.junit.jupiter.api.io.TempDir;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public class TelemetryChannelTest {
+public class TelemetryItemExporterTest {
   RecordingHttpClient recordingHttpClient;
   private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
   private static final String REDIRECT_INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEE";
@@ -65,14 +65,14 @@ public class TelemetryChannelTest {
 
   @TempDir File tempFolder;
 
-  private TelemetryItemPipeline getTelemetryChannel() throws MalformedURLException {
+  private TelemetryItemExporter getExporter() throws MalformedURLException {
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(recordingHttpClient);
     LocalStorageSystem localStorageSystem = new LocalStorageSystem(tempFolder, null);
 
-    TelemetryByteBufferPipeline telemetryByteBufferPipeline =
-        new TelemetryByteBufferPipeline(pipelineBuilder.build(), new URL(END_POINT_URL));
-    return new TelemetryItemPipeline(
-        telemetryByteBufferPipeline, localStorageSystem.createTelemetryChannelListener());
+    TelemetryPipeline telemetryPipeline =
+        new TelemetryPipeline(pipelineBuilder.build(), new URL(END_POINT_URL));
+    return new TelemetryItemExporter(
+        telemetryPipeline, localStorageSystem.createTelemetryPipelineListener());
   }
 
   @Nullable
@@ -126,10 +126,10 @@ public class TelemetryChannelTest {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
     telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
-    TelemetryItemPipeline telemetryChannel = getTelemetryChannel();
+    TelemetryItemExporter exporter = getExporter();
 
     // when
-    CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
+    CompletableResultCode completableResultCode = exporter.send(telemetryItems);
 
     // then
     assertThat(completableResultCode.isSuccess()).isEqualTo(true);
@@ -143,10 +143,10 @@ public class TelemetryChannelTest {
     telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
     telemetryItems.add(
         TestUtils.createMetricTelemetry("metric" + 2, 2, REDIRECT_INSTRUMENTATION_KEY));
-    TelemetryItemPipeline telemetryChannel = getTelemetryChannel();
+    TelemetryItemExporter exporter = getExporter();
 
     // when
-    CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
+    CompletableResultCode completableResultCode = exporter.send(telemetryItems);
 
     // then
     assertThat(completableResultCode.isSuccess()).isEqualTo(true);
@@ -159,10 +159,10 @@ public class TelemetryChannelTest {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
     telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
     telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 2, 2, INSTRUMENTATION_KEY));
-    TelemetryItemPipeline telemetryChannel = getTelemetryChannel();
+    TelemetryItemExporter exporter = getExporter();
 
     // when
-    CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
+    CompletableResultCode completableResultCode = exporter.send(telemetryItems);
 
     // then
     assertThat(completableResultCode.isSuccess()).isEqualTo(true);
@@ -179,10 +179,10 @@ public class TelemetryChannelTest {
         TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
     telemetryItems.add(
         TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
-    TelemetryItemPipeline telemetryChannel = getTelemetryChannel();
+    TelemetryItemExporter exporter = getExporter();
 
     // when
-    CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
+    CompletableResultCode completableResultCode = exporter.send(telemetryItems);
 
     // then
     assertThat(completableResultCode.isSuccess()).isEqualTo(true);
@@ -199,16 +199,16 @@ public class TelemetryChannelTest {
         TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
     telemetryItems.add(
         TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
-    TelemetryItemPipeline telemetryChannel = getTelemetryChannel();
+    TelemetryItemExporter exporter = getExporter();
 
     // when
-    CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
+    CompletableResultCode completableResultCode = exporter.send(telemetryItems);
 
     // then
     assertThat(completableResultCode.isSuccess()).isEqualTo(true);
     assertThat(recordingHttpClient.getCount()).isEqualTo(3);
 
-    completableResultCode = telemetryChannel.send(telemetryItems);
+    completableResultCode = exporter.send(telemetryItems);
 
     // then
     // the redirect url should be cached and should not invoke another redirect.
@@ -226,16 +226,16 @@ public class TelemetryChannelTest {
         TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
     telemetryItems.add(
         TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
-    TelemetryItemPipeline telemetryChannel = getTelemetryChannel();
+    TelemetryItemExporter exporter = getExporter();
 
     // when
-    CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
+    CompletableResultCode completableResultCode = exporter.send(telemetryItems);
 
     // then
     assertThat(completableResultCode.isSuccess()).isEqualTo(true);
     assertThat(recordingHttpClient.getCount()).isEqualTo(3);
 
-    completableResultCode = telemetryChannel.send(telemetryItems);
+    completableResultCode = exporter.send(telemetryItems);
 
     // then
     // the redirect url should be cached and should not invoke another redirect.

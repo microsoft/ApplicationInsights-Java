@@ -401,7 +401,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
   public void flush() {
     // this is not null because sdk instrumentation is not added until TelemetryClient.setActive()
     // is called
-    TelemetryClient.getActive().flushChannelBatcher().join(10, SECONDS);
+    TelemetryClient.getActive().forceFlush().join(10, SECONDS);
   }
 
   @Override

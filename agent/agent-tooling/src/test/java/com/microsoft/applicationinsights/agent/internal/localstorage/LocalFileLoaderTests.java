@@ -37,7 +37,7 @@ import com.azure.core.util.Context;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.agent.internal.MockHttpResponse;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryByteBufferPipeline;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipeline;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -246,8 +246,8 @@ public class LocalFileLoaderTests {
     LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder, null);
     LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
 
-    TelemetryByteBufferPipeline telemetryByteBufferPipeline =
-        new TelemetryByteBufferPipeline(pipelineBuilder.build(), new URL("http://foo.bar"));
+    TelemetryPipeline telemetryPipeline =
+        new TelemetryPipeline(pipelineBuilder.build(), new URL("http://foo.bar"));
 
     // persist 10 files to disk
     for (int i = 0; i < 10; i++) {
@@ -266,7 +266,7 @@ public class LocalFileLoaderTests {
     for (int i = 0; i < 10; i++) {
       LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
       CompletableResultCode completableResultCode =
-          telemetryByteBufferPipeline.send(
+          telemetryPipeline.send(
               singletonList(persistedFile.rawBytes),
               persistedFile.instrumentationKey,
               new LocalFileSenderTelemetryPipelineListener(localFileLoader, persistedFile.file));
@@ -297,8 +297,8 @@ public class LocalFileLoaderTests {
     LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
     LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder, null);
 
-    TelemetryByteBufferPipeline telemetryByteBufferPipeline =
-        new TelemetryByteBufferPipeline(pipelineBuilder.build(), new URL("http://foo.bar"));
+    TelemetryPipeline telemetryPipeline =
+        new TelemetryPipeline(pipelineBuilder.build(), new URL("http://foo.bar"));
 
     // persist 10 files to disk
     for (int i = 0; i < 10; i++) {
@@ -317,7 +317,7 @@ public class LocalFileLoaderTests {
       assertThat(persistedFile.instrumentationKey).isEqualTo(INSTRUMENTATION_KEY);
 
       CompletableResultCode completableResultCode =
-          telemetryByteBufferPipeline.send(
+          telemetryPipeline.send(
               singletonList(persistedFile.rawBytes),
               persistedFile.instrumentationKey,
               new LocalFileSenderTelemetryPipelineListener(localFileLoader, persistedFile.file));

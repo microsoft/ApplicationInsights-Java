@@ -40,7 +40,7 @@ import java.util.Map;
 import java.util.Set;
 import reactor.core.publisher.Mono;
 
-public class TelemetryByteBufferPipeline {
+public class TelemetryPipeline {
 
   static final Set<Integer> REDIRECT_RESPONSE_CODES = new HashSet<>(asList(301, 302, 307, 308));
 
@@ -60,7 +60,7 @@ public class TelemetryByteBufferPipeline {
             }
           });
 
-  public TelemetryByteBufferPipeline(HttpPipeline pipeline, URL ingestionEndpointUrl) {
+  public TelemetryPipeline(HttpPipeline pipeline, URL ingestionEndpointUrl) {
     this.pipeline = pipeline;
     this.ingestionEndpointUrl = ingestionEndpointUrl;
   }

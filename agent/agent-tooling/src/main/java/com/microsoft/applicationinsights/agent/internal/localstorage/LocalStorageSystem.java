@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
 import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryByteBufferPipeline;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipeline;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipelineListener;
 import java.io.File;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -39,12 +39,12 @@ public class LocalStorageSystem {
     writer = new LocalFileWriter(localFileCache, telemetryFolder, nonessentialStatsbeat);
   }
 
-  public TelemetryPipelineListener createTelemetryChannelListener() {
+  public TelemetryPipelineListener createTelemetryPipelineListener() {
     return new LocalStorageTelemetryPipelineListener(writer);
   }
 
-  public void startSendingFromDisk(TelemetryByteBufferPipeline channel) {
-    LocalFileSender.start(loader, channel);
+  public void startSendingFromDisk(TelemetryPipeline pipeline) {
+    LocalFileSender.start(loader, pipeline);
   }
 
   public void stop() {

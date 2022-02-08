@@ -308,7 +308,7 @@ class AiComponentInstaller {
       CompletableResultCode result = new CompletableResultCode();
       otelFlush.whenComplete(
           () -> {
-            CompletableResultCode batchingClientFlush = telemetryClient.flushChannelBatcher();
+            CompletableResultCode batchingClientFlush = telemetryClient.forceFlush();
             batchingClientFlush.whenComplete(
                 () -> {
                   if (otelFlush.isSuccess() && batchingClientFlush.isSuccess()) {

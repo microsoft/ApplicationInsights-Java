@@ -35,8 +35,8 @@ import com.azure.core.test.http.MockHttpResponse;
 import com.azure.core.util.Context;
 import com.microsoft.applicationinsights.agent.internal.common.TestUtils;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryByteBufferPipeline;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryItemPipeline;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryItemExporter;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipeline;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -64,7 +64,7 @@ public class IntegrationTests {
 
   private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
   private static final String PERSISTED_FILENAME = "gzipped-raw-bytes.trn";
-  private TelemetryItemPipeline telemetryChannel;
+  private TelemetryItemExporter telemetryItemExporter;
   private LocalFileCache localFileCache;
   private LocalFileLoader localFileLoader;
 
@@ -95,11 +95,11 @@ public class IntegrationTests {
     localFileCache = new LocalFileCache(tempFolder);
     localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
 
-    TelemetryByteBufferPipeline telemetryByteBufferPipeline =
-        new TelemetryByteBufferPipeline(pipelineBuilder.build(), new URL("http://foo.bar"));
-    telemetryChannel =
-        new TelemetryItemPipeline(
-            telemetryByteBufferPipeline,
+    TelemetryPipeline telemetryPipeline =
+        new TelemetryPipeline(pipelineBuilder.build(), new URL("http://foo.bar"));
+    telemetryItemExporter =
+        new TelemetryItemExporter(
+            telemetryPipeline,
             new LocalStorageTelemetryPipelineListener(
                 new LocalFileWriter(localFileCache, tempFolder, null)));
   }
@@ -118,7 +118,8 @@ public class IntegrationTests {
       executorService.execute(
           () -> {
             for (int j = 0; j < 10; j++) {
-              CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
+              CompletableResultCode completableResultCode =
+                  telemetryItemExporter.send(telemetryItems);
               completableResultCode.join(10, SECONDS);
               assertThat(completableResultCode.isSuccess()).isFalse();
             }

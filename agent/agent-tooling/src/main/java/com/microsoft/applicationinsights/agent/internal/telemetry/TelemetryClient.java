@@ -91,10 +91,10 @@ public class TelemetryClient {
 
   @Nullable private final Configuration.AadAuthentication aadAuthentication;
 
-  private final Object channelInitLock = new Object();
-  private volatile @MonotonicNonNull BatchSpanProcessor generalChannelBatcher;
-  private volatile @MonotonicNonNull BatchSpanProcessor metricsChannelBatcher;
-  private volatile @MonotonicNonNull BatchSpanProcessor statsbeatChannelBatcher;
+  private final Object batchItemProcessorInitLock = new Object();
+  private volatile @MonotonicNonNull BatchItemProcessor generalBatchItemProcessor;
+  private volatile @MonotonicNonNull BatchItemProcessor metricsBatchItemProcessor;
+  private volatile @MonotonicNonNull BatchItemProcessor statsbeatBatchItemProcessor;
 
   public static TelemetryClient.Builder builder() {
     return new TelemetryClient.Builder();
@@ -181,9 +181,9 @@ public class TelemetryClient {
     // for simplicity not reporting back success/failure from this layer
     // only that it was successfully delivered to the next layer
     if (data instanceof MetricsData) {
-      getMetricsChannelBatcher().trackAsync(telemetryItem);
+      getMetricsBatchItemProcessor().trackAsync(telemetryItem);
     } else {
-      getGeneralChannelBatcher().trackAsync(telemetryItem);
+      getGeneralBatchItemProcessor().trackAsync(telemetryItem);
     }
   }
 
@@ -191,42 +191,50 @@ public class TelemetryClient {
     // batching, retry, throttling, and writing to disk on failure occur downstream
     // for simplicity not reporting back success/failure from this layer
     // only that it was successfully delivered to the next layer
-    getStatsbeatChannelBatcher().trackAsync(telemetry);
+    getStatsbeatBatchItemProcessor().trackAsync(telemetry);
   }
 
-  public CompletableResultCode flushChannelBatcher() {
-    if (generalChannelBatcher != null) {
-      return generalChannelBatcher.forceFlush();
-    } else {
-      return CompletableResultCode.ofSuccess();
+  public CompletableResultCode forceFlush() {
+    List<CompletableResultCode> resultCodes = new ArrayList<>();
+    if (generalBatchItemProcessor != null) {
+      resultCodes.add(generalBatchItemProcessor.forceFlush());
     }
+    if (metricsBatchItemProcessor != null) {
+      resultCodes.add(metricsBatchItemProcessor.forceFlush());
+    }
+    if (statsbeatBatchItemProcessor != null) {
+      resultCodes.add(statsbeatBatchItemProcessor.forceFlush());
+    }
+    return CompletableResultCode.ofAll(resultCodes);
   }
 
-  private BatchSpanProcessor getGeneralChannelBatcher() {
-    if (generalChannelBatcher == null) {
-      synchronized (channelInitLock) {
-        if (generalChannelBatcher == null) {
-          generalChannelBatcher = initChannelBatcher(generalExportQueueCapacity, 512, "general");
+  private BatchItemProcessor getGeneralBatchItemProcessor() {
+    if (generalBatchItemProcessor == null) {
+      synchronized (batchItemProcessorInitLock) {
+        if (generalBatchItemProcessor == null) {
+          generalBatchItemProcessor =
+              initBatchItemProcessor(generalExportQueueCapacity, 512, "general");
         }
       }
     }
-    return generalChannelBatcher;
+    return generalBatchItemProcessor;
   }
 
   // metrics get flooded every 60 seconds by default, so need much larger queue size to avoid
   // dropping telemetry (they are much smaller so a larger queue size and larger batch size are ok)
-  private BatchSpanProcessor getMetricsChannelBatcher() {
-    if (metricsChannelBatcher == null) {
-      synchronized (channelInitLock) {
-        if (metricsChannelBatcher == null) {
-          metricsChannelBatcher = initChannelBatcher(metricsExportQueueCapacity, 2048, "metrics");
+  private BatchItemProcessor getMetricsBatchItemProcessor() {
+    if (metricsBatchItemProcessor == null) {
+      synchronized (batchItemProcessorInitLock) {
+        if (metricsBatchItemProcessor == null) {
+          metricsBatchItemProcessor =
+              initBatchItemProcessor(metricsExportQueueCapacity, 2048, "metrics");
         }
       }
     }
-    return metricsChannelBatcher;
+    return metricsBatchItemProcessor;
   }
 
-  private BatchSpanProcessor initChannelBatcher(
+  private BatchItemProcessor initBatchItemProcessor(
       int exportQueueCapacity, int maxExportBatchSize, String queueName) {
     LocalStorageSystem localStorageSystem = null;
     TelemetryPipelineListener telemetryPipelineListener = TelemetryPipelineListener.noop();
@@ -235,59 +243,57 @@ public class TelemetryClient {
           new LocalStorageSystem(
               LocalStorageUtils.getOfflineTelemetryFolder(),
               statsbeatModule.getNonessentialStatsbeat());
-      telemetryPipelineListener = localStorageSystem.createTelemetryChannelListener();
+      telemetryPipelineListener = localStorageSystem.createTelemetryPipelineListener();
     }
 
     HttpPipeline httpPipeline =
         LazyHttpClient.newHttpPipeLine(
             aadAuthentication,
             new NetworkStatsbeatHttpPipelinePolicy(statsbeatModule.getNetworkStatsbeat()));
-    TelemetryByteBufferPipeline telemetryByteBufferPipeline =
-        new TelemetryByteBufferPipeline(httpPipeline, endpointProvider.getIngestionEndpointUrl());
+    TelemetryPipeline telemetryPipeline =
+        new TelemetryPipeline(httpPipeline, endpointProvider.getIngestionEndpointUrl());
 
-    TelemetryItemPipeline telemetryItemPipeline =
-        new TelemetryItemPipeline(telemetryByteBufferPipeline, telemetryPipelineListener);
+    TelemetryItemExporter exporter =
+        new TelemetryItemExporter(telemetryPipeline, telemetryPipelineListener);
 
     if (!readOnlyFileSystem) {
-      localStorageSystem.startSendingFromDisk(telemetryByteBufferPipeline);
+      localStorageSystem.startSendingFromDisk(telemetryPipeline);
     }
 
-    return BatchSpanProcessor.builder(telemetryItemPipeline)
+    return BatchItemProcessor.builder(exporter)
         .setMaxQueueSize(exportQueueCapacity)
         .setMaxExportBatchSize(maxExportBatchSize)
         .build(queueName);
   }
 
-  public BatchSpanProcessor getStatsbeatChannelBatcher() {
-    if (statsbeatChannelBatcher == null) {
-      synchronized (channelInitLock) {
-        if (statsbeatChannelBatcher == null) {
+  public BatchItemProcessor getStatsbeatBatchItemProcessor() {
+    if (statsbeatBatchItemProcessor == null) {
+      synchronized (batchItemProcessorInitLock) {
+        if (statsbeatBatchItemProcessor == null) {
           LocalStorageSystem localStorageSystem = null;
           TelemetryPipelineListener telemetryPipelineListener = TelemetryPipelineListener.noop();
           if (!readOnlyFileSystem) {
             localStorageSystem =
                 new LocalStorageSystem(LocalStorageUtils.getOfflineStatsbeatFolder(), null);
-            telemetryPipelineListener = localStorageSystem.createTelemetryChannelListener();
+            telemetryPipelineListener = localStorageSystem.createTelemetryPipelineListener();
           }
 
           HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(null);
-          TelemetryByteBufferPipeline telemetryByteBufferPipeline =
-              new TelemetryByteBufferPipeline(
-                  httpPipeline, endpointProvider.getStatsbeatEndpointUrl());
+          TelemetryPipeline telemetryPipeline =
+              new TelemetryPipeline(httpPipeline, endpointProvider.getStatsbeatEndpointUrl());
 
-          TelemetryItemPipeline telemetryItemPipeline =
-              new TelemetryItemPipeline(telemetryByteBufferPipeline, telemetryPipelineListener);
+          TelemetryItemExporter exporter =
+              new TelemetryItemExporter(telemetryPipeline, telemetryPipelineListener);
 
           if (!readOnlyFileSystem) {
-            localStorageSystem.startSendingFromDisk(telemetryByteBufferPipeline);
+            localStorageSystem.startSendingFromDisk(telemetryPipeline);
           }
 
-          statsbeatChannelBatcher =
-              BatchSpanProcessor.builder(telemetryItemPipeline).build("statsbeat");
+          statsbeatBatchItemProcessor = BatchItemProcessor.builder(exporter).build("statsbeat");
         }
       }
     }
-    return statsbeatChannelBatcher;
+    return statsbeatBatchItemProcessor;
   }
 
   /** Gets or sets the default instrumentation key for the application. */
