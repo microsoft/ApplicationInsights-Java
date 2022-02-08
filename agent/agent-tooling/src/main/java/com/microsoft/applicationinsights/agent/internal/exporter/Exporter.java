@@ -25,20 +25,20 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.Exceptions;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDependencyTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.UrlParser;
 import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.builders.AbstractTelemetryBuilder;
-import com.microsoft.applicationinsights.agent.internal.exporter.builders.ExceptionTelemetryBuilder;
-import com.microsoft.applicationinsights.agent.internal.exporter.builders.MessageTelemetryBuilder;
-import com.microsoft.applicationinsights.agent.internal.exporter.builders.RemoteDependencyTelemetryBuilder;
-import com.microsoft.applicationinsights.agent.internal.exporter.builders.RequestTelemetryBuilder;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.ContextTagKeys;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.SeverityLevel;
-import com.microsoft.applicationinsights.agent.internal.exporter.utils.Exceptions;
 import com.microsoft.applicationinsights.agent.internal.exporter.utils.Trie;
-import com.microsoft.applicationinsights.agent.internal.exporter.utils.UrlParser;
-import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedDuration;
-import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import io.opentelemetry.api.common.AttributeKey;
@@ -68,6 +68,9 @@ import org.slf4j.LoggerFactory;
 public class Exporter implements SpanExporter {
 
   private static final Logger logger = LoggerFactory.getLogger(Exporter.class);
+
+  // TODO (trask) add to generated ContextTagKeys class
+  private static final ContextTagKeys AI_DEVICE_OS = ContextTagKeys.fromString("ai.device.os");
 
   private static final Set<String> SQL_DB_SYSTEMS;
 
@@ -773,7 +776,7 @@ public class Exporter implements SpanExporter {
     if (deviceOs != null) {
       // this is only used by the 2.x web interop bridge for
       // ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getDevice().setOperatingSystem()
-      telemetryBuilder.addTag(ContextTagKeys.AI_DEVICE_OS.toString(), deviceOs);
+      telemetryBuilder.addTag(AI_DEVICE_OS.toString(), deviceOs);
     }
     String deviceOsVersion = attributes.get(AI_DEVICE_OS_VERSION_KEY);
     if (deviceOsVersion != null) {

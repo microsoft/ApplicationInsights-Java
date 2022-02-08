@@ -87,4 +87,9 @@ dependencies {
 
   testImplementation("com.microsoft.jfr:jfr-streaming")
   testImplementation("com.azure:azure-storage-blob")
+
+  // needed temporarily while hosting azure-monitor-opentelemetry-exporter in this repo
+  testImplementation("com.azure:azure-data-appconfiguration:1.2.5")
+  testImplementation("com.azure:azure-messaging-eventhubs:5.10.4")
+  testImplementation("com.azure:azure-messaging-eventhubs-checkpointstore-blob:1.10.3")
 }

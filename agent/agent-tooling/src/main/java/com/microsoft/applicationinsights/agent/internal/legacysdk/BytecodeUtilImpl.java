@@ -21,27 +21,28 @@
 
 package com.microsoft.applicationinsights.agent.internal.legacysdk;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.EventTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricPointBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.PageViewTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDependencyTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.builders.AbstractTelemetryBuilder;
-import com.microsoft.applicationinsights.agent.internal.exporter.builders.EventTelemetryBuilder;
-import com.microsoft.applicationinsights.agent.internal.exporter.builders.ExceptionTelemetryBuilder;
-import com.microsoft.applicationinsights.agent.internal.exporter.builders.MessageTelemetryBuilder;
-import com.microsoft.applicationinsights.agent.internal.exporter.builders.MetricPointBuilder;
-import com.microsoft.applicationinsights.agent.internal.exporter.builders.MetricTelemetryBuilder;
-import com.microsoft.applicationinsights.agent.internal.exporter.builders.PageViewTelemetryBuilder;
-import com.microsoft.applicationinsights.agent.internal.exporter.builders.RemoteDependencyTelemetryBuilder;
-import com.microsoft.applicationinsights.agent.internal.exporter.builders.RequestTelemetryBuilder;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.ContextTagKeys;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.DataPointType;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.SeverityLevel;
 import com.microsoft.applicationinsights.agent.internal.init.AiOperationNameSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyPropagator;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingScoreGeneratorV2;
-import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedDuration;
-import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import io.opentelemetry.api.trace.Span;
@@ -90,7 +91,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     if (timestamp != null) {
-      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochMillis(timestamp.getTime()));
     } else {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
@@ -141,7 +142,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     if (timestamp != null) {
-      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochMillis(timestamp.getTime()));
     } else {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
@@ -183,7 +184,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
     telemetryBuilder.setResultCode(resultCode);
     if (totalMillis != null) {
-      telemetryBuilder.setDuration(FormattedDuration.fromMillis(totalMillis));
+      telemetryBuilder.setDuration(FormattedDuration.fromNanos(MILLISECONDS.toNanos(totalMillis)));
     }
     telemetryBuilder.setSuccess(success);
     telemetryBuilder.setData(commandName);
@@ -197,7 +198,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     if (timestamp != null) {
-      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochMillis(timestamp.getTime()));
     } else {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
@@ -230,7 +231,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     if (uri != null) {
       telemetryBuilder.setUrl(uri.toString());
     }
-    telemetryBuilder.setDuration(FormattedDuration.fromMillis(totalMillis));
+    telemetryBuilder.setDuration(FormattedDuration.fromNanos(MILLISECONDS.toNanos(totalMillis)));
     for (Map.Entry<String, Double> entry : measurements.entrySet()) {
       telemetryBuilder.addMeasurement(entry.getKey(), entry.getValue());
     }
@@ -239,7 +240,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     if (timestamp != null) {
-      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochMillis(timestamp.getTime()));
     } else {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
@@ -275,7 +276,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     if (timestamp != null) {
-      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochMillis(timestamp.getTime()));
     } else {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
@@ -317,7 +318,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setUrl(url.toString());
     }
     if (duration != null) {
-      telemetryBuilder.setDuration(FormattedDuration.fromMillis(duration));
+      telemetryBuilder.setDuration(FormattedDuration.fromNanos(MILLISECONDS.toNanos(duration)));
     }
     telemetryBuilder.setResponseCode(responseCode);
     telemetryBuilder.setSuccess(success);
@@ -330,7 +331,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     if (timestamp != null) {
-      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochMillis(timestamp.getTime()));
     } else {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
@@ -366,7 +367,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     if (timestamp != null) {
-      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochMillis(timestamp.getTime()));
     } else {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }

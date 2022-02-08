@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.builders.StatsbeatTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.StatsbeatTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 
 abstract class BaseStatsbeat {

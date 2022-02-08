@@ -23,12 +23,12 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.StatsbeatTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.exporter.builders.StatsbeatTelemetryBuilder;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import org.junit.jupiter.api.Test;
 
