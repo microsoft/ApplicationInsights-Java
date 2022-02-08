@@ -21,12 +21,12 @@
 
 package com.microsoft.applicationinsights.agent.internal.common;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.DataPointType;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDataPoint;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorBase;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorBase;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

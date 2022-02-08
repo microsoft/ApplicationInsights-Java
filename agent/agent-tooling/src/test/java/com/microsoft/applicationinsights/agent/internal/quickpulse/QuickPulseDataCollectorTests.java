@@ -26,7 +26,7 @@ import static com.microsoft.applicationinsights.agent.internal.quickpulse.QuickP
 import static com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseTestBase.createRequestTelemetry;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector.CountAndDuration;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector.Counters;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector.FinalCounters;

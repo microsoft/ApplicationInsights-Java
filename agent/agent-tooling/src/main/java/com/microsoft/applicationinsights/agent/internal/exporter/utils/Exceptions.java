@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.exporter.utils;
 
 import static java.util.Collections.singletonList;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.builders.ExceptionDetailBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionDetailBuilder;
 import java.util.List;
 
 public class Exceptions {

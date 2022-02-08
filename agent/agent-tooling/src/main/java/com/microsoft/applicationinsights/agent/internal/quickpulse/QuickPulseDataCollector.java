@@ -21,14 +21,14 @@
 
 package com.microsoft.applicationinsights.agent.internal.quickpulse;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.ContextTagKeys;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorDomain;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDependencyData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.StackFrame;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDependencyData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.StackFrame;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionDetails;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.CpuPerformanceCounterCalculator;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.model.QuickPulseDependencyDocument;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.model.QuickPulseDocument;

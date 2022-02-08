@@ -28,13 +28,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.common.LocalFileSystemUtils;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
-import com.microsoft.applicationinsights.agent.internal.exporter.builders.MetricTelemetryBuilder;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorDomain;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;

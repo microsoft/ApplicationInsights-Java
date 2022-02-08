@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.quickpulse;
 
 import static com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil.getExceptions;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import com.azure.core.credential.TokenCredential;
 import com.azure.core.http.HttpClient;
@@ -36,12 +37,12 @@ import com.azure.core.test.TestBase;
 import com.azure.core.test.TestMode;
 import com.azure.core.util.FluxUtil;
 import com.azure.identity.ClientSecretCredentialBuilder;
-import com.microsoft.applicationinsights.agent.internal.exporter.builders.ExceptionTelemetryBuilder;
-import com.microsoft.applicationinsights.agent.internal.exporter.builders.RemoteDependencyTelemetryBuilder;
-import com.microsoft.applicationinsights.agent.internal.exporter.builders.RequestTelemetryBuilder;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedDuration;
-import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDependencyTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -92,11 +93,11 @@ public class QuickPulseTestBase extends TestBase {
     RequestTelemetryBuilder telemetryBuilder = RequestTelemetryBuilder.create();
     telemetryBuilder.addProperty("customProperty", "customValue");
     telemetryBuilder.setName(name);
-    telemetryBuilder.setDuration(FormattedDuration.fromMillis(durationMillis));
+    telemetryBuilder.setDuration(FormattedDuration.fromNanos(MILLISECONDS.toNanos(durationMillis)));
     telemetryBuilder.setResponseCode(responseCode);
     telemetryBuilder.setSuccess(success);
     telemetryBuilder.setUrl("foo");
-    telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
+    telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochMillis(timestamp.getTime()));
     return telemetryBuilder.build();
   }
 
@@ -106,7 +107,7 @@ public class QuickPulseTestBase extends TestBase {
     telemetryBuilder.addProperty("customProperty", "customValue");
     telemetryBuilder.setName(name);
     telemetryBuilder.setData(command);
-    telemetryBuilder.setDuration(FormattedDuration.fromMillis(durationMillis));
+    telemetryBuilder.setDuration(FormattedDuration.fromNanos(MILLISECONDS.toNanos(durationMillis)));
     telemetryBuilder.setSuccess(success);
     return telemetryBuilder.build();
   }
