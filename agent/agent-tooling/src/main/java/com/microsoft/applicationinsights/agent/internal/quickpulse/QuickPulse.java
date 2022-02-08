@@ -23,9 +23,9 @@ package com.microsoft.applicationinsights.agent.internal.quickpulse;
 
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.common.HostName;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.UUID;

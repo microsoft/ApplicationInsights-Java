@@ -25,8 +25,8 @@ import static java.util.Collections.singletonList;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
+import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.telemetry.DiagnosticTelemetryPipelineListener;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.sdk.common.CompletableResultCode;

@@ -21,9 +21,9 @@
 
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
-import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import java.util.ArrayList;

@@ -21,6 +21,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.logging;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,8 +29,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

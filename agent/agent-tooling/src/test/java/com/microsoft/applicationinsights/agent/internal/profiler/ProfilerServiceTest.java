@@ -32,8 +32,8 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTe
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.common.LocalFileSystemUtils;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
+import com.microsoft.applicationinsights.agent.internal.common.LocalFileSystemUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
