@@ -36,9 +36,10 @@ public class SystemInformation {
   private static final boolean LINUX;
 
   static {
-    String os = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
-    WINDOWS = os.contains("win");
-    LINUX = os.contains("nux");
+    String osName = System.getProperty("os.name");
+    String osNameLower = osName == null ? null : osName.toLowerCase(Locale.ENGLISH);
+    WINDOWS = osNameLower != null && osNameLower.startsWith("windows");
+    LINUX = osNameLower != null && osNameLower.startsWith("linux");
   }
 
   private static final String processId = initializeProcessId();

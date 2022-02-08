@@ -43,7 +43,12 @@ class FileUtil {
 
   static void moveFile(File srcFile, File destFile) throws IOException {
     if (!srcFile.renameTo(destFile)) {
-      throw new IOException("Unable to rename file '" + srcFile + "' to '" + destFile + "'");
+      throw new IOException(
+          "Unable to rename file '"
+              + srcFile.getAbsolutePath()
+              + "' to '"
+              + destFile.getAbsolutePath()
+              + "'");
     }
   }
 
