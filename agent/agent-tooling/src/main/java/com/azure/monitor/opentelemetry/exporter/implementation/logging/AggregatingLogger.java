@@ -19,8 +19,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.common;
+package com.azure.monitor.opentelemetry.exporter.implementation.logging;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;

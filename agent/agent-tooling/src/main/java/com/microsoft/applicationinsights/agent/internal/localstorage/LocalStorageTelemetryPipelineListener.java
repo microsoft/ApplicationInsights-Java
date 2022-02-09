@@ -23,9 +23,9 @@ package com.microsoft.applicationinsights.agent.internal.localstorage;
 
 import static java.util.Arrays.asList;
 
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipelineListener;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipelineRequest;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryPipelineResponse;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineRequest;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineResponse;
 import java.util.HashSet;
 import java.util.Set;
 

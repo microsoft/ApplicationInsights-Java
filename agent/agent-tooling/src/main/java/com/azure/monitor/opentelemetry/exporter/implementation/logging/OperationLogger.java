@@ -19,31 +19,37 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.common;
+package com.azure.monitor.opentelemetry.exporter.implementation.logging;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-// aggregated warnings for a given 5-min window
-public class WarningLogger {
+// operation failure stats for a given 5-min window
+// each instance represents a logical grouping of errors that a user cares about and can understand,
+// e.g. sending telemetry to the portal, storing telemetry to disk, ...
+public class OperationLogger {
 
   private final AggregatingLogger aggregatingLogger;
 
-  public WarningLogger(Class<?> source, String operation) {
+  public OperationLogger(Class<?> source, String operation) {
     this(source, operation, 300);
   }
 
   // visible for testing
-  WarningLogger(Class<?> source, String operation, int intervalSeconds) {
-    aggregatingLogger = new AggregatingLogger(source, operation, false, intervalSeconds);
+  OperationLogger(Class<?> source, String operation, int intervalSeconds) {
+    aggregatingLogger = new AggregatingLogger(source, operation, true, intervalSeconds);
   }
 
-  // warningMessage should have low cardinality
-  public void recordWarning(String warningMessage) {
-    aggregatingLogger.recordWarning(warningMessage);
+  public void recordSuccess() {
+    aggregatingLogger.recordSuccess();
   }
 
-  // warningMessage should have low cardinality
-  public void recordWarning(String warningMessage, @Nullable Throwable exception) {
-    aggregatingLogger.recordWarning(warningMessage, exception);
+  // failureMessage should have low cardinality
+  public void recordFailure(String failureMessage) {
+    aggregatingLogger.recordWarning(failureMessage);
+  }
+
+  // failureMessage should have low cardinality
+  public void recordFailure(String failureMessage, @Nullable Throwable exception) {
+    aggregatingLogger.recordWarning(failureMessage, exception);
   }
 }
