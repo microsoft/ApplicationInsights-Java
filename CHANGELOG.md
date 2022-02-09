@@ -3,7 +3,6 @@
 # Version 3.2.6 GA
 * Support Statsbeat in EU regions [#2082](https://github.com/microsoft/ApplicationInsights-Java/pull/2082).
 * Update Oshi default logging level [#2086](https://github.com/microsoft/ApplicationInsights-Java/pull/2086).
-* Shorten host property in network Statsbeat [#2087](https://github.com/microsoft/ApplicationInsights-Java/pull/2087).
 * Add debug profiler for startup perf [#2085](https://github.com/microsoft/ApplicationInsights-Java/pull/2085).
 * Update azure-core dependency [#2095](https://github.com/microsoft/ApplicationInsights-Java/pull/2095).
 
