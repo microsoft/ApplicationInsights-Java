@@ -55,9 +55,6 @@ public class ConnectionString {
   public static void updateStatsbeatConnectionString(
       @Nullable String ikey, @Nullable String endpoint, TelemetryClient telemetryClient)
       throws InvalidConnectionStringException {
-    if (Strings.isNullOrEmpty(ikey)) {
-      logger.warn("Missing Statsbeat '" + Keywords.INSTRUMENTATION_KEY + "'");
-    }
 
     // if customer is in EU region and their statsbeat config is not in EU region, customer is
     // responsible for breaking the EU data boundary violation.
