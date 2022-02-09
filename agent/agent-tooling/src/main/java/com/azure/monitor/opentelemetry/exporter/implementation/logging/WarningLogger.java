@@ -19,23 +19,31 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.telemetry;
+package com.azure.monitor.opentelemetry.exporter.implementation.logging;
 
-public class TelemetryPipelineResponse {
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-  private final int statusCode;
-  private final String body;
+// aggregated warnings for a given 5-min window
+public class WarningLogger {
 
-  TelemetryPipelineResponse(int statusCode, String body) {
-    this.statusCode = statusCode;
-    this.body = body;
+  private final AggregatingLogger aggregatingLogger;
+
+  public WarningLogger(Class<?> source, String operation) {
+    this(source, operation, 300);
   }
 
-  public int getStatusCode() {
-    return statusCode;
+  // visible for testing
+  WarningLogger(Class<?> source, String operation, int intervalSeconds) {
+    aggregatingLogger = new AggregatingLogger(source, operation, false, intervalSeconds);
   }
 
-  public String getBody() {
-    return body;
+  // warningMessage should have low cardinality
+  public void recordWarning(String warningMessage) {
+    aggregatingLogger.recordWarning(warningMessage);
+  }
+
+  // warningMessage should have low cardinality
+  public void recordWarning(String warningMessage, @Nullable Throwable exception) {
+    aggregatingLogger.recordWarning(warningMessage, exception);
   }
 }

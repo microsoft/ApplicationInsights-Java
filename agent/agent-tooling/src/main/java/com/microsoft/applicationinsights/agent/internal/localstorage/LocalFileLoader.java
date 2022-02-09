@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.localstorage;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
+import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
 import java.io.EOFException;
 import java.io.File;

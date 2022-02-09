@@ -26,7 +26,7 @@ public class AiOperationNameSpanProcessorTest {
 
   private static Tracer configureAzureMonitorExporter(HttpPipelinePolicy validator) {
     String connectionStringTemplate =
-        "InstrumentationKey=f8a2dad5-eb61-4fe2-adcd-2b0db1412c0f;IngestionEndpoint=https://westus2-2.in.applicationinsights.azure.com/";
+        "InstrumentationKey=ikey;IngestionEndpoint=https://testendpoint.com";
     String connectionString =
         Configuration.getGlobalConfiguration()
             .get("APPLICATIONINSIGHTS_CONNECTION_STRING", connectionStringTemplate);

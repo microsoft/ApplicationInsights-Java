@@ -19,37 +19,52 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.common;
+package com.azure.monitor.opentelemetry.exporter.implementation.pipeline;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
-// operation failure stats for a given 5-min window
-// each instance represents a logical grouping of errors that a user cares about and can understand,
-// e.g. sending telemetry to the portal, storing telemetry to disk, ...
-public class OperationLogger {
+class ByteBufferOutputStream extends OutputStream {
 
-  private final AggregatingLogger aggregatingLogger;
+  private final AppInsightsByteBufferPool byteBufferPool;
 
-  public OperationLogger(Class<?> source, String operation) {
-    this(source, operation, 300);
+  private final List<ByteBuffer> byteBuffers = new ArrayList<>();
+
+  private ByteBuffer current;
+
+  ByteBufferOutputStream(AppInsightsByteBufferPool byteBufferPool) {
+    this.byteBufferPool = byteBufferPool;
+    current = byteBufferPool.remove();
+    byteBuffers.add(current);
   }
 
-  // visible for testing
-  OperationLogger(Class<?> source, String operation, int intervalSeconds) {
-    aggregatingLogger = new AggregatingLogger(source, operation, true, intervalSeconds);
+  @Override
+  public void write(int b) {
+    ensureSomeCapacity();
+    current.put((byte) b);
   }
 
-  public void recordSuccess() {
-    aggregatingLogger.recordSuccess();
+  @Override
+  public void write(byte[] bytes, int off, int len) {
+    ensureSomeCapacity();
+    int numBytesWritten = Math.min(current.remaining(), len);
+    current.put(bytes, off, numBytesWritten);
+    if (numBytesWritten < len) {
+      write(bytes, off + numBytesWritten, len - numBytesWritten);
+    }
   }
 
-  // failureMessage should have low cardinality
-  public void recordFailure(String failureMessage) {
-    aggregatingLogger.recordWarning(failureMessage);
+  void ensureSomeCapacity() {
+    if (current.remaining() > 0) {
+      return;
+    }
+    current = byteBufferPool.remove();
+    byteBuffers.add(current);
   }
 
-  // failureMessage should have low cardinality
-  public void recordFailure(String failureMessage, @Nullable Throwable exception) {
-    aggregatingLogger.recordWarning(failureMessage, exception);
+  List<ByteBuffer> getByteBuffers() {
+    return byteBuffers;
   }
 }

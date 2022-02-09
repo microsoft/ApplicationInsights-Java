@@ -30,6 +30,8 @@ import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.util.FluxUtil;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.microsoft.applicationinsights.agent.internal.MockHttpResponse;
 import com.microsoft.applicationinsights.agent.internal.common.TestUtils;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalStorageSystem;

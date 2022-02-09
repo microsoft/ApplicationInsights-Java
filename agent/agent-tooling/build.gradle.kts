@@ -38,7 +38,9 @@ dependencies {
 
   implementation(project(":agent:agent-profiler:agent-profiler-api"))
 
-  implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.5")
+  // commented out temporarily while hosting azure-monitor-opentelemetry-exporter in this repo
+  // implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.4")
+
   implementation("com.azure:azure-core")
   implementation("com.azure:azure-identity") {
     // "This dependency can be excluded if IntelliJ Credential is not being used for authentication
