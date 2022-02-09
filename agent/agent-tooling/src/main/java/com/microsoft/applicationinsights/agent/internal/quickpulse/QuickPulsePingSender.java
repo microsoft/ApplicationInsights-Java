@@ -158,7 +158,8 @@ class QuickPulsePingSender {
 
   // visible for testing
   String getQuickPulseEndpoint() {
-    return telemetryClient.getConnectionString().getLiveEndpoint().toString();
+    return telemetryClient.getConnectionString().getLiveEndpoint().toString()
+        + "QuickPulseService.svc";
   }
 
   private String buildPingEntity(long timeInMillis) throws JsonProcessingException {

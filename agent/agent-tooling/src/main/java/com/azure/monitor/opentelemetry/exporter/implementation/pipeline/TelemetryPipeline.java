@@ -62,7 +62,11 @@ public class TelemetryPipeline {
 
   public TelemetryPipeline(HttpPipeline pipeline, URL endpoint) {
     this.pipeline = pipeline;
-    this.endpoint = endpoint;
+    try {
+      this.endpoint = new URL(endpoint, "v2.1/track");
+    } catch (MalformedURLException e) {
+      throw new IllegalArgumentException("Invalid endpoint: " + endpoint, e);
+    }
   }
 
   public CompletableResultCode send(

@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.connectionstring.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -39,7 +40,6 @@ import com.microsoft.applicationinsights.agent.internal.perfcounter.PerformanceC
 import com.microsoft.applicationinsights.agent.internal.perfcounter.ProcessCpuPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.ProcessMemoryPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulse;
-import com.microsoft.applicationinsights.agent.internal.telemetry.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;

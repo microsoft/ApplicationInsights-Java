@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.telemetry;
+package com.azure.monitor.opentelemetry.exporter.implementation.connectionstring;
 
 import java.util.HashSet;
 import java.util.Set;

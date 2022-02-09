@@ -178,7 +178,7 @@ class AiComponentInstaller {
 
     BytecodeUtilImpl.samplingPercentage = config.sampling.percentage;
 
-    AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient);
+    AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient.getConnectionString());
     AiAppId.setSupplier(appIdSupplier);
 
     if (config.preview.profiler.enabled) {

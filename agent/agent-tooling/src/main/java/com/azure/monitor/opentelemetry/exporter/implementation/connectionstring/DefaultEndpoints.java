@@ -19,14 +19,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.configuration;
+package com.azure.monitor.opentelemetry.exporter.implementation.connectionstring;
 
-public class DefaultEndpoints {
+class DefaultEndpoints {
 
-  public static final String INGESTION_ENDPOINT = "https://dc.services.visualstudio.com";
-  public static final String LIVE_ENDPOINT = "https://rt.services.visualstudio.com";
-  public static final String PROFILER_ENDPOINT = "https://agent.azureserviceprofiler.net";
-  public static final String SNAPSHOT_ENDPOINT = "https://agent.azureserviceprofiler.net";
+  static final String INGESTION_ENDPOINT = "https://dc.services.visualstudio.com/";
+  static final String LIVE_ENDPOINT = "https://rt.services.visualstudio.com/";
+  static final String PROFILER_ENDPOINT = "https://agent.azureserviceprofiler.net/";
+  static final String SNAPSHOT_ENDPOINT = "https://agent.azureserviceprofiler.net/";
 
   private DefaultEndpoints() {}
 }

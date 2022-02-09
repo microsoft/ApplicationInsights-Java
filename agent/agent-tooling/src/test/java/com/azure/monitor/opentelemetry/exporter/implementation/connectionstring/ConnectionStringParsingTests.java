@@ -19,13 +19,12 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.telemetry;
+package com.azure.monitor.opentelemetry.exporter.implementation.connectionstring;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.microsoft.applicationinsights.agent.internal.configuration.DefaultEndpoints;
-import com.microsoft.applicationinsights.agent.internal.telemetry.ConnectionString.EndpointPrefixes;
+import com.azure.monitor.opentelemetry.exporter.implementation.connectionstring.ConnectionString.EndpointPrefixes;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.UUID;
@@ -41,53 +40,8 @@ class ConnectionStringParsingTests {
     ConnectionString parsed = ConnectionString.parse(cs);
     assertThat(parsed.getInstrumentationKey()).isEqualTo(ikey);
     assertThat(parsed.getIngestionEndpoint())
-        .isEqualTo(
-            new URL(
-                DefaultEndpoints.INGESTION_ENDPOINT + "/" + EndpointProvider.INGESTION_URL_PATH));
-    assertThat(parsed.getLiveEndpoint())
-        .isEqualTo(new URL(DefaultEndpoints.LIVE_ENDPOINT + "/" + EndpointProvider.LIVE_URL_PATH));
-  }
-
-  @Test // this test does not use this.config
-  void appIdUrlIsConstructedWithIkeyFromIngestionEndpoint() throws MalformedURLException {
-    EndpointProvider ep = new EndpointProvider();
-    String ikey = "fake-ikey";
-    final String host = "http://123.com";
-    ep.setIngestionEndpoint(new URL(host));
-    assertThat(ep.getAppIdEndpointUrl(ikey))
-        .isEqualTo(
-            new URL(
-                host
-                    + "/"
-                    + EndpointProvider.API_PROFILES_APP_ID_URL_PREFIX
-                    + ikey
-                    + EndpointProvider.API_PROFILES_APP_ID_URL_SUFFIX));
-  }
-
-  @Test
-  void appIdUrlWithPathKeepsIt() throws MalformedURLException {
-    EndpointProvider ep = new EndpointProvider();
-    String ikey = "fake-ikey";
-    String url = "http://123.com/path/321";
-    ep.setIngestionEndpoint(new URL(url));
-    assertThat(ep.getAppIdEndpointUrl(ikey))
-        .isEqualTo(
-            new URL(
-                url
-                    + "/"
-                    + EndpointProvider.API_PROFILES_APP_ID_URL_PREFIX
-                    + ikey
-                    + EndpointProvider.API_PROFILES_APP_ID_URL_SUFFIX));
-
-    ep.setIngestionEndpoint(new URL(url + "/"));
-    assertThat(ep.getAppIdEndpointUrl(ikey))
-        .isEqualTo(
-            new URL(
-                url
-                    + "/"
-                    + EndpointProvider.API_PROFILES_APP_ID_URL_PREFIX
-                    + ikey
-                    + EndpointProvider.API_PROFILES_APP_ID_URL_SUFFIX));
+        .isEqualTo(new URL(DefaultEndpoints.INGESTION_ENDPOINT));
+    assertThat(parsed.getLiveEndpoint()).isEqualTo(new URL(DefaultEndpoints.LIVE_ENDPOINT));
   }
 
   @Test
@@ -96,21 +50,9 @@ class ConnectionStringParsingTests {
     final String suffix = "ai.example.com";
     final String cs = "InstrumentationKey=" + ikey + ";EndpointSuffix=" + suffix;
     URL expectedIngestionEndpointUrl =
-        new URL(
-            "https://"
-                + EndpointPrefixes.INGESTION_ENDPOINT_PREFIX
-                + "."
-                + suffix
-                + "/"
-                + EndpointProvider.INGESTION_URL_PATH);
+        new URL("https://" + EndpointPrefixes.INGESTION_ENDPOINT_PREFIX + "." + suffix + "/");
     URL expectedLiveEndpoint =
-        new URL(
-            "https://"
-                + EndpointPrefixes.LIVE_ENDPOINT_PREFIX
-                + "."
-                + suffix
-                + "/"
-                + EndpointProvider.LIVE_URL_PATH);
+        new URL("https://" + EndpointPrefixes.LIVE_ENDPOINT_PREFIX + "." + suffix + "/");
 
     ConnectionString parsed = ConnectionString.parse(cs);
     assertThat(parsed.getInstrumentationKey()).isEqualTo(ikey);
@@ -124,21 +66,9 @@ class ConnectionStringParsingTests {
     final String suffix = "ai.example.com/my-proxy-app/doProxy";
     final String cs = "InstrumentationKey=" + ikey + ";EndpointSuffix=" + suffix;
     URL expectedIngestionEndpointUrl =
-        new URL(
-            "https://"
-                + EndpointPrefixes.INGESTION_ENDPOINT_PREFIX
-                + "."
-                + suffix
-                + "/"
-                + EndpointProvider.INGESTION_URL_PATH);
+        new URL("https://" + EndpointPrefixes.INGESTION_ENDPOINT_PREFIX + "." + suffix + "/");
     URL expectedLiveEndpoint =
-        new URL(
-            "https://"
-                + EndpointPrefixes.LIVE_ENDPOINT_PREFIX
-                + "."
-                + suffix
-                + "/"
-                + EndpointProvider.LIVE_URL_PATH);
+        new URL("https://" + EndpointPrefixes.LIVE_ENDPOINT_PREFIX + "." + suffix + "/");
 
     ConnectionString parsed = ConnectionString.parse(cs);
     assertThat(parsed.getInstrumentationKey()).isEqualTo(ikey);
@@ -152,21 +82,9 @@ class ConnectionStringParsingTests {
     final String suffix = "ai.example.com:9999";
     final String cs = "InstrumentationKey=" + ikey + ";EndpointSuffix=" + suffix;
     URL expectedIngestionEndpointUrl =
-        new URL(
-            "https://"
-                + EndpointPrefixes.INGESTION_ENDPOINT_PREFIX
-                + "."
-                + suffix
-                + "/"
-                + EndpointProvider.INGESTION_URL_PATH);
+        new URL("https://" + EndpointPrefixes.INGESTION_ENDPOINT_PREFIX + "." + suffix + "/");
     URL expectedLiveEndpoint =
-        new URL(
-            "https://"
-                + EndpointPrefixes.LIVE_ENDPOINT_PREFIX
-                + "."
-                + suffix
-                + "/"
-                + EndpointProvider.LIVE_URL_PATH);
+        new URL("https://" + EndpointPrefixes.LIVE_ENDPOINT_PREFIX + "." + suffix + "/");
 
     ConnectionString parsed = ConnectionString.parse(cs);
     assertThat(parsed.getInstrumentationKey()).isEqualTo(ikey);
@@ -178,10 +96,9 @@ class ConnectionStringParsingTests {
   void ikeyWithExplicitEndpoints() throws Exception {
     final String ikey = "fake-ikey";
     URL expectedIngestionEndpoint = new URL("https://ingestion.example.com");
-    URL expectedIngestionEndpointUrl =
-        new URL("https://ingestion.example.com/" + EndpointProvider.INGESTION_URL_PATH);
+    URL expectedIngestionEndpointUrl = new URL("https://ingestion.example.com/");
     final String liveHost = "https://live.example.com";
-    URL expectedLiveEndpoint = new URL(liveHost + "/" + EndpointProvider.LIVE_URL_PATH);
+    URL expectedLiveEndpoint = new URL(liveHost + "/");
 
     String cs =
         "InstrumentationKey="
@@ -202,16 +119,9 @@ class ConnectionStringParsingTests {
     final String ikey = "fake-ikey";
     final String suffix = "ai.example.com";
     URL expectedIngestionEndpoint = new URL("https://ingestion.example.com");
-    URL expectedIngestionEndpointUrl =
-        new URL("https://ingestion.example.com/" + EndpointProvider.INGESTION_URL_PATH);
+    URL expectedIngestionEndpointUrl = new URL("https://ingestion.example.com/");
     URL expectedLiveEndpoint =
-        new URL(
-            "https://"
-                + EndpointPrefixes.LIVE_ENDPOINT_PREFIX
-                + "."
-                + suffix
-                + "/"
-                + EndpointProvider.LIVE_URL_PATH);
+        new URL("https://" + EndpointPrefixes.LIVE_ENDPOINT_PREFIX + "." + suffix + "/");
     String cs =
         "InstrumentationKey="
             + ikey
@@ -232,21 +142,9 @@ class ConnectionStringParsingTests {
     final String suffix = "ai.example.com";
     final String cs = "InstrumentationKey=" + ikey + ";;EndpointSuffix=" + suffix + ";";
     URL expectedIngestionEndpointUrl =
-        new URL(
-            "https://"
-                + EndpointPrefixes.INGESTION_ENDPOINT_PREFIX
-                + "."
-                + suffix
-                + "/"
-                + EndpointProvider.INGESTION_URL_PATH);
+        new URL("https://" + EndpointPrefixes.INGESTION_ENDPOINT_PREFIX + "." + suffix + "/");
     URL expectedLiveEndpoint =
-        new URL(
-            "https://"
-                + EndpointPrefixes.LIVE_ENDPOINT_PREFIX
-                + "."
-                + suffix
-                + "/"
-                + EndpointProvider.LIVE_URL_PATH);
+        new URL("https://" + EndpointPrefixes.LIVE_ENDPOINT_PREFIX + "." + suffix + "/");
 
     ConnectionString parsed = ConnectionString.parse(cs);
     assertThat(parsed.getInstrumentationKey()).isEqualTo(ikey);
@@ -258,10 +156,8 @@ class ConnectionStringParsingTests {
   void emptyKeyIsIgnored() throws MalformedURLException {
     final String ikey = "fake-ikey";
     final String cs = "InstrumentationKey=" + ikey + ";=1234";
-    URL expectedIngestionEndpointUrl =
-        new URL(DefaultEndpoints.INGESTION_ENDPOINT + "/" + EndpointProvider.INGESTION_URL_PATH);
-    URL expectedLiveEndpoint =
-        new URL(DefaultEndpoints.LIVE_ENDPOINT + "/" + EndpointProvider.LIVE_URL_PATH);
+    URL expectedIngestionEndpointUrl = new URL(DefaultEndpoints.INGESTION_ENDPOINT);
+    URL expectedLiveEndpoint = new URL(DefaultEndpoints.LIVE_ENDPOINT);
 
     ConnectionString parsed = ConnectionString.parse(cs);
     assertThat(parsed.getInstrumentationKey()).isEqualTo(ikey);
@@ -277,11 +173,8 @@ class ConnectionStringParsingTests {
     ConnectionString parsed = ConnectionString.parse(cs);
     assertThat(parsed.getInstrumentationKey()).isEqualTo(ikey);
     assertThat(parsed.getIngestionEndpoint())
-        .isEqualTo(
-            new URL(
-                DefaultEndpoints.INGESTION_ENDPOINT + "/" + EndpointProvider.INGESTION_URL_PATH));
-    assertThat(parsed.getLiveEndpoint())
-        .isEqualTo(new URL(DefaultEndpoints.LIVE_ENDPOINT + "/" + EndpointProvider.LIVE_URL_PATH));
+        .isEqualTo(new URL(DefaultEndpoints.INGESTION_ENDPOINT));
+    assertThat(parsed.getLiveEndpoint()).isEqualTo(new URL(DefaultEndpoints.LIVE_ENDPOINT));
   }
 
   @Test
@@ -374,8 +267,7 @@ class ConnectionStringParsingTests {
     ConnectionString parsed =
         ConnectionString.parse(
             "InstrumentationKey=fake-ikey;IngestionEndpoint=http://my-ai.example.com");
-    assertThat(parsed.getIngestionEndpoint())
-        .isEqualTo(new URL("http://my-ai.example.com/v2.1/track"));
+    assertThat(parsed.getIngestionEndpoint()).isEqualTo(new URL("http://my-ai.example.com/"));
   }
 
   @Test
@@ -428,26 +320,23 @@ class ConnectionStringParsingTests {
     ConnectionString parsed = ConnectionString.parse(fakeConnectionString);
 
     assertThat(parsed.getIngestionEndpoint().toString())
-        .isEqualTo("https://ingestion.example.com/v2.1/track");
-    assertThat(parsed.getLiveEndpoint().toString())
-        .isEqualTo("https://live.example.com/QuickPulseService.svc");
+        .isEqualTo("https://ingestion.example.com/");
+    assertThat(parsed.getLiveEndpoint().toString()).isEqualTo("https://live.example.com/");
 
     String newFakeConnectionString =
         "InstrumentationKey=new-fake-key;IngestionEndpoint=https://new-ingestion.example.com/;LiveEndpoint=https://new-live.example.com/";
     parsed = ConnectionString.parse(newFakeConnectionString);
 
     assertThat(parsed.getIngestionEndpoint().toString())
-        .isEqualTo("https://new-ingestion.example.com/v2.1/track");
-    assertThat(parsed.getLiveEndpoint().toString())
-        .isEqualTo("https://new-live.example.com/QuickPulseService.svc");
+        .isEqualTo("https://new-ingestion.example.com/");
+    assertThat(parsed.getLiveEndpoint().toString()).isEqualTo("https://new-live.example.com/");
 
     String newerFakeConnectionString =
         "InstrumentationKey=newer-fake-key;IngestionEndpoint=https://newer-ingestion.example.com/;LiveEndpoint=https://newer-live.example.com/";
     parsed = ConnectionString.parse(newerFakeConnectionString);
 
     assertThat(parsed.getIngestionEndpoint().toString())
-        .isEqualTo("https://newer-ingestion.example.com/v2.1/track");
-    assertThat(parsed.getLiveEndpoint().toString())
-        .isEqualTo("https://newer-live.example.com/QuickPulseService.svc");
+        .isEqualTo("https://newer-ingestion.example.com/");
+    assertThat(parsed.getLiveEndpoint().toString()).isEqualTo("https://newer-live.example.com/");
   }
 }

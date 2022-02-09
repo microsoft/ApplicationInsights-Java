@@ -122,7 +122,8 @@ class QuickPulseDataFetcher {
   // visible for testing
   String getQuickPulseEndpoint() {
     if (telemetryClient != null && telemetryClient.getConnectionString() != null) {
-      return telemetryClient.getConnectionString().getLiveEndpoint().toString();
+      return telemetryClient.getConnectionString().getLiveEndpoint().toString()
+          + "QuickPulseService.svc";
     } else {
       return QP_BASE_URI;
     }

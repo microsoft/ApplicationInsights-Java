@@ -19,13 +19,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.telemetry;
+package com.azure.monitor.opentelemetry.exporter.implementation.connectionstring;
 
+import com.azure.core.util.CoreUtils;
 import com.google.auto.value.AutoValue;
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import javax.annotation.Nullable;
 
@@ -53,8 +54,6 @@ public abstract class ConnectionString {
 
   public abstract URL getIngestionEndpoint();
 
-  public abstract URL getAppIdEndpoint();
-
   public abstract URL getLiveEndpoint();
 
   public abstract URL getProfilerEndpoint();
@@ -74,12 +73,25 @@ public abstract class ConnectionString {
     Map<String, String> kvps;
     try {
       kvps = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-      kvps.putAll(Strings.splitToMap(connectionString));
+      kvps.putAll(extractKeyValuesFromConnectionString(connectionString));
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("Could not parse connection string.", e);
     }
 
     return kvps;
+  }
+
+  private static Map<String, String> extractKeyValuesFromConnectionString(String connectionString) {
+    Objects.requireNonNull(connectionString);
+    Map<String, String> keyValues = new HashMap<>();
+    String[] splits = connectionString.split(";");
+    for (String split : splits) {
+      String[] keyValPair = split.split("=");
+      if (keyValPair.length == 2) {
+        keyValues.put(keyValPair[0], keyValPair[1]);
+      }
+    }
+    return keyValues;
   }
 
   private static ConnectionString mapToConnectionConfiguration(
@@ -89,51 +101,46 @@ public abstract class ConnectionString {
 
     // get ikey
     String instrumentationKey = kvps.get(Keywords.INSTRUMENTATION_KEY);
-    if (Strings.isNullOrEmpty(instrumentationKey)) {
+    if (CoreUtils.isNullOrEmpty(instrumentationKey)) {
       throw new IllegalArgumentException("Missing '" + Keywords.INSTRUMENTATION_KEY + "'");
     }
 
-    EndpointProvider endpoints = new EndpointProvider();
+    ConnectionStringBuilder endpoints = new ConnectionStringBuilder();
 
     // resolve suffix
     String suffix = kvps.get(Keywords.ENDPOINT_SUFFIX);
-    if (!Strings.isNullOrEmpty(suffix)) {
+    if (!CoreUtils.isNullOrEmpty(suffix)) {
       if (suffix.startsWith(".")) {
         suffix = suffix.substring(1);
       }
-      try {
-        endpoints.setIngestionEndpoint(
-            new URL("https://" + EndpointPrefixes.INGESTION_ENDPOINT_PREFIX + "." + suffix));
-        endpoints.setLiveEndpoint(
-            new URL("https://" + EndpointPrefixes.LIVE_ENDPOINT_PREFIX + "." + suffix));
-        endpoints.setProfilerEndpoint(
-            new URL("https://" + EndpointPrefixes.PROFILER_ENDPOINT_PREFIX + "." + suffix));
-        endpoints.setSnapshotEndpoint(
-            new URL("https://" + EndpointPrefixes.SNAPSHOT_ENDPOINT_PREFIX + "." + suffix));
-      } catch (MalformedURLException e) {
-        throw new IllegalArgumentException(Keywords.ENDPOINT_SUFFIX + " is invalid: " + suffix, e);
-      }
+      endpoints.setIngestionEndpoint(
+          "https://" + EndpointPrefixes.INGESTION_ENDPOINT_PREFIX + "." + suffix);
+      endpoints.setLiveEndpoint("https://" + EndpointPrefixes.LIVE_ENDPOINT_PREFIX + "." + suffix);
+      endpoints.setProfilerEndpoint(
+          "https://" + EndpointPrefixes.PROFILER_ENDPOINT_PREFIX + "." + suffix);
+      endpoints.setSnapshotEndpoint(
+          "https://" + EndpointPrefixes.SNAPSHOT_ENDPOINT_PREFIX + "." + suffix);
     }
 
     // set explicit endpoints
     String liveEndpoint = kvps.get(Keywords.LIVE_ENDPOINT);
-    if (!Strings.isNullOrEmpty(liveEndpoint)) {
-      endpoints.setLiveEndpoint(toUrlOrThrow(liveEndpoint, Keywords.LIVE_ENDPOINT));
+    if (!CoreUtils.isNullOrEmpty(liveEndpoint)) {
+      endpoints.setLiveEndpoint(liveEndpoint);
     }
 
     String ingestionEndpoint = kvps.get(Keywords.INGESTION_ENDPOINT);
-    if (!Strings.isNullOrEmpty(ingestionEndpoint)) {
-      endpoints.setIngestionEndpoint(toUrlOrThrow(ingestionEndpoint, Keywords.INGESTION_ENDPOINT));
+    if (!CoreUtils.isNullOrEmpty(ingestionEndpoint)) {
+      endpoints.setIngestionEndpoint(ingestionEndpoint);
     }
 
     String profilerEndpoint = kvps.get(Keywords.PROFILER_ENDPOINT);
-    if (!Strings.isNullOrEmpty(profilerEndpoint)) {
-      endpoints.setProfilerEndpoint(toUrlOrThrow(profilerEndpoint, Keywords.PROFILER_ENDPOINT));
+    if (!CoreUtils.isNullOrEmpty(profilerEndpoint)) {
+      endpoints.setProfilerEndpoint(profilerEndpoint);
     }
 
     String snapshotEndpoint = kvps.get(Keywords.SNAPSHOT_ENDPOINT);
-    if (!Strings.isNullOrEmpty(snapshotEndpoint)) {
-      endpoints.setSnapshotEndpoint(toUrlOrThrow(snapshotEndpoint, Keywords.SNAPSHOT_ENDPOINT));
+    if (!CoreUtils.isNullOrEmpty(snapshotEndpoint)) {
+      endpoints.setSnapshotEndpoint(snapshotEndpoint);
     }
 
     // if customer is in EU region and their statsbeat config is not in EU region, customer is
@@ -147,33 +154,17 @@ public abstract class ConnectionString {
       statsbeatIngestionEndpoint = pair.endpoint;
     }
 
-    if (!Strings.isNullOrEmpty(statsbeatIngestionEndpoint)) {
-      endpoints.setStatsbeatEndpoint(
-          toUrlOrThrow(statsbeatIngestionEndpoint, Keywords.INGESTION_ENDPOINT));
+    if (!CoreUtils.isNullOrEmpty(statsbeatIngestionEndpoint)) {
+      endpoints.setStatsbeatEndpoint(statsbeatIngestionEndpoint);
     }
 
     return new AutoValue_ConnectionString(
         instrumentationKey,
-        endpoints.getIngestionEndpointUrl(),
-        endpoints.getAppIdEndpointUrl(instrumentationKey),
-        endpoints.getLiveEndpointUrl(),
+        endpoints.getIngestionEndpoint(),
+        endpoints.getLiveEndpoint(),
         endpoints.getProfilerEndpoint(),
         statsbeatInstrumentationKey,
-        endpoints.getStatsbeatEndpointUrl());
-  }
-
-  public static URL toUrlOrThrow(String url, String field) {
-    try {
-      URL result = new URL(url);
-      String scheme = result.getProtocol();
-      if (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme)) {
-        throw new IllegalArgumentException(
-            field + " must specify supported protocol, either 'http' or 'https': \"" + url + "\"");
-      }
-      return result;
-    } catch (MalformedURLException e) {
-      throw new IllegalArgumentException(field + " is invalid: \"" + url + "\"", e);
-    }
+        endpoints.getStatsbeatEndpoint());
   }
 
   /** All tokens are lowercase. Parsing should be case insensitive. */

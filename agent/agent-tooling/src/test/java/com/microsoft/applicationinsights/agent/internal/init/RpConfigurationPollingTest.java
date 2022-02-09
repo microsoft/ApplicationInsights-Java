@@ -23,12 +23,12 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.connectionstring.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.agent.internal.legacysdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
-import com.microsoft.applicationinsights.agent.internal.telemetry.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import io.opentelemetry.api.common.Attributes;
@@ -80,9 +80,10 @@ class RpConfigurationPollingTest {
     rpConfiguration.lastModifiedTime = 0;
 
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
-    telemetryClient.setConnectionString(
-        ConnectionString.parse("InstrumentationKey=00000000-0000-0000-0000-000000000000"));
-    AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient);
+    ConnectionString connectionString =
+        ConnectionString.parse("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+    telemetryClient.setConnectionString(connectionString);
+    AppIdSupplier appIdSupplier = new AppIdSupplier(connectionString);
 
     BytecodeUtilImpl.samplingPercentage = 100;
 
@@ -115,9 +116,10 @@ class RpConfigurationPollingTest {
     rpConfiguration.lastModifiedTime = 0;
 
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
-    telemetryClient.setConnectionString(
-        ConnectionString.parse("InstrumentationKey=00000000-0000-0000-0000-000000000000"));
-    AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient);
+    ConnectionString connectionString =
+        ConnectionString.parse("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+    telemetryClient.setConnectionString(connectionString);
+    AppIdSupplier appIdSupplier = new AppIdSupplier(connectionString);
 
     BytecodeUtilImpl.samplingPercentage = 100;
 
