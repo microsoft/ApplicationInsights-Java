@@ -40,6 +40,11 @@ public class Agent {
     if (alreadyLoaded) {
       return;
     }
+
+    if (Boolean.getBoolean("applicationinsights.debug.startupProfiling")) {
+      StartupProfiler.start();
+    }
+
     OpenTelemetryAgent.premain(agentArgs, inst);
     alreadyLoaded = true;
   }
