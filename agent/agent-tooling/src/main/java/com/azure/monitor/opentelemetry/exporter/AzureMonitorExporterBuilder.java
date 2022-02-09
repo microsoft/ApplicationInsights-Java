@@ -303,7 +303,6 @@ public final class AzureMonitorExporterBuilder {
     String applicationId = CoreUtils.getApplicationId(clientOptions, httpLogOptions);
 
     policies.add(new UserAgentPolicy(applicationId, clientName, clientVersion, buildConfiguration));
-    policies.add(new AzureMonitorRedirectPolicy());
     policies.add(retryPolicy == null ? new RetryPolicy() : retryPolicy);
     policies.add(new CookiePolicy());
     policies.addAll(this.httpPipelinePolicies);
