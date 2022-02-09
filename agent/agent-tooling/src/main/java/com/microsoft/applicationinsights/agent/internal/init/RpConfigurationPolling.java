@@ -32,6 +32,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.RpConfigur
 import com.microsoft.applicationinsights.agent.internal.legacysdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
+import com.microsoft.applicationinsights.agent.internal.telemetry.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -101,7 +102,11 @@ public class RpConfigurationPolling implements Runnable {
         if (!newRpConfiguration.connectionString.equals(rpConfiguration.connectionString)) {
           logger.debug(
               "Connection string from the JSON config file is overriding the previously configured connection string.");
-          telemetryClient.setConnectionString(newRpConfiguration.connectionString);
+          telemetryClient.setConnectionString(
+              ConnectionString.parse(
+                  newRpConfiguration.connectionString,
+                  configuration.internal.statsbeat.instrumentationKey,
+                  configuration.internal.statsbeat.endpoint));
           if (!Strings.isNullOrEmpty(newRpConfiguration.connectionString)) {
             appIdSupplier.startAppIdRetrieval();
           }

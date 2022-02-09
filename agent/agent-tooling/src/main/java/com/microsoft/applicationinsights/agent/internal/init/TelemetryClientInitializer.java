@@ -39,6 +39,7 @@ import com.microsoft.applicationinsights.agent.internal.perfcounter.PerformanceC
 import com.microsoft.applicationinsights.agent.internal.perfcounter.ProcessCpuPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.ProcessMemoryPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulse;
+import com.microsoft.applicationinsights.agent.internal.telemetry.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
@@ -116,7 +117,11 @@ public class TelemetryClientInitializer {
     String connectionString = configuration.connectionString;
 
     if (connectionString != null) {
-      telemetryClient.setConnectionString(connectionString);
+      telemetryClient.setConnectionString(
+          ConnectionString.parse(
+              connectionString,
+              configuration.internal.statsbeat.instrumentationKey,
+              configuration.internal.statsbeat.endpoint));
     }
   }
 

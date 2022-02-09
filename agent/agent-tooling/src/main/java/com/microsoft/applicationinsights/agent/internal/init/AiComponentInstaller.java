@@ -50,8 +50,6 @@ import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFilePu
 import com.microsoft.applicationinsights.agent.internal.profiler.GcEventMonitor;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilerServiceInitializer;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
-import com.microsoft.applicationinsights.agent.internal.telemetry.ConnectionString;
-import com.microsoft.applicationinsights.agent.internal.telemetry.InvalidConnectionStringException;
 import com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
@@ -178,15 +176,6 @@ class AiComponentInstaller {
     TelemetryClientInitializer.initialize(telemetryClient, config);
     TelemetryClient.setActive(telemetryClient);
 
-    try {
-      ConnectionString.updateStatsbeatConnectionString(
-          config.internal.statsbeat.instrumentationKey,
-          config.internal.statsbeat.endpoint,
-          telemetryClient);
-    } catch (InvalidConnectionStringException ex) {
-      startupLogger.warn("Statsbeat endpoint is invalid. {}", ex.getMessage());
-    }
-
     BytecodeUtilImpl.samplingPercentage = config.sampling.percentage;
 
     AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient);
@@ -260,7 +249,7 @@ class AiComponentInstaller {
   private static ServiceProfilerServiceConfig formServiceProfilerConfig(
       ProfilerConfiguration configuration) {
     URL serviceProfilerFrontEndPoint =
-        TelemetryClient.getActive().getEndpointProvider().getProfilerEndpoint();
+        TelemetryClient.getActive().getConnectionString().getProfilerEndpoint();
     return new ServiceProfilerServiceConfig(
         configuration.configPollPeriodSeconds,
         configuration.periodicRecordingDurationSeconds,

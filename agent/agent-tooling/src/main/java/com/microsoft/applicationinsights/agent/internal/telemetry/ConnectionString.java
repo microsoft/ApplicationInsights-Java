@@ -21,67 +21,51 @@
 
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
+import com.google.auto.value.AutoValue;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class ConnectionString {
-
-  private static final Logger logger = LoggerFactory.getLogger(ConnectionString.class);
+@AutoValue
+public abstract class ConnectionString {
 
   // visible for testing
   static final int CONNECTION_STRING_MAX_LENGTH = 4096;
 
-  private ConnectionString() {}
-
-  public static void parseInto(String connectionString, TelemetryClient telemetryClient)
-      throws InvalidConnectionStringException, MalformedURLException {
-    // reset endpoint to default for ingestion, live metric and profiler
-    telemetryClient.getEndpointProvider().resetEndpointUrls();
-
-    if (Strings.isNullOrEmpty(connectionString)) {
-      telemetryClient.setInstrumentationKey(null);
-    } else {
-      mapToConnectionConfiguration(getKeyValuePairs(connectionString), telemetryClient);
-    }
+  public static ConnectionString parse(String connectionString) {
+    return parse(connectionString, null, null);
   }
 
-  public static void updateStatsbeatConnectionString(
-      @Nullable String ikey, @Nullable String endpoint, TelemetryClient telemetryClient)
-      throws InvalidConnectionStringException {
-    if (Strings.isNullOrEmpty(ikey)) {
-      logger.warn("Missing Statsbeat '" + Keywords.INSTRUMENTATION_KEY + "'");
-    }
-
-    // if customer is in EU region and their statsbeat config is not in EU region, customer is
-    // responsible for breaking the EU data boundary violation.
-    // Statsbeat config setting has the highest precedence.
-    if (ikey == null || ikey.isEmpty()) {
-      StatsbeatConnectionString.InstrumentationKeyEndpointPair pair =
-          StatsbeatConnectionString.getInstrumentationKeyAndEndpointPair(
-              telemetryClient.getEndpointProvider().getIngestionEndpoint().toString());
-      ikey = pair.instrumentationKey;
-      endpoint = pair.endpoint;
-    }
-
-    telemetryClient.setStatsbeatInstrumentationKey(ikey);
-
-    if (!Strings.isNullOrEmpty(endpoint)) {
-      telemetryClient
-          .getEndpointProvider()
-          .setStatsbeatEndpoint(toUrlOrThrow(endpoint, Keywords.INGESTION_ENDPOINT));
-    }
+  public static ConnectionString parse(
+      String connectionString,
+      @Nullable String statsbeatInstrumentationKey,
+      @Nullable String statsbeatIngestionEndpoint) {
+    return mapToConnectionConfiguration(
+        getKeyValuePairs(connectionString),
+        statsbeatInstrumentationKey,
+        statsbeatIngestionEndpoint);
   }
 
-  private static Map<String, String> getKeyValuePairs(String connectionString)
-      throws InvalidConnectionStringException {
+  public abstract String getInstrumentationKey();
+
+  public abstract URL getIngestionEndpoint();
+
+  public abstract URL getAppIdEndpoint();
+
+  public abstract URL getLiveEndpoint();
+
+  public abstract URL getProfilerEndpoint();
+
+  public abstract String getStatsbeatInstrumentationKey();
+
+  public abstract URL getStatsbeatEndpoint();
+
+  private static Map<String, String> getKeyValuePairs(String connectionString) {
     if (connectionString.length() > CONNECTION_STRING_MAX_LENGTH) { // guard against malicious input
-      throw new InvalidConnectionStringException(
+      throw new IllegalArgumentException(
           "ConnectionString values with more than "
               + CONNECTION_STRING_MAX_LENGTH
               + " characters are not allowed.");
@@ -92,25 +76,24 @@ public class ConnectionString {
       kvps = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
       kvps.putAll(Strings.splitToMap(connectionString));
     } catch (IllegalArgumentException e) {
-      throw new InvalidConnectionStringException("Could not parse connection string.", e);
+      throw new IllegalArgumentException("Could not parse connection string.", e);
     }
 
     return kvps;
   }
 
-  private static void mapToConnectionConfiguration(
-      Map<String, String> kvps, TelemetryClient telemetryClient)
-      throws InvalidConnectionStringException {
+  private static ConnectionString mapToConnectionConfiguration(
+      Map<String, String> kvps,
+      @Nullable String statsbeatInstrumentationKey,
+      @Nullable String statsbeatIngestionEndpoint) {
 
     // get ikey
     String instrumentationKey = kvps.get(Keywords.INSTRUMENTATION_KEY);
     if (Strings.isNullOrEmpty(instrumentationKey)) {
-      throw new InvalidConnectionStringException("Missing '" + Keywords.INSTRUMENTATION_KEY + "'");
+      throw new IllegalArgumentException("Missing '" + Keywords.INSTRUMENTATION_KEY + "'");
     }
-    if (!Strings.isNullOrEmpty(telemetryClient.getInstrumentationKey())) {
-      logger.warn("Connection string is overriding previously configured instrumentation key.");
-    }
-    telemetryClient.setInstrumentationKey(instrumentationKey);
+
+    EndpointProvider endpoints = new EndpointProvider();
 
     // resolve suffix
     String suffix = kvps.get(Keywords.ENDPOINT_SUFFIX);
@@ -119,70 +102,77 @@ public class ConnectionString {
         suffix = suffix.substring(1);
       }
       try {
-        telemetryClient
-            .getEndpointProvider()
-            .setIngestionEndpoint(
-                new URL("https://" + EndpointPrefixes.INGESTION_ENDPOINT_PREFIX + "." + suffix));
-        telemetryClient
-            .getEndpointProvider()
-            .setLiveEndpoint(
-                new URL("https://" + EndpointPrefixes.LIVE_ENDPOINT_PREFIX + "." + suffix));
-        telemetryClient
-            .getEndpointProvider()
-            .setProfilerEndpoint(
-                new URL("https://" + EndpointPrefixes.PROFILER_ENDPOINT_PREFIX + "." + suffix));
-        telemetryClient
-            .getEndpointProvider()
-            .setSnapshotEndpoint(
-                new URL("https://" + EndpointPrefixes.SNAPSHOT_ENDPOINT_PREFIX + "." + suffix));
+        endpoints.setIngestionEndpoint(
+            new URL("https://" + EndpointPrefixes.INGESTION_ENDPOINT_PREFIX + "." + suffix));
+        endpoints.setLiveEndpoint(
+            new URL("https://" + EndpointPrefixes.LIVE_ENDPOINT_PREFIX + "." + suffix));
+        endpoints.setProfilerEndpoint(
+            new URL("https://" + EndpointPrefixes.PROFILER_ENDPOINT_PREFIX + "." + suffix));
+        endpoints.setSnapshotEndpoint(
+            new URL("https://" + EndpointPrefixes.SNAPSHOT_ENDPOINT_PREFIX + "." + suffix));
       } catch (MalformedURLException e) {
-        throw new InvalidConnectionStringException(
-            Keywords.ENDPOINT_SUFFIX + " is invalid: " + suffix, e);
+        throw new IllegalArgumentException(Keywords.ENDPOINT_SUFFIX + " is invalid: " + suffix, e);
       }
     }
 
     // set explicit endpoints
     String liveEndpoint = kvps.get(Keywords.LIVE_ENDPOINT);
     if (!Strings.isNullOrEmpty(liveEndpoint)) {
-      telemetryClient
-          .getEndpointProvider()
-          .setLiveEndpoint(toUrlOrThrow(liveEndpoint, Keywords.LIVE_ENDPOINT));
+      endpoints.setLiveEndpoint(toUrlOrThrow(liveEndpoint, Keywords.LIVE_ENDPOINT));
     }
 
     String ingestionEndpoint = kvps.get(Keywords.INGESTION_ENDPOINT);
     if (!Strings.isNullOrEmpty(ingestionEndpoint)) {
-      telemetryClient
-          .getEndpointProvider()
-          .setIngestionEndpoint(toUrlOrThrow(ingestionEndpoint, Keywords.INGESTION_ENDPOINT));
+      endpoints.setIngestionEndpoint(toUrlOrThrow(ingestionEndpoint, Keywords.INGESTION_ENDPOINT));
     }
 
     String profilerEndpoint = kvps.get(Keywords.PROFILER_ENDPOINT);
     if (!Strings.isNullOrEmpty(profilerEndpoint)) {
-      telemetryClient
-          .getEndpointProvider()
-          .setProfilerEndpoint(toUrlOrThrow(profilerEndpoint, Keywords.PROFILER_ENDPOINT));
+      endpoints.setProfilerEndpoint(toUrlOrThrow(profilerEndpoint, Keywords.PROFILER_ENDPOINT));
     }
 
     String snapshotEndpoint = kvps.get(Keywords.SNAPSHOT_ENDPOINT);
     if (!Strings.isNullOrEmpty(snapshotEndpoint)) {
-      telemetryClient
-          .getEndpointProvider()
-          .setSnapshotEndpoint(toUrlOrThrow(snapshotEndpoint, Keywords.SNAPSHOT_ENDPOINT));
+      endpoints.setSnapshotEndpoint(toUrlOrThrow(snapshotEndpoint, Keywords.SNAPSHOT_ENDPOINT));
     }
+
+    // if customer is in EU region and their statsbeat config is not in EU region, customer is
+    // responsible for breaking the EU data boundary violation.
+    // Statsbeat config setting has the highest precedence.
+    if (statsbeatInstrumentationKey == null || statsbeatInstrumentationKey.isEmpty()) {
+      StatsbeatConnectionString.InstrumentationKeyEndpointPair pair =
+          StatsbeatConnectionString.getInstrumentationKeyAndEndpointPair(
+              endpoints.getIngestionEndpoint().toString());
+      statsbeatInstrumentationKey = pair.instrumentationKey;
+      statsbeatIngestionEndpoint = pair.endpoint;
+    }
+
+    if (!Strings.isNullOrEmpty(statsbeatIngestionEndpoint)) {
+      endpoints.setStatsbeatEndpoint(
+          toUrlOrThrow(statsbeatIngestionEndpoint, Keywords.INGESTION_ENDPOINT));
+    }
+
+    return new AutoValue_ConnectionString(
+        instrumentationKey,
+        endpoints.getIngestionEndpointUrl(),
+        endpoints.getAppIdEndpointUrl(instrumentationKey),
+        endpoints.getLiveEndpointUrl(),
+        endpoints.getProfilerEndpoint(),
+        statsbeatInstrumentationKey,
+        endpoints.getStatsbeatEndpointUrl());
   }
 
-  private static URL toUrlOrThrow(String url, String field)
-      throws InvalidConnectionStringException {
+  public static URL toUrlOrThrow(String url, String field) {
     try {
       URL result = new URL(url);
       String scheme = result.getProtocol();
       if (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme)) {
-        throw new InvalidConnectionStringException(
+        throw new IllegalArgumentException(
             field + " must specify supported protocol, either 'http' or 'https': \"" + url + "\"");
       }
       return result;
     } catch (MalformedURLException e) {
-      throw new InvalidConnectionStringException(field + " is invalid: \"" + url + "\"", e);
+      throw new IllegalArgumentException(field + " is invalid: \"" + url + "\"", e);
     }
   }
 

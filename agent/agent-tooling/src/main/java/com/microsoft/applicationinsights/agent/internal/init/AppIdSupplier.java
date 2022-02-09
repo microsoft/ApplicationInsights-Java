@@ -68,10 +68,8 @@ public class AppIdSupplier implements AiAppId.Supplier {
   }
 
   public void startAppIdRetrieval() {
-    String instrumentationKey = telemetryClient.getInstrumentationKey();
     GetAppIdTask newTask =
-        new GetAppIdTask(
-            telemetryClient.getEndpointProvider().getAppIdEndpointUrl(instrumentationKey));
+        new GetAppIdTask(telemetryClient.getConnectionString().getAppIdEndpoint());
     synchronized (taskLock) {
       appId = null;
       if (task != null) {

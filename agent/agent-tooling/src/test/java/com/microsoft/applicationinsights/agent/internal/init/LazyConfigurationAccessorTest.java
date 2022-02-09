@@ -22,11 +22,12 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.microsoft.applicationinsights.agent.internal.telemetry.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import org.junit.jupiter.api.Test;
 
@@ -85,7 +86,7 @@ class LazyConfigurationAccessorTest {
     lazyConfigurationAccessor.setConnectionString(null, null);
 
     // then
-    verify(telemetryClient, never()).setConnectionString(anyString());
+    verify(telemetryClient, never()).setConnectionString(any());
   }
 
   @Test
@@ -104,7 +105,7 @@ class LazyConfigurationAccessorTest {
     lazyConfigurationAccessor.setConnectionString(CONNECTION_STRING, null);
 
     // then
-    verify(telemetryClient).setConnectionString(CONNECTION_STRING);
+    verify(telemetryClient).setConnectionString(ConnectionString.parse(CONNECTION_STRING));
 
     // when
     lazyConfigurationAccessor.setWebsiteSiteName(WEBSITE_SITE_NAME);
@@ -129,7 +130,7 @@ class LazyConfigurationAccessorTest {
     lazyConfigurationAccessor.setConnectionString(null, INSTRUMENTATION_KEY);
 
     // then
-    verify(telemetryClient).setConnectionString("InstrumentationKey=" + INSTRUMENTATION_KEY);
+    verify(telemetryClient).setConnectionString(ConnectionString.parse(CONNECTION_STRING));
   }
 
   @Test
@@ -166,7 +167,7 @@ class LazyConfigurationAccessorTest {
     lazyConfigurationAccessor.setConnectionString(null, null);
 
     // then
-    verify(telemetryClient, never()).setConnectionString(anyString());
+    verify(telemetryClient, never()).setConnectionString(any());
   }
 
   @Test
@@ -185,7 +186,7 @@ class LazyConfigurationAccessorTest {
     lazyConfigurationAccessor.setConnectionString(CONNECTION_STRING, null);
 
     // then
-    verify(telemetryClient).setConnectionString(CONNECTION_STRING);
+    verify(telemetryClient).setConnectionString(ConnectionString.parse(CONNECTION_STRING));
   }
 
   @Test
@@ -204,6 +205,6 @@ class LazyConfigurationAccessorTest {
     lazyConfigurationAccessor.setConnectionString(null, INSTRUMENTATION_KEY);
 
     // then
-    verify(telemetryClient).setConnectionString("InstrumentationKey=" + INSTRUMENTATION_KEY);
+    verify(telemetryClient).setConnectionString(ConnectionString.parse(CONNECTION_STRING));
   }
 }

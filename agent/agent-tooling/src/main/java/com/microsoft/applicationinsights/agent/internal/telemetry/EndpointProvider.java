@@ -25,7 +25,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.DefaultEnd
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class EndpointProvider {
+class EndpointProvider {
   // visible for testing
   static final String INGESTION_URL_PATH = "v2.1/track";
   // visible for testing
@@ -43,7 +43,7 @@ public class EndpointProvider {
   private volatile URL snapshotEndpoint;
   private volatile URL statsbeatEndpointUrl;
 
-  public EndpointProvider() {
+  EndpointProvider() {
     try {
       resetEndpointUrls();
       snapshotEndpoint = new URL(DefaultEndpoints.SNAPSHOT_ENDPOINT);
@@ -53,28 +53,28 @@ public class EndpointProvider {
     }
   }
 
-  private URL buildIngestionUrl(URL baseUri) throws MalformedURLException {
+  static URL buildIngestionUrl(URL baseUri) throws MalformedURLException {
     return buildUrl(baseUri, INGESTION_URL_PATH);
   }
 
-  private URL buildLiveUri(URL baseUri) throws MalformedURLException {
+  static URL buildLiveUri(URL baseUri) throws MalformedURLException {
     return buildUrl(baseUri, LIVE_URL_PATH);
   }
 
-  public URL getIngestionEndpointUrl() {
+  URL getIngestionEndpointUrl() {
     return ingestionEndpointUrl;
   }
 
-  public URL getStatsbeatEndpointUrl() {
+  URL getStatsbeatEndpointUrl() {
     return statsbeatEndpointUrl;
   }
 
-  public URL getAppIdEndpointUrl(String instrumentationKey) {
+  URL getAppIdEndpointUrl(String instrumentationKey) {
     return buildAppIdUrl(instrumentationKey);
   }
 
   // reset endpoint URLs for ingestion, live metric and profiler
-  public void resetEndpointUrls() throws MalformedURLException {
+  void resetEndpointUrls() throws MalformedURLException {
     ingestionEndpoint = new URL(DefaultEndpoints.INGESTION_ENDPOINT);
     ingestionEndpointUrl = buildIngestionUrl(ingestionEndpoint);
     liveEndpointUrl = buildLiveUri(new URL(DefaultEndpoints.LIVE_ENDPOINT));
@@ -91,7 +91,7 @@ public class EndpointProvider {
     }
   }
 
-  URL buildUrl(URL baseUri, String appendPath) throws MalformedURLException {
+  static URL buildUrl(URL baseUri, String appendPath) throws MalformedURLException {
     String uriString = baseUri.toString();
     if (!uriString.endsWith("/")) {
       uriString = uriString + "/";
@@ -118,7 +118,7 @@ public class EndpointProvider {
     this.ingestionEndpoint = ingestionEndpoint;
   }
 
-  public URL getLiveEndpointUrl() {
+  URL getLiveEndpointUrl() {
     return liveEndpointUrl;
   }
 
@@ -138,7 +138,7 @@ public class EndpointProvider {
     }
   }
 
-  public URL getProfilerEndpoint() {
+  URL getProfilerEndpoint() {
     return profilerEndpoint;
   }
 
@@ -146,7 +146,7 @@ public class EndpointProvider {
     this.profilerEndpoint = profilerEndpoint;
   }
 
-  public URL getSnapshotEndpoint() {
+  URL getSnapshotEndpoint() {
     return snapshotEndpoint;
   }
 

@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.RpConfigur
 import com.microsoft.applicationinsights.agent.internal.legacysdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
+import com.microsoft.applicationinsights.agent.internal.telemetry.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import io.opentelemetry.api.common.Attributes;
@@ -79,7 +80,8 @@ class RpConfigurationPollingTest {
     rpConfiguration.lastModifiedTime = 0;
 
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
-    telemetryClient.setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+    telemetryClient.setConnectionString(
+        ConnectionString.parse("InstrumentationKey=00000000-0000-0000-0000-000000000000"));
     AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient);
 
     BytecodeUtilImpl.samplingPercentage = 100;
@@ -113,7 +115,8 @@ class RpConfigurationPollingTest {
     rpConfiguration.lastModifiedTime = 0;
 
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
-    telemetryClient.setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+    telemetryClient.setConnectionString(
+        ConnectionString.parse("InstrumentationKey=00000000-0000-0000-0000-000000000000"));
     AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient);
 
     BytecodeUtilImpl.samplingPercentage = 100;
