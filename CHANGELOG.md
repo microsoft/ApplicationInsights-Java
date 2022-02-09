@@ -4,7 +4,7 @@
 * Support Statsbeat in EU regions [#2082](https://github.com/microsoft/ApplicationInsights-Java/pull/2082).
 * Update Oshi default logging level [#2086](https://github.com/microsoft/ApplicationInsights-Java/pull/2086).
 * Add debug profiler for startup perf [#2085](https://github.com/microsoft/ApplicationInsights-Java/pull/2085).
-* Update azure-core dependency [#2095](https://github.com/microsoft/ApplicationInsights-Java/pull/2095).
+* Avoid local DNS resolution when using http proxy configuration [#2095](https://github.com/microsoft/ApplicationInsights-Java/pull/2095).
 
 # Version 3.2.5 GA
 
