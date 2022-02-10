@@ -72,7 +72,8 @@ public class LoggingConfigurator {
   void configure() {
     loggerContext.getLogger(ROOT_LOGGER_NAME).detachAndStopAllAppenders();
 
-    if (DiagnosticsHelper.useAppSvcRpIntegrationLogging() || DiagnosticsHelper.useFunctionsRpIntegrationLogging()) {
+    if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()
+        || DiagnosticsHelper.useFunctionsRpIntegrationLogging()) {
       configureAppSvcsAndFunction();
     } else if (destination == null || destination.equalsIgnoreCase("file+console")) {
       configureFileAndConsole();
