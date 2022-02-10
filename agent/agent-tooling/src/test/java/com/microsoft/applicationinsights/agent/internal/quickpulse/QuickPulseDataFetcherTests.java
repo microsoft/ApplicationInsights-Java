@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.azure.core.http.HttpHeaders;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpPipelineBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.connectionstring.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.MockHttpResponse;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.net.URI;

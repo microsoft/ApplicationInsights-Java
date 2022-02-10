@@ -19,12 +19,12 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter.implementation.connectionstring;
+package com.azure.monitor.opentelemetry.exporter.implementation.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.connectionstring.ConnectionString.EndpointPrefixes;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString.EndpointPrefixes;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.UUID;

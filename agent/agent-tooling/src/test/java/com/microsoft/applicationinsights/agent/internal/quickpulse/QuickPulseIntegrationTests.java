@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.policy.HttpPipelinePolicy;
-import com.azure.monitor.opentelemetry.exporter.implementation.connectionstring.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.Date;

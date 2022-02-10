@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.connectionstring.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.junit.jupiter.api.Test;

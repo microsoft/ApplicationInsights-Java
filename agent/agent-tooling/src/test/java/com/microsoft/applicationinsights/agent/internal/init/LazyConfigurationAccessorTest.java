@@ -27,7 +27,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.connectionstring.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import org.junit.jupiter.api.Test;
 

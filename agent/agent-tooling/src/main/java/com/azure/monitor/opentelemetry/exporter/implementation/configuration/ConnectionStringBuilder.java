@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter.implementation.connectionstring;
+package com.azure.monitor.opentelemetry.exporter.implementation.configuration;
 
 import java.net.MalformedURLException;
 import java.net.URL;

@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter.implementation.connectionstring;
+package com.azure.monitor.opentelemetry.exporter.implementation.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import ch.qos.logback.classic.LoggerContext;
-import com.azure.monitor.opentelemetry.exporter.implementation.connectionstring.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;

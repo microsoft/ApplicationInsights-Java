@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.connectionstring.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
