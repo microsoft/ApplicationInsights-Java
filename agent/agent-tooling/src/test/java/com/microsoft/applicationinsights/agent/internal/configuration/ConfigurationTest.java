@@ -274,7 +274,7 @@ class ConfigurationTest {
         "InstrumentationKey=11111111-1111-1111-1111-111111111111");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.connectionString)
         .isEqualTo("InstrumentationKey=11111111-1111-1111-1111-111111111111");
@@ -287,7 +287,7 @@ class ConfigurationTest {
         "InstrumentationKey=11111111-1111-1111-1111-111111111111");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.connectionString)
         .isEqualTo("InstrumentationKey=11111111-1111-1111-1111-111111111111");
@@ -303,7 +303,7 @@ class ConfigurationTest {
         "InstrumentationKey=22222222-2222-2222-2222-222222222222");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.connectionString)
         .isEqualTo("InstrumentationKey=22222222-2222-2222-2222-222222222222");
@@ -316,7 +316,7 @@ class ConfigurationTest {
     envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.role.name).isEqualTo("role name from env");
   }
@@ -328,7 +328,7 @@ class ConfigurationTest {
     envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.role.name).isEqualTo("role name from sys");
   }
@@ -341,7 +341,7 @@ class ConfigurationTest {
     envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.role.name).isEqualTo("role name from sys");
   }
@@ -351,7 +351,7 @@ class ConfigurationTest {
     envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
 
     Configuration configuration = loadConfiguration("applicationinsights_NoRole.json");
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.role.name).isEqualTo("Role Name From Website Env");
   }
@@ -361,7 +361,7 @@ class ConfigurationTest {
     envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.role.name).isEqualTo("Something Good");
   }
@@ -372,7 +372,7 @@ class ConfigurationTest {
     envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
 
     Configuration configuration = loadConfiguration("applicationinsights_NoRole.json");
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.role.name).isEqualTo("role name from website env");
   }
@@ -384,7 +384,7 @@ class ConfigurationTest {
     envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.role.instance).isEqualTo("role instance from env");
   }
@@ -396,7 +396,7 @@ class ConfigurationTest {
     envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.role.instance).isEqualTo("role instance from sys");
   }
@@ -409,7 +409,7 @@ class ConfigurationTest {
     envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.role.instance).isEqualTo("role instance from sys");
   }
@@ -419,7 +419,7 @@ class ConfigurationTest {
     envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
 
     Configuration configuration = loadConfiguration("applicationinsights_NoRole.json");
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.role.instance).isEqualTo("role instance from website env");
   }
@@ -429,7 +429,7 @@ class ConfigurationTest {
     envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.role.instance).isEqualTo("xyz123");
   }
@@ -439,7 +439,7 @@ class ConfigurationTest {
     envVars.set("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", "0.25");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.sampling.percentage).isEqualTo(0.25f);
   }
@@ -449,7 +449,7 @@ class ConfigurationTest {
     envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL", "TRACE");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.instrumentation.logging.level).isEqualTo("TRACE");
   }
@@ -462,7 +462,7 @@ class ConfigurationTest {
     envVars.set("APPLICATIONINSIGHTS_JMX_METRICS", jmxMetricsJson);
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     List<JmxMetric> jmxMetrics = parseJmxMetricsJson(jmxMetricsJson);
     assertThat(jmxMetrics.size()).isEqualTo(2);
@@ -479,7 +479,7 @@ class ConfigurationTest {
     envVars.set("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL", "DEBUG");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.selfDiagnostics.level).isEqualTo("DEBUG");
   }
@@ -489,7 +489,7 @@ class ConfigurationTest {
     envVars.set("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH", "/tmp/ai.log");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.selfDiagnostics.file.path).isEqualTo("/tmp/ai.log");
   }
@@ -499,7 +499,7 @@ class ConfigurationTest {
     envVars.set("APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_SPRING_INTEGRATION_ENABLED", "true");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.preview.instrumentation.springIntegration.enabled).isTrue();
   }
@@ -509,7 +509,7 @@ class ConfigurationTest {
     envVars.set("APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED", "false");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.preview.liveMetrics.enabled).isFalse();
   }
@@ -519,7 +519,7 @@ class ConfigurationTest {
     envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_AZURE_SDK_ENABLED", "false");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.instrumentation.azureSdk.enabled).isFalse();
   }
@@ -529,7 +529,7 @@ class ConfigurationTest {
     envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_CASSANDRA_ENABLED", "false");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.instrumentation.cassandra.enabled).isFalse();
   }
@@ -539,7 +539,7 @@ class ConfigurationTest {
     envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_JDBC_ENABLED", "false");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.instrumentation.jdbc.enabled).isFalse();
   }
@@ -549,7 +549,7 @@ class ConfigurationTest {
     envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_JMS_ENABLED", "false");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.instrumentation.jms.enabled).isFalse();
   }
@@ -559,7 +559,7 @@ class ConfigurationTest {
     envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_KAFKA_ENABLED", "false");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.instrumentation.kafka.enabled).isFalse();
   }
@@ -569,7 +569,7 @@ class ConfigurationTest {
     envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_MICROMETER_ENABLED", "false");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.instrumentation.micrometer.enabled).isFalse();
   }
@@ -579,7 +579,7 @@ class ConfigurationTest {
     envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_MONGO_ENABLED", "false");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.instrumentation.mongo.enabled).isFalse();
   }
@@ -589,7 +589,7 @@ class ConfigurationTest {
     envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_RABBITMQ_ENABLED", "true");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.instrumentation.rabbitmq.enabled).isTrue();
   }
@@ -599,7 +599,7 @@ class ConfigurationTest {
     envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_REDIS_ENABLED", "false");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.instrumentation.redis.enabled).isFalse();
   }
@@ -609,7 +609,7 @@ class ConfigurationTest {
     envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_SPRING_SCHEDULING_ENABLED", "false");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.instrumentation.springScheduling.enabled).isFalse();
   }
@@ -619,7 +619,7 @@ class ConfigurationTest {
     envVars.set("APPLICATIONINSIGHTS_AUTHENTICATION_STRING", "Authorization=AAD;ClientId=12345678");
 
     Configuration configuration = loadConfiguration("applicationinsights_aadauthenv.json");
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
     assertThat(configuration.preview.authentication.enabled).isTrue();
     assertThat(configuration.preview.authentication.type)
@@ -630,7 +630,7 @@ class ConfigurationTest {
     envVars.set("APPLICATIONINSIGHTS_AUTHENTICATION_STRING", "Authorization=AAD;ClientId=");
 
     Configuration configuration2 = loadConfiguration("applicationinsights_aadauthenv.json");
-    ConfigurationBuilder.overlayFromEnv(configuration2);
+    ConfigurationBuilder.overlayFromEnv(configuration2, Paths.get("."));
 
     assertThat(configuration2.preview.authentication.enabled).isTrue();
     assertThat(configuration2.preview.authentication.type)
@@ -647,7 +647,7 @@ class ConfigurationTest {
         loadConfiguration("applicationinsights_statsbeatdisabledenv.json");
     assertThat(configuration.preview.statsbeat.disabled).isFalse();
 
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
     assertThat(configuration.preview.statsbeat.disabled).isTrue();
 
     envVars.set("APPLICATIONINSIGHTS_STATSBEAT_DISABLED", "false");
@@ -655,7 +655,7 @@ class ConfigurationTest {
         loadConfiguration("applicationinsights_statsbeatdisabledenv.json");
     assertThat(configuration2.preview.statsbeat.disabled).isFalse();
 
-    ConfigurationBuilder.overlayFromEnv(configuration2);
+    ConfigurationBuilder.overlayFromEnv(configuration2, Paths.get("."));
     assertThat(configuration2.preview.statsbeat.disabled).isFalse();
   }
 
