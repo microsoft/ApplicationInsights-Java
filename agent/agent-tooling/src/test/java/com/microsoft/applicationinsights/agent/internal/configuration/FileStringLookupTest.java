@@ -126,4 +126,11 @@ public class FileStringLookupTest {
     assertThatThrownBy(() -> stringSubstitutor.replace(connectionString))
         .isInstanceOf(IllegalArgumentException.class);
   }
+
+  @Test
+  public void testRelativePath() {
+    String connectionString = "${file:./" + file.getName() + "}";
+    String value = stringSubstitutor.replace(connectionString);
+    assertThat(value).isEqualTo(CONNECTION_STRING);
+  }
 }
