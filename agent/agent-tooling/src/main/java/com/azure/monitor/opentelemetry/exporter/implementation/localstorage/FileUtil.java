@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.localstorage;
+package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import static java.util.Arrays.asList;
 
@@ -50,6 +50,25 @@ class FileUtil {
               + destFile.getAbsolutePath()
               + "'");
     }
+  }
+
+  // delete a file and then retry 3 times when it fails.
+  static boolean deleteFileWithRetries(File file) {
+    if (!file.delete()) {
+      for (int i = 0; i < 3; i++) {
+        try {
+          Thread.sleep(500);
+        } catch (InterruptedException ex) {
+          Thread.currentThread().interrupt();
+          return false;
+        }
+        if (file.delete()) {
+          break;
+        }
+      }
+    }
+
+    return true;
   }
 
   private FileUtil() {}

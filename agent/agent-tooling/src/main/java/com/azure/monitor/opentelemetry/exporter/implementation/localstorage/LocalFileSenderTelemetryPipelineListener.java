@@ -19,45 +19,37 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.localstorage;
-
-import static java.util.Arrays.asList;
+package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineRequest;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineResponse;
-import java.util.HashSet;
-import java.util.Set;
+import java.io.File;
 
-class LocalStorageTelemetryPipelineListener implements TelemetryPipelineListener {
+class LocalFileSenderTelemetryPipelineListener implements TelemetryPipelineListener {
 
-  static final Set<Integer> RETRYABLE_CODES =
-      new HashSet<>(
-          asList(
-              401,
-              403,
-              408, // REQUEST TIMEOUT
-              429, // TOO MANY REQUESTS
-              500, // INTERNAL SERVER ERROR
-              503 // SERVICE UNAVAILABLE
-              ));
+  private final LocalFileLoader localFileLoader;
+  private final File file;
 
-  private final LocalFileWriter localFileWriter;
-
-  LocalStorageTelemetryPipelineListener(LocalFileWriter localFileWriter) {
-    this.localFileWriter = localFileWriter;
+  LocalFileSenderTelemetryPipelineListener(LocalFileLoader localFileLoader, File file) {
+    this.localFileLoader = localFileLoader;
+    this.file = file;
   }
 
   @Override
   public void onResponse(TelemetryPipelineRequest request, TelemetryPipelineResponse response) {
-    if (RETRYABLE_CODES.contains(response.getStatusCode())) {
-      localFileWriter.writeToDisk(request.getInstrumentationKey(), request.getTelemetry());
+    int responseCode = response.getStatusCode();
+    if (responseCode == 200) {
+      localFileLoader.updateProcessedFileStatus(true, file);
+    } else {
+      localFileLoader.updateProcessedFileStatus(
+          !LocalStorageTelemetryPipelineListener.RETRYABLE_CODES.contains(responseCode), file);
     }
   }
 
   @Override
   public void onException(
       TelemetryPipelineRequest request, String errorMessage, Throwable throwable) {
-    localFileWriter.writeToDisk(request.getInstrumentationKey(), request.getTelemetry());
+    localFileLoader.updateProcessedFileStatus(false, file);
   }
 }

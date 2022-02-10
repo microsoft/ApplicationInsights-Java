@@ -32,7 +32,7 @@ import com.azure.core.util.FluxUtil;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.MockHttpResponse;
 import com.microsoft.applicationinsights.agent.internal.common.TestUtils;
-import com.microsoft.applicationinsights.agent.internal.localstorage.LocalStorageSystem;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageSystem;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

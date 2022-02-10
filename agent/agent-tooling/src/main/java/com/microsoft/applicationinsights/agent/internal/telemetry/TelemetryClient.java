@@ -34,6 +34,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDe
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageSystem;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
@@ -43,10 +44,9 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
+import com.microsoft.applicationinsights.agent.internal.common.TempDirs;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
-import com.microsoft.applicationinsights.agent.internal.localstorage.LocalStorageSystem;
-import com.microsoft.applicationinsights.agent.internal.localstorage.LocalStorageUtils;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeatHttpPipelinePolicy;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
@@ -64,6 +64,9 @@ import org.apache.commons.text.StringSubstitutor;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
 public class TelemetryClient {
+
+  private static final String TELEMETRY_FOLDER_NAME = "telemetry";
+  private static final String STATSBEAT_FOLDER_NAME = "statsbeat";
 
   private static volatile @MonotonicNonNull TelemetryClient active;
 
@@ -243,7 +246,7 @@ public class TelemetryClient {
     if (!readOnlyFileSystem) {
       localStorageSystem =
           new LocalStorageSystem(
-              LocalStorageUtils.getOfflineTelemetryFolder(),
+              TempDirs.getTempDir(TELEMETRY_FOLDER_NAME),
               statsbeatModule.getNonessentialStatsbeat());
       telemetryPipelineListener = localStorageSystem.createTelemetryPipelineListener();
     }
@@ -276,7 +279,7 @@ public class TelemetryClient {
           TelemetryPipelineListener telemetryPipelineListener = TelemetryPipelineListener.noop();
           if (!readOnlyFileSystem) {
             localStorageSystem =
-                new LocalStorageSystem(LocalStorageUtils.getOfflineStatsbeatFolder(), null);
+                new LocalStorageSystem(TempDirs.getTempDir(STATSBEAT_FOLDER_NAME), null);
             telemetryPipelineListener = localStorageSystem.createTelemetryPipelineListener();
           }
 

@@ -27,10 +27,10 @@ import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
-import com.microsoft.applicationinsights.agent.internal.common.LocalFileSystemUtils;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
+import com.microsoft.applicationinsights.agent.internal.common.TempDirs;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProfilerConfiguration;
@@ -46,7 +46,6 @@ import com.microsoft.applicationinsights.agent.internal.legacysdk.RequestNameHan
 import com.microsoft.applicationinsights.agent.internal.legacysdk.RequestTelemetryClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.legacysdk.TelemetryClientClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.legacysdk.WebRequestTrackingFilterClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFilePurger;
 import com.microsoft.applicationinsights.agent.internal.profiler.GcEventMonitor;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilerServiceInitializer;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
@@ -70,9 +69,6 @@ class AiComponentInstaller {
 
   private static final Logger startupLogger =
       LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
-
-  private static final File tempDirectory =
-      new File(LocalFileSystemUtils.getTempDir(), "applicationinsights/profiles");
 
   static AppIdSupplier beforeAgent(Instrumentation instrumentation) {
     AppIdSupplier appIdSupplier = start(instrumentation);
@@ -217,11 +213,6 @@ class AiComponentInstaller {
     // initialize StatsbeatModule
     statsbeatModule.start(telemetryClient, config);
 
-    // start local File purger scheduler task
-    if (!readOnlyFileSystem) {
-      LocalFilePurger.startPurging();
-    }
-
     return appIdSupplier;
   }
 
@@ -257,7 +248,7 @@ class AiComponentInstaller {
         serviceProfilerFrontEndPoint,
         configuration.memoryTriggeredSettings,
         configuration.cpuTriggeredSettings,
-        tempDirectory);
+        TempDirs.getTempDir("profiles"));
   }
 
   @Nullable

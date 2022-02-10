@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.localstorage;
+package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -31,6 +31,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
+
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.FileUtil;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalFileCache;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;

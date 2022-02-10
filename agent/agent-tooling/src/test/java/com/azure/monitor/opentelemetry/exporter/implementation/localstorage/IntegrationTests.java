@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.localstorage;
+package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -33,6 +33,10 @@ import com.azure.core.http.HttpPipelineBuilder;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.test.http.MockHttpResponse;
 import com.azure.core.util.Context;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalFileCache;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalFileLoader;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalFileWriter;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;

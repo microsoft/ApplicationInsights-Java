@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.localstorage;
+package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import java.io.File;
 import java.util.Comparator;

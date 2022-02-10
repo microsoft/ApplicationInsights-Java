@@ -19,16 +19,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.localstorage;
+package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import static java.util.Collections.singletonList;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.logging.DiagnosticTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.telemetry.DiagnosticTelemetryPipelineListener;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -68,10 +66,6 @@ class LocalFileSender implements Runnable {
   public void run() {
     // TODO (heya) load all persisted files on disk in one or more batch per batch capacity?
     try {
-      if (Strings.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey())) {
-        return;
-      }
-
       LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
       if (persistedFile != null) {
         CompletableResultCode resultCode =

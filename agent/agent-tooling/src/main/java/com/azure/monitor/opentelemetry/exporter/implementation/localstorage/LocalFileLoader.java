@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.localstorage;
+package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -99,7 +99,7 @@ class LocalFileLoader {
     }
 
     if (tempFile.length() <= 36) {
-      if (LocalStorageUtils.deleteFileWithRetries(tempFile)) {
+      if (FileUtil.deleteFileWithRetries(tempFile)) {
         operationLogger.recordFailure(
             "Fail to delete a corrupted persisted file: length is  " + tempFile.length());
       }
@@ -115,7 +115,7 @@ class LocalFileLoader {
       instrumentationKey = new String(ikeyBytes, UTF_8);
       if (!isInstrumentationKeyValid(instrumentationKey)) {
         fileInputStream.close(); // need to close FileInputStream before delete
-        if (!LocalStorageUtils.deleteFileWithRetries(tempFile)) {
+        if (!FileUtil.deleteFileWithRetries(tempFile)) {
           operationLogger.recordFailure(
               "Fail to delete the old persisted file with an invalid instrumentation key "
                   + tempFile.getName());
@@ -158,7 +158,7 @@ class LocalFileLoader {
 
   // either delete it permanently on success or add it back to cache to be processed again later on
   // failure
-  public void updateProcessedFileStatus(boolean successOrNonRetryableError, File file) {
+  void updateProcessedFileStatus(boolean successOrNonRetryableError, File file) {
     if (!file.exists()) {
       // not sure why this would happen
       updateOperationLogger.recordFailure("File no longer exists: " + file.getName());
@@ -166,7 +166,7 @@ class LocalFileLoader {
     }
     if (successOrNonRetryableError) {
       // delete a file on the queue permanently when http response returns success.
-      if (!LocalStorageUtils.deleteFileWithRetries(file)) {
+      if (!FileUtil.deleteFileWithRetries(file)) {
         // TODO (heya) track file deletion failure via Statsbeat
         updateOperationLogger.recordFailure("Fail to delete " + file.getName());
       } else {

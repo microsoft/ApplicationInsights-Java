@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.localstorage;
+package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
@@ -29,11 +29,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class LocalStorageSystem {
 
+  private final File telemetryFolder;
   private final LocalFileWriter writer;
   private final LocalFileLoader loader;
 
   public LocalStorageSystem(
       File telemetryFolder, @Nullable NonessentialStatsbeat nonessentialStatsbeat) {
+    this.telemetryFolder = telemetryFolder;
     LocalFileCache localFileCache = new LocalFileCache(telemetryFolder);
     loader = new LocalFileLoader(localFileCache, telemetryFolder, nonessentialStatsbeat);
     writer = new LocalFileWriter(localFileCache, telemetryFolder, nonessentialStatsbeat);
@@ -45,6 +47,7 @@ public class LocalStorageSystem {
 
   public void startSendingFromDisk(TelemetryPipeline pipeline) {
     LocalFileSender.start(loader, pipeline);
+    LocalFilePurger.startPurging(telemetryFolder);
   }
 
   public void stop() {

@@ -21,16 +21,41 @@
 
 package com.microsoft.applicationinsights.agent.internal.common;
 
+import com.azure.core.util.CoreUtils;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 /** Helper methods for dealing with files and folders. */
-public class LocalFileSystemUtils {
+public class TempDirs {
 
   private static final List<String> CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES =
       Collections.unmodifiableList(Arrays.asList("USER", "LOGNAME", "USERNAME"));
+
+  /**
+   * Windows: C:\Users\{USER_NAME}\AppData\Local\Temp\applicationinsights Linux:
+   * /var/temp/applicationinsights We will store all persisted files in this folder for all apps.
+   */
+  private static final File DEFAULT_FOLDER = new File(getTempDir(), "applicationinsights");
+
+  // retrieve the default folder name based on telemetry type.
+  // regular telemetry is written to "applicationinsights/telemetry" folder.
+  // statsbeat telemetry is written to "applicationinsights/statsbeat" folder.
+  public static File getTempDir(String name) {
+    File subdirectory = new File(DEFAULT_FOLDER, name);
+
+    if (!subdirectory.exists()) {
+      subdirectory.mkdirs();
+    }
+
+    if (!subdirectory.exists() || !subdirectory.canRead() || !subdirectory.canWrite()) {
+      throw new IllegalArgumentException(
+          "subdirectory must exist and have read and write permissions.");
+    }
+
+    return subdirectory;
+  }
 
   /**
    * Finds a suitable folder to use for temporary files, while avoiding the risk of collision when
@@ -43,7 +68,7 @@ public class LocalFileSystemUtils {
    * @return a {@link File} representing a folder in which temporary files will be stored for the
    *     current user.
    */
-  public static File getTempDir() {
+  private static File getTempDir() {
     String tempDirectory = System.getProperty("java.io.tmpdir");
     String currentUserName = determineCurrentUserName();
 
@@ -80,17 +105,17 @@ public class LocalFileSystemUtils {
     // Start with the value of the "user.name" property
     userName = System.getProperty("user.name");
 
-    if (Strings.isNullOrEmpty(userName)) {
+    if (CoreUtils.isNullOrEmpty(userName)) {
       // Try some environment variables
       for (String candidate : CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES) {
         userName = System.getenv(candidate);
-        if (!Strings.isNullOrEmpty(userName)) {
+        if (!CoreUtils.isNullOrEmpty(userName)) {
           break;
         }
       }
     }
 
-    if (Strings.isNullOrEmpty(userName)) {
+    if (CoreUtils.isNullOrEmpty(userName)) {
       // TODO: it might be nice to use a unique-ish value, such as the current process ID
       userName = "unknown";
     }
@@ -98,5 +123,5 @@ public class LocalFileSystemUtils {
     return userName;
   }
 
-  private LocalFileSystemUtils() {}
+  private TempDirs() {}
 }

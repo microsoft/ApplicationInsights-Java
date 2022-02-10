@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.localstorage;
+package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
@@ -34,6 +34,11 @@ import com.azure.core.http.HttpPipelineBuilder;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.util.Context;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.FileUtil;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalFileCache;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalFileLoader;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalFileSenderTelemetryPipelineListener;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalFileWriter;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
