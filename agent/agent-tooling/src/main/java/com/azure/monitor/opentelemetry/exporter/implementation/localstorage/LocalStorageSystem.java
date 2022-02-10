@@ -23,9 +23,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
 import java.io.File;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class LocalStorageSystem {
 
@@ -33,12 +31,11 @@ public class LocalStorageSystem {
   private final LocalFileWriter writer;
   private final LocalFileLoader loader;
 
-  public LocalStorageSystem(
-      File telemetryFolder, @Nullable NonessentialStatsbeat nonessentialStatsbeat) {
+  public LocalStorageSystem(File telemetryFolder, LocalStorageStats stats) {
     this.telemetryFolder = telemetryFolder;
     LocalFileCache localFileCache = new LocalFileCache(telemetryFolder);
-    loader = new LocalFileLoader(localFileCache, telemetryFolder, nonessentialStatsbeat);
-    writer = new LocalFileWriter(localFileCache, telemetryFolder, nonessentialStatsbeat);
+    loader = new LocalFileLoader(localFileCache, telemetryFolder, stats);
+    writer = new LocalFileWriter(localFileCache, telemetryFolder, stats);
   }
 
   public TelemetryPipelineListener createTelemetryPipelineListener() {

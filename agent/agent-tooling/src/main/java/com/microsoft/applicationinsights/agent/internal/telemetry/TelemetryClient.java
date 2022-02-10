@@ -34,6 +34,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDe
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageSystem;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
@@ -279,7 +280,8 @@ public class TelemetryClient {
           TelemetryPipelineListener telemetryPipelineListener = TelemetryPipelineListener.noop();
           if (!readOnlyFileSystem) {
             localStorageSystem =
-                new LocalStorageSystem(TempDirs.getTempDir(STATSBEAT_FOLDER_NAME), null);
+                new LocalStorageSystem(
+                    TempDirs.getTempDir(STATSBEAT_FOLDER_NAME), LocalStorageStats.noop());
             telemetryPipelineListener = localStorageSystem.createTelemetryPipelineListener();
           }
 

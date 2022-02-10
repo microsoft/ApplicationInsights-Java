@@ -24,7 +24,6 @@ package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,8 +43,7 @@ class LocalFileLoader {
 
   private final LocalFileCache localFileCache;
   private final File telemetryFolder;
-  // this is null for Statsbeat telemetry
-  @Nullable private final NonessentialStatsbeat nonessentialStatsbeat;
+  private final LocalStorageStats stats;
 
   private static final OperationLogger operationLogger =
       new OperationLogger(LocalFileLoader.class, "Loading telemetry from disk");
@@ -53,13 +51,10 @@ class LocalFileLoader {
   private static final OperationLogger updateOperationLogger =
       new OperationLogger(LocalFileLoader.class, "Updating local telemetry on disk");
 
-  LocalFileLoader(
-      LocalFileCache localFileCache,
-      File telemetryFolder,
-      @Nullable NonessentialStatsbeat nonessentialStatsbeat) {
+  LocalFileLoader(LocalFileCache localFileCache, File telemetryFolder, LocalStorageStats stats) {
     this.localFileCache = localFileCache;
     this.telemetryFolder = telemetryFolder;
-    this.nonessentialStatsbeat = nonessentialStatsbeat;
+    this.stats = stats;
   }
 
   // Load ByteBuffer from persisted files on disk in FIFO order.
@@ -94,7 +89,7 @@ class LocalFileLoader {
               + TEMPORARY_FILE_EXTENSION
               + " extension: ",
           e);
-      incrementReadFailureCount();
+      stats.incrementReadFailureCount();
       return null;
     }
 
@@ -126,7 +121,7 @@ class LocalFileLoader {
       readFully(fileInputStream, telemetryBytes, rawByteLength);
     } catch (IOException ex) {
       operationLogger.recordFailure("Fail to read telemetry from " + tempFile.getName(), ex);
-      incrementReadFailureCount();
+      stats.incrementReadFailureCount();
       return null;
     }
 
@@ -186,12 +181,6 @@ class LocalFileLoader {
 
       // add the source filename back to local file cache to be processed later.
       localFileCache.addPersistedFile(sourceFile);
-    }
-  }
-
-  private void incrementReadFailureCount() {
-    if (nonessentialStatsbeat != null) {
-      nonessentialStatsbeat.incrementReadFailureCount();
     }
   }
 
