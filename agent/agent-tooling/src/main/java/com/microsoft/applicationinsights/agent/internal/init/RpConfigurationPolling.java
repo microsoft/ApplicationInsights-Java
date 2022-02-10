@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -102,11 +103,15 @@ public class RpConfigurationPolling implements Runnable {
         if (!newRpConfiguration.connectionString.equals(rpConfiguration.connectionString)) {
           logger.debug(
               "Connection string from the JSON config file is overriding the previously configured connection string.");
-          telemetryClient.setConnectionString(
-              ConnectionString.parse(
-                  newRpConfiguration.connectionString,
+          ConnectionString connectionString =
+              ConnectionString.parse(newRpConfiguration.connectionString);
+          telemetryClient.setConnectionString(connectionString);
+          telemetryClient.setStatsbeatConnectionString(
+              StatsbeatConnectionString.create(
+                  connectionString,
                   configuration.internal.statsbeat.instrumentationKey,
                   configuration.internal.statsbeat.endpoint));
+
           if (!Strings.isNullOrEmpty(newRpConfiguration.connectionString)) {
             appIdSupplier.startAppIdRetrieval();
           }

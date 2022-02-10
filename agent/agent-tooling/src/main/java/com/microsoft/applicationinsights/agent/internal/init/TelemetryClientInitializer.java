@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -117,9 +118,11 @@ public class TelemetryClientInitializer {
     String connectionString = configuration.connectionString;
 
     if (connectionString != null) {
-      telemetryClient.setConnectionString(
-          ConnectionString.parse(
-              connectionString,
+      ConnectionString connectionStringObj = ConnectionString.parse(connectionString);
+      telemetryClient.setConnectionString(connectionStringObj);
+      telemetryClient.setStatsbeatConnectionString(
+          StatsbeatConnectionString.create(
+              connectionStringObj,
               configuration.internal.statsbeat.instrumentationKey,
               configuration.internal.statsbeat.endpoint));
     }

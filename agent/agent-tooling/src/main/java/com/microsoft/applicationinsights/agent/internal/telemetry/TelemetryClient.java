@@ -33,6 +33,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.PageView
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDependencyTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
@@ -69,6 +70,7 @@ public class TelemetryClient {
   private final Set<String> nonFilterableMetricNames = new HashSet<>();
 
   @Nullable private volatile ConnectionString connectionString;
+  @Nullable private volatile StatsbeatConnectionString statsbeatConnectionString;
   private volatile @MonotonicNonNull String roleName;
   private volatile @MonotonicNonNull String roleInstance;
 
@@ -280,7 +282,7 @@ public class TelemetryClient {
 
           HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(null);
           TelemetryPipeline telemetryPipeline =
-              new TelemetryPipeline(httpPipeline, connectionString.getStatsbeatEndpoint());
+              new TelemetryPipeline(httpPipeline, statsbeatConnectionString.getEndpoint());
 
           TelemetryItemExporter exporter =
               new TelemetryItemExporter(telemetryPipeline, telemetryPipelineListener);
@@ -359,14 +361,6 @@ public class TelemetryClient {
   }
 
   @Nullable
-  public String getStatsbeatInstrumentationKey() {
-    // TODO (trask) I may have broken statsbeat under lazy loading
-    //  (azure functions / azure spring cloud)
-    ConnectionString val = this.connectionString;
-    return val != null ? val.getStatsbeatInstrumentationKey() : null;
-  }
-
-  @Nullable
   public String getRoleName() {
     return roleName;
   }
@@ -387,6 +381,10 @@ public class TelemetryClient {
 
   public void setConnectionString(ConnectionString connectionString) {
     this.connectionString = connectionString;
+  }
+
+  public void setStatsbeatConnectionString(StatsbeatConnectionString statsbeatConnectionString) {
+    this.statsbeatConnectionString = statsbeatConnectionString;
   }
 
   @Nullable

@@ -30,7 +30,6 @@ class ConnectionStringBuilder {
   private URL liveEndpoint;
   private URL profilerEndpoint;
   private URL snapshotEndpoint;
-  private URL statsbeatEndpoint;
 
   ConnectionStringBuilder() {
     try {
@@ -47,10 +46,6 @@ class ConnectionStringBuilder {
     return ingestionEndpoint;
   }
 
-  URL getStatsbeatEndpoint() {
-    return statsbeatEndpoint;
-  }
-
   void setIngestionEndpoint(String ingestionEndpoint) {
     this.ingestionEndpoint =
         toUrlOrThrow(ingestionEndpoint, ConnectionString.Keywords.INGESTION_ENDPOINT);
@@ -62,17 +57,6 @@ class ConnectionStringBuilder {
 
   void setLiveEndpoint(String liveEndpoint) {
     this.liveEndpoint = toUrlOrThrow(liveEndpoint, ConnectionString.Keywords.LIVE_ENDPOINT);
-  }
-
-  void setStatsbeatEndpoint(String statsbeatEndpoint) {
-    if (!statsbeatEndpoint.endsWith("/")) {
-      statsbeatEndpoint += "/";
-    }
-    try {
-      this.statsbeatEndpoint = new URL(statsbeatEndpoint);
-    } catch (MalformedURLException e) {
-      throw new IllegalArgumentException("could not construct statsbeat endpoint uri", e);
-    }
   }
 
   URL getProfilerEndpoint() {

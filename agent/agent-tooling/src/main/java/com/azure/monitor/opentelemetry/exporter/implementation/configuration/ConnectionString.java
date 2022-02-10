@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
-import javax.annotation.Nullable;
 
 @AutoValue
 public abstract class ConnectionString {
@@ -37,17 +36,7 @@ public abstract class ConnectionString {
   static final int CONNECTION_STRING_MAX_LENGTH = 4096;
 
   public static ConnectionString parse(String connectionString) {
-    return parse(connectionString, null, null);
-  }
-
-  public static ConnectionString parse(
-      String connectionString,
-      @Nullable String statsbeatInstrumentationKey,
-      @Nullable String statsbeatIngestionEndpoint) {
-    return mapToConnectionConfiguration(
-        getKeyValuePairs(connectionString),
-        statsbeatInstrumentationKey,
-        statsbeatIngestionEndpoint);
+    return mapToConnectionConfiguration(getKeyValuePairs(connectionString));
   }
 
   public abstract String getInstrumentationKey();
@@ -57,10 +46,6 @@ public abstract class ConnectionString {
   public abstract URL getLiveEndpoint();
 
   public abstract URL getProfilerEndpoint();
-
-  public abstract String getStatsbeatInstrumentationKey();
-
-  public abstract URL getStatsbeatEndpoint();
 
   private static Map<String, String> getKeyValuePairs(String connectionString) {
     if (connectionString.length() > CONNECTION_STRING_MAX_LENGTH) { // guard against malicious input
@@ -94,10 +79,7 @@ public abstract class ConnectionString {
     return keyValues;
   }
 
-  private static ConnectionString mapToConnectionConfiguration(
-      Map<String, String> kvps,
-      @Nullable String statsbeatInstrumentationKey,
-      @Nullable String statsbeatIngestionEndpoint) {
+  private static ConnectionString mapToConnectionConfiguration(Map<String, String> kvps) {
 
     // get ikey
     String instrumentationKey = kvps.get(Keywords.INSTRUMENTATION_KEY);
@@ -143,28 +125,11 @@ public abstract class ConnectionString {
       endpoints.setSnapshotEndpoint(snapshotEndpoint);
     }
 
-    // if customer is in EU region and their statsbeat config is not in EU region, customer is
-    // responsible for breaking the EU data boundary violation.
-    // Statsbeat config setting has the highest precedence.
-    if (statsbeatInstrumentationKey == null || statsbeatInstrumentationKey.isEmpty()) {
-      StatsbeatConnectionString.InstrumentationKeyEndpointPair pair =
-          StatsbeatConnectionString.getInstrumentationKeyAndEndpointPair(
-              endpoints.getIngestionEndpoint().toString());
-      statsbeatInstrumentationKey = pair.instrumentationKey;
-      statsbeatIngestionEndpoint = pair.endpoint;
-    }
-
-    if (!CoreUtils.isNullOrEmpty(statsbeatIngestionEndpoint)) {
-      endpoints.setStatsbeatEndpoint(statsbeatIngestionEndpoint);
-    }
-
     return new AutoValue_ConnectionString(
         instrumentationKey,
         endpoints.getIngestionEndpoint(),
         endpoints.getLiveEndpoint(),
-        endpoints.getProfilerEndpoint(),
-        statsbeatInstrumentationKey,
-        endpoints.getStatsbeatEndpoint());
+        endpoints.getProfilerEndpoint());
   }
 
   /** All tokens are lowercase. Parsing should be case insensitive. */

@@ -80,84 +80,82 @@ public class StatsbeatConnectionStringTest {
     // customer ikey is in non-eu
     // Statsbeat config ikey is in eu
     // use Statsbeat config ikey
+    ConnectionString connectionString =
+        ConnectionString.parse(
+            "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://westus2-1.example.com/");
     String ikeyConfig = "00000000-0000-0000-0000-000000000001";
     String endpointConfig = "https://westeurope-2.example.com";
-    ConnectionString parsed =
-        ConnectionString.parse(
-            "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://westus2-1.example.com/",
-            ikeyConfig,
-            endpointConfig);
-    assertThat(parsed.getStatsbeatInstrumentationKey()).isEqualTo(ikeyConfig);
-    assertThat(parsed.getStatsbeatEndpoint().toString()).isEqualTo(endpointConfig + "/");
+    StatsbeatConnectionString statsbeatConnectionString =
+        StatsbeatConnectionString.create(connectionString, ikeyConfig, endpointConfig);
+    assertThat(statsbeatConnectionString.getInstrumentationKey()).isEqualTo(ikeyConfig);
+    assertThat(statsbeatConnectionString.getEndpoint().toString()).isEqualTo(endpointConfig + "/");
 
     // case 2
     // customer ikey is in non-eu
     // Statsbeat config ikey is in non-eu
     // use Statsbeat config ikey
+    connectionString =
+        ConnectionString.parse(
+            "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://westus2-1.example.com/");
     ikeyConfig = "00000000-0000-0000-0000-000000000002";
     endpointConfig = "https://westus2-2.example.com";
-    parsed =
-        ConnectionString.parse(
-            "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://westus2-1.example.com/",
-            ikeyConfig,
-            endpointConfig);
-    assertThat(parsed.getStatsbeatInstrumentationKey()).isEqualTo(ikeyConfig);
-    assertThat(parsed.getStatsbeatEndpoint().toString()).isEqualTo(endpointConfig + "/");
+    statsbeatConnectionString =
+        StatsbeatConnectionString.create(connectionString, ikeyConfig, endpointConfig);
+    assertThat(statsbeatConnectionString.getInstrumentationKey()).isEqualTo(ikeyConfig);
+    assertThat(statsbeatConnectionString.getEndpoint().toString()).isEqualTo(endpointConfig + "/");
 
     // case 3
     // customer ikey is in non-eu
     // no Statsbeat config
     // use Statsbeat non-eu
-    parsed =
+    connectionString =
         ConnectionString.parse(
-            "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://westus2-1.example.com/",
-            null,
-            null);
-    assertThat(parsed.getStatsbeatInstrumentationKey())
+            "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://westus2-1.example.com/");
+    statsbeatConnectionString = StatsbeatConnectionString.create(connectionString, null, null);
+    assertThat(statsbeatConnectionString.getInstrumentationKey())
         .isEqualTo(StatsbeatConnectionString.NON_EU_REGION_STATSBEAT_IKEY);
-    assertThat(parsed.getStatsbeatEndpoint().toString())
+    assertThat(statsbeatConnectionString.getEndpoint().toString())
         .isEqualTo(StatsbeatConnectionString.NON_EU_REGION_STATSBEAT_ENDPOINT);
 
     // case 4
     // customer is in eu
     // Statsbeat config ikey is in non-eu
     // use Statsbeat config's ikey
+    connectionString =
+        ConnectionString.parse(
+            "InstrumentationKey=00000000-0000-0000-0000-000000000003;IngestionEndpoint=https://westeurope-1.example.com/");
     ikeyConfig = "00000000-0000-0000-0000-000000000004";
     endpointConfig = "https://westus2-4.example.com";
-    parsed =
-        ConnectionString.parse(
-            "InstrumentationKey=00000000-0000-0000-0000-000000000003;IngestionEndpoint=https://westeurope-1.example.com/",
-            ikeyConfig,
-            endpointConfig);
-    assertThat(parsed.getStatsbeatInstrumentationKey()).isEqualTo(ikeyConfig);
-    assertThat(parsed.getStatsbeatEndpoint().toString()).isEqualTo(endpointConfig + "/");
+    statsbeatConnectionString =
+        StatsbeatConnectionString.create(connectionString, ikeyConfig, endpointConfig);
+    assertThat(statsbeatConnectionString.getInstrumentationKey()).isEqualTo(ikeyConfig);
+    assertThat(statsbeatConnectionString.getEndpoint().toString()).isEqualTo(endpointConfig + "/");
 
     // case 5
     // customer is in eu
     // Statsbeat config ikey is in eu
     // use Statsbeat config's ikey
+    connectionString =
+        ConnectionString.parse(
+            "InstrumentationKey=00000000-0000-0000-0000-000000000003;IngestionEndpoint=https://westeurope-1.example.com/");
     ikeyConfig = "00000000-0000-0000-0000-000000000005";
     endpointConfig = "https://francesouth-1.example.com";
-    parsed =
-        ConnectionString.parse(
-            "InstrumentationKey=00000000-0000-0000-0000-000000000003;IngestionEndpoint=https://westeurope-1.example.com/",
-            ikeyConfig,
-            endpointConfig);
-    assertThat(parsed.getStatsbeatInstrumentationKey()).isEqualTo(ikeyConfig);
-    assertThat(parsed.getStatsbeatEndpoint().toString()).isEqualTo(endpointConfig + "/");
+    statsbeatConnectionString =
+        StatsbeatConnectionString.create(connectionString, ikeyConfig, endpointConfig);
+    assertThat(statsbeatConnectionString.getInstrumentationKey()).isEqualTo(ikeyConfig);
+    assertThat(statsbeatConnectionString.getEndpoint().toString()).isEqualTo(endpointConfig + "/");
 
     // case 6
     // customer is in eu
     // no statsbeat config
     // use Statsbeat eu
-    parsed =
+    connectionString =
         ConnectionString.parse(
-            "InstrumentationKey=00000000-0000-0000-0000-000000000003;IngestionEndpoint=https://westeurope-1.example.com/",
-            null,
-            null);
-    assertThat(parsed.getStatsbeatInstrumentationKey())
+            "InstrumentationKey=00000000-0000-0000-0000-000000000003;IngestionEndpoint=https://westeurope-1.example.com/");
+    statsbeatConnectionString = StatsbeatConnectionString.create(connectionString, null, null);
+    assertThat(statsbeatConnectionString.getInstrumentationKey())
         .isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_IKEY);
-    assertThat(parsed.getStatsbeatEndpoint().toString())
+    assertThat(statsbeatConnectionString.getEndpoint().toString())
         .isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_ENDPOINT);
   }
 
