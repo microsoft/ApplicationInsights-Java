@@ -159,7 +159,7 @@ public class ConfigurationBuilder {
               + " so no need to enable it under preview configuration");
     }
 
-    overlayFromEnv(config, agentJarPath);
+    overlayFromEnv(config, agentJarPath.getParent());
     config.sampling.percentage = roundToNearest(config.sampling.percentage, true);
     for (SamplingOverride override : config.preview.sampling.overrides) {
       override.percentage = roundToNearest(override.percentage, true);
@@ -355,12 +355,11 @@ public class ConfigurationBuilder {
   }
 
   // visible for testing
-  static void overlayFromEnv(Configuration config, Path agentJarPath) throws IOException {
+  static void overlayFromEnv(Configuration config, Path baseDir) throws IOException {
     // load connection string from a file if connection string is in the format of
     // "${file:mounted_connection_string_file.txt}"
     Map<String, StringLookup> stringLookupMap =
-        Collections.singletonMap(
-            StringLookupFactory.KEY_FILE, new FileStringLookup(agentJarPath.getParent()));
+        Collections.singletonMap(StringLookupFactory.KEY_FILE, new FileStringLookup(baseDir));
     StringLookup stringLookup =
         StringLookupFactory.INSTANCE.interpolatorStringLookup(stringLookupMap, null, false);
     StringSubstitutor stringSubstitutor = new StringSubstitutor(stringLookup);
