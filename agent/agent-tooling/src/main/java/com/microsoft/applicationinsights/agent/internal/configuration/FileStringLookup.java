@@ -26,7 +26,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import javax.annotation.Nullable;
 import org.apache.commons.text.lookup.StringLookup;
 
 final class FileStringLookup implements StringLookup {
@@ -38,10 +37,10 @@ final class FileStringLookup implements StringLookup {
   }
 
   @Override
-  @Nullable
   public String lookup(String key) {
     try {
-      return new String(Files.readAllBytes(agentJarPath.resolve(key)), StandardCharsets.UTF_8);
+      return new String(
+          Files.readAllBytes(agentJarPath.resolveSibling(key)), StandardCharsets.UTF_8);
     } catch (IOException | InvalidPathException e) {
       throw new IllegalArgumentException(
           "Error occurs when reading connection string from the file '"
