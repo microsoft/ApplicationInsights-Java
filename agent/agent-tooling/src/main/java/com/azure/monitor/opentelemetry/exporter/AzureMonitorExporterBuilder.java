@@ -194,10 +194,10 @@ public final class AzureMonitorExporterBuilder {
    * @throws IllegalArgumentException If the connection string is invalid.
    */
   public AzureMonitorExporterBuilder connectionString(String connectionString) {
-    ConnectionString parsed = ConnectionString.parse(connectionString);
-    this.instrumentationKey = parsed.getInstrumentationKey();
-    this.endpoint(parsed.getIngestionEndpoint());
     this.connectionString = connectionString;
+    ConnectionString connectionStringObj = ConnectionString.parse(connectionString);
+    this.instrumentationKey = connectionStringObj.getInstrumentationKey();
+    this.endpoint(connectionStringObj.getIngestionEndpoint());
     return this;
   }
 
