@@ -148,7 +148,7 @@ public class StatusFile {
   private StatusFile() {}
 
   private static boolean shouldWrite() {
-    if (!DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
+    if (!DiagnosticsHelper.useAppSvcRpIntegrationLogging() && !DiagnosticsHelper.useFunctionsRpIntegrationLogging()) {
       return false;
     }
     if (writable) {
