@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
 import org.apache.commons.text.StringSubstitutor;
@@ -57,7 +58,8 @@ public class FileStringLookupTest {
 
     assertThat(file.exists()).isTrue();
     Map<String, StringLookup> stringLookupMap =
-        Collections.singletonMap(StringLookupFactory.KEY_FILE, FileStringLookup.INSTANCE);
+        Collections.singletonMap(
+            StringLookupFactory.KEY_FILE, new FileStringLookup(Paths.get(".")));
     StringLookup stringLookup =
         StringLookupFactory.INSTANCE.interpolatorStringLookup(stringLookupMap, null, false);
     stringSubstitutor = new StringSubstitutor(stringLookup);
