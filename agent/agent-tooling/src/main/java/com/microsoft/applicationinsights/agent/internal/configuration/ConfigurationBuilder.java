@@ -359,7 +359,8 @@ public class ConfigurationBuilder {
     // load connection string from a file if connection string is in the format of
     // "${file:mounted_connection_string_file.txt}"
     Map<String, StringLookup> stringLookupMap =
-        Collections.singletonMap(StringLookupFactory.KEY_FILE, new FileStringLookup(agentJarPath));
+        Collections.singletonMap(
+            StringLookupFactory.KEY_FILE, new FileStringLookup(agentJarPath.getParent()));
     StringLookup stringLookup =
         StringLookupFactory.INSTANCE.interpolatorStringLookup(stringLookupMap, null, false);
     StringSubstitutor stringSubstitutor = new StringSubstitutor(stringLookup);
