@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.policy.HttpPipelinePolicy;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.Date;
@@ -35,7 +36,8 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 public class QuickPulseIntegrationTests extends QuickPulseTestBase {
-  private static final String connectionString = "InstrumentationKey=ikey123";
+  private static final ConnectionString connectionString =
+      ConnectionString.parse("InstrumentationKey=ikey123");
   private static final String instrumentationKey = "ikey123";
 
   private QuickPulsePingSender getQuickPulsePingSender() {

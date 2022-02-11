@@ -48,7 +48,7 @@ public class TelemetryPipeline {
   private static final int MAX_REDIRECTS = 10;
 
   private final HttpPipeline pipeline;
-  private final URL ingestionEndpointUrl;
+  private final URL endpoint;
 
   // key is instrumentationKey, value is redirectUrl
   private final Map<String, URL> redirectCache =
@@ -60,15 +60,19 @@ public class TelemetryPipeline {
             }
           });
 
-  public TelemetryPipeline(HttpPipeline pipeline, URL ingestionEndpointUrl) {
+  public TelemetryPipeline(HttpPipeline pipeline, URL endpoint) {
     this.pipeline = pipeline;
-    this.ingestionEndpointUrl = ingestionEndpointUrl;
+    try {
+      this.endpoint = new URL(endpoint, "v2.1/track");
+    } catch (MalformedURLException e) {
+      throw new IllegalArgumentException("Invalid endpoint: " + endpoint, e);
+    }
   }
 
   public CompletableResultCode send(
       List<ByteBuffer> telemetry, String instrumentationKey, TelemetryPipelineListener listener) {
 
-    URL url = redirectCache.getOrDefault(instrumentationKey, ingestionEndpointUrl);
+    URL url = redirectCache.getOrDefault(instrumentationKey, endpoint);
     TelemetryPipelineRequest request =
         new TelemetryPipelineRequest(url, instrumentationKey, telemetry);
 

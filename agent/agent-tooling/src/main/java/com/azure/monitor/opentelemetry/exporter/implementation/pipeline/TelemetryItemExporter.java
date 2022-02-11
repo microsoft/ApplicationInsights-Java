@@ -62,13 +62,13 @@ public class TelemetryItemExporter {
     return mapper;
   }
 
-  private final TelemetryPipeline byteBufferPipeline;
+  private final TelemetryPipeline telemetryPipeline;
   private final TelemetryPipelineListener listener;
 
   // e.g. construct with diagnostic listener and local storage listener
   public TelemetryItemExporter(
-      TelemetryPipeline byteBufferPipeline, TelemetryPipelineListener listener) {
-    this.byteBufferPipeline = byteBufferPipeline;
+      TelemetryPipeline telemetryPipeline, TelemetryPipelineListener listener) {
+    this.telemetryPipeline = telemetryPipeline;
     this.listener = listener;
   }
 
@@ -101,7 +101,7 @@ public class TelemetryItemExporter {
           "Error encoding telemetry items: " + t.getMessage(), t);
       return CompletableResultCode.ofFailure();
     }
-    return byteBufferPipeline.send(byteBuffers, instrumentationKey, listener);
+    return telemetryPipeline.send(byteBuffers, instrumentationKey, listener);
   }
 
   List<ByteBuffer> encode(List<TelemetryItem> telemetryItems) throws IOException {

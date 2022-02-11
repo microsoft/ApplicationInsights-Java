@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import ch.qos.logback.classic.LoggerContext;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -86,7 +87,8 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
   }
 
   private void setValue(String value) {
-    telemetryClient.setConnectionString(value);
+    // passing nulls because lazy configuration doesn't support manual statsbeat overrides
+    telemetryClient.setConnectionString(ConnectionString.parse(value));
     // now that we know the user has opted in to tracing, we need to init the propagator and sampler
     DelegatingPropagator.getInstance().setUpStandardDelegate(false);
     // TODO handle APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE

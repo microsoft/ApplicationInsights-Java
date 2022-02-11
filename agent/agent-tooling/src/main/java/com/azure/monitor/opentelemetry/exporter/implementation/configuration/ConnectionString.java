@@ -19,14 +19,42 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.configuration;
+package com.azure.monitor.opentelemetry.exporter.implementation.configuration;
 
-public class DefaultEndpoints {
+import java.net.URL;
 
-  public static final String INGESTION_ENDPOINT = "https://dc.services.visualstudio.com";
-  public static final String LIVE_ENDPOINT = "https://rt.services.visualstudio.com";
-  public static final String PROFILER_ENDPOINT = "https://agent.azureserviceprofiler.net";
-  public static final String SNAPSHOT_ENDPOINT = "https://agent.azureserviceprofiler.net";
+public final class ConnectionString {
 
-  private DefaultEndpoints() {}
+  private final String instrumentationKey;
+  private final URL ingestionEndpoint;
+  private final URL liveEndpoint;
+  private final URL profilerEndpoint;
+
+  ConnectionString(
+      String instrumentationKey, URL ingestionEndpoint, URL liveEndpoint, URL profilerEndpoint) {
+    this.instrumentationKey = instrumentationKey;
+    this.ingestionEndpoint = ingestionEndpoint;
+    this.liveEndpoint = liveEndpoint;
+    this.profilerEndpoint = profilerEndpoint;
+  }
+
+  public static ConnectionString parse(String connectionString) {
+    return new ConnectionStringBuilder().setConnectionString(connectionString).build();
+  }
+
+  public String getInstrumentationKey() {
+    return instrumentationKey;
+  }
+
+  public URL getIngestionEndpoint() {
+    return ingestionEndpoint;
+  }
+
+  public URL getLiveEndpoint() {
+    return liveEndpoint;
+  }
+
+  public URL getProfilerEndpoint() {
+    return profilerEndpoint;
+  }
 }

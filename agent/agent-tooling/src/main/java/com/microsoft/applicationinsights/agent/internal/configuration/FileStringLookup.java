@@ -25,19 +25,21 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
-import java.nio.file.Paths;
-import javax.annotation.Nullable;
+import java.nio.file.Path;
 import org.apache.commons.text.lookup.StringLookup;
 
 final class FileStringLookup implements StringLookup {
 
-  static final FileStringLookup INSTANCE = new FileStringLookup();
+  private final Path baseDir;
+
+  FileStringLookup(Path baseDir) {
+    this.baseDir = baseDir;
+  }
 
   @Override
-  @Nullable
   public String lookup(String key) {
     try {
-      return new String(Files.readAllBytes(Paths.get(key)), StandardCharsets.UTF_8);
+      return new String(Files.readAllBytes(baseDir.resolve(key)), StandardCharsets.UTF_8);
     } catch (IOException | InvalidPathException e) {
       throw new IllegalArgumentException(
           "Error occurs when reading connection string from the file '"
@@ -46,6 +48,4 @@ final class FileStringLookup implements StringLookup {
           e);
     }
   }
-
-  private FileStringLookup() {}
 }
