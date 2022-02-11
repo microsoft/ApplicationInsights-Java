@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.common;
 
-import com.microsoft.applicationinsights.agent.internal.configuration.DefaultEndpoints;
 import io.netty.handler.ssl.SslHandshakeTimeoutException;
 import java.io.File;
 import java.io.IOException;
@@ -94,10 +93,7 @@ public class NetworkFriendlyExceptions {
   }
 
   private static String getFriendlyExceptionBanner(String url) {
-    if (url.contains(DefaultEndpoints.LIVE_ENDPOINT)) {
-      return "ApplicationInsights Java Agent failed to connect to Live metric end point.";
-    }
-    return "ApplicationInsights Java Agent failed to send telemetry data.";
+    return "ApplicationInsights Java Agent failed to connect to " + url;
   }
 
   interface FriendlyExceptionDetector {

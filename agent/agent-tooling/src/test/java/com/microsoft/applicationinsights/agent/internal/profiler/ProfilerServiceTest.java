@@ -58,7 +58,6 @@ import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -123,8 +122,7 @@ class ProfilerServiceTest {
 
     Object monitor = new Object();
 
-    TelemetryClient client =
-        spy(TelemetryClient.builder().setCustomDimensions(new HashMap<>()).build());
+    TelemetryClient client = spy(TelemetryClient.createForTest());
     doAnswer(
             invocation -> {
               TelemetryItem telemetryItem = invocation.getArgument(0);

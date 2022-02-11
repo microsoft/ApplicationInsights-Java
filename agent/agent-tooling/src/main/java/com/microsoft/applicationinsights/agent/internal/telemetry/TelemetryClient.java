@@ -32,6 +32,8 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTe
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.PageViewTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDependencyTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
@@ -41,7 +43,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalStorageSystem;
@@ -50,7 +51,6 @@ import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDat
 import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeatHttpPipelinePolicy;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,12 +69,10 @@ public class TelemetryClient {
 
   private final Set<String> nonFilterableMetricNames = new HashSet<>();
 
-  @Nullable private volatile String instrumentationKey;
+  @Nullable private volatile ConnectionString connectionString;
+  @Nullable private volatile StatsbeatConnectionString statsbeatConnectionString;
   private volatile @MonotonicNonNull String roleName;
   private volatile @MonotonicNonNull String roleInstance;
-  private volatile @MonotonicNonNull String statsbeatInstrumentationKey;
-
-  private final EndpointProvider endpointProvider = new EndpointProvider();
 
   // globalTags contain:
   // * cloud role name
@@ -103,6 +101,7 @@ public class TelemetryClient {
     return new TelemetryClient.Builder();
   }
 
+  // TODO (trask) reduce usage of this
   // only used by tests
   public static TelemetryClient createForTest() {
     return builder()
@@ -139,7 +138,7 @@ public class TelemetryClient {
   }
 
   public void trackAsync(TelemetryItem telemetryItem) {
-    if (Strings.isNullOrEmpty(instrumentationKey)) {
+    if (connectionString == null) {
       return;
     }
 
@@ -254,7 +253,7 @@ public class TelemetryClient {
             aadAuthentication,
             new NetworkStatsbeatHttpPipelinePolicy(statsbeatModule.getNetworkStatsbeat()));
     TelemetryPipeline telemetryPipeline =
-        new TelemetryPipeline(httpPipeline, endpointProvider.getIngestionEndpointUrl());
+        new TelemetryPipeline(httpPipeline, connectionString.getIngestionEndpoint());
 
     TelemetryItemExporter exporter =
         new TelemetryItemExporter(telemetryPipeline, telemetryPipelineListener);
@@ -283,7 +282,7 @@ public class TelemetryClient {
 
           HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(null);
           TelemetryPipeline telemetryPipeline =
-              new TelemetryPipeline(httpPipeline, endpointProvider.getStatsbeatEndpointUrl());
+              new TelemetryPipeline(httpPipeline, statsbeatConnectionString.getEndpoint());
 
           TelemetryItemExporter exporter =
               new TelemetryItemExporter(telemetryPipeline, telemetryPipelineListener);
@@ -300,8 +299,16 @@ public class TelemetryClient {
   }
 
   /** Gets or sets the default instrumentation key for the application. */
+  @Nullable
   public String getInstrumentationKey() {
-    return instrumentationKey;
+    ConnectionString val = this.connectionString;
+    return val != null ? val.getInstrumentationKey() : null;
+  }
+
+  @Nullable
+  public String getStatsbeatInstrumentationKey() {
+    StatsbeatConnectionString val = this.statsbeatConnectionString;
+    return val != null ? val.getInstrumentationKey() : null;
   }
 
   // convenience
@@ -350,26 +357,13 @@ public class TelemetryClient {
   }
 
   private void populateDefaults(AbstractTelemetryBuilder telemetryBuilder) {
-    telemetryBuilder.setInstrumentationKey(instrumentationKey);
+    telemetryBuilder.setInstrumentationKey(getInstrumentationKey());
     for (Map.Entry<String, String> entry : globalTags.entrySet()) {
       telemetryBuilder.addTag(entry.getKey(), entry.getValue());
     }
     for (Map.Entry<String, String> entry : globalProperties.entrySet()) {
       telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
     }
-  }
-
-  /** Gets or sets the default instrumentation key for the application. */
-  public void setInstrumentationKey(@Nullable String key) {
-    instrumentationKey = key;
-  }
-
-  public String getStatsbeatInstrumentationKey() {
-    return statsbeatInstrumentationKey;
-  }
-
-  public void setStatsbeatInstrumentationKey(String key) {
-    statsbeatInstrumentationKey = key;
   }
 
   @Nullable
@@ -391,20 +385,20 @@ public class TelemetryClient {
     globalTags.put(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), roleInstance);
   }
 
-  public void setConnectionString(String connectionString) {
-    try {
-      ConnectionString.parseInto(connectionString, this);
-    } catch (InvalidConnectionStringException e) {
-      throw new IllegalArgumentException("Invalid connection string", e);
-    } catch (MalformedURLException e) {
-      throw new IllegalStateException("Invalid endpoint urls.", e);
-    }
+  public void setConnectionString(ConnectionString connectionString) {
+    this.connectionString = connectionString;
   }
 
-  public EndpointProvider getEndpointProvider() {
-    return endpointProvider;
+  public void setStatsbeatConnectionString(StatsbeatConnectionString statsbeatConnectionString) {
+    this.statsbeatConnectionString = statsbeatConnectionString;
   }
 
+  @Nullable
+  public ConnectionString getConnectionString() {
+    return connectionString;
+  }
+
+  @Nullable
   public Configuration.AadAuthentication getAadAuthentication() {
     return aadAuthentication;
   }
