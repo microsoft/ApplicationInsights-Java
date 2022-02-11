@@ -322,10 +322,14 @@ public class TelemetryChannel {
                               + " (telemetry will be stored to disk and retried later)");
                       onFailure.accept(true);
                       break;
-                    case 439: // Breeze-specific: THROTTLED OVER EXTENDED TIME
-                      // TODO handle throttling
+                    case 402: // THROTTLED MONTHLY QUOTA EXCEEDED
                       operationLogger.recordFailure(
-                          "received response code 439 (throttled over extended time)");
+                          "received response code 402 (monthly quota exceeded and throttled over extended time)");
+                      onFailure.accept(false);
+                      break;
+                    case 439: // THROTTLED DAILY QUOTA EXCEEDED
+                      operationLogger.recordFailure(
+                          "received response code 439 (daily quota exceeded and throttled over extended time)");
                       onFailure.accept(false);
                       break;
                     default:
@@ -348,7 +352,7 @@ public class TelemetryChannel {
       statsbeatModule
           .getNetworkStatsbeat()
           .incrementRequestSuccessCount(System.currentTimeMillis() - startTime, instrumentationKey);
-    } else if (statusCode == 439) {
+    } else if (statusCode == 439 || statusCode == 402) {
       statsbeatModule.getNetworkStatsbeat().incrementThrottlingCount(instrumentationKey);
     } else {
       statsbeatModule.getNetworkStatsbeat().incrementRequestFailureCount(instrumentationKey);
