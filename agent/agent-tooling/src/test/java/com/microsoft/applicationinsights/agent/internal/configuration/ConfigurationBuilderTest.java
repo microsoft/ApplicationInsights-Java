@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -168,7 +169,7 @@ class ConfigurationBuilderTest {
   void testOverlayWithEnvVarWithGoodFileStringLookupFormat() throws Exception {
     Configuration configuration = new Configuration();
     configuration.connectionString = "${file:" + connectionStringFile.getAbsolutePath() + "}";
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
     assertThat(configuration.connectionString).isEqualTo(CONNECTION_STRING);
   }
 
@@ -176,23 +177,23 @@ class ConfigurationBuilderTest {
   void testOverlayWithEnvVarWithBadFileStringLookupFormat() throws Exception {
     Configuration configuration = new Configuration();
     configuration.connectionString = "${file:" + connectionStringFile.getAbsolutePath();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
     assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);
 
     configuration.connectionString = "${xyz:" + connectionStringFile.getAbsolutePath() + "}";
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
     assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);
 
     configuration.connectionString = "file:" + connectionStringFile.getAbsolutePath() + "}";
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
     assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);
 
     configuration.connectionString = "file:" + connectionStringFile.getAbsolutePath();
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
     assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);
 
     configuration.connectionString = CONNECTION_STRING;
-    ConfigurationBuilder.overlayFromEnv(configuration);
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
     assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);
   }
 
@@ -206,7 +207,7 @@ class ConfigurationBuilderTest {
 
               configuration.connectionString =
                   "${file:" + connectionStringFile.getAbsolutePath() + "}";
-              ConfigurationBuilder.overlayFromEnv(configuration);
+              ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
               assertThat(configuration.connectionString).isEqualTo(testConnectionString);
             });

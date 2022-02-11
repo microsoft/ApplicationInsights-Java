@@ -58,7 +58,7 @@ public class NetworkStatsbeatHttpPipelinePolicy implements HttpPipelinePolicy {
                   || statusCode == 307
                   || statusCode == 308) {
                 // these are not tracked as success or failure since they are just redirects
-              } else if (statusCode == 439) {
+              } else if (statusCode == 402 || statusCode == 439) {
                 networkStatsbeat.incrementThrottlingCount(instrumentationKey, host);
               } else {
                 // note: 401 and 403 are currently tracked as failures
