@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.azure.core.http.HttpHeaders;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpPipelineBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.MockHttpResponse;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.net.URI;
@@ -40,7 +41,7 @@ class QuickPulsePingSenderTests {
   @Test
   void endpointIsFormattedCorrectlyWhenUsingConnectionString() throws URISyntaxException {
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
-    telemetryClient.setConnectionString("InstrumentationKey=testing-123");
+    telemetryClient.setConnectionString(ConnectionString.parse("InstrumentationKey=testing-123"));
     QuickPulsePingSender quickPulsePingSender =
         new QuickPulsePingSender(null, telemetryClient, null, null, null);
     String quickPulseEndpoint = quickPulsePingSender.getQuickPulseEndpoint();
@@ -56,7 +57,8 @@ class QuickPulsePingSenderTests {
   @Test
   void endpointIsFormattedCorrectlyWhenUsingInstrumentationKey() throws URISyntaxException {
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
-    telemetryClient.setInstrumentationKey("A-test-instrumentation-key");
+    telemetryClient.setConnectionString(
+        ConnectionString.parse("InstrumentationKey=A-test-instrumentation-key"));
     QuickPulsePingSender quickPulsePingSender =
         new QuickPulsePingSender(null, telemetryClient, null, null, null);
     String quickPulseEndpoint = quickPulsePingSender.getQuickPulseEndpoint();
@@ -79,7 +81,7 @@ class QuickPulsePingSenderTests {
     headers.put("x-ms-qps-subscribed", "true");
     HttpHeaders httpHeaders = new HttpHeaders(headers);
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
-    telemetryClient.setInstrumentationKey("fake-ikey");
+    telemetryClient.setConnectionString(ConnectionString.parse("InstrumentationKey=fake-ikey"));
     HttpPipeline httpPipeline =
         new HttpPipelineBuilder()
             .httpClient(request -> Mono.just(new MockHttpResponse(request, 200, httpHeaders)))

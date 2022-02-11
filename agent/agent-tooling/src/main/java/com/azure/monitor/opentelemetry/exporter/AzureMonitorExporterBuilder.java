@@ -36,12 +36,10 @@ import com.azure.core.http.policy.UserAgentPolicy;
 import com.azure.core.util.ClientOptions;
 import com.azure.core.util.Configuration;
 import com.azure.core.util.CoreUtils;
-import com.azure.core.util.logging.ClientLogger;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -56,8 +54,6 @@ public final class AzureMonitorExporterBuilder {
       "APPLICATIONINSIGHTS_CONNECTION_STRING";
   private static final String APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE =
       "https://monitor.azure.com//.default";
-
-  private static final ClientLogger logger = new ClientLogger(AzureMonitorExporterBuilder.class);
 
   private static final Map<String, String> properties =
       CoreUtils.getProperties("azure-monitor-opentelemetry-exporter.properties");
@@ -91,20 +87,15 @@ public final class AzureMonitorExporterBuilder {
    * @throws NullPointerException if {@code endpoint} is null.
    * @throws IllegalArgumentException if {@code endpoint} cannot be parsed into a valid URL.
    */
-  AzureMonitorExporterBuilder endpoint(String endpoint) {
+  AzureMonitorExporterBuilder endpoint(URL endpoint) {
     Objects.requireNonNull(endpoint, "'endpoint' cannot be null.");
-    try {
-      this.endpoint = new URL(endpoint);
-    } catch (MalformedURLException ex) {
-      throw logger.logExceptionAsWarning(
-          new IllegalArgumentException("'endpoint' must be a valid URL.", ex));
-    }
+    this.endpoint = endpoint;
     return this;
   }
 
   /**
    * Sets the HTTP pipeline to use for the service client. If {@code httpPipeline} is set, all other
-   * settings are ignored, apart from {@link #endpoint(String) endpoint}.
+   * settings are ignored, apart from {@link #endpoint(URL) endpoint}.
    *
    * @param httpPipeline The HTTP pipeline to use for sending service requests and receiving
    *     responses.
@@ -203,19 +194,10 @@ public final class AzureMonitorExporterBuilder {
    * @throws IllegalArgumentException If the connection string is invalid.
    */
   public AzureMonitorExporterBuilder connectionString(String connectionString) {
-    // TODO (trask) share connection string parsing code
-    Map<String, String> keyValues = extractKeyValuesFromConnectionString(connectionString);
-    if (!keyValues.containsKey("InstrumentationKey")) {
-      throw logger.logExceptionAsError(
-          new IllegalArgumentException("InstrumentationKey not found in connectionString"));
-    }
-    this.instrumentationKey = keyValues.get("InstrumentationKey");
-    String endpoint = keyValues.get("IngestionEndpoint");
-    if (endpoint == null) {
-      endpoint = "https://dc.services.visualstudio.com";
-    }
-    this.endpoint(endpoint + "/v2.1/track");
     this.connectionString = connectionString;
+    ConnectionString connectionStringObj = ConnectionString.parse(connectionString);
+    this.instrumentationKey = connectionStringObj.getInstrumentationKey();
+    this.endpoint(connectionStringObj.getIngestionEndpoint());
     return this;
   }
 
@@ -240,19 +222,6 @@ public final class AzureMonitorExporterBuilder {
   public AzureMonitorExporterBuilder credential(TokenCredential credential) {
     this.credential = credential;
     return this;
-  }
-
-  private static Map<String, String> extractKeyValuesFromConnectionString(String connectionString) {
-    Objects.requireNonNull(connectionString);
-    Map<String, String> keyValues = new HashMap<>();
-    String[] splits = connectionString.split(";");
-    for (String split : splits) {
-      String[] keyValPair = split.split("=");
-      if (keyValPair.length == 2) {
-        keyValues.put(keyValPair[0], keyValPair[1]);
-      }
-    }
-    return keyValues;
   }
 
   /**

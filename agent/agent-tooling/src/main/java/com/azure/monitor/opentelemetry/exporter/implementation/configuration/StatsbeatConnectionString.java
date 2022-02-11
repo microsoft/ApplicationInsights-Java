@@ -19,15 +19,17 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.telemetry;
+package com.azure.monitor.opentelemetry.exporter.implementation.configuration;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
-final class StatsbeatConnectionString {
+public final class StatsbeatConnectionString {
 
   // visible for testing
   static final String EU_REGION_STATSBEAT_IKEY =
@@ -56,6 +58,51 @@ final class StatsbeatConnectionString {
     EU_REGION_GEO_SET.add("switzerlandwest");
   }
 
+  private final URL endpoint;
+  private final String instrumentationKey;
+
+  public static StatsbeatConnectionString create(
+      ConnectionString connectionString,
+      @Nullable String instrumentationKey,
+      @Nullable String endpoint) {
+
+    // if customer is in EU region and their statsbeat config is not in EU region, customer is
+    // responsible for breaking the EU data boundary violation.
+    // Statsbeat config setting has the highest precedence.
+    if (instrumentationKey == null || instrumentationKey.isEmpty()) {
+      StatsbeatConnectionString.InstrumentationKeyEndpointPair pair =
+          StatsbeatConnectionString.getInstrumentationKeyAndEndpointPair(
+              connectionString.getIngestionEndpoint().toString());
+      instrumentationKey = pair.instrumentationKey;
+      endpoint = pair.endpoint;
+    }
+
+    URL endpointUrl;
+    if (!endpoint.endsWith("/")) {
+      endpoint += "/";
+    }
+    try {
+      endpointUrl = new URL(endpoint);
+    } catch (MalformedURLException e) {
+      throw new IllegalArgumentException("could not construct statsbeat endpoint uri", e);
+    }
+
+    return new StatsbeatConnectionString(endpointUrl, instrumentationKey);
+  }
+
+  private StatsbeatConnectionString(URL endpoint, String instrumentationKey) {
+    this.endpoint = endpoint;
+    this.instrumentationKey = instrumentationKey;
+  }
+
+  public URL getEndpoint() {
+    return endpoint;
+  }
+
+  public String getInstrumentationKey() {
+    return instrumentationKey;
+  }
+
   // visible for testing
   static InstrumentationKeyEndpointPair getInstrumentationKeyAndEndpointPair(
       String customerEndpoint) {
@@ -79,8 +126,6 @@ final class StatsbeatConnectionString {
 
     return null;
   }
-
-  private StatsbeatConnectionString() {}
 
   static class InstrumentationKeyEndpointPair {
     public final String instrumentationKey;
