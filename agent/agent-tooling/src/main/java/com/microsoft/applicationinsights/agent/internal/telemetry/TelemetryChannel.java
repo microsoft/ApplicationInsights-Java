@@ -323,10 +323,13 @@ public class TelemetryChannel {
                       onFailure.accept(true);
                       break;
                     case 402: // THROTTLED MONTHLY QUOTA EXCEEDED
-                    case 439: // THROTTLED DAILY QUOTA EXCEEDED
-                      // TODO handle throttling
                       operationLogger.recordFailure(
-                          "received response code 439 (throttled over extended time)");
+                          "received response code 402 (monthly quota exceeded and throttled over extended time)");
+                      onFailure.accept(false);
+                      break;
+                    case 439: // THROTTLED DAILY QUOTA EXCEEDED
+                      operationLogger.recordFailure(
+                          "received response code 439 (daily quota exceeded and throttled over extended time)");
                       onFailure.accept(false);
                       break;
                     default:
