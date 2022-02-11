@@ -322,8 +322,8 @@ public class TelemetryChannel {
                               + " (telemetry will be stored to disk and retried later)");
                       onFailure.accept(true);
                       break;
-                    case 402: // NEW THROTTLED MONTHLY QUOTA EXCEEDED
-                    case 439: // LEGACY THROTTLED MONTHLY QUOTA EXCEEDED
+                    case 402: // THROTTLED MONTHLY QUOTA EXCEEDED
+                    case 439: // THROTTLED DAILY QUOTA EXCEEDED
                       // TODO handle throttling
                       operationLogger.recordFailure(
                           "received response code 439 (throttled over extended time)");
