@@ -36,7 +36,7 @@ class ConnectionStringParsingTests {
     final String ikey = "fake-ikey";
     final String cs = "InstrumentationKey=" + ikey;
 
-    ConnectionString parsed = ConnectionString.create(cs);
+    ConnectionString parsed = ConnectionString.parse(cs);
     assertThat(parsed.getInstrumentationKey()).isEqualTo(ikey);
     assertThat(parsed.getIngestionEndpoint())
         .isEqualTo(new URL(DefaultEndpoints.INGESTION_ENDPOINT));
@@ -63,7 +63,7 @@ class ConnectionStringParsingTests {
                 + suffix
                 + "/");
 
-    ConnectionString parsed = ConnectionString.create(cs);
+    ConnectionString parsed = ConnectionString.parse(cs);
     assertThat(parsed.getInstrumentationKey()).isEqualTo(ikey);
     assertThat(parsed.getIngestionEndpoint()).isEqualTo(expectedIngestionEndpointUrl);
     assertThat(parsed.getLiveEndpoint()).isEqualTo(expectedLiveEndpoint);
@@ -89,7 +89,7 @@ class ConnectionStringParsingTests {
                 + suffix
                 + "/");
 
-    ConnectionString parsed = ConnectionString.create(cs);
+    ConnectionString parsed = ConnectionString.parse(cs);
     assertThat(parsed.getInstrumentationKey()).isEqualTo(ikey);
     assertThat(parsed.getIngestionEndpoint()).isEqualTo(expectedIngestionEndpointUrl);
     assertThat(parsed.getLiveEndpoint()).isEqualTo(expectedLiveEndpoint);
@@ -115,7 +115,7 @@ class ConnectionStringParsingTests {
                 + suffix
                 + "/");
 
-    ConnectionString parsed = ConnectionString.create(cs);
+    ConnectionString parsed = ConnectionString.parse(cs);
     assertThat(parsed.getInstrumentationKey()).isEqualTo(ikey);
     assertThat(parsed.getIngestionEndpoint()).isEqualTo(expectedIngestionEndpointUrl);
     assertThat(parsed.getLiveEndpoint()).isEqualTo(expectedLiveEndpoint);
@@ -137,7 +137,7 @@ class ConnectionStringParsingTests {
             + ";LiveEndpoint="
             + liveHost;
 
-    ConnectionString parsed = ConnectionString.create(cs);
+    ConnectionString parsed = ConnectionString.parse(cs);
     assertThat(parsed.getInstrumentationKey()).isEqualTo(ikey);
     assertThat(parsed.getIngestionEndpoint()).isEqualTo(expectedIngestionEndpointUrl);
     assertThat(parsed.getLiveEndpoint()).isEqualTo(expectedLiveEndpoint);
@@ -164,7 +164,7 @@ class ConnectionStringParsingTests {
             + ";EndpointSuffix="
             + suffix;
 
-    ConnectionString parsed = ConnectionString.create(cs);
+    ConnectionString parsed = ConnectionString.parse(cs);
     assertThat(parsed.getInstrumentationKey()).isEqualTo(ikey);
     assertThat(parsed.getIngestionEndpoint()).isEqualTo(expectedIngestionEndpointUrl);
     assertThat(parsed.getLiveEndpoint()).isEqualTo(expectedLiveEndpoint);
@@ -190,7 +190,7 @@ class ConnectionStringParsingTests {
                 + suffix
                 + "/");
 
-    ConnectionString parsed = ConnectionString.create(cs);
+    ConnectionString parsed = ConnectionString.parse(cs);
     assertThat(parsed.getInstrumentationKey()).isEqualTo(ikey);
     assertThat(parsed.getIngestionEndpoint()).isEqualTo(expectedIngestionEndpointUrl);
     assertThat(parsed.getLiveEndpoint()).isEqualTo(expectedLiveEndpoint);
@@ -203,7 +203,7 @@ class ConnectionStringParsingTests {
     URL expectedIngestionEndpointUrl = new URL(DefaultEndpoints.INGESTION_ENDPOINT);
     URL expectedLiveEndpoint = new URL(DefaultEndpoints.LIVE_ENDPOINT);
 
-    ConnectionString parsed = ConnectionString.create(cs);
+    ConnectionString parsed = ConnectionString.parse(cs);
     assertThat(parsed.getInstrumentationKey()).isEqualTo(ikey);
     assertThat(parsed.getIngestionEndpoint()).isEqualTo(expectedIngestionEndpointUrl);
     assertThat(parsed.getLiveEndpoint()).isEqualTo(expectedLiveEndpoint);
@@ -214,7 +214,7 @@ class ConnectionStringParsingTests {
     final String ikey = "fake-ikey";
     final String cs = "InstrumentationKey=" + ikey + ";EndpointSuffix=";
 
-    ConnectionString parsed = ConnectionString.create(cs);
+    ConnectionString parsed = ConnectionString.parse(cs);
     assertThat(parsed.getInstrumentationKey()).isEqualTo(ikey);
     assertThat(parsed.getIngestionEndpoint())
         .isEqualTo(new URL(DefaultEndpoints.INGESTION_ENDPOINT));
@@ -231,8 +231,8 @@ class ConnectionStringParsingTests {
     final String cs2 =
         "instRUMentationkEY=" + ikey + ";LivEEndPOINT=" + live + ";ProFILErEndPOinT=" + profiler;
 
-    ConnectionString parsed = ConnectionString.create(cs1);
-    ConnectionString parsed2 = ConnectionString.create(cs2);
+    ConnectionString parsed = ConnectionString.parse(cs1);
+    ConnectionString parsed2 = ConnectionString.parse(cs2);
 
     assertThat(parsed2.getInstrumentationKey()).isEqualTo(parsed.getInstrumentationKey());
     assertThat(parsed2.getIngestionEndpoint()).isEqualTo(parsed.getIngestionEndpoint());
@@ -266,8 +266,8 @@ class ConnectionStringParsingTests {
             + ";LiveEndpoint="
             + live;
 
-    ConnectionString parsed = ConnectionString.create(cs1);
-    ConnectionString parsed2 = ConnectionString.create(cs2);
+    ConnectionString parsed = ConnectionString.parse(cs1);
+    ConnectionString parsed2 = ConnectionString.parse(cs2);
 
     assertThat(parsed2.getInstrumentationKey()).isEqualTo(parsed.getInstrumentationKey());
     assertThat(parsed2.getIngestionEndpoint()).isEqualTo(parsed.getIngestionEndpoint());
@@ -280,7 +280,7 @@ class ConnectionStringParsingTests {
   void endpointWithNoSchemeIsInvalid() {
     assertThatThrownBy(
             () ->
-                ConnectionString.create(
+                ConnectionString.parse(
                     "InstrumentationKey=fake-ikey;IngestionEndpoint=my-ai.example.com"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("IngestionEndpoint");
@@ -290,7 +290,7 @@ class ConnectionStringParsingTests {
   void endpointWithPathMissingSchemeIsInvalid() {
     assertThatThrownBy(
             () ->
-                ConnectionString.create(
+                ConnectionString.parse(
                     "InstrumentationKey=fake-ikey;IngestionEndpoint=my-ai.example.com/path/prefix"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("IngestionEndpoint");
@@ -300,7 +300,7 @@ class ConnectionStringParsingTests {
   void endpointWithPortMissingSchemeIsInvalid() {
     assertThatThrownBy(
             () ->
-                ConnectionString.create(
+                ConnectionString.parse(
                     "InstrumentationKey=fake-ikey;IngestionEndpoint=my-ai.example.com:9999"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("IngestionEndpoint");
@@ -309,7 +309,7 @@ class ConnectionStringParsingTests {
   @Test
   void httpEndpointKeepsScheme() throws Exception {
     ConnectionString parsed =
-        ConnectionString.create(
+        ConnectionString.parse(
             "InstrumentationKey=fake-ikey;IngestionEndpoint=http://my-ai.example.com");
     assertThat(parsed.getIngestionEndpoint()).isEqualTo(new URL("http://my-ai.example.com/"));
   }
@@ -318,28 +318,28 @@ class ConnectionStringParsingTests {
   void emptyIkeyValueIsInvalid() {
     assertThatThrownBy(
             () ->
-                ConnectionString.create(
+                ConnectionString.parse(
                     "InstrumentationKey=;IngestionEndpoint=https://ingestion.example.com;EndpointSuffix=ai.example.com"))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void nonKeyValueStringIsInvalid() {
-    assertThatThrownBy(() -> ConnectionString.create(UUID.randomUUID().toString()))
+    assertThatThrownBy(() -> ConnectionString.parse(UUID.randomUUID().toString()))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test // when more Authorization values are available, create a copy of this test. For example,
   // given "Authorization=Xyz", this would fail because the 'Xyz' key/value pair is missing.
   void missingInstrumentationKeyIsInvalid() {
-    assertThatThrownBy(() -> ConnectionString.create("LiveEndpoint=https://live.example.com"))
+    assertThatThrownBy(() -> ConnectionString.parse("LiveEndpoint=https://live.example.com"))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void invalidUrlIsInvalidConnectionString() {
     assertThatThrownBy(
-            () -> ConnectionString.create("InstrumentationKey=fake-ikey;LiveEndpoint=httpx://host"))
+            () -> ConnectionString.parse("InstrumentationKey=fake-ikey;LiveEndpoint=httpx://host"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasCauseInstanceOf(MalformedURLException.class)
         .hasMessageContaining("LiveEndpoint");
@@ -352,7 +352,7 @@ class ConnectionStringParsingTests {
       bigIkey.append('0');
     }
 
-    assertThatThrownBy(() -> ConnectionString.create("InstrumentationKey=" + bigIkey))
+    assertThatThrownBy(() -> ConnectionString.parse("InstrumentationKey=" + bigIkey))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining(
             Integer.toString(ConnectionStringBuilder.CONNECTION_STRING_MAX_LENGTH));
@@ -362,7 +362,7 @@ class ConnectionStringParsingTests {
   void resetEndpointUrlTest() {
     String fakeConnectionString =
         "InstrumentationKey=fake-key;IngestionEndpoint=https://ingestion.example.com/;LiveEndpoint=https://live.example.com/";
-    ConnectionString parsed = ConnectionString.create(fakeConnectionString);
+    ConnectionString parsed = ConnectionString.parse(fakeConnectionString);
 
     assertThat(parsed.getIngestionEndpoint().toString())
         .isEqualTo("https://ingestion.example.com/");
@@ -370,7 +370,7 @@ class ConnectionStringParsingTests {
 
     String newFakeConnectionString =
         "InstrumentationKey=new-fake-key;IngestionEndpoint=https://new-ingestion.example.com/;LiveEndpoint=https://new-live.example.com/";
-    parsed = ConnectionString.create(newFakeConnectionString);
+    parsed = ConnectionString.parse(newFakeConnectionString);
 
     assertThat(parsed.getIngestionEndpoint().toString())
         .isEqualTo("https://new-ingestion.example.com/");
@@ -378,7 +378,7 @@ class ConnectionStringParsingTests {
 
     String newerFakeConnectionString =
         "InstrumentationKey=newer-fake-key;IngestionEndpoint=https://newer-ingestion.example.com/;LiveEndpoint=https://newer-live.example.com/";
-    parsed = ConnectionString.create(newerFakeConnectionString);
+    parsed = ConnectionString.parse(newerFakeConnectionString);
 
     assertThat(parsed.getIngestionEndpoint().toString())
         .isEqualTo("https://newer-ingestion.example.com/");

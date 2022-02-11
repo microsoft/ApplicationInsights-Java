@@ -81,7 +81,7 @@ class RpConfigurationPollingTest {
 
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
     ConnectionString connectionString =
-        ConnectionString.create("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+        ConnectionString.parse("InstrumentationKey=00000000-0000-0000-0000-000000000000");
     telemetryClient.setConnectionString(connectionString);
     AppIdSupplier appIdSupplier = new AppIdSupplier(connectionString);
 
@@ -117,7 +117,7 @@ class RpConfigurationPollingTest {
 
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
     ConnectionString connectionString =
-        ConnectionString.create("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+        ConnectionString.parse("InstrumentationKey=00000000-0000-0000-0000-000000000000");
     telemetryClient.setConnectionString(connectionString);
     AppIdSupplier appIdSupplier = new AppIdSupplier(connectionString);
 

@@ -41,7 +41,7 @@ class QuickPulsePingSenderTests {
   @Test
   void endpointIsFormattedCorrectlyWhenUsingConnectionString() throws URISyntaxException {
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
-    telemetryClient.setConnectionString(ConnectionString.create("InstrumentationKey=testing-123"));
+    telemetryClient.setConnectionString(ConnectionString.parse("InstrumentationKey=testing-123"));
     QuickPulsePingSender quickPulsePingSender =
         new QuickPulsePingSender(null, telemetryClient, null, null, null);
     String quickPulseEndpoint = quickPulsePingSender.getQuickPulseEndpoint();
@@ -58,7 +58,7 @@ class QuickPulsePingSenderTests {
   void endpointIsFormattedCorrectlyWhenUsingInstrumentationKey() throws URISyntaxException {
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
     telemetryClient.setConnectionString(
-        ConnectionString.create("InstrumentationKey=A-test-instrumentation-key"));
+        ConnectionString.parse("InstrumentationKey=A-test-instrumentation-key"));
     QuickPulsePingSender quickPulsePingSender =
         new QuickPulsePingSender(null, telemetryClient, null, null, null);
     String quickPulseEndpoint = quickPulsePingSender.getQuickPulseEndpoint();
@@ -81,7 +81,7 @@ class QuickPulsePingSenderTests {
     headers.put("x-ms-qps-subscribed", "true");
     HttpHeaders httpHeaders = new HttpHeaders(headers);
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
-    telemetryClient.setConnectionString(ConnectionString.create("InstrumentationKey=fake-ikey"));
+    telemetryClient.setConnectionString(ConnectionString.parse("InstrumentationKey=fake-ikey"));
     HttpPipeline httpPipeline =
         new HttpPipelineBuilder()
             .httpClient(request -> Mono.just(new MockHttpResponse(request, 200, httpHeaders)))

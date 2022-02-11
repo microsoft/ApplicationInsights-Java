@@ -50,7 +50,7 @@ class QuickPulseDataFetcherTests {
   @Test
   void endpointIsFormattedCorrectlyWhenUsingConfig() throws URISyntaxException {
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
-    telemetryClient.setConnectionString(ConnectionString.create("InstrumentationKey=testing-123"));
+    telemetryClient.setConnectionString(ConnectionString.parse("InstrumentationKey=testing-123"));
     QuickPulseDataFetcher quickPulseDataFetcher =
         new QuickPulseDataFetcher(null, telemetryClient, null, null, null);
     String quickPulseEndpoint = quickPulseDataFetcher.getQuickPulseEndpoint();
@@ -82,7 +82,7 @@ class QuickPulseDataFetcherTests {
     headers.put("x-ms-qps-subscribed", "true");
     HttpHeaders httpHeaders = new HttpHeaders(headers);
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
-    telemetryClient.setConnectionString(ConnectionString.create("InstrumentationKey=fake-key"));
+    telemetryClient.setConnectionString(ConnectionString.parse("InstrumentationKey=fake-key"));
     HttpPipeline httpPipeline =
         new HttpPipelineBuilder()
             .httpClient(request -> Mono.just(new MockHttpResponse(request, 200, httpHeaders)))

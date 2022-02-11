@@ -38,7 +38,7 @@ public final class ConnectionString {
     this.profilerEndpoint = profilerEndpoint;
   }
 
-  public static ConnectionString create(String connectionString) {
+  public static ConnectionString parse(String connectionString) {
     return new ConnectionStringBuilder().setConnectionString(connectionString).build();
   }
 
