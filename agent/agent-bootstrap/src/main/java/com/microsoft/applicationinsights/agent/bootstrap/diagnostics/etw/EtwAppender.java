@@ -34,11 +34,14 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model.IpaEtwEventBase;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import java.util.Map;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class EtwAppender extends AppenderBase<ILoggingEvent> {
   private final EtwProvider etwProvider;
   private final IpaEtwEventBase proto;
+
+  private static final Logger logger = LoggerFactory.getLogger(EtwAppender.class);
 
   public EtwAppender() {
     ApplicationMetadataFactory metadata = DiagnosticsHelper.getMetadataFactory();
@@ -49,14 +52,18 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
     proto.setSubscriptionId(metadata.getSubscriptionId().getValue());
 
     etwProvider = new EtwProvider(metadata.getSdkVersion().getValue());
+
+    logger.debug("############# Initialize ETWAppender");
   }
 
   @Override
   public void start() {
+    logger.debug("############# ETWAppender start");
     IpaVerbose event = new IpaVerbose(proto);
     event.setMessageFormat("EtwProvider initialized sucessfully.");
     try {
       this.etwProvider.writeEvent(event);
+      logger.debug("############# ETWAppender write " + event + " to ETWProvider");
     } catch (LinkageError | ApplicationInsightsEtwException e) {
       final String message = "EtwProvider failed to initialize.";
       LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME).error(message, e);
@@ -66,6 +73,7 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
       StatusFile.putValue("EtwProviderError", e.getLocalizedMessage());
       StatusFile.write();
 
+      logger.debug("############# ETWAppender fails to start");
       return; // appender fails to start
     }
 

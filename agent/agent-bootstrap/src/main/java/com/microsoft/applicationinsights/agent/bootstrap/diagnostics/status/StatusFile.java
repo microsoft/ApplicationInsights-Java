@@ -152,9 +152,15 @@ public class StatusFile {
         && !DiagnosticsHelper.useFunctionsRpIntegrationLogging()) {
       return false;
     }
+
+    startupLogger.debug("############# should write JSON file.");
+
     if (writable) {
       return true;
     }
+
+    startupLogger.debug("############# It's a READONLY file system.");
+
     // read-only app services, want to log warning once in this case
     if (startupLogger != null && !alreadyLogged.getAndSet(true)) {
       startupLogger.info(
@@ -219,6 +225,7 @@ public class StatusFile {
                       .nullSafe()
                       .toJson(b, map);
                   b.flush();
+                  startupLogger.debug("############# write data to file (" + file.getName() + ")");
                 } catch (Exception e) {
                   if (logger != null) {
                     logger.error("Error writing {}", file.getAbsolutePath(), e);
@@ -232,15 +239,20 @@ public class StatusFile {
                       // ignore this
                     }
                   }
+                  startupLogger.debug(
+                      "############# Error occurred when writing data to file ("
+                          + file.getName()
+                          + ")",
+                      e);
                 }
               } else {
                 if (logger != null) {
                   logger.error(
-                      "Parent directories for status file could not be created: {}",
+                      "############# Parent directories for status file could not be created: {}",
                       file.getAbsolutePath());
                 } else {
                   System.err.println(
-                      "Parent directories for status file could not be created: "
+                      "############# Parent directories for status file could not be created: "
                           + file.getAbsolutePath());
                 }
               }
