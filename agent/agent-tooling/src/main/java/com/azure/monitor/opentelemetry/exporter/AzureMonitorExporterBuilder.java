@@ -195,7 +195,7 @@ public final class AzureMonitorExporterBuilder {
    */
   public AzureMonitorExporterBuilder connectionString(String connectionString) {
     this.connectionString = connectionString;
-    ConnectionString connectionStringObj = ConnectionString.parse(connectionString);
+    ConnectionString connectionStringObj = ConnectionString.create(connectionString);
     this.instrumentationKey = connectionStringObj.getInstrumentationKey();
     this.endpoint(connectionStringObj.getIngestionEndpoint());
     return this;

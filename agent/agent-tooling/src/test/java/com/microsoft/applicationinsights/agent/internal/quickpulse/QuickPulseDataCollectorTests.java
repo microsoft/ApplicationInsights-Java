@@ -42,7 +42,7 @@ class QuickPulseDataCollectorTests {
 
   private static final String FAKE_INSTRUMENTATION_KEY = "fake-instrumentation-key";
   private static final ConnectionString FAKE_CONNECTION_STRING =
-      ConnectionString.parse("InstrumentationKey=" + FAKE_INSTRUMENTATION_KEY);
+      ConnectionString.create("InstrumentationKey=" + FAKE_INSTRUMENTATION_KEY);
 
   @BeforeEach
   void setup() {

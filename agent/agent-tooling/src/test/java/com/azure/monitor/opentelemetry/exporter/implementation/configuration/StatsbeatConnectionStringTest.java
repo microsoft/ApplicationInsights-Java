@@ -81,7 +81,7 @@ public class StatsbeatConnectionStringTest {
     // Statsbeat config ikey is in eu
     // use Statsbeat config ikey
     ConnectionString connectionString =
-        ConnectionString.parse(
+        ConnectionString.create(
             "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://westus2-1.example.com/");
     String ikeyConfig = "00000000-0000-0000-0000-000000000001";
     String endpointConfig = "https://westeurope-2.example.com";
@@ -95,7 +95,7 @@ public class StatsbeatConnectionStringTest {
     // Statsbeat config ikey is in non-eu
     // use Statsbeat config ikey
     connectionString =
-        ConnectionString.parse(
+        ConnectionString.create(
             "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://westus2-1.example.com/");
     ikeyConfig = "00000000-0000-0000-0000-000000000002";
     endpointConfig = "https://westus2-2.example.com";
@@ -109,7 +109,7 @@ public class StatsbeatConnectionStringTest {
     // no Statsbeat config
     // use Statsbeat non-eu
     connectionString =
-        ConnectionString.parse(
+        ConnectionString.create(
             "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://westus2-1.example.com/");
     statsbeatConnectionString = StatsbeatConnectionString.create(connectionString, null, null);
     assertThat(statsbeatConnectionString.getInstrumentationKey())
@@ -122,7 +122,7 @@ public class StatsbeatConnectionStringTest {
     // Statsbeat config ikey is in non-eu
     // use Statsbeat config's ikey
     connectionString =
-        ConnectionString.parse(
+        ConnectionString.create(
             "InstrumentationKey=00000000-0000-0000-0000-000000000003;IngestionEndpoint=https://westeurope-1.example.com/");
     ikeyConfig = "00000000-0000-0000-0000-000000000004";
     endpointConfig = "https://westus2-4.example.com";
@@ -136,7 +136,7 @@ public class StatsbeatConnectionStringTest {
     // Statsbeat config ikey is in eu
     // use Statsbeat config's ikey
     connectionString =
-        ConnectionString.parse(
+        ConnectionString.create(
             "InstrumentationKey=00000000-0000-0000-0000-000000000003;IngestionEndpoint=https://westeurope-1.example.com/");
     ikeyConfig = "00000000-0000-0000-0000-000000000005";
     endpointConfig = "https://francesouth-1.example.com";
@@ -150,7 +150,7 @@ public class StatsbeatConnectionStringTest {
     // no statsbeat config
     // use Statsbeat eu
     connectionString =
-        ConnectionString.parse(
+        ConnectionString.create(
             "InstrumentationKey=00000000-0000-0000-0000-000000000003;IngestionEndpoint=https://westeurope-1.example.com/");
     statsbeatConnectionString = StatsbeatConnectionString.create(connectionString, null, null);
     assertThat(statsbeatConnectionString.getInstrumentationKey())

@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test;
 
 public class QuickPulseIntegrationTests extends QuickPulseTestBase {
   private static final ConnectionString connectionString =
-      ConnectionString.parse("InstrumentationKey=ikey123");
+      ConnectionString.create("InstrumentationKey=ikey123");
   private static final String instrumentationKey = "ikey123";
 
   private QuickPulsePingSender getQuickPulsePingSender() {

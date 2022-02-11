@@ -23,11 +23,11 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import org.junit.jupiter.api.Test;
 
@@ -105,7 +105,8 @@ class LazyConfigurationAccessorTest {
     lazyConfigurationAccessor.setConnectionString(CONNECTION_STRING, null);
 
     // then
-    verify(telemetryClient).setConnectionString(ConnectionString.parse(CONNECTION_STRING));
+    verify(telemetryClient)
+        .setConnectionString(argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
 
     // when
     lazyConfigurationAccessor.setWebsiteSiteName(WEBSITE_SITE_NAME);
@@ -130,7 +131,8 @@ class LazyConfigurationAccessorTest {
     lazyConfigurationAccessor.setConnectionString(null, INSTRUMENTATION_KEY);
 
     // then
-    verify(telemetryClient).setConnectionString(ConnectionString.parse(CONNECTION_STRING));
+    verify(telemetryClient)
+        .setConnectionString(argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
   }
 
   @Test
@@ -186,7 +188,8 @@ class LazyConfigurationAccessorTest {
     lazyConfigurationAccessor.setConnectionString(CONNECTION_STRING, null);
 
     // then
-    verify(telemetryClient).setConnectionString(ConnectionString.parse(CONNECTION_STRING));
+    verify(telemetryClient)
+        .setConnectionString(argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
   }
 
   @Test
@@ -205,6 +208,7 @@ class LazyConfigurationAccessorTest {
     lazyConfigurationAccessor.setConnectionString(null, INSTRUMENTATION_KEY);
 
     // then
-    verify(telemetryClient).setConnectionString(ConnectionString.parse(CONNECTION_STRING));
+    verify(telemetryClient)
+        .setConnectionString(argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
   }
 }

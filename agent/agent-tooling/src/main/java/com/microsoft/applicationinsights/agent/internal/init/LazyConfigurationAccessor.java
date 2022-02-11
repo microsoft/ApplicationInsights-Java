@@ -88,7 +88,7 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
 
   private void setValue(String value) {
     // passing nulls because lazy configuration doesn't support manual statsbeat overrides
-    telemetryClient.setConnectionString(ConnectionString.parse(value));
+    telemetryClient.setConnectionString(ConnectionString.create(value));
     // now that we know the user has opted in to tracing, we need to init the propagator and sampler
     DelegatingPropagator.getInstance().setUpStandardDelegate(false);
     // TODO handle APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE

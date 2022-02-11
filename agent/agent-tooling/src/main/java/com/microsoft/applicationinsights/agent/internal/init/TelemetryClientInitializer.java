@@ -118,7 +118,7 @@ public class TelemetryClientInitializer {
     String connectionString = configuration.connectionString;
 
     if (connectionString != null) {
-      ConnectionString connectionStringObj = ConnectionString.parse(connectionString);
+      ConnectionString connectionStringObj = ConnectionString.create(connectionString);
       telemetryClient.setConnectionString(connectionStringObj);
       telemetryClient.setStatsbeatConnectionString(
           StatsbeatConnectionString.create(

@@ -38,7 +38,7 @@ public class AppIdSupplierTest {
   @Test // this test does not use this.config
   void appIdUrlIsConstructedWithIkeyFromIngestionEndpoint() throws MalformedURLException {
     ConnectionString cs =
-        ConnectionString.parse("InstrumentationKey=fake-ikey;IngestionEndpoint=http://123.com");
+        ConnectionString.create("InstrumentationKey=fake-ikey;IngestionEndpoint=http://123.com");
     assertThat(AppIdSupplier.getAppIdUrl(cs))
         .isEqualTo(new URL("http://123.com/api/profiles/fake-ikey/appId"));
   }
@@ -46,13 +46,13 @@ public class AppIdSupplierTest {
   @Test
   void appIdUrlWithPathKeepsIt() throws MalformedURLException {
     ConnectionString cs =
-        ConnectionString.parse(
+        ConnectionString.create(
             "InstrumentationKey=fake-ikey;IngestionEndpoint=http://123.com/path/321");
     assertThat(AppIdSupplier.getAppIdUrl(cs))
         .isEqualTo(new URL("http://123.com/path/321/api/profiles/fake-ikey/appId"));
 
     cs =
-        ConnectionString.parse(
+        ConnectionString.create(
             "InstrumentationKey=fake-ikey;IngestionEndpoint=http://123.com/path/321/");
     assertThat(AppIdSupplier.getAppIdUrl(cs))
         .isEqualTo(new URL("http://123.com/path/321/api/profiles/fake-ikey/appId"));
