@@ -322,7 +322,8 @@ public class TelemetryChannel {
                               + " (telemetry will be stored to disk and retried later)");
                       onFailure.accept(true);
                       break;
-                    case 439: // Breeze-specific: THROTTLED OVER EXTENDED TIME
+                    case 402: // NEW THROTTLED MONTHLY QUOTA EXCEEDED
+                    case 439: // LEGACY THROTTLED MONTHLY QUOTA EXCEEDED
                       // TODO handle throttling
                       operationLogger.recordFailure(
                           "received response code 439 (throttled over extended time)");
@@ -348,7 +349,7 @@ public class TelemetryChannel {
       statsbeatModule
           .getNetworkStatsbeat()
           .incrementRequestSuccessCount(System.currentTimeMillis() - startTime, instrumentationKey);
-    } else if (statusCode == 439) {
+    } else if (statusCode == 439 || statusCode == 402) {
       statsbeatModule.getNetworkStatsbeat().incrementThrottlingCount(instrumentationKey);
     } else {
       statsbeatModule.getNetworkStatsbeat().incrementRequestFailureCount(instrumentationKey);
