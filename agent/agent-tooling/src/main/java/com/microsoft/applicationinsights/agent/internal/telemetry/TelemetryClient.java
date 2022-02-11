@@ -305,6 +305,12 @@ public class TelemetryClient {
     return val != null ? val.getInstrumentationKey() : null;
   }
 
+  @Nullable
+  public String getStatsbeatInstrumentationKey() {
+    StatsbeatConnectionString val = this.statsbeatConnectionString;
+    return val != null ? val.getInstrumentationKey() : null;
+  }
+
   // convenience
   public TelemetryItem newMetricTelemetry(String name, double value) {
     return newMetricTelemetryBuilder(name, value).build();

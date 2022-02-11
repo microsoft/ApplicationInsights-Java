@@ -39,7 +39,7 @@ abstract class BaseStatsbeat {
 
     StatsbeatTelemetryBuilder telemetryBuilder = StatsbeatTelemetryBuilder.create(name, value);
 
-    telemetryBuilder.setInstrumentationKey(telemetryClient.getInstrumentationKey());
+    telemetryBuilder.setInstrumentationKey(telemetryClient.getStatsbeatInstrumentationKey());
 
     customDimensions.populateProperties(telemetryBuilder, telemetryClient.getInstrumentationKey());
 
