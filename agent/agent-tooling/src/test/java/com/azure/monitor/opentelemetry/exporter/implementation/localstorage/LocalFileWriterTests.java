@@ -25,8 +25,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalFileCache;
-import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalFileWriter;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
