@@ -3,7 +3,7 @@ plugins {
   id("com.github.johnrengelman.shadow")
 }
 
-val otelInstrumentationAlphaVersion = "1.10.0+ai.patches-alpha"
+val otelInstrumentationAlphaVersion = "1.11.0+ai.patches-alpha"
 
 configurations {
   // exclude bootstrap dependencies from shadowJar
@@ -135,7 +135,7 @@ dependencies {
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-undertow-1.4:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-vertx-http-client-3.0:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-vertx-http-client-4.0:$otelInstrumentationAlphaVersion")
-  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-vertx-reactive-3.5:$otelInstrumentationAlphaVersion")
+  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-vertx-rx-java-3.5:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-vertx-web-3.0:$otelInstrumentationAlphaVersion")
 }
 
