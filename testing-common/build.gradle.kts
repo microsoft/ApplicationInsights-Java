@@ -50,6 +50,9 @@ dependencies {
 
   compileOnly(project(path = ":testing:armeria-shaded-for-testing", configuration = "shadow"))
 
+  compileOnly("com.google.auto.value:auto-value-annotations")
+  annotationProcessor("com.google.auto.value:auto-value")
+
   implementation("io.opentelemetry.proto:opentelemetry-proto")
 
   implementation("net.bytebuddy:byte-buddy")
