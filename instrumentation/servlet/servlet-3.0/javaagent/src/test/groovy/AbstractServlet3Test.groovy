@@ -18,6 +18,7 @@ import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEn
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.ERROR
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.EXCEPTION
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.INDEXED_CHILD
+import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.NOT_FOUND
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.QUERY_PARAM
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.REDIRECT
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.SUCCESS
@@ -61,11 +62,21 @@ abstract class AbstractServlet3Test<SERVER, CONTEXT> extends HttpServerTest<SERV
   }
 
   @Override
-  List<AttributeKey<?>> extraAttributes() {
-    [
-      SemanticAttributes.HTTP_SERVER_NAME,
-      SemanticAttributes.NET_TRANSPORT
+  String expectedHttpRoute(ServerEndpoint endpoint) {
+    switch (endpoint) {
+      case NOT_FOUND:
+        return getContextPath() + "/*"
+      default:
+        return super.expectedHttpRoute(endpoint)
+    }
+  }
+
+  @Override
+  Set<AttributeKey<?>> httpAttributes(ServerEndpoint endpoint) {
+    Set<AttributeKey<?>> extra = [
+      SemanticAttributes.HTTP_SERVER_NAME
     ]
+    super.httpAttributes(endpoint) + extra
   }
 
   @Override

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.smoketest
 
+import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest
 import io.opentelemetry.proto.common.v1.AnyValue
@@ -18,6 +19,7 @@ import spock.lang.Specification
 import java.util.regex.Pattern
 import java.util.stream.Stream
 
+import static io.opentelemetry.smoketest.TestContainerManager.useWindowsContainers
 import static java.util.stream.Collectors.toSet
 
 abstract class SmokeTest extends Specification {
@@ -120,6 +122,10 @@ abstract class SmokeTest extends Specification {
     return telemetryRetriever.waitForMetrics()
   }
 
+  protected Collection<ExportLogsServiceRequest> waitForLogs() {
+    return telemetryRetriever.waitForLogs()
+  }
+
   protected static Set<String> getLoggedTraceIds(ToStringConsumer output) {
     output.toUtf8String().lines()
       .flatMap(SmokeTest.&findTraceId)
@@ -139,13 +145,6 @@ abstract class SmokeTest extends Specification {
   }
 
   private static TestContainerManager createContainerManager() {
-    boolean isWindows = System.getProperty("os.name").toLowerCase().contains("windows")
-
-    if (isWindows && "1" != System.getenv("USE_LINUX_CONTAINERS")) {
-      return new WindowsTestContainerManager()
-    }
-
-    return new LinuxTestContainerManager()
+    return useWindowsContainers() ? new WindowsTestContainerManager() : new LinuxTestContainerManager()
   }
-
 }

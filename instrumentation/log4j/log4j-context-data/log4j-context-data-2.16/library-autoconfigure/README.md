@@ -15,9 +15,8 @@ stable [release](https://search.maven.org/search?q=g:io.opentelemetry.instrument
 <dependencies>
   <dependency>
     <groupId>io.opentelemetry.instrumentation</groupId>
-    <artifactId>opentelemetry-log4j-2.16-autoconfigure</artifactId>
+    <artifactId>opentelemetry-log4j-context-data-2.16-autoconfigure</artifactId>
     <version>OPENTELEMETRY_VERSION</version>
-    <scope>runtime</scope>
   </dependency>
 </dependencies>
 ```
@@ -26,7 +25,7 @@ stable [release](https://search.maven.org/search?q=g:io.opentelemetry.instrument
 
 ```kotlin
 dependencies {
-  runtimeOnly("io.opentelemetry.instrumentation:opentelemetry-log4j-2.16-autoconfigure:OPENTELEMETRY_VERSION")
+  runtimeOnly("io.opentelemetry.instrumentation:opentelemetry-log4j-context-data-2.16-autoconfigure:OPENTELEMETRY_VERSION")
 }
 ```
 

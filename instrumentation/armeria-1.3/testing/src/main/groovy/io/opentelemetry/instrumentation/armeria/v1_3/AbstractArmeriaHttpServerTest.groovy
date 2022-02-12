@@ -29,6 +29,7 @@ import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEn
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.ERROR
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.EXCEPTION
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.INDEXED_CHILD
+import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.NOT_FOUND
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.PATH_PARAM
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.QUERY_PARAM
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.REDIRECT
@@ -39,15 +40,25 @@ abstract class AbstractArmeriaHttpServerTest extends HttpServerTest<Server> {
   abstract ServerBuilder configureServer(ServerBuilder serverBuilder)
 
   @Override
-  List<AttributeKey<?>> extraAttributes() {
-    [
+  String expectedHttpRoute(ServerEndpoint endpoint) {
+    switch (endpoint) {
+      case NOT_FOUND:
+        // TODO(anuraaga): Revisit this when applying instrumenters to more libraries, Armeria
+        // currently reports '/*' which is a fallback route.
+        return "/*"
+      default:
+        return super.expectedHttpRoute(endpoint)
+    }
+  }
+
+  @Override
+  Set<AttributeKey<?>> httpAttributes(ServerEndpoint endpoint) {
+    Set<AttributeKey<?>> extra = [
       SemanticAttributes.HTTP_REQUEST_CONTENT_LENGTH,
       SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH,
-      SemanticAttributes.HTTP_ROUTE,
-      SemanticAttributes.HTTP_SERVER_NAME,
-      SemanticAttributes.NET_PEER_NAME,
-      SemanticAttributes.NET_TRANSPORT
+      SemanticAttributes.HTTP_SERVER_NAME
     ]
+    super.httpAttributes(endpoint) + extra
   }
 
   @Override

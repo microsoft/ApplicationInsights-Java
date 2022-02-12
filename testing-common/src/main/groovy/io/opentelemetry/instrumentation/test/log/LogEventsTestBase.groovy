@@ -5,8 +5,6 @@
 
 package io.opentelemetry.instrumentation.test.log
 
-import static io.opentelemetry.instrumentation.test.utils.TraceUtils.runUnderTrace
-
 import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
 import spock.lang.Unroll
 
@@ -29,7 +27,7 @@ abstract class LogEventsTestBase extends AgentInstrumentationSpecification {
 
   def "capture #testMethod (#capture)"() {
     setup:
-    runUnderTrace("test") {
+    runWithSpan("test") {
       def logger = createLogger("abc")
       logger."$testMethod"("xyz")
     }

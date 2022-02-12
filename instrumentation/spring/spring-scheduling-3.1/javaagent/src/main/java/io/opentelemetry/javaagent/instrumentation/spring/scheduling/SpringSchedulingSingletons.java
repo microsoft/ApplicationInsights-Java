@@ -7,7 +7,7 @@ package io.opentelemetry.javaagent.instrumentation.spring.scheduling;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
-import io.opentelemetry.instrumentation.api.tracer.SpanNames;
+import io.opentelemetry.instrumentation.api.instrumenter.SpanNames;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 
 public final class SpringSchedulingSingletons {
@@ -17,6 +17,7 @@ public final class SpringSchedulingSingletons {
               GlobalOpenTelemetry.get(),
               "io.opentelemetry.spring-scheduling-3.1",
               SpringSchedulingSingletons::extractSpanName)
+          .addAttributesExtractor(new SpringSchedulingCodeAttributesExtractor())
           .newInstrumenter();
 
   private static String extractSpanName(Runnable runnable) {

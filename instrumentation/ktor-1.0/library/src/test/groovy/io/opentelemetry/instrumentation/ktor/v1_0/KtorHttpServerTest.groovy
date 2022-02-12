@@ -13,7 +13,7 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
 
 import java.util.concurrent.TimeUnit
 
-import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.NOT_FOUND
+import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.PATH_PARAM
 
 class KtorHttpServerTest extends HttpServerTest<ApplicationEngine> implements LibraryTestTrait {
 
@@ -35,20 +35,24 @@ class KtorHttpServerTest extends HttpServerTest<ApplicationEngine> implements Li
   }
 
   @Override
-  String expectedServerSpanName(ServerEndpoint endpoint) {
-    switch (endpoint) {
-      case NOT_FOUND:
-        return "HTTP GET"
-      default:
-        return endpoint.resolvePath(address).path
-    }
+  boolean testPathParam() {
+    true
   }
 
   @Override
-  List<AttributeKey<?>> extraAttributes() {
-    [
-      SemanticAttributes.NET_PEER_NAME,
-      SemanticAttributes.NET_TRANSPORT
-    ]
+  Set<AttributeKey<?>> httpAttributes(ServerEndpoint endpoint) {
+    def attributes = super.httpAttributes(endpoint)
+    attributes.remove(SemanticAttributes.NET_PEER_PORT)
+    attributes
+  }
+
+  @Override
+  String expectedHttpRoute(ServerEndpoint endpoint) {
+    switch (endpoint) {
+      case PATH_PARAM:
+        return getContextPath() + "/path/{id}/param"
+      default:
+        return super.expectedHttpRoute(endpoint)
+    }
   }
 }

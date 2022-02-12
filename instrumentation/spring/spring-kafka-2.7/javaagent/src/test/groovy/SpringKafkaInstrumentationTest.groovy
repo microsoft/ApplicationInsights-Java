@@ -4,8 +4,10 @@
  */
 
 import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
+import io.opentelemetry.instrumentation.testing.GlobalTraceUtil
 import io.opentelemetry.sdk.trace.data.SpanData
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
+import java.time.Duration
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.boot.SpringApplication
@@ -19,12 +21,12 @@ import org.springframework.kafka.config.TopicBuilder
 import org.springframework.kafka.core.ConsumerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.testcontainers.containers.KafkaContainer
+import org.testcontainers.containers.wait.strategy.Wait
 import spock.lang.Shared
 
 import static io.opentelemetry.api.trace.SpanKind.CONSUMER
 import static io.opentelemetry.api.trace.SpanKind.PRODUCER
 import static io.opentelemetry.api.trace.StatusCode.ERROR
-import static io.opentelemetry.instrumentation.test.utils.TraceUtils.runInternalSpan
 
 class SpringKafkaInstrumentationTest extends AgentInstrumentationSpecification {
   @Shared
@@ -34,6 +36,8 @@ class SpringKafkaInstrumentationTest extends AgentInstrumentationSpecification {
 
   def setupSpec() {
     kafka = new KafkaContainer()
+      .waitingFor(Wait.forLogMessage(".*started \\(kafka.server.KafkaServer\\).*", 1))
+      .withStartupTimeout(Duration.ofMinutes(1))
     kafka.start()
 
     def app = new SpringApplication(ConsumerConfig)
@@ -241,7 +245,7 @@ class SpringKafkaInstrumentationTest extends AgentInstrumentationSpecification {
 
     @KafkaListener(id = "testListener", topics = "testTopic", containerFactory = "batchFactory")
     void listener(List<ConsumerRecord<String, String>> records) {
-      runInternalSpan("consumer")
+      GlobalTraceUtil.runWithSpan("consumer") {}
       records.forEach({ record ->
         if (record.value() == "error") {
           throw new IllegalArgumentException("boom")

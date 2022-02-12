@@ -5,9 +5,8 @@
 
 package io.opentelemetry.instrumentation.restlet.v2_0
 
-import io.opentelemetry.api.common.AttributeKey
+
 import io.opentelemetry.instrumentation.test.base.HttpServerTest
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
 import org.restlet.Component
 import org.restlet.Context
 import org.restlet.Request
@@ -166,26 +165,19 @@ abstract class AbstractRestletServerTest extends HttpServerTest<Server> {
   }
 
   @Override
-  List<AttributeKey<?>> extraAttributes() {
-    [
-      SemanticAttributes.NET_TRANSPORT
-    ]
-  }
-
-  @Override
   boolean testPathParam() {
     true
   }
 
   @Override
-  String expectedServerSpanName(ServerEndpoint endpoint) {
+  String expectedHttpRoute(ServerEndpoint endpoint) {
     switch (endpoint) {
       case PATH_PARAM:
         return getContextPath() + "/path/{id}/param"
       case NOT_FOUND:
         return getContextPath() + "/*"
       default:
-        return endpoint.resolvePath(address).path
+        return super.expectedHttpRoute(endpoint)
     }
   }
 

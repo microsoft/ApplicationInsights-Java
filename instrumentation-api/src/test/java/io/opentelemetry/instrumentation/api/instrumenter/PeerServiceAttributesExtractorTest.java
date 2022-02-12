@@ -14,7 +14,8 @@ import static org.mockito.BDDMockito.given;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.instrumentation.api.instrumenter.net.NetClientAttributesExtractor;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.api.instrumenter.net.NetClientAttributesGetter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class PeerServiceAttributesExtractorTest {
-  @Mock NetClientAttributesExtractor<String, String> netAttributesExtractor;
+  @Mock NetClientAttributesGetter<String, String> netAttributesExtractor;
 
   @Test
   void shouldNotSetAnyValueIfNetExtractorReturnsNulls() {
@@ -35,10 +36,12 @@ class PeerServiceAttributesExtractorTest {
     PeerServiceAttributesExtractor<String, String> underTest =
         new PeerServiceAttributesExtractor<>(peerServiceMapping, netAttributesExtractor);
 
+    Context context = Context.root();
+
     // when
     AttributesBuilder attributes = Attributes.builder();
-    underTest.onStart(attributes, "request");
-    underTest.onEnd(attributes, "request", "response", null);
+    underTest.onStart(attributes, context, "request");
+    underTest.onEnd(attributes, context, "request", "response", null);
 
     // then
     assertTrue(attributes.build().isEmpty());
@@ -54,11 +57,13 @@ class PeerServiceAttributesExtractorTest {
 
     given(netAttributesExtractor.peerName(any(), any())).willReturn("example2.com");
 
+    Context context = Context.root();
+
     // when
     AttributesBuilder startAttributes = Attributes.builder();
-    underTest.onStart(startAttributes, "request");
+    underTest.onStart(startAttributes, context, "request");
     AttributesBuilder endAttributes = Attributes.builder();
-    underTest.onEnd(endAttributes, "request", "response", null);
+    underTest.onEnd(endAttributes, context, "request", "response", null);
 
     // then
     assertTrue(startAttributes.build().isEmpty());
@@ -75,11 +80,13 @@ class PeerServiceAttributesExtractorTest {
 
     given(netAttributesExtractor.peerIp(any(), any())).willReturn("1.2.3.5");
 
+    Context context = Context.root();
+
     // when
     AttributesBuilder startAttributes = Attributes.builder();
-    underTest.onStart(startAttributes, "request");
+    underTest.onStart(startAttributes, context, "request");
     AttributesBuilder endAttributes = Attributes.builder();
-    underTest.onEnd(endAttributes, "request", "response", null);
+    underTest.onEnd(endAttributes, context, "request", "response", null);
 
     // then
     assertTrue(startAttributes.build().isEmpty());
@@ -98,11 +105,13 @@ class PeerServiceAttributesExtractorTest {
 
     given(netAttributesExtractor.peerName(any(), any())).willReturn("example.com");
 
+    Context context = Context.root();
+
     // when
     AttributesBuilder startAttributes = Attributes.builder();
-    underTest.onStart(startAttributes, "request");
+    underTest.onStart(startAttributes, context, "request");
     AttributesBuilder endAttributes = Attributes.builder();
-    underTest.onEnd(endAttributes, "request", "response", null);
+    underTest.onEnd(endAttributes, context, "request", "response", null);
 
     // then
     assertThat(startAttributes.build()).isEmpty();
@@ -123,11 +132,13 @@ class PeerServiceAttributesExtractorTest {
     given(netAttributesExtractor.peerName(any(), any())).willReturn("test.com");
     given(netAttributesExtractor.peerIp(any(), any())).willReturn("1.2.3.4");
 
+    Context context = Context.root();
+
     // when
     AttributesBuilder startAttributes = Attributes.builder();
-    underTest.onStart(startAttributes, "request");
+    underTest.onStart(startAttributes, context, "request");
     AttributesBuilder endAttributes = Attributes.builder();
-    underTest.onEnd(endAttributes, "request", "response", null);
+    underTest.onEnd(endAttributes, context, "request", "response", null);
 
     // then
     assertThat(startAttributes.build()).isEmpty();

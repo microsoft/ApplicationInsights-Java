@@ -11,8 +11,8 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.instrumentation.api.appender.LogBuilder;
-import io.opentelemetry.instrumentation.api.appender.Severity;
+import io.opentelemetry.instrumentation.api.appender.internal.LogBuilder;
+import io.opentelemetry.instrumentation.api.appender.internal.Severity;
 import io.opentelemetry.instrumentation.api.cache.Cache;
 import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
@@ -27,6 +27,10 @@ import org.apache.logging.log4j.core.time.Instant;
 import org.apache.logging.log4j.message.MapMessage;
 import org.apache.logging.log4j.message.Message;
 
+/**
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+ * any time.
+ */
 public final class LogEventMapper<T> {
 
   private static final String SPECIAL_MAP_MESSAGE_ATTRIBUTE = "message";
@@ -182,7 +186,8 @@ public final class LogEventMapper<T> {
   }
 
   private static void setThrowable(AttributesBuilder attributes, Throwable throwable) {
-    // TODO (trask) extract method for recording exception into instrumentation-api-appender
+    // TODO (trask) extract method for recording exception into
+    // instrumentation-appender-api-internal
     attributes.put(SemanticAttributes.EXCEPTION_TYPE, throwable.getClass().getName());
     attributes.put(SemanticAttributes.EXCEPTION_MESSAGE, throwable.getMessage());
     StringWriter writer = new StringWriter();
