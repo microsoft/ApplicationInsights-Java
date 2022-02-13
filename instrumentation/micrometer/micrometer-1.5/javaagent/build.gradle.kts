@@ -13,9 +13,27 @@ muzzle {
 
 dependencies {
   library("io.micrometer:micrometer-core:1.5.0")
+
+  implementation(project(":instrumentation:micrometer:micrometer-1.5:library"))
+
+  testImplementation(project(":instrumentation:micrometer:micrometer-1.5:testing"))
 }
 
-// TODO: disabled by default, since not all instruments are implemented
-tasks.withType<Test>().configureEach {
-  jvmArgs("-Dotel.instrumentation.micrometer.enabled=true")
+tasks {
+  val testBaseTimeUnit by registering(Test::class) {
+    filter {
+      includeTestsMatching("*TimerSecondsTest")
+      isFailOnNoMatchingTests = false
+    }
+    include("**/*TimerSecondsTest.*")
+    jvmArgs("-Dotel.instrumentation.micrometer.base-time-unit=seconds")
+  }
+
+  test {
+    dependsOn(testBaseTimeUnit)
+    filter {
+      excludeTestsMatching("*TimerSecondsTest")
+      isFailOnNoMatchingTests = false
+    }
+  }
 }

@@ -30,19 +30,9 @@ val javaagentLibs by configurations.creating {
   isCanBeConsumed = false
   extendsFrom(baseJavaagentLibs)
 }
-// this configuration collects just exporter libs (also placed in the agent classloader & isolated from the instrumented application)
-val exporterLibs by configurations.creating {
-  isCanBeResolved = true
-  isCanBeConsumed = false
-}
-// this configuration collects just exporter libs for slim artifact (also placed in the agent classloader & isolated from the instrumented application)
-val exporterSlimLibs by configurations.creating {
-  isCanBeResolved = true
-  isCanBeConsumed = false
-}
 
 // exclude dependencies that are to be placed in bootstrap from agent libs - they won't be added to inst/
-listOf(baseJavaagentLibs, javaagentLibs, exporterLibs, exporterSlimLibs).forEach {
+listOf(baseJavaagentLibs, javaagentLibs).forEach {
   it.run {
     exclude("org.slf4j")
     exclude("io.opentelemetry", "opentelemetry-api")
@@ -57,7 +47,7 @@ val licenseReportDependencies by configurations.creating {
 dependencies {
   bootstrapLibs(project(":instrumentation-api"))
   bootstrapLibs(project(":instrumentation-api-annotation-support"))
-  bootstrapLibs(project(":instrumentation-api-appender"))
+  bootstrapLibs(project(":instrumentation-appender-api-internal"))
   bootstrapLibs(project(":javaagent-bootstrap"))
   bootstrapLibs(project(":javaagent-instrumentation-api"))
   bootstrapLibs("org.slf4j:slf4j-simple")
@@ -74,11 +64,6 @@ dependencies {
   baseJavaagentLibs(project(":instrumentation:internal:internal-lambda:javaagent"))
   baseJavaagentLibs(project(":instrumentation:internal:internal-reflection:javaagent"))
   baseJavaagentLibs(project(":instrumentation:internal:internal-url-class-loader:javaagent"))
-
-  exporterLibs(project(":javaagent-exporters"))
-
-  exporterSlimLibs("io.opentelemetry:opentelemetry-exporter-otlp")
-  exporterSlimLibs("io.opentelemetry:opentelemetry-exporter-otlp-metrics")
 
   // concurrentlinkedhashmap-lru and weak-lock-free are copied in to the instrumentation-api module
   licenseReportDependencies("com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.4.2")
@@ -144,25 +129,12 @@ tasks {
     excludeBootstrapJars()
   }
 
-  val relocateExporterLibs by registering(ShadowJar::class) {
-    configurations = listOf(exporterLibs)
-
-    archiveFileName.set("exporterLibs-relocated.jar")
-  }
-
-  val relocateExporterSlimLibs by registering(ShadowJar::class) {
-    configurations = listOf(exporterSlimLibs)
-
-    archiveFileName.set("exporterSlimLibs-relocated.jar")
-  }
-
   // Includes everything needed for OOTB experience
   val shadowJar by existing(ShadowJar::class) {
     configurations = listOf(bootstrapLibs)
 
-    dependsOn(relocateJavaagentLibs, relocateExporterLibs)
+    dependsOn(relocateJavaagentLibs)
     isolateClasses(relocateJavaagentLibs.get().outputs.files)
-    isolateClasses(relocateExporterLibs.get().outputs.files)
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
@@ -177,21 +149,6 @@ tasks {
         "Can-Redefine-Classes" to true,
         "Can-Retransform-Classes" to true
       )
-    }
-  }
-
-  // Includes instrumentations plus the OTLP/gRPC exporters
-  val slimShadowJar by registering(ShadowJar::class) {
-    configurations = listOf(bootstrapLibs)
-
-    dependsOn(relocateJavaagentLibs, relocateExporterSlimLibs)
-    isolateClasses(relocateJavaagentLibs.get().outputs.files)
-    isolateClasses(relocateExporterSlimLibs.get().outputs.files)
-
-    archiveClassifier.set("slim")
-
-    manifest {
-      attributes(shadowJar.get().manifest.attributes)
     }
   }
 
@@ -211,6 +168,11 @@ tasks {
     }
   }
 
+  jar {
+    // Empty jar that cannot be used for anything and isn't published.
+    archiveClassifier.set("dontuse")
+  }
+
   val baseJar by configurations.creating {
     isCanBeConsumed = true
     isCanBeResolved = false
@@ -220,12 +182,8 @@ tasks {
     add("baseJar", baseJavaagentJar)
   }
 
-  jar {
-    enabled = false
-  }
-
   assemble {
-    dependsOn(shadowJar, slimShadowJar, baseJavaagentJar)
+    dependsOn(shadowJar, baseJavaagentJar)
   }
 
   withType<Test>().configureEach {
@@ -248,12 +206,22 @@ tasks {
     dependsOn(cleanLicenses)
   }
 
-  publishing {
-    publications {
-      named<MavenPublication>("maven") {
-        artifact(slimShadowJar)
-        project.shadow.component(this)
-      }
+  // Because we reconfigure publishing to only include the shadow jar, the Gradle metadata is not correct.
+  // Since we are fully bundled and have no dependencies, Gradle metadata wouldn't provide any advantage over
+  // the POM anyways so in practice we shouldn't be losing anything.
+  withType<GenerateModuleMetadata>().configureEach {
+    enabled = false
+  }
+}
+
+// Don't publish non-shadowed jar (shadowJar is in shadowRuntimeElements)
+with(components["java"] as AdhocComponentWithVariants) {
+  configurations.forEach {
+    withVariantsFromConfiguration(configurations["apiElements"]) {
+      skip()
+    }
+    withVariantsFromConfiguration(configurations["runtimeElements"]) {
+      skip()
     }
   }
 }
@@ -293,7 +261,7 @@ fun ShadowJar.excludeBootstrapJars() {
   dependencies {
     exclude(project(":instrumentation-api"))
     exclude(project(":instrumentation-api-annotation-support"))
-    exclude(project(":instrumentation-api-appender"))
+    exclude(project(":instrumentation-appender-api-internal"))
     exclude(project(":javaagent-bootstrap"))
     exclude(project(":javaagent-instrumentation-api"))
   }

@@ -47,14 +47,6 @@ abstract class AbstractServletServerTest extends HttpServerTest<Server> {
   }
 
   @Override
-  List<AttributeKey<?>> extraAttributes() {
-    [
-      SemanticAttributes.NET_TRANSPORT,
-      SemanticAttributes.HTTP_SERVER_NAME
-    ]
-  }
-
-  @Override
   void stopServer(Server server) {
     server.stop()
     server.destroy()
@@ -71,14 +63,22 @@ abstract class AbstractServletServerTest extends HttpServerTest<Server> {
   }
 
   @Override
-  String expectedServerSpanName(ServerEndpoint endpoint) {
+  Set<AttributeKey<?>> httpAttributes(ServerEndpoint endpoint) {
+    Set<AttributeKey<?>> extra = [
+      SemanticAttributes.HTTP_SERVER_NAME
+    ]
+    super.httpAttributes(endpoint) + extra
+  }
+
+  @Override
+  String expectedHttpRoute(ServerEndpoint endpoint) {
     switch (endpoint) {
       case PATH_PARAM:
         return getContextPath() + "/path/{id}/param"
       case NOT_FOUND:
         return getContextPath() + "/*"
       default:
-        return endpoint.resolvePath(address).path
+        return super.expectedHttpRoute(endpoint)
     }
   }
 

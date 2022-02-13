@@ -1,7 +1,7 @@
 plugins {
   `kotlin-dsl`
   // When updating, update below in dependencies too
-  id("com.diffplug.spotless") version "5.16.0"
+  id("com.diffplug.spotless") version "6.1.2"
 }
 
 spotless {
@@ -9,6 +9,10 @@ spotless {
     googleJavaFormat()
     licenseHeaderFile(rootProject.file("../buildscripts/spotless.license.java"), "(package|import|public)")
     target("src/**/*.java")
+  }
+  kotlinGradle {
+    ktlint().userData(mapOf("indent_size" to "2", "continuation_indent_size" to "2", "disabled_rules" to "no-wildcard-imports"))
+    target("**/*.gradle.kts")
   }
 }
 
@@ -35,10 +39,10 @@ dependencies {
   implementation("org.apache.maven:maven-aether-provider:3.3.9")
 
   // When updating, update above in plugins too
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:5.16.0")
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.1.2")
   implementation("com.google.guava:guava:31.0.1-jre")
   implementation("gradle.plugin.com.google.protobuf:protobuf-gradle-plugin:0.8.18")
-  implementation("gradle.plugin.com.github.johnrengelman:shadow:7.1.1")
+  implementation("gradle.plugin.com.github.johnrengelman:shadow:7.1.2")
   implementation("org.ow2.asm:asm:9.1")
   implementation("org.ow2.asm:asm-tree:9.1")
   implementation("org.apache.httpcomponents:httpclient:4.5.13")

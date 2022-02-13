@@ -63,12 +63,11 @@ class DropwizardTest extends HttpServerTest<DropwizardTestSupport> implements Ag
   }
 
   @Override
-  List<AttributeKey<?>> extraAttributes() {
-    [
-      SemanticAttributes.HTTP_SERVER_NAME,
-      SemanticAttributes.NET_PEER_NAME,
-      SemanticAttributes.NET_TRANSPORT
+  Set<AttributeKey<?>> httpAttributes(ServerEndpoint endpoint) {
+    Set<AttributeKey<?>> extra = [
+      SemanticAttributes.HTTP_SERVER_NAME
     ]
+    super.httpAttributes(endpoint) + extra
   }
 
   // this override is needed because dropwizard reports peer ip as the client ip
@@ -93,14 +92,14 @@ class DropwizardTest extends HttpServerTest<DropwizardTestSupport> implements Ag
   }
 
   @Override
-  String expectedServerSpanName(ServerEndpoint endpoint) {
+  String expectedHttpRoute(ServerEndpoint endpoint) {
     switch (endpoint) {
-      case PATH_PARAM:
-        return "/path/{id}/param"
       case NOT_FOUND:
-        return "/*"
+        return getContextPath() + "/*"
+      case PATH_PARAM:
+        return getContextPath() + "/path/{id}/param"
       default:
-        return endpoint.resolvePath(address).path
+        return super.expectedHttpRoute(endpoint)
     }
   }
 

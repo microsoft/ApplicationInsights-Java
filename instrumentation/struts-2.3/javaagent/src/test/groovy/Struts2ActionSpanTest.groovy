@@ -12,7 +12,6 @@ import io.opentelemetry.instrumentation.test.base.HttpServerTest
 import io.opentelemetry.sdk.trace.data.SpanData
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
 import io.opentelemetry.struts.GreetingServlet
-import org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.DefaultServlet
 import org.eclipse.jetty.servlet.ServletContextHandler
@@ -30,11 +29,11 @@ import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEn
 class Struts2ActionSpanTest extends HttpServerTest<Server> implements AgentTestTrait {
 
   @Override
-  List<AttributeKey<?>> extraAttributes() {
-    [
-      SemanticAttributes.HTTP_SERVER_NAME,
-      SemanticAttributes.NET_TRANSPORT
+  Set<AttributeKey<?>> httpAttributes(ServerEndpoint endpoint) {
+    Set<AttributeKey<?>> extra = [
+      SemanticAttributes.HTTP_SERVER_NAME
     ]
+    super.httpAttributes(endpoint) + extra
   }
 
   @Override
@@ -76,14 +75,14 @@ class Struts2ActionSpanTest extends HttpServerTest<Server> implements AgentTestT
     }
   }
 
-  String expectedServerSpanName(ServerEndpoint endpoint) {
+  String expectedHttpRoute(ServerEndpoint endpoint) {
     switch (endpoint) {
       case PATH_PARAM:
         return getContextPath() + "/path/{id}/param"
       case NOT_FOUND:
         return getContextPath() + "/*"
       default:
-        return endpoint.resolvePath(address).path
+        return super.expectedHttpRoute(endpoint)
     }
   }
 
@@ -121,7 +120,15 @@ class Struts2ActionSpanTest extends HttpServerTest<Server> implements AgentTestT
 
     context.addServlet(DefaultServlet, "/")
     context.addServlet(GreetingServlet, "/greetingServlet")
-    context.addFilter(StrutsPrepareAndExecuteFilter, "/*", EnumSet.of(DispatcherType.REQUEST))
+    def strutsFilterClass = null
+    try {
+      // struts 2.3
+      strutsFilterClass = Class.forName("org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter")
+    } catch (ClassNotFoundException exception) {
+      // struts 2.5
+      strutsFilterClass = Class.forName("org.apache.struts2.dispatcher.filter.StrutsPrepareAndExecuteFilter")
+    }
+    context.addFilter(strutsFilterClass, "/*", EnumSet.of(DispatcherType.REQUEST))
 
     server.start()
 

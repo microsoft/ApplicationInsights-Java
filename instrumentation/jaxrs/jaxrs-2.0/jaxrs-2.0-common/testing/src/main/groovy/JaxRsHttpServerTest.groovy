@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NetTransportValues.IP_TCP
-
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.instrumentation.test.AgentTestTrait
 import io.opentelemetry.instrumentation.test.asserts.TraceAssert
@@ -20,6 +18,7 @@ import static io.opentelemetry.api.trace.StatusCode.ERROR
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.EXCEPTION
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.PATH_PARAM
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.SUCCESS
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NetTransportValues.IP_TCP
 import static java.util.concurrent.TimeUnit.SECONDS
 import static org.junit.jupiter.api.Assumptions.assumeTrue
 
@@ -191,11 +190,11 @@ abstract class JaxRsHttpServerTest<S> extends HttpServerTest<S> implements Agent
   }
 
   @Override
-  List<AttributeKey<?>> extraAttributes() {
-    [
-      SemanticAttributes.HTTP_SERVER_NAME,
-      SemanticAttributes.NET_TRANSPORT
+  Set<AttributeKey<?>> httpAttributes(ServerEndpoint endpoint) {
+    Set<AttributeKey<?>> extra = [
+      SemanticAttributes.HTTP_SERVER_NAME
     ]
+    super.httpAttributes(endpoint) + extra
   }
 
   @Override
@@ -291,7 +290,9 @@ abstract class JaxRsHttpServerTest<S> extends HttpServerTest<S> implements Agent
         "$SemanticAttributes.HTTP_CLIENT_IP" TEST_CLIENT_IP
         "$SemanticAttributes.HTTP_SERVER_NAME" String
         "$SemanticAttributes.NET_TRANSPORT" IP_TCP
-        "$SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH" { it == null || it instanceof Long } // Optional
+        // Optional
+        "$SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH" { it == null || it instanceof Long }
+        "$SemanticAttributes.HTTP_ROUTE" path
         if (fullUrl.getPath().endsWith(ServerEndpoint.CAPTURE_HEADERS.getPath())) {
           "http.request.header.x_test_request" { it == ["test"] }
           "http.response.header.x_test_response" { it == ["test"] }

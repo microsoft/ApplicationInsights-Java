@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.entry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,12 +51,14 @@ class MessagingAttributesExtractorTest {
 
     TestMessagingAttributesExtractor underTest = new TestMessagingAttributesExtractor(operation);
 
+    Context context = Context.root();
+
     // when
     AttributesBuilder startAttributes = Attributes.builder();
-    underTest.onStart(startAttributes, request);
+    underTest.onStart(startAttributes, context, request);
 
     AttributesBuilder endAttributes = Attributes.builder();
-    underTest.onEnd(endAttributes, request, "42", null);
+    underTest.onEnd(endAttributes, context, request, "42", null);
 
     // then
     List<MapEntry<AttributeKey<?>, Object>> expectedEntries = new ArrayList<>();
@@ -74,7 +77,10 @@ class MessagingAttributesExtractorTest {
         entry(SemanticAttributes.MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES, 10L));
     expectedEntries.add(entry(SemanticAttributes.MESSAGING_OPERATION, operation.operationName()));
 
-    assertThat(startAttributes.build()).containsOnly(expectedEntries.toArray(new MapEntry[0]));
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    MapEntry<? extends AttributeKey<?>, ?>[] expectedEntriesArr =
+        expectedEntries.toArray(new MapEntry[0]);
+    assertThat(startAttributes.build()).containsOnly(expectedEntriesArr);
 
     assertThat(endAttributes.build())
         .containsOnly(entry(SemanticAttributes.MESSAGING_MESSAGE_ID, "42"));
@@ -92,12 +98,14 @@ class MessagingAttributesExtractorTest {
     TestMessagingAttributesExtractor underTest =
         new TestMessagingAttributesExtractor(MessageOperation.SEND);
 
+    Context context = Context.root();
+
     // when
     AttributesBuilder startAttributes = Attributes.builder();
-    underTest.onStart(startAttributes, Collections.emptyMap());
+    underTest.onStart(startAttributes, context, Collections.emptyMap());
 
     AttributesBuilder endAttributes = Attributes.builder();
-    underTest.onEnd(endAttributes, Collections.emptyMap(), null, null);
+    underTest.onEnd(endAttributes, context, Collections.emptyMap(), null, null);
 
     // then
     assertThat(startAttributes.build().isEmpty()).isTrue();

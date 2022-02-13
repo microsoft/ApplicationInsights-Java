@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.instrumentation.test.AgentTestTrait
 import io.opentelemetry.instrumentation.test.base.HttpServerTest
 
@@ -20,13 +21,13 @@ abstract class AkkaHttpServerInstrumentationTest extends HttpServerTest<Object> 
 //  }
 
   @Override
-  String expectedServerSpanName(ServerEndpoint endpoint) {
-    return "akka.request"
+  boolean testCapturedHttpHeaders() {
+    false
   }
 
   @Override
-  boolean testCapturedHttpHeaders() {
-    false
+  Set<AttributeKey<?>> httpAttributes(ServerEndpoint endpoint) {
+    []
   }
 }
 

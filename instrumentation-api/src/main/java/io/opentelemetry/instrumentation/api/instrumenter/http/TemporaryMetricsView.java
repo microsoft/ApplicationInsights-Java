@@ -21,8 +21,6 @@ final class TemporaryMetricsView {
   private static final Set<AttributeKey> durationAlwaysInclude = buildDurationAlwaysInclude();
   private static final Set<AttributeKey> durationClientView = buildDurationClientView();
   private static final Set<AttributeKey> durationServerView = buildDurationServerView();
-  private static final Set<AttributeKey> durationServerFallbackView =
-      buildDurationServerFallbackView();
   private static final Set<AttributeKey> activeRequestsView = buildActiveRequestsView();
 
   private static Set<AttributeKey> buildDurationAlwaysInclude() {
@@ -38,8 +36,10 @@ final class TemporaryMetricsView {
   private static Set<AttributeKey> buildDurationClientView() {
     // We pull identifying attributes according to:
     // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/semantic_conventions/http-metrics.md#attribute-alternatives
+    // We only pull net.peer.name and net.peer.port because http.url has too high cardinality
     Set<AttributeKey> view = new HashSet<>(durationAlwaysInclude);
-    view.add(SemanticAttributes.HTTP_URL);
+    view.add(SemanticAttributes.NET_PEER_NAME);
+    view.add(SemanticAttributes.NET_PEER_PORT);
     return view;
   }
 
@@ -53,19 +53,6 @@ final class TemporaryMetricsView {
     view.add(SemanticAttributes.HTTP_SCHEME);
     view.add(SemanticAttributes.HTTP_HOST);
     view.add(SemanticAttributes.HTTP_ROUTE);
-    return view;
-  }
-
-  private static Set<AttributeKey> buildDurationServerFallbackView() {
-    // We pull identifying attributes according to:
-    // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/semantic_conventions/http-metrics.md#attribute-alternatives
-    // With the following caveat:
-    // - we always rely on http.route + http.host in this repository.
-    // - we prefer http.route (which is scrubbed) over http.target (which is not scrubbed).
-    Set<AttributeKey> view = new HashSet<>(durationAlwaysInclude);
-    view.add(SemanticAttributes.HTTP_SCHEME);
-    view.add(SemanticAttributes.HTTP_HOST);
-    view.add(SemanticAttributes.HTTP_TARGET);
     return view;
   }
 
@@ -88,20 +75,10 @@ final class TemporaryMetricsView {
     return filtered.build();
   }
 
-  private static <T> boolean containsAttribute(
-      AttributeKey<T> key, Attributes startAttributes, Attributes endAttributes) {
-    return startAttributes.get(key) != null || endAttributes.get(key) != null;
-  }
-
   static Attributes applyServerDurationView(Attributes startAttributes, Attributes endAttributes) {
-    Set<AttributeKey> fullSet = durationServerView;
-    // Use http.target when http.route is not available.
-    if (!containsAttribute(SemanticAttributes.HTTP_ROUTE, startAttributes, endAttributes)) {
-      fullSet = durationServerFallbackView;
-    }
     AttributesBuilder filtered = Attributes.builder();
-    applyView(filtered, startAttributes, fullSet);
-    applyView(filtered, endAttributes, fullSet);
+    applyView(filtered, startAttributes, durationServerView);
+    applyView(filtered, endAttributes, durationServerView);
     return filtered.build();
   }
 
@@ -118,30 +95,9 @@ final class TemporaryMetricsView {
         (BiConsumer<AttributeKey, Object>)
             (key, value) -> {
               if (view.contains(key)) {
-                // For now, we filter query parameters out of URLs in metrics.
-                if (SemanticAttributes.HTTP_URL.equals(key)
-                    || SemanticAttributes.HTTP_TARGET.equals(key)) {
-                  filtered.put(key, removeQueryParamFromUrlOrTarget(value.toString()));
-                } else {
-                  filtered.put(key, value);
-                }
+                filtered.put(key, value);
               }
             });
-  }
-
-  // Attempt to handle cleaning URLs like http://myServer;jsessionId=1 or targets like
-  // /my/path?queryParam=2
-  private static String removeQueryParamFromUrlOrTarget(String urlOrTarget) {
-    // Note: Maybe not the most robust, but purely to limit cardinality.
-    int idx = -1;
-    for (int i = 0; i < urlOrTarget.length(); ++i) {
-      char ch = urlOrTarget.charAt(i);
-      if (ch == '?' || ch == ';') {
-        idx = i;
-        break;
-      }
-    }
-    return idx == -1 ? urlOrTarget : urlOrTarget.substring(0, idx);
   }
 
   private TemporaryMetricsView() {}

@@ -17,11 +17,9 @@ muzzle {
 dependencies {
   library("ch.qos.logback:logback-classic:0.9.16")
 
-  compileOnly(project(":instrumentation-api-appender"))
+  compileOnly(project(":instrumentation-appender-api-internal"))
 
   implementation(project(":instrumentation:logback:logback-appender-1.0:library"))
-
-  latestDepTestLibrary("ch.qos.logback:logback-classic:1.2.+")
 
   testImplementation("org.awaitility:awaitility")
 }
