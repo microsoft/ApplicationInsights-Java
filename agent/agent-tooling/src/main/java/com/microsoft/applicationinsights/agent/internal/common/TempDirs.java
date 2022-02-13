@@ -26,6 +26,8 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
 
 /** Helper methods for dealing with files and folders. */
 public class TempDirs {
@@ -34,27 +36,58 @@ public class TempDirs {
       Collections.unmodifiableList(Arrays.asList("USER", "LOGNAME", "USERNAME"));
 
   /**
-   * Windows: C:\Users\{USER_NAME}\AppData\Local\Temp\applicationinsights Linux:
-   * /var/temp/applicationinsights We will store all persisted files in this folder for all apps.
+   * Windows: C:\Users\{USER}\AppData\Local\Temp\applicationinsights
+   *
+   * <p>Linux: /tmp/{USER}/applicationinsights
+   *
+   * <p>We will store all persisted files in this folder for all apps.
    */
-  private static final File DEFAULT_FOLDER = new File(getTempDir(), "applicationinsights");
+  @Nullable
+  public static File getTempDir(Logger logger, String message) {
+    File tempDir = new File(System.getProperty("java.io.tmpdir"));
+    tempDir = maybeAddUserSubDir(tempDir);
+    tempDir = new File(tempDir, "applicationinsights");
 
-  // retrieve the default folder name based on telemetry type.
-  // regular telemetry is written to "applicationinsights/telemetry" folder.
-  // statsbeat telemetry is written to "applicationinsights/statsbeat" folder.
-  public static File getTempDir(String name) {
-    File subdirectory = new File(DEFAULT_FOLDER, name);
-
-    if (!subdirectory.exists()) {
-      subdirectory.mkdirs();
+    if ((!tempDir.exists() && !tempDir.mkdir())) {
+      logger.info(
+          "Unable to create directory: {}. {}. If this is unexpected, please check"
+              + " that the process has the necessary permissions to create the directory.",
+          tempDir.getAbsolutePath(),
+          message);
+      return null;
     }
-
-    if (!subdirectory.exists() || !subdirectory.canRead() || !subdirectory.canWrite()) {
-      throw new IllegalArgumentException(
-          "subdirectory must exist and have read and write permissions.");
+    if (!tempDir.canRead()) {
+      logger.info(
+          "Missing read permissions on directory: {}. {}. If this is unexpected, please check"
+              + " that the process has the necessary permissions to read from the directory.",
+          tempDir.getAbsolutePath(),
+          message);
+      return null;
     }
+    if (!tempDir.canWrite()) {
+      logger.info(
+          "Missing write permissions on directory: {}. {}. If this is unexpected, please check"
+              + " that the process has the necessary permissions to write to the directory.",
+          tempDir.getAbsolutePath(),
+          message);
+      return null;
+    }
+    return tempDir;
+  }
 
-    return subdirectory;
+  public static File getSubDir(File parent, String name) {
+    File dir = new File(parent, name);
+
+    if (!dir.exists() && !dir.mkdir()) {
+      throw new IllegalArgumentException("Unable to create directory: " + dir);
+    }
+    if (!dir.canRead()) {
+      throw new IllegalArgumentException("Missing read permission to subdirectory: " + dir);
+    }
+    if (!dir.canWrite()) {
+      throw new IllegalArgumentException("Missing write permission to subdirectory: " + dir);
+    }
+    return dir;
   }
 
   /**
@@ -68,31 +101,20 @@ public class TempDirs {
    * @return a {@link File} representing a folder in which temporary files will be stored for the
    *     current user.
    */
-  private static File getTempDir() {
-    String tempDirectory = System.getProperty("java.io.tmpdir");
-    String currentUserName = determineCurrentUserName();
-
-    File result = getTempDir(tempDirectory, currentUserName);
-    if (!result.isDirectory()) {
-      // Noinspection ResultOfMethodCallIgnored
-      result.mkdirs();
-    }
-    return result;
-  }
-
   // visible for testing
-  static File getTempDir(String initialValue, String userName) {
-    String tempDirectory = initialValue;
+  private static File maybeAddUserSubDir(File dir) {
 
     // does it look shared?
-    // TODO: this only catches the Linux case; I think a few system users on Windows might share
-    // c:\Windows\Temp
-    if ("/tmp".contentEquals(tempDirectory)) {
-      File candidate = new File(tempDirectory, userName);
-      tempDirectory = candidate.getAbsolutePath();
+    // TODO: this only catches the Linux case
+    //  I think a few system users on Windows might share C:\Windows\Temp
+    if ("/tmp".contentEquals(dir.getAbsolutePath())) {
+      String username = determineCurrentUsername();
+      if (username != null) {
+        return new File(dir, username);
+      }
     }
 
-    return new File(tempDirectory);
+    return dir;
   }
 
   /**
@@ -100,27 +122,24 @@ public class TempDirs {
    *
    * @return the best guess at what the current user's login name is.
    */
-  private static String determineCurrentUserName() {
-    String userName;
+  @Nullable
+  private static String determineCurrentUsername() {
     // Start with the value of the "user.name" property
-    userName = System.getProperty("user.name");
+    String username = System.getProperty("user.name");
 
-    if (CoreUtils.isNullOrEmpty(userName)) {
-      // Try some environment variables
-      for (String candidate : CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES) {
-        userName = System.getenv(candidate);
-        if (!CoreUtils.isNullOrEmpty(userName)) {
-          break;
-        }
+    if (!CoreUtils.isNullOrEmpty(username)) {
+      return username;
+    }
+
+    // Try some environment variables
+    for (String candidate : CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES) {
+      username = System.getenv(candidate);
+      if (!CoreUtils.isNullOrEmpty(username)) {
+        return username;
       }
     }
 
-    if (CoreUtils.isNullOrEmpty(userName)) {
-      // TODO: it might be nice to use a unique-ish value, such as the current process ID
-      userName = "unknown";
-    }
-
-    return userName;
+    return null;
   }
 
   private TempDirs() {}

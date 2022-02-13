@@ -52,6 +52,7 @@ import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDat
 import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeatHttpPipelinePolicy;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -90,7 +91,7 @@ public class TelemetryClient {
   private final List<MetricFilter> metricFilters;
 
   private final StatsbeatModule statsbeatModule;
-  private final boolean readOnlyFileSystem;
+  @Nullable private final File tempDir;
   private final int generalExportQueueCapacity;
   private final int metricsExportQueueCapacity;
 
@@ -120,7 +121,7 @@ public class TelemetryClient {
     this.globalProperties = builder.globalProperties;
     this.metricFilters = builder.metricFilters;
     this.statsbeatModule = builder.statsbeatModule;
-    this.readOnlyFileSystem = builder.readOnlyFileSystem;
+    this.tempDir = builder.tempDir;
     this.generalExportQueueCapacity = builder.generalExportQueueCapacity;
     this.metricsExportQueueCapacity = builder.metricsExportQueueCapacity;
     this.aadAuthentication = builder.aadAuthentication;
@@ -251,12 +252,12 @@ public class TelemetryClient {
         new TelemetryPipeline(httpPipeline, connectionString.getIngestionEndpoint());
 
     TelemetryPipelineListener telemetryPipelineListener;
-    if (readOnlyFileSystem) {
+    if (tempDir == null) {
       telemetryPipelineListener = TelemetryPipelineListener.noop();
     } else {
       telemetryPipelineListener =
           new LocalStorageTelemetryPipelineListener(
-              TempDirs.getTempDir(TELEMETRY_FOLDER_NAME),
+              TempDirs.getSubDir(tempDir, TELEMETRY_FOLDER_NAME),
               telemetryPipeline,
               statsbeatModule.getNonessentialStatsbeat());
     }
@@ -277,12 +278,12 @@ public class TelemetryClient {
               new TelemetryPipeline(httpPipeline, statsbeatConnectionString.getEndpoint());
 
           TelemetryPipelineListener telemetryPipelineListener;
-          if (readOnlyFileSystem) {
+          if (tempDir == null) {
             telemetryPipelineListener = TelemetryPipelineListener.noop();
           } else {
             telemetryPipelineListener =
                 new LocalStorageTelemetryPipelineListener(
-                    TempDirs.getTempDir(STATSBEAT_FOLDER_NAME),
+                    TempDirs.getSubDir(tempDir, STATSBEAT_FOLDER_NAME),
                     telemetryPipeline,
                     LocalStorageStats.noop());
           }
@@ -416,7 +417,7 @@ public class TelemetryClient {
     private Map<String, String> globalProperties;
     private List<MetricFilter> metricFilters;
     private StatsbeatModule statsbeatModule;
-    private boolean readOnlyFileSystem;
+    @Nullable private File tempDir;
     private int generalExportQueueCapacity;
     private int metricsExportQueueCapacity;
     @Nullable private Configuration.AadAuthentication aadAuthentication;
@@ -455,8 +456,8 @@ public class TelemetryClient {
       return this;
     }
 
-    public Builder setReadOnlyFileSystem(boolean readOnlyFileSystem) {
-      this.readOnlyFileSystem = readOnlyFileSystem;
+    public Builder setTempDir(@Nullable File tempDir) {
+      this.tempDir = tempDir;
       return this;
     }
 
