@@ -48,6 +48,7 @@ public class LocalStorageTelemetryPipelineListener implements TelemetryPipelineL
   private final LocalFileSender localFileSender;
   private final LocalFilePurger localFilePurger;
 
+  // telemetryFolder must already exist and be writable
   public LocalStorageTelemetryPipelineListener(
       File telemetryFolder, TelemetryPipeline pipeline, LocalStorageStats stats) {
 
