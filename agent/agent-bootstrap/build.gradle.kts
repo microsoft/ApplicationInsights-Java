@@ -11,6 +11,7 @@ dependencies {
   }
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-appender-api-internal")
   implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-instrumentation-api")
   implementation("ch.qos.logback:logback-classic")
   implementation("ch.qos.logback.contrib:logback-json-classic")
