@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
@@ -30,7 +31,6 @@ import com.microsoft.applicationinsights.agent.internal.common.FriendlyException
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
-import com.microsoft.applicationinsights.agent.internal.common.TempDirs;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProfilerConfiguration;
@@ -96,7 +96,7 @@ class AiComponentInstaller {
     }
 
     File tempDir =
-        TempDirs.getTempDir(
+        TempDirs.getApplicationInsightsTempDir(
             startupLogger,
             "Telemetry will not be stored to disk and retried later"
                 + " on sporadic network failures");

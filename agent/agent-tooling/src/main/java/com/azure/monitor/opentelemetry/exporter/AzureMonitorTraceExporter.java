@@ -39,8 +39,10 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTag
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.UrlParser;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.VersionGenerator;
 import io.opentelemetry.api.common.AttributeKey;
@@ -62,6 +64,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.slf4j.LoggerFactory;
 import reactor.util.annotation.Nullable;
 
 /**
@@ -124,7 +127,9 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
     STANDARD_ATTRIBUTE_PREFIXES = Collections.unmodifiableSet(standardAttributesPrefix);
   }
 
+  @Nullable
   private final LocalStorageTelemetryPipelineListener localStorageTelemetryPipelineListener;
+
   private final TelemetryItemExporter telemetryItemExporter;
   private final String instrumentationKey;
 
@@ -138,11 +143,23 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
    */
   AzureMonitorTraceExporter(HttpPipeline httpPipeline, URL endpoint, String instrumentationKey) {
     TelemetryPipeline pipeline = new TelemetryPipeline(httpPipeline, endpoint);
-    localStorageTelemetryPipelineListener =
-        new LocalStorageTelemetryPipelineListener(
-            new File("."), pipeline, LocalStorageStats.noop());
-    telemetryItemExporter =
-        new TelemetryItemExporter(pipeline, localStorageTelemetryPipelineListener);
+
+    File tempDir =
+        TempDirs.getApplicationInsightsTempDir(
+            LoggerFactory.getLogger(AzureMonitorTraceExporter.class),
+            "Telemetry will not be stored to disk and retried later"
+                + " on sporadic network failures");
+
+    if (tempDir != null) {
+      localStorageTelemetryPipelineListener =
+          new LocalStorageTelemetryPipelineListener(
+              TempDirs.getSubDir(tempDir, "telemetry"), pipeline, LocalStorageStats.noop());
+      telemetryItemExporter =
+          new TelemetryItemExporter(pipeline, localStorageTelemetryPipelineListener);
+    } else {
+      localStorageTelemetryPipelineListener = null;
+      telemetryItemExporter = new TelemetryItemExporter(pipeline, TelemetryPipelineListener.noop());
+    }
     this.instrumentationKey = instrumentationKey;
   }
 
@@ -172,7 +189,9 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
   /** {@inheritDoc} */
   @Override
   public CompletableResultCode shutdown() {
-    localStorageTelemetryPipelineListener.shutdown();
+    if (localStorageTelemetryPipelineListener != null) {
+      localStorageTelemetryPipelineListener.shutdown();
+    }
     return CompletableResultCode.ofSuccess();
   }
 

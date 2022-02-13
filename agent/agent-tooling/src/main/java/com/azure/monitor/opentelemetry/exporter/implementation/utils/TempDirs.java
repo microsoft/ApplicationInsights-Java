@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.common;
+package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
 import com.azure.core.util.CoreUtils;
 import java.io.File;
@@ -29,21 +29,13 @@ import java.util.List;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 
-/** Helper methods for dealing with files and folders. */
 public class TempDirs {
 
   private static final List<String> CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES =
       Collections.unmodifiableList(Arrays.asList("USER", "LOGNAME", "USERNAME"));
 
-  /**
-   * Windows: C:\Users\{USER}\AppData\Local\Temp\applicationinsights
-   *
-   * <p>Linux: /tmp/{USER}/applicationinsights
-   *
-   * <p>We will store all persisted files in this folder for all apps.
-   */
   @Nullable
-  public static File getTempDir(Logger logger, String message) {
+  public static File getApplicationInsightsTempDir(Logger logger, String message) {
     File tempDir = new File(System.getProperty("java.io.tmpdir"));
     tempDir = maybeAddUserSubDir(tempDir);
     tempDir = new File(tempDir, "applicationinsights");
@@ -101,7 +93,6 @@ public class TempDirs {
    * @return a {@link File} representing a folder in which temporary files will be stored for the
    *     current user.
    */
-  // visible for testing
   private static File maybeAddUserSubDir(File dir) {
 
     // does it look shared?
