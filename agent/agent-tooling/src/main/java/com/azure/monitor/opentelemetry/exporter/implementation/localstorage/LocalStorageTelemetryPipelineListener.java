@@ -23,13 +23,15 @@ package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import static java.util.Arrays.asList;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineRequest;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineResponse;
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
-class LocalStorageTelemetryPipelineListener implements TelemetryPipelineListener {
+public class LocalStorageTelemetryPipelineListener implements TelemetryPipelineListener {
 
   static final Set<Integer> RETRYABLE_CODES =
       new HashSet<>(
@@ -43,9 +45,23 @@ class LocalStorageTelemetryPipelineListener implements TelemetryPipelineListener
               ));
 
   private final LocalFileWriter localFileWriter;
+  private final LocalFileSender localFileSender;
+  private final LocalFilePurger localFilePurger;
 
-  LocalStorageTelemetryPipelineListener(LocalFileWriter localFileWriter) {
-    this.localFileWriter = localFileWriter;
+  public LocalStorageTelemetryPipelineListener(
+      File telemetryFolder, TelemetryPipeline pipeline, LocalStorageStats stats) {
+
+    LocalFileCache localFileCache = new LocalFileCache(telemetryFolder);
+    LocalFileLoader loader = new LocalFileLoader(localFileCache, telemetryFolder, stats);
+    localFileWriter = new LocalFileWriter(localFileCache, telemetryFolder, stats);
+
+    localFileSender = new LocalFileSender(loader, pipeline);
+    localFilePurger = new LocalFilePurger(telemetryFolder);
+  }
+
+  public void shutdown() {
+    localFileSender.shutdown();
+    localFilePurger.shutdown();
   }
 
   @Override

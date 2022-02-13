@@ -40,26 +40,28 @@ class LocalFileSender implements Runnable {
 
   // send persisted telemetries from local disk every 30 seconds.
   private static final long INTERVAL_SECONDS = 30;
-  private static final ScheduledExecutorService scheduledExecutor =
-      Executors.newSingleThreadScheduledExecutor(
-          ThreadPoolUtils.createDaemonThreadFactory(LocalFileLoader.class));
 
   private final LocalFileLoader localFileLoader;
   private final TelemetryPipeline telemetryPipeline;
+
+  private final ScheduledExecutorService scheduledExecutor =
+      Executors.newSingleThreadScheduledExecutor(
+          ThreadPoolUtils.createDaemonThreadFactory(LocalFileLoader.class));
 
   private final TelemetryPipelineListener diagnosticListener =
       new DiagnosticTelemetryPipelineListener(
           "Sending telemetry to the ingestion service (retry from disk)");
 
-  static void start(LocalFileLoader localFileLoader, TelemetryPipeline telemetryPipeline) {
-    LocalFileSender localFileSender = new LocalFileSender(localFileLoader, telemetryPipeline);
-    scheduledExecutor.scheduleWithFixedDelay(
-        localFileSender, INTERVAL_SECONDS, INTERVAL_SECONDS, TimeUnit.SECONDS);
-  }
-
-  private LocalFileSender(LocalFileLoader localFileLoader, TelemetryPipeline telemetryPipeline) {
+  LocalFileSender(LocalFileLoader localFileLoader, TelemetryPipeline telemetryPipeline) {
     this.localFileLoader = localFileLoader;
     this.telemetryPipeline = telemetryPipeline;
+
+    scheduledExecutor.scheduleWithFixedDelay(
+        this, INTERVAL_SECONDS, INTERVAL_SECONDS, TimeUnit.SECONDS);
+  }
+
+  void shutdown() {
+    scheduledExecutor.shutdown();
   }
 
   @Override

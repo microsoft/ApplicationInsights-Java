@@ -29,7 +29,7 @@ import com.azure.core.http.HttpPipelineBuilder;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.util.FluxUtil;
-import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageSystem;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.MockHttpResponse;
 import com.microsoft.applicationinsights.agent.internal.common.TestUtils;
@@ -67,12 +67,12 @@ public class TelemetryItemExporterTest {
 
   private TelemetryItemExporter getExporter() throws MalformedURLException {
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(recordingHttpClient);
-    LocalStorageSystem localStorageSystem = new LocalStorageSystem(tempFolder, null);
-
     TelemetryPipeline telemetryPipeline =
         new TelemetryPipeline(pipelineBuilder.build(), new URL(END_POINT_URL));
+
     return new TelemetryItemExporter(
-        telemetryPipeline, localStorageSystem.createTelemetryPipelineListener());
+        telemetryPipeline,
+        new LocalStorageTelemetryPipelineListener(tempFolder, telemetryPipeline, null));
   }
 
   @Nullable

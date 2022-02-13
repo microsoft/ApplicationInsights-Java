@@ -41,29 +41,28 @@ class LocalFilePurger implements Runnable {
 
   private static final Logger logger = LoggerFactory.getLogger(LocalFilePurger.class);
 
-  private static final ScheduledExecutorService scheduledExecutor =
+  private final File folder;
+  private final long expiredIntervalSeconds;
+
+  private final ScheduledExecutorService scheduledExecutor =
       Executors.newSingleThreadScheduledExecutor(
           ThreadPoolUtils.createDaemonThreadFactory(LocalFilePurger.class));
 
-  private final long expiredInterval;
-  private final File folder;
-
-  static void startPurging(File folder) {
-    startPurging(TimeUnit.DAYS.toSeconds(1), TimeUnit.DAYS.toSeconds(2), folder);
+  LocalFilePurger(File folder) {
+    this(folder, TimeUnit.DAYS.toSeconds(2), TimeUnit.DAYS.toSeconds(1));
   }
 
   // visible for testing
-  static void startPurging(long purgeIntervalSeconds, long expiredIntervalSeconds, File folder) {
+  LocalFilePurger(File folder, long expiredIntervalSeconds, long purgeIntervalSeconds) {
+    this.folder = folder;
+    this.expiredIntervalSeconds = expiredIntervalSeconds;
+
     scheduledExecutor.scheduleWithFixedDelay(
-        new LocalFilePurger(expiredIntervalSeconds, folder),
-        purgeIntervalSeconds < 60 ? purgeIntervalSeconds : 60,
-        purgeIntervalSeconds,
-        SECONDS);
+        this, Math.min(purgeIntervalSeconds, 60), purgeIntervalSeconds, SECONDS);
   }
 
-  LocalFilePurger(long expiredInterval, File folder) {
-    this.expiredInterval = expiredInterval;
-    this.folder = folder;
+  void shutdown() {
+    scheduledExecutor.shutdown();
   }
 
   @Override
@@ -97,7 +96,7 @@ class LocalFilePurger implements Runnable {
   private boolean expired(String fileName) {
     String time = fileName.substring(0, fileName.lastIndexOf('-'));
     long milliseconds = Long.parseLong(time);
-    Date twoDaysAgo = new Date(System.currentTimeMillis() - 1000 * expiredInterval);
+    Date twoDaysAgo = new Date(System.currentTimeMillis() - 1000 * expiredIntervalSeconds);
     Date fileDate = new Date(milliseconds);
     return fileDate.before(twoDaysAgo);
   }

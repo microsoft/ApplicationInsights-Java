@@ -35,7 +35,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestT
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
-import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageSystem;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
@@ -242,15 +242,6 @@ public class TelemetryClient {
 
   private BatchItemProcessor initBatchItemProcessor(
       int exportQueueCapacity, int maxExportBatchSize, String queueName) {
-    LocalStorageSystem localStorageSystem = null;
-    TelemetryPipelineListener telemetryPipelineListener = TelemetryPipelineListener.noop();
-    if (!readOnlyFileSystem) {
-      localStorageSystem =
-          new LocalStorageSystem(
-              TempDirs.getTempDir(TELEMETRY_FOLDER_NAME),
-              statsbeatModule.getNonessentialStatsbeat());
-      telemetryPipelineListener = localStorageSystem.createTelemetryPipelineListener();
-    }
 
     HttpPipeline httpPipeline =
         LazyHttpClient.newHttpPipeLine(
@@ -259,14 +250,19 @@ public class TelemetryClient {
     TelemetryPipeline telemetryPipeline =
         new TelemetryPipeline(httpPipeline, connectionString.getIngestionEndpoint());
 
-    TelemetryItemExporter exporter =
-        new TelemetryItemExporter(telemetryPipeline, telemetryPipelineListener);
-
-    if (!readOnlyFileSystem) {
-      localStorageSystem.startSendingFromDisk(telemetryPipeline);
+    TelemetryPipelineListener telemetryPipelineListener;
+    if (readOnlyFileSystem) {
+      telemetryPipelineListener = TelemetryPipelineListener.noop();
+    } else {
+      telemetryPipelineListener =
+          new LocalStorageTelemetryPipelineListener(
+              TempDirs.getTempDir(TELEMETRY_FOLDER_NAME),
+              telemetryPipeline,
+              statsbeatModule.getNonessentialStatsbeat());
     }
 
-    return BatchItemProcessor.builder(exporter)
+    return BatchItemProcessor.builder(
+            new TelemetryItemExporter(telemetryPipeline, telemetryPipelineListener))
         .setMaxQueueSize(exportQueueCapacity)
         .setMaxExportBatchSize(maxExportBatchSize)
         .build(queueName);
@@ -276,25 +272,23 @@ public class TelemetryClient {
     if (statsbeatBatchItemProcessor == null) {
       synchronized (batchItemProcessorInitLock) {
         if (statsbeatBatchItemProcessor == null) {
-          LocalStorageSystem localStorageSystem = null;
-          TelemetryPipelineListener telemetryPipelineListener = TelemetryPipelineListener.noop();
-          if (!readOnlyFileSystem) {
-            localStorageSystem =
-                new LocalStorageSystem(
-                    TempDirs.getTempDir(STATSBEAT_FOLDER_NAME), LocalStorageStats.noop());
-            telemetryPipelineListener = localStorageSystem.createTelemetryPipelineListener();
-          }
-
           HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(null);
           TelemetryPipeline telemetryPipeline =
               new TelemetryPipeline(httpPipeline, statsbeatConnectionString.getEndpoint());
 
+          TelemetryPipelineListener telemetryPipelineListener;
+          if (readOnlyFileSystem) {
+            telemetryPipelineListener = TelemetryPipelineListener.noop();
+          } else {
+            telemetryPipelineListener =
+                new LocalStorageTelemetryPipelineListener(
+                    TempDirs.getTempDir(STATSBEAT_FOLDER_NAME),
+                    telemetryPipeline,
+                    LocalStorageStats.noop());
+          }
+
           TelemetryItemExporter exporter =
               new TelemetryItemExporter(telemetryPipeline, telemetryPipelineListener);
-
-          if (!readOnlyFileSystem) {
-            localStorageSystem.startSendingFromDisk(telemetryPipeline);
-          }
 
           statsbeatBatchItemProcessor = BatchItemProcessor.builder(exporter).build("statsbeat");
         }

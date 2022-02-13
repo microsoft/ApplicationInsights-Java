@@ -33,11 +33,12 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.Exceptio
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDependencyTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
-import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.UrlParser;
@@ -52,6 +53,7 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -122,6 +124,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
     STANDARD_ATTRIBUTE_PREFIXES = Collections.unmodifiableSet(standardAttributesPrefix);
   }
 
+  private final LocalStorageTelemetryPipelineListener localStorageTelemetryPipelineListener;
   private final TelemetryItemExporter telemetryItemExporter;
   private final String instrumentationKey;
 
@@ -134,9 +137,12 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
    * @param instrumentationKey The instrumentation key of Application Insights resource.
    */
   AzureMonitorTraceExporter(HttpPipeline httpPipeline, URL endpoint, String instrumentationKey) {
-    this.telemetryItemExporter =
-        new TelemetryItemExporter(
-            new TelemetryPipeline(httpPipeline, endpoint), TelemetryPipelineListener.noop());
+    TelemetryPipeline pipeline = new TelemetryPipeline(httpPipeline, endpoint);
+    localStorageTelemetryPipelineListener =
+        new LocalStorageTelemetryPipelineListener(
+            new File("."), pipeline, LocalStorageStats.noop());
+    telemetryItemExporter =
+        new TelemetryItemExporter(pipeline, localStorageTelemetryPipelineListener);
     this.instrumentationKey = instrumentationKey;
   }
 
@@ -166,6 +172,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
   /** {@inheritDoc} */
   @Override
   public CompletableResultCode shutdown() {
+    localStorageTelemetryPipelineListener.shutdown();
     return CompletableResultCode.ofSuccess();
   }
 
