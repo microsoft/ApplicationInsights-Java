@@ -109,7 +109,7 @@ public enum QuickPulse {
                   machineName,
                   instanceName,
                   quickPulseId,
-                  endpointProvider.toString());
+                  endpointProvider.getLiveEndpointUrl().toString());
           QuickPulseDataFetcher quickPulseDataFetcher =
               new QuickPulseDataFetcher(
                   sendQueue,
@@ -118,7 +118,7 @@ public enum QuickPulse {
                   machineName,
                   instanceName,
                   quickPulseId,
-                  endpointProvider.toString());
+                  endpointProvider.getLiveEndpointUrl().toString());
 
           QuickPulseCoordinatorInitData coordinatorInitData =
               new QuickPulseCoordinatorInitDataBuilder()

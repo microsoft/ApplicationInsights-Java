@@ -21,10 +21,19 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AuthenticationType.CLIENTSECRET;
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AuthenticationType.SAMI;
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AuthenticationType.UAMI;
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AuthenticationType.VSCODE;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AadAuthentication;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AadAuthenticationBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AuthenticationType;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.EndpointProvider;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -40,7 +49,6 @@ import com.microsoft.applicationinsights.agent.internal.perfcounter.OshiPerforma
 import com.microsoft.applicationinsights.agent.internal.perfcounter.PerformanceCounterContainer;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.ProcessCpuPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.ProcessMemoryPerformanceCounter;
-import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
@@ -108,7 +116,39 @@ public class TelemetryClientInitializer {
   private static void setQuickPulse(Configuration configuration, TelemetryClient telemetryClient) {
     if (configuration.preview.liveMetrics.enabled) {
       logger.trace("Initializing QuickPulse...");
-      QuickPulse.INSTANCE.initialize(telemetryClient);
+      QuickPulse.INSTANCE.initialize(
+          aadAuthenticationMapper(telemetryClient.getAadAuthentication()),
+          telemetryClient.getRoleName(),
+          telemetryClient.getInstrumentationKey(),
+          telemetryClient.getRoleInstance(),
+          new EndpointProvider());
+    }
+  }
+
+  private static AadAuthentication aadAuthenticationMapper(
+      Configuration.AadAuthentication aadAuthentication) {
+    return new AadAuthenticationBuilder(aadAuthenticationTypeMapper(aadAuthentication.type))
+        .clientId(aadAuthentication.clientId)
+        .clientSecret(aadAuthentication.clientSecret)
+        .authorityHost(aadAuthentication.authorityHost)
+        .tenantId(aadAuthentication.tenantId)
+        .build();
+  }
+
+  private static AuthenticationType aadAuthenticationTypeMapper(
+      Configuration.AuthenticationType authenticationType) {
+    switch (authenticationType) {
+      case UAMI:
+        return UAMI;
+      case SAMI:
+        return SAMI;
+      case CLIENTSECRET:
+        return CLIENTSECRET;
+      case VSCODE:
+        return VSCODE;
+      default:
+        throw new IllegalStateException(
+            "AAD Authentication configuration of type: " + authenticationType + " is invalid");
     }
   }
 
