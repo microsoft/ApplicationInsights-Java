@@ -162,7 +162,6 @@ class LocalFileLoader {
     if (successOrNonRetryableError) {
       // delete a file on the queue permanently when http response returns success.
       if (!FileUtil.deleteFileWithRetries(file)) {
-        // TODO (heya) track file deletion failure via Statsbeat
         updateOperationLogger.recordFailure("Fail to delete " + file.getName());
       } else {
         updateOperationLogger.recordSuccess();

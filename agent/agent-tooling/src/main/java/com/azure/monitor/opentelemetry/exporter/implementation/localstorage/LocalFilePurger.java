@@ -96,8 +96,8 @@ class LocalFilePurger implements Runnable {
   private boolean expired(String fileName) {
     String time = fileName.substring(0, fileName.lastIndexOf('-'));
     long milliseconds = Long.parseLong(time);
-    Date twoDaysAgo = new Date(System.currentTimeMillis() - 1000 * expiredIntervalSeconds);
+    Date expirationDate = new Date(System.currentTimeMillis() - 1000 * expiredIntervalSeconds);
     Date fileDate = new Date(milliseconds);
-    return fileDate.before(twoDaysAgo);
+    return fileDate.before(expirationDate);
   }
 }
