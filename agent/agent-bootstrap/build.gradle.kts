@@ -3,7 +3,7 @@ plugins {
   id("ai.sdk-version-file")
 }
 
-val otelInstrumentationAlphaVersion = "1.10.0+ai.patches-alpha"
+val otelInstrumentationAlphaVersion = "1.11.0+ai.patches-alpha"
 
 dependencies {
   implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap") {
@@ -11,6 +11,7 @@ dependencies {
   }
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-appender-api-internal")
   implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-instrumentation-api")
   implementation("ch.qos.logback:logback-classic")
   implementation("ch.qos.logback.contrib:logback-json-classic")
