@@ -25,7 +25,6 @@ import com.azure.core.http.HttpRequest;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model.QuickPulseEnvelope;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model.QuickPulseMetrics;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.util.CustomCharacterEscapes;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.EndpointProvider;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,6 +42,8 @@ class QuickPulseDataFetcher {
 
   private static final String QP_BASE_URI =
       "https://rt.services.visualstudio.com/QuickPulseService.svc";
+
+  private static final String LIVE_URL_PATH = "QuickPulseService.svc";
   private static final ObjectMapper mapper;
 
   static {
@@ -59,7 +60,7 @@ class QuickPulseDataFetcher {
   private final String instanceName;
   private final String machineName;
   private final String quickPulseId;
-  private final EndpointProvider endpointProvider;
+  private final String endPointUrl;
 
   public QuickPulseDataFetcher(
       ArrayBlockingQueue<HttpRequest> sendQueue,
@@ -68,14 +69,14 @@ class QuickPulseDataFetcher {
       String machineName,
       String instanceName,
       String quickPulseId,
-      EndpointProvider endpointProvider) {
+      String endPointUrl) {
     this.sendQueue = sendQueue;
     this.roleName = roleName;
     this.instrumentationKey = instrumentationKey;
     this.instanceName = instanceName;
     this.machineName = machineName;
     this.quickPulseId = quickPulseId;
-    this.endpointProvider = endpointProvider;
+    this.endPointUrl = endPointUrl;
     sdkVersion = getCurrentSdkVersion();
     if (logger.isTraceEnabled()) {
       logger.trace(
@@ -127,9 +128,7 @@ class QuickPulseDataFetcher {
 
   // visible for testing
   String getQuickPulseEndpoint() {
-    return endpointProvider == null
-        ? QP_BASE_URI
-        : endpointProvider.getLiveEndpointUrl().toString();
+    return endPointUrl == null ? QP_BASE_URI : endPointUrl + LIVE_URL_PATH;
   }
 
   private String getInstrumentationKey() {

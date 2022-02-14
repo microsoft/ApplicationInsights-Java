@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Set;
 import reactor.util.annotation.Nullable;
 
-public class TelemetryMappingHelper {
+public final class TelemetryMappingHelper {
 
   private static final Set<String> SQL_DB_SYSTEMS;
 
@@ -771,4 +771,6 @@ public class TelemetryMappingHelper {
         return 0;
     }
   }
+
+  private TelemetryMappingHelper() {}
 }

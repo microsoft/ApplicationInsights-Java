@@ -27,32 +27,30 @@ import com.azure.core.http.HttpResponse;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model.QuickPulseEnvelope;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.util.CustomCharacterEscapes;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.EndpointProvider;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.LazyHttpClient;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import java.util.Date;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class QuickPulsePingSender {
 
   private static final Logger logger = LoggerFactory.getLogger(QuickPulsePingSender.class);
+  private static final String QP_BASE_URI =
+      "https://rt.services.visualstudio.com/QuickPulseService.svc";
+
+  private static final String LIVE_URL_PATH = "QuickPulseService.svc";
 
   private static final ObjectMapper mapper;
 
   // TODO Kishna populate this
-  private static final String quickPulseVersion = "unknown";
+  private static final String quickPulseVersion = "(unknown)";
 
   private static final OperationLogger operationLogger =
       new OperationLogger(QuickPulsePingSender.class, "Pinging live metrics endpoint");
-
-  // TODO (kryalama) do we still need this AtomicBoolean, or can we use throttling built in to the
-  //  operationLogger?
-  private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
   static {
     mapper = new ObjectMapper();
@@ -68,7 +66,7 @@ class QuickPulsePingSender {
   private final String quickPulseId;
   private final String roleName;
   private final String instrumentationKey;
-  private final EndpointProvider endpointProvider;
+  private final String endPointUrl;
   private long lastValidTransmission = 0;
 
   public QuickPulsePingSender(
@@ -78,14 +76,14 @@ class QuickPulsePingSender {
       String machineName,
       String instanceName,
       String quickPulseId,
-      EndpointProvider endpointProvider) {
+      String endPointUrl) {
     this.httpPipeline = httpPipeline;
     this.instanceName = instanceName;
     this.machineName = machineName;
     this.quickPulseId = quickPulseId;
     this.roleName = roleName;
     this.instrumentationKey = instrumentationKey;
-    this.endpointProvider = endpointProvider;
+    this.endPointUrl = endPointUrl;
     if (logger.isTraceEnabled()) {
       logger.trace(
           "{} using endpoint {}",
@@ -160,7 +158,7 @@ class QuickPulsePingSender {
 
   // visible for testing
   String getQuickPulseEndpoint() {
-    return endpointProvider.getLiveEndpointUrl().toString();
+    return endPointUrl == null ? QP_BASE_URI : endPointUrl + LIVE_URL_PATH;
   }
 
   private String buildPingEntity(long timeInMillis) throws JsonProcessingException {
@@ -169,7 +167,7 @@ class QuickPulsePingSender {
       pingEnvelope.setInstance(instanceName);
       pingEnvelope.setInvariantVersion(QuickPulse.QP_INVARIANT_VERSION);
       pingEnvelope.setMachineName(machineName);
-      pingEnvelope.setRoleName("empty role name");
+      pingEnvelope.setRoleName(roleName);
       pingEnvelope.setStreamId(quickPulseId);
       pingEnvelope.setVersion(quickPulseVersion);
     }

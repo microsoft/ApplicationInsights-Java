@@ -18,6 +18,7 @@ import java.util.List;
 public class LiveMetricsSpanProcessor implements SpanProcessor {
 
   private static final ClientLogger LOGGER = new ClientLogger(AzureMonitorTraceExporter.class);
+  private String instrumentationKey;
 
   private LiveMetricsSpanProcessor() {}
 
@@ -26,6 +27,7 @@ public class LiveMetricsSpanProcessor implements SpanProcessor {
       String roleName,
       String instrumentationKey,
       String roleInstance) {
+    this.instrumentationKey = instrumentationKey;
     QuickPulse.INSTANCE.initialize(
         aadAuthentication, roleName, instrumentationKey, roleInstance, new EndpointProvider());
   }
@@ -35,7 +37,6 @@ public class LiveMetricsSpanProcessor implements SpanProcessor {
     SpanData spanData = readWriteSpan.toSpanData();
     SpanKind kind = spanData.getKind();
     String instrumentationName = spanData.getInstrumentationLibraryInfo().getName();
-    String instrumentationKey = "Ikey";
     List<TelemetryItem> telemetryItems = new ArrayList<>();
     if (kind == SpanKind.INTERNAL) {
       if (instrumentationName.startsWith("io.opentelemetry.spring-scheduling-")

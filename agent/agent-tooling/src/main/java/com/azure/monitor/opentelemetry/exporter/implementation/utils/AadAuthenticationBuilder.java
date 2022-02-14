@@ -57,7 +57,7 @@ public class AadAuthenticationBuilder {
     return aadAuthentication;
   }
 
-  private void validate(AadAuthentication aadAuthentication) throws IllegalStateException {
+  private static void validate(AadAuthentication aadAuthentication) {
     if (aadAuthentication.getType() == null) {
       throw new IllegalStateException(
           "AAD Authentication configuration is missing authentication \"type\".");

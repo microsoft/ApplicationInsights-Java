@@ -25,10 +25,10 @@ import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.AadAuthentication;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.EndpointProvider;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.HostName;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.LazyHttpClient;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
-import com.microsoft.applicationinsights.agent.internal.common.HostName;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -109,7 +109,7 @@ public enum QuickPulse {
                   machineName,
                   instanceName,
                   quickPulseId,
-                  endpointProvider);
+                  endpointProvider.toString());
           QuickPulseDataFetcher quickPulseDataFetcher =
               new QuickPulseDataFetcher(
                   sendQueue,
@@ -118,7 +118,7 @@ public enum QuickPulse {
                   machineName,
                   instanceName,
                   quickPulseId,
-                  endpointProvider);
+                  endpointProvider.toString());
 
           QuickPulseCoordinatorInitData coordinatorInitData =
               new QuickPulseCoordinatorInitDataBuilder()
