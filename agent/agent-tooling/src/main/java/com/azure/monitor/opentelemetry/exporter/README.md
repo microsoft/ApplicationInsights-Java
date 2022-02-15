@@ -3,7 +3,7 @@
 This client library provides support for exporting OpenTelemetry data to Azure Monitor. This package assumes your
  application is already instrumented with the [OpenTelemetry SDK][opentelemetry_sdk] following the [OpenTelemetry
  Specification][opentelemetry_specification].
-  
+
 [Source code][source_code] | [Package (Maven)][package_mvn] | [API reference documentation][api_reference_doc] | [Product Documentation][product_documentation] | [Samples][sample_readme]
 
 ## Getting started
@@ -33,7 +33,7 @@ For more information, please read [introduction to Application Insights][applica
 #### Get the instrumentation key from the portal
 
 In order to export telemetry data to Azure Monitor, you will need the instrumentation key to your [Application
- Insights resource][application_insights_resource]. To get your instrumentation key, go to [Azure Portal][azure_portal], 
+ Insights resource][application_insights_resource]. To get your instrumentation key, go to [Azure Portal][azure_portal],
 search for your resource. On the overview page of your resource, you will find the instrumentation key in the top
 right corner.
 
@@ -172,7 +172,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct][coc]. For m
 [application_insights_resource]: https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource
 [application_insights_intro]: https://docs.microsoft.com/azure/azure-monitor/app/app-insights-overview
 [azure_portal]: https://ms.portal.azure.com/#blade/HubsExtension/BrowseResource/resourceType/microsoft.insights%2Fcomponents
-[opentelemetry_io]: https://opentelemetry.io/ 
+[opentelemetry_io]: https://opentelemetry.io/
 [span_data]: https://opentelemetry.lightstep.com/spans
 [sample_readme]: https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/monitor
 [opentelemetry_spec]: https://opentelemetry.io/
