@@ -73,19 +73,19 @@ public class AiOperationNameSpanProcessorTest {
   @SuppressWarnings("MustBeClosedChecker")
   public void operationNameFromParentTest() throws InterruptedException {
     CountDownLatch exporterCountDown = new CountDownLatch(1);
-    final Tracer TRACER =
+    final Tracer tracer =
         configureAzureMonitorExporter(
             new ValidationPolicy(exporterCountDown, Arrays.asList("child-span", "myop")));
 
     Span parentSpan =
-        TRACER
+        tracer
             .spanBuilder("parent-span")
             .setAttribute(AiOperationNameSpanProcessor.AI_OPERATION_NAME_KEY, "myop")
             .startSpan();
     parentSpan.updateName("parent-span-changed");
     parentSpan.setAttribute(SemanticAttributes.HTTP_METHOD, "POST");
     final Scope parentScope = parentSpan.makeCurrent();
-    Span span = TRACER.spanBuilder("child-span").startSpan();
+    Span span = tracer.spanBuilder("child-span").startSpan();
     final Scope scope = span.makeCurrent();
     try {
       // Thread bound (sync) calls will automatically pick up the parent span and you don't need to
@@ -104,15 +104,15 @@ public class AiOperationNameSpanProcessorTest {
   @SuppressWarnings("MustBeClosedChecker")
   public void operationNameEmptyFromParentTest() throws InterruptedException {
     CountDownLatch exporterCountDown = new CountDownLatch(1);
-    final Tracer TRACER =
+    final Tracer tracer =
         configureAzureMonitorExporter(
             new ValidationPolicy(
                 exporterCountDown, Arrays.asList("child-span", "POST parent-span-changed")));
-    Span parentSpan = TRACER.spanBuilder("parent-span").startSpan();
+    Span parentSpan = tracer.spanBuilder("parent-span").startSpan();
     parentSpan.updateName("parent-span-changed");
     parentSpan.setAttribute(SemanticAttributes.HTTP_METHOD, "POST");
     final Scope parentScope = parentSpan.makeCurrent();
-    Span span = TRACER.spanBuilder("child-span").startSpan();
+    Span span = tracer.spanBuilder("child-span").startSpan();
     final Scope scope = span.makeCurrent();
     try {
       // Thread bound (sync) calls will automatically pick up the parent span and you don't need to
@@ -131,14 +131,14 @@ public class AiOperationNameSpanProcessorTest {
   @SuppressWarnings("MustBeClosedChecker")
   public void operationNameAsSpanNameTest() throws InterruptedException {
     CountDownLatch exporterCountDown = new CountDownLatch(1);
-    final Tracer TRACER =
+    final Tracer tracer =
         configureAzureMonitorExporter(
             new ValidationPolicy(
                 exporterCountDown, Arrays.asList("child-span", "parent-span-changed")));
-    Span parentSpan = TRACER.spanBuilder("parent-span").startSpan();
+    Span parentSpan = tracer.spanBuilder("parent-span").startSpan();
     parentSpan.updateName("parent-span-changed");
     final Scope parentScope = parentSpan.makeCurrent();
-    Span span = TRACER.spanBuilder("child-span").startSpan();
+    Span span = tracer.spanBuilder("child-span").startSpan();
     final Scope scope = span.makeCurrent();
     try {
       // Thread bound (sync) calls will automatically pick up the parent span and you don't need to
