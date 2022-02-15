@@ -36,7 +36,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDu
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.UrlParser;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.utils.Trie;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import io.opentelemetry.api.common.AttributeKey;
@@ -165,7 +164,7 @@ public class Exporter implements SpanExporter {
         .getInstrumentationStatsbeat()
         .addInstrumentation(instrumentationName);
     if (kind == SpanKind.INTERNAL) {
-        exportRemoteDependency(span, true);
+      exportRemoteDependency(span, true);
     } else if (kind == SpanKind.CLIENT || kind == SpanKind.PRODUCER) {
       exportRemoteDependency(span, false);
     } else if (kind == SpanKind.CONSUMER

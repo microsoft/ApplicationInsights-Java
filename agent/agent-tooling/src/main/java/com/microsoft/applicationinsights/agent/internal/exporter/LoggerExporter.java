@@ -39,21 +39,23 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.Collection;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LoggerExporter implements LogExporter {
 
-  private static final AttributeKey<String> AI_OPERATION_NAME_KEY = AttributeKey.stringKey("applicationinsights.internal.operation_name");
+  private static final AttributeKey<String> AI_OPERATION_NAME_KEY =
+      AttributeKey.stringKey("applicationinsights.internal.operation_name");
   private static final AttributeKey<String> AI_LOG_LEVEL_KEY =
       AttributeKey.stringKey("applicationinsights.internal.log_level");
   private static final AttributeKey<String> AI_LOGGER_NAME_KEY =
       AttributeKey.stringKey("applicationinsights.internal.logger_name");
   private static final Logger logger = LoggerFactory.getLogger(LoggerExporter.class);
-  private static final OperationLogger exportingLogLogger = new OperationLogger(Exporter.class, "Exporting log");
+  private static final OperationLogger exportingLogLogger =
+      new OperationLogger(Exporter.class, "Exporting log");
   private final TelemetryClient telemetryClient;
   private final AtomicBoolean stopped = new AtomicBoolean();
 
@@ -164,15 +166,17 @@ public class LoggerExporter implements LogExporter {
   }
 
   private static void setOperationTags(AbstractTelemetryBuilder telemetryBuilder, LogData log) {
-    telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_ID.toString(), log.getSpanContext().getTraceId());
+    telemetryBuilder.addTag(
+        ContextTagKeys.AI_OPERATION_ID.toString(), log.getSpanContext().getTraceId());
     setOperationParentId(telemetryBuilder, log.getSpanContext().getSpanId());
     setOperationName(telemetryBuilder, log.getAttributes());
   }
 
-  private static void setOperationParentId(AbstractTelemetryBuilder telemetryBuilder, String parentSpanId) {
-      if (SpanId.isValid(parentSpanId)) {
-        telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), parentSpanId);
-      }
+  private static void setOperationParentId(
+      AbstractTelemetryBuilder telemetryBuilder, String parentSpanId) {
+    if (SpanId.isValid(parentSpanId)) {
+      telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), parentSpanId);
+    }
   }
 
   private static void setOperationName(
@@ -184,13 +188,18 @@ public class LoggerExporter implements LogExporter {
   }
 
   private static void setSampleRate(AbstractTelemetryBuilder telemetryBuilder, LogData log) {
-    float samplingPercentage = TelemetryUtil.getSamplingPercentage(log.getSpanContext().getTraceState(), 10, true);
+    float samplingPercentage =
+        TelemetryUtil.getSamplingPercentage(log.getSpanContext().getTraceState(), 10, true);
     if (samplingPercentage != 100) {
       telemetryBuilder.setSampleRate(samplingPercentage);
     }
   }
 
-  private static void setLoggerProperties(AbstractTelemetryBuilder telemetryBuilder, String level, String loggerName, String threadName) {
+  private static void setLoggerProperties(
+      AbstractTelemetryBuilder telemetryBuilder,
+      String level,
+      String loggerName,
+      String threadName) {
     if (level != null) {
       // TODO are these needed? level is already reported as severityLevel, sourceType maybe needed
       // for exception telemetry only?

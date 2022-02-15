@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.microsoft.applicationinsights.agent.internal.exporter.utils.Trie;
@@ -28,12 +30,9 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
-
-import java.util.List;
-
-import static io.opentelemetry.api.common.AttributeKey.longKey;
 
 // common static methods shared among exporters
 final class ExporterUtil {
@@ -45,8 +44,7 @@ final class ExporterUtil {
 
   private static final Trie<Boolean> STANDARD_ATTRIBUTE_PREFIX_TRIE;
 
-  static final AttributeKey<String> AZURE_NAMESPACE =
-      AttributeKey.stringKey("az.namespace");
+  static final AttributeKey<String> AZURE_NAMESPACE = AttributeKey.stringKey("az.namespace");
   static final AttributeKey<String> AZURE_SDK_MESSAGE_BUS_DESTINATION =
       AttributeKey.stringKey("message_bus.destination");
   static final AttributeKey<Long> AZURE_SDK_ENQUEUED_TIME =
