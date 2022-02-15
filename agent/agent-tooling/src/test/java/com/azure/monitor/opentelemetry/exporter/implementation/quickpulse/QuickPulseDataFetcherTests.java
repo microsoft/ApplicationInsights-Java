@@ -53,13 +53,7 @@ class QuickPulseDataFetcherTests {
     ConnectionString connectionString = ConnectionString.parse("InstrumentationKey=testing-123");
     QuickPulseDataFetcher quickPulseDataFetcher =
         new QuickPulseDataFetcher(
-            null,
-            null,
-            connectionString.getInstrumentationKey(),
-            null,
-            null,
-            null,
-            connectionString.getLiveEndpoint().toString());
+            null, null, connectionString.getInstrumentationKey(), null, null, null, null);
     String quickPulseEndpoint = quickPulseDataFetcher.getQuickPulseEndpoint();
     String endpointUrl = quickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);
     URI uri = new URI(endpointUrl);
@@ -101,7 +95,7 @@ class QuickPulseDataFetcherTests {
             "machine1",
             "instance1",
             "qpid123",
-            connectionString.getLiveEndpoint().toString());
+            null);
     QuickPulseHeaderInfo quickPulseHeaderInfo = quickPulsePingSender.ping(null);
     assertThat(QuickPulseStatus.QP_IS_ON).isEqualTo(quickPulseHeaderInfo.getQuickPulseStatus());
     assertThat(1000).isEqualTo(quickPulseHeaderInfo.getQpsServicePollingInterval());

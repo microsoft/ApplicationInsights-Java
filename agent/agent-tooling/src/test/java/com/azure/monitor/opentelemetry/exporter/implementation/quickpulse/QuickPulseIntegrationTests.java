@@ -47,7 +47,7 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
         "machine1",
         "instance1",
         "qpid123",
-        connectionString.getLiveEndpoint().toString());
+        null);
   }
 
   private QuickPulsePingSender getQuickPulsePingSenderWithAuthentication() {
@@ -58,7 +58,7 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
         "machine1",
         "instance1",
         "qpid123",
-        connectionString.getLiveEndpoint().toString());
+        null);
   }
 
   private QuickPulsePingSender getQuickPulsePingSenderWithValidator(HttpPipelinePolicy validator) {
@@ -69,7 +69,7 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
         "machine1",
         "instance1",
         "qpid123",
-        connectionString.getLiveEndpoint().toString());
+        null);
   }
 
   @Test
@@ -127,7 +127,7 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
             "machine1",
             "instance1",
             null,
-            connectionString.getLiveEndpoint().toString());
+            null);
     QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
     QuickPulseDataCollector.INSTANCE.enable(connectionString.getInstrumentationKey());
     final long duration = 112233L;

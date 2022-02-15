@@ -57,6 +57,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -125,8 +126,12 @@ public class TelemetryClientInitializer {
     }
   }
 
+  @Nullable
   private static AadAuthentication aadAuthenticationMapper(
       Configuration.AadAuthentication aadAuthentication) {
+    if (!aadAuthentication.enabled) {
+      return null;
+    }
     return new AadAuthenticationBuilder(aadAuthenticationTypeMapper(aadAuthentication.type))
         .clientId(aadAuthentication.clientId)
         .clientSecret(aadAuthentication.clientSecret)

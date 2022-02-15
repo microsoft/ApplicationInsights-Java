@@ -42,13 +42,7 @@ class QuickPulsePingSenderTests {
     ConnectionString connectionString = ConnectionString.parse("InstrumentationKey=testing-123");
     QuickPulsePingSender quickPulsePingSender =
         new QuickPulsePingSender(
-            null,
-            null,
-            connectionString.getInstrumentationKey(),
-            null,
-            null,
-            null,
-            connectionString.getLiveEndpoint().toString());
+            null, null, connectionString.getInstrumentationKey(), null, null, null, null);
     String quickPulseEndpoint = quickPulsePingSender.getQuickPulseEndpoint();
     String endpointUrl = quickPulsePingSender.getQuickPulsePingUri(quickPulseEndpoint);
     URI uri = new URI(endpointUrl);
@@ -65,13 +59,7 @@ class QuickPulsePingSenderTests {
         ConnectionString.parse("InstrumentationKey=A-test-instrumentation-key");
     QuickPulsePingSender quickPulsePingSender =
         new QuickPulsePingSender(
-            null,
-            null,
-            connectionString.getInstrumentationKey(),
-            null,
-            null,
-            null,
-            connectionString.getLiveEndpoint().toString());
+            null, null, connectionString.getInstrumentationKey(), null, null, null, null);
     String quickPulseEndpoint = quickPulsePingSender.getQuickPulseEndpoint();
     String endpointUrl = quickPulsePingSender.getQuickPulsePingUri(quickPulseEndpoint);
     URI uri = new URI(endpointUrl);
@@ -104,7 +92,7 @@ class QuickPulsePingSenderTests {
             "machine1",
             "instance1",
             "qpid123",
-            connectionString.getLiveEndpoint().toString());
+            null);
     QuickPulseHeaderInfo quickPulseHeaderInfo = quickPulsePingSender.ping(null);
     assertThat(QuickPulseStatus.QP_IS_ON).isEqualTo(quickPulseHeaderInfo.getQuickPulseStatus());
     assertThat(1000).isEqualTo(quickPulseHeaderInfo.getQpsServicePollingInterval());
