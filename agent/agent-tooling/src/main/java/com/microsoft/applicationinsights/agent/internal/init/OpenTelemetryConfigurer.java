@@ -21,6 +21,9 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
+import com.azure.monitor.opentelemetry.exporter.AiOperationNameSpanProcessor;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
@@ -35,6 +38,7 @@ import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampl
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -44,7 +48,6 @@ import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,6 +58,8 @@ import java.util.stream.Collectors;
 public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
 
   private static volatile BatchSpanProcessor batchSpanProcessor;
+  // TODO Krishna remove this Duplicate from SemanticAttributes
+  private static final AttributeKey<String> HTTP_URL = stringKey("http.url");
 
   public static CompletableResultCode flush() {
     if (batchSpanProcessor == null) {
@@ -185,7 +190,7 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
 
     private static SpanData addBackCompatHttpUrl(SpanData span) {
       Attributes attributes = span.getAttributes();
-      if (attributes.get(SemanticAttributes.HTTP_URL) != null) {
+      if (attributes.get(HTTP_URL) != null) {
         // already has http.url
         return span;
       }
@@ -194,7 +199,7 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
         return span;
       }
       AttributesBuilder builder = attributes.toBuilder();
-      builder.put(SemanticAttributes.HTTP_URL, httpUrl);
+      builder.put(HTTP_URL, httpUrl);
       return new MySpanData(span, builder.build());
     }
 

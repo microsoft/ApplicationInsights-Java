@@ -15,7 +15,7 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 // name from routing instrumentation
 //       if we (only) set operation name on requests here, it would be based on span name at
 // startSpan
-class AiOperationNameSpanProcessor implements SpanProcessor {
+public class AiOperationNameSpanProcessor implements SpanProcessor {
   public static final AttributeKey<String> AI_OPERATION_NAME_KEY =
       AttributeKey.stringKey("applicationinsights.internal.operation_name");
 
@@ -51,7 +51,7 @@ class AiOperationNameSpanProcessor implements SpanProcessor {
     return false;
   }
 
-  private static String getOperationName(ReadableSpan serverSpan) {
+  public static String getOperationName(ReadableSpan serverSpan) {
     String operationName = serverSpan.getAttribute(AI_OPERATION_NAME_KEY);
     if (operationName != null) {
       return operationName;

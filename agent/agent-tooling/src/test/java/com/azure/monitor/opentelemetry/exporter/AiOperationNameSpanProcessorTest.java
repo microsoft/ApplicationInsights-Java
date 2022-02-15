@@ -33,7 +33,7 @@ public class AiOperationNameSpanProcessorTest {
     AzureMonitorTraceExporter exporter =
         new AzureMonitorExporterBuilder()
             .connectionString(connectionString)
-            .addPolicy(validator)
+            .addHttpPipelinePolicy(validator)
             .buildTraceExporter();
 
     SdkTracerProvider tracerProvider =
