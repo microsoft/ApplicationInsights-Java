@@ -56,12 +56,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.text.StringSubstitutor;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TelemetryClient {
+
+  private static final Logger logger = LoggerFactory.getLogger(TelemetryClient.class);
 
   private static final String EVENT_TELEMETRY_NAME = "Event";
   private static final String EXCEPTION_TELEMETRY_NAME = "Exception";
@@ -155,27 +158,26 @@ public class TelemetryClient {
     MonitorDomain data = telemetry.getData().getBaseData();
     if (data instanceof MetricsData) {
       MetricsData metricsData = (MetricsData) data;
-      List<MetricDataPoint> filteredPoints =
-          metricsData.getMetrics().stream()
-              .filter(
-                  point -> {
-                    String metricName = point.getName();
-                    if (nonFilterableMetricNames.contains(metricName)) {
-                      return true;
-                    }
-                    for (MetricFilter metricFilter : metricFilters) {
-                      if (!metricFilter.matches(metricName)) {
-                        return false;
-                      }
-                    }
-                    return true;
-                  })
-              .collect(Collectors.toList());
-
-      if (filteredPoints.isEmpty()) {
+      if (metricsData.getMetrics().isEmpty()) {
+        // this is unexpected
+        logger.debug("MetricsData has no metric point");
         return;
       }
-      metricsData.setMetrics(filteredPoints);
+      MetricDataPoint point = metricsData.getMetrics().get(0);
+      String metricName = point.getName();
+      if (!nonFilterableMetricNames.contains(metricName)) {
+        for (MetricFilter metricFilter : metricFilters) {
+          if (!metricFilter.matches(metricName)) {
+            // user configuration filtered out this metric name
+            return;
+          }
+        }
+      }
+
+      if (!Double.isFinite(point.getValue())) {
+        // breeze doesn't like these values
+        return;
+      }
     }
 
     if (telemetry.getTime() == null) {
