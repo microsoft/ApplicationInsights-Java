@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
-import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -33,7 +32,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDe
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.UrlParser;
@@ -42,7 +40,6 @@ import com.microsoft.applicationinsights.agent.internal.exporter.utils.Trie;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -74,22 +71,19 @@ public class Exporter implements SpanExporter {
 
   private static final Set<String> SQL_DB_SYSTEMS;
 
-  private static final Trie<Boolean> STANDARD_ATTRIBUTE_PREFIX_TRIE;
-
   // TODO (trask) this can go away once new indexer is rolled out to gov clouds
   private static final AttributeKey<List<String>> AI_REQUEST_CONTEXT_KEY =
       AttributeKey.stringArrayKey("http.response.header.request_context");
 
   public static final AttributeKey<String> AI_OPERATION_NAME_KEY =
       AttributeKey.stringKey("applicationinsights.internal.operation_name");
-
-  private static final AttributeKey<Boolean> AI_LOG_KEY =
-      AttributeKey.booleanKey("applicationinsights.internal.log");
-
   public static final AttributeKey<String> AI_LEGACY_PARENT_ID_KEY =
       AttributeKey.stringKey("applicationinsights.internal.legacy_parent_id");
   public static final AttributeKey<String> AI_LEGACY_ROOT_ID_KEY =
       AttributeKey.stringKey("applicationinsights.internal.legacy_root_id");
+
+  private static final AttributeKey<String> AZURE_SDK_PEER_ADDRESS =
+      AttributeKey.stringKey("peer.address");
 
   // this is only used by the 2.x web interop bridge
   // for ThreadContext.getRequestTelemetryContext().getRequestTelemetry().setSource()
@@ -101,26 +95,6 @@ public class Exporter implements SpanExporter {
       AttributeKey.stringKey("applicationinsights.internal.operating_system");
   private static final AttributeKey<String> AI_DEVICE_OS_VERSION_KEY =
       AttributeKey.stringKey("applicationinsights.internal.operating_system_version");
-
-  private static final AttributeKey<String> AI_LOG_LEVEL_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.log_level");
-  private static final AttributeKey<String> AI_LOGGER_NAME_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.logger_name");
-  private static final AttributeKey<String> AI_LOG_ERROR_STACK_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.log_error_stack");
-
-  private static final AttributeKey<String> AZURE_NAMESPACE =
-      AttributeKey.stringKey("az.namespace");
-  private static final AttributeKey<String> AZURE_SDK_PEER_ADDRESS =
-      AttributeKey.stringKey("peer.address");
-  private static final AttributeKey<String> AZURE_SDK_MESSAGE_BUS_DESTINATION =
-      AttributeKey.stringKey("message_bus.destination");
-  private static final AttributeKey<Long> AZURE_SDK_ENQUEUED_TIME =
-      AttributeKey.longKey("x-opt-enqueued-time");
-
-  private static final AttributeKey<Long> KAFKA_RECORD_QUEUE_TIME_MS =
-      longKey("kafka.record.queue_time_ms");
-  private static final AttributeKey<Long> KAFKA_OFFSET = longKey("kafka.offset");
 
   private static final OperationLogger exportingSpanLogger =
       new OperationLogger(Exporter.class, "Exporting span");
@@ -140,22 +114,6 @@ public class Exporter implements SpanExporter {
     dbSystems.add(SemanticAttributes.DbSystemValues.H2);
 
     SQL_DB_SYSTEMS = Collections.unmodifiableSet(dbSystems);
-
-    // TODO need to keep this list in sync as new semantic conventions are defined
-    STANDARD_ATTRIBUTE_PREFIX_TRIE =
-        Trie.<Boolean>newBuilder()
-            .put("http.", true)
-            .put("db.", true)
-            .put("message.", true)
-            .put("messaging.", true)
-            .put("rpc.", true)
-            .put("enduser.", true)
-            .put("net.", true)
-            .put("peer.", true)
-            .put("exception.", true)
-            .put("thread.", true)
-            .put("faas.", true)
-            .build();
   }
 
   private final TelemetryClient telemetryClient;
@@ -207,17 +165,7 @@ public class Exporter implements SpanExporter {
         .getInstrumentationStatsbeat()
         .addInstrumentation(instrumentationName);
     if (kind == SpanKind.INTERNAL) {
-      Boolean isLog = span.getAttributes().get(AI_LOG_KEY);
-      if (isLog != null && isLog) {
-        exportLogSpan(span);
-      } else if (instrumentationName.startsWith("io.opentelemetry.spring-scheduling-")
-          && !span.getParentSpanContext().isValid()) {
-        // TODO (trask) AI mapping: need semantic convention for determining whether to map INTERNAL
-        // to request or dependency (or need clarification to use SERVER for this)
-        exportRequest(span);
-      } else {
         exportRemoteDependency(span, true);
-      }
     } else if (kind == SpanKind.CLIENT || kind == SpanKind.PRODUCER) {
       exportRemoteDependency(span, false);
     } else if (kind == SpanKind.CONSUMER
@@ -240,7 +188,7 @@ public class Exporter implements SpanExporter {
     setOperationTags(telemetryBuilder, span);
     setTime(telemetryBuilder, span.getStartEpochNanos());
     setSampleRate(telemetryBuilder, samplingPercentage);
-    setExtraAttributes(telemetryBuilder, span.getAttributes());
+    ExporterUtil.setExtraAttributes(telemetryBuilder, span.getAttributes(), logger);
     addLinks(telemetryBuilder, span.getLinks());
 
     // set dependency-specific properties
@@ -318,7 +266,7 @@ public class Exporter implements SpanExporter {
       applyDatabaseClientSpan(telemetryBuilder, dbSystem, attributes);
       return;
     }
-    String azureNamespace = attributes.get(AZURE_NAMESPACE);
+    String azureNamespace = attributes.get(ExporterUtil.AZURE_NAMESPACE);
     if ("Microsoft.EventHub".equals(azureNamespace)) {
       applyEventHubsSpan(telemetryBuilder, attributes);
       return;
@@ -348,65 +296,6 @@ public class Exporter implements SpanExporter {
     // so we mark these as InProc, even though they aren't INTERNAL spans,
     // in order to prevent App Map from considering them
     telemetryBuilder.setType("InProc");
-  }
-
-  private void exportLogSpan(SpanData span) {
-    String errorStack = span.getAttributes().get(AI_LOG_ERROR_STACK_KEY);
-    if (errorStack == null) {
-      trackMessage(span);
-    } else {
-      trackTraceAsException(span, errorStack);
-    }
-  }
-
-  private void trackMessage(SpanData span) {
-    MessageTelemetryBuilder telemetryBuilder = telemetryClient.newMessageTelemetryBuilder();
-
-    Attributes attributes = span.getAttributes();
-
-    // set standard properties
-    setTime(telemetryBuilder, span.getStartEpochNanos());
-    setOperationTags(telemetryBuilder, span);
-    setSampleRate(telemetryBuilder, span);
-    setExtraAttributes(telemetryBuilder, attributes);
-
-    // set message-specific properties
-    String level = attributes.get(AI_LOG_LEVEL_KEY);
-    String loggerName = attributes.get(AI_LOGGER_NAME_KEY);
-    String threadName = attributes.get(SemanticAttributes.THREAD_NAME);
-
-    telemetryBuilder.setSeverityLevel(toSeverityLevel(level));
-    telemetryBuilder.setMessage(span.getName());
-
-    setLoggerProperties(telemetryBuilder, level, loggerName, threadName);
-
-    // export
-    telemetryClient.trackAsync(telemetryBuilder.build());
-  }
-
-  private void trackTraceAsException(SpanData span, String errorStack) {
-    ExceptionTelemetryBuilder telemetryBuilder = telemetryClient.newExceptionTelemetryBuilder();
-
-    Attributes attributes = span.getAttributes();
-
-    // set standard properties
-    setOperationTags(telemetryBuilder, span);
-    setTime(telemetryBuilder, span.getStartEpochNanos());
-    setSampleRate(telemetryBuilder, span);
-    setExtraAttributes(telemetryBuilder, attributes);
-
-    // set exception-specific properties
-    String level = attributes.get(AI_LOG_LEVEL_KEY);
-    String loggerName = attributes.get(AI_LOGGER_NAME_KEY);
-    String threadName = attributes.get(SemanticAttributes.THREAD_NAME);
-
-    telemetryBuilder.setExceptions(Exceptions.minimalParse(errorStack));
-    telemetryBuilder.setSeverityLevel(toSeverityLevel(level));
-    telemetryBuilder.addProperty("Logger Message", span.getName());
-    setLoggerProperties(telemetryBuilder, level, loggerName, threadName);
-
-    // export
-    telemetryClient.trackAsync(telemetryBuilder.build());
   }
 
   private static void setOperationTags(AbstractTelemetryBuilder telemetryBuilder, SpanData span) {
@@ -665,7 +554,7 @@ public class Exporter implements SpanExporter {
 
   private static String getAzureSdkTargetSource(Attributes attributes) {
     String peerAddress = attributes.get(AZURE_SDK_PEER_ADDRESS);
-    String destination = attributes.get(AZURE_SDK_MESSAGE_BUS_DESTINATION);
+    String destination = attributes.get(ExporterUtil.AZURE_SDK_MESSAGE_BUS_DESTINATION);
     return peerAddress + "/" + destination;
   }
 
@@ -712,7 +601,7 @@ public class Exporter implements SpanExporter {
     telemetryBuilder.setId(span.getSpanId());
     setTime(telemetryBuilder, startEpochNanos);
     setSampleRate(telemetryBuilder, samplingPercentage);
-    setExtraAttributes(telemetryBuilder, attributes);
+    ExporterUtil.setExtraAttributes(telemetryBuilder, attributes, logger);
     addLinks(telemetryBuilder, span.getLinks());
 
     String operationName = getOperationName(span);
@@ -787,14 +676,14 @@ public class Exporter implements SpanExporter {
 
     // TODO(trask)? for batch consumer, enqueuedTime should be the average of this attribute
     //  across all links
-    Long enqueuedTime = attributes.get(AZURE_SDK_ENQUEUED_TIME);
+    Long enqueuedTime = attributes.get(ExporterUtil.AZURE_SDK_ENQUEUED_TIME);
     if (enqueuedTime != null) {
       long timeSinceEnqueuedMillis =
           Math.max(
               0L, NANOSECONDS.toMillis(span.getStartEpochNanos()) - SECONDS.toMillis(enqueuedTime));
       telemetryBuilder.addMeasurement("timeSinceEnqueued", (double) timeSinceEnqueuedMillis);
     }
-    Long timeSinceEnqueuedMillis = attributes.get(KAFKA_RECORD_QUEUE_TIME_MS);
+    Long timeSinceEnqueuedMillis = attributes.get(ExporterUtil.KAFKA_RECORD_QUEUE_TIME_MS);
     if (timeSinceEnqueuedMillis != null) {
       telemetryBuilder.addMeasurement("timeSinceEnqueued", (double) timeSinceEnqueuedMillis);
     }
@@ -877,7 +766,7 @@ public class Exporter implements SpanExporter {
   }
 
   private static boolean isAzureQueue(Attributes attributes) {
-    String azureNamespace = attributes.get(AZURE_NAMESPACE);
+    String azureNamespace = attributes.get(ExporterUtil.AZURE_NAMESPACE);
     return "Microsoft.EventHub".equals(azureNamespace)
         || "Microsoft.ServiceBus".equals(azureNamespace);
   }
@@ -940,7 +829,7 @@ public class Exporter implements SpanExporter {
         setOperationName(telemetryBuilder, span.getAttributes());
       }
       setTime(telemetryBuilder, event.getEpochNanos());
-      setExtraAttributes(telemetryBuilder, event.getAttributes());
+      ExporterUtil.setExtraAttributes(telemetryBuilder, event.getAttributes(), logger);
       setSampleRate(telemetryBuilder, samplingPercentage);
 
       // set message-specific properties
@@ -1010,126 +899,5 @@ public class Exporter implements SpanExporter {
     }
     sb.append("]");
     telemetryBuilder.addProperty("_MS.links", sb.toString());
-  }
-
-  private static void setExtraAttributes(
-      AbstractTelemetryBuilder telemetryBuilder, Attributes attributes) {
-    attributes.forEach(
-        (key, value) -> {
-          String stringKey = key.getKey();
-          if (stringKey.startsWith("applicationinsights.internal.")) {
-            return;
-          }
-          if (stringKey.equals(AZURE_NAMESPACE.getKey())
-              || stringKey.equals(AZURE_SDK_MESSAGE_BUS_DESTINATION.getKey())
-              || stringKey.equals(AZURE_SDK_ENQUEUED_TIME.getKey())) {
-            // these are from azure SDK (AZURE_SDK_PEER_ADDRESS gets filtered out automatically
-            // since it uses the otel "peer." prefix)
-            return;
-          }
-          if (stringKey.equals(KAFKA_RECORD_QUEUE_TIME_MS.getKey())
-              || stringKey.equals(KAFKA_OFFSET.getKey())) {
-            return;
-          }
-          if (stringKey.equals(AI_REQUEST_CONTEXT_KEY.getKey())) {
-            return;
-          }
-          // special case mappings
-          if (stringKey.equals(SemanticAttributes.ENDUSER_ID.getKey()) && value instanceof String) {
-            telemetryBuilder.addTag(ContextTagKeys.AI_USER_ID.toString(), (String) value);
-            return;
-          }
-          if (stringKey.equals(SemanticAttributes.HTTP_USER_AGENT.getKey())
-              && value instanceof String) {
-            telemetryBuilder.addTag("ai.user.userAgent", (String) value);
-            return;
-          }
-          if (stringKey.equals("ai.preview.instrumentation_key") && value instanceof String) {
-            telemetryBuilder.setInstrumentationKey((String) value);
-            return;
-          }
-          if (stringKey.equals("ai.preview.service_name") && value instanceof String) {
-            telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), (String) value);
-            return;
-          }
-          if (stringKey.equals("ai.preview.service_instance_id") && value instanceof String) {
-            telemetryBuilder.addTag(
-                ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), (String) value);
-            return;
-          }
-          if (stringKey.equals("ai.preview.service_version") && value instanceof String) {
-            telemetryBuilder.addTag(ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
-            return;
-          }
-          if (STANDARD_ATTRIBUTE_PREFIX_TRIE.getOrDefault(stringKey, false)
-              && !stringKey.startsWith("http.request.header.")
-              && !stringKey.startsWith("http.response.header.")) {
-            return;
-          }
-          String val = convertToString(value, key.getType());
-          if (value != null) {
-            telemetryBuilder.addProperty(key.getKey(), val);
-          }
-        });
-  }
-
-  @Nullable
-  private static String convertToString(Object value, AttributeType type) {
-    switch (type) {
-      case STRING:
-      case BOOLEAN:
-      case LONG:
-      case DOUBLE:
-        return String.valueOf(value);
-      case STRING_ARRAY:
-      case BOOLEAN_ARRAY:
-      case LONG_ARRAY:
-      case DOUBLE_ARRAY:
-        return join((List<?>) value);
-    }
-    logger.warn("unexpected attribute type: {}", type);
-    return null;
-  }
-
-  private static <T> String join(List<T> values) {
-    StringBuilder sb = new StringBuilder();
-    for (Object val : values) {
-      if (sb.length() > 0) {
-        sb.append(", ");
-      }
-      sb.append(val);
-    }
-    return sb.toString();
-  }
-
-  @Nullable
-  private static SeverityLevel toSeverityLevel(String level) {
-    if (level == null) {
-      return null;
-    }
-    switch (level) {
-      case "FATAL":
-        return SeverityLevel.CRITICAL;
-      case "ERROR":
-      case "SEVERE":
-        return SeverityLevel.ERROR;
-      case "WARN":
-      case "WARNING":
-        return SeverityLevel.WARNING;
-      case "INFO":
-        return SeverityLevel.INFORMATION;
-      case "DEBUG":
-      case "TRACE":
-      case "CONFIG":
-      case "FINE":
-      case "FINER":
-      case "FINEST":
-      case "ALL":
-        return SeverityLevel.VERBOSE;
-      default:
-        // TODO (trask) AI mapping: is this a good fallback?
-        logger.debug("Unexpected level {}, using VERBOSE level as default", level);
-        return SeverityLevel.VERBOSE;
-    }
   }
 }

@@ -23,35 +23,57 @@ package com.microsoft.applicationinsights.agent.internal.exporter;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
+import com.microsoft.applicationinsights.agent.internal.exporter.utils.Trie;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.slf4j.Logger;
 
 import java.util.List;
 
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 
-final class ExporterUtils {
+// common static methods shared among exporters
+final class ExporterUtil {
 
   // TODO (trask) this can go away once new indexer is rolled out to gov clouds
   private static final AttributeKey<List<String>> AI_REQUEST_CONTEXT_KEY =
       AttributeKey.stringArrayKey("http.response.header.request_context");
-  private static final AttributeKey<String> AZURE_NAMESPACE =
-      AttributeKey.stringKey("az.namespace");
-  private static final AttributeKey<String> AZURE_SDK_PEER_ADDRESS =
-      AttributeKey.stringKey("peer.address");
-  private static final AttributeKey<String> AZURE_SDK_MESSAGE_BUS_DESTINATION =
-      AttributeKey.stringKey("message_bus.destination");
-  private static final AttributeKey<Long> AZURE_SDK_ENQUEUED_TIME =
-      AttributeKey.longKey("x-opt-enqueued-time");
-
-  private static final AttributeKey<Long> KAFKA_RECORD_QUEUE_TIME_MS =
-      longKey("kafka.record.queue_time_ms");
   private static final AttributeKey<Long> KAFKA_OFFSET = longKey("kafka.offset");
 
+  private static final Trie<Boolean> STANDARD_ATTRIBUTE_PREFIX_TRIE;
+
+  static final AttributeKey<String> AZURE_NAMESPACE =
+      AttributeKey.stringKey("az.namespace");
+  static final AttributeKey<String> AZURE_SDK_MESSAGE_BUS_DESTINATION =
+      AttributeKey.stringKey("message_bus.destination");
+  static final AttributeKey<Long> AZURE_SDK_ENQUEUED_TIME =
+      AttributeKey.longKey("x-opt-enqueued-time");
+  static final AttributeKey<Long> KAFKA_RECORD_QUEUE_TIME_MS =
+      longKey("kafka.record.queue_time_ms");
+
+  static {
+    // TODO need to keep this list in sync as new semantic conventions are defined
+    STANDARD_ATTRIBUTE_PREFIX_TRIE =
+        Trie.<Boolean>newBuilder()
+            .put("http.", true)
+            .put("db.", true)
+            .put("message.", true)
+            .put("messaging.", true)
+            .put("rpc.", true)
+            .put("enduser.", true)
+            .put("net.", true)
+            .put("peer.", true)
+            .put("exception.", true)
+            .put("thread.", true)
+            .put("faas.", true)
+            .build();
+  }
 
   static void setExtraAttributes(
-      AbstractTelemetryBuilder telemetryBuilder, Attributes attributes) {
+      AbstractTelemetryBuilder telemetryBuilder, Attributes attributes, Logger logger) {
     attributes.forEach(
         (key, value) -> {
           String stringKey = key.getKey();
@@ -104,12 +126,41 @@ final class ExporterUtils {
               && !stringKey.startsWith("http.response.header.")) {
             return;
           }
-          String val = convertToString(value, key.getType());
+          String val = convertToString(value, key.getType(), logger);
           if (value != null) {
             telemetryBuilder.addProperty(key.getKey(), val);
           }
         });
   }
 
-  private ExporterUtils() {}
+  @Nullable
+  private static String convertToString(Object value, AttributeType type, Logger logger) {
+    switch (type) {
+      case STRING:
+      case BOOLEAN:
+      case LONG:
+      case DOUBLE:
+        return String.valueOf(value);
+      case STRING_ARRAY:
+      case BOOLEAN_ARRAY:
+      case LONG_ARRAY:
+      case DOUBLE_ARRAY:
+        return join((List<?>) value);
+    }
+    logger.warn("unexpected attribute type: {}", type);
+    return null;
+  }
+
+  private static <T> String join(List<T> values) {
+    StringBuilder sb = new StringBuilder();
+    for (Object val : values) {
+      if (sb.length() > 0) {
+        sb.append(", ");
+      }
+      sb.append(val);
+    }
+    return sb.toString();
+  }
+
+  private ExporterUtil() {}
 }
