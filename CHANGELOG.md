@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# Version 3.2.6 GA
+* Support Statsbeat in EU regions [#2082](https://github.com/microsoft/ApplicationInsights-Java/pull/2082).
+* Update Oshi default logging level [#2086](https://github.com/microsoft/ApplicationInsights-Java/pull/2086).
+* Add debug profiler for startup perf [#2085](https://github.com/microsoft/ApplicationInsights-Java/pull/2085).
+* Avoid local DNS resolution when using http proxy configuration [#2095](https://github.com/microsoft/ApplicationInsights-Java/pull/2095).
+
 # Version 3.2.5 GA
 
 * Log warning on 206 (partial success) response from Breeze [#2065](https://github.com/microsoft/ApplicationInsights-Java/pull/2065).

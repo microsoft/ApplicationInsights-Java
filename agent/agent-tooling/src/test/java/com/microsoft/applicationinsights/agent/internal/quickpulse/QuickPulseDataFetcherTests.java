@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.azure.core.http.HttpHeaders;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpPipelineBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.MockHttpResponse;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.net.URI;
@@ -49,7 +50,7 @@ class QuickPulseDataFetcherTests {
   @Test
   void endpointIsFormattedCorrectlyWhenUsingConfig() throws URISyntaxException {
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
-    telemetryClient.setConnectionString("InstrumentationKey=testing-123");
+    telemetryClient.setConnectionString(ConnectionString.parse("InstrumentationKey=testing-123"));
     QuickPulseDataFetcher quickPulseDataFetcher =
         new QuickPulseDataFetcher(null, telemetryClient, null, null, null);
     String quickPulseEndpoint = quickPulseDataFetcher.getQuickPulseEndpoint();
@@ -81,7 +82,7 @@ class QuickPulseDataFetcherTests {
     headers.put("x-ms-qps-subscribed", "true");
     HttpHeaders httpHeaders = new HttpHeaders(headers);
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
-    telemetryClient.setInstrumentationKey("fake-key");
+    telemetryClient.setConnectionString(ConnectionString.parse("InstrumentationKey=fake-key"));
     HttpPipeline httpPipeline =
         new HttpPipelineBuilder()
             .httpClient(request -> Mono.just(new MockHttpResponse(request, 200, httpHeaders)))

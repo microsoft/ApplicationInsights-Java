@@ -24,24 +24,23 @@ package com.azure.monitor.opentelemetry.exporter;
 import com.azure.core.credential.TokenCredential;
 import com.azure.core.http.HttpClient;
 import com.azure.core.http.HttpPipeline;
+import com.azure.core.http.HttpPipelineBuilder;
 import com.azure.core.http.policy.BearerTokenAuthenticationPolicy;
+import com.azure.core.http.policy.CookiePolicy;
 import com.azure.core.http.policy.HttpLogDetailLevel;
 import com.azure.core.http.policy.HttpLogOptions;
+import com.azure.core.http.policy.HttpLoggingPolicy;
 import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.core.http.policy.RetryPolicy;
+import com.azure.core.http.policy.UserAgentPolicy;
 import com.azure.core.util.ClientOptions;
 import com.azure.core.util.Configuration;
-import com.azure.core.util.logging.ClientLogger;
-import com.azure.core.util.serializer.JacksonAdapter;
-import com.azure.core.util.serializer.SerializerAdapter;
-import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImpl;
-import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImplBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.NdJsonSerializer;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.azure.core.util.CoreUtils;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -50,36 +49,35 @@ import java.util.Objects;
  * implements {@link SpanExporter} interface defined by OpenTelemetry API specification.
  */
 public final class AzureMonitorExporterBuilder {
+
   private static final String APPLICATIONINSIGHTS_CONNECTION_STRING =
       "APPLICATIONINSIGHTS_CONNECTION_STRING";
   private static final String APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE =
       "https://monitor.azure.com//.default";
-  private static final SerializerAdapter SERIALIZER_ADAPTER;
-  private final ClientLogger logger = new ClientLogger(AzureMonitorExporterBuilder.class);
-  private final ApplicationInsightsClientImplBuilder restServiceClientBuilder;
+
+  private static final Map<String, String> properties =
+      CoreUtils.getProperties("azure-monitor-opentelemetry-exporter.properties");
+
   private String instrumentationKey;
   private String connectionString;
+  private URL endpoint;
+  private TokenCredential credential;
 
   // suppress warnings is needed in ApplicationInsights-Java repo, can be removed when upstreaming
   @SuppressWarnings({"UnusedVariable", "FieldCanBeLocal"})
   private AzureMonitorExporterServiceVersion serviceVersion;
 
-  private TokenCredential credential;
+  private HttpPipeline httpPipeline;
+  private HttpClient httpClient;
+  private HttpLogOptions httpLogOptions;
+  private RetryPolicy retryPolicy;
+  private final List<HttpPipelinePolicy> httpPipelinePolicies = new ArrayList<>();
 
-  static {
-    // Customize serializer to use NDJSON
-    final SimpleModule ndjsonModule = new SimpleModule("Ndjson List Serializer");
-    JacksonAdapter jacksonAdapter = new JacksonAdapter();
-    ndjsonModule.addSerializer(new NdJsonSerializer());
-    jacksonAdapter.serializer().registerModule(ndjsonModule);
-
-    SERIALIZER_ADAPTER = jacksonAdapter;
-  }
+  private Configuration configuration;
+  private ClientOptions clientOptions;
 
   /** Creates an instance of {@link AzureMonitorExporterBuilder}. */
-  public AzureMonitorExporterBuilder() {
-    restServiceClientBuilder = new ApplicationInsightsClientImplBuilder();
-  }
+  public AzureMonitorExporterBuilder() {}
 
   /**
    * Sets the service endpoint for the Azure Monitor Exporter.
@@ -89,39 +87,33 @@ public final class AzureMonitorExporterBuilder {
    * @throws NullPointerException if {@code endpoint} is null.
    * @throws IllegalArgumentException if {@code endpoint} cannot be parsed into a valid URL.
    */
-  AzureMonitorExporterBuilder endpoint(String endpoint) {
+  AzureMonitorExporterBuilder endpoint(URL endpoint) {
     Objects.requireNonNull(endpoint, "'endpoint' cannot be null.");
-    try {
-      URL url = new URL(endpoint);
-      restServiceClientBuilder.host(url.getProtocol() + "://" + url.getHost());
-    } catch (MalformedURLException ex) {
-      throw logger.logExceptionAsWarning(
-          new IllegalArgumentException("'endpoint' must be a valid URL.", ex));
-    }
+    this.endpoint = endpoint;
     return this;
   }
 
   /**
-   * Sets the HTTP pipeline to use for the service client. If {@code pipeline} is set, all other
-   * settings are ignored, apart from {@link #endpoint(String) endpoint}.
+   * Sets the HTTP pipeline to use for the service client. If {@code httpPipeline} is set, all other
+   * settings are ignored, apart from {@link #endpoint(URL) endpoint}.
    *
    * @param httpPipeline The HTTP pipeline to use for sending service requests and receiving
    *     responses.
    * @return The updated {@link AzureMonitorExporterBuilder} object.
    */
-  public AzureMonitorExporterBuilder pipeline(HttpPipeline httpPipeline) {
-    restServiceClientBuilder.pipeline(httpPipeline);
+  public AzureMonitorExporterBuilder httpPipeline(HttpPipeline httpPipeline) {
+    this.httpPipeline = httpPipeline;
     return this;
   }
 
   /**
    * Sets the HTTP client to use for sending and receiving requests to and from the service.
    *
-   * @param client The HTTP client to use for requests.
+   * @param httpClient The HTTP client to use for requests.
    * @return The updated {@link AzureMonitorExporterBuilder} object.
    */
-  public AzureMonitorExporterBuilder httpClient(HttpClient client) {
-    restServiceClientBuilder.httpClient(client);
+  public AzureMonitorExporterBuilder httpClient(HttpClient httpClient) {
+    this.httpClient = httpClient;
     return this;
   }
 
@@ -130,12 +122,12 @@ public final class AzureMonitorExporterBuilder {
    *
    * <p>If logLevel is not provided, default value of {@link HttpLogDetailLevel#NONE} is set.
    *
-   * @param logOptions The logging configuration to use when sending and receiving HTTP
+   * @param httpLogOptions The logging configuration to use when sending and receiving HTTP
    *     requests/responses.
    * @return The updated {@link AzureMonitorExporterBuilder} object.
    */
-  public AzureMonitorExporterBuilder httpLogOptions(HttpLogOptions logOptions) {
-    restServiceClientBuilder.httpLogOptions(logOptions);
+  public AzureMonitorExporterBuilder httpLogOptions(HttpLogOptions httpLogOptions) {
+    this.httpLogOptions = httpLogOptions;
     return this;
   }
 
@@ -149,19 +141,21 @@ public final class AzureMonitorExporterBuilder {
    * @return The updated {@link AzureMonitorExporterBuilder} object.
    */
   public AzureMonitorExporterBuilder retryPolicy(RetryPolicy retryPolicy) {
-    restServiceClientBuilder.retryPolicy(retryPolicy);
+    // TODO (trask) revisit this when we add local storage / retry
+    this.retryPolicy = retryPolicy;
     return this;
   }
 
   /**
    * Adds a policy to the set of existing policies that are executed after required policies.
    *
-   * @param policy The retry policy for service requests.
+   * @param httpPipelinePolicy a policy to be added to the http pipeline.
    * @return The updated {@link AzureMonitorExporterBuilder} object.
    * @throws NullPointerException If {@code policy} is {@code null}.
    */
-  public AzureMonitorExporterBuilder addPolicy(HttpPipelinePolicy policy) {
-    restServiceClientBuilder.addPolicy(Objects.requireNonNull(policy, "'policy' cannot be null."));
+  public AzureMonitorExporterBuilder addHttpPipelinePolicy(HttpPipelinePolicy httpPipelinePolicy) {
+    httpPipelinePolicies.add(
+        Objects.requireNonNull(httpPipelinePolicy, "'policy' cannot be null."));
     return this;
   }
 
@@ -176,7 +170,7 @@ public final class AzureMonitorExporterBuilder {
    * @return The updated {@link AzureMonitorExporterBuilder} object.
    */
   public AzureMonitorExporterBuilder configuration(Configuration configuration) {
-    restServiceClientBuilder.configuration(configuration);
+    this.configuration = configuration;
     return this;
   }
 
@@ -187,7 +181,7 @@ public final class AzureMonitorExporterBuilder {
    * @return The updated {@link AzureMonitorExporterBuilder} object.
    */
   public AzureMonitorExporterBuilder clientOptions(ClientOptions clientOptions) {
-    restServiceClientBuilder.clientOptions(clientOptions);
+    this.clientOptions = clientOptions;
     return this;
   }
 
@@ -200,17 +194,10 @@ public final class AzureMonitorExporterBuilder {
    * @throws IllegalArgumentException If the connection string is invalid.
    */
   public AzureMonitorExporterBuilder connectionString(String connectionString) {
-    Map<String, String> keyValues = extractKeyValuesFromConnectionString(connectionString);
-    if (!keyValues.containsKey("InstrumentationKey")) {
-      throw logger.logExceptionAsError(
-          new IllegalArgumentException("InstrumentationKey not found in connectionString"));
-    }
-    this.instrumentationKey = keyValues.get("InstrumentationKey");
-    String endpoint = keyValues.get("IngestionEndpoint");
-    if (endpoint != null) {
-      this.endpoint(endpoint);
-    }
     this.connectionString = connectionString;
+    ConnectionString connectionStringObj = ConnectionString.parse(connectionString);
+    this.instrumentationKey = connectionStringObj.getInstrumentationKey();
+    this.endpoint(connectionStringObj.getIngestionEndpoint());
     return this;
   }
 
@@ -237,59 +224,6 @@ public final class AzureMonitorExporterBuilder {
     return this;
   }
 
-  private static Map<String, String> extractKeyValuesFromConnectionString(String connectionString) {
-    Objects.requireNonNull(connectionString);
-    Map<String, String> keyValues = new HashMap<>();
-    String[] splits = connectionString.split(";");
-    for (String split : splits) {
-      String[] keyValPair = split.split("=");
-      if (keyValPair.length == 2) {
-        keyValues.put(keyValPair[0], keyValPair[1]);
-      }
-    }
-    return keyValues;
-  }
-
-  /**
-   * Creates a {@link MonitorExporterClient} based on options set in the builder. Every time {@code
-   * buildAsyncClient()} is called a new instance of {@link MonitorExporterClient} is created.
-   *
-   * <p>If {@link #pipeline(HttpPipeline) pipeline} is set, then the {@code pipeline} and {@link
-   * #endpoint(String) endpoint} are used to create the {@link MonitorExporterAsyncClient client}.
-   * All other builder settings are ignored.
-   *
-   * @return A {@link MonitorExporterClient} with the options set from the builder.
-   * @throws NullPointerException if {@link #endpoint(String) endpoint} has not been set.
-   */
-  MonitorExporterClient buildClient() {
-    return new MonitorExporterClient(buildAsyncClient());
-  }
-
-  /**
-   * Creates a {@link MonitorExporterAsyncClient} based on options set in the builder. Every time
-   * {@code buildAsyncClient()} is called a new instance of {@link MonitorExporterAsyncClient} is
-   * created.
-   *
-   * <p>If {@link #pipeline(HttpPipeline) pipeline} is set, then the {@code pipeline} and {@link
-   * #endpoint(String) endpoint} are used to create the {@link MonitorExporterAsyncClient client}.
-   * All other builder settings are ignored.
-   *
-   * @return A {@link MonitorExporterAsyncClient} with the options set from the builder.
-   */
-  MonitorExporterAsyncClient buildAsyncClient() {
-    restServiceClientBuilder.serializerAdapter(SERIALIZER_ADAPTER);
-    if (this.credential != null) {
-      // Add authentication policy to HttpPipeline
-      BearerTokenAuthenticationPolicy authenticationPolicy =
-          new BearerTokenAuthenticationPolicy(
-              this.credential, APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE);
-      restServiceClientBuilder.addPolicy(authenticationPolicy);
-    }
-    ApplicationInsightsClientImpl restServiceClient = restServiceClientBuilder.buildClient();
-
-    return new MonitorExporterAsyncClient(restServiceClient);
-  }
-
   /**
    * Creates an {@link AzureMonitorTraceExporter} based on the options set in the builder. This
    * exporter is an implementation of OpenTelemetry {@link SpanExporter}.
@@ -308,6 +242,43 @@ public final class AzureMonitorExporterBuilder {
     // instrumentationKey is extracted from connectionString, so, if instrumentationKey is null
     // then the error message should read "connectionString cannot be null".
     Objects.requireNonNull(instrumentationKey, "'connectionString' cannot be null");
-    return new AzureMonitorTraceExporter(buildAsyncClient(), instrumentationKey);
+
+    if (this.credential != null) {
+      // Add authentication policy to HttpPipeline
+      BearerTokenAuthenticationPolicy authenticationPolicy =
+          new BearerTokenAuthenticationPolicy(
+              this.credential, APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE);
+      httpPipelinePolicies.add(authenticationPolicy);
+    }
+
+    return new AzureMonitorTraceExporter(
+        httpPipeline == null ? createHttpPipeline() : httpPipeline, endpoint, instrumentationKey);
+  }
+
+  private HttpPipeline createHttpPipeline() {
+    Configuration buildConfiguration =
+        (configuration == null) ? Configuration.getGlobalConfiguration() : configuration;
+    if (httpLogOptions == null) {
+      httpLogOptions = new HttpLogOptions();
+    }
+
+    if (clientOptions == null) {
+      clientOptions = new ClientOptions();
+    }
+    List<HttpPipelinePolicy> policies = new ArrayList<>();
+    String clientName = properties.getOrDefault("name", "UnknownName");
+    String clientVersion = properties.getOrDefault("version", "UnknownVersion");
+
+    String applicationId = CoreUtils.getApplicationId(clientOptions, httpLogOptions);
+
+    policies.add(new UserAgentPolicy(applicationId, clientName, clientVersion, buildConfiguration));
+    policies.add(retryPolicy == null ? new RetryPolicy() : retryPolicy);
+    policies.add(new CookiePolicy());
+    policies.addAll(this.httpPipelinePolicies);
+    policies.add(new HttpLoggingPolicy(httpLogOptions));
+    return new HttpPipelineBuilder()
+        .policies(policies.toArray(new HttpPipelinePolicy[0]))
+        .httpClient(httpClient)
+        .build();
   }
 }

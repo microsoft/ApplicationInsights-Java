@@ -54,9 +54,7 @@ public class GrpcTest extends AiSmokeTest {
     RemoteDependencyData rdd =
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-    // TODO this is not correct (or at least not ideal)
-    //  see https://msazure.visualstudio.com/One/_workitems/edit/8687985
-    assertEquals("grpc", rdd.getTarget());
+    assertEquals("localhost:10203", rdd.getTarget());
 
     assertTrue(rd1.getProperties().isEmpty());
     assertTrue(rd1.getSuccess());
@@ -91,7 +89,7 @@ public class GrpcTest extends AiSmokeTest {
     RemoteDependencyData rdd =
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-    assertEquals("grpc", rdd.getTarget());
+    assertEquals("localhost:10203", rdd.getTarget());
 
     assertTrue(rd1.getProperties().isEmpty());
     assertTrue(rd1.getSuccess());
