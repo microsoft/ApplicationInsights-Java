@@ -24,7 +24,6 @@ package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.AadAuthentication;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.EndpointProvider;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.HostName;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.LazyHttpClient;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
@@ -33,6 +32,7 @@ import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import javax.annotation.Nullable;
 
 public enum QuickPulse {
   INSTANCE;
@@ -45,11 +45,11 @@ public enum QuickPulse {
   // can cause slowness during startup in some environments
 
   public void initialize(
-      AadAuthentication aadAuthentication,
-      String roleName,
-      String instrumentationKey,
-      String roleInstance,
-      EndpointProvider endpointProvider) {
+      @Nullable AadAuthentication aadAuthentication,
+      @Nullable String roleName,
+      @Nullable String instrumentationKey,
+      @Nullable String roleInstance,
+      @Nullable String endpointUrl) {
     CountDownLatch latch = new CountDownLatch(1);
     Executors.newSingleThreadExecutor(ThreadPoolUtils.createDaemonThreadFactory(QuickPulse.class))
         .execute(
@@ -60,7 +60,7 @@ public enum QuickPulse {
                     roleName,
                     instrumentationKey,
                     roleInstance,
-                    endpointProvider));
+                    endpointUrl));
     // don't return until initialization thread has INSTANCE lock
     try {
       latch.await();
@@ -71,11 +71,11 @@ public enum QuickPulse {
 
   private void initializeSync(
       CountDownLatch latch,
-      AadAuthentication aadAuthentication,
-      String roleName,
-      String instrumentationKey,
-      String roleInstance,
-      EndpointProvider endpointProvider) {
+      @Nullable AadAuthentication aadAuthentication,
+      @Nullable String roleName,
+      @Nullable String instrumentationKey,
+      @Nullable String roleInstance,
+      @Nullable String endpointUrl) {
     if (initialized) {
       latch.countDown();
     } else {
@@ -109,7 +109,7 @@ public enum QuickPulse {
                   machineName,
                   instanceName,
                   quickPulseId,
-                  endpointProvider.getLiveEndpointUrl().toString());
+                  endpointUrl);
           QuickPulseDataFetcher quickPulseDataFetcher =
               new QuickPulseDataFetcher(
                   sendQueue,
@@ -118,7 +118,7 @@ public enum QuickPulse {
                   machineName,
                   instanceName,
                   quickPulseId,
-                  endpointProvider.getLiveEndpointUrl().toString());
+                  endpointUrl);
 
           QuickPulseCoordinatorInitData coordinatorInitData =
               new QuickPulseCoordinatorInitDataBuilder()

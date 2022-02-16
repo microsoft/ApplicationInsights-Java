@@ -43,6 +43,8 @@ class QuickPulseDataFetcher {
   private static final String QP_BASE_URI =
       "https://rt.services.visualstudio.com/QuickPulseService.svc";
 
+  private static final String LIVE_URL_PATH = "QuickPulseService.svc";
+
   private static final ObjectMapper mapper;
 
   static {
@@ -127,7 +129,7 @@ class QuickPulseDataFetcher {
 
   // visible for testing
   String getQuickPulseEndpoint() {
-    return endPointUrl == null ? QP_BASE_URI : endPointUrl;
+    return endPointUrl == null ? QP_BASE_URI : endPointUrl + LIVE_URL_PATH;
   }
 
   private String getInstrumentationKey() {

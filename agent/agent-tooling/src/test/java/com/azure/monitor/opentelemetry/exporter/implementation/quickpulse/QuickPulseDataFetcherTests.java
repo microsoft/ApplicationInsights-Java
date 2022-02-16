@@ -53,7 +53,13 @@ class QuickPulseDataFetcherTests {
     ConnectionString connectionString = ConnectionString.parse("InstrumentationKey=testing-123");
     QuickPulseDataFetcher quickPulseDataFetcher =
         new QuickPulseDataFetcher(
-            null, null, connectionString.getInstrumentationKey(), null, null, null, null);
+            null,
+            null,
+            connectionString.getInstrumentationKey(),
+            null,
+            null,
+            null,
+            connectionString.getLiveEndpoint().toString());
     String quickPulseEndpoint = quickPulseDataFetcher.getQuickPulseEndpoint();
     String endpointUrl = quickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);
     URI uri = new URI(endpointUrl);

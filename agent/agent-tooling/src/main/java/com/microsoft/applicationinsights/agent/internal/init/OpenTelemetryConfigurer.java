@@ -21,6 +21,16 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AuthenticationType.CLIENTSECRET;
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AuthenticationType.SAMI;
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AuthenticationType.UAMI;
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AuthenticationType.VSCODE;
+
+import com.azure.monitor.opentelemetry.exporter.LiveMetricsSpanProcessor;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AadAuthentication;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AadAuthenticationBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AuthenticationType;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
@@ -50,6 +60,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 @AutoService(SdkTracerProviderConfigurer.class)
 public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
@@ -116,10 +127,49 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
               configuration.preview.instrumentationKeyOverrides));
     }
 
+    // Add quick pulse
+    tracerProvider.addSpanProcessor(
+        new LiveMetricsSpanProcessor(
+            aadAuthenticationMapper(telemetryClient.getAadAuthentication()),
+            telemetryClient.getRoleName(),
+            telemetryClient.getInstrumentationKey(),
+            telemetryClient.getRoleInstance(),
+            ConnectionString.parse(configuration.connectionString).getLiveEndpoint().toString()));
     String tracesExporter = config.getString("otel.traces.exporter");
     if ("none".equals(tracesExporter)) {
       batchSpanProcessor = createExporter(configuration);
       tracerProvider.addSpanProcessor(batchSpanProcessor);
+    }
+  }
+
+  @Nullable
+  private static AadAuthentication aadAuthenticationMapper(
+      Configuration.AadAuthentication aadAuthentication) {
+    if (!aadAuthentication.enabled) {
+      return null;
+    }
+    return new AadAuthenticationBuilder(aadAuthenticationTypeMapper(aadAuthentication.type))
+        .clientId(aadAuthentication.clientId)
+        .clientSecret(aadAuthentication.clientSecret)
+        .authorityHost(aadAuthentication.authorityHost)
+        .tenantId(aadAuthentication.tenantId)
+        .build();
+  }
+
+  private static AuthenticationType aadAuthenticationTypeMapper(
+      Configuration.AuthenticationType authenticationType) {
+    switch (authenticationType) {
+      case UAMI:
+        return UAMI;
+      case SAMI:
+        return SAMI;
+      case CLIENTSECRET:
+        return CLIENTSECRET;
+      case VSCODE:
+        return VSCODE;
+      default:
+        throw new IllegalStateException(
+            "AAD Authentication configuration of type: " + authenticationType + " is invalid");
     }
   }
 
