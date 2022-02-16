@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.localstorage;
+package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
@@ -42,7 +42,7 @@ public class LocalFilePurgerTests {
     LocalFileWriter writer = new LocalFileWriter(cache, tempFolder, null);
 
     // run purge task every second to delete files that are 5 seconds old
-    LocalFilePurger.startPurging(1L, 5L, tempFolder);
+    LocalFilePurger purger = new LocalFilePurger(tempFolder, 5L, 1L);
 
     // persist 100 files to disk
     for (int i = 0; i < 100; i++) {
@@ -58,5 +58,7 @@ public class LocalFilePurgerTests {
 
     files = FileUtil.listTrnFiles(tempFolder);
     assertThat(files.size()).isEqualTo(0);
+
+    purger.shutdown();
   }
 }

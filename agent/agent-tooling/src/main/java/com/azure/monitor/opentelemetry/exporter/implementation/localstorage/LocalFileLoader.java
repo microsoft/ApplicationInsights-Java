@@ -19,12 +19,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.localstorage;
+package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,8 +43,7 @@ class LocalFileLoader {
 
   private final LocalFileCache localFileCache;
   private final File telemetryFolder;
-  // this is null for Statsbeat telemetry
-  @Nullable private final NonessentialStatsbeat nonessentialStatsbeat;
+  private final LocalStorageStats stats;
 
   private static final OperationLogger operationLogger =
       new OperationLogger(LocalFileLoader.class, "Loading telemetry from disk");
@@ -53,13 +51,10 @@ class LocalFileLoader {
   private static final OperationLogger updateOperationLogger =
       new OperationLogger(LocalFileLoader.class, "Updating local telemetry on disk");
 
-  LocalFileLoader(
-      LocalFileCache localFileCache,
-      File telemetryFolder,
-      @Nullable NonessentialStatsbeat nonessentialStatsbeat) {
+  LocalFileLoader(LocalFileCache localFileCache, File telemetryFolder, LocalStorageStats stats) {
     this.localFileCache = localFileCache;
     this.telemetryFolder = telemetryFolder;
-    this.nonessentialStatsbeat = nonessentialStatsbeat;
+    this.stats = stats;
   }
 
   // Load ByteBuffer from persisted files on disk in FIFO order.
@@ -94,12 +89,12 @@ class LocalFileLoader {
               + TEMPORARY_FILE_EXTENSION
               + " extension: ",
           e);
-      incrementReadFailureCount();
+      stats.incrementReadFailureCount();
       return null;
     }
 
     if (tempFile.length() <= 36) {
-      if (LocalStorageUtils.deleteFileWithRetries(tempFile)) {
+      if (FileUtil.deleteFileWithRetries(tempFile)) {
         operationLogger.recordFailure(
             "Fail to delete a corrupted persisted file: length is  " + tempFile.length());
       }
@@ -115,7 +110,7 @@ class LocalFileLoader {
       instrumentationKey = new String(ikeyBytes, UTF_8);
       if (!isInstrumentationKeyValid(instrumentationKey)) {
         fileInputStream.close(); // need to close FileInputStream before delete
-        if (!LocalStorageUtils.deleteFileWithRetries(tempFile)) {
+        if (!FileUtil.deleteFileWithRetries(tempFile)) {
           operationLogger.recordFailure(
               "Fail to delete the old persisted file with an invalid instrumentation key "
                   + tempFile.getName());
@@ -126,7 +121,7 @@ class LocalFileLoader {
       readFully(fileInputStream, telemetryBytes, rawByteLength);
     } catch (IOException ex) {
       operationLogger.recordFailure("Fail to read telemetry from " + tempFile.getName(), ex);
-      incrementReadFailureCount();
+      stats.incrementReadFailureCount();
       return null;
     }
 
@@ -158,7 +153,7 @@ class LocalFileLoader {
 
   // either delete it permanently on success or add it back to cache to be processed again later on
   // failure
-  public void updateProcessedFileStatus(boolean successOrNonRetryableError, File file) {
+  void updateProcessedFileStatus(boolean successOrNonRetryableError, File file) {
     if (!file.exists()) {
       // not sure why this would happen
       updateOperationLogger.recordFailure("File no longer exists: " + file.getName());
@@ -166,8 +161,7 @@ class LocalFileLoader {
     }
     if (successOrNonRetryableError) {
       // delete a file on the queue permanently when http response returns success.
-      if (!LocalStorageUtils.deleteFileWithRetries(file)) {
-        // TODO (heya) track file deletion failure via Statsbeat
+      if (!FileUtil.deleteFileWithRetries(file)) {
         updateOperationLogger.recordFailure("Fail to delete " + file.getName());
       } else {
         updateOperationLogger.recordSuccess();
@@ -186,12 +180,6 @@ class LocalFileLoader {
 
       // add the source filename back to local file cache to be processed later.
       localFileCache.addPersistedFile(sourceFile);
-    }
-  }
-
-  private void incrementReadFailureCount() {
-    if (nonessentialStatsbeat != null) {
-      nonessentialStatsbeat.incrementReadFailureCount();
     }
   }
 

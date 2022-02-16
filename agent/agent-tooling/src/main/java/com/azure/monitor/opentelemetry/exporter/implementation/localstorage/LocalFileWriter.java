@@ -19,12 +19,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.localstorage;
+package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -32,7 +31,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Collection;
 import java.util.List;
-import javax.annotation.Nullable;
 
 /** This class manages writing a list of {@link ByteBuffer} to the file system. */
 final class LocalFileWriter {
@@ -43,20 +41,16 @@ final class LocalFileWriter {
 
   private final LocalFileCache localFileCache;
   private final File telemetryFolder;
-  // this is null for Statsbeat telemetry
-  @Nullable private final NonessentialStatsbeat nonessentialStatsbeat;
+  private final LocalStorageStats stats;
 
   private static final OperationLogger operationLogger =
       new OperationLogger(
           LocalFileWriter.class, "Writing telemetry to disk (telemetry is discarded on failure)");
 
-  LocalFileWriter(
-      LocalFileCache localFileCache,
-      File telemetryFolder,
-      @Nullable NonessentialStatsbeat nonessentialStatsbeat) {
+  LocalFileWriter(LocalFileCache localFileCache, File telemetryFolder, LocalStorageStats stats) {
     this.telemetryFolder = telemetryFolder;
     this.localFileCache = localFileCache;
-    this.nonessentialStatsbeat = nonessentialStatsbeat;
+    this.stats = stats;
   }
 
   void writeToDisk(String instrumentationKey, List<ByteBuffer> buffers) {
@@ -66,7 +60,7 @@ final class LocalFileWriter {
           "Local persistent storage capacity has been reached. It's currently at ("
               + (size / 1024)
               + "KB). Telemetry will be lost");
-      incrementWriteFailureCount();
+      stats.incrementWriteFailureCount();
       return;
     }
 
@@ -75,7 +69,7 @@ final class LocalFileWriter {
       tempFile = createTempFile(telemetryFolder);
     } catch (IOException e) {
       operationLogger.recordFailure("unable to create temporary file: " + e, e);
-      incrementWriteFailureCount();
+      stats.incrementWriteFailureCount();
       return;
     }
 
@@ -83,7 +77,7 @@ final class LocalFileWriter {
       write(tempFile, buffers, instrumentationKey);
     } catch (IOException e) {
       operationLogger.recordFailure(String.format("unable to write to file: %s", e), e);
-      incrementWriteFailureCount();
+      stats.incrementWriteFailureCount();
       return;
     }
 
@@ -100,19 +94,13 @@ final class LocalFileWriter {
               + PERMANENT_FILE_EXTENSION
               + " extension: ",
           e);
-      incrementWriteFailureCount();
+      stats.incrementWriteFailureCount();
       return;
     }
 
     localFileCache.addPersistedFile(permanentFile);
 
     operationLogger.recordSuccess();
-  }
-
-  private void incrementWriteFailureCount() {
-    if (nonessentialStatsbeat != null) {
-      nonessentialStatsbeat.incrementWriteFailureCount();
-    }
   }
 
   private static void write(File file, List<ByteBuffer> buffers, String instrumentationKey)

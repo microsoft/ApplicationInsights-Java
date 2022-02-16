@@ -19,8 +19,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.common;
+package com.azure.monitor.opentelemetry.exporter.implementation.logging;
 
+import com.azure.core.util.CoreUtils;
 import io.netty.handler.ssl.SslHandshakeTimeoutException;
 import java.io.File;
 import java.io.IOException;
@@ -96,6 +97,31 @@ public class NetworkFriendlyExceptions {
     return "ApplicationInsights Java Agent failed to connect to " + url;
   }
 
+  private static String populateFriendlyMessage(
+      String description, String action, String banner, String note) {
+    StringBuilder messageBuilder = new StringBuilder();
+    messageBuilder.append(System.lineSeparator());
+    messageBuilder.append("*************************").append(System.lineSeparator());
+    messageBuilder.append(banner).append(System.lineSeparator());
+    messageBuilder.append("*************************").append(System.lineSeparator());
+    if (!CoreUtils.isNullOrEmpty(description)) {
+      messageBuilder.append(System.lineSeparator());
+      messageBuilder.append("Description:").append(System.lineSeparator());
+      messageBuilder.append(description).append(System.lineSeparator());
+    }
+    if (!CoreUtils.isNullOrEmpty(action)) {
+      messageBuilder.append(System.lineSeparator());
+      messageBuilder.append("Action:").append(System.lineSeparator());
+      messageBuilder.append(action).append(System.lineSeparator());
+    }
+    if (!CoreUtils.isNullOrEmpty(note)) {
+      messageBuilder.append(System.lineSeparator());
+      messageBuilder.append("Note:").append(System.lineSeparator());
+      messageBuilder.append(note).append(System.lineSeparator());
+    }
+    return messageBuilder.toString();
+  }
+
   interface FriendlyExceptionDetector {
     boolean detect(Throwable error);
 
@@ -119,7 +145,7 @@ public class NetworkFriendlyExceptions {
 
     @Override
     public String message(String url) {
-      return FriendlyException.populateFriendlyMessage(
+      return populateFriendlyMessage(
           "Unable to find valid certification path to requested target.",
           getSslFriendlyExceptionAction(url),
           getFriendlyExceptionBanner(url),
@@ -174,7 +200,7 @@ public class NetworkFriendlyExceptions {
 
     @Override
     public String message(String url) {
-      return FriendlyException.populateFriendlyMessage(
+      return populateFriendlyMessage(
           "Unable to resolve host in end point url",
           getUnknownHostFriendlyExceptionAction(url),
           getFriendlyExceptionBanner(url),
@@ -223,7 +249,7 @@ public class NetworkFriendlyExceptions {
 
     @Override
     public String message(String url) {
-      return FriendlyException.populateFriendlyMessage(
+      return populateFriendlyMessage(
           "Probable root cause may be : missing cipher suites which are expected by the requested target.",
           getCipherFriendlyExceptionAction(url),
           getFriendlyExceptionBanner(url),
