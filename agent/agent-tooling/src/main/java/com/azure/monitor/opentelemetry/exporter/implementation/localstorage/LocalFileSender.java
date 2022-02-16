@@ -66,6 +66,12 @@ class LocalFileSender implements Runnable {
 
   @Override
   public void run() {
+    // NOTE this sends telemetry that was stored to disk and the ikey is encoded into the file
+    // so even if the customer has changed the ikey in their applicationinsights.json file, this
+    // will still send out the telemetry to the original destination
+    // (and same for azure spring cloud, if ikey is changed dynamically at runtime, this will still
+    // send out the telemetry to the original destination)
+
     // TODO (heya) load all persisted files on disk in one or more batch per batch capacity?
     try {
       LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
