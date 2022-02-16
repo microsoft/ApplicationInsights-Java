@@ -44,13 +44,14 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.LoggerFactory;
 
 public enum QuickPulseDataCollector {
   INSTANCE;
 
-  private String instrumentationKey;
+  private Supplier<String> instrumentationKeySupplier;
 
   static class FinalCounters {
     public final int exceptions;
@@ -173,8 +174,8 @@ public enum QuickPulseDataCollector {
     quickPulseStatus = QuickPulseStatus.QP_IS_OFF;
   }
 
-  public synchronized void enable(String instrumentationKey) {
-    this.instrumentationKey = instrumentationKey;
+  public synchronized void enable(Supplier<String> instrumentationKeySupplier) {
+    this.instrumentationKeySupplier = instrumentationKeySupplier;
     counters.set(new Counters());
   }
 
@@ -208,7 +209,7 @@ public enum QuickPulseDataCollector {
   }
 
   public void add(TelemetryItem telemetryItem) {
-    if (instrumentationKey == null || quickPulseStatus != QuickPulseStatus.QP_IS_ON) {
+    if (instrumentationKeySupplier.get() == null || quickPulseStatus != QuickPulseStatus.QP_IS_ON) {
       // quick pulse is not enabled or quick pulse data sender is not enabled
       return;
     }
@@ -242,7 +243,7 @@ public enum QuickPulseDataCollector {
   }
 
   private synchronized String getInstrumentationKey() {
-    return instrumentationKey;
+    return instrumentationKeySupplier.get();
   }
 
   private void addDependency(RemoteDependencyData telemetry, int itemCount) {
