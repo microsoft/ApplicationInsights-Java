@@ -23,15 +23,18 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 
 import static com.microsoft.applicationinsights.agent.internal.processors.ProcessorUtil.applyRule;
 import static com.microsoft.applicationinsights.agent.internal.processors.ProcessorUtil.getGroupNamesList;
-import static com.microsoft.applicationinsights.agent.internal.processors.ProcessorUtil.spanHasAllFromAttributeKeys;
 
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -87,28 +90,37 @@ public class LogProcessor extends AgentProcessor {
         separator);
   }
 
-  // fromAttributes represents the attribute keys to pull the values from to generate the new span
+  // fromAttributes represents the attribute keys to pull the values from to generate the new log
   // name.
-  public SpanData processFromAttributes(SpanData log) {
-    if (spanHasAllFromAttributeKeys(log, fromAttributes)) {
-      StringBuilder updatedSpanBuffer = new StringBuilder();
-      Attributes existingSpanAttributes = log.getAttributes();
+  public LogData processFromAttributes(LogData log) {
+    if (logHasAllFromAttributeKeys(log, fromAttributes)) {
+      StringBuilder updatedLogBuffer = new StringBuilder();
+      Attributes existingLogAttributes = log.getAttributes();
       for (AttributeKey<?> attributeKey : fromAttributes) {
-        updatedSpanBuffer.append(existingSpanAttributes.get(attributeKey));
-        updatedSpanBuffer.append(separator);
+        updatedLogBuffer.append(existingLogAttributes.get(attributeKey));
+        updatedLogBuffer.append(separator);
       }
       // Removing the last appended separator
       if (separator.length() > 0) {
-        updatedSpanBuffer.setLength(updatedSpanBuffer.length() - separator.length());
+        updatedLogBuffer.setLength(updatedLogBuffer.length() - separator.length());
       }
-      return new MySpanData(log, log.getAttributes(), updatedSpanBuffer.toString());
+
+      return LogDataBuilder.create(log.getResource(), log.getInstrumentationLibraryInfo())
+          .setEpoch(log.getEpochNanos(), TimeUnit.NANOSECONDS)
+          .setSpanContext(log.getSpanContext())
+          .setSeverity(log.getSeverity())
+          .setName(updatedLogBuffer.toString())
+          .setBody(log.getBody().asString())
+          .setAttributes(log.getAttributes())
+          .build();
     }
+
     return log;
   }
 
   // The following function extracts attributes from span name and replaces extracted parts with
   // attribute names
-  public SpanData processToAttributes(SpanData log) {
+  public LogData processToAttributes(LogData log) {
     if (toAttributeRulePatterns.isEmpty()) {
       return log;
     }
@@ -121,6 +133,22 @@ public class LogProcessor extends AgentProcessor {
     for (int i = 0; i < groupNames.size(); i++) {
       spanName = applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), spanName, builder);
     }
+
+//    LogDataBuilder.create(log.getResource(), log.getInstrumentationLibraryInfo()).set
     return new MySpanData(log, builder.build(), spanName);
+  }
+
+  public static boolean logHasAllFromAttributeKeys(
+      LogData log, List<AttributeKey<?>> fromAttributes) {
+    if (fromAttributes.isEmpty()) {
+      return false;
+    }
+    Attributes existingSpanAttributes = log.getAttributes();
+    for (AttributeKey<?> attributeKey : fromAttributes) {
+      if (existingSpanAttributes.get(attributeKey) == null) {
+        return false;
+      }
+    }
+    return true;
   }
 }

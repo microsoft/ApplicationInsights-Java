@@ -91,49 +91,5 @@ public class ProcessorUtil {
     return true;
   }
 
-  // fromAttributes represents the attribute keys to pull the values from to generate the new span
-  // name.
-  // TODO (kryalama) this looks unused, but also there are similar methods under SpanProcessor and
-  //  LogProcessor
-  public static SpanData processFromAttributes(
-      SpanData span, List<AttributeKey<?>> fromAttributes, String separator) {
-    if (spanHasAllFromAttributeKeys(span, fromAttributes)) {
-      StringBuilder updatedSpanBuffer = new StringBuilder();
-      Attributes existingSpanAttributes = span.getAttributes();
-      for (AttributeKey<?> attributeKey : fromAttributes) {
-        updatedSpanBuffer.append(existingSpanAttributes.get(attributeKey));
-        updatedSpanBuffer.append(separator);
-      }
-      // Removing the last appended separator
-      if (separator.length() > 0) {
-        updatedSpanBuffer.setLength(updatedSpanBuffer.length() - separator.length());
-      }
-      return new MySpanData(span, span.getAttributes(), updatedSpanBuffer.toString());
-    }
-    return span;
-  }
-
-  // The following function extracts attributes from span name and replaces extracted parts with
-  // attribute names
-  // TODO (kryalama) this looks unused, but also there are similar methods under SpanProcessor and
-  //  LogProcessor
-  public static SpanData processToAttributes(
-      SpanData span, List<Pattern> toAttributeRulePatterns, List<List<String>> groupNames) {
-    if (toAttributeRulePatterns.isEmpty()) {
-      return span;
-    }
-
-    String spanName = span.getName();
-    // copy existing attributes.
-    // According to Collector docs, The matched portion
-    // in the span name is replaced by extracted attribute name. If the attributes exist
-    // they will be overwritten. Need a way to optimize this.
-    AttributesBuilder builder = span.getAttributes().toBuilder();
-    for (int i = 0; i < groupNames.size(); i++) {
-      spanName = applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), spanName, builder);
-    }
-    return new MySpanData(span, builder.build(), spanName);
-  }
-
   private ProcessorUtil() {}
 }

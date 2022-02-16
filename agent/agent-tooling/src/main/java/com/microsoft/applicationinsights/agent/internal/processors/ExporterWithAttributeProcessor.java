@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.processors.AgentProcessor.IncludeExclude;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayList;
@@ -54,17 +55,30 @@ public class ExporterWithAttributeProcessor implements SpanExporter {
 
   private SpanData process(SpanData span) {
     IncludeExclude include = attributeProcessor.getInclude();
-    boolean isLog = ProcessorUtil.isSpanOfTypeLog(span);
-    if (include != null && !include.isMatch(span, isLog)) {
+    if (include != null && !include.isMatch(span.getAttributes(), span.getName(), false)) {
       // If not included we can skip further processing
       return span;
     }
     IncludeExclude exclude = attributeProcessor.getExclude();
-    if (exclude != null && exclude.isMatch(span, isLog)) {
+    if (exclude != null && exclude.isMatch(span.getAttributes(), span.getName(), false)) {
       // If excluded we can skip further processing
       return span;
     }
     return attributeProcessor.processActions(span);
+  }
+
+  private LogData process(LogData log) {
+    IncludeExclude include = attributeProcessor.getInclude();
+    if (include != null && !include.isMatch(log.getAttributes(), log.getName(), true)) {
+      // If not included we can skip further processing
+      return log;
+    }
+    IncludeExclude exclude = attributeProcessor.getExclude();
+    if (exclude != null && exclude.isMatch(log.getAttributes(), log.getName(), true)) {
+      // If excluded we can skip further processing
+      return log;
+    }
+    return attributeProcessor.processActions(log);
   }
 
   @Override

@@ -34,7 +34,7 @@ import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 
-// common static methods shared among exporters
+// common string constants and static methods shared among exporters
 final class ExporterUtil {
 
   // TODO (trask) this can go away once new indexer is rolled out to gov clouds
