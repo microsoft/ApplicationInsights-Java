@@ -103,6 +103,11 @@ final class StartupProfiler {
               threadBean.getAllThreadIds(), threadBean.isObjectMonitorUsageSupported(), false);
       long currentThreadId = Thread.currentThread().getId();
       for (ThreadInfo threadInfo : threadInfos) {
+        // If a thread of a given ID is not alive or does not exist, the corresponding element in the returned array will contain null
+        if (threadInfo == null) {
+          continue;
+        }
+        
         if (threadInfo.getThreadId() != currentThreadId) {
           write(threadInfo);
         }
