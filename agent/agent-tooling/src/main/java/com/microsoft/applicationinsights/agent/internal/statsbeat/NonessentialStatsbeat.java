@@ -22,10 +22,11 @@
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.StatsbeatTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class NonessentialStatsbeat extends BaseStatsbeat {
+public class NonessentialStatsbeat extends BaseStatsbeat implements LocalStorageStats {
 
   // TODO when there are more non-essential statsbeat(s) in the future, try to separate different
   // kinds of non-essential statsbeat into different classes.
@@ -47,22 +48,22 @@ public class NonessentialStatsbeat extends BaseStatsbeat {
 
   @Override
   protected void send(TelemetryClient telemetryClient) {
-    if (readFailureCount.get() != 0) {
+    long readFailures = readFailureCount.getAndSet(0);
+    if (readFailures != 0) {
       StatsbeatTelemetryBuilder telemetryItem =
           createStatsbeatTelemetry(telemetryClient, READ_FAILURE_COUNT, readFailureCount.get());
       telemetryClient.trackStatsbeatAsync(telemetryItem.build());
     }
 
-    if (writeFailureCount.get() != 0) {
+    long writeFailures = readFailureCount.getAndSet(0);
+    if (writeFailures != 0) {
       StatsbeatTelemetryBuilder telemetryItem =
           createStatsbeatTelemetry(telemetryClient, WRITE_FAILURE_COUNT, writeFailureCount.get());
       telemetryClient.trackStatsbeatAsync(telemetryItem.build());
     }
-
-    readFailureCount.set(0L);
-    writeFailureCount.set(0L);
   }
 
+  @Override
   public void incrementReadFailureCount() {
     readFailureCount.incrementAndGet();
   }
@@ -72,6 +73,7 @@ public class NonessentialStatsbeat extends BaseStatsbeat {
     return readFailureCount.get();
   }
 
+  @Override
   public void incrementWriteFailureCount() {
     writeFailureCount.incrementAndGet();
   }

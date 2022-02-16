@@ -23,11 +23,11 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
-import com.microsoft.applicationinsights.agent.internal.common.LocalFileSystemUtils;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
@@ -46,7 +46,6 @@ import com.microsoft.applicationinsights.agent.internal.legacysdk.RequestNameHan
 import com.microsoft.applicationinsights.agent.internal.legacysdk.RequestTelemetryClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.legacysdk.TelemetryClientClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.legacysdk.WebRequestTrackingFilterClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFilePurger;
 import com.microsoft.applicationinsights.agent.internal.profiler.GcEventMonitor;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilerServiceInitializer;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
@@ -70,9 +69,6 @@ class AiComponentInstaller {
 
   private static final Logger startupLogger =
       LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
-
-  private static final File tempDirectory =
-      new File(LocalFileSystemUtils.getTempDir(), "applicationinsights/profiles");
 
   static AppIdSupplier beforeAgent(Instrumentation instrumentation) {
     AppIdSupplier appIdSupplier = start(instrumentation);
@@ -99,22 +95,11 @@ class AiComponentInstaller {
       PropertyHelper.setSdkNamePrefix(codelessSdkNamePrefix);
     }
 
-    File javaTmpDir = new File(System.getProperty("java.io.tmpdir"));
-    boolean readOnlyFileSystem = false;
-    if (javaTmpDir.canRead() && !javaTmpDir.canWrite()) {
-      readOnlyFileSystem = true;
-    }
-
-    if (!readOnlyFileSystem) {
-      File tmpDir = new File(javaTmpDir, "applicationinsights-java");
-      if (!tmpDir.exists() && !tmpDir.mkdirs()) {
-        throw new IllegalStateException("Could not create directory: " + tmpDir.getAbsolutePath());
-      }
-    } else {
-      startupLogger.info(
-          "Detected running on a read-only file system, telemetry will not be stored to disk or retried later on sporadic network failures. If this is unexpected, please check that the process has write access to the temp directory: "
-              + javaTmpDir.getAbsolutePath());
-    }
+    File tempDir =
+        TempDirs.getApplicationInsightsTempDir(
+            startupLogger,
+            "Telemetry will not be stored to disk and retried later"
+                + " on sporadic network failures");
 
     Configuration config = MainEntryPoint.getConfiguration();
     if (!hasConnectionStringOrInstrumentationKey(config)) {
@@ -167,7 +152,7 @@ class AiComponentInstaller {
             .setCustomDimensions(config.customDimensions)
             .setMetricFilters(metricFilters)
             .setStatsbeatModule(statsbeatModule)
-            .setReadOnlyFileSystem(readOnlyFileSystem)
+            .setTempDir(tempDir)
             .setGeneralExportQueueSize(config.preview.generalExportQueueCapacity)
             .setMetricsExportQueueSize(config.preview.metricsExportQueueCapacity)
             .setAadAuthentication(config.preview.authentication)
@@ -182,7 +167,7 @@ class AiComponentInstaller {
     AiAppId.setSupplier(appIdSupplier);
 
     if (config.preview.profiler.enabled) {
-      if (readOnlyFileSystem) {
+      if (tempDir == null) {
         throw new FriendlyException(
             "Profile is not supported in a read-only file system.",
             "disable profiler or use a writable file system");
@@ -191,7 +176,7 @@ class AiComponentInstaller {
       ProfilerServiceInitializer.initialize(
           appIdSupplier::get,
           SystemInformation.getProcessId(),
-          formServiceProfilerConfig(config.preview.profiler),
+          formServiceProfilerConfig(config.preview.profiler, tempDir),
           config.role.instance,
           config.role.name,
           telemetryClient,
@@ -216,11 +201,6 @@ class AiComponentInstaller {
 
     // initialize StatsbeatModule
     statsbeatModule.start(telemetryClient, config);
-
-    // start local File purger scheduler task
-    if (!readOnlyFileSystem) {
-      LocalFilePurger.startPurging();
-    }
 
     return appIdSupplier;
   }
@@ -247,7 +227,7 @@ class AiComponentInstaller {
   }
 
   private static ServiceProfilerServiceConfig formServiceProfilerConfig(
-      ProfilerConfiguration configuration) {
+      ProfilerConfiguration configuration, File tempDir) {
     URL serviceProfilerFrontEndPoint =
         TelemetryClient.getActive().getConnectionString().getProfilerEndpoint();
     return new ServiceProfilerServiceConfig(
@@ -257,7 +237,7 @@ class AiComponentInstaller {
         serviceProfilerFrontEndPoint,
         configuration.memoryTriggeredSettings,
         configuration.cpuTriggeredSettings,
-        tempDirectory);
+        TempDirs.getSubDir(tempDir, "profiles"));
   }
 
   @Nullable

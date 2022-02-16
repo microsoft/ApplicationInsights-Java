@@ -33,7 +33,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDom
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
-import com.microsoft.applicationinsights.agent.internal.common.LocalFileSystemUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
@@ -164,13 +163,7 @@ class ProfilerServiceTest {
         new JfrProfilerService(
                 () -> appId,
                 new ServiceProfilerServiceConfig(
-                    1,
-                    2,
-                    3,
-                    new URL("http://localhost"),
-                    null,
-                    null,
-                    LocalFileSystemUtils.getTempDir()),
+                    1, 2, 3, new URL("http://localhost"), null, null, new File(".")),
                 jfrProfiler,
                 ProfilerServiceInitializer.updateAlertingConfig(alertService),
                 ProfilerServiceInitializer.sendServiceProfilerIndex(client),
@@ -224,7 +217,7 @@ class ProfilerServiceTest {
   private JfrProfiler getJfrDaemon(AtomicBoolean profileInvoked) throws MalformedURLException {
     return new JfrProfiler(
         new ServiceProfilerServiceConfig(
-            1, 2, 3, new URL("http://localhost"), null, null, LocalFileSystemUtils.getTempDir())) {
+            1, 2, 3, new URL("http://localhost"), null, null, new File("."))) {
       @Override
       protected void profileAndUpload(AlertBreach alertBreach, Duration duration) {
         profileInvoked.set(true);
