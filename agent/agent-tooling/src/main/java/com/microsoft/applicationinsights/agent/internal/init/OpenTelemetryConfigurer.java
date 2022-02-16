@@ -45,6 +45,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -161,9 +162,11 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
     }
 
     // using BatchSpanProcessor in order to get off of the application thread as soon as possible
-    // using batch size 1 because need to convert to SpanData as soon as possible to grab data for
+    // using duration 500 milliseconds because need to convert to SpanData quickly to grab data for
     // live metrics. the real batching is done at a lower level
-    return BatchSpanProcessor.builder(currExporter).setMaxExportBatchSize(1).build();
+    return BatchSpanProcessor.builder(currExporter)
+        .setScheduleDelay(Duration.ofMillis(500))
+        .build();
   }
 
   private static class BackCompatHttpUrlProcessor implements SpanExporter {
