@@ -59,12 +59,8 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import org.apache.commons.text.StringSubstitutor;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TelemetryClient {
-
-  private static final Logger logger = LoggerFactory.getLogger(TelemetryClient.class);
 
   private static final String EVENT_TELEMETRY_NAME = "Event";
   private static final String EXCEPTION_TELEMETRY_NAME = "Exception";
