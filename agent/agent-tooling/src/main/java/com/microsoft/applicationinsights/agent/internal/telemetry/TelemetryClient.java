@@ -159,9 +159,7 @@ public class TelemetryClient {
     if (data instanceof MetricsData) {
       MetricsData metricsData = (MetricsData) data;
       if (metricsData.getMetrics().isEmpty()) {
-        // this is unexpected
-        logger.debug("MetricsData has no metric point");
-        return;
+        throw new AssertionError("MetricsData has no metric point");
       }
       MetricDataPoint point = metricsData.getMetrics().get(0);
       String metricName = point.getName();
@@ -175,6 +173,7 @@ public class TelemetryClient {
       }
 
       if (!Double.isFinite(point.getValue())) {
+        // TODO (trask) add test for this
         // breeze doesn't like these values
         return;
       }
