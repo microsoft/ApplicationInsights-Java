@@ -56,7 +56,7 @@ class ExporterWithAttributeProcessorTest {
     config.type = ProcessorType.ATTRIBUTE;
     config.id = "noAction";
 
-    assertThatThrownBy(() -> new ExporterWithAttributeProcessor(config, mockSpanExporter))
+    assertThatThrownBy(() -> new SpanExporterWithAttributeProcessor(config, mockSpanExporter))
         .isInstanceOf(FriendlyException.class);
   }
 
@@ -75,7 +75,7 @@ class ExporterWithAttributeProcessorTest {
     actions.add(action);
     config.actions = actions;
 
-    assertThatThrownBy(() -> new ExporterWithAttributeProcessor(config, mockSpanExporter))
+    assertThatThrownBy(() -> new SpanExporterWithAttributeProcessor(config, mockSpanExporter))
         .isInstanceOf(FriendlyException.class);
   }
 
@@ -94,7 +94,7 @@ class ExporterWithAttributeProcessorTest {
     actions.add(action);
     config.actions = actions;
 
-    assertThatThrownBy(() -> new ExporterWithAttributeProcessor(config, mockSpanExporter))
+    assertThatThrownBy(() -> new SpanExporterWithAttributeProcessor(config, mockSpanExporter))
         .isInstanceOf(FriendlyException.class);
   }
 
@@ -109,7 +109,7 @@ class ExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span span =
         tracer
@@ -147,7 +147,7 @@ class ExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span span =
         tracer
@@ -189,7 +189,7 @@ class ExporterWithAttributeProcessorTest {
     actions.add(action);
     actions.add(updateAction);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span span =
         tracer
@@ -233,7 +233,7 @@ class ExporterWithAttributeProcessorTest {
     actions.add(action);
     actions.add(updateAction);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span span =
         tracer
@@ -271,7 +271,7 @@ class ExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span span =
         tracer
@@ -310,7 +310,7 @@ class ExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span span =
         tracer
@@ -350,7 +350,7 @@ class ExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span span =
         tracer
@@ -401,7 +401,7 @@ class ExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span span =
         tracer
@@ -440,7 +440,7 @@ class ExporterWithAttributeProcessorTest {
     actions.add(updateAction);
     actions.add(deleteAction);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span span =
         tracer
@@ -480,7 +480,7 @@ class ExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span spanA =
         tracer
@@ -549,7 +549,7 @@ class ExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span spanA =
         tracer
@@ -632,7 +632,7 @@ class ExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span spanA =
         tracer
@@ -702,7 +702,7 @@ class ExporterWithAttributeProcessorTest {
     actions.add(action);
     config.actions = actions;
 
-    assertThatThrownBy(() -> new ExporterWithAttributeProcessor(config, mockSpanExporter))
+    assertThatThrownBy(() -> new SpanExporterWithAttributeProcessor(config, mockSpanExporter))
         .isInstanceOf(FriendlyException.class);
   }
 
@@ -725,7 +725,7 @@ class ExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span spanA =
         tracer
@@ -809,7 +809,7 @@ class ExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span spanA =
         tracer
@@ -889,7 +889,7 @@ class ExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span spanA =
         tracer
@@ -958,7 +958,7 @@ class ExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span spanA =
         tracer
@@ -1027,7 +1027,7 @@ class ExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span spanA =
         tracer
@@ -1107,7 +1107,7 @@ class ExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span spanA =
         tracer
@@ -1183,7 +1183,7 @@ class ExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span spanA =
         tracer
@@ -1259,7 +1259,7 @@ class ExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span spanA =
         tracer
@@ -1326,7 +1326,7 @@ class ExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span span =
         tracer
@@ -1373,7 +1373,7 @@ class ExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span span =
         tracer
@@ -1451,7 +1451,7 @@ class ExporterWithAttributeProcessorTest {
     actions.add(action4);
     actions.add(action5);
     config.actions = actions;
-    SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockSpanExporter);
+    SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter);
 
     Span span =
         tracer
