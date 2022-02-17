@@ -37,7 +37,7 @@ jobs:
         working-directory: smoke-tests/images/fake-backend
 
   buildWindows:
-    runs-on: windows-latest
+    runs-on: windows-2019
     defaults:
       run:
         shell: bash
