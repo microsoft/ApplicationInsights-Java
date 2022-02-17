@@ -40,4 +40,5 @@ public class CustomizedLogData {
         .build();
   }
 
+  private CustomizedLogData() {}
 }

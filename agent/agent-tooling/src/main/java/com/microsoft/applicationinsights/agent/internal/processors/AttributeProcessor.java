@@ -27,15 +27,11 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogDataBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.w3c.dom.Attr;
 
 // structure which only allows valid data
 // normalization has to occur before construction
