@@ -50,49 +50,49 @@ class ExporterWithSpanProcessorTest {
 
   @Test
   void noNameObjectTest() {
-    MockExporter mockExporter = new MockExporter();
+    MockSpanExporter mockSpanExporter = new MockSpanExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
     config.id = "noNameObjectTest";
 
-    assertThatThrownBy(() -> new ExporterWithSpanProcessor(config, mockExporter))
+    assertThatThrownBy(() -> new ExporterWithSpanProcessor(config, mockSpanExporter))
         .isInstanceOf(FriendlyException.class);
   }
 
   @Test
   void inValidConfigTestWithNoFromOrToAttributesTest() {
-    MockExporter mockExporter = new MockExporter();
+    MockSpanExporter mockSpanExporter = new MockSpanExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
     config.id = "inValidConfigTestWithToAttributesNoRules";
     config.name = new NameConfig();
 
-    assertThatThrownBy(() -> new ExporterWithSpanProcessor(config, mockExporter))
+    assertThatThrownBy(() -> new ExporterWithSpanProcessor(config, mockSpanExporter))
         .isInstanceOf(FriendlyException.class);
   }
 
   @Test
   void inValidConfigTestWithToAttributesNoRulesTest() {
-    MockExporter mockExporter = new MockExporter();
+    MockSpanExporter mockSpanExporter = new MockSpanExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
     config.id = "inValidConfigTestWithToAttributesNoRules";
     config.name = new NameConfig();
     config.name.toAttributes = new ToAttributeConfig();
 
-    assertThatThrownBy(() -> new ExporterWithSpanProcessor(config, mockExporter))
+    assertThatThrownBy(() -> new ExporterWithSpanProcessor(config, mockSpanExporter))
         .isInstanceOf(FriendlyException.class);
   }
 
   @Test
   void simpleRenameSpanTest() {
-    MockExporter mockExporter = new MockExporter();
+    MockSpanExporter mockSpanExporter = new MockSpanExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
     config.id = "SimpleRenameSpan";
     config.name = new NameConfig();
     config.name.fromAttributes = Arrays.asList("db.svc", "operation", "id");
-    SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
+    SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockSpanExporter);
 
     Span span =
         tracer
@@ -111,21 +111,21 @@ class ExporterWithSpanProcessorTest {
     exampleExporter.export(spans);
 
     // verify that resulting spans are filtered in the way we want
-    List<SpanData> result = mockExporter.getSpans();
+    List<SpanData> result = mockSpanExporter.getSpans();
     SpanData resultSpan = result.get(0);
     assertThat(resultSpan.getName()).isEqualTo("locationget1234");
   }
 
   @Test
   void simpleRenameSpanWithSeparatorTest() {
-    MockExporter mockExporter = new MockExporter();
+    MockSpanExporter mockSpanExporter = new MockSpanExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
     config.id = "SimpleRenameSpanWithSeparator";
     config.name = new NameConfig();
     config.name.fromAttributes = Arrays.asList("db.svc", "operation", "id");
     config.name.separator = "::";
-    SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
+    SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockSpanExporter);
 
     Span span =
         tracer
@@ -144,21 +144,21 @@ class ExporterWithSpanProcessorTest {
     exampleExporter.export(spans);
 
     // verify that resulting spans are filtered in the way we want
-    List<SpanData> result = mockExporter.getSpans();
+    List<SpanData> result = mockSpanExporter.getSpans();
     SpanData resultSpan = result.get(0);
     assertThat(resultSpan.getName()).isEqualTo("location::get::1234");
   }
 
   @Test
   void simpleRenameSpanWithMissingKeysTest() {
-    MockExporter mockExporter = new MockExporter();
+    MockSpanExporter mockSpanExporter = new MockSpanExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
     config.id = "SimpleRenameSpanWithMissingKeys";
     config.name = new NameConfig();
     config.name.fromAttributes = Arrays.asList("db.svc", "operation", "id");
     config.name.separator = "::";
-    SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
+    SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockSpanExporter);
 
     Span span =
         tracer
@@ -176,14 +176,14 @@ class ExporterWithSpanProcessorTest {
     exampleExporter.export(spans);
 
     // verify that resulting spans are filtered in the way we want
-    List<SpanData> result = mockExporter.getSpans();
+    List<SpanData> result = mockSpanExporter.getSpans();
     SpanData resultSpan = result.get(0);
     assertThat(resultSpan.getName()).isEqualTo("svcA");
   }
 
   @Test
   void renameSpanWithIncludeTest() {
-    MockExporter mockExporter = new MockExporter();
+    MockSpanExporter mockSpanExporter = new MockSpanExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
     config.id = "RenameSpanWithInclude";
@@ -192,7 +192,7 @@ class ExporterWithSpanProcessorTest {
     config.include = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.STRICT;
     config.include.names = Arrays.asList("svcA", "svcB");
-    SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
+    SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockSpanExporter);
 
     Span spanA =
         tracer
@@ -242,7 +242,7 @@ class ExporterWithSpanProcessorTest {
     exampleExporter.export(spans);
 
     // verify that resulting spans are filtered in the way we want
-    List<SpanData> result = mockExporter.getSpans();
+    List<SpanData> result = mockSpanExporter.getSpans();
     SpanData resultSpanA = result.get(0);
     SpanData resultSpanB = result.get(1);
     SpanData resultSpanC = result.get(2);
@@ -255,7 +255,7 @@ class ExporterWithSpanProcessorTest {
 
   @Test
   void invalidRegexInRulesTest() {
-    MockExporter mockExporter = new MockExporter();
+    MockSpanExporter mockSpanExporter = new MockSpanExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
     config.id = "InvalidRegexInRules";
@@ -265,13 +265,13 @@ class ExporterWithSpanProcessorTest {
     toAttributeConfig.rules.add("***");
     config.name.toAttributes = toAttributeConfig;
 
-    assertThatThrownBy(() -> new ExporterWithSpanProcessor(config, mockExporter))
+    assertThatThrownBy(() -> new ExporterWithSpanProcessor(config, mockSpanExporter))
         .isInstanceOf(FriendlyException.class);
   }
 
   @Test
   void simpleToAttributesTest() {
-    MockExporter mockExporter = new MockExporter();
+    MockSpanExporter mockSpanExporter = new MockSpanExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
     config.id = "SimpleToAttributes";
@@ -280,7 +280,7 @@ class ExporterWithSpanProcessorTest {
     toAttributeConfig.rules = new ArrayList<>();
     toAttributeConfig.rules.add("^/api/v1/document/(?<documentId>.*)/update$");
     config.name.toAttributes = toAttributeConfig;
-    SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
+    SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockSpanExporter);
 
     Span span =
         tracer
@@ -299,7 +299,7 @@ class ExporterWithSpanProcessorTest {
     exampleExporter.export(spans);
 
     // verify that resulting spans are filtered in the way we want
-    List<SpanData> result = mockExporter.getSpans();
+    List<SpanData> result = mockSpanExporter.getSpans();
     SpanData resultSpan = result.get(0);
     assertThat(
             Objects.requireNonNull(
@@ -314,7 +314,7 @@ class ExporterWithSpanProcessorTest {
 
   @Test
   void multiRuleToAttributesTest() {
-    MockExporter mockExporter = new MockExporter();
+    MockSpanExporter mockSpanExporter = new MockSpanExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
     config.id = "MultiRuleToAttributes";
@@ -324,7 +324,7 @@ class ExporterWithSpanProcessorTest {
     toAttributeConfig.rules.add("Password=(?<password1>[^ ]+)");
     toAttributeConfig.rules.add("Pass=(?<password2>[^ ]+)");
     config.name.toAttributes = toAttributeConfig;
-    SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
+    SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockSpanExporter);
 
     Span spanA =
         tracer
@@ -355,7 +355,7 @@ class ExporterWithSpanProcessorTest {
     exampleExporter.export(spans);
 
     // verify that resulting spans are filtered in the way we want
-    List<SpanData> result = mockExporter.getSpans();
+    List<SpanData> result = mockSpanExporter.getSpans();
     SpanData resultSpanA = result.get(0);
     SpanData resultSpanB = result.get(1);
     assertThat(
@@ -389,7 +389,7 @@ class ExporterWithSpanProcessorTest {
 
   @Test
   void extractAttributesWithIncludeExcludeTest() {
-    MockExporter mockExporter = new MockExporter();
+    MockSpanExporter mockSpanExporter = new MockSpanExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
     config.id = "ExtractAttributesWithIncludeExclude";
@@ -402,7 +402,7 @@ class ExporterWithSpanProcessorTest {
     config.exclude.names = Arrays.asList("donot/change");
     config.name.toAttributes = new ToAttributeConfig();
     config.name.toAttributes.rules = Arrays.asList("(?<operationwebsite>.*?)$");
-    SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
+    SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockSpanExporter);
 
     Span spanA =
         tracer
@@ -452,7 +452,7 @@ class ExporterWithSpanProcessorTest {
     exampleExporter.export(spans);
 
     // verify that resulting spans are filtered in the way we want
-    List<SpanData> result = mockExporter.getSpans();
+    List<SpanData> result = mockSpanExporter.getSpans();
     SpanData resultSpanA = result.get(0);
     SpanData resultSpanB = result.get(1);
     SpanData resultSpanC = result.get(2);
@@ -477,13 +477,13 @@ class ExporterWithSpanProcessorTest {
 
   @Test
   void simpleRenameSpanTestWithLogProcessor() {
-    MockExporter mockExporter = new MockExporter();
+    MockSpanExporter mockSpanExporter = new MockSpanExporter();
     ProcessorConfig config = new ProcessorConfig();
     config.type = ProcessorType.SPAN;
     config.id = "SimpleRenameSpan";
     config.name = new NameConfig();
     config.name.fromAttributes = Arrays.asList("db.svc", "operation", "id");
-    SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
+    SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockSpanExporter);
 
     Span span =
         tracer
@@ -503,7 +503,7 @@ class ExporterWithSpanProcessorTest {
     exampleExporter.export(spans);
 
     // verify that resulting spans are not modified
-    List<SpanData> result = mockExporter.getSpans();
+    List<SpanData> result = mockSpanExporter.getSpans();
     SpanData resultSpan = result.get(0);
     assertThat(resultSpan.getName()).isEqualTo("svcA");
   }
