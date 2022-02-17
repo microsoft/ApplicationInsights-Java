@@ -77,7 +77,7 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
     throw new IllegalStateException("process config is empty");
   }
 
-  private List<Configuration.ProcessorConfig> reverseProcessorConfigs(Configuration configuration) {
+  private static List<Configuration.ProcessorConfig> reverseProcessorConfigs(Configuration configuration) {
     List<Configuration.ProcessorConfig> processors =
         configuration.preview.processors.stream()
             .filter(processor -> processor.type != Configuration.ProcessorType.METRIC_FILTER)

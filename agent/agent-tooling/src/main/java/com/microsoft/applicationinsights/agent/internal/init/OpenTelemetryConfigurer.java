@@ -25,11 +25,9 @@ import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
-import com.microsoft.applicationinsights.agent.internal.exporter.LoggerExporter;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHeaderSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithAttributeProcessor;
-import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithLogProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
@@ -159,20 +157,6 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
     // using batch size 1 because need to convert to SpanData as soon as possible to grab data for
     // live metrics. the real batching is done at a lower level
     return BatchSpanProcessor.builder(spanExporter).setMaxExportBatchSize(1).build();
-  }
-
-  private static BatchLogProcessor createLogExporter(List<ProcessorConfig> processorConfigs) {
-    LoggerExporter loggerExporter = new LoggerExporter(TelemetryClient.getActive());
-    if (!processorConfigs.isEmpty()) {
-      for (ProcessorConfig processorConfig : processorConfigs) {
-        if (processorConfig.type == Configuration.ProcessorType.LOG) {
-          ExporterWithLogProcessor logProcessor = new ExporterWithLogProcessor(processorConfig, loggerExporter);
-          return BatchLogProcessor.builder(logProcessor).setMaxExportBatchSize(1).build();
-        }
-      }
-    }
-
-    return null;
   }
 
   private static List<ProcessorConfig> reverseProcessorConfigs(Configuration configuration) {
