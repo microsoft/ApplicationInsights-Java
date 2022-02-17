@@ -30,13 +30,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class ExporterWithAttributeProcessor implements SpanExporter {
+public class SpanExporterWithAttributeProcessor implements SpanExporter {
 
   private final SpanExporter delegate;
   private final AttributeProcessor attributeProcessor;
 
   // caller should check config.isValid before creating
-  public ExporterWithAttributeProcessor(ProcessorConfig config, SpanExporter delegate) {
+  public SpanExporterWithAttributeProcessor(ProcessorConfig config, SpanExporter delegate) {
     config.validate();
     attributeProcessor = AttributeProcessor.create(config);
     this.delegate = delegate;
@@ -65,21 +65,6 @@ public class ExporterWithAttributeProcessor implements SpanExporter {
     }
     return attributeProcessor.processActions(span);
   }
-
-  // TODO (heya) does LogData uses attribute processor?
-//  private LogData process(LogData log) {
-//    IncludeExclude include = attributeProcessor.getInclude();
-//    if (include != null && !include.isMatch(log.getAttributes(), log.getName(), true)) {
-//      // If not included we can skip further processing
-//      return log;
-//    }
-//    IncludeExclude exclude = attributeProcessor.getExclude();
-//    if (exclude != null && exclude.isMatch(log.getAttributes(), log.getName(), true)) {
-//      // If excluded we can skip further processing
-//      return log;
-//    }
-//    return attributeProcessor.processActions(log);
-//  }
 
   @Override
   public CompletableResultCode flush() {

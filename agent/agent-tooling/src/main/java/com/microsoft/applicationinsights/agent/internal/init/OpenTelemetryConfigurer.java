@@ -27,7 +27,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHeaderSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
-import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithAttributeProcessor;
+import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
@@ -134,13 +134,11 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
       for (ProcessorConfig processorConfig : processorConfigs) {
         switch (processorConfig.type) {
           case ATTRIBUTE:
-            spanExporter = new ExporterWithAttributeProcessor(processorConfig, spanExporter);
+            spanExporter = new SpanExporterWithAttributeProcessor(processorConfig, spanExporter);
             break;
           case SPAN:
             spanExporter = new ExporterWithSpanProcessor(processorConfig, spanExporter);
             break;
-          case LOG:
-
           default:
             throw new IllegalStateException(
                 "Not an expected ProcessorType: " + processorConfig.type);
