@@ -32,14 +32,8 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.export.LogExporter;
-import io.opentelemetry.sdk.trace.ReadableSpan;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -140,7 +134,6 @@ class ExporterWithLogProcessorTest {
   @Test
   void simpleRenameLogWithMissingKeysTest() {
     config.id = "SimpleRenameLogWithMissingKeys";
-    config.body = new NameConfig();
     config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
     config.body.separator = "::";
     LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
@@ -162,7 +155,6 @@ class ExporterWithLogProcessorTest {
   @Test
   void invalidRegexInRulesTest() {
     config.id = "InvalidRegexInRules";
-    config.body = new NameConfig();
     ToAttributeConfig toAttributeConfig = new ToAttributeConfig();
     toAttributeConfig.rules = new ArrayList<>();
     toAttributeConfig.rules.add("***");
@@ -204,11 +196,7 @@ class ExporterWithLogProcessorTest {
 
   @Test
   void multiRuleToAttributesTest() {
-    MockSpanExporter mockSpanExporter = new MockSpanExporter();
-    ProcessorConfig config = new ProcessorConfig();
-    config.type = ProcessorType.LOG;
     config.id = "MultiRuleToAttributes";
-    config.body = new NameConfig();
     ToAttributeConfig toAttributeConfig = new ToAttributeConfig();
     toAttributeConfig.rules = new ArrayList<>();
     toAttributeConfig.rules.add("Password=(?<password1>[^ ]+)");
@@ -232,7 +220,7 @@ class ExporterWithLogProcessorTest {
             .build();
     MockLogData mockLogB = MockLogData.builder()
         .setName("yyyPassword=**** aba")
-        .setAttributes(attributes)
+        .setAttributes(attributesB)
         .build();
 
     List<LogData> logs = new ArrayList<>();
@@ -276,11 +264,10 @@ class ExporterWithLogProcessorTest {
   @Test
   void simpleRenameLogTestWithSpanProcessor() {
     config.id = "SimpleRenameLog";
-    config.body = new NameConfig();
     config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
     LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
 
-    Attributes attributesB =
+    Attributes newAttributes =
         Attributes.builder()
             .put("one", "1")
             .put("two", 2L)
@@ -290,7 +277,7 @@ class ExporterWithLogProcessorTest {
             .build();
     MockLogData mockLog = MockLogData.builder()
         .setName("svcA")
-        .setAttributes(attributes)
+        .setAttributes(newAttributes)
         .build();
 
     List<LogData> logs = new ArrayList<>();

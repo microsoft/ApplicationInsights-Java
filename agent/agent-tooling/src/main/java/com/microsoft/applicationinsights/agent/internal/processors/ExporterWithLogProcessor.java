@@ -27,9 +27,6 @@ import com.microsoft.applicationinsights.agent.internal.processors.AgentProcesso
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.export.LogExporter;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
-import org.apache.commons.logging.Log;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

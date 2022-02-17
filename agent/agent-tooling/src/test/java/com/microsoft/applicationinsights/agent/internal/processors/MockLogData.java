@@ -23,35 +23,25 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
-import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
-import java.time.Instant;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class MockLogData implements LogData {
 
-  private static final String TRACE_ID = TraceId.fromLongs(10L, 2L);
-  private static final String SPAN_ID = SpanId.fromLong(1);
-  private static final TraceState TRACE_STATE = TraceState.builder().build();
+  private final Resource resource;
+  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
+  private final long epochNanos;
+  private final SpanContext spanContext;
+  private final Severity severity;
+  private final String severityText;
+  private final String name;
+  private final Body body;
+  private final Attributes attributes;
 
-  private Resource resource;
-  private InstrumentationLibraryInfo instrumentationLibraryInfo = InstrumentationLibraryInfo.create("TestLib", "1");
-  private long epochNanos = MILLISECONDS.toNanos(Instant.now().toEpochMilli());
-  private SpanContext spanContext = SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE);
-  private Severity severity;
-  private String severityText;
-  private String name;
-  private Body body;
-  private Attributes attributes;
   static MockLogData.Builder builder() {
     return new Builder();
   }
@@ -103,10 +93,6 @@ public class MockLogData implements LogData {
   @Override
   public String getName() {
     return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
   }
 
   @Override

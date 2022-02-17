@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.processors.AgentProcessor.IncludeExclude;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayList;
@@ -67,19 +66,20 @@ public class ExporterWithAttributeProcessor implements SpanExporter {
     return attributeProcessor.processActions(span);
   }
 
-  private LogData process(LogData log) {
-    IncludeExclude include = attributeProcessor.getInclude();
-    if (include != null && !include.isMatch(log.getAttributes(), log.getName(), true)) {
-      // If not included we can skip further processing
-      return log;
-    }
-    IncludeExclude exclude = attributeProcessor.getExclude();
-    if (exclude != null && exclude.isMatch(log.getAttributes(), log.getName(), true)) {
-      // If excluded we can skip further processing
-      return log;
-    }
-    return attributeProcessor.processActions(log);
-  }
+  // TODO (heya) does LogData uses attribute processor?
+//  private LogData process(LogData log) {
+//    IncludeExclude include = attributeProcessor.getInclude();
+//    if (include != null && !include.isMatch(log.getAttributes(), log.getName(), true)) {
+//      // If not included we can skip further processing
+//      return log;
+//    }
+//    IncludeExclude exclude = attributeProcessor.getExclude();
+//    if (exclude != null && exclude.isMatch(log.getAttributes(), log.getName(), true)) {
+//      // If excluded we can skip further processing
+//      return log;
+//    }
+//    return attributeProcessor.processActions(log);
+//  }
 
   @Override
   public CompletableResultCode flush() {
