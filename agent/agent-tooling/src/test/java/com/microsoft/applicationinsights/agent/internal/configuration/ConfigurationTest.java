@@ -163,13 +163,15 @@ class ConfigurationTest {
     assertThat(selectiveConfig.actions.size()).isEqualTo(2);
     assertThat(selectiveConfig.actions.get(0).key).isEqualTo(AttributeKey.stringKey("credit_card"));
     assertThat(selectiveConfig.actions.get(0).action).isEqualTo(ProcessorActionType.DELETE);
-    // log/update name test
-    ProcessorConfig logUpdateNameConfig = preview.processors.get(3);
-    assertThat(logUpdateNameConfig.type).isEqualTo(ProcessorType.LOG);
-    assertThat(logUpdateNameConfig.id).isEqualTo("log/updateName");
-    assertThat(logUpdateNameConfig.body.fromAttributes.size()).isEqualTo(1);
-    assertThat(logUpdateNameConfig.body.fromAttributes.get(0)).isEqualTo("loggerName");
-    assertThat(logUpdateNameConfig.body.separator).isEqualTo("::");
+    // log/updateLogName
+    ProcessorConfig logUpdateLogName = preview.processors.get(3);
+    assertThat(logUpdateLogName.type).isEqualTo(ProcessorType.LOG);
+    assertThat(logUpdateLogName.id).isEqualTo("log/updateLogName");
+    assertThat(logUpdateLogName.body.toAttributes.rules.size()).isEqualTo(1);
+    assertThat(logUpdateLogName.body.toAttributes.rules.get(0));
+    assertThat(logUpdateLogName.name.fromAttributes.size()).isEqualTo(1);
+    assertThat(logUpdateLogName.name.fromAttributes.get(0)).isEqualTo("loggerName");
+    assertThat(logUpdateLogName.name.separator).isEqualTo("::");
     // log/extractAttributes
     ProcessorConfig logExtractAttributesConfig = preview.processors.get(4);
     assertThat(logExtractAttributesConfig.type).isEqualTo(ProcessorType.LOG);
@@ -177,8 +179,18 @@ class ConfigurationTest {
     assertThat(logExtractAttributesConfig.body.toAttributes.rules.size()).isEqualTo(1);
     assertThat(logExtractAttributesConfig.body.toAttributes.rules.get(0))
         .isEqualTo("^/api/v1/document/(?<documentId>.*)/update$");
+    // log/updateLogNameWithRegex
+    ProcessorConfig logUpdateNameConfig = preview.processors.get(5);
+    assertThat(logUpdateNameConfig.type).isEqualTo(ProcessorType.LOG);
+    assertThat(logUpdateNameConfig.id).isEqualTo("log/updateLogNameWithRegex");
+    assertThat(logUpdateNameConfig.include.matchType).isEqualTo(MatchType.REGEXP);
+    assertThat(logUpdateNameConfig.include.logNames.size()).isEqualTo(1);
+    assertThat(logUpdateNameConfig.include.logNames.get(0)).isEqualTo(".*password.*");
+    assertThat(logUpdateNameConfig.name.fromAttributes.size()).isEqualTo(1);
+    assertThat(logUpdateNameConfig.name.fromAttributes.get(0)).isEqualTo("loggerName");
+    assertThat(logUpdateNameConfig.name.separator).isEqualTo("::");
     // span/update name test
-    ProcessorConfig spanUpdateNameConfig = preview.processors.get(5);
+    ProcessorConfig spanUpdateNameConfig = preview.processors.get(6);
     assertThat(spanUpdateNameConfig.type).isEqualTo(ProcessorType.SPAN);
     assertThat(spanUpdateNameConfig.id).isEqualTo("span/updateName");
     assertThat(spanUpdateNameConfig.include.matchType).isEqualTo(MatchType.REGEXP);
@@ -194,6 +206,7 @@ class ConfigurationTest {
     assertThat(spanExtractAttributesConfig.name.toAttributes.rules.size()).isEqualTo(1);
     assertThat(spanExtractAttributesConfig.name.toAttributes.rules.get(0))
         .isEqualTo("^/api/v1/document/(?<documentId>.*)/update$");
+
     // attribute/extract
     ProcessorConfig attributesExtractConfig = preview.processors.get(7);
     assertThat(attributesExtractConfig.type).isEqualTo(ProcessorType.ATTRIBUTE);

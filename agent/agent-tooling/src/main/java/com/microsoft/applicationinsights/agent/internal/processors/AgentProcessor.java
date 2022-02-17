@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.processors;
 
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorAttribute;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorIncludeExclude;
@@ -69,7 +68,7 @@ public abstract class AgentProcessor {
   public static class StrictIncludeExclude extends IncludeExclude {
     private final List<ProcessorAttribute> processorAttributes;
     private final List<String> names;
-    private ProcessorType type;
+    private final ProcessorType type;
 
     private StrictIncludeExclude(List<ProcessorAttribute> processorAttributes, List<String> names, ProcessorType type) {
       this.processorAttributes = processorAttributes;
@@ -83,9 +82,9 @@ public abstract class AgentProcessor {
         attributes = new ArrayList<>();
       }
       List<String> names = null;
-      if (type == Configuration.ProcessorType.SPAN) {
+      if (type == ProcessorType.SPAN) {
         names = includeExclude.spanNames;
-      } else if (type == Configuration.ProcessorType.LOG) {
+      } else if (type == ProcessorType.LOG) {
         names = includeExclude.logNames;
       }
 
@@ -160,13 +159,13 @@ public abstract class AgentProcessor {
       }
 
       List<Pattern> patterns = new ArrayList<>();
-      if (type == Configuration.ProcessorType.SPAN) {
+      if (type == ProcessorType.SPAN) {
         if (includeExclude.spanNames != null) {
           for (String regex : includeExclude.spanNames) {
             patterns.add(Pattern.compile(regex));
           }
         }
-      } else if (type == Configuration.ProcessorType.LOG) {
+      } else if (type == ProcessorType.LOG) {
         if (includeExclude.logNames != null) {
           for (String regex : includeExclude.logNames) {
             patterns.add(Pattern.compile(regex));
