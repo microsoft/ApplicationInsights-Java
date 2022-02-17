@@ -23,8 +23,7 @@ public class TomcatNetAttributesExtractor extends NetServerAttributesExtractor<R
   @Override
   @Nullable
   public String peerName(Request request) {
-    request.action(ActionCode.REQ_HOST_ATTRIBUTE, request);
-    return request.remoteHost().toString();
+    return null;
   }
 
   @Override
