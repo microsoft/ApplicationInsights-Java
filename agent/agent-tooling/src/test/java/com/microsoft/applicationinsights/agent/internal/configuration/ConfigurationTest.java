@@ -127,7 +127,6 @@ class ConfigurationTest {
 
   @Test
   void shouldParseProcessorConfiguration() throws IOException {
-
     Configuration configuration = loadConfiguration("ApplicationInsights_SpanProcessor.json");
     PreviewConfiguration preview = configuration.preview;
     assertThat(configuration.connectionString)
@@ -155,8 +154,8 @@ class ConfigurationTest {
     assertThat(selectiveConfig.type).isEqualTo(ProcessorType.ATTRIBUTE);
     assertThat(selectiveConfig.id).isEqualTo("attributes/selectiveProcessing");
     assertThat(selectiveConfig.include.matchType).isEqualTo(MatchType.STRICT);
-    assertThat(selectiveConfig.include.names.size()).isEqualTo(2);
-    assertThat(selectiveConfig.include.names.get(0)).isEqualTo("svcA");
+    assertThat(selectiveConfig.include.spanNames.size()).isEqualTo(2);
+    assertThat(selectiveConfig.include.spanNames.get(0)).isEqualTo("svcA");
     assertThat(selectiveConfig.exclude.matchType).isEqualTo(MatchType.STRICT);
     assertThat(selectiveConfig.exclude.attributes.size()).isEqualTo(1);
     assertThat(selectiveConfig.exclude.attributes.get(0).key).isEqualTo("redact_trace");
@@ -183,8 +182,8 @@ class ConfigurationTest {
     assertThat(spanUpdateNameConfig.type).isEqualTo(ProcessorType.SPAN);
     assertThat(spanUpdateNameConfig.id).isEqualTo("span/updateName");
     assertThat(spanUpdateNameConfig.include.matchType).isEqualTo(MatchType.REGEXP);
-    assertThat(spanUpdateNameConfig.include.names.size()).isEqualTo(1);
-    assertThat(spanUpdateNameConfig.include.names.get(0)).isEqualTo(".*password.*");
+    assertThat(spanUpdateNameConfig.include.spanNames.size()).isEqualTo(1);
+    assertThat(spanUpdateNameConfig.include.spanNames.get(0)).isEqualTo(".*password.*");
     assertThat(spanUpdateNameConfig.name.fromAttributes.size()).isEqualTo(1);
     assertThat(spanUpdateNameConfig.name.fromAttributes.get(0)).isEqualTo("loggerName");
     assertThat(spanUpdateNameConfig.name.separator).isEqualTo("::");

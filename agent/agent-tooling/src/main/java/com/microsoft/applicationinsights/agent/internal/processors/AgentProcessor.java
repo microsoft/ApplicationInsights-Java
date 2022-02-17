@@ -21,18 +21,20 @@
 
 package com.microsoft.applicationinsights.agent.internal.processors;
 
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorAttribute;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorIncludeExclude;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorType;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public abstract class AgentProcessor {
 
@@ -45,10 +47,10 @@ public abstract class AgentProcessor {
   }
 
   protected static IncludeExclude getNormalizedIncludeExclude(
-      ProcessorIncludeExclude includeExclude) {
+      ProcessorIncludeExclude includeExclude, ProcessorType type) {
     return includeExclude.matchType == MatchType.STRICT
-        ? AgentProcessor.StrictIncludeExclude.create(includeExclude)
-        : AgentProcessor.RegexpIncludeExclude.create(includeExclude);
+        ? AgentProcessor.StrictIncludeExclude.create(includeExclude, type)
+        : AgentProcessor.RegexpIncludeExclude.create(includeExclude, type);
   }
 
   public @Nullable IncludeExclude getInclude() {
@@ -61,34 +63,42 @@ public abstract class AgentProcessor {
 
   public abstract static class IncludeExclude {
     // Function to compare span/log with user provided span/log names or span/log patterns
-    public abstract boolean isMatch(Attributes attributes, String name, boolean isLog);
+    public abstract boolean isMatch(Attributes attributes, String name);
   }
 
   public static class StrictIncludeExclude extends IncludeExclude {
     private final List<ProcessorAttribute> processorAttributes;
     private final List<String> names;
+    private ProcessorType type;
 
-    public StrictIncludeExclude(List<ProcessorAttribute> processorAttributes, List<String> names) {
+    private StrictIncludeExclude(List<ProcessorAttribute> processorAttributes, List<String> names, ProcessorType type) {
       this.processorAttributes = processorAttributes;
       this.names = names;
+      this.type = type;
     }
 
-    public static StrictIncludeExclude create(ProcessorIncludeExclude includeExclude) {
+    public static StrictIncludeExclude create(ProcessorIncludeExclude includeExclude, ProcessorType type) {
       List<ProcessorAttribute> attributes = includeExclude.attributes;
       if (attributes == null) {
         attributes = new ArrayList<>();
       }
-      List<String> spanNames = includeExclude.names;
-      if (spanNames == null) {
-        spanNames = new ArrayList<>();
+      List<String> names = null;
+      if (type == Configuration.ProcessorType.SPAN) {
+        names = includeExclude.spanNames;
+      } else if (type == Configuration.ProcessorType.LOG) {
+        names = includeExclude.logNames;
       }
-      return new StrictIncludeExclude(attributes, spanNames);
+
+      if (names == null) {
+        names = new ArrayList<>();
+      }
+      return new StrictIncludeExclude(attributes, names, type);
     }
 
     // compare span/log with user provided span/log names
     @Override
-    public boolean isMatch(Attributes attributes, String name, boolean isLog) {
-      if (isLog) {
+    public boolean isMatch(Attributes attributes, String name) {
+      if (type == ProcessorType.LOG) {
         // If user provided span/log Names , then do not include log in the include/exclude criteria
         if (!names.isEmpty()) {
           return false;
@@ -128,14 +138,16 @@ public abstract class AgentProcessor {
 
     private final List<Pattern> patterns;
     private final Map<AttributeKey<?>, Pattern> attributeValuePatterns;
+    private final ProcessorType type;
 
-    public RegexpIncludeExclude(
-        List<Pattern> patterns, Map<AttributeKey<?>, Pattern> attributeValuePatterns) {
+    private RegexpIncludeExclude(
+        List<Pattern> patterns, Map<AttributeKey<?>, Pattern> attributeValuePatterns, ProcessorType type) {
       this.patterns = patterns;
       this.attributeValuePatterns = attributeValuePatterns;
+      this.type = type;
     }
 
-    public static RegexpIncludeExclude create(ProcessorIncludeExclude includeExclude) {
+    public static RegexpIncludeExclude create(ProcessorIncludeExclude includeExclude, ProcessorType type) {
       List<ProcessorAttribute> attributes = includeExclude.attributes;
       Map<AttributeKey<?>, Pattern> attributeKeyValuePatterns = new HashMap<>();
       if (attributes != null) {
@@ -147,13 +159,22 @@ public abstract class AgentProcessor {
         }
       }
 
-      List<Pattern> spanPatterns = new ArrayList<>();
-      if (includeExclude.names != null) {
-        for (String regex : includeExclude.names) {
-          spanPatterns.add(Pattern.compile(regex));
+      List<Pattern> patterns = new ArrayList<>();
+      if (type == Configuration.ProcessorType.SPAN) {
+        if (includeExclude.spanNames != null) {
+          for (String regex : includeExclude.spanNames) {
+            patterns.add(Pattern.compile(regex));
+          }
+        }
+      } else if (type == Configuration.ProcessorType.LOG) {
+        if (includeExclude.logNames != null) {
+          for (String regex : includeExclude.logNames) {
+            patterns.add(Pattern.compile(regex));
+          }
         }
       }
-      return new RegexpIncludeExclude(spanPatterns, attributeKeyValuePatterns);
+
+      return new RegexpIncludeExclude(patterns, attributeKeyValuePatterns, type);
     }
 
     // Function to compare span attribute value with user provided value
@@ -174,8 +195,8 @@ public abstract class AgentProcessor {
 
     // Function to compare span/log with user provided span patterns/log patterns
     @Override
-    public boolean isMatch(Attributes attributes, String name, boolean isLog) {
-      if (isLog) {
+    public boolean isMatch(Attributes attributes, String name) {
+      if (type == ProcessorType.LOG) {
         // If user provided log name, then do not include log in the include/exclude criteria
         if (!patterns.isEmpty()) {
           return false;

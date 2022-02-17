@@ -54,12 +54,12 @@ public class ExporterWithLogProcessor implements LogExporter {
 
   private LogData process(LogData log) {
     IncludeExclude include = logProcessor.getInclude();
-    if (include != null && !include.isMatch(log.getAttributes(), log.getName(), true)) {
+    if (include != null && !include.isMatch(log.getAttributes(), log.getName())) {
       // If Not included we can skip further processing
       return log;
     }
     IncludeExclude exclude = logProcessor.getExclude();
-    if (exclude != null && exclude.isMatch(log.getAttributes(), log.getName(), true)) {
+    if (exclude != null && exclude.isMatch(log.getAttributes(), log.getName())) {
       return log;
     }
 

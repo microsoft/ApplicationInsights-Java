@@ -50,17 +50,17 @@ public class AttributeProcessor extends AgentProcessor {
   // Creates a Span Processor object
   public static AttributeProcessor create(ProcessorConfig config) {
     IncludeExclude normalizedInclude =
-        config.include != null ? getNormalizedIncludeExclude(config.include) : null;
+        config.include != null ? getNormalizedIncludeExclude(config.include, config.type) : null;
     IncludeExclude normalizedExclude =
-        config.exclude != null ? getNormalizedIncludeExclude(config.exclude) : null;
+        config.exclude != null ? getNormalizedIncludeExclude(config.exclude, config.type) : null;
     return new AttributeProcessor(config.actions, normalizedInclude, normalizedExclude);
   }
 
   // Process actions on SpanData
   public SpanData processActions(SpanData span) {
-    SpanData result = null;
+    SpanData result = span;
     for (ProcessorAction actionObj : actions) {
-      result = new MySpanData(span, processAction(span.getAttributes(), actionObj));
+      result = new MySpanData(result, processAction(result.getAttributes(), actionObj));
     }
 
     return result;
@@ -68,10 +68,9 @@ public class AttributeProcessor extends AgentProcessor {
 
   // Process actions on LogData
   public LogData processActions(LogData log) {
-    LogData result = null;
+    LogData result = log;
     for (ProcessorAction actionObj : actions) {
-      Attributes attributes = processAction(log.getAttributes(), actionObj);
-      result = CustomizedLogData.create(log, attributes, log.getName());
+      result = CustomizedLogData.create(result, processAction(result.getAttributes(), actionObj), result.getName());
     }
 
     return result;
