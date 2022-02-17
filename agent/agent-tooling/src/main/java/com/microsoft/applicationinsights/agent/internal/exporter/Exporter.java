@@ -327,25 +327,6 @@ public class Exporter implements SpanExporter {
     telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_NAME.toString(), operationName);
   }
 
-  private static void setLoggerProperties(
-      AbstractTelemetryBuilder telemetryBuilder,
-      String level,
-      String loggerName,
-      String threadName) {
-    if (level != null) {
-      // TODO are these needed? level is already reported as severityLevel, sourceType maybe needed
-      // for exception telemetry only?
-      telemetryBuilder.addProperty("SourceType", "Logger");
-      telemetryBuilder.addProperty("LoggingLevel", level);
-    }
-    if (loggerName != null) {
-      telemetryBuilder.addProperty("LoggerName", loggerName);
-    }
-    if (threadName != null) {
-      telemetryBuilder.addProperty("ThreadName", threadName);
-    }
-  }
-
   private static void applyHttpClientSpan(
       RemoteDependencyTelemetryBuilder telemetryBuilder, Attributes attributes) {
 
@@ -861,10 +842,6 @@ public class Exporter implements SpanExporter {
 
   private static void setTime(AbstractTelemetryBuilder telemetryBuilder, long epochNanos) {
     telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(epochNanos));
-  }
-
-  private static void setSampleRate(AbstractTelemetryBuilder telemetryBuilder, SpanData span) {
-    setSampleRate(telemetryBuilder, getSamplingPercentage(span.getSpanContext().getTraceState()));
   }
 
   private static void setSampleRate(

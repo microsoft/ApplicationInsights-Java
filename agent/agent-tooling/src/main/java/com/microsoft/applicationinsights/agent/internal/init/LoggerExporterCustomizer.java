@@ -57,7 +57,7 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
   }
 
   @SuppressWarnings("SystemOut")
-  private BatchLogProcessor createLogExporter(List<Configuration.ProcessorConfig> processorConfigs) {
+  private static BatchLogProcessor createLogExporter(List<Configuration.ProcessorConfig> processorConfigs) {
     System.out.println("====================================== createLogExporter ======================================");
     LoggerExporter loggerExporter = new LoggerExporter(TelemetryClient.getActive());
     if (!processorConfigs.isEmpty()) {
@@ -65,11 +65,16 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
         if (processorConfig.type == Configuration.ProcessorType.LOG) {
           ExporterWithLogProcessor logProcessor = new ExporterWithLogProcessor(processorConfig, loggerExporter);
           return BatchLogProcessor.builder(logProcessor).setMaxExportBatchSize(1).build();
+        } else {
+          // TODO (heya) what to do when processorConfigs is empty and the processConfig.type is not LOG
+          throw new IllegalStateException(
+              "Not an expected ProcessorType: " + processorConfig.type);
         }
       }
     }
 
-    return null;
+    // TODO (heya) what to do when processConfigs is empty. do we create a log processor?
+    throw new IllegalStateException("process config is empty");
   }
 
   private List<Configuration.ProcessorConfig> reverseProcessorConfigs(Configuration configuration) {
