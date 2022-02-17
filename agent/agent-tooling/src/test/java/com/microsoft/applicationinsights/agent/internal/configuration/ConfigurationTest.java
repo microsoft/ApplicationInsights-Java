@@ -131,7 +131,7 @@ class ConfigurationTest {
     PreviewConfiguration preview = configuration.preview;
     assertThat(configuration.connectionString)
         .isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
-    assertThat(preview.processors.size()).isEqualTo(10);
+    assertThat(preview.processors.size()).isEqualTo(11);
     // insert config test
     ProcessorConfig insertConfig = preview.processors.get(0);
     assertThat(insertConfig.id).isEqualTo("attributes/insert");
@@ -167,11 +167,9 @@ class ConfigurationTest {
     ProcessorConfig logUpdateLogName = preview.processors.get(3);
     assertThat(logUpdateLogName.type).isEqualTo(ProcessorType.LOG);
     assertThat(logUpdateLogName.id).isEqualTo("log/updateLogName");
-    assertThat(logUpdateLogName.body.toAttributes.rules.size()).isEqualTo(1);
-    assertThat(logUpdateLogName.body.toAttributes.rules.get(0));
-    assertThat(logUpdateLogName.name.fromAttributes.size()).isEqualTo(1);
-    assertThat(logUpdateLogName.name.fromAttributes.get(0)).isEqualTo("loggerName");
-    assertThat(logUpdateLogName.name.separator).isEqualTo("::");
+    assertThat(logUpdateLogName.body.fromAttributes.size()).isEqualTo(1);
+    assertThat(logUpdateLogName.body.fromAttributes.get(0)).isEqualTo("loggerName");
+    assertThat(logUpdateLogName.body.separator).isEqualTo("::");
     // log/extractAttributes
     ProcessorConfig logExtractAttributesConfig = preview.processors.get(4);
     assertThat(logExtractAttributesConfig.type).isEqualTo(ProcessorType.LOG);
@@ -200,15 +198,14 @@ class ConfigurationTest {
     assertThat(spanUpdateNameConfig.name.fromAttributes.get(0)).isEqualTo("loggerName");
     assertThat(spanUpdateNameConfig.name.separator).isEqualTo("::");
     // span/extractAttributes
-    ProcessorConfig spanExtractAttributesConfig = preview.processors.get(6);
+    ProcessorConfig spanExtractAttributesConfig = preview.processors.get(7);
     assertThat(spanExtractAttributesConfig.type).isEqualTo(ProcessorType.SPAN);
     assertThat(spanExtractAttributesConfig.id).isEqualTo("span/extractAttributes");
     assertThat(spanExtractAttributesConfig.name.toAttributes.rules.size()).isEqualTo(1);
     assertThat(spanExtractAttributesConfig.name.toAttributes.rules.get(0))
         .isEqualTo("^/api/v1/document/(?<documentId>.*)/update$");
-
     // attribute/extract
-    ProcessorConfig attributesExtractConfig = preview.processors.get(7);
+    ProcessorConfig attributesExtractConfig = preview.processors.get(8);
     assertThat(attributesExtractConfig.type).isEqualTo(ProcessorType.ATTRIBUTE);
     assertThat(attributesExtractConfig.id).isEqualTo("attributes/extract");
     assertThat(attributesExtractConfig.actions.size()).isEqualTo(1);
@@ -223,7 +220,7 @@ class ConfigurationTest {
     assertThat(attributesExtractConfig.actions.get(0).extractAttribute.groupNames.get(0))
         .isEqualTo("httpProtocol");
     // metric-filter
-    ProcessorConfig metricFilterConfig = preview.processors.get(8);
+    ProcessorConfig metricFilterConfig = preview.processors.get(9);
     assertThat(metricFilterConfig.type).isEqualTo(ProcessorType.METRIC_FILTER);
     assertThat(metricFilterConfig.id).isEqualTo("metric-filter/exclude-two-metrics");
     assertThat(metricFilterConfig.exclude.matchType).isEqualTo(MatchType.STRICT);
@@ -231,7 +228,7 @@ class ConfigurationTest {
     assertThat(metricFilterConfig.exclude.metricNames.get(0)).isEqualTo("a_test_metric");
     assertThat(metricFilterConfig.exclude.metricNames.get(1)).isEqualTo("another_test_metric");
     // attribute/mask
-    ProcessorConfig attributesMaskConfig = preview.processors.get(9);
+    ProcessorConfig attributesMaskConfig = preview.processors.get(10);
     assertThat(attributesMaskConfig.type).isEqualTo(ProcessorType.ATTRIBUTE);
     assertThat(attributesMaskConfig.id).isEqualTo("attributes/mask");
     assertThat(attributesMaskConfig.actions.size()).isEqualTo(1);

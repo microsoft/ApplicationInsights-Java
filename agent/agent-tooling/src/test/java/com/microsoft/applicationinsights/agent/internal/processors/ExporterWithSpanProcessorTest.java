@@ -191,7 +191,7 @@ class ExporterWithSpanProcessorTest {
     config.name.fromAttributes = Arrays.asList("db.svc", "operation", "id");
     config.include = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.STRICT;
-    config.include.names = Arrays.asList("svcA", "svcB");
+    config.include.spanNames = Arrays.asList("svcA", "svcB");
     SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockSpanExporter);
 
     Span spanA =
@@ -396,10 +396,10 @@ class ExporterWithSpanProcessorTest {
     config.name = new NameConfig();
     config.include = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.REGEXP;
-    config.include.names = Arrays.asList("^(.*?)/(.*?)$");
+    config.include.spanNames = Arrays.asList("^(.*?)/(.*?)$");
     config.exclude = new ProcessorIncludeExclude();
     config.exclude.matchType = MatchType.STRICT;
-    config.exclude.names = Arrays.asList("donot/change");
+    config.exclude.spanNames = Arrays.asList("donot/change");
     config.name.toAttributes = new ToAttributeConfig();
     config.name.toAttributes.rules = Arrays.asList("(?<operationwebsite>.*?)$");
     SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockSpanExporter);
