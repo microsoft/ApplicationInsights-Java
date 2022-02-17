@@ -29,7 +29,6 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
-import io.opentelemetry.sdk.logs.export.SimpleLogProcessor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -47,7 +46,10 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
     autoConfiguration.addLogEmitterProviderCustomizer(
         (builder, config) -> {
           List<Configuration.ProcessorConfig> processorConfigs = reverseProcessorConfigs(MainEntryPoint.getConfiguration());
-          builder.addLogProcessor(createLogExporter(processorConfigs)).build();
+          BatchLogProcessor batchLogProcessor = createLogExporter(processorConfigs);
+          if (batchLogProcessor != null) {
+            builder.addLogProcessor(batchLogProcessor).build();
+          }
         }
     );
   }
