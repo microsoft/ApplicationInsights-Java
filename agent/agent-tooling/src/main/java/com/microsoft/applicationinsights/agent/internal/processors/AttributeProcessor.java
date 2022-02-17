@@ -75,14 +75,7 @@ public class AttributeProcessor extends AgentProcessor {
     LogData result = null;
     for (ProcessorAction actionObj : actions) {
       Attributes attributes = processAction(log.getAttributes(), actionObj);
-      result = LogDataBuilder.create(log.getResource(), log.getInstrumentationLibraryInfo())
-          .setEpoch(log.getEpochNanos(), TimeUnit.NANOSECONDS)
-          .setSpanContext(log.getSpanContext())
-          .setSeverity(log.getSeverity())
-          .setName(log.getName())
-          .setBody(log.getBody().asString())
-          .setAttributes(attributes)
-          .build();
+      result = CustomizedLogData.create(log, attributes, log.getName());
     }
 
     return result;

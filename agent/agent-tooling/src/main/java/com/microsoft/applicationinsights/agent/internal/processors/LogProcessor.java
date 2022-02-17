@@ -24,14 +24,12 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 import static com.microsoft.applicationinsights.agent.internal.processors.ProcessorUtil.applyRule;
 import static com.microsoft.applicationinsights.agent.internal.processors.ProcessorUtil.getGroupNamesList;
 
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogDataBuilder;
-import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -105,37 +103,29 @@ public class LogProcessor extends AgentProcessor {
         updatedLogBuffer.setLength(updatedLogBuffer.length() - separator.length());
       }
 
-      return LogDataBuilder.create(log.getResource(), log.getInstrumentationLibraryInfo())
-          .setEpoch(log.getEpochNanos(), TimeUnit.NANOSECONDS)
-          .setSpanContext(log.getSpanContext())
-          .setSeverity(log.getSeverity())
-          .setName(updatedLogBuffer.toString())
-          .setBody(log.getBody().asString())
-          .setAttributes(log.getAttributes())
-          .build();
+      return CustomizedLogData.create(log, existingLogAttributes, updatedLogBuffer.toString());
     }
 
     return log;
   }
 
-  // The following function extracts attributes from span name and replaces extracted parts with
+  // The following function extracts attributes from log name and replaces extracted parts with
   // attribute names
   public LogData processToAttributes(LogData log) {
     if (toAttributeRulePatterns.isEmpty()) {
       return log;
     }
-    String spanName = log.getName();
+    String logName = log.getName();
     // copy existing attributes.
     // According to Collector docs, The matched portion
-    // in the span name is replaced by extracted attribute name. If the attributes exist
+    // in the log name is replaced by extracted attribute name. If the attributes exist
     // they will be overwritten. Need a way to optimize this.
     AttributesBuilder builder = log.getAttributes().toBuilder();
     for (int i = 0; i < groupNames.size(); i++) {
-      spanName = applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), spanName, builder);
+      logName = applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), logName, builder);
     }
 
-//    LogDataBuilder.create(log.getResource(), log.getInstrumentationLibraryInfo()).set
-    return new MySpanData(log, builder.build(), spanName);
+    return CustomizedLogData.create(log, builder.build(), log.getName());
   }
 
   public static boolean logHasAllFromAttributeKeys(

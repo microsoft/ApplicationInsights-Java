@@ -48,8 +48,10 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
           List<Configuration.ProcessorConfig> processorConfigs = reverseProcessorConfigs(MainEntryPoint.getConfiguration());
           BatchLogProcessor batchLogProcessor = createLogExporter(processorConfigs);
           if (batchLogProcessor != null) {
-            builder.addLogProcessor(batchLogProcessor).build();
+            return builder.addLogProcessor(batchLogProcessor);
           }
+
+          return null;
         }
     );
   }
