@@ -53,7 +53,6 @@ class ExporterWithLogProcessorTest {
     mockExporter = new MockLogExporter(Mockito.mock(TelemetryClient.class));
     config = new ProcessorConfig();
     config.type = ProcessorType.LOG;
-    config.body = new NameConfig();
     attributes =
         Attributes.builder()
             .put("one", "1")
@@ -76,7 +75,7 @@ class ExporterWithLogProcessorTest {
   @Test
   void inValidConfigTestWithNoFromOrToAttributesTest() {
     config.id = "inValidConfigTestWithToAttributesNoRules";
-
+    config.body = new NameConfig();
     assertThatThrownBy(() -> new ExporterWithLogProcessor(config, mockExporter))
         .isInstanceOf(FriendlyException.class);
   }
@@ -84,6 +83,7 @@ class ExporterWithLogProcessorTest {
   @Test
   void inValidConfigTestWithToAttributesNoRulesTest() {
     config.id = "inValidConfigTestWithToAttributesNoRules";
+    config.body = new NameConfig();
     config.body.toAttributes = new ToAttributeConfig();
 
     assertThatThrownBy(() -> new ExporterWithLogProcessor(config, mockExporter))
@@ -134,6 +134,7 @@ class ExporterWithLogProcessorTest {
   @Test
   void simpleRenameLogWithMissingKeysTest() {
     config.id = "SimpleRenameLogWithMissingKeys";
+    config.body = new NameConfig();
     config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
     config.body.separator = "::";
     LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
@@ -155,6 +156,7 @@ class ExporterWithLogProcessorTest {
   @Test
   void invalidRegexInRulesTest() {
     config.id = "InvalidRegexInRules";
+    config.body = new NameConfig();
     ToAttributeConfig toAttributeConfig = new ToAttributeConfig();
     toAttributeConfig.rules = new ArrayList<>();
     toAttributeConfig.rules.add("***");
@@ -167,6 +169,7 @@ class ExporterWithLogProcessorTest {
   @Test
   void simpleToAttributesTest() {
     config.id = "SimpleToAttributes";
+    config.body = new NameConfig();
     ToAttributeConfig toAttributeConfig = new ToAttributeConfig();
     toAttributeConfig.rules = new ArrayList<>();
     toAttributeConfig.rules.add("^/api/v1/document/(?<documentId>.*)/update$");
@@ -197,6 +200,7 @@ class ExporterWithLogProcessorTest {
   @Test
   void multiRuleToAttributesTest() {
     config.id = "MultiRuleToAttributes";
+    config.body = new NameConfig();
     ToAttributeConfig toAttributeConfig = new ToAttributeConfig();
     toAttributeConfig.rules = new ArrayList<>();
     toAttributeConfig.rules.add("Password=(?<password1>[^ ]+)");
@@ -264,6 +268,7 @@ class ExporterWithLogProcessorTest {
   @Test
   void simpleRenameLogTestWithSpanProcessor() {
     config.id = "SimpleRenameLog";
+    config.body = new NameConfig();
     config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
     LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
 

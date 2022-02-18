@@ -101,7 +101,7 @@ public class LogProcessor extends AgentProcessor {
         updatedLogBuffer.setLength(updatedLogBuffer.length() - separator.length());
       }
 
-      return CustomizedLogData.create(log, existingLogAttributes, updatedLogBuffer.toString());
+      return new MyLogData(log, existingLogAttributes, updatedLogBuffer.toString());
     }
 
     return log;
@@ -123,7 +123,7 @@ public class LogProcessor extends AgentProcessor {
       logName = applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), logName, builder);
     }
 
-    return CustomizedLogData.create(log, builder.build(), log.getName());
+    return new MyLogData(log, builder.build(), log.getName());
   }
 
   public static boolean logHasAllFromAttributeKeys(

@@ -68,7 +68,7 @@ class ExporterWithAttributeProcessorTest {
     config.id = "inValidConfigTestWithNoValueInAction";
     config.include = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.STRICT;
-    config.include.names = asList("svcA", "svcB");
+    config.include.spanNames = asList("svcA", "svcB");
     ProcessorAction action =
         new ProcessorAction("testKey", ProcessorActionType.UPDATE, null, null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
@@ -87,7 +87,7 @@ class ExporterWithAttributeProcessorTest {
     config.id = "inValidConfigTestWithInvalidInclude";
     config.include = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.STRICT;
-    config.include.names = asList("svcA", "svcB");
+    config.include.spanNames = asList("svcA", "svcB");
     ProcessorAction action =
         new ProcessorAction("testKey", ProcessorActionType.UPDATE, null, null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
@@ -474,7 +474,7 @@ class ExporterWithAttributeProcessorTest {
     config.id = "simpleInclude";
     config.include = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.STRICT;
-    config.include.names = asList("svcA", "svcB");
+    config.include.spanNames = asList("svcA", "svcB");
     ProcessorAction action =
         new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
@@ -543,7 +543,7 @@ class ExporterWithAttributeProcessorTest {
     config.id = "simpleIncludeWithSpanNames";
     config.include = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.STRICT;
-    config.include.names = asList("svcA", "svcB");
+    config.include.spanNames = asList("svcA", "svcB");
     ProcessorAction action =
         new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
@@ -626,7 +626,7 @@ class ExporterWithAttributeProcessorTest {
     config.id = "simpleIncludeRegex";
     config.include = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.REGEXP;
-    config.include.names = asList("svc.*", "test.*");
+    config.include.spanNames = asList("svc.*", "test.*");
     ProcessorAction action =
         new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
@@ -695,7 +695,7 @@ class ExporterWithAttributeProcessorTest {
     config.id = "invalidRegex";
     config.include = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.REGEXP;
-    config.include.names = Collections.singletonList("***");
+    config.include.spanNames = Collections.singletonList("***");
     ProcessorAction action =
         new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
@@ -714,7 +714,7 @@ class ExporterWithAttributeProcessorTest {
     config.id = "simpleIncludeRegexValue";
     config.include = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.REGEXP;
-    config.include.names = asList("svc.*", "test.*");
+    config.include.spanNames = asList("svc.*", "test.*");
     ProcessorAttribute attributeWithValue = new ProcessorAttribute();
     attributeWithValue.key = "testKey";
     attributeWithValue.value = "Value.*";
@@ -799,7 +799,7 @@ class ExporterWithAttributeProcessorTest {
     config.id = "simpleIncludeRegexNoValue";
     config.include = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.REGEXP;
-    config.include.names = asList("svc.*", "test.*");
+    config.include.spanNames = asList("svc.*", "test.*");
     ProcessorAttribute attributeWithNoValue = new ProcessorAttribute();
     attributeWithNoValue.key = "testKey";
     config.include.attributes = new ArrayList<>();
@@ -883,7 +883,7 @@ class ExporterWithAttributeProcessorTest {
     config.id = "simpleIncludeHash";
     config.include = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.STRICT;
-    config.include.names = asList("svcA", "svcB", "svcC");
+    config.include.spanNames = asList("svcA", "svcB", "svcC");
     ProcessorAction action =
         new ProcessorAction("testKey", ProcessorActionType.HASH, null, null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
@@ -952,7 +952,7 @@ class ExporterWithAttributeProcessorTest {
     config.id = "simpleExclude";
     config.exclude = new ProcessorIncludeExclude();
     config.exclude.matchType = MatchType.STRICT;
-    config.exclude.names = asList("svcA", "svcB");
+    config.exclude.spanNames = asList("svcA", "svcB");
     ProcessorAction action =
         new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
@@ -1021,7 +1021,7 @@ class ExporterWithAttributeProcessorTest {
     config.id = "simpleExcludeRegex";
     config.exclude = new ProcessorIncludeExclude();
     config.exclude.matchType = MatchType.REGEXP;
-    config.exclude.names = Collections.singletonList("svc.*");
+    config.exclude.spanNames = Collections.singletonList("svc.*");
     ProcessorAction action =
         new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
@@ -1093,7 +1093,7 @@ class ExporterWithAttributeProcessorTest {
     config.id = "multiInclude";
     config.include = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.STRICT;
-    config.include.names = asList("svcA", "svcB");
+    config.include.spanNames = asList("svcA", "svcB");
     config.include.attributes = new ArrayList<>();
     ProcessorAttribute attributeWithValue = new ProcessorAttribute();
     attributeWithValue.key = "testKey";
@@ -1169,7 +1169,7 @@ class ExporterWithAttributeProcessorTest {
     config.id = "multiExclude";
     config.exclude = new ProcessorIncludeExclude();
     config.exclude.matchType = MatchType.STRICT;
-    config.exclude.names = asList("svcA", "svcB");
+    config.exclude.spanNames = asList("svcA", "svcB");
     config.exclude.attributes = new ArrayList<>();
     ProcessorAttribute attributeWithValue = new ProcessorAttribute();
     attributeWithValue.key = "testKey";
@@ -1247,7 +1247,7 @@ class ExporterWithAttributeProcessorTest {
     config.include = new ProcessorIncludeExclude();
     config.exclude = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.STRICT;
-    config.include.names = asList("svcA", "svcB");
+    config.include.spanNames = asList("svcA", "svcB");
     config.exclude.matchType = MatchType.STRICT;
     config.exclude.attributes = new ArrayList<>();
     ProcessorAttribute attributeWithValue = new ProcessorAttribute();
