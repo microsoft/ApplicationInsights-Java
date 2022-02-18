@@ -209,12 +209,13 @@ public enum QuickPulseDataCollector {
   }
 
   public void add(TelemetryItem telemetryItem) {
-    if (instrumentationKeySupplier.get() == null || quickPulseStatus != QuickPulseStatus.QP_IS_ON) {
+    String instrumentationKey = instrumentationKeySupplier.get();
+    if (instrumentationKey == null || quickPulseStatus != QuickPulseStatus.QP_IS_ON) {
       // quick pulse is not enabled or quick pulse data sender is not enabled
       return;
     }
 
-    if (!telemetryItem.getInstrumentationKey().equals(getInstrumentationKey())) {
+    if (!telemetryItem.getInstrumentationKey().equals(instrumentationKey)) {
       return;
     }
 
@@ -240,10 +241,6 @@ public enum QuickPulseDataCollector {
   private static String getOperationName(TelemetryItem telemetryItem) {
     Map<String, String> tags = telemetryItem.getTags();
     return tags == null ? null : tags.get(ContextTagKeys.AI_OPERATION_NAME.toString());
-  }
-
-  private synchronized String getInstrumentationKey() {
-    return instrumentationKeySupplier.get();
   }
 
   private void addDependency(RemoteDependencyData telemetry, int itemCount) {
