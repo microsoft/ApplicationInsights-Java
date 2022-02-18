@@ -124,16 +124,12 @@ class QuickPulseDataFetcher {
 
   // visible for testing
   String getEndpointUrl(String endpointPrefix) {
-    return endpointPrefix + "/post?ikey=" + getInstrumentationKey();
+    return endpointPrefix + "/post?ikey=" + instrumentationKey;
   }
 
   // visible for testing
   String getQuickPulseEndpoint() {
     return endPointUrl == null ? QP_BASE_URI : endPointUrl + LIVE_URL_PATH;
-  }
-
-  private String getInstrumentationKey() {
-    return instrumentationKey;
   }
 
   private String buildPostEntity(QuickPulseDataCollector.FinalCounters counters)
@@ -145,10 +141,10 @@ class QuickPulseDataFetcher {
     postEnvelope.setInvariantVersion(QuickPulse.QP_INVARIANT_VERSION);
     postEnvelope.setMachineName(machineName);
     // FIXME (heya) what about azure functions consumption plan where role name not available yet?
-    postEnvelope.setRoleName(this.roleName);
+    postEnvelope.setRoleName(roleName);
     // For historical reasons, instrumentation key is provided both in the query string and
     // envelope.
-    postEnvelope.setInstrumentationKey(getInstrumentationKey());
+    postEnvelope.setInstrumentationKey(instrumentationKey);
     postEnvelope.setStreamId(quickPulseId);
     postEnvelope.setVersion(sdkVersion);
     postEnvelope.setTimeStamp("/Date(" + System.currentTimeMillis() + ")/");
