@@ -60,7 +60,6 @@ class ExporterWithLogProcessorTest {
             .put("db.svc", "location")
             .put("operation", "get")
             .put("id", "1234")
-            .put("applicationinsights.internal.log", true)
             .build();
   }
 
@@ -150,7 +149,7 @@ class ExporterWithLogProcessorTest {
     // verify that resulting logs are filtered in the way we want
     List<LogData> result = mockExporter.getLogs();
     LogData resultLog = result.get(0);
-    assertThat(resultLog.getName()).isEqualTo("svcA");
+    assertThat(resultLog.getName()).isEqualTo("location::get::1234");
   }
 
   @Test
@@ -220,7 +219,6 @@ class ExporterWithLogProcessorTest {
             .put("operation", "get")
             .put("id", "1234")
             .put("password", "234")
-            .put("applicationinsights.internal.log", true)
             .build();
     MockLogData mockLogB = MockLogData.builder()
         .setName("yyyPassword=**** aba")
@@ -232,7 +230,7 @@ class ExporterWithLogProcessorTest {
     logs.add(mockLogB);
     logExporter.export(logs);
 
-    // verify that resulting spans are filtered in the way we want
+    // verify that resulting logs are filtered in the way we want
     List<LogData> result = mockExporter.getLogs();
     LogData resultA = result.get(0);
     LogData resultB = result.get(1);
@@ -266,7 +264,7 @@ class ExporterWithLogProcessorTest {
   }
 
   @Test
-  void simpleRenameLogTestWithSpanProcessor() {
+  void simpleRenameLogTestWithLogProcessor() {
     config.id = "SimpleRenameLog";
     config.body = new NameConfig();
     config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
@@ -292,6 +290,6 @@ class ExporterWithLogProcessorTest {
     // verify that resulting logs are not modified
     List<LogData> result = mockExporter.getLogs();
     LogData resultLog = result.get(0);
-    assertThat(resultLog.getName()).isEqualTo("svcA");
+    assertThat(resultLog.getName()).isEqualTo("locationget1234");
   }
 }

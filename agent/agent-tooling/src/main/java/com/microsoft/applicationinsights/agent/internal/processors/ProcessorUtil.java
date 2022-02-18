@@ -32,28 +32,21 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ProcessorUtil {
-  private static final AttributeKey<Boolean> AI_LOG_KEY =
-      AttributeKey.booleanKey("applicationinsights.internal.log");
-
-  public static boolean isSpanOfTypeLog(SpanData span) {
-    Boolean isLog = span.getAttributes().get(AI_LOG_KEY);
-    return isLog != null && isLog;
-  }
 
   public static String applyRule(
-      List<String> groupNamesList, Pattern pattern, String spanName, AttributesBuilder builder) {
+      List<String> groupNamesList, Pattern pattern, String name, AttributesBuilder builder) {
     if (groupNamesList.isEmpty()) {
-      return spanName;
+      return name;
     }
-    Matcher matcher = pattern.matcher(spanName);
+    Matcher matcher = pattern.matcher(name);
     StringBuilder sb = new StringBuilder();
     int lastEnd = 0;
     // As of now we are considering only first match.
     if (matcher.find()) {
-      sb.append(spanName, lastEnd, matcher.start());
+      sb.append(name, lastEnd, matcher.start());
       int innerLastEnd = matcher.start();
       for (int i = 1; i <= groupNamesList.size(); i++) {
-        sb.append(spanName, innerLastEnd, matcher.start(i));
+        sb.append(name, innerLastEnd, matcher.start(i));
         sb.append("{");
         sb.append(groupNamesList.get(i - 1));
         // add attribute key=groupNames.get(i-1), value=matcher.group(i)
@@ -61,10 +54,10 @@ public class ProcessorUtil {
         sb.append("}");
         innerLastEnd = matcher.end(i);
       }
-      sb.append(spanName, innerLastEnd, matcher.end());
+      sb.append(name, innerLastEnd, matcher.end());
       lastEnd = matcher.end();
     }
-    sb.append(spanName, lastEnd, spanName.length());
+    sb.append(name, lastEnd, name.length());
 
     return sb.toString();
   }
