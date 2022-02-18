@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;

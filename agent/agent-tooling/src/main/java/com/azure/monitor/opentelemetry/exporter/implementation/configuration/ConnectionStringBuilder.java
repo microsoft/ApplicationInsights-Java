@@ -22,6 +22,7 @@
 package com.azure.monitor.opentelemetry.exporter.implementation.configuration;
 
 import com.azure.core.util.CoreUtils;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.DefaultEndpoints;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;

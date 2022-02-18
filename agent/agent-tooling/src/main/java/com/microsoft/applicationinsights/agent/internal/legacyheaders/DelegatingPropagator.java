@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.legacyheaders;
 
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;

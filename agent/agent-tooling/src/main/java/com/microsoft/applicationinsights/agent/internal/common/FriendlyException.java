@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.common;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class FriendlyException extends RuntimeException {
