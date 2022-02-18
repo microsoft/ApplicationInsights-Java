@@ -56,9 +56,9 @@ public class LogProcessor extends AgentProcessor {
 
   public static LogProcessor create(ProcessorConfig config) {
     IncludeExclude normalizedInclude =
-        config.include != null ? getNormalizedIncludeExclude(config.include, config.type) : null;
+        config.include != null ? getNormalizedIncludeExclude(config.include, true) : null;
     IncludeExclude normalizedExclude =
-        config.exclude != null ? getNormalizedIncludeExclude(config.exclude, config.type) : null;
+        config.exclude != null ? getNormalizedIncludeExclude(config.exclude, true) : null;
     List<AttributeKey<?>> fromAttributes = new ArrayList<>();
     if (config.body.fromAttributes != null) {
       for (String attribute : config.body.fromAttributes) {

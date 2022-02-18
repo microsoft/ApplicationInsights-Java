@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorAttribute;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorIncludeExclude;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorType;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import java.util.ArrayList;
@@ -46,10 +45,10 @@ public abstract class AgentProcessor {
   }
 
   protected static IncludeExclude getNormalizedIncludeExclude(
-      ProcessorIncludeExclude includeExclude, ProcessorType type) {
+      ProcessorIncludeExclude includeExclude, boolean isLog) {
     return includeExclude.matchType == MatchType.STRICT
-        ? AgentProcessor.StrictIncludeExclude.create(includeExclude, type)
-        : AgentProcessor.RegexpIncludeExclude.create(includeExclude, type);
+        ? AgentProcessor.StrictIncludeExclude.create(includeExclude, isLog)
+        : AgentProcessor.RegexpIncludeExclude.create(includeExclude, isLog);
   }
 
   public @Nullable IncludeExclude getInclude() {
@@ -68,45 +67,32 @@ public abstract class AgentProcessor {
   public static class StrictIncludeExclude extends IncludeExclude {
     private final List<ProcessorAttribute> processorAttributes;
     private final List<String> names;
-    private final ProcessorType type;
 
-    private StrictIncludeExclude(List<ProcessorAttribute> processorAttributes, List<String> names, ProcessorType type) {
+    private StrictIncludeExclude(List<ProcessorAttribute> processorAttributes, List<String> names) {
       this.processorAttributes = processorAttributes;
       this.names = names;
-      this.type = type;
     }
 
-    public static StrictIncludeExclude create(ProcessorIncludeExclude includeExclude, ProcessorType type) {
+    public static StrictIncludeExclude create(ProcessorIncludeExclude includeExclude, boolean isLog) {
       List<ProcessorAttribute> attributes = includeExclude.attributes;
       if (attributes == null) {
         attributes = new ArrayList<>();
       }
-      List<String> names = null;
-      if (type == ProcessorType.SPAN) {
-        names = includeExclude.spanNames;
-      } else if (type == ProcessorType.LOG) {
-        names = includeExclude.logNames;
-      }
 
+      List<String> names = isLog ? includeExclude.logNames : includeExclude.spanNames;
       if (names == null) {
         names = new ArrayList<>();
       }
-      return new StrictIncludeExclude(attributes, names, type);
+      return new StrictIncludeExclude(attributes, names);
     }
 
     // compare span/log with user provided span/log names
     @Override
     public boolean isMatch(Attributes attributes, String name) {
-      if (type == ProcessorType.LOG) {
-        // If user provided span/log Names , then do not include log in the include/exclude criteria
-        if (!names.isEmpty()) {
-          return false;
-        }
-      } else {
-        if (!names.isEmpty() && !names.contains(name)) {
-          return false;
-        }
+      if (!names.isEmpty() && !names.contains(name)) {
+        return false;
       }
+
       return this.checkAttributes(attributes);
     }
 
@@ -137,16 +123,14 @@ public abstract class AgentProcessor {
 
     private final List<Pattern> patterns;
     private final Map<AttributeKey<?>, Pattern> attributeValuePatterns;
-    private final ProcessorType type;
 
     private RegexpIncludeExclude(
-        List<Pattern> patterns, Map<AttributeKey<?>, Pattern> attributeValuePatterns, ProcessorType type) {
+        List<Pattern> patterns, Map<AttributeKey<?>, Pattern> attributeValuePatterns) {
       this.patterns = patterns;
       this.attributeValuePatterns = attributeValuePatterns;
-      this.type = type;
     }
 
-    public static RegexpIncludeExclude create(ProcessorIncludeExclude includeExclude, ProcessorType type) {
+    public static RegexpIncludeExclude create(ProcessorIncludeExclude includeExclude, boolean isLog) {
       List<ProcessorAttribute> attributes = includeExclude.attributes;
       Map<AttributeKey<?>, Pattern> attributeKeyValuePatterns = new HashMap<>();
       if (attributes != null) {
@@ -159,21 +143,21 @@ public abstract class AgentProcessor {
       }
 
       List<Pattern> patterns = new ArrayList<>();
-      if (type == ProcessorType.SPAN) {
-        if (includeExclude.spanNames != null) {
-          for (String regex : includeExclude.spanNames) {
-            patterns.add(Pattern.compile(regex));
-          }
-        }
-      } else if (type == ProcessorType.LOG) {
+      if (isLog) {
         if (includeExclude.logNames != null) {
           for (String regex : includeExclude.logNames) {
             patterns.add(Pattern.compile(regex));
           }
         }
+      } else {
+        if (includeExclude.spanNames != null) {
+          for (String regex : includeExclude.spanNames) {
+            patterns.add(Pattern.compile(regex));
+          }
+        }
       }
 
-      return new RegexpIncludeExclude(patterns, attributeKeyValuePatterns, type);
+      return new RegexpIncludeExclude(patterns, attributeKeyValuePatterns);
     }
 
     // Function to compare span attribute value with user provided value
@@ -195,16 +179,10 @@ public abstract class AgentProcessor {
     // Function to compare span/log with user provided span patterns/log patterns
     @Override
     public boolean isMatch(Attributes attributes, String name) {
-      if (type == ProcessorType.LOG) {
-        // If user provided log name, then do not include log in the include/exclude criteria
-        if (!patterns.isEmpty()) {
-          return false;
-        }
-      } else {
-        if (!patterns.isEmpty() && !isPatternFound(name, patterns)) {
-          return false;
-        }
+      if (!patterns.isEmpty() && !isPatternFound(name, patterns)) {
+        return false;
       }
+
       return checkAttributes(attributes);
     }
 

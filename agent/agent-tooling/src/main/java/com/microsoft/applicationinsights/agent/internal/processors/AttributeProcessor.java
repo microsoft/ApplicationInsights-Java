@@ -48,11 +48,11 @@ public class AttributeProcessor extends AgentProcessor {
   }
 
   // Creates a Span Processor object
-  public static AttributeProcessor create(ProcessorConfig config) {
+  public static AttributeProcessor create(ProcessorConfig config, boolean isLog) {
     IncludeExclude normalizedInclude =
-        config.include != null ? getNormalizedIncludeExclude(config.include, config.type) : null;
+        config.include != null ? getNormalizedIncludeExclude(config.include, isLog) : null;
     IncludeExclude normalizedExclude =
-        config.exclude != null ? getNormalizedIncludeExclude(config.exclude, config.type) : null;
+        config.exclude != null ? getNormalizedIncludeExclude(config.exclude, isLog) : null;
     return new AttributeProcessor(config.actions, normalizedInclude, normalizedExclude);
   }
 

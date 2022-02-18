@@ -38,7 +38,7 @@ public class SpanExporterWithAttributeProcessor implements SpanExporter {
   // caller should check config.isValid before creating
   public SpanExporterWithAttributeProcessor(ProcessorConfig config, SpanExporter delegate) {
     config.validate();
-    attributeProcessor = AttributeProcessor.create(config);
+    attributeProcessor = AttributeProcessor.create(config, false);
     this.delegate = delegate;
   }
 

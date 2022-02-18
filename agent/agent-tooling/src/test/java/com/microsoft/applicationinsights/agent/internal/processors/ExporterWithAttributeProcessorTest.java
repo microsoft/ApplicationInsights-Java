@@ -779,6 +779,7 @@ class ExporterWithAttributeProcessorTest {
     SpanData resultSpanA = result.get(0);
     SpanData resultSpanB = result.get(1);
     SpanData resultSpanC = result.get(2);
+    SpanData resultSpanD = result.get(3);
     SpanData resultSpanE = result.get(4);
 
     assertThat(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey")))
@@ -786,6 +787,8 @@ class ExporterWithAttributeProcessorTest {
     assertThat(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("redacted");
     assertThat(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey")))
+        .isEqualTo("testValue");
+    assertThat(resultSpanD.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("testValue");
     assertThat(resultSpanE.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("testV1");
@@ -863,6 +866,7 @@ class ExporterWithAttributeProcessorTest {
     SpanData resultSpanA = result.get(0);
     SpanData resultSpanB = result.get(1);
     SpanData resultSpanC = result.get(2);
+    SpanData resultSpanD = result.get(3);
     SpanData resultSpanE = result.get(4);
 
     assertThat(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey")))
@@ -870,6 +874,8 @@ class ExporterWithAttributeProcessorTest {
     assertThat(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("redacted");
     assertThat(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey")))
+        .isEqualTo("testValue");
+    assertThat(resultSpanD.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("testValue");
     assertThat(resultSpanE.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("redacted");

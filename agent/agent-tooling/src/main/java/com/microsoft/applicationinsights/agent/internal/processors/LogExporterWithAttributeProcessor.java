@@ -38,7 +38,7 @@ public class LogExporterWithAttributeProcessor implements LogExporter {
   public LogExporterWithAttributeProcessor(
       Configuration.ProcessorConfig config, LogExporter delegate) {
     config.validate();
-    attributeProcessor = AttributeProcessor.create(config);
+    attributeProcessor = AttributeProcessor.create(config, true);
     this.delegate = delegate;
   }
 
