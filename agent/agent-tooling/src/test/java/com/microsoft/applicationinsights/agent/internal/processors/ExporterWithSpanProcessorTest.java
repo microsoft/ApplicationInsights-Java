@@ -474,37 +474,4 @@ class ExporterWithSpanProcessorTest {
     assertThat(resultSpanC.getName()).isEqualTo("svcC");
     assertThat(resultSpanD.getName()).isEqualTo("donot/change");
   }
-
-  @Test
-  void simpleRenameSpanTestWithLogProcessor() {
-    MockSpanExporter mockSpanExporter = new MockSpanExporter();
-    ProcessorConfig config = new ProcessorConfig();
-    config.type = ProcessorType.SPAN;
-    config.id = "SimpleRenameSpan";
-    config.name = new NameConfig();
-    config.name.fromAttributes = Arrays.asList("db.svc", "operation", "id");
-    SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockSpanExporter);
-
-    Span span =
-        tracer
-            .spanBuilder("svcA")
-            .setAttribute("one", "1")
-            .setAttribute("two", 2L)
-            .setAttribute("db.svc", "location")
-            .setAttribute("operation", "get")
-            .setAttribute("id", "1234")
-            .setAttribute("applicationinsights.internal.log", true)
-            .startSpan();
-
-    SpanData spanData = ((ReadableSpan) span).toSpanData();
-
-    List<SpanData> spans = new ArrayList<>();
-    spans.add(spanData);
-    exampleExporter.export(spans);
-
-    // verify that resulting spans are not modified
-    List<SpanData> result = mockSpanExporter.getSpans();
-    SpanData resultSpan = result.get(0);
-    assertThat(resultSpan.getName()).isEqualTo("svcA");
-  }
 }
