@@ -57,14 +57,15 @@ class QuickPulseDataCollectorTests {
 
   @Test
   void emptyCountsAndDurationsAfterEnable() {
-    QuickPulseDataCollector.INSTANCE.enable(FAKE_CONNECTION_STRING.getInstrumentationKey());
+
+    QuickPulseDataCollector.INSTANCE.enable(() -> FAKE_CONNECTION_STRING.getInstrumentationKey());
     QuickPulseDataCollector.FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
     assertCountersReset(counters);
   }
 
   @Test
   void nullCountersAfterDisable() {
-    QuickPulseDataCollector.INSTANCE.enable(FAKE_CONNECTION_STRING.getInstrumentationKey());
+    QuickPulseDataCollector.INSTANCE.enable(() -> FAKE_CONNECTION_STRING.getInstrumentationKey());
     QuickPulseDataCollector.INSTANCE.disable();
     assertThat(QuickPulseDataCollector.INSTANCE.peek()).isNull();
   }
@@ -72,7 +73,7 @@ class QuickPulseDataCollectorTests {
   @Test
   void requestTelemetryIsCounted_DurationIsSum() {
     QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
-    QuickPulseDataCollector.INSTANCE.enable(FAKE_CONNECTION_STRING.getInstrumentationKey());
+    QuickPulseDataCollector.INSTANCE.enable(() -> FAKE_CONNECTION_STRING.getInstrumentationKey());
 
     // add a success and peek
     final long duration = 112233L;
@@ -113,7 +114,7 @@ class QuickPulseDataCollectorTests {
   @Test
   void dependencyTelemetryIsCounted_DurationIsSum() {
     QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
-    QuickPulseDataCollector.INSTANCE.enable(FAKE_CONNECTION_STRING.getInstrumentationKey());
+    QuickPulseDataCollector.INSTANCE.enable(() -> FAKE_CONNECTION_STRING.getInstrumentationKey());
 
     // add a success and peek.
     final long duration = 112233L;
@@ -154,7 +155,7 @@ class QuickPulseDataCollectorTests {
   @Test
   void exceptionTelemetryIsCounted() {
     QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
-    QuickPulseDataCollector.INSTANCE.enable(FAKE_CONNECTION_STRING.getInstrumentationKey());
+    QuickPulseDataCollector.INSTANCE.enable(() -> FAKE_CONNECTION_STRING.getInstrumentationKey());
 
     TelemetryItem telemetry = createExceptionTelemetry(new Exception());
     telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
@@ -250,7 +251,7 @@ class QuickPulseDataCollectorTests {
   @Test
   void checkDocumentsListSize() {
     QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
-    QuickPulseDataCollector.INSTANCE.enable(FAKE_CONNECTION_STRING.getInstrumentationKey());
+    QuickPulseDataCollector.INSTANCE.enable(() -> FAKE_CONNECTION_STRING.getInstrumentationKey());
 
     final long duration = 112233L;
     TelemetryItem telemetry =

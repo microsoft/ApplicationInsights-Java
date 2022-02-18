@@ -138,7 +138,7 @@ public enum QuickPulse {
           thread.setDaemon(true);
           thread.start();
 
-          QuickPulseDataCollector.INSTANCE.enable(instrumentationKey);
+          QuickPulseDataCollector.INSTANCE.enable(() -> instrumentationKey);
         }
       }
     }

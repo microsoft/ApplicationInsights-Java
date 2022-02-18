@@ -128,8 +128,9 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
             "instance1",
             null,
             null);
+
     QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
-    QuickPulseDataCollector.INSTANCE.enable(connectionString.getInstrumentationKey());
+    QuickPulseDataCollector.INSTANCE.enable(() -> connectionString.getInstrumentationKey());
     final long duration = 112233L;
     // Request Telemetry
     TelemetryItem requestTelemetry =
