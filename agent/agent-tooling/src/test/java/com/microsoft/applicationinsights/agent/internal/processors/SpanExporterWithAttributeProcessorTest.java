@@ -45,7 +45,7 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class ExporterWithAttributeProcessorTest {
+class SpanExporterWithAttributeProcessorTest {
 
   private final Tracer tracer = OpenTelemetrySdk.builder().build().getTracer("test");
 
