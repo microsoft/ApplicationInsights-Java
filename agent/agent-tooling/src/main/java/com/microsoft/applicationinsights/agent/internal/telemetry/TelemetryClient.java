@@ -21,6 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AuthenticationType.CLIENTSECRET;
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AuthenticationType.SAMI;
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AuthenticationType.UAMI;
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AuthenticationType.VSCODE;
 import static java.util.Arrays.asList;
 
 import com.azure.core.http.HttpPipeline;
@@ -45,10 +49,13 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulseDataCollector;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AadAuthentication;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AadAuthenticationBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AuthenticationType;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.LazyHttpClient;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeatHttpPipelinePolicy;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -95,7 +102,7 @@ public class TelemetryClient {
   private final int generalExportQueueCapacity;
   private final int metricsExportQueueCapacity;
 
-  @Nullable private final Configuration.AadAuthentication aadAuthentication;
+  @Nullable private final AadAuthentication aadAuthentication;
 
   private final Object batchItemProcessorInitLock = new Object();
   private volatile @MonotonicNonNull BatchItemProcessor generalBatchItemProcessor;
@@ -399,7 +406,7 @@ public class TelemetryClient {
   }
 
   @Nullable
-  public Configuration.AadAuthentication getAadAuthentication() {
+  public AadAuthentication getAadAuthentication() {
     return aadAuthentication;
   }
 
@@ -420,7 +427,7 @@ public class TelemetryClient {
     @Nullable private File tempDir;
     private int generalExportQueueCapacity;
     private int metricsExportQueueCapacity;
-    @Nullable private Configuration.AadAuthentication aadAuthentication;
+    @Nullable private AadAuthentication aadAuthentication;
 
     public Builder setCustomDimensions(Map<String, String> customDimensions) {
       StringSubstitutor substitutor = new StringSubstitutor(System.getenv());
@@ -472,12 +479,43 @@ public class TelemetryClient {
     }
 
     public Builder setAadAuthentication(Configuration.AadAuthentication aadAuthentication) {
-      this.aadAuthentication = aadAuthentication;
+      this.aadAuthentication = aadAuthenticationMapper(aadAuthentication);
       return this;
     }
 
     public TelemetryClient build() {
       return new TelemetryClient(this);
+    }
+
+    @Nullable
+    private static AadAuthentication aadAuthenticationMapper(
+        Configuration.AadAuthentication aadAuthentication) {
+      if (!aadAuthentication.enabled) {
+        return null;
+      }
+      return new AadAuthenticationBuilder(aadAuthenticationTypeMapper(aadAuthentication.type))
+          .clientId(aadAuthentication.clientId)
+          .clientSecret(aadAuthentication.clientSecret)
+          .authorityHost(aadAuthentication.authorityHost)
+          .tenantId(aadAuthentication.tenantId)
+          .build();
+    }
+
+    private static AuthenticationType aadAuthenticationTypeMapper(
+        Configuration.AuthenticationType authenticationType) {
+      switch (authenticationType) {
+        case UAMI:
+          return UAMI;
+        case SAMI:
+          return SAMI;
+        case CLIENTSECRET:
+          return CLIENTSECRET;
+        case VSCODE:
+          return VSCODE;
+        default:
+          throw new IllegalStateException(
+              "AAD Authentication configuration of type: " + authenticationType + " is invalid");
+      }
     }
   }
 }
