@@ -23,22 +23,29 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogDataBuilder;
-import java.util.concurrent.TimeUnit;
 
-public class CustomizedLogData {
+public class MyLogData extends DelegatingLogData {
 
-  public static LogData create(LogData log, Attributes attributes, String name) {
-    return LogDataBuilder.create(log.getResource(), log.getInstrumentationLibraryInfo())
-        .setEpoch(log.getEpochNanos(), TimeUnit.NANOSECONDS)
-        .setSpanContext(log.getSpanContext())
-        .setSeverity(log.getSeverity())
-        .setSeverityText(log.getSeverityText())
-        .setName(name)
-        .setBody(log.getBody().asString())
-        .setAttributes(attributes)
-        .build();
+  private final Attributes attributes;
+  private final String logName;
+
+  public MyLogData(LogData delegate, Attributes attributes) {
+    this(delegate, attributes, delegate.getName());
   }
 
-  private CustomizedLogData() {}
+  public MyLogData(LogData delegate, Attributes attributes, String spanName) {
+    super(delegate);
+    this.attributes = attributes;
+    this.logName = spanName;
+  }
+
+  @Override
+  public String getName() {
+    return logName;
+  }
+
+  @Override
+  public Attributes getAttributes() {
+    return attributes;
+  }
 }
