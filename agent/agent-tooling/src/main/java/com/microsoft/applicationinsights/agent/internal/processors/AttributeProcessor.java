@@ -70,7 +70,7 @@ public class AttributeProcessor extends AgentProcessor {
   public LogData processActions(LogData log) {
     LogData result = log;
     for (ProcessorAction actionObj : actions) {
-      result = new MyLogData(result, processAction(result.getAttributes(), actionObj), result.getName());
+      result = new MyLogData(result, processAction(result.getAttributes(), actionObj));
     }
 
     return result;

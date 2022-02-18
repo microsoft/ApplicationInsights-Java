@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.processors;
 
-import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -33,7 +32,6 @@ import javax.annotation.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
-@AutoValue
 public abstract class DelegatingLogData implements LogData {
 
   private final LogData delegate;

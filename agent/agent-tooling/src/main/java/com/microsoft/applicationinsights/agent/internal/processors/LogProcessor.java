@@ -123,7 +123,7 @@ public class LogProcessor extends AgentProcessor {
       logName = applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), logName, builder);
     }
 
-    return new MyLogData(log, builder.build(), log.getName());
+    return new MyLogData(log, builder.build(), logName);
   }
 
   public static boolean logHasAllFromAttributeKeys(

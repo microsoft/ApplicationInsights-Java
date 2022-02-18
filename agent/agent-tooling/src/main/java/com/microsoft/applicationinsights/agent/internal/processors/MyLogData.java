@@ -33,10 +33,10 @@ public class MyLogData extends DelegatingLogData {
     this(delegate, attributes, delegate.getName());
   }
 
-  public MyLogData(LogData delegate, Attributes attributes, String spanName) {
+  public MyLogData(LogData delegate, Attributes attributes, String logName) {
     super(delegate);
     this.attributes = attributes;
-    this.logName = spanName;
+    this.logName = logName;
   }
 
   @Override
