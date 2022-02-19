@@ -1021,7 +1021,6 @@ class SpanExporterWithAttributeProcessorTest {
     SpanData resultSpanC = result.get(2);
     SpanData resultSpanD = result.get(3);
 
-
     assertThat(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("testValue");
     assertThat(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey")))
