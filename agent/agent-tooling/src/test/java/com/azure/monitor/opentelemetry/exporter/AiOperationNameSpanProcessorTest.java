@@ -31,6 +31,7 @@ import com.azure.core.util.Configuration;
 import com.azure.core.util.FluxUtil;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -70,7 +71,6 @@ public class AiOperationNameSpanProcessorTest {
   }
 
   @Test
-  @SuppressWarnings("MustBeClosedChecker")
   public void operationNameFromParentTest() throws InterruptedException {
     CountDownLatch exporterCountDown = new CountDownLatch(1);
     final Tracer tracer =
@@ -84,17 +84,13 @@ public class AiOperationNameSpanProcessorTest {
             .startSpan();
     parentSpan.updateName("parent-span-changed");
     parentSpan.setAttribute(SemanticAttributes.HTTP_METHOD, "POST");
-    final Scope parentScope = parentSpan.makeCurrent();
-    Span span = tracer.spanBuilder("child-span").startSpan();
-    final Scope scope = span.makeCurrent();
-    try {
-      // Thread bound (sync) calls will automatically pick up the parent span and you don't need to
-      // pass it explicitly.
+
+    Context parentContext = Context.current().with(parentSpan);
+    try (Scope ignored = parentContext.makeCurrent()) {
+      Span childSpan = tracer.spanBuilder("child-span").setParent(parentContext).startSpan();
+      childSpan.end();
     } finally {
-      span.end();
-      scope.close();
       parentSpan.end();
-      parentScope.close();
     }
 
     assertTrue(exporterCountDown.await(10, TimeUnit.SECONDS));
@@ -135,22 +131,28 @@ public class AiOperationNameSpanProcessorTest {
         configureAzureMonitorExporter(
             new ValidationPolicy(
                 exporterCountDown, Arrays.asList("child-span", "parent-span-changed")));
-    Span parentSpan = tracer.spanBuilder("parent-span").startSpan();
-    parentSpan.updateName("parent-span-changed");
-    final Scope parentScope = parentSpan.makeCurrent();
-    Span span = tracer.spanBuilder("child-span").startSpan();
-    final Scope scope = span.makeCurrent();
-    try {
-      // Thread bound (sync) calls will automatically pick up the parent span and you don't need to
-      // pass it explicitly.
-    } finally {
-      span.end();
-      scope.close();
-      parentSpan.end();
-      parentScope.close();
-    }
-
+    createNestedSpan(tracer);
     assertTrue(exporterCountDown.await(10, TimeUnit.SECONDS));
+  }
+
+  private static void createNestedSpan(Tracer tracer) {
+    Span parentSpan = tracer.spanBuilder("parent").startSpan();
+    parentSpan.updateName("parent-span-changed");
+    try {
+      createChildSpan(tracer, parentSpan);
+    } finally {
+      parentSpan.end();
+    }
+  }
+
+  private static void createChildSpan(Tracer tracer, Span parentSpan) {
+    Span childSpan =
+        tracer.spanBuilder("child").setParent(Context.current().with(parentSpan)).startSpan();
+    try {
+      // do stuff
+    } finally {
+      childSpan.end();
+    }
   }
 
   static class ValidationPolicy implements HttpPipelinePolicy {
@@ -171,6 +173,7 @@ public class AiOperationNameSpanProcessorTest {
               .map(bytes -> new String(bytes, StandardCharsets.UTF_8));
       asyncString.subscribe(
           value -> {
+            //  System.out.println(value);
             for (String expectedName : expectedValues) {
               if (!value.contains(expectedName)) {
                 return;
