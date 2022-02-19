@@ -535,10 +535,14 @@ class LogExporterWithAttributeProcessorTest {
     LogData result3 = result.get(2);
     LogData result4 = result.get(3);
 
-    assertThat(result1.getName()).isEqualTo("redacted");
-    assertThat(result2.getName()).isEqualTo("redacted");
-    assertThat(result3.getName()).isEqualTo("svcC");
-    assertThat(result4.getName()).isEqualTo("svcD");
+    assertThat(result1.getAttributes().get(AttributeKey.stringKey("testKey")))
+        .isEqualTo("redacted");
+    assertThat(result2.getAttributes().get(AttributeKey.stringKey("testKey")))
+        .isEqualTo("redacted");
+    assertThat(result3.getAttributes().get(AttributeKey.stringKey("testKey")))
+        .isEqualTo("testValue");
+    assertThat(result4.getAttributes().get(AttributeKey.stringKey("testKey")))
+        .isEqualTo("testValue");
   }
 
   @Test
@@ -989,8 +993,8 @@ class LogExporterWithAttributeProcessorTest {
     LogData result4 = result.get(3);
 
     assertThat(result1.getAttributes().get(AttributeKey.stringKey("testKey")))
-        .isNotEqualTo("testValue");
-    assertThat(result2.getAttributes().get(AttributeKey.stringKey("testKey2")))
+        .isEqualTo("testValue");
+    assertThat(result2.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("testValue");
     assertThat(result3.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("redacted");
@@ -1035,7 +1039,7 @@ class LogExporterWithAttributeProcessorTest {
         Attributes.builder()
             .put("one", "1")
             .put("testKey", "testValue")
-            .put("testKey2", "testValue2")
+            .put("testKey3", "testValue2")
             .build();
     MockLogData logB = MockLogData.builder()
         .setName("svcB")
@@ -1093,7 +1097,7 @@ class LogExporterWithAttributeProcessorTest {
     config.include = new ProcessorIncludeExclude();
     config.exclude = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.STRICT;
-    config.include.logNames = asList("svcA", "svcB", "svcD");
+    config.include.logNames = asList("svcA", "svcB");
     config.exclude.matchType = MatchType.STRICT;
     config.exclude.attributes = new ArrayList<>();
     ProcessorAttribute attributeWithValue = new ProcessorAttribute();
@@ -1137,7 +1141,7 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey2", "testValue2")
             .build();
     MockLogData logC = MockLogData.builder()
-        .setName("serviceC")
+        .setName("svcC")
         .setAttributes(attributesC)
         .build();
 
@@ -1145,8 +1149,8 @@ class LogExporterWithAttributeProcessorTest {
         Attributes.builder()
             .put("one", "1")
             .put("two", 2L)
-            .put("testKey", "testValueD")
-            .put("testKey2", "123")
+            .put("testKey", "testValue")
+            .put("testKey2", "testValue2")
             .build();
     MockLogData logD = MockLogData.builder()
         .setName("svcD")
@@ -1169,12 +1173,90 @@ class LogExporterWithAttributeProcessorTest {
     LogData result4 = result.get(3);
 
     assertThat(result1.getAttributes().get(AttributeKey.stringKey("testKey2")))
-        .isNotEqualTo("testValue2");
+        .isEqualTo("testValue2");
     assertThat(result2.getAttributes().get(AttributeKey.stringKey("testKey2")))
         .isNull();
     assertThat(result3.getAttributes().get(AttributeKey.stringKey("testKey2")))
         .isEqualTo("testValue2");
-    assertThat(result4.getAttributes().get(AttributeKey.stringKey("testKey")))
-        .isNull();
+    assertThat(result4.getAttributes().get(AttributeKey.stringKey("testKey2")))
+        .isEqualTo("testValue2");
+  }
+
+  @Test
+  void actionInsertWithMaskTest() {
+    config.id = "actionInsertWithMask";
+    String regex =
+        "^(?<uriNoCard>.*\\/cardid\\/)(?<cardStart>[0-9]{6})[0-9]{6}(?<cardEnd>[0-9]{4,6}).*";
+    String regex2 = "(?<httpPath>.+)";
+    String regex3 = "(?<httpPath>[a-zA-Z]+)";
+    ProcessorAction action =
+        new ProcessorAction(
+            "testKey", ProcessorActionType.MASK, null, null, regex, "${uriNoCard}****${cardEnd}");
+    ProcessorAction action2 =
+        new ProcessorAction(
+            "testKey2",
+            ProcessorActionType.MASK,
+            null,
+            null,
+            regex,
+            "${uriNoCard}${cardStart}****${cardEnd}");
+    ProcessorAction action3 =
+        new ProcessorAction(
+            "testKey3",
+            ProcessorActionType.MASK,
+            null,
+            null,
+            regex,
+            "${cardStart}****${cardStart}");
+    ProcessorAction action4 =
+        new ProcessorAction(
+            "testKey4", ProcessorActionType.MASK, null, null, regex2, "*${httpPath}*");
+    ProcessorAction action5 =
+        new ProcessorAction(
+            "testKey5", ProcessorActionType.MASK, null, null, regex3, "**${httpPath}**");
+    List<ProcessorAction> actions = new ArrayList<>();
+    actions.add(action);
+    actions.add(action2);
+    actions.add(action3);
+    actions.add(action4);
+    actions.add(action5);
+    config.actions = actions;
+    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLogExporter);
+
+    Attributes attributes =
+        Attributes.builder()
+            .put("one", "1")
+            .put("two", 2L)
+            .put("testKey", "http://example.com/cardid/1234562222227899")
+            .put("testKey2", "http://example.com/cardid/1234562222227899")
+            .put("testKey3", "http://example.com/cardid/1234562222227899")
+            .put("TESTKEY2", "testValue2")
+            .put("testKey4", "/TelemetryProcessors/test")
+            .put("testKey5", "/abc/xyz")
+            .build();
+    MockLogData log = MockLogData.builder()
+        .setName("my log")
+        .setAttributes(attributes)
+        .build();
+
+    List<LogData> logs = new ArrayList<>();
+    logs.add(log);
+    exampleExporter.export(logs);
+
+    // verify that resulting logs are filtered in the way we want
+    List<LogData> result = mockLogExporter.getLogs();
+    LogData resultLog = result.get(0);
+    assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testKey")))
+        .isEqualTo("http://example.com/cardid/****7899");
+    assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testKey2")))
+        .isEqualTo("http://example.com/cardid/123456****7899");
+    assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testKey3")))
+        .isEqualTo("123456****123456");
+    assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("TESTKEY2")))
+        .isEqualTo("testValue2");
+    assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testKey4")))
+        .isEqualTo("*/TelemetryProcessors/test*");
+    assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testKey5")))
+        .isEqualTo("/**abc**/**xyz**");
   }
 }
