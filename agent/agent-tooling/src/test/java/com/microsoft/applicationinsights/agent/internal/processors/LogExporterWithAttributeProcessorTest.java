@@ -790,19 +790,19 @@ class LogExporterWithAttributeProcessorTest {
     Attributes attributesC =
         Attributes.builder()
             .put("two", 2L)
-            .put("testKey", "123")
+            .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logC = MockLogData.builder().setName("serviceC").setAttributes(attributesC).build();
+    MockLogData logC = MockLogData.builder().setName("svcC").setAttributes(attributesC).build();
 
     Attributes attributesD =
         Attributes.builder()
             .put("one", "1")
             .put("two", 2L)
-            .put("testKey", "testValueD")
+            .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logD = MockLogData.builder().setName("serviceD").setAttributes(attributesD).build();
+    MockLogData logD = MockLogData.builder().setName("svcD").setAttributes(attributesD).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(logA);
@@ -821,16 +821,17 @@ class LogExporterWithAttributeProcessorTest {
 
     assertThat(result1.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isNotEqualTo("testValue");
-    assertThat(result2.getAttributes().get(AttributeKey.stringKey("testKey2")))
-        .isEqualTo("testValue2");
-    assertThat(result3.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("123");
+    assertThat(result2.getAttributes().get(AttributeKey.stringKey("testKey")))
+        .isNotEqualTo("testValue");
+    assertThat(result3.getAttributes().get(AttributeKey.stringKey("testKey")))
+        .isNotEqualTo("testValue");
     assertThat(result4.getAttributes().get(AttributeKey.stringKey("testKey")))
-        .isEqualTo("testValueD");
+        .isEqualTo("testValue");
   }
 
   @Test
   void simpleExcludeTest() {
-    config.id = "simpleIncludeHash";
+    config.id = "simpleExclude";
     config.exclude = new ProcessorIncludeExclude();
     config.exclude.matchType = MatchType.STRICT;
     config.exclude.logNames = asList("svcA", "svcB");
@@ -898,6 +899,85 @@ class LogExporterWithAttributeProcessorTest {
         .isEqualTo("redacted");
     assertThat(result4.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("redacted");
+  }
+
+  @Test
+  void multiIncludeTest() {
+    config.id = "multiInclude";
+    config.include = new ProcessorIncludeExclude();
+    config.include.matchType = MatchType.STRICT;
+    config.include.logNames = asList("svcA", "svcB");
+    config.include.attributes = new ArrayList<>();
+    ProcessorAttribute attributeWithValue = new ProcessorAttribute();
+    attributeWithValue.key = "testKey";
+    attributeWithValue.value = "testValue";
+    ProcessorAttribute attributeWithNoValue = new ProcessorAttribute();
+    attributeWithNoValue.key = "testKey2";
+    config.include.attributes.add(attributeWithValue);
+    config.include.attributes.add(attributeWithNoValue);
+    ProcessorAction action =
+        new ProcessorAction("testKey", ProcessorActionType.DELETE, null, null, null, null);
+    List<ProcessorAction> actions = new ArrayList<>();
+    actions.add(action);
+    config.actions = actions;
+    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLogExporter);
+
+    Attributes attributesA =
+        Attributes.builder()
+            .put("one", "1")
+            .put("two", 2L)
+            .put("testKey", "testValue")
+            .put("testKey2", "testValue2")
+            .build();
+    MockLogData logA = MockLogData.builder().setName("svcA").setAttributes(attributesA).build();
+
+    Attributes attributesB =
+        Attributes.builder()
+            .put("one", "1")
+            .put("testKey", "testValue")
+            .put("testKey3", "testValue3")
+            .build();
+    MockLogData logB = MockLogData.builder().setName("svcB").setAttributes(attributesB).build();
+
+    Attributes attributesC =
+        Attributes.builder()
+            .put("two", 2L)
+            .put("testKey", "testValue")
+            .put("testKey2", "testValue2")
+            .build();
+    MockLogData logC = MockLogData.builder().setName("svcC").setAttributes(attributesC).build();
+
+    Attributes attributesD =
+        Attributes.builder()
+            .put("one", "1")
+            .put("two", 2L)
+            .put("testKey", "testValue")
+            .put("testKey2", "testValue2")
+            .build();
+    MockLogData logD = MockLogData.builder().setName("svcD").setAttributes(attributesD).build();
+
+    List<LogData> logs = new ArrayList<>();
+    logs.add(logA);
+    logs.add(logB);
+    logs.add(logC);
+    logs.add(logD);
+
+    exampleExporter.export(logs);
+
+    // verify that resulting logs are filtered in the way we want
+    List<LogData> result = mockLogExporter.getLogs();
+    LogData result1 = result.get(0);
+    LogData result2 = result.get(1);
+    LogData result3 = result.get(2);
+    LogData result4 = result.get(3);
+
+    assertThat(result1.getAttributes().get(AttributeKey.stringKey("testKey"))).isNull();
+    assertThat(result2.getAttributes().get(AttributeKey.stringKey("testKey")))
+        .isEqualTo("testValue");
+    assertThat(result3.getAttributes().get(AttributeKey.stringKey("testKey")))
+        .isEqualTo("testValue");
+    assertThat(result4.getAttributes().get(AttributeKey.stringKey("testKey")))
+        .isEqualTo("testValue");
   }
 
   @Test
