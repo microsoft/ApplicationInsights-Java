@@ -19,37 +19,62 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.localstorage;
+package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
+import static java.util.Arrays.asList;
+
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineRequest;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineResponse;
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 
-class LocalFileSenderTelemetryPipelineListener implements TelemetryPipelineListener {
+public class LocalStorageTelemetryPipelineListener implements TelemetryPipelineListener {
 
-  private final LocalFileLoader localFileLoader;
-  private final File file;
+  static final Set<Integer> RETRYABLE_CODES =
+      new HashSet<>(
+          asList(
+              401,
+              403,
+              408, // REQUEST TIMEOUT
+              429, // TOO MANY REQUESTS
+              500, // INTERNAL SERVER ERROR
+              503 // SERVICE UNAVAILABLE
+              ));
 
-  LocalFileSenderTelemetryPipelineListener(LocalFileLoader localFileLoader, File file) {
-    this.localFileLoader = localFileLoader;
-    this.file = file;
+  private final LocalFileWriter localFileWriter;
+  private final LocalFileSender localFileSender;
+  private final LocalFilePurger localFilePurger;
+
+  // telemetryFolder must already exist and be writable
+  public LocalStorageTelemetryPipelineListener(
+      File telemetryFolder, TelemetryPipeline pipeline, LocalStorageStats stats) {
+
+    LocalFileCache localFileCache = new LocalFileCache(telemetryFolder);
+    LocalFileLoader loader = new LocalFileLoader(localFileCache, telemetryFolder, stats);
+    localFileWriter = new LocalFileWriter(localFileCache, telemetryFolder, stats);
+
+    localFileSender = new LocalFileSender(loader, pipeline);
+    localFilePurger = new LocalFilePurger(telemetryFolder);
+  }
+
+  public void shutdown() {
+    localFileSender.shutdown();
+    localFilePurger.shutdown();
   }
 
   @Override
   public void onResponse(TelemetryPipelineRequest request, TelemetryPipelineResponse response) {
-    int responseCode = response.getStatusCode();
-    if (responseCode == 200) {
-      localFileLoader.updateProcessedFileStatus(true, file);
-    } else {
-      localFileLoader.updateProcessedFileStatus(
-          !LocalStorageTelemetryPipelineListener.RETRYABLE_CODES.contains(responseCode), file);
+    if (RETRYABLE_CODES.contains(response.getStatusCode())) {
+      localFileWriter.writeToDisk(request.getInstrumentationKey(), request.getTelemetry());
     }
   }
 
   @Override
   public void onException(
       TelemetryPipelineRequest request, String errorMessage, Throwable throwable) {
-    localFileLoader.updateProcessedFileStatus(false, file);
+    localFileWriter.writeToDisk(request.getInstrumentationKey(), request.getTelemetry());
   }
 }

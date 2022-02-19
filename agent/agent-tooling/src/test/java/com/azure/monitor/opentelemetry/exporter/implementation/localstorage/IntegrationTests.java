@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.localstorage;
+package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -64,9 +64,8 @@ public class IntegrationTests {
 
   private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
   private static final String PERSISTED_FILENAME = "gzipped-raw-bytes.trn";
+
   private TelemetryItemExporter telemetryItemExporter;
-  private LocalFileCache localFileCache;
-  private LocalFileLoader localFileLoader;
 
   @TempDir File tempFolder;
 
@@ -92,8 +91,6 @@ public class IntegrationTests {
                       new MockHttpResponse(invocation.getArgument(0, HttpRequest.class), 401)));
     }
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
-    localFileCache = new LocalFileCache(tempFolder);
-    localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
 
     TelemetryPipeline telemetryPipeline =
         new TelemetryPipeline(pipelineBuilder.build(), new URL("http://foo.bar"));
@@ -101,7 +98,7 @@ public class IntegrationTests {
         new TelemetryItemExporter(
             telemetryPipeline,
             new LocalStorageTelemetryPipelineListener(
-                new LocalFileWriter(localFileCache, tempFolder, null)));
+                tempFolder, telemetryPipeline, LocalStorageStats.noop()));
   }
 
   @Test
@@ -130,6 +127,10 @@ public class IntegrationTests {
     executorService.awaitTermination(10, TimeUnit.MINUTES);
 
     Thread.sleep(1000);
+
+    LocalFileCache localFileCache = new LocalFileCache(tempFolder);
+    LocalFileLoader localFileLoader =
+        new LocalFileLoader(localFileCache, tempFolder, LocalStorageStats.noop());
 
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(100);
 
