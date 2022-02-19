@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.processors;
 
+import static java.util.Objects.requireNonNull;
+
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -29,8 +31,6 @@ import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
-
-import static java.util.Objects.requireNonNull;
 
 public abstract class DelegatingLogData implements LogData {
 

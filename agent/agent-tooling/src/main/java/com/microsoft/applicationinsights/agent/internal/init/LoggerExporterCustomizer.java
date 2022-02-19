@@ -42,25 +42,28 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
   @SuppressWarnings("SystemOut")
   @Override
   public void customize(AutoConfigurationCustomizer autoConfiguration) {
-    System.out.println("====================================== LoggerExporterCustomizer::customize ======================================");
+    System.out.println(
+        "====================================== LoggerExporterCustomizer::customize ======================================");
     Thread.dumpStack();
 
     autoConfiguration.addLogEmitterProviderCustomizer(
         (builder, config) -> {
-          List<Configuration.ProcessorConfig> processorConfigs = reverseProcessorConfigs(MainEntryPoint.getConfiguration());
+          List<Configuration.ProcessorConfig> processorConfigs =
+              reverseProcessorConfigs(MainEntryPoint.getConfiguration());
           BatchLogProcessor batchLogProcessor = createLogExporter(processorConfigs);
           if (batchLogProcessor != null) {
             return builder.addLogProcessor(batchLogProcessor);
           }
 
           return null;
-        }
-    );
+        });
   }
 
   @SuppressWarnings("SystemOut")
-  private static BatchLogProcessor createLogExporter(List<Configuration.ProcessorConfig> processorConfigs) {
-    System.out.println("====================================== createLogExporter ======================================");
+  private static BatchLogProcessor createLogExporter(
+      List<Configuration.ProcessorConfig> processorConfigs) {
+    System.out.println(
+        "====================================== createLogExporter ======================================");
     LogExporter logExporter = new LoggerExporter(TelemetryClient.getActive());
     if (!processorConfigs.isEmpty()) {
       for (Configuration.ProcessorConfig processorConfig : processorConfigs) {
@@ -81,7 +84,8 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
     return BatchLogProcessor.builder(logExporter).setMaxExportBatchSize(1).build();
   }
 
-  private static List<Configuration.ProcessorConfig> reverseProcessorConfigs(Configuration configuration) {
+  private static List<Configuration.ProcessorConfig> reverseProcessorConfigs(
+      Configuration configuration) {
     List<Configuration.ProcessorConfig> processors =
         configuration.preview.processors.stream()
             .filter(processor -> processor.type != Configuration.ProcessorType.METRIC_FILTER)

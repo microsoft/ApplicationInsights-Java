@@ -103,7 +103,7 @@ public class AttributeProcessor extends AgentProcessor {
       AttributesBuilder builder = Attributes.builder();
       builder.put(actionObj.key, actionObj.value);
       builder.putAll(existingAttributes);
-      return  builder.build();
+      return builder.build();
     }
 
     String fromAttributeValue = existingAttributes.get(actionObj.fromAttribute);
@@ -111,7 +111,7 @@ public class AttributeProcessor extends AgentProcessor {
       AttributesBuilder builder = Attributes.builder();
       builder.put(actionObj.key, fromAttributeValue);
       builder.putAll(existingAttributes);
-      return  builder.build();
+      return builder.build();
     }
 
     return attributes;
@@ -154,13 +154,12 @@ public class AttributeProcessor extends AgentProcessor {
     }
 
     AttributesBuilder builder = Attributes.builder();
-    existingAttributes
-        .forEach(
-            (key, value) -> {
-              if (!key.equals(actionObj.key)) {
-                putIntoBuilder(builder, key, value);
-              }
-            });
+    existingAttributes.forEach(
+        (key, value) -> {
+          if (!key.equals(actionObj.key)) {
+            putIntoBuilder(builder, key, value);
+          }
+        });
     return builder.build();
   }
 

@@ -95,10 +95,7 @@ class ExporterWithLogProcessorTest {
     config.body = new NameConfig();
     config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
     LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
-    MockLogData mockLog = MockLogData.builder()
-        .setName("logA")
-        .setAttributes(attributes)
-        .build();
+    MockLogData mockLog = MockLogData.builder().setName("logA").setAttributes(attributes).build();
     List<LogData> logs = new ArrayList<>();
     logs.add(mockLog);
     logExporter.export(logs);
@@ -116,10 +113,7 @@ class ExporterWithLogProcessorTest {
     config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
     config.body.separator = "::";
     LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
-    MockLogData mockLog = MockLogData.builder()
-        .setName("svcA")
-        .setAttributes(attributes)
-        .build();
+    MockLogData mockLog = MockLogData.builder().setName("svcA").setAttributes(attributes).build();
     List<LogData> logs = new ArrayList<>();
     logs.add(mockLog);
     logExporter.export(logs);
@@ -138,10 +132,7 @@ class ExporterWithLogProcessorTest {
     config.body.separator = "::";
     LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
 
-    MockLogData mockLog = MockLogData.builder()
-        .setName("svcA")
-        .setAttributes(attributes)
-        .build();
+    MockLogData mockLog = MockLogData.builder().setName("svcA").setAttributes(attributes).build();
     List<LogData> logs = new ArrayList<>();
     logs.add(mockLog);
     logExporter.export(logs);
@@ -174,10 +165,11 @@ class ExporterWithLogProcessorTest {
     toAttributeConfig.rules.add("^/api/v1/document/(?<documentId>.*)/update$");
     config.body.toAttributes = toAttributeConfig;
     LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
-    MockLogData mockLog = MockLogData.builder()
-        .setName("/api/v1/document/12345678/update")
-        .setAttributes(attributes)
-        .build();
+    MockLogData mockLog =
+        MockLogData.builder()
+            .setName("/api/v1/document/12345678/update")
+            .setAttributes(attributes)
+            .build();
     List<LogData> logs = new ArrayList<>();
     logs.add(mockLog);
     logExporter.export(logs);
@@ -186,12 +178,12 @@ class ExporterWithLogProcessorTest {
     List<LogData> result = mockExporter.getLogs();
     LogData resultLog = result.get(0);
     assertThat(
-        Objects.requireNonNull(
-            resultLog.getAttributes().get(AttributeKey.stringKey("documentId"))))
+            Objects.requireNonNull(
+                resultLog.getAttributes().get(AttributeKey.stringKey("documentId"))))
         .isNotNull();
     assertThat(
-        Objects.requireNonNull(
-            resultLog.getAttributes().get(AttributeKey.stringKey("documentId"))))
+            Objects.requireNonNull(
+                resultLog.getAttributes().get(AttributeKey.stringKey("documentId"))))
         .isEqualTo("12345678");
     assertThat(resultLog.getName()).isEqualTo("/api/v1/document/{documentId}/update");
   }
@@ -206,10 +198,11 @@ class ExporterWithLogProcessorTest {
     toAttributeConfig.rules.add("Pass=(?<password2>[^ ]+)");
     config.body.toAttributes = toAttributeConfig;
     LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
-    MockLogData mockLogA = MockLogData.builder()
-        .setName("yyyPassword=123 aba Pass=555 xyx Pass=777 zzz")
-        .setAttributes(attributes)
-        .build();
+    MockLogData mockLogA =
+        MockLogData.builder()
+            .setName("yyyPassword=123 aba Pass=555 xyx Pass=777 zzz")
+            .setAttributes(attributes)
+            .build();
 
     Attributes attributesB =
         Attributes.builder()
@@ -220,10 +213,8 @@ class ExporterWithLogProcessorTest {
             .put("id", "1234")
             .put("password", "234")
             .build();
-    MockLogData mockLogB = MockLogData.builder()
-        .setName("yyyPassword=**** aba")
-        .setAttributes(attributesB)
-        .build();
+    MockLogData mockLogB =
+        MockLogData.builder().setName("yyyPassword=**** aba").setAttributes(attributesB).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(mockLogA);
@@ -278,10 +269,8 @@ class ExporterWithLogProcessorTest {
             .put("operation", "get")
             .put("id", "1234")
             .build();
-    MockLogData mockLog = MockLogData.builder()
-        .setName("svcA")
-        .setAttributes(newAttributes)
-        .build();
+    MockLogData mockLog =
+        MockLogData.builder().setName("svcA").setAttributes(newAttributes).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(mockLog);

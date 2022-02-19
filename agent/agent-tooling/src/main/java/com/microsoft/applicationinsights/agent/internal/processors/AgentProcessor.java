@@ -73,7 +73,8 @@ public abstract class AgentProcessor {
       this.names = names;
     }
 
-    public static StrictIncludeExclude create(ProcessorIncludeExclude includeExclude, boolean isLog) {
+    public static StrictIncludeExclude create(
+        ProcessorIncludeExclude includeExclude, boolean isLog) {
       List<ProcessorAttribute> attributes = includeExclude.attributes;
       if (attributes == null) {
         attributes = new ArrayList<>();
@@ -100,8 +101,7 @@ public abstract class AgentProcessor {
     private boolean checkAttributes(Attributes attributes) {
       for (ProcessorAttribute attribute : processorAttributes) {
         // All of these attributes must match exactly for a match to occur.
-        Object existingAttributeValue =
-            attributes.get(AttributeKey.stringKey(attribute.key));
+        Object existingAttributeValue = attributes.get(AttributeKey.stringKey(attribute.key));
         // to get the string value
         // existingAttributeValue.toString()
         // String.valueOf(existingAttributeValue);
@@ -130,7 +130,8 @@ public abstract class AgentProcessor {
       this.attributeValuePatterns = attributeValuePatterns;
     }
 
-    public static RegexpIncludeExclude create(ProcessorIncludeExclude includeExclude, boolean isLog) {
+    public static RegexpIncludeExclude create(
+        ProcessorIncludeExclude includeExclude, boolean isLog) {
       List<ProcessorAttribute> attributes = includeExclude.attributes;
       Map<AttributeKey<?>, Pattern> attributeKeyValuePatterns = new HashMap<>();
       if (attributes != null) {

@@ -121,7 +121,8 @@ public class MockLogData implements LogData {
       return this;
     }
 
-    public Builder setInstrumentationLibraryInfo(InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    public Builder setInstrumentationLibraryInfo(
+        InstrumentationLibraryInfo instrumentationLibraryInfo) {
       this.instrumentationLibraryInfo = instrumentationLibraryInfo;
       return this;
     }

@@ -27,9 +27,9 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHeaderSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
-import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
+import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -118,15 +118,16 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
     String tracesExporter = config.getString("otel.traces.exporter");
     if ("none".equals(tracesExporter)) {
       List<ProcessorConfig> processorConfigs = reverseProcessorConfigs(configuration);
-      batchSpanProcessor = createSpanExporter(processorConfigs, configuration.preview.captureHttpServer4xxAsError);
+      batchSpanProcessor =
+          createSpanExporter(processorConfigs, configuration.preview.captureHttpServer4xxAsError);
       tracerProvider.addSpanProcessor(batchSpanProcessor);
     }
   }
 
-  private static BatchSpanProcessor createSpanExporter(List<ProcessorConfig> processorConfigs, boolean captureHttpServer4xxAsError) {
+  private static BatchSpanProcessor createSpanExporter(
+      List<ProcessorConfig> processorConfigs, boolean captureHttpServer4xxAsError) {
     SpanExporter spanExporter =
-        new Exporter(
-            TelemetryClient.getActive(), captureHttpServer4xxAsError);
+        new Exporter(TelemetryClient.getActive(), captureHttpServer4xxAsError);
 
     // NOTE if changing the span processor to something async, flush it in the shutdown hook before
     // flushing TelemetryClient
