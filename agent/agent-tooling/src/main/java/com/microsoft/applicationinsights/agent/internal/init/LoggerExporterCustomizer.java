@@ -42,6 +42,7 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
   @SuppressWarnings("SystemOut")
   @Override
   public void customize(AutoConfigurationCustomizer autoConfiguration) {
+    // TODO remove sout after done testing smoke tests
     System.out.println(
         "====================================== LoggerExporterCustomizer::customize ======================================");
     Thread.dumpStack();
@@ -62,6 +63,7 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
   @SuppressWarnings("SystemOut")
   private static BatchLogProcessor createLogExporter(
       List<Configuration.ProcessorConfig> processorConfigs) {
+    // TODO remove sout after done testing smoke tests
     System.out.println(
         "====================================== createLogExporter ======================================");
     LogExporter logExporter = new LoggerExporter(TelemetryClient.getActive());
