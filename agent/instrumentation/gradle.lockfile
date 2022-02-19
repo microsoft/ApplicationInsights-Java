@@ -141,9 +141,6 @@ io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-lettuce-5.0:1
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-lettuce-5.1:1.11.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-liberty-dispatcher:1.11.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-liberty:1.11.0+ai.patches-alpha=runtimeClasspath
-io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-spans-1.2:1.11.0+ai.patches-alpha=runtimeClasspath
-io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-spans-2.0:1.11.0+ai.patches-alpha=runtimeClasspath
-io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-spans-1.0:1.11.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-micrometer-1.0:1.11.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-mongo-3.1:1.11.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-mongo-3.7:1.11.0+ai.patches-alpha=runtimeClasspath
