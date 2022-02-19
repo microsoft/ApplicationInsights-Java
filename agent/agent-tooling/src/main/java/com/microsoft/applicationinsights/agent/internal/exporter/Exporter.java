@@ -164,7 +164,14 @@ public class Exporter implements SpanExporter {
         .getInstrumentationStatsbeat()
         .addInstrumentation(instrumentationName);
     if (kind == SpanKind.INTERNAL) {
-      exportRemoteDependency(span, true);
+      if (instrumentationName.startsWith("io.opentelemetry.spring-scheduling-")
+          && !span.getParentSpanContext().isValid()) {
+        // TODO (trask) AI mapping: need semantic convention for determining whether to map INTERNAL
+        // to request or dependency (or need clarification to use SERVER for this)
+        exportRequest(span);
+      } else {
+        exportRemoteDependency(span, true);
+      }
     } else if (kind == SpanKind.CLIENT || kind == SpanKind.PRODUCER) {
       exportRemoteDependency(span, false);
     } else if (kind == SpanKind.CONSUMER
