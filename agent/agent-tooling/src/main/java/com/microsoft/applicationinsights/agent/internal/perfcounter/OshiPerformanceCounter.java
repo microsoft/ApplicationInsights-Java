@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.perfcounter;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,10 @@ import oshi.hardware.CentralProcessor;
 import oshi.hardware.CentralProcessor.TickType;
 import oshi.software.os.OSProcess;
 import oshi.software.os.OperatingSystem;
+import oshi.software.os.linux.LinuxOSProcess;
+import oshi.util.FileUtil;
+import oshi.util.ParseUtil;
+import oshi.util.platform.linux.ProcPath;
 
 public class OshiPerformanceCounter implements PerformanceCounter {
 
@@ -79,8 +84,12 @@ public class OshiPerformanceCounter implements PerformanceCounter {
     long currCollectionTimeMillis = System.currentTimeMillis();
     long currProcessBytes = 0L;
     if (processInfo != null) {
-      updateAttributes(processInfo);
-      currProcessBytes = getProcessBytes(processInfo);
+      if (processInfo instanceof LinuxOSProcess) {
+        currProcessBytes = getProcessBytesLinux(processInfo.getProcessID());
+      } else {
+        updateAttributes(processInfo);
+        currProcessBytes = getProcessBytes(processInfo);
+      }
     }
 
     long currTotalProcessorMillis = getTotalProcessorMillis(processor);
@@ -122,6 +131,21 @@ public class OshiPerformanceCounter implements PerformanceCounter {
   // must call updateAttributes on processInfo before calling this method
   private static long getProcessBytes(OSProcess processInfo) {
     return processInfo.getBytesRead() + processInfo.getBytesWritten();
+  }
+
+  // oshi.software.os.linux.LinuxOSProcess.updateAttributes() captures too much stuff each time,
+  // including groupId which calls "getent group", which having the machine connected to active
+  // directory, scans its entire structure
+  // (https://portal.microsofticm.com/imp/v3/incidents/details/289056966/home)
+  //
+  // so this method copies what LinuxOSProcess.updateAttributes() does for just the metrics that we
+  // use for calculating I/O bytes
+  private static long getProcessBytesLinux(int processId) {
+    Map<String, String> io =
+        FileUtil.getKeyValueMapFromFile(String.format(ProcPath.PID_IO, processId), ":");
+    long bytesRead = ParseUtil.parseLongOrDefault(io.getOrDefault("read_bytes", ""), 0L);
+    long bytesWritten = ParseUtil.parseLongOrDefault(io.getOrDefault("write_bytes", ""), 0L);
+    return bytesRead + bytesWritten;
   }
 
   private static long getTotalProcessorMillis(CentralProcessor processor) {
