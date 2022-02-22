@@ -45,8 +45,6 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
     // TODO remove sout after done testing smoke tests
     System.out.println(
         "====================================== LoggerExporterCustomizer::customize ======================================");
-    Thread.dumpStack();
-
     autoConfiguration.addLogEmitterProviderCustomizer(
         (builder, config) -> {
           List<Configuration.ProcessorConfig> processorConfigs =
