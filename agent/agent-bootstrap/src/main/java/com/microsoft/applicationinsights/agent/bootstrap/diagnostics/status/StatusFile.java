@@ -147,19 +147,20 @@ public class StatusFile {
 
   private StatusFile() {}
 
+  @SuppressWarnings("SystemOut")
   private static boolean shouldWrite() {
     if (!DiagnosticsHelper.useAppSvcRpIntegrationLogging()
         && !DiagnosticsHelper.useFunctionsRpIntegrationLogging()) {
       return false;
     }
 
-    startupLogger.debug("############# should write JSON file.");
+    System.out.println("############# should write JSON file.");
 
     if (writable) {
       return true;
     }
 
-    startupLogger.debug("############# It's a READONLY file system.");
+    System.out.println("############# It's a READONLY file system.");
 
     // read-only app services, want to log warning once in this case
     if (startupLogger != null && !alreadyLogged.getAndSet(true)) {
@@ -225,7 +226,7 @@ public class StatusFile {
                       .nullSafe()
                       .toJson(b, map);
                   b.flush();
-                  startupLogger.debug("############# write data to file (" + file.getName() + ")");
+                  System.out.println("############# write data to file (" + file.getName() + ")");
                 } catch (Exception e) {
                   if (logger != null) {
                     logger.error("Error writing {}", file.getAbsolutePath(), e);
