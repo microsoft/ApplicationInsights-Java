@@ -25,7 +25,7 @@ dependencies {
   implementation(project(":agent:agent-gc-monitor:gc-monitor-core"))
 
   implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling") {
-    exclude(group = "io.opentelemetry", module = "opentelemetry-extension-noop-api")
+    exclude("io.opentelemetry", "opentelemetry-extension-noop-api")
   }
   implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api")
   implementation("net.bytebuddy:byte-buddy")

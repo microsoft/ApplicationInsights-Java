@@ -210,7 +210,6 @@ io.opentelemetry:opentelemetry-exporter-prometheus:1.11.0-alpha=runtimeClasspath
 io.opentelemetry:opentelemetry-exporter-zipkin:1.11.0=runtimeClasspath
 io.opentelemetry:opentelemetry-extension-aws:1.11.0=runtimeClasspath
 io.opentelemetry:opentelemetry-extension-kotlin:1.11.0=runtimeClasspath
-io.opentelemetry:opentelemetry-extension-noop-api:1.11.0-alpha=runtimeClasspath
 io.opentelemetry:opentelemetry-extension-trace-propagators:1.11.0=runtimeClasspath
 io.opentelemetry:opentelemetry-sdk-common:1.11.0=runtimeClasspath
 io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi:1.11.0=runtimeClasspath
