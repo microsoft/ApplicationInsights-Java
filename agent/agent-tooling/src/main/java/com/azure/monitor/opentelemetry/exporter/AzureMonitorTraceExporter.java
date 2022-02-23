@@ -343,12 +343,6 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
     setOperationName(telemetryBuilder, span.getAttributes());
   }
 
-  private static void setOperationTags(
-      AbstractTelemetryBuilder telemetryBuilder, String traceId, String parentSpanId) {
-    setOperationId(telemetryBuilder, traceId);
-    setOperationParentId(telemetryBuilder, parentSpanId);
-  }
-
   private static void setOperationId(AbstractTelemetryBuilder telemetryBuilder, String traceId) {
     telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_ID.toString(), traceId);
   }
@@ -760,7 +754,8 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
       initTelemetry(telemetryBuilder);
 
       // set standard properties
-      setOperationTags(telemetryBuilder, span.getTraceId(), span.getSpanId());
+      setOperationId(telemetryBuilder, span.getTraceId());
+      setOperationParentId(telemetryBuilder, span.getSpanId());
       if (operationName != null) {
         setOperationName(telemetryBuilder, operationName);
       } else {
@@ -785,7 +780,8 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
     initTelemetry(telemetryBuilder);
 
     // set standard properties
-    setOperationTags(telemetryBuilder, span.getTraceId(), span.getSpanId());
+    setOperationId(telemetryBuilder, span.getTraceId());
+    setOperationParentId(telemetryBuilder, span.getSpanId());
     if (operationName != null) {
       setOperationName(telemetryBuilder, operationName);
     } else {

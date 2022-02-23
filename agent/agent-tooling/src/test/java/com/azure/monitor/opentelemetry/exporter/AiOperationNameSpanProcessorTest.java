@@ -73,7 +73,6 @@ public class AiOperationNameSpanProcessorTest {
   }
 
   @Test
-  @SuppressWarnings("MustBeClosedChecker")
   public void operationNameFromParentTest() throws InterruptedException {
     CountDownLatch exporterCountDown = new CountDownLatch(1);
     final Tracer tracer =
@@ -87,24 +86,22 @@ public class AiOperationNameSpanProcessorTest {
             .startSpan();
     parentSpan.updateName("parent-span-changed");
     parentSpan.setAttribute(SemanticAttributes.HTTP_METHOD, "POST");
-    final Scope parentScope = parentSpan.makeCurrent();
-    Span childSpan = tracer.spanBuilder("child-span").startSpan();
-    final Scope childScope = childSpan.makeCurrent();
-    try {
-      // Thread bound (sync) calls will automatically pick up the parent span and you don't need to
-      // pass it explicitly.
+    try (Scope parentScope = parentSpan.makeCurrent()) {
+      Span childSpan = tracer.spanBuilder("child-span").startSpan();
+      try (Scope childScope = childSpan.makeCurrent()) {
+        // Thread bound (sync) calls will automatically pick up the parent span and you don't need
+        // to
+        // pass it explicitly.
+      } finally {
+        childSpan.end();
+      }
     } finally {
-      childSpan.end();
-      childScope.close();
       parentSpan.end();
-      parentScope.close();
     }
-
     assertTrue(exporterCountDown.await(10, TimeUnit.SECONDS));
   }
 
   @Test
-  @SuppressWarnings("MustBeClosedChecker")
   public void operationNameEmptyFromParentTest() throws InterruptedException {
     CountDownLatch exporterCountDown = new CountDownLatch(1);
     final Tracer tracer =
@@ -114,24 +111,22 @@ public class AiOperationNameSpanProcessorTest {
     Span parentSpan = tracer.spanBuilder("parent-span").startSpan();
     parentSpan.updateName("parent-span-changed");
     parentSpan.setAttribute(SemanticAttributes.HTTP_METHOD, "POST");
-    final Scope parentScope = parentSpan.makeCurrent();
-    Span span = tracer.spanBuilder("child-span").startSpan();
-    final Scope scope = span.makeCurrent();
-    try {
-      // Thread bound (sync) calls will automatically pick up the parent span and you don't need to
-      // pass it explicitly.
+    try (Scope parentScope = parentSpan.makeCurrent()) {
+      Span childSpan = tracer.spanBuilder("child-span").startSpan();
+      try (Scope childScope = childSpan.makeCurrent()) {
+        // Thread bound (sync) calls will automatically pick up the parent span and you don't need
+        // to
+        // pass it explicitly.
+      } finally {
+        childSpan.end();
+      }
     } finally {
-      span.end();
-      scope.close();
       parentSpan.end();
-      parentScope.close();
     }
-
     assertTrue(exporterCountDown.await(10, TimeUnit.SECONDS));
   }
 
   @Test
-  @SuppressWarnings("MustBeClosedChecker")
   public void operationNameAsSpanNameTest() throws InterruptedException {
     CountDownLatch exporterCountDown = new CountDownLatch(1);
     final Tracer tracer =
@@ -140,17 +135,17 @@ public class AiOperationNameSpanProcessorTest {
                 exporterCountDown, Arrays.asList("child-span", "parent-span-changed")));
     Span parentSpan = tracer.spanBuilder("parent-span").startSpan();
     parentSpan.updateName("parent-span-changed");
-    final Scope parentScope = parentSpan.makeCurrent();
-    Span childSpan = tracer.spanBuilder("child-span").startSpan();
-    final Scope childScope = childSpan.makeCurrent();
-    try {
-      // Thread bound (sync) calls will automatically pick up the parent span and you don't need to
-      // pass it explicitly.
+    try (Scope parentScope = parentSpan.makeCurrent()) {
+      Span childSpan = tracer.spanBuilder("child-span").startSpan();
+      try (Scope childScope = childSpan.makeCurrent()) {
+        // Thread bound (sync) calls will automatically pick up the parent span and you don't need
+        // to
+        // pass it explicitly.
+      } finally {
+        childSpan.end();
+      }
     } finally {
-      childSpan.end();
-      childScope.close();
       parentSpan.end();
-      parentScope.close();
     }
     assertTrue(exporterCountDown.await(10, TimeUnit.SECONDS));
   }
