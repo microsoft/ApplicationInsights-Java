@@ -6,7 +6,6 @@
 * Oshi optimization for better performance [#2126](https://github.com/microsoft/ApplicationInsights-Java/pull/2126).
 * Fix a NullPointerException in startup profiler [#2124](https://github.com/microsoft/ApplicationInsights-Java/pull/2124).
 * Drop metrics with NaN values [#2119](https://github.com/microsoft/ApplicationInsights-Java/pull/2119).
-* Support relative path to agent jar for connection string file lookup [#2105](https://github.com/microsoft/ApplicationInsights-Java/pull/2105).
 
 # Version 3.2.6 GA
 * Support Statsbeat in EU regions [#2082](https://github.com/microsoft/ApplicationInsights-Java/pull/2082).
