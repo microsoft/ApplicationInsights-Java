@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.localstorage;
+package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -28,6 +28,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Date;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,44 +37,37 @@ import org.slf4j.LoggerFactory;
  * Purge files that are older than 48 hours in both 'telemetry' and 'statsbeat' folders. Purge is
  * run every 24 hours.
  */
-public class LocalFilePurger implements Runnable {
+class LocalFilePurger implements Runnable {
 
   private static final Logger logger = LoggerFactory.getLogger(LocalFilePurger.class);
 
-  private final long expiredInterval;
-  private final File[] folders;
+  private final File folder;
+  private final long expiredIntervalSeconds;
 
-  public static void startPurging() {
-    startPurging(
-        TimeUnit.DAYS.toSeconds(1),
-        TimeUnit.DAYS.toSeconds(2),
-        LocalStorageUtils.getOfflineTelemetryFolder(),
-        LocalStorageUtils.getOfflineStatsbeatFolder());
+  private final ScheduledExecutorService scheduledExecutor =
+      Executors.newSingleThreadScheduledExecutor(
+          ThreadPoolUtils.createDaemonThreadFactory(LocalFilePurger.class));
+
+  LocalFilePurger(File folder) {
+    this(folder, TimeUnit.DAYS.toSeconds(2), TimeUnit.DAYS.toSeconds(1));
   }
 
-  // this is used by tests to configure purge interval, expired interval and the test folder which
-  // files are to be purged.
-  static void startPurging(
-      long purgeIntervalSeconds, long expiredIntervalSeconds, File... folders) {
-    Executors.newSingleThreadScheduledExecutor(
-            ThreadPoolUtils.createDaemonThreadFactory(LocalFilePurger.class))
-        .scheduleWithFixedDelay(
-            new LocalFilePurger(expiredIntervalSeconds, folders),
-            purgeIntervalSeconds < 60 ? purgeIntervalSeconds : 60,
-            purgeIntervalSeconds,
-            SECONDS);
+  // visible for testing
+  LocalFilePurger(File folder, long expiredIntervalSeconds, long purgeIntervalSeconds) {
+    this.folder = folder;
+    this.expiredIntervalSeconds = expiredIntervalSeconds;
+
+    scheduledExecutor.scheduleWithFixedDelay(
+        this, Math.min(purgeIntervalSeconds, 60), purgeIntervalSeconds, SECONDS);
   }
 
-  LocalFilePurger(long expiredInterval, File... folders) {
-    this.expiredInterval = expiredInterval;
-    this.folders = folders;
+  void shutdown() {
+    scheduledExecutor.shutdown();
   }
 
   @Override
   public void run() {
-    for (File folder : folders) {
-      purgedExpiredFiles(folder);
-    }
+    purgedExpiredFiles(folder);
   }
 
   private void purgedExpiredFiles(File folder) {
@@ -81,7 +75,7 @@ public class LocalFilePurger implements Runnable {
     int numDeleted = 0;
     for (File file : files) {
       if (expired(file.getName())) {
-        if (!LocalStorageUtils.deleteFileWithRetries(file)) {
+        if (!FileUtil.deleteFileWithRetries(file)) {
           logger.warn(
               "Fail to delete the expired {} from folder '{}'.", file.getName(), folder.getName());
         } else {
@@ -102,8 +96,8 @@ public class LocalFilePurger implements Runnable {
   private boolean expired(String fileName) {
     String time = fileName.substring(0, fileName.lastIndexOf('-'));
     long milliseconds = Long.parseLong(time);
-    Date twoDaysAgo = new Date(System.currentTimeMillis() - 1000 * expiredInterval);
+    Date expirationDate = new Date(System.currentTimeMillis() - 1000 * expiredIntervalSeconds);
     Date fileDate = new Date(milliseconds);
-    return fileDate.before(twoDaysAgo);
+    return fileDate.before(expirationDate);
   }
 }

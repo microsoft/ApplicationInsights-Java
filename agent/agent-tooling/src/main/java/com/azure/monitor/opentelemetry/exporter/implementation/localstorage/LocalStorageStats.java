@@ -19,38 +19,17 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.localstorage;
+package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
-import static java.util.Arrays.asList;
+// this interface exists just to break the cycle between local storage and statsbeat
+// TODO (trask) revisit this once statsbeat is pulled over into azure-monitor-opentelemetry-exporter
+public interface LocalStorageStats {
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
+  void incrementReadFailureCount();
 
-class FileUtil {
+  void incrementWriteFailureCount();
 
-  static List<File> listTrnFiles(File directory) {
-    File[] files = directory.listFiles((dir, name) -> name.endsWith(".trn"));
-    return files == null ? Collections.emptyList() : asList(files);
+  static LocalStorageStats noop() {
+    return NoopLocalStorageStats.INSTANCE;
   }
-
-  static String getBaseName(File file) {
-    String name = file.getName();
-    int index = name.lastIndexOf('.');
-    return index == -1 ? name : name.substring(0, index);
-  }
-
-  static void moveFile(File srcFile, File destFile) throws IOException {
-    if (!srcFile.renameTo(destFile)) {
-      throw new IOException(
-          "Unable to rename file '"
-              + srcFile.getAbsolutePath()
-              + "' to '"
-              + destFile.getAbsolutePath()
-              + "'");
-    }
-  }
-
-  private FileUtil() {}
 }

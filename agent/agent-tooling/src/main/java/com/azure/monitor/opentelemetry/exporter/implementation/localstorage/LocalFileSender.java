@@ -19,16 +19,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.localstorage;
+package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import static java.util.Collections.singletonList;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.logging.DiagnosticTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.telemetry.DiagnosticTelemetryPipelineListener;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -42,36 +40,40 @@ class LocalFileSender implements Runnable {
 
   // send persisted telemetries from local disk every 30 seconds.
   private static final long INTERVAL_SECONDS = 30;
-  private static final ScheduledExecutorService scheduledExecutor =
-      Executors.newSingleThreadScheduledExecutor(
-          ThreadPoolUtils.createDaemonThreadFactory(LocalFileLoader.class));
 
   private final LocalFileLoader localFileLoader;
   private final TelemetryPipeline telemetryPipeline;
+
+  private final ScheduledExecutorService scheduledExecutor =
+      Executors.newSingleThreadScheduledExecutor(
+          ThreadPoolUtils.createDaemonThreadFactory(LocalFileLoader.class));
 
   private final TelemetryPipelineListener diagnosticListener =
       new DiagnosticTelemetryPipelineListener(
           "Sending telemetry to the ingestion service (retry from disk)");
 
-  static void start(LocalFileLoader localFileLoader, TelemetryPipeline telemetryPipeline) {
-    LocalFileSender localFileSender = new LocalFileSender(localFileLoader, telemetryPipeline);
-    scheduledExecutor.scheduleWithFixedDelay(
-        localFileSender, INTERVAL_SECONDS, INTERVAL_SECONDS, TimeUnit.SECONDS);
-  }
-
-  private LocalFileSender(LocalFileLoader localFileLoader, TelemetryPipeline telemetryPipeline) {
+  LocalFileSender(LocalFileLoader localFileLoader, TelemetryPipeline telemetryPipeline) {
     this.localFileLoader = localFileLoader;
     this.telemetryPipeline = telemetryPipeline;
+
+    scheduledExecutor.scheduleWithFixedDelay(
+        this, INTERVAL_SECONDS, INTERVAL_SECONDS, TimeUnit.SECONDS);
+  }
+
+  void shutdown() {
+    scheduledExecutor.shutdown();
   }
 
   @Override
   public void run() {
+    // NOTE this sends telemetry that was stored to disk and the ikey is encoded into the file
+    // so even if the customer has changed the ikey in their applicationinsights.json file, this
+    // will still send out the telemetry to the original destination
+    // (and same for azure spring cloud, if ikey is changed dynamically at runtime, this will still
+    // send out the telemetry to the original destination)
+
     // TODO (heya) load all persisted files on disk in one or more batch per batch capacity?
     try {
-      if (Strings.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey())) {
-        return;
-      }
-
       LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
       if (persistedFile != null) {
         CompletableResultCode resultCode =
