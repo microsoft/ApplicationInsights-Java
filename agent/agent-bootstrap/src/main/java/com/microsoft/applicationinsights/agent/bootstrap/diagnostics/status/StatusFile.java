@@ -243,7 +243,8 @@ public class StatusFile {
                   System.out.println(
                       "############# Error occurred when writing data to file ("
                           + file.getName()
-                          + ")" + e.toString());
+                          + ")"
+                          + e.toString());
                 }
               } else {
                 if (logger != null) {
