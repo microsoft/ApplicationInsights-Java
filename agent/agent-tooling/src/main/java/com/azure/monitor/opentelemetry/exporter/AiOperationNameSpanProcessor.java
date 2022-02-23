@@ -41,9 +41,9 @@ public class AiOperationNameSpanProcessor implements SpanProcessor {
 
   @Override
   public void onStart(Context parentContext, ReadWriteSpan span) {
-    // also check if we should copy parentSpan operation name if the child span already have
-    // operation name
     if (span.getAttribute(AI_OPERATION_NAME_KEY) != null) {
+      // don't copy down the parent span's operation name if the user gave the span an explicit
+      // operation name
       return;
     }
 
