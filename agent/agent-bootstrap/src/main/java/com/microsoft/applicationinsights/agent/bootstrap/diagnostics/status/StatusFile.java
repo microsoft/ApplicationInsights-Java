@@ -240,11 +240,6 @@ public class StatusFile {
                       // ignore this
                     }
                   }
-                  logger.error(
-                      "############# Error occurred when writing data to file ("
-                          + file.getName()
-                          + ")",
-                      e);
                 }
               } else {
                 if (logger != null) {
