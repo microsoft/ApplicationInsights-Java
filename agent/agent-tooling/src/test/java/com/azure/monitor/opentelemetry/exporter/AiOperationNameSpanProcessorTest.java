@@ -21,6 +21,7 @@
 
 package com.azure.monitor.opentelemetry.exporter;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.azure.core.http.HttpPipelineCallContext;
@@ -31,16 +32,17 @@ import com.azure.core.util.Configuration;
 import com.azure.core.util.FluxUtil;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import java.nio.charset.StandardCharsets;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.GZIPInputStream;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
@@ -48,7 +50,7 @@ public class AiOperationNameSpanProcessorTest {
 
   private static Tracer configureAzureMonitorExporter(HttpPipelinePolicy validator) {
     String connectionStringTemplate =
-        "InstrumentationKey=ikey;IngestionEndpoint=https://testendpoint.com";
+        "InstrumentationKey=ikey;IngestionEndpoint=https://test.applicationinsights.azure.com/";
     String connectionString =
         Configuration.getGlobalConfiguration()
             .get("APPLICATIONINSIGHTS_CONNECTION_STRING", connectionStringTemplate);
@@ -71,6 +73,7 @@ public class AiOperationNameSpanProcessorTest {
   }
 
   @Test
+  @SuppressWarnings("MustBeClosedChecker")
   public void operationNameFromParentTest() throws InterruptedException {
     CountDownLatch exporterCountDown = new CountDownLatch(1);
     final Tracer tracer =
@@ -84,13 +87,17 @@ public class AiOperationNameSpanProcessorTest {
             .startSpan();
     parentSpan.updateName("parent-span-changed");
     parentSpan.setAttribute(SemanticAttributes.HTTP_METHOD, "POST");
-
-    Context parentContext = Context.current().with(parentSpan);
-    try (Scope ignored = parentContext.makeCurrent()) {
-      Span childSpan = tracer.spanBuilder("child-span").setParent(parentContext).startSpan();
-      childSpan.end();
+    final Scope parentScope = parentSpan.makeCurrent();
+    Span childSpan = tracer.spanBuilder("child-span").startSpan();
+    final Scope childScope = childSpan.makeCurrent();
+    try {
+      // Thread bound (sync) calls will automatically pick up the parent span and you don't need to
+      // pass it explicitly.
     } finally {
+      childSpan.end();
+      childScope.close();
       parentSpan.end();
+      parentScope.close();
     }
 
     assertTrue(exporterCountDown.await(10, TimeUnit.SECONDS));
@@ -131,28 +138,21 @@ public class AiOperationNameSpanProcessorTest {
         configureAzureMonitorExporter(
             new ValidationPolicy(
                 exporterCountDown, Arrays.asList("child-span", "parent-span-changed")));
-    createNestedSpan(tracer);
-    assertTrue(exporterCountDown.await(10, TimeUnit.SECONDS));
-  }
-
-  private static void createNestedSpan(Tracer tracer) {
-    Span parentSpan = tracer.spanBuilder("parent").startSpan();
+    Span parentSpan = tracer.spanBuilder("parent-span").startSpan();
     parentSpan.updateName("parent-span-changed");
+    final Scope parentScope = parentSpan.makeCurrent();
+    Span childSpan = tracer.spanBuilder("child-span").startSpan();
+    final Scope childScope = childSpan.makeCurrent();
     try {
-      createChildSpan(tracer, parentSpan);
-    } finally {
-      parentSpan.end();
-    }
-  }
-
-  private static void createChildSpan(Tracer tracer, Span parentSpan) {
-    Span childSpan =
-        tracer.spanBuilder("child").setParent(Context.current().with(parentSpan)).startSpan();
-    try {
-      // do stuff
+      // Thread bound (sync) calls will automatically pick up the parent span and you don't need to
+      // pass it explicitly.
     } finally {
       childSpan.end();
+      childScope.close();
+      parentSpan.end();
+      parentScope.close();
     }
+    assertTrue(exporterCountDown.await(10, TimeUnit.SECONDS));
   }
 
   static class ValidationPolicy implements HttpPipelinePolicy {
@@ -170,10 +170,26 @@ public class AiOperationNameSpanProcessorTest {
         HttpPipelineCallContext context, HttpPipelineNextPolicy next) {
       Mono<String> asyncString =
           FluxUtil.collectBytesInByteBufferStream(context.getHttpRequest().getBody())
-              .map(bytes -> new String(bytes, StandardCharsets.UTF_8));
+              .map(
+                  bytes -> {
+                    ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+                    byte[] ungzip = new byte[bytes.length * 3];
+                    int read = 0;
+                    try (GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream)) {
+                      read = gzipInputStream.read(ungzip, 0, ungzip.length);
+                    } catch (IOException e) {
+                      // e.printStackTrace();
+                    } finally {
+                      try {
+                        inputStream.close();
+                      } catch (IOException e) {
+                        // e.printStackTrace();
+                      }
+                    }
+                    return new String(Arrays.copyOf(ungzip, read), UTF_8);
+                  });
       asyncString.subscribe(
           value -> {
-            //  System.out.println(value);
             for (String expectedName : expectedValues) {
               if (!value.contains(expectedName)) {
                 return;
