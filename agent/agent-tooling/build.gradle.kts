@@ -25,6 +25,8 @@ dependencies {
   implementation(project(":agent:agent-gc-monitor:gc-monitor-core"))
 
   implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling") {
+    // excluded temporarily while hosting azure-monitor-opentelemetry-exporter in this repo
+    // because it causes problems for those unit tests
     exclude("io.opentelemetry", "opentelemetry-extension-noop-api")
   }
   implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api")

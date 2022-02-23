@@ -35,7 +35,8 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 // startSpan
 public class AiOperationNameSpanProcessor implements SpanProcessor {
 
-  public static final AttributeKey<String> AI_OPERATION_NAME_KEY =
+  // visible for testing
+  static final AttributeKey<String> AI_OPERATION_NAME_KEY =
       AttributeKey.stringKey("applicationinsights.internal.operation_name");
 
   @Override
