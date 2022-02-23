@@ -56,7 +56,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.text.StringSubstitutor;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -155,27 +154,25 @@ public class TelemetryClient {
     MonitorDomain data = telemetry.getData().getBaseData();
     if (data instanceof MetricsData) {
       MetricsData metricsData = (MetricsData) data;
-      List<MetricDataPoint> filteredPoints =
-          metricsData.getMetrics().stream()
-              .filter(
-                  point -> {
-                    String metricName = point.getName();
-                    if (nonFilterableMetricNames.contains(metricName)) {
-                      return true;
-                    }
-                    for (MetricFilter metricFilter : metricFilters) {
-                      if (!metricFilter.matches(metricName)) {
-                        return false;
-                      }
-                    }
-                    return true;
-                  })
-              .collect(Collectors.toList());
+      if (metricsData.getMetrics().isEmpty()) {
+        throw new AssertionError("MetricsData has no metric point");
+      }
+      MetricDataPoint point = metricsData.getMetrics().get(0);
+      String metricName = point.getName();
+      if (!nonFilterableMetricNames.contains(metricName)) {
+        for (MetricFilter metricFilter : metricFilters) {
+          if (!metricFilter.matches(metricName)) {
+            // user configuration filtered out this metric name
+            return;
+          }
+        }
+      }
 
-      if (filteredPoints.isEmpty()) {
+      if (!Double.isFinite(point.getValue())) {
+        // TODO (trask) add test for this
+        // breeze doesn't like these values
         return;
       }
-      metricsData.setMetrics(filteredPoints);
     }
 
     if (telemetry.getTime() == null) {
