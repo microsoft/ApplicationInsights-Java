@@ -244,7 +244,7 @@ public class StatusFile {
                       "############# Error occurred when writing data to file ("
                           + file.getName()
                           + ")"
-                          + e.toString());
+                          + e.getCause().toString());
                 }
               } else {
                 if (logger != null) {
