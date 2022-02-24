@@ -155,6 +155,7 @@ public class Exporter implements SpanExporter {
             .put("exception.", true)
             .put("thread.", true)
             .put("faas.", true)
+            .put("code.", true)
             .build();
   }
 
