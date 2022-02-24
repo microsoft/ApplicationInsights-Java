@@ -99,6 +99,8 @@ public final class BatchSpanProcessor {
     private final TelemetryChannel spanExporter;
     private final long scheduleDelayNanos;
     private final int maxExportBatchSize;
+
+    @SuppressWarnings({"UnusedVariable", "FieldCanBeLocal"})
     private final long exporterTimeoutNanos;
 
     private long nextExportTime;
@@ -251,8 +253,7 @@ public final class BatchSpanProcessor {
 
       try {
         // batching, retry, logging, and writing to disk on failure occur downstream
-        CompletableResultCode result = spanExporter.send(Collections.unmodifiableList(batch));
-        result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+        spanExporter.send(Collections.unmodifiableList(batch));
       } finally {
         batch.clear();
       }
