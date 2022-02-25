@@ -109,7 +109,7 @@ io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-lamb
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-reflection:1.11.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-url-class-loader:1.11.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-http-client:1.11.0+ai.patches-alpha=runtimeClasspath
-io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging-spans:1.11.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging:1.11.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-1.0:1.11.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-2.0-common:1.11.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-2.0-cxf-3.2:1.11.0+ai.patches-alpha=runtimeClasspath
