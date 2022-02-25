@@ -159,11 +159,6 @@ tasks {
 
     configurations.add(project.configurations.runtimeClasspath.get())
 
-    dependencies {
-      exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging-spans"))
-      exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-spans-1.0"))
-    }
-
     // rewrite dependencies calling Logger.getLogger
     relocate("java.util.logging.Logger", "io.opentelemetry.javaagent.bootstrap.PatchLogger")
 
