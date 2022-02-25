@@ -68,6 +68,8 @@ io.opentelemetry.instrumentation:opentelemetry-jetty-httpclient-9.2:1.11.0+ai.pa
 io.opentelemetry.instrumentation:opentelemetry-kafka-clients-common:1.11.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-lettuce-5.1:1.11.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-lettuce-common:1.11.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.instrumentation:opentelemetry-log4j-appender-2.16:1.11.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:1.11.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-mongo-3.1:1.11.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0:1.11.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-quartz-2.0:1.11.0+ai.patches-alpha=runtimeClasspath
@@ -141,6 +143,9 @@ io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-lettuce-5.0:1
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-lettuce-5.1:1.11.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-liberty-dispatcher:1.11.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-liberty:1.11.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-appender-1.2:1.11.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-appender-2.16:1.11.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-appender-1.0:1.11.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-micrometer-1.0:1.11.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-mongo-3.1:1.11.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-mongo-3.7:1.11.0+ai.patches-alpha=runtimeClasspath
