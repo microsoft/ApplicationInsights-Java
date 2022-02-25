@@ -17,11 +17,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration(proxyBeanMethods = false)
-@AutoConfigureBefore({
-  CompositeMeterRegistryAutoConfiguration.class,
-  SimpleMetricsExportAutoConfiguration.class
-})
-@AutoConfigureAfter(MetricsAutoConfiguration.class)
+@AutoConfigureBefore(CompositeMeterRegistryAutoConfiguration.class)
+// configure after SimpleMeterRegistry is registered, otherwise SimpleMeterRegistry will be
+// suppressed by the existence of the MeterRegistry created here, which can alter the spring boot
+// actuator scraping endpoint behavior (since AzureMonitorMeterRegistry is a delta
+// StepMeterRegistry, while SimpleMeterRegistry is cumulative)
+@AutoConfigureAfter({MetricsAutoConfiguration.class, SimpleMetricsExportAutoConfiguration.class})
 @ConditionalOnBean(Clock.class)
 @ConditionalOnClass(AzureMonitorMeterRegistry.class)
 public class AzureMonitorAutoConfiguration {
