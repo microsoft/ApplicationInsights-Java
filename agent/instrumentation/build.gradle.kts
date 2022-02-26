@@ -140,13 +140,13 @@ dependencies {
 }
 
 // need to perform shading in two steps in order to avoid shading java.util.logging.Logger
-// in opentelemetry-javaagent-java-util-logging-spans since that instrumentation needs to
+// in opentelemetry-javaagent-java-util-logging since that instrumentation needs to
 // reference unshaded java.util.logging.Logger
 // (java.util.logging.Logger shading is not needed in any of the instrumentation modules,
 // but it is needed for the dependencies, e.g. guava, which use java.util.logging.Logger)
 // -- AND ALSO --
 // need to perform shading in two steps in order to avoid shading ch.qos.logback.*
-// in opentelemetry-javaagent-logback-spans-1.0 since that instrumentation needs to
+// in opentelemetry-javaagent-logback-appender-1.0 since that instrumentation needs to
 // reference unshaded ch.qos.logback.*
 // (ch.qos.logback.* shading is not needed in any of the instrumentation modules,
 // but it is needed for agent-tooling, which use logback to update levels dynamically in LazyConfigurationAccessor)
@@ -158,6 +158,11 @@ tasks {
     destinationDirectory.set(file("${project.buildDir}/step1"))
 
     configurations.add(project.configurations.runtimeClasspath.get())
+
+    dependencies {
+      exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging"))
+      exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-appender-1.0"))
+    }
 
     // rewrite dependencies calling Logger.getLogger
     relocate("java.util.logging.Logger", "io.opentelemetry.javaagent.bootstrap.PatchLogger")
