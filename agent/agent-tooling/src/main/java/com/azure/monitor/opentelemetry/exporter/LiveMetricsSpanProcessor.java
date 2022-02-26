@@ -38,9 +38,8 @@ import java.util.List;
 public class LiveMetricsSpanProcessor implements SpanProcessor {
 
   private static final ClientLogger LOGGER = new ClientLogger(AzureMonitorTraceExporter.class);
-  private String instrumentationKey;
 
-  private LiveMetricsSpanProcessor() {}
+  private final String instrumentationKey;
 
   public LiveMetricsSpanProcessor(
       AadAuthentication aadAuthentication,
