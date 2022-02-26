@@ -24,7 +24,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.LazyHttpClient;
+import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import java.util.concurrent.ArrayBlockingQueue;
 
 class QuickPulseDataSender implements Runnable {

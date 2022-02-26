@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter.implementation.utils;
+package com.microsoft.applicationinsights.agent.internal.httpclient;
 
 import static java.util.Arrays.asList;
 
@@ -42,6 +42,7 @@ import com.azure.identity.ManagedIdentityCredential;
 import com.azure.identity.ManagedIdentityCredentialBuilder;
 import com.azure.identity.VisualStudioCodeCredential;
 import com.azure.identity.VisualStudioCodeCredentialBuilder;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -128,15 +129,16 @@ public class LazyHttpClient implements HttpClient {
   }
 
   public static HttpPipeline newHttpPipeLineWithDefaultRedirect(
-      @Nullable AadAuthentication aadAuthentication) {
-    return newHttpPipeLine(aadAuthentication, new RedirectPolicy(new DefaultRedirectStrategy()));
+      @Nullable Configuration.AadAuthentication aadConfiguration) {
+    return newHttpPipeLine(aadConfiguration, new RedirectPolicy(new DefaultRedirectStrategy()));
   }
 
   public static HttpPipeline newHttpPipeLine(
-      @Nullable AadAuthentication aadAuthentication, HttpPipelinePolicy... additionalPolicies) {
+      @Nullable Configuration.AadAuthentication aadConfiguration,
+      HttpPipelinePolicy... additionalPolicies) {
     List<HttpPipelinePolicy> policies = new ArrayList<>();
-    if (aadAuthentication != null) {
-      policies.add(getAuthenticationPolicy(aadAuthentication));
+    if (aadConfiguration != null && aadConfiguration.enabled) {
+      policies.add(getAuthenticationPolicy(aadConfiguration));
     }
     policies.addAll(asList(additionalPolicies));
     // Add Logging Policy. Can be enabled using AZURE_LOG_LEVEL.
@@ -164,38 +166,39 @@ public class LazyHttpClient implements HttpClient {
     response.getBody().subscribe();
   }
 
-  private static HttpPipelinePolicy getAuthenticationPolicy(AadAuthentication aadAuthentication) {
-    switch (aadAuthentication.getType()) {
+  private static HttpPipelinePolicy getAuthenticationPolicy(
+      Configuration.AadAuthentication configuration) {
+    switch (configuration.type) {
       case UAMI:
-        return getAuthenticationPolicyWithUami(aadAuthentication);
+        return getAuthenticationPolicyWithUami(configuration);
       case SAMI:
         return getAuthenticationPolicyWithSami();
       case VSCODE:
         return getAuthenticationPolicyWithVsCode();
       case CLIENTSECRET:
-        return getAuthenticationPolicyWithClientSecret(aadAuthentication);
+        return getAuthenticationPolicyWithClientSecret(configuration);
     }
     throw new IllegalStateException(
-        "Invalid Authentication Type used in AAD Authentication: " + aadAuthentication.getType());
+        "Invalid Authentication Type used in AAD Authentication: " + configuration.type);
   }
 
   private static HttpPipelinePolicy getAuthenticationPolicyWithUami(
-      AadAuthentication aadAuthentication) {
+      Configuration.AadAuthentication configuration) {
     ManagedIdentityCredentialBuilder managedIdentityCredential =
-        new ManagedIdentityCredentialBuilder().clientId(aadAuthentication.getClientId());
+        new ManagedIdentityCredentialBuilder().clientId(configuration.clientId);
     return new BearerTokenAuthenticationPolicy(
         managedIdentityCredential.build(), APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE);
   }
 
   private static HttpPipelinePolicy getAuthenticationPolicyWithClientSecret(
-      AadAuthentication aadAuthentication) {
+      Configuration.AadAuthentication configuration) {
     ClientSecretCredentialBuilder credential =
         new ClientSecretCredentialBuilder()
-            .tenantId(aadAuthentication.getTenantId())
-            .clientSecret(aadAuthentication.getClientSecret())
-            .clientId(aadAuthentication.getClientId());
-    if (aadAuthentication.getAuthorityHost() != null) {
-      credential.authorityHost(aadAuthentication.getAuthorityHost());
+            .tenantId(configuration.tenantId)
+            .clientSecret(configuration.clientSecret)
+            .clientId(configuration.clientId);
+    if (configuration.authorityHost != null) {
+      credential.authorityHost(configuration.authorityHost);
     }
     return new BearerTokenAuthenticationPolicy(
         credential.build(), APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE);

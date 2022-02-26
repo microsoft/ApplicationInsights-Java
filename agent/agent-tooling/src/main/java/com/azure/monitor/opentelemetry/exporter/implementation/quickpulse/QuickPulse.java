@@ -23,9 +23,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse;
 
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AadAuthentication;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.HostName;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.LazyHttpClient;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import java.util.UUID;
@@ -45,7 +43,7 @@ public enum QuickPulse {
   // can cause slowness during startup in some environments
 
   public void initialize(
-      @Nullable AadAuthentication aadAuthentication,
+      HttpPipeline httpPipeline,
       @Nullable String roleName,
       @Nullable String instrumentationKey,
       @Nullable String roleInstance,
@@ -55,12 +53,7 @@ public enum QuickPulse {
         .execute(
             () ->
                 initializeSync(
-                    latch,
-                    aadAuthentication,
-                    roleName,
-                    instrumentationKey,
-                    roleInstance,
-                    endpointUrl));
+                    latch, httpPipeline, roleName, instrumentationKey, roleInstance, endpointUrl));
     // don't return until initialization thread has INSTANCE lock
     try {
       latch.await();
@@ -71,7 +64,7 @@ public enum QuickPulse {
 
   private void initializeSync(
       CountDownLatch latch,
-      @Nullable AadAuthentication aadAuthentication,
+      HttpPipeline httpPipeline,
       @Nullable String roleName,
       @Nullable String instrumentationKey,
       @Nullable String roleInstance,
@@ -84,8 +77,6 @@ public enum QuickPulse {
         if (!initialized) {
           initialized = true;
           String quickPulseId = UUID.randomUUID().toString().replace("-", "");
-          HttpPipeline httpPipeline =
-              LazyHttpClient.newHttpPipeLineWithDefaultRedirect(aadAuthentication);
           ArrayBlockingQueue<HttpRequest> sendQueue = new ArrayBlockingQueue<>(256, true);
 
           QuickPulseDataSender quickPulseDataSender =

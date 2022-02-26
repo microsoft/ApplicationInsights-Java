@@ -21,11 +21,11 @@
 
 package com.azure.monitor.opentelemetry.exporter;
 
+import com.azure.core.http.HttpPipeline;
 import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulseDataCollector;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AadAuthentication;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
@@ -42,14 +42,14 @@ public class LiveMetricsSpanProcessor implements SpanProcessor {
   private final String instrumentationKey;
 
   public LiveMetricsSpanProcessor(
-      AadAuthentication aadAuthentication,
+      HttpPipeline httpPipeline,
       String roleName,
       String instrumentationKey,
       String roleInstance,
       String endpointUrl) {
     this.instrumentationKey = instrumentationKey;
     QuickPulse.INSTANCE.initialize(
-        aadAuthentication, roleName, instrumentationKey, roleInstance, endpointUrl);
+        httpPipeline, roleName, instrumentationKey, roleInstance, endpointUrl);
   }
 
   @Override

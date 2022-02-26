@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.LazyHttpClient;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
@@ -36,6 +35,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
+import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.legacysdk.ApplicationInsightsAppenderClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.legacysdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.legacysdk.DependencyTelemetryClassFileTransformer;

@@ -22,8 +22,6 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.azure.monitor.opentelemetry.exporter.AiOperationNameSpanProcessor;
-import com.azure.monitor.opentelemetry.exporter.LiveMetricsSpanProcessor;
-import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
@@ -119,14 +117,6 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
               configuration.preview.instrumentationKeyOverrides));
     }
 
-    // Add quick pulse
-    tracerProvider.addSpanProcessor(
-        new LiveMetricsSpanProcessor(
-            telemetryClient.getAadAuthentication(),
-            telemetryClient.getRoleName(),
-            telemetryClient.getInstrumentationKey(),
-            telemetryClient.getRoleInstance(),
-            ConnectionString.parse(configuration.connectionString).getLiveEndpoint().toString()));
     String tracesExporter = config.getString("otel.traces.exporter");
     if ("none".equals(tracesExporter)) {
       batchSpanProcessor = createExporter(configuration);
