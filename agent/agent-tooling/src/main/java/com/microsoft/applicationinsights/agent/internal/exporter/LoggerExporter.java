@@ -37,6 +37,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Collection;
@@ -47,15 +48,14 @@ import org.slf4j.LoggerFactory;
 
 public class LoggerExporter implements LogExporter {
 
+  private static final Logger logger = LoggerFactory.getLogger(LoggerExporter.class);
+
   private static final AttributeKey<String> AI_OPERATION_NAME_KEY =
       AttributeKey.stringKey("applicationinsights.internal.operation_name");
-  private static final AttributeKey<String> AI_LOG_LEVEL_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.log_level");
-  private static final AttributeKey<String> AI_LOGGER_NAME_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.logger_name");
-  private static final Logger logger = LoggerFactory.getLogger(LoggerExporter.class);
+
   private static final OperationLogger exportingLogLogger =
       new OperationLogger(Exporter.class, "Exporting log");
+
   private final TelemetryClient telemetryClient;
   private final AtomicBoolean stopped = new AtomicBoolean();
 
@@ -102,11 +102,8 @@ public class LoggerExporter implements LogExporter {
   }
 
   private void internalExport(LogData log) {
-    String instrumentationName = log.getInstrumentationLibraryInfo().getName();
-    telemetryClient
-        .getStatsbeatModule()
-        .getInstrumentationStatsbeat()
-        .addInstrumentation(instrumentationName);
+    // note: instrumentationLibraryInfo name is the logger name, not the instrumentation name, so
+    // cannot use it for instrumentation statsbeat
 
     String stack = log.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
     if (stack == null) {
@@ -128,14 +125,13 @@ public class LoggerExporter implements LogExporter {
     ExporterUtil.setExtraAttributes(telemetryBuilder, attributes, logger);
 
     // set message-specific properties
-    String level = attributes.get(AI_LOG_LEVEL_KEY);
-    String loggerName = attributes.get(AI_LOGGER_NAME_KEY);
+    String loggerName = log.getInstrumentationLibraryInfo().getName();
     String threadName = attributes.get(SemanticAttributes.THREAD_NAME);
 
-    telemetryBuilder.setSeverityLevel(toSeverityLevel(level));
-    telemetryBuilder.setMessage(log.getName());
+    telemetryBuilder.setSeverityLevel(toSeverityLevel(log.getSeverity()));
+    telemetryBuilder.setMessage(log.getBody().asString());
 
-    setLoggerProperties(telemetryBuilder, level, loggerName, threadName);
+    setLoggerProperties(telemetryBuilder, loggerName, threadName);
 
     // export
     telemetryClient.trackAsync(telemetryBuilder.build());
@@ -152,14 +148,13 @@ public class LoggerExporter implements LogExporter {
     ExporterUtil.setExtraAttributes(telemetryBuilder, attributes, logger);
 
     // set exception-specific properties
-    String level = attributes.get(AI_LOG_LEVEL_KEY);
-    String loggerName = attributes.get(AI_LOGGER_NAME_KEY);
+    String loggerName = log.getInstrumentationLibraryInfo().getName();
     String threadName = attributes.get(SemanticAttributes.THREAD_NAME);
 
     telemetryBuilder.setExceptions(Exceptions.minimalParse(stack));
-    telemetryBuilder.setSeverityLevel(toSeverityLevel(level));
+    telemetryBuilder.setSeverityLevel(toSeverityLevel(log.getSeverity()));
     telemetryBuilder.addProperty("Logger Message", log.getName());
-    setLoggerProperties(telemetryBuilder, level, loggerName, threadName);
+    setLoggerProperties(telemetryBuilder, loggerName, threadName);
 
     // export
     telemetryClient.trackAsync(telemetryBuilder.build());
@@ -196,16 +191,7 @@ public class LoggerExporter implements LogExporter {
   }
 
   private static void setLoggerProperties(
-      AbstractTelemetryBuilder telemetryBuilder,
-      String level,
-      String loggerName,
-      String threadName) {
-    if (level != null) {
-      // TODO are these needed? level is already reported as severityLevel, sourceType maybe needed
-      // for exception telemetry only?
-      telemetryBuilder.addProperty("SourceType", "Logger");
-      telemetryBuilder.addProperty("LoggingLevel", level);
-    }
+      AbstractTelemetryBuilder telemetryBuilder, String loggerName, String threadName) {
     if (loggerName != null) {
       telemetryBuilder.addProperty("LoggerName", loggerName);
     }
@@ -215,33 +201,44 @@ public class LoggerExporter implements LogExporter {
   }
 
   @Nullable
-  private static SeverityLevel toSeverityLevel(String level) {
-    if (level == null) {
+  private static SeverityLevel toSeverityLevel(Severity severity) {
+    if (severity == null) {
       return null;
     }
-    switch (level) {
-      case "FATAL":
-        return SeverityLevel.CRITICAL;
-      case "ERROR":
-      case "SEVERE":
-        return SeverityLevel.ERROR;
-      case "WARN":
-      case "WARNING":
-        return SeverityLevel.WARNING;
-      case "INFO":
-        return SeverityLevel.INFORMATION;
-      case "DEBUG":
-      case "TRACE":
-      case "CONFIG":
-      case "FINE":
-      case "FINER":
-      case "FINEST":
-      case "ALL":
-        return SeverityLevel.VERBOSE;
-      default:
+    switch (severity) {
+      case UNDEFINED_SEVERITY_NUMBER:
         // TODO (trask) AI mapping: is this a good fallback?
-        logger.debug("Unexpected level {}, using VERBOSE level as default", level);
+      case TRACE:
+      case TRACE2:
+      case TRACE3:
+      case TRACE4:
+      case DEBUG:
+      case DEBUG2:
+      case DEBUG3:
+      case DEBUG4:
         return SeverityLevel.VERBOSE;
+      case INFO:
+      case INFO2:
+      case INFO3:
+      case INFO4:
+        return SeverityLevel.INFORMATION;
+      case WARN:
+      case WARN2:
+      case WARN3:
+      case WARN4:
+        return SeverityLevel.WARNING;
+      case ERROR:
+      case ERROR2:
+      case ERROR3:
+      case ERROR4:
+        return SeverityLevel.ERROR;
+      case FATAL:
+      case FATAL2:
+      case FATAL3:
+      case FATAL4:
+        return SeverityLevel.CRITICAL;
     }
+    // TODO (trask) AI mapping: is this a good fallback?
+    return SeverityLevel.VERBOSE;
   }
 }
