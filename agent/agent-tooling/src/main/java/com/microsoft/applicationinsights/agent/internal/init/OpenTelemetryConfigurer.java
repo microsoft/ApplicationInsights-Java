@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import com.azure.monitor.opentelemetry.exporter.AiOperationNameSpanProcessor;
 import com.azure.monitor.opentelemetry.exporter.LiveMetricsSpanProcessor;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.google.auto.service.AutoService;

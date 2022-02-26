@@ -19,21 +19,34 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.init;
+package com.azure.monitor.opentelemetry.exporter;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
+/** SpanProcessor implementation to update operation name. */
+// note: operation name for requests is handled during export so that it can use the updated span
+// name from routing instrumentation
+//       if we (only) set operation name on requests here, it would be based on span name at
+// startSpan
 public class AiOperationNameSpanProcessor implements SpanProcessor {
+
+  // visible for testing
+  static final AttributeKey<String> AI_OPERATION_NAME_KEY =
+      AttributeKey.stringKey("applicationinsights.internal.operation_name");
 
   @Override
   public void onStart(Context parentContext, ReadWriteSpan span) {
+    if (span.getAttribute(AI_OPERATION_NAME_KEY) != null) {
+      // don't copy down the parent span's operation name if the user gave the span an explicit
+      // operation name
+      return;
+    }
+
     Span parentSpan = Span.fromContextOrNull(parentContext);
     if (parentSpan == null) {
       return;
@@ -41,7 +54,8 @@ public class AiOperationNameSpanProcessor implements SpanProcessor {
     if (!(parentSpan instanceof ReadableSpan)) {
       return;
     }
-    span.setAttribute(Exporter.AI_OPERATION_NAME_KEY, getOperationName((ReadableSpan) parentSpan));
+
+    span.setAttribute(AI_OPERATION_NAME_KEY, getOperationName((ReadableSpan) parentSpan));
   }
 
   @Override
@@ -58,15 +72,14 @@ public class AiOperationNameSpanProcessor implements SpanProcessor {
   }
 
   public static String getOperationName(ReadableSpan serverSpan) {
-
-    String operationName = serverSpan.getAttribute(Exporter.AI_OPERATION_NAME_KEY);
+    String operationName = serverSpan.getAttribute(AI_OPERATION_NAME_KEY);
     if (operationName != null) {
       return operationName;
     }
 
     String spanName = serverSpan.getName();
     String httpMethod = serverSpan.getAttribute(SemanticAttributes.HTTP_METHOD);
-    if (Strings.isNullOrEmpty(httpMethod)) {
+    if (httpMethod == null || httpMethod.isEmpty()) {
       return spanName;
     }
     return httpMethod + " " + spanName;

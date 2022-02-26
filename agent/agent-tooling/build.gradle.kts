@@ -24,7 +24,11 @@ dependencies {
   implementation(project(":agent:agent-gc-monitor:gc-monitor-api"))
   implementation(project(":agent:agent-gc-monitor:gc-monitor-core"))
 
-  implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
+  implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling") {
+    // excluded temporarily while hosting azure-monitor-opentelemetry-exporter in this repo
+    // because it causes problems for those unit tests
+    exclude("io.opentelemetry", "opentelemetry-extension-noop-api")
+  }
   implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api")
   implementation("net.bytebuddy:byte-buddy")
 
@@ -43,6 +47,7 @@ dependencies {
 
   // commented out temporarily while hosting azure-monitor-opentelemetry-exporter in this repo
   // implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.4")
+
   implementation("com.azure:azure-core")
   implementation("com.azure:azure-identity") {
     // "This dependency can be excluded if IntelliJ Credential is not being used for authentication
