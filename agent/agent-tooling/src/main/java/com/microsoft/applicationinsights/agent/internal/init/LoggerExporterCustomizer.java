@@ -23,12 +23,14 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.exporter.AiOperationNameLogWrappingProcessor;
 import com.microsoft.applicationinsights.agent.internal.exporter.LoggerExporter;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithLogProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.LogExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
+import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import java.util.ArrayList;
@@ -49,17 +51,12 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
         (builder, config) -> {
           List<Configuration.ProcessorConfig> processorConfigs =
               reverseProcessorConfigs(MainEntryPoint.getConfiguration());
-          BatchLogProcessor batchLogProcessor = createLogExporter(processorConfigs);
-          if (batchLogProcessor != null) {
-            return builder.addLogProcessor(batchLogProcessor);
-          }
-
-          return null;
+          return builder.addLogProcessor(createLogExporter(processorConfigs));
         });
   }
 
   @SuppressWarnings("SystemOut")
-  private static BatchLogProcessor createLogExporter(
+  private static LogProcessor createLogExporter(
       List<Configuration.ProcessorConfig> processorConfigs) {
     // TODO remove sout after done testing smoke tests
     System.out.println(
@@ -81,7 +78,10 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
       }
     }
 
-    return BatchLogProcessor.builder(logExporter).setMaxExportBatchSize(1).build();
+    // operation name need to be captured while on the main thread
+    // before passing off to the BatchLogProcessor
+    return new AiOperationNameLogWrappingProcessor(
+        BatchLogProcessor.builder(logExporter).setMaxExportBatchSize(1).build());
   }
 
   private static List<Configuration.ProcessorConfig> reverseProcessorConfigs(

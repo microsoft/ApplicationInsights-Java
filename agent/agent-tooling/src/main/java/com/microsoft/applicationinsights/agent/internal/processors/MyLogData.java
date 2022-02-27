@@ -27,6 +27,8 @@ import io.opentelemetry.sdk.logs.data.LogData;
 public class MyLogData extends DelegatingLogData {
 
   private final Attributes attributes;
+  // TODO (heya) this should be log body, we may want to change log processor configuration to
+  //  reflect the new name
   private final String logName;
 
   public MyLogData(LogData delegate, Attributes attributes) {

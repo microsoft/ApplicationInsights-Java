@@ -41,21 +41,14 @@ public class AiOperationNameSpanProcessor implements SpanProcessor {
 
   @Override
   public void onStart(Context parentContext, ReadWriteSpan span) {
-    if (span.getAttribute(AI_OPERATION_NAME_KEY) != null) {
-      // don't copy down the parent span's operation name if the user gave the span an explicit
-      // operation name
-      return;
-    }
+
+    // if user wants to change operation name, they should change operation name on the parent span
+    // first before creating child span
 
     Span parentSpan = Span.fromContextOrNull(parentContext);
-    if (parentSpan == null) {
-      return;
+    if (parentSpan instanceof ReadableSpan) {
+      span.setAttribute(AI_OPERATION_NAME_KEY, getOperationName((ReadableSpan) parentSpan));
     }
-    if (!(parentSpan instanceof ReadableSpan)) {
-      return;
-    }
-
-    span.setAttribute(AI_OPERATION_NAME_KEY, getOperationName((ReadableSpan) parentSpan));
   }
 
   @Override
@@ -71,14 +64,14 @@ public class AiOperationNameSpanProcessor implements SpanProcessor {
     return false;
   }
 
-  public static String getOperationName(ReadableSpan serverSpan) {
-    String operationName = serverSpan.getAttribute(AI_OPERATION_NAME_KEY);
+  public static String getOperationName(ReadableSpan span) {
+    String operationName = span.getAttribute(AI_OPERATION_NAME_KEY);
     if (operationName != null) {
       return operationName;
     }
 
-    String spanName = serverSpan.getName();
-    String httpMethod = serverSpan.getAttribute(SemanticAttributes.HTTP_METHOD);
+    String spanName = span.getName();
+    String httpMethod = span.getAttribute(SemanticAttributes.HTTP_METHOD);
     if (httpMethod == null || httpMethod.isEmpty()) {
       return spanName;
     }

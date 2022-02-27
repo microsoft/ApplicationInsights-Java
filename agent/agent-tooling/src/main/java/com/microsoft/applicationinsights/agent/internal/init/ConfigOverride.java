@@ -130,6 +130,13 @@ class ConfigOverride {
         "otel.instrumentation.http.capture-headers.client.response",
         config.preview.captureHttpClientHeaders.responseHeaders);
 
+    properties.put(
+        "otel.instrumentation.logback-appender.experimental.capture-mdc-attributes", "true");
+    properties.put(
+        "otel.instrumentation.log4j-appender.experimental.capture-context-data-attributes", "*");
+    properties.put(
+        "otel.instrumentation.log4j-appender.experimental.capture-map-message-attributes", "true");
+
     properties.put("otel.propagators", DelegatingPropagatorProvider.NAME);
 
     String tracesExporter = getProperty("otel.traces.exporter");

@@ -65,6 +65,12 @@ public class LoggerExporter implements LogExporter {
 
   @Override
   public CompletableResultCode export(Collection<LogData> logs) {
+
+    // TODO (heya) ignore logs that do not meet the configured logging threshold
+    //  (configuration.instrumentation.logging.level)
+    //  this used to be handled in the instrumentation, but otel instrumentation doesn't have that
+    //  setting yet, which is ok we should be able to filter here fine
+
     if (Strings.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey())) {
       logger.debug("Instrumentation key is null or empty. Fail to export logs.");
       return CompletableResultCode.ofFailure();
@@ -122,7 +128,7 @@ public class LoggerExporter implements LogExporter {
     telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(log.getEpochNanos()));
     setOperationTags(telemetryBuilder, log);
     setSampleRate(telemetryBuilder, log);
-    ExporterUtil.setExtraAttributes(telemetryBuilder, attributes, logger);
+    setExtraAttributes(telemetryBuilder, attributes);
 
     // set message-specific properties
     String loggerName = log.getInstrumentationLibraryInfo().getName();
@@ -145,7 +151,7 @@ public class LoggerExporter implements LogExporter {
     setOperationTags(telemetryBuilder, log);
     telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(log.getEpochNanos()));
     setSampleRate(telemetryBuilder, log);
-    ExporterUtil.setExtraAttributes(telemetryBuilder, attributes, logger);
+    setExtraAttributes(telemetryBuilder, attributes);
 
     // set exception-specific properties
     String loggerName = log.getInstrumentationLibraryInfo().getName();
@@ -153,7 +159,8 @@ public class LoggerExporter implements LogExporter {
 
     telemetryBuilder.setExceptions(Exceptions.minimalParse(stack));
     telemetryBuilder.setSeverityLevel(toSeverityLevel(log.getSeverity()));
-    telemetryBuilder.addProperty("Logger Message", log.getName());
+    telemetryBuilder.addProperty("Logger Message", log.getBody().asString());
+    telemetryBuilder.addProperty("SourceType", "Logger");
     setLoggerProperties(telemetryBuilder, loggerName, threadName);
 
     // export
@@ -188,6 +195,26 @@ public class LoggerExporter implements LogExporter {
     if (samplingPercentage != 100) {
       telemetryBuilder.setSampleRate(samplingPercentage);
     }
+  }
+
+  private static final String LOG4J_CONTEXT_DATA_PREFIX = "log4j.context_data.";
+  private static final String LOGBACK_MDC_PREFIX = "logback.mdc.";
+
+  static void setExtraAttributes(AbstractTelemetryBuilder telemetryBuilder, Attributes attributes) {
+    attributes.forEach(
+        (key, value) -> {
+          String stringKey = key.getKey();
+          if (stringKey.startsWith(LOG4J_CONTEXT_DATA_PREFIX)) {
+            telemetryBuilder.addProperty(
+                stringKey.substring(LOG4J_CONTEXT_DATA_PREFIX.length()), String.valueOf(value));
+            return;
+          }
+          if (stringKey.startsWith(LOGBACK_MDC_PREFIX)) {
+            telemetryBuilder.addProperty(
+                stringKey.substring(LOGBACK_MDC_PREFIX.length()), String.valueOf(value));
+            return;
+          }
+        });
   }
 
   private static void setLoggerProperties(
