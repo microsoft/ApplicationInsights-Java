@@ -24,11 +24,7 @@ public abstract class NetServerAttributesExtractor<REQUEST, RESPONSE>
     set(attributes, SemanticAttributes.NET_TRANSPORT, transport(request));
 
     String peerIp = peerIp(request);
-    String peerName = peerName(request);
 
-    if (peerName != null && !peerName.equals(peerIp)) {
-      set(attributes, SemanticAttributes.NET_PEER_NAME, peerName);
-    }
     set(attributes, SemanticAttributes.NET_PEER_IP, peerIp);
 
     Integer peerPort = peerPort(request);
@@ -46,9 +42,6 @@ public abstract class NetServerAttributesExtractor<REQUEST, RESPONSE>
 
   @Nullable
   public abstract String transport(REQUEST request);
-
-  @Nullable
-  public abstract String peerName(REQUEST request);
 
   @Nullable
   public abstract Integer peerPort(REQUEST request);

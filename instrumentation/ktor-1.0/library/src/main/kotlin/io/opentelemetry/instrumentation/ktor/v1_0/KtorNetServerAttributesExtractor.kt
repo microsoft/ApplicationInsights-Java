@@ -15,14 +15,6 @@ internal class KtorNetServerAttributesExtractor : NetServerAttributesExtractor<A
     return SemanticAttributes.NetTransportValues.IP_TCP
   }
 
-  override fun peerName(request: ApplicationRequest): String? {
-    var remote = request.local.remoteHost
-    if (remote != null && "unknown" != remote && !isIpAddress(remote)) {
-      return remote
-    }
-    return null
-  }
-
   override fun peerPort(request: ApplicationRequest): Int? {
     return null
   }

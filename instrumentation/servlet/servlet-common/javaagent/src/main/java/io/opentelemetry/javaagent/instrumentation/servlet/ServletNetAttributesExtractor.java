@@ -26,12 +26,6 @@ public class ServletNetAttributesExtractor<REQUEST, RESPONSE>
 
   @Override
   @Nullable
-  public String peerName(ServletRequestContext<REQUEST> requestContext) {
-    return accessor.getRequestRemoteHost(requestContext.request());
-  }
-
-  @Override
-  @Nullable
   public Integer peerPort(ServletRequestContext<REQUEST> requestContext) {
     return accessor.getRequestRemotePort(requestContext.request());
   }

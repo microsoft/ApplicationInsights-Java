@@ -14,15 +14,8 @@ import ratpack.http.Response;
 public final class RatpackNetAttributesExtractor
     extends NetServerAttributesExtractor<Request, Response> {
   @Override
-  @Nullable
   public String transport(Request request) {
     return SemanticAttributes.NetTransportValues.IP_TCP;
-  }
-
-  @Override
-  @Nullable
-  public String peerName(Request request) {
-    return null;
   }
 
   @Override
