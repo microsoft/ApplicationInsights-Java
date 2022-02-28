@@ -1,5 +1,12 @@
 # CHANGELOG
 
+# Version 3.2.7 GA
+* Improve startup performance by optimizing weak cache [#2136](https://github.com/microsoft/ApplicationInsights-Java/pull/2136).
+* Fix reverse DNS name lookup [#5393](https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/5393).
+* Oshi optimization for better performance [#2126](https://github.com/microsoft/ApplicationInsights-Java/pull/2126).
+* Fix a NullPointerException in startup profiler [#2124](https://github.com/microsoft/ApplicationInsights-Java/pull/2124).
+* Drop metrics with NaN values [#2119](https://github.com/microsoft/ApplicationInsights-Java/pull/2119).
+
 # Version 3.2.6 GA
 * Support Statsbeat in EU regions [#2082](https://github.com/microsoft/ApplicationInsights-Java/pull/2082).
 * Update Oshi default logging level [#2086](https://github.com/microsoft/ApplicationInsights-Java/pull/2086).
