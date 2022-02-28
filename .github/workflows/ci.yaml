@@ -10,12 +10,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ windows-latest, ubuntu-latest ]
+        os: [ windows-2019, ubuntu-latest ]
       fail-fast: false
     steps:
       - name: Support longpaths
         run: git config --system core.longpaths true
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-2019'
       - name: Check out repository
         uses: actions/checkout@v2
         with:
