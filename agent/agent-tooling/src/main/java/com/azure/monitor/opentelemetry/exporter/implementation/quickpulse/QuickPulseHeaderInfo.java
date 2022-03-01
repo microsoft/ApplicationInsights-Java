@@ -19,22 +19,39 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.common;
+package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse;
 
-import static org.assertj.core.api.Assertions.assertThat;
+public class QuickPulseHeaderInfo {
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-import org.junit.jupiter.api.Test;
+  private final QuickPulseStatus quickPulseStatus;
+  private final String qpsServiceEndpointRedirect;
+  private final long qpsServicePollingInterval;
 
-public class StringsTest {
+  public QuickPulseHeaderInfo(
+      QuickPulseStatus quickPulseStatus,
+      String qpsServiceEndpointRedirect,
+      long qpsServicePollingIntervalHint) {
 
-  @Test
-  void testEmptyToNull() {
-    assertThat(Strings.trimAndEmptyToNull("   ")).isNull();
-    assertThat(Strings.trimAndEmptyToNull("")).isNull();
-    assertThat(Strings.trimAndEmptyToNull(null)).isNull();
-    assertThat(Strings.trimAndEmptyToNull("a")).isEqualTo("a");
-    assertThat(Strings.trimAndEmptyToNull("  a  ")).isEqualTo("a");
-    assertThat(Strings.trimAndEmptyToNull("\t")).isNull();
+    this.quickPulseStatus = quickPulseStatus;
+    this.qpsServiceEndpointRedirect = qpsServiceEndpointRedirect;
+    this.qpsServicePollingInterval = qpsServicePollingIntervalHint;
+  }
+
+  public QuickPulseHeaderInfo(QuickPulseStatus quickPulseStatus) {
+    this.quickPulseStatus = quickPulseStatus;
+    this.qpsServiceEndpointRedirect = null;
+    this.qpsServicePollingInterval = -1;
+  }
+
+  public long getQpsServicePollingInterval() {
+    return qpsServicePollingInterval;
+  }
+
+  public String getQpsServiceEndpointRedirect() {
+    return qpsServiceEndpointRedirect;
+  }
+
+  public QuickPulseStatus getQuickPulseStatus() {
+    return quickPulseStatus;
   }
 }

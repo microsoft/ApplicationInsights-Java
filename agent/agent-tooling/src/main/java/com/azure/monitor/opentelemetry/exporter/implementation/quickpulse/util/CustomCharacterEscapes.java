@@ -19,22 +19,36 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.common;
+package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.fasterxml.jackson.core.SerializableString;
+import com.fasterxml.jackson.core.io.CharacterEscapes;
+import com.fasterxml.jackson.core.io.SerializedString;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-import org.junit.jupiter.api.Test;
+public class CustomCharacterEscapes extends CharacterEscapes {
 
-public class StringsTest {
+  private final int[] asciiEscapes;
 
-  @Test
-  void testEmptyToNull() {
-    assertThat(Strings.trimAndEmptyToNull("   ")).isNull();
-    assertThat(Strings.trimAndEmptyToNull("")).isNull();
-    assertThat(Strings.trimAndEmptyToNull(null)).isNull();
-    assertThat(Strings.trimAndEmptyToNull("a")).isEqualTo("a");
-    assertThat(Strings.trimAndEmptyToNull("  a  ")).isEqualTo("a");
-    assertThat(Strings.trimAndEmptyToNull("\t")).isNull();
+  public CustomCharacterEscapes() {
+    asciiEscapes = standardAsciiEscapesForJSON();
+    // By default jackson doesn't escape forward slashes (`/`), but the quick pulse backend requires
+    // them to be escaped.
+    asciiEscapes['/'] = CharacterEscapes.ESCAPE_CUSTOM;
+  }
+
+  @Override
+  public int[] getEscapeCodesForAscii() {
+    return asciiEscapes;
+  }
+
+  @Override
+  @Nullable
+  public SerializableString getEscapeSequence(int i) {
+    if (i == '/') {
+      return new SerializedString("\\/");
+    } else {
+      return null;
+    }
   }
 }

@@ -19,22 +19,35 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.common;
+package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-import org.junit.jupiter.api.Test;
+public class HostName {
 
-public class StringsTest {
+  private static final Logger logger = LoggerFactory.getLogger(HostName.class);
 
-  @Test
-  void testEmptyToNull() {
-    assertThat(Strings.trimAndEmptyToNull("   ")).isNull();
-    assertThat(Strings.trimAndEmptyToNull("")).isNull();
-    assertThat(Strings.trimAndEmptyToNull(null)).isNull();
-    assertThat(Strings.trimAndEmptyToNull("a")).isEqualTo("a");
-    assertThat(Strings.trimAndEmptyToNull("  a  ")).isEqualTo("a");
-    assertThat(Strings.trimAndEmptyToNull("\t")).isNull();
+  /**
+   * Returns the hostname using {@link InetAddress#getHostName()} on {@link
+   * InetAddress#getLocalHost()}. If an error is encountered, the error is logged and it returns
+   * null.
+   *
+   * @return the local hostname, or null
+   */
+  @Nullable
+  public static String get() {
+    try {
+      InetAddress addr = InetAddress.getLocalHost();
+      return addr.getHostName();
+    } catch (UnknownHostException ex) {
+      logger.warn("Error resolving hostname", ex);
+      return null;
+    }
   }
+
+  private HostName() {}
 }

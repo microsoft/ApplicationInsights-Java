@@ -19,22 +19,28 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.common;
+package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse;
 
-import static org.assertj.core.api.Assertions.assertThat;
+final class QuickPulseCoordinatorInitData {
+  public final QuickPulsePingSender pingSender;
+  public final QuickPulseDataFetcher dataFetcher;
+  public final QuickPulseDataSender dataSender;
+  public final long waitBetweenPingsInMillis;
+  public final long waitBetweenPostsInMillis;
+  public final long waitOnErrorInMillis;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-import org.junit.jupiter.api.Test;
-
-public class StringsTest {
-
-  @Test
-  void testEmptyToNull() {
-    assertThat(Strings.trimAndEmptyToNull("   ")).isNull();
-    assertThat(Strings.trimAndEmptyToNull("")).isNull();
-    assertThat(Strings.trimAndEmptyToNull(null)).isNull();
-    assertThat(Strings.trimAndEmptyToNull("a")).isEqualTo("a");
-    assertThat(Strings.trimAndEmptyToNull("  a  ")).isEqualTo("a");
-    assertThat(Strings.trimAndEmptyToNull("\t")).isNull();
+  public QuickPulseCoordinatorInitData(
+      QuickPulsePingSender pingSender,
+      QuickPulseDataFetcher dataFetcher,
+      QuickPulseDataSender dataSender,
+      long waitBetweenPingsInMillis,
+      long waitBetweenPostsInMillis,
+      long waitOnErrorInMillis) {
+    this.pingSender = pingSender;
+    this.dataFetcher = dataFetcher;
+    this.dataSender = dataSender;
+    this.waitBetweenPingsInMillis = waitBetweenPingsInMillis;
+    this.waitBetweenPostsInMillis = waitBetweenPostsInMillis;
+    this.waitOnErrorInMillis = waitOnErrorInMillis;
   }
 }

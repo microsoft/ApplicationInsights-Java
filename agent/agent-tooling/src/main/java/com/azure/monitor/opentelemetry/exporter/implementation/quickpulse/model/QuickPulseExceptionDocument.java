@@ -19,22 +19,41 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.common;
+package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-import org.junit.jupiter.api.Test;
+public class QuickPulseExceptionDocument extends QuickPulseDocument {
+  @JsonProperty(value = "Exception")
+  private String exception;
 
-public class StringsTest {
+  @JsonProperty(value = "ExceptionMessage")
+  private String exceptionMessage;
 
-  @Test
-  void testEmptyToNull() {
-    assertThat(Strings.trimAndEmptyToNull("   ")).isNull();
-    assertThat(Strings.trimAndEmptyToNull("")).isNull();
-    assertThat(Strings.trimAndEmptyToNull(null)).isNull();
-    assertThat(Strings.trimAndEmptyToNull("a")).isEqualTo("a");
-    assertThat(Strings.trimAndEmptyToNull("  a  ")).isEqualTo("a");
-    assertThat(Strings.trimAndEmptyToNull("\t")).isNull();
+  @JsonProperty(value = "ExceptionType")
+  private String exceptionType;
+
+  public String getException() {
+    return exception;
+  }
+
+  public void setException(String exception) {
+    this.exception = exception;
+  }
+
+  public String getExceptionMessage() {
+    return exceptionMessage;
+  }
+
+  public void setExceptionMessage(String exceptionMessage) {
+    this.exceptionMessage = exceptionMessage;
+  }
+
+  public String getExceptionType() {
+    return exceptionType;
+  }
+
+  public void setExceptionType(String exceptionType) {
+    this.exceptionType = exceptionType;
   }
 }
