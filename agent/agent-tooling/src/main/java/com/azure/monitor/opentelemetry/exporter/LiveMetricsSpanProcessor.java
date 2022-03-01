@@ -32,6 +32,7 @@ import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -44,13 +45,13 @@ public class LiveMetricsSpanProcessor implements SpanProcessor {
 
   public LiveMetricsSpanProcessor(
       HttpPipeline httpPipeline,
+      URL endpointUrl,
       String instrumentationKey,
       @Nullable String roleName,
-      @Nullable String roleInstance,
-      String endpointUrl) {
+      @Nullable String roleInstance) {
     this.instrumentationKey = instrumentationKey;
     QuickPulse.INSTANCE.initialize(
-        httpPipeline, () -> instrumentationKey, roleName, roleInstance, endpointUrl);
+        httpPipeline, () -> endpointUrl, () -> instrumentationKey, roleName, roleInstance);
   }
 
   @Override

@@ -111,10 +111,13 @@ public class TelemetryClientInitializer {
       logger.trace("Initializing QuickPulse...");
       QuickPulse.INSTANCE.initialize(
           LazyHttpClient.newHttpPipeLineWithDefaultRedirect(configuration.preview.authentication),
+          () -> {
+            ConnectionString connectionString = telemetryClient.getConnectionString();
+            return connectionString == null ? null : connectionString.getLiveEndpoint();
+          },
           telemetryClient::getInstrumentationKey,
           telemetryClient.getRoleName(),
-          telemetryClient.getRoleInstance(),
-          telemetryClient.getConnectionString().getLiveEndpoint());
+          telemetryClient.getRoleInstance());
     }
   }
 

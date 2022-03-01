@@ -29,6 +29,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -41,11 +42,6 @@ class QuickPulseDataFetcher {
 
   private static final Logger logger = LoggerFactory.getLogger(QuickPulseDataFetcher.class);
 
-  private static final String QP_BASE_URI =
-      "https://rt.services.visualstudio.com/QuickPulseService.svc";
-
-  private static final String LIVE_URL_PATH = "QuickPulseService.svc";
-
   private static final ObjectMapper mapper;
 
   static {
@@ -57,30 +53,30 @@ class QuickPulseDataFetcher {
   private final ArrayBlockingQueue<HttpRequest> sendQueue;
   private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
 
+  private final Supplier<URL> endpointUrl;
   private final Supplier<String> instrumentationKey;
   private final String roleName;
   private final String instanceName;
   private final String machineName;
   private final String quickPulseId;
-  private final String endPointUrl;
 
   private final String sdkVersion;
 
   public QuickPulseDataFetcher(
       ArrayBlockingQueue<HttpRequest> sendQueue,
+      Supplier<URL> endpointUrl,
       Supplier<String> instrumentationKey,
       String roleName,
       String instanceName,
       String machineName,
-      String quickPulseId,
-      String endPointUrl) {
+      String quickPulseId) {
     this.sendQueue = sendQueue;
-    this.roleName = roleName;
+    this.endpointUrl = endpointUrl;
     this.instrumentationKey = instrumentationKey;
+    this.roleName = roleName;
     this.instanceName = instanceName;
     this.machineName = machineName;
     this.quickPulseId = quickPulseId;
-    this.endPointUrl = endPointUrl;
 
     sdkVersion = getCurrentSdkVersion();
     if (logger.isTraceEnabled()) {
@@ -128,12 +124,12 @@ class QuickPulseDataFetcher {
 
   // visible for testing
   String getEndpointUrl(String endpointPrefix) {
-    return endpointPrefix + "/post?ikey=" + instrumentationKey;
+    return endpointPrefix + "/post?ikey=" + instrumentationKey.get();
   }
 
   // visible for testing
   String getQuickPulseEndpoint() {
-    return endPointUrl == null ? QP_BASE_URI : endPointUrl + LIVE_URL_PATH;
+    return endpointUrl.get().toString() + "QuickPulseService.svc";
   }
 
   private String buildPostEntity(QuickPulseDataCollector.FinalCounters counters)

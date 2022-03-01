@@ -24,7 +24,6 @@ package com.azure.monitor.opentelemetry.exporter.implementation.configuration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.DefaultEndpoints;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.UUID;

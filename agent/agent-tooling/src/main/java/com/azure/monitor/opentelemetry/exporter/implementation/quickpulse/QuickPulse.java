@@ -26,6 +26,7 @@ import com.azure.core.http.HttpRequest;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.HostName;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
+import java.net.URL;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -45,16 +46,16 @@ public enum QuickPulse {
 
   public void initialize(
       HttpPipeline httpPipeline,
+      Supplier<URL> endpointUrl,
       Supplier<String> instrumentationKey,
       @Nullable String roleName,
-      @Nullable String roleInstance,
-      @Nullable String endpointUrl) {
+      @Nullable String roleInstance) {
     CountDownLatch latch = new CountDownLatch(1);
     Executors.newSingleThreadExecutor(ThreadPoolUtils.createDaemonThreadFactory(QuickPulse.class))
         .execute(
             () ->
                 initializeSync(
-                    latch, httpPipeline, instrumentationKey, roleName, roleInstance, endpointUrl));
+                    latch, httpPipeline, endpointUrl, instrumentationKey, roleName, roleInstance));
     // don't return until initialization thread has INSTANCE lock
     try {
       latch.await();
@@ -66,10 +67,10 @@ public enum QuickPulse {
   private void initializeSync(
       CountDownLatch latch,
       HttpPipeline httpPipeline,
+      Supplier<URL> endpointUrl,
       Supplier<String> instrumentationKey,
       @Nullable String roleName,
-      @Nullable String roleInstance,
-      @Nullable String endpointUrl) {
+      @Nullable String roleInstance) {
     if (initialized) {
       latch.countDown();
     } else {
@@ -96,21 +97,21 @@ public enum QuickPulse {
           QuickPulsePingSender quickPulsePingSender =
               new QuickPulsePingSender(
                   httpPipeline,
+                  endpointUrl,
                   instrumentationKey,
                   roleName,
-                  machineName,
                   instanceName,
-                  quickPulseId,
-                  endpointUrl);
+                  machineName,
+                  quickPulseId);
           QuickPulseDataFetcher quickPulseDataFetcher =
               new QuickPulseDataFetcher(
                   sendQueue,
+                  endpointUrl,
                   instrumentationKey,
                   roleName,
-                  machineName,
                   instanceName,
-                  quickPulseId,
-                  endpointUrl);
+                  machineName,
+                  quickPulseId);
 
           QuickPulseCoordinatorInitData coordinatorInitData =
               new QuickPulseCoordinatorInitDataBuilder()

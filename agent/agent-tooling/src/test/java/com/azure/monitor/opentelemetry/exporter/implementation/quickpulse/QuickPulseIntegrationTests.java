@@ -42,34 +42,34 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
   private QuickPulsePingSender getQuickPulsePingSender() {
     return new QuickPulsePingSender(
         getHttpPipeline(),
+        connectionString::getLiveEndpoint,
+        connectionString::getInstrumentationKey,
         null,
-        connectionString.getInstrumentationKey(),
-        "machine1",
         "instance1",
-        "qpid123",
-        null);
+        "machine1",
+        "qpid123");
   }
 
   private QuickPulsePingSender getQuickPulsePingSenderWithAuthentication() {
     return new QuickPulsePingSender(
         getHttpPipelineWithAuthentication(),
+        connectionString::getLiveEndpoint,
+        connectionString::getInstrumentationKey,
         null,
-        connectionString.getInstrumentationKey(),
-        "machine1",
         "instance1",
-        "qpid123",
-        null);
+        "machine1",
+        "qpid123");
   }
 
   private QuickPulsePingSender getQuickPulsePingSenderWithValidator(HttpPipelinePolicy validator) {
     return new QuickPulsePingSender(
         getHttpPipeline(validator),
+        connectionString::getLiveEndpoint,
+        connectionString::getInstrumentationKey,
         null,
-        connectionString.getInstrumentationKey(),
-        "machine1",
         "instance1",
-        "qpid123",
-        null);
+        "machine1",
+        "qpid123");
   }
 
   @Test
@@ -122,15 +122,15 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
     QuickPulseDataFetcher dataFetcher =
         new QuickPulseDataFetcher(
             sendQueue,
+            connectionString::getLiveEndpoint,
+            connectionString::getInstrumentationKey,
             null,
-            connectionString.getInstrumentationKey(),
-            "machine1",
             "instance1",
-            null,
+            "machine1",
             null);
 
     QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
-    QuickPulseDataCollector.INSTANCE.enable(() -> connectionString.getInstrumentationKey());
+    QuickPulseDataCollector.INSTANCE.enable(connectionString::getInstrumentationKey);
     final long duration = 112233L;
     // Request Telemetry
     TelemetryItem requestTelemetry =
