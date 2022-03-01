@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
+import com.azure.core.util.CoreUtils;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.Exceptions;
@@ -29,9 +30,8 @@ import com.azure.monitor.opentelemetry.exporter.implementation.logging.Operation
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanId;
@@ -70,7 +70,7 @@ public class LoggerExporter implements LogExporter {
     //  (configuration.instrumentation.logging.level)
     //  this used to be handled in the instrumentation, but otel instrumentation doesn't have that
     //  setting yet, which is ok we should be able to filter here fine
-    if (Strings.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey())) {
+    if (CoreUtils.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey())) {
       logger.debug("Instrumentation key is null or empty. Fail to export logs.");
       return CompletableResultCode.ofFailure();
     }
