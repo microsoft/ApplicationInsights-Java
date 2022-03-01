@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
 import static com.microsoft.applicationinsights.agent.internal.perfcounter.Constants.PROCESS_CPU_PC_METRIC_NAME;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.CpuPerformanceCounterCalculator;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

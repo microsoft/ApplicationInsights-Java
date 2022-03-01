@@ -19,22 +19,31 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.common;
+package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
+import com.azure.core.http.HttpResponse;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
-public class StringsTest {
+class QuickPulseNetworkHelperTest {
+  @Test
+  void testIsSuccessWith200() {
+    HttpResponse response = mock(HttpResponse.class);
+    Mockito.doReturn(200).when(response).getStatusCode();
+
+    boolean result = new QuickPulseNetworkHelper().isSuccess(response);
+    assertThat(result).isTrue();
+  }
 
   @Test
-  void testEmptyToNull() {
-    assertThat(Strings.trimAndEmptyToNull("   ")).isNull();
-    assertThat(Strings.trimAndEmptyToNull("")).isNull();
-    assertThat(Strings.trimAndEmptyToNull(null)).isNull();
-    assertThat(Strings.trimAndEmptyToNull("a")).isEqualTo("a");
-    assertThat(Strings.trimAndEmptyToNull("  a  ")).isEqualTo("a");
-    assertThat(Strings.trimAndEmptyToNull("\t")).isNull();
+  void testIsSuccessWith500() {
+    HttpResponse response = mock(HttpResponse.class);
+    Mockito.doReturn(500).when(response).getStatusCode();
+
+    boolean result = new QuickPulseNetworkHelper().isSuccess(response);
+    assertThat(result).isFalse();
   }
 }

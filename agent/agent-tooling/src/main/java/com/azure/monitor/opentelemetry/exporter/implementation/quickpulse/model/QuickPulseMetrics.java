@@ -19,22 +19,36 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.common;
+package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-import org.junit.jupiter.api.Test;
+public class QuickPulseMetrics {
 
-public class StringsTest {
+  @JsonProperty(value = "Name")
+  private final String name;
 
-  @Test
-  void testEmptyToNull() {
-    assertThat(Strings.trimAndEmptyToNull("   ")).isNull();
-    assertThat(Strings.trimAndEmptyToNull("")).isNull();
-    assertThat(Strings.trimAndEmptyToNull(null)).isNull();
-    assertThat(Strings.trimAndEmptyToNull("a")).isEqualTo("a");
-    assertThat(Strings.trimAndEmptyToNull("  a  ")).isEqualTo("a");
-    assertThat(Strings.trimAndEmptyToNull("\t")).isNull();
+  @JsonProperty(value = "Value")
+  private final long value;
+
+  @JsonProperty(value = "Weight")
+  private final int weight;
+
+  public QuickPulseMetrics(String name, long value, int weight) {
+    this.name = name;
+    this.value = value;
+    this.weight = weight;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public long getValue() {
+    return value;
+  }
+
+  public int getWeight() {
+    return weight;
   }
 }
