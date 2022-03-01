@@ -459,9 +459,6 @@ public class ConfigurationBuilder {
     if (rpConfiguration.sampling != null) {
       config.sampling.percentage = rpConfiguration.sampling.percentage;
     }
-    if (rpConfiguration.ignoreRemoteParentNotSampled != null) {
-      config.preview.ignoreRemoteParentNotSampled = rpConfiguration.ignoreRemoteParentNotSampled;
-    }
     if (isTrimEmpty(config.role.name)) {
       // only use rp configuration role name as a fallback, similar to WEBSITE_SITE_NAME
       config.role.name = rpConfiguration.role.name;
