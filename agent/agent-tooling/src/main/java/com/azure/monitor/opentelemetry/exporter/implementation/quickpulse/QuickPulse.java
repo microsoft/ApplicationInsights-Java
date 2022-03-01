@@ -23,6 +23,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse;
 
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.HostName;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
@@ -40,6 +41,8 @@ public enum QuickPulse {
   public static final int QP_INVARIANT_VERSION = 1;
   private volatile boolean initialized = false;
 
+  private volatile QuickPulseDataCollector collector;
+
   // initialization is performed in the background because initializing the random seed (via
   // UUID.randomUUID()) below
   // can cause slowness during startup in some environments
@@ -56,11 +59,17 @@ public enum QuickPulse {
             () ->
                 initializeSync(
                     latch, httpPipeline, endpointUrl, instrumentationKey, roleName, roleInstance));
-    // don't return until initialization thread has INSTANCE lock
+    // don't return until initialization thread has lock
     try {
       latch.await();
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
+    }
+  }
+
+  public void add(TelemetryItem telemetryItem) {
+    if (collector != null) {
+      collector.add(telemetryItem);
     }
   }
 
@@ -74,7 +83,7 @@ public enum QuickPulse {
     if (initialized) {
       latch.countDown();
     } else {
-      synchronized (INSTANCE) {
+      synchronized (this) {
         latch.countDown();
         if (!initialized) {
           initialized = true;
@@ -94,6 +103,8 @@ public enum QuickPulse {
             instanceName = "Unknown host";
           }
 
+          QuickPulseDataCollector collector = new QuickPulseDataCollector();
+
           QuickPulsePingSender quickPulsePingSender =
               new QuickPulsePingSender(
                   httpPipeline,
@@ -105,6 +116,7 @@ public enum QuickPulse {
                   quickPulseId);
           QuickPulseDataFetcher quickPulseDataFetcher =
               new QuickPulseDataFetcher(
+                  collector,
                   sendQueue,
                   endpointUrl,
                   instrumentationKey,
@@ -118,6 +130,7 @@ public enum QuickPulse {
                   .withPingSender(quickPulsePingSender)
                   .withDataFetcher(quickPulseDataFetcher)
                   .withDataSender(quickPulseDataSender)
+                  .withCollector(collector)
                   .build();
 
           QuickPulseCoordinator coordinator = new QuickPulseCoordinator(coordinatorInitData);
@@ -131,7 +144,9 @@ public enum QuickPulse {
           thread.setDaemon(true);
           thread.start();
 
-          QuickPulseDataCollector.INSTANCE.enable(instrumentationKey);
+          collector.enable(instrumentationKey);
+
+          this.collector = collector;
         }
       }
     }

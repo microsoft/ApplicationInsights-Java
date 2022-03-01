@@ -48,96 +48,9 @@ import java.util.function.Supplier;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.LoggerFactory;
 
-public enum QuickPulseDataCollector {
-  INSTANCE;
+public class QuickPulseDataCollector {
 
   private Supplier<String> instrumentationKeySupplier;
-
-  static class FinalCounters {
-    public final int exceptions;
-    public final long requests;
-    public final double requestsDuration;
-    public final int unsuccessfulRequests;
-    public final long rdds;
-    public final double rddsDuration;
-    public final int unsuccessfulRdds;
-    public final long memoryCommitted;
-    public final double cpuUsage;
-    public final List<QuickPulseDocument> documentList = new ArrayList<>();
-
-    public FinalCounters(
-        Counters currentCounters,
-        MemoryMXBean memory,
-        CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator) {
-      if (memory != null && memory.getHeapMemoryUsage() != null) {
-        memoryCommitted = memory.getHeapMemoryUsage().getCommitted();
-      } else {
-        memoryCommitted = -1;
-      }
-
-      Double cpuDatum;
-      if (cpuPerformanceCounterCalculator != null
-          && (cpuDatum = cpuPerformanceCounterCalculator.getProcessCpuUsage()) != null) {
-        // normally I wouldn't do this, but I prefer to avoid code duplication more than one-liners
-        // :)
-        cpuUsage = cpuDatum;
-      } else {
-        cpuUsage = -1;
-      }
-      exceptions = currentCounters.exceptions.get();
-
-      CountAndDuration countAndDuration =
-          Counters.decodeCountAndDuration(currentCounters.requestsAndDurations.get());
-      requests = countAndDuration.count;
-      this.requestsDuration = countAndDuration.duration;
-      this.unsuccessfulRequests = currentCounters.unsuccessfulRequests.get();
-
-      countAndDuration = Counters.decodeCountAndDuration(currentCounters.rddsAndDuations.get());
-      this.rdds = countAndDuration.count;
-      this.rddsDuration = countAndDuration.duration;
-      this.unsuccessfulRdds = currentCounters.unsuccessfulRdds.get();
-      synchronized (currentCounters.documentList) {
-        this.documentList.addAll(currentCounters.documentList);
-      }
-    }
-  }
-
-  static class CountAndDuration {
-    public final long count;
-    public final long duration;
-
-    private CountAndDuration(long count, long duration) {
-      this.count = count;
-      this.duration = duration;
-    }
-  }
-
-  static class Counters {
-    private static final long MAX_COUNT = 524287L;
-    private static final long MAX_DURATION = 17592186044415L;
-    private static final int MAX_DOCUMENTS_SIZE = 1000;
-
-    public final AtomicInteger exceptions = new AtomicInteger(0);
-
-    final AtomicLong requestsAndDurations = new AtomicLong(0);
-    final AtomicInteger unsuccessfulRequests = new AtomicInteger(0);
-
-    final AtomicLong rddsAndDuations = new AtomicLong(0);
-    final AtomicInteger unsuccessfulRdds = new AtomicInteger(0);
-    final List<QuickPulseDocument> documentList = new ArrayList<>();
-
-    static long encodeCountAndDuration(long count, long duration) {
-      if (count > MAX_COUNT || duration > MAX_DURATION) {
-        return 0;
-      }
-
-      return (count << 44) + duration;
-    }
-
-    static CountAndDuration decodeCountAndDuration(long countAndDuration) {
-      return new CountAndDuration(countAndDuration >> 44, countAndDuration & MAX_DURATION);
-    }
-  }
 
   private final AtomicReference<Counters> counters = new AtomicReference<>(null);
   private final MemoryMXBean memory;
@@ -420,5 +333,91 @@ public enum QuickPulseDataCollector {
       throw new AssertionError("Unexpected char '" + c + "'");
     }
     return x;
+  }
+
+  static class FinalCounters {
+    public final int exceptions;
+    public final long requests;
+    public final double requestsDuration;
+    public final int unsuccessfulRequests;
+    public final long rdds;
+    public final double rddsDuration;
+    public final int unsuccessfulRdds;
+    public final long memoryCommitted;
+    public final double cpuUsage;
+    public final List<QuickPulseDocument> documentList = new ArrayList<>();
+
+    public FinalCounters(
+        Counters currentCounters,
+        MemoryMXBean memory,
+        CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator) {
+      if (memory != null && memory.getHeapMemoryUsage() != null) {
+        memoryCommitted = memory.getHeapMemoryUsage().getCommitted();
+      } else {
+        memoryCommitted = -1;
+      }
+
+      Double cpuDatum;
+      if (cpuPerformanceCounterCalculator != null
+          && (cpuDatum = cpuPerformanceCounterCalculator.getProcessCpuUsage()) != null) {
+        // normally I wouldn't do this, but I prefer to avoid code duplication more than one-liners
+        // :)
+        cpuUsage = cpuDatum;
+      } else {
+        cpuUsage = -1;
+      }
+      exceptions = currentCounters.exceptions.get();
+
+      CountAndDuration countAndDuration =
+          Counters.decodeCountAndDuration(currentCounters.requestsAndDurations.get());
+      requests = countAndDuration.count;
+      this.requestsDuration = countAndDuration.duration;
+      this.unsuccessfulRequests = currentCounters.unsuccessfulRequests.get();
+
+      countAndDuration = Counters.decodeCountAndDuration(currentCounters.rddsAndDuations.get());
+      this.rdds = countAndDuration.count;
+      this.rddsDuration = countAndDuration.duration;
+      this.unsuccessfulRdds = currentCounters.unsuccessfulRdds.get();
+      synchronized (currentCounters.documentList) {
+        this.documentList.addAll(currentCounters.documentList);
+      }
+    }
+  }
+
+  static class CountAndDuration {
+    public final long count;
+    public final long duration;
+
+    private CountAndDuration(long count, long duration) {
+      this.count = count;
+      this.duration = duration;
+    }
+  }
+
+  static class Counters {
+    private static final long MAX_COUNT = 524287L;
+    private static final long MAX_DURATION = 17592186044415L;
+    private static final int MAX_DOCUMENTS_SIZE = 1000;
+
+    public final AtomicInteger exceptions = new AtomicInteger(0);
+
+    final AtomicLong requestsAndDurations = new AtomicLong(0);
+    final AtomicInteger unsuccessfulRequests = new AtomicInteger(0);
+
+    final AtomicLong rddsAndDuations = new AtomicLong(0);
+    final AtomicInteger unsuccessfulRdds = new AtomicInteger(0);
+    final List<QuickPulseDocument> documentList = new ArrayList<>();
+
+    static long encodeCountAndDuration(long count, long duration) {
+      if (count > MAX_COUNT || duration > MAX_DURATION) {
+        return 0;
+      }
+
+      return (count << 44) + duration;
+    }
+
+    static CountAndDuration decodeCountAndDuration(long countAndDuration) {
+      return new CountAndDuration(countAndDuration >> 44, countAndDuration & MAX_DURATION);
+    }
   }
 }

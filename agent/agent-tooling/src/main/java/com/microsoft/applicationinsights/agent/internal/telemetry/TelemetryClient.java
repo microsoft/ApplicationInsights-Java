@@ -44,7 +44,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryI
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
-import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulseDataCollector;
+import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -176,7 +176,7 @@ public class TelemetryClient {
       throw new AssertionError("telemetry item is missing time");
     }
 
-    QuickPulseDataCollector.INSTANCE.add(telemetryItem);
+    QuickPulse.INSTANCE.add(telemetryItem);
 
     TelemetryObservers.INSTANCE.getObservers().forEach(consumer -> consumer.accept(telemetryItem));
 

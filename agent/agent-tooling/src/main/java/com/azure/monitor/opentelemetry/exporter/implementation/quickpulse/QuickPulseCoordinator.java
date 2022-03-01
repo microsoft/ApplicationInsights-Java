@@ -28,12 +28,14 @@ import org.slf4j.LoggerFactory;
 final class QuickPulseCoordinator implements Runnable {
 
   private static final Logger logger = LoggerFactory.getLogger(QuickPulseCoordinator.class);
+
   private String qpsServiceRedirectedEndpoint;
   private long qpsServicePollingIntervalHintMillis;
 
   private volatile boolean stopped = false;
   private volatile boolean pingMode = true;
 
+  private final QuickPulseDataCollector collector;
   private final QuickPulsePingSender pingSender;
   private final QuickPulseDataFetcher dataFetcher;
   private final QuickPulseDataSender dataSender;
@@ -46,6 +48,7 @@ final class QuickPulseCoordinator implements Runnable {
     dataSender = initData.dataSender;
     pingSender = initData.pingSender;
     dataFetcher = initData.dataFetcher;
+    collector = initData.collector;
 
     waitBetweenPingsInMillis = initData.waitBetweenPingsInMillis;
     waitBetweenPostsInMillis = initData.waitBetweenPostsInMillis;
@@ -80,8 +83,7 @@ final class QuickPulseCoordinator implements Runnable {
     QuickPulseHeaderInfo currentQuickPulseHeaderInfo = dataSender.getQuickPulseHeaderInfo();
 
     this.handleReceivedHeaders(currentQuickPulseHeaderInfo);
-    QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(
-        currentQuickPulseHeaderInfo.getQuickPulseStatus());
+    collector.setQuickPulseStatus(currentQuickPulseHeaderInfo.getQuickPulseStatus());
     switch (currentQuickPulseHeaderInfo.getQuickPulseStatus()) {
       case ERROR:
         pingMode = true;
@@ -98,7 +100,7 @@ final class QuickPulseCoordinator implements Runnable {
     }
 
     logger.error("Critical error while sending QP data: unknown status, aborting");
-    QuickPulseDataCollector.INSTANCE.disable();
+    collector.disable();
     stopped = true;
     return 0;
   }
@@ -106,7 +108,7 @@ final class QuickPulseCoordinator implements Runnable {
   private long ping() {
     QuickPulseHeaderInfo pingResult = pingSender.ping(qpsServiceRedirectedEndpoint);
     this.handleReceivedHeaders(pingResult);
-    QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(pingResult.getQuickPulseStatus());
+    collector.setQuickPulseStatus(pingResult.getQuickPulseStatus());
     switch (pingResult.getQuickPulseStatus()) {
       case ERROR:
         return waitOnErrorInMillis;
@@ -122,7 +124,7 @@ final class QuickPulseCoordinator implements Runnable {
     }
 
     logger.error("Critical error while ping QP: unknown status, aborting");
-    QuickPulseDataCollector.INSTANCE.disable();
+    collector.disable();
     stopped = true;
     return 0;
   }

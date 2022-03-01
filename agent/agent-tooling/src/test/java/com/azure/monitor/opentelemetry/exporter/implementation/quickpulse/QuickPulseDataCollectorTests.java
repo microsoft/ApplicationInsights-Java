@@ -30,8 +30,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.configuration.Con
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import java.time.Duration;
 import java.util.Date;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class QuickPulseDataCollectorTests {
@@ -40,48 +38,43 @@ class QuickPulseDataCollectorTests {
   private static final ConnectionString FAKE_CONNECTION_STRING =
       ConnectionString.parse("InstrumentationKey=" + FAKE_INSTRUMENTATION_KEY);
 
-  @BeforeEach
-  void setup() {
-    QuickPulseDataCollector.INSTANCE.disable();
-  }
-
-  @AfterEach
-  void tearDown() {
-    QuickPulseDataCollector.INSTANCE.disable();
-  }
-
   @Test
   void initialStateIsDisabled() {
-    assertThat(QuickPulseDataCollector.INSTANCE.peek()).isNull();
+    assertThat(new QuickPulseDataCollector().peek()).isNull();
   }
 
   @Test
   void emptyCountsAndDurationsAfterEnable() {
+    QuickPulseDataCollector collector = new QuickPulseDataCollector();
 
-    QuickPulseDataCollector.INSTANCE.enable(() -> FAKE_CONNECTION_STRING.getInstrumentationKey());
-    QuickPulseDataCollector.FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
+    collector.enable(FAKE_CONNECTION_STRING::getInstrumentationKey);
+    QuickPulseDataCollector.FinalCounters counters = collector.peek();
     assertCountersReset(counters);
   }
 
   @Test
   void nullCountersAfterDisable() {
-    QuickPulseDataCollector.INSTANCE.enable(() -> FAKE_CONNECTION_STRING.getInstrumentationKey());
-    QuickPulseDataCollector.INSTANCE.disable();
-    assertThat(QuickPulseDataCollector.INSTANCE.peek()).isNull();
+    QuickPulseDataCollector collector = new QuickPulseDataCollector();
+
+    collector.enable(FAKE_CONNECTION_STRING::getInstrumentationKey);
+    collector.disable();
+    assertThat(collector.peek()).isNull();
   }
 
   @Test
   void requestTelemetryIsCounted_DurationIsSum() {
-    QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
-    QuickPulseDataCollector.INSTANCE.enable(() -> FAKE_CONNECTION_STRING.getInstrumentationKey());
+    QuickPulseDataCollector collector = new QuickPulseDataCollector();
+
+    collector.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
+    collector.enable(FAKE_CONNECTION_STRING::getInstrumentationKey);
 
     // add a success and peek
     final long duration = 112233L;
     TelemetryItem telemetry =
         createRequestTelemetry("request-test", new Date(), duration, "200", true);
     telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-    QuickPulseDataCollector.INSTANCE.add(telemetry);
-    QuickPulseDataCollector.FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
+    collector.add(telemetry);
+    QuickPulseDataCollector.FinalCounters counters = collector.peek();
     assertThat(counters.requests).isEqualTo(1);
     assertThat(counters.unsuccessfulRequests).isEqualTo(0);
     assertThat(counters.requestsDuration).isEqualTo(duration);
@@ -90,8 +83,8 @@ class QuickPulseDataCollectorTests {
     final long duration2 = 65421L;
     telemetry = createRequestTelemetry("request-test-2", new Date(), duration2, "200", true);
     telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-    QuickPulseDataCollector.INSTANCE.add(telemetry);
-    counters = QuickPulseDataCollector.INSTANCE.peek();
+    collector.add(telemetry);
+    counters = collector.peek();
     double total = duration + duration2;
     assertThat(counters.requests).isEqualTo(2);
     assertThat(counters.unsuccessfulRequests).isEqualTo(0);
@@ -101,28 +94,30 @@ class QuickPulseDataCollectorTests {
     final long duration3 = 9988L;
     telemetry = createRequestTelemetry("request-test-3", new Date(), duration3, "400", false);
     telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-    QuickPulseDataCollector.INSTANCE.add(telemetry);
-    counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
+    collector.add(telemetry);
+    counters = collector.getAndRestart();
     total += duration3;
     assertThat(counters.requests).isEqualTo(3);
     assertThat(counters.unsuccessfulRequests).isEqualTo(1);
     assertThat(counters.requestsDuration).isEqualTo(total);
 
-    assertCountersReset(QuickPulseDataCollector.INSTANCE.peek());
+    assertCountersReset(collector.peek());
   }
 
   @Test
   void dependencyTelemetryIsCounted_DurationIsSum() {
-    QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
-    QuickPulseDataCollector.INSTANCE.enable(() -> FAKE_CONNECTION_STRING.getInstrumentationKey());
+    QuickPulseDataCollector collector = new QuickPulseDataCollector();
+
+    collector.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
+    collector.enable(FAKE_CONNECTION_STRING::getInstrumentationKey);
 
     // add a success and peek.
     final long duration = 112233L;
     TelemetryItem telemetry =
         createRemoteDependencyTelemetry("dep-test", "dep-test-cmd", duration, true);
     telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-    QuickPulseDataCollector.INSTANCE.add(telemetry);
-    QuickPulseDataCollector.FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
+    collector.add(telemetry);
+    QuickPulseDataCollector.FinalCounters counters = collector.peek();
     assertThat(counters.rdds).isEqualTo(1);
     assertThat(counters.unsuccessfulRdds).isEqualTo(0);
     assertThat(counters.rddsDuration).isEqualTo(duration);
@@ -131,8 +126,8 @@ class QuickPulseDataCollectorTests {
     final long duration2 = 334455L;
     telemetry = createRemoteDependencyTelemetry("dep-test-2", "dep-test-cmd-2", duration2, true);
     telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-    QuickPulseDataCollector.INSTANCE.add(telemetry);
-    counters = QuickPulseDataCollector.INSTANCE.peek();
+    collector.add(telemetry);
+    counters = collector.peek();
     assertThat(counters.rdds).isEqualTo(2);
     assertThat(counters.unsuccessfulRdds).isEqualTo(0);
     double total = duration + duration2;
@@ -142,34 +137,36 @@ class QuickPulseDataCollectorTests {
     final long duration3 = 123456L;
     telemetry = createRemoteDependencyTelemetry("dep-test-3", "dep-test-cmd-3", duration3, false);
     telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-    QuickPulseDataCollector.INSTANCE.add(telemetry);
-    counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
+    collector.add(telemetry);
+    counters = collector.getAndRestart();
     assertThat(counters.rdds).isEqualTo(3);
     assertThat(counters.unsuccessfulRdds).isEqualTo(1);
     total += duration3;
     assertThat(counters.rddsDuration).isEqualTo(total);
 
-    assertCountersReset(QuickPulseDataCollector.INSTANCE.peek());
+    assertCountersReset(collector.peek());
   }
 
   @Test
   void exceptionTelemetryIsCounted() {
-    QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
-    QuickPulseDataCollector.INSTANCE.enable(() -> FAKE_CONNECTION_STRING.getInstrumentationKey());
+    QuickPulseDataCollector collector = new QuickPulseDataCollector();
+
+    collector.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
+    collector.enable(FAKE_CONNECTION_STRING::getInstrumentationKey);
 
     TelemetryItem telemetry = createExceptionTelemetry(new Exception());
     telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-    QuickPulseDataCollector.INSTANCE.add(telemetry);
-    QuickPulseDataCollector.FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
+    collector.add(telemetry);
+    QuickPulseDataCollector.FinalCounters counters = collector.peek();
     assertThat(counters.exceptions).isEqualTo(1);
 
     telemetry = createExceptionTelemetry(new Exception());
     telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-    QuickPulseDataCollector.INSTANCE.add(telemetry);
-    counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
+    collector.add(telemetry);
+    counters = collector.getAndRestart();
     assertThat(counters.exceptions).isEqualTo(2);
 
-    assertCountersReset(QuickPulseDataCollector.INSTANCE.peek());
+    assertCountersReset(collector.peek());
   }
 
   @Test
@@ -250,25 +247,26 @@ class QuickPulseDataCollectorTests {
 
   @Test
   void checkDocumentsListSize() {
-    QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
-    QuickPulseDataCollector.INSTANCE.enable(() -> FAKE_CONNECTION_STRING.getInstrumentationKey());
+    QuickPulseDataCollector collector = new QuickPulseDataCollector();
+
+    collector.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
+    collector.enable(FAKE_CONNECTION_STRING::getInstrumentationKey);
 
     final long duration = 112233L;
     TelemetryItem telemetry =
         createRequestTelemetry("request-test", new Date(), duration, "200", true);
     telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
     for (int i = 0; i < 1005; i++) {
-      QuickPulseDataCollector.INSTANCE.add(telemetry);
+      collector.add(telemetry);
     }
     // check max documentList size
-    assertThat(QuickPulseDataCollector.INSTANCE.getAndRestart().documentList.size())
-        .isEqualTo(1000);
+    assertThat(collector.getAndRestart().documentList.size()).isEqualTo(1000);
 
-    QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_OFF);
+    collector.setQuickPulseStatus(QuickPulseStatus.QP_IS_OFF);
     for (int i = 0; i < 5; i++) {
-      QuickPulseDataCollector.INSTANCE.add(telemetry);
+      collector.add(telemetry);
     }
     // no telemetry items are added when QP_IS_OFF
-    assertThat(QuickPulseDataCollector.INSTANCE.getAndRestart().documentList.size()).isEqualTo(0);
+    assertThat(collector.getAndRestart().documentList.size()).isEqualTo(0);
   }
 }

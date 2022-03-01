@@ -119,8 +119,10 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
         new QuickPulseDataSender(
             getHttpPipeline(new ValidationPolicy(postCountDown, expectedPostRequestBody)),
             sendQueue);
+    QuickPulseDataCollector collector = new QuickPulseDataCollector();
     QuickPulseDataFetcher dataFetcher =
         new QuickPulseDataFetcher(
+            collector,
             sendQueue,
             connectionString::getLiveEndpoint,
             connectionString::getInstrumentationKey,
@@ -129,29 +131,30 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
             "machine1",
             null);
 
-    QuickPulseDataCollector.INSTANCE.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
-    QuickPulseDataCollector.INSTANCE.enable(connectionString::getInstrumentationKey);
+    collector.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
+    collector.enable(connectionString::getInstrumentationKey);
     final long duration = 112233L;
     // Request Telemetry
     TelemetryItem requestTelemetry =
         createRequestTelemetry("request-test", currDate, duration, "200", true);
     requestTelemetry.setInstrumentationKey(instrumentationKey);
-    QuickPulseDataCollector.INSTANCE.add(requestTelemetry);
+    collector.add(requestTelemetry);
     // Dependency Telemetry
     TelemetryItem dependencyTelemetry =
         createRemoteDependencyTelemetry("dep-test", "dep-test-cmd", duration, true);
     dependencyTelemetry.setInstrumentationKey(instrumentationKey);
-    QuickPulseDataCollector.INSTANCE.add(dependencyTelemetry);
+    collector.add(dependencyTelemetry);
     // Exception Telemetry
     TelemetryItem exceptionTelemetry = createExceptionTelemetry(new Exception("test"));
     exceptionTelemetry.setInstrumentationKey(instrumentationKey);
-    QuickPulseDataCollector.INSTANCE.add(exceptionTelemetry);
+    collector.add(exceptionTelemetry);
 
     QuickPulseCoordinatorInitData initData =
         new QuickPulseCoordinatorInitDataBuilder()
             .withDataFetcher(dataFetcher)
             .withDataSender(dataSender)
             .withPingSender(pingSender)
+            .withCollector(collector)
             .withWaitBetweenPingsInMillis(10L)
             .withWaitBetweenPostsInMillis(10L)
             .withWaitOnErrorInMillis(10L)
@@ -168,8 +171,7 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
     Thread.sleep(50);
     assertTrue(pingCountDown.await(1, TimeUnit.SECONDS));
     assertThat(quickPulseHeaderInfo.getQuickPulseStatus()).isEqualTo(QuickPulseStatus.QP_IS_ON);
-    assertThat(QuickPulseDataCollector.INSTANCE.getQuickPulseStatus())
-        .isEqualTo(QuickPulseStatus.QP_IS_ON);
+    assertThat(collector.getQuickPulseStatus()).isEqualTo(QuickPulseStatus.QP_IS_ON);
     assertTrue(postCountDown.await(1, TimeUnit.SECONDS));
     senderThread.interrupt();
     coordinatorThread.interrupt();
