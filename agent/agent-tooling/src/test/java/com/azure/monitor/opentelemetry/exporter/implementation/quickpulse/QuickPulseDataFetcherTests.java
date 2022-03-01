@@ -92,7 +92,8 @@ class QuickPulseDataFetcherTests {
     URI uri = new URI(endpointUrl);
     assertThat(uri).isNotNull();
     assertThat(endpointUrl)
-        .isEqualTo("https://rt.services.visualstudio.com/QuickPulseService.svc/post?ikey=null");
+        .isEqualTo(
+            "https://rt.services.visualstudio.com/QuickPulseService.svc/post?ikey=testing-123");
   }
 
   @Test
