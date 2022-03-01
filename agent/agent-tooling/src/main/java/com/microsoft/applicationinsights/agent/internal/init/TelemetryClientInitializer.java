@@ -25,10 +25,12 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.heartbeat.HeartBeatModule;
+import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.Constants;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.DeadLockDetectorPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.FreeMemoryPerformanceCounter;
@@ -95,11 +97,25 @@ public class TelemetryClientInitializer {
         Constants.PROCESS_MEM_PC_METRICS_NAME,
         Constants.TOTAL_MEMORY_PC_METRIC_NAME,
         Constants.PROCESS_IO_PC_METRIC_NAME);
+
+    setQuickPulse(configuration, telemetryClient);
   }
 
   private static boolean isAgentRunningInSandboxEnvWindows() {
     String qualifiedSdkVersion = PropertyHelper.getQualifiedSdkVersionString();
     return qualifiedSdkVersion.startsWith("awr") || qualifiedSdkVersion.startsWith("fwr");
+  }
+
+  private static void setQuickPulse(Configuration configuration, TelemetryClient telemetryClient) {
+    if (configuration.preview.liveMetrics.enabled) {
+      logger.trace("Initializing QuickPulse...");
+      QuickPulse.INSTANCE.initialize(
+          LazyHttpClient.newHttpPipeLineWithDefaultRedirect(configuration.preview.authentication),
+          telemetryClient::getInstrumentationKey,
+          telemetryClient.getRoleName(),
+          telemetryClient.getRoleInstance(),
+          telemetryClient.getConnectionString().getLiveEndpoint());
+    }
   }
 
   private static void setConnectionString(

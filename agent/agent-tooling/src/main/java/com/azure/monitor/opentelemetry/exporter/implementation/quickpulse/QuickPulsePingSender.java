@@ -31,7 +31,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import java.util.Date;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -123,8 +122,10 @@ class QuickPulsePingSender {
         // this shouldn't happen, the mono should complete with a response or a failure
         throw new AssertionError("http response mono returned empty");
       }
-      // response body is not consumed below
-      LazyHttpClient.consumeResponseBody(response);
+      // need to consume response, otherwise get netty ByteBuf leak warnings:
+      // io.netty.util.ResourceLeakDetector - LEAK: ByteBuf.release() was not called before
+      // it's garbage-collected (see https://github.com/Azure/azure-sdk-for-java/issues/10467)
+      response.getBody().subscribe();
 
       if (networkHelper.isSuccess(response)) {
         QuickPulseHeaderInfo quickPulseHeaderInfo = networkHelper.getQuickPulseHeaderInfo(response);
