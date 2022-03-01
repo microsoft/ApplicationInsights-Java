@@ -35,6 +35,7 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
@@ -65,12 +66,10 @@ public class LoggerExporter implements LogExporter {
 
   @Override
   public CompletableResultCode export(Collection<LogData> logs) {
-
     // TODO (heya) ignore logs that do not meet the configured logging threshold
     //  (configuration.instrumentation.logging.level)
     //  this used to be handled in the instrumentation, but otel instrumentation doesn't have that
     //  setting yet, which is ok we should be able to filter here fine
-
     if (Strings.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey())) {
       logger.debug("Instrumentation key is null or empty. Fail to export logs.");
       return CompletableResultCode.ofFailure();
@@ -83,7 +82,6 @@ public class LoggerExporter implements LogExporter {
 
     boolean failure = false;
     for (LogData log : logs) {
-      logger.debug("exporting log: {}", log); // do we need to log this, will that be too much?
       try {
         internalExport(log);
         exportingLogLogger.recordSuccess();
@@ -108,9 +106,13 @@ public class LoggerExporter implements LogExporter {
   }
 
   private void internalExport(LogData log) {
-    // note: instrumentationLibraryInfo name is the logger name, not the instrumentation name, so
-    // cannot use it for instrumentation statsbeat
+    int severity = log.getSeverity().getSeverityNumber();
+    int threshold = getThreshold().getSeverityNumber();
+    if (severity < threshold) {
+      return;
+    }
 
+    logger.debug("exporting log: {}", log); // do we need to log this, will that be too much?
     String stack = log.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
     if (stack == null) {
       trackMessage(log);
@@ -130,14 +132,15 @@ public class LoggerExporter implements LogExporter {
     setSampleRate(telemetryBuilder, log);
     setExtraAttributes(telemetryBuilder, attributes);
 
-    // set message-specific properties
-    String loggerName = log.getInstrumentationLibraryInfo().getName();
-    String threadName = attributes.get(SemanticAttributes.THREAD_NAME);
-
     telemetryBuilder.setSeverityLevel(toSeverityLevel(log.getSeverity()));
     telemetryBuilder.setMessage(log.getBody().asString());
 
-    setLoggerProperties(telemetryBuilder, loggerName, threadName);
+    // set message-specific properties
+    setLoggerProperties(
+        telemetryBuilder,
+        log.getBody().asString(),
+        log.getInstrumentationLibraryInfo().getName(),
+        attributes.get(SemanticAttributes.THREAD_NAME));
 
     // export
     telemetryClient.trackAsync(telemetryBuilder.build());
@@ -153,15 +156,15 @@ public class LoggerExporter implements LogExporter {
     setSampleRate(telemetryBuilder, log);
     setExtraAttributes(telemetryBuilder, attributes);
 
-    // set exception-specific properties
-    String loggerName = log.getInstrumentationLibraryInfo().getName();
-    String threadName = attributes.get(SemanticAttributes.THREAD_NAME);
-
     telemetryBuilder.setExceptions(Exceptions.minimalParse(stack));
     telemetryBuilder.setSeverityLevel(toSeverityLevel(log.getSeverity()));
-    telemetryBuilder.addProperty("Logger Message", log.getBody().asString());
-    telemetryBuilder.addProperty("SourceType", "Logger");
-    setLoggerProperties(telemetryBuilder, loggerName, threadName);
+
+    // set exception-specific properties
+    setLoggerProperties(
+        telemetryBuilder,
+        log.getBody().asString(),
+        log.getInstrumentationLibraryInfo().getName(),
+        attributes.get(SemanticAttributes.THREAD_NAME));
 
     // export
     telemetryClient.trackAsync(telemetryBuilder.build());
@@ -218,7 +221,13 @@ public class LoggerExporter implements LogExporter {
   }
 
   private static void setLoggerProperties(
-      AbstractTelemetryBuilder telemetryBuilder, String loggerName, String threadName) {
+      AbstractTelemetryBuilder telemetryBuilder,
+      String message,
+      String loggerName,
+      String threadName) {
+    telemetryBuilder.addProperty("Logger Message", message);
+    telemetryBuilder.addProperty("SourceType", "Logger");
+
     if (loggerName != null) {
       telemetryBuilder.addProperty("LoggerName", loggerName);
     }
@@ -267,5 +276,37 @@ public class LoggerExporter implements LogExporter {
     }
     // TODO (trask) AI mapping: is this a good fallback?
     return SeverityLevel.VERBOSE;
+  }
+
+  private static Severity getThreshold() {
+    String severity = Config.get().getString("otel.experimental.log.capture.threshold");
+    if (severity == null) {
+      return Severity.UNDEFINED_SEVERITY_NUMBER; // OFF?
+    }
+    switch (severity.toUpperCase()) {
+      case "OFF":
+        return Severity.UNDEFINED_SEVERITY_NUMBER; // OFF?
+      case "FATAL":
+      case "ERROR":
+      case "SEVERE":
+        return Severity.ERROR;
+      case "WARN":
+      case "WARNING":
+        return Severity.WARN;
+      case "INFO":
+        return Severity.INFO;
+      case "CONFIG":
+      case "DEBUG":
+      case "FINE":
+      case "FINER":
+        return Severity.DEBUG;
+      case "TRACE":
+      case "FINEST":
+      case "ALL":
+        return Severity.TRACE;
+      default:
+        logger.error("unexpected value for otel.experimental.log.capture.threshold: {}", severity);
+        return Severity.UNDEFINED_SEVERITY_NUMBER; // OFF?
+    }
   }
 }
