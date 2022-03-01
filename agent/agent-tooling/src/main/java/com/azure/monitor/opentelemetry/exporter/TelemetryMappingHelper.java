@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.Set;
 import reactor.util.annotation.Nullable;
 
+// TEMPORARY FOR QUICK PULSE SPAN PROCESSOR
+// TODO (trask) need to rework to be more efficient
 public final class TelemetryMappingHelper {
 
   private static final Set<String> SQL_DB_SYSTEMS;

@@ -34,6 +34,7 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nullable;
 
 public class LiveMetricsSpanProcessor implements SpanProcessor {
 
@@ -43,13 +44,13 @@ public class LiveMetricsSpanProcessor implements SpanProcessor {
 
   public LiveMetricsSpanProcessor(
       HttpPipeline httpPipeline,
-      String roleName,
       String instrumentationKey,
-      String roleInstance,
+      @Nullable String roleName,
+      @Nullable String roleInstance,
       String endpointUrl) {
     this.instrumentationKey = instrumentationKey;
     QuickPulse.INSTANCE.initialize(
-        httpPipeline, roleName, instrumentationKey, roleInstance, endpointUrl);
+        httpPipeline, () -> instrumentationKey, roleName, roleInstance, endpointUrl);
   }
 
   @Override
@@ -57,6 +58,7 @@ public class LiveMetricsSpanProcessor implements SpanProcessor {
     SpanData spanData = readWriteSpan.toSpanData();
     SpanKind kind = spanData.getKind();
     String instrumentationName = spanData.getInstrumentationLibraryInfo().getName();
+
     List<TelemetryItem> telemetryItems = new ArrayList<>();
     if (kind == SpanKind.INTERNAL) {
       if (instrumentationName.startsWith("io.opentelemetry.spring-scheduling-")

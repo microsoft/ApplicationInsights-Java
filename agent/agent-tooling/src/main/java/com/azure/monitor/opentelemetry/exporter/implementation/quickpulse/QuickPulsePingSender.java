@@ -33,6 +33,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import java.util.Date;
+import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,28 +62,29 @@ class QuickPulsePingSender {
   private final HttpPipeline httpPipeline;
   private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
   private volatile QuickPulseEnvelope pingEnvelope; // cached for performance
+
+  private final Supplier<String> instrumentationKey;
   private final String instanceName;
   private final String machineName;
   private final String quickPulseId;
   private final String roleName;
-  private final String instrumentationKey;
   private final String endPointUrl;
   private long lastValidTransmission = 0;
 
   public QuickPulsePingSender(
       HttpPipeline httpPipeline,
+      Supplier<String> instrumentationKey,
       String roleName,
-      String instrumentationKey,
-      String machineName,
       String instanceName,
+      String machineName,
       String quickPulseId,
       String endPointUrl) {
     this.httpPipeline = httpPipeline;
+    this.instrumentationKey = instrumentationKey;
+    this.roleName = roleName;
     this.instanceName = instanceName;
     this.machineName = machineName;
     this.quickPulseId = quickPulseId;
-    this.roleName = roleName;
-    this.instrumentationKey = instrumentationKey;
     this.endPointUrl = endPointUrl;
     if (logger.isTraceEnabled()) {
       logger.trace(
@@ -151,8 +154,9 @@ class QuickPulsePingSender {
     return endpointPrefix + "/ping?ikey=" + getInstrumentationKey();
   }
 
+  @Nullable
   private String getInstrumentationKey() {
-    return instrumentationKey;
+    return instrumentationKey.get();
   }
 
   // visible for testing

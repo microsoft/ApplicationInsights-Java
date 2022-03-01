@@ -30,6 +30,7 @@ import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 public enum QuickPulse {
@@ -44,8 +45,8 @@ public enum QuickPulse {
 
   public void initialize(
       HttpPipeline httpPipeline,
+      Supplier<String> instrumentationKey,
       @Nullable String roleName,
-      @Nullable String instrumentationKey,
       @Nullable String roleInstance,
       @Nullable String endpointUrl) {
     CountDownLatch latch = new CountDownLatch(1);
@@ -53,7 +54,7 @@ public enum QuickPulse {
         .execute(
             () ->
                 initializeSync(
-                    latch, httpPipeline, roleName, instrumentationKey, roleInstance, endpointUrl));
+                    latch, httpPipeline, instrumentationKey, roleName, roleInstance, endpointUrl));
     // don't return until initialization thread has INSTANCE lock
     try {
       latch.await();
@@ -65,8 +66,8 @@ public enum QuickPulse {
   private void initializeSync(
       CountDownLatch latch,
       HttpPipeline httpPipeline,
+      Supplier<String> instrumentationKey,
       @Nullable String roleName,
-      @Nullable String instrumentationKey,
       @Nullable String roleInstance,
       @Nullable String endpointUrl) {
     if (initialized) {
@@ -95,8 +96,8 @@ public enum QuickPulse {
           QuickPulsePingSender quickPulsePingSender =
               new QuickPulsePingSender(
                   httpPipeline,
-                  roleName,
                   instrumentationKey,
+                  roleName,
                   machineName,
                   instanceName,
                   quickPulseId,
@@ -104,8 +105,8 @@ public enum QuickPulse {
           QuickPulseDataFetcher quickPulseDataFetcher =
               new QuickPulseDataFetcher(
                   sendQueue,
-                  roleName,
                   instrumentationKey,
+                  roleName,
                   machineName,
                   instanceName,
                   quickPulseId,
@@ -129,7 +130,7 @@ public enum QuickPulse {
           thread.setDaemon(true);
           thread.start();
 
-          QuickPulseDataCollector.INSTANCE.enable(() -> instrumentationKey);
+          QuickPulseDataCollector.INSTANCE.enable(instrumentationKey);
         }
       }
     }

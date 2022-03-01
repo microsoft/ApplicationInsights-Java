@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,21 +55,23 @@ class QuickPulseDataFetcher {
   }
 
   private final ArrayBlockingQueue<HttpRequest> sendQueue;
-  private final String roleName;
-  private final String instrumentationKey;
   private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
-  private final String sdkVersion;
+
+  private final Supplier<String> instrumentationKey;
+  private final String roleName;
   private final String instanceName;
   private final String machineName;
   private final String quickPulseId;
   private final String endPointUrl;
 
+  private final String sdkVersion;
+
   public QuickPulseDataFetcher(
       ArrayBlockingQueue<HttpRequest> sendQueue,
+      Supplier<String> instrumentationKey,
       String roleName,
-      String instrumentationKey,
-      String machineName,
       String instanceName,
+      String machineName,
       String quickPulseId,
       String endPointUrl) {
     this.sendQueue = sendQueue;
@@ -78,6 +81,7 @@ class QuickPulseDataFetcher {
     this.machineName = machineName;
     this.quickPulseId = quickPulseId;
     this.endPointUrl = endPointUrl;
+
     sdkVersion = getCurrentSdkVersion();
     if (logger.isTraceEnabled()) {
       logger.trace(
@@ -144,7 +148,7 @@ class QuickPulseDataFetcher {
     postEnvelope.setRoleName(roleName);
     // For historical reasons, instrumentation key is provided both in the query string and
     // envelope.
-    postEnvelope.setInstrumentationKey(instrumentationKey);
+    postEnvelope.setInstrumentationKey(instrumentationKey.get());
     postEnvelope.setStreamId(quickPulseId);
     postEnvelope.setVersion(sdkVersion);
     postEnvelope.setTimeStamp("/Date(" + System.currentTimeMillis() + ")/");
