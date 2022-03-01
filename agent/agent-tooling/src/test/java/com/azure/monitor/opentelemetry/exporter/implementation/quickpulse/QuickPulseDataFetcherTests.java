@@ -77,8 +77,16 @@ class QuickPulseDataFetcherTests {
 
   @Test
   void endpointIsFormattedCorrectlyWhenConfigIsNull() throws URISyntaxException {
+    ConnectionString connectionString = ConnectionString.parse("InstrumentationKey=testing-123");
     QuickPulseDataFetcher quickPulseDataFetcher =
-        new QuickPulseDataFetcher(null, () -> null, () -> null, null, null, null, null);
+        new QuickPulseDataFetcher(
+            null,
+            connectionString::getLiveEndpoint,
+            connectionString::getInstrumentationKey,
+            null,
+            null,
+            null,
+            null);
     String quickPulseEndpoint = quickPulseDataFetcher.getQuickPulseEndpoint();
     String endpointUrl = quickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);
     URI uri = new URI(endpointUrl);
