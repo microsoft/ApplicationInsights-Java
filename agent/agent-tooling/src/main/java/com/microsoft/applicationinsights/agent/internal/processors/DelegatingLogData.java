@@ -86,4 +86,36 @@ public abstract class DelegatingLogData implements LogData {
   public Attributes getAttributes() {
     return delegate.getAttributes();
   }
+
+  @Override
+  public String toString() {
+    return "DelegatingLogData{"
+        + "spanContext="
+        + getSpanContext()
+        + ", "
+        + "resource="
+        + getResource()
+        + ", "
+        + "instrumentationLibraryInfo="
+        + getInstrumentationLibraryInfo()
+        + ", "
+        + "name="
+        + getName()
+        + ", "
+        + "epochNanos="
+        + getEpochNanos()
+        + ", "
+        + "attributes="
+        + getAttributes()
+        + ", "
+        + "severity="
+        + getSeverity()
+        + ", "
+        + "severityText="
+        + getSeverityText()
+        + ", "
+        + "body="
+        + getBody()
+        + "}";
+  }
 }

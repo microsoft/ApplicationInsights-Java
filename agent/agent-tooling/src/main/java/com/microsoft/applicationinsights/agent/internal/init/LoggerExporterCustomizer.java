@@ -41,12 +41,14 @@ import java.util.stream.Collectors;
 @AutoService(AutoConfigurationCustomizerProvider.class)
 public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProvider {
 
-  @SuppressWarnings("SystemOut")
   @Override
   public void customize(AutoConfigurationCustomizer autoConfiguration) {
-    // TODO remove sout after done testing smoke tests
-    System.out.println(
-        "====================================== LoggerExporterCustomizer::customize ======================================");
+    TelemetryClient telemetryClient = TelemetryClient.getActive();
+    if (telemetryClient == null) {
+      // agent failed during startup
+      return;
+    }
+
     autoConfiguration.addLogEmitterProviderCustomizer(
         (builder, config) -> {
           List<Configuration.ProcessorConfig> processorConfigs =
@@ -55,12 +57,8 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
         });
   }
 
-  @SuppressWarnings("SystemOut")
   private static LogProcessor createLogExporter(
       List<Configuration.ProcessorConfig> processorConfigs) {
-    // TODO remove sout after done testing smoke tests
-    System.out.println(
-        "====================================== createLogExporter ======================================");
     LogExporter logExporter = new LoggerExporter(TelemetryClient.getActive());
     if (!processorConfigs.isEmpty()) {
       for (Configuration.ProcessorConfig processorConfig : processorConfigs) {
