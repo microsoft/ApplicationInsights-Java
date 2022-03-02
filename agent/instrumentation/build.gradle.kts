@@ -162,6 +162,7 @@ tasks {
     dependencies {
       exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging"))
       exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-appender-1.0"))
+      exclude(dependency("io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0"))
     }
 
     // rewrite dependencies calling Logger.getLogger
