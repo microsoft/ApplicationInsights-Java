@@ -32,6 +32,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
+import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -48,8 +49,20 @@ public class DelegatingPropagator implements TextMapPropagator {
     return instance;
   }
 
-  public void setUpStandardDelegate(boolean legacyRequestIdPropagationEnabled) {
+  public void setUpStandardDelegate(
+      List<String> additionalPropagators, boolean legacyRequestIdPropagationEnabled) {
     List<TextMapPropagator> propagators = new ArrayList<>();
+
+    for (String additionalPropagator : additionalPropagators) {
+      switch (additionalPropagator) {
+        case "b3multi":
+          propagators.add(B3Propagator.injectingMultiHeaders());
+          break;
+        default:
+          throw new IllegalStateException(
+              "Unexpected additional propagator: " + additionalPropagator);
+      }
+    }
 
     // important to add AiLegacyPropagator before W3CTraceContextPropagator, so that
     // W3CTraceContextPropagator will take precedence if both sets of headers are present
