@@ -50,6 +50,8 @@ class QuickPulseDataFetcher {
     mapper.getFactory().setCharacterEscapes(new CustomCharacterEscapes());
   }
 
+  private final QuickPulseDataCollector collector;
+
   private final ArrayBlockingQueue<HttpRequest> sendQueue;
   private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
 
@@ -63,6 +65,7 @@ class QuickPulseDataFetcher {
   private final String sdkVersion;
 
   public QuickPulseDataFetcher(
+      QuickPulseDataCollector collector,
       ArrayBlockingQueue<HttpRequest> sendQueue,
       Supplier<URL> endpointUrl,
       Supplier<String> instrumentationKey,
@@ -70,6 +73,7 @@ class QuickPulseDataFetcher {
       String instanceName,
       String machineName,
       String quickPulseId) {
+    this.collector = collector;
     this.sendQueue = sendQueue;
     this.endpointUrl = endpointUrl;
     this.instrumentationKey = instrumentationKey;
@@ -96,8 +100,7 @@ class QuickPulseDataFetcher {
 
   public void prepareQuickPulseDataForSend(String redirectedEndpoint) {
     try {
-      QuickPulseDataCollector.FinalCounters counters =
-          QuickPulseDataCollector.INSTANCE.getAndRestart();
+      QuickPulseDataCollector.FinalCounters counters = collector.getAndRestart();
 
       Date currentDate = new Date();
       String endpointPrefix =

@@ -42,7 +42,7 @@ final class QuickPulseNetworkHelper {
   private static final String QPS_ROLE_NAME_HEADER = "x-ms-qps-role-name";
   private static final String QPS_INVARIANT_VERSION_HEADER = "x-ms-qps-invariant-version";
 
-  public HttpRequest buildPingRequest(
+  HttpRequest buildPingRequest(
       Date currentDate,
       String address,
       String quickPulseId,
@@ -60,7 +60,7 @@ final class QuickPulseNetworkHelper {
     return request;
   }
 
-  public HttpRequest buildRequest(Date currentDate, String address) {
+  HttpRequest buildRequest(Date currentDate, String address) {
     long ticks = currentDate.getTime() * 10000 + TICKS_AT_EPOCH;
 
     HttpRequest request = new HttpRequest(HttpMethod.POST, address);
@@ -72,7 +72,7 @@ final class QuickPulseNetworkHelper {
     return response.getStatusCode() == 200;
   }
 
-  public QuickPulseHeaderInfo getQuickPulseHeaderInfo(HttpResponse response) {
+  QuickPulseHeaderInfo getQuickPulseHeaderInfo(HttpResponse response) {
     HttpHeaders headers = response.getHeaders();
     QuickPulseStatus status = QuickPulseStatus.ERROR;
     long servicePollingIntervalHint = -1;

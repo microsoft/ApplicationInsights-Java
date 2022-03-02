@@ -58,6 +58,7 @@ dependencies {
 
   implementation("io.opentelemetry:opentelemetry-sdk-extension-tracing-incubator")
   implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
+  implementation("io.opentelemetry:opentelemetry-extension-trace-propagators")
 
   implementation("com.github.oshi:oshi-core")
   implementation("org.slf4j:slf4j-api")
