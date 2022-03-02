@@ -19,26 +19,10 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.configuration;
+package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Role;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Sampling;
-import java.nio.file.Path;
-
-public class RpConfiguration {
-
-  @JsonIgnore public Path configPath;
-
-  @JsonIgnore public long lastModifiedTime;
-
-  public String connectionString;
-
-  // intentionally null, so that we can tell if rp is providing or not
-  public Sampling sampling = new Sampling();
-
-  // this is needed in Azure Spring Cloud because it will set the role name to application name
-  // on behalf of customers by default.
-  // Note the role doesn't support hot load due to unnecessary currently.
-  public Role role = new Role();
+enum QuickPulseStatus {
+  ERROR,
+  QP_IS_OFF,
+  QP_IS_ON
 }

@@ -19,26 +19,39 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.configuration;
+package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Role;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Sampling;
-import java.nio.file.Path;
+public class QuickPulseHeaderInfo {
 
-public class RpConfiguration {
+  private final QuickPulseStatus quickPulseStatus;
+  private final String qpsServiceEndpointRedirect;
+  private final long qpsServicePollingInterval;
 
-  @JsonIgnore public Path configPath;
+  public QuickPulseHeaderInfo(
+      QuickPulseStatus quickPulseStatus,
+      String qpsServiceEndpointRedirect,
+      long qpsServicePollingIntervalHint) {
 
-  @JsonIgnore public long lastModifiedTime;
+    this.quickPulseStatus = quickPulseStatus;
+    this.qpsServiceEndpointRedirect = qpsServiceEndpointRedirect;
+    this.qpsServicePollingInterval = qpsServicePollingIntervalHint;
+  }
 
-  public String connectionString;
+  public QuickPulseHeaderInfo(QuickPulseStatus quickPulseStatus) {
+    this.quickPulseStatus = quickPulseStatus;
+    this.qpsServiceEndpointRedirect = null;
+    this.qpsServicePollingInterval = -1;
+  }
 
-  // intentionally null, so that we can tell if rp is providing or not
-  public Sampling sampling = new Sampling();
+  public long getQpsServicePollingInterval() {
+    return qpsServicePollingInterval;
+  }
 
-  // this is needed in Azure Spring Cloud because it will set the role name to application name
-  // on behalf of customers by default.
-  // Note the role doesn't support hot load due to unnecessary currently.
-  public Role role = new Role();
+  public String getQpsServiceEndpointRedirect() {
+    return qpsServiceEndpointRedirect;
+  }
+
+  public QuickPulseStatus getQuickPulseStatus() {
+    return quickPulseStatus;
+  }
 }

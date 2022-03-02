@@ -19,26 +19,43 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.configuration;
+package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Role;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Sampling;
-import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-public class RpConfiguration {
+public final class Strings {
 
-  @JsonIgnore public Path configPath;
+  public static boolean isNullOrEmpty(@Nullable String string) {
+    return string == null || string.isEmpty();
+  }
 
-  @JsonIgnore public long lastModifiedTime;
+  @Nullable
+  public static String trimAndEmptyToNull(String str) {
+    if (str == null) {
+      return null;
+    }
+    String trimmed = str.trim();
+    return trimmed.isEmpty() ? null : trimmed;
+  }
 
-  public String connectionString;
+  public static Map<String, String> splitToMap(String str) {
+    Map<String, String> map = new HashMap<>();
+    for (String part : str.split(";")) {
+      if (part.trim().isEmpty()) {
+        continue;
+      }
+      int index = part.indexOf('=');
+      if (index == -1) {
+        throw new IllegalArgumentException();
+      }
+      String key = part.substring(0, index);
+      String value = part.substring(index + 1);
+      map.put(key, value);
+    }
+    return map;
+  }
 
-  // intentionally null, so that we can tell if rp is providing or not
-  public Sampling sampling = new Sampling();
-
-  // this is needed in Azure Spring Cloud because it will set the role name to application name
-  // on behalf of customers by default.
-  // Note the role doesn't support hot load due to unnecessary currently.
-  public Role role = new Role();
+  private Strings() {}
 }

@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.common;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import java.lang.management.ManagementFactory;
 import java.util.Locale;
 import org.slf4j.Logger;

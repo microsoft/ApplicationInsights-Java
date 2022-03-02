@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.heartbeat;
 
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;

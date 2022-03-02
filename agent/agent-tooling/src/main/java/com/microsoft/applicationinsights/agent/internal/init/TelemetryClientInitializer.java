@@ -25,10 +25,12 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.heartbeat.HeartBeatModule;
+import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.Constants;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.DeadLockDetectorPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.FreeMemoryPerformanceCounter;
@@ -40,7 +42,6 @@ import com.microsoft.applicationinsights.agent.internal.perfcounter.OshiPerforma
 import com.microsoft.applicationinsights.agent.internal.perfcounter.PerformanceCounterContainer;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.ProcessCpuPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.ProcessMemoryPerformanceCounter;
-import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
@@ -108,7 +109,15 @@ public class TelemetryClientInitializer {
   private static void setQuickPulse(Configuration configuration, TelemetryClient telemetryClient) {
     if (configuration.preview.liveMetrics.enabled) {
       logger.trace("Initializing QuickPulse...");
-      QuickPulse.INSTANCE.initialize(telemetryClient);
+      QuickPulse.INSTANCE.initialize(
+          LazyHttpClient.newHttpPipeLineWithDefaultRedirect(configuration.preview.authentication),
+          () -> {
+            ConnectionString connectionString = telemetryClient.getConnectionString();
+            return connectionString == null ? null : connectionString.getLiveEndpoint();
+          },
+          telemetryClient::getInstrumentationKey,
+          telemetryClient.getRoleName(),
+          telemetryClient.getRoleInstance());
     }
   }
 

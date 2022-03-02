@@ -19,26 +19,36 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.configuration;
+package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.util;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Role;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Sampling;
-import java.nio.file.Path;
+import com.fasterxml.jackson.core.SerializableString;
+import com.fasterxml.jackson.core.io.CharacterEscapes;
+import com.fasterxml.jackson.core.io.SerializedString;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-public class RpConfiguration {
+public class CustomCharacterEscapes extends CharacterEscapes {
 
-  @JsonIgnore public Path configPath;
+  private final int[] asciiEscapes;
 
-  @JsonIgnore public long lastModifiedTime;
+  public CustomCharacterEscapes() {
+    asciiEscapes = standardAsciiEscapesForJSON();
+    // By default jackson doesn't escape forward slashes (`/`), but the quick pulse backend requires
+    // them to be escaped.
+    asciiEscapes['/'] = CharacterEscapes.ESCAPE_CUSTOM;
+  }
 
-  public String connectionString;
+  @Override
+  public int[] getEscapeCodesForAscii() {
+    return asciiEscapes;
+  }
 
-  // intentionally null, so that we can tell if rp is providing or not
-  public Sampling sampling = new Sampling();
-
-  // this is needed in Azure Spring Cloud because it will set the role name to application name
-  // on behalf of customers by default.
-  // Note the role doesn't support hot load due to unnecessary currently.
-  public Role role = new Role();
+  @Override
+  @Nullable
+  public SerializableString getEscapeSequence(int i) {
+    if (i == '/') {
+      return new SerializedString("\\/");
+    } else {
+      return null;
+    }
+  }
 }

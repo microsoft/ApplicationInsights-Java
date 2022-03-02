@@ -19,26 +19,41 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.configuration;
+package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Role;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Sampling;
-import java.nio.file.Path;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class RpConfiguration {
+public class QuickPulseExceptionDocument extends QuickPulseDocument {
+  @JsonProperty(value = "Exception")
+  private String exception;
 
-  @JsonIgnore public Path configPath;
+  @JsonProperty(value = "ExceptionMessage")
+  private String exceptionMessage;
 
-  @JsonIgnore public long lastModifiedTime;
+  @JsonProperty(value = "ExceptionType")
+  private String exceptionType;
 
-  public String connectionString;
+  public String getException() {
+    return exception;
+  }
 
-  // intentionally null, so that we can tell if rp is providing or not
-  public Sampling sampling = new Sampling();
+  public void setException(String exception) {
+    this.exception = exception;
+  }
 
-  // this is needed in Azure Spring Cloud because it will set the role name to application name
-  // on behalf of customers by default.
-  // Note the role doesn't support hot load due to unnecessary currently.
-  public Role role = new Role();
+  public String getExceptionMessage() {
+    return exceptionMessage;
+  }
+
+  public void setExceptionMessage(String exceptionMessage) {
+    this.exceptionMessage = exceptionMessage;
+  }
+
+  public String getExceptionType() {
+    return exceptionType;
+  }
+
+  public void setExceptionType(String exceptionType) {
+    this.exceptionType = exceptionType;
+  }
 }

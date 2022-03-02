@@ -19,26 +19,35 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.configuration;
+package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Role;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Sampling;
-import java.nio.file.Path;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class RpConfiguration {
+public class HostName {
 
-  @JsonIgnore public Path configPath;
+  private static final Logger logger = LoggerFactory.getLogger(HostName.class);
 
-  @JsonIgnore public long lastModifiedTime;
+  /**
+   * Returns the hostname using {@link InetAddress#getHostName()} on {@link
+   * InetAddress#getLocalHost()}. If an error is encountered, the error is logged and it returns
+   * null.
+   *
+   * @return the local hostname, or null
+   */
+  @Nullable
+  public static String get() {
+    try {
+      InetAddress addr = InetAddress.getLocalHost();
+      return addr.getHostName();
+    } catch (UnknownHostException ex) {
+      logger.warn("Error resolving hostname", ex);
+      return null;
+    }
+  }
 
-  public String connectionString;
-
-  // intentionally null, so that we can tell if rp is providing or not
-  public Sampling sampling = new Sampling();
-
-  // this is needed in Azure Spring Cloud because it will set the role name to application name
-  // on behalf of customers by default.
-  // Note the role doesn't support hot load due to unnecessary currently.
-  public Role role = new Role();
+  private HostName() {}
 }

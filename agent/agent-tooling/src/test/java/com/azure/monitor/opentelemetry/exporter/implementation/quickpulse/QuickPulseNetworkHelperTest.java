@@ -19,26 +19,31 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.configuration;
+package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Role;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Sampling;
-import java.nio.file.Path;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
-public class RpConfiguration {
+import com.azure.core.http.HttpResponse;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
-  @JsonIgnore public Path configPath;
+class QuickPulseNetworkHelperTest {
+  @Test
+  void testIsSuccessWith200() {
+    HttpResponse response = mock(HttpResponse.class);
+    Mockito.doReturn(200).when(response).getStatusCode();
 
-  @JsonIgnore public long lastModifiedTime;
+    boolean result = new QuickPulseNetworkHelper().isSuccess(response);
+    assertThat(result).isTrue();
+  }
 
-  public String connectionString;
+  @Test
+  void testIsSuccessWith500() {
+    HttpResponse response = mock(HttpResponse.class);
+    Mockito.doReturn(500).when(response).getStatusCode();
 
-  // intentionally null, so that we can tell if rp is providing or not
-  public Sampling sampling = new Sampling();
-
-  // this is needed in Azure Spring Cloud because it will set the role name to application name
-  // on behalf of customers by default.
-  // Note the role doesn't support hot load due to unnecessary currently.
-  public Role role = new Role();
+    boolean result = new QuickPulseNetworkHelper().isSuccess(response);
+    assertThat(result).isFalse();
+  }
 }

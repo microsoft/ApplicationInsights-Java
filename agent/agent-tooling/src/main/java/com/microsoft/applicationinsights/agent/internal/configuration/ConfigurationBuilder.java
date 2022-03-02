@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.HostName;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -29,8 +31,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
-import com.microsoft.applicationinsights.agent.internal.common.HostName;
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import java.io.IOException;
@@ -458,9 +458,6 @@ public class ConfigurationBuilder {
     }
     if (rpConfiguration.sampling != null) {
       config.sampling.percentage = rpConfiguration.sampling.percentage;
-    }
-    if (rpConfiguration.ignoreRemoteParentNotSampled != null) {
-      config.preview.ignoreRemoteParentNotSampled = rpConfiguration.ignoreRemoteParentNotSampled;
     }
     if (isTrimEmpty(config.role.name)) {
       // only use rp configuration role name as a fallback, similar to WEBSITE_SITE_NAME

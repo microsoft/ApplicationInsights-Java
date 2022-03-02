@@ -23,16 +23,15 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
@@ -110,18 +109,7 @@ class AiComponentInstaller {
       }
     }
     // TODO (trask) should configuration validation be performed earlier?
-    for (Configuration.SamplingOverride samplingOverride : config.preview.sampling.overrides) {
-      samplingOverride.validate();
-    }
-    for (Configuration.InstrumentationKeyOverride instrumentationKeyOverride :
-        config.preview.instrumentationKeyOverrides) {
-      instrumentationKeyOverride.validate();
-    }
-    for (ProcessorConfig processorConfig : config.preview.processors) {
-      processorConfig.validate();
-    }
-    // validate authentication configuration
-    config.preview.authentication.validate();
+    config.preview.validate();
 
     String jbossHome = System.getenv("JBOSS_HOME");
     if (!Strings.isNullOrEmpty(jbossHome)) {

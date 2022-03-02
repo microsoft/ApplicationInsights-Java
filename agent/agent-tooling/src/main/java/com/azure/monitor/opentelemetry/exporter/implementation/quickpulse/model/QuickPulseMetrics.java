@@ -19,26 +19,36 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.configuration;
+package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Role;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Sampling;
-import java.nio.file.Path;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class RpConfiguration {
+public class QuickPulseMetrics {
 
-  @JsonIgnore public Path configPath;
+  @JsonProperty(value = "Name")
+  private final String name;
 
-  @JsonIgnore public long lastModifiedTime;
+  @JsonProperty(value = "Value")
+  private final long value;
 
-  public String connectionString;
+  @JsonProperty(value = "Weight")
+  private final int weight;
 
-  // intentionally null, so that we can tell if rp is providing or not
-  public Sampling sampling = new Sampling();
+  public QuickPulseMetrics(String name, long value, int weight) {
+    this.name = name;
+    this.value = value;
+    this.weight = weight;
+  }
 
-  // this is needed in Azure Spring Cloud because it will set the role name to application name
-  // on behalf of customers by default.
-  // Note the role doesn't support hot load due to unnecessary currently.
-  public Role role = new Role();
+  public String getName() {
+    return name;
+  }
+
+  public long getValue() {
+    return value;
+  }
+
+  public int getWeight() {
+    return weight;
+  }
 }
