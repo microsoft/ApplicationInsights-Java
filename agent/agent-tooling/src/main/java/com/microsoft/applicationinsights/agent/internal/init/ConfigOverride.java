@@ -131,7 +131,7 @@ class ConfigOverride {
         config.preview.captureHttpClientHeaders.responseHeaders);
 
     properties.put(
-        "otel.instrumentation.logback-appender.experimental.capture-mdc-attributes", "true");
+        "otel.instrumentation.logback-appender.experimental.capture-mdc-attributes", "*");
     properties.put(
         "otel.instrumentation.log4j-appender.experimental.capture-context-data-attributes", "*");
     properties.put(
