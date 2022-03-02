@@ -161,7 +161,10 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
   private static List<ProcessorConfig> reverseProcessorConfigs(Configuration configuration) {
     List<ProcessorConfig> processors =
         configuration.preview.processors.stream()
-            .filter(processor -> processor.type != Configuration.ProcessorType.METRIC_FILTER)
+            .filter(
+                processor ->
+                    processor.type != Configuration.ProcessorType.METRIC_FILTER
+                        && processor.type != Configuration.ProcessorType.LOG)
             .collect(Collectors.toCollection(ArrayList::new));
     // Reversing the order of processors before passing it to Span/Log processor
     Collections.reverse(processors);
