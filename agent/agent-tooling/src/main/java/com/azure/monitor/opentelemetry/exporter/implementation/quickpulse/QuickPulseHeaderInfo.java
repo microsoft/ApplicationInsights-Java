@@ -21,13 +21,13 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse;
 
-public class QuickPulseHeaderInfo {
+class QuickPulseHeaderInfo {
 
   private final QuickPulseStatus quickPulseStatus;
   private final String qpsServiceEndpointRedirect;
   private final long qpsServicePollingInterval;
 
-  public QuickPulseHeaderInfo(
+  QuickPulseHeaderInfo(
       QuickPulseStatus quickPulseStatus,
       String qpsServiceEndpointRedirect,
       long qpsServicePollingIntervalHint) {
@@ -37,21 +37,21 @@ public class QuickPulseHeaderInfo {
     this.qpsServicePollingInterval = qpsServicePollingIntervalHint;
   }
 
-  public QuickPulseHeaderInfo(QuickPulseStatus quickPulseStatus) {
+  QuickPulseHeaderInfo(QuickPulseStatus quickPulseStatus) {
     this.quickPulseStatus = quickPulseStatus;
     this.qpsServiceEndpointRedirect = null;
     this.qpsServicePollingInterval = -1;
   }
 
-  public long getQpsServicePollingInterval() {
+  long getQpsServicePollingInterval() {
     return qpsServicePollingInterval;
   }
 
-  public String getQpsServiceEndpointRedirect() {
+  String getQpsServiceEndpointRedirect() {
     return qpsServiceEndpointRedirect;
   }
 
-  public QuickPulseStatus getQuickPulseStatus() {
+  QuickPulseStatus getQuickPulseStatus() {
     return quickPulseStatus;
   }
 }

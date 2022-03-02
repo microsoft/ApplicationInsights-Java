@@ -35,44 +35,42 @@ final class QuickPulseCoordinatorInitDataBuilder {
   private long waitBetweenPostsInMillis = DEFAULT_WAIT_BETWEEN_POSTS_IN_MILLIS;
   private long waitOnErrorInMillis = DEFAULT_WAIT_BETWEEN_PINGS_AFTER_ERROR_IN_MILLIS;
 
-  public QuickPulseCoordinatorInitDataBuilder withWaitBetweenPingsInMillis(
-      long waitBetweenPingsInMillis) {
+  QuickPulseCoordinatorInitDataBuilder withWaitBetweenPingsInMillis(long waitBetweenPingsInMillis) {
     this.waitBetweenPingsInMillis = waitBetweenPingsInMillis;
     return this;
   }
 
-  public QuickPulseCoordinatorInitDataBuilder withWaitBetweenPostsInMillis(
-      long waitBetweenPostsInMillis) {
+  QuickPulseCoordinatorInitDataBuilder withWaitBetweenPostsInMillis(long waitBetweenPostsInMillis) {
     this.waitBetweenPostsInMillis = waitBetweenPostsInMillis;
     return this;
   }
 
-  public QuickPulseCoordinatorInitDataBuilder withWaitOnErrorInMillis(long waitOnErrorInMillis) {
+  QuickPulseCoordinatorInitDataBuilder withWaitOnErrorInMillis(long waitOnErrorInMillis) {
     this.waitOnErrorInMillis = waitOnErrorInMillis;
     return this;
   }
 
-  public QuickPulseCoordinatorInitDataBuilder withPingSender(QuickPulsePingSender pingSender) {
+  QuickPulseCoordinatorInitDataBuilder withPingSender(QuickPulsePingSender pingSender) {
     this.pingSender = pingSender;
     return this;
   }
 
-  public QuickPulseCoordinatorInitDataBuilder withDataSender(QuickPulseDataSender dataSender) {
+  QuickPulseCoordinatorInitDataBuilder withDataSender(QuickPulseDataSender dataSender) {
     this.dataSender = dataSender;
     return this;
   }
 
-  public QuickPulseCoordinatorInitDataBuilder withDataFetcher(QuickPulseDataFetcher dataFetcher) {
+  QuickPulseCoordinatorInitDataBuilder withDataFetcher(QuickPulseDataFetcher dataFetcher) {
     this.dataFetcher = dataFetcher;
     return this;
   }
 
-  public QuickPulseCoordinatorInitDataBuilder withCollector(QuickPulseDataCollector collector) {
+  QuickPulseCoordinatorInitDataBuilder withCollector(QuickPulseDataCollector collector) {
     this.collector = collector;
     return this;
   }
 
-  public QuickPulseCoordinatorInitData build() {
+  QuickPulseCoordinatorInitData build() {
     if (pingSender == null) {
       throw new NullPointerException("ping sender should not be null");
     }

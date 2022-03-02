@@ -44,7 +44,7 @@ final class QuickPulseCoordinator implements Runnable {
   private final long waitBetweenPostsInMillis;
   private final long waitOnErrorInMillis;
 
-  public QuickPulseCoordinator(QuickPulseCoordinatorInitData initData) {
+  QuickPulseCoordinator(QuickPulseCoordinatorInitData initData) {
     dataSender = initData.dataSender;
     pingSender = initData.pingSender;
     dataFetcher = initData.dataFetcher;
@@ -141,7 +141,7 @@ final class QuickPulseCoordinator implements Runnable {
     }
   }
 
-  public void stop() {
+  void stop() {
     stopped = true;
   }
 }

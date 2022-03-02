@@ -48,7 +48,7 @@ import java.util.function.Supplier;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.LoggerFactory;
 
-public class QuickPulseDataCollector {
+final class QuickPulseDataCollector {
 
   private Supplier<String> instrumentationKeySupplier;
 
@@ -82,27 +82,27 @@ public class QuickPulseDataCollector {
     quickPulseStatus = QuickPulseStatus.QP_IS_OFF;
   }
 
-  public synchronized void disable() {
+  synchronized void disable() {
     counters.set(null);
     quickPulseStatus = QuickPulseStatus.QP_IS_OFF;
   }
 
-  public synchronized void enable(Supplier<String> instrumentationKeySupplier) {
+  synchronized void enable(Supplier<String> instrumentationKeySupplier) {
     this.instrumentationKeySupplier = instrumentationKeySupplier;
     counters.set(new Counters());
   }
 
-  public synchronized void setQuickPulseStatus(QuickPulseStatus quickPulseStatus) {
+  synchronized void setQuickPulseStatus(QuickPulseStatus quickPulseStatus) {
     this.quickPulseStatus = quickPulseStatus;
   }
 
   // Used only in tests
-  public synchronized QuickPulseStatus getQuickPulseStatus() {
+  synchronized QuickPulseStatus getQuickPulseStatus() {
     return this.quickPulseStatus;
   }
 
   @Nullable
-  public synchronized FinalCounters getAndRestart() {
+  synchronized FinalCounters getAndRestart() {
     Counters currentCounters = counters.getAndSet(new Counters());
     if (currentCounters != null) {
       return new FinalCounters(currentCounters, memory, cpuPerformanceCounterCalculator);
@@ -121,7 +121,7 @@ public class QuickPulseDataCollector {
     return null;
   }
 
-  public void add(TelemetryItem telemetryItem) {
+  void add(TelemetryItem telemetryItem) {
     String instrumentationKey = instrumentationKeySupplier.get();
     if (instrumentationKey == null || quickPulseStatus != QuickPulseStatus.QP_IS_ON) {
       // quick pulse is not enabled or quick pulse data sender is not enabled
@@ -336,18 +336,18 @@ public class QuickPulseDataCollector {
   }
 
   static class FinalCounters {
-    public final int exceptions;
-    public final long requests;
-    public final double requestsDuration;
-    public final int unsuccessfulRequests;
-    public final long rdds;
-    public final double rddsDuration;
-    public final int unsuccessfulRdds;
-    public final long memoryCommitted;
-    public final double cpuUsage;
-    public final List<QuickPulseDocument> documentList = new ArrayList<>();
+    final int exceptions;
+    final long requests;
+    final double requestsDuration;
+    final int unsuccessfulRequests;
+    final long rdds;
+    final double rddsDuration;
+    final int unsuccessfulRdds;
+    final long memoryCommitted;
+    final double cpuUsage;
+    final List<QuickPulseDocument> documentList = new ArrayList<>();
 
-    public FinalCounters(
+    FinalCounters(
         Counters currentCounters,
         MemoryMXBean memory,
         CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator) {
@@ -385,8 +385,8 @@ public class QuickPulseDataCollector {
   }
 
   static class CountAndDuration {
-    public final long count;
-    public final long duration;
+    final long count;
+    final long duration;
 
     private CountAndDuration(long count, long duration) {
       this.count = count;
@@ -399,7 +399,7 @@ public class QuickPulseDataCollector {
     private static final long MAX_DURATION = 17592186044415L;
     private static final int MAX_DOCUMENTS_SIZE = 1000;
 
-    public final AtomicInteger exceptions = new AtomicInteger(0);
+    final AtomicInteger exceptions = new AtomicInteger(0);
 
     final AtomicLong requestsAndDurations = new AtomicLong(0);
     final AtomicInteger unsuccessfulRequests = new AtomicInteger(0);

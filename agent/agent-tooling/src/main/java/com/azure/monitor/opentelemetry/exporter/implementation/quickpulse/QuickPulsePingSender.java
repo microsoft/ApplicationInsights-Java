@@ -75,7 +75,7 @@ class QuickPulsePingSender {
   private final String quickPulseId;
   private long lastValidTransmission = 0;
 
-  public QuickPulsePingSender(
+  QuickPulsePingSender(
       HttpPipeline httpPipeline,
       Supplier<URL> endpointUrl,
       Supplier<String> instrumentationKey,
@@ -98,7 +98,7 @@ class QuickPulsePingSender {
     }
   }
 
-  public QuickPulseHeaderInfo ping(String redirectedEndpoint) {
+  QuickPulseHeaderInfo ping(String redirectedEndpoint) {
     String instrumentationKey = getInstrumentationKey();
     if (Strings.isNullOrEmpty(instrumentationKey)) {
       // Quick Pulse Ping uri will be null when the instrumentation key is null. When that happens,
