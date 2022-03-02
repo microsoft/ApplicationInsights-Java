@@ -219,9 +219,10 @@ public class Configuration {
     // world,
     // so safer to only allow single interval for now
     public int metricIntervalSeconds = 60;
-    // ignoreRemoteParentNotSampled is currently needed
-    // because .NET SDK always propagates trace flags "00" (not sampled)
-    public boolean ignoreRemoteParentNotSampled = true;
+    // ignoreRemoteParentNotSampled is sometimes needed because .NET SDK always propagates trace
+    // flags "00" (not sampled)
+    // in particular, it is always needed in Azure Functions worker
+    public boolean ignoreRemoteParentNotSampled = DiagnosticsHelper.rpIntegrationChar() == 'f';
     public boolean captureControllerSpans;
     // this is just here to detect if using this old setting in order to give a helpful message
     @Deprecated public boolean httpMethodInOperationName;
