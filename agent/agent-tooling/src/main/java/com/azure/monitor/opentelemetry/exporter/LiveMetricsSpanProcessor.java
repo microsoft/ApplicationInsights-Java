@@ -40,6 +40,7 @@ public class LiveMetricsSpanProcessor implements SpanProcessor {
 
   private static final ClientLogger LOGGER = new ClientLogger(AzureMonitorTraceExporter.class);
 
+  private final QuickPulse quickPulse;
   private final String instrumentationKey;
 
   public LiveMetricsSpanProcessor(
@@ -49,8 +50,9 @@ public class LiveMetricsSpanProcessor implements SpanProcessor {
       @Nullable String roleName,
       @Nullable String roleInstance) {
     this.instrumentationKey = instrumentationKey;
-    QuickPulse.INSTANCE.initialize(
-        httpPipeline, () -> endpointUrl, () -> instrumentationKey, roleName, roleInstance);
+    quickPulse =
+        QuickPulse.create(
+            httpPipeline, () -> endpointUrl, () -> instrumentationKey, roleName, roleInstance);
   }
 
   @Override
@@ -86,7 +88,7 @@ public class LiveMetricsSpanProcessor implements SpanProcessor {
     }
 
     for (TelemetryItem telemetryItem : telemetryItems) {
-      QuickPulse.INSTANCE.add(telemetryItem);
+      quickPulse.add(telemetryItem);
     }
   }
 

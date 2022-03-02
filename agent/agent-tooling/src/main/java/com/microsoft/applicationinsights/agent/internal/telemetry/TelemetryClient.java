@@ -89,6 +89,8 @@ public class TelemetryClient {
 
   private final List<MetricFilter> metricFilters;
 
+  @Nullable private volatile QuickPulse quickPulse;
+
   private final StatsbeatModule statsbeatModule;
   @Nullable private final File tempDir;
   private final int generalExportQueueCapacity;
@@ -176,7 +178,9 @@ public class TelemetryClient {
       throw new AssertionError("telemetry item is missing time");
     }
 
-    QuickPulse.INSTANCE.add(telemetryItem);
+    if (quickPulse != null) {
+      quickPulse.add(telemetryItem);
+    }
 
     TelemetryObservers.INSTANCE.getObservers().forEach(consumer -> consumer.accept(telemetryItem));
 
@@ -405,6 +409,22 @@ public class TelemetryClient {
 
   public void addNonFilterableMetricNames(String... metricNames) {
     nonFilterableMetricNames.addAll(asList(metricNames));
+  }
+
+  public void setQuickPulse(Configuration configuration, TelemetryClient telemetryClient) {
+    if (configuration.preview.liveMetrics.enabled) {
+      quickPulse =
+          QuickPulse.create(
+              LazyHttpClient.newHttpPipeLineWithDefaultRedirect(
+                  configuration.preview.authentication),
+              () -> {
+                ConnectionString connectionString = telemetryClient.getConnectionString();
+                return connectionString == null ? null : connectionString.getLiveEndpoint();
+              },
+              telemetryClient::getInstrumentationKey,
+              telemetryClient.getRoleName(),
+              telemetryClient.getRoleInstance());
+    }
   }
 
   public static class Builder {

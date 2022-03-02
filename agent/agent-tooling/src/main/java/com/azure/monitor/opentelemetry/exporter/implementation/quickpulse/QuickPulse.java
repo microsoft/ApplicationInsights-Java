@@ -35,19 +35,29 @@ import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
-public enum QuickPulse {
-  INSTANCE;
+public class QuickPulse {
 
-  public static final int QP_INVARIANT_VERSION = 1;
+  static final int QP_INVARIANT_VERSION = 1;
   private volatile boolean initialized = false;
 
   private volatile QuickPulseDataCollector collector;
+
+  public static QuickPulse create(
+      HttpPipeline httpPipeline,
+      Supplier<URL> endpointUrl,
+      Supplier<String> instrumentationKey,
+      @Nullable String roleName,
+      @Nullable String roleInstance) {
+    QuickPulse quickPulse = new QuickPulse();
+    quickPulse.initialize(httpPipeline, endpointUrl, instrumentationKey, roleName, roleInstance);
+    return quickPulse;
+  }
 
   // initialization is performed in the background because initializing the random seed (via
   // UUID.randomUUID()) below
   // can cause slowness during startup in some environments
 
-  public void initialize(
+  private void initialize(
       HttpPipeline httpPipeline,
       Supplier<URL> endpointUrl,
       Supplier<String> instrumentationKey,
