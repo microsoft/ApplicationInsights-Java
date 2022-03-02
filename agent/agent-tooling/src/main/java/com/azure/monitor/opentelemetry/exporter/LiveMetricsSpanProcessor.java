@@ -25,7 +25,6 @@ import com.azure.core.http.HttpPipeline;
 import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
-import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulseDataCollector;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
@@ -41,6 +40,7 @@ public class LiveMetricsSpanProcessor implements SpanProcessor {
 
   private static final ClientLogger LOGGER = new ClientLogger(AzureMonitorTraceExporter.class);
 
+  private final QuickPulse quickPulse;
   private final String instrumentationKey;
 
   public LiveMetricsSpanProcessor(
@@ -50,8 +50,9 @@ public class LiveMetricsSpanProcessor implements SpanProcessor {
       @Nullable String roleName,
       @Nullable String roleInstance) {
     this.instrumentationKey = instrumentationKey;
-    QuickPulse.INSTANCE.initialize(
-        httpPipeline, () -> endpointUrl, () -> instrumentationKey, roleName, roleInstance);
+    quickPulse =
+        QuickPulse.create(
+            httpPipeline, () -> endpointUrl, () -> instrumentationKey, roleName, roleInstance);
   }
 
   @Override
@@ -87,7 +88,7 @@ public class LiveMetricsSpanProcessor implements SpanProcessor {
     }
 
     for (TelemetryItem telemetryItem : telemetryItems) {
-      QuickPulseDataCollector.INSTANCE.add(telemetryItem);
+      quickPulse.add(telemetryItem);
     }
   }
 

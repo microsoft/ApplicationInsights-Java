@@ -26,29 +26,18 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.mock;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 class QuickPulseCoordinatorTest {
 
-  @BeforeEach
-  void setup() {
-    QuickPulseDataCollector.INSTANCE.disable();
-  }
-
-  @AfterEach
-  void tearDown() {
-    QuickPulseDataCollector.INSTANCE.disable();
-  }
-
   @Test
   void testOnlyPings() throws InterruptedException {
     QuickPulseDataFetcher mockFetcher = mock(QuickPulseDataFetcher.class);
     QuickPulseDataSender mockSender = mock(QuickPulseDataSender.class);
     QuickPulsePingSender mockPingSender = mock(QuickPulsePingSender.class);
+    QuickPulseDataCollector collector = new QuickPulseDataCollector();
     Mockito.doReturn(new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_OFF))
         .when(mockPingSender)
         .ping(null);
@@ -58,6 +47,7 @@ class QuickPulseCoordinatorTest {
             .withDataFetcher(mockFetcher)
             .withDataSender(mockSender)
             .withPingSender(mockPingSender)
+            .withCollector(collector)
             .withWaitBetweenPingsInMillis(10L)
             .withWaitBetweenPostsInMillis(10L)
             .withWaitOnErrorInMillis(10L)
@@ -80,8 +70,7 @@ class QuickPulseCoordinatorTest {
 
     Mockito.verify(mockPingSender, Mockito.atLeast(1)).ping(null);
     // make sure QP_IS_OFF after ping
-    assertThat(QuickPulseDataCollector.INSTANCE.getQuickPulseStatus())
-        .isEqualTo(QuickPulseStatus.QP_IS_OFF);
+    assertThat(collector.getQuickPulseStatus()).isEqualTo(QuickPulseStatus.QP_IS_OFF);
   }
 
   @Test
@@ -98,11 +87,13 @@ class QuickPulseCoordinatorTest {
             new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_ON),
             new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_OFF));
 
+    QuickPulseDataCollector collector = new QuickPulseDataCollector();
     QuickPulseCoordinatorInitData initData =
         new QuickPulseCoordinatorInitDataBuilder()
             .withDataFetcher(mockFetcher)
             .withDataSender(mockSender)
             .withPingSender(mockPingSender)
+            .withCollector(collector)
             .withWaitBetweenPingsInMillis(10L)
             .withWaitBetweenPostsInMillis(10L)
             .withWaitOnErrorInMillis(10L)
@@ -125,8 +116,7 @@ class QuickPulseCoordinatorTest {
 
     Mockito.verify(mockPingSender, Mockito.atLeast(1)).ping(null);
     // Make sure QP_IS_OFF after one post and ping
-    assertThat(QuickPulseDataCollector.INSTANCE.getQuickPulseStatus())
-        .isEqualTo(QuickPulseStatus.QP_IS_OFF);
+    assertThat(collector.getQuickPulseStatus()).isEqualTo(QuickPulseStatus.QP_IS_OFF);
   }
 
   // FIXME (trask) sporadically failing on CI
@@ -152,6 +142,7 @@ class QuickPulseCoordinatorTest {
             .withDataFetcher(mockFetcher)
             .withDataSender(mockSender)
             .withPingSender(mockPingSender)
+            .withCollector(new QuickPulseDataCollector())
             .withWaitBetweenPingsInMillis(10L)
             .withWaitBetweenPostsInMillis(10L)
             .withWaitOnErrorInMillis(10L)

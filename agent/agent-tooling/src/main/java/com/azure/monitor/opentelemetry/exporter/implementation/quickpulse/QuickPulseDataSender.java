@@ -36,8 +36,7 @@ class QuickPulseDataSender implements Runnable {
 
   private final ArrayBlockingQueue<HttpRequest> sendQueue;
 
-  public QuickPulseDataSender(
-      HttpPipeline httpPipeline, ArrayBlockingQueue<HttpRequest> sendQueue) {
+  QuickPulseDataSender(HttpPipeline httpPipeline, ArrayBlockingQueue<HttpRequest> sendQueue) {
     this.httpPipeline = httpPipeline;
     this.sendQueue = sendQueue;
   }
@@ -84,11 +83,11 @@ class QuickPulseDataSender implements Runnable {
     }
   }
 
-  public void startSending() {
+  void startSending() {
     quickPulseHeaderInfo = new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_ON);
   }
 
-  public QuickPulseHeaderInfo getQuickPulseHeaderInfo() {
+  QuickPulseHeaderInfo getQuickPulseHeaderInfo() {
     return quickPulseHeaderInfo;
   }
 
