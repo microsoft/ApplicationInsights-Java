@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -58,15 +59,15 @@ public class TraceJavaUtilLoggingTest extends AiSmokeTest {
     assertEquals(SeverityLevel.Warning, md1.getSeverityLevel());
     assertEquals("Logger", md1.getProperties().get("SourceType"));
     assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
-//    assertNotNull(md1.getProperties().get("ThreadName"));
-    assertEquals(3, md1.getProperties().size());
+    assertNotNull(md1.getProperties().get("ThreadName"));
+    assertEquals(4, md1.getProperties().size());
 
     assertEquals("This is jul severe.", md2.getMessage());
     assertEquals(SeverityLevel.Error, md2.getSeverityLevel());
     assertEquals("Logger", md2.getProperties().get("SourceType"));
     assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
-//    assertNotNull(md2.getProperties().get("ThreadName"));
-    assertEquals(3, md2.getProperties().size());
+    assertNotNull(md2.getProperties().get("ThreadName"));
+    assertEquals(4, md2.getProperties().size());
 
     assertParentChild(
         rd, rdEnvelope, mdEnvelope1, "GET /TraceJavaUtilLoggingUsingAgent/traceJavaUtilLogging");
@@ -96,8 +97,8 @@ public class TraceJavaUtilLoggingTest extends AiSmokeTest {
     assertEquals("This is an exception!", ed.getProperties().get("Logger Message"));
     assertEquals("Logger", ed.getProperties().get("SourceType"));
     assertEquals("smoketestapp", ed.getProperties().get("LoggerName"));
-//    assertNotNull(ed.getProperties().get("ThreadName"));
-    assertEquals(3, ed.getProperties().size());
+    assertNotNull(ed.getProperties().get("ThreadName"));
+    assertEquals(4, ed.getProperties().size());
 
     assertParentChild(
         rd,

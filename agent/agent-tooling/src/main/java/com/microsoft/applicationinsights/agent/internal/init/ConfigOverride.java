@@ -130,12 +130,21 @@ class ConfigOverride {
         "otel.instrumentation.http.capture-headers.client.response",
         config.preview.captureHttpClientHeaders.responseHeaders);
 
+    // enable logback MDC
     properties.put(
         "otel.instrumentation.logback-appender.experimental.capture-mdc-attributes", "*");
     properties.put(
         "otel.instrumentation.log4j-appender.experimental.capture-context-data-attributes", "*");
     properties.put(
         "otel.instrumentation.log4j-appender.experimental.capture-map-message-attributes", "true");
+
+    // enable thread.name
+    properties.put("otel.instrumentation.java-util-logging.experimental-log-attributes", "true");
+    properties.put("otel.instrumentation.log4j-appender.experimental-log-attributes", "true");
+    properties.put("otel.instrumentation.logback-appender.experimental-log-attributes", "true");
+
+    // enable log4j 1.x MDC
+    properties.put("otel.instrumentation.log4j-appender.experimental.capture-mdc-attributes", "*");
 
     properties.put("otel.propagators", DelegatingPropagatorProvider.NAME);
 
