@@ -95,7 +95,10 @@ dependencies {
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-liberty-dispatcher:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-spans-1.2:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-spans-2.0:$otelInstrumentationAlphaVersion")
+  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-mdc-1.2:$otelInstrumentationAlphaVersion")
+  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-context-data-2.16:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-spans-1.0:$otelInstrumentationAlphaVersion")
+  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-mdc-1.0:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-micrometer-1.0:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-mongo-3.1:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-mongo-3.7:$otelInstrumentationAlphaVersion")
@@ -159,6 +162,7 @@ tasks {
     dependencies {
       exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging-spans"))
       exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-spans-1.0"))
+      exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-mdc-1.0"))
     }
 
     // rewrite dependencies calling Logger.getLogger
