@@ -96,6 +96,9 @@ dependencies {
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-appender-1.2:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-appender-2.16:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-appender-1.0:$otelInstrumentationAlphaVersion")
+  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-mdc-1.2:$otelInstrumentationAlphaVersion")
+  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-context-data-2.16:$otelInstrumentationAlphaVersion")
+  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-mdc-1.0:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-micrometer-1.0:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-mongo-3.1:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-mongo-3.7:$otelInstrumentationAlphaVersion")
@@ -159,6 +162,7 @@ tasks {
     dependencies {
       exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging"))
       exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-appender-1.0"))
+      exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-mdc-1.0"))
       exclude(dependency("io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0"))
     }
 
