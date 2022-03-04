@@ -66,10 +66,6 @@ public class LoggerExporter implements LogExporter {
 
   @Override
   public CompletableResultCode export(Collection<LogData> logs) {
-    // TODO (heya) ignore logs that do not meet the configured logging threshold
-    //  (configuration.instrumentation.logging.level)
-    //  this used to be handled in the instrumentation, but otel instrumentation doesn't have that
-    //  setting yet, which is ok we should be able to filter here fine
     if (CoreUtils.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey())) {
       logger.debug("Instrumentation key is null or empty. Fail to export logs.");
       return CompletableResultCode.ofFailure();
