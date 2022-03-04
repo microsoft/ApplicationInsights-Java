@@ -196,21 +196,27 @@ public class LoggerExporter implements LogExporter {
     }
   }
 
-  private static final String LOG4J_CONTEXT_DATA_PREFIX = "log4j.context_data.";
+  private static final String LOG4J1_2_MDC_PREFIX = "log4j.mdc.";
+  private static final String LOG4J2_CONTEXT_DATA_PREFIX = "log4j.context_data.";
   private static final String LOGBACK_MDC_PREFIX = "logback.mdc.";
 
   static void setExtraAttributes(AbstractTelemetryBuilder telemetryBuilder, Attributes attributes) {
     attributes.forEach(
         (key, value) -> {
           String stringKey = key.getKey();
-          if (stringKey.startsWith(LOG4J_CONTEXT_DATA_PREFIX)) {
+          if (stringKey.startsWith(LOG4J2_CONTEXT_DATA_PREFIX)) {
             telemetryBuilder.addProperty(
-                stringKey.substring(LOG4J_CONTEXT_DATA_PREFIX.length()), String.valueOf(value));
+                stringKey.substring(LOG4J2_CONTEXT_DATA_PREFIX.length()), String.valueOf(value));
             return;
           }
           if (stringKey.startsWith(LOGBACK_MDC_PREFIX)) {
             telemetryBuilder.addProperty(
                 stringKey.substring(LOGBACK_MDC_PREFIX.length()), String.valueOf(value));
+            return;
+          }
+          if (stringKey.startsWith(LOG4J1_2_MDC_PREFIX)) {
+            telemetryBuilder.addProperty(
+                stringKey.substring(LOG4J1_2_MDC_PREFIX.length()), String.valueOf(value));
             return;
           }
         });
