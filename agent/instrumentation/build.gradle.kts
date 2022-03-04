@@ -163,6 +163,7 @@ tasks {
       exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging"))
       exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-appender-1.0"))
       exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-mdc-1.0"))
+      exclude(dependency("io.opentelemetry.instrumentation:opentelemetry-logback-mdc-1.0"))
       exclude(dependency("io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0"))
     }
 
