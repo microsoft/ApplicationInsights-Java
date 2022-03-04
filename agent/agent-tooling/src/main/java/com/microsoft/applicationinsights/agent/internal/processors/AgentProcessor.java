@@ -80,7 +80,7 @@ public abstract class AgentProcessor {
         attributes = new ArrayList<>();
       }
 
-      List<String> names = isLog ? includeExclude.logNames : includeExclude.spanNames;
+      List<String> names = isLog ? includeExclude.logBodies : includeExclude.spanNames;
       if (names == null) {
         names = new ArrayList<>();
       }
@@ -145,8 +145,8 @@ public abstract class AgentProcessor {
 
       List<Pattern> patterns = new ArrayList<>();
       if (isLog) {
-        if (includeExclude.logNames != null) {
-          for (String regex : includeExclude.logNames) {
+        if (includeExclude.logBodies != null) {
+          for (String regex : includeExclude.logBodies) {
             patterns.add(Pattern.compile(regex));
           }
         }

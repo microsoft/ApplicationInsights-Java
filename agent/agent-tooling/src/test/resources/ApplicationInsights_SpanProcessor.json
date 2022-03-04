@@ -89,7 +89,7 @@
         "type": "log",
         "include": {
           "matchType": "regexp",
-          "logNames": [
+          "logBodies": [
             ".*password.*"
           ]
         },

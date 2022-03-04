@@ -75,7 +75,7 @@ class LogExporterWithAttributeProcessorTest {
     config.id = "inValidConfigTestWithNoValueInAction";
     config.include = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.STRICT;
-    config.include.logNames = asList("svcA", "svcB");
+    config.include.logBodies = asList("svcA", "svcB");
     ProcessorAction action =
         new ProcessorAction("testKey", ProcessorActionType.UPDATE, null, null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
@@ -91,7 +91,7 @@ class LogExporterWithAttributeProcessorTest {
     config.id = "inValidConfigTestWithInvalidInclude";
     config.include = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.STRICT;
-    config.include.logNames = asList("svcA", "svcB");
+    config.include.logBodies = asList("svcA", "svcB");
     ProcessorAction action =
         new ProcessorAction("testKey", ProcessorActionType.UPDATE, null, null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
@@ -441,7 +441,7 @@ class LogExporterWithAttributeProcessorTest {
     config.id = "simpleInclude";
     config.include = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.STRICT;
-    config.include.logNames = asList("svcA", "svcB");
+    config.include.logBodies = asList("svcA", "svcB");
     ProcessorAction action =
         new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
@@ -513,7 +513,7 @@ class LogExporterWithAttributeProcessorTest {
     config.id = "simpleIncludeWithLogName";
     config.include = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.STRICT;
-    config.include.logNames = asList("svcA", "svcB");
+    config.include.logBodies = asList("svcA", "svcB");
     ProcessorAction action =
         new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
@@ -585,7 +585,7 @@ class LogExporterWithAttributeProcessorTest {
     config.id = "simpleIncludeRegex";
     config.include = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.REGEXP;
-    config.include.logNames = asList("svc.*", "test.*");
+    config.include.logBodies = asList("svc.*", "test.*");
     ProcessorAction action =
         new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
@@ -657,7 +657,7 @@ class LogExporterWithAttributeProcessorTest {
     config.id = "invalidRegex";
     config.include = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.REGEXP;
-    config.include.logNames = Collections.singletonList("***");
+    config.include.logBodies = Collections.singletonList("***");
     ProcessorAction action =
         new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
@@ -673,7 +673,7 @@ class LogExporterWithAttributeProcessorTest {
     config.id = "simpleIncludeRegex";
     config.include = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.REGEXP;
-    config.include.logNames = asList("svc.*", "test.*");
+    config.include.logBodies = asList("svc.*", "test.*");
     ProcessorAttribute attributeWithValue = new ProcessorAttribute();
     attributeWithValue.key = "testKey";
     attributeWithValue.value = "Value.*";
@@ -762,7 +762,7 @@ class LogExporterWithAttributeProcessorTest {
     config.id = "simpleIncludeHash";
     config.include = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.STRICT;
-    config.include.logNames = asList("svcA", "svcB", "svcC");
+    config.include.logBodies = asList("svcA", "svcB", "svcC");
     ProcessorAction action =
         new ProcessorAction("testKey", ProcessorActionType.HASH, null, null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
@@ -834,7 +834,7 @@ class LogExporterWithAttributeProcessorTest {
     config.id = "simpleExclude";
     config.exclude = new ProcessorIncludeExclude();
     config.exclude.matchType = MatchType.STRICT;
-    config.exclude.logNames = asList("svcA", "svcB");
+    config.exclude.logBodies = asList("svcA", "svcB");
     ProcessorAction action =
         new ProcessorAction("testKey", ProcessorActionType.UPDATE, "redacted", null, null, null);
     List<ProcessorAction> actions = new ArrayList<>();
@@ -906,7 +906,7 @@ class LogExporterWithAttributeProcessorTest {
     config.id = "multiInclude";
     config.include = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.STRICT;
-    config.include.logNames = asList("svcA", "svcB");
+    config.include.logBodies = asList("svcA", "svcB");
     config.include.attributes = new ArrayList<>();
     ProcessorAttribute attributeWithValue = new ProcessorAttribute();
     attributeWithValue.key = "testKey";
@@ -985,7 +985,7 @@ class LogExporterWithAttributeProcessorTest {
     config.id = "multiExclude";
     config.exclude = new ProcessorIncludeExclude();
     config.exclude.matchType = MatchType.STRICT;
-    config.exclude.logNames = asList("svcA", "svcB");
+    config.exclude.logBodies = asList("svcA", "svcB");
     config.exclude.attributes = new ArrayList<>();
     ProcessorAttribute attributeWithValue = new ProcessorAttribute();
     attributeWithValue.key = "testKey";
@@ -1063,7 +1063,7 @@ class LogExporterWithAttributeProcessorTest {
     config.include = new ProcessorIncludeExclude();
     config.exclude = new ProcessorIncludeExclude();
     config.include.matchType = MatchType.STRICT;
-    config.include.logNames = asList("svcA", "svcB");
+    config.include.logBodies = asList("svcA", "svcB");
     config.exclude.matchType = MatchType.STRICT;
     config.exclude.attributes = new ArrayList<>();
     ProcessorAttribute attributeWithValue = new ProcessorAttribute();

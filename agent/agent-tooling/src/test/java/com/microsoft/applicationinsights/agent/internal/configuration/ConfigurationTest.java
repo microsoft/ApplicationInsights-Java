@@ -182,8 +182,8 @@ class ConfigurationTest {
     assertThat(logUpdateNameConfig.type).isEqualTo(ProcessorType.LOG);
     assertThat(logUpdateNameConfig.id).isEqualTo("log/updateLogNameWithRegex");
     assertThat(logUpdateNameConfig.include.matchType).isEqualTo(MatchType.REGEXP);
-    assertThat(logUpdateNameConfig.include.logNames.size()).isEqualTo(1);
-    assertThat(logUpdateNameConfig.include.logNames.get(0)).isEqualTo(".*password.*");
+    assertThat(logUpdateNameConfig.include.logBodies.size()).isEqualTo(1);
+    assertThat(logUpdateNameConfig.include.logBodies.get(0)).isEqualTo(".*password.*");
     assertThat(logUpdateNameConfig.name.fromAttributes.size()).isEqualTo(1);
     assertThat(logUpdateNameConfig.name.fromAttributes.get(0)).isEqualTo("loggerName");
     assertThat(logUpdateNameConfig.name.separator).isEqualTo("::");

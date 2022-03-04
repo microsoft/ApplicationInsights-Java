@@ -689,7 +689,7 @@ public class Configuration {
   public static class ProcessorIncludeExclude {
     public MatchType matchType;
     public List<String> spanNames = new ArrayList<>();
-    public List<String> logNames = new ArrayList<>();
+    public List<String> logBodies = new ArrayList<>();
     public List<String> metricNames = new ArrayList<>();
     public List<ProcessorAttribute> attributes = new ArrayList<>();
 
@@ -748,12 +748,12 @@ public class Configuration {
     }
 
     private void validAttributeProcessorIncludeExclude(IncludeExclude includeExclude) {
-      if (attributes.isEmpty() && spanNames.isEmpty() && logNames.isEmpty()) {
+      if (attributes.isEmpty() && spanNames.isEmpty() && logBodies.isEmpty()) {
         throw new FriendlyException(
             "An attribute processor configuration has an "
                 + includeExclude
-                + " section with no \"spanNames\" and no \"attributes\" and no \"logNames\".",
-            "Please provide at least one of \"spanNames\" or \"attributes\" or \"logNames\" under the "
+                + " section with no \"spanNames\" and no \"attributes\" and no \"logBodies\".",
+            "Please provide at least one of \"spanNames\" or \"attributes\" or \"logBodies\" under the "
                 + includeExclude
                 + " section of the attribute processor configuration. "
                 + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
@@ -763,8 +763,8 @@ public class Configuration {
           validateRegex(spanName, ProcessorType.ATTRIBUTE);
         }
 
-        for (String logName : logNames) {
-          validateRegex(logName, ProcessorType.ATTRIBUTE);
+        for (String logBody : logBodies) {
+          validateRegex(logBody, ProcessorType.ATTRIBUTE);
         }
       }
 
@@ -772,20 +772,20 @@ public class Configuration {
     }
 
     private void validateLogProcessorIncludeExclude(IncludeExclude includeExclude) {
-      if (logNames.isEmpty() && attributes.isEmpty()) {
+      if (logBodies.isEmpty() && attributes.isEmpty()) {
         throw new FriendlyException(
             "A log processor configuration has an "
                 + includeExclude
-                + " section with no \"attributes\" and no \"logNames\".",
-            "Please provide \"attributes\" or \"logNames\" under the "
+                + " section with no \"attributes\" and no \"logBodies\".",
+            "Please provide \"attributes\" or \"logBodies\" under the "
                 + includeExclude
                 + " section of the log processor configuration. "
                 + "Learn more about log processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
       }
 
       if (matchType == MatchType.REGEXP) {
-        for (String logName : logNames) {
-          validateRegex(logName, ProcessorType.LOG);
+        for (String logBody : logBodies) {
+          validateRegex(logBody, ProcessorType.LOG);
         }
       }
 
@@ -810,7 +810,7 @@ public class Configuration {
         }
       }
 
-      validateSectionIsEmpty(logNames, ProcessorType.SPAN, includeExclude, "logNames");
+      validateSectionIsEmpty(logBodies, ProcessorType.SPAN, includeExclude, "logBodies");
       validateSectionIsEmpty(metricNames, ProcessorType.SPAN, includeExclude, "metricNames");
     }
 
