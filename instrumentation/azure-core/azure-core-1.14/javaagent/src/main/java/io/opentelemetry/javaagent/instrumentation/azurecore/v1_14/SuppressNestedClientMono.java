@@ -25,9 +25,9 @@ public class SuppressNestedClientMono<T> extends Mono<T> {
   @Override
   public void subscribe(CoreSubscriber<? super T> actual) {
     Context parentContext = currentContext();
-    if (SpanKey.ALL_CLIENTS.fromContextOrNull(parentContext) == null) {
+    if (SpanKey.HTTP_CLIENT.fromContextOrNull(parentContext) == null) {
       try (Scope ignored =
-          SpanKey.ALL_CLIENTS.storeInContext(parentContext, Span.getInvalid()).makeCurrent()) {
+          SpanKey.HTTP_CLIENT.storeInContext(parentContext, Span.getInvalid()).makeCurrent()) {
         delegate.subscribe(actual);
       }
     } else {
