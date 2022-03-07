@@ -32,6 +32,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import java.util.ArrayList;
@@ -95,7 +96,7 @@ class ExporterWithLogProcessorTest {
     config.body = new NameConfig();
     config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
     LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
-    MockLogData mockLog = MockLogData.builder().setName("logA").setAttributes(attributes).build();
+    MockLogData mockLog = MockLogData.builder().setBody(Body.string("logA")).setAttributes(attributes).build();
     List<LogData> logs = new ArrayList<>();
     logs.add(mockLog);
     logExporter.export(logs);
@@ -103,7 +104,7 @@ class ExporterWithLogProcessorTest {
     // verify that resulting logs are filtered in the way we want
     List<LogData> result = mockExporter.getLogs();
     LogData resultLog = result.get(0);
-    assertThat(resultLog.getName()).isEqualTo("locationget1234");
+    assertThat(resultLog.getBody().asString()).isEqualTo("locationget1234");
   }
 
   @Test
@@ -113,7 +114,7 @@ class ExporterWithLogProcessorTest {
     config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
     config.body.separator = "::";
     LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
-    MockLogData mockLog = MockLogData.builder().setName("svcA").setAttributes(attributes).build();
+    MockLogData mockLog = MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributes).build();
     List<LogData> logs = new ArrayList<>();
     logs.add(mockLog);
     logExporter.export(logs);
@@ -121,7 +122,7 @@ class ExporterWithLogProcessorTest {
     // verify that resulting logs are filtered in the way we want
     List<LogData> result = mockExporter.getLogs();
     LogData resultLog = result.get(0);
-    assertThat(resultLog.getName()).isEqualTo("location::get::1234");
+    assertThat(resultLog.getBody().asString()).isEqualTo("location::get::1234");
   }
 
   @Test
@@ -132,7 +133,7 @@ class ExporterWithLogProcessorTest {
     config.body.separator = "::";
     LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
 
-    MockLogData mockLog = MockLogData.builder().setName("svcA").setAttributes(attributes).build();
+    MockLogData mockLog = MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributes).build();
     List<LogData> logs = new ArrayList<>();
     logs.add(mockLog);
     logExporter.export(logs);
@@ -140,7 +141,7 @@ class ExporterWithLogProcessorTest {
     // verify that resulting logs are filtered in the way we want
     List<LogData> result = mockExporter.getLogs();
     LogData resultLog = result.get(0);
-    assertThat(resultLog.getName()).isEqualTo("location::get::1234");
+    assertThat(resultLog.getBody().asString()).isEqualTo("location::get::1234");
   }
 
   @Test
@@ -167,7 +168,7 @@ class ExporterWithLogProcessorTest {
     LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
     MockLogData mockLog =
         MockLogData.builder()
-            .setName("/api/v1/document/12345678/update")
+            .setBody(Body.string("/api/v1/document/12345678/update"))
             .setAttributes(attributes)
             .build();
     List<LogData> logs = new ArrayList<>();
@@ -185,7 +186,7 @@ class ExporterWithLogProcessorTest {
             Objects.requireNonNull(
                 resultLog.getAttributes().get(AttributeKey.stringKey("documentId"))))
         .isEqualTo("12345678");
-    assertThat(resultLog.getName()).isEqualTo("/api/v1/document/{documentId}/update");
+    assertThat(resultLog.getBody().asString()).isEqualTo("/api/v1/document/{documentId}/update");
   }
 
   @Test
@@ -200,7 +201,7 @@ class ExporterWithLogProcessorTest {
     LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
     MockLogData mockLogA =
         MockLogData.builder()
-            .setName("yyyPassword=123 aba Pass=555 xyx Pass=777 zzz")
+            .setBody(Body.string("yyyPassword=123 aba Pass=555 xyx Pass=777 zzz"))
             .setAttributes(attributes)
             .build();
 
@@ -214,7 +215,7 @@ class ExporterWithLogProcessorTest {
             .put("password", "234")
             .build();
     MockLogData mockLogB =
-        MockLogData.builder().setName("yyyPassword=**** aba").setAttributes(attributesB).build();
+        MockLogData.builder().setBody(Body.string("yyyPassword=**** aba")).setAttributes(attributesB).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(mockLogA);
@@ -241,7 +242,7 @@ class ExporterWithLogProcessorTest {
             Objects.requireNonNull(
                 resultA.getAttributes().get(AttributeKey.stringKey("password2"))))
         .isEqualTo("555");
-    assertThat(resultA.getName())
+    assertThat(resultA.getBody().asString())
         .isEqualTo("yyyPassword={password1} aba Pass={password2} xyx Pass=777 zzz");
     assertThat(
             Objects.requireNonNull(
@@ -251,7 +252,7 @@ class ExporterWithLogProcessorTest {
             Objects.requireNonNull(
                 resultB.getAttributes().get(AttributeKey.stringKey("password1"))))
         .isEqualTo("****");
-    assertThat(resultB.getName()).isEqualTo("yyyPassword={password1} aba");
+    assertThat(resultB.getBody().asString()).isEqualTo("yyyPassword={password1} aba");
   }
 
   @Test
@@ -270,7 +271,7 @@ class ExporterWithLogProcessorTest {
             .put("id", "1234")
             .build();
     MockLogData mockLog =
-        MockLogData.builder().setName("svcA").setAttributes(newAttributes).build();
+        MockLogData.builder().setBody(Body.string("svcA")).setAttributes(newAttributes).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(mockLog);
@@ -279,6 +280,6 @@ class ExporterWithLogProcessorTest {
     // verify that resulting logs are not modified
     List<LogData> result = mockExporter.getLogs();
     LogData resultLog = result.get(0);
-    assertThat(resultLog.getName()).isEqualTo("locationget1234");
+    assertThat(resultLog.getBody().asString()).isEqualTo("locationget1234");
   }
 }

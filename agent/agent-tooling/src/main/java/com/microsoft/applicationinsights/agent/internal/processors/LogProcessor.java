@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogData;
 import java.util.ArrayList;
 import java.util.List;
@@ -87,7 +88,7 @@ public class LogProcessor extends AgentProcessor {
   }
 
   // fromAttributes represents the attribute keys to pull the values from to generate the new log
-  // name.
+  // body.
   public LogData processFromAttributes(LogData log) {
     if (logHasAllFromAttributeKeys(log, fromAttributes)) {
       StringBuilder updatedLogBuffer = new StringBuilder();
@@ -101,7 +102,7 @@ public class LogProcessor extends AgentProcessor {
         updatedLogBuffer.setLength(updatedLogBuffer.length() - separator.length());
       }
 
-      return new MyLogData(log, existingLogAttributes, updatedLogBuffer.toString());
+      return new MyLogData(log, existingLogAttributes, Body.string(updatedLogBuffer.toString()));
     }
 
     return log;
@@ -113,17 +114,17 @@ public class LogProcessor extends AgentProcessor {
     if (toAttributeRulePatterns.isEmpty()) {
       return log;
     }
-    String logName = log.getName();
+    String bodyAsString = log.getBody().asString();
     // copy existing attributes.
     // According to Collector docs, The matched portion
     // in the log name is replaced by extracted attribute name. If the attributes exist
     // they will be overwritten. Need a way to optimize this.
     AttributesBuilder builder = log.getAttributes().toBuilder();
     for (int i = 0; i < groupNames.size(); i++) {
-      logName = applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), logName, builder);
+      bodyAsString = applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), bodyAsString, builder);
     }
 
-    return new MyLogData(log, builder.build(), logName);
+    return new MyLogData(log, builder.build(), Body.string(bodyAsString));
   }
 
   public static boolean logHasAllFromAttributeKeys(

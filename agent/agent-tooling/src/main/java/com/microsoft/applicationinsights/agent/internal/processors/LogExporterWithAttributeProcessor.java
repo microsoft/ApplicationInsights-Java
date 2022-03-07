@@ -54,12 +54,12 @@ public class LogExporterWithAttributeProcessor implements LogExporter {
 
   private LogData process(LogData log) {
     AgentProcessor.IncludeExclude include = attributeProcessor.getInclude();
-    if (include != null && !include.isMatch(log.getAttributes(), log.getName())) {
+    if (include != null && !include.isMatch(log.getAttributes(), log.getBody().asString())) {
       // If not included we can skip further processing
       return log;
     }
     AgentProcessor.IncludeExclude exclude = attributeProcessor.getExclude();
-    if (exclude != null && exclude.isMatch(log.getAttributes(), log.getName())) {
+    if (exclude != null && exclude.isMatch(log.getAttributes(), log.getBody().asString())) {
       // If excluded we can skip further processing
       return log;
     }

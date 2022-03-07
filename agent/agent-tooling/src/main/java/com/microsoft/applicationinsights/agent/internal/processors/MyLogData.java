@@ -22,29 +22,26 @@
 package com.microsoft.applicationinsights.agent.internal.processors;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogData;
 
 public class MyLogData extends DelegatingLogData {
 
   private final Attributes attributes;
-  // TODO (heya) this should be log body, we may want to change log processor configuration to
-  //  reflect the new name
-  private final String logName;
+  private final Body body;
 
   public MyLogData(LogData delegate, Attributes attributes) {
-    this(delegate, attributes, delegate.getName());
+    this(delegate, attributes, delegate.getBody());
   }
 
-  public MyLogData(LogData delegate, Attributes attributes, String logName) {
+  public MyLogData(LogData delegate, Attributes attributes, Body body) {
     super(delegate);
     this.attributes = attributes;
-    this.logName = logName;
+    this.body = body;
   }
 
   @Override
-  public String getName() {
-    return logName;
-  }
+  public Body getBody() { return body; }
 
   @Override
   public Attributes getAttributes() {
