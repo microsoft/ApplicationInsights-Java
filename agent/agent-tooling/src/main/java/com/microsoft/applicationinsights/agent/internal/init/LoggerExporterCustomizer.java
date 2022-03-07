@@ -87,8 +87,8 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
         configuration.preview.processors.stream()
             .filter(
                 processor ->
-                    processor.type != Configuration.ProcessorType.METRIC_FILTER
-                        && processor.type != Configuration.ProcessorType.SPAN)
+                    processor.type == Configuration.ProcessorType.ATTRIBUTE
+                        || processor.type == Configuration.ProcessorType.LOG)
             .collect(Collectors.toCollection(ArrayList::new));
     // Reversing the order of processors before passing it to Span/Log processor
     Collections.reverse(processors);

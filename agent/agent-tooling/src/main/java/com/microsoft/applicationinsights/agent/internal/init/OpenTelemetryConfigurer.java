@@ -120,7 +120,7 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
 
     String tracesExporter = config.getString("otel.traces.exporter");
     if ("none".equals(tracesExporter)) {
-      List<ProcessorConfig> processorConfigs = reverseProcessorConfigs(configuration);
+      List<ProcessorConfig> processorConfigs = getSpanProcessorConfigs(configuration);
       batchSpanProcessor =
           createSpanExporter(processorConfigs, configuration.preview.captureHttpServer4xxAsError);
       tracerProvider.addSpanProcessor(batchSpanProcessor);
@@ -160,13 +160,13 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
     return BatchSpanProcessor.builder(spanExporter).setMaxExportBatchSize(1).build();
   }
 
-  private static List<ProcessorConfig> reverseProcessorConfigs(Configuration configuration) {
+  private static List<ProcessorConfig> getSpanProcessorConfigs(Configuration configuration) {
     List<ProcessorConfig> processors =
         configuration.preview.processors.stream()
             .filter(
                 processor ->
-                    processor.type != Configuration.ProcessorType.METRIC_FILTER
-                        && processor.type != Configuration.ProcessorType.LOG)
+                    processor.type == Configuration.ProcessorType.ATTRIBUTE
+                        || processor.type == Configuration.ProcessorType.SPAN)
             .collect(Collectors.toCollection(ArrayList::new));
     // Reversing the order of processors before passing it to Span/Log processor
     Collections.reverse(processors);
