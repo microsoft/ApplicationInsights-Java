@@ -51,14 +51,13 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
 
     autoConfiguration.addLogEmitterProviderCustomizer(
         (builder, config) -> {
-          List<Configuration.ProcessorConfig> processorConfigs =
-              getLogProcessorConfigs(MainEntryPoint.getConfiguration());
-          return builder.addLogProcessor(createLogExporter(processorConfigs));
+          return builder.addLogProcessor(createLogExporter());
         });
   }
 
-  private static LogProcessor createLogExporter(
-      List<Configuration.ProcessorConfig> processorConfigs) {
+  private static LogProcessor createLogExporter() {
+    List<Configuration.ProcessorConfig> processorConfigs =
+        getLogProcessorConfigs(MainEntryPoint.getConfiguration());
     LogExporter logExporter = new LoggerExporter(TelemetryClient.getActive());
     if (!processorConfigs.isEmpty()) {
       for (Configuration.ProcessorConfig processorConfig : processorConfigs) {

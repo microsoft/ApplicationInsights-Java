@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
+import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -37,8 +38,10 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTi
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.UrlParser;
+import com.microsoft.applicationinsights.agent.internal.exporter.utils.Trie;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -70,6 +73,8 @@ public class Exporter implements SpanExporter {
 
   private static final Set<String> SQL_DB_SYSTEMS;
 
+  private static final Trie<Boolean> STANDARD_ATTRIBUTE_PREFIX_TRIE;
+
   // TODO (trask) this can go away once new indexer is rolled out to gov clouds
   private static final AttributeKey<List<String>> AI_REQUEST_CONTEXT_KEY =
       AttributeKey.stringArrayKey("http.response.header.request_context");
@@ -95,6 +100,17 @@ public class Exporter implements SpanExporter {
   private static final AttributeKey<String> AI_DEVICE_OS_VERSION_KEY =
       AttributeKey.stringKey("applicationinsights.internal.operating_system_version");
 
+  private static final AttributeKey<Long> KAFKA_OFFSET = longKey("kafka.offset");
+
+  private static final AttributeKey<String> AZURE_NAMESPACE =
+      AttributeKey.stringKey("az.namespace");
+  private static final AttributeKey<String> AZURE_SDK_MESSAGE_BUS_DESTINATION =
+      AttributeKey.stringKey("message_bus.destination");
+  private static final AttributeKey<Long> AZURE_SDK_ENQUEUED_TIME =
+      AttributeKey.longKey("x-opt-enqueued-time");
+  private static final AttributeKey<Long> KAFKA_RECORD_QUEUE_TIME_MS =
+      longKey("kafka.record.queue_time_ms");
+
   private static final OperationLogger exportingSpanLogger =
       new OperationLogger(Exporter.class, "Exporting span");
 
@@ -113,6 +129,22 @@ public class Exporter implements SpanExporter {
     dbSystems.add(SemanticAttributes.DbSystemValues.H2);
 
     SQL_DB_SYSTEMS = Collections.unmodifiableSet(dbSystems);
+
+    // TODO need to keep this list in sync as new semantic conventions are defined
+    STANDARD_ATTRIBUTE_PREFIX_TRIE =
+        Trie.<Boolean>newBuilder()
+            .put("http.", true)
+            .put("db.", true)
+            .put("message.", true)
+            .put("messaging.", true)
+            .put("rpc.", true)
+            .put("enduser.", true)
+            .put("net.", true)
+            .put("peer.", true)
+            .put("exception.", true)
+            .put("thread.", true)
+            .put("faas.", true)
+            .build();
   }
 
   private final TelemetryClient telemetryClient;
@@ -194,7 +226,7 @@ public class Exporter implements SpanExporter {
     setOperationTags(telemetryBuilder, span);
     setTime(telemetryBuilder, span.getStartEpochNanos());
     setSampleRate(telemetryBuilder, samplingPercentage);
-    ExporterUtil.setExtraAttributes(telemetryBuilder, span.getAttributes(), logger);
+    setExtraAttributes(telemetryBuilder, span.getAttributes(), logger);
     addLinks(telemetryBuilder, span.getLinks());
 
     // set dependency-specific properties
@@ -272,7 +304,7 @@ public class Exporter implements SpanExporter {
       applyDatabaseClientSpan(telemetryBuilder, dbSystem, attributes);
       return;
     }
-    String azureNamespace = attributes.get(ExporterUtil.AZURE_NAMESPACE);
+    String azureNamespace = attributes.get(AZURE_NAMESPACE);
     if ("Microsoft.EventHub".equals(azureNamespace)) {
       applyEventHubsSpan(telemetryBuilder, attributes);
       return;
@@ -541,7 +573,7 @@ public class Exporter implements SpanExporter {
 
   private static String getAzureSdkTargetSource(Attributes attributes) {
     String peerAddress = attributes.get(AZURE_SDK_PEER_ADDRESS);
-    String destination = attributes.get(ExporterUtil.AZURE_SDK_MESSAGE_BUS_DESTINATION);
+    String destination = attributes.get(AZURE_SDK_MESSAGE_BUS_DESTINATION);
     return peerAddress + "/" + destination;
   }
 
@@ -588,7 +620,7 @@ public class Exporter implements SpanExporter {
     telemetryBuilder.setId(span.getSpanId());
     setTime(telemetryBuilder, startEpochNanos);
     setSampleRate(telemetryBuilder, samplingPercentage);
-    ExporterUtil.setExtraAttributes(telemetryBuilder, attributes, logger);
+    setExtraAttributes(telemetryBuilder, attributes, logger);
     addLinks(telemetryBuilder, span.getLinks());
 
     String operationName = getOperationName(span);
@@ -663,14 +695,14 @@ public class Exporter implements SpanExporter {
 
     // TODO(trask)? for batch consumer, enqueuedTime should be the average of this attribute
     //  across all links
-    Long enqueuedTime = attributes.get(ExporterUtil.AZURE_SDK_ENQUEUED_TIME);
+    Long enqueuedTime = attributes.get(AZURE_SDK_ENQUEUED_TIME);
     if (enqueuedTime != null) {
       long timeSinceEnqueuedMillis =
           Math.max(
               0L, NANOSECONDS.toMillis(span.getStartEpochNanos()) - SECONDS.toMillis(enqueuedTime));
       telemetryBuilder.addMeasurement("timeSinceEnqueued", (double) timeSinceEnqueuedMillis);
     }
-    Long timeSinceEnqueuedMillis = attributes.get(ExporterUtil.KAFKA_RECORD_QUEUE_TIME_MS);
+    Long timeSinceEnqueuedMillis = attributes.get(KAFKA_RECORD_QUEUE_TIME_MS);
     if (timeSinceEnqueuedMillis != null) {
       telemetryBuilder.addMeasurement("timeSinceEnqueued", (double) timeSinceEnqueuedMillis);
     }
@@ -753,7 +785,7 @@ public class Exporter implements SpanExporter {
   }
 
   private static boolean isAzureQueue(Attributes attributes) {
-    String azureNamespace = attributes.get(ExporterUtil.AZURE_NAMESPACE);
+    String azureNamespace = attributes.get(AZURE_NAMESPACE);
     return "Microsoft.EventHub".equals(azureNamespace)
         || "Microsoft.ServiceBus".equals(azureNamespace);
   }
@@ -816,7 +848,7 @@ public class Exporter implements SpanExporter {
         setOperationName(telemetryBuilder, span.getAttributes());
       }
       setTime(telemetryBuilder, event.getEpochNanos());
-      ExporterUtil.setExtraAttributes(telemetryBuilder, event.getAttributes(), logger);
+      setExtraAttributes(telemetryBuilder, event.getAttributes(), logger);
       setSampleRate(telemetryBuilder, samplingPercentage);
 
       // set message-specific properties
@@ -882,5 +914,95 @@ public class Exporter implements SpanExporter {
     }
     sb.append("]");
     telemetryBuilder.addProperty("_MS.links", sb.toString());
+  }
+
+  private static void setExtraAttributes(
+      AbstractTelemetryBuilder telemetryBuilder, Attributes attributes, Logger logger) {
+    attributes.forEach(
+        (key, value) -> {
+          String stringKey = key.getKey();
+          if (stringKey.startsWith("applicationinsights.internal.")) {
+            return;
+          }
+          if (stringKey.equals(AZURE_NAMESPACE.getKey())
+              || stringKey.equals(AZURE_SDK_MESSAGE_BUS_DESTINATION.getKey())
+              || stringKey.equals(AZURE_SDK_ENQUEUED_TIME.getKey())) {
+            // these are from azure SDK (AZURE_SDK_PEER_ADDRESS gets filtered out automatically
+            // since it uses the otel "peer." prefix)
+            return;
+          }
+          if (stringKey.equals(KAFKA_RECORD_QUEUE_TIME_MS.getKey())
+              || stringKey.equals(KAFKA_OFFSET.getKey())) {
+            return;
+          }
+          if (stringKey.equals(AI_REQUEST_CONTEXT_KEY.getKey())) {
+            return;
+          }
+          // special case mappings
+          if (stringKey.equals(SemanticAttributes.ENDUSER_ID.getKey()) && value instanceof String) {
+            telemetryBuilder.addTag(ContextTagKeys.AI_USER_ID.toString(), (String) value);
+            return;
+          }
+          if (stringKey.equals(SemanticAttributes.HTTP_USER_AGENT.getKey())
+              && value instanceof String) {
+            telemetryBuilder.addTag("ai.user.userAgent", (String) value);
+            return;
+          }
+          if (stringKey.equals("ai.preview.instrumentation_key") && value instanceof String) {
+            telemetryBuilder.setInstrumentationKey((String) value);
+            return;
+          }
+          if (stringKey.equals("ai.preview.service_name") && value instanceof String) {
+            telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), (String) value);
+            return;
+          }
+          if (stringKey.equals("ai.preview.service_instance_id") && value instanceof String) {
+            telemetryBuilder.addTag(
+                ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), (String) value);
+            return;
+          }
+          if (stringKey.equals("ai.preview.service_version") && value instanceof String) {
+            telemetryBuilder.addTag(ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
+            return;
+          }
+          if (STANDARD_ATTRIBUTE_PREFIX_TRIE.getOrDefault(stringKey, false)
+              && !stringKey.startsWith("http.request.header.")
+              && !stringKey.startsWith("http.response.header.")) {
+            return;
+          }
+          String val = convertToString(value, key.getType(), logger);
+          if (value != null) {
+            telemetryBuilder.addProperty(key.getKey(), val);
+          }
+        });
+  }
+
+  @Nullable
+  private static String convertToString(Object value, AttributeType type, Logger logger) {
+    switch (type) {
+      case STRING:
+      case BOOLEAN:
+      case LONG:
+      case DOUBLE:
+        return String.valueOf(value);
+      case STRING_ARRAY:
+      case BOOLEAN_ARRAY:
+      case LONG_ARRAY:
+      case DOUBLE_ARRAY:
+        return join((List<?>) value);
+    }
+    logger.warn("unexpected attribute type: {}", type);
+    return null;
+  }
+
+  private static <T> String join(List<T> values) {
+    StringBuilder sb = new StringBuilder();
+    for (Object val : values) {
+      if (sb.length() > 0) {
+        sb.append(", ");
+      }
+      sb.append(val);
+    }
+    return sb.toString();
   }
 }
