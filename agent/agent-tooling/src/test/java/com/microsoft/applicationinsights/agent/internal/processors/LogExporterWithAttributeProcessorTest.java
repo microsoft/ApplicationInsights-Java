@@ -122,7 +122,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("id", "1234")
             .build();
 
-    MockLogData mockLog = MockLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
+    MockLogData mockLog =
+        MockLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(mockLog);
@@ -157,7 +158,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("TESTKEY", "testValue2")
             .build();
 
-    MockLogData mockLog = MockLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
+    MockLogData mockLog =
+        MockLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(mockLog);
@@ -194,7 +196,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("TESTKEY", "testValue2")
             .build();
 
-    MockLogData mockLog = MockLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
+    MockLogData mockLog =
+        MockLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(mockLog);
@@ -232,7 +235,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("TESTKEY", "testValue2")
             .build();
-    MockLogData log = MockLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
+    MockLogData log =
+        MockLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(log);
@@ -264,7 +268,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("TESTKEY", "testValue2")
             .build();
-    MockLogData log = MockLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
+    MockLogData log =
+        MockLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(log);
@@ -298,7 +303,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("TESTKEY", "testValue2")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData log = MockLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
+    MockLogData log =
+        MockLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(log);
@@ -332,7 +338,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("TESTKEY", "testValue2")
             .build();
-    MockLogData log = MockLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
+    MockLogData log =
+        MockLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
 
     // set up span
     Span span =
@@ -390,7 +397,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData log = MockLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
+    MockLogData log =
+        MockLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(log);
@@ -423,7 +431,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData log = MockLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
+    MockLogData log =
+        MockLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(log);
@@ -457,7 +466,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logA = MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
+    MockLogData logA =
+        MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
 
     Attributes attributesB =
         Attributes.builder()
@@ -465,7 +475,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logB = MockLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
+    MockLogData logB =
+        MockLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
 
     Attributes attributesC =
         Attributes.builder()
@@ -473,7 +484,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logC = MockLogData.builder().setBody(Body.string("svcC")).setAttributes(attributesC).build();
+    MockLogData logC =
+        MockLogData.builder().setBody(Body.string("svcC")).setAttributes(attributesC).build();
 
     Attributes attributesD =
         Attributes.builder()
@@ -482,7 +494,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logD = MockLogData.builder().setBody(Body.string("svcD")).setAttributes(attributesD).build();
+    MockLogData logD =
+        MockLogData.builder().setBody(Body.string("svcD")).setAttributes(attributesD).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(logA);
@@ -529,7 +542,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logA = MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
+    MockLogData logA =
+        MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
 
     Attributes attributesB =
         Attributes.builder()
@@ -537,7 +551,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logB = MockLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
+    MockLogData logB =
+        MockLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
 
     Attributes attributesC =
         Attributes.builder()
@@ -545,7 +560,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValueC")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logC = MockLogData.builder().setBody(Body.string("svcC")).setAttributes(attributesC).build();
+    MockLogData logC =
+        MockLogData.builder().setBody(Body.string("svcC")).setAttributes(attributesC).build();
 
     Attributes attributesD =
         Attributes.builder()
@@ -554,7 +570,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValueD")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logD = MockLogData.builder().setBody(Body.string("svcD")).setAttributes(attributesD).build();
+    MockLogData logD =
+        MockLogData.builder().setBody(Body.string("svcD")).setAttributes(attributesD).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(logA);
@@ -601,7 +618,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logA = MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
+    MockLogData logA =
+        MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
 
     Attributes attributesB =
         Attributes.builder()
@@ -609,7 +627,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logB = MockLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
+    MockLogData logB =
+        MockLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
 
     Attributes attributesC =
         Attributes.builder()
@@ -617,7 +636,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValueC")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logC = MockLogData.builder().setBody(Body.string("serviceC")).setAttributes(attributesC).build();
+    MockLogData logC =
+        MockLogData.builder().setBody(Body.string("serviceC")).setAttributes(attributesC).build();
 
     Attributes attributesD =
         Attributes.builder()
@@ -626,7 +646,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValueD")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logD = MockLogData.builder().setBody(Body.string("serviceD")).setAttributes(attributesD).build();
+    MockLogData logD =
+        MockLogData.builder().setBody(Body.string("serviceD")).setAttributes(attributesD).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(logA);
@@ -694,7 +715,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logA = MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
+    MockLogData logA =
+        MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
 
     Attributes attributesB =
         Attributes.builder()
@@ -702,7 +724,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logB = MockLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
+    MockLogData logB =
+        MockLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
 
     Attributes attributesC =
         Attributes.builder()
@@ -710,7 +733,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValueC")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logC = MockLogData.builder().setBody(Body.string("serviceC")).setAttributes(attributesC).build();
+    MockLogData logC =
+        MockLogData.builder().setBody(Body.string("serviceC")).setAttributes(attributesC).build();
 
     Attributes attributesD =
         Attributes.builder()
@@ -719,7 +743,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValueD")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logD = MockLogData.builder().setBody(Body.string("serviceD")).setAttributes(attributesD).build();
+    MockLogData logD =
+        MockLogData.builder().setBody(Body.string("serviceD")).setAttributes(attributesD).build();
 
     Attributes attributesE =
         Attributes.builder()
@@ -728,8 +753,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testV1")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logE = MockLogData.builder().setBody(
-        Body.string("svcE")).setAttributes(attributesE).build();
+    MockLogData logE =
+        MockLogData.builder().setBody(Body.string("svcE")).setAttributes(attributesE).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(logA);
@@ -779,7 +804,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logA = MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
+    MockLogData logA =
+        MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
 
     Attributes attributesB =
         Attributes.builder()
@@ -787,7 +813,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logB = MockLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
+    MockLogData logB =
+        MockLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
 
     Attributes attributesC =
         Attributes.builder()
@@ -795,7 +822,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logC = MockLogData.builder().setBody(Body.string("svcC")).setAttributes(attributesC).build();
+    MockLogData logC =
+        MockLogData.builder().setBody(Body.string("svcC")).setAttributes(attributesC).build();
 
     Attributes attributesD =
         Attributes.builder()
@@ -804,7 +832,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logD = MockLogData.builder().setBody(Body.string("svcD")).setAttributes(attributesD).build();
+    MockLogData logD =
+        MockLogData.builder().setBody(Body.string("svcD")).setAttributes(attributesD).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(logA);
@@ -851,7 +880,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logA = MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
+    MockLogData logA =
+        MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
 
     Attributes attributesB =
         Attributes.builder()
@@ -859,7 +889,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logB = MockLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
+    MockLogData logB =
+        MockLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
 
     Attributes attributesC =
         Attributes.builder()
@@ -867,7 +898,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logC = MockLogData.builder().setBody(Body.string("svcC")).setAttributes(attributesC).build();
+    MockLogData logC =
+        MockLogData.builder().setBody(Body.string("svcC")).setAttributes(attributesC).build();
 
     Attributes attributesD =
         Attributes.builder()
@@ -876,7 +908,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logD = MockLogData.builder().setBody(Body.string("svcD")).setAttributes(attributesD).build();
+    MockLogData logD =
+        MockLogData.builder().setBody(Body.string("svcD")).setAttributes(attributesD).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(logA);
@@ -931,7 +964,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logA = MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
+    MockLogData logA =
+        MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
 
     Attributes attributesB =
         Attributes.builder()
@@ -939,7 +973,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey3", "testValue3")
             .build();
-    MockLogData logB = MockLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
+    MockLogData logB =
+        MockLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
 
     Attributes attributesC =
         Attributes.builder()
@@ -947,7 +982,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logC = MockLogData.builder().setBody(Body.string("svcC")).setAttributes(attributesC).build();
+    MockLogData logC =
+        MockLogData.builder().setBody(Body.string("svcC")).setAttributes(attributesC).build();
 
     Attributes attributesD =
         Attributes.builder()
@@ -956,7 +992,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logD = MockLogData.builder().setBody(Body.string("svcD")).setAttributes(attributesD).build();
+    MockLogData logD =
+        MockLogData.builder().setBody(Body.string("svcD")).setAttributes(attributesD).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(logA);
@@ -1010,7 +1047,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logA = MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
+    MockLogData logA =
+        MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
 
     Attributes attributesB =
         Attributes.builder()
@@ -1018,7 +1056,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey3", "testValue2")
             .build();
-    MockLogData logB = MockLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
+    MockLogData logB =
+        MockLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
 
     Attributes attributesC =
         Attributes.builder()
@@ -1026,7 +1065,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logC = MockLogData.builder().setBody(Body.string("serviceC")).setAttributes(attributesC).build();
+    MockLogData logC =
+        MockLogData.builder().setBody(Body.string("serviceC")).setAttributes(attributesC).build();
 
     Attributes attributesD =
         Attributes.builder()
@@ -1035,7 +1075,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logD = MockLogData.builder().setBody(Body.string("serviceD")).setAttributes(attributesD).build();
+    MockLogData logD =
+        MockLogData.builder().setBody(Body.string("serviceD")).setAttributes(attributesD).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(logA);
@@ -1086,7 +1127,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logA = MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
+    MockLogData logA =
+        MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
 
     Attributes attributesB =
         Attributes.builder()
@@ -1094,7 +1136,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue1")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logB = MockLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
+    MockLogData logB =
+        MockLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
 
     Attributes attributesC =
         Attributes.builder()
@@ -1102,7 +1145,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logC = MockLogData.builder().setBody(Body.string("svcC")).setAttributes(attributesC).build();
+    MockLogData logC =
+        MockLogData.builder().setBody(Body.string("svcC")).setAttributes(attributesC).build();
 
     Attributes attributesD =
         Attributes.builder()
@@ -1111,7 +1155,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    MockLogData logD = MockLogData.builder().setBody(Body.string("svcD")).setAttributes(attributesD).build();
+    MockLogData logD =
+        MockLogData.builder().setBody(Body.string("svcD")).setAttributes(attributesD).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(logA);
@@ -1189,7 +1234,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey4", "/TelemetryProcessors/test")
             .put("testKey5", "/abc/xyz")
             .build();
-    MockLogData log = MockLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
+    MockLogData log =
+        MockLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(log);

@@ -96,7 +96,8 @@ class ExporterWithLogProcessorTest {
     config.body = new NameConfig();
     config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
     LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
-    MockLogData mockLog = MockLogData.builder().setBody(Body.string("logA")).setAttributes(attributes).build();
+    MockLogData mockLog =
+        MockLogData.builder().setBody(Body.string("logA")).setAttributes(attributes).build();
     List<LogData> logs = new ArrayList<>();
     logs.add(mockLog);
     logExporter.export(logs);
@@ -114,7 +115,8 @@ class ExporterWithLogProcessorTest {
     config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
     config.body.separator = "::";
     LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
-    MockLogData mockLog = MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributes).build();
+    MockLogData mockLog =
+        MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributes).build();
     List<LogData> logs = new ArrayList<>();
     logs.add(mockLog);
     logExporter.export(logs);
@@ -133,7 +135,8 @@ class ExporterWithLogProcessorTest {
     config.body.separator = "::";
     LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
 
-    MockLogData mockLog = MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributes).build();
+    MockLogData mockLog =
+        MockLogData.builder().setBody(Body.string("svcA")).setAttributes(attributes).build();
     List<LogData> logs = new ArrayList<>();
     logs.add(mockLog);
     logExporter.export(logs);
@@ -215,7 +218,10 @@ class ExporterWithLogProcessorTest {
             .put("password", "234")
             .build();
     MockLogData mockLogB =
-        MockLogData.builder().setBody(Body.string("yyyPassword=**** aba")).setAttributes(attributesB).build();
+        MockLogData.builder()
+            .setBody(Body.string("yyyPassword=**** aba"))
+            .setAttributes(attributesB)
+            .build();
 
     List<LogData> logs = new ArrayList<>();
     logs.add(mockLogA);

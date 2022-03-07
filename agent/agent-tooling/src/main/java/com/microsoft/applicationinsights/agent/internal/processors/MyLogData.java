@@ -41,7 +41,9 @@ public class MyLogData extends DelegatingLogData {
   }
 
   @Override
-  public Body getBody() { return body; }
+  public Body getBody() {
+    return body;
+  }
 
   @Override
   public Attributes getAttributes() {

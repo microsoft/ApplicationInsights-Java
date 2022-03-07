@@ -121,7 +121,8 @@ public class LogProcessor extends AgentProcessor {
     // they will be overwritten. Need a way to optimize this.
     AttributesBuilder builder = log.getAttributes().toBuilder();
     for (int i = 0; i < groupNames.size(); i++) {
-      bodyAsString = applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), bodyAsString, builder);
+      bodyAsString =
+          applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), bodyAsString, builder);
     }
 
     return new MyLogData(log, builder.build(), Body.string(bodyAsString));
