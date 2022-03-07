@@ -30,7 +30,7 @@ import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
 
-public class MockLogData implements LogData {
+public class TestLogData implements LogData {
 
   private final Resource resource;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
@@ -42,11 +42,11 @@ public class MockLogData implements LogData {
   private final Body body;
   private final Attributes attributes;
 
-  static MockLogData.Builder builder() {
+  static TestLogData.Builder builder() {
     return new Builder();
   }
 
-  MockLogData(Builder builder) {
+  TestLogData(Builder builder) {
     this.resource = builder.resource;
     this.instrumentationLibraryInfo = builder.instrumentationLibraryInfo;
     this.epochNanos = builder.epochNanos;
@@ -162,8 +162,8 @@ public class MockLogData implements LogData {
       return this;
     }
 
-    public MockLogData build() {
-      return new MockLogData(this);
+    public TestLogData build() {
+      return new TestLogData(this);
     }
   }
 }
