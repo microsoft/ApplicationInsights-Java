@@ -29,11 +29,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class MockLogExporter extends LoggerExporter {
+public class MockLoggerExporter extends LoggerExporter {
 
   private final List<LogData> logs = new ArrayList<>();
 
-  public MockLogExporter(TelemetryClient telemetryClient) {
+  public MockLoggerExporter(TelemetryClient telemetryClient) {
     super(telemetryClient);
   }
 

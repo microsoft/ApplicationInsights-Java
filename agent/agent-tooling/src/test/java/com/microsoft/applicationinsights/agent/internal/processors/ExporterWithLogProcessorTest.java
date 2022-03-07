@@ -45,13 +45,13 @@ import org.mockito.Mockito;
 
 class ExporterWithLogProcessorTest {
 
-  private MockLogExporter mockExporter;
+  private MockLoggerExporter mockExporter;
   private ProcessorConfig config;
   private Attributes attributes;
 
   @BeforeEach
   public void setup() {
-    mockExporter = new MockLogExporter(Mockito.mock(TelemetryClient.class));
+    mockExporter = new MockLoggerExporter(Mockito.mock(TelemetryClient.class));
     config = new ProcessorConfig();
     config.type = ProcessorType.LOG;
     attributes =

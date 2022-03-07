@@ -53,12 +53,12 @@ import org.mockito.Mockito;
 
 class LogExporterWithAttributeProcessorTest {
 
-  private MockLogExporter mockLogExporter;
+  private MockLoggerExporter mockLoggerExporter;
   private ProcessorConfig config;
 
   @BeforeEach
   public void setup() {
-    mockLogExporter = new MockLogExporter(Mockito.mock(TelemetryClient.class));
+    mockLoggerExporter = new MockLoggerExporter(Mockito.mock(TelemetryClient.class));
     config = new ProcessorConfig();
     config.type = ProcessorType.ATTRIBUTE;
   }
@@ -67,7 +67,7 @@ class LogExporterWithAttributeProcessorTest {
   void noActionTest() {
     config.id = "noAction";
 
-    assertThatThrownBy(() -> new LogExporterWithAttributeProcessor(config, mockLogExporter))
+    assertThatThrownBy(() -> new LogExporterWithAttributeProcessor(config, mockLoggerExporter))
         .isInstanceOf(FriendlyException.class);
   }
 
@@ -83,7 +83,7 @@ class LogExporterWithAttributeProcessorTest {
     actions.add(action);
     config.actions = actions;
 
-    assertThatThrownBy(() -> new LogExporterWithAttributeProcessor(config, mockLogExporter))
+    assertThatThrownBy(() -> new LogExporterWithAttributeProcessor(config, mockLoggerExporter))
         .isInstanceOf(FriendlyException.class);
   }
 
@@ -99,7 +99,7 @@ class LogExporterWithAttributeProcessorTest {
     actions.add(action);
     config.actions = actions;
 
-    assertThatThrownBy(() -> new LogExporterWithAttributeProcessor(config, mockLogExporter))
+    assertThatThrownBy(() -> new LogExporterWithAttributeProcessor(config, mockLoggerExporter))
         .isInstanceOf(FriendlyException.class);
   }
 
@@ -111,7 +111,7 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLogExporter);
+    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributes =
         Attributes.builder()
@@ -130,7 +130,7 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLogExporter.getLogs();
+    List<LogData> result = mockLoggerExporter.getLogs();
     LogData resultLog = result.get(0);
 
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testKey"))).isNull();
@@ -148,7 +148,7 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLogExporter);
+    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributes =
         Attributes.builder()
@@ -166,7 +166,7 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLogExporter.getLogs();
+    List<LogData> result = mockLoggerExporter.getLogs();
     LogData resultLog = result.get(0);
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testNewKey"))).isNotNull();
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testNewKey")))
@@ -186,7 +186,7 @@ class LogExporterWithAttributeProcessorTest {
     actions.add(action);
     actions.add(updateAction);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLogExporter);
+    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributes =
         Attributes.builder()
@@ -204,7 +204,7 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLogExporter.getLogs();
+    List<LogData> result = mockLoggerExporter.getLogs();
     LogData resultLog = result.get(0);
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testNewKey"))).isNotNull();
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testNewKey")))
@@ -226,7 +226,7 @@ class LogExporterWithAttributeProcessorTest {
     actions.add(action);
     actions.add(updateAction);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLogExporter);
+    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributes =
         Attributes.builder()
@@ -243,7 +243,7 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLogExporter.getLogs();
+    List<LogData> result = mockLoggerExporter.getLogs();
     LogData resultLog = result.get(0);
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testNewKey"))).isNotNull();
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testNewKey")))
@@ -259,7 +259,7 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLogExporter);
+    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributes =
         Attributes.builder()
@@ -276,7 +276,7 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLogExporter.getLogs();
+    List<LogData> result = mockLoggerExporter.getLogs();
     LogData resultLog = result.get(0);
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("testValue");
@@ -293,7 +293,7 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLogExporter);
+    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributes =
         Attributes.builder()
@@ -311,7 +311,7 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLogExporter.getLogs();
+    List<LogData> result = mockLoggerExporter.getLogs();
     LogData resultLog = result.get(0);
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("testValue");
@@ -328,7 +328,7 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter logExporter = new LogExporterWithAttributeProcessor(config, mockLogExporter);
+    LogExporter logExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     // set up log
     Attributes attributes =
@@ -366,7 +366,7 @@ class LogExporterWithAttributeProcessorTest {
     spanExporter.export(spans);
 
     // retrieve updated log
-    List<LogData> resultLogs = mockLogExporter.getLogs();
+    List<LogData> resultLogs = mockLoggerExporter.getLogs();
     LogData resultLog = resultLogs.get(0);
 
     // retrieve updated span
@@ -388,7 +388,7 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLogExporter);
+    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributes =
         Attributes.builder()
@@ -405,7 +405,7 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLogExporter.getLogs();
+    List<LogData> result = mockLoggerExporter.getLogs();
     LogData resultLog = result.get(0);
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("testValue2");
@@ -422,7 +422,7 @@ class LogExporterWithAttributeProcessorTest {
     actions.add(updateAction);
     actions.add(deleteAction);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLogExporter);
+    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributes =
         Attributes.builder()
@@ -439,7 +439,7 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLogExporter.getLogs();
+    List<LogData> result = mockLoggerExporter.getLogs();
     LogData resultLog = result.get(0);
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("redacted");
@@ -457,7 +457,7 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLogExporter);
+    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributesA =
         Attributes.builder()
@@ -506,7 +506,7 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLogExporter.getLogs();
+    List<LogData> result = mockLoggerExporter.getLogs();
     LogData result1 = result.get(0);
     LogData result2 = result.get(1);
     LogData result3 = result.get(2);
@@ -533,7 +533,7 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLogExporter);
+    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributesA =
         Attributes.builder()
@@ -582,7 +582,7 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLogExporter.getLogs();
+    List<LogData> result = mockLoggerExporter.getLogs();
     LogData result1 = result.get(0);
     LogData result2 = result.get(1);
     LogData result3 = result.get(2);
@@ -609,7 +609,7 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLogExporter);
+    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributesA =
         Attributes.builder()
@@ -658,7 +658,7 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLogExporter.getLogs();
+    List<LogData> result = mockLoggerExporter.getLogs();
     LogData result1 = result.get(0);
     LogData result2 = result.get(1);
     LogData result3 = result.get(2);
@@ -686,7 +686,7 @@ class LogExporterWithAttributeProcessorTest {
     actions.add(action);
     config.actions = actions;
 
-    assertThatThrownBy(() -> new LogExporterWithAttributeProcessor(config, mockLogExporter))
+    assertThatThrownBy(() -> new LogExporterWithAttributeProcessor(config, mockLoggerExporter))
         .isInstanceOf(FriendlyException.class);
   }
 
@@ -706,7 +706,7 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLogExporter);
+    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributesA =
         Attributes.builder()
@@ -766,7 +766,7 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLogExporter.getLogs();
+    List<LogData> result = mockLoggerExporter.getLogs();
     LogData result1 = result.get(0);
     LogData result2 = result.get(1);
     LogData result3 = result.get(2);
@@ -795,7 +795,7 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLogExporter);
+    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributesA =
         Attributes.builder()
@@ -844,7 +844,7 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLogExporter.getLogs();
+    List<LogData> result = mockLoggerExporter.getLogs();
     LogData result1 = result.get(0);
     LogData result2 = result.get(1);
     LogData result3 = result.get(2);
@@ -871,7 +871,7 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLogExporter);
+    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributesA =
         Attributes.builder()
@@ -920,7 +920,7 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLogExporter.getLogs();
+    List<LogData> result = mockLoggerExporter.getLogs();
     LogData result1 = result.get(0);
     LogData result2 = result.get(1);
     LogData result3 = result.get(2);
@@ -955,7 +955,7 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLogExporter);
+    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributesA =
         Attributes.builder()
@@ -1004,7 +1004,7 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLogExporter.getLogs();
+    List<LogData> result = mockLoggerExporter.getLogs();
     LogData result1 = result.get(0);
     LogData result2 = result.get(1);
     LogData result3 = result.get(2);
@@ -1038,7 +1038,7 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLogExporter);
+    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributesA =
         Attributes.builder()
@@ -1087,7 +1087,7 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLogExporter.getLogs();
+    List<LogData> result = mockLoggerExporter.getLogs();
     LogData result1 = result.get(0);
     LogData result2 = result.get(1);
     LogData result3 = result.get(2);
@@ -1118,7 +1118,7 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLogExporter);
+    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributesA =
         Attributes.builder()
@@ -1167,7 +1167,7 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLogExporter.getLogs();
+    List<LogData> result = mockLoggerExporter.getLogs();
     LogData result1 = result.get(0);
     LogData result2 = result.get(1);
     LogData result3 = result.get(2);
@@ -1221,7 +1221,7 @@ class LogExporterWithAttributeProcessorTest {
     actions.add(action4);
     actions.add(action5);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLogExporter);
+    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributes =
         Attributes.builder()
@@ -1242,7 +1242,7 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLogExporter.getLogs();
+    List<LogData> result = mockLoggerExporter.getLogs();
     LogData resultLog = result.get(0);
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("http://example.com/cardid/****7899");
