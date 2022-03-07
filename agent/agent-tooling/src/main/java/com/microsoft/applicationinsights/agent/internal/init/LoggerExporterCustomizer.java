@@ -52,7 +52,7 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
     autoConfiguration.addLogEmitterProviderCustomizer(
         (builder, config) -> {
           List<Configuration.ProcessorConfig> processorConfigs =
-              reverseProcessorConfigs(MainEntryPoint.getConfiguration());
+              getLogProcessorConfigs(MainEntryPoint.getConfiguration());
           return builder.addLogProcessor(createLogExporter(processorConfigs));
         });
   }
@@ -82,7 +82,7 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
         BatchLogProcessor.builder(logExporter).setMaxExportBatchSize(1).build());
   }
 
-  private static List<Configuration.ProcessorConfig> reverseProcessorConfigs(
+  private static List<Configuration.ProcessorConfig> getLogProcessorConfigs(
       Configuration configuration) {
     List<Configuration.ProcessorConfig> processors =
         configuration.preview.processors.stream()
