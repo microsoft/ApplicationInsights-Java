@@ -61,7 +61,6 @@ public class TraceLog4j2Test extends AiSmokeTest {
     assertEquals("This is log4j2 warn.", md1.getMessage());
     assertEquals(SeverityLevel.Warning, md1.getSeverityLevel());
     assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
-    // TODO (heya) IMPORTANT we need to get thread name into the upstream otel instrumentation
     assertNotNull(md1.getProperties().get("ThreadName"));
     assertEquals("MDC value", md1.getProperties().get("MDC key"));
     assertEquals(5, md1.getProperties().size());
