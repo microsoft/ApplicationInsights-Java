@@ -27,9 +27,11 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -62,6 +64,7 @@ public final class BatchSpanProcessor {
       int maxQueueSize,
       int maxExportBatchSize,
       long exporterTimeoutNanos,
+      int maxConcurrentExports,
       String queueName) {
     MpscArrayQueue<TelemetryItem> queue = new MpscArrayQueue<>(maxQueueSize);
     this.worker =
@@ -70,6 +73,7 @@ public final class BatchSpanProcessor {
             scheduleDelayNanos,
             maxExportBatchSize,
             exporterTimeoutNanos,
+            maxConcurrentExports,
             queue,
             queue.capacity(),
             queueName);
@@ -100,6 +104,7 @@ public final class BatchSpanProcessor {
     private final long scheduleDelayNanos;
     private final int maxExportBatchSize;
     private final long exporterTimeoutNanos;
+    private final Semaphore concurrentExportPermits;
 
     private long nextExportTime;
 
@@ -121,11 +126,15 @@ public final class BatchSpanProcessor {
     private static final OperationLogger queuingSpanLogger =
         new OperationLogger(BatchSpanProcessor.class, "Queuing span");
 
+    private static final OperationLogger exportPermitLogger =
+        new OperationLogger(BatchSpanProcessor.class, "Acquiring permit to export");
+
     private Worker(
         TelemetryChannel spanExporter,
         long scheduleDelayNanos,
         int maxExportBatchSize,
         long exporterTimeoutNanos,
+        int maxConcurrentExports,
         Queue<TelemetryItem> queue,
         int queueCapacity,
         String queueName) {
@@ -133,6 +142,7 @@ public final class BatchSpanProcessor {
       this.scheduleDelayNanos = scheduleDelayNanos;
       this.maxExportBatchSize = maxExportBatchSize;
       this.exporterTimeoutNanos = exporterTimeoutNanos;
+      this.concurrentExportPermits = new Semaphore(maxConcurrentExports);
       this.queue = queue;
       this.queueCapacity = queueCapacity;
       this.queueName = queueName;
@@ -175,7 +185,7 @@ public final class BatchSpanProcessor {
           batch.add(queue.poll());
         }
         if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime) {
-          exportCurrentBatch();
+          exportCurrentBatchUsingPermit();
           updateNextExportTime();
         }
         if (queue.isEmpty()) {
@@ -196,18 +206,23 @@ public final class BatchSpanProcessor {
 
     private void flush() {
       int spansToFlush = queue.size();
+      List<CompletableResultCode> results = new ArrayList<>();
       while (spansToFlush > 0) {
         TelemetryItem span = queue.poll();
         assert span != null;
         batch.add(span);
         spansToFlush--;
         if (batch.size() >= maxExportBatchSize) {
-          exportCurrentBatch();
+          results.add(exportCurrentBatchUsingPermit());
         }
       }
-      exportCurrentBatch();
-      flushRequested.get().succeed();
-      flushRequested.set(null);
+      results.add(exportCurrentBatchUsingPermit());
+      CompletableResultCode.ofAll(results).join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+      CompletableResultCode flushResult = this.flushRequested.get();
+      if (flushResult != null) {
+        flushResult.succeed();
+        flushRequested.set(null);
+      }
     }
 
     private void updateNextExportTime() {
@@ -244,15 +259,34 @@ public final class BatchSpanProcessor {
       return possibleResult == null ? CompletableResultCode.ofSuccess() : possibleResult;
     }
 
-    private void exportCurrentBatch() {
+    private CompletableResultCode exportCurrentBatchUsingPermit() {
       if (batch.isEmpty()) {
-        return;
+        return CompletableResultCode.ofSuccess();
+      }
+
+      try {
+        concurrentExportPermits.acquire();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        return CompletableResultCode.ofFailure();
+      }
+      try {
+        exportCurrentBatch().whenComplete(concurrentExportPermits::release);
+        return CompletableResultCode.ofSuccess();
+      } catch (Throwable t) {
+        concurrentExportPermits.release();
+        return CompletableResultCode.ofFailure();
+      }
+    }
+
+    private CompletableResultCode exportCurrentBatch() {
+      if (batch.isEmpty()) {
+        return CompletableResultCode.ofSuccess();
       }
 
       try {
         // batching, retry, logging, and writing to disk on failure occur downstream
-        CompletableResultCode result = spanExporter.send(Collections.unmodifiableList(batch));
-        result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+        return spanExporter.send(Collections.unmodifiableList(batch));
       } finally {
         batch.clear();
       }

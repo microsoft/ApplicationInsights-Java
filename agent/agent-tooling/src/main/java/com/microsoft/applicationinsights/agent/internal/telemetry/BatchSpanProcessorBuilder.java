@@ -34,12 +34,14 @@ final class BatchSpanProcessorBuilder {
   private static final int DEFAULT_MAX_QUEUE_SIZE = 2048;
   private static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
   private static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
+  static final int DEFAULT_MAX_CONCURRENT_EXPORTS = 1;
 
   private final TelemetryChannel spanExporter;
   private long scheduleDelayNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_SCHEDULE_DELAY_MILLIS);
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
   private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
+  private int maxConcurrentExports = DEFAULT_MAX_CONCURRENT_EXPORTS;
 
   BatchSpanProcessorBuilder(TelemetryChannel spanExporter) {
     this.spanExporter = requireNonNull(spanExporter, "spanExporter");
@@ -123,6 +125,16 @@ final class BatchSpanProcessorBuilder {
   }
 
   /**
+   * Sets the maximum number of concurrent exports. If unset, defaults to {@value
+   * DEFAULT_MAX_CONCURRENT_EXPORTS}.
+   */
+  public BatchSpanProcessorBuilder setMaxConcurrentExports(int maxConcurrentExports) {
+    checkArgument(maxConcurrentExports > 0, "maxConcurrentExports must be positive.");
+    this.maxConcurrentExports = maxConcurrentExports;
+    return this;
+  }
+
+  /**
    * Returns a new {@link io.opentelemetry.sdk.trace.export.BatchSpanProcessor} that batches, then
    * converts spans to proto and forwards them to the given {@code spanExporter}.
    *
@@ -136,6 +148,7 @@ final class BatchSpanProcessorBuilder {
         maxQueueSize,
         maxExportBatchSize,
         exporterTimeoutNanos,
+        maxConcurrentExports,
         queueName);
   }
 }
