@@ -46,7 +46,7 @@ public class SpringBootAutoTest extends AiSmokeTest {
     List<MessageData> logs = mockedIngestion.getMessageDataInRequest();
     if (!logs.isEmpty()) {
       MessageData md1 = logs.get(0);
-      assertEquals("This is log from SpringBootApp.", md1.getMessage());
+      assertEquals("testValue1::testValue2", md1.getMessage());
     }
   }
 

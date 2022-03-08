@@ -72,7 +72,7 @@
           ],
           "separator": "::"
         },
-        "id": "log/updateLogName"
+        "id": "log/updateLogBodyWithLogName"
       },
       {
         "type": "log",
@@ -93,13 +93,13 @@
             ".*password.*"
           ]
         },
-        "name": {
+        "body": {
           "fromAttributes": [
-            "loggerName"
+            "LoggerName"
           ],
           "separator": "::"
         },
-        "id": "log/updateLogNameWithRegex"
+        "id": "log/updateLogBodyWithRegex"
       },
       {
         "type": "span",
@@ -111,7 +111,7 @@
         },
         "name": {
           "fromAttributes": [
-            "loggerName"
+            "spanName"
           ],
           "separator": "::"
         },
