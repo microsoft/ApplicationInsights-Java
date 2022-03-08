@@ -72,7 +72,7 @@
           ],
           "separator": "::"
         },
-        "id": "log/updateLogBodyWithLogName"
+        "id": "log/updateLogBodyWithLoggerName"
       },
       {
         "type": "log",

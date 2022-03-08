@@ -163,10 +163,10 @@ class ConfigurationTest {
     assertThat(selectiveConfig.actions.size()).isEqualTo(2);
     assertThat(selectiveConfig.actions.get(0).key).isEqualTo(AttributeKey.stringKey("credit_card"));
     assertThat(selectiveConfig.actions.get(0).action).isEqualTo(ProcessorActionType.DELETE);
-    // log/updateLogBodyWithLogName
+    // log/updateLogBodyWithLoggerName
     ProcessorConfig logUpdateLogName = preview.processors.get(3);
     assertThat(logUpdateLogName.type).isEqualTo(ProcessorType.LOG);
-    assertThat(logUpdateLogName.id).isEqualTo("log/updateLogBodyWithLogName");
+    assertThat(logUpdateLogName.id).isEqualTo("log/updateLogBodyWithLoggerName");
     assertThat(logUpdateLogName.body.fromAttributes.size()).isEqualTo(1);
     assertThat(logUpdateLogName.body.fromAttributes.get(0)).isEqualTo("loggerName");
     assertThat(logUpdateLogName.body.separator).isEqualTo("::");
