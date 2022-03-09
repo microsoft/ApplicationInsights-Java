@@ -34,7 +34,7 @@ final class BatchSpanProcessorBuilder {
   private static final int DEFAULT_MAX_QUEUE_SIZE = 2048;
   private static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
   private static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
-  static final int DEFAULT_MAX_CONCURRENT_EXPORTS = 1;
+  private static final int DEFAULT_MAX_CONCURRENT_EXPORTS = 1;
 
   private final TelemetryChannel spanExporter;
   private long scheduleDelayNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_SCHEDULE_DELAY_MILLIS);
@@ -124,10 +124,7 @@ final class BatchSpanProcessorBuilder {
     return this;
   }
 
-  /**
-   * Sets the maximum number of concurrent exports. If unset, defaults to {@value
-   * DEFAULT_MAX_CONCURRENT_EXPORTS}.
-   */
+  /** Sets the maximum number of concurrent exports. If unset, defaults to 1. */
   public BatchSpanProcessorBuilder setMaxConcurrentExports(int maxConcurrentExports) {
     checkArgument(maxConcurrentExports > 0, "maxConcurrentExports must be positive.");
     this.maxConcurrentExports = maxConcurrentExports;

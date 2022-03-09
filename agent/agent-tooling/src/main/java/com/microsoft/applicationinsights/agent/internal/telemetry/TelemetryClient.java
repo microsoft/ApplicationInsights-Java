@@ -261,10 +261,18 @@ public class TelemetryClient {
       LocalFileSender.start(localFileLoader, channel);
     }
 
-    return BatchSpanProcessor.builder(channel)
-        .setMaxQueueSize(exportQueueCapacity)
-        .setMaxExportBatchSize(maxExportBatchSize)
-        .build(queueName);
+    BatchSpanProcessorBuilder builder =
+        BatchSpanProcessor.builder(channel)
+            .setMaxQueueSize(exportQueueCapacity)
+            .setMaxExportBatchSize(maxExportBatchSize);
+
+    String maxConcurrentExportsStr =
+        System.getenv("APPLICATIONINSIGHTS_PREVIEW_MAX_CONCURRENT_EXPORTS");
+    if (maxConcurrentExportsStr != null) {
+      builder.setMaxConcurrentExports(Integer.parseInt(maxConcurrentExportsStr));
+    }
+
+    return builder.build(queueName);
   }
 
   public BatchSpanProcessor getStatsbeatChannelBatcher() {
