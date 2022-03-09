@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -104,7 +103,7 @@ public final class BatchSpanProcessor {
     private final long scheduleDelayNanos;
     private final int maxExportBatchSize;
     private final long exporterTimeoutNanos;
-    private final Semaphore concurrentExportPermits;
+    private final int maxConcurrentExports;
 
     private long nextExportTime;
 
@@ -126,9 +125,6 @@ public final class BatchSpanProcessor {
     private static final OperationLogger queuingSpanLogger =
         new OperationLogger(BatchSpanProcessor.class, "Queuing span");
 
-    private static final OperationLogger exportPermitLogger =
-        new OperationLogger(BatchSpanProcessor.class, "Acquiring permit to export");
-
     private Worker(
         TelemetryChannel spanExporter,
         long scheduleDelayNanos,
@@ -142,7 +138,7 @@ public final class BatchSpanProcessor {
       this.scheduleDelayNanos = scheduleDelayNanos;
       this.maxExportBatchSize = maxExportBatchSize;
       this.exporterTimeoutNanos = exporterTimeoutNanos;
-      this.concurrentExportPermits = new Semaphore(maxConcurrentExports);
+      this.maxConcurrentExports = maxConcurrentExports;
       this.queue = queue;
       this.queueCapacity = queueCapacity;
       this.queueName = queueName;
@@ -181,11 +177,19 @@ public final class BatchSpanProcessor {
         if (flushRequested.get() != null) {
           flush();
         }
-        while (!queue.isEmpty() && batch.size() < maxExportBatchSize) {
+        List<CompletableResultCode> concurrentExports = new ArrayList<>();
+        while (!queue.isEmpty() && concurrentExports.size() < maxConcurrentExports) {
           batch.add(queue.poll());
+          if (batch.size() >= maxExportBatchSize) {
+            concurrentExports.add(exportCurrentBatch());
+          }
         }
-        if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime) {
-          exportCurrentBatchUsingPermit();
+        if (concurrentExports.isEmpty() && System.nanoTime() >= nextExportTime) {
+          concurrentExports.add(exportCurrentBatch());
+        }
+        if (!concurrentExports.isEmpty()) {
+          CompletableResultCode.ofAll(concurrentExports)
+              .join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
           updateNextExportTime();
         }
         if (queue.isEmpty()) {
@@ -206,18 +210,16 @@ public final class BatchSpanProcessor {
 
     private void flush() {
       int spansToFlush = queue.size();
-      List<CompletableResultCode> results = new ArrayList<>();
       while (spansToFlush > 0) {
         TelemetryItem span = queue.poll();
         assert span != null;
         batch.add(span);
         spansToFlush--;
         if (batch.size() >= maxExportBatchSize) {
-          results.add(exportCurrentBatchUsingPermit());
+          exportCurrentBatch().join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
         }
       }
-      results.add(exportCurrentBatchUsingPermit());
-      CompletableResultCode.ofAll(results).join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+      exportCurrentBatch().join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
       CompletableResultCode flushResult = this.flushRequested.get();
       if (flushResult != null) {
         flushResult.succeed();
@@ -257,26 +259,6 @@ public final class BatchSpanProcessor {
       // get what's in the atomic. In that case, just return success, since we know it succeeded in
       // the interim.
       return possibleResult == null ? CompletableResultCode.ofSuccess() : possibleResult;
-    }
-
-    private CompletableResultCode exportCurrentBatchUsingPermit() {
-      if (batch.isEmpty()) {
-        return CompletableResultCode.ofSuccess();
-      }
-
-      try {
-        concurrentExportPermits.acquire();
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        return CompletableResultCode.ofFailure();
-      }
-      try {
-        exportCurrentBatch().whenComplete(concurrentExportPermits::release);
-        return CompletableResultCode.ofSuccess();
-      } catch (Throwable t) {
-        concurrentExportPermits.release();
-        return CompletableResultCode.ofFailure();
-      }
     }
 
     private CompletableResultCode exportCurrentBatch() {
