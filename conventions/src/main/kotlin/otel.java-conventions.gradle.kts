@@ -75,8 +75,12 @@ tasks.withType<JavaCompile>().configureEach {
 // Groovy and Scala compilers don't actually understand --release option
 afterEvaluate {
   tasks.withType<GroovyCompile>().configureEach {
-    sourceCompatibility = otelJava.minJavaVersionSupported.get().majorVersion
-    targetCompatibility = otelJava.minJavaVersionSupported.get().majorVersion
+    var javaVersion = otelJava.minJavaVersionSupported.get().majorVersion
+    if (javaVersion == "8") {
+      javaVersion = "1.8"
+    }
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
   }
   tasks.withType<ScalaCompile>().configureEach {
     sourceCompatibility = otelJava.minJavaVersionSupported.get().majorVersion
@@ -212,11 +216,8 @@ fun isJavaVersionAllowed(version: JavaVersion): Boolean {
   return true
 }
 
-class TestcontainersBuildService : BuildService<BuildServiceParameters.None?> {
-  override fun getParameters(): BuildServiceParameters.None? {
-    return null
-  }
-}
+abstract class TestcontainersBuildService : BuildService<BuildServiceParameters.None>
+
 // To limit number of concurrently running resource intensive tests add
 // tasks {
 //   test {

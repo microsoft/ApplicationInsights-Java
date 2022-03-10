@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import io.opentelemetry.instrumentation.testing.junit.http.ServerEndpoint
 import org.apache.cxf.endpoint.Server
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean
 import test.JaxRsTestApplication
