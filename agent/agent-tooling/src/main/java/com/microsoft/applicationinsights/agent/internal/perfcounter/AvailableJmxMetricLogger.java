@@ -45,6 +45,7 @@ import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// TODO (trask) add tests
 class AvailableJmxMetricLogger {
 
   private static final Logger logger = LoggerFactory.getLogger(AvailableJmxMetricLogger.class);
