@@ -2,7 +2,7 @@
 
 # Version 3.2.8 GA
 * Fix spring actuator endpoint behavior [#2146](https://github.com/microsoft/ApplicationInsights-Java/pull/2146).
-* Clean up JMX debug logging [#2157](https://github.com/microsoft/ApplicationInsights-Java/pull/2157).
+* Better JMX debug logging [#2157](https://github.com/microsoft/ApplicationInsights-Java/pull/2157).
 * Add BatchSpanProcessor configuration option [#2165](https://github.com/microsoft/ApplicationInsights-Java/pull/2165).
 
 # Version 3.2.7 GA
