@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation") // suppress CapturedHttpHeaders deprecation
 class HttpServerAttributesExtractorTest {
 
   static class TestHttpServerAttributesExtractor
@@ -184,8 +185,10 @@ class HttpServerAttributesExtractorTest {
     request.put("header.x-forwarded-for", "1.1.1.1");
 
     HttpServerAttributesExtractor<Map<String, String>, Map<String, String>> extractor =
-        HttpServerAttributesExtractor.create(
-            new TestHttpServerAttributesExtractor(), CapturedHttpHeaders.empty());
+        HttpServerAttributesExtractor.builder(new TestHttpServerAttributesExtractor())
+            .setCapturedRequestHeaders(emptyList())
+            .setCapturedResponseHeaders(emptyList())
+            .build();
 
     AttributesBuilder attributes = Attributes.builder();
     extractor.onStart(attributes, Context.root(), request);
@@ -203,8 +206,10 @@ class HttpServerAttributesExtractorTest {
     request.put("header.x-forwarded-proto", "https");
 
     HttpServerAttributesExtractor<Map<String, String>, Map<String, String>> extractor =
-        HttpServerAttributesExtractor.create(
-            new TestHttpServerAttributesExtractor(), CapturedHttpHeaders.empty());
+        HttpServerAttributesExtractor.builder(new TestHttpServerAttributesExtractor())
+            .setCapturedRequestHeaders(emptyList())
+            .setCapturedResponseHeaders(emptyList())
+            .build();
 
     AttributesBuilder attributes = Attributes.builder();
     extractor.onStart(attributes, Context.root(), request);

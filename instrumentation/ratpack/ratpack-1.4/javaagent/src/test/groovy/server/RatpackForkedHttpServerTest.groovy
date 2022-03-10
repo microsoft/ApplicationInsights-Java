@@ -7,6 +7,7 @@ package server
 
 import io.opentelemetry.instrumentation.ratpack.server.AbstractRatpackForkedHttpServerTest
 import io.opentelemetry.instrumentation.test.AgentTestTrait
+import io.opentelemetry.instrumentation.testing.junit.http.ServerEndpoint
 import ratpack.server.RatpackServerSpec
 
 class RatpackForkedHttpServerTest extends AbstractRatpackForkedHttpServerTest implements AgentTestTrait {
