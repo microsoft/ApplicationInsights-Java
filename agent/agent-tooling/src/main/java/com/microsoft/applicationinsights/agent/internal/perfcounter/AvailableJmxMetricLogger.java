@@ -21,13 +21,11 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -47,35 +45,21 @@ import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// TODO (trask) add tests
 class AvailableJmxMetricLogger {
 
   private static final Logger logger = LoggerFactory.getLogger(AvailableJmxMetricLogger.class);
 
-  private static final Set<String> NUMERIC_ATTRIBUTE_TYPES =
-      new HashSet<>(
-          asList(
-              "long",
-              "int",
-              "double",
-              "float",
-              "java.lang.Long",
-              "java.lang.Integer",
-              "java.lang.Double",
-              "java.lang.Float"));
-
-  private static final Set<String> BOOLEAN_ATTRIBUTE_TYPES =
-      new HashSet<>(asList("boolean", "java.lang.Boolean"));
-
   @GuardedBy("lock")
-  private Map<String, Set<String>> priorAvailableJmxAttributes = new HashMap<>();
+  private Map<String, Set<String>> priorAttributeMap = new HashMap<>();
 
   private final Object lock = new Object();
 
   void logAvailableJmxMetrics() {
     synchronized (lock) {
-      Map<String, Set<String>> availableJmxAttributes = getAvailableJmxAttributes();
-      logDifference(priorAvailableJmxAttributes, availableJmxAttributes);
-      priorAvailableJmxAttributes = availableJmxAttributes;
+      Map<String, Set<String>> attributeMap = getAttributeMap();
+      logDifference(priorAttributeMap, attributeMap);
+      priorAttributeMap = attributeMap;
     }
   }
 
@@ -106,75 +90,64 @@ class AvailableJmxMetricLogger {
       sb.append("  - object name:        ")
           .append(entry.getKey())
           .append("\n")
-          .append("    numeric attributes: ")
+          .append("    attributes: ")
           .append(entry.getValue().stream().sorted().collect(Collectors.joining(", ")))
           .append("\n");
     }
     return sb.toString();
   }
 
-  private static Map<String, Set<String>> getAvailableJmxAttributes() {
+  private static Map<String, Set<String>> getAttributeMap() {
     MBeanServer server = ManagementFactory.getPlatformMBeanServer();
     Set<ObjectName> objectNames = server.queryNames(null, null);
-    Map<String, Set<String>> availableJmxMetrics = new HashMap<>();
+    Map<String, Set<String>> attributeMap = new HashMap<>();
     for (ObjectName objectName : objectNames) {
       String name = objectName.toString();
+      Set<String> attributes;
       try {
-        Set<String> attrs = getJmxAttributes(server, objectName);
-        if (!attrs.isEmpty()) {
-          availableJmxMetrics.put(name, attrs);
+        attributes = getAttributes(server, objectName);
+        if (attributes.isEmpty()) {
+          attributes.add("(no attributes found)");
         }
       } catch (Exception e) {
         // log exception at trace level since this is expected in several cases, e.g.
         // "java.lang.UnsupportedOperationException: CollectionUsage threshold is not supported"
         // and available jmx metrics are already only logged at debug
         logger.trace(e.getMessage(), e);
-        availableJmxMetrics.put(name, Collections.singleton("<error getting attributes: " + e));
+        attributes = singleton("(error getting attributes)");
       }
+      attributeMap.put(name, attributes);
     }
-    return availableJmxMetrics;
+    return attributeMap;
   }
 
-  private static Set<String> getJmxAttributes(MBeanServer server, ObjectName objectName)
+  private static Set<String> getAttributes(MBeanServer server, ObjectName objectName)
       throws Exception {
     MBeanInfo mbeanInfo = server.getMBeanInfo(objectName);
-    Set<String> attributeNames = new HashSet<>();
+    Set<String> attributes = new HashSet<>();
     for (MBeanAttributeInfo attribute : mbeanInfo.getAttributes()) {
-      if (attribute.isReadable()) {
-        try {
-          Object value = server.getAttribute(objectName, attribute.getName());
-          attributeNames.addAll(getNumericAttributes(attribute, value));
-        } catch (Exception e) {
-          // log exception at trace level since this is expected in several cases, e.g.
-          // "java.lang.UnsupportedOperationException: CollectionUsage threshold is not supported"
-          // and available jmx metrics are already only logged at debug
-          logger.trace(e.getMessage(), e);
-        }
+      if (!attribute.isReadable()) {
+        attributes.add(attribute.getName() + " (not readable)");
+        continue;
+      }
+      try {
+        Object value = server.getAttribute(objectName, attribute.getName());
+        attributes.addAll(getAttributes(attribute, value));
+      } catch (Exception e) {
+        // log exception at trace level since this is expected in several cases, e.g.
+        // "java.lang.UnsupportedOperationException: CollectionUsage threshold is not supported"
+        // and available jmx metrics are already only logged at debug
+        logger.trace(e.getMessage(), e);
+        attributes.add(attribute.getName() + " (exception)");
       }
     }
-    return attributeNames;
+    return attributes;
   }
 
-  private static List<String> getNumericAttributes(MBeanAttributeInfo attribute, Object value) {
+  private static List<String> getAttributes(MBeanAttributeInfo attribute, @Nullable Object value) {
+
     String attributeType = attribute.getType();
-    if (NUMERIC_ATTRIBUTE_TYPES.contains(attributeType) && value instanceof Number) {
-      return singletonList(attribute.getName());
-    }
-    if (BOOLEAN_ATTRIBUTE_TYPES.contains(attributeType) && value instanceof Boolean) {
-      return singletonList(attribute.getName());
-    }
-    if (attributeType.equals("java.lang.Object") && value instanceof Number) {
-      return singletonList(attribute.getName());
-    }
-    if (attributeType.equals("java.lang.String") && value instanceof String) {
-      try {
-        Double.parseDouble((String) value);
-        return singletonList(attribute.getName());
-      } catch (NumberFormatException e) {
-        // this is expected for non-numeric attributes
-        return emptyList();
-      }
-    }
+
     if (attributeType.equals(CompositeData.class.getName())) {
       Object openType = attribute.getDescriptor().getFieldValue("openType");
       CompositeType compositeType = null;
@@ -184,43 +157,49 @@ class AvailableJmxMetricLogger {
         compositeType = ((CompositeDataSupport) value).getCompositeType();
       }
       if (compositeType != null) {
-        return getCompositeTypeAttributeNames(attribute, value, compositeType);
+        return getCompositeTypeAttributes(attribute, value, compositeType);
       }
     }
-    return emptyList();
+
+    return singletonList(attribute.getName() + " (" + valueType(value) + ")");
   }
 
-  private static List<String> getCompositeTypeAttributeNames(
+  private static List<String> getCompositeTypeAttributes(
       MBeanAttributeInfo attribute, Object compositeData, CompositeType compositeType) {
-    List<String> attributeNames = new ArrayList<>();
+    List<String> attributes = new ArrayList<>();
     for (String itemName : compositeType.keySet()) {
+      String attributeName = attribute.getName() + "." + itemName;
       OpenType<?> itemType = compositeType.getType(itemName);
       if (itemType == null) {
+        attributes.add(attributeName + " (null)");
         continue;
       }
-      String className = itemType.getClassName();
-      Class<?> clazz;
-      try {
-        clazz = Class.forName(className);
-      } catch (ClassNotFoundException e) {
-        logger.warn(e.getMessage(), e);
-        continue;
-      }
-      if (Number.class.isAssignableFrom(clazz)) {
-        attributeNames.add(attribute.getName() + '.' + itemName);
-      } else if (clazz == String.class && compositeData instanceof CompositeData) {
-        Object val = ((CompositeData) compositeData).get(itemName);
-        if (val instanceof String) {
-          try {
-            Double.parseDouble((String) val);
-            attributeNames.add(attribute.getName() + '.' + itemName);
-          } catch (NumberFormatException e) {
-            // this is expected for non-numeric attributes
-          }
-        }
+      if (compositeData instanceof CompositeData) {
+        Object value = ((CompositeData) compositeData).get(itemName);
+        attributes.add(attributeName + " (" + valueType(value) + ")");
+      } else {
+        attributes.add(attributeName + " (unexpected: " + compositeData.getClass().getName() + ")");
       }
     }
-    return attributeNames;
+    return attributes;
+  }
+
+  private static String valueType(@Nullable Object value) {
+    if (value instanceof Number) {
+      return "number";
+    }
+    if (value instanceof Boolean) {
+      return "boolean";
+    }
+    if (value instanceof String) {
+      try {
+        Double.parseDouble((String) value);
+        return "number";
+      } catch (NumberFormatException e) {
+        return "string";
+      }
+    }
+    return "other";
   }
 
   // visible for testing
