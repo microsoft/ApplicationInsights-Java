@@ -106,6 +106,7 @@ public class LoggingConfigurator {
       diagnosticLogger.setLevel(Level.INFO);
       diagnosticLogger.setAdditive(false);
       diagnosticLogger.addAppender(diagnosticAppender);
+      diagnosticLogger.addAppender(configureConsoleAppender());
 
       // errors reported by other loggers should also go to diagnostic log
       // (level filter for these is applied in ApplicationInsightsDiagnosticsLogFilter)
