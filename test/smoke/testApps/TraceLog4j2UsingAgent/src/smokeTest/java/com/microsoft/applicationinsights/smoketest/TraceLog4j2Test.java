@@ -105,10 +105,11 @@ public class TraceLog4j2Test extends AiSmokeTest {
     assertEquals(SeverityLevel.Error, ed.getSeverityLevel());
     assertEquals("This is an exception!", ed.getProperties().get("Logger Message"));
     assertEquals("Logger", ed.getProperties().get("SourceType"));
+    assertEquals("ERROR", ed.getProperties().get("LoggingLevel"));
     assertEquals("smoketestapp", ed.getProperties().get("LoggerName"));
     assertNotNull(ed.getProperties().get("ThreadName"));
     assertEquals("MDC value", ed.getProperties().get("MDC key"));
-    assertEquals(5, ed.getProperties().size());
+    assertEquals(6, ed.getProperties().size());
 
     assertParentChild(
         rd, rdEnvelope, edEnvelope, "GET /TraceLog4j2UsingAgent/traceLog4j2WithException");
