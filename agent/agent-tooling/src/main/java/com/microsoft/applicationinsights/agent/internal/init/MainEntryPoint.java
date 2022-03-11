@@ -101,6 +101,11 @@ public class MainEntryPoint {
           "ApplicationInsights Java Agent {} started successfully (PID {})",
           agentVersion,
           new PidFinder().getValue());
+      startupLogger.info(
+          "Java {}, {}, {}",
+          System.getProperty("java.version"),
+          System.getProperty("java.vendor"),
+          System.getProperty("java.home"));
       success = true;
       LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
           .info("Application Insights Codeless Agent {} Attach Successful", agentVersion);
@@ -109,7 +114,18 @@ public class MainEntryPoint {
     } catch (Throwable t) {
 
       FriendlyException friendlyException = getFriendlyException(t);
-      String banner = "ApplicationInsights Java Agent " + agentVersion + " failed to start";
+      String banner =
+          "ApplicationInsights Java Agent "
+              + agentVersion
+              + " failed to start (PID "
+              + new PidFinder().getValue()
+              + ")\nJava "
+              + System.getProperty("java.version")
+              + ", "
+              + System.getProperty("java.vendor")
+              + ", "
+              + System.getProperty("java.home")
+              + ")";
       if (friendlyException != null) {
         logErrorMessage(
             startupLogger, friendlyException.getMessageWithBanner(banner), true, t, javaagentFile);
