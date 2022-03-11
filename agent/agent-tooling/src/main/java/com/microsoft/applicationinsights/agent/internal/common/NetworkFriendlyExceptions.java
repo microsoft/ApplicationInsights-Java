@@ -250,10 +250,10 @@ public class NetworkFriendlyExceptions {
       for (String foundCipher : cipherSuitesFromJvm) {
         actionBuilder.append(foundCipher).append("\n");
       }
-      // the JVM info is attached directly to friendly exceptions since that is what customer
-      // usually provides, so it can save having to ask for the full log
+      // even though we log this info at startup, this info is particularly important for this error
+      // so we duplicate it here to make sure we get it as quickly and as easily as possible
       actionBuilder.append(
-          "\nJVM info -- version:"
+          "\nJava version:"
               + System.getProperty("java.version")
               + ", vendor: "
               + System.getProperty("java.vendor")
