@@ -133,7 +133,7 @@ public class LoggingConfigurator {
     rootLogger.addAppender(configureConsoleAppender());
     loggingLevelConfigurator.initLoggerLevels(loggerContext);
     // these messages are specifically designed for attach
-    loggerContext.getLogger("applicationinsights.extension.diagnostics").setLevel(Level.DEBUG);
+    loggerContext.getLogger("applicationinsights.extension.diagnostics").setLevel(Level.OFF);
   }
 
   private void configureFile() {
