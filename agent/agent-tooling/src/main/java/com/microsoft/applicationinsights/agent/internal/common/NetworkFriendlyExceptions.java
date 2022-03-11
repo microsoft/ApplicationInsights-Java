@@ -244,11 +244,21 @@ public class NetworkFriendlyExceptions {
       for (String missingCipher : EXPECTED_CIPHERS) {
         actionBuilder.append("    ").append(missingCipher).append("\n");
       }
-      actionBuilder.append("\nHere are the cipher suites that the JVM does have, in case this is"
-          + " helpful in identifying why the ones above are missing:\n");
+      actionBuilder.append(
+          "\nHere are the cipher suites that the JVM does have, in case this is"
+              + " helpful in identifying why the ones above are missing:\n");
       for (String foundCipher : cipherSuitesFromJvm) {
         actionBuilder.append(foundCipher).append("\n");
       }
+      // the JVM info is attached directly to friendly exceptions since that is what customer
+      // usually provides, so it can save having to ask for the full log
+      actionBuilder.append(
+          "\nJVM info -- version:"
+              + System.getProperty("java.version")
+              + ", vendor: "
+              + System.getProperty("java.vendor")
+              + ", home: "
+              + System.getProperty("java.home"));
       actionBuilder.append(
           "\nLearn more about troubleshooting this network issue related to cipher suites here:"
               + " https://go.microsoft.com/fwlink/?linkid=2185426");
