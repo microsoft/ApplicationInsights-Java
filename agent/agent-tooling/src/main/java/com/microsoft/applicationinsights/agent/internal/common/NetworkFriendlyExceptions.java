@@ -228,24 +228,40 @@ public class NetworkFriendlyExceptions {
     @Override
     public String message(String url) {
       return FriendlyException.populateFriendlyMessage(
-          "Probable root cause may be : missing cipher suites which are expected by the requested target.",
+          "JVM appears to be missing cipher suites which are supported by the endpoint.",
           getCipherFriendlyExceptionAction(url),
           getFriendlyExceptionBanner(url),
           "This message is only logged the first time it occurs after startup.");
     }
 
-    private static String getCipherFriendlyExceptionAction(String url) {
+    private String getCipherFriendlyExceptionAction(String url) {
       StringBuilder actionBuilder = new StringBuilder();
       actionBuilder
           .append(
-              "The Application Insights Java agent detects that you do not have any of the following cipher suites that are supported by the endpoint it connects to: "
+              "The JVM does not have any of the cipher suites that are supported by the endpoint "
                   + url)
-          .append("\n");
+          .append("\n\n");
       for (String missingCipher : EXPECTED_CIPHERS) {
-        actionBuilder.append(missingCipher).append("\n");
+        actionBuilder.append("    ").append(missingCipher).append("\n");
       }
       actionBuilder.append(
-          "Learn more about troubleshooting this network issue related to cipher suites here: https://go.microsoft.com/fwlink/?linkid=2185426");
+          "\nHere are the cipher suites that the JVM does have, in case this is"
+              + " helpful in identifying why the ones above are missing:\n");
+      for (String foundCipher : cipherSuitesFromJvm) {
+        actionBuilder.append(foundCipher).append("\n");
+      }
+      // even though we log this info at startup, this info is particularly important for this error
+      // so we duplicate it here to make sure we get it as quickly and as easily as possible
+      actionBuilder.append(
+          "\nJava version:"
+              + System.getProperty("java.version")
+              + ", vendor: "
+              + System.getProperty("java.vendor")
+              + ", home: "
+              + System.getProperty("java.home"));
+      actionBuilder.append(
+          "\nLearn more about troubleshooting this network issue related to cipher suites here:"
+              + " https://go.microsoft.com/fwlink/?linkid=2185426");
       return actionBuilder.toString();
     }
   }
