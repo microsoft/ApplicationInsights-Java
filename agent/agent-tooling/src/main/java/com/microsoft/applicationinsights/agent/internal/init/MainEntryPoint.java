@@ -119,12 +119,6 @@ public class MainEntryPoint {
               + agentVersion
               + " failed to start (PID "
               + new PidFinder().getValue()
-              + ")\nJava version: "
-              + System.getProperty("java.version")
-              + ", vendor: "
-              + System.getProperty("java.vendor")
-              + ", home: "
-              + System.getProperty("java.home")
               + ")";
       if (friendlyException != null) {
         logErrorMessage(
