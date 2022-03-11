@@ -86,9 +86,6 @@ public class Exporter implements SpanExporter {
   public static final AttributeKey<String> AI_LEGACY_ROOT_ID_KEY =
       AttributeKey.stringKey("applicationinsights.internal.legacy_root_id");
 
-  private static final AttributeKey<String> AZURE_SDK_PEER_ADDRESS =
-      AttributeKey.stringKey("peer.address");
-
   // this is only used by the 2.x web interop bridge
   // for ThreadContext.getRequestTelemetryContext().getRequestTelemetry().setSource()
   private static final AttributeKey<String> AI_SPAN_SOURCE_KEY =
@@ -100,16 +97,18 @@ public class Exporter implements SpanExporter {
   private static final AttributeKey<String> AI_DEVICE_OS_VERSION_KEY =
       AttributeKey.stringKey("applicationinsights.internal.operating_system_version");
 
-  private static final AttributeKey<Long> KAFKA_OFFSET = longKey("kafka.offset");
-
   private static final AttributeKey<String> AZURE_NAMESPACE =
       AttributeKey.stringKey("az.namespace");
+  private static final AttributeKey<String> AZURE_SDK_PEER_ADDRESS =
+      AttributeKey.stringKey("peer.address");
   private static final AttributeKey<String> AZURE_SDK_MESSAGE_BUS_DESTINATION =
       AttributeKey.stringKey("message_bus.destination");
   private static final AttributeKey<Long> AZURE_SDK_ENQUEUED_TIME =
       AttributeKey.longKey("x-opt-enqueued-time");
+
   private static final AttributeKey<Long> KAFKA_RECORD_QUEUE_TIME_MS =
       longKey("kafka.record.queue_time_ms");
+  private static final AttributeKey<Long> KAFKA_OFFSET = longKey("kafka.offset");
 
   private static final OperationLogger exportingSpanLogger =
       new OperationLogger(Exporter.class, "Exporting span");
@@ -144,6 +143,7 @@ public class Exporter implements SpanExporter {
             .put("exception.", true)
             .put("thread.", true)
             .put("faas.", true)
+            .put("code.", true)
             .build();
   }
 
