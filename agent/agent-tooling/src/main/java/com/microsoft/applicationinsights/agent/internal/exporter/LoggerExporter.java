@@ -134,7 +134,6 @@ public class LoggerExporter implements LogExporter {
     // set message-specific properties
     setLoggerProperties(
         telemetryBuilder,
-        log.getBody().asString(),
         log.getInstrumentationLibraryInfo().getName(),
         attributes.get(SemanticAttributes.THREAD_NAME));
 
@@ -158,10 +157,12 @@ public class LoggerExporter implements LogExporter {
     // set exception-specific properties
     setLoggerProperties(
         telemetryBuilder,
-        log.getBody().asString(),
         log.getInstrumentationLibraryInfo().getName(),
         attributes.get(SemanticAttributes.THREAD_NAME));
 
+    if (log.getBody() != null) {
+      telemetryBuilder.addProperty("Logger Message", log.getBody().asString());
+    }
     // export
     telemetryClient.trackAsync(telemetryBuilder.build());
   }
@@ -223,11 +224,7 @@ public class LoggerExporter implements LogExporter {
   }
 
   private static void setLoggerProperties(
-      AbstractTelemetryBuilder telemetryBuilder,
-      String message,
-      String loggerName,
-      String threadName) {
-    telemetryBuilder.addProperty("Logger Message", message);
+      AbstractTelemetryBuilder telemetryBuilder, String loggerName, String threadName) {
     telemetryBuilder.addProperty("SourceType", "Logger");
 
     if (loggerName != null) {
