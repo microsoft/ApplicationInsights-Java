@@ -56,10 +56,12 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
   }
 
   private static LogProcessor createLogExporter() {
+    LogExporter logExporter = new LoggerExporter(TelemetryClient.getActive());
     List<Configuration.ProcessorConfig> processorConfigs =
         getLogProcessorConfigs(MainEntryPoint.getConfiguration());
-    LogExporter logExporter = new LoggerExporter(TelemetryClient.getActive());
     if (!processorConfigs.isEmpty()) {
+      // Reversing the order of processors before passing it Log processor
+      Collections.reverse(processorConfigs);
       for (Configuration.ProcessorConfig processorConfig : processorConfigs) {
         switch (processorConfig.type) {
           case ATTRIBUTE:
@@ -83,15 +85,13 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
 
   private static List<Configuration.ProcessorConfig> getLogProcessorConfigs(
       Configuration configuration) {
-    List<Configuration.ProcessorConfig> processors =
+    List<Configuration.ProcessorConfig> processorConfigs =
         configuration.preview.processors.stream()
             .filter(
                 processor ->
                     processor.type == Configuration.ProcessorType.ATTRIBUTE
                         || processor.type == Configuration.ProcessorType.LOG)
             .collect(Collectors.toCollection(ArrayList::new));
-    // Reversing the order of processors before passing it to Span/Log processor
-    Collections.reverse(processors);
-    return processors;
+    return processorConfigs;
   }
 }

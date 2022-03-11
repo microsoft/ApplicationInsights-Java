@@ -120,21 +120,21 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
 
     String tracesExporter = config.getString("otel.traces.exporter");
     if ("none".equals(tracesExporter)) {
-      List<ProcessorConfig> processorConfigs = getSpanProcessorConfigs(configuration);
       batchSpanProcessor =
-          createSpanExporter(processorConfigs, configuration.preview.captureHttpServer4xxAsError);
+          createSpanExporter(configuration, configuration.preview.captureHttpServer4xxAsError);
       tracerProvider.addSpanProcessor(batchSpanProcessor);
     }
   }
 
-  private static BatchSpanProcessor createSpanExporter(
-      List<ProcessorConfig> processorConfigs, boolean captureHttpServer4xxAsError) {
+  private static BatchSpanProcessor createSpanExporter(Configuration configuration, boolean captureHttpServer4xxAsError) {
     SpanExporter spanExporter =
         new Exporter(TelemetryClient.getActive(), captureHttpServer4xxAsError);
-
+    List<ProcessorConfig> processorConfigs = getSpanProcessorConfigs(configuration);
     // NOTE if changing the span processor to something async, flush it in the shutdown hook before
     // flushing TelemetryClient
     if (!processorConfigs.isEmpty()) {
+      // Reversing the order of processors before passing it Span processor
+      Collections.reverse(processorConfigs);
       for (ProcessorConfig processorConfig : processorConfigs) {
         switch (processorConfig.type) {
           case ATTRIBUTE:
@@ -168,8 +168,6 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
                     processor.type == Configuration.ProcessorType.ATTRIBUTE
                         || processor.type == Configuration.ProcessorType.SPAN)
             .collect(Collectors.toCollection(ArrayList::new));
-    // Reversing the order of processors before passing it to Span/Log processor
-    Collections.reverse(processors);
     return processors;
   }
 
