@@ -126,7 +126,8 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
     }
   }
 
-  private static BatchSpanProcessor createSpanExporter(Configuration configuration, boolean captureHttpServer4xxAsError) {
+  private static BatchSpanProcessor createSpanExporter(
+      Configuration configuration, boolean captureHttpServer4xxAsError) {
     SpanExporter spanExporter =
         new Exporter(TelemetryClient.getActive(), captureHttpServer4xxAsError);
     List<ProcessorConfig> processorConfigs = getSpanProcessorConfigs(configuration);
