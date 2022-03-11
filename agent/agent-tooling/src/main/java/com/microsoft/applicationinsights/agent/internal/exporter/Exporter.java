@@ -226,7 +226,7 @@ public class Exporter implements SpanExporter {
     setOperationTags(telemetryBuilder, span);
     setTime(telemetryBuilder, span.getStartEpochNanos());
     setSampleRate(telemetryBuilder, samplingPercentage);
-    setExtraAttributes(telemetryBuilder, span.getAttributes(), logger);
+    setExtraAttributes(telemetryBuilder, span.getAttributes());
     addLinks(telemetryBuilder, span.getLinks());
 
     // set dependency-specific properties
@@ -620,7 +620,7 @@ public class Exporter implements SpanExporter {
     telemetryBuilder.setId(span.getSpanId());
     setTime(telemetryBuilder, startEpochNanos);
     setSampleRate(telemetryBuilder, samplingPercentage);
-    setExtraAttributes(telemetryBuilder, attributes, logger);
+    setExtraAttributes(telemetryBuilder, attributes);
     addLinks(telemetryBuilder, span.getLinks());
 
     String operationName = getOperationName(span);
@@ -848,7 +848,7 @@ public class Exporter implements SpanExporter {
         setOperationName(telemetryBuilder, span.getAttributes());
       }
       setTime(telemetryBuilder, event.getEpochNanos());
-      setExtraAttributes(telemetryBuilder, event.getAttributes(), logger);
+      setExtraAttributes(telemetryBuilder, event.getAttributes());
       setSampleRate(telemetryBuilder, samplingPercentage);
 
       // set message-specific properties
@@ -917,7 +917,7 @@ public class Exporter implements SpanExporter {
   }
 
   private static void setExtraAttributes(
-      AbstractTelemetryBuilder telemetryBuilder, Attributes attributes, Logger logger) {
+      AbstractTelemetryBuilder telemetryBuilder, Attributes attributes) {
     attributes.forEach(
         (key, value) -> {
           String stringKey = key.getKey();
@@ -970,7 +970,7 @@ public class Exporter implements SpanExporter {
               && !stringKey.startsWith("http.response.header.")) {
             return;
           }
-          String val = convertToString(value, key.getType(), logger);
+          String val = convertToString(value, key.getType());
           if (value != null) {
             telemetryBuilder.addProperty(key.getKey(), val);
           }
@@ -978,7 +978,7 @@ public class Exporter implements SpanExporter {
   }
 
   @Nullable
-  private static String convertToString(Object value, AttributeType type, Logger logger) {
+  private static String convertToString(Object value, AttributeType type) {
     switch (type) {
       case STRING:
       case BOOLEAN:
