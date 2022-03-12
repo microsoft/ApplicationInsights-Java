@@ -54,11 +54,6 @@ public class ProcessCpuPerformanceCounter implements PerformanceCounter {
   }
 
   @Override
-  public String getId() {
-    return Constants.PROCESS_CPU_PC_ID;
-  }
-
-  @Override
   public void report(TelemetryClient telemetryClient) {
     if (cpuPerformanceCounterCalculator == null) {
       return;

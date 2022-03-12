@@ -149,8 +149,8 @@ public enum PerformanceCounterContainer {
               } catch (Throwable t) {
                 try {
                   logger.error(
-                      "Exception while reporting performance counter '{}'",
-                      performanceCounter.getId(),
+                      "Exception while reporting performance counter: '{}'",
+                      performanceCounter.getClass().getName(),
                       t);
                 } catch (ThreadDeath td) {
                   throw td;

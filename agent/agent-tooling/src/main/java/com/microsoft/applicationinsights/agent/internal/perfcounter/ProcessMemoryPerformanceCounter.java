@@ -39,11 +39,6 @@ public class ProcessMemoryPerformanceCounter implements PerformanceCounter {
   public ProcessMemoryPerformanceCounter() {}
 
   @Override
-  public String getId() {
-    return Constants.PROCESS_MEM_PC_ID;
-  }
-
-  @Override
   public void report(TelemetryClient telemetryClient) {
     MemoryMXBean memoryData = ManagementFactory.getMemoryMXBean();
 

@@ -40,11 +40,6 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
   private final Collection<JmxAttributeData> attributes;
   private boolean alreadyLogged = false;
 
-  @Override
-  public String getId() {
-    return id;
-  }
-
   /**
    * The main method. The method will fetch the data and send it. The method will not do anything if
    * there was a major problem accessing the needed counter.

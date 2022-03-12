@@ -52,11 +52,6 @@ public class OshiPerformanceCounter implements PerformanceCounter {
   private static final AtomicBoolean hasError = new AtomicBoolean();
 
   @Override
-  public String getId() {
-    return ID;
-  }
-
-  @Override
   public void report(TelemetryClient telemetryClient) {
     // stop collecting oshi perf counters when initialization fails.
     if (hasError.get()) {

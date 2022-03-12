@@ -37,11 +37,6 @@ public class FreeMemoryPerformanceCounter implements PerformanceCounter {
   public FreeMemoryPerformanceCounter() {}
 
   @Override
-  public String getId() {
-    return Constants.TOTAL_MEMORY_PC_ID;
-  }
-
-  @Override
   public void report(TelemetryClient telemetryClient) {
     long freePhysicalMemorySize;
     try {
