@@ -35,7 +35,6 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
 
   private static final Logger logger = LoggerFactory.getLogger(AbstractJmxPerformanceCounter.class);
 
-  private final String id;
   private final String objectName;
   private final Collection<JmxAttributeData> attributes;
   private boolean alreadyLogged = false;
@@ -86,8 +85,7 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
   }
 
   protected AbstractJmxPerformanceCounter(
-      String id, String objectName, Collection<JmxAttributeData> attributes) {
-    this.id = id;
+      String objectName, Collection<JmxAttributeData> attributes) {
     this.objectName = objectName;
     this.attributes = attributes;
   }
