@@ -209,12 +209,8 @@ public class TelemetryClientInitializer {
       // Register each entry in the performance container
       for (Map.Entry<String, Collection<JmxAttributeData>> entry : data.entrySet()) {
         try {
-          if (PerformanceCounterContainer.INSTANCE.register(
-              new JmxMetricPerformanceCounter(entry.getKey(), entry.getKey(), entry.getValue()))) {
-            logger.trace("Registered JMX performance counter '{}'", entry.getKey());
-          } else {
-            logger.trace("Failed to register JMX performance counter '{}'", entry.getKey());
-          }
+          PerformanceCounterContainer.INSTANCE.register(
+              new JmxMetricPerformanceCounter(entry.getKey(), entry.getKey(), entry.getValue()));
         } catch (RuntimeException e) {
           logger.error(
               "Failed to register JMX performance counter '{}': '{}'",

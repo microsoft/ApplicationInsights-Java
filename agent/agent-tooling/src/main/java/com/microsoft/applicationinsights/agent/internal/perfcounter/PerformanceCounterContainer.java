@@ -23,8 +23,8 @@ package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -62,8 +62,7 @@ public enum PerformanceCounterContainer {
   public static final long DEFAULT_COLLECTION_FREQUENCY_IN_SEC = 60;
   private static final long MIN_COLLECTION_FREQUENCY_IN_SEC = 1;
 
-  private final ConcurrentMap<String, PerformanceCounter> performanceCounters =
-      new ConcurrentHashMap<>();
+  private final List<PerformanceCounter> performanceCounters = new CopyOnWriteArrayList<>();
 
   private volatile @Nullable AvailableJmxMetricLogger availableJmxMetricLogger;
 
@@ -74,25 +73,13 @@ public enum PerformanceCounterContainer {
   private ScheduledThreadPoolExecutor threads;
 
   /**
-   * /** Registers a {@link PerformanceCounter} that can collect data.
+   * Adds a {@link PerformanceCounter} that can collect data.
    *
    * @param performanceCounter The Performance Counter.
-   * @return True on success.
    */
-  public boolean register(PerformanceCounter performanceCounter) {
+  public void register(PerformanceCounter performanceCounter) {
     initialize();
-
-    logger.trace("Registering PC '{}'", performanceCounter.getId());
-    PerformanceCounter prev =
-        performanceCounters.putIfAbsent(performanceCounter.getId(), performanceCounter);
-    if (prev != null) {
-      logger.trace(
-          "Failed to store performance counter '{}', since there is already one",
-          performanceCounter.getId());
-      return false;
-    }
-
-    return true;
+    performanceCounters.add(performanceCounter);
   }
 
   /**
@@ -154,7 +141,7 @@ public enum PerformanceCounterContainer {
 
             TelemetryClient telemetryClient = TelemetryClient.getActive();
 
-            for (PerformanceCounter performanceCounter : performanceCounters.values()) {
+            for (PerformanceCounter performanceCounter : performanceCounters) {
               try {
                 performanceCounter.report(telemetryClient);
               } catch (ThreadDeath td) {
