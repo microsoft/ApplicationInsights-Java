@@ -203,6 +203,7 @@ public class Configuration {
 
     public String host;
     public int port = 80;
+    // password in json file is not secure, use APPLICATIONINSIGHTS_PROXY
     public String username;
     public String password;
   }

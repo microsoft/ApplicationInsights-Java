@@ -35,6 +35,11 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -79,6 +84,10 @@ public class ConfigurationBuilder {
 
   private static final String APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL =
       "APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL";
+
+  // not recommending Azure SDK's HTTPS_PROXY because it requires also setting
+  // -Djava.net.useSystemProxies=true
+  private static final String APPLICATIONINSIGHTS_PROXY = "APPLICATIONINSIGHTS_PROXY";
 
   private static final String APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL =
       "APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL";
@@ -386,6 +395,8 @@ public class ConfigurationBuilder {
     config.sampling.percentage =
         overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, config.sampling.percentage);
 
+    config.proxy = overlayProxyFromEnv(config.proxy);
+
     config.selfDiagnostics.level =
         overlayWithEnvVar(APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL, config.selfDiagnostics.level);
     config.selfDiagnostics.file.path =
@@ -448,6 +459,45 @@ public class ConfigurationBuilder {
     }
 
     return null;
+  }
+
+  private static Configuration.Proxy overlayProxyFromEnv(Configuration.Proxy proxy)
+      throws MalformedURLException, UnsupportedEncodingException {
+
+    String proxyEnvVar = getEnvVar(APPLICATIONINSIGHTS_PROXY);
+    if (proxyEnvVar == null) {
+      if (proxy.password != null) {
+        configurationLogger.warn(
+            "Storing the proxy password in the application insights json configuration file"
+                + " is deprecated because it is not secure. Please use the"
+                + " APPLICATIONINSIGHTS_PROXY environment variable instead which supports passing"
+                + " the username and password, e.g."
+                + " APPLICATIONINSIGHTS_PROXY=https://myuser:mypassword@myproxy:8888");
+      }
+      return proxy;
+    }
+
+    Configuration.Proxy proxyFromEnv = new Configuration.Proxy();
+
+    URL proxyUrl = new URL(proxyEnvVar);
+    proxyFromEnv.host = proxyUrl.getHost();
+    proxyFromEnv.port = proxyUrl.getPort();
+    if (proxyFromEnv.port == -1) {
+      proxyFromEnv.port = proxyUrl.getDefaultPort();
+    }
+
+    String userInfo = proxyUrl.getUserInfo();
+    if (userInfo != null) {
+      String[] usernamePassword = userInfo.split(":", 2);
+      if (usernamePassword.length == 2) {
+        proxyFromEnv.username =
+            URLDecoder.decode(usernamePassword[0], StandardCharsets.UTF_8.toString());
+        proxyFromEnv.password =
+            URLDecoder.decode(usernamePassword[1], StandardCharsets.UTF_8.toString());
+      }
+    }
+
+    return proxyFromEnv;
   }
 
   // visible for testing
