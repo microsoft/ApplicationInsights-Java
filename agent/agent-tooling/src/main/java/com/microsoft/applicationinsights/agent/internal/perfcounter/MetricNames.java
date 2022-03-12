@@ -24,7 +24,15 @@ package com.microsoft.applicationinsights.agent.internal.perfcounter;
 public final class MetricNames {
 
   public static final String TOTAL_CPU = "\\Processor(_Total)\\% Processor Time";
+
+  // unfortunately the Java SDK behavior has always been to report the "% Processor Time" number
+  // as "normalized" (divided by # of CPU cores), even though it should be non-normalized
+  // maybe this can be fixed in 4.0 (would be a breaking change)
   public static final String PROCESS_CPU = "\\Process(??APP_WIN32_PROC??)\\% Processor Time";
+
+  // introduced in 3.3.0
+  public static final String PROCESS_CPU_NORMALIZED =
+      "\\Process(??APP_WIN32_PROC??)\\% Processor Time Normalized";
 
   public static final String PROCESS_MEMORY = "\\Process(??APP_WIN32_PROC??)\\Private Bytes";
 

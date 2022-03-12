@@ -78,6 +78,7 @@ public class TelemetryClient {
           asList(
               MetricNames.TOTAL_CPU,
               MetricNames.PROCESS_CPU,
+              MetricNames.PROCESS_CPU_NORMALIZED,
               MetricNames.PROCESS_MEMORY,
               MetricNames.TOTAL_MEMORY,
               MetricNames.PROCESS_IO));

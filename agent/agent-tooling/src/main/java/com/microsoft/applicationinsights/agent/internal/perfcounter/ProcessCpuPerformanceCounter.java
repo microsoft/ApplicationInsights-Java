@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
 import static com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames.PROCESS_CPU;
+import static com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames.PROCESS_CPU_NORMALIZED;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.CpuPerformanceCounterCalculator;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -63,7 +64,15 @@ public class ProcessCpuPerformanceCounter implements PerformanceCounter {
       return;
     }
 
+    // unfortunately the Java SDK behavior has always been to report the "% Processor Time" number
+    // as "normalized" (divided by # of CPU cores), even though it should be non-normalized
+    // maybe this can be fixed in 4.0 (would be a breaking change)
+
     logger.trace("Performance Counter: {}: {}", PROCESS_CPU, processCpuUsage);
     telemetryClient.trackAsync(telemetryClient.newMetricTelemetry(PROCESS_CPU, processCpuUsage));
+
+    logger.trace("Performance Counter: {}: {}", PROCESS_CPU_NORMALIZED, processCpuUsage);
+    telemetryClient.trackAsync(
+        telemetryClient.newMetricTelemetry(PROCESS_CPU_NORMALIZED, processCpuUsage));
   }
 }
