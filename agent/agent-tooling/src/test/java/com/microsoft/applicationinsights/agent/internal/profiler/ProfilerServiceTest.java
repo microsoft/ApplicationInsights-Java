@@ -21,8 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler;
 
-import static com.microsoft.applicationinsights.agent.internal.perfcounter.Constants.TOTAL_CPU_PC_METRIC_NAME;
 import static com.microsoft.applicationinsights.agent.internal.perfcounter.JvmHeapMemoryUsedPerformanceCounter.HEAP_MEM_USED_PERCENTAGE;
+import static com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames.TOTAL_CPU;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -80,7 +80,7 @@ class ProfilerServiceTest {
   void endToEndAlertTriggerCpu() throws Exception {
     endToEndAlertTriggerCycle(
         false,
-        MetricTelemetryBuilder.create(TOTAL_CPU_PC_METRIC_NAME, 100.0).build(),
+        MetricTelemetryBuilder.create(TOTAL_CPU, 100.0).build(),
         telemetry -> {
           assertThat(telemetry.getProperties().get("Source")).isEqualTo("JFR-CPU");
           assertThat(telemetry.getMeasurements().get("AverageCPUUsage")).isEqualTo(100.0);

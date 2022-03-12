@@ -39,7 +39,6 @@ import oshi.util.platform.linux.ProcPath;
 public class OshiPerformanceCounter implements PerformanceCounter {
 
   private static final Logger logger = LoggerFactory.getLogger(OshiPerformanceCounter.class);
-  private static final String ID = Constants.PERFORMANCE_COUNTER_PREFIX + "OshiPerformanceCounter";
 
   private static final double MILLIS_IN_SECOND = 1000;
 
@@ -92,22 +91,18 @@ public class OshiPerformanceCounter implements PerformanceCounter {
       double elapsedSeconds = elapsedMillis / MILLIS_IN_SECOND;
       if (processInfo != null) {
         double processBytes = (currProcessBytes - prevProcessBytes) / elapsedSeconds;
-        send(telemetryClient, processBytes, Constants.PROCESS_IO_PC_METRIC_NAME);
+        send(telemetryClient, processBytes, MetricNames.PROCESS_IO);
         logger.trace(
-            "Sent performance counter for '{}': '{}'",
-            Constants.PROCESS_IO_PC_METRIC_NAME,
-            processBytes);
+            "Sent performance counter for '{}': '{}'", MetricNames.PROCESS_IO, processBytes);
       }
 
       double processorLoad =
           (currTotalProcessorMillis - prevTotalProcessorMillis)
               / (elapsedMillis * processor.getLogicalProcessorCount());
       double processorPercentage = 100 * processorLoad;
-      send(telemetryClient, processorPercentage, Constants.TOTAL_CPU_PC_METRIC_NAME);
+      send(telemetryClient, processorPercentage, MetricNames.TOTAL_CPU);
       logger.trace(
-          "Sent performance counter for '{}': '{}'",
-          Constants.TOTAL_CPU_PC_METRIC_NAME,
-          processorPercentage);
+          "Sent performance counter for '{}': '{}'", MetricNames.TOTAL_CPU, processorPercentage);
     }
 
     prevCollectionTimeMillis = currCollectionTimeMillis;

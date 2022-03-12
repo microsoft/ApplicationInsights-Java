@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import static com.microsoft.applicationinsights.agent.internal.perfcounter.Constants.PROCESS_CPU_PC_METRIC_NAME;
+import static com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames.PROCESS_CPU;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.CpuPerformanceCounterCalculator;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -63,8 +63,7 @@ public class ProcessCpuPerformanceCounter implements PerformanceCounter {
       return;
     }
 
-    logger.trace("Performance Counter: {}: {}", PROCESS_CPU_PC_METRIC_NAME, processCpuUsage);
-    telemetryClient.trackAsync(
-        telemetryClient.newMetricTelemetry(PROCESS_CPU_PC_METRIC_NAME, processCpuUsage));
+    logger.trace("Performance Counter: {}: {}", PROCESS_CPU, processCpuUsage);
+    telemetryClient.trackAsync(telemetryClient.newMetricTelemetry(PROCESS_CPU, processCpuUsage));
   }
 }
