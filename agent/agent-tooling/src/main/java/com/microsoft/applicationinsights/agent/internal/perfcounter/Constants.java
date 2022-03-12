@@ -24,17 +24,9 @@ package com.microsoft.applicationinsights.agent.internal.perfcounter;
 public final class Constants {
   public static final String PERFORMANCE_COUNTER_PREFIX = "JSDK_";
 
-  public static final String PROCESS_CPU_PC_ID =
-      PERFORMANCE_COUNTER_PREFIX + "ProcessCpuPerformanceCounter";
-
   public static final String TOTAL_CPU_PC_METRIC_NAME = "\\Processor(_Total)\\% Processor Time";
   public static final String PROCESS_CPU_PC_METRIC_NAME =
       "\\Process(??APP_WIN32_PROC??)\\% Processor Time";
-
-  public static final String TOTAL_MEMORY_PC_ID =
-      PERFORMANCE_COUNTER_PREFIX + "TotalMemoryPerformanceCounter";
-  public static final String PROCESS_MEM_PC_ID =
-      PERFORMANCE_COUNTER_PREFIX + "ProcessMemoryPerformanceCounter";
 
   public static final String PROCESS_MEM_PC_METRICS_NAME =
       "\\Process(??APP_WIN32_PROC??)\\Private Bytes";
