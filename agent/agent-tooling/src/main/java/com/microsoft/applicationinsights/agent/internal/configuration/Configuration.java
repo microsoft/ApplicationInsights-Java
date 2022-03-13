@@ -248,6 +248,7 @@ public class Configuration {
     public PreviewStatsbeat statsbeat = new PreviewStatsbeat();
 
     public List<InstrumentationKeyOverride> instrumentationKeyOverrides = new ArrayList<>();
+    public List<RoleNameOverride> roleNameOverrides = new ArrayList<>();
 
     public int generalExportQueueCapacity = 2048;
     // metrics get flooded every 60 seconds by default, so need larger queue size to avoid dropping
@@ -264,6 +265,9 @@ public class Configuration {
       for (Configuration.InstrumentationKeyOverride instrumentationKeyOverride :
           instrumentationKeyOverrides) {
         instrumentationKeyOverride.validate();
+      }
+      for (Configuration.RoleNameOverride roleNameOverride : roleNameOverrides) {
+        roleNameOverride.validate();
       }
       for (ProcessorConfig processorConfig : processors) {
         processorConfig.validate();
@@ -396,7 +400,27 @@ public class Configuration {
         // TODO add doc and go link, similar to telemetry processors
         throw new FriendlyException(
             "An instrumentation key override configuration is missing an \"instrumentationKey\".",
-            "Please provide an \"instrumentationKey\" for the instrumentation key configuration.");
+            "Please provide an \"instrumentationKey\" for the instrumentation key override configuration.");
+      }
+    }
+  }
+
+  public static class RoleNameOverride {
+    public String httpPathPrefix;
+    public String roleName;
+
+    public void validate() {
+      if (httpPathPrefix == null) {
+        // TODO add doc and go link, similar to telemetry processors
+        throw new FriendlyException(
+            "A role name override configuration is missing an \"httpPathPrefix\".",
+            "Please provide an \"httpPathPrefix\" for the instrumentation key override configuration.");
+      }
+      if (roleName == null) {
+        // TODO add doc and go link, similar to telemetry processors
+        throw new FriendlyException(
+            "An role name override configuration is missing a \"roleName\".",
+            "Please provide a \"roleName\" for the role name override configuration.");
       }
     }
   }
