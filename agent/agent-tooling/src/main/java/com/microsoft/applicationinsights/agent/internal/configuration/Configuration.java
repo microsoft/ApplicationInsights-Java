@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
+import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
@@ -31,8 +32,8 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.Stat
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import io.opentelemetry.api.common.AttributeKey;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -255,7 +256,7 @@ public class Configuration {
     public int metricsExportQueueCapacity = 65536;
 
     private static final Set<String> VALID_ADDITIONAL_PROPAGATORS =
-        Collections.singleton("b3multi");
+        new HashSet<>(asList("b3", "b3multi"));
 
     public void validate() {
       for (Configuration.SamplingOverride samplingOverride : sampling.overrides) {
