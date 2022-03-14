@@ -44,10 +44,8 @@ public class SpringBootAutoTest extends AiSmokeTest {
     assertTrue(telemetry.rd.getSuccess());
     // Log processor test
     List<MessageData> logs = mockedIngestion.getMessageDataInRequest();
-    if (!logs.isEmpty()) {
-      MessageData md1 = logs.get(0);
-      assertEquals("testValue1::testValue2", md1.getMessage());
-    }
+    MessageData md1 = logs.get(0);
+    assertEquals("testValue1::testValue2", md1.getMessage());
   }
 
   @Test

@@ -162,14 +162,12 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
   }
 
   private static List<ProcessorConfig> getSpanProcessorConfigs(Configuration configuration) {
-    List<ProcessorConfig> processors =
-        configuration.preview.processors.stream()
-            .filter(
-                processor ->
-                    processor.type == Configuration.ProcessorType.ATTRIBUTE
-                        || processor.type == Configuration.ProcessorType.SPAN)
-            .collect(Collectors.toCollection(ArrayList::new));
-    return processors;
+    return configuration.preview.processors.stream()
+        .filter(
+            processor ->
+                processor.type == Configuration.ProcessorType.ATTRIBUTE
+                    || processor.type == Configuration.ProcessorType.SPAN)
+        .collect(Collectors.toCollection(ArrayList::new));
   }
 
   private static class BackCompatHttpUrlProcessor implements SpanExporter {

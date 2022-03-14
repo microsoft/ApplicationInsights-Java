@@ -60,6 +60,8 @@ public class TraceLog4j2Test extends AiSmokeTest {
 
     assertEquals("This is log4j2 warn.", md1.getMessage());
     assertEquals(SeverityLevel.Warning, md1.getSeverityLevel());
+    assertEquals("Logger", md1.getProperties().get("SourceType"));
+    assertEquals("WARN", md1.getProperties().get("LoggingLevel"));
     assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
     assertNotNull(md1.getProperties().get("ThreadName"));
     assertEquals("MDC value", md1.getProperties().get("MDC key"));
@@ -67,16 +69,19 @@ public class TraceLog4j2Test extends AiSmokeTest {
 
     assertEquals("This is log4j2 error.", md2.getMessage());
     assertEquals(SeverityLevel.Error, md2.getSeverityLevel());
+    assertEquals("Logger", md2.getProperties().get("SourceType"));
+    assertEquals("ERROR", md2.getProperties().get("LoggingLevel"));
     assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
     assertNotNull(md1.getProperties().get("ThreadName"));
     assertEquals(4, md2.getProperties().size());
 
     assertEquals("This is log4j2 fatal.", md3.getMessage());
     assertEquals(SeverityLevel.Critical, md3.getSeverityLevel());
+    assertEquals("Logger", md3.getProperties().get("SourceType"));
+    assertEquals("ERROR", md3.getProperties().get("LoggingLevel"));
     assertEquals("smoketestapp", md3.getProperties().get("LoggerName"));
     assertNotNull(md3.getProperties().get("ThreadName"));
     assertEquals(4, md3.getProperties().size());
-
     assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /TraceLog4j2UsingAgent/traceLog4j2");
     assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /TraceLog4j2UsingAgent/traceLog4j2");
     assertParentChild(rd, rdEnvelope, mdEnvelope3, "GET /TraceLog4j2UsingAgent/traceLog4j2");

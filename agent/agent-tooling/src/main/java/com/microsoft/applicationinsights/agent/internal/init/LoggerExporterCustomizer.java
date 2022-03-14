@@ -85,13 +85,11 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
 
   private static List<Configuration.ProcessorConfig> getLogProcessorConfigs(
       Configuration configuration) {
-    List<Configuration.ProcessorConfig> processorConfigs =
-        configuration.preview.processors.stream()
-            .filter(
-                processor ->
-                    processor.type == Configuration.ProcessorType.ATTRIBUTE
-                        || processor.type == Configuration.ProcessorType.LOG)
-            .collect(Collectors.toCollection(ArrayList::new));
-    return processorConfigs;
+    return configuration.preview.processors.stream()
+        .filter(
+            processor ->
+                processor.type == Configuration.ProcessorType.ATTRIBUTE
+                    || processor.type == Configuration.ProcessorType.LOG)
+        .collect(Collectors.toCollection(ArrayList::new));
   }
 }

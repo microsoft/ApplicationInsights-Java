@@ -59,7 +59,7 @@ public class SpringBootAutoTest extends AiSmokeTest {
     assertEquals("INFO", md.getProperties().get("LoggingLevel"));
     assertEquals("smoketestapp", md.getProperties().get("LoggerName"));
     assertNotNull(md.getProperties().get("ThreadName"));
-    assertEquals("z", rd.getProperties().get("tenant"));
-    assertEquals(4, md.getProperties().size());
+    assertEquals("z", md.getProperties().get("tenant"));
+    assertEquals(5, md.getProperties().size());
   }
 }

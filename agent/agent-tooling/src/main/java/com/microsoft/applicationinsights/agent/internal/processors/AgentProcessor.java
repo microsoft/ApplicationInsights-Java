@@ -121,6 +121,7 @@ public abstract class AgentProcessor {
 
   public static class RegexpIncludeExclude extends IncludeExclude {
 
+    // pattern to match against span names or log bodies
     private final List<Pattern> patterns;
     private final Map<AttributeKey<?>, Pattern> attributeValuePatterns;
 
