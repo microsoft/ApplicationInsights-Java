@@ -40,12 +40,14 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
   private static final Logger logger = LoggerFactory.getLogger(FOR_CLASS);
 
   private final OperationLogger operationLogger;
+  private final boolean shouldLogWarnings;
 
   private final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
   // e.g. "Sending telemetry to the ingestion service"
-  public DiagnosticTelemetryPipelineListener(String operation) {
+  public DiagnosticTelemetryPipelineListener(String operation, boolean shouldLogWarnings) {
     operationLogger = new OperationLogger(FOR_CLASS, operation);
+    this.shouldLogWarnings = shouldLogWarnings;
   }
 
   @Override
@@ -66,19 +68,22 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
         break;
       case 401: // breeze returns if aad enabled and no authentication token provided
       case 403: // breeze returns if aad enabled or disabled (both cases) and
-        // wrong/expired credentials provided
-        operationLogger.recordFailure(
-            getErrorMessageFromCredentialRelatedResponse(
-                response.getStatusCode(), response.getBody()));
+        if (shouldLogWarnings) {
+          operationLogger.recordFailure(
+              getErrorMessageFromCredentialRelatedResponse(
+                  response.getStatusCode(), response.getBody()));
+        }
         break;
       case 408: // REQUEST TIMEOUT
       case 429: // TOO MANY REQUESTS
       case 500: // INTERNAL SERVER ERROR
       case 503: // SERVICE UNAVAILABLE
-        operationLogger.recordFailure(
-            "received response code "
-                + response.getStatusCode()
-                + " (telemetry will be stored to disk and retried later)");
+        if (shouldLogWarnings) {
+          operationLogger.recordFailure(
+              "received response code "
+                  + response.getStatusCode()
+                  + " (telemetry will be stored to disk and retried later)");
+        }
         break;
       case 402: // Breeze-specific: THROTTLED OVER EXTENDED TIME
         // TODO handle throttling

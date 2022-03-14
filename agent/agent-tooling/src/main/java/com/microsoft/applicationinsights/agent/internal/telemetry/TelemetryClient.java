@@ -36,6 +36,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.configuration.Con
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
+import com.azure.monitor.opentelemetry.exporter.implementation.logging.DiagnosticTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
@@ -253,13 +254,20 @@ public class TelemetryClient {
 
     TelemetryPipelineListener telemetryPipelineListener;
     if (tempDir == null) {
-      telemetryPipelineListener = TelemetryPipelineListener.noop();
+      telemetryPipelineListener =
+          new DiagnosticTelemetryPipelineListener(
+              "Sending telemetry to the ingestion service", true);
     } else {
       telemetryPipelineListener =
-          new LocalStorageTelemetryPipelineListener(
-              TempDirs.getSubDir(tempDir, TELEMETRY_FOLDER_NAME),
-              telemetryPipeline,
-              statsbeatModule.getNonessentialStatsbeat());
+          TelemetryPipelineListener.composite(
+              // don't log warnings in order to reduce sporadic/annoying warnings when storing to
+              // disk and retrying shortly afterwards anyways and will log then if that fails
+              new DiagnosticTelemetryPipelineListener(
+                  "Sending telemetry to the ingestion service", false),
+              new LocalStorageTelemetryPipelineListener(
+                  TempDirs.getSubDir(tempDir, TELEMETRY_FOLDER_NAME),
+                  telemetryPipeline,
+                  statsbeatModule.getNonessentialStatsbeat()));
     }
 
     return BatchItemProcessor.builder(

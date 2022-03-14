@@ -55,6 +55,9 @@ public class DelegatingPropagator implements TextMapPropagator {
 
     for (String additionalPropagator : additionalPropagators) {
       switch (additionalPropagator) {
+        case "b3":
+          propagators.add(B3Propagator.injectingSingleHeader());
+          break;
         case "b3multi":
           propagators.add(B3Propagator.injectingMultiHeaders());
           break;

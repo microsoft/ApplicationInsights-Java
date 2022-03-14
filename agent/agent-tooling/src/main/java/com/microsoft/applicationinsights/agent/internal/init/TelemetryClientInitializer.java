@@ -29,13 +29,13 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.heartbeat.HeartBeatModule;
-import com.microsoft.applicationinsights.agent.internal.perfcounter.Constants;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.DeadLockDetectorPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.FreeMemoryPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.GcPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.JmxAttributeData;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.JmxMetricPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.JvmHeapMemoryUsedPerformanceCounter;
+import com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.OshiPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.PerformanceCounterContainer;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.ProcessCpuPerformanceCounter;
@@ -90,11 +90,11 @@ public class TelemetryClientInitializer {
     PerformanceCounterContainer.INSTANCE.register(new GcPerformanceCounter());
 
     telemetryClient.addNonFilterableMetricNames(
-        Constants.TOTAL_CPU_PC_METRIC_NAME,
-        Constants.PROCESS_CPU_PC_METRIC_NAME,
-        Constants.PROCESS_MEM_PC_METRICS_NAME,
-        Constants.TOTAL_MEMORY_PC_METRIC_NAME,
-        Constants.PROCESS_IO_PC_METRIC_NAME);
+        MetricNames.TOTAL_CPU,
+        MetricNames.PROCESS_CPU,
+        MetricNames.PROCESS_MEMORY,
+        MetricNames.TOTAL_MEMORY,
+        MetricNames.PROCESS_IO);
 
     telemetryClient.setQuickPulse(configuration, telemetryClient);
   }
@@ -209,12 +209,8 @@ public class TelemetryClientInitializer {
       // Register each entry in the performance container
       for (Map.Entry<String, Collection<JmxAttributeData>> entry : data.entrySet()) {
         try {
-          if (PerformanceCounterContainer.INSTANCE.register(
-              new JmxMetricPerformanceCounter(entry.getKey(), entry.getKey(), entry.getValue()))) {
-            logger.trace("Registered JMX performance counter '{}'", entry.getKey());
-          } else {
-            logger.trace("Failed to register JMX performance counter '{}'", entry.getKey());
-          }
+          PerformanceCounterContainer.INSTANCE.register(
+              new JmxMetricPerformanceCounter(entry.getKey(), entry.getValue()));
         } catch (RuntimeException e) {
           logger.error(
               "Failed to register JMX performance counter '{}': '{}'",

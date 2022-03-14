@@ -50,7 +50,7 @@ class LocalFileSender implements Runnable {
 
   private final TelemetryPipelineListener diagnosticListener =
       new DiagnosticTelemetryPipelineListener(
-          "Sending telemetry to the ingestion service (retry from disk)");
+          "Sending telemetry to the ingestion service (retry from disk)", true);
 
   LocalFileSender(LocalFileLoader localFileLoader, TelemetryPipeline telemetryPipeline) {
     this.localFileLoader = localFileLoader;
