@@ -414,7 +414,7 @@ public class Configuration {
         // TODO add doc and go link, similar to telemetry processors
         throw new FriendlyException(
             "A role name override configuration is missing an \"httpPathPrefix\".",
-            "Please provide an \"httpPathPrefix\" for the instrumentation key override configuration.");
+            "Please provide an \"httpPathPrefix\" for the role name override configuration.");
       }
       if (roleName == null) {
         // TODO add doc and go link, similar to telemetry processors
