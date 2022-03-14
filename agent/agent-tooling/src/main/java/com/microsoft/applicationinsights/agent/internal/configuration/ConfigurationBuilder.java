@@ -35,8 +35,6 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -461,8 +459,7 @@ public class ConfigurationBuilder {
     return null;
   }
 
-  private static Configuration.Proxy overlayProxyFromEnv(Configuration.Proxy proxy)
-      throws MalformedURLException, UnsupportedEncodingException {
+  private static Configuration.Proxy overlayProxyFromEnv(Configuration.Proxy proxy) {
 
     String proxyEnvVar = getEnvVar(APPLICATIONINSIGHTS_PROXY);
     if (proxyEnvVar == null) {
@@ -479,22 +476,29 @@ public class ConfigurationBuilder {
 
     Configuration.Proxy proxyFromEnv = new Configuration.Proxy();
 
-    URL proxyUrl = new URL(proxyEnvVar);
-    proxyFromEnv.host = proxyUrl.getHost();
-    proxyFromEnv.port = proxyUrl.getPort();
-    if (proxyFromEnv.port == -1) {
-      proxyFromEnv.port = proxyUrl.getDefaultPort();
-    }
-
-    String userInfo = proxyUrl.getUserInfo();
-    if (userInfo != null) {
-      String[] usernamePassword = userInfo.split(":", 2);
-      if (usernamePassword.length == 2) {
-        proxyFromEnv.username =
-            URLDecoder.decode(usernamePassword[0], StandardCharsets.UTF_8.toString());
-        proxyFromEnv.password =
-            URLDecoder.decode(usernamePassword[1], StandardCharsets.UTF_8.toString());
+    try {
+      URL proxyUrl = new URL(proxyEnvVar);
+      proxyFromEnv.host = proxyUrl.getHost();
+      proxyFromEnv.port = proxyUrl.getPort();
+      if (proxyFromEnv.port == -1) {
+        proxyFromEnv.port = proxyUrl.getDefaultPort();
       }
+
+      String userInfo = proxyUrl.getUserInfo();
+      if (userInfo != null) {
+        String[] usernamePassword = userInfo.split(":", 2);
+        if (usernamePassword.length == 2) {
+          proxyFromEnv.username =
+              URLDecoder.decode(usernamePassword[0], StandardCharsets.UTF_8.toString());
+          proxyFromEnv.password =
+              URLDecoder.decode(usernamePassword[1], StandardCharsets.UTF_8.toString());
+        }
+      }
+    } catch (IOException e) {
+      throw new FriendlyException(
+          "Error parsing environment variable APPLICATIONINSIGHTS_PROXY",
+          "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358",
+          e);
     }
 
     return proxyFromEnv;
