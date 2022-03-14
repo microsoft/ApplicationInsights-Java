@@ -257,6 +257,11 @@ public class Configuration {
     // telemetry (they are much smaller so a larger queue size is ok)
     public int metricsExportQueueCapacity = 65536;
 
+    // unfortunately the Java SDK behavior has always been to report the "% Processor Time" number
+    // as "normalized" (divided by # of CPU cores), even though it should be non-normalized
+    // maybe this can be fixed in 4.0 (would be a breaking change)
+    public boolean reportNonNormalizedProcessorTime;
+
     private static final Set<String> VALID_ADDITIONAL_PROPAGATORS =
         new HashSet<>(asList("b3", "b3multi"));
 

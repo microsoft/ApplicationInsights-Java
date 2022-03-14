@@ -26,6 +26,9 @@ import static com.microsoft.applicationinsights.agent.internal.perfcounter.Metri
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.CpuPerformanceCounterCalculator;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,17 +37,28 @@ public class ProcessCpuPerformanceCounter implements PerformanceCounter {
 
   private static final Logger logger = LoggerFactory.getLogger(ProcessCpuPerformanceCounter.class);
 
-  private CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator;
+  private static final OperatingSystemMXBean operatingSystemMxBean =
+      ManagementFactory.getOperatingSystemMXBean();
 
-  public ProcessCpuPerformanceCounter() {
+  private final boolean reportNonNormalizedProcessorTime;
+
+  private final CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator =
+      getCpuPerformanceCounterCalculator();
+
+  public ProcessCpuPerformanceCounter(boolean reportNonNormalizedProcessorTime) {
+    this.reportNonNormalizedProcessorTime = reportNonNormalizedProcessorTime;
+  }
+
+  @Nullable
+  private static CpuPerformanceCounterCalculator getCpuPerformanceCounterCalculator() {
     try {
-      cpuPerformanceCounterCalculator = new CpuPerformanceCounterCalculator();
+      return new CpuPerformanceCounterCalculator();
     } catch (ThreadDeath td) {
       throw td;
     } catch (Throwable t) {
       try {
-        cpuPerformanceCounterCalculator = null;
         logger.error("Failed to create ProcessCpuPerformanceCounter", t);
+        return null;
       } catch (ThreadDeath td) {
         throw td;
       } catch (Throwable t2) {
@@ -59,20 +73,25 @@ public class ProcessCpuPerformanceCounter implements PerformanceCounter {
     if (cpuPerformanceCounterCalculator == null) {
       return;
     }
-    Double processCpuUsage = cpuPerformanceCounterCalculator.getProcessCpuUsage();
+    Double processCpuUsage = cpuPerformanceCounterCalculator.getProcessCpuPercentage();
     if (processCpuUsage == null) {
       return;
     }
 
-    // unfortunately the Java SDK behavior has always been to report the "% Processor Time" number
-    // as "normalized" (divided by # of CPU cores), even though it should be non-normalized
-    // maybe this can be fixed in 4.0 (would be a breaking change)
+    double normalized = processCpuUsage / operatingSystemMxBean.getAvailableProcessors();
+
+    if (!reportNonNormalizedProcessorTime) {
+      // unfortunately the Java SDK behavior has always been to report the "% Processor Time" number
+      // as "normalized" (divided by # of CPU cores), even though it should be non-normalized
+      // maybe this can be fixed in 4.0 (would be a breaking change)
+      processCpuUsage = normalized;
+    }
 
     logger.trace("Performance Counter: {}: {}", PROCESS_CPU, processCpuUsage);
     telemetryClient.trackAsync(telemetryClient.newMetricTelemetry(PROCESS_CPU, processCpuUsage));
 
     logger.trace("Performance Counter: {}: {}", PROCESS_CPU_NORMALIZED, processCpuUsage);
     telemetryClient.trackAsync(
-        telemetryClient.newMetricTelemetry(PROCESS_CPU_NORMALIZED, processCpuUsage));
+        telemetryClient.newMetricTelemetry(PROCESS_CPU_NORMALIZED, normalized));
   }
 }

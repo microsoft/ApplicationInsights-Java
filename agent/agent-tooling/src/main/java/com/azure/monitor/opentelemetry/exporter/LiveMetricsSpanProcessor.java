@@ -52,7 +52,12 @@ public class LiveMetricsSpanProcessor implements SpanProcessor {
     this.instrumentationKey = instrumentationKey;
     quickPulse =
         QuickPulse.create(
-            httpPipeline, () -> endpointUrl, () -> instrumentationKey, roleName, roleInstance);
+            httpPipeline,
+            () -> endpointUrl,
+            () -> instrumentationKey,
+            roleName,
+            roleInstance,
+            true);
   }
 
   @Override

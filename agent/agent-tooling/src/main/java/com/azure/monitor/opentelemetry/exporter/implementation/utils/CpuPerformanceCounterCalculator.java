@@ -22,10 +22,10 @@
 package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
 import java.lang.management.ManagementFactory;
-import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,48 +34,35 @@ public final class CpuPerformanceCounterCalculator {
   private static final Logger logger =
       LoggerFactory.getLogger(CpuPerformanceCounterCalculator.class);
 
-  private final int numberOfCpus;
+  private static final RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
 
   private long prevUpTime;
   private long prevProcessCpuTime;
 
   private ObjectName osBean;
 
-  public CpuPerformanceCounterCalculator() {
-    OperatingSystemMXBean operatingSystemMxBean = ManagementFactory.getOperatingSystemMXBean();
-    numberOfCpus = operatingSystemMxBean.getAvailableProcessors();
-  }
-
-  public Double getProcessCpuUsage() {
-    Double processCpuUsage = null;
+  // this is not normalized by number of cores, so can be 800% with 8 cores
+  @Nullable
+  public Double getProcessCpuPercentage() {
     try {
-      RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
-
       long upTime = runtimeMxBean.getUptime();
       long processCpuTime = getProcessCpuTime();
 
       if (prevUpTime > 0L && upTime > prevUpTime) {
         long elapsedCpu = processCpuTime - prevProcessCpuTime;
         long elapsedTime = upTime - prevUpTime;
-        processCpuUsage =
-            Math.min(
-                99.999,
-                elapsedCpu
-                    / (elapsedTime
-                        * 10_000.0
-                        * numberOfCpus)); // if this looks weird, here's another way to write it:
-        // (elapsedCpu / 1000000.0) / elapsedTime / numberOfCpus *
-        // 100.0
+        // if this looks weird, here's another way to write it:
+        // (elapsedCpu / 1000000.0) / elapsedTime / 100.0
+        return elapsedCpu / (elapsedTime * 10_000.0);
       }
       prevUpTime = upTime;
       prevProcessCpuTime = processCpuTime;
+      return null;
     } catch (Exception e) {
-      processCpuUsage = null;
       logger.error("Error in getProcessCPUUsage");
       logger.trace("Error in getProcessCPUUsage", e);
+      return null;
     }
-
-    return processCpuUsage;
   }
 
   private long getProcessCpuTime() throws Exception {

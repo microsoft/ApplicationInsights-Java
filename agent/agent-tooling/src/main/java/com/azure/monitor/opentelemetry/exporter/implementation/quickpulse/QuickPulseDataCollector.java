@@ -36,6 +36,8 @@ import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model.
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.CpuPerformanceCounterCalculator;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
+import java.lang.management.OperatingSystemMXBean;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,22 +47,33 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 import org.slf4j.LoggerFactory;
 
 final class QuickPulseDataCollector {
 
-  private Supplier<String> instrumentationKeySupplier;
+  private static final MemoryMXBean memory = ManagementFactory.getMemoryMXBean();
+
+  private static final OperatingSystemMXBean operatingSystemMxBean =
+      ManagementFactory.getOperatingSystemMXBean();
 
   private final AtomicReference<Counters> counters = new AtomicReference<>(null);
-  private final MemoryMXBean memory;
-  private final CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator;
-  private volatile QuickPulseStatus quickPulseStatus;
+  private final CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator =
+      getCpuPerformanceCounterCalculator();
+  private final boolean reportNonNormalizedProcessorTime;
 
-  QuickPulseDataCollector() {
-    CpuPerformanceCounterCalculator temp;
+  private volatile QuickPulseStatus quickPulseStatus = QuickPulseStatus.QP_IS_OFF;
+
+  private volatile Supplier<String> instrumentationKeySupplier;
+
+  QuickPulseDataCollector(boolean reportNonNormalizedProcessorTime) {
+    this.reportNonNormalizedProcessorTime = reportNonNormalizedProcessorTime;
+  }
+
+  @Nullable
+  private static CpuPerformanceCounterCalculator getCpuPerformanceCounterCalculator() {
     try {
-      temp = new CpuPerformanceCounterCalculator();
+      return new CpuPerformanceCounterCalculator();
     } catch (ThreadDeath td) {
       throw td;
     } catch (Throwable t) {
@@ -75,11 +88,8 @@ final class QuickPulseDataCollector {
       } catch (Throwable t2) {
         // chomp
       }
-      temp = null;
+      return null;
     }
-    cpuPerformanceCounterCalculator = temp;
-    memory = ManagementFactory.getMemoryMXBean();
-    quickPulseStatus = QuickPulseStatus.QP_IS_OFF;
   }
 
   synchronized void disable() {
@@ -105,7 +115,7 @@ final class QuickPulseDataCollector {
   synchronized FinalCounters getAndRestart() {
     Counters currentCounters = counters.getAndSet(new Counters());
     if (currentCounters != null) {
-      return new FinalCounters(currentCounters, memory, cpuPerformanceCounterCalculator);
+      return new FinalCounters(currentCounters);
     }
 
     return null;
@@ -116,7 +126,7 @@ final class QuickPulseDataCollector {
   synchronized FinalCounters peek() {
     Counters currentCounters = this.counters.get(); // this should be the only differece
     if (currentCounters != null) {
-      return new FinalCounters(currentCounters, memory, cpuPerformanceCounterCalculator);
+      return new FinalCounters(currentCounters);
     }
     return null;
   }
@@ -335,7 +345,8 @@ final class QuickPulseDataCollector {
     return x;
   }
 
-  static class FinalCounters {
+  class FinalCounters {
+
     final int exceptions;
     final long requests;
     final double requestsDuration;
@@ -347,25 +358,10 @@ final class QuickPulseDataCollector {
     final double cpuUsage;
     final List<QuickPulseDocument> documentList = new ArrayList<>();
 
-    FinalCounters(
-        Counters currentCounters,
-        MemoryMXBean memory,
-        CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator) {
-      if (memory != null && memory.getHeapMemoryUsage() != null) {
-        memoryCommitted = memory.getHeapMemoryUsage().getCommitted();
-      } else {
-        memoryCommitted = -1;
-      }
+    private FinalCounters(Counters currentCounters) {
 
-      Double cpuDatum;
-      if (cpuPerformanceCounterCalculator != null
-          && (cpuDatum = cpuPerformanceCounterCalculator.getProcessCpuUsage()) != null) {
-        // normally I wouldn't do this, but I prefer to avoid code duplication more than one-liners
-        // :)
-        cpuUsage = cpuDatum;
-      } else {
-        cpuUsage = -1;
-      }
+      memoryCommitted = getMemoryCommitted(memory);
+      cpuUsage = getCpuUsage(cpuPerformanceCounterCalculator);
       exceptions = currentCounters.exceptions.get();
 
       CountAndDuration countAndDuration =
@@ -381,6 +377,34 @@ final class QuickPulseDataCollector {
       synchronized (currentCounters.documentList) {
         this.documentList.addAll(currentCounters.documentList);
       }
+    }
+
+    private long getMemoryCommitted(@Nullable MemoryMXBean memory) {
+      if (memory == null) {
+        return -1;
+      }
+      MemoryUsage heapMemoryUsage = memory.getHeapMemoryUsage();
+      if (heapMemoryUsage == null) {
+        return -1;
+      }
+      return heapMemoryUsage.getCommitted();
+    }
+
+    private double getCpuUsage(
+        @Nullable CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator) {
+      if (cpuPerformanceCounterCalculator == null) {
+        return -1;
+      }
+      Double cpuDatum = cpuPerformanceCounterCalculator.getProcessCpuPercentage();
+      if (cpuDatum == null) {
+        return -1;
+      }
+
+      if (!reportNonNormalizedProcessorTime) {
+        cpuDatum /= operatingSystemMxBean.getAvailableProcessors();
+      }
+
+      return cpuDatum;
     }
   }
 
