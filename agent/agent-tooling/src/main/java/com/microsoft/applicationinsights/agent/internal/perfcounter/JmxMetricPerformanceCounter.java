@@ -30,9 +30,8 @@ public final class JmxMetricPerformanceCounter extends AbstractJmxPerformanceCou
 
   private static final Logger logger = LoggerFactory.getLogger(JmxMetricPerformanceCounter.class);
 
-  public JmxMetricPerformanceCounter(
-      String id, String objectName, Collection<JmxAttributeData> attributes) {
-    super(id, objectName, attributes);
+  public JmxMetricPerformanceCounter(String objectName, Collection<JmxAttributeData> attributes) {
+    super(objectName, attributes);
   }
 
   @Override

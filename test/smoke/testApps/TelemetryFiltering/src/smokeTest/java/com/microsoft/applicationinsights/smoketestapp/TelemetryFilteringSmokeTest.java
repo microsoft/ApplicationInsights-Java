@@ -73,6 +73,7 @@ public class TelemetryFilteringSmokeTest extends AiSmokeTest {
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
     assertEquals("00000000-0000-0000-0000-0FEEDDADBEEF", rdEnvelope.getIKey());
+    assertEquals("app", rdEnvelope.getTags().get("ai.cloud.role"));
     assertTrue(rd.getSuccess());
   }
 
@@ -95,6 +96,7 @@ public class TelemetryFilteringSmokeTest extends AiSmokeTest {
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
     assertEquals("87654321-0000-0000-0000-0FEEDDADBEEF", rdEnvelope.getIKey());
+    assertEquals("app3", rdEnvelope.getTags().get("ai.cloud.role"));
     assertTrue(rd.getSuccess());
 
     assertEquals("SQL", rdd.getType());
@@ -102,6 +104,7 @@ public class TelemetryFilteringSmokeTest extends AiSmokeTest {
     assertEquals("SELECT testdb.abc", rdd.getName());
     assertEquals("select * from abc", rdd.getData());
     assertEquals("87654321-0000-0000-0000-0FEEDDADBEEF", rddEnvelope.getIKey());
+    assertEquals("app3", rddEnvelope.getTags().get("ai.cloud.role"));
     assertTrue(rdd.getSuccess());
 
     assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /TelemetryFiltering/*");
