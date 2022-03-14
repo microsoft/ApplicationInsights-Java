@@ -35,15 +35,9 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
 
   private static final Logger logger = LoggerFactory.getLogger(AbstractJmxPerformanceCounter.class);
 
-  private final String id;
   private final String objectName;
   private final Collection<JmxAttributeData> attributes;
   private boolean alreadyLogged = false;
-
-  @Override
-  public String getId() {
-    return id;
-  }
 
   /**
    * The main method. The method will fetch the data and send it. The method will not do anything if
@@ -91,8 +85,7 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
   }
 
   protected AbstractJmxPerformanceCounter(
-      String id, String objectName, Collection<JmxAttributeData> attributes) {
-    this.id = id;
+      String objectName, Collection<JmxAttributeData> attributes) {
     this.objectName = objectName;
     this.attributes = attributes;
   }

@@ -36,11 +36,6 @@ public final class GcPerformanceCounter implements PerformanceCounter {
   private long currentTotalTime = 0;
 
   @Override
-  public String getId() {
-    return "GCPerformanceCounter";
-  }
-
-  @Override
   public void report(TelemetryClient telemetryClient) {
     synchronized (this) {
       List<GarbageCollectorMXBean> gcs = ManagementFactory.getGarbageCollectorMXBeans();
