@@ -92,7 +92,7 @@ public class IntegrationTests {
           .then(
               invocation ->
                   Mono.just(
-                      new MockHttpResponse(invocation.getArgument(0, HttpRequest.class), 401)));
+                      new MockHttpResponse(invocation.getArgument(0, HttpRequest.class), 500)));
     }
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
     localFileCache = new LocalFileCache(tempFolder);
