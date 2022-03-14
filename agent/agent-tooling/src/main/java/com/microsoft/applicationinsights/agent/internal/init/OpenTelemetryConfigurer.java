@@ -118,6 +118,12 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
           new InheritedInstrumentationKeySpanProcessor(
               configuration.preview.instrumentationKeyOverrides));
     }
+    // role name overrides span processor is only applied on span start, so doesn't need
+    // to be chained with the batch span processor
+    if (!configuration.preview.roleNameOverrides.isEmpty()) {
+      tracerProvider.addSpanProcessor(
+          new InheritedRoleNameSpanProcessor(configuration.preview.roleNameOverrides));
+    }
 
     String tracesExporter = config.getString("otel.traces.exporter");
     if ("none".equals(tracesExporter)) {
