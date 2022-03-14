@@ -21,8 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import static com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames.PROCESS_CPU;
-import static com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames.PROCESS_CPU_NORMALIZED;
+import static com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames.PROCESS_CPU_PERCENTAGE;
+import static com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames.PROCESS_CPU_PERCENTAGE_NORMALIZED;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.CpuPerformanceCounterCalculator;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -40,13 +40,13 @@ public class ProcessCpuPerformanceCounter implements PerformanceCounter {
   private static final OperatingSystemMXBean operatingSystemMxBean =
       ManagementFactory.getOperatingSystemMXBean();
 
-  private final boolean reportNonNormalizedProcessorTime;
+  private final boolean backCompatNonNormalizedCpuPercentage;
 
   private final CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator =
       getCpuPerformanceCounterCalculator();
 
-  public ProcessCpuPerformanceCounter(boolean reportNonNormalizedProcessorTime) {
-    this.reportNonNormalizedProcessorTime = reportNonNormalizedProcessorTime;
+  public ProcessCpuPerformanceCounter(boolean backCompatNonNormalizedCpuPercentage) {
+    this.backCompatNonNormalizedCpuPercentage = backCompatNonNormalizedCpuPercentage;
   }
 
   @Nullable
@@ -73,25 +73,27 @@ public class ProcessCpuPerformanceCounter implements PerformanceCounter {
     if (cpuPerformanceCounterCalculator == null) {
       return;
     }
-    Double processCpuUsage = cpuPerformanceCounterCalculator.getProcessCpuPercentage();
-    if (processCpuUsage == null) {
+    Double cpuPercentage = cpuPerformanceCounterCalculator.getCpuPercentage();
+    if (cpuPercentage == null) {
       return;
     }
 
-    double normalized = processCpuUsage / operatingSystemMxBean.getAvailableProcessors();
+    double cpuPercentageNormalized = cpuPercentage / operatingSystemMxBean.getAvailableProcessors();
 
-    if (!reportNonNormalizedProcessorTime) {
-      // unfortunately the Java SDK behavior has always been to report the "% Processor Time" number
-      // as "normalized" (divided by # of CPU cores), even though it should be non-normalized
-      // maybe this can be fixed in 4.0 (would be a breaking change)
-      processCpuUsage = normalized;
+    if (backCompatNonNormalizedCpuPercentage) {
+      // use normalized for backwards compatibility even though this is supposed to be
+      // non-normalized
+      cpuPercentage = cpuPercentageNormalized;
     }
 
-    logger.trace("Performance Counter: {}: {}", PROCESS_CPU, processCpuUsage);
-    telemetryClient.trackAsync(telemetryClient.newMetricTelemetry(PROCESS_CPU, processCpuUsage));
-
-    logger.trace("Performance Counter: {}: {}", PROCESS_CPU_NORMALIZED, processCpuUsage);
+    logger.trace("Performance Counter: {}: {}", PROCESS_CPU_PERCENTAGE, cpuPercentage);
     telemetryClient.trackAsync(
-        telemetryClient.newMetricTelemetry(PROCESS_CPU_NORMALIZED, normalized));
+        telemetryClient.newMetricTelemetry(PROCESS_CPU_PERCENTAGE, cpuPercentage));
+
+    logger.trace(
+        "Performance Counter: {}: {}", PROCESS_CPU_PERCENTAGE_NORMALIZED, cpuPercentageNormalized);
+    telemetryClient.trackAsync(
+        telemetryClient.newMetricTelemetry(
+            PROCESS_CPU_PERCENTAGE_NORMALIZED, cpuPercentageNormalized));
   }
 }

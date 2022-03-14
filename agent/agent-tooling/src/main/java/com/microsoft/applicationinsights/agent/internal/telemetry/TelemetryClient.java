@@ -76,9 +76,9 @@ public class TelemetryClient {
   private final Set<String> nonFilterableMetricNames =
       new HashSet<>(
           asList(
-              MetricNames.TOTAL_CPU,
-              MetricNames.PROCESS_CPU,
-              MetricNames.PROCESS_CPU_NORMALIZED,
+              MetricNames.TOTAL_CPU_PERCENTAGE,
+              MetricNames.PROCESS_CPU_PERCENTAGE,
+              MetricNames.PROCESS_CPU_PERCENTAGE_NORMALIZED,
               MetricNames.PROCESS_MEMORY,
               MetricNames.TOTAL_MEMORY,
               MetricNames.PROCESS_IO));
@@ -437,7 +437,7 @@ public class TelemetryClient {
               telemetryClient::getInstrumentationKey,
               telemetryClient.getRoleName(),
               telemetryClient.getRoleInstance(),
-              configuration.preview.reportNonNormalizedProcessorTime);
+              configuration.preview.backCompatNonNormalizedCpuPercentage);
     }
   }
 

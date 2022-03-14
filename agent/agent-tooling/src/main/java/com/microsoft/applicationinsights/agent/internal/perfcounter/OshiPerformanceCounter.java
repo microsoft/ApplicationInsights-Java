@@ -100,9 +100,11 @@ public class OshiPerformanceCounter implements PerformanceCounter {
           (currTotalProcessorMillis - prevTotalProcessorMillis)
               / (elapsedMillis * processor.getLogicalProcessorCount());
       double processorPercentage = 100 * processorLoad;
-      send(telemetryClient, processorPercentage, MetricNames.TOTAL_CPU);
+      send(telemetryClient, processorPercentage, MetricNames.TOTAL_CPU_PERCENTAGE);
       logger.trace(
-          "Sent performance counter for '{}': '{}'", MetricNames.TOTAL_CPU, processorPercentage);
+          "Sent performance counter for '{}': '{}'",
+          MetricNames.TOTAL_CPU_PERCENTAGE,
+          processorPercentage);
     }
 
     prevCollectionTimeMillis = currCollectionTimeMillis;

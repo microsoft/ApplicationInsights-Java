@@ -60,14 +60,14 @@ final class QuickPulseDataCollector {
   private final AtomicReference<Counters> counters = new AtomicReference<>(null);
   private final CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator =
       getCpuPerformanceCounterCalculator();
-  private final boolean reportNonNormalizedProcessorTime;
+  private final boolean backCompatNonNormalizedCpuPercentage;
 
   private volatile QuickPulseStatus quickPulseStatus = QuickPulseStatus.QP_IS_OFF;
 
   private volatile Supplier<String> instrumentationKeySupplier;
 
-  QuickPulseDataCollector(boolean reportNonNormalizedProcessorTime) {
-    this.reportNonNormalizedProcessorTime = reportNonNormalizedProcessorTime;
+  QuickPulseDataCollector(boolean backCompatNonNormalizedCpuPercentage) {
+    this.backCompatNonNormalizedCpuPercentage = backCompatNonNormalizedCpuPercentage;
   }
 
   @Nullable
@@ -361,7 +361,7 @@ final class QuickPulseDataCollector {
     private FinalCounters(Counters currentCounters) {
 
       memoryCommitted = getMemoryCommitted(memory);
-      cpuUsage = getCpuUsage(cpuPerformanceCounterCalculator);
+      cpuUsage = getNonNormalizedCpuPercentage(cpuPerformanceCounterCalculator);
       exceptions = currentCounters.exceptions.get();
 
       CountAndDuration countAndDuration =
@@ -390,17 +390,18 @@ final class QuickPulseDataCollector {
       return heapMemoryUsage.getCommitted();
     }
 
-    private double getCpuUsage(
+    private double getNonNormalizedCpuPercentage(
         @Nullable CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator) {
       if (cpuPerformanceCounterCalculator == null) {
         return -1;
       }
-      Double cpuDatum = cpuPerformanceCounterCalculator.getProcessCpuPercentage();
+      Double cpuDatum = cpuPerformanceCounterCalculator.getCpuPercentage();
       if (cpuDatum == null) {
         return -1;
       }
 
-      if (!reportNonNormalizedProcessorTime) {
+      if (backCompatNonNormalizedCpuPercentage) {
+        // normalize for backwards compatibility even though this is supposed to be non-normalized
         cpuDatum /= operatingSystemMxBean.getAvailableProcessors();
       }
 
