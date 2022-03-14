@@ -51,11 +51,6 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
   }
 
   @Override
-  public String getId() {
-    return "DeadLockDetector";
-  }
-
-  @Override
   public void report(TelemetryClient telemetryClient) {
 
     long[] threadIds = threadBean.findDeadlockedThreads();

@@ -23,15 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 
-/**
- * PerformanceCounter interface.
- *
- * <p>Every concrete class should have a unique id and it should be able to collect data send that
- * data using a {@link TelemetryClient}
- */
 public interface PerformanceCounter {
-
-  String getId();
 
   void report(TelemetryClient telemetryClient);
 }

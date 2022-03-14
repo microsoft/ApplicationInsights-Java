@@ -42,11 +42,6 @@ public class JvmHeapMemoryUsedPerformanceCounter implements PerformanceCounter {
   }
 
   @Override
-  public String getId() {
-    return "JvmHeapMemoryUsedPerformanceCounter";
-  }
-
-  @Override
   public void report(TelemetryClient telemetryClient) {
     if (memory == null) {
       return;

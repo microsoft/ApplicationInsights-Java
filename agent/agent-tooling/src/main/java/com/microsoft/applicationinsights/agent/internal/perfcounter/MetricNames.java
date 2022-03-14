@@ -21,15 +21,16 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import static org.assertj.core.api.Assertions.assertThat;
+public final class MetricNames {
 
-import org.junit.jupiter.api.Test;
+  public static final String TOTAL_CPU = "\\Processor(_Total)\\% Processor Time";
+  public static final String PROCESS_CPU = "\\Process(??APP_WIN32_PROC??)\\% Processor Time";
 
-class ProcessMemoryPerformanceCounterTest {
+  public static final String PROCESS_MEMORY = "\\Process(??APP_WIN32_PROC??)\\Private Bytes";
 
-  @Test
-  void testGetId() {
-    ProcessMemoryPerformanceCounter pc = new ProcessMemoryPerformanceCounter();
-    assertThat(pc.getId()).isEqualTo(Constants.PROCESS_MEM_PC_ID);
-  }
+  public static final String TOTAL_MEMORY = "\\Memory\\Available Bytes";
+
+  public static final String PROCESS_IO = "\\Process(??APP_WIN32_PROC??)\\IO Data Bytes/sec";
+
+  private MetricNames() {}
 }
