@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
+import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
@@ -31,8 +32,8 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.Stat
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import io.opentelemetry.api.common.AttributeKey;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -248,6 +249,7 @@ public class Configuration {
     public PreviewStatsbeat statsbeat = new PreviewStatsbeat();
 
     public List<InstrumentationKeyOverride> instrumentationKeyOverrides = new ArrayList<>();
+    public List<RoleNameOverride> roleNameOverrides = new ArrayList<>();
 
     public int generalExportQueueCapacity = 2048;
     // metrics get flooded every 60 seconds by default, so need larger queue size to avoid dropping
@@ -255,7 +257,7 @@ public class Configuration {
     public int metricsExportQueueCapacity = 65536;
 
     private static final Set<String> VALID_ADDITIONAL_PROPAGATORS =
-        Collections.singleton("b3multi");
+        new HashSet<>(asList("b3", "b3multi"));
 
     public void validate() {
       for (Configuration.SamplingOverride samplingOverride : sampling.overrides) {
@@ -264,6 +266,9 @@ public class Configuration {
       for (Configuration.InstrumentationKeyOverride instrumentationKeyOverride :
           instrumentationKeyOverrides) {
         instrumentationKeyOverride.validate();
+      }
+      for (Configuration.RoleNameOverride roleNameOverride : roleNameOverrides) {
+        roleNameOverride.validate();
       }
       for (ProcessorConfig processorConfig : processors) {
         processorConfig.validate();
@@ -396,7 +401,27 @@ public class Configuration {
         // TODO add doc and go link, similar to telemetry processors
         throw new FriendlyException(
             "An instrumentation key override configuration is missing an \"instrumentationKey\".",
-            "Please provide an \"instrumentationKey\" for the instrumentation key configuration.");
+            "Please provide an \"instrumentationKey\" for the instrumentation key override configuration.");
+      }
+    }
+  }
+
+  public static class RoleNameOverride {
+    public String httpPathPrefix;
+    public String roleName;
+
+    public void validate() {
+      if (httpPathPrefix == null) {
+        // TODO add doc and go link, similar to telemetry processors
+        throw new FriendlyException(
+            "A role name override configuration is missing an \"httpPathPrefix\".",
+            "Please provide an \"httpPathPrefix\" for the role name override configuration.");
+      }
+      if (roleName == null) {
+        // TODO add doc and go link, similar to telemetry processors
+        throw new FriendlyException(
+            "An role name override configuration is missing a \"roleName\".",
+            "Please provide a \"roleName\" for the role name override configuration.");
       }
     }
   }

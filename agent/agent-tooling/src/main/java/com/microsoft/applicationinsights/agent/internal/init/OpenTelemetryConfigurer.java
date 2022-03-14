@@ -43,8 +43,10 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -117,6 +119,12 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
           new InheritedInstrumentationKeySpanProcessor(
               configuration.preview.instrumentationKeyOverrides));
     }
+    // role name overrides span processor is only applied on span start, so doesn't need
+    // to be chained with the batch span processor
+    if (!configuration.preview.roleNameOverrides.isEmpty()) {
+      tracerProvider.addSpanProcessor(
+          new InheritedRoleNameSpanProcessor(configuration.preview.roleNameOverrides));
+    }
 
     String tracesExporter = config.getString("otel.traces.exporter");
     if ("none".equals(tracesExporter)) {
@@ -156,9 +164,20 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
     }
 
     // using BatchSpanProcessor in order to get off of the application thread as soon as possible
-    // using batch size 1 because need to convert to SpanData as soon as possible to grab data for
-    // live metrics. the real batching is done at a lower level
-    return BatchSpanProcessor.builder(spanExporter).setMaxExportBatchSize(1).build();
+    BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(currExporter);
+
+    String delayMillisStr = System.getenv("APPLICATIONINSIGHTS_PREVIEW_BSP_SCHEDULE_DELAY");
+    if (delayMillisStr != null) {
+      // experimenting with flushing at small interval instead of using batch size 1
+      // (suspect this may be better performance on small containers)
+      builder.setScheduleDelay(Duration.ofMillis(Integer.parseInt(delayMillisStr)));
+    } else {
+      // using batch size 1 because need to convert to SpanData as soon as possible to grab data for
+      // live metrics. the real batching is done at a lower level
+      builder.setMaxExportBatchSize(1);
+    }
+
+    return builder.setScheduleDelay(Duration.ofMillis(100)).build();
   }
 
   private static List<ProcessorConfig> getSpanProcessorConfigs(Configuration configuration) {
