@@ -51,14 +51,27 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
 
     autoConfiguration.addLogEmitterProviderCustomizer(
         (builder, config) -> {
-          return builder.addLogProcessor(createLogExporter());
+          LogExporter logExporter = new LoggerExporter(TelemetryClient.getActive());
+          Configuration configuration = MainEntryPoint.getConfiguration();
+          LogProcessor aiOperationNameLogProcessor = createAiOperationNameLogProcessor(logExporter, configuration);
+          builder.addLogProcessor(aiOperationNameLogProcessor);
+
+          LogProcessor inheritedAttributesLogProcessor = createInheritedAttributesLogProcessor(logExporter, configuration);
+          if (inheritedAttributesLogProcessor != null) {
+            builder.addLogProcessor(inheritedAttributesLogProcessor);
+          }
+
+          LogProcessor inheritedInstrumentationKeyLogProcessor = createInheritedInstrumentationKeyLogProcessor(logExporter, configuration);
+          if (inheritedInstrumentationKeyLogProcessor != null) {
+            builder.addLogProcessor(inheritedInstrumentationKeyLogProcessor);
+          }
+
+          return builder;
         });
   }
 
-  private static LogProcessor createLogExporter() {
-    LogExporter logExporter = new LoggerExporter(TelemetryClient.getActive());
-    List<Configuration.ProcessorConfig> processorConfigs =
-        getLogProcessorConfigs(MainEntryPoint.getConfiguration());
+  private static LogProcessor createAiOperationNameLogProcessor(LogExporter logExporter, Configuration configuration) {
+    List<Configuration.ProcessorConfig> processorConfigs = getLogProcessorConfigs(configuration);
     if (!processorConfigs.isEmpty()) {
       // Reversing the order of processors before passing it Log processor
       Collections.reverse(processorConfigs);
@@ -82,6 +95,25 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
     return new AiOperationNameLogWrappingProcessor(
         BatchLogProcessor.builder(logExporter).setMaxExportBatchSize(1).build());
   }
+
+  private static LogProcessor createInheritedAttributesLogProcessor(LogExporter logExporter, Configuration configuration) {
+    if (!configuration.preview.inheritedAttributes.isEmpty()) {
+      return new InheritedAttributesLogProcessor(configuration.preview.inheritedAttributes,
+          BatchLogProcessor.builder(logExporter).setMaxExportBatchSize(1).build());
+    }
+
+    return null;
+  }
+
+  private static LogProcessor createInheritedInstrumentationKeyLogProcessor(LogExporter logExporter, Configuration configuration) {
+    if (!configuration.preview.instrumentationKeyOverrides.isEmpty()) {
+      return new InheritedInstrumentationKeyLogProcessor(configuration.preview.instrumentationKeyOverrides,
+          BatchLogProcessor.builder(logExporter).setMaxExportBatchSize(1).build());
+    }
+
+    return null;
+  }
+
 
   private static List<Configuration.ProcessorConfig> getLogProcessorConfigs(
       Configuration configuration) {
