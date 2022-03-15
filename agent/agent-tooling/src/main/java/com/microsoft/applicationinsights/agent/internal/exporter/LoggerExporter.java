@@ -34,6 +34,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTi
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.instrumentation.api.config.Config;
@@ -43,6 +44,7 @@ import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
@@ -223,6 +225,10 @@ public class LoggerExporter implements LogExporter {
                 stringKey.substring(LOG4J1_2_MDC_PREFIX.length()), String.valueOf(value));
             return;
           }
+          String val = convertToString(value, key.getType());
+          if (!SemanticAttributes.THREAD_ID.getKey().equals(stringKey) && !SemanticAttributes.THREAD_NAME.getKey().equals(stringKey) && !AI_OPERATION_NAME_KEY.getKey().equals(stringKey)) {
+            telemetryBuilder.addProperty(key.getKey(), val);
+          }
         });
   }
 
@@ -355,5 +361,34 @@ public class LoggerExporter implements LogExporter {
         logger.error("Unexpected severity {}", severity);
         return Level.OFF;
     }
+  }
+
+  @Nullable
+  private static String convertToString(Object value, AttributeType type) {
+    switch (type) {
+      case STRING:
+      case BOOLEAN:
+      case LONG:
+      case DOUBLE:
+        return String.valueOf(value);
+      case STRING_ARRAY:
+      case BOOLEAN_ARRAY:
+      case LONG_ARRAY:
+      case DOUBLE_ARRAY:
+        return join((List<?>) value);
+    }
+    logger.warn("unexpected attribute type: {}", type);
+    return null;
+  }
+
+  private static <T> String join(List<T> values) {
+    StringBuilder sb = new StringBuilder();
+    for (Object val : values) {
+      if (sb.length() > 0) {
+        sb.append(", ");
+      }
+      sb.append(val);
+    }
+    return sb.toString();
   }
 }

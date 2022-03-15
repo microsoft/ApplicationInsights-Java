@@ -8,31 +8,31 @@ import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 
-public class InheritedInstrumentationKeyLogProcessor implements LogProcessor {
+public class InheritedRoleNameLogProcessor implements LogProcessor {
 
-  private static final AttributeKey<String> INSTRUMENTATION_KEY_KEY =
-      AttributeKey.stringKey("ai.preview.instrumentation_key");
+  private static final AttributeKey<String> ROLE_NAME_KEY =
+      AttributeKey.stringKey("ai.preview.service_name");
 
   private final LogProcessor delegate;
 
-  public InheritedInstrumentationKeyLogProcessor(LogProcessor delegate) {
+  public InheritedRoleNameLogProcessor(LogProcessor delegate) {
     this.delegate = delegate;
   }
 
   @Override
   public void emit(LogData log) {
-    Span currentSpan = Span.current();
-    if (!(currentSpan instanceof ReadableSpan)) {
+    Span span = Span.current();
+    if (!(span instanceof ReadableSpan)) {
       return;
     }
 
-    ReadableSpan readableSpan = (ReadableSpan) currentSpan;
-    String instrumentationKey = readableSpan.getAttribute(INSTRUMENTATION_KEY_KEY);
-    if (instrumentationKey != null) {
+    ReadableSpan readableSpan = (ReadableSpan) span;
+    String roleName = readableSpan.getAttribute(ROLE_NAME_KEY);
+    if (roleName != null) {
       log = new MyLogData(
           log,
           log.getAttributes().toBuilder()
-              .put(INSTRUMENTATION_KEY_KEY, instrumentationKey)
+              .put(ROLE_NAME_KEY, roleName)
               .build());
     }
 

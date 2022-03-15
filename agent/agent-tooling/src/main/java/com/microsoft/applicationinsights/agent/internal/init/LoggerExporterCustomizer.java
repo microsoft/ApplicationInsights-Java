@@ -33,7 +33,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvide
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
 import io.opentelemetry.sdk.logs.export.LogExporter;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,26 +51,26 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
 
     autoConfiguration.addLogEmitterProviderCustomizer(
         (builder, config) -> {
-          LogExporter logExporter = new LoggerExporter(TelemetryClient.getActive());
           Configuration configuration = MainEntryPoint.getConfiguration();
-          LogProcessor aiOperationNameLogProcessor = createAiOperationNameLogProcessor(logExporter, configuration);
-          builder.addLogProcessor(aiOperationNameLogProcessor);
-
-          LogProcessor inheritedAttributesLogProcessor = createInheritedAttributesLogProcessor(logExporter, configuration);
-          if (inheritedAttributesLogProcessor != null) {
-            builder.addLogProcessor(inheritedAttributesLogProcessor);
+          LogProcessor logProcessor = createCustomLogProcessor(configuration);
+          if (!configuration.preview.inheritedAttributes.isEmpty()) {
+            logProcessor = new InheritedAttributesLogProcessor(configuration.preview.inheritedAttributes, logProcessor);
           }
 
-          LogProcessor inheritedInstrumentationKeyLogProcessor = createInheritedInstrumentationKeyLogProcessor(logExporter, configuration);
-          if (inheritedInstrumentationKeyLogProcessor != null) {
-            builder.addLogProcessor(inheritedInstrumentationKeyLogProcessor);
+          if (!configuration.preview.instrumentationKeyOverrides.isEmpty()) {
+            logProcessor = new InheritedInstrumentationKeyLogProcessor(logProcessor);
           }
 
-          return builder;
+          if (!configuration.preview.roleNameOverrides.isEmpty()) {
+            logProcessor = new InheritedRoleNameLogProcessor(logProcessor);
+          }
+
+          return builder.addLogProcessor(logProcessor);
         });
   }
 
-  private static LogProcessor createAiOperationNameLogProcessor(LogExporter logExporter, Configuration configuration) {
+  private static LogProcessor createCustomLogProcessor(Configuration configuration) {
+    LogExporter logExporter = new LoggerExporter(TelemetryClient.getActive());
     List<Configuration.ProcessorConfig> processorConfigs = getLogProcessorConfigs(configuration);
     if (!processorConfigs.isEmpty()) {
       // Reversing the order of processors before passing it Log processor
@@ -96,26 +95,6 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
     return new AiOperationNameLogWrappingProcessor(
         BatchLogProcessor.builder(logExporter).setMaxExportBatchSize(1).build());
   }
-
-  @Nullable
-  private static LogProcessor createInheritedAttributesLogProcessor(LogExporter logExporter, Configuration configuration) {
-    if (!configuration.preview.inheritedAttributes.isEmpty()) {
-      return new InheritedAttributesLogProcessor(configuration.preview.inheritedAttributes,
-          BatchLogProcessor.builder(logExporter).setMaxExportBatchSize(1).build());
-    }
-
-    return null;
-  }
-
-  @Nullable
-  private static LogProcessor createInheritedInstrumentationKeyLogProcessor(LogExporter logExporter, Configuration configuration) {
-    if (!configuration.preview.instrumentationKeyOverrides.isEmpty()) {
-      return new InheritedInstrumentationKeyLogProcessor(BatchLogProcessor.builder(logExporter).setMaxExportBatchSize(1).build());
-    }
-
-    return null;
-  }
-
 
   private static List<Configuration.ProcessorConfig> getLogProcessorConfigs(
       Configuration configuration) {

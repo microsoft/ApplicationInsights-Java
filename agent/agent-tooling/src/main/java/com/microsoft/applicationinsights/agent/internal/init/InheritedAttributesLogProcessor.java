@@ -23,9 +23,8 @@ public class InheritedAttributesLogProcessor implements LogProcessor {
     this.delegate = delegate;
   }
 
-  @SuppressWarnings("SystemOut")
   @Override
-  public void emit(LogData logData) {
+  public void emit(LogData log) {
     Span currentSpan = Span.current();
     if (!(currentSpan instanceof ReadableSpan)) {
       return;
@@ -34,16 +33,16 @@ public class InheritedAttributesLogProcessor implements LogProcessor {
     ReadableSpan readableSpan = (ReadableSpan) currentSpan;
     for (AttributeKey<?> inheritedAttributeKey : inheritedAttributes) {
       Object value = readableSpan.getAttribute(inheritedAttributeKey);
-      // TODO remove after test is done
-      System.out.println("############## inherited key: " + inheritedAttributeKey.getKey());
-      System.out.println("############## inherited value: " + value.toString());
       if (value != null) {
-        logData.getAttributes().toBuilder().put((AttributeKey<Object>) inheritedAttributeKey, value);
+        log = new MyLogData(
+            log,
+            log.getAttributes().toBuilder()
+                .put((AttributeKey<Object>) inheritedAttributeKey, value)
+                .build());
       }
     }
 
-    logData = new MyLogData(logData, logData.getAttributes());
-    delegate.emit(logData);
+    delegate.emit(log);
   }
 
   @Override
