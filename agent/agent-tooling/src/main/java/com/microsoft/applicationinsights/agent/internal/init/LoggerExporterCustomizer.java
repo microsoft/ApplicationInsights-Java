@@ -48,17 +48,9 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
       // agent failed during startup
       return;
     }
-
     autoConfiguration.addLogEmitterProviderCustomizer(
-        (builder, config) -> {
-          Configuration configuration = MainEntryPoint.getConfiguration();
-          return builder.addLogProcessor(
-              // inherited attributes log processor also handles ikey and role name attribute
-              // inheritance (not only configured attributes)
-              new InheritedAttributesLogProcessor(
-                  configuration.preview.inheritedAttributes,
-                  createCustomLogProcessor(configuration)));
-        });
+        (builder, config) ->
+            builder.addLogProcessor(createCustomLogProcessor(MainEntryPoint.getConfiguration())));
   }
 
   private static LogProcessor createCustomLogProcessor(Configuration configuration) {
@@ -82,10 +74,22 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
       }
     }
 
+    LogProcessor logProcessor =
+        BatchLogProcessor.builder(logExporter).setMaxExportBatchSize(1).build();
+
     // operation name need to be captured while on the main thread
     // before passing off to the BatchLogProcessor
-    return new AiOperationNameLogWrappingProcessor(
-        BatchLogProcessor.builder(logExporter).setMaxExportBatchSize(1).build());
+    logProcessor = new AiOperationNameLogWrappingProcessor(logProcessor);
+
+    // inherited attributes log processor also handles ikey and role name attribute
+    // inheritance (not only configured attributes)
+    // and these all need access to Span.current(), so must be run before passing off to the
+    // BatchLogProcessor
+    logProcessor =
+        new InheritedAttributesLogProcessor(
+            configuration.preview.inheritedAttributes, logProcessor);
+
+    return logProcessor;
   }
 
   private static List<Configuration.ProcessorConfig> getLogProcessorConfigs(
