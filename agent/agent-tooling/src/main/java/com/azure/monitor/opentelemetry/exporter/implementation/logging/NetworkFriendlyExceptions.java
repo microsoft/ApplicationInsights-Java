@@ -253,15 +253,15 @@ public class NetworkFriendlyExceptions {
           "The JVM does not have any of the cipher suites which are supported by the endpoint \""
               + url
               + "\"";
-      String enableECC = System.getProperty("com.sun.net.ssl.enableECC");
-      if ("false".equalsIgnoreCase(enableECC)) {
+      String enableEcc = System.getProperty("com.sun.net.ssl.enableECC");
+      if ("false".equalsIgnoreCase(enableEcc)) {
         return populateFriendlyMessage(
             description
                 + ", because the system property \"com.sun.net.ssl.enableECC\" is set"
                 + " to \""
-                + enableECC
+                + enableEcc
                 + "\".",
-            "Remove \"-Dcom.sun.net.ssl.enableECC=" + enableECC + "\" from your command line.",
+            "Remove \"-Dcom.sun.net.ssl.enableECC=" + enableEcc + "\" from your command line.",
             getFriendlyExceptionBanner(url),
             "This message is only logged the first time it occurs after startup.");
       }
