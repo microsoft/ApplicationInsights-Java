@@ -3,7 +3,6 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.processors.MyLogData;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogProcessor;
@@ -35,6 +34,7 @@ public class InheritedAttributesLogProcessor implements LogProcessor {
     ReadableSpan readableSpan = (ReadableSpan) currentSpan;
     for (AttributeKey<?> inheritedAttributeKey : inheritedAttributes) {
       Object value = readableSpan.getAttribute(inheritedAttributeKey);
+      // TODO remove after test is done
       System.out.println("############## inherited key: " + inheritedAttributeKey.getKey());
       System.out.println("############## inherited value: " + value.toString());
       if (value != null) {
