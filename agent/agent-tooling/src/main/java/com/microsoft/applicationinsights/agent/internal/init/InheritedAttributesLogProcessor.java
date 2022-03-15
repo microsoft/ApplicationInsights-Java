@@ -77,9 +77,11 @@ public class InheritedAttributesLogProcessor implements LogProcessor {
     ReadableSpan readableSpan = (ReadableSpan) currentSpan;
     AttributesBuilder builder = log.getAttributes().toBuilder();
     for (AttributeKey<?> inheritedAttributeKey : inheritedAttributes) {
-      Object value = readableSpan.getAttribute(inheritedAttributeKey);
-      if (value == null && inheritedAttributeKey == AI_OPERATION_NAME_KEY) {
+      Object value;
+      if (inheritedAttributeKey == AI_OPERATION_NAME_KEY) {
         value = AiOperationNameSpanProcessor.getOperationName(readableSpan);
+      } else {
+        value = readableSpan.getAttribute(inheritedAttributeKey);
       }
       if (value != null) {
         if (builder == null) {
