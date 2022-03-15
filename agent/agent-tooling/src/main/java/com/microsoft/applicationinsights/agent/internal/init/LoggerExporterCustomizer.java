@@ -73,17 +73,12 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
       }
     }
 
-    LogProcessor logProcessor =
-        BatchLogProcessor.builder(logExporter).setMaxExportBatchSize(1).build();
-
     // inherited attributes log processor also handles operation name, ikey and role name attributes
     // and these all need access to Span.current(), so must be run before passing off to the
     // BatchLogProcessor
-    logProcessor =
-        new InheritedAttributesLogProcessor(
-            configuration.preview.inheritedAttributes, logProcessor);
-
-    return logProcessor;
+    return new InheritedAttributesLogProcessor(
+        configuration.preview.inheritedAttributes,
+        BatchLogProcessor.builder(logExporter).setMaxExportBatchSize(1).build());
   }
 
   private static List<Configuration.ProcessorConfig> getLogProcessorConfigs(
