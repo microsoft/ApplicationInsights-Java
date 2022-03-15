@@ -54,7 +54,9 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
           Configuration configuration = MainEntryPoint.getConfiguration();
           LogProcessor logProcessor = createCustomLogProcessor(configuration);
           if (!configuration.preview.inheritedAttributes.isEmpty()) {
-            logProcessor = new InheritedAttributesLogProcessor(configuration.preview.inheritedAttributes, logProcessor);
+            logProcessor =
+                new InheritedAttributesLogProcessor(
+                    configuration.preview.inheritedAttributes, logProcessor);
           }
 
           if (!configuration.preview.instrumentationKeyOverrides.isEmpty()) {

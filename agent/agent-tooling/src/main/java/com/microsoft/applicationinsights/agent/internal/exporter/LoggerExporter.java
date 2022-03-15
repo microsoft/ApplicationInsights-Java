@@ -226,7 +226,9 @@ public class LoggerExporter implements LogExporter {
             return;
           }
           String val = convertToString(value, key.getType());
-          if (!SemanticAttributes.THREAD_ID.getKey().equals(stringKey) && !SemanticAttributes.THREAD_NAME.getKey().equals(stringKey) && !AI_OPERATION_NAME_KEY.getKey().equals(stringKey)) {
+          if (!SemanticAttributes.THREAD_ID.getKey().equals(stringKey)
+              && !SemanticAttributes.THREAD_NAME.getKey().equals(stringKey)
+              && !AI_OPERATION_NAME_KEY.getKey().equals(stringKey)) {
             telemetryBuilder.addProperty(key.getKey(), val);
           }
         });
