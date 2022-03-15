@@ -234,6 +234,18 @@ public class LoggerExporter implements LogExporter {
           if (stringKey.equals(AI_OPERATION_NAME_KEY.getKey())) {
             return;
           }
+          if (stringKey.equals(SemanticAttributes.EXCEPTION_MESSAGE.getKey())) {
+            return;
+          }
+          if (stringKey.equals(SemanticAttributes.EXCEPTION_TYPE.getKey())) {
+            return;
+          }
+          if (stringKey.equals(SemanticAttributes.EXCEPTION_STACKTRACE.getKey())) {
+            return;
+          }
+          if (stringKey.equals("Logger Message")) {
+            return;
+          }
           String val = convertToString(value, key.getType());
           if (val != null) {
             telemetryBuilder.addProperty(key.getKey(), val);
