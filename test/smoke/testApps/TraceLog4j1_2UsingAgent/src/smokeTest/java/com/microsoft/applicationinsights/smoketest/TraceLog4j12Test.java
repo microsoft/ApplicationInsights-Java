@@ -78,8 +78,8 @@ public class TraceLog4j12Test extends AiSmokeTest {
     assertEquals("This is log4j1.2 fatal.", md3.getMessage());
     assertEquals(SeverityLevel.Critical, md3.getSeverityLevel());
     assertEquals("Logger", md3.getProperties().get("SourceType"));
-    assertEquals("ERROR", md3.getProperties().get("LoggingLevel"));
-    assertEquals("smoketestapp", md2.getProperties().get("LoggerName"));
+    assertEquals("FATAL", md3.getProperties().get("LoggingLevel"));
+    assertEquals("smoketestapp", md3.getProperties().get("LoggerName"));
     assertNotNull(md3.getProperties().get("ThreadName"));
     assertEquals(4, md3.getProperties().size());
 
