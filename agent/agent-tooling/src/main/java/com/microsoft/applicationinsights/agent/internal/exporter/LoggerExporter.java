@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
-import ch.qos.logback.classic.Level;
 import com.azure.core.util.CoreUtils;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
@@ -34,7 +33,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTi
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.instrumentation.api.config.Config;
@@ -44,8 +42,6 @@ import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +57,6 @@ public class LoggerExporter implements LogExporter {
       new OperationLogger(Exporter.class, "Exporting log");
 
   private final TelemetryClient telemetryClient;
-  private final AtomicBoolean stopped = new AtomicBoolean();
 
   public LoggerExporter(TelemetryClient telemetryClient) {
     this.telemetryClient = telemetryClient;
@@ -74,13 +69,9 @@ public class LoggerExporter implements LogExporter {
       return CompletableResultCode.ofFailure();
     }
 
-    if (stopped.get()) {
-      logger.debug("LoggerExporter has been stopped. Fail to export logs.");
-      return CompletableResultCode.ofFailure();
-    }
-
     boolean failure = false;
     for (LogData log : logs) {
+      logger.debug("exporting log: {}", log);
       try {
         internalExport(log);
         exportingLogLogger.recordSuccess();
@@ -90,6 +81,9 @@ public class LoggerExporter implements LogExporter {
       }
     }
 
+    // batching, retry, throttling, and writing to disk on failure occur downstream
+    // for simplicity not reporting back success/failure from this layer
+    // only that it was successfully delivered to the next layer
     return failure ? CompletableResultCode.ofFailure() : CompletableResultCode.ofSuccess();
   }
 
@@ -100,7 +94,6 @@ public class LoggerExporter implements LogExporter {
 
   @Override
   public CompletableResultCode shutdown() {
-    stopped.set(true);
     return CompletableResultCode.ofSuccess();
   }
 
@@ -111,7 +104,6 @@ public class LoggerExporter implements LogExporter {
       return;
     }
 
-    logger.debug("exporting log: {}", log); // do we need to log this, will that be too much?
     String stack = log.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
     if (stack == null) {
       trackMessage(log);
@@ -225,28 +217,16 @@ public class LoggerExporter implements LogExporter {
                 stringKey.substring(LOG4J1_2_MDC_PREFIX.length()), String.valueOf(value));
             return;
           }
-          if (stringKey.equals(SemanticAttributes.THREAD_ID.getKey())) {
-            return;
-          }
-          if (stringKey.equals(SemanticAttributes.THREAD_NAME.getKey())) {
-            return;
-          }
           if (stringKey.equals(AI_OPERATION_NAME_KEY.getKey())) {
             return;
           }
-          if (stringKey.equals(SemanticAttributes.EXCEPTION_MESSAGE.getKey())) {
+          if (stringKey.startsWith("thread.")) {
             return;
           }
-          if (stringKey.equals(SemanticAttributes.EXCEPTION_TYPE.getKey())) {
+          if (stringKey.equals("exception.")) {
             return;
           }
-          if (stringKey.equals(SemanticAttributes.EXCEPTION_STACKTRACE.getKey())) {
-            return;
-          }
-          if (stringKey.equals("Logger Message")) {
-            return;
-          }
-          String val = convertToString(value, key.getType());
+          String val = Exporter.convertToString(value, key.getType());
           if (val != null) {
             telemetryBuilder.addProperty(key.getKey(), val);
           }
@@ -258,9 +238,13 @@ public class LoggerExporter implements LogExporter {
       String loggerName,
       String threadName,
       Severity severity) {
-    telemetryBuilder.addProperty("SourceType", "Logger");
-    telemetryBuilder.addProperty("LoggingLevel", mapSeverityToLoggingLevel(severity).toString());
 
+    telemetryBuilder.addProperty("SourceType", "Logger");
+
+    String loggingLevel = mapSeverityToLoggingLevel(severity);
+    if (loggingLevel != null) {
+      telemetryBuilder.addProperty("LoggingLevel", loggingLevel);
+    }
     if (loggerName != null) {
       telemetryBuilder.addProperty("LoggerName", loggerName);
     }
@@ -345,71 +329,44 @@ public class LoggerExporter implements LogExporter {
 
   // TODO need to retrieve logging frameworks' name (Log4j, Logback, Java Util Logging) so that we
   // can correctly map Severity to logging level
-  private static Level mapSeverityToLoggingLevel(Severity severity) {
+  @Nullable
+  private static String mapSeverityToLoggingLevel(Severity severity) {
     switch (severity) {
       case UNDEFINED_SEVERITY_NUMBER:
-        return Level.ALL;
+        return null;
       case FATAL:
       case FATAL2:
       case FATAL3:
       case FATAL4:
+        return "FATAL";
       case ERROR:
       case ERROR2:
       case ERROR3:
       case ERROR4:
-        return Level.ERROR;
+        return "ERROR";
       case WARN:
       case WARN2:
       case WARN3:
       case WARN4:
-        return Level.WARN;
+        return "WARN";
       case INFO:
       case INFO2:
       case INFO3:
       case INFO4:
-        return Level.INFO;
+        return "INFO";
       case DEBUG:
       case DEBUG2:
       case DEBUG3:
       case DEBUG4:
-        return Level.DEBUG;
+        return "DEBUG";
       case TRACE:
       case TRACE2:
       case TRACE3:
       case TRACE4:
-        return Level.TRACE;
+        return "TRACE";
       default:
         logger.error("Unexpected severity {}", severity);
-        return Level.OFF;
+        return null;
     }
-  }
-
-  @Nullable
-  private static String convertToString(Object value, AttributeType type) {
-    switch (type) {
-      case STRING:
-      case BOOLEAN:
-      case LONG:
-      case DOUBLE:
-        return String.valueOf(value);
-      case STRING_ARRAY:
-      case BOOLEAN_ARRAY:
-      case LONG_ARRAY:
-      case DOUBLE_ARRAY:
-        return join((List<?>) value);
-    }
-    logger.warn("unexpected attribute type: {}", type);
-    return null;
-  }
-
-  private static <T> String join(List<T> values) {
-    StringBuilder sb = new StringBuilder();
-    for (Object val : values) {
-      if (sb.length() > 0) {
-        sb.append(", ");
-      }
-      sb.append(val);
-    }
-    return sb.toString();
   }
 }

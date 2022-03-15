@@ -161,6 +161,7 @@ public class Exporter implements SpanExporter {
       logger.debug("Instrumentation key is null or empty.");
       return CompletableResultCode.ofSuccess();
     }
+
     boolean failure = false;
     for (SpanData span : spans) {
       logger.debug("exporting span: {}", span);
@@ -172,6 +173,7 @@ public class Exporter implements SpanExporter {
         failure = true;
       }
     }
+
     // batching, retry, throttling, and writing to disk on failure occur downstream
     // for simplicity not reporting back success/failure from this layer
     // only that it was successfully delivered to the next layer
@@ -978,7 +980,7 @@ public class Exporter implements SpanExporter {
   }
 
   @Nullable
-  private static String convertToString(Object value, AttributeType type) {
+  static String convertToString(Object value, AttributeType type) {
     switch (type) {
       case STRING:
       case BOOLEAN:
