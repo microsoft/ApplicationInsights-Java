@@ -52,22 +52,12 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
     autoConfiguration.addLogEmitterProviderCustomizer(
         (builder, config) -> {
           Configuration configuration = MainEntryPoint.getConfiguration();
-          LogProcessor logProcessor = createCustomLogProcessor(configuration);
-          if (!configuration.preview.inheritedAttributes.isEmpty()) {
-            logProcessor =
-                new InheritedAttributesLogProcessor(
-                    configuration.preview.inheritedAttributes, logProcessor);
-          }
-
-          if (!configuration.preview.instrumentationKeyOverrides.isEmpty()) {
-            logProcessor = new InheritedInstrumentationKeyLogProcessor(logProcessor);
-          }
-
-          if (!configuration.preview.roleNameOverrides.isEmpty()) {
-            logProcessor = new InheritedRoleNameLogProcessor(logProcessor);
-          }
-
-          return builder.addLogProcessor(logProcessor);
+          return builder.addLogProcessor(
+              // inherited attributes log processor also handles ikey and role name attribute
+              // inheritance (not only configured attributes)
+              new InheritedAttributesLogProcessor(
+                  configuration.preview.inheritedAttributes,
+                  createCustomLogProcessor(configuration)));
         });
   }
 
