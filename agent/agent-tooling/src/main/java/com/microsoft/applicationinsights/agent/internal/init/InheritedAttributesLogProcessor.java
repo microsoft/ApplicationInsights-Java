@@ -35,6 +35,9 @@ import java.util.List;
 
 public class InheritedAttributesLogProcessor implements LogProcessor {
 
+  private static final AttributeKey<String> AI_OPERATION_NAME_KEY =
+      AttributeKey.stringKey("applicationinsights.internal.operation_name");
+
   private static final AttributeKey<String> INSTRUMENTATION_KEY_KEY =
       AttributeKey.stringKey("ai.preview.instrumentation_key");
 
@@ -56,6 +59,7 @@ public class InheritedAttributesLogProcessor implements LogProcessor {
     for (Configuration.InheritedAttribute inheritedAttribute : inheritedAttributes) {
       list.add(inheritedAttribute.getAttributeKey());
     }
+    list.add(AI_OPERATION_NAME_KEY);
     list.add(INSTRUMENTATION_KEY_KEY);
     list.add(ROLE_NAME_KEY);
     return list;

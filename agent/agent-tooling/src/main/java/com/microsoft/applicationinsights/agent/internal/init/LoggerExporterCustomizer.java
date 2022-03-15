@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.exporter.AiOperationNameLogWrappingProcessor;
 import com.microsoft.applicationinsights.agent.internal.exporter.LoggerExporter;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithLogProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.LogExporterWithAttributeProcessor;
@@ -77,12 +76,7 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
     LogProcessor logProcessor =
         BatchLogProcessor.builder(logExporter).setMaxExportBatchSize(1).build();
 
-    // operation name need to be captured while on the main thread
-    // before passing off to the BatchLogProcessor
-    logProcessor = new AiOperationNameLogWrappingProcessor(logProcessor);
-
-    // inherited attributes log processor also handles ikey and role name attribute
-    // inheritance (not only configured attributes)
+    // inherited attributes log processor also handles operation name, ikey and role name attributes
     // and these all need access to Span.current(), so must be run before passing off to the
     // BatchLogProcessor
     logProcessor =
