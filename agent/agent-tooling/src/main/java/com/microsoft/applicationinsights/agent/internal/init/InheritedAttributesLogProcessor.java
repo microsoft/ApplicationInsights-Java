@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.processors.MyLogData;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogProcessor;
@@ -47,6 +48,7 @@ public class InheritedAttributesLogProcessor implements LogProcessor {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public void emit(LogData log) {
     Span currentSpan = Span.current();
     if (!(currentSpan instanceof ReadableSpan)) {
@@ -54,16 +56,18 @@ public class InheritedAttributesLogProcessor implements LogProcessor {
     }
 
     ReadableSpan readableSpan = (ReadableSpan) currentSpan;
+    AttributesBuilder builder = log.getAttributes().toBuilder();
     for (AttributeKey<?> inheritedAttributeKey : inheritedAttributes) {
       Object value = readableSpan.getAttribute(inheritedAttributeKey);
       if (value != null) {
-        log =
-            new MyLogData(
-                log,
-                log.getAttributes().toBuilder()
-                    .put((AttributeKey<Object>) inheritedAttributeKey, value)
-                    .build());
+        if (builder == null) {
+          builder = log.getAttributes().toBuilder();
+        }
+        builder.put((AttributeKey<Object>) inheritedAttributeKey, value);
       }
+    }
+    if (builder != null) {
+      log = new MyLogData(log, builder.build());
     }
 
     delegate.emit(log);
