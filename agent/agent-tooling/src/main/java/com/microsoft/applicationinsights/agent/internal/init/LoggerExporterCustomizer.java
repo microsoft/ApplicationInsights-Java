@@ -33,6 +33,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvide
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
 import io.opentelemetry.sdk.logs.export.LogExporter;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -96,6 +97,7 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
         BatchLogProcessor.builder(logExporter).setMaxExportBatchSize(1).build());
   }
 
+  @Nullable
   private static LogProcessor createInheritedAttributesLogProcessor(LogExporter logExporter, Configuration configuration) {
     if (!configuration.preview.inheritedAttributes.isEmpty()) {
       return new InheritedAttributesLogProcessor(configuration.preview.inheritedAttributes,
@@ -105,10 +107,10 @@ public class LoggerExporterCustomizer implements AutoConfigurationCustomizerProv
     return null;
   }
 
+  @Nullable
   private static LogProcessor createInheritedInstrumentationKeyLogProcessor(LogExporter logExporter, Configuration configuration) {
     if (!configuration.preview.instrumentationKeyOverrides.isEmpty()) {
-      return new InheritedInstrumentationKeyLogProcessor(configuration.preview.instrumentationKeyOverrides,
-          BatchLogProcessor.builder(logExporter).setMaxExportBatchSize(1).build());
+      return new InheritedInstrumentationKeyLogProcessor(BatchLogProcessor.builder(logExporter).setMaxExportBatchSize(1).build());
     }
 
     return null;
