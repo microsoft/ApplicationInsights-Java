@@ -39,10 +39,11 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
   private static final Class<?> FOR_CLASS = TelemetryPipeline.class;
   private static final Logger logger = LoggerFactory.getLogger(FOR_CLASS);
 
+  // share this across multiple pipelines
+  private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
+
   private final OperationLogger operationLogger;
   private final boolean shouldLogWarnings;
-
-  private final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
   // e.g. "Sending telemetry to the ingestion service"
   public DiagnosticTelemetryPipelineListener(String operation, boolean shouldLogWarnings) {
@@ -102,13 +103,10 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
 
   @Override
   public void onException(TelemetryPipelineRequest request, String reason, Throwable throwable) {
-
     if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
         throwable, request.getUrl().toString(), friendlyExceptionThrown, logger)) {
       operationLogger.recordFailure(reason, throwable);
     }
-
-    operationLogger.recordFailure(reason, throwable);
   }
 
   private static String getErrorMessageFromPartialSuccessResponse(String body) {

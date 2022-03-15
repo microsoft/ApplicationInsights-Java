@@ -119,7 +119,8 @@ public class TelemetryPipeline {
                           result.fail();
                         }),
             throwable -> {
-              listener.onException(request, "Error sending telemetry items" + throwable, throwable);
+              listener.onException(
+                  request, "Error sending telemetry items: " + throwable, throwable);
               result.fail();
             });
   }

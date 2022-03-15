@@ -249,19 +249,35 @@ public class NetworkFriendlyExceptions {
 
     @Override
     public String message(String url) {
+      String description =
+          "The JVM does not have any of the cipher suites which are supported by the endpoint \""
+              + url
+              + "\"";
+      String enableEcc = System.getProperty("com.sun.net.ssl.enableECC");
+      if ("false".equalsIgnoreCase(enableEcc)) {
+        return populateFriendlyMessage(
+            description
+                + ", because the system property \"com.sun.net.ssl.enableECC\" is set"
+                + " to \""
+                + enableEcc
+                + "\".",
+            "Remove \"-Dcom.sun.net.ssl.enableECC=" + enableEcc + "\" from your command line.",
+            getFriendlyExceptionBanner(url),
+            "This message is only logged the first time it occurs after startup.");
+      }
       return populateFriendlyMessage(
-          "JVM appears to be missing cipher suites which are supported by the endpoint.",
-          getCipherFriendlyExceptionAction(url),
+          description + ".",
+          getCipherFriendlyExceptionAction(),
           getFriendlyExceptionBanner(url),
           "This message is only logged the first time it occurs after startup.");
     }
 
-    private String getCipherFriendlyExceptionAction(String url) {
+    private String getCipherFriendlyExceptionAction() {
       StringBuilder actionBuilder = new StringBuilder();
       actionBuilder
           .append(
-              "The JVM does not have any of the cipher suites that are supported by the endpoint "
-                  + url)
+              "Investigate why the security providers in your Java distribution's"
+                  + " java.security configuration file differ from a standard Java distribution.")
           .append("\n\n");
       for (String missingCipher : EXPECTED_CIPHERS) {
         actionBuilder.append("    ").append(missingCipher).append("\n");
