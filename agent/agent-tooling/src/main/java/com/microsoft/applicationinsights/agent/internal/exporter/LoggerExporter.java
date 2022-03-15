@@ -223,7 +223,7 @@ public class LoggerExporter implements LogExporter {
           if (stringKey.startsWith("thread.")) {
             return;
           }
-          if (stringKey.equals("exception.")) {
+          if (stringKey.startsWith("exception.")) {
             return;
           }
           String val = Exporter.convertToString(value, key.getType());

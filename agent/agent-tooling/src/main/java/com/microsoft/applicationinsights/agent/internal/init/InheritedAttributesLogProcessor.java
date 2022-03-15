@@ -21,8 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import com.azure.monitor.opentelemetry.exporter.AiOperationNameSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.processors.MyLogData;
+import io.netty.handler.traffic.AbstractTrafficShapingHandler;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
@@ -77,6 +79,9 @@ public class InheritedAttributesLogProcessor implements LogProcessor {
     AttributesBuilder builder = log.getAttributes().toBuilder();
     for (AttributeKey<?> inheritedAttributeKey : inheritedAttributes) {
       Object value = readableSpan.getAttribute(inheritedAttributeKey);
+      if (inheritedAttributeKey == AI_OPERATION_NAME_KEY) {
+        value = AiOperationNameSpanProcessor.getOperationName(readableSpan);
+      }
       if (value != null) {
         if (builder == null) {
           builder = log.getAttributes().toBuilder();
