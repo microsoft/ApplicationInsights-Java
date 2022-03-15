@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import com.azure.monitor.opentelemetry.exporter.AiOperationNameSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.processors.MyLogData;
-import io.netty.handler.traffic.AbstractTrafficShapingHandler;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
