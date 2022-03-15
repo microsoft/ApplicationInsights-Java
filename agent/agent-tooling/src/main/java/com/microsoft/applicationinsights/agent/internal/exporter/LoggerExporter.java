@@ -225,10 +225,17 @@ public class LoggerExporter implements LogExporter {
                 stringKey.substring(LOG4J1_2_MDC_PREFIX.length()), String.valueOf(value));
             return;
           }
+          if (stringKey.equals(SemanticAttributes.THREAD_ID.getKey())) {
+            return;
+          }
+          if (stringKey.equals(SemanticAttributes.THREAD_NAME.getKey())) {
+            return;
+          }
+          if (stringKey.equals(AI_OPERATION_NAME_KEY.getKey())) {
+            return;
+          }
           String val = convertToString(value, key.getType());
-          if (!SemanticAttributes.THREAD_ID.getKey().equals(stringKey)
-              && !SemanticAttributes.THREAD_NAME.getKey().equals(stringKey)
-              && !AI_OPERATION_NAME_KEY.getKey().equals(stringKey)) {
+          if (val != null) {
             telemetryBuilder.addProperty(key.getKey(), val);
           }
         });
