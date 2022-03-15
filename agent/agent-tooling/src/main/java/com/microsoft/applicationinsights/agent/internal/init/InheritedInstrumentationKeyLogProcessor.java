@@ -50,7 +50,8 @@ public class InheritedInstrumentationKeyLogProcessor implements LogProcessor {
     ReadableSpan readableSpan = (ReadableSpan) currentSpan;
     String instrumentationKey = readableSpan.getAttribute(INSTRUMENTATION_KEY_KEY);
     if (instrumentationKey != null) {
-      log = new MyLogData(
+      log =
+          new MyLogData(
               log,
               log.getAttributes().toBuilder()
                   .put(INSTRUMENTATION_KEY_KEY, instrumentationKey)
