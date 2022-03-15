@@ -164,7 +164,7 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
     }
 
     // using BatchSpanProcessor in order to get off of the application thread as soon as possible
-    BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(currExporter);
+    BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(spanExporter);
 
     String delayMillisStr = System.getenv("APPLICATIONINSIGHTS_PREVIEW_BSP_SCHEDULE_DELAY");
     if (delayMillisStr != null) {
