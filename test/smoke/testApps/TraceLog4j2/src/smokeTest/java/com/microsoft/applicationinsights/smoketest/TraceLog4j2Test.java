@@ -116,6 +116,7 @@ public class TraceLog4j2Test extends AiSmokeTest {
     assertNotNull(ed.getProperties().get("ThreadName"));
     assertEquals("MDC value", ed.getProperties().get("MDC key"));
     assertEquals(6, ed.getProperties().size());
+
     assertParentChild(rd, rdEnvelope, edEnvelope, "GET /TraceLog4j2/traceLog4j2WithException");
   }
 }
