@@ -233,6 +233,28 @@ public final class BatchItemProcessor {
     }
 
     private CompletableResultCode forceFlush() {
+      CompletableResultCode overallResult = new CompletableResultCode();
+      CompletableResultCode workerResult = forceFlushWorker();
+      workerResult.whenComplete(
+          () -> {
+            if (!workerResult.isSuccess()) {
+              overallResult.fail();
+              return;
+            }
+            CompletableResultCode exporterResult = exporter.flush();
+            exporterResult.whenComplete(
+                () -> {
+                  if (exporterResult.isSuccess()) {
+                    overallResult.succeed();
+                  } else {
+                    overallResult.fail();
+                  }
+                });
+          });
+      return overallResult;
+    }
+
+    private CompletableResultCode forceFlushWorker() {
       CompletableResultCode flushResult = new CompletableResultCode();
       // we set the atomic here to trigger the worker loop to do a flush of the entire queue.
       if (flushRequested.compareAndSet(null, flushResult)) {
