@@ -33,16 +33,28 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.GZIPOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TelemetryItemExporter {
 
+  // the number 100 was calculated as the max number of concurrent exports that the single worker
+  // thread can drive, so anything higher than this should not increase throughput
+  private static final int MAX_CONCURRENT_EXPORTS = 100;
+
   private static final Logger logger = LoggerFactory.getLogger(TelemetryItemExporter.class);
+
+  private static final OperationLogger operationLogger =
+      new OperationLogger(
+          TelemetryItemExporter.class,
+          "Put export into the background (don't wait for it to return)");
 
   private static final ObjectMapper mapper = createObjectMapper();
 
@@ -65,6 +77,9 @@ public class TelemetryItemExporter {
   private final TelemetryPipeline telemetryPipeline;
   private final TelemetryPipelineListener listener;
 
+  private final Set<CompletableResultCode> activeExportResults =
+      Collections.newSetFromMap(new ConcurrentHashMap<>());
+
   // e.g. construct with diagnostic listener and local storage listener
   public TelemetryItemExporter(
       TelemetryPipeline telemetryPipeline, TelemetryPipelineListener listener) {
@@ -74,7 +89,6 @@ public class TelemetryItemExporter {
 
   public CompletableResultCode send(List<TelemetryItem> telemetryItems) {
     Map<String, List<TelemetryItem>> instrumentationKeyMap = new HashMap<>();
-    List<CompletableResultCode> resultCodeList = new ArrayList<>();
     for (TelemetryItem telemetryItem : telemetryItems) {
       String instrumentationKey = telemetryItem.getInstrumentationKey();
       if (!instrumentationKeyMap.containsKey(instrumentationKey)) {
@@ -82,12 +96,36 @@ public class TelemetryItemExporter {
       }
       instrumentationKeyMap.get(instrumentationKey).add(telemetryItem);
     }
+    List<CompletableResultCode> resultCodeList = new ArrayList<>();
     for (String instrumentationKey : instrumentationKeyMap.keySet()) {
       resultCodeList.add(
           internalSendByInstrumentationKey(
               instrumentationKeyMap.get(instrumentationKey), instrumentationKey));
     }
-    return CompletableResultCode.ofAll(resultCodeList);
+    return maybeAddToActiveExportResults(resultCodeList);
+  }
+
+  private CompletableResultCode maybeAddToActiveExportResults(List<CompletableResultCode> results) {
+    if (activeExportResults.size() >= MAX_CONCURRENT_EXPORTS) {
+      // this is just a failsafe to limit concurrent exports, it's not ideal because it blocks
+      // waiting for the most recent export instead of waiting for the first export to return
+      operationLogger.recordFailure(
+          "Hit max " + MAX_CONCURRENT_EXPORTS + " active concurrent requests");
+      return CompletableResultCode.ofAll(results);
+    }
+
+    operationLogger.recordSuccess();
+
+    activeExportResults.addAll(results);
+    for (CompletableResultCode result : results) {
+      result.whenComplete(() -> activeExportResults.remove(result));
+    }
+
+    return CompletableResultCode.ofSuccess();
+  }
+
+  public CompletableResultCode flush() {
+    return CompletableResultCode.ofAll(activeExportResults);
   }
 
   CompletableResultCode internalSendByInstrumentationKey(

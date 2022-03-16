@@ -22,7 +22,6 @@
 package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -37,7 +36,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryI
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.microsoft.applicationinsights.agent.internal.common.TestUtils;
-import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -115,13 +113,12 @@ public class IntegrationTests {
       executorService.execute(
           () -> {
             for (int j = 0; j < 10; j++) {
-              CompletableResultCode completableResultCode =
-                  telemetryItemExporter.send(telemetryItems);
-              completableResultCode.join(10, SECONDS);
-              assertThat(completableResultCode.isSuccess()).isFalse();
+              telemetryItemExporter.send(telemetryItems);
             }
           });
     }
+
+    telemetryItemExporter.flush();
 
     executorService.shutdown();
     executorService.awaitTermination(10, TimeUnit.MINUTES);
