@@ -35,7 +35,6 @@ import com.microsoft.applicationinsights.agent.internal.perfcounter.GcPerformanc
 import com.microsoft.applicationinsights.agent.internal.perfcounter.JmxAttributeData;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.JmxMetricPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.JvmHeapMemoryUsedPerformanceCounter;
-import com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.OshiPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.PerformanceCounterContainer;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.ProcessCpuPerformanceCounter;
@@ -88,13 +87,6 @@ public class TelemetryClientInitializer {
     }
     PerformanceCounterContainer.INSTANCE.register(new JvmHeapMemoryUsedPerformanceCounter());
     PerformanceCounterContainer.INSTANCE.register(new GcPerformanceCounter());
-
-    telemetryClient.addNonFilterableMetricNames(
-        MetricNames.TOTAL_CPU,
-        MetricNames.PROCESS_CPU,
-        MetricNames.PROCESS_MEMORY,
-        MetricNames.TOTAL_MEMORY,
-        MetricNames.PROCESS_IO);
 
     telemetryClient.setQuickPulse(configuration, telemetryClient);
   }
