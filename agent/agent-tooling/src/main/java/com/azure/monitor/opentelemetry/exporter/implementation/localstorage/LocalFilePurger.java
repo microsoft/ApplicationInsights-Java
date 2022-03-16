@@ -26,7 +26,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import java.io.File;
 import java.util.Collection;
-import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -74,7 +73,7 @@ class LocalFilePurger implements Runnable {
     Collection<File> files = FileUtil.listTrnFiles(folder);
     int numDeleted = 0;
     for (File file : files) {
-      if (expired(file.getName())) {
+      if (LocalFileCache.isExpired(file, expiredIntervalSeconds)) {
         if (!FileUtil.deleteFileWithRetries(file)) {
           logger.warn(
               "Fail to delete the expired {} from folder '{}'.", file.getName(), folder.getName());
@@ -89,15 +88,5 @@ class LocalFilePurger implements Runnable {
           numDeleted,
           folder.getName());
     }
-  }
-
-  // files that are older than expiredIntervalSeconds (default 48 hours) are expired and need to
-  // be deleted permanently.
-  private boolean expired(String fileName) {
-    String time = fileName.substring(0, fileName.lastIndexOf('-'));
-    long milliseconds = Long.parseLong(time);
-    Date expirationDate = new Date(System.currentTimeMillis() - 1000 * expiredIntervalSeconds);
-    Date fileDate = new Date(milliseconds);
-    return fileDate.before(expirationDate);
   }
 }
