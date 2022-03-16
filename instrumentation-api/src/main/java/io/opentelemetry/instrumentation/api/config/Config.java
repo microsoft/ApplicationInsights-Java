@@ -14,8 +14,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Represents the global agent configuration consisting of system properties, environment variables,
@@ -30,7 +28,10 @@ import org.slf4j.LoggerFactory;
  */
 @AutoValue
 public abstract class Config {
-  private static final Logger logger = LoggerFactory.getLogger(Config.class);
+
+  // NOTE it's important not to use slf4j in this class, because this class is used before slf4j is
+  // configured, and so using slf4j here would initialize slf4j-simple before we have a chance to
+  // configure the logging levels
 
   // lazy initialized, so that javaagent can set it, and library instrumentation can fall back and
   // read system properties
@@ -55,7 +56,6 @@ public abstract class Config {
    */
   public static void internalInitializeConfig(Config config) {
     if (instance != null) {
-      logger.warn("Config#INSTANCE was already set earlier");
       return;
     }
     instance = requireNonNull(config);
@@ -276,7 +276,6 @@ public abstract class Config {
       T value = getTypedProperty(name, parser);
       return value == null ? defaultValue : value;
     } catch (RuntimeException t) {
-      logger.debug("Error occurred during parsing: {}", t.getMessage(), t);
       return defaultValue;
     }
   }
