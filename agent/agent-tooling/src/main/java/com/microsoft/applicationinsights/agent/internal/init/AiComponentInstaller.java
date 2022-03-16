@@ -101,11 +101,10 @@ class AiComponentInstaller {
                 + " on sporadic network failures");
 
     Configuration config = MainEntryPoint.getConfiguration();
-    if (!hasConnectionStringOrInstrumentationKey(config)) {
+    if (!hasConnectionString(config)) {
       if (!"java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
         throw new FriendlyException(
-            "No connection string or instrumentation key provided",
-            "Please provide connection string or instrumentation key.");
+            "No connection string provided", "Please provide connection string.");
       }
     }
     // TODO (trask) should configuration validation be performed earlier?
@@ -247,7 +246,7 @@ class AiComponentInstaller {
     return sdkNamePrefix.toString();
   }
 
-  private static boolean hasConnectionStringOrInstrumentationKey(Configuration config) {
+  private static boolean hasConnectionString(Configuration config) {
     return !Strings.isNullOrEmpty(config.connectionString);
   }
 
