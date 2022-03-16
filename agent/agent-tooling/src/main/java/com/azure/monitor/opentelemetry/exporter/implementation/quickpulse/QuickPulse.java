@@ -30,7 +30,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolU
 import java.net.URL;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -38,7 +37,6 @@ import javax.annotation.Nullable;
 public class QuickPulse {
 
   static final int QP_INVARIANT_VERSION = 1;
-  private volatile boolean initialized = false;
 
   private volatile QuickPulseDataCollector collector;
 
@@ -48,33 +46,24 @@ public class QuickPulse {
       Supplier<String> instrumentationKey,
       @Nullable String roleName,
       @Nullable String roleInstance) {
+
     QuickPulse quickPulse = new QuickPulse();
-    quickPulse.initialize(httpPipeline, endpointUrl, instrumentationKey, roleName, roleInstance);
-    return quickPulse;
-  }
 
-  // initialization is performed in the background because initializing the random seed (via
-  // UUID.randomUUID()) below
-  // can cause slowness during startup in some environments
-
-  private void initialize(
-      HttpPipeline httpPipeline,
-      Supplier<URL> endpointUrl,
-      Supplier<String> instrumentationKey,
-      @Nullable String roleName,
-      @Nullable String roleInstance) {
-    CountDownLatch latch = new CountDownLatch(1);
+    // initialization is delayed and performed in the background because initializing the random
+    // seed via UUID.randomUUID() below can cause slowness during startup in some environments
     Executors.newSingleThreadExecutor(ThreadPoolUtils.createDaemonThreadFactory(QuickPulse.class))
         .execute(
-            () ->
-                initializeSync(
-                    latch, httpPipeline, endpointUrl, instrumentationKey, roleName, roleInstance));
-    // don't return until initialization thread has lock
-    try {
-      latch.await();
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
+            () -> {
+              try {
+                Thread.sleep(5000);
+              } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+              }
+              quickPulse.initialize(
+                  httpPipeline, endpointUrl, instrumentationKey, roleName, roleInstance);
+            });
+
+    return quickPulse;
   }
 
   public void add(TelemetryItem telemetryItem) {
@@ -83,82 +72,71 @@ public class QuickPulse {
     }
   }
 
-  private void initializeSync(
-      CountDownLatch latch,
+  private void initialize(
       HttpPipeline httpPipeline,
       Supplier<URL> endpointUrl,
       Supplier<String> instrumentationKey,
       @Nullable String roleName,
       @Nullable String roleInstance) {
-    if (initialized) {
-      latch.countDown();
-    } else {
-      synchronized (this) {
-        latch.countDown();
-        if (!initialized) {
-          initialized = true;
-          String quickPulseId = UUID.randomUUID().toString().replace("-", "");
-          ArrayBlockingQueue<HttpRequest> sendQueue = new ArrayBlockingQueue<>(256, true);
 
-          QuickPulseDataSender quickPulseDataSender =
-              new QuickPulseDataSender(httpPipeline, sendQueue);
+    String quickPulseId = UUID.randomUUID().toString().replace("-", "");
+    ArrayBlockingQueue<HttpRequest> sendQueue = new ArrayBlockingQueue<>(256, true);
 
-          String instanceName = roleInstance;
-          String machineName = HostName.get();
+    QuickPulseDataSender quickPulseDataSender = new QuickPulseDataSender(httpPipeline, sendQueue);
 
-          if (Strings.isNullOrEmpty(instanceName)) {
-            instanceName = machineName;
-          }
-          if (Strings.isNullOrEmpty(instanceName)) {
-            instanceName = "Unknown host";
-          }
+    String instanceName = roleInstance;
+    String machineName = HostName.get();
 
-          QuickPulseDataCollector collector = new QuickPulseDataCollector();
-
-          QuickPulsePingSender quickPulsePingSender =
-              new QuickPulsePingSender(
-                  httpPipeline,
-                  endpointUrl,
-                  instrumentationKey,
-                  roleName,
-                  instanceName,
-                  machineName,
-                  quickPulseId);
-          QuickPulseDataFetcher quickPulseDataFetcher =
-              new QuickPulseDataFetcher(
-                  collector,
-                  sendQueue,
-                  endpointUrl,
-                  instrumentationKey,
-                  roleName,
-                  instanceName,
-                  machineName,
-                  quickPulseId);
-
-          QuickPulseCoordinatorInitData coordinatorInitData =
-              new QuickPulseCoordinatorInitDataBuilder()
-                  .withPingSender(quickPulsePingSender)
-                  .withDataFetcher(quickPulseDataFetcher)
-                  .withDataSender(quickPulseDataSender)
-                  .withCollector(collector)
-                  .build();
-
-          QuickPulseCoordinator coordinator = new QuickPulseCoordinator(coordinatorInitData);
-
-          Thread senderThread =
-              new Thread(quickPulseDataSender, QuickPulseDataSender.class.getSimpleName());
-          senderThread.setDaemon(true);
-          senderThread.start();
-
-          Thread thread = new Thread(coordinator, QuickPulseCoordinator.class.getSimpleName());
-          thread.setDaemon(true);
-          thread.start();
-
-          collector.enable(instrumentationKey);
-
-          this.collector = collector;
-        }
-      }
+    if (Strings.isNullOrEmpty(instanceName)) {
+      instanceName = machineName;
     }
+    if (Strings.isNullOrEmpty(instanceName)) {
+      instanceName = "Unknown host";
+    }
+
+    QuickPulseDataCollector collector = new QuickPulseDataCollector();
+
+    QuickPulsePingSender quickPulsePingSender =
+        new QuickPulsePingSender(
+            httpPipeline,
+            endpointUrl,
+            instrumentationKey,
+            roleName,
+            instanceName,
+            machineName,
+            quickPulseId);
+    QuickPulseDataFetcher quickPulseDataFetcher =
+        new QuickPulseDataFetcher(
+            collector,
+            sendQueue,
+            endpointUrl,
+            instrumentationKey,
+            roleName,
+            instanceName,
+            machineName,
+            quickPulseId);
+
+    QuickPulseCoordinatorInitData coordinatorInitData =
+        new QuickPulseCoordinatorInitDataBuilder()
+            .withPingSender(quickPulsePingSender)
+            .withDataFetcher(quickPulseDataFetcher)
+            .withDataSender(quickPulseDataSender)
+            .withCollector(collector)
+            .build();
+
+    QuickPulseCoordinator coordinator = new QuickPulseCoordinator(coordinatorInitData);
+
+    Thread senderThread =
+        new Thread(quickPulseDataSender, QuickPulseDataSender.class.getSimpleName());
+    senderThread.setDaemon(true);
+    senderThread.start();
+
+    Thread thread = new Thread(coordinator, QuickPulseCoordinator.class.getSimpleName());
+    thread.setDaemon(true);
+    thread.start();
+
+    collector.enable(instrumentationKey);
+
+    this.collector = collector;
   }
 }
