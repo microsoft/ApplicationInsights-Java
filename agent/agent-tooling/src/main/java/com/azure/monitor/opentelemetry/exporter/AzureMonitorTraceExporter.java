@@ -173,7 +173,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
     try {
       for (SpanData span : spans) {
         LOGGER.verbose("exporting span: {}", span);
-        exportInternal(span, telemetryItems);
+        internalExport(span, telemetryItems);
       }
       return telemetryItemExporter.send(telemetryItems);
     } catch (Throwable t) {
@@ -197,7 +197,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
     return CompletableResultCode.ofSuccess();
   }
 
-  private void exportInternal(SpanData span, List<TelemetryItem> telemetryItems) {
+  private void internalExport(SpanData span, List<TelemetryItem> telemetryItems) {
     SpanKind kind = span.getKind();
     String instrumentationName = span.getInstrumentationLibraryInfo().getName();
     if (kind == SpanKind.INTERNAL) {
