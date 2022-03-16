@@ -176,7 +176,7 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
       builder.setMaxExportBatchSize(1);
     }
 
-    return builder.setScheduleDelay(Duration.ofMillis(100)).build();
+    return builder.build();
   }
 
   private static class BackCompatHttpUrlProcessor implements SpanExporter {
