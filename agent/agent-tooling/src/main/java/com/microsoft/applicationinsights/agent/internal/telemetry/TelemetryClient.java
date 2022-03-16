@@ -50,6 +50,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
+import com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeatHttpPipelinePolicy;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -72,7 +73,14 @@ public class TelemetryClient {
 
   private static volatile @MonotonicNonNull TelemetryClient active;
 
-  private final Set<String> nonFilterableMetricNames = new HashSet<>();
+  private final Set<String> nonFilterableMetricNames =
+      new HashSet<>(
+          asList(
+              MetricNames.TOTAL_CPU,
+              MetricNames.PROCESS_CPU,
+              MetricNames.PROCESS_MEMORY,
+              MetricNames.TOTAL_MEMORY,
+              MetricNames.PROCESS_IO));
 
   @Nullable private volatile ConnectionString connectionString;
   @Nullable private volatile StatsbeatConnectionString statsbeatConnectionString;
@@ -413,10 +421,6 @@ public class TelemetryClient {
 
   public StatsbeatModule getStatsbeatModule() {
     return statsbeatModule;
-  }
-
-  public void addNonFilterableMetricNames(String... metricNames) {
-    nonFilterableMetricNames.addAll(asList(metricNames));
   }
 
   public void setQuickPulse(Configuration configuration, TelemetryClient telemetryClient) {

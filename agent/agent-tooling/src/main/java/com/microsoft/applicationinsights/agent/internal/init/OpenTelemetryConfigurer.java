@@ -37,8 +37,9 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
+import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -53,10 +54,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@AutoService(SdkTracerProviderConfigurer.class)
-public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
+@AutoService(AutoConfigurationCustomizerProvider.class)
+public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvider {
 
   private static volatile BatchSpanProcessor batchSpanProcessor;
+
+  @Override
+  public void customize(AutoConfigurationCustomizer autoConfiguration) {
+    autoConfiguration.addTracerProviderCustomizer(
+        (builder, config) -> {
+          configure(builder, config);
+          return builder;
+        });
+  }
 
   public static CompletableResultCode flush() {
     if (batchSpanProcessor == null) {
@@ -65,11 +75,10 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
     return batchSpanProcessor.forceFlush();
   }
 
-  @Override
   @SuppressFBWarnings(
       value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
       justification = "this method is only called once during initialization")
-  public void configure(SdkTracerProviderBuilder tracerProvider, ConfigProperties config) {
+  private static void configure(SdkTracerProviderBuilder tracerProvider, ConfigProperties config) {
     TelemetryClient telemetryClient = TelemetryClient.getActive();
     if (telemetryClient == null) {
       // agent failed during startup
