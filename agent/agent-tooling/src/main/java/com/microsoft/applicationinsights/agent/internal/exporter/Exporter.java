@@ -33,7 +33,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDe
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
@@ -82,10 +81,6 @@ public class Exporter implements SpanExporter {
 
   public static final AttributeKey<String> AI_OPERATION_NAME_KEY =
       AttributeKey.stringKey("applicationinsights.internal.operation_name");
-
-  private static final AttributeKey<Boolean> AI_LOG_KEY =
-      AttributeKey.booleanKey("applicationinsights.internal.log");
-
   public static final AttributeKey<String> AI_LEGACY_PARENT_ID_KEY =
       AttributeKey.stringKey("applicationinsights.internal.legacy_parent_id");
   public static final AttributeKey<String> AI_LEGACY_ROOT_ID_KEY =
@@ -101,13 +96,6 @@ public class Exporter implements SpanExporter {
       AttributeKey.stringKey("applicationinsights.internal.operating_system");
   private static final AttributeKey<String> AI_DEVICE_OS_VERSION_KEY =
       AttributeKey.stringKey("applicationinsights.internal.operating_system_version");
-
-  private static final AttributeKey<String> AI_LOG_LEVEL_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.log_level");
-  private static final AttributeKey<String> AI_LOGGER_NAME_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.logger_name");
-  private static final AttributeKey<String> AI_LOG_ERROR_STACK_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.log_error_stack");
 
   private static final AttributeKey<String> AZURE_NAMESPACE =
       AttributeKey.stringKey("az.namespace");
@@ -173,6 +161,7 @@ public class Exporter implements SpanExporter {
       logger.debug("Instrumentation key is null or empty.");
       return CompletableResultCode.ofSuccess();
     }
+
     boolean failure = false;
     for (SpanData span : spans) {
       logger.debug("exporting span: {}", span);
@@ -184,6 +173,7 @@ public class Exporter implements SpanExporter {
         failure = true;
       }
     }
+
     // batching, retry, throttling, and writing to disk on failure occur downstream
     // for simplicity not reporting back success/failure from this layer
     // only that it was successfully delivered to the next layer
@@ -208,10 +198,7 @@ public class Exporter implements SpanExporter {
         .getInstrumentationStatsbeat()
         .addInstrumentation(instrumentationName);
     if (kind == SpanKind.INTERNAL) {
-      Boolean isLog = span.getAttributes().get(AI_LOG_KEY);
-      if (isLog != null && isLog) {
-        exportLogSpan(span);
-      } else if (instrumentationName.startsWith("io.opentelemetry.spring-scheduling-")
+      if (instrumentationName.startsWith("io.opentelemetry.spring-scheduling-")
           && !span.getParentSpanContext().isValid()) {
         // TODO (trask) AI mapping: need semantic convention for determining whether to map INTERNAL
         // to request or dependency (or need clarification to use SERVER for this)
@@ -351,65 +338,6 @@ public class Exporter implements SpanExporter {
     telemetryBuilder.setType("InProc");
   }
 
-  private void exportLogSpan(SpanData span) {
-    String errorStack = span.getAttributes().get(AI_LOG_ERROR_STACK_KEY);
-    if (errorStack == null) {
-      trackMessage(span);
-    } else {
-      trackTraceAsException(span, errorStack);
-    }
-  }
-
-  private void trackMessage(SpanData span) {
-    MessageTelemetryBuilder telemetryBuilder = telemetryClient.newMessageTelemetryBuilder();
-
-    Attributes attributes = span.getAttributes();
-
-    // set standard properties
-    setTime(telemetryBuilder, span.getStartEpochNanos());
-    setOperationTags(telemetryBuilder, span);
-    setSampleRate(telemetryBuilder, span);
-    setExtraAttributes(telemetryBuilder, attributes);
-
-    // set message-specific properties
-    String level = attributes.get(AI_LOG_LEVEL_KEY);
-    String loggerName = attributes.get(AI_LOGGER_NAME_KEY);
-    String threadName = attributes.get(SemanticAttributes.THREAD_NAME);
-
-    telemetryBuilder.setSeverityLevel(toSeverityLevel(level));
-    telemetryBuilder.setMessage(span.getName());
-
-    setLoggerProperties(telemetryBuilder, level, loggerName, threadName);
-
-    // export
-    telemetryClient.trackAsync(telemetryBuilder.build());
-  }
-
-  private void trackTraceAsException(SpanData span, String errorStack) {
-    ExceptionTelemetryBuilder telemetryBuilder = telemetryClient.newExceptionTelemetryBuilder();
-
-    Attributes attributes = span.getAttributes();
-
-    // set standard properties
-    setOperationTags(telemetryBuilder, span);
-    setTime(telemetryBuilder, span.getStartEpochNanos());
-    setSampleRate(telemetryBuilder, span);
-    setExtraAttributes(telemetryBuilder, attributes);
-
-    // set exception-specific properties
-    String level = attributes.get(AI_LOG_LEVEL_KEY);
-    String loggerName = attributes.get(AI_LOGGER_NAME_KEY);
-    String threadName = attributes.get(SemanticAttributes.THREAD_NAME);
-
-    telemetryBuilder.setExceptions(Exceptions.minimalParse(errorStack));
-    telemetryBuilder.setSeverityLevel(toSeverityLevel(level));
-    telemetryBuilder.addProperty("Logger Message", span.getName());
-    setLoggerProperties(telemetryBuilder, level, loggerName, threadName);
-
-    // export
-    telemetryClient.trackAsync(telemetryBuilder.build());
-  }
-
   private static void setOperationTags(AbstractTelemetryBuilder telemetryBuilder, SpanData span) {
     setOperationId(telemetryBuilder, span.getTraceId());
     setOperationParentId(telemetryBuilder, span.getParentSpanContext().getSpanId());
@@ -438,25 +366,6 @@ public class Exporter implements SpanExporter {
   private static void setOperationName(
       AbstractTelemetryBuilder telemetryBuilder, String operationName) {
     telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_NAME.toString(), operationName);
-  }
-
-  private static void setLoggerProperties(
-      AbstractTelemetryBuilder telemetryBuilder,
-      String level,
-      String loggerName,
-      String threadName) {
-    if (level != null) {
-      // TODO are these needed? level is already reported as severityLevel, sourceType maybe needed
-      // for exception telemetry only?
-      telemetryBuilder.addProperty("SourceType", "Logger");
-      telemetryBuilder.addProperty("LoggingLevel", level);
-    }
-    if (loggerName != null) {
-      telemetryBuilder.addProperty("LoggerName", loggerName);
-    }
-    if (threadName != null) {
-      telemetryBuilder.addProperty("ThreadName", threadName);
-    }
   }
 
   private static void applyHttpClientSpan(
@@ -976,10 +885,6 @@ public class Exporter implements SpanExporter {
     telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(epochNanos));
   }
 
-  private static void setSampleRate(AbstractTelemetryBuilder telemetryBuilder, SpanData span) {
-    setSampleRate(telemetryBuilder, getSamplingPercentage(span.getSpanContext().getTraceState()));
-  }
-
   private static void setSampleRate(
       AbstractTelemetryBuilder telemetryBuilder, float samplingPercentage) {
     if (samplingPercentage != 100) {
@@ -1075,7 +980,7 @@ public class Exporter implements SpanExporter {
   }
 
   @Nullable
-  private static String convertToString(Object value, AttributeType type) {
+  static String convertToString(Object value, AttributeType type) {
     switch (type) {
       case STRING:
       case BOOLEAN:
@@ -1101,36 +1006,5 @@ public class Exporter implements SpanExporter {
       sb.append(val);
     }
     return sb.toString();
-  }
-
-  @Nullable
-  private static SeverityLevel toSeverityLevel(String level) {
-    if (level == null) {
-      return null;
-    }
-    switch (level) {
-      case "FATAL":
-        return SeverityLevel.CRITICAL;
-      case "ERROR":
-      case "SEVERE":
-        return SeverityLevel.ERROR;
-      case "WARN":
-      case "WARNING":
-        return SeverityLevel.WARNING;
-      case "INFO":
-        return SeverityLevel.INFORMATION;
-      case "DEBUG":
-      case "TRACE":
-      case "CONFIG":
-      case "FINE":
-      case "FINER":
-      case "FINEST":
-      case "ALL":
-        return SeverityLevel.VERBOSE;
-      default:
-        // TODO (trask) AI mapping: is this a good fallback?
-        logger.debug("Unexpected level {}, using VERBOSE level as default", level);
-        return SeverityLevel.VERBOSE;
-    }
   }
 }

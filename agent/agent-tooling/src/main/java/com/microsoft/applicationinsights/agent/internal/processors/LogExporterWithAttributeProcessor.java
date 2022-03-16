@@ -21,8 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.processors;
 
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
-import com.microsoft.applicationinsights.agent.internal.processors.AgentProcessor.IncludeExclude;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.export.LogExporter;
@@ -30,15 +29,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class ExporterWithLogProcessor implements LogExporter {
+public class LogExporterWithAttributeProcessor implements LogExporter {
 
-  private final LogExporter delegate;
-  private final LogProcessor logProcessor;
+  public final LogExporter delegate;
+  private final AttributeProcessor attributeProcessor;
 
   // caller should check config.isValid before creating
-  public ExporterWithLogProcessor(ProcessorConfig config, LogExporter delegate) {
+  public LogExporterWithAttributeProcessor(
+      Configuration.ProcessorConfig config, LogExporter delegate) {
     config.validate();
-    logProcessor = LogProcessor.create(config);
+    attributeProcessor = AttributeProcessor.create(config, true);
     this.delegate = delegate;
   }
 
@@ -53,18 +53,18 @@ public class ExporterWithLogProcessor implements LogExporter {
   }
 
   private LogData process(LogData log) {
-    IncludeExclude include = logProcessor.getInclude();
+    AgentProcessor.IncludeExclude include = attributeProcessor.getInclude();
     if (include != null && !include.isMatch(log.getAttributes(), log.getBody().asString())) {
-      // If Not included we can skip further processing
+      // If not included we can skip further processing
       return log;
     }
-    IncludeExclude exclude = logProcessor.getExclude();
+    AgentProcessor.IncludeExclude exclude = attributeProcessor.getExclude();
     if (exclude != null && exclude.isMatch(log.getAttributes(), log.getBody().asString())) {
+      // If excluded we can skip further processing
       return log;
     }
 
-    LogData updatedLog = logProcessor.processFromAttributes(log);
-    return logProcessor.processToAttributes(updatedLog);
+    return attributeProcessor.processActions(log);
   }
 
   @Override

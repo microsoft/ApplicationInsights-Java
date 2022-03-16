@@ -68,7 +68,9 @@ io.opentelemetry.instrumentation:opentelemetry-jetty-httpclient-9.2:1.12.0+ai.pa
 io.opentelemetry.instrumentation:opentelemetry-kafka-clients-common:1.12.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-lettuce-5.1:1.12.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-lettuce-common:1.12.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.instrumentation:opentelemetry-log4j-appender-2.16:1.12.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-log4j-context-data-2.16-autoconfigure:1.12.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:1.12.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-logback-mdc-1.0:1.12.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-mongo-3.1:1.12.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0:1.12.0+ai.patches-alpha=runtimeClasspath
@@ -109,7 +111,7 @@ io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-lamb
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-reflection:1.12.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-url-class-loader:1.12.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-http-client:1.12.0+ai.patches-alpha=runtimeClasspath
-io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging-spans:1.12.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging:1.12.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-1.0:1.12.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-2.0-common:1.12.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-2.0-cxf-3.2:1.12.0+ai.patches-alpha=runtimeClasspath
@@ -139,12 +141,12 @@ io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-lettuce-5.0:1
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-lettuce-5.1:1.12.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-liberty-dispatcher:1.12.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-liberty:1.12.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-appender-1.2:1.12.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-appender-2.16:1.12.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-context-data-2.16:1.12.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-mdc-1.2:1.12.0+ai.patches-alpha=runtimeClasspath
-io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-spans-1.2:1.12.0+ai.patches-alpha=runtimeClasspath
-io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-spans-2.0:1.12.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-appender-1.0:1.12.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-mdc-1.0:1.12.0+ai.patches-alpha=runtimeClasspath
-io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-spans-1.0:1.12.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-micrometer-1.0:1.12.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-mongo-3.1:1.12.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-mongo-3.7:1.12.0+ai.patches-alpha=runtimeClasspath

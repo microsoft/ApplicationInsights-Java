@@ -28,10 +28,9 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHeaderSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
-import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithAttributeProcessor;
-import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithLogProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
+import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -129,36 +128,29 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
 
     String tracesExporter = config.getString("otel.traces.exporter");
     if ("none".equals(tracesExporter)) {
-      batchSpanProcessor = createExporter(configuration);
+      batchSpanProcessor =
+          createSpanExporter(configuration, configuration.preview.captureHttpServer4xxAsError);
       tracerProvider.addSpanProcessor(batchSpanProcessor);
     }
   }
 
-  private static BatchSpanProcessor createExporter(Configuration configuration) {
-    List<ProcessorConfig> processors =
-        configuration.preview.processors.stream()
-            .filter(processor -> processor.type != Configuration.ProcessorType.METRIC_FILTER)
-            .collect(Collectors.toCollection(ArrayList::new));
-    // Reversing the order of processors before passing it to SpanProcessor
-    Collections.reverse(processors);
-
-    SpanExporter currExporter =
-        new Exporter(
-            TelemetryClient.getActive(), configuration.preview.captureHttpServer4xxAsError);
-
+  private static BatchSpanProcessor createSpanExporter(
+      Configuration configuration, boolean captureHttpServer4xxAsError) {
+    SpanExporter spanExporter =
+        new Exporter(TelemetryClient.getActive(), captureHttpServer4xxAsError);
+    List<ProcessorConfig> processorConfigs = getSpanProcessorConfigs(configuration);
     // NOTE if changing the span processor to something async, flush it in the shutdown hook before
     // flushing TelemetryClient
-    if (!processors.isEmpty()) {
-      for (ProcessorConfig processorConfig : processors) {
+    if (!processorConfigs.isEmpty()) {
+      // Reversing the order of processors before passing it Span processor
+      Collections.reverse(processorConfigs);
+      for (ProcessorConfig processorConfig : processorConfigs) {
         switch (processorConfig.type) {
           case ATTRIBUTE:
-            currExporter = new ExporterWithAttributeProcessor(processorConfig, currExporter);
+            spanExporter = new SpanExporterWithAttributeProcessor(processorConfig, spanExporter);
             break;
           case SPAN:
-            currExporter = new ExporterWithSpanProcessor(processorConfig, currExporter);
-            break;
-          case LOG:
-            currExporter = new ExporterWithLogProcessor(processorConfig, currExporter);
+            spanExporter = new ExporterWithSpanProcessor(processorConfig, spanExporter);
             break;
           default:
             throw new IllegalStateException(
@@ -168,11 +160,11 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
 
       // this is temporary until semantic attributes stabilize and we make breaking change
       // then can use java.util.functions.Predicate<Attributes>
-      currExporter = new BackCompatHttpUrlProcessor(currExporter);
+      spanExporter = new BackCompatHttpUrlProcessor(spanExporter);
     }
 
     // using BatchSpanProcessor in order to get off of the application thread as soon as possible
-    BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(currExporter);
+    BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(spanExporter);
 
     String delayMillisStr = System.getenv("APPLICATIONINSIGHTS_PREVIEW_BSP_SCHEDULE_DELAY");
     if (delayMillisStr != null) {
@@ -186,6 +178,15 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
     }
 
     return builder.setScheduleDelay(Duration.ofMillis(100)).build();
+  }
+
+  private static List<ProcessorConfig> getSpanProcessorConfigs(Configuration configuration) {
+    return configuration.preview.processors.stream()
+        .filter(
+            processor ->
+                processor.type == Configuration.ProcessorType.ATTRIBUTE
+                    || processor.type == Configuration.ProcessorType.SPAN)
+        .collect(Collectors.toCollection(ArrayList::new));
   }
 
   private static class BackCompatHttpUrlProcessor implements SpanExporter {

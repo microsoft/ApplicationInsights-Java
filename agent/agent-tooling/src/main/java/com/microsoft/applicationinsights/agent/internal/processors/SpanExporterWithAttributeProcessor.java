@@ -30,15 +30,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class ExporterWithAttributeProcessor implements SpanExporter {
+public class SpanExporterWithAttributeProcessor implements SpanExporter {
 
   private final SpanExporter delegate;
   private final AttributeProcessor attributeProcessor;
 
   // caller should check config.isValid before creating
-  public ExporterWithAttributeProcessor(ProcessorConfig config, SpanExporter delegate) {
+  public SpanExporterWithAttributeProcessor(ProcessorConfig config, SpanExporter delegate) {
     config.validate();
-    attributeProcessor = AttributeProcessor.create(config);
+    attributeProcessor = AttributeProcessor.create(config, false);
     this.delegate = delegate;
   }
 
@@ -54,13 +54,12 @@ public class ExporterWithAttributeProcessor implements SpanExporter {
 
   private SpanData process(SpanData span) {
     IncludeExclude include = attributeProcessor.getInclude();
-    boolean isLog = ProcessorUtil.isSpanOfTypeLog(span);
-    if (include != null && !include.isMatch(span, isLog)) {
+    if (include != null && !include.isMatch(span.getAttributes(), span.getName())) {
       // If not included we can skip further processing
       return span;
     }
     IncludeExclude exclude = attributeProcessor.getExclude();
-    if (exclude != null && exclude.isMatch(span, isLog)) {
+    if (exclude != null && exclude.isMatch(span.getAttributes(), span.getName())) {
       // If excluded we can skip further processing
       return span;
     }

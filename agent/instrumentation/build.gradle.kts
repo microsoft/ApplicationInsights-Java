@@ -67,7 +67,7 @@ dependencies {
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-reflection:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-internal-url-class-loader:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-http-client:$otelInstrumentationAlphaVersion")
-  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging-spans:$otelInstrumentationAlphaVersion")
+  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-1.0:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-2.0-cxf-3.2:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-2.0-jersey-2.0:$otelInstrumentationAlphaVersion")
@@ -93,11 +93,11 @@ dependencies {
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-lettuce-5.1:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-liberty:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-liberty-dispatcher:$otelInstrumentationAlphaVersion")
-  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-spans-1.2:$otelInstrumentationAlphaVersion")
-  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-spans-2.0:$otelInstrumentationAlphaVersion")
+  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-appender-1.2:$otelInstrumentationAlphaVersion")
+  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-appender-2.16:$otelInstrumentationAlphaVersion")
+  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-appender-1.0:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-mdc-1.2:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-log4j-context-data-2.16:$otelInstrumentationAlphaVersion")
-  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-spans-1.0:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-mdc-1.0:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-micrometer-1.0:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-mongo-3.1:$otelInstrumentationAlphaVersion")
@@ -140,13 +140,13 @@ dependencies {
 }
 
 // need to perform shading in two steps in order to avoid shading java.util.logging.Logger
-// in opentelemetry-javaagent-java-util-logging-spans since that instrumentation needs to
+// in opentelemetry-javaagent-java-util-logging since that instrumentation needs to
 // reference unshaded java.util.logging.Logger
 // (java.util.logging.Logger shading is not needed in any of the instrumentation modules,
 // but it is needed for the dependencies, e.g. guava, which use java.util.logging.Logger)
 // -- AND ALSO --
 // need to perform shading in two steps in order to avoid shading ch.qos.logback.*
-// in opentelemetry-javaagent-logback-spans-1.0 since that instrumentation needs to
+// in opentelemetry-javaagent-logback-appender-1.0 since that instrumentation needs to
 // reference unshaded ch.qos.logback.*
 // (ch.qos.logback.* shading is not needed in any of the instrumentation modules,
 // but it is needed for agent-tooling, which use logback to update levels dynamically in LazyConfigurationAccessor)
@@ -160,9 +160,11 @@ tasks {
     configurations.add(project.configurations.runtimeClasspath.get())
 
     dependencies {
-      exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging-spans"))
-      exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-spans-1.0"))
+      exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging"))
+      exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-appender-1.0"))
       exclude(dependency("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-mdc-1.0"))
+      exclude(dependency("io.opentelemetry.instrumentation:opentelemetry-logback-mdc-1.0"))
+      exclude(dependency("io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0"))
     }
 
     // rewrite dependencies calling Logger.getLogger
