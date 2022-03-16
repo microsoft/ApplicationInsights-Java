@@ -127,10 +127,6 @@ class QuickPulsePingSender {
         // this shouldn't happen, the mono should complete with a response or a failure
         throw new AssertionError("http response mono returned empty");
       }
-      // need to consume response, otherwise get netty ByteBuf leak warnings:
-      // io.netty.util.ResourceLeakDetector - LEAK: ByteBuf.release() was not called before
-      // it's garbage-collected (see https://github.com/Azure/azure-sdk-for-java/issues/10467)
-      response.getBody().subscribe();
 
       if (networkHelper.isSuccess(response)) {
         QuickPulseHeaderInfo quickPulseHeaderInfo = networkHelper.getQuickPulseHeaderInfo(response);
