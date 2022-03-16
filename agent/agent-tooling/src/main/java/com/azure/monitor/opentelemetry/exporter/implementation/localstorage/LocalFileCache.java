@@ -79,14 +79,14 @@ class LocalFileCache {
     int index = name.indexOf('-');
     if (index == -1) {
       logger.debug("unexpected .trn file name: {}", name);
-      return false;
+      return true;
     }
     long timestamp;
     try {
       timestamp = Long.parseLong(name.substring(0, index));
     } catch (NumberFormatException e) {
       logger.debug("unexpected .trn file name: {}", name);
-      return false;
+      return true;
     }
     Date expirationDate = new Date(System.currentTimeMillis() - 1000 * expiredIntervalSeconds);
     Date fileDate = new Date(timestamp);
