@@ -155,6 +155,7 @@ public class Exporter implements SpanExporter {
     this.captureHttpServer4xxAsError = captureHttpServer4xxAsError;
   }
 
+  /** {@inheritDoc} */
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
     if (Strings.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey())) {

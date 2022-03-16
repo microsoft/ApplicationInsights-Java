@@ -45,6 +45,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTi
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.UrlParser;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.VersionGenerator;
+import com.microsoft.applicationinsights.agent.internal.exporter.utils.Trie;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
@@ -75,7 +76,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
 
   private static final Set<String> SQL_DB_SYSTEMS;
 
-  private static final Set<String> STANDARD_ATTRIBUTE_PREFIXES;
+  private static final Trie<Boolean> STANDARD_ATTRIBUTE_PREFIX_TRIE;
 
   private static final AttributeKey<String> AI_OPERATION_NAME_KEY =
       AttributeKey.stringKey("applicationinsights.internal.operation_name");
@@ -111,20 +112,22 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
 
     SQL_DB_SYSTEMS = Collections.unmodifiableSet(dbSystems);
 
-    Set<String> standardAttributesPrefix = new HashSet<>();
-    standardAttributesPrefix.add("http");
-    standardAttributesPrefix.add("db");
-    standardAttributesPrefix.add("message");
-    standardAttributesPrefix.add("messaging");
-    standardAttributesPrefix.add("rpc");
-    standardAttributesPrefix.add("enduser");
-    standardAttributesPrefix.add("net");
-    standardAttributesPrefix.add("peer");
-    standardAttributesPrefix.add("exception");
-    standardAttributesPrefix.add("thread");
-    standardAttributesPrefix.add("faas");
-
-    STANDARD_ATTRIBUTE_PREFIXES = Collections.unmodifiableSet(standardAttributesPrefix);
+    // TODO need to keep this list in sync as new semantic conventions are defined
+    STANDARD_ATTRIBUTE_PREFIX_TRIE =
+        Trie.<Boolean>newBuilder()
+            .put("http.", true)
+            .put("db.", true)
+            .put("message.", true)
+            .put("messaging.", true)
+            .put("rpc.", true)
+            .put("enduser.", true)
+            .put("net.", true)
+            .put("peer.", true)
+            .put("exception.", true)
+            .put("thread.", true)
+            .put("faas.", true)
+            .put("code.", true)
+            .build();
   }
 
   @Nullable
@@ -166,9 +169,8 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
   /** {@inheritDoc} */
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
-    CompletableResultCode completableResultCode = new CompletableResultCode();
+    List<TelemetryItem> telemetryItems = new ArrayList<>();
     try {
-      List<TelemetryItem> telemetryItems = new ArrayList<>();
       for (SpanData span : spans) {
         LOGGER.verbose("exporting span: {}", span);
         exportInternal(span, telemetryItems);
@@ -176,7 +178,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
       return telemetryItemExporter.send(telemetryItems);
     } catch (Throwable t) {
       LOGGER.error(t.getMessage(), t);
-      return completableResultCode.fail();
+      return CompletableResultCode.ofFailure();
     }
   }
 
@@ -854,9 +856,9 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
             telemetryBuilder.addTag("ai.user.userAgent", (String) value);
             return;
           }
-          int index = stringKey.indexOf(".");
-          String prefix = index == -1 ? stringKey : stringKey.substring(0, index);
-          if (STANDARD_ATTRIBUTE_PREFIXES.contains(prefix)) {
+          if (STANDARD_ATTRIBUTE_PREFIX_TRIE.getOrDefault(stringKey, false)
+              && !stringKey.startsWith("http.request.header.")
+              && !stringKey.startsWith("http.response.header.")) {
             return;
           }
           String val = convertToString(value, key.getType());
