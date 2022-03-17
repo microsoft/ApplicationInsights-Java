@@ -21,28 +21,14 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
-import static java.util.Arrays.asList;
-
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineRequest;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineResponse;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.StatusCodes;
 import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
 
 public class LocalStorageTelemetryPipelineListener implements TelemetryPipelineListener {
-
-  static final Set<Integer> RETRYABLE_CODES =
-      new HashSet<>(
-          asList(
-              401,
-              403,
-              408, // REQUEST TIMEOUT
-              429, // TOO MANY REQUESTS
-              500, // INTERNAL SERVER ERROR
-              503 // SERVICE UNAVAILABLE
-              ));
 
   private final LocalFileWriter localFileWriter;
   private final LocalFileSender localFileSender;
@@ -67,7 +53,7 @@ public class LocalStorageTelemetryPipelineListener implements TelemetryPipelineL
 
   @Override
   public void onResponse(TelemetryPipelineRequest request, TelemetryPipelineResponse response) {
-    if (RETRYABLE_CODES.contains(response.getStatusCode())) {
+    if (StatusCodes.isRetryable(response.getStatusCode())) {
       localFileWriter.writeToDisk(request.getInstrumentationKey(), request.getTelemetry());
     }
   }
