@@ -33,6 +33,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDe
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
@@ -54,6 +55,7 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -155,6 +157,7 @@ public class Exporter implements SpanExporter {
     this.captureHttpServer4xxAsError = captureHttpServer4xxAsError;
   }
 
+  /** {@inheritDoc} */
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
     if (Strings.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey())) {
@@ -162,11 +165,13 @@ public class Exporter implements SpanExporter {
       return CompletableResultCode.ofSuccess();
     }
 
+    List<TelemetryItem> telemetryItems = new ArrayList<>();
+
     boolean failure = false;
     for (SpanData span : spans) {
       logger.debug("exporting span: {}", span);
       try {
-        internalExport(span);
+        internalExport(span, telemetryItems);
         exportingSpanLogger.recordSuccess();
       } catch (Throwable t) {
         exportingSpanLogger.recordFailure(t.getMessage(), t);
@@ -177,6 +182,10 @@ public class Exporter implements SpanExporter {
     // batching, retry, throttling, and writing to disk on failure occur downstream
     // for simplicity not reporting back success/failure from this layer
     // only that it was successfully delivered to the next layer
+    for (TelemetryItem telemetryItem : telemetryItems) {
+      telemetryClient.trackAsync(telemetryItem);
+    }
+
     return failure ? CompletableResultCode.ofFailure() : CompletableResultCode.ofSuccess();
   }
 
@@ -190,7 +199,7 @@ public class Exporter implements SpanExporter {
     return CompletableResultCode.ofSuccess();
   }
 
-  private void internalExport(SpanData span) {
+  private void internalExport(SpanData span, List<TelemetryItem> telemetryItems) {
     SpanKind kind = span.getKind();
     String instrumentationName = span.getInstrumentationLibraryInfo().getName();
     telemetryClient
@@ -202,23 +211,24 @@ public class Exporter implements SpanExporter {
           && !span.getParentSpanContext().isValid()) {
         // TODO (trask) AI mapping: need semantic convention for determining whether to map INTERNAL
         // to request or dependency (or need clarification to use SERVER for this)
-        exportRequest(span);
+        exportRequest(span, telemetryItems);
       } else {
-        exportRemoteDependency(span, true);
+        exportRemoteDependency(span, true, telemetryItems);
       }
     } else if (kind == SpanKind.CLIENT || kind == SpanKind.PRODUCER) {
-      exportRemoteDependency(span, false);
+      exportRemoteDependency(span, false, telemetryItems);
     } else if (kind == SpanKind.CONSUMER
         && "receive".equals(span.getAttributes().get(SemanticAttributes.MESSAGING_OPERATION))) {
-      exportRemoteDependency(span, false);
+      exportRemoteDependency(span, false, telemetryItems);
     } else if (kind == SpanKind.SERVER || kind == SpanKind.CONSUMER) {
-      exportRequest(span);
+      exportRequest(span, telemetryItems);
     } else {
       throw new UnsupportedOperationException(kind.name());
     }
   }
 
-  private void exportRemoteDependency(SpanData span, boolean inProc) {
+  private void exportRemoteDependency(
+      SpanData span, boolean inProc, List<TelemetryItem> telemetryItems) {
     RemoteDependencyTelemetryBuilder telemetryBuilder =
         telemetryClient.newRemoteDependencyTelemetryBuilder();
 
@@ -244,9 +254,8 @@ public class Exporter implements SpanExporter {
       applySemanticConventions(telemetryBuilder, span);
     }
 
-    // export
-    telemetryClient.trackAsync(telemetryBuilder.build());
-    exportEvents(span, null, samplingPercentage);
+    telemetryItems.add(telemetryBuilder.build());
+    exportEvents(span, null, samplingPercentage, telemetryItems);
   }
 
   private static final Set<String> DEFAULT_HTTP_SPAN_NAMES =
@@ -611,7 +620,7 @@ public class Exporter implements SpanExporter {
     }
   }
 
-  private void exportRequest(SpanData span) {
+  private void exportRequest(SpanData span, List<TelemetryItem> telemetryItems) {
     RequestTelemetryBuilder telemetryBuilder = telemetryClient.newRequestTelemetryBuilder();
 
     Attributes attributes = span.getAttributes();
@@ -709,9 +718,8 @@ public class Exporter implements SpanExporter {
       telemetryBuilder.addMeasurement("timeSinceEnqueued", (double) timeSinceEnqueuedMillis);
     }
 
-    // export
-    telemetryClient.trackAsync(telemetryBuilder.build());
-    exportEvents(span, operationName, samplingPercentage);
+    telemetryItems.add(telemetryBuilder.build());
+    exportEvents(span, operationName, samplingPercentage, telemetryItems);
   }
 
   private boolean getSuccess(SpanData span) {
@@ -812,7 +820,10 @@ public class Exporter implements SpanExporter {
   }
 
   private void exportEvents(
-      SpanData span, @Nullable String operationName, float samplingPercentage) {
+      SpanData span,
+      @Nullable String operationName,
+      float samplingPercentage,
+      List<TelemetryItem> telemetryItems) {
     for (EventData event : span.getEvents()) {
       String instrumentationLibraryName = span.getInstrumentationLibraryInfo().getName();
       boolean lettuce51 = instrumentationLibraryName.equals("io.opentelemetry.lettuce-5.1");
@@ -834,7 +845,7 @@ public class Exporter implements SpanExporter {
         // TODO (trask) map OpenTelemetry exception to Application Insights exception better
         String stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
         if (stacktrace != null) {
-          trackException(stacktrace, span, operationName, samplingPercentage);
+          trackException(stacktrace, span, operationName, samplingPercentage, telemetryItems);
         }
         return;
       }
@@ -856,12 +867,17 @@ public class Exporter implements SpanExporter {
       // set message-specific properties
       telemetryBuilder.setMessage(event.getName());
 
-      telemetryClient.trackAsync(telemetryBuilder.build());
+      telemetryItems.add(telemetryBuilder.build());
     }
   }
 
   private void trackException(
-      String errorStack, SpanData span, @Nullable String operationName, float samplingPercentage) {
+      String errorStack,
+      SpanData span,
+      @Nullable String operationName,
+      float samplingPercentage,
+      List<TelemetryItem> telemetryItems) {
+
     ExceptionTelemetryBuilder telemetryBuilder = telemetryClient.newExceptionTelemetryBuilder();
 
     // set standard properties
@@ -878,7 +894,7 @@ public class Exporter implements SpanExporter {
     // set exception-specific properties
     telemetryBuilder.setExceptions(Exceptions.minimalParse(errorStack));
 
-    telemetryClient.trackAsync(telemetryBuilder.build());
+    telemetryItems.add(telemetryBuilder.build());
   }
 
   private static void setTime(AbstractTelemetryBuilder telemetryBuilder, long epochNanos) {
