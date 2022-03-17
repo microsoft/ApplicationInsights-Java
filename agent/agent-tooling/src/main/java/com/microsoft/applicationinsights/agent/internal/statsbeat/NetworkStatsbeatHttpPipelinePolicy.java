@@ -29,8 +29,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.StatusCodes
 import java.util.concurrent.atomic.AtomicLong;
 import reactor.core.publisher.Mono;
 
-import static com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener.RETRYABLE_CODES;
-
 public class NetworkStatsbeatHttpPipelinePolicy implements HttpPipelinePolicy {
 
   private static final String INSTRUMENTATION_KEY_DATA = "instrumentationKey";
@@ -60,7 +58,7 @@ public class NetworkStatsbeatHttpPipelinePolicy implements HttpPipelinePolicy {
                 // these are not tracked as success or failure since they are just redirects
               } else if (statusCode == 402 || statusCode == 439) {
                 networkStatsbeat.incrementThrottlingCount(instrumentationKey, host);
-              } else if (RETRYABLE_CODES.contains(statusCode)) {
+              } else if (StatusCodes.isRetryable(statusCode)) {
                 networkStatsbeat.incrementRetryCount(instrumentationKey, host);
               } else {
                 // note: 401 and 403 are currently tracked as failures
