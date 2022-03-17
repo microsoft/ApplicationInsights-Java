@@ -33,7 +33,7 @@ import java.util.Set;
 
 public class LocalStorageTelemetryPipelineListener implements TelemetryPipelineListener {
 
-  static final Set<Integer> RETRYABLE_CODES =
+  public static final Set<Integer> RETRYABLE_CODES =
       new HashSet<>(
           asList(
               401,
