@@ -33,7 +33,7 @@ public class StatusCodes {
   }
 
   public static boolean isRedirect(int statusCode) {
-    return statusCode == 301 || statusCode == 302 || statusCode == 307 || statusCode == 308;
+    return statusCode == 307 || statusCode == 308;
   }
 
   private StatusCodes() {}

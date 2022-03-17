@@ -27,6 +27,7 @@ import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.util.Context;
 import com.azure.core.util.tracing.Tracer;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.StatusCodes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -41,8 +42,6 @@ import java.util.Set;
 import reactor.core.publisher.Mono;
 
 public class TelemetryPipeline {
-
-  static final Set<Integer> REDIRECT_RESPONSE_CODES = new HashSet<>(asList(301, 302, 307, 308));
 
   // Based on Stamp specific redirects design doc
   private static final int MAX_REDIRECTS = 10;
@@ -135,7 +134,7 @@ public class TelemetryPipeline {
 
     int responseCode = response.getStatusCode();
 
-    if (REDIRECT_RESPONSE_CODES.contains(responseCode) && remainingRedirects > 0) {
+    if (StatusCodes.isRedirect(responseCode) && remainingRedirects > 0) {
       String location = response.getHeaderValue("Location");
       URL locationUrl;
       try {
