@@ -86,6 +86,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         ikey, host, intervalMetrics -> intervalMetrics.requestFailureCount.incrementAndGet());
   }
 
+  // TODO (heya) this is never called
   public void incrementRetryCount(String ikey, String host) {
     doWithIntervalMetrics(
         ikey, host, intervalMetrics -> intervalMetrics.retryCount.incrementAndGet());
