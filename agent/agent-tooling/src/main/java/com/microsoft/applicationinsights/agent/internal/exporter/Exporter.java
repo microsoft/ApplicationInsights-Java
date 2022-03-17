@@ -718,7 +718,6 @@ public class Exporter implements SpanExporter {
       telemetryBuilder.addMeasurement("timeSinceEnqueued", (double) timeSinceEnqueuedMillis);
     }
 
-    // export
     telemetryItems.add(telemetryBuilder.build());
     exportEvents(span, operationName, samplingPercentage, telemetryItems);
   }

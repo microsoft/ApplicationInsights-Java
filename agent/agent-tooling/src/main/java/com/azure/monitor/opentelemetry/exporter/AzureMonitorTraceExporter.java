@@ -487,6 +487,9 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
   private static void applyDatabaseClientSpan(
       RemoteDependencyTelemetryBuilder telemetryBuilder, String dbSystem, Attributes attributes) {
     String dbStatement = attributes.get(SemanticAttributes.DB_STATEMENT);
+    if (dbStatement == null) {
+      dbStatement = attributes.get(SemanticAttributes.DB_OPERATION);
+    }
     String type;
     if (SQL_DB_SYSTEMS.contains(dbSystem)) {
       if (dbSystem.equals(SemanticAttributes.DbSystemValues.MYSQL)) {
