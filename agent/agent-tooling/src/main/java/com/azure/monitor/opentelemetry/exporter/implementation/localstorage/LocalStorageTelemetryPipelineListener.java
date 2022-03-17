@@ -29,6 +29,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.StatusCodes
 import java.io.File;
 
 public class LocalStorageTelemetryPipelineListener implements TelemetryPipelineListener {
+
   private final LocalFileWriter localFileWriter;
   private final LocalFileSender localFileSender;
   private final LocalFilePurger localFilePurger;
