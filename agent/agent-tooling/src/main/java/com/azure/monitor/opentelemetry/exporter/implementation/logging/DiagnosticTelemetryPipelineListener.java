@@ -61,8 +61,6 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
         operationLogger.recordFailure(
             getErrorMessageFromPartialSuccessResponse(response.getBody()));
         break;
-      case 301:
-      case 302:
       case 307:
       case 308:
         operationLogger.recordFailure("Too many redirects");
