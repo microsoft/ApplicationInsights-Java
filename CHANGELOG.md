@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# Version 3.2.9-BETA
+* Allow concurrent exports [#2181](https://github.com/microsoft/ApplicationInsights-Java/pull/2181).
+* Fix parsing exception with colons [#2196](https://github.com/microsoft/ApplicationInsights-Java/issues/2196).
+
 # Version 3.2.8 GA
 * Fix spring actuator endpoint behavior [#2146](https://github.com/microsoft/ApplicationInsights-Java/pull/2146).
 * Better JMX debug logging [#2157](https://github.com/microsoft/ApplicationInsights-Java/pull/2157).
