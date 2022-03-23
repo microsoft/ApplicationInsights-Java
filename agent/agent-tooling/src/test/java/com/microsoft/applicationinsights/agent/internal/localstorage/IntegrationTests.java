@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -37,6 +38,7 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.Telemetr
 import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeat;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryChannel;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -122,12 +124,12 @@ public class IntegrationTests {
       executorService.execute(
           () -> {
             for (int j = 0; j < 10; j++) {
-              telemetryChannel.send(telemetryItems);
+              CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
+              completableResultCode.join(10, SECONDS);
+              assertThat(completableResultCode.isSuccess()).isFalse();
             }
           });
     }
-
-    telemetryChannel.flush();
 
     executorService.shutdown();
     executorService.awaitTermination(10, TimeUnit.MINUTES);
