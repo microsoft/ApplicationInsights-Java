@@ -129,6 +129,9 @@ public final class BatchSpanProcessor {
     private static final OperationLogger queuingSpanLogger =
         new OperationLogger(BatchSpanProcessor.class, "Queuing span");
 
+    private static final OperationLogger addAsyncExport =
+        new OperationLogger(BatchSpanProcessor.class, "Add async export");
+
     private Worker(
         TelemetryChannel spanExporter,
         long scheduleDelayNanos,
@@ -267,12 +270,17 @@ public final class BatchSpanProcessor {
         // batching, retry, logging, and writing to disk on failure occur downstream
         CompletableResultCode result = spanExporter.send(Collections.unmodifiableList(batch));
         if (pendingExports.size() < maxPendingExports - 1) {
+          addAsyncExport.recordSuccess();
           pendingExports.add(result);
           result.whenComplete(
               () -> {
                 pendingExports.remove(result);
               });
         } else {
+          addAsyncExport.recordFailure(
+              "Max number of concurrent exports "
+                  + maxPendingExports
+                  + " has been hit, may see some export throttling due to this");
           result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
         }
       } finally {
