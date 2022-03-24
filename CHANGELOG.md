@@ -1,6 +1,6 @@
 # CHANGELOG
 
-# Version 3.2.9-BETA
+# Version 3.2.9
 * Increase export throughput [#2204](https://github.com/microsoft/ApplicationInsights-Java/pull/2204).
 * Fix parsing exception with colons [#2196](https://github.com/microsoft/ApplicationInsights-Java/issues/2196).
 * Remove reverse name lookup everywhere [#2205](https://github.com/microsoft/ApplicationInsights-Java/pull/2205).
