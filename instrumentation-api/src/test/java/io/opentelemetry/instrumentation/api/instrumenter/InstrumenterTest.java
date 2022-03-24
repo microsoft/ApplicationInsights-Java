@@ -779,11 +779,6 @@ class InstrumenterTest {
     }
 
     @Override
-    public String peerName(REQUEST request) {
-      return null;
-    }
-
-    @Override
     public Integer peerPort(REQUEST request) {
       return null;
     }

@@ -689,8 +689,6 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
         if (extraAttributes.contains(SemanticAttributes.NET_TRANSPORT)) {
           "$SemanticAttributes.NET_TRANSPORT" IP_TCP
         }
-        // net.peer.name resolves to "127.0.0.1" on windows which is same as net.peer.ip so then not captured
-        "$SemanticAttributes.NET_PEER_NAME" { it == null || it == address.host }
         "$SemanticAttributes.NET_PEER_PORT" { it == null || (it instanceof Long && it != port) }
         "$SemanticAttributes.NET_PEER_IP" { it == null || it == peerIp(endpoint) } // Optional
 
@@ -746,8 +744,6 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
         if (extraAttributes.contains(SemanticAttributes.NET_TRANSPORT)) {
           "$SemanticAttributes.NET_TRANSPORT" IP_TCP
         }
-        // net.peer.name resolves to "127.0.0.1" on windows which is same as net.peer.ip so then not captured
-        "$SemanticAttributes.NET_PEER_NAME" { (it == null || it == address.host) }
         "$SemanticAttributes.NET_PEER_PORT" { it == null || it instanceof Long }
         "$SemanticAttributes.NET_PEER_IP" { it == null || it == peerIp(endpoint) } // Optional
 
