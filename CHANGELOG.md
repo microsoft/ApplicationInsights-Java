@@ -1,5 +1,8 @@
 # CHANGELOG
 
+# Version 3.2.10 GA
+* Fix Statsbeat warning [#2208](https://github.com/microsoft/ApplicationInsights-Java/pull/2208).
+
 # Version 3.2.9 GA
 * Increase export throughput [#2204](https://github.com/microsoft/ApplicationInsights-Java/pull/2204).
 * Fix parsing exception with colons [#2196](https://github.com/microsoft/ApplicationInsights-Java/issues/2196).
