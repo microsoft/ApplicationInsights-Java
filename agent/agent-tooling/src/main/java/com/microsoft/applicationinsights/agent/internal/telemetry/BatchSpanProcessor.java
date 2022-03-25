@@ -277,10 +277,14 @@ public final class BatchSpanProcessor {
                 pendingExports.remove(result);
               });
         } else {
-          addAsyncExport.recordFailure(
-              "Max number of concurrent exports "
-                  + maxPendingExports
-                  + " has been hit, may see some export throttling due to this");
+          // need conditional, otherwise this will always get logged when maxPendingExports is 1
+          // (e.g. statsbeat)
+          if (maxPendingExports > 1) {
+            addAsyncExport.recordFailure(
+                "Max number of concurrent exports "
+                    + maxPendingExports
+                    + " has been hit, may see some export throttling due to this");
+          }
           result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
         }
       } finally {
