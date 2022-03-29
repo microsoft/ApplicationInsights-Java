@@ -51,6 +51,7 @@ import java.io.StringWriter;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.channels.UnresolvedAddressException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -363,7 +364,7 @@ public class TelemetryChannel {
       String instrumentationKey, Consumer<Boolean> onFailure, OperationLogger operationLogger) {
 
     return error -> {
-      if (isStatsbeat && error instanceof UnknownHostException) {
+      if (isStatsbeat && (error instanceof UnknownHostException || error instanceof UnresolvedAddressException)) {
         // when sending a Statsbeat request and server returns an UnknownHostException, it's
         // likely that it's using AMPLS. In that case, we use the kill-switch to turn off Statsbeat.
         statsbeatModule.shutdown();
