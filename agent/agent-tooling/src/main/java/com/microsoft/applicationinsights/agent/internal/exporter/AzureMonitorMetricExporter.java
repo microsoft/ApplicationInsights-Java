@@ -55,7 +55,11 @@ public class AzureMonitorMetricExporter implements MetricExporter {
   public CompletableResultCode export(Collection<MetricData> metrics) {
     for (MetricData metricData : metrics) {
       MetricDataType type = metricData.getType();
-      if (type == DOUBLE_SUM || type == DOUBLE_GAUGE || type == LONG_SUM || type == LONG_GAUGE || type == HISTOGRAM) {
+      if (type == DOUBLE_SUM
+          || type == DOUBLE_GAUGE
+          || type == LONG_SUM
+          || type == LONG_GAUGE
+          || type == HISTOGRAM) {
         TelemetryItem item = convertOtelMetricToAzureMonitorMetric(metricData);
         telemetryClient.trackAsync(item);
       } else {
