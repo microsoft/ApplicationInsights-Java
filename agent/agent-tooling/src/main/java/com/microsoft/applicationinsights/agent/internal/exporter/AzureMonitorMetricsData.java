@@ -36,13 +36,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 final class AzureMonitorMetricsData {
 
   private static final int VERSION = 2;
-  private static final Logger logger = LoggerFactory.getLogger(AzureMonitorMetricsData.class);
   private MetricsData metricsData;
 
   public AzureMonitorMetricsData(MetricData metricData, PointData pointData) {

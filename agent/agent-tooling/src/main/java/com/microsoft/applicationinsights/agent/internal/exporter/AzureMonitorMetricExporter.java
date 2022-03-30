@@ -38,7 +38,6 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,15 +74,14 @@ public class AzureMonitorMetricExporter implements MetricExporter {
     return CompletableResultCode.ofSuccess();
   }
 
-  @Nullable
-  private TelemetryItem convertOtelMetricToAzureMonitorMetric(MetricData metricData) {
+  // visible for testing
+  TelemetryItem convertOtelMetricToAzureMonitorMetric(MetricData metricData) {
     TelemetryItem telemetryItem = new TelemetryItem();
     telemetryItem.setInstrumentationKey(telemetryClient.getInstrumentationKey());
     for (PointData data : metricData.getData().getPoints()) {
       MonitorBase monitorBase = new MonitorBase();
       monitorBase.setBaseType("MetricData");
-      AzureMonitorMetricsData azureMonitorMetricsData =
-          new AzureMonitorMetricsData(metricData, data);
+      AzureMonitorMetricsData azureMonitorMetricsData = new AzureMonitorMetricsData(metricData, data);
       MetricsData metricsData = azureMonitorMetricsData.getMetricsData();
       populateDefaults(telemetryItem, metricsData);
       monitorBase.setBaseData(azureMonitorMetricsData.getMetricsData());
@@ -93,7 +91,8 @@ public class AzureMonitorMetricExporter implements MetricExporter {
     return telemetryItem;
   }
 
-  private void populateDefaults(TelemetryItem telemetryItem, MetricsData metricsData) {
+  // visible for testing
+  void populateDefaults(TelemetryItem telemetryItem, MetricsData metricsData) {
     telemetryItem.setInstrumentationKey(telemetryClient.getInstrumentationKey());
     Map<String, String> tags = telemetryItem.getTags();
     Map<String, String> globalTags = telemetryClient.getGlobalTags();
