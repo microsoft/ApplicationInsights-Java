@@ -39,6 +39,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +47,7 @@ public class AzureMonitorMetricExporter implements MetricExporter {
 
   private final TelemetryClient telemetryClient;
   private static final Logger logger = LoggerFactory.getLogger(AzureMonitorMetricExporter.class);
+  private final AtomicBoolean stopped = new AtomicBoolean();
 
   public AzureMonitorMetricExporter(TelemetryClient telemetryClient) {
     this.telemetryClient = telemetryClient;
@@ -53,6 +55,10 @@ public class AzureMonitorMetricExporter implements MetricExporter {
 
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
+    if (stopped.get()) {
+      return CompletableResultCode.ofFailure();
+    }
+
     for (MetricData metricData : metrics) {
       MetricDataType type = metricData.getType();
       if (type == DOUBLE_SUM
@@ -76,6 +82,7 @@ public class AzureMonitorMetricExporter implements MetricExporter {
 
   @Override
   public CompletableResultCode shutdown() {
+    stopped.set(true);
     return CompletableResultCode.ofSuccess();
   }
 
@@ -102,7 +109,7 @@ public class AzureMonitorMetricExporter implements MetricExporter {
     telemetryItem.setInstrumentationKey(telemetryClient.getInstrumentationKey());
     Map<String, String> tags = telemetryItem.getTags();
     Map<String, String> globalTags = telemetryClient.getGlobalTags();
-    if (tags == null && !globalTags.isEmpty()) {
+    if (tags == null) {
       tags = new HashMap<>();
     }
     for (Map.Entry<String, String> entry : globalTags.entrySet()) {
@@ -114,7 +121,7 @@ public class AzureMonitorMetricExporter implements MetricExporter {
 
     Map<String, String> globalProperties = telemetryClient.getGlobalProperties();
     Map<String, String> properties = metricsData.getProperties();
-    if (properties == null && !globalProperties.isEmpty()) {
+    if (properties == null) {
       properties = new HashMap<>();
     }
     for (Map.Entry<String, String> entry : globalProperties.entrySet()) {

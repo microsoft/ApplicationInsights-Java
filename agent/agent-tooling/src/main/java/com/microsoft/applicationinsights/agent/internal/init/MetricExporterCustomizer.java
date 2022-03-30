@@ -40,9 +40,9 @@ public class MetricExporterCustomizer implements AutoConfigurationCustomizerProv
     }
     autoConfiguration.addMeterProviderCustomizer(
         (meterProvider, config) ->
-            meterProvider.registerMetricReader(
-                PeriodicMetricReader.builder(new AzureMonitorMetricExporter(telemetryClient))
-                    .setInterval(Duration.ofMinutes(1))
-                    .newMetricReaderFactory()));
+          meterProvider.registerMetricReader(
+              PeriodicMetricReader.builder(new AzureMonitorMetricExporter(telemetryClient))
+                  .setInterval(Duration.ofSeconds(MainEntryPoint.getConfiguration().preview.metricIntervalSeconds))
+                  .newMetricReaderFactory()));
   }
 }
