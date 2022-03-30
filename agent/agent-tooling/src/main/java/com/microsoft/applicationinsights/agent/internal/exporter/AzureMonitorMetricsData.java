@@ -27,6 +27,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointT
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -67,8 +68,13 @@ final class AzureMonitorMetricsData {
         metricDataPoint.setDataPointType(DataPointType.MEASUREMENT);
         metricDataPoint.setValue(((DoublePointData) pointData).getValue());
         break;
+      case HISTOGRAM:
+        metricDataPoint.setDataPointType(DataPointType.AGGREGATION);
+        long histogramCount = ((DoubleHistogramPointData) pointData).getCount();
+        int histogramCountIntValue = histogramCount <= Integer.MAX_VALUE && histogramCount >= Integer.MIN_VALUE ? (int)histogramCount : null;
+        metricDataPoint.setCount(histogramCountIntValue);
+        break;
       case SUMMARY: // not supported yet in OpenTelemetry SDK
-      case HISTOGRAM: // supported in OpenTelemetry SDK but not supported yet in Breeze
       case EXPONENTIAL_HISTOGRAM: // not supported yet in OpenTelemetry SDK
       default:
         throw new IllegalArgumentException("metric data type '" + type + "' is not supported yet");
