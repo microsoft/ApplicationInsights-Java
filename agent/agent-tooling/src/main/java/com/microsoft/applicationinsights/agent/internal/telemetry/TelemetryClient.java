@@ -38,7 +38,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.Loca
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.DiagnosticTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
@@ -64,7 +63,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import io.opentelemetry.sdk.metrics.data.PointData;
 import org.apache.commons.text.StringSubstitutor;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 

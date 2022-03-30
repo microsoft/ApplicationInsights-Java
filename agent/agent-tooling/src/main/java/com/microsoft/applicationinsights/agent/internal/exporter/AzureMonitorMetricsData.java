@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
+import static io.opentelemetry.api.internal.Utils.checkArgument;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
@@ -30,15 +32,12 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static io.opentelemetry.api.internal.Utils.checkArgument;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 final class AzureMonitorMetricsData {
 
@@ -54,7 +53,7 @@ final class AzureMonitorMetricsData {
     List<MetricDataPoint> metricDataPoints = new ArrayList<>();
     MetricDataPoint metricDataPoint = new MetricDataPoint();
     MetricDataType type = metricData.getType();
-    switch(type) {
+    switch (type) {
       case LONG_SUM:
         metricDataPoint.setDataPointType(DataPointType.AGGREGATION);
         metricDataPoint.setValue(((LongPointData) pointData).getValue());
@@ -92,6 +91,6 @@ final class AzureMonitorMetricsData {
   }
 
   public MetricsData getMetricsData() {
-      return metricsData;
-    }
+    return metricsData;
+  }
 }

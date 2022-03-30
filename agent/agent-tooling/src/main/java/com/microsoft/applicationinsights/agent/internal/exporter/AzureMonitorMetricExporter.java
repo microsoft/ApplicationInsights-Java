@@ -21,6 +21,11 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
+import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_GAUGE;
+import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_SUM;
+import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_GAUGE;
+import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorBase;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
@@ -30,17 +35,12 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
-import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_GAUGE;
-import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_SUM;
-import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_GAUGE;
-import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AzureMonitorMetricExporter implements MetricExporter {
 
@@ -82,7 +82,8 @@ public class AzureMonitorMetricExporter implements MetricExporter {
     for (PointData data : metricData.getData().getPoints()) {
       MonitorBase monitorBase = new MonitorBase();
       monitorBase.setBaseType("MetricData");
-      AzureMonitorMetricsData azureMonitorMetricsData = new AzureMonitorMetricsData(metricData, data);
+      AzureMonitorMetricsData azureMonitorMetricsData =
+          new AzureMonitorMetricsData(metricData, data);
       MetricsData metricsData = azureMonitorMetricsData.getMetricsData();
       populateDefaults(telemetryItem, metricsData);
       monitorBase.setBaseData(azureMonitorMetricsData.getMetricsData());
