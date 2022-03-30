@@ -90,7 +90,7 @@ public class AzureMonitorMetricExporter implements MetricExporter {
           new AzureMonitorMetricsData(metricData, data);
       MetricsData metricsData = azureMonitorMetricsData.getMetricsData();
       populateDefaults(telemetryItem, metricsData);
-      monitorBase.setBaseData(azureMonitorMetricsData.getMetricsData());
+      monitorBase.setBaseData(metricsData);
       telemetryItem.setData(monitorBase);
     }
 
