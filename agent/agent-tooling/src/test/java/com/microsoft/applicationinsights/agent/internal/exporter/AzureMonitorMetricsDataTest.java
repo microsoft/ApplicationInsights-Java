@@ -26,14 +26,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounter;
+import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -84,5 +90,65 @@ public class AzureMonitorMetricsDataTest {
     }
     assertThat(metricData.getType()).isEqualTo(DOUBLE_SUM);
     assertThat(metricData.getName()).isEqualTo("testDoubleCounter");
+  }
+
+  @Test
+  public void testLongCounter() throws InterruptedException {
+    LongCounter counter = meter.counterBuilder("testLongCounter").build();
+    counter.add(
+        1,
+        Attributes.of(
+            AttributeKey.stringKey("name"), "apple", AttributeKey.stringKey("color"), "red"));
+    counter.add(
+        2,
+        Attributes.of(
+            AttributeKey.stringKey("name"), "lemon", AttributeKey.stringKey("color"), "yellow"));
+    counter.add(
+        1,
+        Attributes.of(
+            AttributeKey.stringKey("name"), "lemon", AttributeKey.stringKey("color"), "yellow"));
+    counter.add(
+        2,
+        Attributes.of(
+            AttributeKey.stringKey("name"), "apple", AttributeKey.stringKey("color"), "green"));
+    counter.add(
+        5,
+        Attributes.of(
+            AttributeKey.stringKey("name"), "apple", AttributeKey.stringKey("color"), "red"));
+    counter.add(
+        4,
+        Attributes.of(
+            AttributeKey.stringKey("name"), "lemon", AttributeKey.stringKey("color"), "yellow"));
+
+    Thread.sleep(60 * 1000); // wait 1 min
+
+    List<MetricData> metricDatas = inMemoryMetricExporter.getExportedMetricDatas();
+    assertThat(metricDatas.size()).isEqualTo(1);
+
+    MetricData metricData = metricDatas.get(0);
+    Collection<LongPointData> points = (Collection<LongPointData>) metricData.getData().getPoints();
+    assertThat(points.size()).isEqualTo(3);
+
+    Iterator<LongPointData> iterator = points.iterator();
+    LongPointData longPointData1 = iterator.next();
+    assertThat(longPointData1.getValue()).isEqualTo(6L);
+    assertThat(longPointData1.getAttributes().get(AttributeKey.stringKey("name")))
+        .isEqualTo("apple");
+    assertThat(longPointData1.getAttributes().get(AttributeKey.stringKey("color")))
+        .isEqualTo("red");
+
+    LongPointData longPointData2 = iterator.next();
+    assertThat(longPointData2.getValue()).isEqualTo(2L);
+    assertThat(longPointData2.getAttributes().get(AttributeKey.stringKey("name")))
+        .isEqualTo("apple");
+    assertThat(longPointData2.getAttributes().get(AttributeKey.stringKey("color")))
+        .isEqualTo("green");
+
+    LongPointData longPointData3 = iterator.next();
+    assertThat(longPointData3.getValue()).isEqualTo(7L);
+    assertThat(longPointData3.getAttributes().get(AttributeKey.stringKey("name")))
+        .isEqualTo("lemon");
+    assertThat(longPointData3.getAttributes().get(AttributeKey.stringKey("color")))
+        .isEqualTo("yellow");
   }
 }
