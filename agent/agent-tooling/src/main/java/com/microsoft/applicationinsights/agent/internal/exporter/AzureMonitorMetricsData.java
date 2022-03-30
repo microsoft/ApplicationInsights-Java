@@ -41,12 +41,11 @@ import java.util.Map;
 final class AzureMonitorMetricsData {
 
   private static final int VERSION = 2;
-  private MetricsData metricsData;
+  private final MetricsData metricsData = new MetricsData();
 
   public AzureMonitorMetricsData(MetricData metricData, PointData pointData) {
     checkArgument(metricData != null, "MetricData cannot be null.");
 
-    metricsData = new MetricsData();
     metricsData.setVersion(VERSION);
     List<MetricDataPoint> metricDataPoints = new ArrayList<>();
     MetricDataPoint metricDataPoint = new MetricDataPoint();
@@ -71,11 +70,9 @@ final class AzureMonitorMetricsData {
       case HISTOGRAM:
         metricDataPoint.setDataPointType(DataPointType.AGGREGATION);
         long histogramCount = ((DoubleHistogramPointData) pointData).getCount();
-        int histogramCountIntValue =
-            histogramCount <= Integer.MAX_VALUE && histogramCount >= Integer.MIN_VALUE
-                ? (int) histogramCount
-                : null;
-        metricDataPoint.setCount(histogramCountIntValue);
+        if (histogramCount <= Integer.MAX_VALUE && histogramCount >= Integer.MIN_VALUE) {
+          metricDataPoint.setCount((int) histogramCount);
+        }
         break;
       case SUMMARY: // not supported yet in OpenTelemetry SDK
       case EXPONENTIAL_HISTOGRAM: // not supported yet in OpenTelemetry SDK
