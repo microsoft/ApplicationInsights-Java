@@ -41,6 +41,8 @@ import java.util.Map;
 final class AzureMonitorMetricsData {
 
   private static final int VERSION = 2;
+  private static final String DEFAULT_EXPORTER_INTERVAL_MILLISECONDS = "60000";
+  private static final String AGGREGATION_INTERNAL_MS_KEY = "_MS.AggregationIntervalMs";
   private final MetricsData metricsData = new MetricsData();
 
   public AzureMonitorMetricsData(MetricData metricData, PointData pointData) {
@@ -89,6 +91,7 @@ final class AzureMonitorMetricsData {
       for (AttributeKey key : pointData.getAttributes().asMap().keySet()) {
         properties.put(key.getKey(), pointData.getAttributes().get(key).toString());
       }
+      properties.put(AGGREGATION_INTERNAL_MS_KEY, DEFAULT_EXPORTER_INTERVAL_MILLISECONDS);
       metricsData.setProperties(properties);
     }
   }
