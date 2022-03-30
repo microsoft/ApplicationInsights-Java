@@ -71,7 +71,10 @@ final class AzureMonitorMetricsData {
       case HISTOGRAM:
         metricDataPoint.setDataPointType(DataPointType.AGGREGATION);
         long histogramCount = ((DoubleHistogramPointData) pointData).getCount();
-        int histogramCountIntValue = histogramCount <= Integer.MAX_VALUE && histogramCount >= Integer.MIN_VALUE ? (int)histogramCount : null;
+        int histogramCountIntValue =
+            histogramCount <= Integer.MAX_VALUE && histogramCount >= Integer.MIN_VALUE
+                ? (int) histogramCount
+                : null;
         metricDataPoint.setCount(histogramCountIntValue);
         break;
       case SUMMARY: // not supported yet in OpenTelemetry SDK
