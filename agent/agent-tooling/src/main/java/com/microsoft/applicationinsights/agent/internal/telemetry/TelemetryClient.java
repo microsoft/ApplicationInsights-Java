@@ -334,10 +334,6 @@ public class TelemetryClient {
     return newMetricTelemetryBuilder(name, value).build();
   }
 
-  public TelemetryItem newMetricTelemetry(String name, double value, DataPointType type, PointData data) {
-    return newMetricTelemetryBuilder(name, value, type, data).build();
-  }
-
   public EventTelemetryBuilder newEventTelemetryBuilder() {
     return newTelemetryBuilder(EventTelemetryBuilder::create);
   }
@@ -358,10 +354,6 @@ public class TelemetryClient {
   // this _does_ populate the current time
   public MetricTelemetryBuilder newMetricTelemetryBuilder(String name, double value) {
     return newTelemetryBuilder(() -> MetricTelemetryBuilder.create(name, value));
-  }
-
-  public MetricTelemetryBuilder newMetricTelemetryBuilder(String name, double value, DataPointType type, PointData data) {
-    return newTelemetryBuilder(() -> MetricTelemetryBuilder.create(name, value, type, data));
   }
 
   public PageViewTelemetryBuilder newPageViewTelemetryBuilder() {
