@@ -25,6 +25,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointT
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,19 +39,31 @@ public final class MetricTelemetryBuilder extends AbstractTelemetryBuilder {
     return new MetricTelemetryBuilder(new MetricsData());
   }
 
-  public static MetricTelemetryBuilder create(String name, double value) {
-    MetricTelemetryBuilder telemetryBuilder = new MetricTelemetryBuilder(new MetricsData());
+  public static MetricTelemetryBuilder create(String name, double value, DataPointType type, PointData data) {
+    MetricsData metricsData = new MetricsData();
+    List<MetricDataPoint> metricDataPoints = new ArrayList<>();
+    MetricDataPoint metricDataPoint = null;
+    if (data != null) {
+      metricsData.setVersion(2);
+      metricsData.set
+    }
+    MetricTelemetryBuilder telemetryBuilder = new MetricTelemetryBuilder(metricsData);
 
     MetricPointBuilder point = new MetricPointBuilder();
 
     point.setName(name);
     point.setValue(value);
-    point.setDataPointType(DataPointType.MEASUREMENT);
+    point.setDataPointType(type);
     telemetryBuilder.setMetricPoint(point);
 
     telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
 
     return telemetryBuilder;
+  }
+
+  // default to MEASUREMENT
+  public static MetricTelemetryBuilder create(String name, double value) {
+    return create(name, value, DataPointType.MEASUREMENT, null);
   }
 
   private MetricTelemetryBuilder(MetricsData data) {

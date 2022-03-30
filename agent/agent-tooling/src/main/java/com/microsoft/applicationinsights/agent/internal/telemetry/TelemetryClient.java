@@ -38,6 +38,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.Loca
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.DiagnosticTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
@@ -63,6 +64,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import org.apache.commons.text.StringSubstitutor;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
@@ -332,6 +334,10 @@ public class TelemetryClient {
     return newMetricTelemetryBuilder(name, value).build();
   }
 
+  public TelemetryItem newMetricTelemetry(String name, double value, DataPointType type, PointData data) {
+    return newMetricTelemetryBuilder(name, value, type, data).build();
+  }
+
   public EventTelemetryBuilder newEventTelemetryBuilder() {
     return newTelemetryBuilder(EventTelemetryBuilder::create);
   }
@@ -354,6 +360,10 @@ public class TelemetryClient {
     return newTelemetryBuilder(() -> MetricTelemetryBuilder.create(name, value));
   }
 
+  public MetricTelemetryBuilder newMetricTelemetryBuilder(String name, double value, DataPointType type, PointData data) {
+    return newTelemetryBuilder(() -> MetricTelemetryBuilder.create(name, value, type, data));
+  }
+
   public PageViewTelemetryBuilder newPageViewTelemetryBuilder() {
     return newTelemetryBuilder(PageViewTelemetryBuilder::create);
   }
@@ -364,6 +374,14 @@ public class TelemetryClient {
 
   public RequestTelemetryBuilder newRequestTelemetryBuilder() {
     return newTelemetryBuilder(RequestTelemetryBuilder::create);
+  }
+
+  public Map<String, String> getGlobalTags() {
+    return globalTags;
+  }
+
+  public Map<String, String> getGlobalProperties() {
+    return globalProperties;
   }
 
   private <T extends AbstractTelemetryBuilder> T newTelemetryBuilder(Supplier<T> creator) {
