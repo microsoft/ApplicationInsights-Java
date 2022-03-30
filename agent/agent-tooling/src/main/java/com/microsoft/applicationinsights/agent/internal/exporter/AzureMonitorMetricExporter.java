@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.exporter;
 
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_GAUGE;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_SUM;
+import static io.opentelemetry.sdk.metrics.data.MetricDataType.HISTOGRAM;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_GAUGE;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM;
 
@@ -54,7 +55,7 @@ public class AzureMonitorMetricExporter implements MetricExporter {
   public CompletableResultCode export(Collection<MetricData> metrics) {
     for (MetricData metricData : metrics) {
       MetricDataType type = metricData.getType();
-      if (type == DOUBLE_SUM || type == DOUBLE_GAUGE || type == LONG_SUM || type == LONG_GAUGE) {
+      if (type == DOUBLE_SUM || type == DOUBLE_GAUGE || type == LONG_SUM || type == LONG_GAUGE || type == HISTOGRAM) {
         TelemetryItem item = convertOtelMetricToAzureMonitorMetric(metricData);
         telemetryClient.trackAsync(item);
       } else {
