@@ -68,7 +68,8 @@ public class AzureMonitorMetricsDataTest {
     OpenTelemetry openTelemetry =
         OpenTelemetrySdk.builder()
             .setMeterProvider(meterProvider)
-            .build(); // buildAndRegisterGlobal can be used once and then use
+            .build();
+    // buildAndRegisterGlobal can be called only once and then use
     // GlobalOpenTelemetry.get();
 
     meter =
@@ -88,7 +89,7 @@ public class AzureMonitorMetricsDataTest {
     DoubleCounter counter = meter.counterBuilder("testDoubleCounter").ofDoubles().build();
     counter.add(3.1415);
 
-    Thread.sleep(60 * 1000); // wait 1 min
+    Thread.sleep(90 * 1000); // wait 90 seconds
 
     List<MetricData> metricDatas = inMemoryMetricExporter.getExportedMetrics();
     assertThat(metricDatas.size()).isEqualTo(1);
@@ -118,7 +119,7 @@ public class AzureMonitorMetricsDataTest {
               m.record(20.0, Attributes.of(AttributeKey.stringKey("thing"), "engine"));
             });
 
-    Thread.sleep(60 * 2 * 1000); // wait 2 min
+    Thread.sleep(90 * 1000); // wait 90 seconds
 
     List<MetricData> metricDataList = inMemoryMetricExporter.getExportedMetrics();
     assertThat(metricDataList.size()).isEqualTo(1);
@@ -168,7 +169,7 @@ public class AzureMonitorMetricsDataTest {
         Attributes.of(
             AttributeKey.stringKey("name"), "lemon", AttributeKey.stringKey("color"), "yellow"));
 
-    Thread.sleep(60 * 2 * 1000); // wait 2 min
+    Thread.sleep(90 * 1000); // wait 90 seconds
 
     List<MetricData> metricDataList = inMemoryMetricExporter.getExportedMetrics();
     assertThat(metricDataList.size()).isEqualTo(1);
@@ -259,7 +260,7 @@ public class AzureMonitorMetricsDataTest {
               m.record(20, Attributes.of(AttributeKey.stringKey("thing"), "engine"));
             });
 
-    Thread.sleep(60 * 1000); // wait 1 min
+    Thread.sleep(90 * 1000); // wait 90 seconds
 
     List<MetricData> metricDataList = inMemoryMetricExporter.getExportedMetrics();
     assertThat(metricDataList.size()).isEqualTo(1);
