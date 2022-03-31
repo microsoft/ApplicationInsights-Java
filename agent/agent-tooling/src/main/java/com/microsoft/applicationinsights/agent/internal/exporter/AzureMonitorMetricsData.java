@@ -75,6 +75,7 @@ final class AzureMonitorMetricsData {
         if (histogramCount <= Integer.MAX_VALUE && histogramCount >= Integer.MIN_VALUE) {
           metricDataPoint.setCount((int) histogramCount);
         }
+        metricDataPoint.setValue(((DoubleHistogramPointData) pointData).getSum());
         break;
       case SUMMARY: // not supported yet in OpenTelemetry SDK
       case EXPONENTIAL_HISTOGRAM: // not supported yet in OpenTelemetry SDK

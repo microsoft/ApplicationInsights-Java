@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.exporter;
 
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_GAUGE;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_SUM;
+import static io.opentelemetry.sdk.metrics.data.MetricDataType.HISTOGRAM;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_GAUGE;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,6 +34,7 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounter;
+import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -66,9 +68,7 @@ public class AzureMonitorMetricsDataTest {
         SdkMeterProvider.builder().registerMetricReader(metricReaderFactory).build();
 
     OpenTelemetry openTelemetry =
-        OpenTelemetrySdk.builder()
-            .setMeterProvider(meterProvider)
-            .build();
+        OpenTelemetrySdk.builder().setMeterProvider(meterProvider).build();
     // buildAndRegisterGlobal can be called only once and then use
     // GlobalOpenTelemetry.get();
 
@@ -280,5 +280,35 @@ public class AzureMonitorMetricsDataTest {
 
     assertThat(metricData.getType()).isEqualTo(LONG_GAUGE);
     assertThat(metricData.getName()).isEqualTo("testLongGauge");
+  }
+
+  @Test
+  public void testDoubleHistogram() throws InterruptedException {
+    DoubleHistogram doubleHistogram =
+        meter
+            .histogramBuilder("testDoubleHistogram")
+            .setDescription("http.client.duration")
+            .setUnit("ms")
+            .build();
+
+    doubleHistogram.record(25.45);
+    Thread.sleep(90 * 1000); // wait 90 seconds
+
+    List<MetricData> metricDataList = inMemoryMetricExporter.getExportedMetrics();
+    assertThat(metricDataList.size()).isEqualTo(1);
+
+    MetricData metricData = metricDataList.get(0);
+    assertThat(metricData.getData().getPoints().size()).isEqualTo(1);
+    PointData pointData = metricData.getData().getPoints().iterator().next();
+    AzureMonitorMetricsData azureMonitorMetricsData =
+        new AzureMonitorMetricsData(metricDataList.get(0), pointData);
+    List<MetricDataPoint> metricDataPoints = azureMonitorMetricsData.getMetricsData().getMetrics();
+    assertThat(metricDataPoints.size()).isEqualTo(1);
+    assertThat(metricDataPoints.get(0).getCount()).isEqualTo(1);
+    assertThat(metricDataPoints.get(0).getValue()).isEqualTo(25.45);
+    assertThat(azureMonitorMetricsData.getMetricsData().getProperties().size()).isEqualTo(1);
+
+    assertThat(metricData.getType()).isEqualTo(HISTOGRAM);
+    assertThat(metricData.getName()).isEqualTo("testDoubleHistogram");
   }
 }
