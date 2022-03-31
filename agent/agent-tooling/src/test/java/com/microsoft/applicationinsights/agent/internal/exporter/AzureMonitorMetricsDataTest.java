@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.exporter;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_SUM;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
@@ -39,8 +40,11 @@ import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -129,20 +133,25 @@ public class AzureMonitorMetricsDataTest {
     Collection<LongPointData> points = (Collection<LongPointData>) metricData.getData().getPoints();
     assertThat(points.size()).isEqualTo(3);
 
+    points =
+        points.stream()
+            .sorted(Comparator.comparing(o -> o.getValue()))
+            .collect(Collectors.toList());
+
     Iterator<LongPointData> iterator = points.iterator();
     LongPointData longPointData1 = iterator.next();
-    assertThat(longPointData1.getValue()).isEqualTo(6L);
+    assertThat(longPointData1.getValue()).isEqualTo(2L);
     assertThat(longPointData1.getAttributes().get(AttributeKey.stringKey("name")))
         .isEqualTo("apple");
     assertThat(longPointData1.getAttributes().get(AttributeKey.stringKey("color")))
-        .isEqualTo("red");
+        .isEqualTo("green");
 
     LongPointData longPointData2 = iterator.next();
-    assertThat(longPointData2.getValue()).isEqualTo(2L);
+    assertThat(longPointData2.getValue()).isEqualTo(6L);
     assertThat(longPointData2.getAttributes().get(AttributeKey.stringKey("name")))
         .isEqualTo("apple");
     assertThat(longPointData2.getAttributes().get(AttributeKey.stringKey("color")))
-        .isEqualTo("green");
+        .isEqualTo("red");
 
     LongPointData longPointData3 = iterator.next();
     assertThat(longPointData3.getValue()).isEqualTo(7L);
@@ -150,5 +159,45 @@ public class AzureMonitorMetricsDataTest {
         .isEqualTo("lemon");
     assertThat(longPointData3.getAttributes().get(AttributeKey.stringKey("color")))
         .isEqualTo("yellow");
+
+    AzureMonitorMetricsData azureMonitorMetricsData =
+        new AzureMonitorMetricsData(metricData, longPointData1);
+    List<MetricDataPoint> metricDataPoints = azureMonitorMetricsData.getMetricsData().getMetrics();
+    assertThat(metricDataPoints.size()).isEqualTo(1);
+    MetricDataPoint metricDataPoint = metricDataPoints.get(0);
+    assertThat(metricDataPoint.getValue()).isEqualTo(2L);
+    assertThat(metricDataPoint.getDataPointType()).isEqualTo(DataPointType.AGGREGATION);
+
+    Map<String, String> properties = azureMonitorMetricsData.getMetricsData().getProperties();
+    assertThat(properties.size()).isEqualTo(3);
+    assertThat(properties.get("name")).isEqualTo("apple");
+    assertThat(properties.get("color")).isEqualTo("green");
+    assertThat(properties.get("_MS.AggregationIntervalMs")).isEqualTo("60000");
+
+    azureMonitorMetricsData = new AzureMonitorMetricsData(metricData, longPointData2);
+    metricDataPoints = azureMonitorMetricsData.getMetricsData().getMetrics();
+    assertThat(metricDataPoints.size()).isEqualTo(1);
+    metricDataPoint = metricDataPoints.get(0);
+    assertThat(metricDataPoint.getValue()).isEqualTo(6L);
+    assertThat(metricDataPoint.getDataPointType()).isEqualTo(DataPointType.AGGREGATION);
+
+    properties = azureMonitorMetricsData.getMetricsData().getProperties();
+    assertThat(properties.size()).isEqualTo(3);
+    assertThat(properties.get("name")).isEqualTo("apple");
+    assertThat(properties.get("color")).isEqualTo("red");
+    assertThat(properties.get("_MS.AggregationIntervalMs")).isEqualTo("60000");
+
+    azureMonitorMetricsData = new AzureMonitorMetricsData(metricData, longPointData3);
+    metricDataPoints = azureMonitorMetricsData.getMetricsData().getMetrics();
+    assertThat(metricDataPoints.size()).isEqualTo(1);
+    metricDataPoint = metricDataPoints.get(0);
+    assertThat(metricDataPoint.getValue()).isEqualTo(7L);
+    assertThat(metricDataPoint.getDataPointType()).isEqualTo(DataPointType.AGGREGATION);
+
+    properties = azureMonitorMetricsData.getMetricsData().getProperties();
+    assertThat(properties.size()).isEqualTo(3);
+    assertThat(properties.get("name")).isEqualTo("lemon");
+    assertThat(properties.get("color")).isEqualTo("yellow");
+    assertThat(properties.get("_MS.AggregationIntervalMs")).isEqualTo("60000");
   }
 }
