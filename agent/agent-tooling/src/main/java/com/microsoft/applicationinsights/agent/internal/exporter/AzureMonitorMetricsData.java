@@ -29,6 +29,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsDat
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
+import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
@@ -71,11 +72,11 @@ final class AzureMonitorMetricsData {
         break;
       case HISTOGRAM:
         metricDataPoint.setDataPointType(DataPointType.AGGREGATION);
-        long histogramCount = ((DoubleHistogramPointData) pointData).getCount();
+        long histogramCount = ((HistogramPointData) pointData).getCount();
         if (histogramCount <= Integer.MAX_VALUE && histogramCount >= Integer.MIN_VALUE) {
           metricDataPoint.setCount((int) histogramCount);
         }
-        metricDataPoint.setValue(((DoubleHistogramPointData) pointData).getSum());
+        metricDataPoint.setValue(((HistogramPointData) pointData).getSum());
         break;
       case SUMMARY: // not supported yet in OpenTelemetry SDK
       case EXPONENTIAL_HISTOGRAM: // not supported yet in OpenTelemetry SDK
