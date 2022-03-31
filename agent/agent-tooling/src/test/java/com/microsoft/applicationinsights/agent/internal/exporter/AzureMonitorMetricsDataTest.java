@@ -68,7 +68,7 @@ public class AzureMonitorMetricsDataTest {
     OpenTelemetry openTelemetry =
         OpenTelemetrySdk.builder()
             .setMeterProvider(meterProvider)
-            .build(); // buildAndRegisterGlobal can be called only once ->
+            .build(); // buildAndRegisterGlobal can be used once and then use
     // GlobalOpenTelemetry.get();
 
     meter =
@@ -118,7 +118,7 @@ public class AzureMonitorMetricsDataTest {
               m.record(20.0, Attributes.of(AttributeKey.stringKey("thing"), "engine"));
             });
 
-    Thread.sleep(60 * 1000); // wait 1 min
+    Thread.sleep(60 * 2 * 1000); // wait 2 min
 
     List<MetricData> metricDataList = inMemoryMetricExporter.getExportedMetrics();
     assertThat(metricDataList.size()).isEqualTo(1);
@@ -256,7 +256,7 @@ public class AzureMonitorMetricsDataTest {
         .setUnit("C")
         .buildWithCallback(
             m -> {
-              m.record(20, Attributes.of(AttributeKey.stringKey("weather"), "seattle"));
+              m.record(20, Attributes.of(AttributeKey.stringKey("thing"), "engine"));
             });
 
     Thread.sleep(60 * 1000); // wait 1 min
@@ -273,8 +273,8 @@ public class AzureMonitorMetricsDataTest {
       assertThat(metricDataPoints.size()).isEqualTo(1);
       assertThat(metricDataPoints.get(0).getValue()).isEqualTo(20L);
       assertThat(azureMonitorMetricsData.getMetricsData().getProperties().size()).isEqualTo(2);
-      assertThat(azureMonitorMetricsData.getMetricsData().getProperties().get("weather"))
-          .isEqualTo("seattle");
+      assertThat(azureMonitorMetricsData.getMetricsData().getProperties().get("thing"))
+          .isEqualTo("engine");
     }
 
     assertThat(metricData.getType()).isEqualTo(LONG_GAUGE);
