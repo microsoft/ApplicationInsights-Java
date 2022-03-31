@@ -21,7 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
+import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_GAUGE;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_SUM;
+import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_GAUGE;
+import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
@@ -45,6 +48,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -64,7 +68,9 @@ public class AzureMonitorMetricsDataTest {
     OpenTelemetry openTelemetry =
         OpenTelemetrySdk.builder()
             .setMeterProvider(meterProvider)
-            .buildAndRegisterGlobal(); // GlobalOpenTelemetry.get();
+            .build(); // buildAndRegisterGlobal can be called only once ->
+    // GlobalOpenTelemetry.get();
+
     meter =
         openTelemetry
             .meterBuilder("AzureMonitorMetricsDataTest")
@@ -72,15 +78,19 @@ public class AzureMonitorMetricsDataTest {
             .build();
   }
 
+  @AfterEach
+  public void cleanup() {
+    inMemoryMetricExporter.reset();
+  }
+
   @Test
   public void testDoubleCounter() throws InterruptedException {
-    DoubleCounter counter =
-        (DoubleCounter) meter.counterBuilder("testDoubleCounter").ofDoubles().build();
+    DoubleCounter counter = meter.counterBuilder("testDoubleCounter").ofDoubles().build();
     counter.add(3.1415);
 
     Thread.sleep(60 * 1000); // wait 1 min
 
-    List<MetricData> metricDatas = inMemoryMetricExporter.getExportedMetricDatas();
+    List<MetricData> metricDatas = inMemoryMetricExporter.getExportedMetrics();
     assertThat(metricDatas.size()).isEqualTo(1);
 
     MetricData metricData = metricDatas.get(0);
@@ -92,8 +102,42 @@ public class AzureMonitorMetricsDataTest {
       assertThat(metricDataPoints.size()).isEqualTo(1);
       assertThat(metricDataPoints.get(0).getValue()).isEqualTo(3.1415);
     }
+
     assertThat(metricData.getType()).isEqualTo(DOUBLE_SUM);
     assertThat(metricData.getName()).isEqualTo("testDoubleCounter");
+  }
+
+  @Test
+  public void testDoubleGauge() throws InterruptedException {
+    meter
+        .gaugeBuilder("testDoubleGauge")
+        .setDescription("the current temperature")
+        .setUnit("C")
+        .buildWithCallback(
+            m -> {
+              m.record(20.0, Attributes.of(AttributeKey.stringKey("thing"), "engine"));
+            });
+
+    Thread.sleep(60 * 1000); // wait 1 min
+
+    List<MetricData> metricDataList = inMemoryMetricExporter.getExportedMetrics();
+    assertThat(metricDataList.size()).isEqualTo(1);
+
+    MetricData metricData = metricDataList.get(0);
+    for (PointData pointData : metricData.getData().getPoints()) {
+      AzureMonitorMetricsData azureMonitorMetricsData =
+          new AzureMonitorMetricsData(metricDataList.get(0), pointData);
+      List<MetricDataPoint> metricDataPoints =
+          azureMonitorMetricsData.getMetricsData().getMetrics();
+      assertThat(metricDataPoints.size()).isEqualTo(1);
+      assertThat(metricDataPoints.get(0).getValue()).isEqualTo(20.0);
+      assertThat(azureMonitorMetricsData.getMetricsData().getProperties().size()).isEqualTo(2);
+      assertThat(azureMonitorMetricsData.getMetricsData().getProperties().get("thing"))
+          .isEqualTo("engine");
+    }
+
+    assertThat(metricData.getType()).isEqualTo(DOUBLE_GAUGE);
+    assertThat(metricData.getName()).isEqualTo("testDoubleGauge");
   }
 
   @Test
@@ -124,12 +168,11 @@ public class AzureMonitorMetricsDataTest {
         Attributes.of(
             AttributeKey.stringKey("name"), "lemon", AttributeKey.stringKey("color"), "yellow"));
 
-    Thread.sleep(60 * 1000); // wait 1 min
+    Thread.sleep(60 * 2 * 1000); // wait 2 min
 
-    List<MetricData> metricDatas = inMemoryMetricExporter.getExportedMetricDatas();
-    assertThat(metricDatas.size()).isEqualTo(1);
-
-    MetricData metricData = metricDatas.get(0);
+    List<MetricData> metricDataList = inMemoryMetricExporter.getExportedMetrics();
+    assertThat(metricDataList.size()).isEqualTo(1);
+    MetricData metricData = metricDataList.get(0);
     Collection<LongPointData> points = (Collection<LongPointData>) metricData.getData().getPoints();
     assertThat(points.size()).isEqualTo(3);
 
@@ -199,5 +242,42 @@ public class AzureMonitorMetricsDataTest {
     assertThat(properties.get("name")).isEqualTo("lemon");
     assertThat(properties.get("color")).isEqualTo("yellow");
     assertThat(properties.get("_MS.AggregationIntervalMs")).isEqualTo("60000");
+
+    assertThat(metricData.getType()).isEqualTo(LONG_SUM);
+    assertThat(metricData.getName()).isEqualTo("testLongCounter");
+  }
+
+  @Test
+  public void testLongGauge() throws InterruptedException {
+    meter
+        .gaugeBuilder("testLongGauge")
+        .ofLongs()
+        .setDescription("the current temperature")
+        .setUnit("C")
+        .buildWithCallback(
+            m -> {
+              m.record(20, Attributes.of(AttributeKey.stringKey("weather"), "seattle"));
+            });
+
+    Thread.sleep(60 * 1000); // wait 1 min
+
+    List<MetricData> metricDataList = inMemoryMetricExporter.getExportedMetrics();
+    assertThat(metricDataList.size()).isEqualTo(1);
+
+    MetricData metricData = metricDataList.get(0);
+    for (PointData pointData : metricData.getData().getPoints()) {
+      AzureMonitorMetricsData azureMonitorMetricsData =
+          new AzureMonitorMetricsData(metricDataList.get(0), pointData);
+      List<MetricDataPoint> metricDataPoints =
+          azureMonitorMetricsData.getMetricsData().getMetrics();
+      assertThat(metricDataPoints.size()).isEqualTo(1);
+      assertThat(metricDataPoints.get(0).getValue()).isEqualTo(20L);
+      assertThat(azureMonitorMetricsData.getMetricsData().getProperties().size()).isEqualTo(2);
+      assertThat(azureMonitorMetricsData.getMetricsData().getProperties().get("weather"))
+          .isEqualTo("seattle");
+    }
+
+    assertThat(metricData.getType()).isEqualTo(LONG_GAUGE);
+    assertThat(metricData.getName()).isEqualTo("testLongGauge");
   }
 }

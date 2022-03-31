@@ -33,21 +33,21 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 // test OpenTelemetry integration
 final class InMemoryMetricExporter implements MetricExporter {
-  private final Queue<MetricData> exportedMetricDatas = new ConcurrentLinkedQueue<>();
+  private final Queue<MetricData> exportedMetrics = new ConcurrentLinkedQueue<>();
 
   InMemoryMetricExporter() {}
 
-  public List<MetricData> getExportedMetricDatas() {
-    return Collections.unmodifiableList(new ArrayList<>(exportedMetricDatas));
+  public List<MetricData> getExportedMetrics() {
+    return Collections.unmodifiableList(new ArrayList<>(exportedMetrics));
   }
 
   public void reset() {
-    exportedMetricDatas.clear();
+    exportedMetrics.clear();
   }
 
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
-    exportedMetricDatas.addAll(metrics);
+    exportedMetrics.addAll(metrics);
     return CompletableResultCode.ofSuccess();
   }
 
@@ -58,7 +58,7 @@ final class InMemoryMetricExporter implements MetricExporter {
 
   @Override
   public CompletableResultCode shutdown() {
-    exportedMetricDatas.clear();
+    exportedMetrics.clear();
     return CompletableResultCode.ofSuccess();
   }
 }
