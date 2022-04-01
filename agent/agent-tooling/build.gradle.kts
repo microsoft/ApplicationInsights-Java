@@ -64,6 +64,7 @@ dependencies {
   implementation("org.slf4j:slf4j-api")
 
   implementation("io.opentelemetry:opentelemetry-api")
+  implementation("io.opentelemetry:opentelemetry-sdk-metrics-testing")
   implementation("org.jctools:jctools-core:3.3.0")
 
   implementation("io.opentelemetry:opentelemetry-exporter-otlp")

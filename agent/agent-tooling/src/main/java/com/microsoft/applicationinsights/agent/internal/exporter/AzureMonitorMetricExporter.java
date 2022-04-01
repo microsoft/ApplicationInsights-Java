@@ -86,8 +86,7 @@ public class AzureMonitorMetricExporter implements MetricExporter {
     return CompletableResultCode.ofSuccess();
   }
 
-  // visible for testing
-  TelemetryItem convertOtelMetricToAzureMonitorMetric(MetricData metricData) {
+  private TelemetryItem convertOtelMetricToAzureMonitorMetric(MetricData metricData) {
     TelemetryItem telemetryItem = new TelemetryItem();
     telemetryItem.setInstrumentationKey(telemetryClient.getInstrumentationKey());
     for (PointData data : metricData.getData().getPoints()) {
@@ -104,8 +103,7 @@ public class AzureMonitorMetricExporter implements MetricExporter {
     return telemetryItem;
   }
 
-  // visible for testing
-  void populateDefaults(TelemetryItem telemetryItem, MetricsData metricsData) {
+  private void populateDefaults(TelemetryItem telemetryItem, MetricsData metricsData) {
     telemetryItem.setInstrumentationKey(telemetryClient.getInstrumentationKey());
     Map<String, String> tags = telemetryItem.getTags();
     Map<String, String> globalTags = telemetryClient.getGlobalTags();
