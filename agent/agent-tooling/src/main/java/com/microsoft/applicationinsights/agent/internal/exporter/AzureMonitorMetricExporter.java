@@ -30,14 +30,17 @@ import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorBase;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
@@ -66,8 +69,10 @@ public class AzureMonitorMetricExporter implements MetricExporter {
           || type == LONG_SUM
           || type == LONG_GAUGE
           || type == HISTOGRAM) {
-        TelemetryItem item = convertOtelMetricToAzureMonitorMetric(metricData);
-        telemetryClient.trackAsync(item);
+        List<TelemetryItem> items = convertOtelMetricToAzureMonitorMetric(metricData);
+        items.forEach(item -> {
+          telemetryClient.trackAsync(item);
+        });
       } else {
         logger.warn("metric data type {} is not supported yet.", type);
       }
@@ -86,24 +91,27 @@ public class AzureMonitorMetricExporter implements MetricExporter {
     return CompletableResultCode.ofSuccess();
   }
 
-  private TelemetryItem convertOtelMetricToAzureMonitorMetric(MetricData metricData) {
-    TelemetryItem telemetryItem = new TelemetryItem();
-    telemetryItem.setInstrumentationKey(telemetryClient.getInstrumentationKey());
+  private List<TelemetryItem> convertOtelMetricToAzureMonitorMetric(MetricData metricData) {
+    List<TelemetryItem> telemetryItems = new ArrayList<>();
+    TelemetryItem telemetryItem;
     for (PointData data : metricData.getData().getPoints()) {
+      telemetryItem = new TelemetryItem();
       MonitorBase monitorBase = new MonitorBase();
       monitorBase.setBaseType("MetricData");
-      AzureMonitorMetricsData azureMonitorMetricsData =
-          new AzureMonitorMetricsData(metricData, data);
+      AzureMonitorMetricsData azureMonitorMetricsData = new AzureMonitorMetricsData(metricData, data);
       MetricsData metricsData = azureMonitorMetricsData.getMetricsData();
       populateDefaults(telemetryItem, metricsData);
       monitorBase.setBaseData(metricsData);
       telemetryItem.setData(monitorBase);
+      telemetryItems.add(telemetryItem);
     }
-
-    return telemetryItem;
+    return telemetryItems;
   }
 
   private void populateDefaults(TelemetryItem telemetryItem, MetricsData metricsData) {
+    telemetryItem.setTime(FormattedTime.offSetDateTimeFromNow());
+    telemetryItem.setName("Metric");
+    telemetryItem.setVersion(1);
     telemetryItem.setInstrumentationKey(telemetryClient.getInstrumentationKey());
     Map<String, String> tags = telemetryItem.getTags();
     Map<String, String> globalTags = telemetryClient.getGlobalTags();
