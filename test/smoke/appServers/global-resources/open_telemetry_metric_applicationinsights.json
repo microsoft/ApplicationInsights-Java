@@ -1,0 +1,15 @@
+{
+  "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://host.docker.internal:6060/",
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "preview": {
+    "metricIntervalSeconds": 30
+  },
+  "customDimensions": {
+    "tag1": "abc",
+    "tag2": "def",
+    "service.version": "123"
+  }
+}
