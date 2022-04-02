@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
@@ -51,6 +50,103 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
     validateCounterMetric("trackLongCounterMetric");
   }
 
+  @Test
+  @TargetUri("/trackDoubleGaugeMetric")
+  public void trackDoubleGaugeMetric() throws Exception {
+    validateGaugeMetric("trackDoubleGaugeMetric");
+  }
+
+  @Test
+  @TargetUri("/trackLongGaugeMetric")
+  public void trackLongGaugeMetric() throws Exception {
+    validateGaugeMetric("trackLongGaugeMetric");
+  }
+
+  @Test
+  @TargetUri("/trackDoubleHistogramMetric")
+  public void trackDoubleHistogramMetric() throws Exception {
+    validateHistogramMetric("trackDoubleHistogramMetric");
+  }
+
+  @Test
+  @TargetUri("/trackLongHistogramMetric")
+  public void trackLongHistogramMetric() throws Exception {
+    validateHistogramMetric("trackLongHistogramMetric");
+  }
+
+  private void validateHistogramMetric(String name) throws Exception {
+    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> metrics = mockedIngestion.waitForItems(getMetricPredicate(name), 1, 40, TimeUnit.SECONDS);
+    assertEquals(1, metrics.size());
+
+    Envelope rdEnvelope = rdList.get(0);
+    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+    assertEquals("GET /OpenTelemetryMetric/" + name, rd.getName());
+
+    Envelope envelope = metrics.get(0);
+
+    // validate tags
+    Map<String, String> tags = envelope.getTags();
+    assertNotNull(tags.get("ai.internal.sdkVersion"));
+    assertEquals(tags.get("ai.cloud.roleInstance"), "testroleinstance");
+    assertEquals(tags.get("ai.cloud.role"), "testrolename");
+    assertEquals(tags.get("ai.application.ver"), "123");
+
+    // validate base data
+    MetricData md = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
+    List<DataPoint> dataPointList = md.getMetrics();
+    assertEquals(1, dataPointList.size());
+    DataPoint dp = dataPointList.get(0);
+    double expectedValue = 456;
+    double epsilon = Math.ulp(expectedValue);
+    assertEquals(expectedValue, dp.getValue(), epsilon);
+    assertEquals(DataPointType.Aggregation, dp.getKind());
+    assertEquals(name, dp.getName());
+
+    // validate custom dimension
+    Map<String, String> properties = md.getProperties();
+    assertEquals(properties.get("_MS.AggregationIntervalMs"), "60000");
+    assertEquals(properties.get("tag1"), "abc");
+    assertEquals(properties.get("tag2"), "def");
+  }
+
+  private void validateGaugeMetric(String name) throws Exception {
+    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> metrics = mockedIngestion.waitForItems(getMetricPredicate(name), 1, 40, TimeUnit.SECONDS);
+    assertEquals(1, metrics.size());
+
+    Envelope rdEnvelope = rdList.get(0);
+    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+    assertEquals("GET /OpenTelemetryMetric/" + name, rd.getName());
+
+    Envelope envelope = metrics.get(0);
+
+    // validate tags
+    Map<String, String> tags = envelope.getTags();
+    assertNotNull(tags.get("ai.internal.sdkVersion"));
+    assertEquals(tags.get("ai.cloud.roleInstance"), "testroleinstance");
+    assertEquals(tags.get("ai.cloud.role"), "testrolename");
+    assertEquals(tags.get("ai.application.ver"), "123");
+
+    // validate base data
+    MetricData md = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
+    List<DataPoint> dataPointList = md.getMetrics();
+    assertEquals(1, dataPointList.size());
+    DataPoint dp = dataPointList.get(0);
+    double expectedValue = 10;
+    double epsilon = Math.ulp(expectedValue);
+    assertEquals(expectedValue, dp.getValue(), epsilon);
+    assertEquals(DataPointType.Measurement, dp.getKind());
+    assertEquals(name, dp.getName());
+
+    // validate custom dimension
+    Map<String, String> properties = md.getProperties();
+    assertEquals(properties.get("_MS.AggregationIntervalMs"), "60000");
+    assertEquals(properties.get("tag1"), "abc");
+    assertEquals(properties.get("tag2"), "def");
+    assertEquals(properties.get("thing1"), "thing2");
+  }
+
   private void validateCounterMetric(String name) throws Exception {
     List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
     List<Envelope> metrics = mockedIngestion.waitForItems(getMetricPredicate(name), 3, 40, TimeUnit.SECONDS);
@@ -58,10 +154,10 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
 
     Envelope rdEnvelope = rdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+    assertEquals("GET /OpenTelemetryMetric/" + name, rd.getName());
 
     // validate 1st metric
     Envelope envelope1 = metrics.get(0);
-    assertParentChild(rd, rdEnvelope, envelope1,"GET /OpenTelemetryMetric/" + name);
 
     // validate tags
     Map<String, String> tags = envelope1.getTags();
@@ -79,7 +175,7 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
     double epsilon = Math.ulp(expectedValue);
     assertEquals(expectedValue, dp.getValue(), epsilon);
     assertEquals(DataPointType.Aggregation, dp.getKind());
-    assertEquals("trackDoubleCounterMetric", dp.getName());
+    assertEquals(name, dp.getName());
 
     // validate custom dimension
     Map<String, String> properties = md.getProperties();
@@ -91,7 +187,6 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
 
     // validate 2nd metric
     Envelope envelope2 = metrics.get(1);
-    assertParentChild(rd, rdEnvelope, envelope2,"GET /OpenTelemetryMetric/" + name);
 
     // validate tags
     tags = envelope2.getTags();
@@ -121,7 +216,6 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
 
     // validate 3rd metric
     Envelope envelope3 = metrics.get(2);
-    assertParentChild(rd, rdEnvelope, envelope3,"GET /OpenTelemetryMetric/" + name);
 
     // validate tags
     tags = envelope3.getTags();
