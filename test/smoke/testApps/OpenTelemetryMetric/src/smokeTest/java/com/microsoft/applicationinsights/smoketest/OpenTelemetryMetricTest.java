@@ -22,13 +22,18 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
+import com.microsoft.applicationinsights.smoketest.schemav2.DataPointType;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
+import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import org.junit.Test;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @UseAgent("open_telemetry_metric")
@@ -37,33 +42,111 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
   @Test
   @TargetUri("/trackDoubleCounterMetric")
   public void trackDoubleCounterMetric() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-    List<Envelope> metrics =
-        mockedIngestion.waitForItems(getMetricPredicate("trackDoubleCounterMetric"), 3, 40, TimeUnit.SECONDS);
-    assertEquals(3, metrics.size());
-
-    for (Envelope envelop : metrics) {
-      MetricData md = (MetricData) ((Data<?>) envelop.getData()).getBaseData();
-      List<DataPoint> dataPointList = md.getMetrics();
-      assertEquals(1, dataPointList.size());
-      System.out.println("datapoint: " + dataPointList.get(0).getValue());
-    }
+    validateCounterMetric("trackDoubleCounterMetric");
   }
 
   @Test
   @TargetUri("/trackLongCounterMetric")
   public void trackLongCounterMetric() throws Exception {
+    validateCounterMetric("trackLongCounterMetric");
+  }
+
+  private void validateCounterMetric(String name) throws Exception {
     List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-    List<Envelope> metrics =
-        mockedIngestion
-            .waitForItems(getMetricPredicate("trackLongCounterMetric"), 3, 40, TimeUnit.SECONDS);
+    List<Envelope> metrics = mockedIngestion.waitForItems(getMetricPredicate(name), 3, 40, TimeUnit.SECONDS);
     assertEquals(3, metrics.size());
 
-    for (Envelope envelop : metrics) {
-      MetricData md = (MetricData) ((Data<?>) envelop.getData()).getBaseData();
-      List<DataPoint> dataPointList = md.getMetrics();
-      assertEquals(1, dataPointList.size());
-      System.out.println("datapoint: " + dataPointList.get(0).getValue());
-    }
+    Envelope rdEnvelope = rdList.get(0);
+    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+
+    // validate 1st metric
+    Envelope envelope1 = metrics.get(0);
+    assertParentChild(rd, rdEnvelope, envelope1,"GET /OpenTelemetryMetric/" + name);
+
+    // validate tags
+    Map<String, String> tags = envelope1.getTags();
+    assertNotNull(tags.get("ai.internal.sdkVersion"));
+    assertEquals(tags.get("ai.cloud.roleInstance"), "testroleinstance");
+    assertEquals(tags.get("ai.cloud.role"), "testrolename");
+    assertEquals(tags.get("ai.application.ver"), "123");
+
+    // validate base data
+    MetricData md = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
+    List<DataPoint> dataPointList = md.getMetrics();
+    assertEquals(1, dataPointList.size());
+    DataPoint dp = dataPointList.get(0);
+    double expectedValue = 6.0;
+    double epsilon = Math.ulp(expectedValue);
+    assertEquals(expectedValue, dp.getValue(), epsilon);
+    assertEquals(DataPointType.Aggregation, dp.getKind());
+    assertEquals("trackDoubleCounterMetric", dp.getName());
+
+    // validate custom dimension
+    Map<String, String> properties = md.getProperties();
+    assertEquals(properties.get("_MS.AggregationIntervalMs"), "60000");
+    assertEquals(properties.get("tag1"), "abc");
+    assertEquals(properties.get("tag2"), "def");
+    assertEquals(properties.get("name"), "apple");
+    assertEquals(properties.get("color"), "red");
+
+    // validate 2nd metric
+    Envelope envelope2 = metrics.get(1);
+    assertParentChild(rd, rdEnvelope, envelope2,"GET /OpenTelemetryMetric/" + name);
+
+    // validate tags
+    tags = envelope2.getTags();
+    assertNotNull(tags.get("ai.internal.sdkVersion"));
+    assertEquals(tags.get("ai.cloud.roleInstance"), "testroleinstance");
+    assertEquals(tags.get("ai.cloud.role"), "testrolename");
+    assertEquals(tags.get("ai.application.ver"), "123");
+
+    // validate base data
+    md = (MetricData) ((Data<?>) envelope2.getData()).getBaseData();
+    dataPointList = md.getMetrics();
+    assertEquals(1, dataPointList.size());
+    dp = dataPointList.get(0);
+    expectedValue = 2.0;
+    epsilon = Math.ulp(expectedValue);
+    assertEquals(expectedValue, dp.getValue(), epsilon);
+    assertEquals(DataPointType.Aggregation, dp.getKind());
+    assertEquals(name, dp.getName());
+
+    // validate custom dimension
+    properties = md.getProperties();
+    assertEquals(properties.get("_MS.AggregationIntervalMs"), "60000");
+    assertEquals(properties.get("tag1"), "abc");
+    assertEquals(properties.get("tag2"), "def");
+    assertEquals(properties.get("name"), "apple");
+    assertEquals(properties.get("color"), "green");
+
+    // validate 3rd metric
+    Envelope envelope3 = metrics.get(2);
+    assertParentChild(rd, rdEnvelope, envelope3,"GET /OpenTelemetryMetric/" + name);
+
+    // validate tags
+    tags = envelope3.getTags();
+    assertNotNull(tags.get("ai.internal.sdkVersion"));
+    assertEquals(tags.get("ai.cloud.roleInstance"), "testroleinstance");
+    assertEquals(tags.get("ai.cloud.role"), "testrolename");
+    assertEquals(tags.get("ai.application.ver"), "123");
+
+    // validate base data
+    md = (MetricData) ((Data<?>) envelope3.getData()).getBaseData();
+    dataPointList = md.getMetrics();
+    assertEquals(1, dataPointList.size());
+    dp = dataPointList.get(0);
+    expectedValue = 7.0;
+    epsilon = Math.ulp(expectedValue);
+    assertEquals(expectedValue, dp.getValue(), epsilon);
+    assertEquals(DataPointType.Aggregation, dp.getKind());
+    assertEquals(name, dp.getName());
+
+    // validate custom dimension
+    properties = md.getProperties();
+    assertEquals(properties.get("_MS.AggregationIntervalMs"), "60000");
+    assertEquals(properties.get("tag1"), "abc");
+    assertEquals(properties.get("tag2"), "def");
+    assertEquals(properties.get("name"), "lemon");
+    assertEquals(properties.get("color"), "yellow");
   }
 }
