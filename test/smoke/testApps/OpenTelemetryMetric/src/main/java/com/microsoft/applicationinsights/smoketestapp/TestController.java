@@ -25,6 +25,7 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounter;
+import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,11 +40,11 @@ public class TestController {
     return "OK";
   }
 
-  @GetMapping("/testCustomMetric")
-  public String testCustomMetric() throws InterruptedException {
-    Meter meter = GlobalOpenTelemetry.get().getMeter("testCustomMetric");
+  @GetMapping("/trackDoubleCounterMetric")
+  public String trackDoubleCounterMetric() throws InterruptedException {
+    Meter meter = GlobalOpenTelemetry.get().getMeter("trackDoubleCounterMetric");
     DoubleCounter counter = meter
-        .counterBuilder("testCustomMetric")
+        .counterBuilder("trackDoubleCounterMetric")
         .ofDoubles()
         .setUnit("1")
         .build();
@@ -60,8 +61,23 @@ public class TestController {
     return "OK!";
   }
 
-//  @GetMapping("/test-overriding-customDimension")
-//  public String testMetricWithCustomDimensions() {
-//    return "OK!";
-//  }
+  @GetMapping("/trackLongCounterMetric")
+  public String trackLongCounterMetric() throws InterruptedException {
+    Meter meter = GlobalOpenTelemetry.get().getMeter("trackLongCounterMetric");
+    LongCounter counter = meter
+        .counterBuilder("trackLongCounterMetric")
+        .setUnit("1")
+        .build();
+
+    counter.add(1L, Attributes.of(AttributeKey.stringKey("name"), "apple", AttributeKey.stringKey("color"), "red"));
+    counter.add(2L, Attributes.of(AttributeKey.stringKey("name"), "lemon", AttributeKey.stringKey("color"), "yellow"));
+    counter.add(1L, Attributes.of(AttributeKey.stringKey("name"), "lemon", AttributeKey.stringKey("color"), "yellow"));
+    counter.add(2L, Attributes.of(AttributeKey.stringKey("name"), "apple", AttributeKey.stringKey("color"), "green"));
+    counter.add(5L, Attributes.of(AttributeKey.stringKey("name"), "apple", AttributeKey.stringKey("color"), "red"));
+    counter.add(4L, Attributes.of(AttributeKey.stringKey("name"), "lemon", AttributeKey.stringKey("color"), "yellow"));
+
+    Thread.sleep(90 * 1000); // wait for 90 seconds
+
+    return "OK!";
+  }
 }

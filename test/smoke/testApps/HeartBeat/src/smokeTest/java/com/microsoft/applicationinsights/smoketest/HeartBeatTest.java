@@ -51,21 +51,4 @@ public class HeartBeatTest extends AiSmokeTest {
     assertNotNull(data.getProperties().get("osType"));
     assertEquals(5, data.getProperties().size());
   }
-
-  private static Predicate<Envelope> getMetricPredicate(String name) {
-    Objects.requireNonNull(name, "name");
-    return new Predicate<Envelope>() {
-      @Override
-      public boolean test(Envelope input) {
-        if (input == null) {
-          return false;
-        }
-        if (!input.getData().getBaseType().equals("MetricData")) {
-          return false;
-        }
-        MetricData md = getBaseData(input);
-        return name.equals(md.getMetrics().get(0).getName());
-      }
-    };
-  }
 }
