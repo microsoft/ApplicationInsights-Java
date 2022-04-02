@@ -39,7 +39,7 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
   public void trackDoubleCounterMetric() throws Exception {
     List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
     List<Envelope> metrics =
-        mockedIngestion.waitForItems(getMetricPredicate("trackDoubleCounterMetric"), 3, 120, TimeUnit.SECONDS);
+        mockedIngestion.waitForItems(getMetricPredicate("trackDoubleCounterMetric"), 3, 40, TimeUnit.SECONDS);
     assertEquals(3, metrics.size());
 
     for (Envelope envelop : metrics) {
@@ -56,7 +56,7 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
     List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
     List<Envelope> metrics =
         mockedIngestion
-            .waitForItems(getMetricPredicate("trackLongCounterMetric"), 3, 120, TimeUnit.SECONDS);
+            .waitForItems(getMetricPredicate("trackLongCounterMetric"), 3, 40, TimeUnit.SECONDS);
     assertEquals(3, metrics.size());
 
     for (Envelope envelop : metrics) {

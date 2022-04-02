@@ -56,8 +56,6 @@ public class TestController {
     counter.add(5.0, Attributes.of(AttributeKey.stringKey("name"), "apple", AttributeKey.stringKey("color"), "red"));
     counter.add(4.0, Attributes.of(AttributeKey.stringKey("name"), "lemon", AttributeKey.stringKey("color"), "yellow"));
 
-    Thread.sleep(90 * 1000); // wait for 90 seconds
-
     return "OK!";
   }
 
@@ -75,8 +73,6 @@ public class TestController {
     counter.add(2L, Attributes.of(AttributeKey.stringKey("name"), "apple", AttributeKey.stringKey("color"), "green"));
     counter.add(5L, Attributes.of(AttributeKey.stringKey("name"), "apple", AttributeKey.stringKey("color"), "red"));
     counter.add(4L, Attributes.of(AttributeKey.stringKey("name"), "lemon", AttributeKey.stringKey("color"), "yellow"));
-
-    Thread.sleep(90 * 1000); // wait for 90 seconds
 
     return "OK!";
   }
