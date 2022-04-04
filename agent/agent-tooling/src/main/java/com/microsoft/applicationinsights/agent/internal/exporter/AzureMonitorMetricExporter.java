@@ -70,9 +70,10 @@ public class AzureMonitorMetricExporter implements MetricExporter {
           || type == LONG_GAUGE
           || type == HISTOGRAM) {
         List<TelemetryItem> items = convertOtelMetricToAzureMonitorMetric(metricData);
-        items.forEach(item -> {
-          telemetryClient.trackAsync(item);
-        });
+        items.forEach(
+            item -> {
+              telemetryClient.trackAsync(item);
+            });
       } else {
         logger.warn("metric data type {} is not supported yet.", type);
       }
@@ -98,7 +99,8 @@ public class AzureMonitorMetricExporter implements MetricExporter {
       telemetryItem = new TelemetryItem();
       MonitorBase monitorBase = new MonitorBase();
       monitorBase.setBaseType("MetricData");
-      AzureMonitorMetricsData azureMonitorMetricsData = new AzureMonitorMetricsData(metricData, data);
+      AzureMonitorMetricsData azureMonitorMetricsData =
+          new AzureMonitorMetricsData(metricData, data);
       MetricsData metricsData = azureMonitorMetricsData.getMetricsData();
       populateDefaults(telemetryItem, metricsData);
       monitorBase.setBaseData(metricsData);
