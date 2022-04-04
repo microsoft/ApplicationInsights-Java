@@ -31,6 +31,7 @@ import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import org.junit.Test;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -152,6 +153,14 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
     List<Envelope> metrics = mockedIngestion.waitForItems(getMetricPredicate(name), 3, 40, TimeUnit.SECONDS);
     assertEquals(3, metrics.size());
 
+    metrics.sort(Comparator.comparing(
+        obj -> {
+          MetricData metricData = (MetricData) ((Data<?>) obj.getData()).getBaseData();
+          List<DataPoint> dataPointList = metricData.getMetrics();
+          DataPoint dataPoint = dataPointList.get(0);
+          return dataPoint.getValue();
+        }));
+
     Envelope rdEnvelope = rdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     assertEquals("GET /OpenTelemetryMetric/" + name, rd.getName());
@@ -171,7 +180,7 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
     List<DataPoint> dataPointList = md.getMetrics();
     assertEquals(1, dataPointList.size());
     DataPoint dp = dataPointList.get(0);
-    double expectedValue = 6.0;
+    double expectedValue = 2.0;
     double epsilon = Math.ulp(expectedValue);
     assertEquals(expectedValue, dp.getValue(), epsilon);
     assertEquals(DataPointType.Aggregation, dp.getKind());
@@ -183,7 +192,7 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
     assertEquals(properties.get("tag1"), "abc");
     assertEquals(properties.get("tag2"), "def");
     assertEquals(properties.get("name"), "apple");
-    assertEquals(properties.get("color"), "red");
+    assertEquals(properties.get("color"), "green");
 
     // validate 2nd metric
     Envelope envelope2 = metrics.get(1);
@@ -200,7 +209,7 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
     dataPointList = md.getMetrics();
     assertEquals(1, dataPointList.size());
     dp = dataPointList.get(0);
-    expectedValue = 2.0;
+    expectedValue = 6.0;
     epsilon = Math.ulp(expectedValue);
     assertEquals(expectedValue, dp.getValue(), epsilon);
     assertEquals(DataPointType.Aggregation, dp.getKind());
@@ -212,7 +221,7 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
     assertEquals(properties.get("tag1"), "abc");
     assertEquals(properties.get("tag2"), "def");
     assertEquals(properties.get("name"), "apple");
-    assertEquals(properties.get("color"), "green");
+    assertEquals(properties.get("color"), "red");
 
     // validate 3rd metric
     Envelope envelope3 = metrics.get(2);
