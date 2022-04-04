@@ -48,12 +48,19 @@ import org.slf4j.LoggerFactory;
 
 public class AzureMonitorMetricExporter implements MetricExporter {
 
+  private static final List<String> EXCLUDED_METRIC_NAMES = new ArrayList<>();
+
   private final TelemetryClient telemetryClient;
   private static final Logger logger = LoggerFactory.getLogger(AzureMonitorMetricExporter.class);
   private final AtomicBoolean stopped = new AtomicBoolean();
 
   public AzureMonitorMetricExporter(TelemetryClient telemetryClient) {
     this.telemetryClient = telemetryClient;
+  }
+
+  static {
+    EXCLUDED_METRIC_NAMES.add("http.server.active_requests");
+    EXCLUDED_METRIC_NAMES.add("http.server.duration");
   }
 
   @Override
@@ -63,6 +70,10 @@ public class AzureMonitorMetricExporter implements MetricExporter {
     }
 
     for (MetricData metricData : metrics) {
+      if (EXCLUDED_METRIC_NAMES.contains(metricData.getName())) {
+        continue;
+      }
+
       MetricDataType type = metricData.getType();
       if (type == DOUBLE_SUM
           || type == DOUBLE_GAUGE
