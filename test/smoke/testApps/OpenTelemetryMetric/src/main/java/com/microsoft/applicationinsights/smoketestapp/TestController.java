@@ -114,7 +114,7 @@ public class TestController {
         .setUnit("ms")
         .build();
 
-    doubleHistogram.record(456L);
+    doubleHistogram.record(456.0);
 
     return "OK!";
   }
