@@ -88,7 +88,7 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
         break;
       case 402: // Breeze-specific: New Daily Quota Exceeded
         operationLogger.recordFailure(
-            "received response code 402 (monthly quota exceeded and throttled over extended time)");
+            "received response code 402 (daily quota exceeded and throttled over extended time)");
         break;
       case 439: // Breeze-specific: Deprecated Daily Quota Exceeded
         operationLogger.recordFailure(
