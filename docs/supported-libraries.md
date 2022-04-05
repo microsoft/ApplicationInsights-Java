@@ -1,4 +1,3 @@
-
 # Supported libraries, frameworks, application servers, and JVMs
 
 We automatically instrument and support a huge number of libraries, frameworks,
@@ -57,6 +56,7 @@ These are the supported libraries and frameworks:
 | [Geode Client](https://geode.apache.org/)                                                                                         | 1.4+                           |
 | [Google HTTP Client](https://github.com/googleapis/google-http-java-client)                                                       | 1.19+                          |
 | [Grails](https://grails.org/)                                                                                                     | 3.0+                           |
+| [GraphQL Java](https://www.graphql-java.com/)                                                                                     | 12.0+                          |
 | [gRPC](https://github.com/grpc/grpc-java)                                                                                         | 1.6+                           |
 | [Guava ListenableFuture](https://guava.dev/releases/snapshot/api/docs/com/google/common/util/concurrent/ListenableFuture.html)    | 10.0+                          |
 | [GWT](http://www.gwtproject.org/)                                                                                                 | 2.0+                           |
@@ -136,10 +136,10 @@ These are the application servers that the smoke tests are run against:
 
 These are the JVMs and operating systems that the integration tests are run against:
 
-| JVM                                               | Versions  | OS                             |
-| ------------------------------------------------- | --------- | ------------------------------ |
-| [AdoptOpenJDK Hotspot](https://adoptopenjdk.net/) | 8, 11, 15 | Ubuntu 18, Windows Server 2019 |
-| [AdoptOpenJDK OpenJ9](https://adoptopenjdk.net/)  | 8, 11, 15 | Ubuntu 18, Windows Server 2019 |
+| JVM                                                                                        | Versions  | OS                             |
+| ------------------------------------------------------------------------------------------ | --------- | ------------------------------ |
+| [OpenJDK (Eclipse Temurin)](https://adoptium.net/)                                         | 8, 11, 17 | Ubuntu 18, Windows Server 2019 |
+| [OpenJ9 (IBM Semeru Runtimes)](https://developer.ibm.com/languages/java/semeru-runtimes/)  | 8, 11, 17 | Ubuntu 18, Windows Server 2019 |
 
 ## Disabled instrumentations
 

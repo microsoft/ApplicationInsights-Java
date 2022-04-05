@@ -1,8 +1,6 @@
 import net.ltgt.gradle.errorprone.errorprone
 
 plugins {
-  id("org.xbib.gradle.plugin.jflex")
-
   id("otel.java-conventions")
   id("otel.animalsniffer-conventions")
   id("otel.jacoco-conventions")
@@ -15,54 +13,20 @@ group = "io.opentelemetry.instrumentation"
 
 dependencies {
   api("io.opentelemetry:opentelemetry-api")
-  api("io.opentelemetry:opentelemetry-semconv")
-
-  implementation("org.slf4j:slf4j-api")
 
   compileOnly("com.google.auto.value:auto-value-annotations")
   annotationProcessor("com.google.auto.value:auto-value")
 
   testImplementation(project(":testing-common"))
-  testImplementation("org.mockito:mockito-core")
-  testImplementation("org.mockito:mockito-junit-jupiter")
-  testImplementation("org.assertj:assertj-core")
-  testImplementation("org.awaitility:awaitility")
   testImplementation("io.opentelemetry:opentelemetry-sdk-metrics")
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
+
+  jmhImplementation(project(":instrumentation-api-semconv"))
 }
 
 tasks {
   named<Checkstyle>("checkstyleMain") {
     exclude("**/concurrentlinkedhashmap/**")
-  }
-
-  // Work around https://github.com/jflex-de/jflex/issues/762
-  compileJava {
-    with(options) {
-      compilerArgs.add("-Xlint:-fallthrough")
-    }
-  }
-
-  sourcesJar {
-    dependsOn("generateJflex")
-  }
-
-  val testStatementSanitizerConfig by registering(Test::class) {
-    filter {
-      includeTestsMatching("StatementSanitizationConfigTest")
-      isFailOnNoMatchingTests = false
-    }
-    include("**/StatementSanitizationConfigTest.*")
-    jvmArgs("-Dotel.instrumentation.common.db-statement-sanitizer.enabled=false")
-  }
-
-  test {
-    dependsOn(testStatementSanitizerConfig)
-
-    filter {
-      excludeTestsMatching("StatementSanitizationConfigTest")
-      isFailOnNoMatchingTests = false
-    }
   }
 
   // TODO this should live in jmh-conventions
