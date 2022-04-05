@@ -26,6 +26,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineRequest;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineResponse;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.StatusCodes;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -49,13 +50,15 @@ public class LocalStorageTelemetryPipelineListener implements TelemetryPipelineL
     localFilePurger = new LocalFilePurger(telemetryFolder);
   }
 
-  public void shutdown() {
+  @Override
+  public CompletableResultCode shutdown() {
     // guarding against multiple shutdown calls because this can get called if statsbeat shuts down
     // early because it cannot reach breeze and later on real shut down (when running not as agent)
     if (!shutdown.getAndSet(true)) {
       localFileSender.shutdown();
       localFilePurger.shutdown();
     }
+    return CompletableResultCode.ofSuccess();
   }
 
   @Override

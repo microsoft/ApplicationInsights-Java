@@ -130,9 +130,6 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
             .build();
   }
 
-  @Nullable
-  private final LocalStorageTelemetryPipelineListener localStorageTelemetryPipelineListener;
-
   private final TelemetryItemExporter telemetryItemExporter;
   private final String instrumentationKey;
 
@@ -154,13 +151,12 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
                 + " on sporadic network failures");
 
     if (tempDir != null) {
-      localStorageTelemetryPipelineListener =
-          new LocalStorageTelemetryPipelineListener(
-              TempDirs.getSubDir(tempDir, "telemetry"), pipeline, LocalStorageStats.noop());
       telemetryItemExporter =
-          new TelemetryItemExporter(pipeline, localStorageTelemetryPipelineListener);
+          new TelemetryItemExporter(
+              pipeline,
+              new LocalStorageTelemetryPipelineListener(
+                  TempDirs.getSubDir(tempDir, "telemetry"), pipeline, LocalStorageStats.noop()));
     } else {
-      localStorageTelemetryPipelineListener = null;
       telemetryItemExporter = new TelemetryItemExporter(pipeline, TelemetryPipelineListener.noop());
     }
     this.instrumentationKey = instrumentationKey;
@@ -185,16 +181,13 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
   /** {@inheritDoc} */
   @Override
   public CompletableResultCode flush() {
-    return CompletableResultCode.ofSuccess();
+    return telemetryItemExporter.flush();
   }
 
   /** {@inheritDoc} */
   @Override
   public CompletableResultCode shutdown() {
-    if (localStorageTelemetryPipelineListener != null) {
-      localStorageTelemetryPipelineListener.shutdown();
-    }
-    return CompletableResultCode.ofSuccess();
+    return telemetryItemExporter.shutdown();
   }
 
   private void internalExport(SpanData span, List<TelemetryItem> telemetryItems) {
@@ -203,7 +196,6 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
     if (kind == SpanKind.INTERNAL) {
       if (instrumentationName.startsWith("io.opentelemetry.spring-scheduling-")
           && !span.getParentSpanContext().isValid()) {
-        // if (!span.getParentSpanContext().isValid()) {
         // TODO (trask) AI mapping: need semantic convention for determining whether to map INTERNAL
         // to request or dependency (or need clarification to use SERVER for this)
         exportRequest(span, telemetryItems);
@@ -227,9 +219,12 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
     RemoteDependencyTelemetryBuilder telemetryBuilder = RemoteDependencyTelemetryBuilder.create();
     initTelemetry(telemetryBuilder);
 
+    float samplingPercentage = 100; // TODO
+
     // set standard properties
     setOperationTags(telemetryBuilder, span);
     setTime(telemetryBuilder, span.getStartEpochNanos());
+    setSampleRate(telemetryBuilder, samplingPercentage);
     setExtraAttributes(telemetryBuilder, span.getAttributes());
     addLinks(telemetryBuilder, span.getLinks());
 
@@ -247,7 +242,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
     }
 
     telemetryItems.add(telemetryBuilder.build());
-    exportEvents(span, null, telemetryItems);
+    exportEvents(span, null, samplingPercentage, telemetryItems);
   }
 
   private static final Set<String> DEFAULT_HTTP_SPAN_NAMES =
@@ -593,10 +588,12 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
 
     Attributes attributes = span.getAttributes();
     long startEpochNanos = span.getStartEpochNanos();
+    float samplingPercentage = 100; // TODO
 
     // set standard properties
     telemetryBuilder.setId(span.getSpanId());
     setTime(telemetryBuilder, startEpochNanos);
+    setSampleRate(telemetryBuilder, samplingPercentage);
     setExtraAttributes(telemetryBuilder, attributes);
     addLinks(telemetryBuilder, span.getLinks());
 
@@ -654,7 +651,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
     }
 
     telemetryItems.add(telemetryBuilder.build());
-    exportEvents(span, operationName, telemetryItems);
+    exportEvents(span, operationName, samplingPercentage, telemetryItems);
   }
 
   private static boolean getSuccess(SpanData span) {
@@ -742,7 +739,10 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
   }
 
   private void exportEvents(
-      SpanData span, @Nullable String operationName, List<TelemetryItem> telemetryItems) {
+      SpanData span,
+      @Nullable String operationName,
+      float samplingPercentage,
+      List<TelemetryItem> telemetryItems) {
     for (EventData event : span.getEvents()) {
 
       if (event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE) != null
@@ -750,7 +750,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
         // TODO (trask) map OpenTelemetry exception to Application Insights exception better
         String stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
         if (stacktrace != null) {
-          trackException(stacktrace, span, operationName, telemetryItems);
+          trackException(stacktrace, span, operationName, samplingPercentage, telemetryItems);
         }
         return;
       }
@@ -768,6 +768,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
       }
       setTime(telemetryBuilder, event.getEpochNanos());
       setExtraAttributes(telemetryBuilder, event.getAttributes());
+      setSampleRate(telemetryBuilder, samplingPercentage);
 
       // set message-specific properties
       telemetryBuilder.setMessage(event.getName());
@@ -780,6 +781,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
       String errorStack,
       SpanData span,
       @Nullable String operationName,
+      float samplingPercentage,
       List<TelemetryItem> telemetryItems) {
     ExceptionTelemetryBuilder telemetryBuilder = ExceptionTelemetryBuilder.create();
     initTelemetry(telemetryBuilder);
@@ -793,6 +795,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
       setOperationName(telemetryBuilder, span.getAttributes());
     }
     setTime(telemetryBuilder, span.getEndEpochNanos());
+    setSampleRate(telemetryBuilder, samplingPercentage);
 
     // set exception-specific properties
     telemetryBuilder.setExceptions(Exceptions.minimalParse(errorStack));
@@ -809,6 +812,13 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
 
   private static void setTime(AbstractTelemetryBuilder telemetryBuilder, long epochNanos) {
     telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(epochNanos));
+  }
+
+  private static void setSampleRate(
+      AbstractTelemetryBuilder telemetryBuilder, float samplingPercentage) {
+    if (samplingPercentage != 100) {
+      telemetryBuilder.setSampleRate(samplingPercentage);
+    }
   }
 
   private static void addLinks(AbstractTelemetryBuilder telemetryBuilder, List<LinkData> links) {
