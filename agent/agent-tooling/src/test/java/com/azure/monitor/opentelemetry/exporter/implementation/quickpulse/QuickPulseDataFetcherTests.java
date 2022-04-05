@@ -42,7 +42,7 @@ class QuickPulseDataFetcherTests {
     ConnectionString connectionString = ConnectionString.parse("InstrumentationKey=testing-123");
     QuickPulseDataFetcher dataFetcher =
         new QuickPulseDataFetcher(
-            new QuickPulseDataCollector(),
+            new QuickPulseDataCollector(true),
             null,
             connectionString::getLiveEndpoint,
             connectionString::getInstrumentationKey,
@@ -60,7 +60,7 @@ class QuickPulseDataFetcherTests {
     ConnectionString connectionString = ConnectionString.parse("InstrumentationKey=testing-123");
     QuickPulseDataFetcher quickPulseDataFetcher =
         new QuickPulseDataFetcher(
-            new QuickPulseDataCollector(),
+            new QuickPulseDataCollector(true),
             null,
             connectionString::getLiveEndpoint,
             connectionString::getInstrumentationKey,
@@ -82,7 +82,7 @@ class QuickPulseDataFetcherTests {
     ConnectionString connectionString = ConnectionString.parse("InstrumentationKey=testing-123");
     QuickPulseDataFetcher quickPulseDataFetcher =
         new QuickPulseDataFetcher(
-            new QuickPulseDataCollector(),
+            new QuickPulseDataCollector(true),
             null,
             connectionString::getLiveEndpoint,
             connectionString::getInstrumentationKey,
