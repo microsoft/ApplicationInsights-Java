@@ -51,17 +51,6 @@ public class LocalStorageTelemetryPipelineListener implements TelemetryPipelineL
   }
 
   @Override
-  public CompletableResultCode shutdown() {
-    // guarding against multiple shutdown calls because this can get called if statsbeat shuts down
-    // early because it cannot reach breeze and later on real shut down (when running not as agent)
-    if (!shutdown.getAndSet(true)) {
-      localFileSender.shutdown();
-      localFilePurger.shutdown();
-    }
-    return CompletableResultCode.ofSuccess();
-  }
-
-  @Override
   public void onResponse(TelemetryPipelineRequest request, TelemetryPipelineResponse response) {
     if (StatusCodes.isRetryable(response.getStatusCode())) {
       localFileWriter.writeToDisk(request.getInstrumentationKey(), request.getTelemetry());
@@ -72,5 +61,16 @@ public class LocalStorageTelemetryPipelineListener implements TelemetryPipelineL
   public void onException(
       TelemetryPipelineRequest request, String errorMessage, Throwable throwable) {
     localFileWriter.writeToDisk(request.getInstrumentationKey(), request.getTelemetry());
+  }
+
+  @Override
+  public CompletableResultCode shutdown() {
+    // guarding against multiple shutdown calls because this can get called if statsbeat shuts down
+    // early because it cannot reach breeze and later on real shut down (when running not as agent)
+    if (!shutdown.getAndSet(true)) {
+      localFileSender.shutdown();
+      localFilePurger.shutdown();
+    }
+    return CompletableResultCode.ofSuccess();
   }
 }

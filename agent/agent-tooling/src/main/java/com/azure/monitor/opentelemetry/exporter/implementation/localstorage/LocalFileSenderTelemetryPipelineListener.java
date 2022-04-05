@@ -25,6 +25,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineRequest;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineResponse;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.StatusCodes;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.File;
 
 class LocalFileSenderTelemetryPipelineListener implements TelemetryPipelineListener {
@@ -51,5 +52,10 @@ class LocalFileSenderTelemetryPipelineListener implements TelemetryPipelineListe
   public void onException(
       TelemetryPipelineRequest request, String errorMessage, Throwable throwable) {
     localFileLoader.updateProcessedFileStatus(false, file);
+  }
+
+  @Override
+  public CompletableResultCode shutdown() {
+    return CompletableResultCode.ofSuccess();
   }
 }
