@@ -40,13 +40,14 @@ public class ProcessCpuPerformanceCounter implements PerformanceCounter {
   private static final OperatingSystemMXBean operatingSystemMxBean =
       ManagementFactory.getOperatingSystemMXBean();
 
-  private final boolean backCompatNonNormalizedCpuPercentage;
+  private final boolean useNormalizedValueForNonNormalizedCpuPercentage;
 
   private final CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator =
       getCpuPerformanceCounterCalculator();
 
-  public ProcessCpuPerformanceCounter(boolean backCompatNonNormalizedCpuPercentage) {
-    this.backCompatNonNormalizedCpuPercentage = backCompatNonNormalizedCpuPercentage;
+  public ProcessCpuPerformanceCounter(boolean useNormalizedValueForNonNormalizedCpuPercentage) {
+    this.useNormalizedValueForNonNormalizedCpuPercentage =
+        useNormalizedValueForNonNormalizedCpuPercentage;
   }
 
   @Nullable
@@ -80,7 +81,7 @@ public class ProcessCpuPerformanceCounter implements PerformanceCounter {
 
     double cpuPercentageNormalized = cpuPercentage / operatingSystemMxBean.getAvailableProcessors();
 
-    if (backCompatNonNormalizedCpuPercentage) {
+    if (useNormalizedValueForNonNormalizedCpuPercentage) {
       // use normalized for backwards compatibility even though this is supposed to be
       // non-normalized
       cpuPercentage = cpuPercentageNormalized;

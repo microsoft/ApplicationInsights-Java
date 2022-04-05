@@ -60,14 +60,15 @@ final class QuickPulseDataCollector {
   private final AtomicReference<Counters> counters = new AtomicReference<>(null);
   private final CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator =
       getCpuPerformanceCounterCalculator();
-  private final boolean backCompatNonNormalizedCpuPercentage;
+  private final boolean useNormalizedValueForNonNormalizedCpuPercentage;
 
   private volatile QuickPulseStatus quickPulseStatus = QuickPulseStatus.QP_IS_OFF;
 
   private volatile Supplier<String> instrumentationKeySupplier;
 
-  QuickPulseDataCollector(boolean backCompatNonNormalizedCpuPercentage) {
-    this.backCompatNonNormalizedCpuPercentage = backCompatNonNormalizedCpuPercentage;
+  QuickPulseDataCollector(boolean useNormalizedValueForNonNormalizedCpuPercentage) {
+    this.useNormalizedValueForNonNormalizedCpuPercentage =
+        useNormalizedValueForNonNormalizedCpuPercentage;
   }
 
   @Nullable
@@ -400,7 +401,7 @@ final class QuickPulseDataCollector {
         return -1;
       }
 
-      if (backCompatNonNormalizedCpuPercentage) {
+      if (useNormalizedValueForNonNormalizedCpuPercentage) {
         // normalize for backwards compatibility even though this is supposed to be non-normalized
         cpuDatum /= operatingSystemMxBean.getAvailableProcessors();
       }

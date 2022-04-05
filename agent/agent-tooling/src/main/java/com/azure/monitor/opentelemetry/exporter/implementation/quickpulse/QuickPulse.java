@@ -46,7 +46,7 @@ public class QuickPulse {
       Supplier<String> instrumentationKey,
       @Nullable String roleName,
       @Nullable String roleInstance,
-      boolean reportNonNormalizedProcessorTime) {
+      boolean useNormalizedValueForNonNormalizedCpuPercentage) {
 
     QuickPulse quickPulse = new QuickPulse();
 
@@ -66,7 +66,7 @@ public class QuickPulse {
                   instrumentationKey,
                   roleName,
                   roleInstance,
-                  reportNonNormalizedProcessorTime);
+                  useNormalizedValueForNonNormalizedCpuPercentage);
             });
 
     return quickPulse;
@@ -84,7 +84,7 @@ public class QuickPulse {
       Supplier<String> instrumentationKey,
       @Nullable String roleName,
       @Nullable String roleInstance,
-      boolean backCompatNonNormalizedCpuPercentage) {
+      boolean useNormalizedValueForNonNormalizedCpuPercentage) {
 
     String quickPulseId = UUID.randomUUID().toString().replace("-", "");
     ArrayBlockingQueue<HttpRequest> sendQueue = new ArrayBlockingQueue<>(256, true);
@@ -102,7 +102,7 @@ public class QuickPulse {
     }
 
     QuickPulseDataCollector collector =
-        new QuickPulseDataCollector(backCompatNonNormalizedCpuPercentage);
+        new QuickPulseDataCollector(useNormalizedValueForNonNormalizedCpuPercentage);
 
     QuickPulsePingSender quickPulsePingSender =
         new QuickPulsePingSender(

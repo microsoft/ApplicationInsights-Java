@@ -264,7 +264,7 @@ public class Configuration {
     //
     // note: the normalized value is now (correctly) reported under a different metric
     // "% Processor Time Normalized"
-    public boolean backCompatNonNormalizedCpuPercentage;
+    public boolean useNormalizedValueForNonNormalizedCpuPercentage = true;
 
     private static final Set<String> VALID_ADDITIONAL_PROPAGATORS =
         new HashSet<>(asList("b3", "b3multi"));

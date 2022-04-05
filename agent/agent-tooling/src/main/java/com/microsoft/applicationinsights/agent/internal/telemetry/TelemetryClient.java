@@ -440,7 +440,7 @@ public class TelemetryClient {
               telemetryClient::getInstrumentationKey,
               telemetryClient.getRoleName(),
               telemetryClient.getRoleInstance(),
-              configuration.preview.backCompatNonNormalizedCpuPercentage);
+              configuration.preview.useNormalizedValueForNonNormalizedCpuPercentage);
     }
   }
 

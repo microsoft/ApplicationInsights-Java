@@ -74,7 +74,7 @@ public class TelemetryClientInitializer {
 
     PerformanceCounterContainer.INSTANCE.register(
         new ProcessCpuPerformanceCounter(
-            configuration.preview.backCompatNonNormalizedCpuPercentage));
+            configuration.preview.useNormalizedValueForNonNormalizedCpuPercentage));
     PerformanceCounterContainer.INSTANCE.register(new ProcessMemoryPerformanceCounter());
     PerformanceCounterContainer.INSTANCE.register(new FreeMemoryPerformanceCounter());
 
