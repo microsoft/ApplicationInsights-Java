@@ -31,7 +31,7 @@ public final class MetricNames {
   // we cannot change this existing behavior as it would break existing customers' alerts, but at
   // least there is a configuration option that gives users a way to opt in to the correct behavior
   //
-  // note: the normalized value is now (correctly) reported under a different metric
+  // note: the normalized value is now separately reported under a different metric
   // "% Processor Time Normalized"
   public static final String PROCESS_CPU_PERCENTAGE =
       "\\Process(??APP_WIN32_PROC??)\\% Processor Time";

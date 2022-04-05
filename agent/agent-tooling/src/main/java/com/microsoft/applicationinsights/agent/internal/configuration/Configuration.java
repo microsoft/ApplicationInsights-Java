@@ -262,7 +262,7 @@ public class Configuration {
     // we cannot change this existing behavior as it would break existing customers' alerts, but at
     // least this configuration gives users a way to opt in to the correct behavior
     //
-    // note: the normalized value is now (correctly) reported under a different metric
+    // note: the normalized value is now separately reported under a different metric
     // "% Processor Time Normalized"
     public boolean useNormalizedValueForNonNormalizedCpuPercentage = true;
 
