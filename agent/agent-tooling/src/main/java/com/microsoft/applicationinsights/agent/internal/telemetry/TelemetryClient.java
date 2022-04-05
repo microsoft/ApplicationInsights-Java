@@ -283,6 +283,9 @@ public class TelemetryClient {
             new TelemetryItemExporter(telemetryPipeline, telemetryPipelineListener))
         .setMaxQueueSize(exportQueueCapacity)
         .setMaxExportBatchSize(maxExportBatchSize)
+        // the number 100 was calculated as the max number of concurrent exports that the single
+        // worker thread can drive, so anything higher than this should not increase throughput
+        .setMaxPendingExports(100)
         .build(queueName);
   }
 

@@ -50,6 +50,22 @@ public class ExceptionsTest {
   }
 
   @Test
+  public void testMinimalParseWithColonInMessage() {
+    // given
+    String str = toString(new IllegalStateException("hello: world"));
+
+    // when
+    List<ExceptionDetailBuilder> list = Exceptions.minimalParse(str);
+
+    // then
+    assertThat(list.size()).isEqualTo(1);
+
+    TelemetryExceptionDetails details = list.get(0).build();
+    assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
+    assertThat(details.getMessage()).isEqualTo("hello: world");
+  }
+
+  @Test
   public void testMinimalParseWithNoMessage() {
     // given
     String str = toString(new IllegalStateException());
