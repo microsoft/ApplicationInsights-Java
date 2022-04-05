@@ -27,8 +27,7 @@ import static io.opentelemetry.sdk.metrics.data.MetricDataType.HISTOGRAM;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_GAUGE;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorBase;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -39,9 +38,7 @@ import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,11 +77,7 @@ public class AzureMonitorMetricExporter implements MetricExporter {
           || type == LONG_SUM
           || type == LONG_GAUGE
           || type == HISTOGRAM) {
-        List<TelemetryItem> items = convertOtelMetricToAzureMonitorMetric(metricData);
-        items.forEach(
-            item -> {
-              telemetryClient.trackAsync(item);
-            });
+        convertOtelMetricToAzureMonitorMetric(metricData).forEach(telemetryClient::trackAsync);
       } else {
         logger.warn("metric data type {} is not supported yet.", type);
       }
@@ -105,49 +98,12 @@ public class AzureMonitorMetricExporter implements MetricExporter {
 
   private List<TelemetryItem> convertOtelMetricToAzureMonitorMetric(MetricData metricData) {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-    TelemetryItem telemetryItem;
     for (PointData data : metricData.getData().getPoints()) {
-      telemetryItem = new TelemetryItem();
-      MonitorBase monitorBase = new MonitorBase();
-      monitorBase.setBaseType("MetricData");
-      AzureMonitorMetricsData azureMonitorMetricsData =
-          new AzureMonitorMetricsData(metricData, data);
-      MetricsData metricsData = azureMonitorMetricsData.getMetricsData();
-      populateDefaults(telemetryItem, metricsData);
-      monitorBase.setBaseData(metricsData);
-      telemetryItem.setData(monitorBase);
-      telemetryItems.add(telemetryItem);
+      MetricTelemetryBuilder builder = telemetryClient.newMetricTelemetryBuilder();
+      builder.setTime(FormattedTime.offSetDateTimeFromNow());
+      AzureMonitorMetricsData.populatePointAndProperties(builder, metricData, data);
+      telemetryItems.add(builder.build());
     }
     return telemetryItems;
-  }
-
-  private void populateDefaults(TelemetryItem telemetryItem, MetricsData metricsData) {
-    telemetryItem.setTime(FormattedTime.offSetDateTimeFromNow());
-    telemetryItem.setName("Metric");
-    telemetryItem.setVersion(1);
-    telemetryItem.setInstrumentationKey(telemetryClient.getInstrumentationKey());
-    Map<String, String> tags = telemetryItem.getTags();
-    Map<String, String> globalTags = telemetryClient.getGlobalTags();
-    if (tags == null) {
-      tags = new HashMap<>();
-    }
-    for (Map.Entry<String, String> entry : globalTags.entrySet()) {
-      tags.put(entry.getKey(), entry.getValue());
-    }
-    if (!globalTags.isEmpty()) {
-      telemetryItem.setTags(tags);
-    }
-
-    Map<String, String> globalProperties = telemetryClient.getGlobalProperties();
-    Map<String, String> properties = metricsData.getProperties();
-    if (properties == null) {
-      properties = new HashMap<>();
-    }
-    for (Map.Entry<String, String> entry : globalProperties.entrySet()) {
-      properties.put(entry.getKey(), entry.getValue());
-    }
-    if (!globalProperties.isEmpty()) {
-      metricsData.setProperties(properties);
-    }
   }
 }

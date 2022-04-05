@@ -23,59 +23,51 @@ package com.microsoft.applicationinsights.agent.internal.exporter;
 
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricPointBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 final class AzureMonitorMetricsData {
 
-  private static final int VERSION = 2;
   private static final String DEFAULT_METRIC_AGGREGATION_INTERVAL = "60000";
   private static final String AGGREGATION_INTERNAL_MS_KEY = "_MS.AggregationIntervalMs";
-  private final MetricsData metricsData = new MetricsData();
 
-  public AzureMonitorMetricsData(MetricData metricData, PointData pointData) {
+  public static void populatePointAndProperties(
+      MetricTelemetryBuilder metricTelemetryBuilder, MetricData metricData, PointData pointData) {
     checkArgument(metricData != null, "MetricData cannot be null.");
 
-    metricsData.setVersion(VERSION);
-    List<MetricDataPoint> metricDataPoints = new ArrayList<>();
-    MetricDataPoint metricDataPoint = new MetricDataPoint();
+    MetricPointBuilder pointBuilder = new MetricPointBuilder();
     MetricDataType type = metricData.getType();
     switch (type) {
       case LONG_SUM:
-        metricDataPoint.setDataPointType(DataPointType.AGGREGATION);
-        metricDataPoint.setValue(((LongPointData) pointData).getValue());
+        pointBuilder.setDataPointType(DataPointType.AGGREGATION);
+        pointBuilder.setValue(((LongPointData) pointData).getValue());
         break;
       case LONG_GAUGE:
-        metricDataPoint.setDataPointType(DataPointType.MEASUREMENT);
-        metricDataPoint.setValue(((LongPointData) pointData).getValue());
+        pointBuilder.setDataPointType(DataPointType.MEASUREMENT);
+        pointBuilder.setValue(((LongPointData) pointData).getValue());
         break;
       case DOUBLE_SUM:
-        metricDataPoint.setDataPointType(DataPointType.AGGREGATION);
-        metricDataPoint.setValue(((DoublePointData) pointData).getValue());
+        pointBuilder.setDataPointType(DataPointType.AGGREGATION);
+        pointBuilder.setValue(((DoublePointData) pointData).getValue());
         break;
       case DOUBLE_GAUGE:
-        metricDataPoint.setDataPointType(DataPointType.MEASUREMENT);
-        metricDataPoint.setValue(((DoublePointData) pointData).getValue());
+        pointBuilder.setDataPointType(DataPointType.MEASUREMENT);
+        pointBuilder.setValue(((DoublePointData) pointData).getValue());
         break;
       case HISTOGRAM:
-        metricDataPoint.setDataPointType(DataPointType.AGGREGATION);
+        pointBuilder.setDataPointType(DataPointType.AGGREGATION);
         long histogramCount = ((HistogramPointData) pointData).getCount();
         if (histogramCount <= Integer.MAX_VALUE && histogramCount >= Integer.MIN_VALUE) {
-          metricDataPoint.setCount((int) histogramCount);
+          pointBuilder.setCount((int) histogramCount);
         }
-        metricDataPoint.setValue(((HistogramPointData) pointData).getSum());
+        pointBuilder.setValue(((HistogramPointData) pointData).getSum());
         break;
       case SUMMARY: // not supported yet in OpenTelemetry SDK
       case EXPONENTIAL_HISTOGRAM: // not supported yet in OpenTelemetry SDK
@@ -83,21 +75,15 @@ final class AzureMonitorMetricsData {
         throw new IllegalArgumentException("metric data type '" + type + "' is not supported yet");
     }
 
-    metricDataPoint.setName(metricData.getName());
-    metricDataPoints.add(metricDataPoint);
-    metricsData.setMetrics(metricDataPoints);
+    pointBuilder.setName(metricData.getName());
 
-    if (pointData.getAttributes() != null) {
-      Map<String, String> properties = new HashMap<>();
-      for (AttributeKey key : pointData.getAttributes().asMap().keySet()) {
-        properties.put(key.getKey(), pointData.getAttributes().get(key).toString());
-      }
-      properties.put(AGGREGATION_INTERNAL_MS_KEY, DEFAULT_METRIC_AGGREGATION_INTERVAL);
-      metricsData.setProperties(properties);
-    }
-  }
+    metricTelemetryBuilder.setMetricPoint(pointBuilder);
 
-  public MetricsData getMetricsData() {
-    return metricsData;
+    pointData
+        .getAttributes()
+        .forEach(
+            (key, value) -> metricTelemetryBuilder.addProperty(key.getKey(), value.toString()));
+    metricTelemetryBuilder.addProperty(
+        AGGREGATION_INTERNAL_MS_KEY, DEFAULT_METRIC_AGGREGATION_INTERVAL);
   }
 }
