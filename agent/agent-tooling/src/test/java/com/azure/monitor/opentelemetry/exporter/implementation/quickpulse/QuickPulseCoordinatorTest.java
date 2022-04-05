@@ -37,7 +37,7 @@ class QuickPulseCoordinatorTest {
     QuickPulseDataFetcher mockFetcher = mock(QuickPulseDataFetcher.class);
     QuickPulseDataSender mockSender = mock(QuickPulseDataSender.class);
     QuickPulsePingSender mockPingSender = mock(QuickPulsePingSender.class);
-    QuickPulseDataCollector collector = new QuickPulseDataCollector(false);
+    QuickPulseDataCollector collector = new QuickPulseDataCollector(true);
     Mockito.doReturn(new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_OFF))
         .when(mockPingSender)
         .ping(null);
@@ -87,7 +87,7 @@ class QuickPulseCoordinatorTest {
             new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_ON),
             new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_OFF));
 
-    QuickPulseDataCollector collector = new QuickPulseDataCollector(false);
+    QuickPulseDataCollector collector = new QuickPulseDataCollector(true);
     QuickPulseCoordinatorInitData initData =
         new QuickPulseCoordinatorInitDataBuilder()
             .withDataFetcher(mockFetcher)
@@ -142,7 +142,7 @@ class QuickPulseCoordinatorTest {
             .withDataFetcher(mockFetcher)
             .withDataSender(mockSender)
             .withPingSender(mockPingSender)
-            .withCollector(new QuickPulseDataCollector(false))
+            .withCollector(new QuickPulseDataCollector(true))
             .withWaitBetweenPingsInMillis(10L)
             .withWaitBetweenPostsInMillis(10L)
             .withWaitOnErrorInMillis(10L)
