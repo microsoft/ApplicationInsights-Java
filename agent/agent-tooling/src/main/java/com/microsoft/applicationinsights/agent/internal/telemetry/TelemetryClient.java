@@ -366,14 +366,6 @@ public class TelemetryClient {
     return newTelemetryBuilder(RequestTelemetryBuilder::create);
   }
 
-  public Map<String, String> getGlobalTags() {
-    return globalTags;
-  }
-
-  public Map<String, String> getGlobalProperties() {
-    return globalProperties;
-  }
-
   private <T extends AbstractTelemetryBuilder> T newTelemetryBuilder(Supplier<T> creator) {
     T telemetry = creator.get();
     populateDefaults(telemetry);
