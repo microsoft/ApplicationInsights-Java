@@ -23,21 +23,12 @@ import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.propagation.TextMapGetter;
-import io.opentelemetry.instrumentation.api.InstrumentationVersion;
-import io.opentelemetry.instrumentation.api.instrumenter.db.DbClientAttributesExtractor;
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientAttributesExtractor;
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpServerAttributesExtractor;
-import io.opentelemetry.instrumentation.api.instrumenter.messaging.MessageOperation;
-import io.opentelemetry.instrumentation.api.instrumenter.messaging.MessagingAttributesExtractor;
-import io.opentelemetry.instrumentation.api.instrumenter.net.NetServerAttributesExtractor;
-import io.opentelemetry.instrumentation.api.instrumenter.net.NetServerAttributesGetter;
-import io.opentelemetry.instrumentation.api.instrumenter.rpc.RpcAttributesExtractor;
 import io.opentelemetry.instrumentation.api.internal.SpanKey;
+import io.opentelemetry.instrumentation.api.internal.SpanKeyProvider;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
@@ -165,19 +156,19 @@ class InstrumenterTest {
   @RegisterExtension
   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
-  @Mock
-  HttpClientAttributesExtractor<Map<String, String>, Map<String, String>> mockHttpClientAttributes;
+  @Mock(extraInterfaces = SpanKeyProvider.class)
+  AttributesExtractor<Map<String, String>, Map<String, String>> mockHttpClientAttributes;
 
-  @Mock
-  HttpServerAttributesExtractor<Map<String, String>, Map<String, String>> mockHttpServerAttributes;
+  @Mock(extraInterfaces = SpanKeyProvider.class)
+  AttributesExtractor<Map<String, String>, Map<String, String>> mockDbClientAttributes;
 
-  @Mock DbClientAttributesExtractor<Map<String, String>, Map<String, String>> mockDbAttributes;
+  @Mock(extraInterfaces = SpanKeyProvider.class)
+  AttributesExtractor<Map<String, String>, Map<String, String>> mockRpcClientAttributes;
 
-  @Mock
-  MessagingAttributesExtractor<Map<String, String>, Map<String, String>> mockMessagingAttributes;
+  @Mock(extraInterfaces = SpanKeyProvider.class)
+  AttributesExtractor<Map<String, String>, Map<String, String>> mockMessagingProducerAttributes;
 
-  @Mock RpcAttributesExtractor<Map<String, String>, Map<String, String>> mockRpcAttributes;
-  @Mock NetServerAttributesExtractor<Map<String, String>, Map<String, String>> mockNetAttributes;
+  @Mock AttributesExtractor<Map<String, String>, Map<String, String>> mockNetClientAttributes;
 
   @Test
   void server() {
@@ -289,41 +280,6 @@ class InstrumenterTest {
   }
 
   @Test
-  void server_http() {
-    Instrumenter<Map<String, String>, Map<String, String>> instrumenter =
-        Instrumenter.<Map<String, String>, Map<String, String>>builder(
-                otelTesting.getOpenTelemetry(), "test", unused -> "span")
-            .addAttributesExtractors(
-                mockHttpServerAttributes,
-                NetServerAttributesExtractor.create(new ConstantNetPeerIpGetter<>("2.2.2.2")),
-                new AttributesExtractor1(),
-                new AttributesExtractor2())
-            .addSpanLinksExtractor(new LinksExtractor())
-            .newServerInstrumenter(new MapGetter());
-
-    Context context = instrumenter.start(Context.root(), REQUEST);
-    SpanContext spanContext = Span.fromContext(context).getSpanContext();
-
-    assertThat(spanContext.isValid()).isTrue();
-    assertThat(SpanKey.SERVER.fromContextOrNull(context).getSpanContext()).isEqualTo(spanContext);
-
-    instrumenter.end(context, REQUEST, RESPONSE, null);
-
-    otelTesting
-        .assertTraces()
-        .hasTracesSatisfyingExactly(
-            trace ->
-                trace.hasSpansSatisfyingExactly(
-                    span ->
-                        span.hasName("span")
-                            .hasAttributesSatisfying(
-                                attributes ->
-                                    assertThat(attributes)
-                                        .containsEntry(
-                                            SemanticAttributes.NET_PEER_IP, "2.2.2.2"))));
-  }
-
-  @Test
   void client() {
     Instrumenter<Map<String, String>, Map<String, String>> instrumenter =
         Instrumenter.<Map<String, String>, Map<String, String>>builder(
@@ -430,6 +386,38 @@ class InstrumenterTest {
                             .hasTraceId("ff01020304050600ff0a0b0c0d0e0f00")
                             .hasSpanId(spanContext.getSpanId())
                             .hasParentSpanId("090a0b0c0d0e0f00")));
+  }
+
+  @Test
+  void requestListeners() {
+    AtomicReference<Boolean> startContext = new AtomicReference<>();
+    AtomicReference<Boolean> endContext = new AtomicReference<>();
+
+    RequestListener requestListener =
+        new RequestListener() {
+          @Override
+          public Context start(Context context, Attributes startAttributes, long startNanos) {
+            startContext.set(true);
+            return context;
+          }
+
+          @Override
+          public void end(Context context, Attributes endAttributes, long endNanos) {
+            endContext.set(true);
+          }
+        };
+
+    Instrumenter<Map<String, String>, Map<String, String>> instrumenter =
+        Instrumenter.<Map<String, String>, Map<String, String>>builder(
+                otelTesting.getOpenTelemetry(), "test", unused -> "span")
+            .addRequestListener(requestListener)
+            .newServerInstrumenter(new MapGetter());
+
+    Context context = instrumenter.start(Context.root(), REQUEST);
+    instrumenter.end(context, REQUEST, RESPONSE, null);
+
+    assertThat(startContext.get()).isTrue();
+    assertThat(endContext.get()).isTrue();
   }
 
   @Test
@@ -547,8 +535,13 @@ class InstrumenterTest {
 
   @Test
   void clientNestedSpansSuppressed_whenInstrumentationTypeDisabled2() {
+    when(((SpanKeyProvider) mockHttpClientAttributes).internalGetSpanKey())
+        .thenReturn(SpanKey.HTTP_CLIENT);
+    when(((SpanKeyProvider) mockDbClientAttributes).internalGetSpanKey())
+        .thenReturn(SpanKey.DB_CLIENT);
+
     Instrumenter<Map<String, String>, Map<String, String>> instrumenterOuter =
-        getInstrumenterWithType(false, mockDbAttributes);
+        getInstrumenterWithType(false, mockDbClientAttributes);
     Instrumenter<Map<String, String>, Map<String, String>> instrumenterInner =
         getInstrumenterWithType(false, mockHttpClientAttributes);
 
@@ -560,10 +553,13 @@ class InstrumenterTest {
 
   @Test
   void clientNestedSuppressed_whenSameInstrumentationType() {
+    when(((SpanKeyProvider) mockDbClientAttributes).internalGetSpanKey())
+        .thenReturn(SpanKey.DB_CLIENT);
+
     Instrumenter<Map<String, String>, Map<String, String>> instrumenterOuter =
-        getInstrumenterWithType(true, mockDbAttributes);
+        getInstrumenterWithType(true, mockDbClientAttributes);
     Instrumenter<Map<String, String>, Map<String, String>> instrumenterInner =
-        getInstrumenterWithType(true, mockDbAttributes);
+        getInstrumenterWithType(true, mockDbClientAttributes);
 
     Map<String, String> request = new HashMap<>(REQUEST);
 
@@ -576,8 +572,13 @@ class InstrumenterTest {
 
   @Test
   void clientNestedNotSuppressed_wehnDifferentInstrumentationCategories() {
+    when(((SpanKeyProvider) mockHttpClientAttributes).internalGetSpanKey())
+        .thenReturn(SpanKey.HTTP_CLIENT);
+    when(((SpanKeyProvider) mockDbClientAttributes).internalGetSpanKey())
+        .thenReturn(SpanKey.DB_CLIENT);
+
     Instrumenter<Map<String, String>, Map<String, String>> instrumenterOuter =
-        getInstrumenterWithType(true, mockDbAttributes);
+        getInstrumenterWithType(true, mockDbClientAttributes);
     Instrumenter<Map<String, String>, Map<String, String>> instrumenterInner =
         getInstrumenterWithType(true, mockHttpClientAttributes);
 
@@ -616,6 +617,9 @@ class InstrumenterTest {
 
   @Test
   void instrumentationTypeDetected_http() {
+    when(((SpanKeyProvider) mockHttpClientAttributes).internalGetSpanKey())
+        .thenReturn(SpanKey.HTTP_CLIENT);
+
     Instrumenter<Map<String, String>, Map<String, String>> instrumenter =
         getInstrumenterWithType(true, mockHttpClientAttributes, new AttributesExtractor1());
 
@@ -627,8 +631,11 @@ class InstrumenterTest {
 
   @Test
   void instrumentationTypeDetected_db() {
+    when(((SpanKeyProvider) mockDbClientAttributes).internalGetSpanKey())
+        .thenReturn(SpanKey.DB_CLIENT);
+
     Instrumenter<Map<String, String>, Map<String, String>> instrumenter =
-        getInstrumenterWithType(true, mockDbAttributes, new AttributesExtractor2());
+        getInstrumenterWithType(true, mockDbClientAttributes, new AttributesExtractor2());
 
     Map<String, String> request = new HashMap<>(REQUEST);
 
@@ -638,8 +645,11 @@ class InstrumenterTest {
 
   @Test
   void instrumentationTypeDetected_rpc() {
+    when(((SpanKeyProvider) mockRpcClientAttributes).internalGetSpanKey())
+        .thenReturn(SpanKey.RPC_CLIENT);
+
     Instrumenter<Map<String, String>, Map<String, String>> instrumenter =
-        getInstrumenterWithType(true, mockRpcAttributes);
+        getInstrumenterWithType(true, mockRpcClientAttributes);
 
     Map<String, String> request = new HashMap<>(REQUEST);
 
@@ -649,10 +659,11 @@ class InstrumenterTest {
 
   @Test
   void instrumentationTypeDetected_producer() {
-    when(mockMessagingAttributes.operation()).thenReturn(MessageOperation.SEND);
+    when(((SpanKeyProvider) mockMessagingProducerAttributes).internalGetSpanKey())
+        .thenReturn(SpanKey.PRODUCER);
 
     Instrumenter<Map<String, String>, Map<String, String>> instrumenter =
-        getInstrumenterWithType(true, mockMessagingAttributes);
+        getInstrumenterWithType(true, mockMessagingProducerAttributes);
 
     Map<String, String> request = new HashMap<>(REQUEST);
 
@@ -662,15 +673,18 @@ class InstrumenterTest {
 
   @Test
   void instrumentationTypeDetected_mix() {
-    when(mockMessagingAttributes.operation()).thenReturn(MessageOperation.SEND);
+    when(((SpanKeyProvider) mockDbClientAttributes).internalGetSpanKey())
+        .thenReturn(SpanKey.DB_CLIENT);
+    when(((SpanKeyProvider) mockMessagingProducerAttributes).internalGetSpanKey())
+        .thenReturn(SpanKey.PRODUCER);
 
     Instrumenter<Map<String, String>, Map<String, String>> instrumenter =
         getInstrumenterWithType(
             true,
             new AttributesExtractor2(),
-            mockMessagingAttributes,
-            mockNetAttributes,
-            mockDbAttributes);
+            mockMessagingProducerAttributes,
+            mockNetClientAttributes,
+            mockDbClientAttributes);
 
     Map<String, String> request = new HashMap<>(REQUEST);
 
@@ -681,7 +695,7 @@ class InstrumenterTest {
   @Test
   void instrumentationTypeDetected_generic() {
     Instrumenter<Map<String, String>, Map<String, String>> instrumenter =
-        getInstrumenterWithType(true, new AttributesExtractor2(), mockNetAttributes);
+        getInstrumenterWithType(true, new AttributesExtractor2(), mockNetClientAttributes);
 
     Map<String, String> request = new HashMap<>(REQUEST);
 
@@ -699,7 +713,8 @@ class InstrumenterTest {
   @Test
   void instrumentationVersion_default() {
     InstrumenterBuilder<Map<String, String>, Map<String, String>> builder =
-        Instrumenter.builder(otelTesting.getOpenTelemetry(), "test", name -> "span");
+        Instrumenter.builder(
+            otelTesting.getOpenTelemetry(), "test-instrumentation", name -> "span");
 
     Instrumenter<Map<String, String>, Map<String, String>> instrumenter = builder.newInstrumenter();
 
@@ -708,16 +723,17 @@ class InstrumenterTest {
 
     instrumenter.end(context, Collections.emptyMap(), Collections.emptyMap(), null);
 
+    // see the test-instrumentation.properties file
+    InstrumentationLibraryInfo expectedLibraryInfo =
+        InstrumentationLibraryInfo.create("test-instrumentation", "1.2.3");
+
     otelTesting
         .assertTraces()
         .hasTracesSatisfyingExactly(
             trace ->
                 trace.hasSpansSatisfyingExactly(
                     span ->
-                        span.hasName("span")
-                            .hasInstrumentationLibraryInfo(
-                                InstrumentationLibraryInfo.create(
-                                    "test", InstrumentationVersion.VERSION))));
+                        span.hasName("span").hasInstrumentationLibraryInfo(expectedLibraryInfo)));
   }
 
   @Test
@@ -768,30 +784,5 @@ class InstrumenterTest {
     return LinkData.create(
         SpanContext.create(
             LINK_TRACE_ID, LINK_SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault()));
-  }
-
-  private static final class ConstantNetPeerIpGetter<REQUEST>
-      implements NetServerAttributesGetter<REQUEST> {
-
-    private final String peerIp;
-
-    private ConstantNetPeerIpGetter(String peerIp) {
-      this.peerIp = peerIp;
-    }
-
-    @Override
-    public String transport(REQUEST request) {
-      return null;
-    }
-
-    @Override
-    public Integer peerPort(REQUEST request) {
-      return null;
-    }
-
-    @Override
-    public String peerIp(REQUEST request) {
-      return peerIp;
-    }
   }
 }

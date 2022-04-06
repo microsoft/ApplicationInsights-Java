@@ -27,7 +27,7 @@ afterEvaluate {
 }
 
 // Version to use to compile code and run tests.
-val DEFAULT_JAVA_VERSION = JavaVersion.VERSION_11
+val DEFAULT_JAVA_VERSION = JavaVersion.VERSION_17
 
 java {
   toolchain {
@@ -125,34 +125,51 @@ dependencies {
 
   compileOnly("com.google.code.findbugs:jsr305")
 
-  testImplementation("org.junit.jupiter:junit-jupiter-api")
-  testImplementation("org.junit.jupiter:junit-jupiter-params")
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-  testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
-
-  testImplementation("org.objenesis:objenesis")
-  testImplementation("org.spockframework:spock-core") {
-    // exclude optional dependencies
-    exclude(group = "cglib", module = "cglib-nodep")
-    exclude(group = "net.bytebuddy", module = "byte-buddy")
-    exclude(group = "org.junit.platform", module = "junit-platform-testkit")
-    exclude(group = "org.jetbrains", module = "annotations")
-    exclude(group = "org.objenesis", module = "objenesis")
-    exclude(group = "org.ow2.asm", module = "asm")
-  }
-  testImplementation("org.spockframework:spock-junit4") {
-    // spock-core is already added as dependency
-    // exclude it here to avoid pulling in optional dependencies
-    exclude(group = "org.spockframework", module = "spock-core")
-  }
-  testImplementation("ch.qos.logback:logback-classic")
-  testImplementation("org.slf4j:log4j-over-slf4j")
-  testImplementation("org.slf4j:jcl-over-slf4j")
-  testImplementation("org.slf4j:jul-to-slf4j")
-  testImplementation("com.github.stefanbirkner:system-rules")
-
   codenarc("org.codenarc:CodeNarc:2.2.0")
   codenarc(platform("org.codehaus.groovy:groovy-bom:3.0.9"))
+}
+
+testing {
+  suites.withType(JvmTestSuite::class).configureEach {
+    dependencies {
+      implementation("org.junit.jupiter:junit-jupiter-api")
+      implementation("org.junit.jupiter:junit-jupiter-params")
+      runtimeOnly("org.junit.jupiter:junit-jupiter-engine")
+      runtimeOnly("org.junit.vintage:junit-vintage-engine")
+
+
+      implementation("org.assertj:assertj-core")
+      implementation("org.awaitility:awaitility")
+      implementation("org.mockito:mockito-core")
+      implementation("org.mockito:mockito-inline")
+      implementation("org.mockito:mockito-junit-jupiter")
+
+      implementation("org.objenesis:objenesis")
+      implementation("org.spockframework:spock-core") {
+        with (this as ExternalDependency) {
+          // exclude optional dependencies
+          exclude(group = "cglib", module = "cglib-nodep")
+          exclude(group = "net.bytebuddy", module = "byte-buddy")
+          exclude(group = "org.junit.platform", module = "junit-platform-testkit")
+          exclude(group = "org.jetbrains", module = "annotations")
+          exclude(group = "org.objenesis", module = "objenesis")
+          exclude(group = "org.ow2.asm", module = "asm")
+        }
+      }
+      implementation("org.spockframework:spock-junit4") {
+        with (this as ExternalDependency) {
+          // spock-core is already added as dependency
+          // exclude it here to avoid pulling in optional dependencies
+          exclude(group = "org.spockframework", module = "spock-core")
+        }
+      }
+      implementation("ch.qos.logback:logback-classic")
+      implementation("org.slf4j:log4j-over-slf4j")
+      implementation("org.slf4j:jcl-over-slf4j")
+      implementation("org.slf4j:jul-to-slf4j")
+      implementation("com.github.stefanbirkner:system-rules")
+    }
+  }
 }
 
 tasks {
@@ -351,6 +368,7 @@ configurations.configureEach {
     // what modules they add to reference generically.
     dependencySubstitution {
       substitute(module("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")).using(project(":instrumentation-api"))
+      substitute(module("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")).using(project(":instrumentation-api-semconv"))
       substitute(module("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support")).using(project(":instrumentation-api-annotation-support"))
       substitute(module("io.opentelemetry.instrumentation:opentelemetry-instrumentation-appender-api-internal")).using(project(":instrumentation-appender-api-internal"))
       substitute(module("io.opentelemetry.javaagent:opentelemetry-javaagent-instrumentation-api")).using(project(":javaagent-instrumentation-api"))

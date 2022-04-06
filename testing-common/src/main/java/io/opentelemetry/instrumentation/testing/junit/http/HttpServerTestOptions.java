@@ -50,7 +50,7 @@ public final class HttpServerTestOptions {
   boolean testPathParam = false;
   boolean testCaptureHttpHeaders = true;
   boolean testCaptureRequestParameters = false;
-  Predicate<ServerEndpoint> sendsBackAiTargetAppId = null;
+  Predicate<ServerEndpoint> sendsBackAiTargetAppId = endpoint -> false;
 
   HttpServerTestOptions() {}
 

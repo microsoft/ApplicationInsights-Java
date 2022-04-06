@@ -46,11 +46,11 @@ val licenseReportDependencies by configurations.creating {
 
 dependencies {
   bootstrapLibs(project(":instrumentation-api"))
+  bootstrapLibs(project(":instrumentation-api-semconv"))
   bootstrapLibs(project(":instrumentation-api-annotation-support"))
   bootstrapLibs(project(":instrumentation-appender-api-internal"))
   bootstrapLibs(project(":javaagent-bootstrap"))
   bootstrapLibs(project(":javaagent-instrumentation-api"))
-  bootstrapLibs("org.slf4j:slf4j-simple")
 
   baseJavaagentLibs(project(":javaagent-extension-api"))
   baseJavaagentLibs(project(":javaagent-tooling"))
@@ -80,7 +80,6 @@ dependencies {
   testImplementation("com.google.guava:guava")
   testImplementation("io.opentelemetry:opentelemetry-sdk")
   testImplementation("io.opentracing.contrib.dropwizard:dropwizard-opentracing:0.2.2")
-  testImplementation("org.assertj:assertj-core")
 }
 
 val javaagentDependencies = dependencies
@@ -260,6 +259,7 @@ fun CopySpec.isolateClasses(jars: Iterable<File>) {
 fun ShadowJar.excludeBootstrapJars() {
   dependencies {
     exclude(project(":instrumentation-api"))
+    exclude(project(":instrumentation-api-semconv"))
     exclude(project(":instrumentation-api-annotation-support"))
     exclude(project(":instrumentation-appender-api-internal"))
     exclude(project(":javaagent-bootstrap"))
