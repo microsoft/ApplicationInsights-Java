@@ -229,8 +229,12 @@ class AiComponentInstaller {
     }
 
     // initialize StatsbeatModule and don't start Statsbeat when proxy is used
-    String proxyHost = config.proxy.host;
-    if (proxyHost == null || proxyHost.isEmpty()) {
+    String configProxyHost = config.proxy.host;
+    String systemPropertyProxyHost = System.getProperty("https.proxyHost");
+    if (configProxyHost == null
+        || configProxyHost.isEmpty()
+        || systemPropertyProxyHost == null
+        || systemPropertyProxyHost.isEmpty()) {
       statsbeatModule.start(telemetryClient, config);
     }
 

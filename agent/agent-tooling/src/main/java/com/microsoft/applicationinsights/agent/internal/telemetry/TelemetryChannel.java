@@ -340,7 +340,9 @@ public class TelemetryChannel {
                   }
                 },
                 exception -> {
-                  operationLogger.recordFailure("exception retrieving response body", exception);
+                  if (!isStatsbeat) {
+                    operationLogger.recordFailure("exception retrieving response body", exception);
+                  }
                   onFailure.accept(false);
                 });
   }
@@ -362,11 +364,11 @@ public class TelemetryChannel {
       String instrumentationKey, Consumer<Boolean> onFailure, OperationLogger operationLogger) {
 
     return error -> {
-      if (isStatsbeat && error instanceof Exception) {
+      if (isStatsbeat) {
         // when sending a Statsbeat request and server returns an Exception, it's
         // likely that it's using AMPLS or other private endpoints. In that case, we use the
         // kill-switch to turn off Statsbeat.
-        // TODO (heya) track Statsbeat exception count via a new Statsbeat metric
+        // TODO (heya) track Statsbeat request exception count via a new Statsbeat metric
         statsbeatModule.shutdown();
         onFailure.accept(false);
         return;
