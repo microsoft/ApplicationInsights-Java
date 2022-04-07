@@ -70,6 +70,11 @@ public class PerfCountersDataTest extends AiSmokeTest {
             getPerfMetricPredicate("\\Process(??APP_WIN32_PROC??)\\% Processor Time"),
             timeout,
             TimeUnit.SECONDS);
+    Envelope processCpuNormalized =
+        mockedIngestion.waitForItem(
+            getPerfMetricPredicate("\\Process(??APP_WIN32_PROC??)\\% Processor Time Normalized"),
+            timeout,
+            TimeUnit.SECONDS);
     System.out.println("PerformanceCounterData are good: " + (System.currentTimeMillis() - start));
 
     MetricData metricMem = getBaseData(availableMem);
@@ -83,6 +88,7 @@ public class PerfCountersDataTest extends AiSmokeTest {
     assertPerfMetric(getBaseData(processIo));
     assertPerfMetric(getBaseData(processMemUsed));
     assertPerfMetric(getBaseData(processCpu));
+    assertPerfMetric(getBaseData(processCpuNormalized));
 
     start = System.currentTimeMillis();
     System.out.println("Waiting for metric data...");

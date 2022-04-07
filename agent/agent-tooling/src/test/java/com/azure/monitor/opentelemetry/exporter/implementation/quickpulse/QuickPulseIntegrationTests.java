@@ -119,7 +119,7 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
         new QuickPulseDataSender(
             getHttpPipeline(new ValidationPolicy(postCountDown, expectedPostRequestBody)),
             sendQueue);
-    QuickPulseDataCollector collector = new QuickPulseDataCollector();
+    QuickPulseDataCollector collector = new QuickPulseDataCollector(true);
     QuickPulseDataFetcher dataFetcher =
         new QuickPulseDataFetcher(
             collector,

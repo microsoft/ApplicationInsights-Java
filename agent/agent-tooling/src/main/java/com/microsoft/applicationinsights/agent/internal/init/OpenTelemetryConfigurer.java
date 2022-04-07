@@ -186,7 +186,7 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
       builder.setMaxExportBatchSize(1);
     }
 
-    return builder.setScheduleDelay(Duration.ofMillis(100)).build();
+    return builder.build();
   }
 
   private static List<ProcessorConfig> getSpanProcessorConfigs(Configuration configuration) {
