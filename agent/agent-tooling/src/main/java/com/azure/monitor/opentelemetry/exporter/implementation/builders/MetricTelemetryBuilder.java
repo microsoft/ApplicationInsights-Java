@@ -70,13 +70,8 @@ public final class MetricTelemetryBuilder extends AbstractTelemetryBuilder {
   }
 
   // visible for testing
-  public List<MetricDataPoint> getMetricPoint() {
-    return data.getMetrics();
-  }
-
-  // visible for testing
   @Override
-  public Map<String, String> getProperties() {
+  protected Map<String, String> getProperties() {
     Map<String, String> properties = data.getProperties();
     if (properties == null) {
       properties = new HashMap<>();
