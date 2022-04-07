@@ -43,6 +43,8 @@ jobs:
         # TODO enable build cache, either --build-cache here, or org.gradle.caching=true in gradle.properties
         run: ./gradlew check --stacktrace
       - name: Upload snapshot
+        # only upload from windows since only that build includes etw
+        if: matrix.os == 'windows-2019'
         uses: actions/upload-artifact@v2
         with:
           path: agent/agent/build/libs/applicationinsights-agent-*-SNAPSHOT.jar
