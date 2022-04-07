@@ -86,4 +86,6 @@ final class AzureMonitorMetricsData {
     metricTelemetryBuilder.addProperty(
         AGGREGATION_INTERNAL_MS_KEY, DEFAULT_METRIC_AGGREGATION_INTERVAL);
   }
+
+  private AzureMonitorMetricsData() {}
 }
