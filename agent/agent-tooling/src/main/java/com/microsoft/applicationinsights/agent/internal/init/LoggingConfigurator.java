@@ -121,7 +121,7 @@ public class LoggingConfigurator {
     if (DiagnosticsHelper.isOsWindows()
         && !Boolean.getBoolean("applicationinsights.testing.etw.disabled")) {
       rootLogger.addAppender(configureEtwAppender());
-      rootLogger.debug("############# Add ETWAppender to root logger");
+      rootLogger.debug("Add ETWAppender to root logger");
     }
 
     loggingLevelConfigurator.initLoggerLevels(loggerContext);

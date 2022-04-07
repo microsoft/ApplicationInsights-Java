@@ -52,18 +52,16 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
     proto.setSubscriptionId(metadata.getSubscriptionId().getValue());
 
     etwProvider = new EtwProvider(metadata.getSdkVersion().getValue());
-
-    logger.debug("############# Initialize ETWAppender");
   }
 
   @Override
   public void start() {
-    logger.debug("############# ETWAppender start");
+    logger.debug("ETWAppender start");
     IpaVerbose event = new IpaVerbose(proto);
     event.setMessageFormat("EtwProvider initialized sucessfully.");
     try {
       this.etwProvider.writeEvent(event);
-      logger.debug("############# ETWAppender write " + event + " to ETWProvider");
+      logger.debug("ETWAppender write " + event + " to ETWProvider");
     } catch (LinkageError | ApplicationInsightsEtwException e) {
       final String message = "EtwProvider failed to initialize.";
       LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME).error(message, e);
@@ -73,7 +71,7 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
       StatusFile.putValue("EtwProviderError", e.getLocalizedMessage());
       StatusFile.write();
 
-      logger.debug("############# ETWAppender fails to start");
+      logger.debug("ETWAppender fails to start");
       return; // appender fails to start
     }
 
