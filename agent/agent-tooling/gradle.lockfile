@@ -134,5 +134,5 @@ org.ow2.asm:asm-commons:9.2=runtimeClasspath
 org.ow2.asm:asm:9.2=runtimeClasspath
 org.reactivestreams:reactive-streams:1.0.3=runtimeClasspath
 org.slf4j:jcl-over-slf4j:1.7.30=runtimeClasspath
-org.slf4j:slf4j-api:1.7.32=runtimeClasspath
+org.slf4j:slf4j-api:1.7.36=runtimeClasspath
 empty=
