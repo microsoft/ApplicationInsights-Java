@@ -49,9 +49,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.nio.channels.UnresolvedAddressException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -364,19 +362,21 @@ public class TelemetryChannel {
       String instrumentationKey, Consumer<Boolean> onFailure, OperationLogger operationLogger) {
 
     return error -> {
-      if (isStatsbeat
-          && (error instanceof UnknownHostException
-              || error instanceof UnresolvedAddressException)) {
-        // when sending a Statsbeat request and server returns an UnknownHostException, it's
-        // likely that it's using AMPLS. In that case, we use the kill-switch to turn off Statsbeat.
+      if (isStatsbeat && error instanceof Exception) {
+        // when sending a Statsbeat request and server returns an Exception, it's
+        // likely that it's using AMPLS or other private endpoints. In that case, we use the
+        // kill-switch to
+        // turn off Statsbeat.
         statsbeatModule.shutdown();
         onFailure.accept(false);
         return;
       }
 
       // TODO (trask) only log one-time friendly exception if no prior successes
-      if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
-          error, endpointUrl.toString(), friendlyExceptionThrown, logger)) {
+      // stop logging statsbeat failures
+      if (!isStatsbeat
+          && !NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
+              error, endpointUrl.toString(), friendlyExceptionThrown, logger)) {
         operationLogger.recordFailure(
             "Error sending telemetry items: " + error.getMessage(), error);
       }

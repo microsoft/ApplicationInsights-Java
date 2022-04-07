@@ -228,8 +228,11 @@ class AiComponentInstaller {
       RpConfigurationPolling.startPolling(rpConfiguration, config, telemetryClient, appIdSupplier);
     }
 
-    // initialize StatsbeatModule
-    statsbeatModule.start(telemetryClient, config);
+    // initialize StatsbeatModule and don't start Statsbeat when proxy is used
+    String proxyHost = config.proxy.host;
+    if (proxyHost == null || proxyHost.isEmpty()) {
+      statsbeatModule.start(telemetryClient, config);
+    }
 
     // start local File purger scheduler task
     if (!readOnlyFileSystem) {
