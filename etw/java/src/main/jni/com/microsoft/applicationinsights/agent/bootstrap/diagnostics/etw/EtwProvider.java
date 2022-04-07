@@ -86,6 +86,5 @@ public class EtwProvider {
 
   public void writeEvent(IpaEtwEventBase event) throws ApplicationInsightsEtwException {
     cppWriteEvent(event);
-    LOGGER.debug("ETWProvider write event (" + event.toString() + ") to ETW");
   }
 }
