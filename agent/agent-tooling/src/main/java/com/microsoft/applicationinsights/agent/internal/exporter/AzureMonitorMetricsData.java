@@ -68,6 +68,7 @@ final class AzureMonitorMetricsData {
           pointBuilder.setCount((int) histogramCount);
         }
         pointBuilder.setValue(((HistogramPointData) pointData).getSum());
+        // TODO track min/max when it becomes available
         break;
       case SUMMARY: // not supported yet in OpenTelemetry SDK
       case EXPONENTIAL_HISTOGRAM: // not supported yet in OpenTelemetry SDK

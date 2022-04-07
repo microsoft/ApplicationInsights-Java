@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-@UseAgent("open_telemetry_metric")
+@UseAgent("opentelemetry_metric")
 public class OpenTelemetryMetricTest extends AiSmokeTest {
 
   @Test
