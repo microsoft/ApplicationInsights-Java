@@ -147,13 +147,11 @@ public class StatusFile {
 
   private StatusFile() {}
 
-  @SuppressWarnings("SystemOut")
   private static boolean shouldWrite() {
     if (!DiagnosticsHelper.useAppSvcRpIntegrationLogging()
         && !DiagnosticsHelper.useFunctionsRpIntegrationLogging()) {
       return false;
     }
-
     if (writable) {
       return true;
     }

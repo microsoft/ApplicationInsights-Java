@@ -106,7 +106,11 @@ public class LoggingConfigurator {
       diagnosticLogger.setLevel(Level.INFO);
       diagnosticLogger.setAdditive(false);
       diagnosticLogger.addAppender(diagnosticAppender);
-      diagnosticLogger.addAppender(configureConsoleAppender());
+      // push linux consumption plan diagnostic logs to console due to some restriction on
+      // consumption container not able to create a new file
+      if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+        diagnosticLogger.addAppender(configureConsoleAppender());
+      }
 
       // errors reported by other loggers should also go to diagnostic log
       // (level filter for these is applied in ApplicationInsightsDiagnosticsLogFilter)

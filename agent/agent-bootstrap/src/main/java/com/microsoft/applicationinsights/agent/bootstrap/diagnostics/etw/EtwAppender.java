@@ -40,7 +40,6 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
   private final EtwProvider etwProvider;
   private final IpaEtwEventBase proto;
 
-
   public EtwAppender() {
     ApplicationMetadataFactory metadata = DiagnosticsHelper.getMetadataFactory();
 
@@ -55,7 +54,7 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
   @Override
   public void start() {
     IpaVerbose event = new IpaVerbose(proto);
-    event.setMessageFormat("EtwProvider initialized sucessfully.");
+    event.setMessageFormat("EtwProvider initialized successfully.");
     try {
       this.etwProvider.writeEvent(event);
     } catch (LinkageError | ApplicationInsightsEtwException e) {
