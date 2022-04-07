@@ -48,7 +48,7 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.instrumentation.api.server.ServerSpan;
+import io.opentelemetry.instrumentation.api.internal.SpanKey;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import java.net.URI;
 import java.net.URL;
@@ -455,7 +455,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     if (operationName == null) {
-      Span serverSpan = ServerSpan.fromContextOrNull(Context.current());
+      Span serverSpan = SpanKey.SERVER.fromContextOrNull(Context.current());
       if (serverSpan instanceof ReadableSpan) {
         telemetryBuilder.addTag(
             ContextTagKeys.AI_OPERATION_NAME.toString(),

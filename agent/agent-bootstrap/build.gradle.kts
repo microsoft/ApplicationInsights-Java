@@ -10,6 +10,7 @@ dependencies {
     exclude("org.slf4j", "slf4j-simple")
   }
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support")
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-appender-api-internal")
   implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-instrumentation-api")
