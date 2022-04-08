@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.zip.GZIPOutputStream;
 import javax.annotation.Nullable;
@@ -83,6 +84,9 @@ public class TelemetryChannel {
   // TODO (kryalama) do we still need this AtomicBoolean, or can we use throttling built in to the
   //  operationLogger?
   private final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
+
+  private static final int MAX_STATSBEAT_ERROR_COUNT = 3;
+  private static final AtomicInteger statsbeatErrorCount = new AtomicInteger();
 
   @SuppressWarnings("CatchAndPrintStackTrace")
   private static ObjectMapper createObjectMapper() {
@@ -364,12 +368,13 @@ public class TelemetryChannel {
       String instrumentationKey, Consumer<Boolean> onFailure, OperationLogger operationLogger) {
 
     return error -> {
-      if (isStatsbeat) {
-        // when sending a Statsbeat request and server returns an Exception, it's
+      if (isStatsbeat && statsbeatErrorCount.getAndIncrement() >= MAX_STATSBEAT_ERROR_COUNT) {
+        // when sending a Statsbeat request and server returns an Exception 3 times in a row, it's
         // likely that it's using AMPLS or other private endpoints. In that case, we use the
         // kill-switch to turn off Statsbeat.
         // TODO need to figure out a way to detect AMPL or we can let the new ingestion service to
         // handle this case for us when it becomes available.
+        statsbeatErrorCount.set(0);
         statsbeatModule.shutdown();
         onFailure.accept(false);
         return;
