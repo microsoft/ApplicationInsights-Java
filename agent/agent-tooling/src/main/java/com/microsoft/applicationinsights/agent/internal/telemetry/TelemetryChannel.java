@@ -266,6 +266,10 @@ public class TelemetryChannel {
                 instrumentationKey,
                 startTime,
                 () -> {
+                  if (isStatsbeat) {
+                    statsbeatErrorCount.set(
+                        0); // reset error count when non-consecutive errors occur
+                  }
                   onSuccess.run();
                   result.succeed();
                 },
