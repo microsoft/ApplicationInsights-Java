@@ -69,7 +69,6 @@ public final class MetricTelemetryBuilder extends AbstractTelemetryBuilder {
     }
   }
 
-  // visible for testing
   @Override
   protected Map<String, String> getProperties() {
     Map<String, String> properties = data.getProperties();

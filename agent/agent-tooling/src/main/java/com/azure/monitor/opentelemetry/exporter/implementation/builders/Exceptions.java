@@ -34,7 +34,7 @@ public final class Exceptions {
     int current;
     for (current = 0; current < length; current++) {
       char c = str.charAt(current);
-      if (c == ':') {
+      if (c == ':' && separator == -1) {
         separator = current;
       } else if (c == '\r' || c == '\n') {
         break;

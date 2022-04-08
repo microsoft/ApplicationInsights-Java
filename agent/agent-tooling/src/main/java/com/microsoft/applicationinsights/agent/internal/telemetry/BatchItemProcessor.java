@@ -29,8 +29,10 @@ import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -63,6 +65,7 @@ public final class BatchItemProcessor {
       int maxQueueSize,
       int maxExportBatchSize,
       long exporterTimeoutNanos,
+      int maxPendingExports,
       String queueName) {
     MpscArrayQueue<TelemetryItem> queue = new MpscArrayQueue<>(maxQueueSize);
     this.worker =
@@ -71,6 +74,7 @@ public final class BatchItemProcessor {
             scheduleDelayNanos,
             maxExportBatchSize,
             exporterTimeoutNanos,
+            maxPendingExports,
             queue,
             queue.capacity(),
             queueName);
@@ -101,6 +105,7 @@ public final class BatchItemProcessor {
     private final long scheduleDelayNanos;
     private final int maxExportBatchSize;
     private final long exporterTimeoutNanos;
+    private final int maxPendingExports;
 
     private long nextExportTime;
 
@@ -119,14 +124,21 @@ public final class BatchItemProcessor {
     private volatile boolean continueWork = true;
     private final ArrayList<TelemetryItem> batch;
 
+    private final Set<CompletableResultCode> pendingExports =
+        Collections.newSetFromMap(new ConcurrentHashMap<>());
+
     private static final OperationLogger queuingItemLogger =
         new OperationLogger(BatchItemProcessor.class, "Queuing telemetry item");
+
+    private static final OperationLogger addAsyncExport =
+        new OperationLogger(BatchItemProcessor.class, "Add async export");
 
     private Worker(
         TelemetryItemExporter exporter,
         long scheduleDelayNanos,
         int maxExportBatchSize,
         long exporterTimeoutNanos,
+        int maxPendingExports,
         Queue<TelemetryItem> queue,
         int queueCapacity,
         String queueName) {
@@ -134,6 +146,7 @@ public final class BatchItemProcessor {
       this.scheduleDelayNanos = scheduleDelayNanos;
       this.maxExportBatchSize = maxExportBatchSize;
       this.exporterTimeoutNanos = exporterTimeoutNanos;
+      this.maxPendingExports = maxPendingExports;
       this.queue = queue;
       this.queueCapacity = queueCapacity;
       this.queueName = queueName;
@@ -207,8 +220,12 @@ public final class BatchItemProcessor {
         }
       }
       exportCurrentBatch();
-      flushRequested.get().succeed();
-      flushRequested.set(null);
+      CompletableResultCode.ofAll(pendingExports).join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+      CompletableResultCode flushResult = flushRequested.get();
+      if (flushResult != null) {
+        flushResult.succeed();
+        flushRequested.set(null);
+      }
     }
 
     private void updateNextExportTime() {
@@ -275,7 +292,24 @@ public final class BatchItemProcessor {
       try {
         // batching, retry, logging, and writing to disk on failure occur downstream
         CompletableResultCode result = exporter.send(Collections.unmodifiableList(batch));
-        result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+        if (pendingExports.size() < maxPendingExports - 1) {
+          addAsyncExport.recordSuccess();
+          pendingExports.add(result);
+          result.whenComplete(
+              () -> {
+                pendingExports.remove(result);
+              });
+        } else {
+          // need conditional, otherwise this will always get logged when maxPendingExports is 1
+          // (e.g. statsbeat)
+          if (maxPendingExports > 1) {
+            addAsyncExport.recordFailure(
+                "Max number of concurrent exports "
+                    + maxPendingExports
+                    + " has been hit, may see some export throttling due to this");
+          }
+          result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+        }
       } finally {
         batch.clear();
       }

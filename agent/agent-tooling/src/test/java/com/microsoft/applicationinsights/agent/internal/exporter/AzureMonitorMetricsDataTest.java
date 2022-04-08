@@ -48,6 +48,7 @@ import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -67,7 +68,9 @@ public class AzureMonitorMetricsDataTest {
   public void setup() {
     inMemoryMetricExporter = InMemoryMetricExporter.create();
     MetricReaderFactory metricReaderFactory =
-        PeriodicMetricReader.newMetricReaderFactory(inMemoryMetricExporter);
+        PeriodicMetricReader.builder(inMemoryMetricExporter)
+            .setInterval(Duration.ofMillis(100))
+            .newMetricReaderFactory();
     SdkMeterProvider meterProvider =
         SdkMeterProvider.builder().registerMetricReader(metricReaderFactory).build();
 
@@ -91,10 +94,10 @@ public class AzureMonitorMetricsDataTest {
     DoubleCounter counter = meter.counterBuilder("testDoubleCounter").ofDoubles().build();
     counter.add(3.1415);
 
-    Thread.sleep(90 * 1000); // wait 90 seconds
+    Thread.sleep(1000);
 
     List<MetricData> metricDatas = inMemoryMetricExporter.getFinishedMetricItems();
-    assertThat(metricDatas.size()).isEqualTo(1);
+    assertThat(metricDatas.size()).isGreaterThanOrEqualTo(1);
 
     MetricData metricData = metricDatas.get(0);
     for (PointData pointData : metricData.getData().getPoints()) {
@@ -120,10 +123,10 @@ public class AzureMonitorMetricsDataTest {
               m.record(20.0, Attributes.of(AttributeKey.stringKey("thing"), "engine"));
             });
 
-    Thread.sleep(90 * 1000); // wait 90 seconds
+    Thread.sleep(1000);
 
     List<MetricData> metricDataList = inMemoryMetricExporter.getFinishedMetricItems();
-    assertThat(metricDataList.size()).isEqualTo(1);
+    assertThat(metricDataList.size()).isGreaterThanOrEqualTo(1);
 
     MetricData metricData = metricDataList.get(0);
     for (PointData pointData : metricData.getData().getPoints()) {
@@ -168,10 +171,10 @@ public class AzureMonitorMetricsDataTest {
         Attributes.of(
             AttributeKey.stringKey("name"), "lemon", AttributeKey.stringKey("color"), "yellow"));
 
-    Thread.sleep(90 * 1000); // wait 90 seconds
+    Thread.sleep(1000);
 
     List<MetricData> metricDataList = inMemoryMetricExporter.getFinishedMetricItems();
-    assertThat(metricDataList.size()).isEqualTo(1);
+    assertThat(metricDataList.size()).isGreaterThanOrEqualTo(1);
     MetricData metricData = metricDataList.get(0);
     Collection<LongPointData> points = (Collection<LongPointData>) metricData.getData().getPoints();
     assertThat(points.size()).isEqualTo(3);
@@ -261,10 +264,10 @@ public class AzureMonitorMetricsDataTest {
               m.record(20, Attributes.of(AttributeKey.stringKey("thing"), "engine"));
             });
 
-    Thread.sleep(90 * 1000); // wait 90 seconds
+    Thread.sleep(1000);
 
     List<MetricData> metricDataList = inMemoryMetricExporter.getFinishedMetricItems();
-    assertThat(metricDataList.size()).isEqualTo(1);
+    assertThat(metricDataList.size()).isGreaterThanOrEqualTo(1);
 
     MetricData metricData = metricDataList.get(0);
     for (PointData pointData : metricData.getData().getPoints()) {
@@ -291,10 +294,10 @@ public class AzureMonitorMetricsDataTest {
             .build();
 
     doubleHistogram.record(25.45);
-    Thread.sleep(90 * 1000); // wait 90 seconds
+    Thread.sleep(1000);
 
     List<MetricData> metricDataList = inMemoryMetricExporter.getFinishedMetricItems();
-    assertThat(metricDataList.size()).isEqualTo(1);
+    assertThat(metricDataList.size()).isGreaterThanOrEqualTo(1);
 
     MetricData metricData = metricDataList.get(0);
     assertThat(metricData.getData().getPoints().size()).isEqualTo(1);

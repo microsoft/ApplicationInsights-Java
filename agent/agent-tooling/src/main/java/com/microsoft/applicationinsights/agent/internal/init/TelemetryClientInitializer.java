@@ -72,7 +72,9 @@ public class TelemetryClientInitializer {
 
     loadCustomJmxPerfCounters(configuration.jmxMetrics);
 
-    PerformanceCounterContainer.INSTANCE.register(new ProcessCpuPerformanceCounter());
+    PerformanceCounterContainer.INSTANCE.register(
+        new ProcessCpuPerformanceCounter(
+            configuration.preview.useNormalizedValueForNonNormalizedCpuPercentage));
     PerformanceCounterContainer.INSTANCE.register(new ProcessMemoryPerformanceCounter());
     PerformanceCounterContainer.INSTANCE.register(new FreeMemoryPerformanceCounter());
 
