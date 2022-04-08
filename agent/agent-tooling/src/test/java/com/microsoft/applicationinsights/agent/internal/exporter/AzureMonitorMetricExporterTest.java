@@ -59,7 +59,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class AzureMonitorMetricsDataTest {
+public class AzureMonitorMetricExporterTest {
 
   private Meter meter;
   private InMemoryMetricExporter inMemoryMetricExporter;
@@ -79,7 +79,7 @@ public class AzureMonitorMetricsDataTest {
 
     meter =
         openTelemetry
-            .meterBuilder("AzureMonitorMetricsDataTest")
+            .meterBuilder("AzureMonitorMetricExporterTest")
             .setInstrumentationVersion("1.0.0")
             .build();
   }
@@ -102,7 +102,7 @@ public class AzureMonitorMetricsDataTest {
     MetricData metricData = metricDatas.get(0);
     for (PointData pointData : metricData.getData().getPoints()) {
       MetricTelemetryBuilder builder = TelemetryClient.createForTest().newMetricTelemetryBuilder();
-      AzureMonitorMetricsData.populatePointAndProperties(builder, metricDatas.get(0), pointData);
+      AzureMonitorMetricExporter.updateMetricPointBuilder(builder, metricDatas.get(0), pointData);
       MetricsData metricsData = (MetricsData) builder.build().getData().getBaseData();
       assertThat(metricsData.getMetrics().size()).isEqualTo(1);
       assertThat(metricsData.getMetrics().get(0).getValue()).isEqualTo(3.1415);
@@ -131,7 +131,7 @@ public class AzureMonitorMetricsDataTest {
     MetricData metricData = metricDataList.get(0);
     for (PointData pointData : metricData.getData().getPoints()) {
       MetricTelemetryBuilder builder = TelemetryClient.createForTest().newMetricTelemetryBuilder();
-      AzureMonitorMetricsData.populatePointAndProperties(builder, metricData, pointData);
+      AzureMonitorMetricExporter.updateMetricPointBuilder(builder, metricData, pointData);
       MetricsData metricsData = (MetricsData) builder.build().getData().getBaseData();
       assertThat(metricsData.getMetrics().size()).isEqualTo(1);
       assertThat(metricsData.getMetrics().get(0).getValue()).isEqualTo(20.0);
@@ -207,7 +207,7 @@ public class AzureMonitorMetricsDataTest {
         .isEqualTo("yellow");
 
     MetricTelemetryBuilder builder = TelemetryClient.createForTest().newMetricTelemetryBuilder();
-    AzureMonitorMetricsData.populatePointAndProperties(builder, metricData, longPointData1);
+    AzureMonitorMetricExporter.updateMetricPointBuilder(builder, metricData, longPointData1);
     MetricsData metricsData = (MetricsData) builder.build().getData().getBaseData();
     assertThat(metricsData.getMetrics().size()).isEqualTo(1);
     MetricDataPoint metricDataPoint = metricsData.getMetrics().get(0);
@@ -221,7 +221,7 @@ public class AzureMonitorMetricsDataTest {
     assertThat(properties.get("_MS.AggregationIntervalMs")).isEqualTo("60000");
 
     builder = TelemetryClient.createForTest().newMetricTelemetryBuilder();
-    AzureMonitorMetricsData.populatePointAndProperties(builder, metricData, longPointData2);
+    AzureMonitorMetricExporter.updateMetricPointBuilder(builder, metricData, longPointData2);
     metricsData = (MetricsData) builder.build().getData().getBaseData();
     assertThat(metricsData.getMetrics().size()).isEqualTo(1);
     metricDataPoint = metricsData.getMetrics().get(0);
@@ -235,7 +235,7 @@ public class AzureMonitorMetricsDataTest {
     assertThat(properties.get("_MS.AggregationIntervalMs")).isEqualTo("60000");
 
     builder = TelemetryClient.createForTest().newMetricTelemetryBuilder();
-    AzureMonitorMetricsData.populatePointAndProperties(builder, metricData, longPointData3);
+    AzureMonitorMetricExporter.updateMetricPointBuilder(builder, metricData, longPointData3);
     metricsData = (MetricsData) builder.build().getData().getBaseData();
     assertThat(metricsData.getMetrics().size()).isEqualTo(1);
     metricDataPoint = metricsData.getMetrics().get(0);
@@ -272,7 +272,7 @@ public class AzureMonitorMetricsDataTest {
     MetricData metricData = metricDataList.get(0);
     for (PointData pointData : metricData.getData().getPoints()) {
       MetricTelemetryBuilder builder = TelemetryClient.createForTest().newMetricTelemetryBuilder();
-      AzureMonitorMetricsData.populatePointAndProperties(builder, metricData, pointData);
+      AzureMonitorMetricExporter.updateMetricPointBuilder(builder, metricData, pointData);
       MetricsData metricsData = (MetricsData) builder.build().getData().getBaseData();
       assertThat(metricsData.getMetrics().size()).isEqualTo(1);
       assertThat(metricsData.getMetrics().get(0).getValue()).isEqualTo(20L);
@@ -303,7 +303,7 @@ public class AzureMonitorMetricsDataTest {
     assertThat(metricData.getData().getPoints().size()).isEqualTo(1);
     PointData pointData = metricData.getData().getPoints().iterator().next();
     MetricTelemetryBuilder builder = TelemetryClient.createForTest().newMetricTelemetryBuilder();
-    AzureMonitorMetricsData.populatePointAndProperties(builder, metricData, pointData);
+    AzureMonitorMetricExporter.updateMetricPointBuilder(builder, metricData, pointData);
     MetricsData metricsData = (MetricsData) builder.build().getData().getBaseData();
     assertThat(metricsData.getMetrics().size()).isEqualTo(1);
     assertThat(metricsData.getMetrics().get(0).getCount()).isEqualTo(1);
