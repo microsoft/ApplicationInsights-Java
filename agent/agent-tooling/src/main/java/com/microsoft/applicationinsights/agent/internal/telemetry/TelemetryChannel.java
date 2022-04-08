@@ -85,8 +85,9 @@ public class TelemetryChannel {
   //  operationLogger?
   private final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
-  private static final int MAX_STATSBEAT_ERROR_COUNT = 3;
+  private static final int MAX_STATSBEAT_ERROR_COUNT = 10;
   private static final AtomicInteger statsbeatErrorCount = new AtomicInteger();
+  private static final AtomicBoolean atLeastOneStatsbeatSuccess = new AtomicBoolean();
 
   @SuppressWarnings("CatchAndPrintStackTrace")
   private static ObjectMapper createObjectMapper() {
@@ -267,8 +268,7 @@ public class TelemetryChannel {
                 startTime,
                 () -> {
                   if (isStatsbeat) {
-                    statsbeatErrorCount.set(
-                        0); // reset error count when non-consecutive errors occur
+                    atLeastOneStatsbeatSuccess.set(true);
                   }
                   onSuccess.run();
                   result.succeed();
@@ -372,8 +372,10 @@ public class TelemetryChannel {
       String instrumentationKey, Consumer<Boolean> onFailure, OperationLogger operationLogger) {
 
     return error -> {
-      if (isStatsbeat && statsbeatErrorCount.getAndIncrement() >= MAX_STATSBEAT_ERROR_COUNT) {
-        // when sending a Statsbeat request and server returns an Exception 3 times in a row, it's
+      if (isStatsbeat
+          && !atLeastOneStatsbeatSuccess.get()
+          && statsbeatErrorCount.getAndIncrement() >= MAX_STATSBEAT_ERROR_COUNT) {
+        // when sending a Statsbeat request and server returns an Exception 10 times in a row, it's
         // likely that it's using AMPLS or other private endpoints. In that case, we use the
         // kill-switch to turn off Statsbeat.
         // TODO need to figure out a way to detect AMPL or we can let the new ingestion service to
