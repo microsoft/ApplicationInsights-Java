@@ -56,8 +56,11 @@ public class AzureMonitorMetricExporter implements MetricExporter {
   }
 
   static {
-    EXCLUDED_METRIC_NAMES.add("http.server.active_requests");
-    EXCLUDED_METRIC_NAMES.add("http.server.duration");
+    EXCLUDED_METRIC_NAMES.add("http.server.active_requests"); // Micrometer
+    EXCLUDED_METRIC_NAMES.add("http.server.duration"); // Micrometer
+    EXCLUDED_METRIC_NAMES.add("http.client.duration"); // HttpClient
+    EXCLUDED_METRIC_NAMES.add("rpc.client.duration"); // gRPC
+    EXCLUDED_METRIC_NAMES.add("rpc.server.duration"); // gRPC
   }
 
   @Override
