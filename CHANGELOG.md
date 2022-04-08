@@ -1,5 +1,13 @@
 # CHANGELOG
 
+# Version 3.2.10 GA
+* Fix Statsbeat warning [#2208](https://github.com/microsoft/ApplicationInsights-Java/pull/2208).
+
+# Version 3.2.9 GA
+* Increase export throughput [#2204](https://github.com/microsoft/ApplicationInsights-Java/pull/2204).
+* Fix parsing exception with colons [#2196](https://github.com/microsoft/ApplicationInsights-Java/issues/2196).
+* Remove reverse name lookup everywhere [#2205](https://github.com/microsoft/ApplicationInsights-Java/pull/2205).
+
 # Version 3.2.8 GA
 * Fix spring actuator endpoint behavior [#2146](https://github.com/microsoft/ApplicationInsights-Java/pull/2146).
 * Better JMX debug logging [#2157](https://github.com/microsoft/ApplicationInsights-Java/pull/2157).

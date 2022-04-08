@@ -45,7 +45,8 @@ public class QuickPulse {
       Supplier<URL> endpointUrl,
       Supplier<String> instrumentationKey,
       @Nullable String roleName,
-      @Nullable String roleInstance) {
+      @Nullable String roleInstance,
+      boolean useNormalizedValueForNonNormalizedCpuPercentage) {
 
     QuickPulse quickPulse = new QuickPulse();
 
@@ -60,7 +61,12 @@ public class QuickPulse {
                 Thread.currentThread().interrupt();
               }
               quickPulse.initialize(
-                  httpPipeline, endpointUrl, instrumentationKey, roleName, roleInstance);
+                  httpPipeline,
+                  endpointUrl,
+                  instrumentationKey,
+                  roleName,
+                  roleInstance,
+                  useNormalizedValueForNonNormalizedCpuPercentage);
             });
 
     return quickPulse;
@@ -77,7 +83,8 @@ public class QuickPulse {
       Supplier<URL> endpointUrl,
       Supplier<String> instrumentationKey,
       @Nullable String roleName,
-      @Nullable String roleInstance) {
+      @Nullable String roleInstance,
+      boolean useNormalizedValueForNonNormalizedCpuPercentage) {
 
     String quickPulseId = UUID.randomUUID().toString().replace("-", "");
     ArrayBlockingQueue<HttpRequest> sendQueue = new ArrayBlockingQueue<>(256, true);
@@ -94,7 +101,8 @@ public class QuickPulse {
       instanceName = "Unknown host";
     }
 
-    QuickPulseDataCollector collector = new QuickPulseDataCollector();
+    QuickPulseDataCollector collector =
+        new QuickPulseDataCollector(useNormalizedValueForNonNormalizedCpuPercentage);
 
     QuickPulsePingSender quickPulsePingSender =
         new QuickPulsePingSender(

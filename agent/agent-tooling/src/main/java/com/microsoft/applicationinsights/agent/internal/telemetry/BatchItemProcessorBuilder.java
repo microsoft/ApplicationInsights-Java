@@ -35,12 +35,14 @@ final class BatchItemProcessorBuilder {
   private static final int DEFAULT_MAX_QUEUE_SIZE = 2048;
   private static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
   private static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
+  private static final int DEFAULT_MAX_PENDING_EXPORTS = 1;
 
   private final TelemetryItemExporter exporter;
   private long scheduleDelayNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_SCHEDULE_DELAY_MILLIS);
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
   private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
+  private int maxPendingExports = DEFAULT_MAX_PENDING_EXPORTS;
 
   BatchItemProcessorBuilder(TelemetryItemExporter exporter) {
     this.exporter = requireNonNull(exporter, "exporter");
@@ -124,6 +126,31 @@ final class BatchItemProcessorBuilder {
   }
 
   /**
+   * The maximum number of exports that can be pending at any time.
+   *
+   * <p>The {@link BatchItemProcessor}'s single worker thread will keep processing as many batches
+   * as it can without blocking on the {@link io.opentelemetry.sdk.common.CompletableResultCode}s
+   * that are returned from the {@code spanExporter}, but it will limit the total number of pending
+   * exports in flight to this number.
+   *
+   * <p>Default value is {@code 1}.
+   *
+   * @param maxPendingExports the maximum number of exports that can be pending at any time.
+   * @return this.
+   * @see BatchItemProcessorBuilder#DEFAULT_MAX_PENDING_EXPORTS
+   */
+  public BatchItemProcessorBuilder setMaxPendingExports(int maxPendingExports) {
+    checkArgument(maxPendingExports > 0, "maxPendingExports must be positive.");
+    this.maxPendingExports = maxPendingExports;
+    return this;
+  }
+
+  // Visible for testing
+  int getMaxPendingExports() {
+    return maxPendingExports;
+  }
+
+  /**
    * Returns a new {@link BatchItemProcessor} that batches, then converts items to proto and
    * forwards them to the given {@code exporter}.
    *
@@ -137,6 +164,7 @@ final class BatchItemProcessorBuilder {
         maxQueueSize,
         maxExportBatchSize,
         exporterTimeoutNanos,
+        maxPendingExports,
         queueName);
   }
 }

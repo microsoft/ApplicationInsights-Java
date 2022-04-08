@@ -10,6 +10,7 @@ com.squareup.moshi:moshi:1.11.0=runtimeClasspath
 com.squareup.okio:okio:1.17.5=runtimeClasspath
 io.netty:netty-bom:4.1.72.Final=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support:1.12.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:1.12.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:1.12.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-appender-api-internal:1.12.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.12.0+ai.patches-alpha=runtimeClasspath
