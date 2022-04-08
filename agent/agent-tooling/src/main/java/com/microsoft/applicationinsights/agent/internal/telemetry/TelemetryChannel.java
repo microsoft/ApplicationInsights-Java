@@ -368,7 +368,8 @@ public class TelemetryChannel {
         // when sending a Statsbeat request and server returns an Exception, it's
         // likely that it's using AMPLS or other private endpoints. In that case, we use the
         // kill-switch to turn off Statsbeat.
-        // TODO (heya) track Statsbeat request exception count via a new Statsbeat metric
+        // TODO need to figure out a way to detect AMPL or we can let the new ingestion service to
+        // handle this case for us when it becomes available.
         statsbeatModule.shutdown();
         onFailure.accept(false);
         return;
