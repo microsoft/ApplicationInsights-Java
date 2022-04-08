@@ -166,17 +166,17 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
     BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(currExporter);
 
     String delayMillisStr = System.getenv("APPLICATIONINSIGHTS_PREVIEW_BSP_SCHEDULE_DELAY");
+    int delayMillis;
     if (delayMillisStr != null) {
-      // experimenting with flushing at small interval instead of using batch size 1
-      // (suspect this may be better performance on small containers)
-      builder.setScheduleDelay(Duration.ofMillis(Integer.parseInt(delayMillisStr)));
+      delayMillis = Integer.parseInt(delayMillisStr);
     } else {
-      // using batch size 1 because need to convert to SpanData as soon as possible to grab data for
-      // live metrics. the real batching is done at a lower level
-      builder.setMaxExportBatchSize(1);
+      // using small interval because need to convert to SpanData as soon as possible to grab data
+      // for live metrics. the real batching is done at a lower level
+      // (not using batch size 1 because that seems to cause poor performance on small containers)
+      delayMillis = 100;
     }
 
-    return builder.build();
+    return builder.setScheduleDelay(Duration.ofMillis(delayMillis)).build();
   }
 
   private static class BackCompatHttpUrlProcessor implements SpanExporter {
