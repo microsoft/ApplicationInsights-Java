@@ -98,9 +98,7 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
     List<DataPoint> dataPointList = md.getMetrics();
     assertEquals(1, dataPointList.size());
     DataPoint dp = dataPointList.get(0);
-    double expectedValue = 456;
-    double epsilon = Math.ulp(expectedValue);
-    assertEquals(expectedValue, dp.getValue(), epsilon);
+    assertEquals(456, dp.getValue(), 0);
     assertEquals(DataPointType.Aggregation, dp.getKind());
     assertEquals(name, dp.getName());
 
@@ -134,9 +132,7 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
     List<DataPoint> dataPointList = md.getMetrics();
     assertEquals(1, dataPointList.size());
     DataPoint dp = dataPointList.get(0);
-    double expectedValue = 10;
-    double epsilon = Math.ulp(expectedValue);
-    assertEquals(expectedValue, dp.getValue(), epsilon);
+    assertEquals(10, dp.getValue(), 0);
     assertEquals(DataPointType.Measurement, dp.getKind());
     assertEquals(name, dp.getName());
 
@@ -180,9 +176,7 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
     List<DataPoint> dataPointList = md.getMetrics();
     assertEquals(1, dataPointList.size());
     DataPoint dp = dataPointList.get(0);
-    double expectedValue = 2.0;
-    double epsilon = Math.ulp(expectedValue);
-    assertEquals(expectedValue, dp.getValue(), epsilon);
+    assertEquals(2.0, dp.getValue(), 0);
     assertEquals(DataPointType.Aggregation, dp.getKind());
     assertEquals(name, dp.getName());
 
@@ -209,9 +203,7 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
     dataPointList = md.getMetrics();
     assertEquals(1, dataPointList.size());
     dp = dataPointList.get(0);
-    expectedValue = 6.0;
-    epsilon = Math.ulp(expectedValue);
-    assertEquals(expectedValue, dp.getValue(), epsilon);
+    assertEquals(6.0, dp.getValue(), 0);
     assertEquals(DataPointType.Aggregation, dp.getKind());
     assertEquals(name, dp.getName());
 
@@ -238,9 +230,7 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
     dataPointList = md.getMetrics();
     assertEquals(1, dataPointList.size());
     dp = dataPointList.get(0);
-    expectedValue = 7.0;
-    epsilon = Math.ulp(expectedValue);
-    assertEquals(expectedValue, dp.getValue(), epsilon);
+    assertEquals(7.0, dp.getValue(), 0);
     assertEquals(DataPointType.Aggregation, dp.getKind());
     assertEquals(name, dp.getName());
 
