@@ -81,8 +81,10 @@ public class TelemetryChannel {
   private final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
   private static final int MAX_STATSBEAT_ERROR_COUNT = 10;
-  private static final AtomicInteger statsbeatErrorCount = new AtomicInteger();
-  private static final AtomicBoolean atLeastOneStatsbeatSuccess = new AtomicBoolean();
+
+  private final AtomicInteger statsbeatErrorCount = new AtomicInteger();
+  private volatile boolean statsbeatAtLeastOneSuccess;
+  private final AtomicBoolean statsbeatShutdown = new AtomicBoolean();
 
   @SuppressWarnings("CatchAndPrintStackTrace")
   private static ObjectMapper createObjectMapper() {
@@ -119,6 +121,10 @@ public class TelemetryChannel {
       String instrumentationKey,
       Runnable onSuccess,
       Consumer<Boolean> onFailure) {
+    if (isStatsbeat && statsbeatShutdown.get()) {
+      // let it be deleted from disk so that it won't keep getting retried
+      return CompletableResultCode.ofSuccess();
+    }
     return internalSend(
         singletonList(buffer), instrumentationKey, onSuccess, onFailure, retryOperationLogger);
   }
@@ -273,9 +279,6 @@ public class TelemetryChannel {
                 instrumentationKey,
                 startTime,
                 () -> {
-                  if (isStatsbeat) {
-                    atLeastOneStatsbeatSuccess.set(true);
-                  }
                   onSuccess.run();
                   result.succeed();
                 },
@@ -308,6 +311,13 @@ public class TelemetryChannel {
             .subscribe(
                 body -> {
                   int statusCode = response.getStatusCode();
+                  if (isStatsbeat && !statsbeatAtLeastOneSuccess) {
+                    if (statusCode == 200) {
+                      statsbeatAtLeastOneSuccess = true;
+                    } else if (statusCode != 439 && statusCode != 402) {
+                      possiblyShutDownStatsbeat();
+                    }
+                  }
                   switch (statusCode) {
                     case 200: // SUCCESS
                       operationLogger.recordSuccess();
@@ -376,21 +386,10 @@ public class TelemetryChannel {
       String instrumentationKey, Consumer<Boolean> onFailure, OperationLogger operationLogger) {
 
     return error -> {
-      if (isStatsbeat
-          && !atLeastOneStatsbeatSuccess.get()
-          && statsbeatErrorCount.getAndIncrement() >= MAX_STATSBEAT_ERROR_COUNT) {
-        // when sending a Statsbeat request and server returns an Exception 10 times in a row, it's
-        // likely that it's using AMPLS or other private endpoints. In that case, we use the
-        // kill-switch to turn off Statsbeat.
-        // TODO need to figure out a way to detect AMPL or we can let the new ingestion service to
-        // handle this case for us when it becomes available.
-        statsbeatModule.shutdown();
-        onFailure.accept(false);
-        return;
+      if (isStatsbeat && !statsbeatAtLeastOneSuccess) {
+        possiblyShutDownStatsbeat();
       }
 
-      // TODO (trask) only log one-time friendly exception if no prior successes
-      // stop logging statsbeat failures
       if (!isStatsbeat
           && !NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
               error, endpointUrl.toString(), friendlyExceptionThrown, logger)) {
@@ -404,6 +403,21 @@ public class TelemetryChannel {
 
       onFailure.accept(true);
     };
+  }
+
+  private void possiblyShutDownStatsbeat() {
+    if (statsbeatErrorCount.getAndIncrement() >= MAX_STATSBEAT_ERROR_COUNT
+        && !statsbeatShutdown.getAndSet(true)) {
+      // shutting down statsbeat because it's unlikely that it will ever get through at this point
+      // some possible reasons:
+      // * AMPLS
+      // * proxy that has not been configured to allow westus-0
+      // * local firewall that has not been configured to allow westus-0
+      //
+      // TODO need to figure out a way that statsbeat telemetry can be sent to the same endpoint as
+      // the customer data for these cases
+      statsbeatModule.shutdown();
+    }
   }
 
   private static String getErrorMessageFromPartialSuccessResponse(String body) {
