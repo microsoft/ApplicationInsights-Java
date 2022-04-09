@@ -380,7 +380,6 @@ public class TelemetryChannel {
         // kill-switch to turn off Statsbeat.
         // TODO need to figure out a way to detect AMPL or we can let the new ingestion service to
         // handle this case for us when it becomes available.
-        statsbeatErrorCount.set(0);
         statsbeatModule.shutdown();
         onFailure.accept(false);
         return;
