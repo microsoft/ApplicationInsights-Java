@@ -201,7 +201,7 @@ public class TelemetryChannel {
 
   List<ByteBuffer> encode(List<TelemetryItem> telemetryItems) throws IOException {
 
-    if (logger.isDebugEnabled()) {
+    if (!isStatsbeat && logger.isDebugEnabled()) {
       StringWriter debug = new StringWriter();
       try (JsonGenerator jg = mapper.createGenerator(debug)) {
         writeTelemetryItems(jg, telemetryItems);
