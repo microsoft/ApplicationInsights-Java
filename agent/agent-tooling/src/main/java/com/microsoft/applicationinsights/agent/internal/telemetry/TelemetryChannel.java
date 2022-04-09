@@ -73,6 +73,8 @@ public class TelemetryChannel {
 
   private static final AppInsightsByteBufferPool byteBufferPool = new AppInsightsByteBufferPool();
 
+  private static final int MAX_STATSBEAT_ERROR_COUNT = 10;
+
   private final OperationLogger operationLogger;
   private final OperationLogger retryOperationLogger;
 
@@ -80,11 +82,10 @@ public class TelemetryChannel {
   //  operationLogger?
   private final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
-  private static final int MAX_STATSBEAT_ERROR_COUNT = 10;
-
   private final AtomicInteger statsbeatErrorCount = new AtomicInteger();
-  private volatile boolean statsbeatAtLeastOneSuccess;
   private final AtomicBoolean statsbeatShutdown = new AtomicBoolean();
+
+  private volatile boolean statsbeatAtLeastOneSuccess;
 
   @SuppressWarnings("CatchAndPrintStackTrace")
   private static ObjectMapper createObjectMapper() {
@@ -143,6 +144,7 @@ public class TelemetryChannel {
     this.isStatsbeat = isStatsbeat;
 
     if (isStatsbeat) {
+      // suppress all logging for statsbeat telemetry failures
       operationLogger = OperationLogger.NOOP;
       retryOperationLogger = OperationLogger.NOOP;
     } else {
