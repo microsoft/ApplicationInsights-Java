@@ -73,13 +73,8 @@ public class TelemetryChannel {
 
   private static final AppInsightsByteBufferPool byteBufferPool = new AppInsightsByteBufferPool();
 
-  // TODO (heya) should we suppress logging statsbeat telemetry ingestion issues?
-  private static final OperationLogger operationLogger =
-      new OperationLogger(TelemetryChannel.class, "Sending telemetry to the ingestion service");
-
-  private static final OperationLogger retryOperationLogger =
-      new OperationLogger(
-          TelemetryChannel.class, "Sending telemetry to the ingestion service (retry)");
+  private final OperationLogger operationLogger;
+  private final OperationLogger retryOperationLogger;
 
   // TODO (kryalama) do we still need this AtomicBoolean, or can we use throttling built in to the
   //  operationLogger?
@@ -140,6 +135,17 @@ public class TelemetryChannel {
     this.localFileWriter = localFileWriter;
     this.statsbeatModule = statsbeatModule;
     this.isStatsbeat = isStatsbeat;
+
+    if (isStatsbeat) {
+      operationLogger = OperationLogger.NOOP;
+      retryOperationLogger = OperationLogger.NOOP;
+    } else {
+      operationLogger =
+          new OperationLogger(TelemetryChannel.class, "Sending telemetry to the ingestion service");
+      retryOperationLogger =
+          new OperationLogger(
+              TelemetryChannel.class, "Sending telemetry to the ingestion service (retry)");
+    }
   }
 
   public CompletableResultCode send(List<TelemetryItem> telemetryItems) {
@@ -348,9 +354,7 @@ public class TelemetryChannel {
                   }
                 },
                 exception -> {
-                  if (!isStatsbeat) {
-                    operationLogger.recordFailure("exception retrieving response body", exception);
-                  }
+                  operationLogger.recordFailure("exception retrieving response body", exception);
                   onFailure.accept(false);
                 });
   }
