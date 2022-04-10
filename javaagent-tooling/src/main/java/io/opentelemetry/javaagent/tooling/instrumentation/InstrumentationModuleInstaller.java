@@ -12,19 +12,22 @@ import static net.bytebuddy.matcher.ElementMatchers.isAnnotatedWith;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.not;
 
-import io.opentelemetry.instrumentation.api.cache.Cache;
+import io.opentelemetry.instrumentation.api.internal.cache.Cache;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.tooling.HelperInjector;
 import io.opentelemetry.javaagent.tooling.TransformSafeLogger;
 import io.opentelemetry.javaagent.tooling.Utils;
 import io.opentelemetry.javaagent.tooling.bytebuddy.LoggingFailSafeMatcher;
+import io.opentelemetry.javaagent.tooling.config.AgentConfig;
 import io.opentelemetry.javaagent.tooling.field.VirtualFieldImplementationInstaller;
 import io.opentelemetry.javaagent.tooling.field.VirtualFieldImplementationInstallerFactory;
 import io.opentelemetry.javaagent.tooling.muzzle.HelperResourceBuilderImpl;
 import io.opentelemetry.javaagent.tooling.muzzle.InstrumentationModuleMuzzle;
 import io.opentelemetry.javaagent.tooling.muzzle.Mismatch;
 import io.opentelemetry.javaagent.tooling.muzzle.ReferenceMatcher;
+import io.opentelemetry.javaagent.tooling.util.IgnoreFailedTypeMatcher;
+import io.opentelemetry.javaagent.tooling.util.NamedMatcher;
 import java.lang.instrument.Instrumentation;
 import java.security.ProtectionDomain;
 import java.util.List;
@@ -56,7 +59,9 @@ public final class InstrumentationModuleInstaller {
 
   AgentBuilder install(
       InstrumentationModule instrumentationModule, AgentBuilder parentAgentBuilder) {
-    if (!instrumentationModule.isEnabled()) {
+    if (!AgentConfig.get()
+        .isInstrumentationEnabled(
+            instrumentationModule.instrumentationNames(), instrumentationModule.defaultEnabled())) {
       logger.log(
           FINE, "Instrumentation {0} is disabled", instrumentationModule.instrumentationName());
       return parentAgentBuilder;
@@ -92,18 +97,29 @@ public final class InstrumentationModuleInstaller {
 
     AgentBuilder agentBuilder = parentAgentBuilder;
     for (TypeInstrumentation typeInstrumentation : typeInstrumentations) {
+      ElementMatcher<TypeDescription> typeMatcher =
+          new NamedMatcher<>(
+              instrumentationModule.getClass().getSimpleName()
+                  + "#"
+                  + typeInstrumentation.getClass().getSimpleName(),
+              new IgnoreFailedTypeMatcher(typeInstrumentation.typeMatcher()));
+      ElementMatcher<ClassLoader> classLoaderMatcher =
+          new NamedMatcher<>(
+              instrumentationModule.getClass().getSimpleName()
+                  + "#"
+                  + typeInstrumentation.getClass().getSimpleName(),
+              moduleClassLoaderMatcher.and(typeInstrumentation.classLoaderOptimization()));
+
       AgentBuilder.Identified.Extendable extendableAgentBuilder =
           agentBuilder
               .type(
                   new LoggingFailSafeMatcher<>(
-                      typeInstrumentation.typeMatcher(),
-                      "Instrumentation type matcher unexpected exception: "
-                          + typeInstrumentation.typeMatcher()),
+                      typeMatcher,
+                      "Instrumentation type matcher unexpected exception: " + typeMatcher),
                   new LoggingFailSafeMatcher<>(
-                      moduleClassLoaderMatcher.and(typeInstrumentation.classLoaderOptimization()),
+                      classLoaderMatcher,
                       "Instrumentation class loader matcher unexpected exception: "
-                          + moduleClassLoaderMatcher.and(
-                              typeInstrumentation.classLoaderOptimization())))
+                          + classLoaderMatcher))
               .and(NOT_DECORATOR_MATCHER)
               .and(muzzleMatcher)
               .transform(ConstantAdjuster.instance())
