@@ -388,6 +388,10 @@ public class Configuration {
         new DisabledByDefaultInstrumentation();
 
     public DisabledByDefaultInstrumentation vertx = new DisabledByDefaultInstrumentation();
+
+    // this is opt-in because it can cause startup slowness due to expensive matchers
+    public DisabledByDefaultInstrumentation jaxrsAnnotations =
+        new DisabledByDefaultInstrumentation();
   }
 
   public static class PreviewStatsbeat {

@@ -104,6 +104,15 @@ class ConfigOverride {
       // vertx instrumentation is ON by default in OTEL
       properties.put("otel.instrumentation.vertx.enabled", "false");
     }
+    if (!config.preview.instrumentation.jaxrsAnnotations.enabled) {
+      // jaxrs annotations instrumentation is ON by default in OTEL
+      // but OFF by default in Application Insights due to its impact on startup performance
+      // and also because it only captures internal spans
+      // hopefully this will be optimized upstream at some point and it can be enabled by default
+      // here again
+      properties.put("otel.instrumentation.jaxrs-1.0.enabled", "false");
+      properties.put("otel.instrumentation.jaxrs-annotations.enabled", "false");
+    }
     if (!config.preview.captureControllerSpans) {
       properties.put("otel.instrumentation.common.experimental.suppress-controller-spans", "true");
     }
