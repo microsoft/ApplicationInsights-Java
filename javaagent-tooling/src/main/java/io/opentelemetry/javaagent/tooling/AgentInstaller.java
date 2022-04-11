@@ -24,6 +24,7 @@ import io.opentelemetry.javaagent.bootstrap.AgentClassLoader;
 import io.opentelemetry.javaagent.bootstrap.AgentInitializer;
 import io.opentelemetry.javaagent.bootstrap.BootstrapPackagePrefixesHolder;
 import io.opentelemetry.javaagent.bootstrap.ClassFileTransformerHolder;
+import io.opentelemetry.javaagent.bootstrap.DefineClassHelper;
 import io.opentelemetry.javaagent.extension.AgentListener;
 import io.opentelemetry.javaagent.extension.ignore.IgnoredTypesConfigurer;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
@@ -31,6 +32,7 @@ import io.opentelemetry.javaagent.instrumentation.api.internal.InstrumentedTaskC
 import io.opentelemetry.javaagent.tooling.asyncannotationsupport.WeakRefAsyncOperationEndStrategies;
 import io.opentelemetry.javaagent.tooling.bootstrap.BootstrapPackagesBuilderImpl;
 import io.opentelemetry.javaagent.tooling.bootstrap.BootstrapPackagesConfigurer;
+import io.opentelemetry.javaagent.tooling.config.AgentConfig;
 import io.opentelemetry.javaagent.tooling.config.ConfigInitializer;
 import io.opentelemetry.javaagent.tooling.ignore.IgnoredClassLoadersMatcher;
 import io.opentelemetry.javaagent.tooling.ignore.IgnoredTypesBuilderImpl;
@@ -130,6 +132,7 @@ public class AgentInstaller {
     Config config = Config.get();
 
     setBootstrapPackages(config);
+    setDefineClassHandler();
 
     // If noop OpenTelemetry is enabled, autoConfiguredSdk will be null and AgentListeners are not
     // called
@@ -160,7 +163,7 @@ public class AgentInstaller {
 
     agentBuilder = configureIgnoredTypes(config, agentBuilder);
 
-    if (config.isAgentDebugEnabled()) {
+    if (AgentConfig.get().isDebugModeEnabled()) {
       agentBuilder =
           agentBuilder
               .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
@@ -217,6 +220,10 @@ public class AgentInstaller {
       configurer.configure(config, builder);
     }
     BootstrapPackagePrefixesHolder.setBoostrapPackagePrefixes(builder.build());
+  }
+
+  private static void setDefineClassHandler() {
+    DefineClassHelper.internalSetHandler(DefineClassHandler.INSTANCE);
   }
 
   private static void runBeforeAgentListeners(
