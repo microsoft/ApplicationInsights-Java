@@ -43,7 +43,7 @@ val DEPENDENCY_SETS = listOf(
   DependencySet(
     "net.bytebuddy",
     // When updating, also update buildSrc/build.gradle.kts
-    "1.12.6",
+    "1.12.9",
     listOf("byte-buddy", "byte-buddy-dep", "byte-buddy-agent", "byte-buddy-gradle-plugin")
   ),
   DependencySet(
