@@ -52,6 +52,7 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -73,8 +74,6 @@ public class TelemetryChannel {
 
   private static final AppInsightsByteBufferPool byteBufferPool = new AppInsightsByteBufferPool();
 
-  private static final int MAX_STATSBEAT_ERROR_COUNT = 10;
-
   private final OperationLogger operationLogger;
   private final OperationLogger retryOperationLogger;
 
@@ -82,10 +81,10 @@ public class TelemetryChannel {
   //  operationLogger?
   private final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
-  private final AtomicInteger statsbeatErrorCount = new AtomicInteger();
-  private final AtomicBoolean statsbeatShutdown = new AtomicBoolean();
+  private final AtomicInteger statsbeatUnableToReachBreezeCounter = new AtomicInteger();
+  private final AtomicBoolean statsbeatHasBeenShutdown = new AtomicBoolean();
 
-  private volatile boolean statsbeatAtLeastOneSuccess;
+  private volatile boolean statsbeatHasReachedBreezeAtLeastOnce;
 
   @SuppressWarnings("CatchAndPrintStackTrace")
   private static ObjectMapper createObjectMapper() {
@@ -122,7 +121,7 @@ public class TelemetryChannel {
       String instrumentationKey,
       Runnable onSuccess,
       Consumer<Boolean> onFailure) {
-    if (isStatsbeat && statsbeatShutdown.get()) {
+    if (isStatsbeat && statsbeatHasBeenShutdown.get()) {
       // let it be deleted from disk so that it won't keep getting retried
       return CompletableResultCode.ofSuccess();
     }
@@ -299,6 +298,11 @@ public class TelemetryChannel {
     return result;
   }
 
+  // not including 401/403/503 in this list because those are commonly returned by proxy servers
+  // when they are not configured to allow traffic for westus-0
+  private static final Set<Integer> RESPONSE_CODES_INDICATING_REACHED_BREEZE =
+      new HashSet<>(asList(200, 206, 402, 408, 429, 439, 500));
+
   private Consumer<HttpResponse> responseHandler(
       String instrumentationKey,
       long startTime,
@@ -313,11 +317,11 @@ public class TelemetryChannel {
             .subscribe(
                 body -> {
                   int statusCode = response.getStatusCode();
-                  if (isStatsbeat && !statsbeatAtLeastOneSuccess) {
-                    if (statusCode == 200) {
-                      statsbeatAtLeastOneSuccess = true;
-                    } else if (statusCode != 439 && statusCode != 402) {
-                      possiblyShutDownStatsbeat();
+                  if (isStatsbeat && !statsbeatHasReachedBreezeAtLeastOnce) {
+                    if (RESPONSE_CODES_INDICATING_REACHED_BREEZE.contains(statusCode)) {
+                      statsbeatHasReachedBreezeAtLeastOnce = true;
+                    } else {
+                      statsbeatDidNotReachBreeze();
                     }
                   }
                   switch (statusCode) {
@@ -388,8 +392,8 @@ public class TelemetryChannel {
       String instrumentationKey, Consumer<Boolean> onFailure, OperationLogger operationLogger) {
 
     return error -> {
-      if (isStatsbeat && !statsbeatAtLeastOneSuccess) {
-        possiblyShutDownStatsbeat();
+      if (isStatsbeat && !statsbeatHasReachedBreezeAtLeastOnce) {
+        statsbeatDidNotReachBreeze();
       }
 
       if (!isStatsbeat
@@ -407,9 +411,9 @@ public class TelemetryChannel {
     };
   }
 
-  private void possiblyShutDownStatsbeat() {
-    if (statsbeatErrorCount.getAndIncrement() >= MAX_STATSBEAT_ERROR_COUNT
-        && !statsbeatShutdown.getAndSet(true)) {
+  private void statsbeatDidNotReachBreeze() {
+    if (statsbeatUnableToReachBreezeCounter.getAndIncrement() >= 10
+        && !statsbeatHasBeenShutdown.getAndSet(true)) {
       // shutting down statsbeat because it's unlikely that it will ever get through at this point
       // some possible reasons:
       // * AMPLS
