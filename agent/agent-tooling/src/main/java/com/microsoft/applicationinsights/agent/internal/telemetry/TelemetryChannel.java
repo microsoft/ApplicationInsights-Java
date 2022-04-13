@@ -84,6 +84,7 @@ public class TelemetryChannel {
   private final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
   private final AtomicInteger statsbeatUnableToReachBreezeCounter = new AtomicInteger();
+  // TODO (trask) remove this boolean and shutdown the disk loader for statsbeat instead
   private final AtomicBoolean statsbeatHasBeenShutdown = new AtomicBoolean();
 
   private volatile boolean statsbeatHasReachedBreezeAtLeastOnce;
