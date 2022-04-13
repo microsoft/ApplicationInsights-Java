@@ -36,6 +36,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryI
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
@@ -69,6 +70,11 @@ public class AzureMonitorMetricExporter implements MetricExporter {
     EXCLUDED_METRIC_NAMES.add("http.client.duration"); // HttpClient
     EXCLUDED_METRIC_NAMES.add("rpc.client.duration"); // gRPC
     EXCLUDED_METRIC_NAMES.add("rpc.server.duration"); // gRPC
+  }
+
+  @Override
+  public AggregationTemporality getPreferredTemporality() {
+    return AggregationTemporality.DELTA;
   }
 
   @Override
