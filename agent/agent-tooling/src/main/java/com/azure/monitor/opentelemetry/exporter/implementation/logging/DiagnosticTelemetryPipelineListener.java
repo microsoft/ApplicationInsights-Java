@@ -84,13 +84,11 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
                   + " (telemetry will be stored to disk and retried later)");
         }
         break;
-      case 402: // Breeze-specific: THROTTLED OVER EXTENDED TIME
-        // TODO handle throttling
+      case 402: // Breeze-specific: New Daily Quota Exceeded
         operationLogger.recordFailure(
-            "received response code 402 (monthly quota exceeded and throttled over extended time)");
+            "received response code 402 (daily quota exceeded and throttled over extended time)");
         break;
-      case 439: // Breeze-specific: THROTTLED OVER EXTENDED TIME
-        // TODO handle throttling
+      case 439: // Breeze-specific: Deprecated Daily Quota Exceeded
         operationLogger.recordFailure(
             "received response code 439 (daily quota exceeded and throttled over extended time)");
         break;
