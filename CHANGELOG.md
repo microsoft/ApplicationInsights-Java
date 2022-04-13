@@ -1,7 +1,7 @@
 # CHANGELOG
 
 # Version 3.2.11 GA
-* Turn off Statsbeat when using private endpoints. [#2221](https://github.com/microsoft/ApplicationInsights-Java/pull/2221).
+* Turn off Statsbeat when unable to reach ingestion service. [#2221](https://github.com/microsoft/ApplicationInsights-Java/pull/2221).
 
 # Version 3.2.10 GA
 * Fix Statsbeat warning [#2208](https://github.com/microsoft/ApplicationInsights-Java/pull/2208).
