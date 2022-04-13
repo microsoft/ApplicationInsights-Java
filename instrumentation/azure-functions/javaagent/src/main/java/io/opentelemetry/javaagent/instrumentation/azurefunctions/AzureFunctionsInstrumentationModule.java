@@ -38,6 +38,7 @@ public class AzureFunctionsInstrumentationModule extends InstrumentationModule {
     return singletonList(new AzureFunctionsInstrumentation());
   }
 
+  @SuppressWarnings("unused")
   private static class AzureFunctionsInstrumentation implements TypeInstrumentation {
 
     @Override
