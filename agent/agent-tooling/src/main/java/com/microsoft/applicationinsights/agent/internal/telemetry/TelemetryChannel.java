@@ -302,6 +302,8 @@ public class TelemetryChannel {
 
   // not including 401/403/503 in this list because those are commonly returned by proxy servers
   // when they are not configured to allow traffic for westus-0
+  // not including 307/308 in this list because redirects only bubble up to this class if they have
+  // reached the 10 redirect threshold, in which case they are considered non-retryable exceptions
   private static final Set<Integer> RESPONSE_CODES_INDICATING_REACHED_BREEZE =
       new HashSet<>(asList(200, 206, 402, 408, 429, 439, 500));
 
