@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 
 import com.azure.core.http.HttpMethod;
@@ -55,6 +56,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
