@@ -149,6 +149,7 @@ class ConfigOverride {
 
     // enable thread.name
     properties.put("otel.instrumentation.java-util-logging.experimental-log-attributes", "true");
+    properties.put("otel.instrumentation.jboss-logmanager.experimental-log-attributes", "true");
     properties.put("otel.instrumentation.log4j-appender.experimental-log-attributes", "true");
     properties.put("otel.instrumentation.logback-appender.experimental-log-attributes", "true");
 
