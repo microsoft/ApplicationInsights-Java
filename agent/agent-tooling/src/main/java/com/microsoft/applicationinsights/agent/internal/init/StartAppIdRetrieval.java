@@ -22,9 +22,11 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.google.auto.service.AutoService;
+import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.extension.AgentListener;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
+import java.util.logging.LogManager;
 
 @AutoService(AgentListener.class)
 public class StartAppIdRetrieval implements AgentListener {
@@ -47,5 +49,13 @@ public class StartAppIdRetrieval implements AgentListener {
       // available for Linux Consumption Plan.
       appIdSupplier.startAppIdRetrieval();
     }
+
+    // force LogManager to be initialized, because if we wait, LogManager initialization can cause
+    // deadlock
+    LogManager.getLogManager();
+
+    // it's important for this to be called after LogManager initialization, since the thread that
+    // initializes the HttpClient is one of the culprits in the deadlock
+    LazyHttpClient.safeToInitLatch.countDown();
   }
 }

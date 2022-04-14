@@ -58,7 +58,6 @@ import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
@@ -70,7 +69,7 @@ class AiComponentInstaller {
       LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
 
   static AppIdSupplier beforeAgent(Instrumentation instrumentation) {
-    AppIdSupplier appIdSupplier = start(instrumentation);
+    AppIdSupplier appIdSupplier = start();
 
     // add sdk instrumentation after ensuring Global.getTelemetryClient() will not return null
     instrumentation.addTransformer(new TelemetryClientClassFileTransformer());
@@ -87,7 +86,7 @@ class AiComponentInstaller {
     return appIdSupplier;
   }
 
-  private static AppIdSupplier start(Instrumentation instrumentation) {
+  private static AppIdSupplier start() {
 
     String codelessSdkNamePrefix = getCodelessSdkNamePrefix();
     if (codelessSdkNamePrefix != null) {
@@ -109,16 +108,6 @@ class AiComponentInstaller {
     }
     // TODO (trask) should configuration validation be performed earlier?
     config.preview.validate();
-
-    String jbossHome = System.getenv("JBOSS_HOME");
-    if (!Strings.isNullOrEmpty(jbossHome)) {
-      // this is used to delay SSL initialization because SSL initialization triggers loading of
-      // java.util.logging (starting with Java 8u231)
-      // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized
-      LazyHttpClient.safeToInitLatch = new CountDownLatch(1);
-      instrumentation.addTransformer(
-          new JulListeningClassFileTransformer(LazyHttpClient.safeToInitLatch));
-    }
 
     if (config.proxy.host != null) {
       LazyHttpClient.proxyHost = config.proxy.host;
