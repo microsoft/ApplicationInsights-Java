@@ -28,7 +28,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineResponse;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class StatsbeatTelemetryPipelineListener implements TelemetryPipelineListener {
@@ -40,19 +39,14 @@ public class StatsbeatTelemetryPipelineListener implements TelemetryPipelineList
   private static final Set<Integer> RESPONSE_CODES_INDICATING_REACHED_BREEZE =
       new HashSet<>(asList(200, 206, 402, 408, 429, 439, 500));
 
-  private final StatsbeatModule statsbeatModule;
-  private final Runnable localStorageTelemetryShutdownFunction;
+  private final Runnable statsbeatShutdown;
 
   private final AtomicInteger statsbeatUnableToReachBreezeCounter = new AtomicInteger();
-  // TODO (trask) remove this boolean and shutdown the disk loader for statsbeat instead
-  private final AtomicBoolean statsbeatHasBeenShutdown = new AtomicBoolean();
 
   private volatile boolean statsbeatHasReachedBreezeAtLeastOnce;
 
-  public StatsbeatTelemetryPipelineListener(
-      StatsbeatModule statsbeatModule, Runnable localStorageTelemetryShutdownFunction) {
-    this.statsbeatModule = statsbeatModule;
-    this.localStorageTelemetryShutdownFunction = localStorageTelemetryShutdownFunction;
+  public StatsbeatTelemetryPipelineListener(Runnable statsbeatShutdown) {
+    this.statsbeatShutdown = statsbeatShutdown;
   }
 
   @Override
@@ -76,8 +70,7 @@ public class StatsbeatTelemetryPipelineListener implements TelemetryPipelineList
   }
 
   private void statsbeatDidNotReachBreeze() {
-    if (statsbeatUnableToReachBreezeCounter.getAndIncrement() >= 10
-        && !statsbeatHasBeenShutdown.getAndSet(true)) {
+    if (statsbeatUnableToReachBreezeCounter.getAndIncrement() >= 10) {
       // shutting down statsbeat because it's unlikely that it will ever get through at this point
       // some possible reasons:
       // * AMPLS
@@ -86,8 +79,7 @@ public class StatsbeatTelemetryPipelineListener implements TelemetryPipelineList
       //
       // TODO need to figure out a way that statsbeat telemetry can be sent to the same endpoint as
       // the customer data for these cases
-      statsbeatModule.shutdown();
-      localStorageTelemetryShutdownFunction.run();
+      statsbeatShutdown.run();
     }
   }
 }

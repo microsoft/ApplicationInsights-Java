@@ -301,7 +301,7 @@ public class TelemetryClient {
           TelemetryPipelineListener telemetryPipelineListener;
           if (tempDir == null) {
             telemetryPipelineListener =
-                new StatsbeatTelemetryPipelineListener(statsbeatModule, () -> {});
+                new StatsbeatTelemetryPipelineListener(statsbeatModule::shutdown);
           } else {
             LocalStorageTelemetryPipelineListener localStorageTelemetryPipelineListener =
                 new LocalStorageTelemetryPipelineListener(
@@ -311,7 +311,10 @@ public class TelemetryClient {
             telemetryPipelineListener =
                 TelemetryPipelineListener.composite(
                     new StatsbeatTelemetryPipelineListener(
-                        statsbeatModule, localStorageTelemetryPipelineListener::shutdown),
+                        () -> {
+                          statsbeatModule.shutdown();
+                          localStorageTelemetryPipelineListener.shutdown();
+                        }),
                     localStorageTelemetryPipelineListener);
           }
 
