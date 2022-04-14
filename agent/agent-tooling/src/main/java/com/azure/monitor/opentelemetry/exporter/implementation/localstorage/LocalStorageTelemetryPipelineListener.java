@@ -27,12 +27,15 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineResponse;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.StatusCodes;
 import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LocalStorageTelemetryPipelineListener implements TelemetryPipelineListener {
 
   private final LocalFileWriter localFileWriter;
   private final LocalFileSender localFileSender;
   private final LocalFilePurger localFilePurger;
+
+  private final AtomicBoolean shutdown = new AtomicBoolean();
 
   // telemetryFolder must already exist and be writable
   public LocalStorageTelemetryPipelineListener(
@@ -47,8 +50,12 @@ public class LocalStorageTelemetryPipelineListener implements TelemetryPipelineL
   }
 
   public void shutdown() {
-    localFileSender.shutdown();
-    localFilePurger.shutdown();
+    // guarding against multiple shutdown calls because this can get called if statsbeat shuts down
+    // early because it cannot reach breeze and later on real shut down (when running not as agent)
+    if (!shutdown.getAndSet(true)) {
+      localFileSender.shutdown();
+      localFilePurger.shutdown();
+    }
   }
 
   @Override

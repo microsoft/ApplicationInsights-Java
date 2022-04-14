@@ -53,6 +53,7 @@ import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClien
 import com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeatHttpPipelinePolicy;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatTelemetryPipelineListener;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.File;
 import java.util.ArrayList;
@@ -299,13 +300,19 @@ public class TelemetryClient {
 
           TelemetryPipelineListener telemetryPipelineListener;
           if (tempDir == null) {
-            telemetryPipelineListener = TelemetryPipelineListener.noop();
-          } else {
             telemetryPipelineListener =
+                new StatsbeatTelemetryPipelineListener(statsbeatModule, () -> {});
+          } else {
+            LocalStorageTelemetryPipelineListener localStorageTelemetryPipelineListener =
                 new LocalStorageTelemetryPipelineListener(
                     TempDirs.getSubDir(tempDir, STATSBEAT_FOLDER_NAME),
                     telemetryPipeline,
                     LocalStorageStats.noop());
+            telemetryPipelineListener =
+                TelemetryPipelineListener.composite(
+                    new StatsbeatTelemetryPipelineListener(
+                        statsbeatModule, localStorageTelemetryPipelineListener::shutdown),
+                    localStorageTelemetryPipelineListener);
           }
 
           TelemetryItemExporter exporter =
