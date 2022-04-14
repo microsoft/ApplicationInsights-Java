@@ -24,7 +24,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionDetailBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.StackFrameBuilder;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.instrumentation.api.cache.Cache;
+import io.opentelemetry.instrumentation.api.internal.cache.Cache;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
