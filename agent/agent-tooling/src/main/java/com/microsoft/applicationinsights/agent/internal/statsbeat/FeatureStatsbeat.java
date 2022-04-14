@@ -146,6 +146,9 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     if (!config.preview.instrumentation.vertx.enabled) {
       featureList.add(Feature.VERTX_DISABLED);
     }
+    if (!config.preview.instrumentation.jaxrsAnnotations.enabled) {
+      featureList.add(Feature.JAXRS_ANNOTATIONS_DISABLED);
+    }
 
     // Statsbeat
     if (config.preview.statsbeat.disabled) {

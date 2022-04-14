@@ -89,7 +89,7 @@ dependencies {
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support")
 
   testImplementation("org.junit.jupiter:junit-jupiter")
-  testImplementation("com.azure:azure-core-test:1.7.0")
+  testImplementation("com.azure:azure-core-test:1.7.10")
   testImplementation("org.assertj:assertj-core")
   testImplementation("org.awaitility:awaitility")
   testImplementation("org.mockito:mockito-core")
@@ -102,7 +102,7 @@ dependencies {
   testImplementation("com.azure:azure-storage-blob")
 
   // needed temporarily while hosting azure-monitor-opentelemetry-exporter in this repo
-  testImplementation("com.azure:azure-data-appconfiguration:1.2.5")
-  testImplementation("com.azure:azure-messaging-eventhubs:5.10.4")
-  testImplementation("com.azure:azure-messaging-eventhubs-checkpointstore-blob:1.10.3")
+  testImplementation("com.azure:azure-data-appconfiguration:1.3.2")
+  testImplementation("com.azure:azure-messaging-eventhubs:5.11.2")
+  testImplementation("com.azure:azure-messaging-eventhubs-checkpointstore-blob:1.12.1")
 }

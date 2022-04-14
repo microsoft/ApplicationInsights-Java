@@ -28,7 +28,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 // e.g. sending telemetry to the portal, storing telemetry to disk, ...
 public class OperationLogger {
 
-  private final AggregatingLogger aggregatingLogger;
+  public static final OperationLogger NOOP = new OperationLogger(null);
+
+  @Nullable private final AggregatingLogger aggregatingLogger;
 
   public OperationLogger(Class<?> source, String operation) {
     this(source, operation, 300);
@@ -36,20 +38,30 @@ public class OperationLogger {
 
   // visible for testing
   OperationLogger(Class<?> source, String operation, int intervalSeconds) {
-    aggregatingLogger = new AggregatingLogger(source, operation, true, intervalSeconds);
+    this(new AggregatingLogger(source, operation, true, intervalSeconds));
+  }
+
+  private OperationLogger(@Nullable AggregatingLogger aggregatingLogger) {
+    this.aggregatingLogger = aggregatingLogger;
   }
 
   public void recordSuccess() {
-    aggregatingLogger.recordSuccess();
+    if (aggregatingLogger != null) {
+      aggregatingLogger.recordSuccess();
+    }
   }
 
   // failureMessage should have low cardinality
   public void recordFailure(String failureMessage) {
-    aggregatingLogger.recordWarning(failureMessage);
+    if (aggregatingLogger != null) {
+      aggregatingLogger.recordWarning(failureMessage);
+    }
   }
 
   // failureMessage should have low cardinality
   public void recordFailure(String failureMessage, @Nullable Throwable exception) {
-    aggregatingLogger.recordWarning(failureMessage, exception);
+    if (aggregatingLogger != null) {
+      aggregatingLogger.recordWarning(failureMessage, exception);
+    }
   }
 }

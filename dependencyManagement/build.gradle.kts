@@ -15,7 +15,7 @@ val otelVersion = "1.12.0"
 rootProject.extra["otelVersion"] = otelVersion
 
 // IMPORTANT when updating opentelemetry version, be sure to update bytebuddy version to match
-val otelInstrumentationVersionAlpha = "1.12.0+ai.patches-alpha"
+val otelInstrumentationVersionAlpha = "1.13.0+ai.patches-alpha"
 
 val DEPENDENCY_BOMS = listOf(
   "com.google.guava:guava-bom:31.0.1-jre",
@@ -43,7 +43,7 @@ val DEPENDENCY_SETS = listOf(
   DependencySet(
     "net.bytebuddy",
     // When updating, also update buildSrc/build.gradle.kts
-    "1.12.6",
+    "1.12.9",
     listOf("byte-buddy", "byte-buddy-dep", "byte-buddy-agent", "byte-buddy-gradle-plugin")
   ),
   DependencySet(
@@ -97,9 +97,9 @@ val DEPENDENCIES = listOf(
   "commons-codec:commons-codec:1.15",
   "org.apache.commons:commons-text:1.9",
   "com.google.code.gson:gson:2.8.2",
-  "com.azure:azure-core:1.25.0",
-  "com.azure:azure-storage-blob:12.14.3",
-  "com.azure:azure-identity:1.4.4",
+  "com.azure:azure-core:1.27.0",
+  "com.azure:azure-storage-blob:12.16.0",
+  "com.azure:azure-identity:1.5.0",
   "com.github.oshi:oshi-core:5.8.0",
   "org.assertj:assertj-core:3.22.0",
   "org.awaitility:awaitility:4.1.0",
