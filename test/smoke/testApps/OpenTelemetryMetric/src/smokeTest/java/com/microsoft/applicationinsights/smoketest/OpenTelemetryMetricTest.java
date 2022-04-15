@@ -21,6 +21,9 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -30,11 +33,11 @@ import com.microsoft.applicationinsights.smoketest.schemav2.DataPointType;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
-import org.junit.Test;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import org.junit.Test;
 
 @UseAgent("opentelemetry_metric")
 public class OpenTelemetryMetricTest extends AiSmokeTest {
@@ -77,7 +80,8 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
 
   private void validateHistogramMetric(String name) throws Exception {
     List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-    List<Envelope> metrics = mockedIngestion.waitForItems(getMetricPredicate(name), 1, 40, TimeUnit.SECONDS);
+    List<Envelope> metrics =
+        mockedIngestion.waitForItems(getMetricPredicate(name), 1, 40, TimeUnit.SECONDS);
     assertEquals(1, metrics.size());
 
     Envelope rdEnvelope = rdList.get(0);
@@ -104,14 +108,17 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
 
     // validate custom dimension
     Map<String, String> properties = md.getProperties();
-    assertEquals(properties.get("_MS.AggregationIntervalMs"), "60000");
+    int aggregationIntervalMs = Integer.parseInt(properties.get("_MS.AggregationIntervalMs"));
+    assertThat(aggregationIntervalMs, greaterThanOrEqualTo(30000));
+    assertThat(aggregationIntervalMs, lessThanOrEqualTo(90000));
     assertEquals(properties.get("tag1"), "abc");
     assertEquals(properties.get("tag2"), "def");
   }
 
   private void validateGaugeMetric(String name) throws Exception {
     List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-    List<Envelope> metrics = mockedIngestion.waitForItems(getMetricPredicate(name), 1, 40, TimeUnit.SECONDS);
+    List<Envelope> metrics =
+        mockedIngestion.waitForItems(getMetricPredicate(name), 1, 40, TimeUnit.SECONDS);
     assertEquals(1, metrics.size());
 
     Envelope rdEnvelope = rdList.get(0);
@@ -138,7 +145,9 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
 
     // validate custom dimension
     Map<String, String> properties = md.getProperties();
-    assertEquals(properties.get("_MS.AggregationIntervalMs"), "60000");
+    int aggregationIntervalMs = Integer.parseInt(properties.get("_MS.AggregationIntervalMs"));
+    assertThat(aggregationIntervalMs, greaterThanOrEqualTo(30000));
+    assertThat(aggregationIntervalMs, lessThanOrEqualTo(90000));
     assertEquals(properties.get("tag1"), "abc");
     assertEquals(properties.get("tag2"), "def");
     assertEquals(properties.get("thing1"), "thing2");
@@ -146,16 +155,18 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
 
   private void validateCounterMetric(String name) throws Exception {
     List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-    List<Envelope> metrics = mockedIngestion.waitForItems(getMetricPredicate(name), 3, 40, TimeUnit.SECONDS);
+    List<Envelope> metrics =
+        mockedIngestion.waitForItems(getMetricPredicate(name), 3, 40, TimeUnit.SECONDS);
     assertEquals(3, metrics.size());
 
-    metrics.sort(Comparator.comparing(
-        obj -> {
-          MetricData metricData = (MetricData) ((Data<?>) obj.getData()).getBaseData();
-          List<DataPoint> dataPointList = metricData.getMetrics();
-          DataPoint dataPoint = dataPointList.get(0);
-          return dataPoint.getValue();
-        }));
+    metrics.sort(
+        Comparator.comparing(
+            obj -> {
+              MetricData metricData = (MetricData) ((Data<?>) obj.getData()).getBaseData();
+              List<DataPoint> dataPointList = metricData.getMetrics();
+              DataPoint dataPoint = dataPointList.get(0);
+              return dataPoint.getValue();
+            }));
 
     Envelope rdEnvelope = rdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
@@ -182,7 +193,9 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
 
     // validate custom dimension
     Map<String, String> properties = md.getProperties();
-    assertEquals(properties.get("_MS.AggregationIntervalMs"), "60000");
+    int aggregationIntervalMs = Integer.parseInt(properties.get("_MS.AggregationIntervalMs"));
+    assertThat(aggregationIntervalMs, greaterThanOrEqualTo(30000));
+    assertThat(aggregationIntervalMs, lessThanOrEqualTo(90000));
     assertEquals(properties.get("tag1"), "abc");
     assertEquals(properties.get("tag2"), "def");
     assertEquals(properties.get("name"), "apple");
@@ -209,7 +222,9 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
 
     // validate custom dimension
     properties = md.getProperties();
-    assertEquals(properties.get("_MS.AggregationIntervalMs"), "60000");
+    aggregationIntervalMs = Integer.parseInt(properties.get("_MS.AggregationIntervalMs"));
+    assertThat(aggregationIntervalMs, greaterThanOrEqualTo(30000));
+    assertThat(aggregationIntervalMs, lessThanOrEqualTo(90000));
     assertEquals(properties.get("tag1"), "abc");
     assertEquals(properties.get("tag2"), "def");
     assertEquals(properties.get("name"), "apple");
@@ -236,7 +251,9 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
 
     // validate custom dimension
     properties = md.getProperties();
-    assertEquals(properties.get("_MS.AggregationIntervalMs"), "60000");
+    aggregationIntervalMs = Integer.parseInt(properties.get("_MS.AggregationIntervalMs"));
+    assertThat(aggregationIntervalMs, greaterThanOrEqualTo(30000));
+    assertThat(aggregationIntervalMs, lessThanOrEqualTo(90000));
     assertEquals(properties.get("tag1"), "abc");
     assertEquals(properties.get("tag2"), "def");
     assertEquals(properties.get("name"), "lemon");
