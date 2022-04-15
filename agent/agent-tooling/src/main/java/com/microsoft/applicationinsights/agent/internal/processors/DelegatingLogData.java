@@ -26,6 +26,7 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
@@ -51,6 +52,11 @@ public abstract class DelegatingLogData implements LogData {
   }
 
   @Override
+  public InstrumentationScopeInfo getInstrumentationScopeInfo() {
+    return delegate.getInstrumentationScopeInfo();
+  }
+
+  @Override
   public long getEpochNanos() {
     return delegate.getEpochNanos();
   }
@@ -69,12 +75,6 @@ public abstract class DelegatingLogData implements LogData {
   @Override
   public String getSeverityText() {
     return delegate.getSeverityText();
-  }
-
-  @Nullable
-  @Override
-  public String getName() {
-    return delegate.getName();
   }
 
   @Override
@@ -98,9 +98,6 @@ public abstract class DelegatingLogData implements LogData {
         + ", "
         + "instrumentationLibraryInfo="
         + getInstrumentationLibraryInfo()
-        + ", "
-        + "name="
-        + getName()
         + ", "
         + "epochNanos="
         + getEpochNanos()

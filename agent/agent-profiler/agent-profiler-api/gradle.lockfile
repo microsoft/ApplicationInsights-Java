@@ -1,13 +1,13 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-com.azure:azure-core:1.25.0=runtimeClasspath
-com.fasterxml.jackson.core:jackson-annotations:2.13.1=runtimeClasspath
-com.fasterxml.jackson.core:jackson-core:2.13.1=runtimeClasspath
-com.fasterxml.jackson.core:jackson-databind:2.13.1=runtimeClasspath
-com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.1=runtimeClasspath
-com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.1=runtimeClasspath
-com.fasterxml.jackson:jackson-bom:2.13.1=runtimeClasspath
+com.azure:azure-core:1.27.0=runtimeClasspath
+com.fasterxml.jackson.core:jackson-annotations:2.13.2=runtimeClasspath
+com.fasterxml.jackson.core:jackson-core:2.13.2=runtimeClasspath
+com.fasterxml.jackson.core:jackson-databind:2.13.2.1=runtimeClasspath
+com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.2=runtimeClasspath
+com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.2=runtimeClasspath
+com.fasterxml.jackson:jackson-bom:2.13.2.1=runtimeClasspath
 com.fasterxml.woodstox:woodstox-core:6.2.7=runtimeClasspath
 com.google.guava:guava-bom:31.0.1-jre=runtimeClasspath
 com.squareup.moshi:moshi:1.11.0=runtimeClasspath
@@ -16,11 +16,11 @@ io.netty:netty-bom:4.1.72.Final=runtimeClasspath
 io.netty:netty-tcnative-boringssl-static:2.0.46.Final=runtimeClasspath
 io.netty:netty-tcnative-classes:2.0.46.Final=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.13.0+ai.patches-alpha=runtimeClasspath
-io.opentelemetry:opentelemetry-bom-alpha:1.11.0-alpha=runtimeClasspath
-io.opentelemetry:opentelemetry-bom:1.11.0=runtimeClasspath
-io.projectreactor:reactor-core:3.4.13=runtimeClasspath
+io.opentelemetry:opentelemetry-bom-alpha:1.13.0-alpha=runtimeClasspath
+io.opentelemetry:opentelemetry-bom:1.13.0=runtimeClasspath
+io.projectreactor:reactor-core:3.4.14=runtimeClasspath
 org.codehaus.woodstox:stax2-api:4.2.1=runtimeClasspath
 org.junit:junit-bom:5.7.2=runtimeClasspath
 org.reactivestreams:reactive-streams:1.0.3=runtimeClasspath
-org.slf4j:slf4j-api:1.7.32=runtimeClasspath
+org.slf4j:slf4j-api:1.7.33=runtimeClasspath
 empty=

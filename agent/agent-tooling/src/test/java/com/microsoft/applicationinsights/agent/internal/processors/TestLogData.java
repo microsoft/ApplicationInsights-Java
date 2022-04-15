@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
@@ -33,12 +34,11 @@ import javax.annotation.Nullable;
 public class TestLogData implements LogData {
 
   private final Resource resource;
-  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
+  private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final long epochNanos;
   private final SpanContext spanContext;
   private final Severity severity;
   private final String severityText;
-  private final String name;
   private final Body body;
   private final Attributes attributes;
 
@@ -48,12 +48,11 @@ public class TestLogData implements LogData {
 
   TestLogData(Builder builder) {
     this.resource = builder.resource;
-    this.instrumentationLibraryInfo = builder.instrumentationLibraryInfo;
+    this.instrumentationScopeInfo = builder.instrumentationScopeInfo;
     this.epochNanos = builder.epochNanos;
     this.spanContext = builder.spanContext;
     this.severity = builder.severity;
     this.severityText = builder.severityText;
-    this.name = builder.name;
     this.body = builder.body;
     this.attributes = builder.attributes;
   }
@@ -65,7 +64,12 @@ public class TestLogData implements LogData {
 
   @Override
   public InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
-    return instrumentationLibraryInfo;
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public InstrumentationScopeInfo getInstrumentationScopeInfo() {
+    return instrumentationScopeInfo;
   }
 
   @Override
@@ -89,12 +93,6 @@ public class TestLogData implements LogData {
     return severityText;
   }
 
-  @Nullable
-  @Override
-  public String getName() {
-    return name;
-  }
-
   @Override
   public Body getBody() {
     return body;
@@ -107,12 +105,11 @@ public class TestLogData implements LogData {
 
   static class Builder {
     private Resource resource;
-    private InstrumentationLibraryInfo instrumentationLibraryInfo;
+    private InstrumentationScopeInfo instrumentationScopeInfo;
     private long epochNanos;
     private SpanContext spanContext;
     private Severity severity;
     private String severityText;
-    private String name;
     private Body body;
     private Attributes attributes;
 
@@ -121,9 +118,8 @@ public class TestLogData implements LogData {
       return this;
     }
 
-    public Builder setInstrumentationLibraryInfo(
-        InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      this.instrumentationLibraryInfo = instrumentationLibraryInfo;
+    public Builder setInstrumentationScopeInfo(InstrumentationScopeInfo instrumentationScopeInfo) {
+      this.instrumentationScopeInfo = instrumentationScopeInfo;
       return this;
     }
 
@@ -144,11 +140,6 @@ public class TestLogData implements LogData {
 
     public Builder setSeverityText(String text) {
       this.severityText = text;
-      return this;
-    }
-
-    public Builder setName(String name) {
-      this.name = name;
       return this;
     }
 
