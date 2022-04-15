@@ -45,6 +45,6 @@ public class MetricExporterCustomizer implements AutoConfigurationCustomizerProv
                     .setInterval(
                         Duration.ofSeconds(
                             MainEntryPoint.getConfiguration().preview.metricIntervalSeconds))
-                    .newMetricReaderFactory()));
+                    .build()));
   }
 }

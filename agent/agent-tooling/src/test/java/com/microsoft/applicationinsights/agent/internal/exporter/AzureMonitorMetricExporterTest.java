@@ -45,7 +45,6 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
-import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter;
 import java.time.Duration;
@@ -67,12 +66,12 @@ public class AzureMonitorMetricExporterTest {
   @BeforeEach
   public void setup() {
     inMemoryMetricExporter = InMemoryMetricExporter.create();
-    MetricReaderFactory metricReaderFactory =
+    PeriodicMetricReader metricReader =
         PeriodicMetricReader.builder(inMemoryMetricExporter)
             .setInterval(Duration.ofMillis(100))
-            .newMetricReaderFactory();
+            .build();
     SdkMeterProvider meterProvider =
-        SdkMeterProvider.builder().registerMetricReader(metricReaderFactory).build();
+        SdkMeterProvider.builder().registerMetricReader(metricReader).build();
 
     OpenTelemetry openTelemetry =
         OpenTelemetrySdk.builder().setMeterProvider(meterProvider).build();

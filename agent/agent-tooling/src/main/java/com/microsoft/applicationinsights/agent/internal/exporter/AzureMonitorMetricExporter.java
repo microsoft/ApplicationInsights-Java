@@ -36,6 +36,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryI
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
@@ -73,8 +74,8 @@ public class AzureMonitorMetricExporter implements MetricExporter {
   }
 
   @Override
-  public AggregationTemporality getPreferredTemporality() {
-    return AggregationTemporality.DELTA;
+  public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    return MetricExporter.deltaPreferred(instrumentType);
   }
 
   @Override
