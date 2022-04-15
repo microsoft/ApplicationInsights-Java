@@ -20,11 +20,11 @@ io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-commo
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-undertow-1.4-bootstrap:1.13.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:1.13.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent:opentelemetry-javaagent-instrumentation-api:1.13.0+ai.patches-alpha=runtimeClasspath
-io.opentelemetry:opentelemetry-api:1.12.0=runtimeClasspath
-io.opentelemetry:opentelemetry-bom-alpha:1.12.0-alpha=runtimeClasspath
-io.opentelemetry:opentelemetry-bom:1.12.0=runtimeClasspath
-io.opentelemetry:opentelemetry-context:1.12.0=runtimeClasspath
-io.opentelemetry:opentelemetry-semconv:1.12.0-alpha=runtimeClasspath
+io.opentelemetry:opentelemetry-api:1.13.0=runtimeClasspath
+io.opentelemetry:opentelemetry-bom-alpha:1.13.0-alpha=runtimeClasspath
+io.opentelemetry:opentelemetry-bom:1.13.0=runtimeClasspath
+io.opentelemetry:opentelemetry-context:1.13.0=runtimeClasspath
+io.opentelemetry:opentelemetry-semconv:1.13.0-alpha=runtimeClasspath
 org.junit:junit-bom:5.7.2=runtimeClasspath
 org.slf4j:slf4j-api:1.7.36=runtimeClasspath
 empty=
