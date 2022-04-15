@@ -26,6 +26,7 @@ import static java.util.Arrays.asList;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineRequest;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineResponse;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -67,6 +68,11 @@ public class StatsbeatTelemetryPipelineListener implements TelemetryPipelineList
     if (!statsbeatHasReachedBreezeAtLeastOnce) {
       statsbeatDidNotReachBreeze();
     }
+  }
+
+  @Override
+  public CompletableResultCode shutdown() {
+    return CompletableResultCode.ofSuccess();
   }
 
   private void statsbeatDidNotReachBreeze() {
