@@ -26,6 +26,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 import java.util.TreeMap;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,22 +40,37 @@ public class ConnectionString {
 
   private ConnectionString() {}
 
-  public static void parseInto(String connectionString, TelemetryClient targetConfig)
-      throws InvalidConnectionStringException {
-    mapToConnectionConfiguration(getKeyValuePairs(connectionString), targetConfig);
+  public static void parseInto(String connectionString, TelemetryClient telemetryClient)
+      throws InvalidConnectionStringException, MalformedURLException {
+    // reset endpoint to default for ingestion, live metric and profiler
+    telemetryClient.getEndpointProvider().resetEndpointUrls();
+
+    if (Strings.isNullOrEmpty(connectionString)) {
+      telemetryClient.setInstrumentationKey(null);
+    } else {
+      mapToConnectionConfiguration(getKeyValuePairs(connectionString), telemetryClient);
+    }
   }
 
   public static void updateStatsbeatConnectionString(
-      String ikey, String endpoint, TelemetryClient config)
+      @Nullable String ikey, @Nullable String endpoint, TelemetryClient telemetryClient)
       throws InvalidConnectionStringException {
-    if (Strings.isNullOrEmpty(ikey)) {
-      logger.warn("Missing Statsbeat '" + Keywords.INSTRUMENTATION_KEY + "'");
+
+    // if customer is in EU region and their statsbeat config is not in EU region, customer is
+    // responsible for breaking the EU data boundary violation.
+    // Statsbeat config setting has the highest precedence.
+    if (ikey == null || ikey.isEmpty()) {
+      StatsbeatConnectionString.InstrumentationKeyEndpointPair pair =
+          StatsbeatConnectionString.getInstrumentationKeyAndEndpointPair(
+              telemetryClient.getEndpointProvider().getIngestionEndpoint().toString());
+      ikey = pair.instrumentationKey;
+      endpoint = pair.endpoint;
     }
 
-    config.setStatsbeatInstrumentationKey(ikey);
+    telemetryClient.setStatsbeatInstrumentationKey(ikey);
 
     if (!Strings.isNullOrEmpty(endpoint)) {
-      config
+      telemetryClient
           .getEndpointProvider()
           .setStatsbeatEndpoint(toUrlOrThrow(endpoint, Keywords.INGESTION_ENDPOINT));
     }

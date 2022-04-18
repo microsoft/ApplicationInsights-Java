@@ -39,21 +39,21 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
   private static final String instrumentationKey = "ikey123";
 
   private QuickPulsePingSender getQuickPulsePingSender() {
-    TelemetryClient telemetryClient = new TelemetryClient();
+    TelemetryClient telemetryClient = TelemetryClient.createForTest();
     telemetryClient.setConnectionString(connectionString);
     return new QuickPulsePingSender(
         getHttpPipeline(), telemetryClient, "machine1", "instance1", "qpid123");
   }
 
   private QuickPulsePingSender getQuickPulsePingSenderWithAuthentication() {
-    TelemetryClient telemetryClient = new TelemetryClient();
+    TelemetryClient telemetryClient = TelemetryClient.createForTest();
     telemetryClient.setConnectionString(connectionString);
     return new QuickPulsePingSender(
         getHttpPipelineWithAuthentication(), telemetryClient, "machine1", "instance1", "qpid123");
   }
 
   private QuickPulsePingSender getQuickPulsePingSenderWithValidator(HttpPipelinePolicy validator) {
-    TelemetryClient telemetryClient = new TelemetryClient();
+    TelemetryClient telemetryClient = TelemetryClient.createForTest();
     telemetryClient.setConnectionString(connectionString);
     return new QuickPulsePingSender(
         getHttpPipeline(validator), telemetryClient, "machine1", "instance1", "qpid123");
@@ -95,7 +95,7 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
     String expectedPingRequestBody =
         "\\{\"Documents\":null,\"InstrumentationKey\":null,\"Metrics\":null,\"InvariantVersion\":1,\"Timestamp\":\"\\\\/Date\\(\\d+\\)\\\\/\",\"Version\":\"\\(unknown\\)\",\"StreamId\":\"qpid123\",\"MachineName\":\"machine1\",\"Instance\":\"instance1\",\"RoleName\":null\\}";
     String expectedPostRequestBody =
-        "\\[\\{\"Documents\":\\[\\{\"__type\":\"RequestTelemetryDocument\",\"DocumentType\":\"Request\",\"Version\":\"1.0\",\"OperationId\":null,\"Properties\":\\{\"customProperty\":\"customValue\"\\},\"Name\":null,\"Success\":true,\"Duration\":\"\\d+:\\d+:\\d+\\.\\d+\",\"ResponseCode\":\"200\",\"OperationName\":\"request-test\"\\},\\{\"__type\":\"DependencyTelemetryDocument\",\"DocumentType\":\"RemoteDependency\",\"Version\":\"1.0\",\"OperationId\":null,\"Properties\":\\{\"customProperty\":\"customValue\"\\},\"Name\":\"dep-test\",\"Target\":null,\"Success\":true,\"Duration\":\"\\d+:\\d+:\\d+.\\d+\",\"ResultCode\":null,\"CommandName\":\"dep-test-cmd\",\"DependencyTypeName\":null,\"OperationName\":null\\},\\{\"__type\":\"ExceptionTelemetryDocument\",\"DocumentType\":\"Exception\",\"Version\":\"1.0\",\"OperationId\":null,\"Properties\":null,\"Exception\":\"\",\"ExceptionMessage\":\"test\",\"ExceptionType\":\"java.lang.Exception\"\\}\\],\"InstrumentationKey\":\""
+        "\\[\\{\"Documents\":\\[\\{\"__type\":\"RequestTelemetryDocument\",\"DocumentType\":\"Request\",\"Version\":\"1.0\",\"OperationId\":null,\"Properties\":\\{\"customProperty\":\"customValue\"\\},\"Name\":\"request-test\",\"Success\":true,\"Duration\":\"PT.*S\",\"ResponseCode\":\"200\",\"OperationName\":null,\"Url\":\"foo\"\\},\\{\"__type\":\"DependencyTelemetryDocument\",\"DocumentType\":\"RemoteDependency\",\"Version\":\"1.0\",\"OperationId\":null,\"Properties\":\\{\"customProperty\":\"customValue\"\\},\"Name\":\"dep-test\",\"Target\":null,\"Success\":true,\"Duration\":\"PT.*S\",\"ResultCode\":null,\"CommandName\":\"dep-test-cmd\",\"DependencyTypeName\":null,\"OperationName\":null\\},\\{\"__type\":\"ExceptionTelemetryDocument\",\"DocumentType\":\"Exception\",\"Version\":\"1.0\",\"OperationId\":null,\"Properties\":null,\"Exception\":\"\",\"ExceptionMessage\":\"test\",\"ExceptionType\":\"java.lang.Exception\"\\}\\],\"InstrumentationKey\":\""
             + instrumentationKey
             + "\",\"Metrics\":\\[\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Requests\\\\\\/Sec\",\"Value\":\\d+,\"Weight\":\\d+\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Request Duration\",\"Value\":\\d+,\"Weight\":\\d+\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Requests Failed\\\\\\/Sec\",\"Value\":\\d+,\"Weight\":\\d+\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Requests Succeeded\\\\\\/Sec\",\"Value\":\\d+,\"Weight\":\\d+\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Dependency Calls\\\\\\/Sec\",\"Value\":\\d+,\"Weight\":\\d+\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Dependency Call Duration\",\"Value\":\\d+,\"Weight\":\\d+\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Dependency Calls Failed\\\\\\/Sec\",\"Value\":\\d+,\"Weight\":\\d+\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Dependency Calls Succeeded\\\\\\/Sec\",\"Value\":\\d+,\"Weight\":\\d+\\},\\{\"Name\":\"\\\\\\\\ApplicationInsights\\\\\\\\Exceptions\\\\\\/Sec\",\"Value\":\\d+,\"Weight\":\\d+\\},\\{\"Name\":\"\\\\\\\\Memory\\\\\\\\Committed Bytes\",\"Value\":\\d+,\"Weight\":\\d+\\},\\{\"Name\":\"\\\\\\\\Processor\\(_Total\\)\\\\\\\\% Processor Time\",\"Value\":-?\\d+,\"Weight\":\\d+\\}\\],\"InvariantVersion\":1,\"Timestamp\":\"\\\\\\/Date\\(\\d+\\)\\\\\\/\",\"Version\":\"[^\"]*\",\"StreamId\":null,\"MachineName\":\"machine1\",\"Instance\":\"instance1\",\"RoleName\":null\\}\\]";
     QuickPulsePingSender pingSender =
@@ -106,7 +106,7 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
         new QuickPulseDataSender(
             getHttpPipeline(new ValidationPolicy(postCountDown, expectedPostRequestBody)),
             sendQueue);
-    TelemetryClient telemetryClient = new TelemetryClient();
+    TelemetryClient telemetryClient = TelemetryClient.createForTest();
     telemetryClient.setConnectionString(connectionString);
     QuickPulseDataFetcher dataFetcher =
         new QuickPulseDataFetcher(sendQueue, telemetryClient, "machine1", "instance1", null);

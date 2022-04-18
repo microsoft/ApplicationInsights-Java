@@ -92,8 +92,8 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     if (config.preview.authentication.enabled) {
       featureList.add(Feature.AAD);
     }
-    if (!config.preview.legacyRequestIdPropagation.enabled) {
-      featureList.add(Feature.LEGACY_PROPAGATION_DISABLED);
+    if (config.preview.legacyRequestIdPropagation.enabled) {
+      featureList.add(Feature.LEGACY_PROPAGATION_ENABLED);
     }
 
     // disabled instrumentations
@@ -138,16 +138,42 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     if (config.preview.instrumentation.grizzly.enabled) {
       featureList.add(Feature.GRIZZLY_ENABLED);
     }
+    if (!config.preview.instrumentation.play.enabled) {
+      featureList.add(Feature.PLAY_DISABLED);
+    }
     if (!config.preview.instrumentation.quartz.enabled) {
       featureList.add(Feature.QUARTZ_DISABLED);
     }
     if (!config.preview.instrumentation.springIntegration.enabled) {
       featureList.add(Feature.SPRING_INTEGRATION_DISABLED);
     }
+    if (!config.preview.instrumentation.vertx.enabled) {
+      featureList.add(Feature.VERTX_DISABLED);
+    }
 
     // Statsbeat
     if (config.preview.statsbeat.disabled) {
       featureList.add(Feature.STATSBEAT_DISABLED);
+    }
+
+    if (config.preview.disablePropagation) {
+      featureList.add(Feature.PROPAGATION_DISABLED);
+    }
+    if (!config.preview.captureHttpServer4xxAsError) {
+      featureList.add(Feature.CAPTURE_HTTP_SERVER_4XX_AS_SUCCESS);
+    }
+    if (!config.preview.captureHttpServerHeaders.requestHeaders.isEmpty()
+        || !config.preview.captureHttpServerHeaders.responseHeaders.isEmpty()) {
+      featureList.add(Feature.CAPTURE_HTTP_SERVER_HEADERS);
+    }
+    if (!config.preview.captureHttpClientHeaders.requestHeaders.isEmpty()
+        || !config.preview.captureHttpClientHeaders.responseHeaders.isEmpty()) {
+      featureList.add(Feature.CAPTURE_HTTP_CLIENT_HEADERS);
+    }
+
+    // customDimensions
+    if (!config.customDimensions.isEmpty()) {
+      featureList.add(Feature.CUSTOM_DIMENSIONS_ENABLED);
     }
   }
 }

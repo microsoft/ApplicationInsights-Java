@@ -34,12 +34,14 @@ final class BatchSpanProcessorBuilder {
   private static final int DEFAULT_MAX_QUEUE_SIZE = 2048;
   private static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
   private static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
+  private static final int DEFAULT_MAX_PENDING_EXPORTS = 1;
 
   private final TelemetryChannel spanExporter;
   private long scheduleDelayNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_SCHEDULE_DELAY_MILLIS);
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
   private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
+  private int maxPendingExports = DEFAULT_MAX_PENDING_EXPORTS;
 
   BatchSpanProcessorBuilder(TelemetryChannel spanExporter) {
     this.spanExporter = requireNonNull(spanExporter, "spanExporter");
@@ -123,14 +125,45 @@ final class BatchSpanProcessorBuilder {
   }
 
   /**
+   * The maximum number of exports that can be pending at any time.
+   *
+   * <p>The {@link BatchSpanProcessor}'s single worker thread will keep processing as many batches
+   * as it can without blocking on the {@link io.opentelemetry.sdk.common.CompletableResultCode}s
+   * that are returned from the {@code spanExporter}, but it will limit the total number of pending
+   * exports in flight to this number.
+   *
+   * <p>Default value is {@code 1}.
+   *
+   * @param maxPendingExports the maximum number of exports that can be pending at any time.
+   * @return this.
+   * @see BatchSpanProcessorBuilder#DEFAULT_MAX_PENDING_EXPORTS
+   */
+  public BatchSpanProcessorBuilder setMaxPendingExports(int maxPendingExports) {
+    checkArgument(maxPendingExports > 0, "maxPendingExports must be positive.");
+    this.maxPendingExports = maxPendingExports;
+    return this;
+  }
+
+  // Visible for testing
+  int getMaxPendingExports() {
+    return maxPendingExports;
+  }
+
+  /**
    * Returns a new {@link io.opentelemetry.sdk.trace.export.BatchSpanProcessor} that batches, then
    * converts spans to proto and forwards them to the given {@code spanExporter}.
    *
    * @return a new {@link io.opentelemetry.sdk.trace.export.BatchSpanProcessor}.
    * @throws NullPointerException if the {@code spanExporter} is {@code null}.
    */
-  public BatchSpanProcessor build() {
+  public BatchSpanProcessor build(String queueName) {
     return new BatchSpanProcessor(
-        spanExporter, scheduleDelayNanos, maxQueueSize, maxExportBatchSize, exporterTimeoutNanos);
+        spanExporter,
+        scheduleDelayNanos,
+        maxQueueSize,
+        maxExportBatchSize,
+        exporterTimeoutNanos,
+        maxPendingExports,
+        queueName);
   }
 }

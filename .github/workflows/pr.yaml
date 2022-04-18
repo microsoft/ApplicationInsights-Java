@@ -12,12 +12,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ windows-latest, ubuntu-latest ]
+        os: [ windows-2019, ubuntu-latest ]
       fail-fast: false
     steps:
       - name: Support longpaths
         run: git config --system core.longpaths true
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-2019'
       - name: Check out repository
         uses: actions/checkout@v2
         with:
@@ -44,6 +44,12 @@ jobs:
       - name: Test
         # TODO enable build cache, either --build-cache here, or org.gradle.caching=true in gradle.properties
         run: ./gradlew check --stacktrace
+      - name: Upload snapshot
+        # only upload from windows since only that build includes etw
+        if: matrix.os == 'windows-2019'
+        uses: actions/upload-artifact@v2
+        with:
+          path: agent/agent/build/libs/applicationinsights-agent-*-SNAPSHOT.jar
 
   setup-smoke-test-matrix:
     runs-on: ubuntu-latest

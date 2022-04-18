@@ -78,7 +78,7 @@ class RpConfigurationPollingTest {
             RpConfigurationPollingTest.class.getResource("/applicationinsights-rp.json").toURI());
     rpConfiguration.lastModifiedTime = 0;
 
-    TelemetryClient telemetryClient = new TelemetryClient();
+    TelemetryClient telemetryClient = TelemetryClient.createForTest();
     telemetryClient.setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
     AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient);
 
@@ -112,7 +112,7 @@ class RpConfigurationPollingTest {
             RpConfigurationPollingTest.class.getResource("/applicationinsights-rp.json").toURI());
     rpConfiguration.lastModifiedTime = 0;
 
-    TelemetryClient telemetryClient = new TelemetryClient();
+    TelemetryClient telemetryClient = TelemetryClient.createForTest();
     telemetryClient.setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
     AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient);
 

@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import io.opentelemetry.instrumentation.api.caching.Cache;
+import io.opentelemetry.instrumentation.api.cache.Cache;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -41,11 +41,12 @@ public class StatsbeatModule {
           ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
 
   private final CustomDimensions customDimensions;
-
   private final NetworkStatsbeat networkStatsbeat;
   private final AttachStatsbeat attachStatsbeat;
   private final FeatureStatsbeat featureStatsbeat;
   private final FeatureStatsbeat instrumentationStatsbeat;
+  private final NonessentialStatsbeat nonessentialStatsbeat;
+  private final AzureMetadataService azureMetadataService;
 
   private final AtomicBoolean started = new AtomicBoolean();
 
@@ -55,6 +56,8 @@ public class StatsbeatModule {
     attachStatsbeat = new AttachStatsbeat(customDimensions);
     featureStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.FEATURE);
     instrumentationStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.INSTRUMENTATION);
+    nonessentialStatsbeat = new NonessentialStatsbeat(customDimensions);
+    azureMetadataService = new AzureMetadataService(attachStatsbeat, customDimensions);
   }
 
   public void start(TelemetryClient telemetryClient, Configuration config) {
@@ -84,12 +87,12 @@ public class StatsbeatModule {
         TimeUnit.SECONDS);
     scheduledExecutor.scheduleWithFixedDelay(
         new StatsbeatSender(featureStatsbeat, telemetryClient),
-        longIntervalSeconds,
+        60,
         longIntervalSeconds,
         TimeUnit.SECONDS);
     scheduledExecutor.scheduleWithFixedDelay(
         new StatsbeatSender(instrumentationStatsbeat, telemetryClient),
-        longIntervalSeconds,
+        60,
         longIntervalSeconds,
         TimeUnit.SECONDS);
 
@@ -97,19 +100,26 @@ public class StatsbeatModule {
     // only turn on AzureMetadataService when the resource provider is VM or UNKNOWN.
     if (rp == ResourceProvider.RP_VM || rp == ResourceProvider.UNKNOWN) {
       // will only reach here the first time, after instance has been instantiated
-      AzureMetadataService metadataService =
-          new AzureMetadataService(attachStatsbeat, customDimensions);
-      metadataService.scheduleWithFixedDelay(longIntervalSeconds);
+      azureMetadataService.scheduleWithFixedDelay(longIntervalSeconds);
     }
 
     featureStatsbeat.trackConfigurationOptions(config);
 
-    if (config.preview.statsbeat.disabled) {
-      // disabled will disable non-essentials Statsbeat, such as tracking failure or success of disk
-      // persistence operations, optional network statsbeat, live metric,
-      // azure metadata service failure, profile endpoint, etc.
-      // TODO stop sending non-essential Statsbeat when applicable
+    if (!config.preview.statsbeat.disabled) {
+      scheduledExecutor.scheduleWithFixedDelay(
+          new StatsbeatSender(nonessentialStatsbeat, telemetryClient),
+          longIntervalSeconds,
+          longIntervalSeconds,
+          TimeUnit.SECONDS);
+    } else {
+      logger.debug("Non-essential Statsbeat is disabled.");
     }
+  }
+
+  public void shutdown() {
+    logger.debug("Shutting down Statsbeat scheduler.");
+    scheduledExecutor.shutdown();
+    azureMetadataService.shutdown();
   }
 
   public NetworkStatsbeat getNetworkStatsbeat() {
@@ -118,6 +128,10 @@ public class StatsbeatModule {
 
   public FeatureStatsbeat getInstrumentationStatsbeat() {
     return instrumentationStatsbeat;
+  }
+
+  public NonessentialStatsbeat getNonessentialStatsbeat() {
+    return nonessentialStatsbeat;
   }
 
   /** Runnable which is responsible for calling the send method to transmit Statsbeat telemetry. */

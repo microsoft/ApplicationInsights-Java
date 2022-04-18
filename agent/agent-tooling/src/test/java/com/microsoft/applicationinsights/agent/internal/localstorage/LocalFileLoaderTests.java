@@ -25,6 +25,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -32,9 +33,12 @@ import com.azure.core.http.HttpClient;
 import com.azure.core.http.HttpPipelineBuilder;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
+import com.azure.core.util.Context;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.agent.internal.MockHttpResponse;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeat;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryChannel;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
@@ -52,17 +56,50 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
 public class LocalFileLoaderTests {
 
+  private static final String GZIPPED_RAW_BYTES_WITHOUT_IKEY = "gzipped-raw-bytes-without-ikey.trn";
   private static final String BYTE_BUFFERS_TEST_FILE = "read-transmission.txt";
+  private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   @TempDir File tempFolder;
 
   @AfterEach
   public void cleanup() {}
+
+  @Test
+  public void testInstrumentationKeyRegex() {
+    assertThat(LocalFileLoader.isInstrumentationKeyValid(INSTRUMENTATION_KEY)).isTrue();
+    assertThat(LocalFileLoader.isInstrumentationKeyValid("fake-instrumentation-key")).isFalse();
+    assertThat(LocalFileLoader.isInstrumentationKeyValid("5ED1AE38-41AF-11EC-81D3")).isFalse();
+    assertThat(LocalFileLoader.isInstrumentationKeyValid("5ED1AE38-41AF-11EC-81D3-0242AC130003"))
+        .isTrue();
+    assertThat(LocalFileLoader.isInstrumentationKeyValid("C6864988-6BF8-45EF-8590-1FD3D84E5A4D"))
+        .isTrue();
+  }
+
+  @Test
+  public void testPersistedFileWithoutInstrumentationKey() throws IOException {
+    File sourceFile =
+        new File(getClass().getClassLoader().getResource(GZIPPED_RAW_BYTES_WITHOUT_IKEY).getPath());
+
+    File persistedFile = new File(tempFolder, GZIPPED_RAW_BYTES_WITHOUT_IKEY);
+    FileUtils.copyFile(sourceFile, persistedFile);
+    assertThat(persistedFile.exists()).isTrue();
+
+    LocalFileCache localFileCache = new LocalFileCache(tempFolder);
+    localFileCache.addPersistedFilenameToMap(GZIPPED_RAW_BYTES_WITHOUT_IKEY);
+
+    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
+    LocalFileLoader.PersistedFile loadedPersistedFile = localFileLoader.loadTelemetriesFromDisk();
+    assertThat(loadedPersistedFile).isNull();
+    assertThat(persistedFile.exists())
+        .isFalse(); // verify the old formatted trn is deleted successfully.
+  }
 
   @Test
   public void testLoadFile() throws IOException {
@@ -74,11 +111,13 @@ public class LocalFileLoaderTests {
     FileUtils.copyFile(sourceFile, persistedFile);
     assertThat(persistedFile.exists()).isTrue();
 
-    LocalFileCache localFileCache = new LocalFileCache();
+    LocalFileCache localFileCache = new LocalFileCache(tempFolder);
     localFileCache.addPersistedFilenameToMap(BYTE_BUFFERS_TEST_FILE);
 
-    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder);
-    String bytesString = readTelemetriesFromDiskToString(localFileLoader);
+    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
+    LocalFileLoader.PersistedFile loadedPersistedFile = localFileLoader.loadTelemetriesFromDisk();
+    assertThat(loadedPersistedFile.instrumentationKey).isEqualTo(INSTRUMENTATION_KEY);
+    String bytesString = new String(loadedPersistedFile.rawBytes.array(), UTF_8);
 
     String[] stringArray = bytesString.split("\n");
     assertThat(stringArray.length).isEqualTo(10);
@@ -92,7 +131,7 @@ public class LocalFileLoaderTests {
       verifyTelemetryName(i, jsonNode.get("name").asText());
       verifyTelemetryTime(i, jsonNode.get("time").asText());
       assertThat(jsonNode.get("sampleRate").asInt()).isEqualTo(100);
-      assertThat(jsonNode.get("iKey").asText()).isEqualTo("00000000-0000-0000-0000-0FEEDDADBEEF");
+      assertThat(jsonNode.get("iKey").asText()).isEqualTo(INSTRUMENTATION_KEY);
 
       // verify tags
       JsonNode tagsNode = jsonNode.get("tags");
@@ -149,13 +188,14 @@ public class LocalFileLoaderTests {
   @Test
   public void testWriteAndReadRandomText() {
     String text = "hello world";
-    LocalFileCache cache = new LocalFileCache();
-    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder);
-    writer.writeToDisk(singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))));
+    LocalFileCache cache = new LocalFileCache(tempFolder);
+    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder, null);
+    writer.writeToDisk(singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))), INSTRUMENTATION_KEY);
 
-    LocalFileLoader loader = new LocalFileLoader(cache, tempFolder);
-    String bytesString = readTelemetriesFromDiskToString(loader);
-    assertThat(bytesString).isEqualTo(text);
+    LocalFileLoader loader = new LocalFileLoader(cache, tempFolder, null);
+    LocalFileLoader.PersistedFile persistedFile = loader.loadTelemetriesFromDisk();
+    assertThat(new String(persistedFile.rawBytes.array(), UTF_8)).isEqualTo(text);
+    assertThat(persistedFile.instrumentationKey).isEqualTo(INSTRUMENTATION_KEY);
   }
 
   @Test
@@ -178,13 +218,14 @@ public class LocalFileLoaderTests {
 
     // write gzipped bytes[] to disk
     byte[] result = byteArrayOutputStream.toByteArray();
-    LocalFileCache cache = new LocalFileCache();
-    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder);
-    writer.writeToDisk(singletonList(ByteBuffer.wrap(result)));
+    LocalFileCache cache = new LocalFileCache(tempFolder);
+    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder, null);
+    writer.writeToDisk(singletonList(ByteBuffer.wrap(result)), INSTRUMENTATION_KEY);
 
     // read gzipped byte[] from disk
-    LocalFileLoader loader = new LocalFileLoader(cache, tempFolder);
-    byte[] bytes = readTelemetriesFromDiskToBytes(loader);
+    LocalFileLoader loader = new LocalFileLoader(cache, tempFolder, null);
+    LocalFileLoader.PersistedFile persistedFile = loader.loadTelemetriesFromDisk();
+    byte[] bytes = persistedFile.rawBytes.array();
 
     // ungzip
     ByteArrayInputStream inputStream = new ByteArrayInputStream(result);
@@ -197,23 +238,32 @@ public class LocalFileLoaderTests {
     }
 
     assertThat(new String(Arrays.copyOf(ungzip, read), UTF_8)).isEqualTo(text);
+    assertThat(persistedFile.instrumentationKey).isEqualTo(INSTRUMENTATION_KEY);
   }
 
   @Test
   public void testDeleteFilePermanentlyOnSuccess() throws Exception {
     HttpClient mockedClient = getMockHttpClientSuccess();
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
-    LocalFileCache localFileCache = new LocalFileCache();
-    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder);
-    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder);
+    LocalFileCache localFileCache = new LocalFileCache(tempFolder);
+    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder, null);
+    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
 
+    StatsbeatModule mockedStatsbeatModule = Mockito.mock(StatsbeatModule.class);
+    when(mockedStatsbeatModule.getNetworkStatsbeat())
+        .thenReturn(Mockito.mock(NetworkStatsbeat.class));
     TelemetryChannel telemetryChannel =
         new TelemetryChannel(
-            pipelineBuilder.build(), new URL("http://foo.bar"), localFileWriter, null);
+            pipelineBuilder.build(),
+            new URL("http://foo.bar"),
+            localFileWriter,
+            mockedStatsbeatModule,
+            false);
 
     // persist 10 files to disk
     for (int i = 0; i < 10; i++) {
-      localFileWriter.writeToDisk(singletonList(ByteBuffer.wrap("hello world".getBytes(UTF_8))));
+      localFileWriter.writeToDisk(
+          singletonList(ByteBuffer.wrap("hello world".getBytes(UTF_8))), INSTRUMENTATION_KEY);
     }
 
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(10);
@@ -227,7 +277,8 @@ public class LocalFileLoaderTests {
     for (int i = 0; i < 10; i++) {
       LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
       CompletableResultCode completableResultCode =
-          telemetryChannel.sendRawBytes(persistedFile.rawBytes);
+          telemetryChannel.sendRawBytes(
+              persistedFile.rawBytes, persistedFile.instrumentationKey, () -> {}, retryable -> {});
       completableResultCode.join(10, SECONDS);
       assertThat(completableResultCode.isSuccess()).isEqualTo(true);
       localFileLoader.updateProcessedFileStatus(true, persistedFile.file);
@@ -245,23 +296,32 @@ public class LocalFileLoaderTests {
   @Test
   public void testDeleteFilePermanentlyOnFailure() throws Exception {
     HttpClient mockedClient = mock(HttpClient.class);
-    HttpRequest mockedRequest = mock(HttpRequest.class);
-    HttpResponse mockedResponse = mock(HttpResponse.class);
-    when(mockedResponse.getStatusCode()).thenReturn(500);
-    when(mockedClient.send(mockedRequest)).thenReturn(Mono.just(mockedResponse));
+    when(mockedClient.send(any(HttpRequest.class), any(Context.class)))
+        .then(
+            invocation ->
+                Mono.error(
+                    () -> new Exception("this is expected to be logged by the operation logger")));
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
-    LocalFileCache localFileCache = new LocalFileCache();
+    LocalFileCache localFileCache = new LocalFileCache(tempFolder);
 
-    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder);
-    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder);
+    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
+    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder, null);
+
+    StatsbeatModule statsbeatModule = mock(StatsbeatModule.class);
+    when(statsbeatModule.getNetworkStatsbeat()).thenReturn(mock(NetworkStatsbeat.class));
 
     TelemetryChannel telemetryChannel =
         new TelemetryChannel(
-            pipelineBuilder.build(), new URL("http://foo.bar"), localFileWriter, null);
+            pipelineBuilder.build(),
+            new URL("http://foo.bar"),
+            localFileWriter,
+            statsbeatModule,
+            false);
 
     // persist 10 files to disk
     for (int i = 0; i < 10; i++) {
-      localFileWriter.writeToDisk(singletonList(ByteBuffer.wrap("hello world".getBytes(UTF_8))));
+      localFileWriter.writeToDisk(
+          singletonList(ByteBuffer.wrap("hello world".getBytes(UTF_8))), INSTRUMENTATION_KEY);
     }
 
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(10);
@@ -272,8 +332,11 @@ public class LocalFileLoaderTests {
     // fail to send persisted files and expect them to be kept on disk
     for (int i = 0; i < 10; i++) {
       LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
+      assertThat(persistedFile.instrumentationKey).isEqualTo(INSTRUMENTATION_KEY);
+
       CompletableResultCode completableResultCode =
-          telemetryChannel.sendRawBytes(persistedFile.rawBytes);
+          telemetryChannel.sendRawBytes(
+              persistedFile.rawBytes, persistedFile.instrumentationKey, () -> {}, retryable -> {});
       completableResultCode.join(10, SECONDS);
       assertThat(completableResultCode.isSuccess()).isEqualTo(false);
       localFileLoader.updateProcessedFileStatus(false, persistedFile.file);
@@ -451,20 +514,9 @@ public class LocalFileLoaderTests {
     assertThat(properties.get("language").asText()).isEqualTo("java");
     assertThat(properties.get("attach").asText()).isEqualTo("codeless");
     assertThat(properties.get("instrumentation").asText()).isEqualTo("0");
-    assertThat(properties.get("cikey").asText()).isEqualTo("00000000-0000-0000-0000-0FEEDDADBEEF");
+    assertThat(properties.get("cikey").asText()).isEqualTo(INSTRUMENTATION_KEY);
     assertThat(properties.get("version").asText()).isEqualTo("3.1.1");
     assertThat(properties.get("rp").asText()).isEqualTo("unknown");
-  }
-
-  private static String readTelemetriesFromDiskToString(LocalFileLoader localFileLoader) {
-    return new String(readTelemetriesFromDiskToBytes(localFileLoader), UTF_8);
-  }
-
-  private static byte[] readTelemetriesFromDiskToBytes(LocalFileLoader localFileLoader) {
-    LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
-    byte[] bytes = new byte[persistedFile.rawBytes.remaining()];
-    persistedFile.rawBytes.get(bytes);
-    return bytes;
   }
 
   private static HttpClient getMockHttpClientSuccess() {

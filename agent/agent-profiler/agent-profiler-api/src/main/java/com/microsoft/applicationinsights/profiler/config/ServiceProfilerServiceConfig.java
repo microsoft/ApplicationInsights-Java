@@ -42,9 +42,6 @@ public class ServiceProfilerServiceConfig {
 
   private final URL serviceProfilerFrontEndPoint;
 
-  // Enable entire service profiler subsystem
-  private final boolean enabled;
-
   // Either an inbuilt profile as defined in ProfileTypes, or a path to a custom JFC file to use for
   // memory profiling
   private final String memoryTriggeredSettings;
@@ -61,7 +58,6 @@ public class ServiceProfilerServiceConfig {
       int periodicRecordingDuration,
       int periodicRecordingInterval,
       URL serviceProfilerFrontEndPoint,
-      boolean enabled,
       String memoryTriggeredSettings,
       String cpuTriggeredSettings,
       File tempDirectory) {
@@ -69,7 +65,6 @@ public class ServiceProfilerServiceConfig {
     this.periodicRecordingDuration = periodicRecordingDuration;
     this.periodicRecordingInterval = periodicRecordingInterval;
     this.serviceProfilerFrontEndPoint = serviceProfilerFrontEndPoint;
-    this.enabled = enabled;
     this.memoryTriggeredSettings = memoryTriggeredSettings;
     this.cpuTriggeredSettings = cpuTriggeredSettings;
     this.tempDirectory = tempDirectory;
@@ -93,10 +88,6 @@ public class ServiceProfilerServiceConfig {
 
   public URL getServiceProfilerFrontEndPoint() {
     return serviceProfilerFrontEndPoint;
-  }
-
-  public boolean enabled() {
-    return enabled;
   }
 
   public String memoryTriggeredSettings() {

@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
@@ -58,9 +57,7 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
-import io.opentelemetry.instrumentation.api.caching.Cache;
-import io.opentelemetry.instrumentation.api.config.Config;
-import io.opentelemetry.javaagent.extension.AgentListener;
+import io.opentelemetry.instrumentation.api.cache.Cache;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.File;
 import java.lang.instrument.Instrumentation;
@@ -72,28 +69,17 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@AutoService(AgentListener.class)
-public class AiComponentInstaller implements AgentListener {
+class AiComponentInstaller {
 
   private static final Logger startupLogger =
       LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
 
-  // TODO move to "agent builder" and then can inject this in the constructor
-  //  or convert to ByteBuddy and use ByteBuddyAgentCustomizer
-  private static volatile Instrumentation instrumentation;
-
-  public static void setInstrumentation(Instrumentation inst) {
-    instrumentation = inst;
-  }
-
-  private volatile AppIdSupplier appIdSupplier;
-
   private static final File tempDirectory =
       new File(LocalFileSystemUtils.getTempDir(), "applicationinsights/profiles");
 
-  @Override
-  public void beforeAgent(Config config) {
-    start(instrumentation);
+  static AppIdSupplier beforeAgent(Instrumentation instrumentation) {
+    AppIdSupplier appIdSupplier = start(instrumentation);
+
     // add sdk instrumentation after ensuring Global.getTelemetryClient() will not return null
     instrumentation.addTransformer(new TelemetryClientClassFileTransformer());
     instrumentation.addTransformer(new DependencyTelemetryClassFileTransformer());
@@ -105,22 +91,11 @@ public class AiComponentInstaller implements AgentListener {
     instrumentation.addTransformer(new WebRequestTrackingFilterClassFileTransformer());
     instrumentation.addTransformer(new RequestNameHandlerClassFileTransformer());
     instrumentation.addTransformer(new DuplicateAgentClassFileTransformer());
+
+    return appIdSupplier;
   }
 
-  @Override
-  public void afterAgent(Config config) {
-    // only safe now to resolve app id because SSL initialization
-    // triggers loading of java.util.logging (starting with Java 8u231)
-    // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized.
-
-    if (!"java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
-      // Delay registering and starting AppId retrieval until the connection string becomes
-      // available for Linux Consumption Plan.
-      appIdSupplier.startAppIdRetrieval();
-    }
-  }
-
-  private void start(Instrumentation instrumentation) {
+  private static AppIdSupplier start(Instrumentation instrumentation) {
 
     String codelessSdkNamePrefix = getCodelessSdkNamePrefix();
     if (codelessSdkNamePrefix != null) {
@@ -128,9 +103,20 @@ public class AiComponentInstaller implements AgentListener {
     }
 
     File javaTmpDir = new File(System.getProperty("java.io.tmpdir"));
-    File tmpDir = new File(javaTmpDir, "applicationinsights-java");
-    if (!tmpDir.exists() && !tmpDir.mkdirs()) {
-      throw new IllegalStateException("Could not create directory: " + tmpDir.getAbsolutePath());
+    boolean readOnlyFileSystem = false;
+    if (javaTmpDir.canRead() && !javaTmpDir.canWrite()) {
+      readOnlyFileSystem = true;
+    }
+
+    if (!readOnlyFileSystem) {
+      File tmpDir = new File(javaTmpDir, "applicationinsights-java");
+      if (!tmpDir.exists() && !tmpDir.mkdirs()) {
+        throw new IllegalStateException("Could not create directory: " + tmpDir.getAbsolutePath());
+      }
+    } else {
+      startupLogger.info(
+          "Detected running on a read-only file system, telemetry will not be stored to disk or retried later on sporadic network failures. If this is unexpected, please check that the process has write access to the temp directory: "
+              + javaTmpDir.getAbsolutePath());
     }
 
     Configuration config = MainEntryPoint.getConfiguration();
@@ -142,8 +128,16 @@ public class AiComponentInstaller implements AgentListener {
       }
     }
     // TODO (trask) should configuration validation be performed earlier?
-    // Function to validate user provided processor configuration
-    validateProcessorConfiguration(config);
+    for (Configuration.SamplingOverride samplingOverride : config.preview.sampling.overrides) {
+      samplingOverride.validate();
+    }
+    for (Configuration.InstrumentationKeyOverride instrumentationKeyOverride :
+        config.preview.instrumentationKeyOverrides) {
+      instrumentationKeyOverride.validate();
+    }
+    for (ProcessorConfig processorConfig : config.preview.processors) {
+      processorConfig.validate();
+    }
     // validate authentication configuration
     config.preview.authentication.validate();
 
@@ -160,6 +154,8 @@ public class AiComponentInstaller implements AgentListener {
     if (config.proxy.host != null) {
       LazyHttpClient.proxyHost = config.proxy.host;
       LazyHttpClient.proxyPortNumber = config.proxy.port;
+      LazyHttpClient.proxyUsername = config.proxy.username;
+      LazyHttpClient.proxyPassword = config.proxy.password;
     }
 
     List<MetricFilter> metricFilters =
@@ -168,16 +164,20 @@ public class AiComponentInstaller implements AgentListener {
             .map(MetricFilter::new)
             .collect(Collectors.toList());
 
-    Cache<String, String> ikeyEndpointMap = Cache.newBuilder().setMaximumSize(100).build();
+    Cache<String, String> ikeyEndpointMap = Cache.bounded(100);
     StatsbeatModule statsbeatModule = new StatsbeatModule(ikeyEndpointMap);
-    // TODO (heya) apply Builder design pattern to TelemetryClient
     TelemetryClient telemetryClient =
-        new TelemetryClient(
-            config.customDimensions,
-            metricFilters,
-            ikeyEndpointMap,
-            statsbeatModule,
-            config.preview.authentication);
+        TelemetryClient.builder()
+            .setCustomDimensions(config.customDimensions)
+            .setMetricFilters(metricFilters)
+            .setIkeyEndpointMap(ikeyEndpointMap)
+            .setStatsbeatModule(statsbeatModule)
+            .setReadOnlyFileSystem(readOnlyFileSystem)
+            .setGeneralExportQueueSize(config.preview.generalExportQueueCapacity)
+            .setMetricsExportQueueSize(config.preview.metricsExportQueueCapacity)
+            .setAadAuthentication(config.preview.authentication)
+            .build();
+
     TelemetryClientInitializer.initialize(telemetryClient, config);
     TelemetryClient.setActive(telemetryClient);
 
@@ -192,18 +192,26 @@ public class AiComponentInstaller implements AgentListener {
 
     BytecodeUtilImpl.samplingPercentage = config.sampling.percentage;
 
-    appIdSupplier = new AppIdSupplier(telemetryClient);
+    AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient);
     AiAppId.setSupplier(appIdSupplier);
 
-    ProfilerServiceInitializer.initialize(
-        appIdSupplier::get,
-        SystemInformation.getProcessId(),
-        formServiceProfilerConfig(config.preview.profiler),
-        config.role.instance,
-        config.role.name,
-        telemetryClient,
-        formApplicationInsightsUserAgent(),
-        formGcEventMonitorConfiguration(config.preview.gcEvents));
+    if (config.preview.profiler.enabled) {
+      if (readOnlyFileSystem) {
+        throw new FriendlyException(
+            "Profile is not supported in a read-only file system.",
+            "disable profiler or use a writable file system");
+      }
+
+      ProfilerServiceInitializer.initialize(
+          appIdSupplier::get,
+          SystemInformation.getProcessId(),
+          formServiceProfilerConfig(config.preview.profiler),
+          config.role.instance,
+          config.role.name,
+          telemetryClient,
+          formApplicationInsightsUserAgent(),
+          formGcEventMonitorConfiguration(config.preview.gcEvents));
+    }
 
     // this is for Azure Function Linux consumption plan support.
     if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
@@ -224,7 +232,11 @@ public class AiComponentInstaller implements AgentListener {
     statsbeatModule.start(telemetryClient, config);
 
     // start local File purger scheduler task
-    LocalFilePurger.startPurging();
+    if (!readOnlyFileSystem) {
+      LocalFilePurger.startPurging();
+    }
+
+    return appIdSupplier;
   }
 
   private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(
@@ -257,19 +269,9 @@ public class AiComponentInstaller implements AgentListener {
         configuration.periodicRecordingDurationSeconds,
         configuration.periodicRecordingIntervalSeconds,
         serviceProfilerFrontEndPoint,
-        configuration.enabled,
         configuration.memoryTriggeredSettings,
         configuration.cpuTriggeredSettings,
         tempDirectory);
-  }
-
-  private static void validateProcessorConfiguration(Configuration config) {
-    if (config.preview == null || config.preview.processors == null) {
-      return;
-    }
-    for (ProcessorConfig processorConfig : config.preview.processors) {
-      processorConfig.validate();
-    }
   }
 
   @Nullable
@@ -330,4 +332,6 @@ public class AiComponentInstaller implements AgentListener {
       }
     }
   }
+
+  private AiComponentInstaller() {}
 }

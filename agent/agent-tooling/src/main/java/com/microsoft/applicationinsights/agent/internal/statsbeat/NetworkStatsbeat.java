@@ -25,22 +25,26 @@ import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
-import io.opentelemetry.instrumentation.api.caching.Cache;
+import io.opentelemetry.instrumentation.api.cache.Cache;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 
 public class NetworkStatsbeat extends BaseStatsbeat {
 
   private static final String REQUEST_SUCCESS_COUNT_METRIC_NAME = "Request Success Count";
-  private static final String REQUEST_FAILURE_COUNT_METRIC_NAME = "Requests Failure Count ";
+  private static final String REQUEST_FAILURE_COUNT_METRIC_NAME = "Request Failure Count";
   private static final String REQUEST_DURATION_METRIC_NAME = "Request Duration";
   private static final String RETRY_COUNT_METRIC_NAME = "Retry Count";
   private static final String THROTTLE_COUNT_METRIC_NAME = "Throttle Count";
   private static final String EXCEPTION_COUNT_METRIC_NAME = "Exception Count";
   private static final String BREEZE_ENDPOINT = "breeze";
+
+  private static final Pattern hostPattern = Pattern.compile("^https?://(?:www\\.)?([^/.]+)");
 
   private final Object lock = new Object();
   private final Cache<String, String> ikeyEndpointMap;
@@ -51,7 +55,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   // only used by tests
   public NetworkStatsbeat() {
     super(new CustomDimensions());
-    this.ikeyEndpointMap = Cache.newBuilder().build();
+    this.ikeyEndpointMap = Cache.bounded(100);
   }
 
   public NetworkStatsbeat(
@@ -241,25 +245,16 @@ public class NetworkStatsbeat extends BaseStatsbeat {
 
   /**
    * e.g. endpointUrl 'https://westus-0.in.applicationinsights.azure.com/v2.1/track' host will
-   * return 'westus-0.in.applicationinsights.azure.com'
+   * return 'westus-0'
    */
   static String getHost(String endpointUrl) {
-    assert (endpointUrl != null && !endpointUrl.isEmpty());
-    int start = endpointUrl.indexOf("://");
-    if (start != -1) {
-      int end = endpointUrl.indexOf("/", start + 3);
-      if (end != -1) {
-        return endpointUrl.substring(start + 3, end);
-      }
+    Matcher matcher = hostPattern.matcher(endpointUrl);
 
-      return endpointUrl.substring(start + 3);
+    if (matcher.find()) {
+      return matcher.group(1);
     }
 
-    int end = endpointUrl.indexOf("/");
-    if (end != -1) {
-      return endpointUrl.substring(0, end);
-    }
-
+    // it's better to send bad endpointUrl to Statsbeat for troubleshooting.
     return endpointUrl;
   }
 }

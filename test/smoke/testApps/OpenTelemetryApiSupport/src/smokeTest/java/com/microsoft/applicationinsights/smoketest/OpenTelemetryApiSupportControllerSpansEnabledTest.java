@@ -158,7 +158,8 @@ public class OpenTelemetryApiSupportControllerSpansEnabledTest extends AiSmokeTe
     assertNull(telemetry.rdd2.getData());
     assertEquals("InProc", telemetry.rdd2.getType());
     assertNull(telemetry.rdd2.getTarget());
-    assertTrue(telemetry.rdd2.getProperties().isEmpty());
+    assertEquals("a message", telemetry.rdd2.getProperties().get("message"));
+    assertEquals(1, telemetry.rdd2.getProperties().size());
     assertTrue(telemetry.rdd2.getSuccess());
 
     assertParentChild(

@@ -41,6 +41,9 @@ public class TestController {
     requestTelemetry.getProperties().put("myattr1", "myvalue1");
     requestTelemetry.getProperties().put("myattr2", "myvalue2");
     requestTelemetry.getContext().getUser().setId("myuser");
+    requestTelemetry.getContext().getSession().setId("mysessionid");
+    requestTelemetry.getContext().getDevice().setOperatingSystem("mydeviceos");
+    requestTelemetry.getContext().getDevice().setOperatingSystemVersion("mydeviceosversion");
     requestTelemetry.setName("myspanname");
     requestTelemetry.setSource("mysource");
     requestTelemetry.setSuccess(false);

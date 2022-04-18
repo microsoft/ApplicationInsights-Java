@@ -21,8 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
+import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryChannel;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -58,16 +60,24 @@ public class LocalFileSender implements Runnable {
   public void run() {
     // TODO (heya) load all persisted files on disk in one or more batch per batch capacity?
     try {
+      if (Strings.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey())) {
+        return;
+      }
+
       LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
       if (persistedFile != null) {
-        CompletableResultCode resultCode = telemetryChannel.sendRawBytes(persistedFile.rawBytes);
+        CompletableResultCode resultCode =
+            telemetryChannel.sendRawBytes(
+                persistedFile.rawBytes,
+                persistedFile.instrumentationKey,
+                () -> localFileLoader.updateProcessedFileStatus(true, persistedFile.file),
+                retryable ->
+                    localFileLoader.updateProcessedFileStatus(!retryable, persistedFile.file));
         resultCode.join(30, TimeUnit.SECONDS); // wait max 30 seconds for request to be completed.
-        localFileLoader.updateProcessedFileStatus(resultCode.isSuccess(), persistedFile.file);
       }
     } catch (RuntimeException ex) {
       logger.error(
           "Unexpected error occurred while sending telemetries from the local storage.", ex);
-      // TODO (heya) track sending persisted telemetries failure via Statsbeat.
     }
   }
 }

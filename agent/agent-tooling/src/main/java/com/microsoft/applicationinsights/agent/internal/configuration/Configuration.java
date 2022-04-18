@@ -35,8 +35,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 // an assumption is made throughout this file that user will not explicitly use `null` value in json
 // file
@@ -62,6 +64,26 @@ public class Configuration {
     return str == null || str.trim().isEmpty();
   }
 
+  // TODO (trask) investigate options for mapping lowercase values to otel enum directly
+  public enum SpanKind {
+    @JsonProperty("server")
+    SERVER(io.opentelemetry.api.trace.SpanKind.SERVER),
+    @JsonProperty("client")
+    CLIENT(io.opentelemetry.api.trace.SpanKind.CLIENT),
+    @JsonProperty("consumer")
+    CONSUMER(io.opentelemetry.api.trace.SpanKind.CONSUMER),
+    @JsonProperty("producer")
+    PRODUCER(io.opentelemetry.api.trace.SpanKind.PRODUCER),
+    @JsonProperty("internal")
+    INTERNAL(io.opentelemetry.api.trace.SpanKind.INTERNAL);
+
+    public final io.opentelemetry.api.trace.SpanKind otelSpanKind;
+
+    SpanKind(io.opentelemetry.api.trace.SpanKind otelSpanKind) {
+      this.otelSpanKind = otelSpanKind;
+    }
+  }
+
   public enum MatchType {
     @JsonProperty("strict")
     STRICT,
@@ -79,7 +101,9 @@ public class Configuration {
     @JsonProperty("hash")
     HASH,
     @JsonProperty("extract")
-    EXTRACT
+    EXTRACT,
+    @JsonProperty("mask")
+    MASK
   }
 
   public enum ProcessorType {
@@ -167,10 +191,8 @@ public class Configuration {
     // when something goes wrong.
     public boolean disabledAll = false;
 
-    public String instrumentationKey =
-        "c4a29126-a7cb-47e5-b348-11414998b11e"; // workspace-aistatsbeat
-    public String endpoint =
-        DefaultEndpoints.INGESTION_ENDPOINT; // this supports the government cloud
+    public String instrumentationKey;
+    public String endpoint;
     public long shortIntervalSeconds = MINUTES.toSeconds(15); // default to 15 minutes
     public long longIntervalSeconds = DAYS.toSeconds(1); // default to daily
   }
@@ -179,6 +201,8 @@ public class Configuration {
 
     public String host;
     public int port = 80;
+    public String username;
+    public String password;
   }
 
   public static class PreviewConfiguration {
@@ -201,13 +225,27 @@ public class Configuration {
     @Deprecated public boolean httpMethodInOperationName;
     public LiveMetrics liveMetrics = new LiveMetrics();
     public LegacyRequestIdPropagation legacyRequestIdPropagation = new LegacyRequestIdPropagation();
+    // this is needed to unblock customer, but is not the ideal long-term solution
+    // https://portal.microsofticm.com/imp/v3/incidents/details/266992200/home
+    public boolean disablePropagation;
+    public boolean captureHttpServer4xxAsError = true;
 
     public List<InheritedAttribute> inheritedAttributes = new ArrayList<>();
+
+    public HttpHeadersConfiguration captureHttpServerHeaders = new HttpHeadersConfiguration();
+    public HttpHeadersConfiguration captureHttpClientHeaders = new HttpHeadersConfiguration();
 
     public ProfilerConfiguration profiler = new ProfilerConfiguration();
     public GcEventConfiguration gcEvents = new GcEventConfiguration();
     public AadAuthentication authentication = new AadAuthentication();
     public PreviewStatsbeat statsbeat = new PreviewStatsbeat();
+
+    public List<InstrumentationKeyOverride> instrumentationKeyOverrides = new ArrayList<>();
+
+    public int generalExportQueueCapacity = 2048;
+    // metrics get flooded every 60 seconds by default, so need larger queue size to avoid dropping
+    // telemetry (they are much smaller so a larger queue size is ok)
+    public int metricsExportQueueCapacity = 65536;
   }
 
   public static class InheritedAttribute {
@@ -235,6 +273,11 @@ public class Configuration {
       }
       throw new IllegalStateException("Unexpected attribute key type: " + type);
     }
+  }
+
+  public static class HttpHeadersConfiguration {
+    public List<String> requestHeaders = new ArrayList<>();
+    public List<String> responseHeaders = new ArrayList<>();
   }
 
   public enum SpanAttributeType {
@@ -267,6 +310,8 @@ public class Configuration {
 
   public static class PreviewInstrumentation {
 
+    public DisabledByDefaultInstrumentation play = new DisabledByDefaultInstrumentation();
+
     public DisabledByDefaultInstrumentation akka = new DisabledByDefaultInstrumentation();
 
     public DisabledByDefaultInstrumentation apacheCamel = new DisabledByDefaultInstrumentation();
@@ -293,12 +338,34 @@ public class Configuration {
 
     public DisabledByDefaultInstrumentation springIntegration =
         new DisabledByDefaultInstrumentation();
+
+    public DisabledByDefaultInstrumentation vertx = new DisabledByDefaultInstrumentation();
   }
 
   public static class PreviewStatsbeat {
     // disabled is used by customer to turn off non-essential Statsbeat, e.g. disk persistence
     // operation status, optional network statsbeat, other endpoints except Breeze, etc.
     public boolean disabled = false;
+  }
+
+  public static class InstrumentationKeyOverride {
+    public String httpPathPrefix;
+    public String instrumentationKey;
+
+    public void validate() {
+      if (httpPathPrefix == null) {
+        // TODO add doc and go link, similar to telemetry processors
+        throw new FriendlyException(
+            "A instrumentation key override configuration is missing an \"httpPathPrefix\".",
+            "Please provide an \"httpPathPrefix\" for the instrumentation key override configuration.");
+      }
+      if (instrumentationKey == null) {
+        // TODO add doc and go link, similar to telemetry processors
+        throw new FriendlyException(
+            "An instrumentation key override configuration is missing an \"instrumentationKey\".",
+            "Please provide an \"instrumentationKey\" for the instrumentation key configuration.");
+      }
+    }
   }
 
   public static class EnabledByDefaultInstrumentation {
@@ -346,6 +413,8 @@ public class Configuration {
   }
 
   public static class SamplingOverride {
+    // TODO (trask) consider making this required when moving out of preview
+    @Nullable public SpanKind spanKind;
     // not using include/exclude, because you can still get exclude with this by adding a second
     // (exclude) override above it
     // (since only the first matching override is used)
@@ -354,11 +423,11 @@ public class Configuration {
     public String id; // optional, used for debugging purposes only
 
     public void validate() {
-      if (attributes.isEmpty()) {
+      if (spanKind == null && attributes.isEmpty()) {
         // TODO add doc and go link, similar to telemetry processors
         throw new FriendlyException(
-            "A sampling override configuration has no attributes.",
-            "Please provide one or more attributes for the sampling override configuration.");
+            "A sampling override configuration is missing \"spanKind\" and has no attributes.",
+            "Please provide at least one of \"spanKind\" or \"attributes\" for the sampling override configuration.");
       }
       if (percentage == null) {
         // TODO add doc and go link, similar to telemetry processors
@@ -380,27 +449,27 @@ public class Configuration {
 
   public static class SamplingOverrideAttribute {
     public String key;
-    public String value;
-    public MatchType matchType;
+    @Nullable public String value;
+    @Nullable public MatchType matchType;
 
     private void validate() {
       if (isEmpty(key)) {
         // TODO add doc and go link, similar to telemetry processors
         throw new FriendlyException(
-            "A telemetry filter configuration has an attribute section that is missing a \"key\".",
-            "Please provide a \"key\" under the attribute section of the telemetry filter configuration.");
+            "A sampling override configuration has an attribute section that is missing a \"key\".",
+            "Please provide a \"key\" under the attribute section of the sampling override configuration.");
       }
-      if (matchType == null) {
+      if (matchType == null && value != null) {
         throw new FriendlyException(
-            "A telemetry filter configuration has an attribute section that is missing a \"matchType\".",
-            "Please provide a \"matchType\" under the attribute section of the telemetry filter configuration.");
+            "A sampling override configuration has an attribute section with a \"value\" that is missing a \"matchType\".",
+            "Please provide a \"matchType\" under the attribute section of the sampling override configuration.");
       }
       if (matchType == MatchType.REGEXP) {
         if (isEmpty(value)) {
           // TODO add doc and go link, similar to telemetry processors
           throw new FriendlyException(
-              "A telemetry filter configuration has an attribute with matchType regexp that is missing a \"value\".",
-              "Please provide a key under the attribute section of the filter configuration.");
+              "Asampling override configuration has an attribute with matchType regexp that is missing a \"value\".",
+              "Please provide a key under the attribute section of the sampling override configuration.");
         }
         validateRegex(value);
       }
@@ -797,12 +866,62 @@ public class Configuration {
     }
   }
 
+  public static class MaskAttribute {
+    private static final Pattern replacePattern = Pattern.compile("\\$\\{[A-Za-z1-9]*\\}*");
+    public final Pattern pattern;
+    public final List<String> groupNames;
+    public final String replace;
+
+    // visible for testing
+    public MaskAttribute(Pattern pattern, List<String> groupNames, String replace) {
+      this.pattern = pattern;
+      this.groupNames = groupNames;
+      this.replace = replace;
+    }
+
+    // TODO: Handle empty patterns or groupNames are not populated gracefully
+    public void validate() {
+      if (groupNames.isEmpty()) {
+        throw new FriendlyException(
+            "An attribute processor configuration does not have valid regex to mask attributes: "
+                + pattern,
+            "Please provide a valid regex of the form (?<name>X) where X is the usual regular expression. "
+                + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+      }
+
+      Matcher maskMatcher = replacePattern.matcher(replace);
+      while (maskMatcher.find()) {
+        String groupName = maskMatcher.group();
+        String replacedString = "";
+        if (groupName.length() > 3) {
+          // to extract string of format ${foo}
+          replacedString = groupName.substring(2, groupName.length() - 1);
+        }
+        if (replacedString.isEmpty()) {
+          throw new FriendlyException(
+              "An attribute processor configuration does not have valid `replace` value to mask attributes: "
+                  + replace,
+              "Please provide a valid replace value of the form (${foo}***${bar}). "
+                  + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+        }
+        if (!groupNames.contains(replacedString)) {
+          throw new FriendlyException(
+              "An attribute processor configuration does not have valid `replace` value to mask attributes: "
+                  + replace,
+              "Please make sure the replace value matches group names used in the `pattern` regex. "
+                  + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+        }
+      }
+    }
+  }
+
   public static class ProcessorAction {
     public final AttributeKey<String> key;
     public final ProcessorActionType action;
     public final String value;
     public final AttributeKey<String> fromAttribute;
     public final ExtractAttribute extractAttribute;
+    public final MaskAttribute maskAttribute;
 
     @JsonCreator
     public ProcessorAction(
@@ -812,7 +931,8 @@ public class Configuration {
         @JsonProperty("value") String value,
         // TODO (trask) should this take attribute type, e.g. "key:type"
         @JsonProperty("fromAttribute") String fromAttribute,
-        @JsonProperty("pattern") String pattern) {
+        @JsonProperty("pattern") String pattern,
+        @JsonProperty("replace") String replace) {
       this.key = isEmpty(key) ? null : AttributeKey.stringKey(key);
       this.action = action;
       this.value = value;
@@ -820,6 +940,7 @@ public class Configuration {
 
       if (pattern == null) {
         extractAttribute = null;
+        maskAttribute = null;
       } else {
         Pattern regexPattern;
         try {
@@ -832,7 +953,13 @@ public class Configuration {
               e);
         }
         List<String> groupNames = Patterns.getGroupNames(pattern);
-        extractAttribute = new Configuration.ExtractAttribute(regexPattern, groupNames);
+        if (replace != null) {
+          extractAttribute = null;
+          maskAttribute = new Configuration.MaskAttribute(regexPattern, groupNames, replace);
+        } else {
+          maskAttribute = null;
+          extractAttribute = new Configuration.ExtractAttribute(regexPattern, groupNames);
+        }
       }
     }
 
@@ -875,8 +1002,18 @@ public class Configuration {
           throw new FriendlyException(
               "An attribute processor configuration has an "
                   + action
-                  + " action with an \"extractAttribute\" section.",
-              "Please do not provide an \"extractAttribute\" under the "
+                  + " action with an \"pattern\" section.",
+              "Please do not provide an \"pattern\" under the "
+                  + action
+                  + " action. "
+                  + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+        }
+        if (maskAttribute != null) {
+          throw new FriendlyException(
+              "An attribute processor configuration has an "
+                  + action
+                  + " action with an \"replace\" section.",
+              "Please do not provide an \"replace\" under the "
                   + action
                   + " action. "
                   + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
@@ -886,8 +1023,8 @@ public class Configuration {
       if (action == ProcessorActionType.EXTRACT) {
         if (extractAttribute == null) {
           throw new FriendlyException(
-              "An attribute processor configuration has an extract action that is missing an \"extractAttributes\" section.",
-              "Please provide an \"extractAttributes\" section under the extract action. "
+              "An attribute processor configuration has an extract action that is missing an \"pattern\" section.",
+              "Please provide an \"pattern\" section under the extract action. "
                   + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
         }
         if (!isEmpty(value)) {
@@ -909,6 +1046,34 @@ public class Configuration {
                   + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
         }
         extractAttribute.validate();
+      }
+
+      if (action == ProcessorActionType.MASK) {
+        if (maskAttribute == null) {
+          throw new FriendlyException(
+              "An attribute processor configuration has an mask action that is missing an \"pattern\" or \"replace\" section.",
+              "Please provide an \"pattern\" section and \"replace\" section under the mask action. "
+                  + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+        }
+        if (!isEmpty(value)) {
+          throw new FriendlyException(
+              "An attribute processor configuration has an " + action + " action with a \"value\".",
+              "Please do not provide a \"value\" under the "
+                  + action
+                  + " action. "
+                  + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+        }
+        if (fromAttribute != null) {
+          throw new FriendlyException(
+              "An attribute processor configuration has an "
+                  + action
+                  + " action with a \"fromAttribute\".",
+              "Please do not provide a \"fromAttribute\" under the "
+                  + action
+                  + " action. "
+                  + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+        }
+        maskAttribute.validate();
       }
     }
   }

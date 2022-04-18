@@ -95,11 +95,11 @@ class ApplicationInsightsJsonLayoutTests {
     ourLayout.valueFinders.add(mockFinder);
 
     Map<String, Object> jsonMap = ourLayout.toJsonMap(logEvent);
-
+    Map<String, Object> propertyMap = (Map<String, Object>) jsonMap.get(CUSTOM_FIELDS_PROP_NAME);
     verify(mockFinder, atLeastOnce()).getName();
     verify(mockFinder, atLeastOnce()).getValue();
-    assertThat((Map<String, Object>) jsonMap.get(CUSTOM_FIELDS_PROP_NAME))
-        .containsEntry(key, value);
+    assertThat(propertyMap).containsEntry(key, value);
+    assertThat(propertyMap).containsEntry("language", "java");
   }
 
   @Test

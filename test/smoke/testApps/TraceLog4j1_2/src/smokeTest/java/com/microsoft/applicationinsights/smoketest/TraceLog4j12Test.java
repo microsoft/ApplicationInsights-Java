@@ -64,14 +64,8 @@ public class TraceLog4j12Test extends AiSmokeTest {
     assertEquals("WARN", md1.getProperties().get("LoggingLevel"));
     assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
     assertNotNull(md1.getProperties().get("ThreadName"));
-    // TODO (trask) revisit after Java 17 release
-    //  MDC.getContext() always returns null on Java 17-ea
-    if (!currentImageName.contains("_openjdk_17")) {
-      assertEquals("MDC value", md1.getProperties().get("MDC key"));
-      assertEquals(5, md1.getProperties().size());
-    } else {
-      assertEquals(4, md1.getProperties().size());
-    }
+    assertEquals("MDC value", md1.getProperties().get("MDC key"));
+    assertEquals(5, md1.getProperties().size());
 
     assertEquals("This is log4j1.2 error.", md2.getMessage());
     assertEquals(SeverityLevel.Error, md2.getSeverityLevel());
@@ -120,14 +114,8 @@ public class TraceLog4j12Test extends AiSmokeTest {
     assertEquals("ERROR", ed.getProperties().get("LoggingLevel"));
     assertEquals("smoketestapp", ed.getProperties().get("LoggerName"));
     assertNotNull(ed.getProperties().get("ThreadName"));
-    // TODO (trask) revisit after Java 17 release
-    //  MDC.getContext() always returns null on Java 17-ea
-    if (!currentImageName.contains("_openjdk_17")) {
-      assertEquals("MDC value", ed.getProperties().get("MDC key"));
-      assertEquals(6, ed.getProperties().size());
-    } else {
-      assertEquals(5, ed.getProperties().size());
-    }
+    assertEquals("MDC value", ed.getProperties().get("MDC key"));
+    assertEquals(6, ed.getProperties().size());
 
     assertParentChild(rd, rdEnvelope, edEnvelope, "GET /TraceLog4j1_2/traceLog4j1_2WithException");
   }

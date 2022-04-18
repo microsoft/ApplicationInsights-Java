@@ -37,9 +37,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import org.apache.commons.text.StringSubstitutor;
+import org.apache.commons.text.lookup.StringLookup;
+import org.apache.commons.text.lookup.StringLookupFactory;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.LoggerFactory;
 
@@ -155,7 +159,7 @@ public class ConfigurationBuilder {
               + " so no need to enable it under preview configuration");
     }
 
-    overlayFromEnv(config);
+    overlayFromEnv(config, agentJarPath.getParent());
     config.sampling.percentage = roundToNearest(config.sampling.percentage, true);
     for (SamplingOverride override : config.preview.sampling.overrides) {
       override.percentage = roundToNearest(override.percentage, true);
@@ -351,9 +355,16 @@ public class ConfigurationBuilder {
   }
 
   // visible for testing
-  static void overlayFromEnv(Configuration config) throws IOException {
-    config.connectionString = overlayConnectionStringFromEnv(config.connectionString);
-
+  static void overlayFromEnv(Configuration config, Path baseDir) throws IOException {
+    // load connection string from a file if connection string is in the format of
+    // "${file:mounted_connection_string_file.txt}"
+    Map<String, StringLookup> stringLookupMap =
+        Collections.singletonMap(StringLookupFactory.KEY_FILE, new FileStringLookup(baseDir));
+    StringLookup stringLookup =
+        StringLookupFactory.INSTANCE.interpolatorStringLookup(stringLookupMap, null, false);
+    StringSubstitutor stringSubstitutor = new StringSubstitutor(stringLookup);
+    config.connectionString =
+        overlayConnectionStringFromEnv(stringSubstitutor.replace(config.connectionString));
     if (isTrimEmpty(config.role.name)) {
       // only use WEBSITE_SITE_NAME as a fallback
       config.role.name = getWebsiteSiteNameEnvVar();
@@ -567,7 +578,11 @@ public class ConfigurationBuilder {
       }
     } catch (JsonMappingException | JsonParseException ex) {
       throw new FriendlyException(
-          "Error parsing configuration from file: " + configPath.toAbsolutePath(),
+          "Error parsing configuration from file: "
+              + configPath.toAbsolutePath()
+              + System.lineSeparator()
+              + System.lineSeparator()
+              + ex.getMessage(),
           "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358",
           ex);
     } catch (Exception e) {

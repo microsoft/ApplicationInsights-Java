@@ -34,18 +34,17 @@ import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDe
 import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.SeverityLevel;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionDetails;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedDuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -54,8 +53,6 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -74,16 +71,17 @@ public class Exporter implements SpanExporter {
 
   private static final Set<String> SQL_DB_SYSTEMS;
 
-  private static final Trie<Boolean> STANDARD_ATTRIBUTE_PREFIXES;
+  private static final Trie<Boolean> STANDARD_ATTRIBUTE_PREFIX_TRIE;
+
+  // TODO (trask) this can go away once new indexer is rolled out to gov clouds
+  private static final AttributeKey<List<String>> AI_REQUEST_CONTEXT_KEY =
+      AttributeKey.stringArrayKey("http.response.header.request_context");
 
   public static final AttributeKey<String> AI_OPERATION_NAME_KEY =
       AttributeKey.stringKey("applicationinsights.internal.operation_name");
 
   private static final AttributeKey<Boolean> AI_LOG_KEY =
       AttributeKey.booleanKey("applicationinsights.internal.log");
-
-  private static final AttributeKey<String> AI_SPAN_TARGET_APP_ID_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.target_app_id");
 
   public static final AttributeKey<String> AI_LEGACY_PARENT_ID_KEY =
       AttributeKey.stringKey("applicationinsights.internal.legacy_parent_id");
@@ -94,6 +92,12 @@ public class Exporter implements SpanExporter {
   // for ThreadContext.getRequestTelemetryContext().getRequestTelemetry().setSource()
   private static final AttributeKey<String> AI_SPAN_SOURCE_KEY =
       AttributeKey.stringKey("applicationinsights.internal.source");
+  private static final AttributeKey<String> AI_SESSION_ID_KEY =
+      AttributeKey.stringKey("applicationinsights.internal.session_id");
+  private static final AttributeKey<String> AI_DEVICE_OS_KEY =
+      AttributeKey.stringKey("applicationinsights.internal.operating_system");
+  private static final AttributeKey<String> AI_DEVICE_OS_VERSION_KEY =
+      AttributeKey.stringKey("applicationinsights.internal.operating_system_version");
 
   private static final AttributeKey<String> AI_LOG_LEVEL_KEY =
       AttributeKey.stringKey("applicationinsights.internal.log_level");
@@ -118,9 +122,6 @@ public class Exporter implements SpanExporter {
   private static final OperationLogger exportingSpanLogger =
       new OperationLogger(Exporter.class, "Exporting span");
 
-  private static final OperationLogger parsingHttpUrlLogger =
-      new OperationLogger(Exporter.class, "Parsing http.url");
-
   static {
     Set<String> dbSystems = new HashSet<>();
     dbSystems.add(SemanticAttributes.DbSystemValues.DB2);
@@ -138,7 +139,7 @@ public class Exporter implements SpanExporter {
     SQL_DB_SYSTEMS = Collections.unmodifiableSet(dbSystems);
 
     // TODO need to keep this list in sync as new semantic conventions are defined
-    STANDARD_ATTRIBUTE_PREFIXES =
+    STANDARD_ATTRIBUTE_PREFIX_TRIE =
         Trie.<Boolean>newBuilder()
             .put("http.", true)
             .put("db.", true)
@@ -155,9 +156,11 @@ public class Exporter implements SpanExporter {
   }
 
   private final TelemetryClient telemetryClient;
+  private final boolean captureHttpServer4xxAsError;
 
-  public Exporter(TelemetryClient telemetryClient) {
+  public Exporter(TelemetryClient telemetryClient, boolean captureHttpServer4xxAsError) {
     this.telemetryClient = telemetryClient;
+    this.captureHttpServer4xxAsError = captureHttpServer4xxAsError;
   }
 
   @Override
@@ -207,8 +210,7 @@ public class Exporter implements SpanExporter {
       } else if (instrumentationName.startsWith("io.opentelemetry.spring-scheduling-")
           && !span.getParentSpanContext().isValid()) {
         // TODO (trask) AI mapping: need semantic convention for determining whether to map INTERNAL
-        // to request or
-        //  dependency (or need clarification to use SERVER for this)
+        // to request or dependency (or need clarification to use SERVER for this)
         exportRequest(span);
       } else {
         exportRemoteDependency(span, true);
@@ -216,37 +218,13 @@ public class Exporter implements SpanExporter {
     } else if (kind == SpanKind.CLIENT || kind == SpanKind.PRODUCER) {
       exportRemoteDependency(span, false);
     } else if (kind == SpanKind.CONSUMER
-        && !span.getParentSpanContext().isRemote()
-        && !span.getName().equals("EventHubs.process")
-        && !span.getName().equals("ServiceBus.process")) {
-      // earlier versions of the azure sdk opentelemetry shim did not set remote parent
-      // see https://github.com/Azure/azure-sdk-for-java/pull/21667
-
-      // TODO need spec clarification, but it seems polling for messages can be CONSUMER also
-      //  in which case the span will not have a remote parent and should be treated as a dependency
-      // instead of a request
+        && "receive".equals(span.getAttributes().get(SemanticAttributes.MESSAGING_OPERATION))) {
       exportRemoteDependency(span, false);
     } else if (kind == SpanKind.SERVER || kind == SpanKind.CONSUMER) {
       exportRequest(span);
     } else {
       throw new UnsupportedOperationException(kind.name());
     }
-  }
-
-  private static List<TelemetryExceptionDetails> minimalParse(String errorStack) {
-    TelemetryExceptionDetails details = new TelemetryExceptionDetails();
-    String line = errorStack.split(System.lineSeparator())[0];
-    int index = line.indexOf(": ");
-
-    if (index != -1) {
-      details.setTypeName(line.substring(0, index));
-      details.setMessage(line.substring(index + 2));
-    } else {
-      details.setTypeName(line);
-    }
-    // TODO (trask): map OpenTelemetry exception to Application Insights exception better
-    details.setStack(errorStack);
-    return Collections.singletonList(details);
   }
 
   private void exportRemoteDependency(SpanData span, boolean inProc) {
@@ -268,7 +246,7 @@ public class Exporter implements SpanExporter {
     data.setName(getDependencyName(span));
     data.setDuration(
         FormattedDuration.fromNanos(span.getEndEpochNanos() - span.getStartEpochNanos()));
-    data.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
+    data.setSuccess(getSuccess(span));
 
     if (inProc) {
       data.setType("InProc");
@@ -339,11 +317,11 @@ public class Exporter implements SpanExporter {
       return;
     }
     String azureNamespace = attributes.get(AZURE_NAMESPACE);
-    if (azureNamespace != null && azureNamespace.equals("Microsoft.EventHub")) {
+    if ("Microsoft.EventHub".equals(azureNamespace)) {
       applyEventHubsSpan(attributes, remoteDependencyData);
       return;
     }
-    if (azureNamespace != null && azureNamespace.equals("Microsoft.ServiceBus")) {
+    if ("Microsoft.ServiceBus".equals(azureNamespace)) {
       applyServiceBusSpan(attributes, remoteDependencyData);
       return;
     }
@@ -482,7 +460,7 @@ public class Exporter implements SpanExporter {
 
     String target = getTargetForHttpClientSpan(attributes);
 
-    String targetAppId = attributes.get(AI_SPAN_TARGET_APP_ID_KEY);
+    String targetAppId = getTargetAppId(attributes);
 
     if (targetAppId == null || AiAppId.getAppId().equals(targetAppId)) {
       telemetry.setType("Http");
@@ -503,6 +481,20 @@ public class Exporter implements SpanExporter {
 
     String url = attributes.get(SemanticAttributes.HTTP_URL);
     telemetry.setData(url);
+  }
+
+  @Nullable
+  private static String getTargetAppId(Attributes attributes) {
+    List<String> requestContextList = attributes.get(AI_REQUEST_CONTEXT_KEY);
+    if (requestContextList == null || requestContextList.isEmpty()) {
+      return null;
+    }
+    String requestContext = requestContextList.get(0);
+    int index = requestContext.indexOf('=');
+    if (index == -1) {
+      return null;
+    }
+    return requestContext.substring(index + 1);
   }
 
   private static String getTargetForHttpClientSpan(Attributes attributes) {
@@ -532,18 +524,8 @@ public class Exporter implements SpanExporter {
     }
     String url = attributes.get(SemanticAttributes.HTTP_URL);
     if (url != null) {
-      URI uri;
-      try {
-        uri = new URI(url);
-      } catch (URISyntaxException e) {
-        parsingHttpUrlLogger.recordFailure(e.getMessage(), e);
-        uri = null;
-      }
-      if (uri != null) {
-        target = uri.getHost();
-        if (uri.getPort() != 80 && uri.getPort() != 443 && uri.getPort() != -1) {
-          target += ":" + uri.getPort();
-        }
+      target = UrlParser.getTargetFromUrl(url);
+      if (target != null) {
         return target;
       }
     }
@@ -685,7 +667,8 @@ public class Exporter implements SpanExporter {
   private static int getDefaultPortForDbSystem(String dbSystem) {
     // jdbc default ports are from
     // io.opentelemetry.javaagent.instrumentation.jdbc.JdbcConnectionUrlParser
-    // TODO make the ports constants (at least in JdbcConnectionUrlParser) so they can be used here
+    // TODO (trask) make the ports constants (at least in JdbcConnectionUrlParser) so they can be
+    // used here
     switch (dbSystem) {
       case SemanticAttributes.DbSystemValues.MONGODB:
         return 27017;
@@ -753,9 +736,9 @@ public class Exporter implements SpanExporter {
     // set request-specific properties
     data.setName(operationName);
     data.setDuration(FormattedDuration.fromNanos(span.getEndEpochNanos() - startEpochNanos));
-    data.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
+    data.setSuccess(getSuccess(span));
 
-    String httpUrl = attributes.get(SemanticAttributes.HTTP_URL);
+    String httpUrl = getHttpUrlFromServerSpan(attributes);
     if (httpUrl != null) {
       data.setUrl(httpUrl);
     }
@@ -780,6 +763,25 @@ public class Exporter implements SpanExporter {
     }
 
     data.setSource(getSource(attributes, span.getSpanContext()));
+
+    String sessionId = attributes.get(AI_SESSION_ID_KEY);
+    if (sessionId != null) {
+      // this is only used by the 2.x web interop bridge for
+      // ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getSession().setId()
+      telemetry.getTags().put(ContextTagKeys.AI_SESSION_ID.toString(), sessionId);
+    }
+    String deviceOs = attributes.get(AI_DEVICE_OS_KEY);
+    if (deviceOs != null) {
+      // this is only used by the 2.x web interop bridge for
+      // ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getDevice().setOperatingSystem()
+      telemetry.getTags().put(ContextTagKeys.AI_DEVICE_OS.toString(), deviceOs);
+    }
+    String deviceOsVersion = attributes.get(AI_DEVICE_OS_VERSION_KEY);
+    if (deviceOsVersion != null) {
+      // this is only used by the 2.x web interop bridge for
+      // ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getDevice().setOperatingSystemVersion()
+      telemetry.getTags().put(ContextTagKeys.AI_DEVICE_OS_VERSION.toString(), deviceOsVersion);
+    }
 
     // TODO(trask)? for batch consumer, enqueuedTime should be the average of this attribute
     //  across all links
@@ -806,10 +808,48 @@ public class Exporter implements SpanExporter {
     exportEvents(span, operationName, samplingPercentage);
   }
 
+  private boolean getSuccess(SpanData span) {
+    switch (span.getStatus().getStatusCode()) {
+      case ERROR:
+        return false;
+      case OK:
+        // instrumentation never sets OK, so this is explicit user override
+        return true;
+      case UNSET:
+        if (captureHttpServer4xxAsError) {
+          Long statusCode = span.getAttributes().get(SemanticAttributes.HTTP_STATUS_CODE);
+          return statusCode == null || statusCode < 400;
+        }
+        return true;
+    }
+    return true;
+  }
+
+  @Nullable
+  public static String getHttpUrlFromServerSpan(Attributes attributes) {
+    String httpUrl = attributes.get(SemanticAttributes.HTTP_URL);
+    if (httpUrl != null) {
+      return httpUrl;
+    }
+    String scheme = attributes.get(SemanticAttributes.HTTP_SCHEME);
+    if (scheme == null) {
+      return null;
+    }
+    String host = attributes.get(SemanticAttributes.HTTP_HOST);
+    if (host == null) {
+      return null;
+    }
+    String target = attributes.get(SemanticAttributes.HTTP_TARGET);
+    if (target == null) {
+      return null;
+    }
+    return scheme + "://" + host + target;
+  }
+
   @Nullable
   private static String getSource(Attributes attributes, SpanContext spanContext) {
     // this is only used by the 2.x web interop bridge
-    // for ThreadContext.getRequestTelemetryContext().getRequestTelemetry().setSource()
+    // for ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setSource()
     String source = attributes.get(AI_SPAN_SOURCE_KEY);
     if (source != null) {
       return source;
@@ -842,17 +882,14 @@ public class Exporter implements SpanExporter {
 
   private static boolean isAzureQueue(Attributes attributes) {
     String azureNamespace = attributes.get(AZURE_NAMESPACE);
-    if (azureNamespace == null) {
-      return false;
-    }
-    return azureNamespace.equals("Microsoft.EventHub")
-        || azureNamespace.equals("Microsoft.ServiceBus");
+    return "Microsoft.EventHub".equals(azureNamespace)
+        || "Microsoft.ServiceBus".equals(azureNamespace);
   }
 
   private static String getOperationName(SpanData span) {
     String spanName = span.getName();
     String httpMethod = span.getAttributes().get(SemanticAttributes.HTTP_METHOD);
-    if (!Strings.isNullOrEmpty(httpMethod) && spanName.startsWith("/")) {
+    if (httpMethod != null && !httpMethod.isEmpty() && spanName.startsWith("/")) {
       return httpMethod + " " + spanName;
     }
     return spanName;
@@ -888,7 +925,7 @@ public class Exporter implements SpanExporter {
 
       if (event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE) != null
           || event.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE) != null) {
-        // TODO map OpenTelemetry exception to Application Insights exception better
+        // TODO (trask) map OpenTelemetry exception to Application Insights exception better
         String stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
         if (stacktrace != null) {
           trackException(stacktrace, span, operationName, samplingPercentage);
@@ -937,7 +974,7 @@ public class Exporter implements SpanExporter {
     setSampleRate(telemetry, samplingPercentage);
 
     // set exception-specific properties
-    data.setExceptions(minimalParse(errorStack));
+    data.setExceptions(Exceptions.minimalParse(errorStack));
 
     telemetryClient.trackAsync(telemetry);
   }
@@ -951,7 +988,9 @@ public class Exporter implements SpanExporter {
   }
 
   private static void setSampleRate(TelemetryItem telemetry, float samplingPercentage) {
-    telemetry.setSampleRate(samplingPercentage);
+    if (samplingPercentage != 100) {
+      telemetry.setSampleRate(samplingPercentage);
+    }
   }
 
   private static float getSamplingPercentage(TraceState traceState) {
@@ -999,12 +1038,16 @@ public class Exporter implements SpanExporter {
               || stringKey.equals(KAFKA_OFFSET.getKey())) {
             return;
           }
+          if (stringKey.equals(AI_REQUEST_CONTEXT_KEY.getKey())) {
+            return;
+          }
           // special case mappings
-          if (key.equals(SemanticAttributes.ENDUSER_ID) && value instanceof String) {
+          if (stringKey.equals(SemanticAttributes.ENDUSER_ID.getKey()) && value instanceof String) {
             telemetry.getTags().put(ContextTagKeys.AI_USER_ID.toString(), (String) value);
             return;
           }
-          if (key.equals(SemanticAttributes.HTTP_USER_AGENT) && value instanceof String) {
+          if (stringKey.equals(SemanticAttributes.HTTP_USER_AGENT.getKey())
+              && value instanceof String) {
             telemetry.getTags().put("ai.user.userAgent", (String) value);
             return;
           }
@@ -1026,10 +1069,12 @@ public class Exporter implements SpanExporter {
             telemetry.getTags().put(ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
             return;
           }
-          if (STANDARD_ATTRIBUTE_PREFIXES.getOrDefault(stringKey, false)) {
+          if (STANDARD_ATTRIBUTE_PREFIX_TRIE.getOrDefault(stringKey, false)
+              && !stringKey.startsWith("http.request.header.")
+              && !stringKey.startsWith("http.response.header.")) {
             return;
           }
-          String val = getStringValue(key, value);
+          String val = convertToString(value, key.getType());
           if (value != null) {
             TelemetryUtil.getProperties(data).put(key.getKey(), val);
           }
@@ -1037,8 +1082,8 @@ public class Exporter implements SpanExporter {
   }
 
   @Nullable
-  private static String getStringValue(AttributeKey<?> attributeKey, Object value) {
-    switch (attributeKey.getType()) {
+  private static String convertToString(Object value, AttributeType type) {
+    switch (type) {
       case STRING:
       case BOOLEAN:
       case LONG:
@@ -1050,7 +1095,7 @@ public class Exporter implements SpanExporter {
       case DOUBLE_ARRAY:
         return join((List<?>) value);
     }
-    logger.warn("unexpected attribute type: {}", attributeKey.getType());
+    logger.warn("unexpected attribute type: {}", type);
     return null;
   }
 

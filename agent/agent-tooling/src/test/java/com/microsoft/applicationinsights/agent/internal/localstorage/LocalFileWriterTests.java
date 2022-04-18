@@ -25,6 +25,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -46,6 +47,7 @@ import org.junit.jupiter.api.io.TempDir;
 public class LocalFileWriterTests {
 
   private LocalFileCache localFileCache;
+  private NonessentialStatsbeat nonessentialStatsbeat;
 
   private ByteBuffer buffer;
 
@@ -53,7 +55,8 @@ public class LocalFileWriterTests {
 
   @BeforeEach
   public void setup() {
-    localFileCache = new LocalFileCache();
+    localFileCache = new LocalFileCache(tempFolder);
+    nonessentialStatsbeat = new NonessentialStatsbeat();
 
     Path path =
         new File(getClass().getClassLoader().getResource("write-transmission.txt").getPath())
@@ -88,15 +91,17 @@ public class LocalFileWriterTests {
 
     assertThat(byteBuffers.size()).isEqualTo(10);
 
-    LocalFileWriter writer = new LocalFileWriter(localFileCache, tempFolder);
-    assertThat(writer.writeToDisk(byteBuffers)).isTrue();
+    LocalFileWriter writer = new LocalFileWriter(localFileCache, tempFolder, nonessentialStatsbeat);
+    writer.writeToDisk(byteBuffers, "00000000-0000-0000-0000-0FEEDDADBEEF");
+    assertThat(nonessentialStatsbeat.getWriteFailureCount()).isEqualTo(0);
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(1);
   }
 
   @Test
   public void testWriteRawByteArray() {
-    LocalFileWriter writer = new LocalFileWriter(localFileCache, tempFolder);
-    assertThat(writer.writeToDisk(singletonList(buffer))).isTrue();
+    LocalFileWriter writer = new LocalFileWriter(localFileCache, tempFolder, nonessentialStatsbeat);
+    writer.writeToDisk(singletonList(buffer), "00000000-0000-0000-0000-0FEEDDADBEEF");
+    assertThat(nonessentialStatsbeat.getWriteFailureCount()).isEqualTo(0);
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(1);
   }
 
@@ -110,8 +115,11 @@ public class LocalFileWriterTests {
       executorService.execute(
           () -> {
             for (int j = 0; j < 10; j++) {
-              LocalFileWriter writer = new LocalFileWriter(localFileCache, tempFolder);
-              writer.writeToDisk(singletonList(ByteBuffer.wrap(telemetry.getBytes(UTF_8))));
+              LocalFileWriter writer =
+                  new LocalFileWriter(localFileCache, tempFolder, nonessentialStatsbeat);
+              writer.writeToDisk(
+                  singletonList(ByteBuffer.wrap(telemetry.getBytes(UTF_8))),
+                  "00000000-0000-0000-0000-0FEEDDADBEEF");
             }
           });
     }

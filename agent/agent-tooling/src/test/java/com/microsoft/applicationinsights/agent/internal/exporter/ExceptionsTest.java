@@ -48,6 +48,22 @@ class ExceptionsTest {
   }
 
   @Test
+  public void testMinimalParseWithColonInMessage() {
+    // given
+    String str = toString(new IllegalStateException("hello: world"));
+
+    // when
+    List<TelemetryExceptionDetails> list = Exceptions.minimalParse(str);
+
+    // then
+    assertThat(list.size()).isEqualTo(1);
+
+    TelemetryExceptionDetails details = list.get(0);
+    assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
+    assertThat(details.getMessage()).isEqualTo("hello: world");
+  }
+
+  @Test
   void testMinimalParseWithNoMessage() {
     // given
     String str = toString(new IllegalStateException());
@@ -60,7 +76,7 @@ class ExceptionsTest {
 
     TelemetryExceptionDetails details = list.get(0);
     assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
-    assertThat(details.getMessage()).isNull();
+    assertThat(details.getMessage()).isEqualTo(IllegalStateException.class.getName());
   }
 
   @Test
@@ -76,7 +92,7 @@ class ExceptionsTest {
 
     TelemetryExceptionDetails details = list.get(0);
     assertThat(details.getTypeName()).isEqualTo(ProblematicException.class.getName());
-    assertThat(details.getMessage()).isNull();
+    assertThat(details.getMessage()).isEqualTo(ProblematicException.class.getName());
   }
 
   @Test
@@ -108,7 +124,7 @@ class ExceptionsTest {
 
     TelemetryExceptionDetails details = list.get(0);
     assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
-    assertThat(details.getMessage()).isNull();
+    assertThat(details.getMessage()).isEqualTo(IllegalStateException.class.getName());
   }
 
   @Test
@@ -124,7 +140,7 @@ class ExceptionsTest {
 
     TelemetryExceptionDetails details = list.get(0);
     assertThat(details.getTypeName()).isEqualTo(ProblematicException.class.getName());
-    assertThat(details.getMessage()).isNull();
+    assertThat(details.getMessage()).isEqualTo(ProblematicException.class.getName());
   }
 
   @Test

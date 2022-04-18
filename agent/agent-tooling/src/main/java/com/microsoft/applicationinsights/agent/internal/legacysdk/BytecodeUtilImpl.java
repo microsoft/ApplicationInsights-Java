@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.legacysdk;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.ContextTagKeys;
@@ -105,7 +107,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetry.setInstrumentationKey(instrumentationKey);
     }
 
-    track(telemetry);
+    track(telemetry, true);
   }
 
   // TODO do not track if perf counter (?)
@@ -161,7 +163,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetry.setInstrumentationKey(instrumentationKey);
     }
 
-    track(telemetry);
+    track(telemetry, false);
   }
 
   @Override
@@ -222,7 +224,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetry.setInstrumentationKey(instrumentationKey);
     }
 
-    track(telemetry);
+    track(telemetry, true);
   }
 
   @Override
@@ -269,7 +271,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetry.setInstrumentationKey(instrumentationKey);
     }
 
-    track(telemetry);
+    track(telemetry, true);
   }
 
   @Override
@@ -311,7 +313,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetry.setInstrumentationKey(instrumentationKey);
     }
 
-    track(telemetry);
+    track(telemetry, true);
   }
 
   @Override
@@ -371,7 +373,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetry.setInstrumentationKey(instrumentationKey);
     }
 
-    track(telemetry);
+    track(telemetry, true);
   }
 
   @Override
@@ -412,7 +414,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetry.setInstrumentationKey(instrumentationKey);
     }
 
-    track(telemetry);
+    track(telemetry, true);
   }
 
   @Nullable
@@ -438,7 +440,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
   public void flush() {
     // this is not null because sdk instrumentation is not added until TelemetryClient.setActive()
     // is called
-    TelemetryClient.getActive().flushChannelBatcher();
+    TelemetryClient.getActive().flushChannelBatcher().join(10, SECONDS);
   }
 
   @Override
@@ -448,22 +450,22 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
   }
 
-  private static void track(TelemetryItem telemetry) {
+  private static void track(TelemetryItem telemetry, boolean applySampling) {
     SpanContext context = Span.current().getSpanContext();
     if (context.isValid()) {
-      trackInsideValidSpanContext(telemetry, context);
+      trackInsideValidSpanContext(telemetry, context, applySampling);
     } else {
-      trackAsStandalone(telemetry);
+      trackAsStandalone(telemetry, applySampling);
     }
   }
 
   private static void trackInsideValidSpanContext(
-      TelemetryItem telemetry, SpanContext spanContext) {
+      TelemetryItem telemetry, SpanContext spanContext, boolean applySampling) {
 
     String operationId = telemetry.getTags().get(ContextTagKeys.AI_OPERATION_ID.toString());
 
     if (operationId != null && !operationId.equals(spanContext.getTraceId())) {
-      trackAsStandalone(telemetry);
+      trackAsStandalone(telemetry, applySampling);
       return;
     }
 
@@ -491,30 +493,35 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       }
     }
 
-    float samplingPercentage =
-        TelemetryUtil.getSamplingPercentage(
-            spanContext.getTraceState(), BytecodeUtilImpl.samplingPercentage, false);
+    if (applySampling) {
+      float samplingPercentage =
+          TelemetryUtil.getSamplingPercentage(
+              spanContext.getTraceState(), BytecodeUtilImpl.samplingPercentage, false);
 
-    if (samplingPercentage != 100) {
-      telemetry.setSampleRate(samplingPercentage);
+      if (samplingPercentage != 100) {
+        telemetry.setSampleRate(samplingPercentage);
+      }
     }
     // this is not null because sdk instrumentation is not added until TelemetryClient.setActive()
     // is called
     TelemetryClient.getActive().trackAsync(telemetry);
   }
 
-  private static void trackAsStandalone(TelemetryItem telemetry) {
-    // sampling is done using the configured sampling percentage
-    float samplingPercentage = BytecodeUtilImpl.samplingPercentage;
-    if (!sample(telemetry, samplingPercentage)) {
-      // sampled out
-      return;
-    }
-    // sampled in
+  private static void trackAsStandalone(TelemetryItem telemetry, boolean applySampling) {
+    if (applySampling) {
+      // sampling is done using the configured sampling percentage
+      float samplingPercentage = BytecodeUtilImpl.samplingPercentage;
+      if (!sample(telemetry, samplingPercentage)) {
+        // sampled out
+        return;
+      }
+      // sampled in
 
-    if (samplingPercentage != 100) {
-      telemetry.setSampleRate(samplingPercentage);
+      if (samplingPercentage != 100) {
+        telemetry.setSampleRate(samplingPercentage);
+      }
     }
+
     // this is not null because sdk instrumentation is not added until TelemetryClient.setActive()
     // is called
     TelemetryClient.getActive().trackAsync(telemetry);

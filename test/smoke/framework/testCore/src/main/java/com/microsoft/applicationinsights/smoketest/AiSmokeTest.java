@@ -403,7 +403,11 @@ public abstract class AiSmokeTest {
       System.out.println("Test app health check complete.");
       waitForHealthCheckTelemetryIfNeeded(contextRootUrl);
     } catch (Exception e) {
-      AiDockerClient.printContainerLogs(containerInfo.getContainerId());
+      for (ContainerInfo container : allContainers) {
+        System.out.println("========== dumping container log: " + container.getContainerId());
+        AiDockerClient.printContainerLogs(container.getContainerId());
+        System.out.println("end of container log ==========");
+      }
       throw e;
     } finally {
       mockedIngestion.resetData();
@@ -563,8 +567,14 @@ public abstract class AiSmokeTest {
       System.out.printf("Deleting network '%s'...%n", networkName);
       docker.deleteNetwork(networkName);
     } catch (Exception e) {
-      System.err.printf("Error deleting network named '%s' (%s)%n", networkName, networkId);
-      e.printStackTrace();
+      try {
+        // try once more since this has sporadically failed before
+        docker.deleteNetwork(networkName);
+      } catch (Exception ignored) {
+        System.err.printf("Error deleting network named '%s' (%s)%n", networkName, networkId);
+        // log original exception
+        e.printStackTrace();
+      }
     } finally {
       networkId = null;
     }

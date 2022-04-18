@@ -45,10 +45,7 @@ public class EndpointProvider {
 
   public EndpointProvider() {
     try {
-      ingestionEndpoint = new URL(DefaultEndpoints.INGESTION_ENDPOINT);
-      ingestionEndpointUrl = buildIngestionUrl(ingestionEndpoint);
-      liveEndpointUrl = buildLiveUri(new URL(DefaultEndpoints.LIVE_ENDPOINT));
-      profilerEndpoint = new URL(DefaultEndpoints.PROFILER_ENDPOINT);
+      resetEndpointUrls();
       snapshotEndpoint = new URL(DefaultEndpoints.SNAPSHOT_ENDPOINT);
       statsbeatEndpointUrl = buildIngestionUrl(ingestionEndpointUrl);
     } catch (MalformedURLException e) {
@@ -80,6 +77,14 @@ public class EndpointProvider {
 
   public URL getAppIdEndpointUrl(String instrumentationKey) {
     return buildAppIdUrl(instrumentationKey);
+  }
+
+  // reset endpoint URLs for ingestion, live metric and profiler
+  public void resetEndpointUrls() throws MalformedURLException {
+    ingestionEndpoint = new URL(DefaultEndpoints.INGESTION_ENDPOINT);
+    ingestionEndpointUrl = buildIngestionUrl(ingestionEndpoint);
+    liveEndpointUrl = buildLiveUri(new URL(DefaultEndpoints.LIVE_ENDPOINT));
+    profilerEndpoint = new URL(DefaultEndpoints.PROFILER_ENDPOINT);
   }
 
   private URL buildAppIdUrl(String instrumentationKey) {

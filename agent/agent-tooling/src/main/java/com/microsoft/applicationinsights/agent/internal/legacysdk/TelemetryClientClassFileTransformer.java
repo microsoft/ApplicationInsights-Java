@@ -86,7 +86,9 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       return null;
     }
 
+    // TODO (heya) track this via FeatureStatsbeat
     StatusFile.putValueAndWrite("SDKPresent", true);
+
     try {
       ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
       TelemetryClientClassVisitor cv = new TelemetryClientClassVisitor(cw);

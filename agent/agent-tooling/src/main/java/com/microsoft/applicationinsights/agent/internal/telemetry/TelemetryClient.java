@@ -46,16 +46,16 @@ import com.microsoft.applicationinsights.agent.internal.localstorage.LocalFileWr
 import com.microsoft.applicationinsights.agent.internal.localstorage.LocalStorageUtils;
 import com.microsoft.applicationinsights.agent.internal.quickpulse.QuickPulseDataCollector;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
-import io.opentelemetry.instrumentation.api.caching.Cache;
+import io.opentelemetry.instrumentation.api.cache.Cache;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.text.StringSubstitutor;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -74,7 +74,7 @@ public class TelemetryClient {
 
   private final Set<String> nonFilterableMetricNames = new HashSet<>();
 
-  private volatile @MonotonicNonNull String instrumentationKey;
+  @Nullable private volatile String instrumentationKey;
   private volatile @MonotonicNonNull String roleName;
   private volatile @MonotonicNonNull String roleInstance;
   private volatile @MonotonicNonNull String statsbeatInstrumentationKey;
@@ -94,52 +94,41 @@ public class TelemetryClient {
 
   private final Cache<String, String> ikeyEndpointMap;
   private final StatsbeatModule statsbeatModule;
+  private final boolean readOnlyFileSystem;
+  private final int generalExportQueueCapacity;
+  private final int metricsExportQueueCapacity;
 
   @Nullable private final Configuration.AadAuthentication aadAuthentication;
 
   private final Object channelInitLock = new Object();
-  private volatile @MonotonicNonNull BatchSpanProcessor channelBatcher;
+  private volatile @MonotonicNonNull BatchSpanProcessor generalChannelBatcher;
+  private volatile @MonotonicNonNull BatchSpanProcessor metricsChannelBatcher;
   private volatile @MonotonicNonNull BatchSpanProcessor statsbeatChannelBatcher;
 
-  // only used by tests
-  public TelemetryClient() {
-    this(
-        new HashMap<>(),
-        new ArrayList<>(),
-        Cache.newBuilder().build(),
-        new StatsbeatModule(null),
-        null);
+  public static TelemetryClient.Builder builder() {
+    return new TelemetryClient.Builder();
   }
 
-  public TelemetryClient(
-      Map<String, String> customDimensions,
-      List<MetricFilter> metricFilters,
-      Cache<String, String> ikeyEndpointMap,
-      StatsbeatModule statsbeatModule,
-      @Nullable Configuration.AadAuthentication aadAuthentication) {
-    StringSubstitutor substitutor = new StringSubstitutor(System.getenv());
-    Map<String, String> globalProperties = new HashMap<>();
-    Map<String, String> globalTags = new HashMap<>();
-    for (Map.Entry<String, String> entry : customDimensions.entrySet()) {
-      String key = entry.getKey();
-      if (key.equals("service.version")) {
-        globalTags.put(
-            ContextTagKeys.AI_APPLICATION_VER.toString(), substitutor.replace(entry.getValue()));
-      } else {
-        globalProperties.put(key, substitutor.replace(entry.getValue()));
-      }
-    }
+  // only used by tests
+  public static TelemetryClient createForTest() {
+    return builder()
+        .setCustomDimensions(new HashMap<>())
+        .setMetricFilters(new ArrayList<>())
+        .setIkeyEndpointMap(Cache.bounded(100))
+        .setStatsbeatModule(new StatsbeatModule(null))
+        .build();
+  }
 
-    globalTags.put(
-        ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(),
-        PropertyHelper.getQualifiedSdkVersionString());
-
-    this.globalProperties = globalProperties;
-    this.globalTags = globalTags;
-    this.metricFilters = metricFilters;
-    this.ikeyEndpointMap = ikeyEndpointMap;
-    this.statsbeatModule = statsbeatModule;
-    this.aadAuthentication = aadAuthentication;
+  public TelemetryClient(Builder builder) {
+    this.globalTags = builder.globalTags;
+    this.globalProperties = builder.globalProperties;
+    this.metricFilters = builder.metricFilters;
+    this.ikeyEndpointMap = builder.ikeyEndpointMap;
+    this.statsbeatModule = builder.statsbeatModule;
+    this.readOnlyFileSystem = builder.readOnlyFileSystem;
+    this.generalExportQueueCapacity = builder.generalExportQueueCapacity;
+    this.metricsExportQueueCapacity = builder.metricsExportQueueCapacity;
+    this.aadAuthentication = builder.aadAuthentication;
   }
 
   public static TelemetryClient getActive() {
@@ -158,30 +147,32 @@ public class TelemetryClient {
   }
 
   public void trackAsync(TelemetryItem telemetry) {
+    if (Strings.isNullOrEmpty(instrumentationKey)) {
+      return;
+    }
+
     MonitorDomain data = telemetry.getData().getBaseData();
     if (data instanceof MetricsData) {
       MetricsData metricsData = (MetricsData) data;
-      List<MetricDataPoint> filteredPoints =
-          metricsData.getMetrics().stream()
-              .filter(
-                  point -> {
-                    String metricName = point.getName();
-                    if (nonFilterableMetricNames.contains(metricName)) {
-                      return true;
-                    }
-                    for (MetricFilter metricFilter : metricFilters) {
-                      if (!metricFilter.matches(metricName)) {
-                        return false;
-                      }
-                    }
-                    return true;
-                  })
-              .collect(Collectors.toList());
+      if (metricsData.getMetrics().isEmpty()) {
+        throw new AssertionError("MetricsData has no metric point");
+      }
+      MetricDataPoint point = metricsData.getMetrics().get(0);
+      String metricName = point.getName();
+      if (!nonFilterableMetricNames.contains(metricName)) {
+        for (MetricFilter metricFilter : metricFilters) {
+          if (!metricFilter.matches(metricName)) {
+            // user configuration filtered out this metric name
+            return;
+          }
+        }
+      }
 
-      if (filteredPoints.isEmpty()) {
+      if (!Double.isFinite(point.getValue())) {
+        // TODO (trask) add test for this
+        // breeze doesn't like these values
         return;
       }
-      metricsData.setMetrics(filteredPoints);
     }
 
     if (telemetry.getTime() == null) {
@@ -196,7 +187,11 @@ public class TelemetryClient {
     // batching, retry, throttling, and writing to disk on failure occur downstream
     // for simplicity not reporting back success/failure from this layer
     // only that it was successfully delivered to the next layer
-    getChannelBatcher().trackAsync(telemetry);
+    if (data instanceof MetricsData) {
+      getMetricsChannelBatcher().trackAsync(telemetry);
+    } else {
+      getGeneralChannelBatcher().trackAsync(telemetry);
+    }
   }
 
   public void trackStatsbeatAsync(TelemetryItem telemetry) {
@@ -207,53 +202,102 @@ public class TelemetryClient {
   }
 
   public CompletableResultCode flushChannelBatcher() {
-    if (channelBatcher != null) {
-      return channelBatcher.forceFlush();
+    if (generalChannelBatcher != null) {
+      return generalChannelBatcher.forceFlush();
     } else {
       return CompletableResultCode.ofSuccess();
     }
   }
 
-  public BatchSpanProcessor getChannelBatcher() {
-    if (channelBatcher == null) {
+  private BatchSpanProcessor getGeneralChannelBatcher() {
+    if (generalChannelBatcher == null) {
       synchronized (channelInitLock) {
-        if (channelBatcher == null) {
-          LocalFileCache localFileCache = new LocalFileCache();
-          File telemetryFolder = LocalStorageUtils.getOfflineTelemetryFolder();
-          LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, telemetryFolder);
-          LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, telemetryFolder);
-          TelemetryChannel channel =
-              TelemetryChannel.create(
-                  endpointProvider.getIngestionEndpointUrl(),
-                  localFileWriter,
-                  ikeyEndpointMap,
-                  statsbeatModule.getNetworkStatsbeat(),
-                  aadAuthentication);
-          LocalFileSender.start(localFileLoader, channel);
-          channelBatcher = BatchSpanProcessor.builder(channel).build();
+        if (generalChannelBatcher == null) {
+          generalChannelBatcher = initChannelBatcher(generalExportQueueCapacity, 512, "general");
         }
       }
     }
-    return channelBatcher;
+    return generalChannelBatcher;
+  }
+
+  // metrics get flooded every 60 seconds by default, so need much larger queue size to avoid
+  // dropping telemetry (they are much smaller so a larger queue size and larger batch size are ok)
+  private BatchSpanProcessor getMetricsChannelBatcher() {
+    if (metricsChannelBatcher == null) {
+      synchronized (channelInitLock) {
+        if (metricsChannelBatcher == null) {
+          metricsChannelBatcher = initChannelBatcher(metricsExportQueueCapacity, 2048, "metrics");
+        }
+      }
+    }
+    return metricsChannelBatcher;
+  }
+
+  private BatchSpanProcessor initChannelBatcher(
+      int exportQueueCapacity, int maxExportBatchSize, String queueName) {
+    LocalFileLoader localFileLoader = null;
+    LocalFileWriter localFileWriter = null;
+    if (!readOnlyFileSystem) {
+      File telemetryFolder = LocalStorageUtils.getOfflineTelemetryFolder();
+      LocalFileCache localFileCache = new LocalFileCache(telemetryFolder);
+      localFileLoader =
+          new LocalFileLoader(
+              localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
+      localFileWriter =
+          new LocalFileWriter(
+              localFileCache, telemetryFolder, statsbeatModule.getNonessentialStatsbeat());
+    }
+
+    TelemetryChannel channel =
+        TelemetryChannel.create(
+            endpointProvider.getIngestionEndpointUrl(),
+            localFileWriter,
+            ikeyEndpointMap,
+            statsbeatModule,
+            false,
+            aadAuthentication);
+
+    if (!readOnlyFileSystem) {
+      LocalFileSender.start(localFileLoader, channel);
+    }
+
+    return BatchSpanProcessor.builder(channel)
+        .setMaxQueueSize(exportQueueCapacity)
+        .setMaxExportBatchSize(maxExportBatchSize)
+        // the number 100 was calculated as the max number of concurrent exports that the single
+        // worker thread can drive, so anything higher than this should not increase throughput
+        .setMaxPendingExports(100)
+        .build(queueName);
   }
 
   public BatchSpanProcessor getStatsbeatChannelBatcher() {
     if (statsbeatChannelBatcher == null) {
       synchronized (channelInitLock) {
         if (statsbeatChannelBatcher == null) {
-          LocalFileCache localFileCache = new LocalFileCache();
-          File statsbeatFolder = LocalStorageUtils.getOfflineStatsbeatFolder();
-          LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, statsbeatFolder);
-          LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, statsbeatFolder);
+          File statsbeatFolder;
+          LocalFileLoader localFileLoader = null;
+          LocalFileWriter localFileWriter = null;
+          if (!readOnlyFileSystem) {
+            statsbeatFolder = LocalStorageUtils.getOfflineStatsbeatFolder();
+            LocalFileCache localFileCache = new LocalFileCache(statsbeatFolder);
+            localFileLoader = new LocalFileLoader(localFileCache, statsbeatFolder, null);
+            localFileWriter = new LocalFileWriter(localFileCache, statsbeatFolder, null);
+          }
+
           TelemetryChannel channel =
               TelemetryChannel.create(
                   endpointProvider.getStatsbeatEndpointUrl(),
                   localFileWriter,
                   ikeyEndpointMap,
-                  null,
+                  statsbeatModule,
+                  true,
                   null);
-          LocalFileSender.start(localFileLoader, channel);
-          statsbeatChannelBatcher = BatchSpanProcessor.builder(channel).build();
+
+          if (!readOnlyFileSystem) {
+            LocalFileSender.start(localFileLoader, channel);
+          }
+
+          statsbeatChannelBatcher = BatchSpanProcessor.builder(channel).build("statsbeat");
         }
       }
     }
@@ -266,13 +310,7 @@ public class TelemetryClient {
   }
 
   /** Gets or sets the default instrumentation key for the application. */
-  public void setInstrumentationKey(String key) {
-
-    // A non null, non empty instrumentation key is a must
-    if (Strings.isNullOrEmpty(key)) {
-      throw new IllegalArgumentException("key");
-    }
-
+  public void setInstrumentationKey(@Nullable String key) {
     instrumentationKey = key;
   }
 
@@ -308,6 +346,8 @@ public class TelemetryClient {
       ConnectionString.parseInto(connectionString, this);
     } catch (InvalidConnectionStringException e) {
       throw new IllegalArgumentException("Invalid connection string", e);
+    } catch (MalformedURLException e) {
+      throw new IllegalStateException("Invalid endpoint urls.", e);
     }
   }
 
@@ -463,5 +503,81 @@ public class TelemetryClient {
     telemetry.setData(monitorBase);
     monitorBase.setBaseType(baseType);
     monitorBase.setBaseData(data);
+  }
+
+  public static class Builder {
+
+    private Map<String, String> globalTags;
+    private Map<String, String> globalProperties;
+    private List<MetricFilter> metricFilters;
+    private Cache<String, String> ikeyEndpointMap;
+    private StatsbeatModule statsbeatModule;
+    private boolean readOnlyFileSystem;
+    private int generalExportQueueCapacity;
+    private int metricsExportQueueCapacity;
+    @Nullable private Configuration.AadAuthentication aadAuthentication;
+
+    public Builder setCustomDimensions(Map<String, String> customDimensions) {
+      StringSubstitutor substitutor = new StringSubstitutor(System.getenv());
+      Map<String, String> globalProperties = new HashMap<>();
+      Map<String, String> globalTags = new HashMap<>();
+      for (Map.Entry<String, String> entry : customDimensions.entrySet()) {
+        String key = entry.getKey();
+        if (key.equals("service.version")) {
+          globalTags.put(
+              ContextTagKeys.AI_APPLICATION_VER.toString(), substitutor.replace(entry.getValue()));
+        } else {
+          globalProperties.put(key, substitutor.replace(entry.getValue()));
+        }
+      }
+
+      globalTags.put(
+          ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(),
+          PropertyHelper.getQualifiedSdkVersionString());
+
+      this.globalProperties = globalProperties;
+      this.globalTags = globalTags;
+
+      return this;
+    }
+
+    public Builder setMetricFilters(List<MetricFilter> metricFilters) {
+      this.metricFilters = metricFilters;
+      return this;
+    }
+
+    public Builder setIkeyEndpointMap(Cache<String, String> ikeyEndpointMap) {
+      this.ikeyEndpointMap = ikeyEndpointMap;
+      return this;
+    }
+
+    public Builder setStatsbeatModule(StatsbeatModule statsbeatModule) {
+      this.statsbeatModule = statsbeatModule;
+      return this;
+    }
+
+    public Builder setReadOnlyFileSystem(boolean readOnlyFileSystem) {
+      this.readOnlyFileSystem = readOnlyFileSystem;
+      return this;
+    }
+
+    public Builder setGeneralExportQueueSize(int generalExportQueueCapacity) {
+      this.generalExportQueueCapacity = generalExportQueueCapacity;
+      return this;
+    }
+
+    public Builder setMetricsExportQueueSize(int metricsExportQueueCapacity) {
+      this.metricsExportQueueCapacity = metricsExportQueueCapacity;
+      return this;
+    }
+
+    public Builder setAadAuthentication(Configuration.AadAuthentication aadAuthentication) {
+      this.aadAuthentication = aadAuthentication;
+      return this;
+    }
+
+    public TelemetryClient build() {
+      return new TelemetryClient(this);
+    }
   }
 }

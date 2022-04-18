@@ -89,16 +89,23 @@ public class MainEntryPoint {
       rpConfiguration = RpConfigurationBuilder.create(agentPath);
       configuration = ConfigurationBuilder.create(agentPath, rpConfiguration);
       startupLogger = configureLogging(configuration.selfDiagnostics, agentPath);
+      StatusFile.startupLogger = startupLogger;
       ConfigurationBuilder.logConfigurationWarnMessages();
       MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
       // TODO convert to agent builder concept
-      AiComponentInstaller.setInstrumentation(instrumentation);
+      AppIdSupplier appIdSupplier = AiComponentInstaller.beforeAgent(instrumentation);
+      StartAppIdRetrieval.setAppIdSupplier(appIdSupplier);
       AgentInstaller.installBytebuddyAgent(
           instrumentation, ConfigOverride.getConfig(configuration), false);
       startupLogger.info(
           "ApplicationInsights Java Agent {} started successfully (PID {})",
           agentVersion,
           new PidFinder().getValue());
+      startupLogger.info(
+          "Java version: {}, vendor: {}, home: {}",
+          System.getProperty("java.version"),
+          System.getProperty("java.vendor"),
+          System.getProperty("java.home"));
       success = true;
       LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
           .info("Application Insights Codeless Agent {} Attach Successful", agentVersion);
@@ -107,7 +114,12 @@ public class MainEntryPoint {
     } catch (Throwable t) {
 
       FriendlyException friendlyException = getFriendlyException(t);
-      String banner = "ApplicationInsights Java Agent " + agentVersion + " failed to start";
+      String banner =
+          "ApplicationInsights Java Agent "
+              + agentVersion
+              + " failed to start (PID "
+              + new PidFinder().getValue()
+              + ")";
       if (friendlyException != null) {
         logErrorMessage(
             startupLogger, friendlyException.getMessageWithBanner(banner), true, t, javaagentFile);

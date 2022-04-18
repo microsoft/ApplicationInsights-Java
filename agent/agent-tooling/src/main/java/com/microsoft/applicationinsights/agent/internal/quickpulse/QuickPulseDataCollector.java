@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.quickpulse;
 
+import com.microsoft.applicationinsights.agent.internal.exporter.models.ContextTagKeys;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorDomain;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDependencyData;
 import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
@@ -36,6 +37,7 @@ import com.microsoft.applicationinsights.agent.internal.quickpulse.model.QuickPu
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -226,7 +228,10 @@ public enum QuickPulseDataCollector {
     MonitorDomain data = telemetryItem.getData().getBaseData();
     if (data instanceof RequestData) {
       RequestData requestTelemetry = (RequestData) data;
-      addRequest(requestTelemetry, itemCount);
+      addRequest(
+          requestTelemetry,
+          itemCount,
+          telemetryItem.getTags().get(ContextTagKeys.AI_OPERATION_NAME.toString()));
     } else if (data instanceof RemoteDependencyData) {
       addDependency((RemoteDependencyData) data, itemCount);
     } else if (data instanceof TelemetryExceptionData) {
@@ -243,8 +248,8 @@ public enum QuickPulseDataCollector {
     if (counters == null) {
       return;
     }
-    counters.rddsAndDuations.addAndGet(
-        Counters.encodeCountAndDuration(itemCount, parseDurationToMillis(telemetry.getDuration())));
+    long durationMillis = parseDurationToMillis(telemetry.getDuration());
+    counters.rddsAndDuations.addAndGet(Counters.encodeCountAndDuration(itemCount, durationMillis));
     Boolean success = telemetry.isSuccess();
     if (success != null && !success) { // success should not be null
       counters.unsuccessfulRdds.incrementAndGet();
@@ -258,7 +263,7 @@ public enum QuickPulseDataCollector {
     quickPulseDependencyDocument.setCommandName(telemetry.getData());
     quickPulseDependencyDocument.setTarget(telemetry.getTarget());
     quickPulseDependencyDocument.setSuccess(telemetry.isSuccess());
-    quickPulseDependencyDocument.setDuration(telemetry.getDuration());
+    quickPulseDependencyDocument.setDuration(Duration.ofMillis(durationMillis).toString());
     quickPulseDependencyDocument.setResultCode(telemetry.getResultCode());
     quickPulseDependencyDocument.setOperationName(telemetry.getId());
     quickPulseDependencyDocument.setDependencyTypeName(telemetry.getType());
@@ -308,15 +313,14 @@ public enum QuickPulseDataCollector {
     }
   }
 
-  private void addRequest(RequestData requestTelemetry, int itemCount) {
+  private void addRequest(RequestData requestTelemetry, int itemCount, String operationName) {
     Counters counters = this.counters.get();
     if (counters == null) {
       return;
     }
-
+    long durationMillis = parseDurationToMillis(requestTelemetry.getDuration());
     counters.requestsAndDurations.addAndGet(
-        Counters.encodeCountAndDuration(
-            itemCount, parseDurationToMillis(requestTelemetry.getDuration())));
+        Counters.encodeCountAndDuration(itemCount, durationMillis));
     if (!requestTelemetry.isSuccess()) {
       counters.unsuccessfulRequests.incrementAndGet();
     }
@@ -326,9 +330,11 @@ public enum QuickPulseDataCollector {
     quickPulseRequestDocument.setOperationId(requestTelemetry.getId());
     quickPulseRequestDocument.setVersion("1.0");
     quickPulseRequestDocument.setSuccess(requestTelemetry.isSuccess());
-    quickPulseRequestDocument.setDuration(requestTelemetry.getDuration());
+    quickPulseRequestDocument.setDuration(Duration.ofMillis(durationMillis).toString());
     quickPulseRequestDocument.setResponseCode(requestTelemetry.getResponseCode());
-    quickPulseRequestDocument.setOperationName(requestTelemetry.getName());
+    quickPulseRequestDocument.setOperationName(operationName);
+    quickPulseRequestDocument.setName(requestTelemetry.getName());
+    quickPulseRequestDocument.setUrl(requestTelemetry.getUrl());
     quickPulseRequestDocument.setProperties(
         aggregateProperties(requestTelemetry.getProperties(), requestTelemetry.getMeasurements()));
     synchronized (counters.documentList) {

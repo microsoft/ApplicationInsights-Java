@@ -38,9 +38,9 @@ public class FeatureStatsbeatTest {
 
   @Test
   public void testLegacyPropagationEnabled() {
-    testFeatureTrackingDisablement(
+    testFeatureTrackingEnablement(
         (config, value) -> config.preview.legacyRequestIdPropagation.enabled = value,
-        Feature.LEGACY_PROPAGATION_DISABLED);
+        Feature.LEGACY_PROPAGATION_ENABLED);
   }
 
   @Test
@@ -106,11 +106,8 @@ public class FeatureStatsbeatTest {
     instrumentationStatsbeat.addInstrumentation("io.opentelemetry.http-url-connection");
     assertThat(instrumentationStatsbeat.getInstrumentation())
         .isEqualTo(
-            (long)
-                (Math.pow(2, 13)
-                    + Math.pow(2, 21)
-                    + Math.pow(
-                        2, 57))); // Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP
+            (long) (Math.pow(2, 5) + Math.pow(2, 13) + Math.pow(2, 21))); // Exponents are keys from
+    // StatsbeatTestUtils.INSTRUMENTATION_MAP_DECODING
   }
 
   private static void testFeatureTrackingEnablement(

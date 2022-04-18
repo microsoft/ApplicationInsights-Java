@@ -21,27 +21,59 @@
 
 package com.microsoft.applicationinsights.agent.internal.common;
 
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class TelemetryTruncation {
 
-  private static final WarningLogger warningLogger =
-      new WarningLogger(TelemetryTruncation.class, "Telemetry was truncated");
+  private static final Logger logger = LoggerFactory.getLogger(TelemetryTruncation.class);
+
+  private static final Set<String> alreadyLoggedAttributeNames = ConcurrentHashMap.newKeySet();
+  private static final Set<String> alreadyLoggedPropertyKeys = ConcurrentHashMap.newKeySet();
 
   public static String truncateTelemetry(String value, int maxLength, String attributeName) {
     if (value == null || value.length() <= maxLength) {
       return value;
     }
-    warningLogger.recordWarning("truncated " + attributeName + ": " + value);
+    if (alreadyLoggedAttributeNames.add(attributeName)) {
+      // this can be expected, so don't want to flood the logs with a lot of these
+      // (and don't want to log the full value, e.g. sql text > 8192 characters)
+      logger.warn(
+          "truncated {} attribute value to {} characters (this message will only be logged once"
+              + " per attribute name): {}",
+          attributeName,
+          maxLength,
+          trimTo80(value));
+    }
+    logger.debug(
+        "truncated {} attribute value to {} characters: {}", attributeName, maxLength, value);
     return value.substring(0, maxLength);
   }
 
-  // need a separate method because don't want to concatenate "property[key]" on every call above
-  // which would be memory allocating
-  public static String truncatePropertyValue(String value, int maxLength, String key) {
+  public static String truncatePropertyValue(String value, int maxLength, String propertyKey) {
     if (value == null || value.length() <= maxLength) {
       return value;
     }
-    warningLogger.recordWarning("truncated property[" + key + "]: " + value);
+    if (alreadyLoggedPropertyKeys.size() < 10 && alreadyLoggedPropertyKeys.add(propertyKey)) {
+      // this can be expected, so don't want to flood the logs with a lot of these
+      logger.warn(
+          "truncated {} property value to {} characters (this message will only be logged once"
+              + " per property key, and only for at most 10 different property keys): {}",
+          propertyKey,
+          maxLength,
+          trimTo80(value));
+    }
+    logger.debug("truncated {} property value to {} characters: {}", propertyKey, maxLength, value);
     return value.substring(0, maxLength);
+  }
+
+  private static String trimTo80(String value) {
+    if (value.length() <= 80) {
+      return value;
+    }
+    return value.substring(0, 80) + "...";
   }
 
   private TelemetryTruncation() {}

@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
@@ -101,7 +102,9 @@ public class RpConfigurationPolling implements Runnable {
           logger.debug(
               "Connection string from the JSON config file is overriding the previously configured connection string.");
           telemetryClient.setConnectionString(newRpConfiguration.connectionString);
-          appIdSupplier.startAppIdRetrieval();
+          if (!Strings.isNullOrEmpty(newRpConfiguration.connectionString)) {
+            appIdSupplier.startAppIdRetrieval();
+          }
         }
 
         if (newRpConfiguration.sampling.percentage != rpConfiguration.sampling.percentage) {

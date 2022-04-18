@@ -24,19 +24,21 @@ package com.microsoft.applicationinsights.agent.internal.sampling;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverrideAttribute;
+import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 // TODO find a better name for this class (and MatcherGroup too)
 class SamplingOverrides {
@@ -51,9 +53,10 @@ class SamplingOverrides {
   }
 
   @Nullable
-  MatcherGroup getOverride(Attributes attributes) {
+  MatcherGroup getOverride(SpanKind spanKind, Attributes attributes) {
+    LazyHttpUrl lazyHttpUrl = new LazyHttpUrl(attributes);
     for (MatcherGroup matcherGroups : matcherGroups) {
-      if (matcherGroups.matches(attributes)) {
+      if (matcherGroups.matches(spanKind, attributes, lazyHttpUrl)) {
         return matcherGroups;
       }
     }
@@ -141,11 +144,13 @@ class SamplingOverrides {
   }
 
   static class MatcherGroup {
-    private final List<Predicate<Attributes>> predicates;
+    @Nullable private final SpanKind spanKind;
+    private final List<TempPredicate> predicates;
     private final double percentage;
     private final SamplingResult recordAndSampleAndOverwriteTraceState;
 
     private MatcherGroup(SamplingOverride override) {
+      spanKind = override.spanKind != null ? override.spanKind.otelSpanKind : null;
       predicates = new ArrayList<>();
       for (SamplingOverrideAttribute attribute : override.attributes) {
         predicates.add(toPredicate(attribute));
@@ -163,27 +168,32 @@ class SamplingOverrides {
       return recordAndSampleAndOverwriteTraceState;
     }
 
-    private boolean matches(Attributes attributes) {
-      for (Predicate<Attributes> predicate : predicates) {
-        if (!predicate.test(attributes)) {
+    private boolean matches(SpanKind spanKind, Attributes attributes, LazyHttpUrl lazyHttpUrl) {
+      if (this.spanKind != null && !this.spanKind.equals(spanKind)) {
+        return false;
+      }
+      for (TempPredicate predicate : predicates) {
+        if (!predicate.test(attributes, lazyHttpUrl)) {
           return false;
         }
       }
       return true;
     }
 
-    private static Predicate<Attributes> toPredicate(SamplingOverrideAttribute attribute) {
+    private static TempPredicate toPredicate(SamplingOverrideAttribute attribute) {
       if (attribute.matchType == MatchType.STRICT) {
         return new StrictMatcher(attribute.key, attribute.value);
       } else if (attribute.matchType == MatchType.REGEXP) {
         return new RegexpMatcher(attribute.key, attribute.value);
+      } else if (attribute.matchType == null) {
+        return new KeyOnlyMatcher(attribute.key);
       } else {
         throw new IllegalStateException("Unexpected match type: " + attribute.matchType);
       }
     }
   }
 
-  private static class StrictMatcher implements Predicate<Attributes> {
+  private static class StrictMatcher implements TempPredicate {
     private final AttributeKey<String> key;
     private final String value;
 
@@ -193,13 +203,16 @@ class SamplingOverrides {
     }
 
     @Override
-    public boolean test(Attributes attributes) {
+    public boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
       String val = attributes.get(key);
+      if (val == null && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())) {
+        val = lazyHttpUrl.get();
+      }
       return value.equals(val);
     }
   }
 
-  private static class RegexpMatcher implements Predicate<Attributes> {
+  private static class RegexpMatcher implements TempPredicate {
     private final AttributeKey<String> key;
     private final Pattern value;
 
@@ -209,9 +222,54 @@ class SamplingOverrides {
     }
 
     @Override
-    public boolean test(Attributes attributes) {
+    public boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
       String val = attributes.get(key);
+      if (val == null && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())) {
+        val = lazyHttpUrl.get();
+      }
       return val != null && value.matcher(val).matches();
     }
+  }
+
+  private static class KeyOnlyMatcher implements TempPredicate {
+    private final AttributeKey<String> key;
+
+    private KeyOnlyMatcher(String key) {
+      this.key = AttributeKey.stringKey(key);
+    }
+
+    @Override
+    public boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
+      String val = attributes.get(key);
+      if (val == null && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())) {
+        val = lazyHttpUrl.get();
+      }
+      return val != null;
+    }
+  }
+
+  // this is temporary until semantic attributes stabilize and we make breaking change
+  private static class LazyHttpUrl {
+    private final Attributes attributes;
+    private boolean initialized;
+    @Nullable private String value;
+
+    private LazyHttpUrl(Attributes attributes) {
+      this.attributes = attributes;
+    }
+
+    private String get() {
+      if (!initialized) {
+        value = Exporter.getHttpUrlFromServerSpan(attributes);
+        initialized = true;
+      }
+      return value;
+    }
+  }
+
+  // this is temporary until semantic attributes stabilize and we make breaking change
+  // then can use java.util.functions.Predicate<Attributes>
+  private interface TempPredicate {
+    boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl);
   }
 }

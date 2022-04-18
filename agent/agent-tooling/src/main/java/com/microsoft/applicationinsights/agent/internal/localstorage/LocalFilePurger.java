@@ -79,13 +79,22 @@ public class LocalFilePurger implements Runnable {
 
   private void purgedExpiredFiles(File folder) {
     Collection<File> files = FileUtils.listFiles(folder, new String[] {"trn"}, false);
+    int numDeleted = 0;
     for (File file : files) {
       if (expired(file.getName())) {
         if (!LocalStorageUtils.deleteFileWithRetries(file)) {
           logger.warn(
               "Fail to delete the expired {} from folder '{}'.", file.getName(), folder.getName());
+        } else {
+          numDeleted++;
         }
       }
+    }
+    if (numDeleted > 0) {
+      logger.warn(
+          "{} local telemetry file(s) in folder '{}' expired after 48 hours and were deleted",
+          numDeleted,
+          folder.getName());
     }
   }
 

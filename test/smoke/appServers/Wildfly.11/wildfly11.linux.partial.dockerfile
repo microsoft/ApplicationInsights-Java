@@ -13,7 +13,7 @@ RUN if type "apt-get" > /dev/null; then \
 ENV WILDFLY_FULL_VERSION 11.0.0.Final
 
 # install tomcat
-RUN wget http://download.jboss.org/wildfly/$WILDFLY_FULL_VERSION/wildfly-$WILDFLY_FULL_VERSION.tar.gz \
+RUN wget https://download.jboss.org/wildfly/$WILDFLY_FULL_VERSION/wildfly-$WILDFLY_FULL_VERSION.tar.gz \
     && tar xzvf wildfly-$WILDFLY_FULL_VERSION.tar.gz \
     && mv ./wildfly-$WILDFLY_FULL_VERSION /opt/wildfly-$WILDFLY_FULL_VERSION
 

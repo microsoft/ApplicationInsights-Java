@@ -125,9 +125,10 @@ public class AppIdSupplier implements AiAppId.Supplier {
       try {
         response = LazyHttpClient.getInstance().send(request).block();
       } catch (RuntimeException ex) {
-        NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
-            ex, url.toString(), friendlyExceptionThrown, logger);
-        warningLogger.recordWarning("exception sending request to " + url, ex);
+        if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
+            ex, url.toString(), friendlyExceptionThrown, logger)) {
+          warningLogger.recordWarning("exception sending request to " + url, ex);
+        }
         backOff();
         return;
       }

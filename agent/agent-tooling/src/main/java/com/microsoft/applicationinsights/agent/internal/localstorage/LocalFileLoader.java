@@ -21,11 +21,16 @@
 
 package com.microsoft.applicationinsights.agent.internal.localstorage;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.NonessentialStatsbeat;
+import java.io.EOFException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -33,17 +38,30 @@ import org.apache.commons.io.FilenameUtils;
 /** This class manages loading a list of {@link ByteBuffer} from the disk. */
 public class LocalFileLoader {
 
+  // A regex to validate that an instrumentation key is well-formed. It's copied straight from the
+  // Breeze repo.
+  private static final String INSTRUMENTATION_KEY_REGEX =
+      "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
   private static final String TEMPORARY_FILE_EXTENSION = ".tmp";
 
   private final LocalFileCache localFileCache;
   private final File telemetryFolder;
+  // this is null for Statsbeat telemetry
+  @Nullable private final NonessentialStatsbeat nonessentialStatsbeat;
 
   private static final OperationLogger operationLogger =
       new OperationLogger(LocalFileLoader.class, "Loading telemetry from disk");
 
-  public LocalFileLoader(LocalFileCache localFileCache, File telemetryFolder) {
+  private static final OperationLogger updateOperationLogger =
+      new OperationLogger(LocalFileLoader.class, "Updating local telemetry on disk");
+
+  public LocalFileLoader(
+      LocalFileCache localFileCache,
+      File telemetryFolder,
+      @Nullable NonessentialStatsbeat nonessentialStatsbeat) {
     this.localFileCache = localFileCache;
     this.telemetryFolder = telemetryFolder;
+    this.nonessentialStatsbeat = nonessentialStatsbeat;
   }
 
   // Load ByteBuffer from persisted files on disk in FIFO order.
@@ -81,29 +99,84 @@ public class LocalFileLoader {
               + TEMPORARY_FILE_EXTENSION
               + " extension: ",
           e);
-      // TODO (heya) track number of failures to create a temp file via Statsbeat
+      incrementReadFailureCount();
       return null;
     }
 
-    byte[] result;
-    try {
-      // TODO (trask) optimization: read this directly into ByteBuffer(s)
-      result = Files.readAllBytes(tempFile.toPath());
+    if (tempFile.length() <= 36) {
+      if (LocalStorageUtils.deleteFileWithRetries(tempFile)) {
+        operationLogger.recordFailure(
+            "Fail to delete a corrupted persisted file: length is  " + tempFile.length());
+      }
+      return null;
+    }
+
+    byte[] ikeyBytes = new byte[36];
+    int rawByteLength = (int) tempFile.length() - 36;
+    byte[] telemetryBytes = new byte[rawByteLength];
+    String instrumentationKey;
+    try (FileInputStream fileInputStream = new FileInputStream(tempFile)) {
+      readFully(fileInputStream, ikeyBytes, 36);
+      instrumentationKey = new String(ikeyBytes, UTF_8);
+      if (!isInstrumentationKeyValid(instrumentationKey)) {
+        fileInputStream.close(); // need to close FileInputStream before delete
+        if (!LocalStorageUtils.deleteFileWithRetries(tempFile)) {
+          operationLogger.recordFailure(
+              "Fail to delete the old persisted file with an invalid instrumentation key "
+                  + tempFile.getName());
+        }
+        return null;
+      }
+
+      readFully(fileInputStream, telemetryBytes, rawByteLength);
     } catch (IOException ex) {
-      // TODO (heya) track deserialization failure via Statsbeat
       operationLogger.recordFailure("Fail to read telemetry from " + tempFile.getName(), ex);
+      incrementReadFailureCount();
       return null;
     }
 
     operationLogger.recordSuccess();
-    return new PersistedFile(tempFile, ByteBuffer.wrap(result));
+    return new PersistedFile(tempFile, instrumentationKey, ByteBuffer.wrap(telemetryBytes));
+  }
+
+  static boolean isInstrumentationKeyValid(String instrumentationKey) {
+    return Pattern.matches(INSTRUMENTATION_KEY_REGEX, instrumentationKey.toLowerCase());
+  }
+
+  // reads bytes from a FileInputStream and allocates those into the buffer array byteArray.
+  private static void readFully(FileInputStream fileInputStream, byte[] byteArray, int length)
+      throws IOException {
+    if (length < 0) {
+      throw new IndexOutOfBoundsException();
+    }
+
+    int totalRead = 0;
+    while (totalRead < length) {
+      int numRead = fileInputStream.read(byteArray, totalRead, length - totalRead);
+      if (numRead < 0) {
+        throw new EOFException();
+      }
+
+      totalRead += numRead;
+    }
   }
 
   // either delete it permanently on success or add it back to cache to be processed again later on
   // failure
-  public void updateProcessedFileStatus(boolean success, File file) {
-    if (success) {
-      deleteFilePermanentlyOnSuccess(file);
+  public void updateProcessedFileStatus(boolean successOrNonRetryableError, File file) {
+    if (!file.exists()) {
+      // not sure why this would happen
+      updateOperationLogger.recordFailure("File no longer exists: " + file.getName());
+      return;
+    }
+    if (successOrNonRetryableError) {
+      // delete a file on the queue permanently when http response returns success.
+      if (!LocalStorageUtils.deleteFileWithRetries(file)) {
+        // TODO (heya) track file deletion failure via Statsbeat
+        updateOperationLogger.recordFailure("Fail to delete " + file.getName());
+      } else {
+        updateOperationLogger.recordSuccess();
+      }
     } else {
       // rename the temp file back to .trn source file extension
       File sourceFile =
@@ -111,40 +184,35 @@ public class LocalFileLoader {
       try {
         FileUtils.moveFile(file, sourceFile);
       } catch (IOException ex) {
-        operationLogger.recordFailure(
+        updateOperationLogger.recordFailure(
             "Fail to rename " + file.getName() + " to have a .trn extension.", ex);
         return;
       }
+      updateOperationLogger.recordSuccess();
 
       // add the source filename back to local file cache to be processed later.
       localFileCache.addPersistedFilenameToMap(sourceFile.getName());
     }
   }
 
-  // delete a file on the queue permanently when http response returns success.
-  private static void deleteFilePermanentlyOnSuccess(File file) {
-    if (!file.exists()) {
-      return;
-    }
-
-    deleteFile(file);
-  }
-
-  private static void deleteFile(File file) {
-    if (!LocalStorageUtils.deleteFileWithRetries(file)) {
-      // TODO (heya) track file deletion failure via Statsbeat
-      operationLogger.recordFailure("Fail to delete " + file.getName());
-    } else {
-      operationLogger.recordSuccess();
+  private void incrementReadFailureCount() {
+    if (nonessentialStatsbeat != null) {
+      nonessentialStatsbeat.incrementReadFailureCount();
     }
   }
 
   static class PersistedFile {
     final File file;
+    final String instrumentationKey;
     final ByteBuffer rawBytes;
 
-    PersistedFile(File file, ByteBuffer byteBuffer) {
+    PersistedFile(File file, String instrumentationKey, ByteBuffer byteBuffer) {
+      if (instrumentationKey == null) {
+        throw new IllegalArgumentException("instrumentation key can not be null.");
+      }
+
       this.file = file;
+      this.instrumentationKey = instrumentationKey;
       this.rawBytes = byteBuffer;
     }
   }

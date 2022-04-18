@@ -5,6 +5,11 @@
       "disabled": false
     }
   },
+  "customDimensions": {
+    "tag1": "abc",
+    "tag2": "def",
+    "service.version": "123"
+  },
   "internal": {
     "statsbeat": {
       "disabledAll": false,
