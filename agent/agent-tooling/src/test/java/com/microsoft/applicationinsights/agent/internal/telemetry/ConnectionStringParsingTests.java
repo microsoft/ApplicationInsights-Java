@@ -31,6 +31,8 @@ import java.net.URL;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ConnectionStringParsingTests {
 
@@ -67,6 +69,21 @@ class ConnectionStringParsingTests {
                     + EndpointProvider.API_PROFILES_APP_ID_URL_PREFIX
                     + ikey
                     + EndpointProvider.API_PROFILES_APP_ID_URL_SUFFIX));
+  }
+
+  @ValueSource(strings = {
+      "http://123.com/Quickpulseservice.svc",
+      "http://123.com",
+      "http://123.com/",
+  })
+  @ParameterizedTest(name = "#{index} - Test live endpoint with Argument: {0}.")
+  void liveEndpointUrl(String host) throws MalformedURLException {
+    EndpointProvider ep = new EndpointProvider();
+
+    ep.setLiveEndpoint(new URL(host));
+
+    assertThat(ep.getLiveEndpointUrl())
+        .isEqualTo(new URL("http://123.com/Quickpulseservice.svc"));
   }
 
   @Test

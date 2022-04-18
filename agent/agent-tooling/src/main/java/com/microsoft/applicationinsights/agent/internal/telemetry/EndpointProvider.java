@@ -60,8 +60,14 @@ public class EndpointProvider {
     return buildUrl(baseUri, INGESTION_URL_PATH);
   }
 
-  private URL buildLiveUri(URL baseUri) throws MalformedURLException {
-    return buildUrl(baseUri, LIVE_URL_PATH);
+  private URL buildLiveUri(URL url) throws MalformedURLException {
+    String urlLowerCase = url.toString().toLowerCase();
+
+    if (urlLowerCase.endsWith(LIVE_URL_PATH.toLowerCase())) {
+      return url;
+    }
+
+    return buildUrl(url, LIVE_URL_PATH);
   }
 
   public URL getIngestionEndpointUrl() {
