@@ -28,7 +28,8 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Diagnostics
 
 public class ApplicationInsightsCsvLayout extends PatternLayout {
 
-  private static final ApplicationMetadataFactory applicationMetadataFactory = DiagnosticsHelper.getMetadataFactory();
+  private static final ApplicationMetadataFactory applicationMetadataFactory =
+      DiagnosticsHelper.getMetadataFactory();
 
   @Override
   public String doLayout(ILoggingEvent event) {
