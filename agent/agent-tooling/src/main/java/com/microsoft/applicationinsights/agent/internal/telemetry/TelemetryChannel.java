@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 
 import com.azure.core.http.HttpMethod;
@@ -49,14 +50,15 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.nio.channels.UnresolvedAddressException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.zip.GZIPOutputStream;
 import javax.annotation.Nullable;
@@ -74,17 +76,18 @@ public class TelemetryChannel {
 
   private static final AppInsightsByteBufferPool byteBufferPool = new AppInsightsByteBufferPool();
 
-  // TODO (heya) should we suppress logging statsbeat telemetry ingestion issues?
-  private static final OperationLogger operationLogger =
-      new OperationLogger(TelemetryChannel.class, "Sending telemetry to the ingestion service");
-
-  private static final OperationLogger retryOperationLogger =
-      new OperationLogger(
-          TelemetryChannel.class, "Sending telemetry to the ingestion service (retry)");
+  private final OperationLogger operationLogger;
+  private final OperationLogger retryOperationLogger;
 
   // TODO (kryalama) do we still need this AtomicBoolean, or can we use throttling built in to the
   //  operationLogger?
   private final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
+
+  private final AtomicInteger statsbeatUnableToReachBreezeCounter = new AtomicInteger();
+  // TODO (trask) remove this boolean and shutdown the disk loader for statsbeat instead
+  private final AtomicBoolean statsbeatHasBeenShutdown = new AtomicBoolean();
+
+  private volatile boolean statsbeatHasReachedBreezeAtLeastOnce;
 
   @SuppressWarnings("CatchAndPrintStackTrace")
   private static ObjectMapper createObjectMapper() {
@@ -121,6 +124,10 @@ public class TelemetryChannel {
       String instrumentationKey,
       Runnable onSuccess,
       Consumer<Boolean> onFailure) {
+    if (isStatsbeat && statsbeatHasBeenShutdown.get()) {
+      // let it be deleted from disk so that it won't keep getting retried
+      return CompletableResultCode.ofSuccess();
+    }
     return internalSend(
         singletonList(buffer), instrumentationKey, onSuccess, onFailure, retryOperationLogger);
   }
@@ -137,6 +144,18 @@ public class TelemetryChannel {
     this.localFileWriter = localFileWriter;
     this.statsbeatModule = statsbeatModule;
     this.isStatsbeat = isStatsbeat;
+
+    if (isStatsbeat) {
+      // suppress all logging for statsbeat telemetry failures
+      operationLogger = OperationLogger.NOOP;
+      retryOperationLogger = OperationLogger.NOOP;
+    } else {
+      operationLogger =
+          new OperationLogger(TelemetryChannel.class, "Sending telemetry to the ingestion service");
+      retryOperationLogger =
+          new OperationLogger(
+              TelemetryChannel.class, "Sending telemetry to the ingestion service (retry)");
+    }
   }
 
   public CompletableResultCode send(List<TelemetryItem> telemetryItems) {
@@ -184,7 +203,7 @@ public class TelemetryChannel {
 
   List<ByteBuffer> encode(List<TelemetryItem> telemetryItems) throws IOException {
 
-    if (logger.isDebugEnabled()) {
+    if (!isStatsbeat && logger.isDebugEnabled()) {
       StringWriter debug = new StringWriter();
       try (JsonGenerator jg = mapper.createGenerator(debug)) {
         writeTelemetryItems(jg, telemetryItems);
@@ -282,6 +301,13 @@ public class TelemetryChannel {
     return result;
   }
 
+  // not including 401/403/503 in this list because those are commonly returned by proxy servers
+  // when they are not configured to allow traffic for westus-0
+  // not including 307/308 in this list because redirects only bubble up to this class if they have
+  // reached the 10 redirect threshold, in which case they are considered non-retryable exceptions
+  private static final Set<Integer> RESPONSE_CODES_INDICATING_REACHED_BREEZE =
+      new HashSet<>(asList(200, 206, 402, 408, 429, 439, 500));
+
   private Consumer<HttpResponse> responseHandler(
       String instrumentationKey,
       long startTime,
@@ -296,6 +322,13 @@ public class TelemetryChannel {
             .subscribe(
                 body -> {
                   int statusCode = response.getStatusCode();
+                  if (isStatsbeat && !statsbeatHasReachedBreezeAtLeastOnce) {
+                    if (RESPONSE_CODES_INDICATING_REACHED_BREEZE.contains(statusCode)) {
+                      statsbeatHasReachedBreezeAtLeastOnce = true;
+                    } else {
+                      statsbeatDidNotReachBreeze();
+                    }
+                  }
                   switch (statusCode) {
                     case 200: // SUCCESS
                       operationLogger.recordSuccess();
@@ -364,19 +397,13 @@ public class TelemetryChannel {
       String instrumentationKey, Consumer<Boolean> onFailure, OperationLogger operationLogger) {
 
     return error -> {
-      if (isStatsbeat
-          && (error instanceof UnknownHostException
-              || error instanceof UnresolvedAddressException)) {
-        // when sending a Statsbeat request and server returns an UnknownHostException, it's
-        // likely that it's using AMPLS. In that case, we use the kill-switch to turn off Statsbeat.
-        statsbeatModule.shutdown();
-        onFailure.accept(false);
-        return;
+      if (isStatsbeat && !statsbeatHasReachedBreezeAtLeastOnce) {
+        statsbeatDidNotReachBreeze();
       }
 
-      // TODO (trask) only log one-time friendly exception if no prior successes
-      if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
-          error, endpointUrl.toString(), friendlyExceptionThrown, logger)) {
+      if (!isStatsbeat
+          && !NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
+              error, endpointUrl.toString(), friendlyExceptionThrown, logger)) {
         operationLogger.recordFailure(
             "Error sending telemetry items: " + error.getMessage(), error);
       }
@@ -387,6 +414,21 @@ public class TelemetryChannel {
 
       onFailure.accept(true);
     };
+  }
+
+  private void statsbeatDidNotReachBreeze() {
+    if (statsbeatUnableToReachBreezeCounter.getAndIncrement() >= 10
+        && !statsbeatHasBeenShutdown.getAndSet(true)) {
+      // shutting down statsbeat because it's unlikely that it will ever get through at this point
+      // some possible reasons:
+      // * AMPLS
+      // * proxy that has not been configured to allow westus-0
+      // * local firewall that has not been configured to allow westus-0
+      //
+      // TODO need to figure out a way that statsbeat telemetry can be sent to the same endpoint as
+      // the customer data for these cases
+      statsbeatModule.shutdown();
+    }
   }
 
   private static String getErrorMessageFromPartialSuccessResponse(String body) {
