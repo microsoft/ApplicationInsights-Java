@@ -38,7 +38,9 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.Data;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
+import io.opentelemetry.sdk.metrics.data.HistogramData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -75,9 +77,11 @@ public class AzureMonitorMetricExporter implements MetricExporter {
 
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    System.out.println("#### InstrumentationTyp: " + instrumentType.toString());
     return MetricExporter.deltaPreferred(instrumentType);
   }
 
+  @SuppressWarnings("SystemOut")
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
     if (stopped.get()) {
@@ -114,12 +118,19 @@ public class AzureMonitorMetricExporter implements MetricExporter {
     return CompletableResultCode.ofSuccess();
   }
 
+  @SuppressWarnings("SystemOut")
   private List<TelemetryItem> convertOtelMetricToAzureMonitorMetric(MetricData metricData) {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-    for (PointData data : metricData.getData().getPoints()) {
+
+    Data<?> data = metricData.getData();
+    if (data instanceof HistogramData) {
+      System.out.println(
+          "#### histogram temporality: " + ((HistogramData) data).getAggregationTemporality());
+    }
+    for (PointData pointData : metricData.getData().getPoints()) {
       MetricTelemetryBuilder builder = telemetryClient.newMetricTelemetryBuilder();
-      builder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(data.getStartEpochNanos()));
-      updateMetricPointBuilder(builder, metricData, data);
+      builder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(pointData.getStartEpochNanos()));
+      updateMetricPointBuilder(builder, metricData, pointData);
       telemetryItems.add(builder.build());
     }
     return telemetryItems;
