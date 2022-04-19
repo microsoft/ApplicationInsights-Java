@@ -75,6 +75,7 @@ public class AzureMonitorMetricExporter implements MetricExporter {
     EXCLUDED_METRIC_NAMES.add("rpc.server.duration"); // gRPC
   }
 
+  @SuppressWarnings("SystemOut")
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
     System.out.println("#### InstrumentationTyp: " + instrumentType.toString());
