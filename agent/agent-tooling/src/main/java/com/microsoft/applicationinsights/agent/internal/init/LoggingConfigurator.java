@@ -38,6 +38,7 @@ import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
 import ch.qos.logback.core.util.FileSize;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.EtwAppender;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsCsvLayout;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsDiagnosticsLogFilter;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsJsonLayout;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.MoshiJsonFormatter;
@@ -205,7 +206,13 @@ public class LoggingConfigurator {
     appender.setContext(loggerContext);
     appender.setName("CONSOLE");
 
-    appender.setEncoder(createEncoder());
+    // format Linux consumption plan linux diagnostic log as comma separated
+    if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+      appender.setLayout(new ApplicationInsightsCsvLayout());
+      System.out.println("####### log will be formatted as csv.");
+    } else {
+      appender.setEncoder(createEncoder());
+    }
     appender.start();
 
     return appender;
