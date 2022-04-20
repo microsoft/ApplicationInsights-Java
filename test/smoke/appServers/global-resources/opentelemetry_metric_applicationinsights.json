@@ -5,7 +5,7 @@
     "instance": "testroleinstance"
   },
   "preview": {
-    "metricIntervalSeconds": 30
+    "metricIntervalSeconds": 10
   },
   "customDimensions": {
     "tag1": "abc",

@@ -75,11 +75,9 @@ public class AzureMonitorMetricExporter implements MetricExporter {
 
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
-    // Use DELTA for now
-    return AggregationTemporality.DELTA;
+    return MetricExporter.deltaPreferred(instrumentType);
   }
 
-  @SuppressWarnings("SystemOut")
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
     if (stopped.get()) {
