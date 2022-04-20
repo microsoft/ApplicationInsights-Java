@@ -23,6 +23,8 @@ package com.azure.monitor.opentelemetry.exporter.implementation.pipeline;
 
 import static java.util.Arrays.asList;
 
+import io.opentelemetry.sdk.common.CompletableResultCode;
+import java.util.ArrayList;
 import java.util.List;
 
 public interface TelemetryPipelineListener {
@@ -30,6 +32,8 @@ public interface TelemetryPipelineListener {
   void onResponse(TelemetryPipelineRequest request, TelemetryPipelineResponse response);
 
   void onException(TelemetryPipelineRequest request, String errorMessage, Throwable throwable);
+
+  CompletableResultCode shutdown();
 
   static TelemetryPipelineListener composite(TelemetryPipelineListener... delegates) {
     return new CompositeTelemetryPipelineListener(asList(delegates));
@@ -61,6 +65,15 @@ public interface TelemetryPipelineListener {
         delegate.onException(request, errorMessage, throwable);
       }
     }
+
+    @Override
+    public CompletableResultCode shutdown() {
+      List<CompletableResultCode> results = new ArrayList<>();
+      for (TelemetryPipelineListener delegate : delegates) {
+        results.add(delegate.shutdown());
+      }
+      return CompletableResultCode.ofAll(results);
+    }
   }
 
   class NoopTelemetryPipelineListener implements TelemetryPipelineListener {
@@ -73,5 +86,10 @@ public interface TelemetryPipelineListener {
     @Override
     public void onException(
         TelemetryPipelineRequest request, String errorMessage, Throwable throwable) {}
+
+    @Override
+    public CompletableResultCode shutdown() {
+      return CompletableResultCode.ofSuccess();
+    }
   }
 }

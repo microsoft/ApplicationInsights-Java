@@ -28,6 +28,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -103,6 +104,11 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
         throwable, request.getUrl().toString(), friendlyExceptionThrown, logger)) {
       operationLogger.recordFailure(reason, throwable);
     }
+  }
+
+  @Override
+  public CompletableResultCode shutdown() {
+    return CompletableResultCode.ofSuccess();
   }
 
   private static String getErrorMessageFromPartialSuccessResponse(String body) {

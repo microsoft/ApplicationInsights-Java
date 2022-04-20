@@ -128,6 +128,10 @@ public class TelemetryItemExporter {
     return CompletableResultCode.ofAll(activeExportResults);
   }
 
+  public CompletableResultCode shutdown() {
+    return listener.shutdown();
+  }
+
   CompletableResultCode internalSendByInstrumentationKey(
       List<TelemetryItem> telemetryItems, String instrumentationKey) {
     List<ByteBuffer> byteBuffers;
