@@ -75,11 +75,9 @@ public class AzureMonitorMetricExporter implements MetricExporter {
     EXCLUDED_METRIC_NAMES.add("rpc.server.duration"); // gRPC
   }
 
-  @SuppressWarnings("SystemOut")
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
-    System.out.println("#### InstrumentationTyp: " + instrumentType.toString());
-    return MetricExporter.deltaPreferred(instrumentType);
+    return AggregationTemporality.DELTA;
   }
 
   @SuppressWarnings("SystemOut")
@@ -128,6 +126,7 @@ public class AzureMonitorMetricExporter implements MetricExporter {
       System.out.println(
           "#### histogram temporality: " + ((HistogramData) data).getAggregationTemporality());
     }
+
     for (PointData pointData : metricData.getData().getPoints()) {
       MetricTelemetryBuilder builder = telemetryClient.newMetricTelemetryBuilder();
       builder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(pointData.getStartEpochNanos()));
