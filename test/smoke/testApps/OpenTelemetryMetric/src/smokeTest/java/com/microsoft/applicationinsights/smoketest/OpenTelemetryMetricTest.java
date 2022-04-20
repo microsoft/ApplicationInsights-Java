@@ -104,6 +104,8 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
     assertEquals(456, dp.getValue(), 0);
     assertEquals(DataPointType.Aggregation, dp.getKind());
     assertEquals(name, dp.getName());
+    assertNotNull(dp.getMin());
+    assertNotNull(dp.getMax());
 
     // validate custom dimension
     Map<String, String> properties = md.getProperties();
@@ -191,8 +193,6 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
     assertEquals(2.0, dp.getValue(), 0);
     assertEquals(DataPointType.Aggregation, dp.getKind());
     assertEquals(name, dp.getName());
-    assertNotNull(dp.getMax());
-    assertNotNull(dp.getMin());
 
     // validate custom dimension
     Map<String, String> properties = md.getProperties();
@@ -223,8 +223,6 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
     assertEquals(6.0, dp.getValue(), 0);
     assertEquals(DataPointType.Aggregation, dp.getKind());
     assertEquals(name, dp.getName());
-    assertNotNull(dp.getMax());
-    assertNotNull(dp.getMin());
 
     // validate custom dimension
     properties = md.getProperties();
@@ -255,8 +253,6 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
     assertEquals(7.0, dp.getValue(), 0);
     assertEquals(DataPointType.Aggregation, dp.getKind());
     assertEquals(name, dp.getName());
-    assertNotNull(dp.getMax());
-    assertNotNull(dp.getMin());
 
     // validate custom dimension
     properties = md.getProperties();
