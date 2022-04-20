@@ -38,9 +38,7 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.Data;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.HistogramData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
