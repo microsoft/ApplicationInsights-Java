@@ -77,6 +77,7 @@ public class AzureMonitorMetricExporter implements MetricExporter {
 
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    // Use DELTA for now
     return AggregationTemporality.DELTA;
   }
 
@@ -117,15 +118,8 @@ public class AzureMonitorMetricExporter implements MetricExporter {
     return CompletableResultCode.ofSuccess();
   }
 
-  @SuppressWarnings("SystemOut")
   private List<TelemetryItem> convertOtelMetricToAzureMonitorMetric(MetricData metricData) {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-
-    Data<?> data = metricData.getData();
-    if (data instanceof HistogramData) {
-      System.out.println(
-          "#### histogram temporality: " + ((HistogramData) data).getAggregationTemporality());
-    }
 
     for (PointData pointData : metricData.getData().getPoints()) {
       MetricTelemetryBuilder builder = telemetryClient.newMetricTelemetryBuilder();
