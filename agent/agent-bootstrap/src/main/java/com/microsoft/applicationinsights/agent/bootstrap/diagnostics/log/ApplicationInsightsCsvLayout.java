@@ -28,12 +28,16 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Diagnostics
 
 public class ApplicationInsightsCsvLayout extends PatternLayout {
 
+  private static final String PREFIX = "LanguageWorkerConsoleLog MS_APPLICATION_INSIGHTS_LOGS";
+
   private static final ApplicationMetadataFactory applicationMetadataFactory =
       DiagnosticsHelper.getMetadataFactory();
 
   @Override
   public String doLayout(ILoggingEvent event) {
     StringBuilder stringBuilder = new StringBuilder();
+    stringBuilder.append(PREFIX);
+    stringBuilder.append(" ");
     stringBuilder.append(event.getTimeStamp());
     stringBuilder.append(",");
     stringBuilder.append(event.getLevel().toString());
