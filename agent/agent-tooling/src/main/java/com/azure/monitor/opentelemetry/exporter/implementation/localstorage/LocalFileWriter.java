@@ -59,7 +59,7 @@ final class LocalFileWriter {
       operationLogger.recordFailure(
           "Local persistent storage capacity has been reached. It's currently at ("
               + (size / 1024)
-              + "KB). Telemetry will be lost");
+              + "KB). Telemetry will be lost.");
       stats.incrementWriteFailureCount();
       return;
     }
@@ -68,7 +68,8 @@ final class LocalFileWriter {
     try {
       tempFile = createTempFile(telemetryFolder);
     } catch (IOException e) {
-      operationLogger.recordFailure("unable to create temporary file: " + e, e);
+      operationLogger.recordFailure(
+          "Error creating file in directory: " + telemetryFolder.getAbsolutePath(), e);
       stats.incrementWriteFailureCount();
       return;
     }
@@ -76,7 +77,7 @@ final class LocalFileWriter {
     try {
       write(tempFile, buffers, instrumentationKey);
     } catch (IOException e) {
-      operationLogger.recordFailure(String.format("unable to write to file: %s", e), e);
+      operationLogger.recordFailure("Error writing file: " + tempFile.getAbsolutePath(), e);
       stats.incrementWriteFailureCount();
       return;
     }
@@ -87,13 +88,7 @@ final class LocalFileWriter {
           new File(telemetryFolder, FileUtil.getBaseName(tempFile) + PERMANENT_FILE_EXTENSION);
       FileUtil.moveFile(tempFile, permanentFile);
     } catch (IOException e) {
-      operationLogger.recordFailure(
-          "Fail to change "
-              + tempFile.getAbsolutePath()
-              + " to have "
-              + PERMANENT_FILE_EXTENSION
-              + " extension: ",
-          e);
+      operationLogger.recordFailure("Error renaming file: " + tempFile.getAbsolutePath(), e);
       stats.incrementWriteFailureCount();
       return;
     }

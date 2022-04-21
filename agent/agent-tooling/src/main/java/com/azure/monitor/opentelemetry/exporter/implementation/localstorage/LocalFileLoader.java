@@ -82,21 +82,14 @@ class LocalFileLoader {
               telemetryFolder, FileUtil.getBaseName(fileToBeLoaded) + TEMPORARY_FILE_EXTENSION);
       FileUtil.moveFile(fileToBeLoaded, tempFile);
     } catch (IOException e) {
-      operationLogger.recordFailure(
-          "Failed to change "
-              + fileToBeLoaded.getAbsolutePath()
-              + " to have "
-              + TEMPORARY_FILE_EXTENSION
-              + " extension: ",
-          e);
+      operationLogger.recordFailure("Error renaming file: " + fileToBeLoaded.getAbsolutePath(), e);
       stats.incrementReadFailureCount();
       return null;
     }
 
     if (tempFile.length() <= 36) {
       if (FileUtil.deleteFileWithRetries(tempFile)) {
-        operationLogger.recordFailure(
-            "Fail to delete a corrupted persisted file: length is  " + tempFile.length());
+        operationLogger.recordFailure("Unable to delete file: " + tempFile.getAbsolutePath());
       }
       return null;
     }
@@ -111,16 +104,14 @@ class LocalFileLoader {
       if (!isInstrumentationKeyValid(instrumentationKey)) {
         fileInputStream.close(); // need to close FileInputStream before delete
         if (!FileUtil.deleteFileWithRetries(tempFile)) {
-          operationLogger.recordFailure(
-              "Fail to delete the old persisted file with an invalid instrumentation key "
-                  + tempFile.getName());
+          operationLogger.recordFailure("Unable to delete file: " + tempFile.getAbsolutePath());
         }
         return null;
       }
 
       readFully(fileInputStream, telemetryBytes, rawByteLength);
-    } catch (IOException ex) {
-      operationLogger.recordFailure("Fail to read telemetry from " + tempFile.getName(), ex);
+    } catch (IOException e) {
+      operationLogger.recordFailure("Error reading file: " + tempFile.getAbsolutePath(), e);
       stats.incrementReadFailureCount();
       return null;
     }
@@ -156,13 +147,13 @@ class LocalFileLoader {
   void updateProcessedFileStatus(boolean successOrNonRetryableError, File file) {
     if (!file.exists()) {
       // not sure why this would happen
-      updateOperationLogger.recordFailure("File no longer exists: " + file.getName());
+      updateOperationLogger.recordFailure("File no longer exists: " + file.getAbsolutePath());
       return;
     }
     if (successOrNonRetryableError) {
       // delete a file on the queue permanently when http response returns success.
       if (!FileUtil.deleteFileWithRetries(file)) {
-        updateOperationLogger.recordFailure("Fail to delete " + file.getName());
+        updateOperationLogger.recordFailure("Unable to delete file: " + file.getAbsolutePath());
       } else {
         updateOperationLogger.recordSuccess();
       }
@@ -171,9 +162,8 @@ class LocalFileLoader {
       File sourceFile = new File(telemetryFolder, FileUtil.getBaseName(file) + ".trn");
       try {
         FileUtil.moveFile(file, sourceFile);
-      } catch (IOException ex) {
-        updateOperationLogger.recordFailure(
-            "Fail to rename " + file.getName() + " to have a .trn extension.", ex);
+      } catch (IOException e) {
+        updateOperationLogger.recordFailure("Error renaming file: " + file.getAbsolutePath(), e);
         return;
       }
       updateOperationLogger.recordSuccess();

@@ -76,7 +76,7 @@ public class TelemetryPipeline {
       sendInternal(request, listener, result, MAX_REDIRECTS);
       return result;
     } catch (Throwable t) {
-      listener.onException(request, "Error sending telemetry items: " + t.getMessage(), t);
+      listener.onException(request, t.getMessage() + " (" + request.getUrl() + ")", t);
       return CompletableResultCode.ofFailure();
     }
   }
@@ -110,12 +110,14 @@ public class TelemetryPipeline {
                                 remainingRedirects),
                         throwable -> {
                           listener.onException(
-                              request, "Error retrieving response body: " + throwable, throwable);
+                              request,
+                              throwable.getMessage() + " (" + request.getUrl() + ")",
+                              throwable);
                           result.fail();
                         }),
             throwable -> {
               listener.onException(
-                  request, "Error sending telemetry items: " + throwable, throwable);
+                  request, throwable.getMessage() + " (" + request.getUrl() + ")", throwable);
               result.fail();
             });
   }
