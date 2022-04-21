@@ -71,6 +71,7 @@ public class InheritedAttributesLogProcessor implements LogProcessor {
   public void emit(LogData log) {
     Span currentSpan = Span.current();
     if (!(currentSpan instanceof ReadableSpan)) {
+      delegate.emit(log);
       return;
     }
 
