@@ -6,12 +6,14 @@
 package io.opentelemetry.instrumentation.jdbc.internal;
 
 import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.WARNING;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Properties;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
@@ -95,7 +97,7 @@ public final class JdbcUtils {
       String url = metaData.getURL();
       if (url != null) {
         try {
-          return JdbcConnectionUrlParser.parse(url, connection.getClientInfo());
+          return JdbcConnectionUrlParser.parse(url, getClientInfo(connection));
         } catch (Throwable ex) {
           // getClientInfo is likely not allowed.
           return JdbcConnectionUrlParser.parse(url, null);
@@ -105,6 +107,28 @@ public final class JdbcUtils {
       }
     } catch (SQLException se) {
       return DbInfo.DEFAULT;
+    }
+  }
+
+  private static final String clientInfo =
+      System.getProperty("applicationinsights.debug.clientInfoCapture", "default");
+
+  @SuppressWarnings("ReturnsNullCollection")
+  @Nullable
+  private static Properties getClientInfo(Connection connection) throws SQLException {
+    switch (clientInfo) {
+      case "default":
+        return connection.getClientInfo();
+      case "none":
+        return null;
+      case "wrapped":
+        if (connection.isWrapperFor(Connection.class)) {
+          connection = connection.unwrap(Connection.class);
+        }
+        return connection.getClientInfo();
+      default:
+        logger.log(WARNING, "Unexpected clientInfoCapture: {0}", clientInfo);
+        return null;
     }
   }
 
