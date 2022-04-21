@@ -156,8 +156,10 @@ public class AzureMonitorMetricExporter implements MetricExporter {
         if (histogramCount <= Integer.MAX_VALUE && histogramCount >= Integer.MIN_VALUE) {
           pointBuilder.setCount((int) histogramCount);
         }
-        pointBuilder.setValue(((HistogramPointData) pointData).getSum());
-        // TODO track min/max when it becomes available
+        HistogramPointData histogramPointData = (HistogramPointData) pointData;
+        pointBuilder.setValue(histogramPointData.getSum());
+        pointBuilder.setMin(histogramPointData.getMin());
+        pointBuilder.setMax(histogramPointData.getMax());
         break;
       case SUMMARY: // not supported yet in OpenTelemetry SDK
       case EXPONENTIAL_HISTOGRAM: // not supported yet in OpenTelemetry SDK

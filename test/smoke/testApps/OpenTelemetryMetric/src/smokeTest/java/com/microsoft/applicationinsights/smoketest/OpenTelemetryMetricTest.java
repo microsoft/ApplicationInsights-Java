@@ -104,6 +104,9 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
     assertEquals(456, dp.getValue(), 0);
     assertEquals(DataPointType.Aggregation, dp.getKind());
     assertEquals(name, dp.getName());
+    assertEquals(1, dp.getCount(), 0);
+    assertEquals(456, dp.getMin(), 0);
+    assertEquals(456, dp.getMax(), 0);
 
     // validate custom dimension
     Map<String, String> properties = md.getProperties();
