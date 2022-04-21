@@ -144,7 +144,7 @@ class QuickPulsePingSender {
     } catch (Throwable t) {
       if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
           t, getQuickPulseEndpoint(), friendlyExceptionThrown, logger)) {
-        operationLogger.recordFailure(t.getMessage(), t);
+        operationLogger.recordFailure(t.getMessage() + " (" + endpointPrefix + ")", t);
       }
     } finally {
       if (response != null) {

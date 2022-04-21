@@ -80,18 +80,18 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
       case 503: // SERVICE UNAVAILABLE
         if (shouldLogWarnings) {
           operationLogger.recordFailure(
-              "received response code "
+              "Received response code "
                   + response.getStatusCode()
                   + " (telemetry will be stored to disk and retried later)");
         }
         break;
       case 402: // Breeze-specific: New Daily Quota Exceeded
         operationLogger.recordFailure(
-            "received response code 402 (daily quota exceeded and throttled over extended time)");
+            "Received response code 402 (daily quota exceeded and throttled over extended time)");
         break;
       case 439: // Breeze-specific: Deprecated Daily Quota Exceeded
         operationLogger.recordFailure(
-            "received response code 439 (daily quota exceeded and throttled over extended time)");
+            "Received response code 439 (daily quota exceeded and throttled over extended time)");
         break;
       default:
         operationLogger.recordFailure("received response code: " + response.getStatusCode());
@@ -135,7 +135,7 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
     try {
       jsonNode = new ObjectMapper().readTree(responseBody);
     } catch (JsonProcessingException e) {
-      return "ingestion service returned "
+      return "Ingestion service returned "
           + responseCode
           + ", but could not parse response as json: "
           + responseBody;
