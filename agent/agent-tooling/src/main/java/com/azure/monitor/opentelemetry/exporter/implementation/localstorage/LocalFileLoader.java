@@ -88,7 +88,7 @@ class LocalFileLoader {
     }
 
     if (tempFile.length() <= 36) {
-      if (FileUtil.deleteFileWithRetries(tempFile)) {
+      if (!FileUtil.deleteFileWithRetries(tempFile)) {
         operationLogger.recordFailure("Unable to delete file: " + tempFile.getAbsolutePath());
       }
       return null;
