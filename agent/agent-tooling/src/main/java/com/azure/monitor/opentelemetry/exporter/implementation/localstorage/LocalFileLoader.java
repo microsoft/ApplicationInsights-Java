@@ -45,16 +45,27 @@ class LocalFileLoader {
   private final File telemetryFolder;
   private final LocalStorageStats stats;
 
-  private static final OperationLogger operationLogger =
-      new OperationLogger(LocalFileLoader.class, "Loading telemetry from disk");
+  private final OperationLogger operationLogger;
+  private final OperationLogger updateOperationLogger;
 
-  private static final OperationLogger updateOperationLogger =
-      new OperationLogger(LocalFileLoader.class, "Updating local telemetry on disk");
-
-  LocalFileLoader(LocalFileCache localFileCache, File telemetryFolder, LocalStorageStats stats) {
+  LocalFileLoader(
+      LocalFileCache localFileCache,
+      File telemetryFolder,
+      LocalStorageStats stats,
+      boolean suppressWarnings) { // used to suppress warnings from statsbeat
     this.localFileCache = localFileCache;
     this.telemetryFolder = telemetryFolder;
     this.stats = stats;
+
+    operationLogger =
+        suppressWarnings
+            ? OperationLogger.NOOP
+            : new OperationLogger(LocalFileLoader.class, "Loading telemetry from disk");
+
+    updateOperationLogger =
+        suppressWarnings
+            ? OperationLogger.NOOP
+            : new OperationLogger(LocalFileLoader.class, "Updating local telemetry on disk");
   }
 
   // Load ByteBuffer from persisted files on disk in FIFO order.

@@ -277,7 +277,8 @@ public class TelemetryClient {
               new LocalStorageTelemetryPipelineListener(
                   TempDirs.getSubDir(tempDir, TELEMETRY_FOLDER_NAME),
                   telemetryPipeline,
-                  statsbeatModule.getNonessentialStatsbeat()));
+                  statsbeatModule.getNonessentialStatsbeat(),
+                  false));
     }
 
     return BatchItemProcessor.builder(
@@ -307,7 +308,8 @@ public class TelemetryClient {
                 new LocalStorageTelemetryPipelineListener(
                     TempDirs.getSubDir(tempDir, STATSBEAT_FOLDER_NAME),
                     telemetryPipeline,
-                    LocalStorageStats.noop());
+                    LocalStorageStats.noop(),
+                    true);
             telemetryPipelineListener =
                 TelemetryPipelineListener.composite(
                     new StatsbeatTelemetryPipelineListener(

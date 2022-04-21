@@ -39,10 +39,10 @@ public class LocalFilePurgerTests {
   public void testPurgedExpiredFiles() throws InterruptedException {
     String text = "hello world";
     LocalFileCache cache = new LocalFileCache(tempFolder);
-    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder, null);
+    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder, null, false);
 
     // run purge task every second to delete files that are 5 seconds old
-    LocalFilePurger purger = new LocalFilePurger(tempFolder, 5L, 1L);
+    LocalFilePurger purger = new LocalFilePurger(tempFolder, 5L, 1L, false);
 
     // persist 100 files to disk
     for (int i = 0; i < 100; i++) {

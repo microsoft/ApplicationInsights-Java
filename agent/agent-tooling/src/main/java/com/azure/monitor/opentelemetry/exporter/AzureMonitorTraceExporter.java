@@ -155,7 +155,10 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
           new TelemetryItemExporter(
               pipeline,
               new LocalStorageTelemetryPipelineListener(
-                  TempDirs.getSubDir(tempDir, "telemetry"), pipeline, LocalStorageStats.noop()));
+                  TempDirs.getSubDir(tempDir, "telemetry"),
+                  pipeline,
+                  LocalStorageStats.noop(),
+                  false));
     } else {
       telemetryItemExporter = new TelemetryItemExporter(pipeline, TelemetryPipelineListener.noop());
     }

@@ -23,14 +23,12 @@ package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import java.io.File;
-import java.util.Collection;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Purge files that are older than 48 hours in both 'telemetry' and 'statsbeat' folders. Purge is
@@ -38,23 +36,33 @@ import org.slf4j.LoggerFactory;
  */
 class LocalFilePurger implements Runnable {
 
-  private static final Logger logger = LoggerFactory.getLogger(LocalFilePurger.class);
-
   private final File folder;
   private final long expiredIntervalSeconds;
+
+  private final OperationLogger operationLogger;
 
   private final ScheduledExecutorService scheduledExecutor =
       Executors.newSingleThreadScheduledExecutor(
           ThreadPoolUtils.createDaemonThreadFactory(LocalFilePurger.class));
 
-  LocalFilePurger(File folder) {
-    this(folder, TimeUnit.DAYS.toSeconds(2), TimeUnit.DAYS.toSeconds(1));
+  LocalFilePurger(
+      File folder, boolean suppressWarnings) { // used to suppress warnings from statsbeat
+    this(folder, TimeUnit.DAYS.toSeconds(2), TimeUnit.DAYS.toSeconds(1), suppressWarnings);
   }
 
   // visible for testing
-  LocalFilePurger(File folder, long expiredIntervalSeconds, long purgeIntervalSeconds) {
+  LocalFilePurger(
+      File folder,
+      long expiredIntervalSeconds,
+      long purgeIntervalSeconds,
+      boolean suppressWarnings) { // used to suppress warnings from statsbeat
     this.folder = folder;
     this.expiredIntervalSeconds = expiredIntervalSeconds;
+
+    operationLogger =
+        suppressWarnings
+            ? OperationLogger.NOOP
+            : new OperationLogger(LocalFilePurger.class, "Purging expired telemetry from disk");
 
     scheduledExecutor.scheduleWithFixedDelay(
         this, Math.min(purgeIntervalSeconds, 60), purgeIntervalSeconds, SECONDS);
@@ -70,23 +78,14 @@ class LocalFilePurger implements Runnable {
   }
 
   private void purgedExpiredFiles(File folder) {
-    Collection<File> files = FileUtil.listTrnFiles(folder);
-    int numDeleted = 0;
-    for (File file : files) {
+    for (File file : FileUtil.listTrnFiles(folder)) {
       if (LocalFileCache.isExpired(file, expiredIntervalSeconds)) {
         if (!FileUtil.deleteFileWithRetries(file)) {
-          logger.warn(
-              "Fail to delete the expired {} from folder '{}'.", file.getName(), folder.getName());
+          operationLogger.recordFailure("Unable to delete file: " + file.getAbsolutePath());
         } else {
-          numDeleted++;
+          operationLogger.recordSuccess();
         }
       }
-    }
-    if (numDeleted > 0) {
-      logger.warn(
-          "{} local telemetry file(s) in folder '{}' expired after 48 hours and were deleted",
-          numDeleted,
-          folder.getName());
     }
   }
 }

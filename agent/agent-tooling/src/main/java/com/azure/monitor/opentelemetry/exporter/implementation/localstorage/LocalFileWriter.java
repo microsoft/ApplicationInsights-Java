@@ -43,14 +43,23 @@ final class LocalFileWriter {
   private final File telemetryFolder;
   private final LocalStorageStats stats;
 
-  private static final OperationLogger operationLogger =
-      new OperationLogger(
-          LocalFileWriter.class, "Writing telemetry to disk (telemetry is discarded on failure)");
+  private final OperationLogger operationLogger;
 
-  LocalFileWriter(LocalFileCache localFileCache, File telemetryFolder, LocalStorageStats stats) {
+  LocalFileWriter(
+      LocalFileCache localFileCache,
+      File telemetryFolder,
+      LocalStorageStats stats,
+      boolean suppressWarnings) { // used to suppress warnings from statsbeat
     this.telemetryFolder = telemetryFolder;
     this.localFileCache = localFileCache;
     this.stats = stats;
+
+    operationLogger =
+        suppressWarnings
+            ? OperationLogger.NOOP
+            : new OperationLogger(
+                LocalFileWriter.class,
+                "Writing telemetry to disk (telemetry is discarded on failure)");
   }
 
   void writeToDisk(String instrumentationKey, List<ByteBuffer> buffers) {

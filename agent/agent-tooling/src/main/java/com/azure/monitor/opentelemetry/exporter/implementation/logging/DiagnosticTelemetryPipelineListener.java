@@ -44,12 +44,12 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
   private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
   private final OperationLogger operationLogger;
-  private final boolean shouldLogWarnings;
+  private final boolean shouldLogRetryableFailure;
 
   // e.g. "Sending telemetry to the ingestion service"
-  public DiagnosticTelemetryPipelineListener(String operation, boolean shouldLogWarnings) {
+  public DiagnosticTelemetryPipelineListener(String operation, boolean shouldLogRetryableFailure) {
     operationLogger = new OperationLogger(FOR_CLASS, operation);
-    this.shouldLogWarnings = shouldLogWarnings;
+    this.shouldLogRetryableFailure = shouldLogRetryableFailure;
   }
 
   @Override
@@ -68,7 +68,7 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
         break;
       case 401: // breeze returns if aad enabled and no authentication token provided
       case 403: // breeze returns if aad enabled or disabled (both cases) and
-        if (shouldLogWarnings) {
+        if (shouldLogRetryableFailure) {
           operationLogger.recordFailure(
               getErrorMessageFromCredentialRelatedResponse(
                   response.getStatusCode(), response.getBody()));
@@ -78,7 +78,7 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
       case 429: // TOO MANY REQUESTS
       case 500: // INTERNAL SERVER ERROR
       case 503: // SERVICE UNAVAILABLE
-        if (shouldLogWarnings) {
+        if (shouldLogRetryableFailure) {
           operationLogger.recordFailure(
               "Received response code "
                   + response.getStatusCode()
