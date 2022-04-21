@@ -308,8 +308,8 @@ public class AzureMonitorMetricExporterTest {
     assertThat(metricsData.getMetrics().get(0).getCount()).isEqualTo(1);
     assertThat(metricsData.getMetrics().get(0).getValue()).isEqualTo(25.45);
     assertThat(metricsData.getProperties().size()).isEqualTo(1);
-    assertThat(metricsData.getMetrics().get(0).getMax()).isNotNull();
-    assertThat(metricsData.getMetrics().get(0).getMin()).isNotNull();
+    assertThat(metricsData.getMetrics().get(0).getMax()).isEqualTo(25.45);
+    assertThat(metricsData.getMetrics().get(0).getMin()).isEqualTo(25.45);
 
     assertThat(metricData.getType()).isEqualTo(HISTOGRAM);
     assertThat(metricData.getName()).isEqualTo("testDoubleHistogram");
