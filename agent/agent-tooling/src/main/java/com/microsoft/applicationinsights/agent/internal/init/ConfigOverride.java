@@ -26,7 +26,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagatorProvider;
 import io.opentelemetry.instrumentation.api.config.Config;
-import io.opentelemetry.instrumentation.api.config.ConfigBuilder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -200,7 +199,7 @@ class ConfigOverride {
       properties.put("otel.service.name", config.role.name);
     }
 
-    return new ConfigBuilder().readProperties(properties).build();
+    return Config.builder().addProperties(properties).build();
   }
 
   private static void setHttpHeaderConfiguration(
