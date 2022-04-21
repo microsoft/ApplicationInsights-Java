@@ -72,7 +72,7 @@ public class TelemetryItemExporterTest {
 
     return new TelemetryItemExporter(
         telemetryPipeline,
-        new LocalStorageTelemetryPipelineListener(tempFolder, telemetryPipeline, null));
+        new LocalStorageTelemetryPipelineListener(tempFolder, telemetryPipeline, null, false));
   }
 
   @Nullable

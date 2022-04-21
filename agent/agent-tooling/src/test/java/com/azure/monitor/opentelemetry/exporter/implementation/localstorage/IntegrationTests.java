@@ -96,7 +96,7 @@ public class IntegrationTests {
         new TelemetryItemExporter(
             telemetryPipeline,
             new LocalStorageTelemetryPipelineListener(
-                tempFolder, telemetryPipeline, LocalStorageStats.noop()));
+                tempFolder, telemetryPipeline, LocalStorageStats.noop(), false));
   }
 
   @Test
@@ -127,7 +127,7 @@ public class IntegrationTests {
 
     LocalFileCache localFileCache = new LocalFileCache(tempFolder);
     LocalFileLoader localFileLoader =
-        new LocalFileLoader(localFileCache, tempFolder, LocalStorageStats.noop());
+        new LocalFileLoader(localFileCache, tempFolder, LocalStorageStats.noop(), false);
 
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(100);
 
@@ -154,7 +154,7 @@ public class IntegrationTests {
     LocalFileCache localFileCache = new LocalFileCache(tempFolder);
     localFileCache.addPersistedFile(persistedFile);
 
-    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
+    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null, false);
     LocalFileLoader.PersistedFile loadedPersistedFile = localFileLoader.loadTelemetriesFromDisk();
 
     ByteBuffer expectedGzipByteBuffer = getByteBufferFromFile(PERSISTED_FILENAME);
