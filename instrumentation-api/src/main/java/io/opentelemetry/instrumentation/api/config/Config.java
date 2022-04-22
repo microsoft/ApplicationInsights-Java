@@ -6,13 +6,11 @@
 package io.opentelemetry.instrumentation.api.config;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.logging.Level.FINE;
 
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -28,7 +26,10 @@ import javax.annotation.Nullable;
  */
 @AutoValue
 public abstract class Config {
-  private static final Logger logger = Logger.getLogger(Config.class.getName());
+
+  // NOTE it's important not to use slf4j in this class, because this class is used before slf4j is
+  // configured, and so using slf4j here would initialize slf4j-simple before we have a chance to
+  // configure the logging levels
 
   // lazy initialized, so that javaagent can set it, and library instrumentation can fall back and
   // read system properties
@@ -56,7 +57,6 @@ public abstract class Config {
    */
   public static void internalInitializeConfig(Config config) {
     if (instance != null) {
-      logger.warning("Config#INSTANCE was already set earlier");
       return;
     }
     instance = requireNonNull(config);
@@ -169,9 +169,6 @@ public abstract class Config {
       T value = getTypedProperty(name, parser);
       return value == null ? defaultValue : value;
     } catch (RuntimeException t) {
-      if (logger.isLoggable(FINE)) {
-        logger.log(FINE, "Error occurred during parsing: " + t.getMessage(), t);
-      }
       return defaultValue;
     }
   }
