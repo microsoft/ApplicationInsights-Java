@@ -61,7 +61,7 @@ class LocalFileSender implements Runnable {
         suppressWarnings
             ? TelemetryPipelineListener.noop()
             : new DiagnosticTelemetryPipelineListener(
-                "Sending telemetry to the ingestion service (retry from disk)", true);
+                "Sending telemetry to the ingestion service (retry from disk)", false);
 
     scheduledExecutor.scheduleWithFixedDelay(
         this, INTERVAL_SECONDS, INTERVAL_SECONDS, TimeUnit.SECONDS);
