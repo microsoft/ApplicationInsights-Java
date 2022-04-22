@@ -124,7 +124,11 @@ public class LoggerExporter implements LogExporter {
     setExtraAttributes(telemetryBuilder, attributes);
 
     telemetryBuilder.setSeverityLevel(toSeverityLevel(log.getSeverity()));
-    telemetryBuilder.setMessage(log.getBody().asString());
+    String body = log.getBody().asString();
+    if (body.isEmpty()) {
+      body = "n/a"; // breeze doesn't accept empty log messages
+    }
+    telemetryBuilder.setMessage(body);
 
     // set message-specific properties
     setLoggerProperties(
@@ -187,8 +191,10 @@ public class LoggerExporter implements LogExporter {
   }
 
   private static void setSampleRate(AbstractTelemetryBuilder telemetryBuilder, LogData log) {
+    // standalone logs (not part of an existing trace) will not have sampling percentage encoded in
+    // their trace state
     float samplingPercentage =
-        TelemetryUtil.getSamplingPercentage(log.getSpanContext().getTraceState(), 10, true);
+        TelemetryUtil.getSamplingPercentage(log.getSpanContext().getTraceState(), 10, false);
     if (samplingPercentage != 100) {
       telemetryBuilder.setSampleRate(samplingPercentage);
     }

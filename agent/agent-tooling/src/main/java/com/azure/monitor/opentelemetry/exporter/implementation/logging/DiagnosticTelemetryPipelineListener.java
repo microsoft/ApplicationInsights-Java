@@ -54,13 +54,15 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
 
   @Override
   public void onResponse(TelemetryPipelineRequest request, TelemetryPipelineResponse response) {
-    switch (response.getStatusCode()) {
+    int responseCode = response.getStatusCode();
+    switch (responseCode) {
       case 200: // SUCCESS
         operationLogger.recordSuccess();
         break;
       case 206: // PARTIAL CONTENT, Breeze-specific: PARTIAL SUCCESS
+      case 400: // breeze returns if json content is bad (e.g. missing required field)
         operationLogger.recordFailure(
-            getErrorMessageFromPartialSuccessResponse(response.getBody()));
+            getErrorMessageFromPartialSuccessResponse(response.getBody(), responseCode));
         break;
       case 307:
       case 308:
@@ -70,8 +72,7 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
       case 403: // breeze returns if aad enabled or disabled (both cases) and
         if (shouldLogRetryableFailure) {
           operationLogger.recordFailure(
-              getErrorMessageFromCredentialRelatedResponse(
-                  response.getStatusCode(), response.getBody()));
+              getErrorMessageFromCredentialRelatedResponse(responseCode, response.getBody()));
         }
         break;
       case 408: // REQUEST TIMEOUT
@@ -81,7 +82,7 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
         if (shouldLogRetryableFailure) {
           operationLogger.recordFailure(
               "Received response code "
-                  + response.getStatusCode()
+                  + responseCode
                   + " (telemetry will be stored to disk and retried later)");
         }
         break;
@@ -94,7 +95,7 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
             "Received response code 439 (daily quota exceeded and throttled over extended time)");
         break;
       default:
-        operationLogger.recordFailure("received response code: " + response.getStatusCode());
+        operationLogger.recordFailure("received response code: " + responseCode);
     }
   }
 
@@ -111,12 +112,13 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
     return CompletableResultCode.ofSuccess();
   }
 
-  private static String getErrorMessageFromPartialSuccessResponse(String body) {
+  private static String getErrorMessageFromPartialSuccessResponse(String body, int responseCode) {
     JsonNode jsonNode;
     try {
       jsonNode = new ObjectMapper().readTree(body);
     } catch (JsonProcessingException e) {
-      return "ingestion service returned 206, but could not parse response as json: " + body;
+      // fallback to generic message
+      return "received response code: " + responseCode;
     }
     List<JsonNode> errors = new ArrayList<>();
     jsonNode.get("errors").forEach(errors::add);
