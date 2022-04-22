@@ -96,8 +96,8 @@ public abstract class DelegatingLogData implements LogData {
         + "resource="
         + getResource()
         + ", "
-        + "instrumentationLibraryInfo="
-        + getInstrumentationLibraryInfo()
+        + "instrumentationScopeInfo="
+        + getInstrumentationScopeInfo()
         + ", "
         + "epochNanos="
         + getEpochNanos()

@@ -133,7 +133,7 @@ public class LoggerExporter implements LogExporter {
     // set message-specific properties
     setLoggerProperties(
         telemetryBuilder,
-        log.getInstrumentationLibraryInfo().getName(),
+        log.getInstrumentationScopeInfo().getName(),
         attributes.get(SemanticAttributes.THREAD_NAME),
         log.getSeverity());
 
@@ -157,7 +157,7 @@ public class LoggerExporter implements LogExporter {
     // set exception-specific properties
     setLoggerProperties(
         telemetryBuilder,
-        log.getInstrumentationLibraryInfo().getName(),
+        log.getInstrumentationScopeInfo().getName(),
         attributes.get(SemanticAttributes.THREAD_NAME),
         log.getSeverity());
 
