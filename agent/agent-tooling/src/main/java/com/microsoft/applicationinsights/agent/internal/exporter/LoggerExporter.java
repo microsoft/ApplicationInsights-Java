@@ -124,7 +124,11 @@ public class LoggerExporter implements LogExporter {
     setExtraAttributes(telemetryBuilder, attributes);
 
     telemetryBuilder.setSeverityLevel(toSeverityLevel(log.getSeverity()));
-    telemetryBuilder.setMessage(log.getBody().asString());
+    String body = log.getBody().asString();
+    if (body.isEmpty()) {
+      body = "n/a"; // breeze doesn't accept empty log messages
+    }
+    telemetryBuilder.setMessage(body);
 
     // set message-specific properties
     setLoggerProperties(
