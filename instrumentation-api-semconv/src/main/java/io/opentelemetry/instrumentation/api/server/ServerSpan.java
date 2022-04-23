@@ -8,13 +8,16 @@ package io.opentelemetry.instrumentation.api.server;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.instrumentation.api.internal.SpanKey;
+import io.opentelemetry.instrumentation.api.instrumenter.LocalRootSpan;
 import javax.annotation.Nullable;
 
 /**
  * This class encapsulates the context key for storing the current {@link SpanKind#SERVER} span in
  * the {@link Context}.
+ *
+ * @deprecated Use {@link LocalRootSpan} instead.
  */
+@Deprecated
 public final class ServerSpan {
 
   /**
@@ -23,7 +26,7 @@ public final class ServerSpan {
    */
   @Nullable
   public static Span fromContextOrNull(Context context) {
-    return SpanKey.SERVER.fromContextOrNull(context);
+    return LocalRootSpan.fromContextOrNull(context);
   }
 
   private ServerSpan() {}

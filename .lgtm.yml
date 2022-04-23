@@ -2,3 +2,10 @@ extraction:
   java:
     index:
       java_version: 11
+      build_command: |
+        # fails without this, guessing similar to https://github.com/github/codeql-action/issues/972
+        export JAVA_TOOL_OPTIONS=--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED
+
+        # needs Java 11, otherwise this could be done in before_index
+        # javadoc fails sporadically fetching https://docs.oracle.com/javase/8/docs/api/
+        ./gradlew publishToMavenLocal -x javadoc

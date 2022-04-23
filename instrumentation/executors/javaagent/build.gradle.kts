@@ -9,6 +9,8 @@ muzzle {
 }
 
 dependencies {
+  bootstrap(project(":instrumentation:executors:bootstrap"))
+
   testImplementation(project(":instrumentation:executors:testing"))
 }
 
@@ -39,7 +41,7 @@ testing {
 
 tasks {
   withType<Test>().configureEach {
-    jvmArgs("-Dotel.instrumentation.executors.include=io.opentelemetry.javaagent.instrumentation.javaconcurrent.ExecutorInstrumentationTest\$CustomThreadPoolExecutor")
+    jvmArgs("-Dotel.instrumentation.executors.include=io.opentelemetry.javaagent.instrumentation.executors.ExecutorInstrumentationTest\$CustomThreadPoolExecutor")
     jvmArgs("-Djava.awt.headless=true")
   }
 
