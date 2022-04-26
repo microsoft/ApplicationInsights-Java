@@ -42,7 +42,7 @@ public class TestController {
   @GetMapping("/delayedSystemExit")
   public String delayedSystemExit() {
     // need a small delay to ensure response has been sent
-    Executors.newScheduledThreadPool(1)
+    Executors.newSingleThreadScheduledExecutor()
         .schedule(
             () -> {
               logger.error("this is an error right before shutdown");
