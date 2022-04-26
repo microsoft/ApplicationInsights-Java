@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
@@ -53,7 +51,6 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
-import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
@@ -168,7 +165,6 @@ class AiComponentInstaller {
 
     // this is currently used by Micrometer instrumentation in addition to 2.x SDK
     BytecodeUtil.setDelegate(new BytecodeUtilImpl());
-    Runtime.getRuntime().addShutdownHook(new ShutdownHook(telemetryClient));
 
     RpConfiguration rpConfiguration = MainEntryPoint.getRpConfiguration();
     if (rpConfiguration != null) {
@@ -237,42 +233,6 @@ class AiComponentInstaller {
 
   private static boolean hasConnectionString(Configuration config) {
     return !Strings.isNullOrEmpty(config.connectionString);
-  }
-
-  private static class ShutdownHook extends Thread {
-    private final TelemetryClient telemetryClient;
-
-    public ShutdownHook(TelemetryClient telemetryClient) {
-      this.telemetryClient = telemetryClient;
-    }
-
-    @Override
-    public void run() {
-      startupLogger.debug("running shutdown hook");
-      CompletableResultCode otelFlush = OpenTelemetryConfigurer.flush();
-      CompletableResultCode result = new CompletableResultCode();
-      otelFlush.whenComplete(
-          () -> {
-            CompletableResultCode batchingClientFlush = telemetryClient.forceFlush();
-            batchingClientFlush.whenComplete(
-                () -> {
-                  if (otelFlush.isSuccess() && batchingClientFlush.isSuccess()) {
-                    result.succeed();
-                  } else {
-                    result.fail();
-                  }
-                });
-          });
-      result.join(5, SECONDS);
-      if (result.isSuccess()) {
-        startupLogger.debug("flushing telemetry on shutdown completed successfully");
-      } else if (Thread.interrupted()) {
-        startupLogger.debug("interrupted while flushing telemetry on shutdown");
-      } else {
-        startupLogger.debug(
-            "flushing telemetry on shutdown has taken more than 5 seconds, shutting down anyways...");
-      }
-    }
   }
 
   private AiComponentInstaller() {}

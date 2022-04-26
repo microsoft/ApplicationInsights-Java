@@ -62,9 +62,6 @@ import java.util.stream.Collectors;
 @AutoService(AutoConfigurationCustomizerProvider.class)
 public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvider {
 
-  private static volatile BatchSpanProcessor batchSpanProcessor;
-  private static volatile BatchLogProcessor batchLogProcessor;
-
   @Override
   public void customize(AutoConfigurationCustomizer autoConfiguration) {
     TelemetryClient telemetryClient = TelemetryClient.getActive();
@@ -75,21 +72,11 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
 
     Configuration configuration = MainEntryPoint.getConfiguration();
 
-    autoConfiguration.addTracerProviderCustomizer(
-        (builder, config) -> configureTracing(builder, config, configuration));
-    autoConfiguration.addLogEmitterProviderCustomizer(
-        (builder, config) -> configureLogging(builder, configuration));
-  }
-
-  public static CompletableResultCode flush() {
-    List<CompletableResultCode> results = new ArrayList<>();
-    if (batchSpanProcessor != null) {
-      results.add(batchSpanProcessor.forceFlush());
-    }
-    if (batchLogProcessor != null) {
-      results.add(batchLogProcessor.forceFlush());
-    }
-    return CompletableResultCode.ofAll(results);
+    autoConfiguration
+        .addTracerProviderCustomizer(
+            (builder, config) -> configureTracing(builder, config, configuration))
+        .addLogEmitterProviderCustomizer(
+            (builder, config) -> configureLogging(builder, configuration));
   }
 
   @SuppressFBWarnings(
@@ -154,12 +141,14 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
           createSpanExporter(configuration, configuration.preview.captureHttpServer4xxAsError);
 
       // using BatchSpanProcessor in order to get off of the application thread as soon as possible
-      batchSpanProcessor =
+      BatchSpanProcessor batchSpanProcessor =
           BatchSpanProcessor.builder(spanExporter)
               .setScheduleDelay(getBatchProcessorDelay())
               .build();
 
-      tracerProvider.addSpanProcessor(batchSpanProcessor);
+      tracerProvider.addSpanProcessor(
+          new TelemetryClientFlushingSpanProcessor(
+              batchSpanProcessor, TelemetryClient.getActive()));
     }
 
     return tracerProvider;
@@ -213,15 +202,18 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
     LogExporter logExporter = createLogExporter(configuration);
 
     // using BatchLogProcessor in order to get off of the application thread as soon as possible
-    batchLogProcessor =
+    BatchLogProcessor batchLogProcessor =
         BatchLogProcessor.builder(logExporter).setScheduleDelay(getBatchProcessorDelay()).build();
+
+    TelemetryClientFlushingLogProcessor telemetryClientFlushingLogProcessor =
+        new TelemetryClientFlushingLogProcessor(batchLogProcessor, TelemetryClient.getActive());
 
     // inherited attributes log processor also handles operation name, ikey and role name attributes
     // and these all need access to Span.current(), so must be run before passing off to the
     // BatchLogProcessor
     return builder.addLogProcessor(
         new InheritedAttributesLogProcessor(
-            configuration.preview.inheritedAttributes, batchLogProcessor));
+            configuration.preview.inheritedAttributes, telemetryClientFlushingLogProcessor));
   }
 
   private static LogExporter createLogExporter(Configuration configuration) {
