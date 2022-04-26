@@ -31,26 +31,19 @@ public class TelemetryClientFlushingLogProcessor implements LogProcessor {
   public CompletableResultCode forceFlush() {
     CompletableResultCode overallResult = new CompletableResultCode();
     CompletableResultCode delegateResult = delegate.forceFlush();
-    System.out.println("FORCE FLUSH");
     delegateResult.whenComplete(
         () -> {
-          System.out.println("DELEGATE COMPLETE");
           if (delegateResult.isSuccess()) {
-            System.out.println("SUCCESS");
             CompletableResultCode telemetryClientResult = telemetryClient.forceFlush();
             telemetryClientResult.whenComplete(
                 () -> {
-                  System.out.println("TELEMETRY CLIENT COMPLETE");
                   if (telemetryClientResult.isSuccess()) {
-                    System.out.println("TELEMETRY CLIENT SUCCESS");
                     overallResult.succeed();
                   } else {
-                    System.out.println("TELEMETRY CLIENT FAIL");
                     overallResult.fail();
                   }
                 });
           } else {
-            System.out.println("FAIL");
             overallResult.fail();
           }
         });
