@@ -48,13 +48,20 @@ class LocalFileSender implements Runnable {
       Executors.newSingleThreadScheduledExecutor(
           ThreadPoolUtils.createDaemonThreadFactory(LocalFileLoader.class));
 
-  private final TelemetryPipelineListener diagnosticListener =
-      new DiagnosticTelemetryPipelineListener(
-          "Sending telemetry to the ingestion service (retry from disk)", true);
+  private final TelemetryPipelineListener diagnosticListener;
 
-  LocalFileSender(LocalFileLoader localFileLoader, TelemetryPipeline telemetryPipeline) {
+  LocalFileSender(
+      LocalFileLoader localFileLoader,
+      TelemetryPipeline telemetryPipeline,
+      boolean suppressWarnings) { // used to suppress warnings from statsbeat
     this.localFileLoader = localFileLoader;
     this.telemetryPipeline = telemetryPipeline;
+
+    diagnosticListener =
+        suppressWarnings
+            ? TelemetryPipelineListener.noop()
+            : new DiagnosticTelemetryPipelineListener(
+                "Sending telemetry to the ingestion service (retry from disk)", false);
 
     scheduledExecutor.scheduleWithFixedDelay(
         this, INTERVAL_SECONDS, INTERVAL_SECONDS, TimeUnit.SECONDS);

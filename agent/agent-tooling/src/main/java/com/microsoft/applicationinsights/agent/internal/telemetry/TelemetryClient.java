@@ -266,18 +266,20 @@ public class TelemetryClient {
     if (tempDir == null) {
       telemetryPipelineListener =
           new DiagnosticTelemetryPipelineListener(
-              "Sending telemetry to the ingestion service", true);
+              "Sending telemetry to the ingestion service", false);
     } else {
       telemetryPipelineListener =
           TelemetryPipelineListener.composite(
-              // don't log warnings in order to reduce sporadic/annoying warnings when storing to
-              // disk and retrying shortly afterwards anyways and will log then if that fails
+              // suppress warnings on retryable failures, in order to reduce sporadic/annoying
+              // warnings when storing to disk and retrying shortly afterwards anyways
+              // will log if that retry from disk fails
               new DiagnosticTelemetryPipelineListener(
-                  "Sending telemetry to the ingestion service", false),
+                  "Sending telemetry to the ingestion service", true),
               new LocalStorageTelemetryPipelineListener(
                   TempDirs.getSubDir(tempDir, TELEMETRY_FOLDER_NAME),
                   telemetryPipeline,
-                  statsbeatModule.getNonessentialStatsbeat()));
+                  statsbeatModule.getNonessentialStatsbeat(),
+                  false));
     }
 
     return BatchItemProcessor.builder(
@@ -307,7 +309,8 @@ public class TelemetryClient {
                 new LocalStorageTelemetryPipelineListener(
                     TempDirs.getSubDir(tempDir, STATSBEAT_FOLDER_NAME),
                     telemetryPipeline,
-                    LocalStorageStats.noop());
+                    LocalStorageStats.noop(),
+                    true);
             telemetryPipelineListener =
                 TelemetryPipelineListener.composite(
                     new StatsbeatTelemetryPipelineListener(

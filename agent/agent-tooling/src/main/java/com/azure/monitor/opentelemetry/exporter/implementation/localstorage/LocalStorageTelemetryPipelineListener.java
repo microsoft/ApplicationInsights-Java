@@ -40,14 +40,18 @@ public class LocalStorageTelemetryPipelineListener implements TelemetryPipelineL
 
   // telemetryFolder must already exist and be writable
   public LocalStorageTelemetryPipelineListener(
-      File telemetryFolder, TelemetryPipeline pipeline, LocalStorageStats stats) {
+      File telemetryFolder,
+      TelemetryPipeline pipeline,
+      LocalStorageStats stats,
+      boolean suppressWarnings) { // used to suppress warnings from statsbeat
 
     LocalFileCache localFileCache = new LocalFileCache(telemetryFolder);
-    LocalFileLoader loader = new LocalFileLoader(localFileCache, telemetryFolder, stats);
-    localFileWriter = new LocalFileWriter(localFileCache, telemetryFolder, stats);
+    LocalFileLoader loader =
+        new LocalFileLoader(localFileCache, telemetryFolder, stats, suppressWarnings);
+    localFileWriter = new LocalFileWriter(localFileCache, telemetryFolder, stats, suppressWarnings);
 
-    localFileSender = new LocalFileSender(loader, pipeline);
-    localFilePurger = new LocalFilePurger(telemetryFolder);
+    localFileSender = new LocalFileSender(loader, pipeline, suppressWarnings);
+    localFilePurger = new LocalFilePurger(telemetryFolder, suppressWarnings);
   }
 
   @Override

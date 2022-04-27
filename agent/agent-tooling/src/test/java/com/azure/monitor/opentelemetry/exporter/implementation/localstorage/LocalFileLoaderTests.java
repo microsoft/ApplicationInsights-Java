@@ -91,7 +91,7 @@ public class LocalFileLoaderTests {
     LocalFileCache localFileCache = new LocalFileCache(tempFolder);
     localFileCache.addPersistedFile(persistedFile);
 
-    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
+    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null, false);
     LocalFileLoader.PersistedFile loadedPersistedFile = localFileLoader.loadTelemetriesFromDisk();
     assertThat(loadedPersistedFile).isNull();
     assertThat(persistedFile.exists())
@@ -111,7 +111,7 @@ public class LocalFileLoaderTests {
     LocalFileCache localFileCache = new LocalFileCache(tempFolder);
     localFileCache.addPersistedFile(persistedFile);
 
-    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
+    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null, false);
     LocalFileLoader.PersistedFile loadedPersistedFile = localFileLoader.loadTelemetriesFromDisk();
     assertThat(loadedPersistedFile.instrumentationKey).isEqualTo(INSTRUMENTATION_KEY);
     String bytesString = new String(loadedPersistedFile.rawBytes.array(), UTF_8);
@@ -186,10 +186,10 @@ public class LocalFileLoaderTests {
   public void testWriteAndReadRandomText() {
     String text = "hello world";
     LocalFileCache cache = new LocalFileCache(tempFolder);
-    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder, null);
+    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder, null, false);
     writer.writeToDisk(INSTRUMENTATION_KEY, singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))));
 
-    LocalFileLoader loader = new LocalFileLoader(cache, tempFolder, null);
+    LocalFileLoader loader = new LocalFileLoader(cache, tempFolder, null, false);
     LocalFileLoader.PersistedFile persistedFile = loader.loadTelemetriesFromDisk();
     assertThat(new String(persistedFile.rawBytes.array(), UTF_8)).isEqualTo(text);
     assertThat(persistedFile.instrumentationKey).isEqualTo(INSTRUMENTATION_KEY);
@@ -216,11 +216,11 @@ public class LocalFileLoaderTests {
     // write gzipped bytes[] to disk
     byte[] result = byteArrayOutputStream.toByteArray();
     LocalFileCache cache = new LocalFileCache(tempFolder);
-    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder, null);
+    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder, null, false);
     writer.writeToDisk(INSTRUMENTATION_KEY, singletonList(ByteBuffer.wrap(result)));
 
     // read gzipped byte[] from disk
-    LocalFileLoader loader = new LocalFileLoader(cache, tempFolder, null);
+    LocalFileLoader loader = new LocalFileLoader(cache, tempFolder, null, false);
     LocalFileLoader.PersistedFile persistedFile = loader.loadTelemetriesFromDisk();
     byte[] bytes = persistedFile.rawBytes.array();
 
@@ -243,8 +243,8 @@ public class LocalFileLoaderTests {
     HttpClient mockedClient = getMockHttpClientSuccess();
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
     LocalFileCache localFileCache = new LocalFileCache(tempFolder);
-    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder, null);
-    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
+    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder, null, false);
+    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null, false);
 
     TelemetryPipeline telemetryPipeline =
         new TelemetryPipeline(pipelineBuilder.build(), new URL("http://foo.bar"));
@@ -294,8 +294,8 @@ public class LocalFileLoaderTests {
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
     LocalFileCache localFileCache = new LocalFileCache(tempFolder);
 
-    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null);
-    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder, null);
+    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null, false);
+    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder, null, false);
 
     TelemetryPipeline telemetryPipeline =
         new TelemetryPipeline(pipelineBuilder.build(), new URL("http://foo.bar"));
