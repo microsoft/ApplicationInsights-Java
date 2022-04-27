@@ -72,7 +72,7 @@ class AzureMetadataService implements Runnable {
   }
 
   void shutdown() {
-    logger.info("Shutting down Azure Metadata Service.");
+    logger.debug("Shutting down Azure Metadata Service.");
     scheduledExecutor.shutdown();
   }
 
