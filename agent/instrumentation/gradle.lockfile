@@ -182,9 +182,12 @@ io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:1
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-5.0:1.13.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common:1.13.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-javax-common:1.13.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spring-core-2.0:1.13.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spring-integration-4.1:1.13.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spring-kafka-2.7:1.13.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spring-rabbit-1.0:1.13.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spring-scheduling-3.1:1.13.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spring-web-3.1:1.13.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spring-webflux-5.0:1.13.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spring-webmvc-3.1:1.13.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-tomcat-10.0:1.13.0+ai.patches-alpha=runtimeClasspath
