@@ -116,8 +116,9 @@ tasks {
       exceptionFormat = TestExceptionFormat.FULL
     }
 
-    // TODO (trask) is this still a problem?
-    //outputs.upToDateWhen { false }
+    // TODO (trask) this is still a problem
+    //  e.g. changes in agent-tooling do not cause smoke tests to re-run
+    outputs.upToDateWhen { false }
   }
 
   // copies test app WARs and shared resources into smoke test resources folder
