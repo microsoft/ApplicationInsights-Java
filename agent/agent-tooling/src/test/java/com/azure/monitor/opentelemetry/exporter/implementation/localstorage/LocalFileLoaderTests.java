@@ -478,7 +478,6 @@ public class LocalFileLoaderTests {
       case 7: // Message
         assertThat(properties.get("LoggerName").asText())
             .isEqualTo("org.springframework.boot.web.embedded.tomcat.TomcatWebServer");
-        assertThat(properties.get("LoggingLevel").asText()).isEqualTo("INFO");
         assertThat(properties.get("SourceType").asText()).isEqualTo("Logger");
         return;
       case 2:
