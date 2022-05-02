@@ -57,9 +57,11 @@ public class LoggerExporter implements LogExporter {
       new OperationLogger(Exporter.class, "Exporting log");
 
   private final TelemetryClient telemetryClient;
+  private final boolean disableLoggingLevel;
 
-  public LoggerExporter(TelemetryClient telemetryClient) {
+  public LoggerExporter(TelemetryClient telemetryClient, boolean disableLoggingLevel) {
     this.telemetryClient = telemetryClient;
+    this.disableLoggingLevel = disableLoggingLevel;
   }
 
   @Override
@@ -134,7 +136,8 @@ public class LoggerExporter implements LogExporter {
     setLoggerProperties(
         telemetryBuilder,
         log.getInstrumentationLibraryInfo().getName(),
-        attributes.get(SemanticAttributes.THREAD_NAME));
+        attributes.get(SemanticAttributes.THREAD_NAME),
+        log.getSeverity());
 
     // export
     telemetryClient.trackAsync(telemetryBuilder.build());
@@ -157,7 +160,8 @@ public class LoggerExporter implements LogExporter {
     setLoggerProperties(
         telemetryBuilder,
         log.getInstrumentationLibraryInfo().getName(),
-        attributes.get(SemanticAttributes.THREAD_NAME));
+        attributes.get(SemanticAttributes.THREAD_NAME),
+        log.getSeverity());
 
     if (log.getBody() != null) {
       telemetryBuilder.addProperty("Logger Message", log.getBody().asString());
@@ -237,10 +241,20 @@ public class LoggerExporter implements LogExporter {
         });
   }
 
-  private static void setLoggerProperties(
-      AbstractTelemetryBuilder telemetryBuilder, String loggerName, String threadName) {
+  private void setLoggerProperties(
+      AbstractTelemetryBuilder telemetryBuilder,
+      String loggerName,
+      String threadName,
+      Severity severity) {
 
     telemetryBuilder.addProperty("SourceType", "Logger");
+
+    if (!disableLoggingLevel) {
+      String loggingLevel = mapSeverityToLoggingLevel(severity);
+      if (loggingLevel != null) {
+        telemetryBuilder.addProperty("LoggingLevel", loggingLevel);
+      }
+    }
 
     if (loggerName != null) {
       telemetryBuilder.addProperty("LoggerName", loggerName);
@@ -321,6 +335,49 @@ public class LoggerExporter implements LogExporter {
       default:
         logger.error("unexpected value for otel.experimental.log.capture.threshold: {}", severity);
         return Severity.UNDEFINED_SEVERITY_NUMBER;
+    }
+  }
+
+  // TODO need to retrieve logging frameworks' name (Log4j, Logback, Java Util Logging) so that we
+  // can correctly map Severity to logging level
+  @Nullable
+  private static String mapSeverityToLoggingLevel(Severity severity) {
+    switch (severity) {
+      case UNDEFINED_SEVERITY_NUMBER:
+        return null;
+      case FATAL:
+      case FATAL2:
+      case FATAL3:
+      case FATAL4:
+        return "FATAL";
+      case ERROR:
+      case ERROR2:
+      case ERROR3:
+      case ERROR4:
+        return "ERROR";
+      case WARN:
+      case WARN2:
+      case WARN3:
+      case WARN4:
+        return "WARN";
+      case INFO:
+      case INFO2:
+      case INFO3:
+      case INFO4:
+        return "INFO";
+      case DEBUG:
+      case DEBUG2:
+      case DEBUG3:
+      case DEBUG4:
+        return "DEBUG";
+      case TRACE:
+      case TRACE2:
+      case TRACE3:
+      case TRACE4:
+        return "TRACE";
+      default:
+        logger.error("Unexpected severity {}", severity);
+        return null;
     }
   }
 }

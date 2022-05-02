@@ -234,6 +234,11 @@ public class Configuration {
     // https://portal.microsofticm.com/imp/v3/incidents/details/266992200/home
     public boolean disablePropagation;
     public boolean captureHttpServer4xxAsError = true;
+
+    // LoggingLevel is no longer sent by default. But customers can still opt in to include
+    // LoggingLevel as part of customDimensions.
+    public boolean disableLoggingLevel = true;
+
     // this is to support interoperability with other systems
     // intentionally not allowing the removal of w3c propagator since that is key to many Azure
     // integrated experiences
