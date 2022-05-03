@@ -34,7 +34,7 @@ public class MockLoggerExporter extends LoggerExporter {
   private final List<LogData> logs = new ArrayList<>();
 
   public MockLoggerExporter(TelemetryClient telemetryClient) {
-    super(telemetryClient);
+    super(telemetryClient, false);
   }
 
   public List<LogData> getLogs() {

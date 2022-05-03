@@ -57,9 +57,12 @@ public class LoggerExporter implements LogExporter {
       new OperationLogger(Exporter.class, "Exporting log");
 
   private final TelemetryClient telemetryClient;
+  private final boolean captureLoggingLevelAsCustomDimension;
 
-  public LoggerExporter(TelemetryClient telemetryClient) {
+  public LoggerExporter(
+      TelemetryClient telemetryClient, boolean captureLoggingLevelAsCustomDimension) {
     this.telemetryClient = telemetryClient;
+    this.captureLoggingLevelAsCustomDimension = captureLoggingLevelAsCustomDimension;
   }
 
   @Override
@@ -239,7 +242,7 @@ public class LoggerExporter implements LogExporter {
         });
   }
 
-  private static void setLoggerProperties(
+  private void setLoggerProperties(
       AbstractTelemetryBuilder telemetryBuilder,
       String loggerName,
       String threadName,
@@ -247,10 +250,13 @@ public class LoggerExporter implements LogExporter {
 
     telemetryBuilder.addProperty("SourceType", "Logger");
 
-    String loggingLevel = mapSeverityToLoggingLevel(severity);
-    if (loggingLevel != null) {
-      telemetryBuilder.addProperty("LoggingLevel", loggingLevel);
+    if (captureLoggingLevelAsCustomDimension) {
+      String loggingLevel = mapSeverityToLoggingLevel(severity);
+      if (loggingLevel != null) {
+        telemetryBuilder.addProperty("LoggingLevel", loggingLevel);
+      }
     }
+
     if (loggerName != null) {
       telemetryBuilder.addProperty("LoggerName", loggerName);
     }
