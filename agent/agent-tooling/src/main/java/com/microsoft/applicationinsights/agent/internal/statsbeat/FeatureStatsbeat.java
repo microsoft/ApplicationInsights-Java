@@ -175,7 +175,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
       featureList.add(Feature.CUSTOM_DIMENSIONS_ENABLED);
     }
 
-    if (!config.preview.disableLoggingLevel) {
+    if (config.preview.captureLoggingLevelAsCustomDimension) {
       featureList.add(Feature.LOGGING_LEVEL_ENABLED);
     }
   }

@@ -226,7 +226,9 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
 
   private static LogExporter createLogExporter(Configuration configuration) {
     LogExporter logExporter =
-        new LoggerExporter(TelemetryClient.getActive(), configuration.preview.disableLoggingLevel);
+        new LoggerExporter(
+            TelemetryClient.getActive(),
+            configuration.preview.captureLoggingLevelAsCustomDimension);
     List<ProcessorConfig> processorConfigs = getLogProcessorConfigs(configuration);
     if (!processorConfigs.isEmpty()) {
       // Reversing the order of processors before passing it Log processor

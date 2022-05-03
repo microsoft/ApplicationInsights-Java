@@ -235,9 +235,12 @@ public class Configuration {
     public boolean disablePropagation;
     public boolean captureHttpServer4xxAsError = true;
 
-    // LoggingLevel is no longer sent by default. But customers can still opt in to include
-    // LoggingLevel as part of customDimensions.
-    public boolean disableLoggingLevel = true;
+    // LoggingLevel is no longer sent by default since 3.3.0, since the data is already available
+    // under SeverityLevel. This configuration is provided as a temporary measure for customers
+    // who are unable to update their alerts/dashboards at the same time that they are updating
+    // their Javaagent version
+    // Note: this configuration option will be removed in 4.0.0
+    public boolean captureLoggingLevelAsCustomDimension;
 
     // this is to support interoperability with other systems
     // intentionally not allowing the removal of w3c propagator since that is key to many Azure
