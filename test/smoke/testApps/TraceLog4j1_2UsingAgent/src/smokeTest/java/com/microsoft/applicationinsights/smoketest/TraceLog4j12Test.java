@@ -61,27 +61,24 @@ public class TraceLog4j12Test extends AiSmokeTest {
     assertEquals("This is log4j1.2 warn.", md1.getMessage());
     assertEquals(SeverityLevel.Warning, md1.getSeverityLevel());
     assertEquals("Logger", md1.getProperties().get("SourceType"));
-    assertEquals("WARN", md1.getProperties().get("LoggingLevel"));
     assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
     assertNotNull(md1.getProperties().get("ThreadName"));
     assertEquals("MDC value", md1.getProperties().get("MDC key"));
-    assertEquals(5, md1.getProperties().size());
+    assertEquals(4, md1.getProperties().size());
 
     assertEquals("This is log4j1.2 error.", md2.getMessage());
     assertEquals(SeverityLevel.Error, md2.getSeverityLevel());
     assertEquals("Logger", md2.getProperties().get("SourceType"));
-    assertEquals("ERROR", md2.getProperties().get("LoggingLevel"));
     assertEquals("smoketestapp", md2.getProperties().get("LoggerName"));
     assertNotNull(md2.getProperties().get("ThreadName"));
-    assertEquals(4, md2.getProperties().size());
+    assertEquals(3, md2.getProperties().size());
 
     assertEquals("This is log4j1.2 fatal.", md3.getMessage());
     assertEquals(SeverityLevel.Critical, md3.getSeverityLevel());
     assertEquals("Logger", md3.getProperties().get("SourceType"));
-    assertEquals("FATAL", md3.getProperties().get("LoggingLevel"));
     assertEquals("smoketestapp", md3.getProperties().get("LoggerName"));
     assertNotNull(md3.getProperties().get("ThreadName"));
-    assertEquals(4, md3.getProperties().size());
+    assertEquals(3, md3.getProperties().size());
 
     assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /TraceLog4j1_2UsingAgent/traceLog4j12");
     assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /TraceLog4j1_2UsingAgent/traceLog4j12");
@@ -111,11 +108,10 @@ public class TraceLog4j12Test extends AiSmokeTest {
     assertEquals(SeverityLevel.Error, ed.getSeverityLevel());
     assertEquals("This is an exception!", ed.getProperties().get("Logger Message"));
     assertEquals("Logger", ed.getProperties().get("SourceType"));
-    assertEquals("ERROR", ed.getProperties().get("LoggingLevel"));
     assertEquals("smoketestapp", ed.getProperties().get("LoggerName"));
     assertNotNull(ed.getProperties().get("ThreadName"));
     assertEquals("MDC value", ed.getProperties().get("MDC key"));
-    assertEquals(6, ed.getProperties().size());
+    assertEquals(5, ed.getProperties().size());
 
     assertParentChild(
         rd, rdEnvelope, edEnvelope, "GET /TraceLog4j1_2UsingAgent/traceLog4j1_2WithException");
