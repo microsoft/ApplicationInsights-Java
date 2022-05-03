@@ -33,6 +33,7 @@ public class SpringBootAutoTest extends AiSmokeTest {
   @TargetUri("/delayedSystemExit")
   public void doDelayedSystemExitTest() throws Exception {
     mockedIngestion.waitForItems("RequestData", 1);
+    mockedIngestion.waitForItems("RemoteDependencyData", 1);
     mockedIngestion.waitForItem(
         input -> {
           if (!"MessageData".equals(input.getData().getBaseType())) {
@@ -43,5 +44,6 @@ public class SpringBootAutoTest extends AiSmokeTest {
         },
         10,
         TimeUnit.SECONDS);
+    mockedIngestion.waitForItem(getMetricPredicate("counter"), 10, TimeUnit.SECONDS);
   }
 }

@@ -26,7 +26,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagatorProvider;
 import io.opentelemetry.instrumentation.api.config.Config;
-import io.opentelemetry.instrumentation.api.config.ConfigBuilder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -114,9 +113,10 @@ class ConfigOverride {
       properties.put("otel.instrumentation.jaxrs-annotations.enabled", "false");
     }
     if (!config.preview.captureControllerSpans) {
-      properties.put("otel.instrumentation.common.experimental.suppress-controller-spans", "true");
+      properties.put(
+          "otel.instrumentation.common.experimental.controller-telemetry.enabled", "false");
     }
-    properties.put("otel.instrumentation.common.experimental.suppress-view-spans", "true");
+    properties.put("otel.instrumentation.common.experimental.view-telemetry.enabled", "false");
     properties.put(
         "otel.instrumentation.common.experimental.suppress-messaging-receive-spans", "true");
     // this is needed to capture kafka.record.queue_time_ms
@@ -200,7 +200,7 @@ class ConfigOverride {
       properties.put("otel.service.name", config.role.name);
     }
 
-    return new ConfigBuilder().readProperties(properties).build();
+    return Config.builder().addProperties(properties).build();
   }
 
   private static void setHttpHeaderConfiguration(

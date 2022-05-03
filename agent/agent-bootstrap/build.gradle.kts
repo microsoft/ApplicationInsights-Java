@@ -17,8 +17,10 @@ dependencies {
   implementation("ch.qos.logback:logback-classic")
   implementation("ch.qos.logback.contrib:logback-json-classic")
 
+  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-executors-bootstrap:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-common-bootstrap:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-kafka-clients-0.11-bootstrap:$otelInstrumentationAlphaVersion")
+  implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap:$otelInstrumentationAlphaVersion")
   implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-undertow-1.4-bootstrap:$otelInstrumentationAlphaVersion")
 
   // not using gson because it has dependency on java.sql.*, which is not available in Java 9+ bootstrap class loader

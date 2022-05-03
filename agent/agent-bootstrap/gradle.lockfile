@@ -14,6 +14,7 @@ io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:1.13.
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:1.13.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-appender-api-internal:1.13.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.13.0+ai.patches-alpha=runtimeClasspath
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-executors-bootstrap:1.13.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-common-bootstrap:1.13.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-kafka-clients-0.11-bootstrap:1.13.0+ai.patches-alpha=runtimeClasspath
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap:1.13.0+ai.patches-alpha=runtimeClasspath
