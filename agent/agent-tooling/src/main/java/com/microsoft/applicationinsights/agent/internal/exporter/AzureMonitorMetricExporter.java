@@ -119,7 +119,7 @@ public class AzureMonitorMetricExporter implements MetricExporter {
 
     for (PointData pointData : metricData.getData().getPoints()) {
       MetricTelemetryBuilder builder = telemetryClient.newMetricTelemetryBuilder();
-      builder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(pointData.getStartEpochNanos()));
+      builder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(pointData.getEpochNanos()));
       updateMetricPointBuilder(builder, metricData, pointData);
       telemetryItems.add(builder.build());
     }

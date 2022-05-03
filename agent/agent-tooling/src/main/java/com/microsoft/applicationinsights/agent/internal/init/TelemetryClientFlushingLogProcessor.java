@@ -45,8 +45,7 @@ public class TelemetryClientFlushingLogProcessor implements LogProcessor {
   @Override
   public CompletableResultCode shutdown() {
 
-    // TODO? de-dupe flushing between spans, logs and metrics, no-op here and flush log processor
-    //  from TelemetryClientFlushingSpanProcessor
+    // TODO? de-dupe flushing of TelemetryClient three times for spans, logs and metrics
 
     // see https://github.com/open-telemetry/opentelemetry-java/issues/4416
     return forceFlush();
