@@ -28,7 +28,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Diagnostics
 
 public class ApplicationInsightsCsvLayout extends PatternLayout {
 
-  private static final String PREFIX = "LanguageWorkerConsoleLog MS_APPLICATION_INSIGHTS_LOGS";
+  private static final String PREFIX = "LanguageWorkerConsoleLogMS_APPLICATION_INSIGHTS_LOGS";
 
   private static final ApplicationMetadataFactory applicationMetadataFactory =
       DiagnosticsHelper.getMetadataFactory();
@@ -59,6 +59,7 @@ public class ApplicationInsightsCsvLayout extends PatternLayout {
     stringBuilder.append(applicationMetadataFactory.getSubscriptionId().getValue());
     stringBuilder.append(",");
     stringBuilder.append("java");
+    stringBuilder.append(System.getProperty("line.separator"));
 
     return stringBuilder.toString();
   }
