@@ -74,9 +74,10 @@ public class LoggingConfigurator {
   void configure() {
     loggerContext.getLogger(ROOT_LOGGER_NAME).detachAndStopAllAppenders();
 
-    if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()
-        || DiagnosticsHelper.useFunctionsRpIntegrationLogging()) {
-      configureAppSvcsAndFunction();
+    if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
+      configureAppSvc();
+    } else if (DiagnosticsHelper.useFunctionsRpIntegrationLogging()) {
+      configureFunctions();
     } else if (destination == null || destination.equalsIgnoreCase("file+console")) {
       configureFileAndConsole();
     } else if (destination.equalsIgnoreCase("file")) {
@@ -88,7 +89,7 @@ public class LoggingConfigurator {
     }
   }
 
-  private void configureAppSvcsAndFunction() {
+  private void configureAppSvc() {
     Logger rootLogger = loggerContext.getLogger(ROOT_LOGGER_NAME);
     rootLogger.addAppender(configureFileAppender());
     rootLogger.addAppender(configureConsoleAppender());
@@ -108,10 +109,6 @@ public class LoggingConfigurator {
       diagnosticLogger.setLevel(Level.INFO);
       diagnosticLogger.setAdditive(false);
       diagnosticLogger.addAppender(diagnosticAppender);
-      // push Functions diagnostic logs to stdout
-      if (DiagnosticsHelper.useFunctionsRpIntegrationLogging()) {
-        diagnosticLogger.addAppender(configureConsoleAppender());
-      }
 
       // errors reported by other loggers should also go to diagnostic log
       // (level filter for these is applied in ApplicationInsightsDiagnosticsLogFilter)
@@ -127,6 +124,22 @@ public class LoggingConfigurator {
         && !Boolean.getBoolean("applicationinsights.testing.etw.disabled")) {
       rootLogger.addAppender(configureEtwAppender());
     }
+
+    loggingLevelConfigurator.initLoggerLevels(loggerContext);
+  }
+
+  private void configureFunctions() {
+    Logger rootLogger = loggerContext.getLogger(ROOT_LOGGER_NAME);
+    rootLogger.addAppender(configureConsoleAppender());
+    Logger diagnosticLogger = loggerContext.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME);
+    diagnosticLogger.setLevel(Level.INFO);
+    diagnosticLogger.setAdditive(false);
+    Appender<ILoggingEvent> appender = configureConsoleAppender();
+    diagnosticLogger.addAppender(appender);
+
+    // errors reported by other loggers should also go to diagnostic log
+    // (level filter for these is applied in ApplicationInsightsDiagnosticsLogFilter)
+    rootLogger.addAppender(appender);
 
     loggingLevelConfigurator.initLoggerLevels(loggerContext);
   }
