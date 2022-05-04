@@ -70,7 +70,6 @@ public class MainEntryPoint {
   }
 
   // TODO turn this into an interceptor
-  @SuppressWarnings("SystemOut")
   public static void start(Instrumentation instrumentation, File javaagentFile) {
     boolean success = false;
     Logger startupLogger = null;
@@ -88,12 +87,14 @@ public class MainEntryPoint {
       // configuration is only read this early in order to extract logging configuration
       rpConfiguration = RpConfigurationBuilder.create(agentPath);
       configuration = ConfigurationBuilder.create(agentPath, rpConfiguration);
+
+      // sdk prefix needs to be setup before calling configureLogging
+      AppIdSupplier appIdSupplier = AiComponentInstaller.beforeAgent(instrumentation);
       startupLogger = configureLogging(configuration.selfDiagnostics, agentPath);
       StatusFile.startupLogger = startupLogger;
       ConfigurationBuilder.logConfigurationWarnMessages();
       MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
       // TODO convert to agent builder concept
-      AppIdSupplier appIdSupplier = AiComponentInstaller.beforeAgent(instrumentation);
       StartAppIdRetrieval.setAppIdSupplier(appIdSupplier);
       AgentInstaller.installBytebuddyAgent(
           instrumentation, ConfigOverride.getConfig(configuration), false);

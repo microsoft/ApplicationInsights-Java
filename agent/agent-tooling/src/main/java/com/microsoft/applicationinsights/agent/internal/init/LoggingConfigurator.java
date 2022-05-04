@@ -108,9 +108,8 @@ public class LoggingConfigurator {
       diagnosticLogger.setLevel(Level.INFO);
       diagnosticLogger.setAdditive(false);
       diagnosticLogger.addAppender(diagnosticAppender);
-      // push linux consumption plan diagnostic logs to console due to some restriction on
-      // consumption container not able to create a new file
-      if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+      // push Functions diagnostic logs to stdout
+      if (DiagnosticsHelper.useFunctionsRpIntegrationLogging()) {
         diagnosticLogger.addAppender(configureConsoleAppender());
       }
 
@@ -207,8 +206,8 @@ public class LoggingConfigurator {
     appender.setContext(loggerContext);
     appender.setName("CONSOLE");
 
-    // format Linux consumption plan linux diagnostic log as comma separated
-    if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+    // format Functions diagnostic log as comma separated
+    if (DiagnosticsHelper.useFunctionsRpIntegrationLogging()) {
       appender.setLayout(
           new ApplicationInsightsCsvLayout(PropertyHelper.getQualifiedSdkVersionString()));
     } else {

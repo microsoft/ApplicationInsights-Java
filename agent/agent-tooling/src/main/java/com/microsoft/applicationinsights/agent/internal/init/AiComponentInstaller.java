@@ -96,7 +96,6 @@ class AiComponentInstaller {
   }
 
   private static AppIdSupplier start(Instrumentation instrumentation) {
-
     String codelessSdkNamePrefix = getCodelessSdkNamePrefix();
     if (codelessSdkNamePrefix != null) {
       PropertyHelper.setSdkNamePrefix(codelessSdkNamePrefix);
