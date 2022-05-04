@@ -32,6 +32,11 @@ public class ApplicationInsightsCsvLayout extends PatternLayout {
 
   private static final ApplicationMetadataFactory applicationMetadataFactory =
       DiagnosticsHelper.getMetadataFactory();
+  private final String qualifiedSdkVersion;
+
+  public ApplicationInsightsCsvLayout(String qualifiedSdkVersion) {
+    this.qualifiedSdkVersion = qualifiedSdkVersion;
+  }
 
   @Override
   public String doLayout(ILoggingEvent event) {
@@ -52,11 +57,7 @@ public class ApplicationInsightsCsvLayout extends PatternLayout {
     stringBuilder.append(",");
     stringBuilder.append(applicationMetadataFactory.getInstrumentationKey().getValue());
     stringBuilder.append(",");
-    stringBuilder.append(applicationMetadataFactory.getExtensionVersion().getValue());
-    stringBuilder.append(",");
-    stringBuilder.append(applicationMetadataFactory.getSdkVersion().getValue());
-    stringBuilder.append(",");
-    stringBuilder.append(applicationMetadataFactory.getSubscriptionId().getValue());
+    stringBuilder.append(qualifiedSdkVersion);
     stringBuilder.append(",");
     stringBuilder.append("java");
     stringBuilder.append(System.getProperty("line.separator"));
