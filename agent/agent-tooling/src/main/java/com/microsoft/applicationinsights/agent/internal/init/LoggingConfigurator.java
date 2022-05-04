@@ -202,7 +202,6 @@ public class LoggingConfigurator {
     return appender;
   }
 
-  @SuppressWarnings("SystemOut")
   private Appender<ILoggingEvent> configureConsoleAppender() {
     ConsoleAppender<ILoggingEvent> appender = new ConsoleAppender<>();
     appender.setContext(loggerContext);
