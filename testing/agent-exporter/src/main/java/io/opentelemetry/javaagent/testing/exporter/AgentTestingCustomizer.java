@@ -9,6 +9,7 @@ import com.google.auto.service.AutoService;
 import io.opentelemetry.instrumentation.api.aisdk.MicrometerUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.time.Duration;
@@ -20,6 +21,11 @@ public class AgentTestingCustomizer implements AutoConfigurationCustomizerProvid
       new AgentTestingSpanProcessor(
           SimpleSpanProcessor.create(AgentTestingExporterFactory.spanExporter));
 
+  static final MetricReader metricReader =
+      PeriodicMetricReader.builder(AgentTestingExporterFactory.metricExporter)
+          .setInterval(Duration.ofMillis(100))
+          .build();
+
   static void reset() {
     spanProcessor.forceFlushCalled = false;
   }
@@ -30,11 +36,7 @@ public class AgentTestingCustomizer implements AutoConfigurationCustomizerProvid
         (tracerProvider, config) -> tracerProvider.addSpanProcessor(spanProcessor));
 
     autoConfigurationCustomizer.addMeterProviderCustomizer(
-        (meterProvider, config) ->
-            meterProvider.registerMetricReader(
-                PeriodicMetricReader.builder(AgentTestingExporterFactory.metricExporter)
-                    .setInterval(Duration.ofMillis(100))
-                    .build()));
+        (meterProvider, config) -> meterProvider.registerMetricReader(metricReader));
 
     MicrometerUtil.setDelegate(AgentTestingMicrometerDelegate.instance);
   }

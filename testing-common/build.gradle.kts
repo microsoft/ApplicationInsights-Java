@@ -49,7 +49,7 @@ dependencies {
 
   api("com.google.guava:guava")
 
-  compileOnly(project(path = ":testing:armeria-shaded-for-testing", configuration = "shadow"))
+  compileOnly(project(":testing:armeria-shaded-for-testing", configuration = "shadow"))
 
   compileOnly("com.google.auto.value:auto-value-annotations")
   annotationProcessor("com.google.auto.value:auto-value")
@@ -68,7 +68,6 @@ dependencies {
   annotationProcessor("com.google.auto.service:auto-service")
   compileOnly("com.google.auto.service:auto-service")
 
-  testImplementation(project(":javaagent-instrumentation-api"))
   testImplementation(project(":javaagent-tooling"))
   testImplementation(project(":javaagent-bootstrap"))
   testImplementation(project(":javaagent-extension-api"))
