@@ -1,5 +1,4 @@
 import com.microsoft.applicationinsights.gradle.AiSmokeTestExtension
-import gradle.kotlin.dsl.accessors._94a23f0be9141f27f052e4809bb3869b.java
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {

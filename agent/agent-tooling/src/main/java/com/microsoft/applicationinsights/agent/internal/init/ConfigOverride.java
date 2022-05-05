@@ -40,78 +40,9 @@ class ConfigOverride {
     properties.put(
         "otel.micrometer.step.millis",
         Long.toString(SECONDS.toMillis(config.preview.metricIntervalSeconds)));
-    if (!config.instrumentation.micrometer.enabled) {
-      properties.put("otel.instrumentation.micrometer.enabled", "false");
-      properties.put("otel.instrumentation.actuator-metrics.enabled", "false");
-    }
-    if (!config.instrumentation.azureSdk.enabled) {
-      properties.put("otel.instrumentation.azure-core.enabled", "false");
-    }
-    if (!config.instrumentation.cassandra.enabled) {
-      properties.put("otel.instrumentation.cassandra.enabled", "false");
-    }
-    if (!config.instrumentation.jdbc.enabled) {
-      properties.put("otel.instrumentation.jdbc.enabled", "false");
-    }
-    if (!config.instrumentation.jms.enabled) {
-      properties.put("otel.instrumentation.jms.enabled", "false");
-    }
-    if (!config.instrumentation.kafka.enabled) {
-      properties.put("otel.instrumentation.kafka.enabled", "false");
-    }
-    if (!config.instrumentation.mongo.enabled) {
-      properties.put("otel.instrumentation.mongo.enabled", "false");
-    }
-    if (!config.instrumentation.rabbitmq.enabled) {
-      // TODO (trask) add test for RabbitMQ and a test for disabled RabbitMQ
-      properties.put("otel.instrumentation.rabbitmq.enabled", "false");
-    }
-    if (!config.instrumentation.redis.enabled) {
-      properties.put("otel.instrumentation.jedis.enabled", "false");
-      properties.put("otel.instrumentation.lettuce.enabled", "false");
-    }
-    if (!config.instrumentation.springScheduling.enabled) {
-      properties.put("otel.instrumentation.spring-scheduling.enabled", "false");
-    }
-    if (!config.preview.instrumentation.akka.enabled) {
-      // akka instrumentation is ON by default in OTEL
-      properties.put("otel.instrumentation.akka-actor.enabled", "false");
-      properties.put("otel.instrumentation.akka-http.enabled", "false");
-    }
-    if (!config.preview.instrumentation.play.enabled) {
-      // play instrumentation is ON by default in OTEL
-      properties.put("otel.instrumentation.play.enabled", "false");
-    }
-    if (!config.preview.instrumentation.apacheCamel.enabled) {
-      // apache-camel instrumentation is ON by default in OTEL
-      properties.put("otel.instrumentation.apache-camel.enabled", "false");
-    }
-    if (config.preview.instrumentation.grizzly.enabled) {
-      // grizzly instrumentation is off by default
-      // TODO (trask) investigate if grizzly instrumentation can be enabled upstream by default now
-      properties.put("otel.instrumentation.grizzly.enabled", "true");
-    }
-    if (!config.preview.instrumentation.quartz.enabled) {
-      // quartz instrumentation is ON by default in OTEL
-      properties.put("otel.instrumentation.quartz.enabled", "false");
-    }
-    if (!config.preview.instrumentation.springIntegration.enabled) {
-      // springIntegration instrumentation is ON by default in OTEL
-      properties.put("otel.instrumentation.spring-integration.enabled", "false");
-    }
-    if (!config.preview.instrumentation.vertx.enabled) {
-      // vertx instrumentation is ON by default in OTEL
-      properties.put("otel.instrumentation.vertx.enabled", "false");
-    }
-    if (!config.preview.instrumentation.jaxrsAnnotations.enabled) {
-      // jaxrs annotations instrumentation is ON by default in OTEL
-      // but OFF by default in Application Insights due to its impact on startup performance
-      // and also because it only captures internal spans
-      // hopefully this will be optimized upstream at some point and it can be enabled by default
-      // here again
-      properties.put("otel.instrumentation.jaxrs-1.0.enabled", "false");
-      properties.put("otel.instrumentation.jaxrs-annotations.enabled", "false");
-    }
+
+    enableInstrumentations(config, properties);
+
     if (!config.preview.captureControllerSpans) {
       properties.put(
           "otel.instrumentation.common.experimental.controller-telemetry.enabled", "false");
@@ -201,6 +132,136 @@ class ConfigOverride {
     }
 
     return Config.builder().addProperties(properties).build();
+  }
+
+  private static void enableInstrumentations(Configuration config, Map<String, String> properties) {
+    properties.put("otel.instrumentation.common.default-enabled", "false");
+
+    // TODO (trask) remove these two after
+    // https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/5989
+    properties.put("otel.instrumentation.oshi-metrics.enabled", "false");
+    properties.put("otel.instrumentation.runtime-metrics.enabled", "false");
+
+    // instrumentation that cannot be disabled (currently at least)
+
+    properties.put("otel.instrumentation.ai-azure-functions.enabled", "true");
+    properties.put("otel.instrumentation.ai-applicationinsights-web.enabled", "true");
+
+    properties.put("otel.instrumentation.apache-httpasyncclient.enabled", "true");
+    properties.put("otel.instrumentation.apache-httpclient.enabled", "true");
+    properties.put("otel.instrumentation.async-http-client.enabled", "true");
+    properties.put("otel.instrumentation.executor.enabled", "true");
+    properties.put("otel.instrumentation.google-http-client.enabled", "true");
+    properties.put("otel.instrumentation.grpc.enabled", "true");
+    properties.put("otel.instrumentation.guava.enabled", "true");
+    properties.put("otel.instrumentation.http-url-connection.enabled", "true");
+    properties.put("otel.instrumentation.java-http-client.enabled", "true");
+    properties.put("otel.instrumentation.java-util-logging.enabled", "true");
+    properties.put("otel.instrumentation.jaxrs.enabled", "true");
+    properties.put("otel.instrumentation.jaxrs-client.enabled", "true");
+    properties.put("otel.instrumentation.jaxws.enabled", "true");
+
+    // TODO (trask) remove these three after
+    // https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/5980
+    properties.put("otel.instrumentation.axis2.enabled", "true");
+    properties.put("otel.instrumentation.cxf.enabled", "true");
+    properties.put("otel.instrumentation.metro.enabled", "true");
+
+    properties.put("otel.instrumentation.jboss-logmanager.enabled", "true");
+    properties.put("otel.instrumentation.jboss-logmanager-mdc.enabled", "true");
+    properties.put("otel.instrumentation.jetty.enabled", "true");
+    properties.put("otel.instrumentation.jetty-httpclient.enabled", "true");
+    properties.put("otel.instrumentation.kotlinx-coroutines.enabled", "true");
+    properties.put("otel.instrumentation.liberty.enabled", "true");
+    properties.put("otel.instrumentation.liberty-dispatcher.enabled", "true");
+    properties.put("otel.instrumentation.log4j-appender.enabled", "true");
+    properties.put("otel.instrumentation.logback-appender.enabled", "true");
+    properties.put("otel.instrumentation.log4j-mdc.enabled", "true");
+    properties.put("otel.instrumentation.log4j-context-data.enabled", "true");
+    properties.put("otel.instrumentation.logback-mdc.enabled", "true");
+    properties.put("otel.instrumentation.netty.enabled", "true");
+    properties.put("otel.instrumentation.okhttp.enabled", "true");
+    properties.put("otel.instrumentation.opentelemetry-annotations.enabled", "true");
+    properties.put("otel.instrumentation.opentelemetry-api.enabled", "true");
+    properties.put("otel.instrumentation.opentelemetry-instrumentation-api.enabled", "true");
+    properties.put("otel.instrumentation.reactor.enabled", "true");
+    properties.put("otel.instrumentation.reactor-netty.enabled", "true");
+    properties.put("otel.instrumentation.rxjava.enabled", "true");
+
+    // TODO (trask) remove these two after
+    // https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/5984
+    properties.put("otel.instrumentation.rxjava2.enabled", "true");
+    properties.put("otel.instrumentation.rxjava3.enabled", "true");
+
+    properties.put("otel.instrumentation.servlet.enabled", "true");
+    properties.put("otel.instrumentation.spring-core.enabled", "true");
+    properties.put("otel.instrumentation.spring-web.enabled", "true");
+    properties.put("otel.instrumentation.spring-webmvc.enabled", "true");
+    properties.put("otel.instrumentation.spring-webflux.enabled", "true");
+    properties.put("otel.instrumentation.tomcat.enabled", "true");
+    properties.put("otel.instrumentation.undertow.enabled", "true");
+
+    if (config.instrumentation.micrometer.enabled) {
+      properties.put("otel.instrumentation.ai-micrometer.enabled", "true");
+      properties.put("otel.instrumentation.ai-actuator-metrics.enabled", "true");
+    }
+    if (config.instrumentation.azureSdk.enabled) {
+      properties.put("otel.instrumentation.azure-core.enabled", "true");
+    }
+    if (config.instrumentation.cassandra.enabled) {
+      properties.put("otel.instrumentation.cassandra.enabled", "true");
+    }
+    if (config.instrumentation.jdbc.enabled) {
+      properties.put("otel.instrumentation.jdbc.enabled", "true");
+    }
+    if (config.instrumentation.jms.enabled) {
+      properties.put("otel.instrumentation.jms.enabled", "true");
+    }
+    if (config.instrumentation.kafka.enabled) {
+      properties.put("otel.instrumentation.kafka.enabled", "true");
+      properties.put("otel.instrumentation.spring-kafka.enabled", "true");
+    }
+    if (config.instrumentation.mongo.enabled) {
+      properties.put("otel.instrumentation.mongo.enabled", "true");
+    }
+    if (config.instrumentation.rabbitmq.enabled) {
+      properties.put("otel.instrumentation.rabbitmq.enabled", "true");
+      properties.put("otel.instrumentation.spring-rabbitmq.enabled", "true");
+    }
+    if (config.instrumentation.redis.enabled) {
+      properties.put("otel.instrumentation.jedis.enabled", "true");
+      properties.put("otel.instrumentation.lettuce.enabled", "true");
+    }
+    if (config.instrumentation.springScheduling.enabled) {
+      properties.put("otel.instrumentation.spring-scheduling.enabled", "true");
+    }
+    if (config.preview.instrumentation.akka.enabled) {
+      properties.put("otel.instrumentation.akka-actor.enabled", "true");
+      properties.put("otel.instrumentation.akka-http.enabled", "true");
+    }
+    if (config.preview.instrumentation.play.enabled) {
+      properties.put("otel.instrumentation.play.enabled", "true");
+    }
+    if (config.preview.instrumentation.apacheCamel.enabled) {
+      properties.put("otel.instrumentation.apache-camel.enabled", "true");
+    }
+    if (config.preview.instrumentation.grizzly.enabled) {
+      // note: grizzly instrumentation is off by default upstream
+      properties.put("otel.instrumentation.grizzly.enabled", "true");
+    }
+    if (config.preview.instrumentation.quartz.enabled) {
+      properties.put("otel.instrumentation.quartz.enabled", "true");
+    }
+    if (config.preview.instrumentation.springIntegration.enabled) {
+      properties.put("otel.instrumentation.spring-integration.enabled", "true");
+    }
+    if (config.preview.instrumentation.vertx.enabled) {
+      properties.put("otel.instrumentation.vertx.enabled", "true");
+    }
+    if (config.preview.instrumentation.jaxrsAnnotations.enabled) {
+      properties.put("otel.instrumentation.jaxrs-1.0.enabled", "true");
+      properties.put("otel.instrumentation.jaxrs-annotations.enabled", "true");
+    }
   }
 
   private static void setHttpHeaderConfiguration(

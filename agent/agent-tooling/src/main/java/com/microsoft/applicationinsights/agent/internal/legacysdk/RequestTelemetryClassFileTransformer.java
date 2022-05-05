@@ -21,21 +21,21 @@
 
 package com.microsoft.applicationinsights.agent.internal.legacysdk;
 
-import static net.bytebuddy.jar.asm.Opcodes.ACC_PRIVATE;
-import static net.bytebuddy.jar.asm.Opcodes.ACC_PROTECTED;
-import static net.bytebuddy.jar.asm.Opcodes.ACC_PUBLIC;
-import static net.bytebuddy.jar.asm.Opcodes.ACONST_NULL;
-import static net.bytebuddy.jar.asm.Opcodes.ARETURN;
-import static net.bytebuddy.jar.asm.Opcodes.ASM7;
+import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
+import static org.objectweb.asm.Opcodes.ACC_PROTECTED;
+import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
+import static org.objectweb.asm.Opcodes.ACONST_NULL;
+import static org.objectweb.asm.Opcodes.ARETURN;
+import static org.objectweb.asm.Opcodes.ASM7;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.reflect.Modifier;
 import java.security.ProtectionDomain;
-import net.bytebuddy.jar.asm.ClassReader;
-import net.bytebuddy.jar.asm.ClassVisitor;
-import net.bytebuddy.jar.asm.ClassWriter;
-import net.bytebuddy.jar.asm.MethodVisitor;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

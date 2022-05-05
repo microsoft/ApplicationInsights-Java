@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
+import com.microsoft.applicationinsights.agent.bootstrap.AiLazyConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
@@ -50,7 +51,6 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
-import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
 import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
