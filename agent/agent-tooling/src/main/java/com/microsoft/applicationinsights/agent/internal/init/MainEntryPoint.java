@@ -70,6 +70,7 @@ public class MainEntryPoint {
   }
 
   // TODO turn this into an interceptor
+  @SuppressWarnings("SystemOut")
   public static void start(Instrumentation instrumentation, File javaagentFile) {
     boolean success = false;
     Logger startupLogger = null;
