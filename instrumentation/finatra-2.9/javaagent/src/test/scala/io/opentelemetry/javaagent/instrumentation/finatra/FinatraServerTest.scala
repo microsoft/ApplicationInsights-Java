@@ -56,6 +56,9 @@ class FinatraServerTest extends AbstractHttpServerTest[HttpServer] {
       override def test(endpoint: ServerEndpoint): Boolean =
         endpoint != ServerEndpoint.NOT_FOUND
     })
+    options.setSendsBackAiTargetAppId(new Predicate[ServerEndpoint] {
+      override def test(endpoint: ServerEndpoint): Boolean = true
+    })
   }
 
   override protected def assertHandlerSpan(
