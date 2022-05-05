@@ -13,7 +13,7 @@ pluginManagement {
 }
 
 plugins {
-  id("com.gradle.enterprise") version "3.9"
+  id("com.gradle.enterprise") version "3.10"
   id("com.github.burrunan.s3-build-cache") version "1.3"
   id("com.gradle.common-custom-user-data-gradle-plugin") version "1.6.5"
 }
@@ -92,6 +92,7 @@ include(":muzzle")
 // agent projects
 include(":opentelemetry-api-shaded-for-instrumenting")
 include(":opentelemetry-ext-annotations-shaded-for-instrumenting")
+include(":opentelemetry-instrumentation-api-shaded-for-instrumenting")
 include(":javaagent-bootstrap")
 include(":javaagent-extension-api")
 include(":javaagent-tooling")
@@ -163,7 +164,6 @@ include(":instrumentation:azure-core:azure-core-1.14:javaagent")
 include(":instrumentation:azure-core:azure-core-1.14:library-instrumentation-shaded")
 include(":instrumentation:azure-core:azure-core-1.19:javaagent")
 include(":instrumentation:azure-core:azure-core-1.19:library-instrumentation-shaded")
-include(":instrumentation:azure-functions:javaagent")
 include(":instrumentation:cassandra:cassandra-3.0:javaagent")
 include(":instrumentation:cassandra:cassandra-4.0:javaagent")
 include(":instrumentation:cdi-testing")
@@ -253,8 +253,8 @@ include(":instrumentation:jaxws:jaxws-2.0-tomee-testing")
 include(":instrumentation:jaxws:jaxws-2.0-wildfly-testing")
 include(":instrumentation:jaxws:jaxws-common:library")
 include(":instrumentation:jaxws:jaxws-jws-api-1.1:javaagent")
-include(":instrumentation:jboss-logmanager-1.1:javaagent")
-include(":instrumentation:jboss-logmanager-mdc-1.1:javaagent")
+include(":instrumentation:jboss-logmanager:jboss-logmanager-1.1:javaagent")
+include(":instrumentation:jboss-logmanager:jboss-logmanager-mdc-1.1:javaagent")
 include(":instrumentation:jdbc:javaagent")
 include(":instrumentation:jdbc:library")
 include(":instrumentation:jdbc:testing")
@@ -301,7 +301,7 @@ include(":instrumentation:log4j:log4j-mdc-1.2:javaagent")
 include(":instrumentation:log4j:log4j-context-data:log4j-context-data-2.7:javaagent")
 include(":instrumentation:log4j:log4j-context-data:log4j-context-data-2.17:javaagent")
 include(":instrumentation:log4j:log4j-context-data:log4j-context-data-2.17:library-autoconfigure")
-include(":instrumentation:log4j:log4j-context-data:log4j-context-data-2-common:testing")
+include(":instrumentation:log4j:log4j-context-data:log4j-context-data-common:testing")
 include(":instrumentation:log4j:log4j-appender-2.17:javaagent")
 include(":instrumentation:log4j:log4j-appender-2.17:library")
 include(":instrumentation:logback:logback-appender-1.0:javaagent")
@@ -431,6 +431,8 @@ include(":instrumentation:vaadin-14.2:testing")
 include(":instrumentation:vertx:vertx-http-client:vertx-http-client-3.0:javaagent")
 include(":instrumentation:vertx:vertx-http-client:vertx-http-client-4.0:javaagent")
 include(":instrumentation:vertx:vertx-http-client:vertx-http-client-common:javaagent")
+include(":instrumentation:vertx:vertx-kafka-client-3.6:javaagent")
+include(":instrumentation:vertx:vertx-kafka-client-3.6:testing")
 include(":instrumentation:vertx:vertx-rx-java-3.5:javaagent")
 include(":instrumentation:vertx:vertx-web-3.0:javaagent")
 include(":instrumentation:vertx:vertx-web-3.0:testing")
