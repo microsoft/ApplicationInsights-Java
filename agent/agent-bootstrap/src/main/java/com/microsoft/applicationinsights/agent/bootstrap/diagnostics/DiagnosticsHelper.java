@@ -53,7 +53,12 @@ public class DiagnosticsHelper {
 
   public static void setAgentJarFile(Path agentPath) {
     if (Files.exists(agentPath.resolveSibling("appsvc.codeless"))) {
-      rpIntegrationChar = 'a';
+      // TODO we can remove this check after the new functions model is deployed.
+      if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+        rpIntegrationChar = 'f';
+      } else {
+        rpIntegrationChar = 'a';
+      }
       useAppSvcRpIntegrationLogging = true;
     } else if (Files.exists(agentPath.resolveSibling("aks.codeless"))) {
       rpIntegrationChar = 'k';
