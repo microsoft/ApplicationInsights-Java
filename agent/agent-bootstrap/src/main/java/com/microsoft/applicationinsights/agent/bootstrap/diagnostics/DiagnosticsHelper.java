@@ -53,11 +53,7 @@ public class DiagnosticsHelper {
 
   public static void setAgentJarFile(Path agentPath) {
     if (Files.exists(agentPath.resolveSibling("appsvc.codeless"))) {
-      if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
-        rpIntegrationChar = 'f';
-      } else {
-        rpIntegrationChar = 'a';
-      }
+      rpIntegrationChar = 'a';
       useAppSvcRpIntegrationLogging = true;
     } else if (Files.exists(agentPath.resolveSibling("aks.codeless"))) {
       rpIntegrationChar = 'k';

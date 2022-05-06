@@ -26,6 +26,8 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
+import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
+import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SelfDiagnostics;
 import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
@@ -89,13 +91,16 @@ public class MainEntryPoint {
       rpConfiguration = RpConfigurationBuilder.create(agentPath);
       configuration = ConfigurationBuilder.create(agentPath, rpConfiguration);
 
-      // sdk prefix needs to be setup before calling configureLogging
-      AppIdSupplier appIdSupplier = AiComponentInstaller.beforeAgent(instrumentation);
+      String codelessSdkNamePrefix = getCodelessSdkNamePrefix();
+      if (codelessSdkNamePrefix != null) {
+        PropertyHelper.setSdkNamePrefix(codelessSdkNamePrefix);
+      }
       startupLogger = configureLogging(configuration.selfDiagnostics, agentPath);
       StatusFile.startupLogger = startupLogger;
       ConfigurationBuilder.logConfigurationWarnMessages();
       MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
       // TODO convert to agent builder concept
+      AppIdSupplier appIdSupplier = AiComponentInstaller.beforeAgent(instrumentation);
       StartAppIdRetrieval.setAppIdSupplier(appIdSupplier);
       AgentInstaller.installBytebuddyAgent(
           instrumentation, ConfigOverride.getConfig(configuration), false);
@@ -215,5 +220,25 @@ public class MainEntryPoint {
   private static Logger configureLogging(SelfDiagnostics selfDiagnostics, Path agentPath) {
     new LoggingConfigurator(selfDiagnostics, agentPath).configure();
     return LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
+  }
+
+  @Nullable
+  private static String getCodelessSdkNamePrefix() {
+    if (!DiagnosticsHelper.isRpIntegration()) {
+      return null;
+    }
+    StringBuilder sdkNamePrefix = new StringBuilder(4);
+    sdkNamePrefix.append(DiagnosticsHelper.rpIntegrationChar());
+    if (SystemInformation.isWindows()) {
+      sdkNamePrefix.append("w");
+    } else if (SystemInformation.isUnix()) {
+      sdkNamePrefix.append("l");
+    } else {
+      LoggerFactory.getLogger("com.microsoft.applicationinsights.agent")
+          .warn("could not detect os: {}", System.getProperty("os.name"));
+      sdkNamePrefix.append("u");
+    }
+    sdkNamePrefix.append("r_"); // "r" is for "recommended"
+    return sdkNamePrefix.toString();
   }
 }
