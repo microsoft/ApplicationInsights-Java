@@ -54,7 +54,7 @@ val DEPENDENCY_SETS = listOf(
   ),
   DependencySet(
     "org.slf4j",
-    "1.7.30",
+    "1.7.36",
     listOf("slf4j-api", "slf4j-simple", "log4j-over-slf4j", "jcl-over-slf4j", "jul-to-slf4j")
   ),
   DependencySet(

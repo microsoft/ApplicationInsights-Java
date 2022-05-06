@@ -202,8 +202,11 @@ class ConfigOverride {
     properties.put("otel.instrumentation.undertow.enabled", "true");
 
     if (config.instrumentation.micrometer.enabled) {
+      // TODO (heya) replace with below when updating to upstream micrometer
       properties.put("otel.instrumentation.ai-micrometer.enabled", "true");
       properties.put("otel.instrumentation.ai-actuator-metrics.enabled", "true");
+      // properties.put("otel.instrumentation.micrometer.enabled", "true");
+      // properties.put("otel.instrumentation.spring-boot-actuator-autoconfigure.enabled", "true");
     }
     if (config.instrumentation.azureSdk.enabled) {
       properties.put("otel.instrumentation.azure-core.enabled", "true");

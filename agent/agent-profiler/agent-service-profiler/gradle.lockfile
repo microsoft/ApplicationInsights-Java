@@ -49,5 +49,5 @@ io.projectreactor:reactor-core:3.4.14=runtimeClasspath
 org.codehaus.woodstox:stax2-api:4.2.1=runtimeClasspath
 org.junit:junit-bom:5.7.2=runtimeClasspath
 org.reactivestreams:reactive-streams:1.0.3=runtimeClasspath
-org.slf4j:slf4j-api:1.7.33=runtimeClasspath
+org.slf4j:slf4j-api:1.7.36=runtimeClasspath
 empty=

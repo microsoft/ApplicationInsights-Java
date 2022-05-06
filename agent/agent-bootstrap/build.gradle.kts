@@ -6,11 +6,6 @@ plugins {
 val otelInstrumentationAlphaVersion = "1.14.0.1-alpha"
 
 dependencies {
-  // FIXME (trask)
-//  implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap") {
-//    exclude("org.slf4j", "slf4j-simple")
-//  }
-
   // needed to access io.opentelemetry.instrumentation.api.aisdk.MicrometerUtil
   // TODO (heya) remove this when updating to upstream micrometer instrumentation
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
