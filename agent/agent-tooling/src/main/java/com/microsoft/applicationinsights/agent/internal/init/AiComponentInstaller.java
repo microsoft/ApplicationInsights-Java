@@ -24,10 +24,8 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
-import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProfilerConfiguration;
@@ -56,7 +54,6 @@ import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,11 +81,6 @@ class AiComponentInstaller {
   }
 
   private static AppIdSupplier start() {
-
-    String codelessSdkNamePrefix = getCodelessSdkNamePrefix();
-    if (codelessSdkNamePrefix != null) {
-      PropertyHelper.setSdkNamePrefix(codelessSdkNamePrefix);
-    }
 
     File tempDir =
         TempDirs.getApplicationInsightsTempDir(
@@ -210,25 +202,6 @@ class AiComponentInstaller {
         configuration.memoryTriggeredSettings,
         configuration.cpuTriggeredSettings,
         TempDirs.getSubDir(tempDir, "profiles"));
-  }
-
-  @Nullable
-  private static String getCodelessSdkNamePrefix() {
-    if (!DiagnosticsHelper.isRpIntegration()) {
-      return null;
-    }
-    StringBuilder sdkNamePrefix = new StringBuilder(4);
-    sdkNamePrefix.append(DiagnosticsHelper.rpIntegrationChar());
-    if (SystemInformation.isWindows()) {
-      sdkNamePrefix.append("w");
-    } else if (SystemInformation.isLinux()) {
-      sdkNamePrefix.append("l");
-    } else {
-      startupLogger.warn("could not detect os: {}", System.getProperty("os.name"));
-      sdkNamePrefix.append("u");
-    }
-    sdkNamePrefix.append("r_"); // "r" is for "recommended"
-    return sdkNamePrefix.toString();
   }
 
   private static boolean hasConnectionString(Configuration config) {
