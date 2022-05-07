@@ -38,9 +38,11 @@ import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
 import ch.qos.logback.core.util.FileSize;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.EtwAppender;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsCsvLayout;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsDiagnosticsLogFilter;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsJsonLayout;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.MoshiJsonFormatter;
+import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.logbackpatch.FixedWindowRollingPolicy;
 import java.nio.file.Path;
@@ -73,7 +75,9 @@ public class LoggingConfigurator {
     loggerContext.getLogger(ROOT_LOGGER_NAME).detachAndStopAllAppenders();
 
     if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
-      configureAppSvcs();
+      configureAppSvc();
+    } else if (DiagnosticsHelper.useFunctionsRpIntegrationLogging()) {
+      configureFunctions();
     } else if (destination == null || destination.equalsIgnoreCase("file+console")) {
       configureFileAndConsole();
     } else if (destination.equalsIgnoreCase("file")) {
@@ -85,7 +89,7 @@ public class LoggingConfigurator {
     }
   }
 
-  private void configureAppSvcs() {
+  private void configureAppSvc() {
     Logger rootLogger = loggerContext.getLogger(ROOT_LOGGER_NAME);
     rootLogger.addAppender(configureFileAppender());
     rootLogger.addAppender(configureConsoleAppender());
@@ -124,11 +128,26 @@ public class LoggingConfigurator {
     loggingLevelConfigurator.initLoggerLevels(loggerContext);
   }
 
+  private void configureFunctions() {
+    Logger rootLogger = loggerContext.getLogger(ROOT_LOGGER_NAME);
+    rootLogger.addAppender(configureConsoleAppender());
+    Logger diagnosticLogger = loggerContext.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME);
+    diagnosticLogger.setLevel(Level.INFO);
+    diagnosticLogger.setAdditive(false);
+    Appender<ILoggingEvent> appender = configureConsoleAppender();
+    diagnosticLogger.addAppender(appender);
+
+    // errors reported by other loggers should also go to diagnostic log
+    // (level filter for these is applied in ApplicationInsightsDiagnosticsLogFilter)
+    rootLogger.addAppender(appender);
+
+    loggingLevelConfigurator.initLoggerLevels(loggerContext);
+  }
+
   private void configureFileAndConsole() {
     Logger rootLogger = loggerContext.getLogger(ROOT_LOGGER_NAME);
     rootLogger.addAppender(configureFileAppender());
     rootLogger.addAppender(configureConsoleAppender());
-
     loggingLevelConfigurator.initLoggerLevels(loggerContext);
     // these messages are specifically designed for attach
     loggerContext.getLogger("applicationinsights.extension.diagnostics").setLevel(Level.OFF);
@@ -200,7 +219,13 @@ public class LoggingConfigurator {
     appender.setContext(loggerContext);
     appender.setName("CONSOLE");
 
-    appender.setEncoder(createEncoder());
+    // format Functions diagnostic log as comma separated
+    if (DiagnosticsHelper.useFunctionsRpIntegrationLogging()) {
+      appender.setLayout(
+          new ApplicationInsightsCsvLayout(PropertyHelper.getQualifiedSdkVersionString()));
+    } else {
+      appender.setEncoder(createEncoder());
+    }
     appender.start();
 
     return appender;

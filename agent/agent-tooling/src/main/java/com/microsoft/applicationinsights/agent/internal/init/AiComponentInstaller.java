@@ -24,11 +24,9 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.common.LocalFileSystemUtils;
-import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.common.Strings;
 import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -65,7 +63,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,12 +93,6 @@ class AiComponentInstaller {
   }
 
   private static AppIdSupplier start(Instrumentation instrumentation) {
-
-    String codelessSdkNamePrefix = getCodelessSdkNamePrefix();
-    if (codelessSdkNamePrefix != null) {
-      PropertyHelper.setSdkNamePrefix(codelessSdkNamePrefix);
-    }
-
     File javaTmpDir = new File(System.getProperty("java.io.tmpdir"));
     boolean readOnlyFileSystem = false;
     if (javaTmpDir.canRead() && !javaTmpDir.canWrite()) {
@@ -272,25 +263,6 @@ class AiComponentInstaller {
         configuration.memoryTriggeredSettings,
         configuration.cpuTriggeredSettings,
         tempDirectory);
-  }
-
-  @Nullable
-  private static String getCodelessSdkNamePrefix() {
-    if (!DiagnosticsHelper.isRpIntegration()) {
-      return null;
-    }
-    StringBuilder sdkNamePrefix = new StringBuilder(4);
-    sdkNamePrefix.append(DiagnosticsHelper.rpIntegrationChar());
-    if (SystemInformation.isWindows()) {
-      sdkNamePrefix.append("w");
-    } else if (SystemInformation.isUnix()) {
-      sdkNamePrefix.append("l");
-    } else {
-      startupLogger.warn("could not detect os: {}", System.getProperty("os.name"));
-      sdkNamePrefix.append("u");
-    }
-    sdkNamePrefix.append("r_"); // "r" is for "recommended"
-    return sdkNamePrefix.toString();
   }
 
   private static boolean hasConnectionStringOrInstrumentationKey(Configuration config) {
