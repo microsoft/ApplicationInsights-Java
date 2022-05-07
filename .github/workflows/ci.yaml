@@ -39,10 +39,10 @@ jobs:
       - name: Build otel-fork
         working-directory: otel
         # javadoc fails sporadically fetching https://docs.oracle.com/javase/8/docs/api/
-        run: ./gradlew publishToMavenLocal -x javadoc --stacktrace
+        run: ./gradlew publishToMavenLocal -x javadoc
       - name: Test
         # TODO enable build cache, either --build-cache here, or org.gradle.caching=true in gradle.properties
-        run: ./gradlew check --stacktrace
+        run: ./gradlew check
       - name: Upload snapshot
         # only upload from windows since only that build includes etw
         if: matrix.os == 'windows-2019'
@@ -98,7 +98,7 @@ jobs:
       - name: Build otel-fork
         working-directory: otel
         # javadoc fails sporadically fetching https://docs.oracle.com/javase/8/docs/api/
-        run: ./gradlew publishToMavenLocal -x javadoc --stacktrace
+        run: ./gradlew publishToMavenLocal -x javadoc
       - name: Test
         # TODO enable build cache, either --build-cache here, or org.gradle.caching=true in gradle.properties
         run: ./gradlew ${{ matrix.module }}:smokeTest
