@@ -3,6 +3,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
   id("ai.java-conventions")
   id("ai.shadow-conventions")
+  id("maven-publish")
 }
 
 base.archivesName.set("applicationinsights-agent")
@@ -131,6 +132,48 @@ tasks {
   assemble {
     dependsOn(shadowJar, mainShadowJar)
   }
+
+  val t = this
+  publishing {
+    publications {
+      register<MavenPublication>("maven") {
+        artifactId = "applicationinsights-agent"
+        groupId = "com.microsoft.azure"
+        version = project.version.toString()
+
+        artifact(shadowJar)
+        artifact(mainShadowJar)
+        artifact(t.named("sourcesJar"))
+        artifact(t.named("javadocJar"))
+
+        pom {
+          name.set("Microsoft Application Insights Java Agent")
+          description.set("Microsoft Application Insights Java Agent")
+          url.set("https://github.com/Microsoft/ApplicationInsights-Java")
+          packaging = "jar"
+
+          licenses {
+            license {
+              name.set("MIT License")
+              url.set("http://www.opensource.org/licenses/mit-license.php")
+            }
+          }
+
+          developers {
+            developer {
+              id.set("Microsoft")
+              name.set("Microsoft")
+            }
+          }
+
+          scm {
+            connection.set("scm:git:git://github.com/Microsoft/ApplicationInsights-Java.git")
+            url.set("scm:git:https://github.com/Microsoft/ApplicationInsights-Java")
+          }
+        }
+      }
+    }
+  }
 }
 
 fun CopySpec.isolateClasses(jars: Iterable<File>) {
@@ -138,15 +181,8 @@ fun CopySpec.isolateClasses(jars: Iterable<File>) {
     from(zipTree(it)) {
       into("inst")
       rename("^(.*)\\.class\$", "\$1.classdata")
-      // Rename LICENSE file since it clashes with license dir on non-case sensitive FSs (i.e. Mac)
-      rename("""^LICENSE$""", "LICENSE.renamed")
-      exclude("META-INF/INDEX.LIST")
-      exclude("META-INF/*.DSA")
-      exclude("META-INF/*.SF")
     }
   }
   from("${rootProject.projectDir}/NOTICE")
   from("${rootProject.projectDir}/LICENSE")
 }
-
-// FIXME (trask) publishing

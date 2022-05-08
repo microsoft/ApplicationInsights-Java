@@ -12,7 +12,21 @@ plugins {
 
 ext.buildScriptsDir = "$rootDir/gradle"
 
-apply from: "$buildScriptsDir/common.gradle"
+version = calcProjectVersion()
+subprojects {
+  version = rootProject.version
+}
+
+def calcProjectVersion() {
+  def projectVersion = version;
+
+  boolean isRelease = (System.properties["isRelease"] ?: "false").toBoolean()
+  if (!isRelease) {
+    projectVersion = projectVersion + "-SNAPSHOT"
+    logger.info "This is NOT a release version; version updated to $projectVersion"
+  }
+  projectVersion
+}
 
 ext {
   isBuildServer = (System.properties["isBuildServer"] ?: "false").toBoolean()
