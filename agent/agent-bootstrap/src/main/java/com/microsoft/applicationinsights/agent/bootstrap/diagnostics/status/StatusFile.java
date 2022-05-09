@@ -154,6 +154,7 @@ public class StatusFile {
     if (writable) {
       return true;
     }
+
     // read-only app services, want to log warning once in this case
     if (startupLogger != null && !alreadyLogged.getAndSet(true)) {
       startupLogger.info(
