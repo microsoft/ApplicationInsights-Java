@@ -23,6 +23,7 @@ dependencies {
   implementation(project(":agent:agent-gc-monitor:gc-monitor-api"))
   implementation(project(":agent:agent-gc-monitor:gc-monitor-core"))
 
+  compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
 
   testImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling") {

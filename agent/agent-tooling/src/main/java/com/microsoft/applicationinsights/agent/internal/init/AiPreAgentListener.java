@@ -19,18 +19,19 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package io.opentelemetry.javaagent.tooling;
+package com.microsoft.applicationinsights.agent.internal.init;
 
-import com.microsoft.applicationinsights.agent.internal.init.MainEntryPoint;
-import java.io.File;
-import java.lang.instrument.Instrumentation;
+import com.google.auto.service.AutoService;
+import io.opentelemetry.instrumentation.api.config.Config;
+import io.opentelemetry.javaagent.extension.AgentListener;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 
-@SuppressWarnings("unused")
-public class AgentInstallerOverride {
+@AutoService(AgentListener.class)
+public class AiPreAgentListener implements AgentListener {
 
-  public static void installBytebuddyAgent(Instrumentation inst, File javaagentFile) {
-    MainEntryPoint.start(inst, javaagentFile);
+  public void beforeAgent(
+      Config config, AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk) {
+
+
   }
-
-  private AgentInstallerOverride() {}
 }

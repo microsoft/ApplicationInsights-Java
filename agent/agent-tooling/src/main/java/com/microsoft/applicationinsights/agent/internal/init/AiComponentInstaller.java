@@ -49,6 +49,7 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
+import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;
 import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
@@ -62,8 +63,10 @@ class AiComponentInstaller {
   private static final Logger startupLogger =
       LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
 
-  static AppIdSupplier beforeAgent(Instrumentation instrumentation) {
+  static AppIdSupplier beforeAgent() {
     AppIdSupplier appIdSupplier = start();
+
+    Instrumentation instrumentation = InstrumentationHolder.getInstrumentation();
 
     // add sdk instrumentation after ensuring Global.getTelemetryClient() will not return null
     instrumentation.addTransformer(new TelemetryClientClassFileTransformer());

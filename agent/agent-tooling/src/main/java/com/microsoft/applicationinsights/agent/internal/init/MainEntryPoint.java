@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
@@ -33,7 +34,8 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfigurationBuilder;
-import io.opentelemetry.javaagent.tooling.AgentInstaller;
+import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;
+import io.opentelemetry.javaagent.tooling.LoggingCustomizer;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
@@ -48,7 +50,8 @@ import org.slf4j.MDC;
 
 // this class initializes configuration and logging before passing control to
 // opentelemetry-java-instrumentation
-public class MainEntryPoint {
+@AutoService(LoggingCustomizer.class)
+public class MainEntryPoint implements LoggingCustomizer {
 
   private static final boolean DEBUG_SIGNED_JAR_ACCESS =
       Boolean.getBoolean("applicationinsights.debug.signedJarAccess");
@@ -71,14 +74,24 @@ public class MainEntryPoint {
     return agentVersion;
   }
 
+  @Override
+  public void init() {}
+
+  @Override
+  public void onStartupFailure(Throwable throwable) {}
+
+  @Override
+  public void onStartupSuccess() {}
+
   // TODO turn this into an interceptor
   @SuppressWarnings("SystemOut")
-  public static void start(Instrumentation instrumentation, File javaagentFile) {
+  public static void start(File javaagentFile) {
     boolean success = false;
     Logger startupLogger = null;
     try {
       if (DEBUG_SIGNED_JAR_ACCESS) {
         JarVerifierClassFileTransformer transformer = new JarVerifierClassFileTransformer();
+        Instrumentation instrumentation = InstrumentationHolder.getInstrumentation();
         instrumentation.addTransformer(transformer, true);
         instrumentation.retransformClasses(Class.forName("java.util.jar.JarVerifier"));
         instrumentation.removeTransformer(transformer);
@@ -99,11 +112,10 @@ public class MainEntryPoint {
       StatusFile.startupLogger = startupLogger;
       ConfigurationBuilder.logConfigurationWarnMessages();
       MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
-      // TODO convert to agent builder concept
-      AppIdSupplier appIdSupplier = AiComponentInstaller.beforeAgent(instrumentation);
+
+      AppIdSupplier appIdSupplier = AiComponentInstaller.beforeAgent();
       StartAppIdRetrieval.setAppIdSupplier(appIdSupplier);
-      AgentInstaller.installBytebuddyAgent(
-          instrumentation, ConfigOverride.getConfig(configuration), false);
+
       startupLogger.info(
           "ApplicationInsights Java Agent {} started successfully (PID {})",
           agentVersion,
@@ -163,7 +175,7 @@ public class MainEntryPoint {
 
   @SuppressWarnings("SystemOut")
   private static void logErrorMessage(
-      Logger startupLogger,
+      @Nullable Logger startupLogger,
       String message,
       boolean isFriendlyException,
       Throwable t,
