@@ -1,8 +1,8 @@
 # CHANGELOG
 
 # Version 3.3.0-BETA
-* Update OpenTelemetry to 1.14
-* Deprecate logs' LoggingLevel custom property [#2254](https://github.com/microsoft/ApplicationInsights-Java/pull/2254)
+* Update OpenTelemetry to 1.14 [#2257](https://github.com/microsoft/ApplicationInsights-Java/pull/2257).
+* Deprecate logs' LoggingLevel custom property [#2254](https://github.com/microsoft/ApplicationInsights-Java/pull/2254).
 * Add support for OpenTelemetry log exporter and metric exporter.
 * Lots of refactorings and improvements. 
 
