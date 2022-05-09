@@ -20,9 +20,4 @@ build:
       artifacts:
         - to: 'Artifacts'
           include:
-            - '**/build/libs/*.jar'
-            - '**/build/libs/*-sources.jar'
-            - '**/build/libs/*-javadoc.jar'
-            - '**/build/libs/*.pom'
-          exclude:
-            - 'buildSrc/**/*'
+            - 'agent/agent/build/libs/*.jar'
