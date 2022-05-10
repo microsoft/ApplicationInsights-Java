@@ -7,10 +7,9 @@ version:
 build:
   commands:
     - !!buildcommand
-      name: 'Assemble ApplicationInsights-Java JARs'
-      command: '.scripts/gradle.cmd'
-      arguments: 'assemble'
+      name: 'Debug'
+      command: '.scripts/debug.cmd'
       artifacts:
         - to: 'Artifacts'
           include:
-            - 'agent/agent/build/libs/*.jar'
+            - 'repository/com/microsoft/azure/applicationinsights-agent/**/*'

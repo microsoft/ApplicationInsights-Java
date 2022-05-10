@@ -7,11 +7,6 @@ environment:
     provider: 'appcontainer'
     image: 'cdpxwin1809.azurecr.io/global/vse2019:latest'
     source_mode: 'link'
-versioning:
-  commands:
-    - !!defaultcommand
-      name: 'Generate Version'
-      command: '.scripts/version.cmd'
 # excluding our source code from being scanned for code sign validation
 signing_options:
   profile: 'none'
@@ -25,59 +20,3 @@ static_analysis_options:
       - from: 'src\Dependencies\'
         exclude:
           - '/source/agent/agent/build/resources/main/inst/com/sun/jna/win32-aarch64/jnidispatch.dll'
-restore:
-  commands:
-    - !!defaultcommand
-      name: 'Install Windows 10 SDK'
-      command: '.scripts/installWindows10Sdk.cmd'
-      logs:
-        - from: 'WinSdkInstall'
-          to: 'WinSdkInstall'
-          include:
-            - '**/*.log'
-    - !!defaultcommand
-      name: 'Install Java 11 JDK'
-      command: '.scripts/installJava11jdk.cmd'
-    - !!defaultcommand
-      name: 'Add OpenTelemetry to MavenLocal'
-      command: '.scripts/ot-gradle.cmd'
-      # javadoc fails sporadically fetching https://docs.oracle.com/javase/8/docs/api/
-      arguments: 'publishToMavenLocal -x javadoc'
-      # if connection reset issue continues, try:
-      #   -P org.gradle.internal.http.connectionTimeout=30000
-      #   -P org.gradle.internal.http.socketTimeout=30000
-      #   -P org.gradle.internal.repository.max.retries=10
-      #   -P org.gradle.internal.repository.initial.backoff=500
-    - !!defaultcommand
-      name: 'Download Dependencies'
-      command: '.scripts/gradle.cmd'
-      arguments: 'downloadDependencies'
-    - !!defaultcommand
-      name: 'List Installation Information'
-      command: '.scripts/dumpInstallationInfo.cmd'
-test:
-  commands:
-    # - !!defaultcommand
-    #   name: 'Gradle Static Analysis'
-    #   command: '.scripts/gradle.cmd'
-    #   arguments: 'check -x test'
-    #   logs:
-    #     - to: 'Checks Reports'
-    #       include:
-    #         - '**/build/reports/**/*'
-    #       exclude:
-    #         - '**/build/reports/tests/**/*'
-    - !!testcommand
-      name: 'ApplicationInsights-Java Unit Tests'
-      command: '.scripts/gradle.cmd'
-      arguments: 'test'
-      fail_on_stderr: false
-      testresults:
-        - title: ':Unit Test Results'
-          type: 'junit'
-          include:
-            - '**/build/test-results/test/**/*'
-      logs:
-        - to: 'Test Logs'
-          include:
-            - '**/build/reports/tests/**/*'
