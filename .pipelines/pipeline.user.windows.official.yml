@@ -18,10 +18,6 @@ build:
       name: 'publishToMavenLocal ApplicationInsights-Java JARs'
       command: '.scripts/gradle.cmd'
       arguments: 'publishToMavenLocal -DisRelease=true -Pai.etw.native.build=release'
-
-    - !!buildcommand
-      name: 'Copy bits from Maven Local to Artifacts'
-      command: '.scripts/copyBitsFromMavenLocal.cmd'
       artifacts:
         - from: 'build/output/'
         - to: 'Artifacts'

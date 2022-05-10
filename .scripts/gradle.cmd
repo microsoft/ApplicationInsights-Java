@@ -16,5 +16,9 @@ if errorlevel 1 (
     echo Error running '%GRADLE_CMD%' in '%PROJECT_ROOT%'
     exit /b 1
 )
+
+mkdir build/output
+copy ~/.m2/repository/com/microsoft/azure/applicationinsights-agent/* build/output/
+
 popd
 endlocal
