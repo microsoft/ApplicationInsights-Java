@@ -157,6 +157,7 @@ public class MainEntryPoint implements LoggingCustomizer {
     updateStatusFile(false);
   }
 
+  @SuppressWarnings("SystemOut")
   private static void updateStatusFile(boolean success) {
     try {
       StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success, startupLogger != null);
