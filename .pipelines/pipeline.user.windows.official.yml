@@ -13,16 +13,17 @@ build:
           to: 'Scripts'
           include:
             - '**/*'
+
     - !!buildcommand
       name: 'publishToMavenLocal ApplicationInsights-Java JARs'
       command: '.scripts/gradle.cmd'
-      arguments: 'assemble copyLibsToGlobalArtifactsFolder -DisRelease=true -Pai.etw.native.build=release'
+      arguments: 'publishToMavenLocal -DisRelease=true -Pai.etw.native.build=release'
+
+    - !!buildcommand
+      name: 'Copy bits from Maven Local to Artifacts'
+      command: '.scripts/copyBitsFromMavenLocal.cmd'
       artifacts:
+        - from: '/source/build/output/'
         - to: 'Artifacts'
-            include:
-              - '**/build/libs/*.jar'
-              - '**/build/libs/*-sources.jar'
-              - '**/build/libs/*-javadoc.jar'
-              - '**/build/libs/*.pom'
-            exclude:
-              - 'buildSrc/**/*'
+          include:
+            - '**/*'
