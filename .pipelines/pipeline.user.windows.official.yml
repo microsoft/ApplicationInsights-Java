@@ -20,6 +20,6 @@ build:
       arguments: 'publishToMavenLocal -DisRelease=true -Pai.etw.native.build=release'
       artifacts:
         - from: 'build/output/'
-        - to: 'Artifacts'
+          to: 'Artifacts'
           include:
             - '**/*'
