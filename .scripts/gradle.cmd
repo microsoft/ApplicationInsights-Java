@@ -18,7 +18,7 @@ if errorlevel 1 (
 )
 
 mkdir build\output
-xcopy ~\.m2\repository\com/microsoft\azure\applicationinsights-agent build\output /e
+xcopy ~\.m2\repository\com\microsoft\azure\applicationinsights-agent build\output /e
 
 popd
 endlocal
