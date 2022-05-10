@@ -21,10 +21,9 @@
 
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
-import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import io.opentelemetry.instrumentation.api.cache.Cache;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +35,7 @@ public class StatsbeatModule {
 
   private static final Logger logger = LoggerFactory.getLogger(BaseStatsbeat.class);
 
-  private static final ScheduledExecutorService scheduledExecutor =
+  private final ScheduledExecutorService scheduledExecutor =
       Executors.newSingleThreadScheduledExecutor(
           ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
 
@@ -50,9 +49,11 @@ public class StatsbeatModule {
 
   private final AtomicBoolean started = new AtomicBoolean();
 
-  public StatsbeatModule(Cache<String, String> ikeyEndpointMap) {
+  private final AtomicBoolean shutdown = new AtomicBoolean();
+
+  public StatsbeatModule() {
     customDimensions = new CustomDimensions();
-    networkStatsbeat = new NetworkStatsbeat(customDimensions, ikeyEndpointMap);
+    networkStatsbeat = new NetworkStatsbeat(customDimensions);
     attachStatsbeat = new AttachStatsbeat(customDimensions);
     featureStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.FEATURE);
     instrumentationStatsbeat = new FeatureStatsbeat(customDimensions, FeatureType.INSTRUMENTATION);
@@ -117,9 +118,13 @@ public class StatsbeatModule {
   }
 
   public void shutdown() {
-    logger.debug("Shutting down Statsbeat scheduler.");
-    scheduledExecutor.shutdown();
-    azureMetadataService.shutdown();
+    // guarding against multiple shutdown calls because this can get called if statsbeat shuts down
+    // early because it cannot reach breeze and later on real shut down (when running not as agent)
+    if (!shutdown.getAndSet(true)) {
+      logger.debug("Shutting down Statsbeat scheduler.");
+      scheduledExecutor.shutdown();
+      azureMetadataService.shutdown();
+    }
   }
 
   public NetworkStatsbeat getNetworkStatsbeat() {

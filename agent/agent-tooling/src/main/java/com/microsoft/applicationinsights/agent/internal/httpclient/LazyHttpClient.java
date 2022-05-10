@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.httpclient;
 
+import static java.util.Arrays.asList;
+
 import com.azure.core.http.HttpClient;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpPipelineBuilder;
@@ -29,9 +31,11 @@ import com.azure.core.http.HttpResponse;
 import com.azure.core.http.ProxyOptions;
 import com.azure.core.http.netty.NettyAsyncHttpClientBuilder;
 import com.azure.core.http.policy.BearerTokenAuthenticationPolicy;
+import com.azure.core.http.policy.DefaultRedirectStrategy;
 import com.azure.core.http.policy.HttpLogOptions;
 import com.azure.core.http.policy.HttpLoggingPolicy;
 import com.azure.core.http.policy.HttpPipelinePolicy;
+import com.azure.core.http.policy.RedirectPolicy;
 import com.azure.core.util.Context;
 import com.azure.identity.ClientSecretCredentialBuilder;
 import com.azure.identity.ManagedIdentityCredential;
@@ -39,7 +43,6 @@ import com.azure.identity.ManagedIdentityCredentialBuilder;
 import com.azure.identity.VisualStudioCodeCredential;
 import com.azure.identity.VisualStudioCodeCredentialBuilder;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import io.opentelemetry.instrumentation.api.cache.Cache;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +60,7 @@ public class LazyHttpClient implements HttpClient {
 
   private static final HttpClient INSTANCE = new LazyHttpClient();
 
-  public static volatile CountDownLatch safeToInitLatch;
+  public static final CountDownLatch safeToInitLatch = new CountDownLatch(1);
   public static volatile String proxyHost;
   public static volatile Integer proxyPortNumber;
   public static volatile String proxyUsername;
@@ -125,16 +128,19 @@ public class LazyHttpClient implements HttpClient {
         .build();
   }
 
-  // pass non-null ikeyRedirectCache if you want to use ikey-specific redirect policy
+  public static HttpPipeline newHttpPipeLineWithDefaultRedirect(
+      @Nullable Configuration.AadAuthentication aadConfiguration) {
+    return newHttpPipeLine(aadConfiguration, new RedirectPolicy(new DefaultRedirectStrategy()));
+  }
+
   public static HttpPipeline newHttpPipeLine(
       @Nullable Configuration.AadAuthentication aadConfiguration,
-      @Nullable Cache<String, String> ikeyRedirectCache) {
+      HttpPipelinePolicy... additionalPolicies) {
     List<HttpPipelinePolicy> policies = new ArrayList<>();
-    // Redirect policy to handle v2.1/track redirects (and other redirects too, e.g. profiler)
-    policies.add(new RedirectPolicy(ikeyRedirectCache));
     if (aadConfiguration != null && aadConfiguration.enabled) {
       policies.add(getAuthenticationPolicy(aadConfiguration));
     }
+    policies.addAll(asList(additionalPolicies));
     // Add Logging Policy. Can be enabled using AZURE_LOG_LEVEL.
     // TODO set the logging level based on self diagnostic log level set by user
     policies.add(new HttpLoggingPolicy(new HttpLogOptions()));
@@ -151,13 +157,6 @@ public class LazyHttpClient implements HttpClient {
   @Override
   public Mono<HttpResponse> send(HttpRequest request, Context context) {
     return getDelegate().send(request, context);
-  }
-
-  // need to consume response, otherwise get netty ByteBuf leak warnings:
-  // io.netty.util.ResourceLeakDetector - LEAK: ByteBuf.release() was not called before
-  // it's garbage-collected (see https://github.com/Azure/azure-sdk-for-java/issues/10467)
-  public static void consumeResponseBody(HttpResponse response) {
-    response.getBody().subscribe();
   }
 
   private static HttpPipelinePolicy getAuthenticationPolicy(

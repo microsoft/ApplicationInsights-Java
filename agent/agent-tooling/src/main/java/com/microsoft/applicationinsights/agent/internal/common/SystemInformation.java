@@ -21,8 +21,9 @@
 
 package com.microsoft.applicationinsights.agent.internal.common;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import java.lang.management.ManagementFactory;
-import org.apache.commons.lang3.SystemUtils;
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +33,16 @@ public class SystemInformation {
 
   private static final String DEFAULT_PROCESS_NAME = "Java_Process";
 
+  private static final boolean WINDOWS;
+  private static final boolean LINUX;
+
+  static {
+    String osName = System.getProperty("os.name");
+    String osNameLower = osName == null ? null : osName.toLowerCase(Locale.ENGLISH);
+    WINDOWS = osNameLower != null && osNameLower.startsWith("windows");
+    LINUX = osNameLower != null && osNameLower.startsWith("linux");
+  }
+
   private static final String processId = initializeProcessId();
 
   public static String getProcessId() {
@@ -39,11 +50,11 @@ public class SystemInformation {
   }
 
   public static boolean isWindows() {
-    return SystemUtils.IS_OS_WINDOWS;
+    return WINDOWS;
   }
 
-  public static boolean isUnix() {
-    return SystemUtils.IS_OS_UNIX;
+  public static boolean isLinux() {
+    return LINUX;
   }
 
   /**

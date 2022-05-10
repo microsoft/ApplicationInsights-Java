@@ -85,8 +85,6 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
                 // this shouldn't happen, the mono should complete with a response or a failure
                 throw new AssertionError("http response mono returned empty");
               }
-              // response body is not consumed below
-              consumeResponseBody(response);
 
               if (response.getStatusCode() >= 300) {
                 throw new HttpResponseException(response);
@@ -98,13 +96,6 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
               }
               return new BlobAccessPass(null, location, null);
             });
-  }
-
-  // need to consume response, otherwise get netty ByteBuf leak warnings:
-  // io.netty.util.ResourceLeakDetector - LEAK: ByteBuf.release() was not called before
-  // it's garbage-collected (see https://github.com/Azure/azure-sdk-for-java/issues/10467)
-  private static void consumeResponseBody(HttpResponse response) {
-    response.getBody().subscribe();
   }
 
   public Mono<HttpResponse> executePostWithRedirect(URL requestUrl) {
@@ -134,7 +125,6 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
               int statusCode = response.getStatusCode();
               if (statusCode != 201 && statusCode != 202) {
                 LOGGER.error("Trace upload failed: {}", statusCode);
-                consumeResponseBody(response);
                 return Mono.error(new AssertionError("http request failed"));
               }
 
@@ -179,7 +169,6 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
                 return Mono.error(new AssertionError("http response mono returned empty"));
               }
               if (response.getStatusCode() >= 300) {
-                consumeResponseBody(response);
                 return Mono.error(new HttpResponseException(response));
               }
               return response.getBodyAsString();

@@ -24,50 +24,47 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.processors.AgentProcessor.IncludeExclude;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.export.LogExporter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class ExporterWithLogProcessor implements SpanExporter {
+public class ExporterWithLogProcessor implements LogExporter {
 
-  private final SpanExporter delegate;
+  private final LogExporter delegate;
   private final LogProcessor logProcessor;
 
   // caller should check config.isValid before creating
-  public ExporterWithLogProcessor(ProcessorConfig config, SpanExporter delegate) {
+  public ExporterWithLogProcessor(ProcessorConfig config, LogExporter delegate) {
     config.validate();
     logProcessor = LogProcessor.create(config);
     this.delegate = delegate;
   }
 
   @Override
-  public CompletableResultCode export(Collection<SpanData> spans) {
+  public CompletableResultCode export(Collection<LogData> logs) {
     // we need to filter attributes before passing on to delegate
-    List<SpanData> copy = new ArrayList<>();
-    for (SpanData span : spans) {
-      copy.add(process(span));
+    List<LogData> copy = new ArrayList<>();
+    for (LogData log : logs) {
+      copy.add(process(log));
     }
     return delegate.export(copy);
   }
 
-  private SpanData process(SpanData span) {
-    if (!ProcessorUtil.isSpanOfTypeLog(span)) {
-      return span;
-    }
+  private LogData process(LogData log) {
     IncludeExclude include = logProcessor.getInclude();
-    if (include != null && !include.isMatch(span, true)) {
+    if (include != null && !include.isMatch(log.getAttributes(), log.getBody().asString())) {
       // If Not included we can skip further processing
-      return span;
+      return log;
     }
     IncludeExclude exclude = logProcessor.getExclude();
-    if (exclude != null && exclude.isMatch(span, true)) {
-      return span;
+    if (exclude != null && exclude.isMatch(log.getAttributes(), log.getBody().asString())) {
+      return log;
     }
 
-    SpanData updatedSpan = logProcessor.processFromAttributes(span);
-    return logProcessor.processToAttributes(updatedSpan);
+    LogData updatedLog = logProcessor.processFromAttributes(log);
+    return logProcessor.processToAttributes(updatedLog);
   }
 
   @Override

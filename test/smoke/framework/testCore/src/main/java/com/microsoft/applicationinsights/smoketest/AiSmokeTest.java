@@ -42,6 +42,7 @@ import com.microsoft.applicationinsights.smoketest.fixtures.ParameterizedRunnerW
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServer;
@@ -58,6 +59,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -952,5 +954,22 @@ public abstract class AiSmokeTest {
 
     assertEquals(parentOperationName, parentEnvelope.getTags().get("ai.operation.name"));
     assertEquals(childOperationName, childEnvelope.getTags().get("ai.operation.name"));
+  }
+
+  public static Predicate<Envelope> getMetricPredicate(String name) {
+    Objects.requireNonNull(name, "name");
+    return new Predicate<Envelope>() {
+      @Override
+      public boolean test(Envelope input) {
+        if (input == null) {
+          return false;
+        }
+        if (!input.getData().getBaseType().equals("MetricData")) {
+          return false;
+        }
+        MetricData md = getBaseData(input);
+        return name.equals(md.getMetrics().get(0).getName());
+      }
+    };
   }
 }

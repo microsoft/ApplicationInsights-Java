@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# Version 3.3.0-BETA
+* Update OpenTelemetry to 1.13 [#2257](https://github.com/microsoft/ApplicationInsights-Java/pull/2257).
+* Deprecate logs' LoggingLevel custom property [#2254](https://github.com/microsoft/ApplicationInsights-Java/pull/2254).
+* Add support for OpenTelemetry metrics API
+* Lots of refactorings and improvements.
+
 # Version 3.2.11 GA
 * Turn off Statsbeat when unable to reach ingestion service. [#2221](https://github.com/microsoft/ApplicationInsights-Java/pull/2221).
 

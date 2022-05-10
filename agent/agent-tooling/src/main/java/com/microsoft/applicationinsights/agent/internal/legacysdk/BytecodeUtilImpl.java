@@ -21,33 +21,34 @@
 
 package com.microsoft.applicationinsights.agent.internal.legacysdk;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import com.azure.monitor.opentelemetry.exporter.AiOperationNameSpanProcessor;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.EventTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricPointBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.PageViewTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDependencyTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.ContextTagKeys;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.DataPointType;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MessageData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDataPoint;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.PageViewData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDependencyData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.SeverityLevel;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.init.AiOperationNameSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyPropagator;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingScoreGeneratorV2;
-import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedDuration;
-import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.instrumentation.api.tracer.ServerSpan;
+import io.opentelemetry.instrumentation.api.instrumenter.LocalRootSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import java.net.URI;
 import java.net.URL;
@@ -73,41 +74,33 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       String name,
       Map<String, String> properties,
       Map<String, String> tags,
-      Map<String, Double> metrics,
+      Map<String, Double> measurements,
       String instrumentationKey) {
 
     if (Strings.isNullOrEmpty(name)) {
       return;
     }
-    TelemetryItem telemetry = new TelemetryItem();
-    TelemetryEventData data = new TelemetryEventData();
-    TelemetryClient.getActive().initEventTelemetry(telemetry, data);
+    EventTelemetryBuilder telemetryBuilder = TelemetryClient.getActive().newEventTelemetryBuilder();
 
-    data.setName(name);
-    data.setMeasurements(metrics);
-
-    // FIXME (trask) azure sdk exporter: add properties to MonitorDomain, then this code can be
-    // shared
-    if (!properties.isEmpty()) {
-      Map<String, String> existingProperties = data.getProperties();
-      if (existingProperties == null) {
-        data.setProperties(properties);
-      } else {
-        existingProperties.putAll(properties);
-      }
+    telemetryBuilder.setName(name);
+    for (Map.Entry<String, Double> entry : measurements.entrySet()) {
+      telemetryBuilder.addMeasurement(entry.getKey(), entry.getValue());
+    }
+    for (Map.Entry<String, String> entry : properties.entrySet()) {
+      telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
     }
 
     if (timestamp != null) {
-      telemetry.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochMillis(timestamp.getTime()));
     } else {
-      telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
-    selectivelySetTags(telemetry, tags);
+    selectivelySetTags(telemetryBuilder, tags);
     if (instrumentationKey != null) {
-      telemetry.setInstrumentationKey(instrumentationKey);
+      telemetryBuilder.setInstrumentationKey(instrumentationKey);
     }
 
-    track(telemetry, true);
+    track(telemetryBuilder, tags, true);
   }
 
   // TODO do not track if perf counter (?)
@@ -127,11 +120,10 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     if (Strings.isNullOrEmpty(name)) {
       return;
     }
-    TelemetryItem telemetry = new TelemetryItem();
-    MetricsData data = new MetricsData();
-    MetricDataPoint point = new MetricDataPoint();
-    TelemetryClient.getActive().initMetricTelemetry(telemetry, data, point);
+    MetricTelemetryBuilder telemetryBuilder =
+        TelemetryClient.getActive().newMetricTelemetryBuilder();
 
+    MetricPointBuilder point = new MetricPointBuilder();
     point.setName(name);
     point.setValue(value);
     point.setCount(count);
@@ -143,27 +135,23 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     } else {
       point.setDataPointType(DataPointType.MEASUREMENT);
     }
+    telemetryBuilder.setMetricPoint(point);
 
-    if (!properties.isEmpty()) {
-      Map<String, String> existingProperties = data.getProperties();
-      if (existingProperties == null) {
-        data.setProperties(properties);
-      } else {
-        existingProperties.putAll(properties);
-      }
+    for (Map.Entry<String, String> entry : properties.entrySet()) {
+      telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
     }
 
     if (timestamp != null) {
-      telemetry.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochMillis(timestamp.getTime()));
     } else {
-      telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
-    selectivelySetTags(telemetry, tags);
+    selectivelySetTags(telemetryBuilder, tags);
     if (instrumentationKey != null) {
-      telemetry.setInstrumentationKey(instrumentationKey);
+      telemetryBuilder.setInstrumentationKey(instrumentationKey);
     }
 
-    track(telemetry, false);
+    track(telemetryBuilder, tags, false);
   }
 
   @Override
@@ -179,52 +167,47 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       String target,
       Map<String, String> properties,
       Map<String, String> tags,
-      Map<String, Double> metrics,
+      Map<String, Double> measurements,
       String instrumentationKey) {
 
     if (Strings.isNullOrEmpty(name)) {
       return;
     }
-    TelemetryItem telemetry = new TelemetryItem();
-    RemoteDependencyData data = new RemoteDependencyData();
-    TelemetryClient.getActive().initRemoteDependencyTelemetry(telemetry, data);
+    RemoteDependencyTelemetryBuilder telemetryBuilder =
+        TelemetryClient.getActive().newRemoteDependencyTelemetryBuilder();
 
-    data.setName(name);
+    telemetryBuilder.setName(name);
     if (id == null) {
-      data.setId(AiLegacyPropagator.generateSpanId());
+      telemetryBuilder.setId(AiLegacyPropagator.generateSpanId());
     } else {
-      data.setId(id);
+      telemetryBuilder.setId(id);
     }
-    data.setResultCode(resultCode);
+    telemetryBuilder.setResultCode(resultCode);
     if (totalMillis != null) {
-      data.setDuration(FormattedDuration.fromMillis(totalMillis));
+      telemetryBuilder.setDuration(FormattedDuration.fromNanos(MILLISECONDS.toNanos(totalMillis)));
     }
-    data.setSuccess(success);
-    data.setData(commandName);
-    data.setType(type);
-    data.setTarget(target);
-    data.setMeasurements(metrics);
-
-    if (!properties.isEmpty()) {
-      Map<String, String> existingProperties = data.getProperties();
-      if (existingProperties == null) {
-        data.setProperties(properties);
-      } else {
-        existingProperties.putAll(properties);
-      }
+    telemetryBuilder.setSuccess(success);
+    telemetryBuilder.setData(commandName);
+    telemetryBuilder.setType(type);
+    telemetryBuilder.setTarget(target);
+    for (Map.Entry<String, Double> entry : measurements.entrySet()) {
+      telemetryBuilder.addMeasurement(entry.getKey(), entry.getValue());
+    }
+    for (Map.Entry<String, String> entry : properties.entrySet()) {
+      telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
     }
 
     if (timestamp != null) {
-      telemetry.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochMillis(timestamp.getTime()));
     } else {
-      telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
-    selectivelySetTags(telemetry, tags);
+    selectivelySetTags(telemetryBuilder, tags);
     if (instrumentationKey != null) {
-      telemetry.setInstrumentationKey(instrumentationKey);
+      telemetryBuilder.setInstrumentationKey(instrumentationKey);
     }
 
-    track(telemetry, true);
+    track(telemetryBuilder, tags, true);
   }
 
   @Override
@@ -235,43 +218,38 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       long totalMillis,
       Map<String, String> properties,
       Map<String, String> tags,
-      Map<String, Double> metrics,
+      Map<String, Double> measurements,
       String instrumentationKey) {
 
     if (Strings.isNullOrEmpty(name)) {
       return;
     }
-    TelemetryItem telemetry = new TelemetryItem();
-    PageViewData data = new PageViewData();
-    TelemetryClient.getActive().initPageViewTelemetry(telemetry, data);
+    PageViewTelemetryBuilder telemetryBuilder =
+        TelemetryClient.getActive().newPageViewTelemetryBuilder();
 
-    data.setName(name);
+    telemetryBuilder.setName(name);
     if (uri != null) {
-      data.setUrl(uri.toString());
+      telemetryBuilder.setUrl(uri.toString());
     }
-    data.setDuration(FormattedDuration.fromMillis(totalMillis));
-    data.setMeasurements(metrics);
-
-    if (!properties.isEmpty()) {
-      Map<String, String> existingProperties = data.getProperties();
-      if (existingProperties == null) {
-        data.setProperties(properties);
-      } else {
-        existingProperties.putAll(properties);
-      }
+    telemetryBuilder.setDuration(FormattedDuration.fromNanos(MILLISECONDS.toNanos(totalMillis)));
+    for (Map.Entry<String, Double> entry : measurements.entrySet()) {
+      telemetryBuilder.addMeasurement(entry.getKey(), entry.getValue());
+    }
+    for (Map.Entry<String, String> entry : properties.entrySet()) {
+      telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
     }
 
     if (timestamp != null) {
-      telemetry.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochMillis(timestamp.getTime()));
     } else {
-      telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
-    selectivelySetTags(telemetry, tags);
+    selectivelySetTags(telemetryBuilder, tags);
     if (instrumentationKey != null) {
-      telemetry.setInstrumentationKey(instrumentationKey);
+      telemetryBuilder.setInstrumentationKey(instrumentationKey);
     }
 
-    track(telemetry, true);
+    track(telemetryBuilder, tags, true);
   }
 
   @Override
@@ -285,35 +263,29 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     if (Strings.isNullOrEmpty(message)) {
       return;
     }
-    TelemetryItem telemetry = new TelemetryItem();
-    MessageData data = new MessageData();
-    TelemetryClient.getActive().initMessageTelemetry(telemetry, data);
+    MessageTelemetryBuilder telemetryBuilder =
+        TelemetryClient.getActive().newMessageTelemetryBuilder();
 
-    data.setMessage(message);
+    telemetryBuilder.setMessage(message);
     if (severityLevel != -1) {
-      data.setSeverityLevel(getSeverityLevel(severityLevel));
+      telemetryBuilder.setSeverityLevel(getSeverityLevel(severityLevel));
     }
 
-    if (!properties.isEmpty()) {
-      Map<String, String> existingProperties = data.getProperties();
-      if (existingProperties == null) {
-        data.setProperties(properties);
-      } else {
-        existingProperties.putAll(properties);
-      }
+    for (Map.Entry<String, String> entry : properties.entrySet()) {
+      telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
     }
 
     if (timestamp != null) {
-      telemetry.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochMillis(timestamp.getTime()));
     } else {
-      telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
-    selectivelySetTags(telemetry, tags);
+    selectivelySetTags(telemetryBuilder, tags);
     if (instrumentationKey != null) {
-      telemetry.setInstrumentationKey(instrumentationKey);
+      telemetryBuilder.setInstrumentationKey(instrumentationKey);
     }
 
-    track(telemetry, true);
+    track(telemetryBuilder, tags, true);
   }
 
   @Override
@@ -328,52 +300,47 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       String source,
       Map<String, String> properties,
       Map<String, String> tags,
-      Map<String, Double> metrics,
+      Map<String, Double> measurements,
       String instrumentationKey) {
     if (Strings.isNullOrEmpty(name)) {
       return;
     }
-    TelemetryItem telemetry = new TelemetryItem();
-    RequestData data = new RequestData();
-    TelemetryClient.getActive().initRequestTelemetry(telemetry, data);
+    RequestTelemetryBuilder telemetryBuilder =
+        TelemetryClient.getActive().newRequestTelemetryBuilder();
 
     if (id == null) {
-      data.setId(AiLegacyPropagator.generateSpanId());
+      telemetryBuilder.setId(AiLegacyPropagator.generateSpanId());
     } else {
-      data.setId(id);
+      telemetryBuilder.setId(id);
     }
-    data.setName(name);
+    telemetryBuilder.setName(name);
     if (url != null) {
-      data.setUrl(url.toString());
+      telemetryBuilder.setUrl(url.toString());
     }
     if (duration != null) {
-      data.setDuration(FormattedDuration.fromMillis(duration));
+      telemetryBuilder.setDuration(FormattedDuration.fromNanos(MILLISECONDS.toNanos(duration)));
     }
-    data.setResponseCode(responseCode);
-    data.setSuccess(success);
-    data.setSource(source);
-    data.setMeasurements(metrics);
-
-    if (!properties.isEmpty()) {
-      Map<String, String> existingProperties = data.getProperties();
-      if (existingProperties == null) {
-        data.setProperties(properties);
-      } else {
-        existingProperties.putAll(properties);
-      }
+    telemetryBuilder.setResponseCode(responseCode);
+    telemetryBuilder.setSuccess(success);
+    telemetryBuilder.setSource(source);
+    for (Map.Entry<String, Double> entry : measurements.entrySet()) {
+      telemetryBuilder.addMeasurement(entry.getKey(), entry.getValue());
+    }
+    for (Map.Entry<String, String> entry : properties.entrySet()) {
+      telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
     }
 
     if (timestamp != null) {
-      telemetry.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochMillis(timestamp.getTime()));
     } else {
-      telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
-    selectivelySetTags(telemetry, tags);
+    selectivelySetTags(telemetryBuilder, tags);
     if (instrumentationKey != null) {
-      telemetry.setInstrumentationKey(instrumentationKey);
+      telemetryBuilder.setInstrumentationKey(instrumentationKey);
     }
 
-    track(telemetry, true);
+    track(telemetryBuilder, tags, true);
   }
 
   @Override
@@ -382,39 +349,34 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       Exception exception,
       Map<String, String> properties,
       Map<String, String> tags,
-      Map<String, Double> metrics,
+      Map<String, Double> measurements,
       String instrumentationKey) {
     if (exception == null) {
       return;
     }
-    TelemetryItem telemetry = new TelemetryItem();
-    TelemetryExceptionData data = new TelemetryExceptionData();
-    TelemetryClient.getActive().initExceptionTelemetry(telemetry, data);
+    ExceptionTelemetryBuilder telemetryBuilder =
+        TelemetryClient.getActive().newExceptionTelemetryBuilder();
 
-    data.setExceptions(TelemetryUtil.getExceptions(exception));
-    data.setSeverityLevel(SeverityLevel.ERROR);
-    data.setMeasurements(metrics);
-
-    if (!properties.isEmpty()) {
-      Map<String, String> existingProperties = data.getProperties();
-      if (existingProperties == null) {
-        data.setProperties(properties);
-      } else {
-        existingProperties.putAll(properties);
-      }
+    telemetryBuilder.setExceptions(TelemetryUtil.getExceptions(exception));
+    telemetryBuilder.setSeverityLevel(SeverityLevel.ERROR);
+    for (Map.Entry<String, Double> entry : measurements.entrySet()) {
+      telemetryBuilder.addMeasurement(entry.getKey(), entry.getValue());
+    }
+    for (Map.Entry<String, String> entry : properties.entrySet()) {
+      telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
     }
 
     if (timestamp != null) {
-      telemetry.setTime(FormattedTime.offSetDateTimeFromDate(timestamp));
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochMillis(timestamp.getTime()));
     } else {
-      telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
-    selectivelySetTags(telemetry, tags);
+    selectivelySetTags(telemetryBuilder, tags);
     if (instrumentationKey != null) {
-      telemetry.setInstrumentationKey(instrumentationKey);
+      telemetryBuilder.setInstrumentationKey(instrumentationKey);
     }
 
-    track(telemetry, true);
+    track(telemetryBuilder, tags, true);
   }
 
   @Nullable
@@ -440,7 +402,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
   public void flush() {
     // this is not null because sdk instrumentation is not added until TelemetryClient.setActive()
     // is called
-    TelemetryClient.getActive().flushChannelBatcher().join(10, SECONDS);
+    TelemetryClient.getActive().forceFlush().join(10, SECONDS);
   }
 
   @Override
@@ -450,22 +412,33 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
   }
 
-  private static void track(TelemetryItem telemetry, boolean applySampling) {
+  private static void track(
+      AbstractTelemetryBuilder telemetryBuilder, Map<String, String> tags, boolean applySampling) {
+
+    String operationId = tags.get(ContextTagKeys.AI_OPERATION_ID.toString());
+
     SpanContext context = Span.current().getSpanContext();
     if (context.isValid()) {
-      trackInsideValidSpanContext(telemetry, context, applySampling);
+      String operationParentId = tags.get(ContextTagKeys.AI_OPERATION_PARENT_ID.toString());
+      String operationName = tags.get(ContextTagKeys.AI_OPERATION_NAME.toString());
+
+      trackInsideValidSpanContext(
+          telemetryBuilder, operationId, operationParentId, operationName, context, applySampling);
     } else {
-      trackAsStandalone(telemetry, applySampling);
+      trackAsStandalone(telemetryBuilder, operationId, applySampling);
     }
   }
 
   private static void trackInsideValidSpanContext(
-      TelemetryItem telemetry, SpanContext spanContext, boolean applySampling) {
-
-    String operationId = telemetry.getTags().get(ContextTagKeys.AI_OPERATION_ID.toString());
+      AbstractTelemetryBuilder telemetryBuilder,
+      @Nullable String operationId,
+      @Nullable String operationParentId,
+      @Nullable String operationName,
+      SpanContext spanContext,
+      boolean applySampling) {
 
     if (operationId != null && !operationId.equals(spanContext.getTraceId())) {
-      trackAsStandalone(telemetry, applySampling);
+      trackAsStandalone(telemetryBuilder, operationId, applySampling);
       return;
     }
 
@@ -474,22 +447,19 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       return;
     }
 
-    telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), spanContext.getTraceId());
+    telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_ID.toString(), spanContext.getTraceId());
 
-    if (!telemetry.getTags().containsKey(ContextTagKeys.AI_OPERATION_PARENT_ID.toString())) {
-      telemetry
-          .getTags()
-          .put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), spanContext.getSpanId());
+    if (operationParentId == null) {
+      telemetryBuilder.addTag(
+          ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), spanContext.getSpanId());
     }
 
-    if (!telemetry.getTags().containsKey(ContextTagKeys.AI_OPERATION_NAME.toString())) {
-      Span serverSpan = ServerSpan.fromContextOrNull(Context.current());
-      if (serverSpan instanceof ReadableSpan) {
-        telemetry
-            .getTags()
-            .put(
-                ContextTagKeys.AI_OPERATION_NAME.toString(),
-                AiOperationNameSpanProcessor.getOperationName((ReadableSpan) serverSpan));
+    if (operationName == null) {
+      Span localRootSpan = LocalRootSpan.fromContextOrNull(Context.current());
+      if (localRootSpan instanceof ReadableSpan) {
+        telemetryBuilder.addTag(
+            ContextTagKeys.AI_OPERATION_NAME.toString(),
+            AiOperationNameSpanProcessor.getOperationName((ReadableSpan) localRootSpan));
       }
     }
 
@@ -499,55 +469,49 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
               spanContext.getTraceState(), BytecodeUtilImpl.samplingPercentage, false);
 
       if (samplingPercentage != 100) {
-        telemetry.setSampleRate(samplingPercentage);
+        telemetryBuilder.setSampleRate(samplingPercentage);
       }
     }
     // this is not null because sdk instrumentation is not added until TelemetryClient.setActive()
     // is called
-    TelemetryClient.getActive().trackAsync(telemetry);
+    TelemetryClient.getActive().trackAsync(telemetryBuilder.build());
   }
 
-  private static void trackAsStandalone(TelemetryItem telemetry, boolean applySampling) {
+  private static void trackAsStandalone(
+      AbstractTelemetryBuilder telemetryBuilder, String operationId, boolean applySampling) {
     if (applySampling) {
       // sampling is done using the configured sampling percentage
       float samplingPercentage = BytecodeUtilImpl.samplingPercentage;
-      if (!sample(telemetry, samplingPercentage)) {
+      if (!sample(operationId, samplingPercentage)) {
+        logger.debug("Item {} sampled out", telemetryBuilder.getClass().getSimpleName());
         // sampled out
         return;
       }
       // sampled in
 
       if (samplingPercentage != 100) {
-        telemetry.setSampleRate(samplingPercentage);
+        telemetryBuilder.setSampleRate(samplingPercentage);
       }
     }
 
     // this is not null because sdk instrumentation is not added until TelemetryClient.setActive()
     // is called
-    TelemetryClient.getActive().trackAsync(telemetry);
+    TelemetryClient.getActive().trackAsync(telemetryBuilder.build());
   }
 
-  private static boolean sample(TelemetryItem telemetry, double samplingPercentage) {
+  private static boolean sample(String operationId, double samplingPercentage) {
     if (samplingPercentage == 100) {
+      // just an optimization
       return true;
     }
-    if (SamplingScoreGeneratorV2.getSamplingScore(getOperationId(telemetry))
-        >= samplingPercentage) {
-      logger.debug("Item {} sampled out", telemetry.getClass().getSimpleName());
-      return false;
-    }
-    return true;
+    return SamplingScoreGeneratorV2.getSamplingScore(operationId) < samplingPercentage;
   }
 
-  private static String getOperationId(TelemetryItem telemetry) {
-    return telemetry.getTags().get(ContextTagKeys.AI_OPERATION_ID.toString());
-  }
-
-  private static void selectivelySetTags(TelemetryItem telemetry, Map<String, String> sourceTags) {
-    Map<String, String> destTags = telemetry.getTags();
+  private static void selectivelySetTags(
+      AbstractTelemetryBuilder telemetryBuilder, Map<String, String> sourceTags) {
     for (Map.Entry<String, String> entry : sourceTags.entrySet()) {
       if (!entry.getKey().equals(ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString())) {
-        destTags.put(entry.getKey(), entry.getValue());
+        telemetryBuilder.addTag(entry.getKey(), entry.getValue());
       }
     }
   }

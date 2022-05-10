@@ -21,11 +21,14 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import static com.microsoft.applicationinsights.agent.internal.perfcounter.Constants.PROCESS_CPU_PC_METRIC_NAME;
+import static com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames.PROCESS_CPU_PERCENTAGE;
+import static com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames.PROCESS_CPU_PERCENTAGE_NORMALIZED;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.CpuPerformanceCounterCalculator;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,17 +37,29 @@ public class ProcessCpuPerformanceCounter implements PerformanceCounter {
 
   private static final Logger logger = LoggerFactory.getLogger(ProcessCpuPerformanceCounter.class);
 
-  private CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator;
+  private static final OperatingSystemMXBean operatingSystemMxBean =
+      ManagementFactory.getOperatingSystemMXBean();
 
-  public ProcessCpuPerformanceCounter() {
+  private final boolean useNormalizedValueForNonNormalizedCpuPercentage;
+
+  private final CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator =
+      getCpuPerformanceCounterCalculator();
+
+  public ProcessCpuPerformanceCounter(boolean useNormalizedValueForNonNormalizedCpuPercentage) {
+    this.useNormalizedValueForNonNormalizedCpuPercentage =
+        useNormalizedValueForNonNormalizedCpuPercentage;
+  }
+
+  @Nullable
+  private static CpuPerformanceCounterCalculator getCpuPerformanceCounterCalculator() {
     try {
-      cpuPerformanceCounterCalculator = new CpuPerformanceCounterCalculator();
+      return new CpuPerformanceCounterCalculator();
     } catch (ThreadDeath td) {
       throw td;
     } catch (Throwable t) {
       try {
-        cpuPerformanceCounterCalculator = null;
         logger.error("Failed to create ProcessCpuPerformanceCounter", t);
+        return null;
       } catch (ThreadDeath td) {
         throw td;
       } catch (Throwable t2) {
@@ -55,24 +70,31 @@ public class ProcessCpuPerformanceCounter implements PerformanceCounter {
   }
 
   @Override
-  public String getId() {
-    return Constants.PROCESS_CPU_PC_ID;
-  }
-
-  @Override
   public void report(TelemetryClient telemetryClient) {
     if (cpuPerformanceCounterCalculator == null) {
       return;
     }
-    Double processCpuUsage = cpuPerformanceCounterCalculator.getProcessCpuUsage();
-    if (processCpuUsage == null) {
+    Double cpuPercentage = cpuPerformanceCounterCalculator.getCpuPercentage();
+    if (cpuPercentage == null) {
       return;
     }
 
-    logger.trace("Performance Counter: {}: {}", PROCESS_CPU_PC_METRIC_NAME, processCpuUsage);
-    TelemetryItem telemetry =
-        TelemetryUtil.createMetricsTelemetry(
-            telemetryClient, PROCESS_CPU_PC_METRIC_NAME, processCpuUsage);
-    telemetryClient.trackAsync(telemetry);
+    double cpuPercentageNormalized = cpuPercentage / operatingSystemMxBean.getAvailableProcessors();
+
+    if (useNormalizedValueForNonNormalizedCpuPercentage) {
+      // use normalized for backwards compatibility even though this is supposed to be
+      // non-normalized
+      cpuPercentage = cpuPercentageNormalized;
+    }
+
+    logger.trace("Performance Counter: {}: {}", PROCESS_CPU_PERCENTAGE, cpuPercentage);
+    telemetryClient.trackAsync(
+        telemetryClient.newMetricTelemetry(PROCESS_CPU_PERCENTAGE, cpuPercentage));
+
+    logger.trace(
+        "Performance Counter: {}: {}", PROCESS_CPU_PERCENTAGE_NORMALIZED, cpuPercentageNormalized);
+    telemetryClient.trackAsync(
+        telemetryClient.newMetricTelemetry(
+            PROCESS_CPU_PERCENTAGE_NORMALIZED, cpuPercentageNormalized));
   }
 }

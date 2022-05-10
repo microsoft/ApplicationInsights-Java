@@ -26,12 +26,14 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
-import com.microsoft.applicationinsights.agent.internal.common.NetworkFriendlyExceptions;
-import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
-import com.microsoft.applicationinsights.agent.internal.common.WarningLogger;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.logging.NetworkFriendlyExceptions;
+import com.azure.monitor.opentelemetry.exporter.implementation.logging.WarningLogger;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -55,7 +57,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
   private GetAppIdTask task;
   private final Object taskLock = new Object();
 
-  private final TelemetryClient telemetryClient;
+  private final ConnectionString connectionString;
 
   private volatile String appId;
 
@@ -63,15 +65,18 @@ public class AppIdSupplier implements AiAppId.Supplier {
   //  warningLogger?
   private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
-  public AppIdSupplier(TelemetryClient telemetryClient) {
-    this.telemetryClient = telemetryClient;
+  public AppIdSupplier(ConnectionString connectionString) {
+    this.connectionString = connectionString;
   }
 
   public void startAppIdRetrieval() {
-    String instrumentationKey = telemetryClient.getInstrumentationKey();
-    GetAppIdTask newTask =
-        new GetAppIdTask(
-            telemetryClient.getEndpointProvider().getAppIdEndpointUrl(instrumentationKey));
+    GetAppIdTask newTask;
+    try {
+      newTask = new GetAppIdTask(getAppIdUrl(connectionString));
+    } catch (MalformedURLException e) {
+      logger.warn(e.getMessage(), e);
+      return;
+    }
     synchronized (taskLock) {
       appId = null;
       if (task != null) {
@@ -81,6 +86,13 @@ public class AppIdSupplier implements AiAppId.Supplier {
       task = newTask;
     }
     scheduledExecutor.submit(newTask);
+  }
+
+  // visible for testing
+  static URL getAppIdUrl(ConnectionString connectionString) throws MalformedURLException {
+    return new URL(
+        connectionString.getIngestionEndpoint(),
+        "api/profiles/" + connectionString.getInstrumentationKey() + "/appId");
   }
 
   @Override

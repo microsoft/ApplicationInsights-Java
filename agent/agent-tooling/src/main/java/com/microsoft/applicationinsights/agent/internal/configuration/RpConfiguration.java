@@ -25,7 +25,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Role;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.Sampling;
 import java.nio.file.Path;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class RpConfiguration {
 
@@ -42,9 +41,4 @@ public class RpConfiguration {
   // on behalf of customers by default.
   // Note the role doesn't support hot load due to unnecessary currently.
   public Role role = new Role();
-
-  // this is needed in Azure Functions because .NET SDK always propagates trace flags "00" (not
-  // sampled)
-  // null means do not override the users selection
-  public @Nullable Boolean ignoreRemoteParentNotSampled;
 }

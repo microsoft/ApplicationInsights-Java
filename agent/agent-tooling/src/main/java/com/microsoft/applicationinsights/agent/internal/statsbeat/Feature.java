@@ -58,7 +58,10 @@ enum Feature {
   CAPTURE_HTTP_SERVER_HEADERS(27),
   CAPTURE_HTTP_CLIENT_HEADERS(28),
   VERTX_DISABLED(29), // preview instrumentation, vertx is ON by default in OTEL
-  CUSTOM_DIMENSIONS_ENABLED(30); // enable customDimensions
+  CUSTOM_DIMENSIONS_ENABLED(30), // enable customDimensions
+  JAXRS_ANNOTATIONS_DISABLED(
+      31), // can cause startup slowness, jaxrs-annotations is ON by default in OTEL
+  LOGGING_LEVEL_CUSTOM_PROPERTY_ENABLED(32); // preview opt-in to include LoggingLevel.
 
   private static final Map<String, Feature> javaVendorFeatureMap;
 

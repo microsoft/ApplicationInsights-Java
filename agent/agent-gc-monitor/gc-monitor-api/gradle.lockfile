@@ -4,9 +4,9 @@
 com.google.errorprone:error_prone_annotations:2.9.0=runtimeClasspath
 com.google.guava:guava-bom:31.0.1-jre=runtimeClasspath
 io.netty:netty-bom:4.1.72.Final=runtimeClasspath
-io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.10.0+ai.patches-alpha=runtimeClasspath
-io.opentelemetry:opentelemetry-bom-alpha:1.10.0-alpha=runtimeClasspath
-io.opentelemetry:opentelemetry-bom:1.10.0=runtimeClasspath
+io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.14.0.1-alpha=runtimeClasspath
+io.opentelemetry:opentelemetry-bom-alpha:1.13.0-alpha=runtimeClasspath
+io.opentelemetry:opentelemetry-bom:1.13.0=runtimeClasspath
 org.junit:junit-bom:5.7.2=runtimeClasspath
-org.slf4j:slf4j-api:1.7.30=runtimeClasspath
+org.slf4j:slf4j-api:1.7.36=runtimeClasspath
 empty=

@@ -21,12 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.StatsbeatTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -67,7 +65,6 @@ public class FeatureStatsbeat extends BaseStatsbeat {
 
   @Override
   protected void send(TelemetryClient telemetryClient) {
-    String metricName = FEATURE_METRIC_NAME;
     long encodedLong;
     String featureType;
 
@@ -79,13 +76,12 @@ public class FeatureStatsbeat extends BaseStatsbeat {
       featureType = "1";
     }
 
-    TelemetryItem telemetryItem = createStatsbeatTelemetry(telemetryClient, metricName, 0);
-    Map<String, String> properties =
-        TelemetryUtil.getProperties(telemetryItem.getData().getBaseData());
-    properties.put("feature", String.valueOf(encodedLong));
-    properties.put("type", featureType);
+    StatsbeatTelemetryBuilder telemetryBuilder =
+        createStatsbeatTelemetry(telemetryClient, FEATURE_METRIC_NAME, 0);
+    telemetryBuilder.addProperty("feature", String.valueOf(encodedLong));
+    telemetryBuilder.addProperty("type", featureType);
 
-    telemetryClient.trackStatsbeatAsync(telemetryItem);
+    telemetryClient.trackStatsbeatAsync(telemetryBuilder.build());
   }
 
   void trackConfigurationOptions(Configuration config) {
@@ -150,6 +146,9 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     if (!config.preview.instrumentation.vertx.enabled) {
       featureList.add(Feature.VERTX_DISABLED);
     }
+    if (!config.preview.instrumentation.jaxrsAnnotations.enabled) {
+      featureList.add(Feature.JAXRS_ANNOTATIONS_DISABLED);
+    }
 
     // Statsbeat
     if (config.preview.statsbeat.disabled) {
@@ -174,6 +173,10 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     // customDimensions
     if (!config.customDimensions.isEmpty()) {
       featureList.add(Feature.CUSTOM_DIMENSIONS_ENABLED);
+    }
+
+    if (config.preview.captureLoggingLevelAsCustomDimension) {
+      featureList.add(Feature.LOGGING_LEVEL_CUSTOM_PROPERTY_ENABLED);
     }
   }
 }

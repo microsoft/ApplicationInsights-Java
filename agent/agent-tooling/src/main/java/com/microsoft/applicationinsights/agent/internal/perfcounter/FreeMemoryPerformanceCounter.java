@@ -21,9 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import java.lang.management.ManagementFactory;
 import javax.management.ObjectName;
 import org.slf4j.Logger;
@@ -39,11 +37,6 @@ public class FreeMemoryPerformanceCounter implements PerformanceCounter {
   public FreeMemoryPerformanceCounter() {}
 
   @Override
-  public String getId() {
-    return Constants.TOTAL_MEMORY_PC_ID;
-  }
-
-  @Override
   public void report(TelemetryClient telemetryClient) {
     long freePhysicalMemorySize;
     try {
@@ -54,14 +47,9 @@ public class FreeMemoryPerformanceCounter implements PerformanceCounter {
       return;
     }
 
-    logger.trace(
-        "Performance Counter: {}: {}",
-        Constants.TOTAL_MEMORY_PC_METRIC_NAME,
-        freePhysicalMemorySize);
-    TelemetryItem telemetry =
-        TelemetryUtil.createMetricsTelemetry(
-            telemetryClient, Constants.TOTAL_MEMORY_PC_METRIC_NAME, freePhysicalMemorySize);
-    telemetryClient.trackAsync(telemetry);
+    logger.trace("Performance Counter: {}: {}", MetricNames.TOTAL_MEMORY, freePhysicalMemorySize);
+    telemetryClient.trackAsync(
+        telemetryClient.newMetricTelemetry(MetricNames.TOTAL_MEMORY, freePhysicalMemorySize));
   }
 
   private long getFreePhysicalMemorySize() throws Exception {

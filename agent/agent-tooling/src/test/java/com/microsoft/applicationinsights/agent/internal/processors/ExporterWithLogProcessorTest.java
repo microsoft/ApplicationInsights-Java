@@ -29,28 +29,43 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ToAttributeConfig;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.ReadableSpan;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.logs.data.Body;
+import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.export.LogExporter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class ExporterWithLogProcessorTest {
 
-  private final Tracer tracer = OpenTelemetrySdk.builder().build().getTracer("test");
+  private MockLoggerExporter mockExporter;
+  private ProcessorConfig config;
+  private Attributes attributes;
+
+  @BeforeEach
+  public void setup() {
+    mockExporter = new MockLoggerExporter(Mockito.mock(TelemetryClient.class));
+    config = new ProcessorConfig();
+    config.type = ProcessorType.LOG;
+    attributes =
+        Attributes.builder()
+            .put("one", "1")
+            .put("two", 2L)
+            .put("db.svc", "location")
+            .put("operation", "get")
+            .put("id", "1234")
+            .build();
+  }
 
   @Test
   void noBodyObjectTest() {
-    MockExporter mockExporter = new MockExporter();
-    ProcessorConfig config = new ProcessorConfig();
-    config.type = ProcessorType.LOG;
     config.id = "noBodyObjectTest";
 
     assertThatThrownBy(() -> new ExporterWithLogProcessor(config, mockExporter))
@@ -59,21 +74,14 @@ class ExporterWithLogProcessorTest {
 
   @Test
   void inValidConfigTestWithNoFromOrToAttributesTest() {
-    MockExporter mockExporter = new MockExporter();
-    ProcessorConfig config = new ProcessorConfig();
-    config.type = ProcessorType.LOG;
     config.id = "inValidConfigTestWithToAttributesNoRules";
     config.body = new NameConfig();
-
     assertThatThrownBy(() -> new ExporterWithLogProcessor(config, mockExporter))
         .isInstanceOf(FriendlyException.class);
   }
 
   @Test
   void inValidConfigTestWithToAttributesNoRulesTest() {
-    MockExporter mockExporter = new MockExporter();
-    ProcessorConfig config = new ProcessorConfig();
-    config.type = ProcessorType.LOG;
     config.id = "inValidConfigTestWithToAttributesNoRules";
     config.body = new NameConfig();
     config.body.toAttributes = new ToAttributeConfig();
@@ -84,109 +92,63 @@ class ExporterWithLogProcessorTest {
 
   @Test
   void simpleRenameLogMessageTest() {
-    MockExporter mockExporter = new MockExporter();
-    ProcessorConfig config = new ProcessorConfig();
-    config.type = ProcessorType.LOG;
     config.id = "SimpleRenameLogMessage";
     config.body = new NameConfig();
     config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
-    SpanExporter exampleExporter = new ExporterWithLogProcessor(config, mockExporter);
-
-    Span span =
-        tracer
-            .spanBuilder("logA")
-            .setAttribute("one", "1")
-            .setAttribute("two", 2L)
-            .setAttribute("db.svc", "location")
-            .setAttribute("operation", "get")
-            .setAttribute("id", "1234")
-            .setAttribute("applicationinsights.internal.log", true)
-            .startSpan();
-
-    SpanData spanData = ((ReadableSpan) span).toSpanData();
-
-    List<SpanData> spans = new ArrayList<>();
-    spans.add(spanData);
-    exampleExporter.export(spans);
+    LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
+    TestLogData mockLog =
+        TestLogData.builder().setBody(Body.string("logA")).setAttributes(attributes).build();
+    List<LogData> logs = new ArrayList<>();
+    logs.add(mockLog);
+    logExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<SpanData> result = mockExporter.getSpans();
-    SpanData resultSpan = result.get(0);
-    assertThat(resultSpan.getName()).isEqualTo("locationget1234");
+    List<LogData> result = mockExporter.getLogs();
+    LogData resultLog = result.get(0);
+    assertThat(resultLog.getBody().asString()).isEqualTo("locationget1234");
   }
 
   @Test
   void simpleRenameLogWithSeparatorTest() {
-    MockExporter mockExporter = new MockExporter();
-    ProcessorConfig config = new ProcessorConfig();
-    config.type = ProcessorType.LOG;
     config.id = "SimpleRenameLogWithSeparator";
     config.body = new NameConfig();
     config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
     config.body.separator = "::";
-    SpanExporter exampleExporter = new ExporterWithLogProcessor(config, mockExporter);
-
-    Span span =
-        tracer
-            .spanBuilder("svcA")
-            .setAttribute("one", "1")
-            .setAttribute("two", 2L)
-            .setAttribute("db.svc", "location")
-            .setAttribute("operation", "get")
-            .setAttribute("id", "1234")
-            .setAttribute("applicationinsights.internal.log", true)
-            .startSpan();
-
-    SpanData spanData = ((ReadableSpan) span).toSpanData();
-
-    List<SpanData> spans = new ArrayList<>();
-    spans.add(spanData);
-    exampleExporter.export(spans);
+    LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
+    TestLogData mockLog =
+        TestLogData.builder().setBody(Body.string("svcA")).setAttributes(attributes).build();
+    List<LogData> logs = new ArrayList<>();
+    logs.add(mockLog);
+    logExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<SpanData> result = mockExporter.getSpans();
-    SpanData resultSpan = result.get(0);
-    assertThat(resultSpan.getName()).isEqualTo("location::get::1234");
+    List<LogData> result = mockExporter.getLogs();
+    LogData resultLog = result.get(0);
+    assertThat(resultLog.getBody().asString()).isEqualTo("location::get::1234");
   }
 
   @Test
   void simpleRenameLogWithMissingKeysTest() {
-    MockExporter mockExporter = new MockExporter();
-    ProcessorConfig config = new ProcessorConfig();
-    config.type = ProcessorType.LOG;
     config.id = "SimpleRenameLogWithMissingKeys";
     config.body = new NameConfig();
     config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
     config.body.separator = "::";
-    SpanExporter exampleExporter = new ExporterWithLogProcessor(config, mockExporter);
+    LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
 
-    Span span =
-        tracer
-            .spanBuilder("svcA")
-            .setAttribute("one", "1")
-            .setAttribute("two", 2L)
-            .setAttribute("db.svc", "location")
-            .setAttribute("operation", "get")
-            .setAttribute("applicationinsights.internal.log", true)
-            .startSpan();
-
-    SpanData spanData = ((ReadableSpan) span).toSpanData();
-
-    List<SpanData> spans = new ArrayList<>();
-    spans.add(spanData);
-    exampleExporter.export(spans);
+    TestLogData mockLog =
+        TestLogData.builder().setBody(Body.string("svcA")).setAttributes(attributes).build();
+    List<LogData> logs = new ArrayList<>();
+    logs.add(mockLog);
+    logExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<SpanData> result = mockExporter.getSpans();
-    SpanData resultSpan = result.get(0);
-    assertThat(resultSpan.getName()).isEqualTo("svcA");
+    List<LogData> result = mockExporter.getLogs();
+    LogData resultLog = result.get(0);
+    assertThat(resultLog.getBody().asString()).isEqualTo("location::get::1234");
   }
 
   @Test
   void invalidRegexInRulesTest() {
-    MockExporter mockExporter = new MockExporter();
-    ProcessorConfig config = new ProcessorConfig();
-    config.type = ProcessorType.LOG;
     config.id = "InvalidRegexInRules";
     config.body = new NameConfig();
     ToAttributeConfig toAttributeConfig = new ToAttributeConfig();
@@ -200,53 +162,38 @@ class ExporterWithLogProcessorTest {
 
   @Test
   void simpleToAttributesTest() {
-    MockExporter mockExporter = new MockExporter();
-    ProcessorConfig config = new ProcessorConfig();
-    config.type = ProcessorType.LOG;
     config.id = "SimpleToAttributes";
     config.body = new NameConfig();
     ToAttributeConfig toAttributeConfig = new ToAttributeConfig();
     toAttributeConfig.rules = new ArrayList<>();
     toAttributeConfig.rules.add("^/api/v1/document/(?<documentId>.*)/update$");
     config.body.toAttributes = toAttributeConfig;
-    SpanExporter exampleExporter = new ExporterWithLogProcessor(config, mockExporter);
-
-    Span span =
-        tracer
-            .spanBuilder("/api/v1/document/12345678/update")
-            .setAttribute("one", "1")
-            .setAttribute("two", 2L)
-            .setAttribute("db.svc", "location")
-            .setAttribute("operation", "get")
-            .setAttribute("id", "1234")
-            .setAttribute("applicationinsights.internal.log", true)
-            .startSpan();
-
-    SpanData spanData = ((ReadableSpan) span).toSpanData();
-
-    List<SpanData> spans = new ArrayList<>();
-    spans.add(spanData);
-    exampleExporter.export(spans);
+    LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
+    TestLogData mockLog =
+        TestLogData.builder()
+            .setBody(Body.string("/api/v1/document/12345678/update"))
+            .setAttributes(attributes)
+            .build();
+    List<LogData> logs = new ArrayList<>();
+    logs.add(mockLog);
+    logExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<SpanData> result = mockExporter.getSpans();
-    SpanData resultSpan = result.get(0);
+    List<LogData> result = mockExporter.getLogs();
+    LogData resultLog = result.get(0);
     assertThat(
             Objects.requireNonNull(
-                resultSpan.getAttributes().get(AttributeKey.stringKey("documentId"))))
+                resultLog.getAttributes().get(AttributeKey.stringKey("documentId"))))
         .isNotNull();
     assertThat(
             Objects.requireNonNull(
-                resultSpan.getAttributes().get(AttributeKey.stringKey("documentId"))))
+                resultLog.getAttributes().get(AttributeKey.stringKey("documentId"))))
         .isEqualTo("12345678");
-    assertThat(resultSpan.getName()).isEqualTo("/api/v1/document/{documentId}/update");
+    assertThat(resultLog.getBody().asString()).isEqualTo("/api/v1/document/{documentId}/update");
   }
 
   @Test
   void multiRuleToAttributesTest() {
-    MockExporter mockExporter = new MockExporter();
-    ProcessorConfig config = new ProcessorConfig();
-    config.type = ProcessorType.LOG;
     config.id = "MultiRuleToAttributes";
     config.body = new NameConfig();
     ToAttributeConfig toAttributeConfig = new ToAttributeConfig();
@@ -254,100 +201,91 @@ class ExporterWithLogProcessorTest {
     toAttributeConfig.rules.add("Password=(?<password1>[^ ]+)");
     toAttributeConfig.rules.add("Pass=(?<password2>[^ ]+)");
     config.body.toAttributes = toAttributeConfig;
-    SpanExporter exampleExporter = new ExporterWithLogProcessor(config, mockExporter);
+    LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
+    TestLogData mockLogA =
+        TestLogData.builder()
+            .setBody(Body.string("yyyPassword=123 aba Pass=555 xyx Pass=777 zzz"))
+            .setAttributes(attributes)
+            .build();
 
-    Span spanA =
-        tracer
-            .spanBuilder("yyyPassword=123 aba Pass=555 xyx Pass=777 zzz")
-            .setAttribute("one", "1")
-            .setAttribute("two", 2L)
-            .setAttribute("db.svc", "location")
-            .setAttribute("operation", "get")
-            .setAttribute("id", "1234")
-            .setAttribute("applicationinsights.internal.log", true)
-            .startSpan();
-    Span spanB =
-        tracer
-            .spanBuilder("yyyPassword=**** aba")
-            .setAttribute("one", "1")
-            .setAttribute("two", 2L)
-            .setAttribute("db.svc", "location")
-            .setAttribute("operation", "get")
-            .setAttribute("id", "1234")
-            .setAttribute("password", "234")
-            .setAttribute("applicationinsights.internal.log", true)
-            .startSpan();
+    Attributes attributesB =
+        Attributes.builder()
+            .put("one", "1")
+            .put("two", 2L)
+            .put("db.svc", "location")
+            .put("operation", "get")
+            .put("id", "1234")
+            .put("password", "234")
+            .build();
+    TestLogData mockLogB =
+        TestLogData.builder()
+            .setBody(Body.string("yyyPassword=**** aba"))
+            .setAttributes(attributesB)
+            .build();
 
-    SpanData spanDataA = ((ReadableSpan) spanA).toSpanData();
-    SpanData spanDataB = ((ReadableSpan) spanB).toSpanData();
+    List<LogData> logs = new ArrayList<>();
+    logs.add(mockLogA);
+    logs.add(mockLogB);
+    logExporter.export(logs);
 
-    List<SpanData> spans = new ArrayList<>();
-    spans.add(spanDataA);
-    spans.add(spanDataB);
-    exampleExporter.export(spans);
-
-    // verify that resulting spans are filtered in the way we want
-    List<SpanData> result = mockExporter.getSpans();
-    SpanData resultSpanA = result.get(0);
-    SpanData resultSpanB = result.get(1);
+    // verify that resulting logs are filtered in the way we want
+    List<LogData> result = mockExporter.getLogs();
+    LogData resultA = result.get(0);
+    LogData resultB = result.get(1);
     assertThat(
             Objects.requireNonNull(
-                resultSpanA.getAttributes().get(AttributeKey.stringKey("password1"))))
+                resultA.getAttributes().get(AttributeKey.stringKey("password1"))))
         .isNotNull();
     assertThat(
             Objects.requireNonNull(
-                resultSpanA.getAttributes().get(AttributeKey.stringKey("password1"))))
+                resultA.getAttributes().get(AttributeKey.stringKey("password1"))))
         .isEqualTo("123");
     assertThat(
             Objects.requireNonNull(
-                resultSpanA.getAttributes().get(AttributeKey.stringKey("password2"))))
+                resultA.getAttributes().get(AttributeKey.stringKey("password2"))))
         .isNotNull();
     assertThat(
             Objects.requireNonNull(
-                resultSpanA.getAttributes().get(AttributeKey.stringKey("password2"))))
+                resultA.getAttributes().get(AttributeKey.stringKey("password2"))))
         .isEqualTo("555");
-    assertThat(resultSpanA.getName())
+    assertThat(resultA.getBody().asString())
         .isEqualTo("yyyPassword={password1} aba Pass={password2} xyx Pass=777 zzz");
     assertThat(
             Objects.requireNonNull(
-                resultSpanB.getAttributes().get(AttributeKey.stringKey("password1"))))
+                resultB.getAttributes().get(AttributeKey.stringKey("password1"))))
         .isNotNull();
     assertThat(
             Objects.requireNonNull(
-                resultSpanB.getAttributes().get(AttributeKey.stringKey("password1"))))
+                resultB.getAttributes().get(AttributeKey.stringKey("password1"))))
         .isEqualTo("****");
-    assertThat(resultSpanB.getName()).isEqualTo("yyyPassword={password1} aba");
+    assertThat(resultB.getBody().asString()).isEqualTo("yyyPassword={password1} aba");
   }
 
   @Test
-  void simpleRenameLogTestWithSpanProcessor() {
-    MockExporter mockExporter = new MockExporter();
-    ProcessorConfig config = new ProcessorConfig();
-    config.type = ProcessorType.LOG;
-    config.id = "SimpleRenameSpan";
+  void simpleRenameLogTestWithLogProcessor() {
+    config.id = "SimpleRenameLog";
     config.body = new NameConfig();
     config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
-    SpanExporter exampleExporter = new ExporterWithLogProcessor(config, mockExporter);
+    LogExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
 
-    Span span =
-        tracer
-            .spanBuilder("svcA")
-            .setAttribute("one", "1")
-            .setAttribute("two", 2L)
-            .setAttribute("db.svc", "location")
-            .setAttribute("operation", "get")
-            .setAttribute("id", "1234")
-            .startSpan();
+    Attributes newAttributes =
+        Attributes.builder()
+            .put("one", "1")
+            .put("two", 2L)
+            .put("db.svc", "location")
+            .put("operation", "get")
+            .put("id", "1234")
+            .build();
+    TestLogData mockLog =
+        TestLogData.builder().setBody(Body.string("svcA")).setAttributes(newAttributes).build();
 
-    SpanData spanData = ((ReadableSpan) span).toSpanData();
-
-    List<SpanData> spans = new ArrayList<>();
-    spans.add(spanData);
-    exampleExporter.export(spans);
+    List<LogData> logs = new ArrayList<>();
+    logs.add(mockLog);
+    logExporter.export(logs);
 
     // verify that resulting logs are not modified
-    List<SpanData> result = mockExporter.getSpans();
-    SpanData resultSpan = result.get(0);
-    assertThat(resultSpan.getName()).isEqualTo("svcA");
+    List<LogData> result = mockExporter.getLogs();
+    LogData resultLog = result.get(0);
+    assertThat(resultLog.getBody().asString()).isEqualTo("locationget1234");
   }
 }

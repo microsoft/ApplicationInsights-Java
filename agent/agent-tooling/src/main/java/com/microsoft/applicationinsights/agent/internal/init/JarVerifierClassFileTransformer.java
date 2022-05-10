@@ -21,22 +21,22 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import static net.bytebuddy.jar.asm.Opcodes.ARETURN;
-import static net.bytebuddy.jar.asm.Opcodes.ASM7;
-import static net.bytebuddy.jar.asm.Opcodes.ATHROW;
-import static net.bytebuddy.jar.asm.Opcodes.DRETURN;
-import static net.bytebuddy.jar.asm.Opcodes.FRETURN;
-import static net.bytebuddy.jar.asm.Opcodes.INVOKESTATIC;
-import static net.bytebuddy.jar.asm.Opcodes.IRETURN;
-import static net.bytebuddy.jar.asm.Opcodes.LRETURN;
-import static net.bytebuddy.jar.asm.Opcodes.RETURN;
+import static org.objectweb.asm.Opcodes.ARETURN;
+import static org.objectweb.asm.Opcodes.ASM7;
+import static org.objectweb.asm.Opcodes.ATHROW;
+import static org.objectweb.asm.Opcodes.DRETURN;
+import static org.objectweb.asm.Opcodes.FRETURN;
+import static org.objectweb.asm.Opcodes.INVOKESTATIC;
+import static org.objectweb.asm.Opcodes.IRETURN;
+import static org.objectweb.asm.Opcodes.LRETURN;
+import static org.objectweb.asm.Opcodes.RETURN;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
-import net.bytebuddy.jar.asm.ClassReader;
-import net.bytebuddy.jar.asm.ClassVisitor;
-import net.bytebuddy.jar.asm.ClassWriter;
-import net.bytebuddy.jar.asm.MethodVisitor;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodVisitor;
 
 public class JarVerifierClassFileTransformer implements ClassFileTransformer {
 

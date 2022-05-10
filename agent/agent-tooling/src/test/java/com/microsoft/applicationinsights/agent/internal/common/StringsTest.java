@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import org.junit.jupiter.api.Test;
 
 public class StringsTest {

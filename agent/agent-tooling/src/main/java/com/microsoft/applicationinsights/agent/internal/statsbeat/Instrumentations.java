@@ -52,7 +52,6 @@ class Instrumentations {
     INSTRUMENTATION_MAP.put("io.opentelemetry.grpc-1.6", 12);
     INSTRUMENTATION_MAP.put("io.opentelemetry.http-url-connection", 13);
     INSTRUMENTATION_MAP.put("io.opentelemetry.servlet-5.0", 14);
-    INSTRUMENTATION_MAP.put("io.opentelemetry.java-util-logging-spans", 15);
     INSTRUMENTATION_MAP.put("io.opentelemetry.jaxrs-1.0", 16);
     INSTRUMENTATION_MAP.put("io.opentelemetry.jaxrs-2.0-common", 17);
     INSTRUMENTATION_MAP.put("io.opentelemetry.async-http-client-1.9", 18);
@@ -71,10 +70,7 @@ class Instrumentations {
     INSTRUMENTATION_MAP.put("io.opentelemetry.lettuce-5.1", 31);
     INSTRUMENTATION_MAP.put("io.opentelemetry.spring-rabbit-1.0", 32);
     INSTRUMENTATION_MAP.put("io.opentelemetry.jaxrs-client-2.0", 33);
-    INSTRUMENTATION_MAP.put("io.opentelemetry.log4j-spans-1.2", 34);
-    INSTRUMENTATION_MAP.put("io.opentelemetry.log4j-spans-2.0", 35);
     INSTRUMENTATION_MAP.put("io.opentelemetry.jaxrs-client-2.0-resteasy-3.0", 36);
-    INSTRUMENTATION_MAP.put("io.opentelemetry.logback-spans-1.0", 37);
     INSTRUMENTATION_MAP.put("io.opentelemetry.micrometer-1.0", 38);
     INSTRUMENTATION_MAP.put("io.opentelemetry.mongo-3.1", 39); // mongo 4.0 is covered in 3.1
     INSTRUMENTATION_MAP.put("io.opentelemetry.grizzly-2.0", 40);

@@ -21,18 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.DataPointType;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDataPoint;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.StatsbeatTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import java.util.HashMap;
-import java.util.Map;
 
 abstract class BaseStatsbeat {
-
-  private static final String STATSBEAT_TELEMETRY_NAME = "Statsbeat";
 
   private final CustomDimensions customDimensions;
 
@@ -42,25 +34,15 @@ abstract class BaseStatsbeat {
 
   protected abstract void send(TelemetryClient telemetryClient);
 
-  protected TelemetryItem createStatsbeatTelemetry(
+  protected StatsbeatTelemetryBuilder createStatsbeatTelemetry(
       TelemetryClient telemetryClient, String name, double value) {
-    TelemetryItem telemetry = new TelemetryItem();
-    MetricsData data = new MetricsData();
-    MetricDataPoint point = new MetricDataPoint();
-    telemetryClient.initMetricTelemetry(telemetry, data, point);
-    // overwrite the default name (which is "Metric")
-    telemetry.setName(STATSBEAT_TELEMETRY_NAME);
 
-    point.setName(name);
-    point.setValue(value);
-    point.setDataPointType(DataPointType.MEASUREMENT);
+    StatsbeatTelemetryBuilder telemetryBuilder = StatsbeatTelemetryBuilder.create(name, value);
 
-    telemetry.setInstrumentationKey(telemetryClient.getStatsbeatInstrumentationKey());
-    telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
+    telemetryBuilder.setInstrumentationKey(telemetryClient.getStatsbeatInstrumentationKey());
 
-    Map<String, String> properties = new HashMap<>();
-    customDimensions.populateProperties(properties, telemetryClient.getInstrumentationKey());
-    data.setProperties(properties);
-    return telemetry;
+    customDimensions.populateProperties(telemetryBuilder, telemetryClient.getInstrumentationKey());
+
+    return telemetryBuilder;
   }
 }

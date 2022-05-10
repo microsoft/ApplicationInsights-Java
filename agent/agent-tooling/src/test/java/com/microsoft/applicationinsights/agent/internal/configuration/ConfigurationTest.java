@@ -127,12 +127,11 @@ class ConfigurationTest {
 
   @Test
   void shouldParseProcessorConfiguration() throws IOException {
-
     Configuration configuration = loadConfiguration("ApplicationInsights_SpanProcessor.json");
     PreviewConfiguration preview = configuration.preview;
     assertThat(configuration.connectionString)
         .isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
-    assertThat(preview.processors.size()).isEqualTo(10);
+    assertThat(preview.processors.size()).isEqualTo(11);
     // insert config test
     ProcessorConfig insertConfig = preview.processors.get(0);
     assertThat(insertConfig.id).isEqualTo("attributes/insert");
@@ -164,13 +163,13 @@ class ConfigurationTest {
     assertThat(selectiveConfig.actions.size()).isEqualTo(2);
     assertThat(selectiveConfig.actions.get(0).key).isEqualTo(AttributeKey.stringKey("credit_card"));
     assertThat(selectiveConfig.actions.get(0).action).isEqualTo(ProcessorActionType.DELETE);
-    // log/update name test
-    ProcessorConfig logUpdateNameConfig = preview.processors.get(3);
-    assertThat(logUpdateNameConfig.type).isEqualTo(ProcessorType.LOG);
-    assertThat(logUpdateNameConfig.id).isEqualTo("log/updateName");
-    assertThat(logUpdateNameConfig.body.fromAttributes.size()).isEqualTo(1);
-    assertThat(logUpdateNameConfig.body.fromAttributes.get(0)).isEqualTo("loggerName");
-    assertThat(logUpdateNameConfig.body.separator).isEqualTo("::");
+    // log/updateLogBodyWithLoggerName
+    ProcessorConfig logUpdateLogName = preview.processors.get(3);
+    assertThat(logUpdateLogName.type).isEqualTo(ProcessorType.LOG);
+    assertThat(logUpdateLogName.id).isEqualTo("log/updateLogBodyWithLoggerName");
+    assertThat(logUpdateLogName.body.fromAttributes.size()).isEqualTo(1);
+    assertThat(logUpdateLogName.body.fromAttributes.get(0)).isEqualTo("loggerName");
+    assertThat(logUpdateLogName.body.separator).isEqualTo("::");
     // log/extractAttributes
     ProcessorConfig logExtractAttributesConfig = preview.processors.get(4);
     assertThat(logExtractAttributesConfig.type).isEqualTo(ProcessorType.LOG);
@@ -178,25 +177,35 @@ class ConfigurationTest {
     assertThat(logExtractAttributesConfig.body.toAttributes.rules.size()).isEqualTo(1);
     assertThat(logExtractAttributesConfig.body.toAttributes.rules.get(0))
         .isEqualTo("^/api/v1/document/(?<documentId>.*)/update$");
+    // log/updateLogBodyWithRegex
+    ProcessorConfig logUpdateNameConfig = preview.processors.get(5);
+    assertThat(logUpdateNameConfig.type).isEqualTo(ProcessorType.LOG);
+    assertThat(logUpdateNameConfig.id).isEqualTo("log/updateLogBodyWithRegex");
+    assertThat(logUpdateNameConfig.include.matchType).isEqualTo(MatchType.REGEXP);
+    assertThat(logUpdateNameConfig.include.logBodies.size()).isEqualTo(1);
+    assertThat(logUpdateNameConfig.include.logBodies.get(0)).isEqualTo(".*password.*");
+    assertThat(logUpdateNameConfig.body.fromAttributes.size()).isEqualTo(1);
+    assertThat(logUpdateNameConfig.body.fromAttributes.get(0)).isEqualTo("LoggerName");
+    assertThat(logUpdateNameConfig.body.separator).isEqualTo("::");
     // span/update name test
-    ProcessorConfig spanUpdateNameConfig = preview.processors.get(5);
+    ProcessorConfig spanUpdateNameConfig = preview.processors.get(6);
     assertThat(spanUpdateNameConfig.type).isEqualTo(ProcessorType.SPAN);
     assertThat(spanUpdateNameConfig.id).isEqualTo("span/updateName");
     assertThat(spanUpdateNameConfig.include.matchType).isEqualTo(MatchType.REGEXP);
     assertThat(spanUpdateNameConfig.include.spanNames.size()).isEqualTo(1);
     assertThat(spanUpdateNameConfig.include.spanNames.get(0)).isEqualTo(".*password.*");
     assertThat(spanUpdateNameConfig.name.fromAttributes.size()).isEqualTo(1);
-    assertThat(spanUpdateNameConfig.name.fromAttributes.get(0)).isEqualTo("loggerName");
+    assertThat(spanUpdateNameConfig.name.fromAttributes.get(0)).isEqualTo("spanName");
     assertThat(spanUpdateNameConfig.name.separator).isEqualTo("::");
     // span/extractAttributes
-    ProcessorConfig spanExtractAttributesConfig = preview.processors.get(6);
+    ProcessorConfig spanExtractAttributesConfig = preview.processors.get(7);
     assertThat(spanExtractAttributesConfig.type).isEqualTo(ProcessorType.SPAN);
     assertThat(spanExtractAttributesConfig.id).isEqualTo("span/extractAttributes");
     assertThat(spanExtractAttributesConfig.name.toAttributes.rules.size()).isEqualTo(1);
     assertThat(spanExtractAttributesConfig.name.toAttributes.rules.get(0))
         .isEqualTo("^/api/v1/document/(?<documentId>.*)/update$");
     // attribute/extract
-    ProcessorConfig attributesExtractConfig = preview.processors.get(7);
+    ProcessorConfig attributesExtractConfig = preview.processors.get(8);
     assertThat(attributesExtractConfig.type).isEqualTo(ProcessorType.ATTRIBUTE);
     assertThat(attributesExtractConfig.id).isEqualTo("attributes/extract");
     assertThat(attributesExtractConfig.actions.size()).isEqualTo(1);
@@ -211,7 +220,7 @@ class ConfigurationTest {
     assertThat(attributesExtractConfig.actions.get(0).extractAttribute.groupNames.get(0))
         .isEqualTo("httpProtocol");
     // metric-filter
-    ProcessorConfig metricFilterConfig = preview.processors.get(8);
+    ProcessorConfig metricFilterConfig = preview.processors.get(9);
     assertThat(metricFilterConfig.type).isEqualTo(ProcessorType.METRIC_FILTER);
     assertThat(metricFilterConfig.id).isEqualTo("metric-filter/exclude-two-metrics");
     assertThat(metricFilterConfig.exclude.matchType).isEqualTo(MatchType.STRICT);
@@ -219,7 +228,7 @@ class ConfigurationTest {
     assertThat(metricFilterConfig.exclude.metricNames.get(0)).isEqualTo("a_test_metric");
     assertThat(metricFilterConfig.exclude.metricNames.get(1)).isEqualTo("another_test_metric");
     // attribute/mask
-    ProcessorConfig attributesMaskConfig = preview.processors.get(9);
+    ProcessorConfig attributesMaskConfig = preview.processors.get(10);
     assertThat(attributesMaskConfig.type).isEqualTo(ProcessorType.ATTRIBUTE);
     assertThat(attributesMaskConfig.id).isEqualTo("attributes/mask");
     assertThat(attributesMaskConfig.actions.size()).isEqualTo(1);

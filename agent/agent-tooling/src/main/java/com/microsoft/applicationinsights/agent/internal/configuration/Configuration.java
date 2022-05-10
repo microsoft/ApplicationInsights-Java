@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
+import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
@@ -32,9 +33,11 @@ import com.microsoft.applicationinsights.agent.internal.common.FriendlyException
 import io.opentelemetry.api.common.AttributeKey;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -201,6 +204,7 @@ public class Configuration {
 
     public String host;
     public int port = 80;
+    // password in json file is not secure, use APPLICATIONINSIGHTS_PROXY
     public String username;
     public String password;
   }
@@ -217,9 +221,10 @@ public class Configuration {
     // world,
     // so safer to only allow single interval for now
     public int metricIntervalSeconds = 60;
-    // ignoreRemoteParentNotSampled is currently needed
-    // because .NET SDK always propagates trace flags "00" (not sampled)
-    public boolean ignoreRemoteParentNotSampled = true;
+    // ignoreRemoteParentNotSampled is sometimes needed because .NET SDK always propagates trace
+    // flags "00" (not sampled)
+    // in particular, it is always needed in Azure Functions worker
+    public boolean ignoreRemoteParentNotSampled = DiagnosticsHelper.rpIntegrationChar() == 'f';
     public boolean captureControllerSpans;
     // this is just here to detect if using this old setting in order to give a helpful message
     @Deprecated public boolean httpMethodInOperationName;
@@ -229,6 +234,18 @@ public class Configuration {
     // https://portal.microsofticm.com/imp/v3/incidents/details/266992200/home
     public boolean disablePropagation;
     public boolean captureHttpServer4xxAsError = true;
+
+    // LoggingLevel is no longer sent by default since 3.3.0, since the data is already available
+    // under SeverityLevel. This configuration is provided as a temporary measure for customers
+    // who are unable to update their alerts/dashboards at the same time that they are updating
+    // their Javaagent version
+    // Note: this configuration option will be removed in 4.0.0
+    public boolean captureLoggingLevelAsCustomDimension;
+
+    // this is to support interoperability with other systems
+    // intentionally not allowing the removal of w3c propagator since that is key to many Azure
+    // integrated experiences
+    public List<String> additionalPropagators = new ArrayList<>();
 
     public List<InheritedAttribute> inheritedAttributes = new ArrayList<>();
 
@@ -241,11 +258,50 @@ public class Configuration {
     public PreviewStatsbeat statsbeat = new PreviewStatsbeat();
 
     public List<InstrumentationKeyOverride> instrumentationKeyOverrides = new ArrayList<>();
+    public List<RoleNameOverride> roleNameOverrides = new ArrayList<>();
 
     public int generalExportQueueCapacity = 2048;
     // metrics get flooded every 60 seconds by default, so need larger queue size to avoid dropping
     // telemetry (they are much smaller so a larger queue size is ok)
     public int metricsExportQueueCapacity = 65536;
+
+    // unfortunately the Java SDK behavior has always been to report the "% Processor Time" number
+    // as "normalized" (divided by # of CPU cores), even though it should be non-normalized
+    // we cannot change this existing behavior as it would break existing customers' alerts, but at
+    // least this configuration gives users a way to opt in to the correct behavior
+    //
+    // note: the normalized value is now separately reported under a different metric
+    // "% Processor Time Normalized"
+    public boolean useNormalizedValueForNonNormalizedCpuPercentage = true;
+
+    private static final Set<String> VALID_ADDITIONAL_PROPAGATORS =
+        new HashSet<>(asList("b3", "b3multi"));
+
+    public void validate() {
+      for (Configuration.SamplingOverride samplingOverride : sampling.overrides) {
+        samplingOverride.validate();
+      }
+      for (Configuration.InstrumentationKeyOverride instrumentationKeyOverride :
+          instrumentationKeyOverrides) {
+        instrumentationKeyOverride.validate();
+      }
+      for (Configuration.RoleNameOverride roleNameOverride : roleNameOverrides) {
+        roleNameOverride.validate();
+      }
+      for (ProcessorConfig processorConfig : processors) {
+        processorConfig.validate();
+      }
+      authentication.validate();
+
+      for (String additionalPropagator : additionalPropagators) {
+        if (!VALID_ADDITIONAL_PROPAGATORS.contains(additionalPropagator)) {
+          throw new FriendlyException(
+              "The \"additionalPropagators\" configuration contains an invalid entry: "
+                  + additionalPropagator,
+              "Please provide only valid values for \"additionalPropagators\" configuration.");
+        }
+      }
+    }
   }
 
   public static class InheritedAttribute {
@@ -340,6 +396,10 @@ public class Configuration {
         new DisabledByDefaultInstrumentation();
 
     public DisabledByDefaultInstrumentation vertx = new DisabledByDefaultInstrumentation();
+
+    // this is opt-in because it can cause startup slowness due to expensive matchers
+    public DisabledByDefaultInstrumentation jaxrsAnnotations =
+        new DisabledByDefaultInstrumentation();
   }
 
   public static class PreviewStatsbeat {
@@ -363,7 +423,27 @@ public class Configuration {
         // TODO add doc and go link, similar to telemetry processors
         throw new FriendlyException(
             "An instrumentation key override configuration is missing an \"instrumentationKey\".",
-            "Please provide an \"instrumentationKey\" for the instrumentation key configuration.");
+            "Please provide an \"instrumentationKey\" for the instrumentation key override configuration.");
+      }
+    }
+  }
+
+  public static class RoleNameOverride {
+    public String httpPathPrefix;
+    public String roleName;
+
+    public void validate() {
+      if (httpPathPrefix == null) {
+        // TODO add doc and go link, similar to telemetry processors
+        throw new FriendlyException(
+            "A role name override configuration is missing an \"httpPathPrefix\".",
+            "Please provide an \"httpPathPrefix\" for the role name override configuration.");
+      }
+      if (roleName == null) {
+        // TODO add doc and go link, similar to telemetry processors
+        throw new FriendlyException(
+            "An role name override configuration is missing a \"roleName\".",
+            "Please provide a \"roleName\" for the role name override configuration.");
       }
     }
   }
@@ -656,6 +736,7 @@ public class Configuration {
   public static class ProcessorIncludeExclude {
     public MatchType matchType;
     public List<String> spanNames = new ArrayList<>();
+    public List<String> logBodies = new ArrayList<>();
     public List<String> metricNames = new ArrayList<>();
     public List<ProcessorAttribute> attributes = new ArrayList<>();
 
@@ -714,12 +795,12 @@ public class Configuration {
     }
 
     private void validAttributeProcessorIncludeExclude(IncludeExclude includeExclude) {
-      if (attributes.isEmpty() && spanNames.isEmpty()) {
+      if (attributes.isEmpty() && spanNames.isEmpty() && logBodies.isEmpty()) {
         throw new FriendlyException(
             "An attribute processor configuration has an "
                 + includeExclude
-                + " section with no \"spanNames\" and no \"attributes\".",
-            "Please provide at least one of \"spanNames\" or \"attributes\" under the "
+                + " section with no \"spanNames\" and no \"attributes\" and no \"logBodies\".",
+            "Please provide at least one of \"spanNames\" or \"attributes\" or \"logBodies\" under the "
                 + includeExclude
                 + " section of the attribute processor configuration. "
                 + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
@@ -728,21 +809,31 @@ public class Configuration {
         for (String spanName : spanNames) {
           validateRegex(spanName, ProcessorType.ATTRIBUTE);
         }
+
+        for (String logBody : logBodies) {
+          validateRegex(logBody, ProcessorType.ATTRIBUTE);
+        }
       }
 
       validateSectionIsEmpty(metricNames, ProcessorType.ATTRIBUTE, includeExclude, "metricNames");
     }
 
     private void validateLogProcessorIncludeExclude(IncludeExclude includeExclude) {
-      if (attributes.isEmpty()) {
+      if (logBodies.isEmpty() && attributes.isEmpty()) {
         throw new FriendlyException(
             "A log processor configuration has an "
                 + includeExclude
-                + " section with no \"attributes\".",
-            "Please provide \"attributes\" under the "
+                + " section with no \"attributes\" and no \"logBodies\".",
+            "Please provide \"attributes\" or \"logBodies\" under the "
                 + includeExclude
                 + " section of the log processor configuration. "
                 + "Learn more about log processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+      }
+
+      if (matchType == MatchType.REGEXP) {
+        for (String logBody : logBodies) {
+          validateRegex(logBody, ProcessorType.LOG);
+        }
       }
 
       validateSectionIsEmpty(spanNames, ProcessorType.LOG, includeExclude, "spanNames");
@@ -766,6 +857,7 @@ public class Configuration {
         }
       }
 
+      validateSectionIsEmpty(logBodies, ProcessorType.SPAN, includeExclude, "logBodies");
       validateSectionIsEmpty(metricNames, ProcessorType.SPAN, includeExclude, "metricNames");
     }
 

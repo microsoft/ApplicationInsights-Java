@@ -22,12 +22,15 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
+import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import java.util.List;
 import org.junit.Test;
 
@@ -39,13 +42,16 @@ public class SpringBootAutoTest extends AiSmokeTest {
   public void spawnAnotherJavaProcess() throws Exception {
     List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
     List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+    List<Envelope> mdList = mockedIngestion.waitForItems("MessageData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     Envelope rddEnvelope = rddList.get(0);
+    Envelope mdEnvelope = mdList.get(0);
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     RemoteDependencyData rdd =
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
+    MessageData md = (MessageData) ((Data<?>) mdEnvelope.getData()).getBaseData();
 
     assertTrue(rd.getProperties().isEmpty());
     assertTrue(rd.getSuccess());
@@ -56,5 +62,12 @@ public class SpringBootAutoTest extends AiSmokeTest {
     assertEquals("https://www.bing.com/search?q=test", rdd.getData());
     assertTrue(rdd.getProperties().isEmpty());
     assertTrue(rdd.getSuccess());
+
+    assertEquals("done", md.getMessage());
+    assertEquals(SeverityLevel.Information, md.getSeverityLevel());
+    assertEquals("Logger", md.getProperties().get("SourceType"));
+    assertEquals("smoketestapp", md.getProperties().get("LoggerName"));
+    assertNotNull(md.getProperties().get("ThreadName"));
+    assertEquals(3, md.getProperties().size());
   }
 }

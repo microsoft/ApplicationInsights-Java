@@ -21,20 +21,19 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler;
 
-import static com.microsoft.applicationinsights.agent.internal.perfcounter.Constants.TOTAL_CPU_PC_METRIC_NAME;
 import static com.microsoft.applicationinsights.agent.internal.perfcounter.JvmHeapMemoryUsedPerformanceCounter.HEAP_MEM_USED_PERCENTAGE;
-import static com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil.createMetricsTelemetry;
+import static com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames.TOTAL_CPU_PERCENTAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
 
-import com.microsoft.applicationinsights.agent.internal.common.LocalFileSystemUtils;
-import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorDomain;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
@@ -58,7 +57,6 @@ import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -82,7 +80,7 @@ class ProfilerServiceTest {
   void endToEndAlertTriggerCpu() throws Exception {
     endToEndAlertTriggerCycle(
         false,
-        createMetricsTelemetry(TelemetryClient.createForTest(), TOTAL_CPU_PC_METRIC_NAME, 100.0),
+        MetricTelemetryBuilder.create(TOTAL_CPU_PERCENTAGE, 100.0).build(),
         telemetry -> {
           assertThat(telemetry.getProperties().get("Source")).isEqualTo("JFR-CPU");
           assertThat(telemetry.getMeasurements().get("AverageCPUUsage")).isEqualTo(100.0);
@@ -94,7 +92,7 @@ class ProfilerServiceTest {
   void endToEndAlertTriggerManual() throws Exception {
     endToEndAlertTriggerCycle(
         true,
-        createMetricsTelemetry(TelemetryClient.createForTest(), HEAP_MEM_USED_PERCENTAGE, 0.0),
+        MetricTelemetryBuilder.create(HEAP_MEM_USED_PERCENTAGE, 0.0).build(),
         telemetry -> {
           assertThat(telemetry.getProperties().get("Source")).isEqualTo("JFR-MANUAL");
           assertThat(telemetry.getMeasurements().get("AverageCPUUsage")).isEqualTo(0.0);
@@ -104,7 +102,7 @@ class ProfilerServiceTest {
 
   void endToEndAlertTriggerCycle(
       boolean triggerNow,
-      TelemetryItem metricTelemetry,
+      TelemetryItem metricTelemetryItem,
       Consumer<TelemetryEventData> assertTelemetry)
       throws Exception {
     AtomicBoolean profileInvoked = new AtomicBoolean(false);
@@ -123,12 +121,11 @@ class ProfilerServiceTest {
 
     Object monitor = new Object();
 
-    TelemetryClient client =
-        spy(TelemetryClient.builder().setCustomDimensions(new HashMap<>()).build());
+    TelemetryClient client = spy(TelemetryClient.createForTest());
     doAnswer(
             invocation -> {
-              TelemetryItem telemetry = invocation.getArgument(0);
-              MonitorDomain data = telemetry.getData().getBaseData();
+              TelemetryItem telemetryItem = invocation.getArgument(0);
+              MonitorDomain data = telemetryItem.getData().getBaseData();
               if (data instanceof TelemetryEventData) {
                 if ("ServiceProfilerIndex".equals(((TelemetryEventData) data).getName())) {
                   serviceProfilerIndex.set((TelemetryEventData) data);
@@ -166,13 +163,7 @@ class ProfilerServiceTest {
         new JfrProfilerService(
                 () -> appId,
                 new ServiceProfilerServiceConfig(
-                    1,
-                    2,
-                    3,
-                    new URL("http://localhost"),
-                    null,
-                    null,
-                    LocalFileSystemUtils.getTempDir()),
+                    1, 2, 3, new URL("http://localhost"), null, null, new File(".")),
                 jfrProfiler,
                 ProfilerServiceInitializer.updateAlertingConfig(alertService),
                 ProfilerServiceInitializer.sendServiceProfilerIndex(client),
@@ -186,7 +177,7 @@ class ProfilerServiceTest {
     for (int i = 0; i < 100; i++) {
       TelemetryObservers.INSTANCE
           .getObservers()
-          .forEach(telemetryObserver -> telemetryObserver.accept(metricTelemetry));
+          .forEach(telemetryObserver -> telemetryObserver.accept(metricTelemetryItem));
 
       synchronized (monitor) {
         if (serviceProfilerIndex.get() != null) {
@@ -226,7 +217,7 @@ class ProfilerServiceTest {
   private JfrProfiler getJfrDaemon(AtomicBoolean profileInvoked) throws MalformedURLException {
     return new JfrProfiler(
         new ServiceProfilerServiceConfig(
-            1, 2, 3, new URL("http://localhost"), null, null, LocalFileSystemUtils.getTempDir())) {
+            1, 2, 3, new URL("http://localhost"), null, null, new File("."))) {
       @Override
       protected void profileAndUpload(AlertBreach alertBreach, Duration duration) {
         profileInvoked.set(true);

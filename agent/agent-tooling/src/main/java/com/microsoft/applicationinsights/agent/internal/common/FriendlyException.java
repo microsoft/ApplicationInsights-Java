@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.common;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class FriendlyException extends RuntimeException {
@@ -55,31 +56,6 @@ public class FriendlyException extends RuntimeException {
       messageBuilder.append(System.lineSeparator());
       messageBuilder.append("Action:").append(System.lineSeparator());
       messageBuilder.append(action).append(System.lineSeparator());
-    }
-    return messageBuilder.toString();
-  }
-
-  public static String populateFriendlyMessage(
-      String description, String action, String banner, String note) {
-    StringBuilder messageBuilder = new StringBuilder();
-    messageBuilder.append(System.lineSeparator());
-    messageBuilder.append("*************************").append(System.lineSeparator());
-    messageBuilder.append(banner).append(System.lineSeparator());
-    messageBuilder.append("*************************").append(System.lineSeparator());
-    if (!Strings.isNullOrEmpty(description)) {
-      messageBuilder.append(System.lineSeparator());
-      messageBuilder.append("Description:").append(System.lineSeparator());
-      messageBuilder.append(description).append(System.lineSeparator());
-    }
-    if (!Strings.isNullOrEmpty(action)) {
-      messageBuilder.append(System.lineSeparator());
-      messageBuilder.append("Action:").append(System.lineSeparator());
-      messageBuilder.append(action).append(System.lineSeparator());
-    }
-    if (!Strings.isNullOrEmpty(note)) {
-      messageBuilder.append(System.lineSeparator());
-      messageBuilder.append("Note:").append(System.lineSeparator());
-      messageBuilder.append(note).append(System.lineSeparator());
     }
     return messageBuilder.toString();
   }

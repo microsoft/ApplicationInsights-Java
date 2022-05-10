@@ -39,8 +39,14 @@ dependencies {
   implementation("org.ow2.asm:asm-tree:9.1")
   implementation("org.apache.httpcomponents:httpclient:4.5.13")
   implementation("org.gradle:test-retry-gradle-plugin:1.2.1")
+
   // When updating, also update dependencyManagement/dependencyManagement.gradle.kts
-  implementation("net.bytebuddy:byte-buddy-gradle-plugin:1.12.6")
+  // we need to use byte buddy variant that does not shade asm
+  implementation("net.bytebuddy:byte-buddy-gradle-plugin:1.12.9") {
+    exclude(group = "net.bytebuddy", module = "byte-buddy")
+  }
+  implementation("net.bytebuddy:byte-buddy-dep:1.12.9")
+
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:2.0.2")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.1.0")
 
