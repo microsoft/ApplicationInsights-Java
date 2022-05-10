@@ -35,6 +35,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfigurationBuilder;
 import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;
+import io.opentelemetry.javaagent.bootstrap.JavaagentFileHolder;
 import io.opentelemetry.javaagent.tooling.LoggingCustomizer;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -56,11 +57,13 @@ public class MainEntryPoint implements LoggingCustomizer {
   private static final boolean DEBUG_SIGNED_JAR_ACCESS =
       Boolean.getBoolean("applicationinsights.debug.signedJarAccess");
 
+  private static final File javaagentFile = JavaagentFileHolder.getJavaagentFile();
+
   private static RpConfiguration rpConfiguration;
   private static Configuration configuration;
   private static String agentVersion = "(unknown)";
 
-  private MainEntryPoint() {}
+  @Nullable private static volatile Logger startupLogger;
 
   public static RpConfiguration getRpConfiguration() {
     return rpConfiguration;
@@ -75,19 +78,7 @@ public class MainEntryPoint implements LoggingCustomizer {
   }
 
   @Override
-  public void init() {}
-
-  @Override
-  public void onStartupFailure(Throwable throwable) {}
-
-  @Override
-  public void onStartupSuccess() {}
-
-  // TODO turn this into an interceptor
-  @SuppressWarnings("SystemOut")
-  public static void start(File javaagentFile) {
-    boolean success = false;
-    Logger startupLogger = null;
+  public void init() {
     try {
       if (DEBUG_SIGNED_JAR_ACCESS) {
         JarVerifierClassFileTransformer transformer = new JarVerifierClassFileTransformer();
@@ -111,52 +102,70 @@ public class MainEntryPoint implements LoggingCustomizer {
       startupLogger = configureLogging(configuration.selfDiagnostics, agentPath);
       StatusFile.startupLogger = startupLogger;
       ConfigurationBuilder.logConfigurationWarnMessages();
-      MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
 
       AppIdSupplier appIdSupplier = AiComponentInstaller.beforeAgent();
       StartAppIdRetrieval.setAppIdSupplier(appIdSupplier);
+    } catch (Exception e) {
+      throw new IllegalStateException(e);
+    }
+  }
 
-      startupLogger.info(
-          "ApplicationInsights Java Agent {} started successfully (PID {})",
-          agentVersion,
-          new PidFinder().getValue());
-      startupLogger.info(
-          "Java version: {}, vendor: {}, home: {}",
-          System.getProperty("java.version"),
-          System.getProperty("java.vendor"),
-          System.getProperty("java.home"));
-      success = true;
+  @Override
+  public void onStartupSuccess() {
+    startupLogger.info(
+        "ApplicationInsights Java Agent {} started successfully (PID {})",
+        agentVersion,
+        new PidFinder().getValue());
+    startupLogger.info(
+        "Java version: {}, vendor: {}, home: {}",
+        System.getProperty("java.version"),
+        System.getProperty("java.vendor"),
+        System.getProperty("java.home"));
+
+    MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
+    try {
       LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
           .info("Application Insights Codeless Agent {} Attach Successful", agentVersion);
-    } catch (ThreadDeath td) {
-      throw td;
-    } catch (Throwable t) {
-
-      FriendlyException friendlyException = getFriendlyException(t);
-      String banner =
-          "ApplicationInsights Java Agent "
-              + agentVersion
-              + " failed to start (PID "
-              + new PidFinder().getValue()
-              + ")";
-      if (friendlyException != null) {
-        logErrorMessage(
-            startupLogger, friendlyException.getMessageWithBanner(banner), true, t, javaagentFile);
-      } else {
-        logErrorMessage(startupLogger, banner, false, t, javaagentFile);
-      }
-
     } finally {
-      try {
-        StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success, startupLogger != null);
-      } catch (Throwable t) {
-        if (startupLogger != null) {
-          startupLogger.error("Error writing status.json", t);
-        } else {
-          t.printStackTrace();
-        }
-      }
       MDC.clear();
+    }
+
+    updateStatusFile(true);
+  }
+
+  @Override
+  public void onStartupFailure(Throwable throwable) {
+    FriendlyException friendlyException = getFriendlyException(throwable);
+    String banner =
+        "ApplicationInsights Java Agent "
+            + agentVersion
+            + " failed to start (PID "
+            + new PidFinder().getValue()
+            + ")";
+
+    if (friendlyException != null) {
+      logErrorMessage(
+          startupLogger,
+          friendlyException.getMessageWithBanner(banner),
+          true,
+          throwable,
+          javaagentFile);
+    } else {
+      logErrorMessage(startupLogger, banner, false, throwable, javaagentFile);
+    }
+
+    updateStatusFile(false);
+  }
+
+  private static void updateStatusFile(boolean success) {
+    try {
+      StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success, startupLogger != null);
+    } catch (Throwable t) {
+      if (startupLogger != null) {
+        startupLogger.error("Error writing status.json", t);
+      } else {
+        t.printStackTrace();
+      }
     }
   }
 
