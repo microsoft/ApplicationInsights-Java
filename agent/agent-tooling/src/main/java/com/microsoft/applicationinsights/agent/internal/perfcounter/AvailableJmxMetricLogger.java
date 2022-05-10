@@ -177,6 +177,8 @@ class AvailableJmxMetricLogger {
       if (compositeData instanceof CompositeData) {
         Object value = ((CompositeData) compositeData).get(itemName);
         attributes.add(attributeName + " (" + valueType(value) + ")");
+      } else if (compositeData == null) {
+        attributes.add(attributeName + " (unexpected: null)");
       } else {
         attributes.add(attributeName + " (unexpected: " + compositeData.getClass().getName() + ")");
       }

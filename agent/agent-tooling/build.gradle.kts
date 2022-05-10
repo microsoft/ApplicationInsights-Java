@@ -1,7 +1,6 @@
 plugins {
   id("ai.java-conventions")
   id("ai.sdk-version-file")
-  id("com.github.johnrengelman.shadow")
 }
 
 // Adding this step to copy playback test results from session-records to build/classes/java/test. Azure core testing framework follows this directory structure.
@@ -24,24 +23,29 @@ dependencies {
   implementation(project(":agent:agent-gc-monitor:gc-monitor-api"))
   implementation(project(":agent:agent-gc-monitor:gc-monitor-core"))
 
-  implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling") {
+  compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
+
+  testImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling") {
     // excluded temporarily while hosting azure-monitor-opentelemetry-exporter in this repo
     // because it causes problems for those unit tests
     exclude("io.opentelemetry", "opentelemetry-extension-noop-api")
   }
-  implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api")
-  implementation("net.bytebuddy:byte-buddy")
+
+  compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api")
+  compileOnly("net.bytebuddy:byte-buddy-dep")
 
   implementation("commons-codec:commons-codec")
   implementation("org.apache.commons:commons-text")
   // TODO (trask) this is probably still needed for above apache commons projects
   implementation("org.slf4j:jcl-over-slf4j")
 
+  // TODO (trask) consolidate and use same annotations as upstream
   implementation("org.checkerframework:checker-qual")
   implementation("com.google.code.findbugs:annotations:3.0.1")
 
-  implementation("ch.qos.logback:logback-classic")
-  implementation("ch.qos.logback.contrib:logback-json-classic")
+  // these are present in the bootstrap class loader
+  compileOnly("ch.qos.logback:logback-classic")
+  compileOnly("ch.qos.logback.contrib:logback-json-classic")
 
   implementation(project(":agent:agent-profiler:agent-profiler-api"))
 
@@ -56,25 +60,24 @@ dependencies {
     exclude("org.linguafranca.pwdb", "KeePassJava2")
   }
 
-  implementation("io.opentelemetry:opentelemetry-sdk-extension-tracing-incubator")
-  implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
-  implementation("io.opentelemetry:opentelemetry-extension-trace-propagators")
+  //  compileOnly("io.opentelemetry:opentelemetry-sdk-extension-tracing-incubator")
+  compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
+  compileOnly("io.opentelemetry:opentelemetry-extension-trace-propagators")
 
   implementation("com.github.oshi:oshi-core")
-  implementation("org.slf4j:slf4j-api")
 
-  implementation("io.opentelemetry:opentelemetry-api")
+  compileOnly("org.slf4j:slf4j-api")
+
+  compileOnly("io.opentelemetry:opentelemetry-sdk")
+  compileOnly("io.opentelemetry:opentelemetry-sdk-metrics")
+  compileOnly("io.opentelemetry:opentelemetry-sdk-logs")
+
+  testImplementation("io.opentelemetry:opentelemetry-sdk")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-metrics")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-logs")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
   testImplementation("io.opentelemetry:opentelemetry-sdk-metrics-testing")
-  implementation("org.jctools:jctools-core:3.3.0")
 
-  implementation("io.opentelemetry:opentelemetry-exporter-otlp")
-  implementation("io.opentelemetry:opentelemetry-exporter-otlp-metrics")
-  implementation("io.opentelemetry:opentelemetry-exporter-otlp-logs")
-  implementation("io.opentelemetry:opentelemetry-exporter-otlp-http-trace")
-  implementation("io.opentelemetry:opentelemetry-exporter-otlp-http-metrics")
-  implementation("io.opentelemetry:opentelemetry-exporter-otlp-http-logs")
-
-  compileOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
   // TODO(trask): update tests, no need to use this anymore
   testImplementation("com.squareup.okio:okio:2.8.0")
 
@@ -95,8 +98,6 @@ dependencies {
   testImplementation("org.mockito:mockito-core")
   testImplementation("uk.org.webcompere:system-stubs-jupiter:1.1.0")
   testImplementation("io.github.hakky54:logcaptor")
-
-  testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
 
   testImplementation("com.microsoft.jfr:jfr-streaming")
   testImplementation("com.azure:azure-storage-blob")

@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.telemetry;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
+import io.opentelemetry.internal.shaded.jctools.queues.MpscArrayQueue;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import java.util.ArrayList;
@@ -37,7 +38,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import org.jctools.queues.MpscArrayQueue;
 
 // copied from io.opentelemetry.sdk.trace.export.BatchSpanProcessor
 public final class BatchItemProcessor {

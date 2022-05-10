@@ -58,7 +58,9 @@ include ':agent:agent-profiler:agent-service-profiler'
 
 include ':agent:agent-bootstrap'
 include ':agent:agent-tooling'
-include ':agent:instrumentation'
+include ':agent:agent-for-testing'
+include ':agent:instrumentation:applicationinsights-web-2.3'
+include ':agent:instrumentation:azure-functions'
 include ':agent:agent'
 
 // misc
