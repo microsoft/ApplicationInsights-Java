@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
 import java.util.Random;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * This class generates the sample using the random number generator. It also contains the logic to
@@ -39,23 +38,15 @@ public class SamplingScoreGeneratorV2 {
    * @return [0.0, 1.0)
    */
   public static double getSamplingScore(String operationId) {
-
-    double samplingScore;
-
-    if (!StringUtils.isEmpty(operationId)) {
-      samplingScore = ((double) getSamplingHashCode(operationId) / Integer.MAX_VALUE);
+    if (operationId != null && !operationId.isEmpty()) {
+      return 100 * ((double) getSamplingHashCode(operationId) / Integer.MAX_VALUE);
     } else {
-      samplingScore = random.nextDouble(); // [0,1)
+      return 100 * random.nextDouble();
     }
-
-    return samplingScore * 100.0; // always < 100.0
   }
 
   /** Returns value in [0, Integer.MAX_VALUE). */
-  static int getSamplingHashCode(String operationId) {
-    if (StringUtils.isEmpty(operationId)) {
-      return 0;
-    }
+  private static int getSamplingHashCode(String operationId) {
 
     CharSequence opId;
     if (operationId.length() < 8) {

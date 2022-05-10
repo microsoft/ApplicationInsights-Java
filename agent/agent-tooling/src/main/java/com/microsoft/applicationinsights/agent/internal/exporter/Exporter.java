@@ -25,20 +25,22 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import com.microsoft.applicationinsights.agent.internal.common.OperationLogger;
-import com.microsoft.applicationinsights.agent.internal.common.Strings;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.ContextTagKeys;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MessageData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorDomain;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.RemoteDependencyData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.RequestData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.SeverityLevel;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryExceptionData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
-import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedDuration;
-import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.Exceptions;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDependencyTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.UrlParser;
+import com.microsoft.applicationinsights.agent.internal.exporter.utils.Trie;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
@@ -53,13 +55,12 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
@@ -68,6 +69,9 @@ import org.slf4j.LoggerFactory;
 public class Exporter implements SpanExporter {
 
   private static final Logger logger = LoggerFactory.getLogger(Exporter.class);
+
+  // TODO (trask) add to generated ContextTagKeys class
+  private static final ContextTagKeys AI_DEVICE_OS = ContextTagKeys.fromString("ai.device.os");
 
   private static final Set<String> SQL_DB_SYSTEMS;
 
@@ -79,10 +83,6 @@ public class Exporter implements SpanExporter {
 
   public static final AttributeKey<String> AI_OPERATION_NAME_KEY =
       AttributeKey.stringKey("applicationinsights.internal.operation_name");
-
-  private static final AttributeKey<Boolean> AI_LOG_KEY =
-      AttributeKey.booleanKey("applicationinsights.internal.log");
-
   public static final AttributeKey<String> AI_LEGACY_PARENT_ID_KEY =
       AttributeKey.stringKey("applicationinsights.internal.legacy_parent_id");
   public static final AttributeKey<String> AI_LEGACY_ROOT_ID_KEY =
@@ -98,13 +98,6 @@ public class Exporter implements SpanExporter {
       AttributeKey.stringKey("applicationinsights.internal.operating_system");
   private static final AttributeKey<String> AI_DEVICE_OS_VERSION_KEY =
       AttributeKey.stringKey("applicationinsights.internal.operating_system_version");
-
-  private static final AttributeKey<String> AI_LOG_LEVEL_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.log_level");
-  private static final AttributeKey<String> AI_LOGGER_NAME_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.logger_name");
-  private static final AttributeKey<String> AI_LOG_ERROR_STACK_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.log_error_stack");
 
   private static final AttributeKey<String> AZURE_NAMESPACE =
       AttributeKey.stringKey("az.namespace");
@@ -152,6 +145,7 @@ public class Exporter implements SpanExporter {
             .put("exception.", true)
             .put("thread.", true)
             .put("faas.", true)
+            .put("code.", true)
             .build();
   }
 
@@ -163,26 +157,35 @@ public class Exporter implements SpanExporter {
     this.captureHttpServer4xxAsError = captureHttpServer4xxAsError;
   }
 
+  /** {@inheritDoc} */
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
     if (Strings.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey())) {
       logger.debug("Instrumentation key is null or empty.");
       return CompletableResultCode.ofSuccess();
     }
+
+    List<TelemetryItem> telemetryItems = new ArrayList<>();
+
     boolean failure = false;
     for (SpanData span : spans) {
       logger.debug("exporting span: {}", span);
       try {
-        internalExport(span);
+        internalExport(span, telemetryItems);
         exportingSpanLogger.recordSuccess();
       } catch (Throwable t) {
         exportingSpanLogger.recordFailure(t.getMessage(), t);
         failure = true;
       }
     }
+
     // batching, retry, throttling, and writing to disk on failure occur downstream
     // for simplicity not reporting back success/failure from this layer
     // only that it was successfully delivered to the next layer
+    for (TelemetryItem telemetryItem : telemetryItems) {
+      telemetryClient.trackAsync(telemetryItem);
+    }
+
     return failure ? CompletableResultCode.ofFailure() : CompletableResultCode.ofSuccess();
   }
 
@@ -196,7 +199,7 @@ public class Exporter implements SpanExporter {
     return CompletableResultCode.ofSuccess();
   }
 
-  private void internalExport(SpanData span) {
+  private void internalExport(SpanData span, List<TelemetryItem> telemetryItems) {
     SpanKind kind = span.getKind();
     String instrumentationName = span.getInstrumentationLibraryInfo().getName();
     telemetryClient
@@ -204,59 +207,55 @@ public class Exporter implements SpanExporter {
         .getInstrumentationStatsbeat()
         .addInstrumentation(instrumentationName);
     if (kind == SpanKind.INTERNAL) {
-      Boolean isLog = span.getAttributes().get(AI_LOG_KEY);
-      if (isLog != null && isLog) {
-        exportLogSpan(span);
-      } else if (instrumentationName.startsWith("io.opentelemetry.spring-scheduling-")
+      if (instrumentationName.startsWith("io.opentelemetry.spring-scheduling-")
           && !span.getParentSpanContext().isValid()) {
         // TODO (trask) AI mapping: need semantic convention for determining whether to map INTERNAL
         // to request or dependency (or need clarification to use SERVER for this)
-        exportRequest(span);
+        exportRequest(span, telemetryItems);
       } else {
-        exportRemoteDependency(span, true);
+        exportRemoteDependency(span, true, telemetryItems);
       }
     } else if (kind == SpanKind.CLIENT || kind == SpanKind.PRODUCER) {
-      exportRemoteDependency(span, false);
+      exportRemoteDependency(span, false, telemetryItems);
     } else if (kind == SpanKind.CONSUMER
         && "receive".equals(span.getAttributes().get(SemanticAttributes.MESSAGING_OPERATION))) {
-      exportRemoteDependency(span, false);
+      exportRemoteDependency(span, false, telemetryItems);
     } else if (kind == SpanKind.SERVER || kind == SpanKind.CONSUMER) {
-      exportRequest(span);
+      exportRequest(span, telemetryItems);
     } else {
       throw new UnsupportedOperationException(kind.name());
     }
   }
 
-  private void exportRemoteDependency(SpanData span, boolean inProc) {
-    TelemetryItem telemetry = new TelemetryItem();
-    RemoteDependencyData data = new RemoteDependencyData();
-    telemetryClient.initRemoteDependencyTelemetry(telemetry, data);
+  private void exportRemoteDependency(
+      SpanData span, boolean inProc, List<TelemetryItem> telemetryItems) {
+    RemoteDependencyTelemetryBuilder telemetryBuilder =
+        telemetryClient.newRemoteDependencyTelemetryBuilder();
 
     float samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
 
     // set standard properties
-    setOperationTags(telemetry, span);
-    setTime(telemetry, span.getStartEpochNanos());
-    setSampleRate(telemetry, samplingPercentage);
-    setExtraAttributes(telemetry, data, span.getAttributes());
-    addLinks(data, span.getLinks());
+    setOperationTags(telemetryBuilder, span);
+    setTime(telemetryBuilder, span.getStartEpochNanos());
+    setSampleRate(telemetryBuilder, samplingPercentage);
+    setExtraAttributes(telemetryBuilder, span.getAttributes());
+    addLinks(telemetryBuilder, span.getLinks());
 
     // set dependency-specific properties
-    data.setId(span.getSpanId());
-    data.setName(getDependencyName(span));
-    data.setDuration(
+    telemetryBuilder.setId(span.getSpanId());
+    telemetryBuilder.setName(getDependencyName(span));
+    telemetryBuilder.setDuration(
         FormattedDuration.fromNanos(span.getEndEpochNanos() - span.getStartEpochNanos()));
-    data.setSuccess(getSuccess(span));
+    telemetryBuilder.setSuccess(getSuccess(span));
 
     if (inProc) {
-      data.setType("InProc");
+      telemetryBuilder.setType("InProc");
     } else {
-      applySemanticConventions(span, data);
+      applySemanticConventions(telemetryBuilder, span);
     }
 
-    // export
-    telemetryClient.trackAsync(telemetry);
-    exportEvents(span, null, samplingPercentage);
+    telemetryItems.add(telemetryBuilder.build());
+    exportEvents(span, null, samplingPercentage, telemetryItems);
   }
 
   private static final Set<String> DEFAULT_HTTP_SPAN_NAMES =
@@ -299,35 +298,35 @@ public class Exporter implements SpanExporter {
   }
 
   private static void applySemanticConventions(
-      SpanData span, RemoteDependencyData remoteDependencyData) {
+      RemoteDependencyTelemetryBuilder telemetryBuilder, SpanData span) {
     Attributes attributes = span.getAttributes();
     String httpMethod = attributes.get(SemanticAttributes.HTTP_METHOD);
     if (httpMethod != null) {
-      applyHttpClientSpan(attributes, remoteDependencyData);
+      applyHttpClientSpan(telemetryBuilder, attributes);
       return;
     }
     String rpcSystem = attributes.get(SemanticAttributes.RPC_SYSTEM);
     if (rpcSystem != null) {
-      applyRpcClientSpan(attributes, remoteDependencyData, rpcSystem);
+      applyRpcClientSpan(telemetryBuilder, rpcSystem, attributes);
       return;
     }
     String dbSystem = attributes.get(SemanticAttributes.DB_SYSTEM);
     if (dbSystem != null) {
-      applyDatabaseClientSpan(attributes, remoteDependencyData, dbSystem);
+      applyDatabaseClientSpan(telemetryBuilder, dbSystem, attributes);
       return;
     }
     String azureNamespace = attributes.get(AZURE_NAMESPACE);
     if ("Microsoft.EventHub".equals(azureNamespace)) {
-      applyEventHubsSpan(attributes, remoteDependencyData);
+      applyEventHubsSpan(telemetryBuilder, attributes);
       return;
     }
     if ("Microsoft.ServiceBus".equals(azureNamespace)) {
-      applyServiceBusSpan(attributes, remoteDependencyData);
+      applyServiceBusSpan(telemetryBuilder, attributes);
       return;
     }
     String messagingSystem = attributes.get(SemanticAttributes.MESSAGING_SYSTEM);
     if (messagingSystem != null) {
-      applyMessagingClientSpan(attributes, remoteDependencyData, messagingSystem, span.getKind());
+      applyMessagingClientSpan(telemetryBuilder, span.getKind(), messagingSystem, attributes);
       return;
     }
 
@@ -335,7 +334,7 @@ public class Exporter implements SpanExporter {
     // so we always want the port included
     String target = getTargetFromPeerAttributes(attributes, Integer.MAX_VALUE);
     if (target != null) {
-      remoteDependencyData.setTarget(target);
+      telemetryBuilder.setTarget(target);
       return;
     }
 
@@ -345,142 +344,65 @@ public class Exporter implements SpanExporter {
     //
     // so we mark these as InProc, even though they aren't INTERNAL spans,
     // in order to prevent App Map from considering them
-    remoteDependencyData.setType("InProc");
+    telemetryBuilder.setType("InProc");
   }
 
-  private void exportLogSpan(SpanData span) {
-    String errorStack = span.getAttributes().get(AI_LOG_ERROR_STACK_KEY);
-    if (errorStack == null) {
-      trackMessage(span);
-    } else {
-      trackTraceAsException(span, errorStack);
-    }
+  private static void setOperationTags(AbstractTelemetryBuilder telemetryBuilder, SpanData span) {
+    setOperationId(telemetryBuilder, span.getTraceId());
+    setOperationParentId(telemetryBuilder, span.getParentSpanContext().getSpanId());
+    setOperationName(telemetryBuilder, span.getAttributes());
   }
 
-  private void trackMessage(SpanData span) {
-    TelemetryItem telemetry = new TelemetryItem();
-    MessageData data = new MessageData();
-    telemetryClient.initMessageTelemetry(telemetry, data);
-
-    Attributes attributes = span.getAttributes();
-
-    // set standard properties
-    setTime(telemetry, span.getStartEpochNanos());
-    setOperationTags(telemetry, span);
-    setSampleRate(telemetry, span);
-    setExtraAttributes(telemetry, data, attributes);
-
-    // set message-specific properties
-    String level = attributes.get(AI_LOG_LEVEL_KEY);
-    String loggerName = attributes.get(AI_LOGGER_NAME_KEY);
-    String threadName = attributes.get(SemanticAttributes.THREAD_NAME);
-
-    data.setVersion(2);
-    data.setSeverityLevel(toSeverityLevel(level));
-    data.setMessage(span.getName());
-
-    setLoggerProperties(data, level, loggerName, threadName);
-
-    // export
-    telemetryClient.trackAsync(telemetry);
+  private static void setOperationId(AbstractTelemetryBuilder telemetryBuilder, String traceId) {
+    telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_ID.toString(), traceId);
   }
 
-  private void trackTraceAsException(SpanData span, String errorStack) {
-    TelemetryItem telemetry = new TelemetryItem();
-    TelemetryExceptionData data = new TelemetryExceptionData();
-    telemetryClient.initExceptionTelemetry(telemetry, data);
-
-    Attributes attributes = span.getAttributes();
-
-    // set standard properties
-    setOperationTags(telemetry, span);
-    setTime(telemetry, span.getStartEpochNanos());
-    setSampleRate(telemetry, span);
-    setExtraAttributes(telemetry, data, attributes);
-
-    // set exception-specific properties
-    String level = attributes.get(AI_LOG_LEVEL_KEY);
-    String loggerName = attributes.get(AI_LOGGER_NAME_KEY);
-    String threadName = attributes.get(SemanticAttributes.THREAD_NAME);
-
-    data.setExceptions(Exceptions.minimalParse(errorStack));
-    data.setSeverityLevel(toSeverityLevel(level));
-    TelemetryUtil.getProperties(data).put("Logger Message", span.getName());
-    setLoggerProperties(data, level, loggerName, threadName);
-
-    // export
-    telemetryClient.trackAsync(telemetry);
-  }
-
-  private static void setOperationTags(TelemetryItem telemetry, SpanData span) {
-    setOperationId(telemetry, span.getTraceId());
-    setOperationParentId(telemetry, span.getParentSpanContext().getSpanId());
-    setOperationName(telemetry, span.getAttributes());
-  }
-
-  private static void setOperationId(TelemetryItem telemetry, String traceId) {
-    telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), traceId);
-  }
-
-  private static void setOperationParentId(TelemetryItem telemetry, String parentSpanId) {
+  private static void setOperationParentId(
+      AbstractTelemetryBuilder telemetryBuilder, String parentSpanId) {
     if (SpanId.isValid(parentSpanId)) {
-      telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), parentSpanId);
+      telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), parentSpanId);
     }
   }
 
-  private static void setOperationName(TelemetryItem telemetry, Attributes attributes) {
+  private static void setOperationName(
+      AbstractTelemetryBuilder telemetryBuilder, Attributes attributes) {
     String operationName = attributes.get(AI_OPERATION_NAME_KEY);
     if (operationName != null) {
-      setOperationName(telemetry, operationName);
+      setOperationName(telemetryBuilder, operationName);
     }
   }
 
-  private static void setOperationName(TelemetryItem telemetry, String operationName) {
-    telemetry.getTags().put(ContextTagKeys.AI_OPERATION_NAME.toString(), operationName);
+  private static void setOperationName(
+      AbstractTelemetryBuilder telemetryBuilder, String operationName) {
+    telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_NAME.toString(), operationName);
   }
 
-  private static void setLoggerProperties(
-      MonitorDomain data, String level, String loggerName, String threadName) {
-    if (level != null) {
-      // TODO are these needed? level is already reported as severityLevel, sourceType maybe needed
-      // for exception telemetry only?
-      Map<String, String> properties = TelemetryUtil.getProperties(data);
-      properties.put("SourceType", "Logger");
-      properties.put("LoggingLevel", level);
-    }
-    if (loggerName != null) {
-      TelemetryUtil.getProperties(data).put("LoggerName", loggerName);
-    }
-    if (threadName != null) {
-      TelemetryUtil.getProperties(data).put("ThreadName", threadName);
-    }
-  }
-
-  private static void applyHttpClientSpan(Attributes attributes, RemoteDependencyData telemetry) {
+  private static void applyHttpClientSpan(
+      RemoteDependencyTelemetryBuilder telemetryBuilder, Attributes attributes) {
 
     String target = getTargetForHttpClientSpan(attributes);
 
     String targetAppId = getTargetAppId(attributes);
 
     if (targetAppId == null || AiAppId.getAppId().equals(targetAppId)) {
-      telemetry.setType("Http");
-      telemetry.setTarget(target);
+      telemetryBuilder.setType("Http");
+      telemetryBuilder.setTarget(target);
     } else {
       // using "Http (tracked component)" is important for dependencies that go cross-component
       // (have an appId in their target field)
       // if you use just HTTP, Breeze will remove appid from the target
       // TODO (trask) remove this once confirmed by zakima that it is no longer needed
-      telemetry.setType("Http (tracked component)");
-      telemetry.setTarget(target + " | " + targetAppId);
+      telemetryBuilder.setType("Http (tracked component)");
+      telemetryBuilder.setTarget(target + " | " + targetAppId);
     }
 
     Long httpStatusCode = attributes.get(SemanticAttributes.HTTP_STATUS_CODE);
     if (httpStatusCode != null) {
-      telemetry.setResultCode(Long.toString(httpStatusCode));
+      telemetryBuilder.setResultCode(Long.toString(httpStatusCode));
     }
 
     String url = attributes.get(SemanticAttributes.HTTP_URL);
-    telemetry.setData(url);
+    telemetryBuilder.setData(url);
   }
 
   @Nullable
@@ -585,18 +507,18 @@ public class Exporter implements SpanExporter {
   }
 
   private static void applyRpcClientSpan(
-      Attributes attributes, RemoteDependencyData telemetry, String rpcSystem) {
-    telemetry.setType(rpcSystem);
+      RemoteDependencyTelemetryBuilder telemetryBuilder, String rpcSystem, Attributes attributes) {
+    telemetryBuilder.setType(rpcSystem);
     String target = getTargetFromPeerAttributes(attributes, 0);
     // not appending /rpc.service for now since that seems too fine-grained
     if (target == null) {
       target = rpcSystem;
     }
-    telemetry.setTarget(target);
+    telemetryBuilder.setTarget(target);
   }
 
   private static void applyDatabaseClientSpan(
-      Attributes attributes, RemoteDependencyData telemetry, String dbSystem) {
+      RemoteDependencyTelemetryBuilder telemetryBuilder, String dbSystem, Attributes attributes) {
     String dbStatement = attributes.get(SemanticAttributes.DB_STATEMENT);
     if (dbStatement == null) {
       dbStatement = attributes.get(SemanticAttributes.DB_OPERATION);
@@ -613,8 +535,8 @@ public class Exporter implements SpanExporter {
     } else {
       type = dbSystem;
     }
-    telemetry.setType(type);
-    telemetry.setData(dbStatement);
+    telemetryBuilder.setType(type);
+    telemetryBuilder.setData(dbStatement);
     String target =
         nullAwareConcat(
             getTargetFromPeerAttributes(attributes, getDefaultPortForDbSystem(dbSystem)),
@@ -623,39 +545,41 @@ public class Exporter implements SpanExporter {
     if (target == null) {
       target = dbSystem;
     }
-    telemetry.setTarget(target);
+    telemetryBuilder.setTarget(target);
   }
 
   private static void applyMessagingClientSpan(
-      Attributes attributes,
-      RemoteDependencyData telemetry,
+      RemoteDependencyTelemetryBuilder telemetryBuilder,
+      SpanKind spanKind,
       String messagingSystem,
-      SpanKind spanKind) {
+      Attributes attributes) {
     if (spanKind == SpanKind.PRODUCER) {
-      telemetry.setType("Queue Message | " + messagingSystem);
+      telemetryBuilder.setType("Queue Message | " + messagingSystem);
     } else {
       // e.g. CONSUMER kind (without remote parent) and CLIENT kind
-      telemetry.setType(messagingSystem);
+      telemetryBuilder.setType(messagingSystem);
     }
     String destination = attributes.get(SemanticAttributes.MESSAGING_DESTINATION);
     if (destination != null) {
-      telemetry.setTarget(destination);
+      telemetryBuilder.setTarget(destination);
     } else {
-      telemetry.setTarget(messagingSystem);
+      telemetryBuilder.setTarget(messagingSystem);
     }
   }
 
   // special case needed until Azure SDK moves to OTel semantic conventions
-  private static void applyEventHubsSpan(Attributes attributes, RemoteDependencyData telemetry) {
-    telemetry.setType("Microsoft.EventHub");
-    telemetry.setTarget(getAzureSdkTargetSource(attributes));
+  private static void applyEventHubsSpan(
+      RemoteDependencyTelemetryBuilder telemetryBuilder, Attributes attributes) {
+    telemetryBuilder.setType("Microsoft.EventHub");
+    telemetryBuilder.setTarget(getAzureSdkTargetSource(attributes));
   }
 
   // special case needed until Azure SDK moves to OTel semantic conventions
-  private static void applyServiceBusSpan(Attributes attributes, RemoteDependencyData telemetry) {
+  private static void applyServiceBusSpan(
+      RemoteDependencyTelemetryBuilder telemetryBuilder, Attributes attributes) {
     // TODO(trask) change this to Microsoft.ServiceBus once that is supported in U/X E2E view
-    telemetry.setType("AZURE SERVICE BUS");
-    telemetry.setTarget(getAzureSdkTargetSource(attributes));
+    telemetryBuilder.setType("AZURE SERVICE BUS");
+    telemetryBuilder.setTarget(getAzureSdkTargetSource(attributes));
   }
 
   private static String getAzureSdkTargetSource(Attributes attributes) {
@@ -696,51 +620,48 @@ public class Exporter implements SpanExporter {
     }
   }
 
-  private void exportRequest(SpanData span) {
-    TelemetryItem telemetry = new TelemetryItem();
-    RequestData data = new RequestData();
-    telemetryClient.initRequestTelemetry(telemetry, data);
+  private void exportRequest(SpanData span, List<TelemetryItem> telemetryItems) {
+    RequestTelemetryBuilder telemetryBuilder = telemetryClient.newRequestTelemetryBuilder();
 
     Attributes attributes = span.getAttributes();
     long startEpochNanos = span.getStartEpochNanos();
     float samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
 
     // set standard properties
-    data.setId(span.getSpanId());
-    setTime(telemetry, startEpochNanos);
-    setSampleRate(telemetry, samplingPercentage);
-    setExtraAttributes(telemetry, data, attributes);
-    addLinks(data, span.getLinks());
+    telemetryBuilder.setId(span.getSpanId());
+    setTime(telemetryBuilder, startEpochNanos);
+    setSampleRate(telemetryBuilder, samplingPercentage);
+    setExtraAttributes(telemetryBuilder, attributes);
+    addLinks(telemetryBuilder, span.getLinks());
 
     String operationName = getOperationName(span);
-    telemetry.getTags().put(ContextTagKeys.AI_OPERATION_NAME.toString(), operationName);
-    telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), span.getTraceId());
+    telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_NAME.toString(), operationName);
+    telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_ID.toString(), span.getTraceId());
 
     // see behavior specified at https://github.com/microsoft/ApplicationInsights-Java/issues/1174
     String aiLegacyParentId = span.getAttributes().get(AI_LEGACY_PARENT_ID_KEY);
     if (aiLegacyParentId != null) {
       // this was the real (legacy) parent id, but it didn't fit span id format
-      telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), aiLegacyParentId);
+      telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), aiLegacyParentId);
     } else if (span.getParentSpanContext().isValid()) {
-      telemetry
-          .getTags()
-          .put(
-              ContextTagKeys.AI_OPERATION_PARENT_ID.toString(),
-              span.getParentSpanContext().getSpanId());
+      telemetryBuilder.addTag(
+          ContextTagKeys.AI_OPERATION_PARENT_ID.toString(),
+          span.getParentSpanContext().getSpanId());
     }
     String aiLegacyRootId = span.getAttributes().get(AI_LEGACY_ROOT_ID_KEY);
     if (aiLegacyRootId != null) {
-      telemetry.getTags().put("ai_legacyRootID", aiLegacyRootId);
+      telemetryBuilder.addTag("ai_legacyRootID", aiLegacyRootId);
     }
 
     // set request-specific properties
-    data.setName(operationName);
-    data.setDuration(FormattedDuration.fromNanos(span.getEndEpochNanos() - startEpochNanos));
-    data.setSuccess(getSuccess(span));
+    telemetryBuilder.setName(operationName);
+    telemetryBuilder.setDuration(
+        FormattedDuration.fromNanos(span.getEndEpochNanos() - startEpochNanos));
+    telemetryBuilder.setSuccess(getSuccess(span));
 
     String httpUrl = getHttpUrlFromServerSpan(attributes);
     if (httpUrl != null) {
-      data.setUrl(httpUrl);
+      telemetryBuilder.setUrl(httpUrl);
     }
 
     Long httpStatusCode = attributes.get(SemanticAttributes.HTTP_STATUS_CODE);
@@ -748,9 +669,9 @@ public class Exporter implements SpanExporter {
       httpStatusCode = attributes.get(SemanticAttributes.RPC_GRPC_STATUS_CODE);
     }
     if (httpStatusCode != null) {
-      data.setResponseCode(Long.toString(httpStatusCode));
+      telemetryBuilder.setResponseCode(Long.toString(httpStatusCode));
     } else {
-      data.setResponseCode("0");
+      telemetryBuilder.setResponseCode("0");
     }
 
     String locationIp = attributes.get(SemanticAttributes.HTTP_CLIENT_IP);
@@ -759,28 +680,28 @@ public class Exporter implements SpanExporter {
       locationIp = attributes.get(SemanticAttributes.NET_PEER_IP);
     }
     if (locationIp != null) {
-      telemetry.getTags().put(ContextTagKeys.AI_LOCATION_IP.toString(), locationIp);
+      telemetryBuilder.addTag(ContextTagKeys.AI_LOCATION_IP.toString(), locationIp);
     }
 
-    data.setSource(getSource(attributes, span.getSpanContext()));
+    telemetryBuilder.setSource(getSource(attributes, span.getSpanContext()));
 
     String sessionId = attributes.get(AI_SESSION_ID_KEY);
     if (sessionId != null) {
       // this is only used by the 2.x web interop bridge for
       // ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getSession().setId()
-      telemetry.getTags().put(ContextTagKeys.AI_SESSION_ID.toString(), sessionId);
+      telemetryBuilder.addTag(ContextTagKeys.AI_SESSION_ID.toString(), sessionId);
     }
     String deviceOs = attributes.get(AI_DEVICE_OS_KEY);
     if (deviceOs != null) {
       // this is only used by the 2.x web interop bridge for
       // ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getDevice().setOperatingSystem()
-      telemetry.getTags().put(ContextTagKeys.AI_DEVICE_OS.toString(), deviceOs);
+      telemetryBuilder.addTag(AI_DEVICE_OS.toString(), deviceOs);
     }
     String deviceOsVersion = attributes.get(AI_DEVICE_OS_VERSION_KEY);
     if (deviceOsVersion != null) {
       // this is only used by the 2.x web interop bridge for
       // ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getDevice().setOperatingSystemVersion()
-      telemetry.getTags().put(ContextTagKeys.AI_DEVICE_OS_VERSION.toString(), deviceOsVersion);
+      telemetryBuilder.addTag(ContextTagKeys.AI_DEVICE_OS_VERSION.toString(), deviceOsVersion);
     }
 
     // TODO(trask)? for batch consumer, enqueuedTime should be the average of this attribute
@@ -790,22 +711,15 @@ public class Exporter implements SpanExporter {
       long timeSinceEnqueuedMillis =
           Math.max(
               0L, NANOSECONDS.toMillis(span.getStartEpochNanos()) - SECONDS.toMillis(enqueuedTime));
-      if (data.getMeasurements() == null) {
-        data.setMeasurements(new HashMap<>());
-      }
-      data.getMeasurements().put("timeSinceEnqueued", (double) timeSinceEnqueuedMillis);
+      telemetryBuilder.addMeasurement("timeSinceEnqueued", (double) timeSinceEnqueuedMillis);
     }
     Long timeSinceEnqueuedMillis = attributes.get(KAFKA_RECORD_QUEUE_TIME_MS);
     if (timeSinceEnqueuedMillis != null) {
-      if (data.getMeasurements() == null) {
-        data.setMeasurements(new HashMap<>());
-      }
-      data.getMeasurements().put("timeSinceEnqueued", (double) timeSinceEnqueuedMillis);
+      telemetryBuilder.addMeasurement("timeSinceEnqueued", (double) timeSinceEnqueuedMillis);
     }
 
-    // export
-    telemetryClient.trackAsync(telemetry);
-    exportEvents(span, operationName, samplingPercentage);
+    telemetryItems.add(telemetryBuilder.build());
+    exportEvents(span, operationName, samplingPercentage, telemetryItems);
   }
 
   private boolean getSuccess(SpanData span) {
@@ -906,7 +820,10 @@ public class Exporter implements SpanExporter {
   }
 
   private void exportEvents(
-      SpanData span, @Nullable String operationName, float samplingPercentage) {
+      SpanData span,
+      @Nullable String operationName,
+      float samplingPercentage,
+      List<TelemetryItem> telemetryItems) {
     for (EventData event : span.getEvents()) {
       String instrumentationLibraryName = span.getInstrumentationLibraryInfo().getName();
       boolean lettuce51 = instrumentationLibraryName.equals("io.opentelemetry.lettuce-5.1");
@@ -928,68 +845,66 @@ public class Exporter implements SpanExporter {
         // TODO (trask) map OpenTelemetry exception to Application Insights exception better
         String stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
         if (stacktrace != null) {
-          trackException(stacktrace, span, operationName, samplingPercentage);
+          trackException(stacktrace, span, operationName, samplingPercentage, telemetryItems);
         }
         return;
       }
 
-      TelemetryItem telemetry = new TelemetryItem();
-      MessageData data = new MessageData();
-      telemetryClient.initMessageTelemetry(telemetry, data);
+      MessageTelemetryBuilder telemetryBuilder = telemetryClient.newMessageTelemetryBuilder();
 
       // set standard properties
-      setOperationId(telemetry, span.getTraceId());
-      setOperationParentId(telemetry, span.getSpanId());
+      setOperationId(telemetryBuilder, span.getTraceId());
+      setOperationParentId(telemetryBuilder, span.getSpanId());
       if (operationName != null) {
-        setOperationName(telemetry, operationName);
+        setOperationName(telemetryBuilder, operationName);
       } else {
-        setOperationName(telemetry, span.getAttributes());
+        setOperationName(telemetryBuilder, span.getAttributes());
       }
-      setTime(telemetry, event.getEpochNanos());
-      setExtraAttributes(telemetry, data, event.getAttributes());
-      setSampleRate(telemetry, samplingPercentage);
+      setTime(telemetryBuilder, event.getEpochNanos());
+      setExtraAttributes(telemetryBuilder, event.getAttributes());
+      setSampleRate(telemetryBuilder, samplingPercentage);
 
       // set message-specific properties
-      data.setMessage(event.getName());
+      telemetryBuilder.setMessage(event.getName());
 
-      telemetryClient.trackAsync(telemetry);
+      telemetryItems.add(telemetryBuilder.build());
     }
   }
 
   private void trackException(
-      String errorStack, SpanData span, @Nullable String operationName, float samplingPercentage) {
-    TelemetryItem telemetry = new TelemetryItem();
-    TelemetryExceptionData data = new TelemetryExceptionData();
-    telemetryClient.initExceptionTelemetry(telemetry, data);
+      String errorStack,
+      SpanData span,
+      @Nullable String operationName,
+      float samplingPercentage,
+      List<TelemetryItem> telemetryItems) {
+
+    ExceptionTelemetryBuilder telemetryBuilder = telemetryClient.newExceptionTelemetryBuilder();
 
     // set standard properties
-    setOperationId(telemetry, span.getTraceId());
-    setOperationParentId(telemetry, span.getSpanId());
+    setOperationId(telemetryBuilder, span.getTraceId());
+    setOperationParentId(telemetryBuilder, span.getSpanId());
     if (operationName != null) {
-      setOperationName(telemetry, operationName);
+      setOperationName(telemetryBuilder, operationName);
     } else {
-      setOperationName(telemetry, span.getAttributes());
+      setOperationName(telemetryBuilder, span.getAttributes());
     }
-    setTime(telemetry, span.getEndEpochNanos());
-    setSampleRate(telemetry, samplingPercentage);
+    setTime(telemetryBuilder, span.getEndEpochNanos());
+    setSampleRate(telemetryBuilder, samplingPercentage);
 
     // set exception-specific properties
-    data.setExceptions(Exceptions.minimalParse(errorStack));
+    telemetryBuilder.setExceptions(Exceptions.minimalParse(errorStack));
 
-    telemetryClient.trackAsync(telemetry);
+    telemetryItems.add(telemetryBuilder.build());
   }
 
-  private static void setTime(TelemetryItem telemetry, long epochNanos) {
-    telemetry.setTime(FormattedTime.offSetDateTimeFromEpochNanos(epochNanos));
+  private static void setTime(AbstractTelemetryBuilder telemetryBuilder, long epochNanos) {
+    telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(epochNanos));
   }
 
-  private static void setSampleRate(TelemetryItem telemetry, SpanData span) {
-    setSampleRate(telemetry, getSamplingPercentage(span.getSpanContext().getTraceState()));
-  }
-
-  private static void setSampleRate(TelemetryItem telemetry, float samplingPercentage) {
+  private static void setSampleRate(
+      AbstractTelemetryBuilder telemetryBuilder, float samplingPercentage) {
     if (samplingPercentage != 100) {
-      telemetry.setSampleRate(samplingPercentage);
+      telemetryBuilder.setSampleRate(samplingPercentage);
     }
   }
 
@@ -997,7 +912,7 @@ public class Exporter implements SpanExporter {
     return TelemetryUtil.getSamplingPercentage(traceState, 100, true);
   }
 
-  private static void addLinks(MonitorDomain data, List<LinkData> links) {
+  private static void addLinks(AbstractTelemetryBuilder telemetryBuilder, List<LinkData> links) {
     if (links.isEmpty()) {
       return;
     }
@@ -1016,11 +931,11 @@ public class Exporter implements SpanExporter {
       first = false;
     }
     sb.append("]");
-    TelemetryUtil.getProperties(data).put("_MS.links", sb.toString());
+    telemetryBuilder.addProperty("_MS.links", sb.toString());
   }
 
   private static void setExtraAttributes(
-      TelemetryItem telemetry, MonitorDomain data, Attributes attributes) {
+      AbstractTelemetryBuilder telemetryBuilder, Attributes attributes) {
     attributes.forEach(
         (key, value) -> {
           String stringKey = key.getKey();
@@ -1043,30 +958,29 @@ public class Exporter implements SpanExporter {
           }
           // special case mappings
           if (stringKey.equals(SemanticAttributes.ENDUSER_ID.getKey()) && value instanceof String) {
-            telemetry.getTags().put(ContextTagKeys.AI_USER_ID.toString(), (String) value);
+            telemetryBuilder.addTag(ContextTagKeys.AI_USER_ID.toString(), (String) value);
             return;
           }
           if (stringKey.equals(SemanticAttributes.HTTP_USER_AGENT.getKey())
               && value instanceof String) {
-            telemetry.getTags().put("ai.user.userAgent", (String) value);
+            telemetryBuilder.addTag("ai.user.userAgent", (String) value);
             return;
           }
           if (stringKey.equals("ai.preview.instrumentation_key") && value instanceof String) {
-            telemetry.setInstrumentationKey((String) value);
+            telemetryBuilder.setInstrumentationKey((String) value);
             return;
           }
           if (stringKey.equals("ai.preview.service_name") && value instanceof String) {
-            telemetry.getTags().put(ContextTagKeys.AI_CLOUD_ROLE.toString(), (String) value);
+            telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), (String) value);
             return;
           }
           if (stringKey.equals("ai.preview.service_instance_id") && value instanceof String) {
-            telemetry
-                .getTags()
-                .put(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), (String) value);
+            telemetryBuilder.addTag(
+                ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), (String) value);
             return;
           }
           if (stringKey.equals("ai.preview.service_version") && value instanceof String) {
-            telemetry.getTags().put(ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
+            telemetryBuilder.addTag(ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
             return;
           }
           if (STANDARD_ATTRIBUTE_PREFIX_TRIE.getOrDefault(stringKey, false)
@@ -1076,13 +990,13 @@ public class Exporter implements SpanExporter {
           }
           String val = convertToString(value, key.getType());
           if (value != null) {
-            TelemetryUtil.getProperties(data).put(key.getKey(), val);
+            telemetryBuilder.addProperty(key.getKey(), val);
           }
         });
   }
 
   @Nullable
-  private static String convertToString(Object value, AttributeType type) {
+  static String convertToString(Object value, AttributeType type) {
     switch (type) {
       case STRING:
       case BOOLEAN:
@@ -1108,36 +1022,5 @@ public class Exporter implements SpanExporter {
       sb.append(val);
     }
     return sb.toString();
-  }
-
-  @Nullable
-  private static SeverityLevel toSeverityLevel(String level) {
-    if (level == null) {
-      return null;
-    }
-    switch (level) {
-      case "FATAL":
-        return SeverityLevel.CRITICAL;
-      case "ERROR":
-      case "SEVERE":
-        return SeverityLevel.ERROR;
-      case "WARN":
-      case "WARNING":
-        return SeverityLevel.WARNING;
-      case "INFO":
-        return SeverityLevel.INFORMATION;
-      case "DEBUG":
-      case "TRACE":
-      case "CONFIG":
-      case "FINE":
-      case "FINER":
-      case "FINEST":
-      case "ALL":
-        return SeverityLevel.VERBOSE;
-      default:
-        // TODO (trask) AI mapping: is this a good fallback?
-        logger.debug("Unexpected level {}, using VERBOSE level as default", level);
-        return SeverityLevel.VERBOSE;
-    }
   }
 }

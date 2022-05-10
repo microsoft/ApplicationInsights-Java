@@ -21,9 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.StatsbeatTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 
 class AttachStatsbeat extends BaseStatsbeat {
 
@@ -52,11 +51,10 @@ class AttachStatsbeat extends BaseStatsbeat {
       resourceProviderId = initResourceProviderId(customDimensions.getResourceProvider(), null);
     }
 
-    TelemetryItem statsbeatTelemetry =
+    StatsbeatTelemetryBuilder telemetryBuilder =
         createStatsbeatTelemetry(telemetryClient, ATTACH_METRIC_NAME, 0);
-    TelemetryUtil.getProperties(statsbeatTelemetry.getData().getBaseData())
-        .put("rpId", resourceProviderId);
-    telemetryClient.trackStatsbeatAsync(statsbeatTelemetry);
+    telemetryBuilder.addProperty("rpId", resourceProviderId);
+    telemetryClient.trackStatsbeatAsync(telemetryBuilder.build());
   }
 
   /** Returns the unique identifier of the resource provider. */

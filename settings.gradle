@@ -58,7 +58,9 @@ include ':agent:agent-profiler:agent-service-profiler'
 
 include ':agent:agent-bootstrap'
 include ':agent:agent-tooling'
-include ':agent:instrumentation'
+include ':agent:agent-for-testing'
+include ':agent:instrumentation:applicationinsights-web-2.3'
+include ':agent:instrumentation:azure-functions'
 include ':agent:agent'
 
 // misc
@@ -102,6 +104,7 @@ include ':test:smoke:testApps:Micrometer'
 include ':test:smoke:testApps:MongoDB'
 include ':test:smoke:testApps:NonDaemonThreads'
 include ':test:smoke:testApps:OpenTelemetryApiSupport'
+include ':test:smoke:testApps:OpenTelemetryMetric'
 include ':test:smoke:testApps:Sampling'
 include ':test:smoke:testApps:SpringBoot1_3Auto'
 include ':test:smoke:testApps:SpringBootAttachInMain'

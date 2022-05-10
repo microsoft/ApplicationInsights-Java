@@ -21,9 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryUtil;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
@@ -41,7 +39,6 @@ import oshi.util.platform.linux.ProcPath;
 public class OshiPerformanceCounter implements PerformanceCounter {
 
   private static final Logger logger = LoggerFactory.getLogger(OshiPerformanceCounter.class);
-  private static final String ID = Constants.PERFORMANCE_COUNTER_PREFIX + "OshiPerformanceCounter";
 
   private static final double MILLIS_IN_SECOND = 1000;
 
@@ -52,11 +49,6 @@ public class OshiPerformanceCounter implements PerformanceCounter {
   private volatile OSProcess processInfo;
   private volatile CentralProcessor processor;
   private static final AtomicBoolean hasError = new AtomicBoolean();
-
-  @Override
-  public String getId() {
-    return ID;
-  }
 
   @Override
   public void report(TelemetryClient telemetryClient) {
@@ -99,21 +91,19 @@ public class OshiPerformanceCounter implements PerformanceCounter {
       double elapsedSeconds = elapsedMillis / MILLIS_IN_SECOND;
       if (processInfo != null) {
         double processBytes = (currProcessBytes - prevProcessBytes) / elapsedSeconds;
-        send(telemetryClient, processBytes, Constants.PROCESS_IO_PC_METRIC_NAME);
+        send(telemetryClient, processBytes, MetricNames.PROCESS_IO);
         logger.trace(
-            "Sent performance counter for '{}': '{}'",
-            Constants.PROCESS_IO_PC_METRIC_NAME,
-            processBytes);
+            "Sent performance counter for '{}': '{}'", MetricNames.PROCESS_IO, processBytes);
       }
 
       double processorLoad =
           (currTotalProcessorMillis - prevTotalProcessorMillis)
               / (elapsedMillis * processor.getLogicalProcessorCount());
       double processorPercentage = 100 * processorLoad;
-      send(telemetryClient, processorPercentage, Constants.TOTAL_CPU_PC_METRIC_NAME);
+      send(telemetryClient, processorPercentage, MetricNames.TOTAL_CPU_PERCENTAGE);
       logger.trace(
           "Sent performance counter for '{}': '{}'",
-          Constants.TOTAL_CPU_PC_METRIC_NAME,
+          MetricNames.TOTAL_CPU_PERCENTAGE,
           processorPercentage);
     }
 
@@ -155,8 +145,6 @@ public class OshiPerformanceCounter implements PerformanceCounter {
   }
 
   private static void send(TelemetryClient telemetryClient, double value, String metricName) {
-    TelemetryItem telemetry =
-        TelemetryUtil.createMetricsTelemetry(telemetryClient, metricName, value);
-    telemetryClient.trackAsync(telemetry);
+    telemetryClient.trackAsync(telemetryClient.newMetricTelemetry(metricName, value));
   }
 }

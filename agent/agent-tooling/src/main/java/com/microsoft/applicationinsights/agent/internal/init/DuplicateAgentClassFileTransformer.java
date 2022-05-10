@@ -21,18 +21,18 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import static net.bytebuddy.jar.asm.Opcodes.ASM7;
-import static net.bytebuddy.jar.asm.Opcodes.RETURN;
+import static org.objectweb.asm.Opcodes.ASM7;
+import static org.objectweb.asm.Opcodes.RETURN;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
 import java.util.HashSet;
 import java.util.Set;
-import net.bytebuddy.jar.asm.ClassReader;
-import net.bytebuddy.jar.asm.ClassVisitor;
-import net.bytebuddy.jar.asm.ClassWriter;
-import net.bytebuddy.jar.asm.MethodVisitor;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

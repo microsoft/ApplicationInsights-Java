@@ -21,11 +21,11 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler;
 
-import static com.microsoft.applicationinsights.agent.internal.perfcounter.Constants.TOTAL_CPU_PC_METRIC_NAME;
+import static com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames.TOTAL_CPU_PERCENTAGE;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricDataPoint;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MetricsData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MonitorDomain;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
@@ -70,7 +70,7 @@ public class AlertingServiceFactory {
           }
           MetricDataPoint point = ((MetricsData) data).getMetrics().get(0);
           AlertMetricType alertMetricType = null;
-          if (point.getName().equals(TOTAL_CPU_PC_METRIC_NAME)) {
+          if (point.getName().equals(TOTAL_CPU_PERCENTAGE)) {
             alertMetricType = AlertMetricType.CPU;
           }
 

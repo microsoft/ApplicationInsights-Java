@@ -95,14 +95,4 @@ public class StatsbeatSmokeTest extends AiSmokeTest {
     assertNotNull(metricData.getProperties().get("language"));
     assertNotNull(metricData.getProperties().get("version"));
   }
-
-  private static Predicate<Envelope> getMetricPredicate(String name) {
-    return input -> {
-      if (!input.getData().getBaseType().equals("MetricData")) {
-        return false;
-      }
-      MetricData md = getBaseData(input);
-      return name.equals(md.getMetrics().get(0).getName());
-    };
-  }
 }

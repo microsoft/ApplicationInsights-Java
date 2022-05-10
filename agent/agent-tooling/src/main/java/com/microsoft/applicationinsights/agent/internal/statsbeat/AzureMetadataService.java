@@ -24,9 +24,9 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import java.io.IOException;
 import java.util.concurrent.Executors;
@@ -72,7 +72,7 @@ class AzureMetadataService implements Runnable {
   }
 
   void shutdown() {
-    logger.info("Shutting down Azure Metadata Service.");
+    logger.debug("Shutting down Azure Metadata Service.");
     scheduledExecutor.shutdown();
   }
 

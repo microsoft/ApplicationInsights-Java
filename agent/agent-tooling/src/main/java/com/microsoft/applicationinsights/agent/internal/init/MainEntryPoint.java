@@ -231,7 +231,7 @@ public class MainEntryPoint {
     sdkNamePrefix.append(DiagnosticsHelper.rpIntegrationChar());
     if (SystemInformation.isWindows()) {
       sdkNamePrefix.append("w");
-    } else if (SystemInformation.isUnix()) {
+    } else if (SystemInformation.isLinux()) {
       sdkNamePrefix.append("l");
     } else {
       LoggerFactory.getLogger("com.microsoft.applicationinsights.agent")

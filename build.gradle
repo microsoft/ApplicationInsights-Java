@@ -1,5 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-
 plugins {
   id "idea"
 
@@ -14,7 +12,21 @@ plugins {
 
 ext.buildScriptsDir = "$rootDir/gradle"
 
-apply from: "$buildScriptsDir/common.gradle"
+version = calcProjectVersion()
+subprojects {
+  version = rootProject.version
+}
+
+def calcProjectVersion() {
+  def projectVersion = version;
+
+  boolean isRelease = (System.properties["isRelease"] ?: "false").toBoolean()
+  if (!isRelease) {
+    projectVersion = projectVersion + "-SNAPSHOT"
+    logger.info "This is NOT a release version; version updated to $projectVersion"
+  }
+  projectVersion
+}
 
 ext {
   isBuildServer = (System.properties["isBuildServer"] ?: "false").toBoolean()
@@ -67,20 +79,6 @@ allprojects {
         it.resolve()
       }
     }
-  }
-
-  tasks.withType(ShadowJar) {
-    exclude "META-INF/maven/**"
-    exclude "META-INF/LICENSE*"
-    exclude "META-INF/DEPENDENCIES"
-    exclude "META-INF/NOTICE*"
-    from "${rootProject.projectDir}/NOTICE"
-    from "${rootProject.projectDir}/LICENSE"
-  }
-
-  tasks.withType(Jar) {
-    from "${rootProject.projectDir}/NOTICE"
-    from "${rootProject.projectDir}/LICENSE"
   }
 
   plugins.withId("net.ltgt.errorprone") {

@@ -212,4 +212,22 @@ class ConfigurationBuilderTest {
               assertThat(configuration.connectionString).isEqualTo(testConnectionString);
             });
   }
+
+  @Test
+  void testProxyEnvOverlay() throws Exception {
+    withEnvironmentVariable("APPLICATIONINSIGHTS_PROXY", "https://me:passw@host:1234")
+        .execute(
+            () -> {
+              Configuration configuration = new Configuration();
+
+              configuration.proxy.host = "old";
+              configuration.proxy.port = 555;
+              ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+
+              assertThat(configuration.proxy.host).isEqualTo("host");
+              assertThat(configuration.proxy.port).isEqualTo(1234);
+              assertThat(configuration.proxy.username).isEqualTo("me");
+              assertThat(configuration.proxy.password).isEqualTo("passw");
+            });
+  }
 }

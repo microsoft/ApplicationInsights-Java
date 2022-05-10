@@ -11,11 +11,12 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.10.0"
+val otelVersion = "1.13.0"
 rootProject.extra["otelVersion"] = otelVersion
 
 // IMPORTANT when updating opentelemetry version, be sure to update bytebuddy version to match
-val otelInstrumentationVersionAlpha = "1.10.0+ai.patches-alpha"
+val otelInstrumentationVersionAlpha = "1.14.0.1-alpha"
+rootProject.extra["otelInstrumentationVersionAlpha"] = otelInstrumentationVersionAlpha
 
 val DEPENDENCY_BOMS = listOf(
   "com.google.guava:guava-bom:31.0.1-jre",
@@ -43,7 +44,7 @@ val DEPENDENCY_SETS = listOf(
   DependencySet(
     "net.bytebuddy",
     // When updating, also update buildSrc/build.gradle.kts
-    "1.12.6",
+    "1.12.9",
     listOf("byte-buddy", "byte-buddy-dep", "byte-buddy-agent", "byte-buddy-gradle-plugin")
   ),
   DependencySet(
@@ -53,7 +54,7 @@ val DEPENDENCY_SETS = listOf(
   ),
   DependencySet(
     "org.slf4j",
-    "1.7.30",
+    "1.7.36",
     listOf("slf4j-api", "slf4j-simple", "log4j-over-slf4j", "jcl-over-slf4j", "jul-to-slf4j")
   ),
   DependencySet(
@@ -70,7 +71,7 @@ val DEPENDENCY_SETS = listOf(
     "io.opentelemetry.javaagent",
     "${otelInstrumentationVersionAlpha}",
     listOf(
-      "opentelemetry-javaagent-instrumentation-api",
+      "opentelemetry-javaagent-extension-api",
       "opentelemetry-javaagent-bootstrap",
       "opentelemetry-javaagent-tooling",
       "opentelemetry-javaagent-extension-api")
@@ -95,13 +96,11 @@ val DEPENDENCIES = listOf(
   "com.google.auto.service:auto-service:1.0",
   "com.uber.nullaway:nullaway:0.9.1",
   "commons-codec:commons-codec:1.15",
-  "commons-io:commons-io:2.7",
-  "org.apache.commons:commons-lang3:3.7",
   "org.apache.commons:commons-text:1.9",
   "com.google.code.gson:gson:2.8.2",
-  "com.azure:azure-core:1.25.0",
-  "com.azure:azure-storage-blob:12.14.3",
-  "com.azure:azure-identity:1.4.4",
+  "com.azure:azure-core:1.27.0",
+  "com.azure:azure-storage-blob:12.16.0",
+  "com.azure:azure-identity:1.5.0",
   "com.github.oshi:oshi-core:5.8.0",
   "org.assertj:assertj-core:3.22.0",
   "org.awaitility:awaitility:4.1.0",

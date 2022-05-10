@@ -21,29 +21,38 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import com.azure.monitor.opentelemetry.exporter.AiOperationNameSpanProcessor;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
+import com.microsoft.applicationinsights.agent.internal.exporter.AzureMonitorMetricExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
+import com.microsoft.applicationinsights.agent.internal.exporter.LoggerExporter;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHeaderSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
-import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithLogProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
+import com.microsoft.applicationinsights.agent.internal.processors.LogExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
+import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
+import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.logs.SdkLogEmitterProviderBuilder;
+import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
+import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
-import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.time.Duration;
@@ -53,23 +62,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@AutoService(SdkTracerProviderConfigurer.class)
-public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
-
-  private static volatile BatchSpanProcessor batchSpanProcessor;
-
-  public static CompletableResultCode flush() {
-    if (batchSpanProcessor == null) {
-      return CompletableResultCode.ofSuccess();
-    }
-    return batchSpanProcessor.forceFlush();
-  }
+@AutoService(AutoConfigurationCustomizerProvider.class)
+public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvider {
 
   @Override
-  @SuppressFBWarnings(
-      value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
-      justification = "this method is only called once during initialization")
-  public void configure(SdkTracerProviderBuilder tracerProvider, ConfigProperties config) {
+  public void customize(AutoConfigurationCustomizer autoConfiguration) {
     TelemetryClient telemetryClient = TelemetryClient.getActive();
     if (telemetryClient == null) {
       // agent failed during startup
@@ -78,12 +75,32 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
 
     Configuration configuration = MainEntryPoint.getConfiguration();
 
+    autoConfiguration
+        .addTracerProviderCustomizer(
+            (builder, config) -> configureTracing(builder, telemetryClient, config, configuration))
+        .addLogEmitterProviderCustomizer(
+            (builder, config) -> configureLogging(builder, telemetryClient, configuration))
+        .addMeterProviderCustomizer(
+            (builder, config) -> configureMetrics(builder, telemetryClient, configuration));
+  }
+
+  @SuppressFBWarnings(
+      value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
+      justification = "this method is only called once during initialization")
+  private static SdkTracerProviderBuilder configureTracing(
+      SdkTracerProviderBuilder tracerProvider,
+      TelemetryClient telemetryClient,
+      ConfigProperties config,
+      Configuration configuration) {
+
     tracerProvider.setSampler(DelegatingSampler.getInstance());
 
     if (configuration.connectionString != null) {
       if (!configuration.preview.disablePropagation) {
         DelegatingPropagator.getInstance()
-            .setUpStandardDelegate(configuration.preview.legacyRequestIdPropagation.enabled);
+            .setUpStandardDelegate(
+                configuration.preview.additionalPropagators,
+                configuration.preview.legacyRequestIdPropagation.enabled);
       }
       DelegatingSampler.getInstance()
           .setDelegate(Samplers.getSampler(configuration.sampling.percentage, configuration));
@@ -117,39 +134,51 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
           new InheritedInstrumentationKeySpanProcessor(
               configuration.preview.instrumentationKeyOverrides));
     }
+    // role name overrides span processor is only applied on span start, so doesn't need
+    // to be chained with the batch span processor
+    if (!configuration.preview.roleNameOverrides.isEmpty()) {
+      tracerProvider.addSpanProcessor(
+          new InheritedRoleNameSpanProcessor(configuration.preview.roleNameOverrides));
+    }
 
     String tracesExporter = config.getString("otel.traces.exporter");
-    if ("none".equals(tracesExporter)) {
-      batchSpanProcessor = createExporter(configuration);
-      tracerProvider.addSpanProcessor(batchSpanProcessor);
+    if ("none".equals(tracesExporter)) { // "none" is the default set in ConfigOverride
+      SpanExporter spanExporter =
+          createSpanExporter(
+              telemetryClient, configuration, configuration.preview.captureHttpServer4xxAsError);
+
+      // using BatchSpanProcessor in order to get off of the application thread as soon as possible
+      BatchSpanProcessor batchSpanProcessor =
+          BatchSpanProcessor.builder(spanExporter)
+              .setScheduleDelay(getBatchProcessorDelay())
+              .build();
+
+      tracerProvider.addSpanProcessor(
+          new TelemetryClientFlushingSpanProcessor(batchSpanProcessor, telemetryClient));
     }
+
+    return tracerProvider;
   }
 
-  private static BatchSpanProcessor createExporter(Configuration configuration) {
-    List<ProcessorConfig> processors =
-        configuration.preview.processors.stream()
-            .filter(processor -> processor.type != Configuration.ProcessorType.METRIC_FILTER)
-            .collect(Collectors.toCollection(ArrayList::new));
-    // Reversing the order of processors before passing it to SpanProcessor
-    Collections.reverse(processors);
+  private static SpanExporter createSpanExporter(
+      TelemetryClient telemetryClient,
+      Configuration configuration,
+      boolean captureHttpServer4xxAsError) {
 
-    SpanExporter currExporter =
-        new Exporter(
-            TelemetryClient.getActive(), configuration.preview.captureHttpServer4xxAsError);
-
+    SpanExporter spanExporter = new Exporter(telemetryClient, captureHttpServer4xxAsError);
+    List<ProcessorConfig> processorConfigs = getSpanProcessorConfigs(configuration);
     // NOTE if changing the span processor to something async, flush it in the shutdown hook before
     // flushing TelemetryClient
-    if (!processors.isEmpty()) {
-      for (ProcessorConfig processorConfig : processors) {
+    if (!processorConfigs.isEmpty()) {
+      // Reversing the order of processors before passing it Span processor
+      Collections.reverse(processorConfigs);
+      for (ProcessorConfig processorConfig : processorConfigs) {
         switch (processorConfig.type) {
           case ATTRIBUTE:
-            currExporter = new ExporterWithAttributeProcessor(processorConfig, currExporter);
+            spanExporter = new SpanExporterWithAttributeProcessor(processorConfig, spanExporter);
             break;
           case SPAN:
-            currExporter = new ExporterWithSpanProcessor(processorConfig, currExporter);
-            break;
-          case LOG:
-            currExporter = new ExporterWithLogProcessor(processorConfig, currExporter);
+            spanExporter = new ExporterWithSpanProcessor(processorConfig, spanExporter);
             break;
           default:
             throw new IllegalStateException(
@@ -159,24 +188,98 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
 
       // this is temporary until semantic attributes stabilize and we make breaking change
       // then can use java.util.functions.Predicate<Attributes>
-      currExporter = new BackCompatHttpUrlProcessor(currExporter);
+      spanExporter = new BackCompatHttpUrlProcessor(spanExporter);
     }
 
-    // using BatchSpanProcessor in order to get off of the application thread as soon as possible
-    BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(currExporter);
+    return spanExporter;
+  }
 
+  private static List<ProcessorConfig> getSpanProcessorConfigs(Configuration configuration) {
+    return configuration.preview.processors.stream()
+        .filter(
+            processor ->
+                processor.type == Configuration.ProcessorType.ATTRIBUTE
+                    || processor.type == Configuration.ProcessorType.SPAN)
+        .collect(Collectors.toCollection(ArrayList::new));
+  }
+
+  private static SdkLogEmitterProviderBuilder configureLogging(
+      SdkLogEmitterProviderBuilder builder,
+      TelemetryClient telemetryClient,
+      Configuration configuration) {
+
+    LogExporter logExporter = createLogExporter(telemetryClient, configuration);
+
+    // using BatchLogProcessor in order to get off of the application thread as soon as possible
+    BatchLogProcessor batchLogProcessor =
+        BatchLogProcessor.builder(logExporter).setScheduleDelay(getBatchProcessorDelay()).build();
+
+    TelemetryClientFlushingLogProcessor telemetryClientFlushingLogProcessor =
+        new TelemetryClientFlushingLogProcessor(batchLogProcessor, telemetryClient);
+
+    // inherited attributes log processor also handles operation name, ikey and role name attributes
+    // and these all need access to Span.current(), so must be run before passing off to the
+    // BatchLogProcessor
+    return builder.addLogProcessor(
+        new InheritedAttributesLogProcessor(
+            configuration.preview.inheritedAttributes, telemetryClientFlushingLogProcessor));
+  }
+
+  private static LogExporter createLogExporter(
+      TelemetryClient telemetryClient, Configuration configuration) {
+    LogExporter logExporter =
+        new LoggerExporter(
+            telemetryClient, configuration.preview.captureLoggingLevelAsCustomDimension);
+    List<ProcessorConfig> processorConfigs = getLogProcessorConfigs(configuration);
+    if (!processorConfigs.isEmpty()) {
+      // Reversing the order of processors before passing it Log processor
+      Collections.reverse(processorConfigs);
+      for (ProcessorConfig processorConfig : processorConfigs) {
+        switch (processorConfig.type) {
+          case ATTRIBUTE:
+            logExporter = new LogExporterWithAttributeProcessor(processorConfig, logExporter);
+            break;
+          case LOG:
+            logExporter = new ExporterWithLogProcessor(processorConfig, logExporter);
+            break;
+          default:
+            throw new IllegalStateException(
+                "Not an expected ProcessorType: " + processorConfig.type);
+        }
+      }
+    }
+    return logExporter;
+  }
+
+  private static List<ProcessorConfig> getLogProcessorConfigs(Configuration configuration) {
+    return configuration.preview.processors.stream()
+        .filter(
+            processor ->
+                processor.type == Configuration.ProcessorType.ATTRIBUTE
+                    || processor.type == Configuration.ProcessorType.LOG)
+        .collect(Collectors.toCollection(ArrayList::new));
+  }
+
+  private static Duration getBatchProcessorDelay() {
     String delayMillisStr = System.getenv("APPLICATIONINSIGHTS_PREVIEW_BSP_SCHEDULE_DELAY");
-    int delayMillis;
     if (delayMillisStr != null) {
-      delayMillis = Integer.parseInt(delayMillisStr);
+      return Duration.ofMillis(Integer.parseInt(delayMillisStr));
     } else {
-      // using small interval because need to convert to SpanData as soon as possible to grab data
-      // for live metrics. the real batching is done at a lower level
+      // using small interval because need to convert to TelemetryItem as soon as possible to grab
+      // data for live metrics. the real batching is done at a lower level
       // (not using batch size 1 because that seems to cause poor performance on small containers)
-      delayMillis = 100;
+      return Duration.ofMillis(100);
     }
+  }
 
-    return builder.setScheduleDelay(Duration.ofMillis(delayMillis)).build();
+  private static SdkMeterProviderBuilder configureMetrics(
+      SdkMeterProviderBuilder builder,
+      TelemetryClient telemetryClient,
+      Configuration configuration) {
+    return builder.registerMetricReader(
+        PeriodicMetricReader.builder(new AzureMonitorMetricExporter(telemetryClient))
+            .setInterval(Duration.ofSeconds(configuration.preview.metricIntervalSeconds))
+            .build());
   }
 
   private static class BackCompatHttpUrlProcessor implements SpanExporter {

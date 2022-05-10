@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.google.auto.service.AutoService;
+import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.extension.AgentListener;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
@@ -47,5 +48,7 @@ public class StartAppIdRetrieval implements AgentListener {
       // available for Linux Consumption Plan.
       appIdSupplier.startAppIdRetrieval();
     }
+
+    LazyHttpClient.safeToInitLatch.countDown();
   }
 }

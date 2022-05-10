@@ -57,9 +57,9 @@ public class SpanProcessor extends AgentProcessor {
 
   public static SpanProcessor create(ProcessorConfig config) {
     IncludeExclude normalizedInclude =
-        config.include != null ? getNormalizedIncludeExclude(config.include) : null;
+        config.include != null ? getNormalizedIncludeExclude(config.include, false) : null;
     IncludeExclude normalizedExclude =
-        config.exclude != null ? getNormalizedIncludeExclude(config.exclude) : null;
+        config.exclude != null ? getNormalizedIncludeExclude(config.exclude, false) : null;
     List<AttributeKey<?>> fromAttributes = new ArrayList<>();
     if (config.name.fromAttributes != null) {
       for (String attribute : config.name.fromAttributes) {

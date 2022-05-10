@@ -95,8 +95,8 @@
         "type": "log",
         "body": {
           "fromAttributes": [
-            "applicationinsights.internal.logger_name",
-            "applicationinsights.internal.log_level"
+            "attribute1",
+            "attribute2"
           ],
           "separator": "::"
         },

@@ -22,12 +22,11 @@
 package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import com.azure.core.http.HttpPipeline;
-import com.microsoft.applicationinsights.agent.internal.common.ThreadPoolUtils;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.MessageData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryEventData;
-import com.microsoft.applicationinsights.agent.internal.exporter.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.EventTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
-import com.microsoft.applicationinsights.agent.internal.telemetry.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
@@ -37,8 +36,10 @@ import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
 import com.microsoft.applicationinsights.profiler.config.AlertConfigParser;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
+import com.microsoft.applicationinsights.profiler.uploader.ServiceProfilerIndex;
 import com.microsoft.applicationinsights.profiler.uploader.UploadCompleteHandler;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -75,7 +76,7 @@ public class ProfilerServiceInitializer {
       GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
 
     HttpPipeline httpPipeline =
-        LazyHttpClient.newHttpPipeLine(telemetryClient.getAadAuthentication(), null);
+        LazyHttpClient.newHttpPipeLineWithDefaultRedirect(telemetryClient.getAadAuthentication());
 
     initialize(
         appIdSupplier,
@@ -182,17 +183,21 @@ public class ProfilerServiceInitializer {
 
   static UploadCompleteHandler sendServiceProfilerIndex(TelemetryClient telemetryClient) {
     return done -> {
-      TelemetryItem telemetry = new TelemetryItem();
-      TelemetryEventData data = new TelemetryEventData();
-      telemetryClient.initEventTelemetry(telemetry, data);
+      EventTelemetryBuilder telemetryBuilder = telemetryClient.newEventTelemetryBuilder();
 
-      data.setName("ServiceProfilerIndex");
-      data.setProperties(done.getServiceProfilerIndex().getProperties());
-      data.setMeasurements(done.getServiceProfilerIndex().getMetrics());
+      telemetryBuilder.setName("ServiceProfilerIndex");
 
-      telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
+      ServiceProfilerIndex serviceProfilerIndex = done.getServiceProfilerIndex();
+      for (Map.Entry<String, String> entry : serviceProfilerIndex.getProperties().entrySet()) {
+        telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
+      }
+      for (Map.Entry<String, Double> entry : serviceProfilerIndex.getMetrics().entrySet()) {
+        telemetryBuilder.addMeasurement(entry.getKey(), entry.getValue());
+      }
 
-      telemetryClient.trackAsync(telemetry);
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
+
+      telemetryClient.trackAsync(telemetryBuilder.build());
 
       // This is an event that the backend specifically looks for to track when a profile is
       // complete
@@ -225,12 +230,12 @@ public class ProfilerServiceInitializer {
   }
 
   private static void sendMessageTelemetry(TelemetryClient telemetryClient, String message) {
-    TelemetryItem telemetry = new TelemetryItem();
-    MessageData data = new MessageData();
-    telemetryClient.initMessageTelemetry(telemetry, data);
-    data.setMessage(message);
-    telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
-    telemetryClient.trackAsync(telemetry);
+    MessageTelemetryBuilder telemetryBuilder = telemetryClient.newMessageTelemetryBuilder();
+
+    telemetryBuilder.setMessage(message);
+    telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
+
+    telemetryClient.trackAsync(telemetryBuilder.build());
   }
 
   private ProfilerServiceInitializer() {}

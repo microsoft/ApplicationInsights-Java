@@ -53,16 +53,13 @@ public class ExporterWithSpanProcessor implements SpanExporter {
   }
 
   private SpanData process(SpanData span) {
-    if (ProcessorUtil.isSpanOfTypeLog(span)) {
-      return span;
-    }
     IncludeExclude include = spanProcessor.getInclude();
-    if (include != null && !include.isMatch(span, false)) {
+    if (include != null && !include.isMatch(span.getAttributes(), span.getName())) {
       // If Not included we can skip further processing
       return span;
     }
     IncludeExclude exclude = spanProcessor.getExclude();
-    if (exclude != null && exclude.isMatch(span, false)) {
+    if (exclude != null && exclude.isMatch(span.getAttributes(), span.getName())) {
       return span;
     }
 
