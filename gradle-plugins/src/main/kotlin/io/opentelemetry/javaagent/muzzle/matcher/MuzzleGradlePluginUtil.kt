@@ -52,7 +52,9 @@ class MuzzleGradlePluginUtil {
      * version passes different {@code userClassLoader}.
      */
     @Suppress("UNCHECKED_CAST")
-    fun assertInstrumentationMuzzled(agentClassLoader: ClassLoader, userClassLoader: ClassLoader, assertPass: Boolean) {
+    fun assertInstrumentationMuzzled(agentClassLoader: ClassLoader, userClassLoader: ClassLoader,
+                                     excludedInstrumentationModules: List<String>, assertPass: Boolean) {
+
       val matcherClass = agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.muzzle.ClassLoaderMatcher")
 
       // We cannot reference Mismatch class directly here, because we are loaded from a different
@@ -65,7 +67,9 @@ class MuzzleGradlePluginUtil {
         .invoke(null, userClassLoader, assertPass)
         as Map<String, List<Any>>
 
-      allMismatches.forEach { moduleName, mismatches ->
+      allMismatches.filterKeys {
+        !excludedInstrumentationModules.contains(it)
+      }.forEach { (moduleName, mismatches) ->
         val passed = mismatches.isEmpty()
         if (passed && !assertPass) {
           System.err.println("MUZZLE PASSED $moduleName BUT FAILURE WAS EXPECTED")
@@ -81,7 +85,7 @@ class MuzzleGradlePluginUtil {
 
       val validatedModulesCount = allMismatches.size
       if (validatedModulesCount == 0) {
-        val errorMessage = "Did not found any InstrumentationModule to validate!"
+        val errorMessage = "Did not find any InstrumentationModule(s) to validate!"
         System.err.println(errorMessage)
         throw IllegalStateException(errorMessage)
       }

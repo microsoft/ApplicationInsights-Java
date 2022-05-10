@@ -16,7 +16,7 @@ public class MicrometerInstrumentationModule extends InstrumentationModule {
 
   // this instrumentation name is important since it is used to disable micrometer instrumentation
   public MicrometerInstrumentationModule() {
-    super("micrometer");
+    super("ai-micrometer");
   }
 
   @Override

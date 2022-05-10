@@ -5,10 +5,10 @@
 
 package io.opentelemetry.javaagent.tooling.bytebuddy;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A fail-safe matcher catches exceptions that are thrown by a delegate matcher and returns {@code
@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
  */
 public class LoggingFailSafeMatcher<T> extends ElementMatcher.Junction.AbstractBase<T> {
 
-  private static final Logger logger = LoggerFactory.getLogger(LoggingFailSafeMatcher.class);
+  private static final Logger logger = Logger.getLogger(LoggingFailSafeMatcher.class.getName());
 
   /** The delegate matcher that might throw an exception. */
   private final ElementMatcher<? super T> matcher;
@@ -47,11 +47,11 @@ public class LoggingFailSafeMatcher<T> extends ElementMatcher.Junction.AbstractB
     } catch (IllegalStateException e) {
       if (!e.getMessage()
           .startsWith("Cannot resolve type description for io.opentelemetry.javaagent.")) {
-        logger.debug(description, e);
+        logger.log(Level.FINE, description, e);
       }
       return false;
     } catch (Throwable e) {
-      logger.debug(description, e);
+      logger.log(Level.FINE, description, e);
       return false;
     }
   }

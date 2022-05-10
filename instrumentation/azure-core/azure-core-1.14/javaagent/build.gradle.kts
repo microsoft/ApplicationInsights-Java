@@ -19,10 +19,12 @@ sourceSets {
 }
 
 dependencies {
-  compileOnly(project(path = ":instrumentation:azure-core:azure-core-1.14:library-instrumentation-shaded", configuration = "shadow"))
+  compileOnly(project(":instrumentation:azure-core:azure-core-1.14:library-instrumentation-shaded", configuration = "shadow"))
 
   library("com.azure:azure-core:1.14.0")
 
   // Ensure no cross interference
   testInstrumentation(project(":instrumentation:azure-core:azure-core-1.19:javaagent"))
+
+  latestDepTestLibrary("com.azure:azure-core:1.18.+") // see azure-core-1.19
 }
