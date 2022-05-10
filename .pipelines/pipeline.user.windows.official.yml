@@ -14,13 +14,15 @@ build:
           include:
             - '**/*'
     - !!buildcommand
-      name: 'Assemble ApplicationInsights-Java JARs'
+      name: 'publishToMavenLocal ApplicationInsights-Java JARs'
       command: '.scripts/gradle.cmd'
-      arguments: 'publishToMavenLocal -DisRelease=true -Pai.etw.native.build=release'
+      arguments: 'assemble copyLibsToGlobalArtifactsFolder -DisRelease=true -Pai.etw.native.build=release'
       artifacts:
         - to: 'Artifacts'
-          include:
-            - '~/.m2/repository/com/microsoft/azure/applicationinsights-agent/*/*.jar'
-            - '~/.m2/repository/com/microsoft/azure/applicationinsights-agent/*/*-sources.jar'
-            - '~/.m2/repository/com/microsoft/azure/applicationinsights-agent/*/*-javadoc.jar'
-            - '~/.m2/repository/com/microsoft/azure/applicationinsights-agent/*/*.pom'
+            include:
+              - '**/build/libs/*.jar'
+              - '**/build/libs/*-sources.jar'
+              - '**/build/libs/*-javadoc.jar'
+              - '**/build/libs/*.pom'
+            exclude:
+              - 'buildSrc/**/*'
