@@ -5,8 +5,10 @@
 
 package server
 
+
 import io.opentelemetry.instrumentation.test.AgentTestTrait
 import io.opentelemetry.instrumentation.test.base.HttpServerTest
+import io.opentelemetry.instrumentation.testing.junit.http.ServerEndpoint
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.DeploymentOptions
 import io.vertx.core.Vertx
@@ -15,9 +17,6 @@ import io.vertx.core.json.JsonObject
 
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
-
-import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.NOT_FOUND
-import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.PATH_PARAM
 
 abstract class AbstractVertxHttpServerTest extends HttpServerTest<Vertx> implements AgentTestTrait {
   @Override
@@ -63,17 +62,4 @@ abstract class AbstractVertxHttpServerTest extends HttpServerTest<Vertx> impleme
   boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
     true
   }
-
-  @Override
-  String expectedServerSpanName(ServerEndpoint endpoint) {
-    switch (endpoint) {
-      case PATH_PARAM:
-        return "/path/:id/param"
-      case NOT_FOUND:
-        return "HTTP GET"
-      default:
-        return endpoint.getPath()
-    }
-  }
-
 }

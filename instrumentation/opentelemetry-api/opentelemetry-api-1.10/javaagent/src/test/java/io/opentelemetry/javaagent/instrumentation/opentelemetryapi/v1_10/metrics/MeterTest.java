@@ -5,8 +5,8 @@
 
 package io.opentelemetry.javaagent.instrumentation.opentelemetryapi.v1_10.metrics;
 
-import static io.opentelemetry.sdk.testing.assertj.MetricAssertions.assertThat;
-import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -18,8 +18,7 @@ import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.instrumentation.testing.junit.AgentInstrumentationExtension;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import org.assertj.core.api.Assertions;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -62,18 +61,18 @@ class MeterTest {
                     assertThat(metric)
                         .hasDescription("d")
                         .hasUnit("u")
-                        .hasInstrumentationLibrary(
-                            InstrumentationLibraryInfo.create(instrumentationName, "1.2.3"))
-                        .hasLongSum()
-                        .isMonotonic()
-                        .isCumulative()
-                        .points()
-                        .satisfiesExactly(
-                            point ->
-                                assertThat(point)
-                                    .hasValue(11)
-                                    .attributes()
-                                    .containsOnly(attributeEntry("q", "r")))));
+                        .hasInstrumentationScope(
+                            InstrumentationScopeInfo.create(
+                                instrumentationName, "1.2.3", /* schemaUrl= */ null))
+                        .hasLongSumSatisfying(
+                            sum ->
+                                sum.isMonotonic()
+                                    .hasPointsSatisfying(
+                                        point ->
+                                            point
+                                                .hasValue(11)
+                                                .hasAttributesSatisfying(
+                                                    equalTo(AttributeKey.stringKey("q"), "r"))))));
   }
 
   @Test
@@ -93,18 +92,18 @@ class MeterTest {
                     assertThat(metric)
                         .hasDescription("d")
                         .hasUnit("u")
-                        .hasInstrumentationLibrary(
-                            InstrumentationLibraryInfo.create(instrumentationName, "1.2.3"))
-                        .hasLongSum()
-                        .isNotMonotonic()
-                        .isCumulative()
-                        .points()
-                        .satisfiesExactly(
-                            point ->
-                                assertThat(point)
-                                    .hasValue(11)
-                                    .attributes()
-                                    .containsOnly(attributeEntry("q", "r")))));
+                        .hasInstrumentationScope(
+                            InstrumentationScopeInfo.create(
+                                instrumentationName, "1.2.3", /* schemaUrl= */ null))
+                        .hasLongSumSatisfying(
+                            sum ->
+                                sum.isNotMonotonic()
+                                    .hasPointsSatisfying(
+                                        point ->
+                                            point
+                                                .hasValue(11)
+                                                .hasAttributesSatisfying(
+                                                    equalTo(AttributeKey.stringKey("q"), "r"))))));
   }
 
   @Test
@@ -124,18 +123,18 @@ class MeterTest {
                     assertThat(metric)
                         .hasDescription("d")
                         .hasUnit("u")
-                        .hasInstrumentationLibrary(
-                            InstrumentationLibraryInfo.create(instrumentationName, "1.2.3"))
-                        .hasDoubleSum()
-                        .isMonotonic()
-                        .isCumulative()
-                        .points()
-                        .satisfiesExactly(
-                            point ->
-                                assertThat(point)
-                                    .hasValue(12.1)
-                                    .attributes()
-                                    .containsOnly(attributeEntry("q", "r")))));
+                        .hasInstrumentationScope(
+                            InstrumentationScopeInfo.create(
+                                instrumentationName, "1.2.3", /* schemaUrl= */ null))
+                        .hasDoubleSumSatisfying(
+                            sum ->
+                                sum.isMonotonic()
+                                    .hasPointsSatisfying(
+                                        point ->
+                                            point
+                                                .hasValue(12.1)
+                                                .hasAttributesSatisfying(
+                                                    equalTo(AttributeKey.stringKey("q"), "r"))))));
   }
 
   @Test
@@ -155,18 +154,18 @@ class MeterTest {
                     assertThat(metric)
                         .hasDescription("d")
                         .hasUnit("u")
-                        .hasInstrumentationLibrary(
-                            InstrumentationLibraryInfo.create(instrumentationName, "1.2.3"))
-                        .hasDoubleSum()
-                        .isNotMonotonic()
-                        .isCumulative()
-                        .points()
-                        .satisfiesExactly(
-                            point ->
-                                assertThat(point)
-                                    .hasValue(12.1)
-                                    .attributes()
-                                    .containsOnly(attributeEntry("q", "r")))));
+                        .hasInstrumentationScope(
+                            InstrumentationScopeInfo.create(
+                                instrumentationName, "1.2.3", /* schemaUrl= */ null))
+                        .hasDoubleSumSatisfying(
+                            sum ->
+                                sum.isNotMonotonic()
+                                    .hasPointsSatisfying(
+                                        point ->
+                                            point
+                                                .hasValue(12.1)
+                                                .hasAttributesSatisfying(
+                                                    equalTo(AttributeKey.stringKey("q"), "r"))))));
   }
 
   @Test
@@ -182,21 +181,21 @@ class MeterTest {
         "test",
         metrics ->
             metrics.anySatisfy(
-                metric -> {
-                  assertThat(metric)
-                      .hasDescription("d")
-                      .hasUnit("u")
-                      .hasInstrumentationLibrary(
-                          InstrumentationLibraryInfo.create(instrumentationName, "1.2.3"))
-                      .hasDoubleHistogram()
-                      .points()
-                      .allSatisfy(
-                          point -> {
-                            Assertions.assertThat(point.getSum()).isEqualTo(11.0);
-                            Assertions.assertThat(point.getAttributes())
-                                .isEqualTo(Attributes.of(AttributeKey.stringKey("q"), "r"));
-                          });
-                }));
+                metric ->
+                    assertThat(metric)
+                        .hasDescription("d")
+                        .hasUnit("u")
+                        .hasInstrumentationScope(
+                            InstrumentationScopeInfo.create(
+                                instrumentationName, "1.2.3", /* schemaUrl= */ null))
+                        .hasHistogramSatisfying(
+                            histogram ->
+                                histogram.hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasSum(11.0)
+                                            .hasAttributesSatisfying(
+                                                equalTo(AttributeKey.stringKey("q"), "r"))))));
   }
 
   @Test
@@ -212,21 +211,21 @@ class MeterTest {
         "test",
         metrics ->
             metrics.anySatisfy(
-                metric -> {
-                  assertThat(metric)
-                      .hasDescription("d")
-                      .hasUnit("u")
-                      .hasInstrumentationLibrary(
-                          InstrumentationLibraryInfo.create(instrumentationName, "1.2.3"))
-                      .hasDoubleHistogram()
-                      .points()
-                      .allSatisfy(
-                          point -> {
-                            Assertions.assertThat(point.getSum()).isEqualTo(12.1);
-                            Assertions.assertThat(point.getAttributes())
-                                .isEqualTo(Attributes.of(AttributeKey.stringKey("q"), "r"));
-                          });
-                }));
+                metric ->
+                    assertThat(metric)
+                        .hasDescription("d")
+                        .hasUnit("u")
+                        .hasInstrumentationScope(
+                            InstrumentationScopeInfo.create(
+                                instrumentationName, "1.2.3", /* schemaUrl= */ null))
+                        .hasHistogramSatisfying(
+                            histogram ->
+                                histogram.hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasSum(12.1)
+                                            .hasAttributesSatisfying(
+                                                equalTo(AttributeKey.stringKey("q"), "r"))))));
   }
 
   @Test
@@ -248,16 +247,17 @@ class MeterTest {
                     assertThat(metric)
                         .hasDescription("d")
                         .hasUnit("u")
-                        .hasInstrumentationLibrary(
-                            InstrumentationLibraryInfo.create(instrumentationName, "1.2.3"))
-                        .hasLongGauge()
-                        .points()
-                        .satisfiesExactly(
-                            point ->
-                                assertThat(point)
-                                    .hasValue(123)
-                                    .attributes()
-                                    .containsOnly(attributeEntry("q", "r")))));
+                        .hasInstrumentationScope(
+                            InstrumentationScopeInfo.create(
+                                instrumentationName, "1.2.3", /* schemaUrl= */ null))
+                        .hasLongGaugeSatisfying(
+                            gauge ->
+                                gauge.hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasValue(123)
+                                            .hasAttributesSatisfying(
+                                                equalTo(AttributeKey.stringKey("q"), "r"))))));
   }
 
   @Test
@@ -278,15 +278,16 @@ class MeterTest {
                     assertThat(metric)
                         .hasDescription("d")
                         .hasUnit("u")
-                        .hasInstrumentationLibrary(
-                            InstrumentationLibraryInfo.create(instrumentationName, "1.2.3"))
-                        .hasDoubleGauge()
-                        .points()
-                        .satisfiesExactly(
-                            point ->
-                                assertThat(point)
-                                    .hasValue(1.23)
-                                    .attributes()
-                                    .containsOnly(attributeEntry("q", "r")))));
+                        .hasInstrumentationScope(
+                            InstrumentationScopeInfo.create(
+                                instrumentationName, "1.2.3", /* schemaUrl= */ null))
+                        .hasDoubleGaugeSatisfying(
+                            gauge ->
+                                gauge.hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasValue(1.23)
+                                            .hasAttributesSatisfying(
+                                                equalTo(AttributeKey.stringKey("q"), "r"))))));
   }
 }

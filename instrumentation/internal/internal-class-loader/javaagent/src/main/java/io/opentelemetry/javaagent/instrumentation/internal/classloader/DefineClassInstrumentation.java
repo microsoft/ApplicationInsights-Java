@@ -6,24 +6,17 @@
 package io.opentelemetry.javaagent.instrumentation.internal.classloader;
 
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
-import io.opentelemetry.javaagent.bootstrap.DefineClassContext;
+import io.opentelemetry.javaagent.bootstrap.DefineClassHelper;
+import io.opentelemetry.javaagent.bootstrap.DefineClassHelper.Handler.DefineClassContext;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import net.bytebuddy.asm.AsmVisitorWrapper;
-import net.bytebuddy.description.field.FieldDescription;
-import net.bytebuddy.description.field.FieldList;
-import net.bytebuddy.description.method.MethodList;
+import java.nio.ByteBuffer;
+import java.security.ProtectionDomain;
+import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
-import net.bytebuddy.implementation.Implementation;
 import net.bytebuddy.matcher.ElementMatcher;
-import net.bytebuddy.pool.TypePool;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 
 public class DefineClassInstrumentation implements TypeInstrumentation {
 
@@ -34,154 +27,50 @@ public class DefineClassInstrumentation implements TypeInstrumentation {
 
   @Override
   public void transform(TypeTransformer transformer) {
-    transformer.applyTransformer(
-        (builder, typeDescription, classLoader, module) ->
-            builder.visit(
-                new AsmVisitorWrapper() {
-                  @Override
-                  public int mergeWriter(int flags) {
-                    return flags | ClassWriter.COMPUTE_MAXS;
-                  }
-
-                  @Override
-                  public int mergeReader(int flags) {
-                    return flags;
-                  }
-
-                  @Override
-                  public ClassVisitor wrap(
-                      TypeDescription instrumentedType,
-                      ClassVisitor classVisitor,
-                      Implementation.Context implementationContext,
-                      TypePool typePool,
-                      FieldList<FieldDescription.InDefinedShape> fields,
-                      MethodList<?> methods,
-                      int writerFlags,
-                      int readerFlags) {
-                    return new ClassLoaderClassVisitor(classVisitor);
-                  }
-                }));
+    transformer.applyAdviceToMethod(
+        named("defineClass")
+            .and(
+                takesArguments(
+                    String.class, byte[].class, int.class, int.class, ProtectionDomain.class)),
+        DefineClassInstrumentation.class.getName() + "$DefineClassAdvice");
+    transformer.applyAdviceToMethod(
+        named("defineClass")
+            .and(takesArguments(String.class, ByteBuffer.class, ProtectionDomain.class)),
+        DefineClassInstrumentation.class.getName() + "$DefineClassAdvice2");
   }
 
-  private static class ClassLoaderClassVisitor extends ClassVisitor {
-
-    ClassLoaderClassVisitor(ClassVisitor cv) {
-      super(Opcodes.ASM7, cv);
+  @SuppressWarnings("unused")
+  public static class DefineClassAdvice {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static DefineClassContext onEnter(
+        @Advice.This ClassLoader classLoader,
+        @Advice.Argument(0) String className,
+        @Advice.Argument(1) byte[] classBytes,
+        @Advice.Argument(2) int offset,
+        @Advice.Argument(3) int length) {
+      return DefineClassHelper.beforeDefineClass(
+          classLoader, className, classBytes, offset, length);
     }
 
-    @Override
-    public MethodVisitor visitMethod(
-        int access, String name, String descriptor, String signature, String[] exceptions) {
-      MethodVisitor mv = super.visitMethod(access, name, descriptor, signature, exceptions);
-      // apply the following transformation to defineClass method
-      /*
-      DefineClassContext.enter();
-      try {
-        // original method body
-        DefineClassContext.exit();
-        return result;
-      } catch (LinkageError error) {
-        boolean helpersInjected = DefineClassContext.exitAndGet();
-        Class<?> loaded = findLoadedClass(className);
-        return DefineClassUtil.handleLinkageError(error, helpersInjected, loaded);
-      } catch (Throwable throwable) {
-        DefineClassContext.exit();
-        throw throwable;
-      }
-       */
-      if ("defineClass".equals(name)
-          && ("(Ljava/lang/String;[BIILjava/security/ProtectionDomain;)Ljava/lang/Class;"
-                  .equals(descriptor)
-              || "(Ljava/lang/String;Ljava/nio/ByteBuffer;Ljava/security/ProtectionDomain;)Ljava/lang/Class;"
-                  .equals(descriptor))) {
-        mv =
-            new MethodVisitor(api, mv) {
-              Label start = new Label();
-              Label end = new Label();
-              Label handler = new Label();
+    @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
+    public static void onExit(@Advice.Enter DefineClassContext context) {
+      DefineClassHelper.afterDefineClass(context);
+    }
+  }
 
-              @Override
-              public void visitCode() {
-                mv.visitMethodInsn(
-                    Opcodes.INVOKESTATIC,
-                    Type.getInternalName(DefineClassContext.class),
-                    "enter",
-                    "()V",
-                    false);
-                mv.visitTryCatchBlock(start, end, end, "java/lang/LinkageError");
-                // catch other exceptions
-                mv.visitTryCatchBlock(start, end, handler, null);
-                mv.visitLabel(start);
+  @SuppressWarnings("unused")
+  public static class DefineClassAdvice2 {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static DefineClassContext onEnter(
+        @Advice.This ClassLoader classLoader,
+        @Advice.Argument(0) String className,
+        @Advice.Argument(1) ByteBuffer classBytes) {
+      return DefineClassHelper.beforeDefineClass(classLoader, className, classBytes);
+    }
 
-                super.visitCode();
-              }
-
-              @Override
-              public void visitInsn(int opcode) {
-                if (opcode == Opcodes.ARETURN) {
-                  mv.visitMethodInsn(
-                      Opcodes.INVOKESTATIC,
-                      Type.getInternalName(DefineClassContext.class),
-                      "exit",
-                      "()V",
-                      false);
-                }
-                super.visitInsn(opcode);
-              }
-
-              @Override
-              public void visitMaxs(int maxStack, int maxLocals) {
-                // handle LinkageError
-                mv.visitLabel(end);
-                mv.visitFrame(
-                    Opcodes.F_FULL,
-                    2,
-                    new Object[] {"java/lang/ClassLoader", "java/lang/String"},
-                    1,
-                    new Object[] {"java/lang/LinkageError"});
-                mv.visitMethodInsn(
-                    Opcodes.INVOKESTATIC,
-                    Type.getInternalName(DefineClassContext.class),
-                    "exitAndGet",
-                    "()Z",
-                    false);
-                mv.visitVarInsn(Opcodes.ALOAD, 0);
-                mv.visitVarInsn(Opcodes.ALOAD, 1);
-                mv.visitMethodInsn(
-                    Opcodes.INVOKEVIRTUAL,
-                    "java/lang/ClassLoader",
-                    "findLoadedClass",
-                    "(Ljava/lang/String;)Ljava/lang/Class;",
-                    false);
-                mv.visitMethodInsn(
-                    Opcodes.INVOKESTATIC,
-                    Type.getInternalName(DefineClassUtil.class),
-                    "handleLinkageError",
-                    "(Ljava/lang/LinkageError;ZLjava/lang/Class;)Ljava/lang/Class;",
-                    false);
-                mv.visitInsn(Opcodes.ARETURN);
-
-                // handle Throwable
-                mv.visitLabel(handler);
-                mv.visitFrame(
-                    Opcodes.F_FULL,
-                    2,
-                    new Object[] {"java/lang/ClassLoader", "java/lang/String"},
-                    1,
-                    new Object[] {"java/lang/Throwable"});
-                mv.visitMethodInsn(
-                    Opcodes.INVOKESTATIC,
-                    Type.getInternalName(DefineClassContext.class),
-                    "exit",
-                    "()V",
-                    false);
-                mv.visitInsn(Opcodes.ATHROW);
-
-                super.visitMaxs(maxStack, maxLocals);
-              }
-            };
-      }
-      return mv;
+    @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
+    public static void onExit(@Advice.Enter DefineClassContext context) {
+      DefineClassHelper.afterDefineClass(context);
     }
   }
 }
