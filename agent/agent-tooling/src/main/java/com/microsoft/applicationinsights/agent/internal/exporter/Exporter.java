@@ -315,16 +315,7 @@ public class Exporter implements SpanExporter {
       applyDatabaseClientSpan(telemetryBuilder, dbSystem, attributes);
       return;
     }
-    String azureNamespace = attributes.get(AZURE_NAMESPACE);
-    if ("Microsoft.EventHub".equals(azureNamespace)) {
-      applyEventHubsSpan(telemetryBuilder, attributes);
-      return;
-    }
-    if ("Microsoft.ServiceBus".equals(azureNamespace)) {
-      applyServiceBusSpan(telemetryBuilder, attributes);
-      return;
-    }
-    String messagingSystem = attributes.get(SemanticAttributes.MESSAGING_SYSTEM);
+    String messagingSystem = getMessagingSystem(attributes);
     if (messagingSystem != null) {
       applyMessagingClientSpan(telemetryBuilder, span.getKind(), messagingSystem, attributes);
       return;
@@ -345,6 +336,16 @@ public class Exporter implements SpanExporter {
     // so we mark these as InProc, even though they aren't INTERNAL spans,
     // in order to prevent App Map from considering them
     telemetryBuilder.setType("InProc");
+  }
+
+  @Nullable
+  private static String getMessagingSystem(Attributes attributes) {
+    String azureNamespace = attributes.get(AZURE_NAMESPACE);
+    if (isAzureSdkMessaging(azureNamespace)) {
+      // special case needed until Azure SDK moves to OTel semantic conventions
+      return azureNamespace;
+    }
+    return attributes.get(SemanticAttributes.MESSAGING_SYSTEM);
   }
 
   private static void setOperationTags(AbstractTelemetryBuilder telemetryBuilder, SpanData span) {
@@ -553,39 +554,17 @@ public class Exporter implements SpanExporter {
       SpanKind spanKind,
       String messagingSystem,
       Attributes attributes) {
+
+    // TODO (trask) verify "Microsoft.ServiceBus" works in U/X E2E view,
+    //  used to be "AZURE SERVICE BUS"
+
     if (spanKind == SpanKind.PRODUCER) {
       telemetryBuilder.setType("Queue Message | " + messagingSystem);
     } else {
       // e.g. CONSUMER kind (without remote parent) and CLIENT kind
       telemetryBuilder.setType(messagingSystem);
     }
-    String destination = attributes.get(SemanticAttributes.MESSAGING_DESTINATION);
-    if (destination != null) {
-      telemetryBuilder.setTarget(destination);
-    } else {
-      telemetryBuilder.setTarget(messagingSystem);
-    }
-  }
-
-  // special case needed until Azure SDK moves to OTel semantic conventions
-  private static void applyEventHubsSpan(
-      RemoteDependencyTelemetryBuilder telemetryBuilder, Attributes attributes) {
-    telemetryBuilder.setType("Microsoft.EventHub");
-    telemetryBuilder.setTarget(getAzureSdkTargetSource(attributes));
-  }
-
-  // special case needed until Azure SDK moves to OTel semantic conventions
-  private static void applyServiceBusSpan(
-      RemoteDependencyTelemetryBuilder telemetryBuilder, Attributes attributes) {
-    // TODO(trask) change this to Microsoft.ServiceBus once that is supported in U/X E2E view
-    telemetryBuilder.setType("AZURE SERVICE BUS");
-    telemetryBuilder.setTarget(getAzureSdkTargetSource(attributes));
-  }
-
-  private static String getAzureSdkTargetSource(Attributes attributes) {
-    String peerAddress = attributes.get(AZURE_SDK_PEER_ADDRESS);
-    String destination = attributes.get(AZURE_SDK_MESSAGE_BUS_DESTINATION);
-    return peerAddress + "/" + destination;
+    telemetryBuilder.setTarget(getMessagingTargetSource(attributes));
   }
 
   private static int getDefaultPortForDbSystem(String dbSystem) {
@@ -761,43 +740,50 @@ public class Exporter implements SpanExporter {
   }
 
   @Nullable
-  private static String getSource(Attributes attributes, SpanContext spanContext) {
+  private static String getSource(Attributes attributes, @Nullable SpanContext spanContext) {
     // this is only used by the 2.x web interop bridge
     // for ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setSource()
     String source = attributes.get(AI_SPAN_SOURCE_KEY);
     if (source != null) {
       return source;
     }
-
-    source = spanContext.getTraceState().get("az");
-
+    if (spanContext != null) {
+      source = spanContext.getTraceState().get("az");
+    }
     if (source != null && !AiAppId.getAppId().equals(source)) {
       return source;
     }
-    if (isAzureQueue(attributes)) {
-      return getAzureSdkTargetSource(attributes);
-    }
-    String messagingSystem = attributes.get(SemanticAttributes.MESSAGING_SYSTEM);
-    if (messagingSystem != null) {
-      // TODO (trask) AI mapping: should this pass default port for messaging.system?
-      source =
-          nullAwareConcat(
-              getTargetFromPeerAttributes(attributes, 0),
-              attributes.get(SemanticAttributes.MESSAGING_DESTINATION),
-              "/");
-      if (source != null) {
-        return source;
-      }
-      // fallback
-      return messagingSystem;
-    }
-    return null;
+    return getMessagingTargetSource(attributes);
   }
 
-  private static boolean isAzureQueue(Attributes attributes) {
-    String azureNamespace = attributes.get(AZURE_NAMESPACE);
-    return "Microsoft.EventHub".equals(azureNamespace)
-        || "Microsoft.ServiceBus".equals(azureNamespace);
+  @Nullable
+  private static String getMessagingTargetSource(Attributes attributes) {
+    if (isAzureSdkMessaging(attributes.get(AZURE_NAMESPACE))) {
+      // special case needed until Azure SDK moves to OTel semantic conventions
+      String peerAddress = attributes.get(AZURE_SDK_PEER_ADDRESS);
+      String destination = attributes.get(AZURE_SDK_MESSAGE_BUS_DESTINATION);
+      return peerAddress + "/" + destination;
+    }
+    String messagingSystem = attributes.get(SemanticAttributes.MESSAGING_SYSTEM);
+    if (messagingSystem == null) {
+      return null;
+    }
+    // TODO (trask) AI mapping: should this pass default port for messaging.system?
+    String source =
+        nullAwareConcat(
+            getTargetFromPeerAttributes(attributes, 0),
+            attributes.get(SemanticAttributes.MESSAGING_DESTINATION),
+            "/");
+    if (source != null) {
+      return source;
+    }
+    // fallback
+    return messagingSystem;
+  }
+
+  private static boolean isAzureSdkMessaging(String messagingSystem) {
+    return "Microsoft.EventHub".equals(messagingSystem)
+        || "Microsoft.ServiceBus".equals(messagingSystem);
   }
 
   private static String getOperationName(SpanData span) {
