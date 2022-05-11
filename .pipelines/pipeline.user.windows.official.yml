@@ -13,14 +13,14 @@ build:
           to: 'Scripts'
           include:
             - '**/*'
-    - !!buildcommand
+    - !!defaultcommand
       name: 'Assemble ApplicationInsights-Java JARs'
       command: '.scripts/gradle.cmd'
       arguments: 'publishToMavenLocal -DisRelease=true -Pai.etw.native.build=release'
+    - !!buildcommand
+      name: 'Copy files from maven local repository'
+      command: '.scripts/copy-from-maven-local.cmd'
       artifacts:
         - to: 'Artifacts'
           include:
-            - '~/.m2/repository/com/microsoft/azure/applicationinsights-agent/*/*.jar'
-            - '~/.m2/repository/com/microsoft/azure/applicationinsights-agent/*/*-sources.jar'
-            - '~/.m2/repository/com/microsoft/azure/applicationinsights-agent/*/*-javadoc.jar'
-            - '~/.m2/repository/com/microsoft/azure/applicationinsights-agent/*/*.pom'
+            - 'published/**/*'
