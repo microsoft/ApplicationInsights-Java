@@ -25,7 +25,6 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogData;
@@ -44,11 +43,6 @@ public abstract class DelegatingLogData implements LogData {
   @Override
   public Resource getResource() {
     return delegate.getResource();
-  }
-
-  @Override
-  public InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
-    return delegate.getInstrumentationLibraryInfo();
   }
 
   @Override

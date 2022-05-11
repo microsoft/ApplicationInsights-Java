@@ -44,6 +44,7 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
+import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -75,7 +76,8 @@ public class AzureMonitorMetricExporter implements MetricExporter {
 
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
-    return MetricExporter.deltaPreferred(instrumentType);
+    return AggregationTemporalitySelector.deltaPreferred()
+        .getAggregationTemporality(instrumentType);
   }
 
   @Override

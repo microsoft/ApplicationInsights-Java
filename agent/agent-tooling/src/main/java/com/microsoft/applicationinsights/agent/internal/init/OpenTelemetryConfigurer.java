@@ -276,10 +276,16 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
       SdkMeterProviderBuilder builder,
       TelemetryClient telemetryClient,
       Configuration configuration) {
-    return builder.registerMetricReader(
+
+    PeriodicMetricReader metricReader =
         PeriodicMetricReader.builder(new AzureMonitorMetricExporter(telemetryClient))
             .setInterval(Duration.ofSeconds(configuration.preview.metricIntervalSeconds))
-            .build());
+            .build();
+
+    TelemetryClientFlushingMetricReader telemetryClientFlushingMetricReader =
+        new TelemetryClientFlushingMetricReader(metricReader, telemetryClient);
+
+    return builder.registerMetricReader(telemetryClientFlushingMetricReader);
   }
 
   private static class BackCompatHttpUrlProcessor implements SpanExporter {
