@@ -48,6 +48,10 @@ public class LoggingLevelConfigurator {
     updateLoggerLevel(loggerContext.getLogger("io.grpc.Context"));
     updateLoggerLevel(loggerContext.getLogger("io.opentelemetry.javaagent.tooling.VersionLogger"));
     updateLoggerLevel(loggerContext.getLogger("io.opentelemetry.exporter.logging"));
+    // TODO (trask) remove after updating to OpenTelemetry SDK 1.15.0
+    updateLoggerLevel(
+        loggerContext.getLogger(
+            "io.opentelemetry.sdk.metrics.internal.state.MetricStorageRegistry"));
     updateLoggerLevel(loggerContext.getLogger("io.opentelemetry"));
     updateLoggerLevel(loggerContext.getLogger("muzzleMatcher"));
     updateLoggerLevel(
@@ -80,6 +84,9 @@ public class LoggingLevelConfigurator {
       // in case user enables OpenTelemetry logging exporters via otel.traces.exporter,
       // otel.metrics.exporter, or otel.logs.exporter
       loggerLevel = level;
+    } else if (name.equals("io.opentelemetry.sdk.metrics.internal.state.MetricStorageRegistry")) {
+      // TODO (trask) remove after updating to OpenTelemetry SDK 1.15.0
+      loggerLevel = getMaxLevel(level, Level.ERROR);
     } else if (name.startsWith("io.opentelemetry")) {
       // OpenTelemetry instrumentation debug log has lots of things that look like errors
       // which has been confusing customers, so only enable it when user configures "trace" level

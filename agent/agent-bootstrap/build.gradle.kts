@@ -6,10 +6,6 @@ plugins {
 val otelInstrumentationAlphaVersion = "1.14.0.1-alpha"
 
 dependencies {
-  // needed to access io.opentelemetry.instrumentation.api.aisdk.MicrometerUtil
-  // TODO (heya) remove this when updating to upstream micrometer instrumentation
-  compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
-
   implementation("ch.qos.logback:logback-classic")
   implementation("ch.qos.logback.contrib:logback-json-classic")
 
