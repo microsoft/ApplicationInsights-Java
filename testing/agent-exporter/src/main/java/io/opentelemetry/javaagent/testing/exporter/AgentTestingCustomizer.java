@@ -6,6 +6,7 @@
 package io.opentelemetry.javaagent.testing.exporter;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.instrumentation.api.aisdk.MicrometerUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.logs.export.SimpleLogProcessor;
@@ -42,5 +43,7 @@ public class AgentTestingCustomizer implements AutoConfigurationCustomizerProvid
         (logProvider, config) ->
             logProvider.addLogProcessor(
                 SimpleLogProcessor.create(AgentTestingExporterFactory.logExporter)));
+
+    MicrometerUtil.setDelegate(AgentTestingMicrometerDelegate.instance);
   }
 }
