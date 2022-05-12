@@ -387,6 +387,7 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
 
   def "should not throw on other DeviceContext methods"() {
     expect:
+
     Code.otherDeviceContextMethods()
   }
 }

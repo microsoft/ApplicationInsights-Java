@@ -184,7 +184,11 @@ public class AiConfigPropertySource implements ConfigPropertySource {
     properties.put("otel.instrumentation.log4j-mdc.enabled", "true");
     properties.put("otel.instrumentation.log4j-context-data.enabled", "true");
     properties.put("otel.instrumentation.logback-mdc.enabled", "true");
-    properties.put("otel.instrumentation.netty.enabled", "true");
+
+    // not supporting netty-3.8 for now
+    properties.put("otel.instrumentation.netty-4.0.enabled", "true");
+    properties.put("otel.instrumentation.netty-4.1.enabled", "true");
+
     properties.put("otel.instrumentation.okhttp.enabled", "true");
     properties.put("otel.instrumentation.opentelemetry-annotations.enabled", "true");
     properties.put("otel.instrumentation.opentelemetry-api.enabled", "true");

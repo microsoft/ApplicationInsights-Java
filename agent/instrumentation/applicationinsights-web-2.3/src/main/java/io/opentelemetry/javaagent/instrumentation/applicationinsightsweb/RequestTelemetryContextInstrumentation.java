@@ -33,8 +33,7 @@ import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Tracestate;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
-import io.opentelemetry.instrumentation.api.field.VirtualField;
+import io.opentelemetry.instrumentation.api.util.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import java.util.function.BiConsumer;
@@ -105,20 +104,12 @@ public class RequestTelemetryContextInstrumentation implements TypeInstrumentati
           VirtualField.find(RequestTelemetryContext.class, Span.class).get(requestTelemetryContext);
       if (span != null) {
         TraceState traceState = span.getSpanContext().getTraceState();
-        Tracestate parent;
         if (traceState.isEmpty()) {
-          parent = null;
+          tracestate = null;
         } else {
           TracestateBuilder builder = new TracestateBuilder();
           traceState.forEach(builder);
-          parent = new Tracestate(builder.toString());
-        }
-        // this is what 2.x SDK does
-        String appId = AiAppId.getAppId();
-        if (appId != null && !appId.isEmpty()) {
-          tracestate = new Tracestate(parent, "az", appId);
-        } else {
-          tracestate = parent;
+          tracestate = new Tracestate(builder.toString());
         }
       }
     }

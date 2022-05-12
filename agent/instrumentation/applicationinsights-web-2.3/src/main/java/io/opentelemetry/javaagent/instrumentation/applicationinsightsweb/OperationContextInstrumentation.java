@@ -30,7 +30,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesNoArguments;
 
 import com.microsoft.applicationinsights.extensibility.context.OperationContext;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.instrumentation.api.field.VirtualField;
+import io.opentelemetry.instrumentation.api.util.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import net.bytebuddy.asm.Advice;
