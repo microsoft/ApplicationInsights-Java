@@ -54,7 +54,7 @@ public class AiConfigPropertySource implements ConfigPropertySource {
     }
     properties.put("otel.instrumentation.common.experimental.view-telemetry.enabled", "false");
     properties.put(
-        "otel.instrumentation.common.experimental.suppress-messaging-receive-spans", "true");
+        "otel.instrumentation.messaging.experimental.receive-telemetry.enabled", "false");
     // this is needed to capture kafka.record.queue_time_ms
     properties.put("otel.instrumentation.kafka.experimental-span-attributes", "true");
 
