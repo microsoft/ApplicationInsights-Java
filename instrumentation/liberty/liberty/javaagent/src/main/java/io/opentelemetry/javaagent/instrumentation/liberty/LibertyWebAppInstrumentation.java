@@ -11,7 +11,6 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.javaagent.bootstrap.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
@@ -114,11 +113,6 @@ public class LibertyWebAppInstrumentation implements TypeInstrumentation {
 
       if (!helper().shouldStart(parentContext, requestContext)) {
         return;
-      }
-
-      String appId = AiAppId.getAppId();
-      if (!appId.isEmpty()) {
-        requestInfo.getResponse().setHeader(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
       }
 
       Context context = helper().start(parentContext, requestContext);

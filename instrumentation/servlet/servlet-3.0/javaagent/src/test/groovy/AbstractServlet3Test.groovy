@@ -75,11 +75,6 @@ abstract class AbstractServlet3Test<SERVER, CONTEXT> extends HttpServerTest<SERV
     true
   }
 
-  @Override
-  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
-    true
-  }
-
   boolean errorEndpointUsesSendError() {
     true
   }
