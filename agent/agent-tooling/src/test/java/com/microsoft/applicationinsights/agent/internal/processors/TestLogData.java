@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogData;
@@ -60,11 +59,6 @@ public class TestLogData implements LogData {
   @Override
   public Resource getResource() {
     return resource;
-  }
-
-  @Override
-  public InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
-    throw new UnsupportedOperationException();
   }
 
   @Override

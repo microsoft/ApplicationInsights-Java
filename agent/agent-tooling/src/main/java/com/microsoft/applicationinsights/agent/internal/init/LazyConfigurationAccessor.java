@@ -27,7 +27,6 @@ import com.microsoft.applicationinsights.agent.bootstrap.AiLazyConfiguration;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import io.opentelemetry.instrumentation.api.config.Config;
 import java.util.Collections;
 import java.util.List;
 import org.slf4j.Logger;
@@ -69,8 +68,7 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
         System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY"));
     setWebsiteSiteName(System.getenv("WEBSITE_SITE_NAME"));
     setSelfDiagnosticsLevel(System.getenv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL"));
-    setInstrumentationLoggingLevel(
-        System.getenv("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL"));
+    // TODO (heya) need to handle APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL
   }
 
   void setConnectionString(String connectionString, String instrumentationKey) {
@@ -147,12 +145,5 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
       }
     }
     return false;
-  }
-
-  static void setInstrumentationLoggingLevel(String loggingLevel) {
-    if (loggingLevel != null && !loggingLevel.isEmpty()) {
-      Config.get()
-          .updateProperty("otel.experimental.log.capture.threshold", loggingLevel.toUpperCase());
-    }
   }
 }

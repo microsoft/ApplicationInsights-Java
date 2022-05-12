@@ -54,13 +54,13 @@ public class TelemetryClientFlushingMetricReader implements MetricReader {
 
     // TODO? de-dupe flushing of TelemetryClient three times for spans, logs and metrics
 
-    return flush();
+    return forceFlush();
   }
 
   @Override
-  public CompletableResultCode flush() {
+  public CompletableResultCode forceFlush() {
     CompletableResultCode overallResult = new CompletableResultCode();
-    CompletableResultCode delegateResult = delegate.flush();
+    CompletableResultCode delegateResult = delegate.forceFlush();
     delegateResult.whenComplete(
         () -> {
           if (delegateResult.isSuccess()) {

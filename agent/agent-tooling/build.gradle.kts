@@ -23,6 +23,7 @@ dependencies {
   implementation(project(":agent:agent-gc-monitor:gc-monitor-api"))
   implementation(project(":agent:agent-gc-monitor:gc-monitor-core"))
 
+  compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
 
   testImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling") {
@@ -76,7 +77,6 @@ dependencies {
   testImplementation("io.opentelemetry:opentelemetry-sdk-metrics")
   testImplementation("io.opentelemetry:opentelemetry-sdk-logs")
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-metrics-testing")
 
   // TODO(trask): update tests, no need to use this anymore
   testImplementation("com.squareup.okio:okio:2.8.0")

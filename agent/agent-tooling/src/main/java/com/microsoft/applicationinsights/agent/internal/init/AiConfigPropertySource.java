@@ -23,18 +23,23 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagatorProvider;
-import io.opentelemetry.instrumentation.api.config.Config;
+import io.opentelemetry.javaagent.extension.config.ConfigPropertySource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-class ConfigOverride {
+@AutoService(ConfigPropertySource.class)
+public class AiConfigPropertySource implements ConfigPropertySource {
 
-  static Config getConfig(Configuration config) {
+  @Override
+  public Map<String, String> getProperties() {
+    Configuration config = MainEntryPoint.getConfiguration();
+
     Map<String, String> properties = new HashMap<>();
     properties.put("otel.experimental.log.capture.threshold", config.instrumentation.logging.level);
     properties.put(
@@ -131,7 +136,7 @@ class ConfigOverride {
       properties.put("otel.service.name", config.role.name);
     }
 
-    return Config.builder().addProperties(properties).build();
+    return properties;
   }
 
   private static void enableInstrumentations(Configuration config, Map<String, String> properties) {
@@ -293,6 +298,4 @@ class ConfigOverride {
     }
     return sb.toString();
   }
-
-  private ConfigOverride() {}
 }
