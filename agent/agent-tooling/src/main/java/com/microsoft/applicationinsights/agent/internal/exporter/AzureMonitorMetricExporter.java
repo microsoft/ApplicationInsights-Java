@@ -27,7 +27,6 @@ import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_SUM;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.HISTOGRAM;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_GAUGE;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM;
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricPointBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
@@ -55,7 +54,6 @@ import org.slf4j.LoggerFactory;
 
 public class AzureMonitorMetricExporter implements MetricExporter {
 
-  private static final String AGGREGATION_INTERNAL_MS_KEY = "_MS.AggregationIntervalMs";
   private static final List<String> EXCLUDED_METRIC_NAMES = new ArrayList<>();
 
   private final TelemetryClient telemetryClient;
@@ -177,12 +175,5 @@ public class AzureMonitorMetricExporter implements MetricExporter {
         .getAttributes()
         .forEach(
             (key, value) -> metricTelemetryBuilder.addProperty(key.getKey(), value.toString()));
-
-    long intervalMillis =
-        NANOSECONDS.toMillis(pointData.getEpochNanos() - pointData.getStartEpochNanos());
-    if (intervalMillis < 0) {
-      intervalMillis = 60000; // default to OpenTelemetry default
-    }
-    metricTelemetryBuilder.addProperty(AGGREGATION_INTERNAL_MS_KEY, Long.toString(intervalMillis));
   }
 }

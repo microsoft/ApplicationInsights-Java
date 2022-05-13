@@ -217,7 +217,6 @@ public class AzureMonitorMetricExporterTest {
     assertThat(properties.size()).isEqualTo(3);
     assertThat(properties.get("name")).isEqualTo("apple");
     assertThat(properties.get("color")).isEqualTo("green");
-    assertThat(Integer.parseInt(properties.get("_MS.AggregationIntervalMs"))).isBetween(50, 150);
 
     builder = TelemetryClient.createForTest().newMetricTelemetryBuilder();
     AzureMonitorMetricExporter.updateMetricPointBuilder(builder, metricData, longPointData2);
@@ -228,10 +227,9 @@ public class AzureMonitorMetricExporterTest {
     assertThat(metricDataPoint.getDataPointType()).isEqualTo(DataPointType.AGGREGATION);
 
     properties = metricsData.getProperties();
-    assertThat(properties.size()).isEqualTo(3);
+    assertThat(properties.size()).isEqualTo(2);
     assertThat(properties.get("name")).isEqualTo("apple");
     assertThat(properties.get("color")).isEqualTo("red");
-    assertThat(Integer.parseInt(properties.get("_MS.AggregationIntervalMs"))).isBetween(50, 150);
 
     builder = TelemetryClient.createForTest().newMetricTelemetryBuilder();
     AzureMonitorMetricExporter.updateMetricPointBuilder(builder, metricData, longPointData3);
@@ -242,10 +240,9 @@ public class AzureMonitorMetricExporterTest {
     assertThat(metricDataPoint.getDataPointType()).isEqualTo(DataPointType.AGGREGATION);
 
     properties = metricsData.getProperties();
-    assertThat(properties.size()).isEqualTo(3);
+    assertThat(properties.size()).isEqualTo(2);
     assertThat(properties.get("name")).isEqualTo("lemon");
     assertThat(properties.get("color")).isEqualTo("yellow");
-    assertThat(Integer.parseInt(properties.get("_MS.AggregationIntervalMs"))).isBetween(50, 150);
 
     assertThat(metricData.getType()).isEqualTo(LONG_SUM);
     assertThat(metricData.getName()).isEqualTo("testLongCounter");
