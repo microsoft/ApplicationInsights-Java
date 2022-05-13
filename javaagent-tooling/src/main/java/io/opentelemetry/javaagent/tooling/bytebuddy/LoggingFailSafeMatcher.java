@@ -44,12 +44,6 @@ public class LoggingFailSafeMatcher<T> extends ElementMatcher.Junction.AbstractB
   public boolean matches(T target) {
     try {
       return matcher.matches(target);
-    } catch (IllegalStateException e) {
-      if (!e.getMessage()
-          .startsWith("Cannot resolve type description for io.opentelemetry.javaagent.")) {
-        logger.log(Level.FINE, description, e);
-      }
-      return false;
     } catch (Throwable e) {
       logger.log(Level.FINE, description, e);
       return false;

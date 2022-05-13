@@ -74,11 +74,6 @@ abstract class AbstractServletServerTest extends HttpServerTest<Server> {
     }
   }
 
-  @Override
-  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
-    true
-  }
-
   static class TestApp extends Application {
 
     @Override

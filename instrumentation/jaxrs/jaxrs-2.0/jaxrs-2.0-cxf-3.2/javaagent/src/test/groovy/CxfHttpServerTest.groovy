@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import io.opentelemetry.instrumentation.testing.junit.http.ServerEndpoint
 import org.apache.cxf.endpoint.Server
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean
 import test.JaxRsTestApplication
@@ -40,10 +39,5 @@ class CxfHttpServerTest extends JaxRsHttpServerTest<Server> {
   @Override
   void stopServer(Server httpServer) {
     httpServer.stop()
-  }
-
-  @Override
-  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
-    return true
   }
 }

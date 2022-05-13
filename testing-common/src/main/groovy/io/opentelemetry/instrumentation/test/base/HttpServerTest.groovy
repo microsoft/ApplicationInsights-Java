@@ -153,9 +153,6 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
     ] as Set
   }
 
-  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
-    false
-  }
 
   final String resolveAddress(ServerEndpoint endpoint) {
     return junitTest.resolveAddress(endpoint)
@@ -211,9 +208,6 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
       options.testPathParam = testPathParam()
       options.testCaptureHttpHeaders = testCapturedHttpHeaders()
       options.testCaptureRequestParameters = testCapturedRequestParameters()
-      options.sendsBackAiTargetAppId = { endpoint ->
-        sendsBackAiTargetAppId(endpoint)
-      }
     }
 
     // Override trace assertion method. We can call java assertions from groovy but not the other

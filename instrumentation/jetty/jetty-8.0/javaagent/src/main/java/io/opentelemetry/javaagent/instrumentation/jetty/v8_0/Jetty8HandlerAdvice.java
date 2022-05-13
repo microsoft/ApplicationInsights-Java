@@ -9,7 +9,6 @@ import static io.opentelemetry.javaagent.instrumentation.jetty.v8_0.Jetty8Single
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.javaagent.bootstrap.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.instrumentation.servlet.ServletRequestContext;
 import javax.servlet.http.HttpServletRequest;
@@ -39,11 +38,6 @@ public class Jetty8HandlerAdvice {
 
     if (!helper().shouldStart(parentContext, requestContext)) {
       return;
-    }
-
-    String appId = AiAppId.getAppId();
-    if (!appId.isEmpty()) {
-      response.setHeader(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
     }
 
     context = helper().start(parentContext, requestContext);

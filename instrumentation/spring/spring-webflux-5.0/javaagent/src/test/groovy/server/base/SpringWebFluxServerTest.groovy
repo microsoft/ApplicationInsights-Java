@@ -58,11 +58,6 @@ abstract class SpringWebFluxServerTest extends HttpServerTest<ConfigurableApplic
   }
 
   @Override
-  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
-    true
-  }
-
-  @Override
   Throwable expectedException() {
     return new IllegalStateException(EXCEPTION.body)
   }

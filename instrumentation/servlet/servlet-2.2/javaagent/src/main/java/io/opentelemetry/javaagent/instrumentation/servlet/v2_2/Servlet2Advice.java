@@ -9,7 +9,6 @@ import static io.opentelemetry.javaagent.instrumentation.servlet.v2_2.Servlet2Si
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.bootstrap.CallDepth;
 import io.opentelemetry.javaagent.bootstrap.Java8BytecodeBridge;
@@ -39,7 +38,6 @@ public class Servlet2Advice {
     }
 
     HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-    HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 
     callDepth = CallDepth.forClass(AppServerBridge.getCallDepthKey());
     callDepth.getAndIncrement();
@@ -59,11 +57,6 @@ public class Servlet2Advice {
 
     if (!helper().shouldStart(parentContext, requestContext)) {
       return;
-    }
-
-    String appId = AiAppId.getAppId();
-    if (!appId.isEmpty()) {
-      httpServletResponse.setHeader(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
     }
 
     context = helper().start(parentContext, requestContext);
