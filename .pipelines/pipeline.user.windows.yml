@@ -39,16 +39,6 @@ restore:
       name: 'Install Java 11 JDK'
       command: '.scripts/installJava11jdk.cmd'
     - !!defaultcommand
-      name: 'Add OpenTelemetry to MavenLocal'
-      command: '.scripts/ot-gradle.cmd'
-      # javadoc fails sporadically fetching https://docs.oracle.com/javase/8/docs/api/
-      arguments: 'publishToMavenLocal -x javadoc'
-      # if connection reset issue continues, try:
-      #   -P org.gradle.internal.http.connectionTimeout=30000
-      #   -P org.gradle.internal.http.socketTimeout=30000
-      #   -P org.gradle.internal.repository.max.retries=10
-      #   -P org.gradle.internal.repository.initial.backoff=500
-    - !!defaultcommand
       name: 'Download Dependencies'
       command: '.scripts/gradle.cmd'
       arguments: 'downloadDependencies'

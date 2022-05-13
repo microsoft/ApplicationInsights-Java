@@ -25,12 +25,12 @@ muzzle {
   }
 }
 
-val otelInstrumentationVersionAlpha: String by project
+val otelInstrumentationAlphaVersion: String by project
 
 dependencies {
   compileOnly("io.micrometer:micrometer-core:1.0.0")
   compileOnly("org.springframework.boot:spring-boot-actuator-autoconfigure:2.2.0.RELEASE")
-  compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:$otelInstrumentationVersionAlpha")
+  compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:$otelInstrumentationAlphaVersion")
 
   testImplementation("com.microsoft.azure:azure-spring-boot-metrics-starter:2.2.3") {
     exclude("io.micrometer", "micrometer-core")
@@ -39,11 +39,11 @@ dependencies {
   testImplementation("io.micrometer:micrometer-core:1.1.0")
 
   // TODO remove when start using io.opentelemetry.instrumentation.javaagent-instrumentation plugin
-  add("codegen", "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:$otelInstrumentationVersionAlpha")
+  add("codegen", "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:$otelInstrumentationAlphaVersion")
   add("codegen", "ch.qos.logback:logback-classic:1.2.3")
-  add("muzzleBootstrap", "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support:$otelInstrumentationVersionAlpha")
-  add("muzzleTooling", "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:$otelInstrumentationVersionAlpha")
-  add("muzzleTooling", "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:$otelInstrumentationVersionAlpha")
+  add("muzzleBootstrap", "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support:$otelInstrumentationAlphaVersion")
+  add("muzzleTooling", "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:$otelInstrumentationAlphaVersion")
+  add("muzzleTooling", "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:$otelInstrumentationAlphaVersion")
 }
 
 tasks {

@@ -21,31 +21,17 @@
 
 package io.opentelemetry.javaagent.instrumentation.micrometer;
 
-import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasClassesNamed;
-
 import com.google.auto.service.AutoService;
-import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
-import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
-import java.util.Arrays;
-import java.util.List;
-import net.bytebuddy.matcher.ElementMatcher;
+import io.opentelemetry.instrumentation.api.config.Config;
+import io.opentelemetry.javaagent.extension.ignore.IgnoredTypesBuilder;
+import io.opentelemetry.javaagent.extension.ignore.IgnoredTypesConfigurer;
 
-@AutoService(InstrumentationModule.class)
-public class ActuatorInstrumentationModule extends InstrumentationModule {
-
-  // this instrumentation name is important since it is used to disable actuator-metrics
-  // instrumentation
-  public ActuatorInstrumentationModule() {
-    super("ai-actuator-metrics");
-  }
+@AutoService(IgnoredTypesConfigurer.class)
+public class SpringBootActuatorIgnoredTypesConfigurer implements IgnoredTypesConfigurer {
 
   @Override
-  public ElementMatcher.Junction<ClassLoader> classLoaderMatcher() {
-    return hasClassesNamed("io.micrometer.core.instrument.Metrics");
-  }
-
-  @Override
-  public List<TypeInstrumentation> typeInstrumentations() {
-    return Arrays.asList(new ActuatorInstrumentation(), new ClassPathResourceInstrumentation());
+  public void configure(Config config, IgnoredTypesBuilder builder) {
+    builder.allowClass("org.springframework.core.io.ClassPathResource");
+    builder.allowClass("org.springframework.boot.autoconfigure.AutoConfigurationImportSelector");
   }
 }

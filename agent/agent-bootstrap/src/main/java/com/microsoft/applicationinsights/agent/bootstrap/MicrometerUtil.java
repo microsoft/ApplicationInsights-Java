@@ -19,33 +19,40 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package io.opentelemetry.javaagent.instrumentation.micrometer;
+package com.microsoft.applicationinsights.agent.bootstrap;
 
-import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasClassesNamed;
+import java.util.Map;
 
-import com.google.auto.service.AutoService;
-import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
-import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
-import java.util.Arrays;
-import java.util.List;
-import net.bytebuddy.matcher.ElementMatcher;
+public class MicrometerUtil {
 
-@AutoService(InstrumentationModule.class)
-public class ActuatorInstrumentationModule extends InstrumentationModule {
+  private static MicrometerUtilDelegate delegate;
 
-  // this instrumentation name is important since it is used to disable actuator-metrics
-  // instrumentation
-  public ActuatorInstrumentationModule() {
-    super("ai-actuator-metrics");
+  public static void setDelegate(MicrometerUtilDelegate delegate) {
+    MicrometerUtil.delegate = delegate;
   }
 
-  @Override
-  public ElementMatcher.Junction<ClassLoader> classLoaderMatcher() {
-    return hasClassesNamed("io.micrometer.core.instrument.Metrics");
+  public static void trackMetric(
+      String name,
+      double value,
+      Integer count,
+      Double min,
+      Double max,
+      Map<String, String> properties) {
+    if (delegate != null) {
+      delegate.trackMetric(name, value, count, min, max, properties);
+    }
   }
 
-  @Override
-  public List<TypeInstrumentation> typeInstrumentations() {
-    return Arrays.asList(new ActuatorInstrumentation(), new ClassPathResourceInstrumentation());
+  public interface MicrometerUtilDelegate {
+
+    void trackMetric(
+        String name,
+        double value,
+        Integer count,
+        Double min,
+        Double max,
+        Map<String, String> properties);
   }
+
+  private MicrometerUtil() {}
 }

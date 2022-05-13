@@ -24,6 +24,8 @@ val upstreamAgent: Configuration by configurations.creating {
 dependencies {
   // include everything from otel agent for testing
   upstreamAgent("io.opentelemetry.javaagent:opentelemetry-agent-for-testing")
+
+  bootstrapLibs(project(":agent:agent-bootstrap"))
 }
 
 tasks {

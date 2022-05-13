@@ -1,9 +1,25 @@
 /*
- * Copyright The OpenTelemetry Authors
- * SPDX-License-Identifier: Apache-2.0
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
  */
 
-
+import com.microsoft.applicationinsights.agent.bootstrap.MicrometerUtil
 import io.micrometer.azuremonitor.AzureMonitorConfig
 import io.micrometer.core.instrument.Clock
 import io.micrometer.core.instrument.Counter
@@ -17,7 +33,6 @@ import io.micrometer.core.instrument.TimeGauge
 import io.micrometer.core.instrument.Timer
 import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
 import io.opentelemetry.javaagent.instrumentation.micrometer.AzureMonitorMeterRegistry
-import io.opentelemetry.javaagent.testing.common.AgentTestingMicrometerDelegateAccess
 
 import java.util.concurrent.Executors
 import java.util.stream.Collectors
@@ -25,6 +40,16 @@ import java.util.stream.Collectors
 import static java.util.concurrent.TimeUnit.MILLISECONDS
 
 class MicrometerTest extends AgentInstrumentationSpecification {
+
+  static final AgentTestingMicrometerDelegate delegate = new AgentTestingMicrometerDelegate()
+
+  static {
+    MicrometerUtil.setDelegate(delegate)
+  }
+
+  def setup() {
+    delegate.reset()
+  }
 
   def "should register AzureMonitorMeterRegistry"() {
     expect:
@@ -56,10 +81,10 @@ class MicrometerTest extends AgentInstrumentationSpecification {
 
     then:
     def measurement = getLastMeasurement("test-time-gauge")
-    measurement.value() == 11
-    measurement.count() == null
-    measurement.min() == null
-    measurement.max() == null
+    measurement.value == 11
+    measurement.count == null
+    measurement.min == null
+    measurement.max == null
   }
 
   def "should capture gauge"() {
@@ -72,10 +97,10 @@ class MicrometerTest extends AgentInstrumentationSpecification {
 
     then:
     def measurement = getLastMeasurement("test-gauge")
-    measurement.value() == 22
-    measurement.count() == null
-    measurement.min() == null
-    measurement.max() == null
+    measurement.value == 22
+    measurement.count == null
+    measurement.min == null
+    measurement.max == null
   }
 
   def "should capture counter"() {
@@ -89,10 +114,10 @@ class MicrometerTest extends AgentInstrumentationSpecification {
 
     then:
     def measurement = getLastMeasurement("test-counter")
-    measurement.value() == 3.3
-    measurement.count() == null
-    measurement.min() == null
-    measurement.max() == null
+    measurement.value == 3.3
+    measurement.count == null
+    measurement.min == null
+    measurement.max == null
   }
 
   def "should capture timer"() {
@@ -107,10 +132,10 @@ class MicrometerTest extends AgentInstrumentationSpecification {
 
     then:
     def measurement = getLastMeasurement("test-timer")
-    measurement.value() == 99
-    measurement.count() == 2
-    measurement.min() == null // min is not supported, see https://github.com/micrometer-metrics/micrometer/issues/457
-    measurement.max() == 55
+    measurement.value == 99
+    measurement.count == 2
+    measurement.min == null // min is not supported, see https://github.com/micrometer-metrics/micrometer/issues/457
+    measurement.max == 55
   }
 
   def "should capture distribution summary"() {
@@ -125,10 +150,10 @@ class MicrometerTest extends AgentInstrumentationSpecification {
 
     then:
     def measurement = getLastMeasurement("test-summary")
-    measurement.value() == 9.9
-    measurement.count() == 2
-    measurement.min() == null // min is not supported, see https://github.com/micrometer-metrics/micrometer/issues/457
-    measurement.max() == 5.5
+    measurement.value == 9.9
+    measurement.count == 2
+    measurement.min == null // min is not supported, see https://github.com/micrometer-metrics/micrometer/issues/457
+    measurement.max == 5.5
   }
 
   def "should capture long task timer"() {
@@ -152,16 +177,16 @@ class MicrometerTest extends AgentInstrumentationSpecification {
 
     then:
     def activeMeasurement = getLastMeasurement("test-long-task-timer_active")
-    activeMeasurement.value() == 2
-    activeMeasurement.count() == null
-    activeMeasurement.min() == null
-    activeMeasurement.max() == null
+    activeMeasurement.value == 2
+    activeMeasurement.count == null
+    activeMeasurement.min == null
+    activeMeasurement.max == null
 
     def durationMeasurement = getLastMeasurement("test-long-task-timer_duration")
-    durationMeasurement.value() > 50
-    durationMeasurement.count() == null
-    durationMeasurement.min() == null
-    durationMeasurement.max() == null
+    durationMeasurement.value > 50
+    durationMeasurement.count == null
+    durationMeasurement.min == null
+    durationMeasurement.max == null
   }
 
   def "should capture function counter"() {
@@ -174,10 +199,10 @@ class MicrometerTest extends AgentInstrumentationSpecification {
 
     then:
     def measurements = getLastMeasurement("test-function-counter")
-    measurements.value() == 6.6
-    measurements.count() == null
-    measurements.min() == null
-    measurements.max() == null
+    measurements.value == 6.6
+    measurements.count == null
+    measurements.min == null
+    measurements.max == null
   }
 
   def "should capture function timer"() {
@@ -191,31 +216,16 @@ class MicrometerTest extends AgentInstrumentationSpecification {
 
     then:
     def measurement = getLastMeasurement("test-function-timer")
-    measurement.value() == 4.4
-    measurement.count() == 2
-    measurement.min() == null
-    measurement.max() == null
+    measurement.value == 4.4
+    measurement.count == 2
+    measurement.min == null
+    measurement.max == null
   }
 
-  AgentTestingMicrometerDelegateAccess.Measurement getLastMeasurement(String name) {
-    def measurements = AgentTestingMicrometerDelegateAccess.getMeasurements().stream()
-      .filter({ it.name() == name && it.value() != 0 })
+  AgentTestingMicrometerDelegate.Measurement getLastMeasurement(String name) {
+    def measurements = delegate.getMeasurements().stream()
+      .filter({ it.name == name && it.value != 0 })
       .collect(Collectors.toList())
     return measurements.get(measurements.size() - 1)
-  }
-
-  static class TestClock implements Clock {
-
-    long timeMillis
-
-    @Override
-    long wallTime() {
-      return timeMillis
-    }
-
-    @Override
-    long monotonicTime() {
-      return MILLISECONDS.toNanos(timeMillis)
-    }
   }
 }

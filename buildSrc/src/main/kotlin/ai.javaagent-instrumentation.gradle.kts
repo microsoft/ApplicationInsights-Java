@@ -5,7 +5,7 @@ plugins {
   id("ai.shadow-conventions")
 }
 
-val otelInstrumentationVersionAlpha: String by project
+val otelInstrumentationAlphaVersion: String by project
 
 val testInstrumentation by configurations.creating
 
@@ -15,12 +15,12 @@ dependencies {
   compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi")
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
-  compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:$otelInstrumentationVersionAlpha")
+  compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:$otelInstrumentationAlphaVersion")
   annotationProcessor("com.google.auto.service:auto-service")
   compileOnly("com.google.auto.service:auto-service")
   compileOnly(project(":agent:agent-bootstrap"))
 
-  testImplementation("io.opentelemetry.javaagent:opentelemetry-testing-common:$otelInstrumentationVersionAlpha")
+  testImplementation("io.opentelemetry.javaagent:opentelemetry-testing-common:$otelInstrumentationAlphaVersion")
   // the bootstrap module is provided by the javaagent in the instrumentation test runtime, no need to include it
   // (especially when it's not being shaded)
   testCompileOnly(project(":agent:agent-bootstrap"))

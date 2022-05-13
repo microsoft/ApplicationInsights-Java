@@ -16,7 +16,7 @@ muzzle {
   }
 }
 
-val otelInstrumentationVersionAlpha: String by project
+val otelInstrumentationAlphaVersion: String by project
 val otelVersion: String by project
 
 dependencies {
@@ -27,12 +27,12 @@ dependencies {
   testImplementation("com.microsoft.azure:applicationinsights-web:2.3.0")
   testImplementation("javax.servlet:javax.servlet-api:3.0.1")
 
-  add("codegen", "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.0:$otelInstrumentationVersionAlpha")
+  add("codegen", "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.0:$otelInstrumentationAlphaVersion")
 
   // TODO remove when start using io.opentelemetry.instrumentation.javaagent-instrumentation plugin
-  add("codegen", "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:$otelInstrumentationVersionAlpha")
+  add("codegen", "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:$otelInstrumentationAlphaVersion")
   add("codegen", "ch.qos.logback:logback-classic:1.2.3")
-  add("muzzleBootstrap", "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support:$otelInstrumentationVersionAlpha")
-  add("muzzleTooling", "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:$otelInstrumentationVersionAlpha")
-  add("muzzleTooling", "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:$otelInstrumentationVersionAlpha")
+  add("muzzleBootstrap", "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support:$otelInstrumentationAlphaVersion")
+  add("muzzleTooling", "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:$otelInstrumentationAlphaVersion")
+  add("muzzleTooling", "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:$otelInstrumentationAlphaVersion")
 }
