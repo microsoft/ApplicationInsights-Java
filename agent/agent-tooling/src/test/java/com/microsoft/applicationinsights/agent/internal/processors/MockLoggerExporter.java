@@ -21,21 +21,16 @@
 
 package com.microsoft.applicationinsights.agent.internal.processors;
 
-import com.microsoft.applicationinsights.agent.internal.exporter.LoggerExporter;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.export.LogExporter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class MockLoggerExporter extends LoggerExporter {
+public class MockLoggerExporter implements LogExporter {
 
   private final List<LogData> logs = new ArrayList<>();
-
-  public MockLoggerExporter(TelemetryClient telemetryClient) {
-    super(telemetryClient, false);
-  }
 
   public List<LogData> getLogs() {
     return logs;

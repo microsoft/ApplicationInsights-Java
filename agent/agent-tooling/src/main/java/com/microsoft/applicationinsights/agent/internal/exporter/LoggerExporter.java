@@ -35,7 +35,6 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
@@ -59,10 +58,20 @@ public class LoggerExporter implements LogExporter {
   private final TelemetryClient telemetryClient;
   private final boolean captureLoggingLevelAsCustomDimension;
 
+  // TODO (trask) could implement this in a filtering LogExporter instead
+  private volatile Severity threshold;
+
   public LoggerExporter(
-      TelemetryClient telemetryClient, boolean captureLoggingLevelAsCustomDimension) {
+      TelemetryClient telemetryClient,
+      Severity threshold,
+      boolean captureLoggingLevelAsCustomDimension) {
     this.telemetryClient = telemetryClient;
+    this.threshold = threshold;
     this.captureLoggingLevelAsCustomDimension = captureLoggingLevelAsCustomDimension;
+  }
+
+  public void setThreshold(Severity threshold) {
+    this.threshold = threshold;
   }
 
   @Override
@@ -102,7 +111,7 @@ public class LoggerExporter implements LogExporter {
 
   private void internalExport(LogData log) {
     int severity = log.getSeverity().getSeverityNumber();
-    int threshold = getThreshold().getSeverityNumber();
+    int threshold = this.threshold.getSeverityNumber();
     if (severity < threshold) {
       return;
     }
@@ -305,38 +314,6 @@ public class LoggerExporter implements LogExporter {
     }
     // TODO (trask) AI mapping: is this a good fallback?
     return SeverityLevel.VERBOSE;
-  }
-
-  private static Severity getThreshold() {
-    String severity = Config.get().getString("otel.experimental.log.capture.threshold");
-    if (severity == null) {
-      return Severity.UNDEFINED_SEVERITY_NUMBER;
-    }
-    switch (severity.toUpperCase()) {
-      case "OFF":
-        return Severity.UNDEFINED_SEVERITY_NUMBER;
-      case "FATAL":
-      case "ERROR":
-      case "SEVERE":
-        return Severity.ERROR;
-      case "WARN":
-      case "WARNING":
-        return Severity.WARN;
-      case "INFO":
-        return Severity.INFO;
-      case "CONFIG":
-      case "DEBUG":
-      case "FINE":
-      case "FINER":
-        return Severity.DEBUG;
-      case "TRACE":
-      case "FINEST":
-      case "ALL":
-        return Severity.TRACE;
-      default:
-        logger.error("unexpected value for otel.experimental.log.capture.threshold: {}", severity);
-        return Severity.UNDEFINED_SEVERITY_NUMBER;
-    }
   }
 
   // TODO need to retrieve logging frameworks' name (Log4j, Logback, Java Util Logging) so that we

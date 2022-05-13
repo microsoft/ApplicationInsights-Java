@@ -29,7 +29,6 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ToAttributeConfig;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.logs.data.Body;
@@ -41,7 +40,6 @@ import java.util.List;
 import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 class ExporterWithLogProcessorTest {
 
@@ -51,7 +49,7 @@ class ExporterWithLogProcessorTest {
 
   @BeforeEach
   public void setup() {
-    mockExporter = new MockLoggerExporter(Mockito.mock(TelemetryClient.class));
+    mockExporter = new MockLoggerExporter();
     config = new ProcessorConfig();
     config.type = ProcessorType.LOG;
     attributes =

@@ -99,7 +99,7 @@ class AiComponentInstaller {
       }
     }
     // TODO (trask) should configuration validation be performed earlier?
-    config.preview.validate();
+    config.validate();
 
     if (config.proxy.host != null) {
       LazyHttpClient.proxyHost = config.proxy.host;
@@ -155,7 +155,8 @@ class AiComponentInstaller {
     // this is for Azure Function Linux consumption plan support.
     if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
       AiLazyConfiguration.setAccessor(
-          new LazyConfigurationAccessor(telemetryClient, appIdSupplier));
+          new LazyConfigurationAccessor(
+              telemetryClient, OpenTelemetryConfigurer.loggerExporter, appIdSupplier));
     }
 
     // this is currently used by Micrometer instrumentation in addition to 2.x SDK
