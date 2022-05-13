@@ -41,7 +41,6 @@ public class AiConfigPropertySource implements ConfigPropertySource {
     Configuration config = MainEntryPoint.getConfiguration();
 
     Map<String, String> properties = new HashMap<>();
-    properties.put("otel.experimental.log.capture.threshold", config.instrumentation.logging.level);
     properties.put(
         "otel.micrometer.step.millis",
         Long.toString(SECONDS.toMillis(config.preview.metricIntervalSeconds)));

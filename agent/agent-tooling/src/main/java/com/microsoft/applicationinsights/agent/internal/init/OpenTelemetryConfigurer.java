@@ -61,9 +61,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 @AutoService(AutoConfigurationCustomizerProvider.class)
 public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvider {
+
+  @Nullable public static LoggerExporter loggerExporter;
 
   @Override
   public void customize(AutoConfigurationCustomizer autoConfiguration) {
@@ -227,9 +230,15 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
 
   private static LogExporter createLogExporter(
       TelemetryClient telemetryClient, Configuration configuration) {
-    LogExporter logExporter =
+
+    loggerExporter =
         new LoggerExporter(
-            telemetryClient, configuration.preview.captureLoggingLevelAsCustomDimension);
+            telemetryClient,
+            configuration.instrumentation.logging.getSeverity(),
+            configuration.preview.captureLoggingLevelAsCustomDimension);
+
+    LogExporter logExporter = loggerExporter;
+
     List<ProcessorConfig> processorConfigs = getLogProcessorConfigs(configuration);
     if (!processorConfigs.isEmpty()) {
       // Reversing the order of processors before passing it Log processor

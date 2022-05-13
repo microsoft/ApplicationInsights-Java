@@ -31,6 +31,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Diagnostics
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.sdk.logs.data.Severity;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,6 +66,11 @@ public class Configuration {
 
   private static boolean isEmpty(String str) {
     return str == null || str.trim().isEmpty();
+  }
+
+  public void validate() {
+    instrumentation.logging.getSeverity();
+    preview.validate();
   }
 
   // TODO (trask) investigate options for mapping lowercase values to otel enum directly
@@ -176,6 +182,38 @@ public class Configuration {
 
   public static class LoggingInstrumentation {
     public String level = "INFO";
+
+    public Severity getSeverity() {
+      return getSeverity(level);
+    }
+
+    public static Severity getSeverity(String level) {
+      switch (level.toUpperCase()) {
+        case "OFF":
+          return Severity.UNDEFINED_SEVERITY_NUMBER;
+        case "FATAL":
+        case "ERROR":
+        case "SEVERE":
+          return Severity.ERROR;
+        case "WARN":
+        case "WARNING":
+          return Severity.WARN;
+        case "INFO":
+          return Severity.INFO;
+        case "CONFIG":
+        case "DEBUG":
+        case "FINE":
+        case "FINER":
+          return Severity.DEBUG;
+        case "TRACE":
+        case "FINEST":
+        case "ALL":
+          return Severity.TRACE;
+        default:
+          throw new FriendlyException(
+              "Invalid logging instrumentation level: " + level, "Please provide a valid level.");
+      }
+    }
   }
 
   public static class MicrometerInstrumentation {

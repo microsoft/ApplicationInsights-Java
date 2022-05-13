@@ -24,6 +24,8 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import ch.qos.logback.classic.LoggerContext;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.microsoft.applicationinsights.agent.bootstrap.AiLazyConfiguration;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.exporter.LoggerExporter;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -37,10 +39,13 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
   private static final Logger logger = LoggerFactory.getLogger(LazyConfigurationAccessor.class);
 
   private final TelemetryClient telemetryClient;
+  private final LoggerExporter loggerExporter;
   private final AppIdSupplier appIdSupplier;
 
-  public LazyConfigurationAccessor(TelemetryClient telemetryClient, AppIdSupplier appIdSupplier) {
+  public LazyConfigurationAccessor(
+      TelemetryClient telemetryClient, LoggerExporter loggerExporter, AppIdSupplier appIdSupplier) {
     this.telemetryClient = telemetryClient;
+    this.loggerExporter = loggerExporter;
     this.appIdSupplier = appIdSupplier;
   }
 
@@ -68,7 +73,9 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
         System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY"));
     setWebsiteSiteName(System.getenv("WEBSITE_SITE_NAME"));
     setSelfDiagnosticsLevel(System.getenv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL"));
-    // TODO (heya) need to handle APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL
+    loggerExporter.setThreshold(
+        Configuration.LoggingInstrumentation.getSeverity(
+            System.getenv("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL")));
   }
 
   void setConnectionString(String connectionString, String instrumentationKey) {
@@ -92,7 +99,7 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
     DelegatingPropagator.getInstance().setUpStandardDelegate(Collections.emptyList(), false);
     // TODO handle APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE
     DelegatingSampler.getInstance().setAlwaysOnDelegate();
-    logger.info("Set connection string {} lazily for the Azure Function Consumption Plan.", value);
+    logger.debug("Set connection string {} lazily for the Azure Function Consumption Plan.", value);
 
     // start app id retrieval after the connection string becomes available.
     appIdSupplier.startAppIdRetrieval();
@@ -101,7 +108,7 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
   void setWebsiteSiteName(String websiteSiteName) {
     if (websiteSiteName != null && !websiteSiteName.isEmpty()) {
       telemetryClient.setRoleName(websiteSiteName);
-      logger.info(
+      logger.debug(
           "Set WEBSITE_SITE_NAME: {} lazily for the Azure Function Consumption Plan.",
           websiteSiteName);
     }
@@ -112,7 +119,7 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
       return;
     }
 
-    logger.info("setting APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL to {}", loggingLevel);
+    logger.debug("setting APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL to {}", loggingLevel);
 
     LoggingLevelConfigurator configurator;
     try {

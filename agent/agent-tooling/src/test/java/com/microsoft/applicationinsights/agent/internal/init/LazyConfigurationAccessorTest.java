@@ -28,6 +28,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.microsoft.applicationinsights.agent.internal.exporter.LoggerExporter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import org.junit.jupiter.api.Test;
 
@@ -78,9 +79,10 @@ class LazyConfigurationAccessorTest {
 
     // given
     TelemetryClient telemetryClient = mock(TelemetryClient.class);
+    LoggerExporter loggerExporter = mock(LoggerExporter.class);
     AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
     LazyConfigurationAccessor lazyConfigurationAccessor =
-        new LazyConfigurationAccessor(telemetryClient, appIdSupplier);
+        new LazyConfigurationAccessor(telemetryClient, loggerExporter, appIdSupplier);
 
     // when
     lazyConfigurationAccessor.setConnectionString(null, null);
@@ -97,9 +99,10 @@ class LazyConfigurationAccessorTest {
 
     // given
     TelemetryClient telemetryClient = mock(TelemetryClient.class);
+    LoggerExporter loggerExporter = mock(LoggerExporter.class);
     AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
     LazyConfigurationAccessor lazyConfigurationAccessor =
-        new LazyConfigurationAccessor(telemetryClient, appIdSupplier);
+        new LazyConfigurationAccessor(telemetryClient, loggerExporter, appIdSupplier);
 
     // when
     lazyConfigurationAccessor.setConnectionString(CONNECTION_STRING, null);
@@ -123,9 +126,10 @@ class LazyConfigurationAccessorTest {
 
     // given
     TelemetryClient telemetryClient = mock(TelemetryClient.class);
+    LoggerExporter loggerExporter = mock(LoggerExporter.class);
     AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
     LazyConfigurationAccessor lazyConfigurationAccessor =
-        new LazyConfigurationAccessor(telemetryClient, appIdSupplier);
+        new LazyConfigurationAccessor(telemetryClient, loggerExporter, appIdSupplier);
 
     // when
     lazyConfigurationAccessor.setConnectionString(null, INSTRUMENTATION_KEY);
@@ -161,9 +165,10 @@ class LazyConfigurationAccessorTest {
 
     // given
     TelemetryClient telemetryClient = mock(TelemetryClient.class);
+    LoggerExporter loggerExporter = mock(LoggerExporter.class);
     AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
     LazyConfigurationAccessor lazyConfigurationAccessor =
-        new LazyConfigurationAccessor(telemetryClient, appIdSupplier);
+        new LazyConfigurationAccessor(telemetryClient, loggerExporter, appIdSupplier);
 
     // when
     lazyConfigurationAccessor.setConnectionString(null, null);
@@ -180,9 +185,10 @@ class LazyConfigurationAccessorTest {
 
     // given
     TelemetryClient telemetryClient = mock(TelemetryClient.class);
+    LoggerExporter loggerExporter = mock(LoggerExporter.class);
     AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
     LazyConfigurationAccessor lazyConfigurationAccessor =
-        new LazyConfigurationAccessor(telemetryClient, appIdSupplier);
+        new LazyConfigurationAccessor(telemetryClient, loggerExporter, appIdSupplier);
 
     // when
     lazyConfigurationAccessor.setConnectionString(CONNECTION_STRING, null);
@@ -200,9 +206,10 @@ class LazyConfigurationAccessorTest {
 
     // given
     TelemetryClient telemetryClient = mock(TelemetryClient.class);
+    LoggerExporter loggerExporter = mock(LoggerExporter.class);
     AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
     LazyConfigurationAccessor lazyConfigurationAccessor =
-        new LazyConfigurationAccessor(telemetryClient, appIdSupplier);
+        new LazyConfigurationAccessor(telemetryClient, loggerExporter, appIdSupplier);
 
     // when
     lazyConfigurationAccessor.setConnectionString(null, INSTRUMENTATION_KEY);
