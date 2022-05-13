@@ -53,6 +53,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -304,6 +305,7 @@ public class AzureMonitorMetricExporterTest {
     assertThat(metricsData.getMetrics().size()).isEqualTo(1);
     assertThat(metricsData.getMetrics().get(0).getCount()).isEqualTo(1);
     assertThat(metricsData.getMetrics().get(0).getValue()).isEqualTo(25.45);
+    assertThat(metricsData.getProperties().size()).isEqualTo(0);
     assertThat(metricsData.getMetrics().get(0).getMax()).isEqualTo(25.45);
     assertThat(metricsData.getMetrics().get(0).getMin()).isEqualTo(25.45);
 
