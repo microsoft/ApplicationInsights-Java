@@ -10,6 +10,7 @@ environment:
 versioning:
   commands:
     - !!defaultcommand
+      # TODO (heya) what is this used for?
       name: 'Generate Version'
       command: '.scripts/version.cmd'
 # excluding our source code from being scanned for code sign validation
@@ -28,6 +29,7 @@ static_analysis_options:
 restore:
   commands:
     - !!defaultcommand
+      # TODO (trask) test if this is needed, or maybe only needed for official release?
       name: 'Install Windows 10 SDK'
       command: '.scripts/installWindows10Sdk.cmd'
       logs:
