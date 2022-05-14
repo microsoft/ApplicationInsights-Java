@@ -70,17 +70,6 @@ allprojects {
     }
   }
 
-  task downloadDependencies {
-    doLast {
-      [configurations, buildscript.configurations].flatten().findAll {
-        // dependencyManagement gets in the way of resolving the "default" configuration
-        it.canBeResolved && it.name != "default"
-      }.each {
-        it.resolve()
-      }
-    }
-  }
-
   plugins.withId("net.ltgt.errorprone") {
     dependencies {
       errorprone "com.google.errorprone:error_prone_core:2.7.1"

@@ -17,7 +17,7 @@ build:
     - !!defaultcommand
       name: 'Assemble ApplicationInsights-Java JARs'
       command: '.scripts/gradle.cmd'
-      arguments: 'publishToMavenLocal -DisRelease=true -Pai.etw.native.build=release'
+      arguments: 'publishToMavenLocal -DisRelease=true -Pai.etw.native.build=release --offline'
     - !!buildcommand
       name: 'Copy files from maven local repository'
       command: '.scripts/copy-from-maven-local.cmd'

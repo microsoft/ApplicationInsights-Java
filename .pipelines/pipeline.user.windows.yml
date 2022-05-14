@@ -38,7 +38,7 @@ restore:
     - !!defaultcommand
       name: 'Download Dependencies'
       command: '.scripts/gradle.cmd'
-      arguments: 'downloadDependencies'
+      arguments: 'build clean'
     - !!defaultcommand
       name: 'List Installation Information'
       command: '.scripts/dumpInstallationInfo.cmd'
