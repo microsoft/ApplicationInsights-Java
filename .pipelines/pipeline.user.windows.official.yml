@@ -15,9 +15,9 @@ build:
           include:
             - '**/*'
     - !!defaultcommand
-      name: 'Assemble ApplicationInsights-Java JARs'
+      name: 'Assemble'
       command: '.scripts/gradle.cmd'
-      arguments: 'publishToMavenLocal -DisRelease=true -Pai.etw.native.build=release --offline'
+      arguments: ':agent:agent:publishToMavenLocal -DisRelease=true -Pai.etw.native.build=release --offline'
     - !!buildcommand
       name: 'Copy files from maven local repository'
       command: '.scripts/copy-from-maven-local.cmd'

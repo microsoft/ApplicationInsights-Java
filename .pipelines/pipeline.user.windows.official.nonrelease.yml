@@ -15,9 +15,9 @@ build:
           include:
             - '**/*'
     - !!buildcommand
-      name: 'Assemble ApplicationInsights-Java JARs'
+      name: 'Assemble'
       command: '.scripts/gradle.cmd'
-      arguments: 'assemble --offline'
+      arguments: ':agent:agent:assemble --offline'
       artifacts:
         - to: 'Artifacts'
           include:

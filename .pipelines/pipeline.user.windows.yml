@@ -36,25 +36,6 @@ restore:
           include:
             - '**/*.log'
     - !!defaultcommand
-      name: 'Download Dependencies'
+      name: 'Download Dependencies and Java Toolchain (Java 11)'
       command: '.scripts/gradle.cmd'
-      arguments: 'build clean'
-    - !!defaultcommand
-      name: 'List Installation Information'
-      command: '.scripts/dumpInstallationInfo.cmd'
-test:
-  commands:
-    - !!testcommand
-      name: 'ApplicationInsights-Java Unit Tests'
-      command: '.scripts/gradle.cmd'
-      arguments: 'test'
-      fail_on_stderr: false
-      testresults:
-        - title: ':Unit Test Results'
-          type: 'junit'
-          include:
-            - '**/build/test-results/test/**/*'
-      logs:
-        - to: 'Test Logs'
-          include:
-            - '**/build/reports/tests/**/*'
+      arguments: ':agent:agent:assemble :agent:agent:clean'
