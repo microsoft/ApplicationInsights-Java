@@ -28,7 +28,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 @UseAgent
-public class AzureSdkTest extends AiSmokeTest {
+public class AzureSdkTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/test")

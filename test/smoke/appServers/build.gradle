@@ -125,16 +125,6 @@ task buildDockerImage {
   dependsOn project.subprojects.collect { it.getTasksByName("buildDockerImage", false) }
 
   outputs.upToDateWhen { false }
-
-  doLast {
-    project.subprojects.each { sp ->
-      copy {
-        from sp.ext.resourcesOutputDir
-        into sharedResourcesDir
-        include "**/*.*"
-      }
-    }
-  }
 }
 
 task resetDockerEnv {

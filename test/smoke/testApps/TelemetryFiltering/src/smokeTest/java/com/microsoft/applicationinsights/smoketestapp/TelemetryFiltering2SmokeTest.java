@@ -21,13 +21,13 @@
 
 package com.microsoft.applicationinsights.smoketestapp;
 
-import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
+import com.microsoft.applicationinsights.smoketest.AiWarSmokeTest;
 import com.microsoft.applicationinsights.smoketest.TargetUri;
 import com.microsoft.applicationinsights.smoketest.UseAgent;
 import org.junit.Test;
 
 @UseAgent("telemetryfiltering2")
-public class TelemetryFiltering2SmokeTest extends AiSmokeTest {
+public class TelemetryFiltering2SmokeTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri(value = "/login", callCount = 100)

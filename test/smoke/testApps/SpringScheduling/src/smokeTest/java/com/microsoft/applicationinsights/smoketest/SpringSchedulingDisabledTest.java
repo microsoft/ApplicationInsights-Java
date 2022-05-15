@@ -22,13 +22,12 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
 @UseAgent("disabled_springscheduling")
-public class SpringSchedulingDisabledTest extends AiSmokeTest {
+public class SpringSchedulingDisabledTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/scheduler")

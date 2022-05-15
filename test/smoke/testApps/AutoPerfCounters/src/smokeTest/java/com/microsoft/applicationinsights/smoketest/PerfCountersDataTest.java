@@ -36,7 +36,7 @@ import org.junit.Test;
 
 @UseAgent("fastmetrics")
 @SuppressWarnings("deprecation")
-public class PerfCountersDataTest extends AiSmokeTest {
+public class PerfCountersDataTest extends AiWarSmokeTest {
   @Test
   @TargetUri(value = "index.jsp", delay = 5000)
   public void testPerformanceCounterData() throws Exception {

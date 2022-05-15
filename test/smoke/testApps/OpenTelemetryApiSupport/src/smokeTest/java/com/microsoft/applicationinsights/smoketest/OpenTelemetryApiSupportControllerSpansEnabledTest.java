@@ -30,7 +30,7 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData
 import org.junit.Test;
 
 @UseAgent("controller_spans_enabled")
-public class OpenTelemetryApiSupportControllerSpansEnabledTest extends AiSmokeTest {
+public class OpenTelemetryApiSupportControllerSpansEnabledTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/test-api")

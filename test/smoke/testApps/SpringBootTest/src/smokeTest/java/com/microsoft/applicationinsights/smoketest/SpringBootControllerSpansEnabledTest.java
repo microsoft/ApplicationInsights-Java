@@ -45,7 +45,7 @@ import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
 
 @UseAgent("controller_spans_enabled")
-public class SpringBootControllerSpansEnabledTest extends AiSmokeTest {
+public class SpringBootControllerSpansEnabledTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/basic/trackEvent")

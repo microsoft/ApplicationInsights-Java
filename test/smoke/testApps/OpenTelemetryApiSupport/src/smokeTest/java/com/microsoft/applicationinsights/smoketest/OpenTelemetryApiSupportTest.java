@@ -28,7 +28,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 @UseAgent
-public class OpenTelemetryApiSupportTest extends AiSmokeTest {
+public class OpenTelemetryApiSupportTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/test-api")

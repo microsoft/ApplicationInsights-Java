@@ -29,7 +29,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 @UseAgent
-public class SpringBootAutoTest extends AiSmokeTest {
+public class SpringBootAutoTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/test")

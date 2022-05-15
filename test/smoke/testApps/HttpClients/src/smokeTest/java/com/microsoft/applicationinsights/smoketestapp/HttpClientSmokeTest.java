@@ -26,13 +26,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
+import com.microsoft.applicationinsights.smoketest.AiWarSmokeTest;
 import com.microsoft.applicationinsights.smoketest.TargetUri;
 import com.microsoft.applicationinsights.smoketest.UseAgent;
 import org.junit.Test;
 
 @UseAgent
-public class HttpClientSmokeTest extends AiSmokeTest {
+public class HttpClientSmokeTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/apacheHttpClient4")

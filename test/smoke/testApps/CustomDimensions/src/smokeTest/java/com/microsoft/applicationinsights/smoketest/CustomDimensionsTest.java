@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 @UseAgent("customdimensions")
-public class CustomDimensionsTest extends AiSmokeTest {
+public class CustomDimensionsTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/test")

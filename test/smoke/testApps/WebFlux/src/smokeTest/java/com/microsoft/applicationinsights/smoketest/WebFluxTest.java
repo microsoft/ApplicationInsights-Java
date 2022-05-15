@@ -29,7 +29,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 @UseAgent
-public class WebFluxTest extends AiSmokeTest {
+public class WebFluxTest extends AiJarSmokeTest {
 
   @Test
   @TargetUri("/test")

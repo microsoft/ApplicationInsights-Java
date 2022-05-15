@@ -29,7 +29,7 @@ import java.util.List;
 import org.junit.Test;
 
 @UseAgent("telemetryprocessors")
-public class SpringBootAutoTest extends AiSmokeTest {
+public class SpringBootAutoTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/test")

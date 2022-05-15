@@ -28,13 +28,11 @@ import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 import org.junit.Test;
 
 @UseAgent("fastheartbeat")
-public class HeartBeatTest extends AiSmokeTest {
+public class HeartBeatTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri(value = "/index.jsp")

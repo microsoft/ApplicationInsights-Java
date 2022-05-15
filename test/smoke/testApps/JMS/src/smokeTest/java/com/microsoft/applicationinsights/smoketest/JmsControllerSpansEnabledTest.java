@@ -33,7 +33,7 @@ import java.util.List;
 import org.junit.Test;
 
 @UseAgent("controller_spans_enabled")
-public class JmsControllerSpansEnabledTest extends AiSmokeTest {
+public class JmsControllerSpansEnabledTest extends AiJarSmokeTest {
 
   @Test
   @TargetUri("/sendMessage")

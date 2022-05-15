@@ -49,7 +49,7 @@ import org.junit.Test;
       },
       hostnameEnvironmentVariable = "KAFKA")
 })
-public class SpringCloudStreamControllerSpansEnabledTest extends AiSmokeTest {
+public class SpringCloudStreamControllerSpansEnabledTest extends AiJarSmokeTest {
 
   @Test
   @TargetUri("/sendMessage")

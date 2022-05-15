@@ -27,10 +27,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.base.CaseFormat;
-import com.google.common.base.Charsets;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.smoketest.docker.AiDockerClient;
 import com.microsoft.applicationinsights.smoketest.docker.ContainerInfo;
@@ -49,16 +46,12 @@ import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIng
 import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServlet;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
@@ -79,7 +72,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 /** This is the base class for smoke tests. */
@@ -88,57 +80,6 @@ import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @SuppressWarnings({"SystemOut", "InterruptedExceptionSwallowed"})
 public abstract class AiSmokeTest {
-
-  // region: parameterization
-  @Parameters(name = "{index}: {0}, {1}, {2}")
-  public static Collection<Object[]> parameterGenerator() throws IOException {
-    List<String> appServers =
-        Resources.readLines(Resources.getResource("appServers.txt"), Charsets.UTF_8);
-    System.out.println("Target appservers=" + Arrays.toString(appServers.toArray()));
-    String os = System.getProperty("applicationinsights.smoketest.os", "linux");
-    URL jreExcludesUrl =
-        Thread.currentThread().getContextClassLoader().getResource("jre.excludes.txt");
-    List<String> jreExcludes;
-    if (jreExcludesUrl == null) {
-      jreExcludes = new ArrayList<>();
-    } else {
-      jreExcludes = Resources.readLines(jreExcludesUrl, Charsets.UTF_8);
-    }
-    Multimap<String, String> appServers2jres = HashMultimap.create();
-    for (String appServer : appServers) {
-      List<String> serverJres;
-      try {
-        serverJres = getAppServerJres(appServer, jreExcludes);
-      } catch (Exception e) {
-        System.err.printf("SKIPPING '%s'. Could not configure jres: %s%n", appServer, e);
-        continue;
-      }
-      appServers2jres.putAll(appServer, serverJres);
-    }
-
-    Collection<Object[]> rval = new ArrayList<>();
-
-    // keys = appServers, values = jres supported by appServer
-    for (Entry<String, String> entry : appServers2jres.entries()) {
-      rval.add(new Object[] {entry.getKey(), os, entry.getValue()});
-    }
-    System.out.println(
-        "Configured appservers=" + Arrays.toString(appServers2jres.keySet().toArray()));
-
-    return rval;
-  }
-
-  private static List<String> getAppServerJres(String appServer, List<String> jreExcludes)
-      throws IOException {
-    List<String> jres = new ArrayList<>();
-    for (String jre :
-        Resources.readLines(Resources.getResource(appServer + ".jre.txt"), Charsets.UTF_8)) {
-      if (!jreExcludes.contains(jre)) {
-        jres.add(jre.replaceAll("[:/]", "_"));
-      }
-    }
-    return jres;
-  }
 
   @Parameter(0)
   public String appServer;

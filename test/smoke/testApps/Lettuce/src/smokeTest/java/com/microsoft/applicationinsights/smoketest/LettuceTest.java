@@ -29,7 +29,7 @@ import org.junit.Test;
 
 @UseAgent
 @WithDependencyContainers(@DependencyContainer(value = "redis", portMapping = "6379"))
-public class LettuceTest extends AiSmokeTest {
+public class LettuceTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/lettuce")

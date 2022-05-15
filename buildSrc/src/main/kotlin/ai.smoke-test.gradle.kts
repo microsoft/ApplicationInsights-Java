@@ -5,10 +5,6 @@ plugins {
   `java-library`
 }
 
-// TODO (trask) this is copy-paste from :test:smoke
-val sharedOutputRoot = project(":test:smoke").projectDir.absolutePath + "/shared-tmp"
-val sharedResourcesDir = "$sharedOutputRoot/resources"
-
 val aiSmokeTest = extensions.create<AiSmokeTestExtension>("aiSmokeTest")
 
 sourceSets {
@@ -123,6 +119,5 @@ tasks {
 
   named<Copy>("processSmokeTestResources") {
     from(aiSmokeTest.testAppArtifactDir.file(aiSmokeTest.testAppArtifactFilename.get()))
-    from(sharedResourcesDir)
   }
 }

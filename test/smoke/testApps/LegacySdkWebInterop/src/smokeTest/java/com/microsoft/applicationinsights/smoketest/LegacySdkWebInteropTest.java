@@ -27,7 +27,7 @@ import static org.junit.Assert.assertFalse;
 import org.junit.Test;
 
 @UseAgent
-public class LegacySdkWebInteropTest extends AiSmokeTest {
+public class LegacySdkWebInteropTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/test")

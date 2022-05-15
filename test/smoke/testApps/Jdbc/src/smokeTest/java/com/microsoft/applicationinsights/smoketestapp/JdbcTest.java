@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.smoketestapp;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
+import com.microsoft.applicationinsights.smoketest.AiWarSmokeTest;
 import com.microsoft.applicationinsights.smoketest.DependencyContainer;
 import com.microsoft.applicationinsights.smoketest.TargetUri;
 import com.microsoft.applicationinsights.smoketest.UseAgent;
@@ -50,7 +50,7 @@ import org.junit.Test;
       portMapping = "1433",
       hostnameEnvironmentVariable = "SQLSERVER")
 })
-public class JdbcTest extends AiSmokeTest {
+public class JdbcTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/hsqldbPreparedStatement")

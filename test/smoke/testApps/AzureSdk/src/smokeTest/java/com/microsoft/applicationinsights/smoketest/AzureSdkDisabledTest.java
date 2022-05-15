@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 @UseAgent("disabled_azuresdk")
-public class AzureSdkDisabledTest extends AiSmokeTest {
+public class AzureSdkDisabledTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/test")

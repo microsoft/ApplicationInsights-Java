@@ -48,7 +48,7 @@ import org.junit.Test;
       },
       hostnameEnvironmentVariable = "KAFKA")
 })
-public class KafkaDisabledTest extends AiSmokeTest {
+public class KafkaDisabledTest extends AiJarSmokeTest {
 
   @Test
   @TargetUri("/sendMessage")

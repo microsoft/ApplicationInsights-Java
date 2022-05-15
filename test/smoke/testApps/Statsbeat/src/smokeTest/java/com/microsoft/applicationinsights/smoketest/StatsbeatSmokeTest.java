@@ -29,11 +29,10 @@ import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 import org.junit.Test;
 
 @UseAgent("faststatsbeat")
-public class StatsbeatSmokeTest extends AiSmokeTest {
+public class StatsbeatSmokeTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri(value = "/index.jsp")
@@ -48,7 +47,8 @@ public class StatsbeatSmokeTest extends AiSmokeTest {
     assertEquals("0", data.getProperties().get("type"));
     assertEquals(9, data.getProperties().size());
 
-    MetricData instrumentationData = (MetricData) ((Data<?>) metrics.get(1).getData()).getBaseData();
+    MetricData instrumentationData =
+        (MetricData) ((Data<?>) metrics.get(1).getData()).getBaseData();
     assertCommon(instrumentationData);
     assertNotNull(instrumentationData.getProperties().get("feature"));
     assertNotNull(instrumentationData.getProperties().get("type"));

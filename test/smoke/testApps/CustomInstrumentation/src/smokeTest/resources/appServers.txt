@@ -1,3 +1,0 @@
-wildfly11
-tomcat85
-jetty9

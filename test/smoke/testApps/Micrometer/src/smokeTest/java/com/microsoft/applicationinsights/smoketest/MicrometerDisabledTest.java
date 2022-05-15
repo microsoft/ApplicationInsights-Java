@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 @UseAgent("disabled_micrometer")
-public class MicrometerDisabledTest extends AiSmokeTest {
+public class MicrometerDisabledTest extends AiJarSmokeTest {
 
   @Test
   @TargetUri("/test")

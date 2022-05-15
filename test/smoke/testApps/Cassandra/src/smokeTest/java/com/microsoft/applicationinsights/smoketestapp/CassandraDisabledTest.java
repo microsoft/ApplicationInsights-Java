@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.smoketestapp;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
+import com.microsoft.applicationinsights.smoketest.AiWarSmokeTest;
 import com.microsoft.applicationinsights.smoketest.DependencyContainer;
 import com.microsoft.applicationinsights.smoketest.TargetUri;
 import com.microsoft.applicationinsights.smoketest.UseAgent;
@@ -37,7 +37,7 @@ import org.junit.Test;
         value = "cassandra:3",
         portMapping = "9042",
         hostnameEnvironmentVariable = "CASSANDRA"))
-public class CassandraDisabledTest extends AiSmokeTest {
+public class CassandraDisabledTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/cassandra")

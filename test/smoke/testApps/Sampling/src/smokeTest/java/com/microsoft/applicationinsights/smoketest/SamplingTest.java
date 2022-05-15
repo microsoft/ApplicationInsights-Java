@@ -33,7 +33,7 @@ import java.util.List;
 import org.junit.Test;
 
 @UseAgent("sampling")
-public class SamplingTest extends AiSmokeTest {
+public class SamplingTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri(value = "/sampling", callCount = 100)

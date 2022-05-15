@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
 @UseAgent
-public class SpringBootAutoTest extends AiSmokeTest {
+public class SpringBootAutoTest extends AiJarSmokeTest {
 
   @Test
   @TargetUri("/delayedSystemExit")

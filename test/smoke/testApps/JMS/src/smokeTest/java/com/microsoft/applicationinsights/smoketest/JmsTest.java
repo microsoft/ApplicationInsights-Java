@@ -33,7 +33,7 @@ import java.util.List;
 import org.junit.Test;
 
 @UseAgent
-public class JmsTest extends AiSmokeTest {
+public class JmsTest extends AiJarSmokeTest {
 
   @Test
   @TargetUri("/sendMessage")

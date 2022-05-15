@@ -32,7 +32,7 @@ import java.util.List;
 import org.junit.Test;
 
 @UseAgent
-public class GrpcTest extends AiSmokeTest {
+public class GrpcTest extends AiJarSmokeTest {
 
   @Test
   @TargetUri("/simple")

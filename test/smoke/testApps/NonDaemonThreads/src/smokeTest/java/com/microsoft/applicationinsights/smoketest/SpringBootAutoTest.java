@@ -35,7 +35,7 @@ import java.util.List;
 import org.junit.Test;
 
 @UseAgent
-public class SpringBootAutoTest extends AiSmokeTest {
+public class SpringBootAutoTest extends AiJarSmokeTest {
 
   @Test
   @TargetUri("/spawn-another-java-process")

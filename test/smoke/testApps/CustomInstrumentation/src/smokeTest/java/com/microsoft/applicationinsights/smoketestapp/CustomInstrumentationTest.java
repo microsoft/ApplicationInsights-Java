@@ -16,7 +16,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 @UseAgent("custominstrumentation")
-public class CustomInstrumentationTest extends AiSmokeTest {
+public class CustomInstrumentationTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/customInstrumentationOne")

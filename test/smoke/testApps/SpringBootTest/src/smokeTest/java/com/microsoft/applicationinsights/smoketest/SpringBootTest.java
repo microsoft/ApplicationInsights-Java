@@ -44,7 +44,7 @@ import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
 
 @UseAgent
-public class SpringBootTest extends AiSmokeTest {
+public class SpringBootTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/basic/trackEvent")

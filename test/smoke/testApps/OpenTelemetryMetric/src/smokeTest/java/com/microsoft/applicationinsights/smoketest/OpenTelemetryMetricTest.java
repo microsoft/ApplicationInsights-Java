@@ -39,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
 @UseAgent("opentelemetry_metric")
-public class OpenTelemetryMetricTest extends AiSmokeTest {
+public class OpenTelemetryMetricTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/trackDoubleCounterMetric")

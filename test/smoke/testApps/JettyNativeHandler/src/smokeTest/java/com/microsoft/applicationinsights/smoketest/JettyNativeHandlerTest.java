@@ -28,7 +28,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 @UseAgent
-public class JettyNativeHandlerTest extends AiSmokeTest {
+public class JettyNativeHandlerTest extends AiJarSmokeTest {
 
   @Test
   @TargetUri("/path")

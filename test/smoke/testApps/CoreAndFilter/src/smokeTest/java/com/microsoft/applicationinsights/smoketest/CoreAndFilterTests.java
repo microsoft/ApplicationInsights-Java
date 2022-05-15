@@ -58,14 +58,26 @@ import com.microsoft.applicationinsights.smoketest.schemav2.PageViewData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import com.microsoft.applicationinsights.smoketest.telemetry.Duration;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import org.junit.Test;
+import org.junit.runners.Parameterized;
 
 @UseAgent
 public class CoreAndFilterTests extends AiSmokeTest {
+
+  // old Application Insights version that do not support Java 11+
+  @Parameterized.Parameters(name = "{index}: {0}, {1}, {2}")
+  public static Collection<Object[]> parameterGenerator() {
+    return Arrays.asList(
+        new Object[] {"jetty9", "linux", "azul_zulu-openjdk_8"},
+        new Object[] {"tomcat85", "linux", "azul_zulu-openjdk_8"},
+        new Object[] {"wildfly11", "linux", "azul_zulu-openjdk_8"});
+  }
 
   @Test
   @TargetUri("/trackDependency")

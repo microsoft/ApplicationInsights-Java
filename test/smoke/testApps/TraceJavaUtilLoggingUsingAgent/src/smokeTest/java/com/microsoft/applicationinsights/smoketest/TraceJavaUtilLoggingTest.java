@@ -35,7 +35,7 @@ import java.util.List;
 import org.junit.Test;
 
 @UseAgent("logging")
-public class TraceJavaUtilLoggingTest extends AiSmokeTest {
+public class TraceJavaUtilLoggingTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/traceJavaUtilLogging")

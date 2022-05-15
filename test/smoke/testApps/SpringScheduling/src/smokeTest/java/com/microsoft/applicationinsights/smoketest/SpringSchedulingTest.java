@@ -29,7 +29,7 @@ import java.util.function.Predicate;
 import org.junit.Test;
 
 @UseAgent
-public class SpringSchedulingTest extends AiSmokeTest {
+public class SpringSchedulingTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/scheduler")

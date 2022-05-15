@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.smoketestapp;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
+import com.microsoft.applicationinsights.smoketest.AiWarSmokeTest;
 import com.microsoft.applicationinsights.smoketest.DependencyContainer;
 import com.microsoft.applicationinsights.smoketest.TargetUri;
 import com.microsoft.applicationinsights.smoketest.UseAgent;
@@ -37,7 +37,7 @@ import org.junit.Test;
         value = "mongo:4",
         portMapping = "27017",
         hostnameEnvironmentVariable = "MONGO"))
-public class MongoDisabledTest extends AiSmokeTest {
+public class MongoDisabledTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/mongo")

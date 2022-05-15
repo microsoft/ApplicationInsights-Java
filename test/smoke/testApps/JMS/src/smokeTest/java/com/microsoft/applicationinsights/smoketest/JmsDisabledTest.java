@@ -32,7 +32,7 @@ import java.util.List;
 import org.junit.Test;
 
 @UseAgent("disabled_jms")
-public class JmsDisabledTest extends AiSmokeTest {
+public class JmsDisabledTest extends AiJarSmokeTest {
 
   @Test
   @TargetUri("/sendMessage")

@@ -29,7 +29,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 @UseAgent()
-public class HttpServer4xxDefaultTest extends AiSmokeTest {
+public class HttpServer4xxDefaultTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/test4xx")

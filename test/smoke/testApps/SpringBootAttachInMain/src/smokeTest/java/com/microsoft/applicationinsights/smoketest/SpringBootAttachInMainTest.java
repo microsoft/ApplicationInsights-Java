@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-public class SpringBootAttachInMainTest extends AiSmokeTest {
+public class SpringBootAttachInMainTest extends AiJarSmokeTest {
 
   @Test
   @TargetUri("/test")

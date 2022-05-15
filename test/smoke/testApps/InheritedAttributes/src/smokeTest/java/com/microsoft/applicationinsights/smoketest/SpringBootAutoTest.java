@@ -34,7 +34,7 @@ import java.util.List;
 import org.junit.Test;
 
 @UseAgent("inheritedattributes")
-public class SpringBootAutoTest extends AiSmokeTest {
+public class SpringBootAutoTest extends AiJarSmokeTest {
 
   @Test
   @TargetUri("/test")

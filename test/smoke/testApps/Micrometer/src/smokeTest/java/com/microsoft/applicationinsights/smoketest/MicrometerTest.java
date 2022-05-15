@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 @UseAgent("micrometer")
-public class MicrometerTest extends AiSmokeTest {
+public class MicrometerTest extends AiJarSmokeTest {
 
   @Test
   @TargetUri("/test")

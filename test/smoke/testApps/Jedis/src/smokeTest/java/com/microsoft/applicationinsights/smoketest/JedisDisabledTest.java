@@ -28,7 +28,7 @@ import org.junit.Test;
 
 @UseAgent("disabled_redis")
 @WithDependencyContainers(@DependencyContainer(value = "redis", portMapping = "6379"))
-public class JedisDisabledTest extends AiSmokeTest {
+public class JedisDisabledTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/jedis")

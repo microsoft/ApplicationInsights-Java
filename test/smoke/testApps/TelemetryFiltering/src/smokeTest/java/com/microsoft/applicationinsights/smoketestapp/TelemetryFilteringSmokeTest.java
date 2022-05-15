@@ -29,7 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
+import com.microsoft.applicationinsights.smoketest.AiWarSmokeTest;
 import com.microsoft.applicationinsights.smoketest.TargetUri;
 import com.microsoft.applicationinsights.smoketest.UseAgent;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
@@ -40,7 +40,7 @@ import java.util.List;
 import org.junit.Test;
 
 @UseAgent("telemetryfiltering")
-public class TelemetryFilteringSmokeTest extends AiSmokeTest {
+public class TelemetryFilteringSmokeTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri(value = "/health-check", callCount = 100)

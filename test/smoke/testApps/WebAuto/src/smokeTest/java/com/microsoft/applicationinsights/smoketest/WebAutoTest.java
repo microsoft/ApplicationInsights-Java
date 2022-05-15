@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.smoketest;
 import org.junit.Test;
 
 @UseAgent
-public class WebAutoTest extends AiSmokeTest {
+public class WebAutoTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/test")

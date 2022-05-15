@@ -26,7 +26,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 @UseAgent
-public class VerifyShadingTest extends AiSmokeTest {
+public class VerifyShadingTest extends AiJarSmokeTest {
 
   @Test
   @TargetUri("/verifyShading")
