@@ -50,7 +50,7 @@ spotless {
 }
 
 allprojects {
-  if (!it.path.startsWith(":test")) {
+  if (!it.path.startsWith(":smoke-tests")) {
     configurations {
       runtimeClasspath {
         resolutionStrategy.activateDependencyLocking()

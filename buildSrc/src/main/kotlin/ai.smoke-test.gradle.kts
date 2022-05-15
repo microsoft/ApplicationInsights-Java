@@ -58,7 +58,7 @@ dependencies {
     }
   }
 
-  smokeTestImplementation(project(":test:smoke:framework:testCore"))
+  smokeTestImplementation(project(":smoke-tests:framework"))
 
   // NOTE not updating smoke tests to JUnit 5, because AiSmokeTest has deep dependency on JUnit 4 infra,
   // and so would take a good amount of work, and eventually want to migrate to otel smoke tests anyways
@@ -85,7 +85,7 @@ tasks {
     // this is just to force building the agent first
     dependsOn(":agent:agent:shadowJar")
 
-    dependsOn(":test:smoke:appServers:buildDockerImage")
+    dependsOn(":smoke-tests:servers:buildDockerImage")
     dependsOn(assemble)
     dependsOn(pullDependencyContainers)
 

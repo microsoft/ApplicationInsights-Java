@@ -52,7 +52,7 @@ jobs:
           java-version: 11
       - id: set-matrix
         # "grep -v skipWinNative" is used to skip the warning message "Skipping build of :etw:native because skipWinNative=true"
-        run: echo "::set-output name=matrix::{\"module\":[\"$(./gradlew -q :test:smoke:testApps:listTestApps | grep -v skipWinNative | xargs echo | sed 's/ /","/g')\"]}"
+        run: echo "::set-output name=matrix::{\"module\":[\"$(./gradlew -q :smoke-tests:apps:listTestApps | grep -v skipWinNative | xargs echo | sed 's/ /","/g')\"]}"
 
   smoke-test:
     needs: setup-smoke-test-matrix
