@@ -52,11 +52,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-public class MockedAppInsightsIngestionServlet extends HttpServlet {
-  public static final long serialVersionUID = -1;
-  public static final String ENDPOINT_HEALTH_CHECK_RESPONSE = "Fake AI Endpoint Online";
-  public static final String PING = "PING";
-  public static final String PONG = "PONG";
+class MockedAppInsightsIngestionServlet extends HttpServlet {
+
+  static final String ENDPOINT_HEALTH_CHECK_RESPONSE = "Fake AI Endpoint Online";
+  static final String PING = "PING";
+  static final String PONG = "PONG";
 
   // guarded by multimapLock
   private final ListMultimap<String, Envelope> type2envelope;
@@ -68,10 +68,10 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
 
   private final ExecutorService itemExecutor = Executors.newSingleThreadExecutor();
 
-  public static final String LOG_PAYLOADS_PARAMETER_KEY = "logPayloads";
-  public static final String RETAIN_PAYLOADS_PARAMETER_KEY = "retainPayloads";
+  static final String LOG_PAYLOADS_PARAMETER_KEY = "logPayloads";
+  static final String RETAIN_PAYLOADS_PARAMETER_KEY = "retainPayloads";
 
-  public MockedAppInsightsIngestionServlet() {
+  MockedAppInsightsIngestionServlet() {
     type2envelope = MultimapBuilder.treeKeys().arrayListValues().build();
     filters = new ArrayList<>();
     config = new MockedIngestionServletConfig();
@@ -113,38 +113,38 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
     }
   }
 
-  public void addIngestionFilter(Predicate<Envelope> filter) {
+  void addIngestionFilter(Predicate<Envelope> filter) {
     this.filters.add(filter);
   }
 
-  public void resetData() {
+  void resetData() {
     logit("Clearing telemetry accumulator...");
     synchronized (multimapLock) {
       type2envelope.clear();
     }
   }
 
-  public boolean hasData() {
+  boolean hasData() {
     return !type2envelope.isEmpty();
   }
 
-  public int getItemCount() {
+  int getItemCount() {
     return type2envelope.size();
   }
 
-  public List<Envelope> getItemsByType(String type) {
+  List<Envelope> getItemsByType(String type) {
     Objects.requireNonNull(type, "type");
     synchronized (multimapLock) {
       return type2envelope.get(type);
     }
   }
 
-  public void awaitAnyItems(long timeout, TimeUnit timeUnit)
+  void awaitAnyItems(long timeout, TimeUnit timeUnit)
       throws InterruptedException, ExecutionException, TimeoutException {
     waitForItems(x -> true, 1, timeout, timeUnit);
   }
 
-  public List<Envelope> waitForItems(
+  List<Envelope> waitForItems(
       Predicate<Envelope> condition, int numItems, long timeout, TimeUnit timeUnit)
       throws InterruptedException, ExecutionException, TimeoutException {
     Future<List<Envelope>> future =
@@ -267,19 +267,19 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
     private boolean retainPayloadsEnabled = true;
     private boolean logPayloadsEnabled = true;
 
-    public boolean isRetainPayloadsEnabled() {
+    boolean isRetainPayloadsEnabled() {
       return retainPayloadsEnabled;
     }
 
-    public void setRetainPayloadsEnabled(boolean retainPayloadsEnabled) {
+    void setRetainPayloadsEnabled(boolean retainPayloadsEnabled) {
       this.retainPayloadsEnabled = retainPayloadsEnabled;
     }
 
-    public boolean isLogPayloadsEnabled() {
+    boolean isLogPayloadsEnabled() {
       return logPayloadsEnabled;
     }
 
-    public void setLogPayloadsEnabled(boolean logPayloadsEnabled) {
+    void setLogPayloadsEnabled(boolean logPayloadsEnabled) {
       this.logPayloadsEnabled = logPayloadsEnabled;
     }
   }

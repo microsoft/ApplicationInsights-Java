@@ -39,6 +39,11 @@ import org.eclipse.jetty.servlet.ServletHolder;
 public class MockedAppInsightsIngestionServer {
   public static final int DEFAULT_PORT = 6060;
 
+  public static final String ENDPOINT_HEALTH_CHECK_RESPONSE =
+      MockedAppInsightsIngestionServlet.ENDPOINT_HEALTH_CHECK_RESPONSE;
+  public static final String PING = MockedAppInsightsIngestionServlet.PING;
+  public static final String PONG = MockedAppInsightsIngestionServlet.PONG;
+
   private final MockedAppInsightsIngestionServlet servlet;
   private final Server server;
 

@@ -43,7 +43,6 @@ import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServer;
-import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServlet;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayDeque;
@@ -484,10 +483,10 @@ public abstract class AiSmokeTest {
 
   protected static void checkMockedIngestionHealth() throws Exception {
     String ok = HttpHelper.get("http://localhost:" + mockedIngestion.getPort() + "/");
-    assertEquals(MockedAppInsightsIngestionServlet.ENDPOINT_HEALTH_CHECK_RESPONSE, ok);
+    assertEquals(MockedAppInsightsIngestionServer.ENDPOINT_HEALTH_CHECK_RESPONSE, ok);
     String postResponse =
-        HttpHelper.post("http://localhost:6060/v2.1/track", MockedAppInsightsIngestionServlet.PING);
-    assertEquals(MockedAppInsightsIngestionServlet.PONG, postResponse);
+        HttpHelper.post("http://localhost:6060/v2.1/track", MockedAppInsightsIngestionServer.PING);
+    assertEquals(MockedAppInsightsIngestionServer.PONG, postResponse);
   }
 
   private static void createDockerNetwork() throws Exception {

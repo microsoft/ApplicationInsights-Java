@@ -8,5 +8,4 @@ dependencies {
   implementation("org.apache.commons:commons-lang3:3.7")
   implementation(project(":test:smoke:framework:utils"))
   implementation(project(":test:fakeIngestion:standalone"))
-  implementation(project(":test:fakeIngestion:servlet"))
 }
