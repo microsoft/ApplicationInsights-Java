@@ -28,7 +28,8 @@ jobs:
       - name: Test
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: check
+          # TODO (trask) fix build to work with build cache
+          arguments: check --no-build-cache
       - name: Upload snapshot
         # only upload from windows since only that build includes etw
         if: matrix.os == 'windows-2019'
@@ -71,7 +72,8 @@ jobs:
       - name: Test
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: ${{ matrix.module }}:smokeTest
+          # TODO (trask) fix build to work with build cache
+          arguments: ${{ matrix.module }}:smokeTest --no-build-cache
 
   accept-pr:
     needs: [ build, smoke-test ]
