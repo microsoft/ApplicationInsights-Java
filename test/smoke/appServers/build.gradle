@@ -4,7 +4,7 @@ apply plugin: "base"
 
 ext {
   partialDockerfileExt = ".partial.dockerfile"
-  jreMasterList = file("jre.master.txt")
+  jreList = file("jre-list.txt")
   globalResourcesDir = "$projectDir/global-resources"
   agentLibsDir = file("${project(':agent:agent').buildDir}/libs")
   // is there a better way to get this?
@@ -27,13 +27,10 @@ subprojects {
     group "Smoke Test"
     description = "Generates Dockerfiles for building images"
 
-    if (!jreMasterList.exists()) {
-      throw new GradleException("Missing master jre list: jre.master.txt")
-    }
     def jreWhitelist = file("jre.includes.txt")
     def jreBlacklist = file("jre.excludes.txt")
 
-    def jresToUse = getConfigSet(jreMasterList, jreWhitelist, jreBlacklist)
+    def jresToUse = getConfigSet(jreList, jreWhitelist, jreBlacklist)
 
     FileTree inputDockerfiles = fileTree(dir: projectDir, include: "*$partialDockerfileExt")
 
@@ -43,9 +40,6 @@ subprojects {
     outputs.upToDateWhen { false }
 
     doFirst {
-      if (!jreMasterList.exists()) {
-        throw new GradleException("Missing master jre list: jre.master.txt")
-      }
       if (inputDockerfiles.files.size() > 1) {
         throw new GradleException("Expected only 1 *$partialDockerfileExt file in $projectDir.name")
       }
@@ -188,13 +182,13 @@ def getConfigSet(File universeFile, File includesFile, File excludesFile) {
   excludeSet.removeAll { it.trim().isEmpty() }
   logger.info "excludeSet has ${excludeSet.size()} elements: $excludeSet"
 
-  // if the excludes file contains entries which do not exist in the master list, warn the user; this is likely a typo
+  // if the excludes file contains entries which do not exist in the list, warn the user; this is likely a typo
   def uniqueExcludes = excludeSet.minus(universalSet)
   if (uniqueExcludes.size() > 0) {
     logger.info("$excludesFile.name entries are not a subset of ${universeFile.name}: ${uniqueExcludes}. These entries are nops and can be removed.")
   }
 
-  // if the includes file contains entires which do not exist in the master list, warn the user; be aware that these will be included
+  // if the includes file contains entries which do not exist in the list, warn the user; be aware that these will be included
   def uniqueIncludes = includeSet.minus(universalSet)
   if (uniqueIncludes.size() > 1) {
     logger.info("FYI: $includesFile.name has ${includeSubset.size()} entries not found in $universeFile.name: $includeSubset")
