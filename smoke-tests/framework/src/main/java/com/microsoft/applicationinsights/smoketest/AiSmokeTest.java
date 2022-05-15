@@ -28,7 +28,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Stopwatch;
-import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.smoketest.docker.AiDockerClient;
 import com.microsoft.applicationinsights.smoketest.docker.ContainerInfo;
 import com.microsoft.applicationinsights.smoketest.exceptions.SmokeTestException;
@@ -627,8 +626,7 @@ public abstract class AiSmokeTest {
 
     try {
       System.out.printf("Deploying test application: %s...%n", warFileName);
-      docker.copyAndDeployToContainer(
-          containerId, new File(Resources.getResource(warFileName).toURI()));
+      docker.copyAndDeployToContainer(containerId, new File(warFileName));
       System.out.println("Test application deployed.");
     } catch (Exception e) {
       System.err.println("Error deploying test application.");
