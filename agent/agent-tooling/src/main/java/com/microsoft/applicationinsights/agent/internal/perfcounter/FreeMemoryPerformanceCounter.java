@@ -49,7 +49,8 @@ public class FreeMemoryPerformanceCounter implements PerformanceCounter {
 
     logger.trace("Performance Counter: {}: {}", MetricNames.TOTAL_MEMORY, freePhysicalMemorySize);
     telemetryClient.trackAsync(
-        telemetryClient.newMetricTelemetry(MetricNames.TOTAL_MEMORY, freePhysicalMemorySize));
+        telemetryClient.newMetricTelemetry(
+            MetricNames.TOTAL_MEMORY, (double) freePhysicalMemorySize));
   }
 
   private long getFreePhysicalMemorySize() throws Exception {

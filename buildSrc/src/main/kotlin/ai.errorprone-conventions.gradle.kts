@@ -25,6 +25,9 @@ tasks {
         disable("SystemOut")
       }
 
+      // Still Java 8
+      disable("Varifier")
+
       // TEMPORARILY until time to revisit
       disable("WildcardImport")
       disable("BadImport")
@@ -55,9 +58,6 @@ tasks {
       // disabling entirely.
       // TODO (trask) consider enabling
       disable("MixedMutabilityReturnType")
-
-      // Limits API possibilities
-      disable("NoFunctionalReturnType")
 
       // We don't use tools that recognize.
       disable("InlineMeSuggester")

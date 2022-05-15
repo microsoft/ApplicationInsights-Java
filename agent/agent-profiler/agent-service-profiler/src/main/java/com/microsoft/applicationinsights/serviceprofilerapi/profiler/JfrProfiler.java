@@ -42,13 +42,14 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanServerConnection;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +78,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
   private final AlertConfiguration periodicConfig;
 
   private final Object activeRecordingLock = new Object();
-  private Recording activeRecording = null;
+  @Nullable private Recording activeRecording = null;
 
   private final RecordingConfiguration memoryRecordingConfiguration;
   private final RecordingConfiguration cpuRecordingConfiguration;
@@ -110,14 +111,14 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
   }
 
   private static RecordingConfiguration getRecordingConfiguration(
-      String triggeredSettings, String reducedProfile) {
+      @Nullable String triggeredSettings, String reducedProfile) {
     if (triggeredSettings != null) {
       try {
-        ProfileTypes profile = ProfileTypes.valueOf(triggeredSettings);
+        ProfileTypes profile = ProfileTypes.valueOf(triggeredSettings.toUpperCase(Locale.ROOT));
 
-        if (profile == ProfileTypes.profile) {
+        if (profile == ProfileTypes.PROFILE) {
           return RecordingConfiguration.PROFILE_CONFIGURATION;
-        } else if (profile == ProfileTypes.profile_without_env_data) {
+        } else if (profile == ProfileTypes.PROFILE_WITHOUT_ENV_DATA) {
           return new RecordingConfiguration.JfcFileConfiguration(
               JfrProfiler.class.getResourceAsStream(reducedProfile));
         }

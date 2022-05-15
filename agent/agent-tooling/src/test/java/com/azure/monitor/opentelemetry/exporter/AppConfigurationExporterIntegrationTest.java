@@ -56,7 +56,7 @@ public class AppConfigurationExporterIntegrationTest extends AzureMonitorTraceEx
     ConfigurationClient client = getConfigurationClient(appConfigCountDown);
 
     Span span = tracer.spanBuilder("set-config-exporter-testing").startSpan();
-    final Scope scope = span.makeCurrent();
+    Scope scope = span.makeCurrent();
     try {
       // Thread bound (sync) calls will automatically pick up the parent span and you don't need to
       // pass it explicitly.
@@ -82,7 +82,7 @@ public class AppConfigurationExporterIntegrationTest extends AzureMonitorTraceEx
     ConfigurationClient client = getConfigurationClient(appConfigCountDown);
 
     Span span = tracer.spanBuilder("disable-config-exporter-testing").startSpan();
-    final Scope scope = span.makeCurrent();
+    Scope scope = span.makeCurrent();
     try {
       ConfigurationSetting configurationSetting =
           new ConfigurationSetting().setKey("hello").setLabel("text").setValue("World");

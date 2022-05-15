@@ -35,6 +35,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 /** Parses the configuration from the service profiler endpoint. */
 public class AlertConfigParser {
@@ -50,7 +51,7 @@ public class AlertConfigParser {
 
   // --single --mode immediate --immediate-profiling-duration 120  --expiration 5249143304354868449
   // --settings-moniker Portal_b5bd7880-7406-4058-a6f8-3ea0102706b1
-  private static CollectionPlanConfiguration parseCollectionPlan(String collectionPlan) {
+  private static CollectionPlanConfiguration parseCollectionPlan(@Nullable String collectionPlan) {
     if (collectionPlan == null) {
       return new CollectionPlanConfiguration(
           false, EngineMode.immediate, Instant.ofEpochMilli(0).atZone(ZoneOffset.UTC), 0, "");
@@ -80,7 +81,7 @@ public class AlertConfigParser {
         .createDefaultConfiguration();
   }
 
-  public static DefaultConfiguration parseDefaultConfiguration(String defaultConfig) {
+  public static DefaultConfiguration parseDefaultConfiguration(@Nullable String defaultConfig) {
     if (defaultConfig == null) {
       return new DefaultConfiguration(false, 0, 0);
     }
@@ -105,7 +106,7 @@ public class AlertConfigParser {
         .createDefaultConfiguration();
   }
 
-  public static AlertConfiguration parseFromMemory(String memoryConfig) {
+  public static AlertConfiguration parseFromMemory(@Nullable String memoryConfig) {
     if (memoryConfig == null) {
       return new AlertConfiguration(AlertMetricType.MEMORY, false, 0f, 0, 0);
     }
@@ -132,7 +133,7 @@ public class AlertConfigParser {
         .createAlertConfiguration();
   }
 
-  public static AlertConfiguration parseFromCpu(String cpuConfig) {
+  public static AlertConfiguration parseFromCpu(@Nullable String cpuConfig) {
     if (cpuConfig == null) {
       return new AlertConfiguration(AlertMetricType.CPU, false, 0f, 0, 0);
     }

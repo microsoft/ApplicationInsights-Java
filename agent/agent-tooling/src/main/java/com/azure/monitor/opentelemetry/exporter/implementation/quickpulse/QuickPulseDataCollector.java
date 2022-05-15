@@ -269,7 +269,7 @@ final class QuickPulseDataCollector {
   }
 
   private static Map<String, String> aggregateProperties(
-      Map<String, String> properties, Map<String, Double> measurements) {
+      @Nullable Map<String, String> properties, @Nullable Map<String, Double> measurements) {
     Map<String, String> aggregatedProperties = new HashMap<>();
     if (measurements != null) {
       measurements.forEach((k, v) -> aggregatedProperties.put(k, String.valueOf(v)));

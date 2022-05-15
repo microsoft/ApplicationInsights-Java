@@ -32,12 +32,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 public abstract class AgentProcessor {
 
-  private final @Nullable IncludeExclude include;
-  private final @Nullable IncludeExclude exclude;
+  @Nullable private final IncludeExclude include;
+  @Nullable private final IncludeExclude exclude;
 
   protected AgentProcessor(@Nullable IncludeExclude include, @Nullable IncludeExclude exclude) {
     this.include = include;
@@ -51,11 +51,13 @@ public abstract class AgentProcessor {
         : AgentProcessor.RegexpIncludeExclude.create(includeExclude, isLog);
   }
 
-  public @Nullable IncludeExclude getInclude() {
+  @Nullable
+  public IncludeExclude getInclude() {
     return include;
   }
 
-  public @Nullable IncludeExclude getExclude() {
+  @Nullable
+  public IncludeExclude getExclude() {
     return exclude;
   }
 

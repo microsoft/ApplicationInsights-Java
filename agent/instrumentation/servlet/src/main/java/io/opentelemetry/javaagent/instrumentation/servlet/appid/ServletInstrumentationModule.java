@@ -38,6 +38,7 @@ import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 import net.bytebuddy.asm.Advice;
@@ -83,7 +84,7 @@ public class ServletInstrumentationModule extends InstrumentationModule {
           getClass().getName() + "$AddHeadersAdvice");
     }
 
-    @SuppressWarnings("PrivateConstructorForUtilityClass")
+    @SuppressWarnings({"UnusedMethod", "UnusedNestedClass", "PrivateConstructorForUtilityClass"})
     public static class AddHeadersAdvice {
       @Advice.OnMethodEnter(suppress = Throwable.class)
       public static void onEnter(
@@ -115,7 +116,7 @@ public class ServletInstrumentationModule extends InstrumentationModule {
       }
 
       @Advice.OnMethodExit(suppress = Throwable.class)
-      public static void onExit(@Advice.Local("aiCallDepth") CallDepth callDepth) {
+      public static void onExit(@Advice.Local("aiCallDepth") @Nullable CallDepth callDepth) {
         if (callDepth != null) {
           callDepth.decrementAndGet();
         }

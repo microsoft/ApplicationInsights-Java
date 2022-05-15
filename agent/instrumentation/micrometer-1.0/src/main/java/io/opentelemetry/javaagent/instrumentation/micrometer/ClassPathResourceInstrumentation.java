@@ -70,7 +70,7 @@ public final class ClassPathResourceInstrumentation implements TypeInstrumentati
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void onExit(
         @Advice.Return(readOnly = false) InputStream result,
-        @Advice.Enter InputStream resultFromAgentLoader) {
+        @Advice.Enter @Nullable InputStream resultFromAgentLoader) {
 
       if (resultFromAgentLoader != null) {
         result = resultFromAgentLoader;

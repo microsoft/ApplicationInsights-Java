@@ -26,6 +26,7 @@ import static com.azure.monitor.opentelemetry.exporter.implementation.builders.T
 import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestData;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 public final class RequestTelemetryBuilder extends AbstractTelemetryBuilder {
 
@@ -73,7 +74,7 @@ public final class RequestTelemetryBuilder extends AbstractTelemetryBuilder {
     data.setUrl(truncateTelemetry(url, MAX_URL_LENGTH, "Request.url"));
   }
 
-  public void addMeasurement(String key, Double value) {
+  public void addMeasurement(@Nullable String key, Double value) {
     if (key == null || key.isEmpty() || key.length() > MAX_MEASUREMENT_KEY_LENGTH) {
       // TODO (trask) log
       return;

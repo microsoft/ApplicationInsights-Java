@@ -28,7 +28,7 @@ import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
 import java.util.HashSet;
 import java.util.Set;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -66,7 +66,8 @@ public class DuplicateAgentClassFileTransformer implements ClassFileTransformer 
   }
 
   @Override
-  public byte /*@Nullable*/[] transform(
+  @Nullable
+  public byte[] transform(
       @Nullable ClassLoader loader,
       @Nullable String className,
       @Nullable Class<?> classBeingRedefined,
@@ -104,7 +105,7 @@ public class DuplicateAgentClassFileTransformer implements ClassFileTransformer 
         String name,
         String descriptor,
         @Nullable String signature,
-        String /*@Nullable*/[] exceptions) {
+        @Nullable String[] exceptions) {
       MethodVisitor mv = cw.visitMethod(access, name, descriptor, signature, exceptions);
       if (name.equals("premain")
           && descriptor.equals("(Ljava/lang/String;Ljava/lang/instrument/Instrumentation;)V")) {

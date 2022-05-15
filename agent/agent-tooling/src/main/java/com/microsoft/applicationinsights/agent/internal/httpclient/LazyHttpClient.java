@@ -43,13 +43,13 @@ import com.azure.identity.ManagedIdentityCredentialBuilder;
 import com.azure.identity.VisualStudioCodeCredential;
 import com.azure.identity.VisualStudioCodeCredentialBuilder;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import io.opentelemetry.instrumentation.api.internal.GuardedBy;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
-import org.checkerframework.checker.lock.qual.GuardedBy;
 import reactor.core.publisher.Mono;
 import reactor.netty.resources.LoopResources;
 

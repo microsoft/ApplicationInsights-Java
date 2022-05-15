@@ -38,6 +38,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -131,10 +132,8 @@ public class AlertingSubsystem {
   }
 
   /** Add telemetry to alert processing pipeline. */
-  public void track(AlertMetricType type, Number value) {
-    if (type != null && value != null) {
-      workQueue.add(new TelemetryDataPoint(type, timeSource.getNow(), value.doubleValue()));
-    }
+  public void track(AlertMetricType type, double value) {
+    workQueue.add(new TelemetryDataPoint(type, timeSource.getNow(), value));
   }
 
   /** Block until work queue is empty. */
@@ -154,9 +153,6 @@ public class AlertingSubsystem {
 
   /** Deliver data to pipelines. */
   public void process(TelemetryDataPoint telemetryDataPoint) {
-    if (telemetryDataPoint == null) {
-      return;
-    }
     LOGGER.trace(
         "Tracking " + telemetryDataPoint.getType().name() + " " + telemetryDataPoint.getValue());
     alertPipelines.process(telemetryDataPoint);
@@ -180,7 +176,7 @@ public class AlertingSubsystem {
 
   /** If the config has changed update the pipeline. */
   private void updatePipelineConfig(
-      AlertConfiguration newAlertConfig, AlertConfiguration oldAlertConfig) {
+      AlertConfiguration newAlertConfig, @Nullable AlertConfiguration oldAlertConfig) {
     if (oldAlertConfig == null || !oldAlertConfig.equals(newAlertConfig)) {
       alertPipelines.updateAlertConfig(newAlertConfig);
     }

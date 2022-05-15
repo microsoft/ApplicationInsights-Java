@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -45,12 +44,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 import java.util.zip.GZIPInputStream;
+import javax.annotation.Nullable;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 class MockedAppInsightsIngestionServlet extends HttpServlet {
 
@@ -106,7 +105,7 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
   }
 
   @SuppressWarnings("SystemOut")
-  private static void logerr(String message, Exception e) {
+  private static void logerr(String message, @Nullable Exception e) {
     System.err.println("FAKE INGESTION: ERROR - " + message);
     if (e != null) {
       e.printStackTrace();
@@ -155,7 +154,7 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
                 List<Envelope> targetCollection = new ArrayList<>(numItems);
                 while (targetCollection.size() < numItems) {
                   targetCollection.clear();
-                  Collection<Envelope> currentValues;
+                  List<Envelope> currentValues;
                   synchronized (multimapLock) {
                     currentValues = new ArrayList<>(type2envelope.values());
                   }

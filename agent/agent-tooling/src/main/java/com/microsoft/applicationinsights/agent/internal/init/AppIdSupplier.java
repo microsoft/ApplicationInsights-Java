@@ -38,6 +38,7 @@ import java.net.URL;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +60,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
 
   private final ConnectionString connectionString;
 
-  private volatile String appId;
+  @Nullable private volatile String appId;
 
   // TODO (kryalama) do we still need this AtomicBoolean, or can we use throttling built in to the
   //  warningLogger?

@@ -41,7 +41,7 @@ import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Collection;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -253,8 +253,8 @@ public class LoggerExporter implements LogExporter {
 
   private void setLoggerProperties(
       AbstractTelemetryBuilder telemetryBuilder,
-      String loggerName,
-      String threadName,
+      @Nullable String loggerName,
+      @Nullable String threadName,
       Severity severity) {
 
     telemetryBuilder.addProperty("SourceType", "Logger");
@@ -276,9 +276,6 @@ public class LoggerExporter implements LogExporter {
 
   @Nullable
   private static SeverityLevel toSeverityLevel(Severity severity) {
-    if (severity == null) {
-      return null;
-    }
     switch (severity) {
       case UNDEFINED_SEVERITY_NUMBER:
         // TODO (trask) AI mapping: is this a good fallback?

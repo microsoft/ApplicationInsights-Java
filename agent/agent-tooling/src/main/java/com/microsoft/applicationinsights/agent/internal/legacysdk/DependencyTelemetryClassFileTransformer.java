@@ -31,7 +31,7 @@ import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
 import java.util.Collections;
 import java.util.Map;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -51,7 +51,8 @@ public class DependencyTelemetryClassFileTransformer implements ClassFileTransfo
       UnshadedSdkPackageName.get() + "/telemetry/RemoteDependencyTelemetry";
 
   @Override
-  public byte /*@Nullable*/[] transform(
+  @Nullable
+  public byte[] transform(
       @Nullable ClassLoader loader,
       @Nullable String className,
       @Nullable Class<?> classBeingRedefined,
@@ -94,7 +95,7 @@ public class DependencyTelemetryClassFileTransformer implements ClassFileTransfo
         String name,
         String descriptor,
         @Nullable String signature,
-        String /*@Nullable*/[] exceptions) {
+        @Nullable String[] exceptions) {
       if (name.equals("getResultCode") && descriptor.equals("()Ljava/lang/String;")) {
         foundGetResultCodeMethod = true;
       } else if (name.equals("getMetrics") && descriptor.equals("()Ljava/util/Map;")) {

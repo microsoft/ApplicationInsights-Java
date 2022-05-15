@@ -34,6 +34,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model.IpaEtwEventErrorBase;
 import java.io.File;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -102,7 +103,7 @@ class EtwProviderTests {
   private static IpaError createError(
       String logger,
       String operation,
-      Throwable throwable,
+      @Nullable Throwable throwable,
       String messageFormat,
       Object... messageArgs) {
     IpaError rval = new IpaError(PROTOTYPE);
@@ -113,7 +114,7 @@ class EtwProviderTests {
   private static IpaWarn createWarn(
       String logger,
       String operation,
-      Throwable throwable,
+      @Nullable Throwable throwable,
       String messageFormat,
       Object... messageArgs) {
     IpaWarn rval = new IpaWarn(PROTOTYPE);
@@ -124,7 +125,7 @@ class EtwProviderTests {
   private static IpaCritical createCritical(
       String logger,
       String operation,
-      Throwable throwable,
+      @Nullable Throwable throwable,
       String messageFormat,
       Object... messageArgs) {
     IpaCritical rval = new IpaCritical(PROTOTYPE);
@@ -136,7 +137,7 @@ class EtwProviderTests {
       IpaEtwEventErrorBase event,
       String logger,
       String operation,
-      Throwable throwable,
+      @Nullable Throwable throwable,
       String messageFormat,
       Object... messageArgs) {
     event.setLogger(logger);

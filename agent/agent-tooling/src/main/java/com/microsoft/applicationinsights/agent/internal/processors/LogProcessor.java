@@ -33,7 +33,7 @@ import io.opentelemetry.sdk.logs.data.LogData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 public class LogProcessor extends AgentProcessor {
   private final List<AttributeKey<?>> fromAttributes;

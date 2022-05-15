@@ -63,7 +63,7 @@ public class ProfilerServiceInitializer {
   private static final Logger LOGGER = LoggerFactory.getLogger(ProfilerServiceInitializer.class);
 
   private static boolean initialized = false;
-  private static com.microsoft.applicationinsights.profiler.ProfilerService profilerService;
+  private static ProfilerService profilerService;
 
   public static synchronized void initialize(
       Supplier<String> appIdSupplier,

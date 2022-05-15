@@ -54,7 +54,7 @@ public class SpringBootAutoTest extends AiJarSmokeTest {
     assertTrue(rd.getSuccess());
 
     assertEquals("hello", md.getMessage());
-    assertEquals(SeverityLevel.Information, md.getSeverityLevel());
+    assertEquals(SeverityLevel.INFORMATION, md.getSeverityLevel());
     assertEquals("Logger", md.getProperties().get("SourceType"));
     assertEquals("smoketestapp", md.getProperties().get("LoggerName"));
     assertNotNull(md.getProperties().get("ThreadName"));

@@ -30,8 +30,8 @@ import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
 import java.util.regex.Matcher;
+import javax.annotation.Nullable;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 // structure which only allows valid data
 // normalization has to occur before construction

@@ -25,6 +25,7 @@ import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.management.AttributeNotFoundException;
@@ -64,7 +65,7 @@ public class JmxDataFetcher {
 
     for (JmxAttributeData attribute : attributes) {
       try {
-        Collection<Object> resultForAttribute = fetch(server, objects, attribute.attribute);
+        List<Object> resultForAttribute = fetch(server, objects, attribute.attribute);
         result.put(attribute.metricName, resultForAttribute);
       } catch (Exception e) {
         logger.warn(
@@ -78,7 +79,7 @@ public class JmxDataFetcher {
     return result;
   }
 
-  private static Collection<Object> fetch(
+  private static List<Object> fetch(
       MBeanServer server, Set<ObjectName> objects, String attributeName)
       throws AttributeNotFoundException, MBeanException, ReflectionException,
           InstanceNotFoundException {

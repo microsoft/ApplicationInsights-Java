@@ -29,7 +29,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.Collection;
 import java.util.List;
 
 /** This class manages writing a list of {@link ByteBuffer} to the file system. */
@@ -128,7 +127,7 @@ final class LocalFileWriter {
     }
 
     long sum = 0;
-    Collection<File> files = FileUtil.listTrnFiles(telemetryFolder);
+    List<File> files = FileUtil.listTrnFiles(telemetryFolder);
     for (File file : files) {
       sum += file.length();
     }

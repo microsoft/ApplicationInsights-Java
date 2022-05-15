@@ -28,7 +28,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.CpuPerforma
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

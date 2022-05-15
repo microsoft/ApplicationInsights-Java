@@ -39,7 +39,6 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.OsPl
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadContext;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadFinishArgs;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
@@ -154,7 +153,9 @@ public class ServiceProfilerUploader {
               });
     } catch (Exception e) {
       LOGGER.error("Upload of the trace file failed", e);
-      close(zippedTraceFile);
+      if (zippedTraceFile != null) {
+        close(zippedTraceFile);
+      }
       return Mono.error(new UploadFailedException(e));
     }
   }
@@ -256,7 +257,7 @@ public class ServiceProfilerUploader {
 
     File targetFile = Files.createTempFile(traceFile.getName(), ".gz").toFile();
     targetFile.deleteOnExit();
-    try (OutputStream target = new GZIPOutputStream(new FileOutputStream(targetFile))) {
+    try (OutputStream target = new GZIPOutputStream(Files.newOutputStream(targetFile.toPath()))) {
       Files.copy(traceFile.toPath(), target);
     }
 
@@ -265,25 +266,23 @@ public class ServiceProfilerUploader {
 
   // Deleting file recursively.
   private static void deletePathRecursive(File fileToDelete) throws IOException {
-    if (fileToDelete != null && fileToDelete.exists()) {
+    if (fileToDelete.exists()) {
       deletePathRecursive(fileToDelete.toPath());
     }
   }
 
   // Deleting file recursively.
   private static void deletePathRecursive(Path path) throws IOException {
-    if (path != null) {
-      try (Stream<Path> stream = Files.walk(path)) {
-        stream
-            .sorted(Comparator.reverseOrder())
-            .map(Path::toFile)
-            .forEach(
-                file -> {
-                  if (!file.delete()) {
-                    LOGGER.error("Failed to delete " + file.getAbsolutePath());
-                  }
-                });
-      }
+    try (Stream<Path> stream = Files.walk(path)) {
+      stream
+          .sorted(Comparator.reverseOrder())
+          .map(Path::toFile)
+          .forEach(
+              file -> {
+                if (!file.delete()) {
+                  LOGGER.error("Failed to delete " + file.getAbsolutePath());
+                }
+              });
     }
   }
 }

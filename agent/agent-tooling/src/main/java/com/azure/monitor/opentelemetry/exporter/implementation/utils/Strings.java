@@ -23,7 +23,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 public final class Strings {
 
@@ -32,7 +32,7 @@ public final class Strings {
   }
 
   @Nullable
-  public static String trimAndEmptyToNull(String str) {
+  public static String trimAndEmptyToNull(@Nullable String str) {
     if (str == null) {
       return null;
     }

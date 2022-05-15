@@ -33,6 +33,7 @@ import static org.objectweb.asm.Opcodes.RETURN;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
+import javax.annotation.Nullable;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -41,6 +42,7 @@ import org.objectweb.asm.MethodVisitor;
 public class JarVerifierClassFileTransformer implements ClassFileTransformer {
 
   @Override
+  @Nullable
   @SuppressWarnings("SystemOut")
   public byte[] transform(
       ClassLoader loader,

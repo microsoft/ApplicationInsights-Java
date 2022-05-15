@@ -40,10 +40,6 @@ dependencies {
   // TODO (trask) this is probably still needed for above apache commons projects
   implementation("org.slf4j:jcl-over-slf4j")
 
-  // TODO (trask) consolidate and use same annotations as upstream
-  implementation("org.checkerframework:checker-qual")
-  implementation("com.google.code.findbugs:annotations:3.0.1")
-
   // these are present in the bootstrap class loader
   compileOnly("ch.qos.logback:logback-classic")
   compileOnly("ch.qos.logback.contrib:logback-json-classic")

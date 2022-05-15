@@ -27,6 +27,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryI
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 public abstract class AbstractTelemetryBuilder {
 
@@ -75,7 +76,7 @@ public abstract class AbstractTelemetryBuilder {
     tags.put(key, value);
   }
 
-  public void addProperty(String key, String value) {
+  public void addProperty(@Nullable String key, @Nullable String value) {
     if (key == null || key.isEmpty() || key.length() > MAX_PROPERTY_KEY_LENGTH || value == null) {
       // TODO (trask) log
       return;

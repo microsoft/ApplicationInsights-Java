@@ -23,9 +23,9 @@ package com.microsoft.applicationinsights.smoketest.docker;
 
 import com.google.common.base.MoreObjects;
 import com.microsoft.applicationinsights.smoketest.DependencyContainer;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class ContainerInfo {
   private final String containerId;

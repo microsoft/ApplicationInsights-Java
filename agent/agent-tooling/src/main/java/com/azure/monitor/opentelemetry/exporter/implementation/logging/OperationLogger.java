@@ -21,7 +21,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.logging;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 // operation failure stats for a given 5-min window
 // each instance represents a logical grouping of errors that a user cares about and can understand,

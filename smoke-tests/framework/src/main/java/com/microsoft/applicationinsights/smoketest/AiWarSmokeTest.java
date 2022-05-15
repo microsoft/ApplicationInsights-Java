@@ -22,13 +22,13 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 import org.junit.runners.Parameterized;
 
 public abstract class AiWarSmokeTest extends AiSmokeTest {
 
   @Parameterized.Parameters(name = "{index}: {0}, {1}, {2}")
-  public static Collection<Object[]> parameterGenerator() {
+  public static List<Object[]> parameterGenerator() {
     return Arrays.asList(
         new Object[] {"jetty9", "linux", "azul_zulu-openjdk_8"},
         new Object[] {"jetty9", "linux", "azul_zulu-openjdk_11"},

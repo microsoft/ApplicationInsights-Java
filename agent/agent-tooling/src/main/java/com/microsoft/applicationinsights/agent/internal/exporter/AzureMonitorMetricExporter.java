@@ -136,11 +136,11 @@ public class AzureMonitorMetricExporter implements MetricExporter {
     switch (type) {
       case LONG_SUM:
         pointBuilder.setDataPointType(DataPointType.AGGREGATION);
-        pointBuilder.setValue(((LongPointData) pointData).getValue());
+        pointBuilder.setValue((double) ((LongPointData) pointData).getValue());
         break;
       case LONG_GAUGE:
         pointBuilder.setDataPointType(DataPointType.MEASUREMENT);
-        pointBuilder.setValue(((LongPointData) pointData).getValue());
+        pointBuilder.setValue((double) ((LongPointData) pointData).getValue());
         break;
       case DOUBLE_SUM:
         pointBuilder.setDataPointType(DataPointType.AGGREGATION);

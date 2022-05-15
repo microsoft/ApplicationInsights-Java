@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.agent.bootstrap.diagnostics;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Method;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 public class PidFinder extends CachedDiagnosticsValueFinder {
   public static final String PROPERTY_NAME = "PID";

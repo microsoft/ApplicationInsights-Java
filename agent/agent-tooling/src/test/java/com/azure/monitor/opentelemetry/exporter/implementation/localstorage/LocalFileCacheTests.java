@@ -26,7 +26,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Queue;
@@ -55,7 +54,7 @@ public class LocalFileCacheTests {
       sortedLastModified.add(file.lastModified());
     }
 
-    Collection<File> files = FileUtil.listTrnFiles(tempFolder);
+    List<File> files = FileUtil.listTrnFiles(tempFolder);
     assertThat(files.size()).isEqualTo(100);
     assertThat(files.size()).isEqualTo(sortedLastModified.size());
   }

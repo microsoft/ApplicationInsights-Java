@@ -49,7 +49,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.zip.GZIPInputStream;
-import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -75,11 +74,10 @@ public class TelemetryItemExporterTest {
         new LocalStorageTelemetryPipelineListener(tempFolder, telemetryPipeline, null, false));
   }
 
-  @Nullable
   private static String getRequestBodyString(Flux<ByteBuffer> requestBody) {
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     byte[] compressed = FluxUtil.collectBytesInByteBufferStream(requestBody).block();
-    final int bufferSize = compressed.length;
+    int bufferSize = compressed.length;
     String requestBodyString = null;
     try {
       ByteArrayInputStream bis = new ByteArrayInputStream(compressed);

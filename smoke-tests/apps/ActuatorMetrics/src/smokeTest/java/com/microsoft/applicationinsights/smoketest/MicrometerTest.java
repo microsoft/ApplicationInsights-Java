@@ -73,7 +73,7 @@ public class MicrometerTest extends AiJarSmokeTest {
 
     DataPoint point = points.get(0);
 
-    assertEquals(DataPointType.Aggregation, point.getKind());
+    assertEquals(DataPointType.AGGREGATION, point.getKind());
     assertEquals(1, point.getCount(), 0); // (this was verified above in Predicate also)
     assertEquals(
         "http_server_requests", point.getName()); // (this was verified above in Predicate also)

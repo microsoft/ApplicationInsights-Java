@@ -76,7 +76,7 @@ public class EventHubsExporterIntegrationTest extends AzureMonitorTraceExporterT
     EventHubProducerAsyncClient producer =
         new EventHubClientBuilder().connectionString(CONNECTION_STRING).buildAsyncProducerClient();
     Span span = tracer.spanBuilder(spanName).startSpan();
-    final Scope scope = span.makeCurrent();
+    Scope scope = span.makeCurrent();
     try {
       producer
           .createBatch()
@@ -153,7 +153,7 @@ public class EventHubsExporterIntegrationTest extends AzureMonitorTraceExporterT
             .buildEventProcessorClient();
 
     Span span = tracer.spanBuilder("event-hubs-consumer-testing").startSpan();
-    final Scope scope = span.makeCurrent();
+    Scope scope = span.makeCurrent();
     try {
       processorClient.start();
     } finally {

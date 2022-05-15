@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +64,7 @@ public enum PerformanceCounterContainer {
 
   private final List<PerformanceCounter> performanceCounters = new CopyOnWriteArrayList<>();
 
-  private volatile @Nullable AvailableJmxMetricLogger availableJmxMetricLogger;
+  @Nullable private volatile AvailableJmxMetricLogger availableJmxMetricLogger;
 
   private volatile boolean initialized = false;
 
@@ -116,6 +116,7 @@ public enum PerformanceCounterContainer {
    * counters data. The method will schedule a callback to be called, it will initialize a {@link
    * TelemetryClient} that the Performance Counters will use to report their data
    */
+  @SuppressWarnings("AlreadyChecked")
   private void initialize() {
     if (!initialized) {
       synchronized (INSTANCE) {

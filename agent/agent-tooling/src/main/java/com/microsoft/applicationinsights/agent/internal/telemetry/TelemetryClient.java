@@ -65,14 +65,13 @@ import java.util.Set;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.apache.commons.text.StringSubstitutor;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
 public class TelemetryClient {
 
   private static final String TELEMETRY_FOLDER_NAME = "telemetry";
   private static final String STATSBEAT_FOLDER_NAME = "statsbeat";
 
-  private static volatile @MonotonicNonNull TelemetryClient active;
+  @Nullable private static volatile TelemetryClient active;
 
   private final Set<String> nonFilterableMetricNames =
       new HashSet<>(
@@ -86,8 +85,8 @@ public class TelemetryClient {
 
   @Nullable private volatile ConnectionString connectionString;
   @Nullable private volatile StatsbeatConnectionString statsbeatConnectionString;
-  private volatile @MonotonicNonNull String roleName;
-  private volatile @MonotonicNonNull String roleInstance;
+  @Nullable private volatile String roleName;
+  @Nullable private volatile String roleInstance;
 
   // globalTags contain:
   // * cloud role name
@@ -110,9 +109,9 @@ public class TelemetryClient {
   @Nullable private final Configuration.AadAuthentication aadAuthentication;
 
   private final Object batchItemProcessorInitLock = new Object();
-  private volatile @MonotonicNonNull BatchItemProcessor generalBatchItemProcessor;
-  private volatile @MonotonicNonNull BatchItemProcessor metricsBatchItemProcessor;
-  private volatile @MonotonicNonNull BatchItemProcessor statsbeatBatchItemProcessor;
+  @Nullable private volatile BatchItemProcessor generalBatchItemProcessor;
+  @Nullable private volatile BatchItemProcessor metricsBatchItemProcessor;
+  @Nullable private volatile BatchItemProcessor statsbeatBatchItemProcessor;
 
   public static TelemetryClient.Builder builder() {
     return new TelemetryClient.Builder();

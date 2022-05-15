@@ -44,7 +44,7 @@ import java.io.Writer;
 import java.lang.instrument.Instrumentation;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;

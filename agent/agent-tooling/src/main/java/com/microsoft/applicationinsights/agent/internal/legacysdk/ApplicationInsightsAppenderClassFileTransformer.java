@@ -26,7 +26,7 @@ import static org.objectweb.asm.Opcodes.RETURN;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -39,23 +39,24 @@ public class ApplicationInsightsAppenderClassFileTransformer implements ClassFil
   private static final Logger logger =
       LoggerFactory.getLogger(ApplicationInsightsAppenderClassFileTransformer.class);
 
-  private static final String unshadedClassNameLogback =
+  private static final String UNSHADED_CLASS_NAME_LOGBACK =
       UnshadedSdkPackageName.get() + "/logback/ApplicationInsightsAppender";
-  private static final String unshadedClassNameLog4jv2 =
+  private static final String UNSHADED_CLASS_NAME_LOG_4_JV_2 =
       UnshadedSdkPackageName.get() + "/log4j/v2/ApplicationInsightsAppender";
-  private static final String unshadedClassNameLog4jv1_2 =
+  private static final String UNSHADED_CLASS_NAME_LOG_4_JV_1_2 =
       UnshadedSdkPackageName.get() + "/log4j/v1_2/ApplicationInsightsAppender";
 
   @Override
-  public byte /*@Nullable*/[] transform(
+  @Nullable
+  public byte[] transform(
       @Nullable ClassLoader loader,
       @Nullable String className,
       @Nullable Class<?> classBeingRedefined,
       @Nullable ProtectionDomain protectionDomain,
       byte[] classfileBuffer) {
-    if (!unshadedClassNameLogback.equals(className)
-        && !unshadedClassNameLog4jv2.equals(className)
-        && !unshadedClassNameLog4jv1_2.equals(className)) {
+    if (!UNSHADED_CLASS_NAME_LOGBACK.equals(className)
+        && !UNSHADED_CLASS_NAME_LOG_4_JV_2.equals(className)
+        && !UNSHADED_CLASS_NAME_LOG_4_JV_1_2.equals(className)) {
       return null;
     }
 
@@ -87,7 +88,7 @@ public class ApplicationInsightsAppenderClassFileTransformer implements ClassFil
         String name,
         String descriptor,
         @Nullable String signature,
-        String /*@Nullable*/[] exceptions) {
+        @Nullable String[] exceptions) {
       MethodVisitor mv = cw.visitMethod(access, name, descriptor, signature, exceptions);
       if (name.equals("append")
           && (descriptor.equals("(Lch/qos/logback/classic/spi/ILoggingEvent;)V")

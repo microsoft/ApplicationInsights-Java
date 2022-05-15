@@ -210,7 +210,7 @@ public class AzureMonitorMetricExporterTest {
     MetricsData metricsData = (MetricsData) builder.build().getData().getBaseData();
     assertThat(metricsData.getMetrics().size()).isEqualTo(1);
     MetricDataPoint metricDataPoint = metricsData.getMetrics().get(0);
-    assertThat(metricDataPoint.getValue()).isEqualTo(2L);
+    assertThat(metricDataPoint.getValue()).isEqualTo(2);
     assertThat(metricDataPoint.getDataPointType()).isEqualTo(DataPointType.AGGREGATION);
 
     Map<String, String> properties = metricsData.getProperties();
@@ -223,7 +223,7 @@ public class AzureMonitorMetricExporterTest {
     metricsData = (MetricsData) builder.build().getData().getBaseData();
     assertThat(metricsData.getMetrics().size()).isEqualTo(1);
     metricDataPoint = metricsData.getMetrics().get(0);
-    assertThat(metricDataPoint.getValue()).isEqualTo(6L);
+    assertThat(metricDataPoint.getValue()).isEqualTo(6);
     assertThat(metricDataPoint.getDataPointType()).isEqualTo(DataPointType.AGGREGATION);
 
     properties = metricsData.getProperties();
@@ -236,7 +236,7 @@ public class AzureMonitorMetricExporterTest {
     metricsData = (MetricsData) builder.build().getData().getBaseData();
     assertThat(metricsData.getMetrics().size()).isEqualTo(1);
     metricDataPoint = metricsData.getMetrics().get(0);
-    assertThat(metricDataPoint.getValue()).isEqualTo(7L);
+    assertThat(metricDataPoint.getValue()).isEqualTo(7);
     assertThat(metricDataPoint.getDataPointType()).isEqualTo(DataPointType.AGGREGATION);
 
     properties = metricsData.getProperties();
@@ -271,7 +271,7 @@ public class AzureMonitorMetricExporterTest {
       AzureMonitorMetricExporter.updateMetricPointBuilder(builder, metricData, pointData);
       MetricsData metricsData = (MetricsData) builder.build().getData().getBaseData();
       assertThat(metricsData.getMetrics().size()).isEqualTo(1);
-      assertThat(metricsData.getMetrics().get(0).getValue()).isEqualTo(20L);
+      assertThat(metricsData.getMetrics().get(0).getValue()).isEqualTo(20);
       assertThat(metricsData.getProperties().size()).isEqualTo(1);
       assertThat(metricsData.getProperties().get("thing")).isEqualTo("engine");
     }

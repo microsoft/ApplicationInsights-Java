@@ -26,6 +26,7 @@ import static com.azure.monitor.opentelemetry.exporter.implementation.builders.T
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 public final class EventTelemetryBuilder extends AbstractTelemetryBuilder {
 
@@ -46,7 +47,7 @@ public final class EventTelemetryBuilder extends AbstractTelemetryBuilder {
     data.setName(truncateTelemetry(name, MAX_EVENT_NAME_LENGTH, "Event.name"));
   }
 
-  public void addMeasurement(String key, Double value) {
+  public void addMeasurement(@Nullable String key, Double value) {
     if (key == null || key.isEmpty() || key.length() > MAX_MEASUREMENT_KEY_LENGTH) {
       // TODO (trask) log
       return;

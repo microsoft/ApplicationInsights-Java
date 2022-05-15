@@ -30,6 +30,7 @@ import java.util.function.Supplier;
 
 public interface ProfilerServiceFactory {
 
+  @SuppressWarnings("TooManyParameters")
   Future<ProfilerService> initialize(
       Supplier<String> appIdSupplier,
       UploadCompleteHandler uploadCompleteObserver,

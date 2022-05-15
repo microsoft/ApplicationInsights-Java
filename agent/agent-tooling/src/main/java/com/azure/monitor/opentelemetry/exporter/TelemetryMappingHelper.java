@@ -405,7 +405,8 @@ public final class TelemetryMappingHelper {
     return peerAddress + "/" + destination;
   }
 
-  private static String nullAwareConcat(String str1, String str2, String separator) {
+  private static String nullAwareConcat(
+      @Nullable String str1, @Nullable String str2, String separator) {
     if (str1 == null) {
       return str2;
     }

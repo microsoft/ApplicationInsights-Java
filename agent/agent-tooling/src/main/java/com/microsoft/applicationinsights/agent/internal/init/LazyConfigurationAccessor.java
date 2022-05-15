@@ -31,6 +31,7 @@ import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampl
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +79,7 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
             System.getenv("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL")));
   }
 
-  void setConnectionString(String connectionString, String instrumentationKey) {
+  void setConnectionString(@Nullable String connectionString, @Nullable String instrumentationKey) {
     if (connectionString != null && !connectionString.isEmpty()) {
       setValue(connectionString);
     } else {
@@ -105,7 +106,7 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
     appIdSupplier.startAppIdRetrieval();
   }
 
-  void setWebsiteSiteName(String websiteSiteName) {
+  void setWebsiteSiteName(@Nullable String websiteSiteName) {
     if (websiteSiteName != null && !websiteSiteName.isEmpty()) {
       telemetryClient.setRoleName(websiteSiteName);
       logger.debug(
@@ -114,7 +115,7 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
     }
   }
 
-  static void setSelfDiagnosticsLevel(String loggingLevel) {
+  static void setSelfDiagnosticsLevel(@Nullable String loggingLevel) {
     if (loggingLevel == null || !loggingLevel.isEmpty()) {
       return;
     }
@@ -139,7 +140,7 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
     logger.debug("self-diagnostics logging level has been updated.");
   }
 
-  static boolean shouldSetConnectionString(boolean lazySetOptIn, String enableAgent) {
+  static boolean shouldSetConnectionString(boolean lazySetOptIn, @Nullable String enableAgent) {
     if (lazySetOptIn) {
       // when LazySetOptIn is on, enable agent if APPLICATIONINSIGHTS_ENABLE_AGENT is null or true
       if (enableAgent == null || Boolean.parseBoolean(enableAgent)) {

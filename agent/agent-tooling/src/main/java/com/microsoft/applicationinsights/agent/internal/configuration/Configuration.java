@@ -42,7 +42,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 // an assumption is made throughout this file that user will not explicitly use `null` value in json
 // file
@@ -64,7 +64,7 @@ public class Configuration {
   // this is just here to detect if using old format in order to give a helpful error message
   public Map<String, Object> instrumentationSettings;
 
-  private static boolean isEmpty(String str) {
+  private static boolean isEmpty(@Nullable String str) {
     return str == null || str.trim().isEmpty();
   }
 
@@ -706,7 +706,7 @@ public class Configuration {
       }
     }
 
-    private void validateSectionIsNull(Object section, String sectionName) {
+    private void validateSectionIsNull(@Nullable Object section, String sectionName) {
       if (section != null) {
         throwUnexpectedSectionFriendlyException(sectionName);
       }
@@ -1046,23 +1046,23 @@ public class Configuration {
   }
 
   public static class ProcessorAction {
-    public final AttributeKey<String> key;
+    @Nullable public final AttributeKey<String> key;
     public final ProcessorActionType action;
     public final String value;
-    public final AttributeKey<String> fromAttribute;
-    public final ExtractAttribute extractAttribute;
-    public final MaskAttribute maskAttribute;
+    @Nullable public final AttributeKey<String> fromAttribute;
+    @Nullable public final ExtractAttribute extractAttribute;
+    @Nullable public final MaskAttribute maskAttribute;
 
     @JsonCreator
     public ProcessorAction(
         // TODO (trask) should this take attribute type, e.g. "key:type"
-        @JsonProperty("key") String key,
-        @JsonProperty("action") ProcessorActionType action,
-        @JsonProperty("value") String value,
+        @JsonProperty("key") @Nullable String key,
+        @JsonProperty("action") @Nullable ProcessorActionType action,
+        @JsonProperty("value") @Nullable String value,
         // TODO (trask) should this take attribute type, e.g. "key:type"
-        @JsonProperty("fromAttribute") String fromAttribute,
-        @JsonProperty("pattern") String pattern,
-        @JsonProperty("replace") String replace) {
+        @JsonProperty("fromAttribute") @Nullable String fromAttribute,
+        @JsonProperty("pattern") @Nullable String pattern,
+        @JsonProperty("replace") @Nullable String replace) {
       this.key = isEmpty(key) ? null : AttributeKey.stringKey(key);
       this.action = action;
       this.value = value;

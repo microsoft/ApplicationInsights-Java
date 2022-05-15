@@ -42,9 +42,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.Nullable;
 import okio.BufferedSink;
 import okio.Okio;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -300,7 +300,7 @@ public class StatusFile {
   // visible for testing
   static String constructFileName(Map<String, Object> map) {
     String result = FILENAME_PREFIX;
-    final String separator = "_";
+    String separator = "_";
     if (map.containsKey(MachineNameFinder.PROPERTY_NAME)) {
       result = result + separator + map.get(MachineNameFinder.PROPERTY_NAME);
     }
@@ -314,7 +314,7 @@ public class StatusFile {
    * @param pid The process' id.
    * @return A unique id for the current process.
    */
-  private static String getUniqueId(Object pid) {
+  private static String getUniqueId(@Nullable Object pid) {
     synchronized (lock) {
       if (uniqueId != null) {
         return uniqueId;
@@ -336,7 +336,7 @@ public class StatusFile {
   }
 
   @Nullable
-  private static String capitalize(String input) {
+  private static String capitalize(@Nullable String input) {
     if (input == null) {
       return null;
     }

@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.alerting.config;
 
 import java.time.ZonedDateTime;
 import java.util.Objects;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 public class CollectionPlanConfiguration {
 
