@@ -19,29 +19,43 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.smoketestapp;
+package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import com.microsoft.applicationinsights.smoketest.AiWarSmokeTest;
-import com.microsoft.applicationinsights.smoketest.TargetUri;
-import com.microsoft.applicationinsights.smoketest.UseAgent;
 import org.junit.Test;
 
-@UseAgent("disabled_jdbc")
-public class JdbcDisabledTest extends AiWarSmokeTest {
+@UseAgent
+@WithDependencyContainers(
+    @DependencyContainer(
+        value = "cassandra:3",
+        portMapping = "9042",
+        hostnameEnvironmentVariable = "CASSANDRA"))
+public class CassandraTest extends AiWarSmokeTest {
 
   @Test
-  @TargetUri("/hsqldbPreparedStatement")
-  public void hsqldbPreparedStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  @TargetUri("/cassandra")
+  public void cassandra() throws Exception {
+    Telemetry telemetry = getTelemetry(1);
 
-    assertEquals("GET /Jdbc/*", telemetry.rd.getName());
+    assertEquals("GET /Cassandra/*", telemetry.rd.getName());
+    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/Cassandra/cassandra"));
+    assertEquals("200", telemetry.rd.getResponseCode());
     assertTrue(telemetry.rd.getSuccess());
+    assertNull(telemetry.rd.getSource());
+    assertTrue(telemetry.rd.getProperties().isEmpty());
+    assertTrue(telemetry.rd.getMeasurements().isEmpty());
 
-    // sleep a bit and make sure no jdbc dependencies are reported
-    Thread.sleep(5000);
-    assertEquals(0, mockedIngestion.getCountForType("RemoteDependencyData"));
+    assertEquals("SELECT test.test", telemetry.rdd1.getName());
+    assertEquals("select * from test.test", telemetry.rdd1.getData());
+    assertEquals("cassandra", telemetry.rdd1.getType());
+    assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+"));
+    assertTrue(telemetry.rdd1.getProperties().isEmpty());
+    assertTrue(telemetry.rdd1.getSuccess());
+
+    assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Cassandra/*");
   }
 }

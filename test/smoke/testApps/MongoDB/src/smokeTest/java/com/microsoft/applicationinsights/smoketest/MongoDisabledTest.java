@@ -19,20 +19,31 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.smoketestapp;
+package com.microsoft.applicationinsights.smoketest;
 
-import com.microsoft.applicationinsights.smoketest.AiWarSmokeTest;
-import com.microsoft.applicationinsights.smoketest.TargetUri;
-import com.microsoft.applicationinsights.smoketest.UseAgent;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
-@UseAgent("telemetryfiltering2")
-public class TelemetryFiltering2SmokeTest extends AiWarSmokeTest {
+@UseAgent("disabled_mongo")
+@WithDependencyContainers(
+    @DependencyContainer(
+        value = "mongo:4",
+        portMapping = "27017",
+        hostnameEnvironmentVariable = "MONGO"))
+public class MongoDisabledTest extends AiWarSmokeTest {
 
   @Test
-  @TargetUri(value = "/login", callCount = 100)
-  public void testSampling() throws Exception {
-    mockedIngestion.waitForItems("RequestData", 100);
-    mockedIngestion.waitForItems("RemoteDependencyData", 100);
+  @TargetUri("/mongo")
+  public void mongo() throws Exception {
+    Telemetry telemetry = getTelemetry(0);
+
+    assertEquals("GET /MongoDB/*", telemetry.rd.getName());
+    assertTrue(telemetry.rd.getSuccess());
+
+    // sleep a bit and make sure no mongo dependencies are reported
+    Thread.sleep(5000);
+    assertEquals(0, mockedIngestion.getCountForType("RemoteDependencyData"));
   }
 }

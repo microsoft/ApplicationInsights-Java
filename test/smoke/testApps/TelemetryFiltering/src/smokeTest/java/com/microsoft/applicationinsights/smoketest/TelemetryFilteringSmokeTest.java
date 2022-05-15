@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.smoketestapp;
+package com.microsoft.applicationinsights.smoketest;
 
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -29,9 +29,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import com.microsoft.applicationinsights.smoketest.AiWarSmokeTest;
-import com.microsoft.applicationinsights.smoketest.TargetUri;
-import com.microsoft.applicationinsights.smoketest.UseAgent;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;

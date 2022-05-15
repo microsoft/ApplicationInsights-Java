@@ -19,17 +19,12 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.smoketestapp;
+package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import com.microsoft.applicationinsights.smoketest.AiWarSmokeTest;
-import com.microsoft.applicationinsights.smoketest.DependencyContainer;
-import com.microsoft.applicationinsights.smoketest.TargetUri;
-import com.microsoft.applicationinsights.smoketest.UseAgent;
-import com.microsoft.applicationinsights.smoketest.WithDependencyContainers;
 import org.junit.Test;
 
 @UseAgent

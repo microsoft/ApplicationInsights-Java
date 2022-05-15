@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.smoketestapp;
+package com.microsoft.applicationinsights.smoketest;
 
 import java.util.List;
 
