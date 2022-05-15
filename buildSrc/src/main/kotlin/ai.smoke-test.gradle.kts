@@ -91,8 +91,7 @@ tasks {
     // this is just to force building the agent first
     dependsOn(":agent:agent:shadowJar")
 
-    // TODO this adds the whole tree rooted at :appServers. Could this depend on :appServers which depends on :appServers:*:build?
-    dependsOn(project(":test:smoke:appServers").getTasksByName("buildDockerImage", true))
+    dependsOn(":test:smoke:appServers:buildDockerImage")
     dependsOn(assemble)
     dependsOn(pullDependencyContainers)
 
