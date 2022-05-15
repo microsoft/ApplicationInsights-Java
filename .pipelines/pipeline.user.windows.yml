@@ -40,4 +40,4 @@ restore:
     - !!defaultcommand
       name: 'Download Dependencies and Java Toolchain (Java 11)'
       command: '.scripts/gradle.cmd'
-      arguments: ':agent:agent:assemble :agent:agent:clean'
+      arguments: 'build clean'
