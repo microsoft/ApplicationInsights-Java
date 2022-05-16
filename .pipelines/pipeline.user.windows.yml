@@ -29,15 +29,6 @@ static_analysis_options:
 restore:
   commands:
     - !!defaultcommand
-      # TODO (trask) test if this is needed, or maybe only needed for official release?
-      name: 'Install Windows 10 SDK'
-      command: '.scripts/installWindows10Sdk.cmd'
-      logs:
-        - from: 'WinSdkInstall'
-          to: 'WinSdkInstall'
-          include:
-            - '**/*.log'
-    - !!defaultcommand
       name: 'Download Dependencies and Java Toolchain (Java 11)'
       command: '.scripts/gradle.cmd'
       arguments: 'test clean'
