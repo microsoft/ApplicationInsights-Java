@@ -21,15 +21,17 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse;
 
+import javax.annotation.Nullable;
+
 class QuickPulseHeaderInfo {
 
   private final QuickPulseStatus quickPulseStatus;
-  private final String qpsServiceEndpointRedirect;
+  @Nullable private final String qpsServiceEndpointRedirect;
   private final long qpsServicePollingInterval;
 
   QuickPulseHeaderInfo(
       QuickPulseStatus quickPulseStatus,
-      String qpsServiceEndpointRedirect,
+      @Nullable String qpsServiceEndpointRedirect,
       long qpsServicePollingIntervalHint) {
 
     this.quickPulseStatus = quickPulseStatus;

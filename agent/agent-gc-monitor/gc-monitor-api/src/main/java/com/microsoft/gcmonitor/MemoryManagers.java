@@ -28,19 +28,20 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Represents a group of memory managers that as a group manages the JVMs heap. Typically for most
- * collectors this would comprise of a Young generational manager and a Tenured generation manger.
+ * Represents a group of memory managers that as a group manages the JVMs heap. Typically, for most
+ * collectors this would consist of a Young generational manager and a Tenured generation manger.
  */
 public enum MemoryManagers {
-  ParallelScavenge(GarbageCollectors.PsMarkSweep.class, GarbageCollectors.PsScavenge.class),
+  PARALLEL_SCAVENGE(GarbageCollectors.PsMarkSweep.class, GarbageCollectors.PsScavenge.class),
 
-  ConcurrentMarkSweep(GarbageCollectors.ConcurrentMarkSweep.class, GarbageCollectors.ParNew.class),
+  CONCURRENT_MARK_SWEEP(
+      GarbageCollectors.ConcurrentMarkSweep.class, GarbageCollectors.ParNew.class),
 
-  MarkSweep(GarbageCollectors.MarkSweepCompact.class, GarbageCollectors.Copy.class),
+  MARK_SWEEP(GarbageCollectors.MarkSweepCompact.class, GarbageCollectors.Copy.class),
 
   G1(GarbageCollectors.G1OldGeneration.class, GarbageCollectors.G1YoungGeneration.class),
 
-  Shenandoah(GarbageCollectors.ShenandoahCycles.class, GarbageCollectors.ShenandoahPauses.class),
+  SHENANDOAH(GarbageCollectors.ShenandoahCycles.class, GarbageCollectors.ShenandoahPauses.class),
 
   ZGC(GarbageCollectors.Zgc.class);
 

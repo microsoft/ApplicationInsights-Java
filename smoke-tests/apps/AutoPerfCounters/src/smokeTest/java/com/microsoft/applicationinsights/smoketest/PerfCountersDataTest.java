@@ -125,7 +125,7 @@ public class PerfCountersDataTest extends AiWarSmokeTest {
     List<DataPoint> metrics = perfMetric.getMetrics();
     assertEquals(1, metrics.size());
     DataPoint dp = metrics.get(0);
-    assertEquals(DataPointType.Measurement, dp.getKind());
+    assertEquals(DataPointType.MEASUREMENT, dp.getKind());
   }
 
   private static Predicate<Envelope> getPerfMetricPredicate(String name) {

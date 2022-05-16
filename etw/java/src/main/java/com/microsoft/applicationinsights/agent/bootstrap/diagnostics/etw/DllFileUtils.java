@@ -29,6 +29,7 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +41,7 @@ class DllFileUtils {
   public static final String AI_BASE_FOLDER = "AISDK";
   public static final String AI_NATIVE_FOLDER = "native";
 
-  public static File buildDllLocalPath(String versionDirectory) {
+  public static File buildDllLocalPath(@Nullable String versionDirectory) {
     File dllPath = getTempDir();
 
     dllPath = new File(dllPath, AI_BASE_FOLDER);

@@ -23,6 +23,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.builders;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +34,7 @@ final class TelemetryTruncation {
   private static final Set<String> alreadyLoggedAttributeNames = ConcurrentHashMap.newKeySet();
   private static final Set<String> alreadyLoggedPropertyKeys = ConcurrentHashMap.newKeySet();
 
-  static String truncateTelemetry(String value, int maxLength, String attributeName) {
+  static String truncateTelemetry(@Nullable String value, int maxLength, String attributeName) {
     if (value == null || value.length() <= maxLength) {
       return value;
     }
@@ -52,7 +53,7 @@ final class TelemetryTruncation {
     return value.substring(0, maxLength);
   }
 
-  static String truncatePropertyValue(String value, int maxLength, String propertyKey) {
+  static String truncatePropertyValue(@Nullable String value, int maxLength, String propertyKey) {
     if (value == null || value.length() <= maxLength) {
       return value;
     }

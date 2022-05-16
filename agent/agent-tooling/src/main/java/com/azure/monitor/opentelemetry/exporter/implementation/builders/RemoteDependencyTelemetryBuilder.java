@@ -26,6 +26,7 @@ import static com.azure.monitor.opentelemetry.exporter.implementation.builders.T
 import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDependencyData;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 public final class RemoteDependencyTelemetryBuilder extends AbstractTelemetryBuilder {
 
@@ -78,7 +79,7 @@ public final class RemoteDependencyTelemetryBuilder extends AbstractTelemetryBui
     data.setSuccess(success);
   }
 
-  public void addMeasurement(String key, Double value) {
+  public void addMeasurement(@Nullable String key, Double value) {
     if (key == null || key.isEmpty() || key.length() > MAX_MEASUREMENT_KEY_LENGTH) {
       // TODO (trask) log
       return;

@@ -33,8 +33,10 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 // supporting all properties of event, metric, remote dependency and page view telemetry
+@SuppressWarnings("TooManyParameters")
 public class BytecodeUtil {
 
   private static BytecodeUtilDelegate delegate;
@@ -221,7 +223,9 @@ public class BytecodeUtil {
 
   // originally from SDK MapUtil.copy()
   public static void copy(
-      Map<String, String> source, Map<String, String> target, String excludePrefix) {
+      @Nullable Map<String, String> source,
+      Map<String, String> target,
+      @Nullable String excludePrefix) {
     if (source == null) {
       return;
     }

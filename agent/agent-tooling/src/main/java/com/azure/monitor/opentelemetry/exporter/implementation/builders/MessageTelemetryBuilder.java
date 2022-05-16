@@ -27,6 +27,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.MessageDat
 import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 public final class MessageTelemetryBuilder extends AbstractTelemetryBuilder {
 
@@ -51,7 +52,7 @@ public final class MessageTelemetryBuilder extends AbstractTelemetryBuilder {
     data.setSeverityLevel(severityLevel);
   }
 
-  public void addMeasurement(String key, Double value) {
+  public void addMeasurement(@Nullable String key, Double value) {
     if (key == null || key.isEmpty() || key.length() > MAX_MEASUREMENT_KEY_LENGTH) {
       // TODO (trask) log
       return;

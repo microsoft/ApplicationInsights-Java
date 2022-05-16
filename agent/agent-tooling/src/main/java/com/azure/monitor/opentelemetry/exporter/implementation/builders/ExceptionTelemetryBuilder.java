@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 public final class ExceptionTelemetryBuilder extends AbstractTelemetryBuilder {
 
@@ -62,7 +63,7 @@ public final class ExceptionTelemetryBuilder extends AbstractTelemetryBuilder {
     data.setProblemId(truncateTelemetry(problemId, MAX_PROBLEM_ID_LENGTH, "Exception.problemId"));
   }
 
-  public void addMeasurement(String key, Double value) {
+  public void addMeasurement(@Nullable String key, Double value) {
     if (key == null || key.isEmpty() || key.length() > MAX_MEASUREMENT_KEY_LENGTH) {
       // TODO (trask) log
       return;

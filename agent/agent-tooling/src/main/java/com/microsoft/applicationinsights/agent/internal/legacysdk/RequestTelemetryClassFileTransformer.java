@@ -31,7 +31,7 @@ import static org.objectweb.asm.Opcodes.ASM7;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.reflect.Modifier;
 import java.security.ProtectionDomain;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -51,7 +51,8 @@ public class RequestTelemetryClassFileTransformer implements ClassFileTransforme
       UnshadedSdkPackageName.get() + "/telemetry/RequestTelemetry";
 
   @Override
-  public byte /*@Nullable*/[] transform(
+  @Nullable
+  public byte[] transform(
       @Nullable ClassLoader loader,
       @Nullable String className,
       @Nullable Class<?> classBeingRedefined,
@@ -90,7 +91,7 @@ public class RequestTelemetryClassFileTransformer implements ClassFileTransforme
         String name,
         String descriptor,
         @Nullable String signature,
-        String /*@Nullable*/[] exceptions) {
+        @Nullable String[] exceptions) {
       if (name.equals("getSource") && descriptor.equals("()Ljava/lang/String;")) {
         foundGetSourceMethod = true;
       }

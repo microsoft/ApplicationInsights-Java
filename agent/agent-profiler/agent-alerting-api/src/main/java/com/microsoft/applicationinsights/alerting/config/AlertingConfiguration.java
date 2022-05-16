@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.alerting.config;
 
 import java.util.Objects;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 /** Contains the overall configuration of the entire alerting subsystem. */
 public class AlertingConfiguration {

@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
 import java.util.Random;
+import javax.annotation.Nullable;
 
 /**
  * This class generates the sample using the random number generator. It also contains the logic to
@@ -37,7 +38,7 @@ public class SamplingScoreGeneratorV2 {
    *
    * @return [0.0, 1.0)
    */
-  public static double getSamplingScore(String operationId) {
+  public static double getSamplingScore(@Nullable String operationId) {
     if (operationId != null && !operationId.isEmpty()) {
       return 100 * ((double) getSamplingHashCode(operationId) / Integer.MAX_VALUE);
     } else {

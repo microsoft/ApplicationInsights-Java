@@ -133,7 +133,7 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
 
     collector.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
     collector.enable(connectionString::getInstrumentationKey);
-    final long duration = 112233L;
+    long duration = 112233L;
     // Request Telemetry
     TelemetryItem requestTelemetry =
         createRequestTelemetry("request-test", currDate, duration, "200", true);

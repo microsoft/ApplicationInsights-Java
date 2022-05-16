@@ -28,13 +28,9 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
 import com.microsoft.applicationinsights.smoketest.schemav2.Base;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
-import com.microsoft.applicationinsights.smoketest.schemav2.DataPointType;
 import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
 import com.microsoft.applicationinsights.smoketest.schemav2.EventData;
 import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionData;
@@ -55,8 +51,6 @@ public class JsonHelper {
           .serializeNulls()
           .registerTypeHierarchyAdapter(Base.class, new BaseDataContractDeserializer())
           .registerTypeAdapter(TypeToken.get(Duration.class).getType(), new DurationDeserializer())
-          .registerTypeAdapter(
-              TypeToken.get(DataPointType.class).getType(), new DataPointTypeEnumConverter())
           .create();
 
   private static class BaseDataContractDeserializer implements JsonDeserializer<Base> {
@@ -129,31 +123,6 @@ public class JsonHelper {
       }
 
       return new Duration(duration);
-    }
-  }
-
-  private static class DataPointTypeEnumConverter
-      implements JsonDeserializer<DataPointType>, JsonSerializer<DataPointType> {
-    @Override
-    public DataPointType deserialize(
-        JsonElement json, Type typeOfT, JsonDeserializationContext context) {
-      String id = json.getAsString();
-      // FIXME (trask) breeze question: this used to be mapped from int (0/1), is it really
-      //  correct to map to string now?
-      switch (id) {
-        case "Measurement":
-          return DataPointType.Measurement;
-        case "Aggregation":
-          return DataPointType.Aggregation;
-        default:
-          throw new IllegalArgumentException("No DataPointType with id=" + id);
-      }
-    }
-
-    @Override
-    public JsonElement serialize(
-        DataPointType src, Type typeOfSrc, JsonSerializationContext context) {
-      return new JsonPrimitive(src.getValue());
     }
   }
 

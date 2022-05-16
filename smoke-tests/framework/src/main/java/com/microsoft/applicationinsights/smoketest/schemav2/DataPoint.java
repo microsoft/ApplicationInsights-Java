@@ -27,7 +27,7 @@ public class DataPoint {
   private String name;
 
   /** Backing field for property Kind. */
-  private DataPointType kind = DataPointType.Measurement;
+  private DataPointType kind = DataPointType.MEASUREMENT;
 
   /** Backing field for property Value. */
   private double value;

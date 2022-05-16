@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.bootstrap.diagnostics;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,7 @@ class SubscriptionIdFinderTest {
 
   @SystemStub EnvironmentVariables envVars = new EnvironmentVariables();
 
-  private SubscriptionIdFinder subIdFinder;
+  @Nullable private SubscriptionIdFinder subIdFinder;
 
   @BeforeEach
   void setup() {

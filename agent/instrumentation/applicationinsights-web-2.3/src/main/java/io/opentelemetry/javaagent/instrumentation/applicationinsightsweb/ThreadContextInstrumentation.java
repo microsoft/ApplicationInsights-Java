@@ -34,6 +34,7 @@ import io.opentelemetry.instrumentation.api.util.VirtualField;
 import io.opentelemetry.javaagent.bootstrap.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
+import javax.annotation.Nullable;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
@@ -55,7 +56,8 @@ public class ThreadContextInstrumentation implements TypeInstrumentation {
   public static class GetRequestTelemetryContextAdvice {
     @Advice.OnMethodExit
     public static void methodExit(
-        @Advice.Return(readOnly = false) RequestTelemetryContext requestTelemetryContext) {
+        @Advice.Return(readOnly = false) @Nullable
+            RequestTelemetryContext requestTelemetryContext) {
       if (requestTelemetryContext != null) {
         // don't want to break code that was manually setting and retrieving this value
         return;

@@ -65,8 +65,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.slf4j.LoggerFactory;
-import reactor.util.annotation.Nullable;
 
 /**
  * This class is an implementation of OpenTelemetry {@link SpanExporter} that allows different
@@ -731,7 +731,8 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
     return spanName;
   }
 
-  private static String nullAwareConcat(String str1, String str2, String separator) {
+  private static String nullAwareConcat(
+      @Nullable String str1, @Nullable String str2, String separator) {
     if (str1 == null) {
       return str2;
     }

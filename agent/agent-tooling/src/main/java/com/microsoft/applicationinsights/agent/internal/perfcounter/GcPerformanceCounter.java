@@ -63,8 +63,10 @@ public final class GcPerformanceCounter implements PerformanceCounter {
       currentTotalCount = totalCollectionCount;
       currentTotalTime = totalCollectionTime;
 
-      telemetryClient.trackAsync(telemetryClient.newMetricTelemetry(GC_TOTAL_COUNT, countToReport));
-      telemetryClient.trackAsync(telemetryClient.newMetricTelemetry(GC_TOTAL_TIME, timeToReport));
+      telemetryClient.trackAsync(
+          telemetryClient.newMetricTelemetry(GC_TOTAL_COUNT, (double) countToReport));
+      telemetryClient.trackAsync(
+          telemetryClient.newMetricTelemetry(GC_TOTAL_TIME, (double) timeToReport));
     }
   }
 }

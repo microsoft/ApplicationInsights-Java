@@ -59,7 +59,6 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import com.microsoft.applicationinsights.smoketest.telemetry.Duration;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -72,7 +71,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
   // old Application Insights version that do not support Java 11+
   @Parameterized.Parameters(name = "{index}: {0}, {1}, {2}")
-  public static Collection<Object[]> parameterGenerator() {
+  public static List<Object[]> parameterGenerator() {
     return Arrays.asList(
         new Object[] {"jetty9", "linux", "azul_zulu-openjdk_8"},
         new Object[] {"tomcat85", "linux", "azul_zulu-openjdk_8"},
@@ -166,7 +165,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
     assertThat(
         exceptions,
         hasItem(
-            allOf(hasException(withMessage(expectedName)), hasSeverityLevel(SeverityLevel.Error))));
+            allOf(hasException(withMessage(expectedName)), hasSeverityLevel(SeverityLevel.ERROR))));
 
     assertParentChild(rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter/trackException");
     assertParentChild(rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter/trackException");
@@ -244,7 +243,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
     final double expectedValue = 111222333.0;
     double epsilon = Math.ulp(expectedValue);
-    assertEquals(DataPointType.Measurement, dp.getKind());
+    assertEquals(DataPointType.MEASUREMENT, dp.getKind());
     assertEquals(expectedValue, dp.getValue(), epsilon);
     assertEquals("TimeToRespond", dp.getName());
 
@@ -277,14 +276,14 @@ public class CoreAndFilterTests extends AiSmokeTest {
         hasItem(
             allOf(
                 TraceDataMatchers.hasMessage("This is second trace message."),
-                TraceDataMatchers.hasSeverityLevel(SeverityLevel.Error))));
+                TraceDataMatchers.hasSeverityLevel(SeverityLevel.ERROR))));
 
     assertThat(
         messages,
         hasItem(
             allOf(
                 TraceDataMatchers.hasMessage("This is third trace message."),
-                TraceDataMatchers.hasSeverityLevel(SeverityLevel.Information),
+                TraceDataMatchers.hasSeverityLevel(SeverityLevel.INFORMATION),
                 TraceDataMatchers.hasProperty("key", "value"))));
 
     assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /CoreAndFilter/trackTrace");

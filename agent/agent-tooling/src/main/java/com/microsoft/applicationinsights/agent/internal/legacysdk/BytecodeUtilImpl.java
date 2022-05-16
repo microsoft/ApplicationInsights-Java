@@ -55,7 +55,7 @@ import java.net.URL;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,12 +70,12 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
   @Override
   public void trackEvent(
-      Date timestamp,
+      @Nullable Date timestamp,
       String name,
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> measurements,
-      String instrumentationKey) {
+      @Nullable String instrumentationKey) {
 
     if (Strings.isNullOrEmpty(name)) {
       return;
@@ -106,16 +106,16 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
   // TODO do not track if perf counter (?)
   @Override
   public void trackMetric(
-      Date timestamp,
+      @Nullable Date timestamp,
       String name,
       double value,
-      Integer count,
-      Double min,
-      Double max,
-      Double stdDev,
+      @Nullable Integer count,
+      @Nullable Double min,
+      @Nullable Double max,
+      @Nullable Double stdDev,
       Map<String, String> properties,
       Map<String, String> tags,
-      String instrumentationKey) {
+      @Nullable String instrumentationKey) {
 
     if (Strings.isNullOrEmpty(name)) {
       return;
@@ -156,9 +156,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
   @Override
   public void trackDependency(
-      Date timestamp,
+      @Nullable Date timestamp,
       String name,
-      String id,
+      @Nullable String id,
       String resultCode,
       @Nullable Long totalMillis,
       boolean success,
@@ -168,7 +168,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> measurements,
-      String instrumentationKey) {
+      @Nullable String instrumentationKey) {
 
     if (Strings.isNullOrEmpty(name)) {
       return;
@@ -212,14 +212,14 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
   @Override
   public void trackPageView(
-      Date timestamp,
+      @Nullable Date timestamp,
       String name,
-      URI uri,
+      @Nullable URI uri,
       long totalMillis,
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> measurements,
-      String instrumentationKey) {
+      @Nullable String instrumentationKey) {
 
     if (Strings.isNullOrEmpty(name)) {
       return;
@@ -254,12 +254,12 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
   @Override
   public void trackTrace(
-      Date timestamp,
+      @Nullable Date timestamp,
       String message,
       int severityLevel,
       Map<String, String> properties,
       Map<String, String> tags,
-      String instrumentationKey) {
+      @Nullable String instrumentationKey) {
     if (Strings.isNullOrEmpty(message)) {
       return;
     }
@@ -290,10 +290,10 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
   @Override
   public void trackRequest(
-      String id,
+      @Nullable String id,
       String name,
-      URL url,
-      Date timestamp,
+      @Nullable URL url,
+      @Nullable Date timestamp,
       @Nullable Long duration,
       String responseCode,
       boolean success,
@@ -301,7 +301,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> measurements,
-      String instrumentationKey) {
+      @Nullable String instrumentationKey) {
     if (Strings.isNullOrEmpty(name)) {
       return;
     }
@@ -345,12 +345,12 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
   @Override
   public void trackException(
-      Date timestamp,
-      Exception exception,
+      @Nullable Date timestamp,
+      @Nullable Exception exception,
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> measurements,
-      String instrumentationKey) {
+      @Nullable String instrumentationKey) {
     if (exception == null) {
       return;
     }

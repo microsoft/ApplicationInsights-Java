@@ -33,8 +33,8 @@ class ConnectionStringParsingTests {
 
   @Test
   void minimalString() throws Exception {
-    final String ikey = "fake-ikey";
-    final String cs = "InstrumentationKey=" + ikey;
+    String ikey = "fake-ikey";
+    String cs = "InstrumentationKey=" + ikey;
 
     ConnectionString parsed = ConnectionString.parse(cs);
     assertThat(parsed.getInstrumentationKey()).isEqualTo(ikey);
@@ -45,9 +45,9 @@ class ConnectionStringParsingTests {
 
   @Test
   void ikeyWithSuffix() throws Exception {
-    final String ikey = "fake-ikey";
-    final String suffix = "ai.example.com";
-    final String cs = "InstrumentationKey=" + ikey + ";EndpointSuffix=" + suffix;
+    String ikey = "fake-ikey";
+    String suffix = "ai.example.com";
+    String cs = "InstrumentationKey=" + ikey + ";EndpointSuffix=" + suffix;
     URL expectedIngestionEndpointUrl =
         new URL(
             "https://"
@@ -71,9 +71,9 @@ class ConnectionStringParsingTests {
 
   @Test
   void suffixWithPathRetainsThePath() throws Exception {
-    final String ikey = "fake-ikey";
-    final String suffix = "ai.example.com/my-proxy-app/doProxy";
-    final String cs = "InstrumentationKey=" + ikey + ";EndpointSuffix=" + suffix;
+    String ikey = "fake-ikey";
+    String suffix = "ai.example.com/my-proxy-app/doProxy";
+    String cs = "InstrumentationKey=" + ikey + ";EndpointSuffix=" + suffix;
     URL expectedIngestionEndpointUrl =
         new URL(
             "https://"
@@ -97,9 +97,9 @@ class ConnectionStringParsingTests {
 
   @Test
   void suffixSupportsPort() throws Exception {
-    final String ikey = "fake-ikey";
-    final String suffix = "ai.example.com:9999";
-    final String cs = "InstrumentationKey=" + ikey + ";EndpointSuffix=" + suffix;
+    String ikey = "fake-ikey";
+    String suffix = "ai.example.com:9999";
+    String cs = "InstrumentationKey=" + ikey + ";EndpointSuffix=" + suffix;
     URL expectedIngestionEndpointUrl =
         new URL(
             "https://"
@@ -123,10 +123,10 @@ class ConnectionStringParsingTests {
 
   @Test
   void ikeyWithExplicitEndpoints() throws Exception {
-    final String ikey = "fake-ikey";
+    String ikey = "fake-ikey";
     URL expectedIngestionEndpoint = new URL("https://ingestion.example.com");
     URL expectedIngestionEndpointUrl = new URL("https://ingestion.example.com/");
-    final String liveHost = "https://live.example.com";
+    String liveHost = "https://live.example.com";
     URL expectedLiveEndpoint = new URL(liveHost + "/");
 
     String cs =
@@ -145,8 +145,8 @@ class ConnectionStringParsingTests {
 
   @Test
   void explicitEndpointOverridesSuffix() throws Exception {
-    final String ikey = "fake-ikey";
-    final String suffix = "ai.example.com";
+    String ikey = "fake-ikey";
+    String suffix = "ai.example.com";
     URL expectedIngestionEndpoint = new URL("https://ingestion.example.com");
     URL expectedIngestionEndpointUrl = new URL("https://ingestion.example.com/");
     URL expectedLiveEndpoint =
@@ -172,9 +172,9 @@ class ConnectionStringParsingTests {
 
   @Test
   void emptyPairIsIgnored() throws MalformedURLException {
-    final String ikey = "fake-ikey";
-    final String suffix = "ai.example.com";
-    final String cs = "InstrumentationKey=" + ikey + ";;EndpointSuffix=" + suffix + ";";
+    String ikey = "fake-ikey";
+    String suffix = "ai.example.com";
+    String cs = "InstrumentationKey=" + ikey + ";;EndpointSuffix=" + suffix + ";";
     URL expectedIngestionEndpointUrl =
         new URL(
             "https://"
@@ -198,8 +198,8 @@ class ConnectionStringParsingTests {
 
   @Test
   void emptyKeyIsIgnored() throws MalformedURLException {
-    final String ikey = "fake-ikey";
-    final String cs = "InstrumentationKey=" + ikey + ";=1234";
+    String ikey = "fake-ikey";
+    String cs = "InstrumentationKey=" + ikey + ";=1234";
     URL expectedIngestionEndpointUrl = new URL(DefaultEndpoints.INGESTION_ENDPOINT);
     URL expectedLiveEndpoint = new URL(DefaultEndpoints.LIVE_ENDPOINT);
 
@@ -211,8 +211,8 @@ class ConnectionStringParsingTests {
 
   @Test
   void emptyValueIsSameAsUnset() throws Exception {
-    final String ikey = "fake-ikey";
-    final String cs = "InstrumentationKey=" + ikey + ";EndpointSuffix=";
+    String ikey = "fake-ikey";
+    String cs = "InstrumentationKey=" + ikey + ";EndpointSuffix=";
 
     ConnectionString parsed = ConnectionString.parse(cs);
     assertThat(parsed.getInstrumentationKey()).isEqualTo(ikey);
@@ -223,12 +223,12 @@ class ConnectionStringParsingTests {
 
   @Test
   void caseInsensitiveParsing() {
-    final String ikey = "fake-ikey";
-    final String live = "https://live.something.com";
-    final String profiler = "https://prof.something.com";
-    final String cs1 =
+    String ikey = "fake-ikey";
+    String live = "https://live.something.com";
+    String profiler = "https://prof.something.com";
+    String cs1 =
         "InstrumentationKey=" + ikey + ";LiveEndpoint=" + live + ";ProfilerEndpoint=" + profiler;
-    final String cs2 =
+    String cs2 =
         "instRUMentationkEY=" + ikey + ";LivEEndPOINT=" + live + ";ProFILErEndPOinT=" + profiler;
 
     ConnectionString parsed = ConnectionString.parse(cs1);
@@ -243,11 +243,11 @@ class ConnectionStringParsingTests {
 
   @Test
   void orderDoesNotMatter() {
-    final String ikey = "fake-ikey";
-    final String live = "https://live.something.com";
-    final String profiler = "https://prof.something.com";
-    final String snapshot = "https://whatever.snappy.com";
-    final String cs1 =
+    String ikey = "fake-ikey";
+    String live = "https://live.something.com";
+    String profiler = "https://prof.something.com";
+    String snapshot = "https://whatever.snappy.com";
+    String cs1 =
         "InstrumentationKey="
             + ikey
             + ";LiveEndpoint="
@@ -256,7 +256,7 @@ class ConnectionStringParsingTests {
             + profiler
             + ";SnapshotEndpoint="
             + snapshot;
-    final String cs2 =
+    String cs2 =
         "SnapshotEndpoint="
             + snapshot
             + ";ProfilerEndpoint="

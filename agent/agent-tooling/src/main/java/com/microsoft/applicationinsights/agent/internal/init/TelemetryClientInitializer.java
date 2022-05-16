@@ -115,50 +115,34 @@ public class TelemetryClientInitializer {
   }
 
   private static void setRoleName(Configuration configuration, TelemetryClient telemetryClient) {
-    try {
-      String roleName;
-
-      // try to find the role name in ApplicationInsights.xml
-      if (configuration != null) {
-        roleName = configuration.role.name;
-        if (roleName == null) {
-          return;
-        }
-
-        roleName = roleName.trim();
-        if (roleName.length() == 0) {
-          return;
-        }
-
-        telemetryClient.setRoleName(roleName);
-      }
-    } catch (RuntimeException e) {
-      logger.error("Failed to set role name: '{}'", e.toString());
+    String roleName = configuration.role.name;
+    if (roleName == null) {
+      return;
     }
+
+    roleName = roleName.trim();
+    if (roleName.length() == 0) {
+      return;
+    }
+
+    telemetryClient.setRoleName(roleName);
   }
 
   private static void setRoleInstance(
       Configuration configuration, TelemetryClient telemetryClient) {
-    try {
-      String roleInstance;
+    String roleInstance;
 
-      // try to find the role instance in ApplicationInsights.xml
-      if (configuration != null) {
-        roleInstance = configuration.role.instance;
-        if (roleInstance == null) {
-          return;
-        }
-
-        roleInstance = roleInstance.trim();
-        if (roleInstance.length() == 0) {
-          return;
-        }
-
-        telemetryClient.setRoleInstance(roleInstance);
-      }
-    } catch (RuntimeException e) {
-      logger.error("Failed to set role instance: '{}'", e.toString());
+    roleInstance = configuration.role.instance;
+    if (roleInstance == null) {
+      return;
     }
+
+    roleInstance = roleInstance.trim();
+    if (roleInstance.length() == 0) {
+      return;
+    }
+
+    telemetryClient.setRoleInstance(roleInstance);
   }
 
   /**
@@ -171,10 +155,6 @@ public class TelemetryClientInitializer {
    */
   private static void loadCustomJmxPerfCounters(List<Configuration.JmxMetric> jmxXmlElements) {
     try {
-      if (jmxXmlElements == null) {
-        return;
-      }
-
       HashMap<String, Collection<JmxAttributeData>> data = new HashMap<>();
 
       // Build a map of object name to its requested attributes

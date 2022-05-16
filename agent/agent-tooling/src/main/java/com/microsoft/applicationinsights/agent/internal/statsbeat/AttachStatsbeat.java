@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.StatsbeatTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import javax.annotation.Nullable;
 
 class AttachStatsbeat extends BaseStatsbeat {
 
@@ -73,7 +74,7 @@ class AttachStatsbeat extends BaseStatsbeat {
 
   // visible for testing
   static String initResourceProviderId(
-      ResourceProvider resourceProvider, MetadataInstanceResponse response) {
+      ResourceProvider resourceProvider, @Nullable MetadataInstanceResponse response) {
     switch (resourceProvider) {
       case RP_APPSVC:
         // Linux App Services doesn't have WEBSITE_HOME_STAMPNAME yet. An ask has been submitted.

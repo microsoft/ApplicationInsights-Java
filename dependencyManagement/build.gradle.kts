@@ -40,7 +40,7 @@ val DEPENDENCY_SETS = listOf(
   ),
   DependencySet(
     "com.google.errorprone",
-    "2.9.0",
+    "2.12.1",
     listOf("error_prone_annotations", "error_prone_core")
   ),
   DependencySet(
@@ -108,7 +108,7 @@ val DEPENDENCIES = listOf(
   "org.awaitility:awaitility:4.1.0",
   "io.github.hakky54:logcaptor:2.5.0",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
-  "org.checkerframework:checker-qual:3.14.0"
+  "com.google.code.findbugs:jsr305:3.0.2"
 )
 
 javaPlatform {

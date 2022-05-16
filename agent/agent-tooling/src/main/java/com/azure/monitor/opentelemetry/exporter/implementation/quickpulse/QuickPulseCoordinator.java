@@ -22,6 +22,7 @@
 package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +30,7 @@ final class QuickPulseCoordinator implements Runnable {
 
   private static final Logger logger = LoggerFactory.getLogger(QuickPulseCoordinator.class);
 
-  private String qpsServiceRedirectedEndpoint;
+  @Nullable private String qpsServiceRedirectedEndpoint;
   private long qpsServicePollingIntervalHintMillis;
 
   private volatile boolean stopped = false;

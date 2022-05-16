@@ -58,7 +58,7 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
     try {
       this.etwProvider.writeEvent(event);
     } catch (LinkageError | ApplicationInsightsEtwException e) {
-      final String message = "EtwProvider failed to initialize.";
+      String message = "EtwProvider failed to initialize.";
       LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME).error(message, e);
       addError(message, e);
 

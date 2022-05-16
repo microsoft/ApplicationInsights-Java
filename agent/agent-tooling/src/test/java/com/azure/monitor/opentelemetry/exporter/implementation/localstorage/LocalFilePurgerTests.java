@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.util.Collection;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -51,7 +51,7 @@ public class LocalFilePurgerTests {
           singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))));
     }
 
-    Collection<File> files = FileUtil.listTrnFiles(tempFolder);
+    List<File> files = FileUtil.listTrnFiles(tempFolder);
     assertThat(files.size()).isEqualTo(100);
 
     Thread.sleep(10000); // wait 10 seconds

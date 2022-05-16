@@ -39,6 +39,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Diagnostics
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsValueFinder;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,7 +50,7 @@ class ApplicationInsightsJsonLayoutTests {
   private static final String LOGGER_NAME = "test.logger";
   private static final long TIMESTAMP_VALUE = System.currentTimeMillis();
 
-  private ApplicationInsightsJsonLayout ourLayout;
+  @Nullable private ApplicationInsightsJsonLayout ourLayout;
 
   private ILoggingEvent logEvent;
 
@@ -86,8 +87,8 @@ class ApplicationInsightsJsonLayoutTests {
 
   @Test
   void addsDataFromFinders() {
-    final String key = "mock-finder";
-    final String value = "mock-value";
+    String key = "mock-finder";
+    String value = "mock-value";
 
     DiagnosticsValueFinder mockFinder = mock(DiagnosticsValueFinder.class);
     when(mockFinder.getName()).thenReturn(key);
@@ -104,16 +105,16 @@ class ApplicationInsightsJsonLayoutTests {
 
   @Test
   void nullOrEmptyValueWritesUnknownValue() {
-    final String nKey = "f-null";
-    final String eKey = "f-empty";
+    String oneKey = "f-null";
+    String twoKey = "f-empty";
 
     DiagnosticsValueFinder nullValueFinder = mock(DiagnosticsValueFinder.class);
-    when(nullValueFinder.getName()).thenReturn(nKey);
+    when(nullValueFinder.getName()).thenReturn(oneKey);
     when(nullValueFinder.getValue()).thenReturn(null);
     ourLayout.valueFinders.add(nullValueFinder);
 
     DiagnosticsValueFinder emptyValueFinder = mock(DiagnosticsValueFinder.class);
-    when(emptyValueFinder.getName()).thenReturn(eKey);
+    when(emptyValueFinder.getName()).thenReturn(twoKey);
     when(emptyValueFinder.getValue()).thenReturn("");
     ourLayout.valueFinders.add(emptyValueFinder);
 
@@ -125,8 +126,8 @@ class ApplicationInsightsJsonLayoutTests {
     verify(nullValueFinder, atLeastOnce()).getValue();
     verify(emptyValueFinder, atLeastOnce()).getName();
     verify(emptyValueFinder, atLeastOnce()).getValue();
-    assertThat(propMap).containsEntry(eKey, UNKNOWN_VALUE);
-    assertThat(propMap).containsEntry(nKey, UNKNOWN_VALUE);
+    assertThat(propMap).containsEntry(twoKey, UNKNOWN_VALUE);
+    assertThat(propMap).containsEntry(oneKey, UNKNOWN_VALUE);
   }
 
   @Test

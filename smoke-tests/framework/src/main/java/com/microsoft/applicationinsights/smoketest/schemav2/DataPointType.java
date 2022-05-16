@@ -21,10 +21,14 @@
 
 package com.microsoft.applicationinsights.smoketest.schemav2;
 
+import com.google.gson.annotations.SerializedName;
+
 /** Enum DataPointType. */
 public enum DataPointType {
-  Measurement(0),
-  Aggregation(1);
+  @SerializedName("Measurement")
+  MEASUREMENT(0),
+  @SerializedName("Aggregation")
+  AGGREGATION(1);
 
   private final int id;
 

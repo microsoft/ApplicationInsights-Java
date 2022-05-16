@@ -96,23 +96,21 @@ public class JmxGarbageCollectorStats implements GarbageCollectorStats {
   }
 
   public void update(Notification notification) {
-    if (notification != null) {
-      if (notification.getType().equals("com.sun.management.gc.notification")) {
-        CompositeData data = (CompositeData) notification.getUserData();
-        if (data.containsKey("gcInfo")) {
+    if (notification.getType().equals("com.sun.management.gc.notification")) {
+      CompositeData data = (CompositeData) notification.getUserData();
+      if (data.containsKey("gcInfo")) {
 
-          countCounter.newValue(mxbean.getCollectionCount());
-          timeCounter.newValue(mxbean.getCollectionTime());
+        countCounter.newValue(mxbean.getCollectionCount());
+        timeCounter.newValue(mxbean.getCollectionTime());
 
-          GcCollectionSample cs =
-              new GcCollectionSample(
-                  this.garbageCollector,
-                  (CompositeData) data.get("gcInfo"),
-                  (String) data.get("gcCause"),
-                  (String) data.get("gcAction"),
-                  memoryManagement);
-          observer.accept(cs);
-        }
+        GcCollectionSample cs =
+            new GcCollectionSample(
+                this.garbageCollector,
+                (CompositeData) data.get("gcInfo"),
+                (String) data.get("gcCause"),
+                (String) data.get("gcAction"),
+                memoryManagement);
+        observer.accept(cs);
       }
     }
   }

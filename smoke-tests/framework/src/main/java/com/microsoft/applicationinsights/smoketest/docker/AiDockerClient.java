@@ -41,6 +41,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
@@ -115,7 +116,7 @@ public class AiDockerClient {
       cmd.add("--name");
       cmd.add(containerName);
     }
-    if (envVars != null && !envVars.isEmpty()) {
+    if (!envVars.isEmpty()) {
       for (Entry<String, String> entry : envVars.entrySet()) {
         if (entry.getKey() == null || entry.getValue() == null) {
           continue;
@@ -126,8 +127,8 @@ public class AiDockerClient {
     }
     cmd.add(image);
     Process p = buildProcess(cmd).start();
-    final int timeout = 30;
-    final TimeUnit unit = TimeUnit.SECONDS;
+    int timeout = 30;
+    TimeUnit unit = TimeUnit.SECONDS;
     waitAndCheckCodeForProcess(p, timeout, unit, "starting container " + image);
 
     return getFirstLineOfProcessOutput(p);
@@ -192,7 +193,7 @@ public class AiDockerClient {
   }
 
   private static void waitAndCheckCodeForProcess(
-      Process p, long timeout, TimeUnit unit, String actionName, String containerId)
+      Process p, long timeout, TimeUnit unit, String actionName, @Nullable String containerId)
       throws IOException, InterruptedException {
     waitForProcessToReturn(p, timeout, unit, actionName);
     if (p.exitValue() != 0) {

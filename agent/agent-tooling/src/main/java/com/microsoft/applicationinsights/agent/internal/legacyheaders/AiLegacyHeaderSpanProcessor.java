@@ -30,7 +30,7 @@ import io.opentelemetry.context.ImplicitContextKeyed;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 public class AiLegacyHeaderSpanProcessor implements SpanProcessor {
 
@@ -68,7 +68,7 @@ public class AiLegacyHeaderSpanProcessor implements SpanProcessor {
 
     private final SpanContext spanContext;
     private final String legacyParentId;
-    private final @Nullable String legacyRootId;
+    @Nullable private final String legacyRootId;
 
     private static LegacyIds fromContext(Context context) {
       return context.get(LegacyIds.AI_LEGACY_IDS_KEY);

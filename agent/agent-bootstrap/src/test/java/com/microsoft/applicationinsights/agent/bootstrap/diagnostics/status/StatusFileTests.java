@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -112,7 +113,8 @@ class StatusFileTests {
     assertMapHasExpectedInformation(inputMap, null, null);
   }
 
-  void assertMapHasExpectedInformation(Map<String, Object> inputMap, String key, String value) {
+  void assertMapHasExpectedInformation(
+      Map<String, Object> inputMap, @Nullable String key, String value) {
     int size = 5;
     if (key != null) {
       size = 6;
@@ -186,7 +188,7 @@ class StatusFileTests {
 
   @Test
   void putValueAndWriteOverwritesCurrentFile() throws Exception {
-    final String key = "write-test";
+    String key = "write-test";
     try {
       DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(true);
 
@@ -199,7 +201,7 @@ class StatusFileTests {
       Map map = parseJsonFile(tempFolder);
       assertMapHasExpectedInformation(map);
 
-      final String value = "value123";
+      String value = "value123";
       StatusFile.putValueAndWrite(key, value);
       pauseForFileWrite();
       assertThat(tempFolder.list()).hasSize(1);

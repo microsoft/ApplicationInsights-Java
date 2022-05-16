@@ -33,7 +33,7 @@ public class JvmHeapMemoryUsedPerformanceCounter implements PerformanceCounter {
 
   public static final String HEAP_MEM_USED_PERCENTAGE = "% Of Max Heap Memory Used";
 
-  private static final long Megabyte = 1024 * 1024;
+  private static final double MEGABYTE = 1024 * 1024;
 
   private final MemoryMXBean memory;
 
@@ -53,7 +53,7 @@ public class JvmHeapMemoryUsedPerformanceCounter implements PerformanceCounter {
   private static void reportHeap(MemoryMXBean memory, TelemetryClient telemetryClient) {
     MemoryUsage mhu = memory.getHeapMemoryUsage();
     if (mhu != null) {
-      long currentHeapUsed = mhu.getUsed() / Megabyte;
+      double currentHeapUsed = mhu.getUsed() / MEGABYTE;
       telemetryClient.trackAsync(
           telemetryClient.newMetricTelemetry(HEAP_MEM_USED, currentHeapUsed));
 

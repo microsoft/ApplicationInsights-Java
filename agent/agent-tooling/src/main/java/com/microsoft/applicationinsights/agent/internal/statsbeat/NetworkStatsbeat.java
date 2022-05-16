@@ -23,13 +23,13 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.StatsbeatTelemetryBuilder;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import io.opentelemetry.instrumentation.api.internal.GuardedBy;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.checkerframework.checker.lock.qual.GuardedBy;
 
 public class NetworkStatsbeat extends BaseStatsbeat {
 
@@ -165,7 +165,9 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     if (local.requestSuccessCount.get() != 0) {
       StatsbeatTelemetryBuilder requestSuccessCountSt =
           createStatsbeatTelemetry(
-              telemetryClient, REQUEST_SUCCESS_COUNT_METRIC_NAME, local.requestSuccessCount.get());
+              telemetryClient,
+              REQUEST_SUCCESS_COUNT_METRIC_NAME,
+              (double) local.requestSuccessCount.get());
       addCommonProperties(requestSuccessCountSt, ikey, local.host);
       telemetryClient.trackStatsbeatAsync(requestSuccessCountSt.build());
     }
@@ -173,7 +175,9 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     if (local.requestFailureCount.get() != 0) {
       StatsbeatTelemetryBuilder requestFailureCountSt =
           createStatsbeatTelemetry(
-              telemetryClient, REQUEST_FAILURE_COUNT_METRIC_NAME, local.requestFailureCount.get());
+              telemetryClient,
+              REQUEST_FAILURE_COUNT_METRIC_NAME,
+              (double) local.requestFailureCount.get());
       addCommonProperties(requestFailureCountSt, ikey, local.host);
       telemetryClient.trackStatsbeatAsync(requestFailureCountSt.build());
     }
@@ -189,7 +193,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     if (local.retryCount.get() != 0) {
       StatsbeatTelemetryBuilder retryCountSt =
           createStatsbeatTelemetry(
-              telemetryClient, RETRY_COUNT_METRIC_NAME, local.retryCount.get());
+              telemetryClient, RETRY_COUNT_METRIC_NAME, (double) local.retryCount.get());
       addCommonProperties(retryCountSt, ikey, local.host);
       telemetryClient.trackStatsbeatAsync(retryCountSt.build());
     }
@@ -197,7 +201,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     if (local.throttlingCount.get() != 0) {
       StatsbeatTelemetryBuilder throttleCountSt =
           createStatsbeatTelemetry(
-              telemetryClient, THROTTLE_COUNT_METRIC_NAME, local.throttlingCount.get());
+              telemetryClient, THROTTLE_COUNT_METRIC_NAME, (double) local.throttlingCount.get());
       addCommonProperties(throttleCountSt, ikey, local.host);
       telemetryClient.trackStatsbeatAsync(throttleCountSt.build());
     }
@@ -205,7 +209,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     if (local.exceptionCount.get() != 0) {
       StatsbeatTelemetryBuilder exceptionCountSt =
           createStatsbeatTelemetry(
-              telemetryClient, EXCEPTION_COUNT_METRIC_NAME, local.exceptionCount.get());
+              telemetryClient, EXCEPTION_COUNT_METRIC_NAME, (double) local.exceptionCount.get());
       addCommonProperties(exceptionCountSt, ikey, local.host);
       telemetryClient.trackStatsbeatAsync(exceptionCountSt.build());
     }

@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.perfcounter;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 
+import io.opentelemetry.instrumentation.api.internal.GuardedBy;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,7 +42,6 @@ import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeDataSupport;
 import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.OpenType;
-import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -165,7 +165,7 @@ class AvailableJmxMetricLogger {
   }
 
   private static List<String> getCompositeTypeAttributes(
-      MBeanAttributeInfo attribute, Object compositeData, CompositeType compositeType) {
+      MBeanAttributeInfo attribute, @Nullable Object compositeData, CompositeType compositeType) {
     List<String> attributes = new ArrayList<>();
     for (String itemName : compositeType.keySet()) {
       String attributeName = attribute.getName() + "." + itemName;

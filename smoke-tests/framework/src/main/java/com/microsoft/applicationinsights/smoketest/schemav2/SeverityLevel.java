@@ -21,13 +21,20 @@
 
 package com.microsoft.applicationinsights.smoketest.schemav2;
 
+import com.google.gson.annotations.SerializedName;
+
 /** Enum SeverityLevel. */
 public enum SeverityLevel {
-  Verbose(0),
-  Information(1),
-  Warning(2),
-  Error(3),
-  Critical(4);
+  @SerializedName("Verbose")
+  VERBOSE(0),
+  @SerializedName("Information")
+  INFORMATION(1),
+  @SerializedName("Warning")
+  WARNING(2),
+  @SerializedName("Error")
+  ERROR(3),
+  @SerializedName("Critical")
+  CRITICAL(4);
 
   private final int id;
 

@@ -24,7 +24,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.util;
 import com.fasterxml.jackson.core.SerializableString;
 import com.fasterxml.jackson.core.io.CharacterEscapes;
 import com.fasterxml.jackson.core.io.SerializedString;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 public class CustomCharacterEscapes extends CharacterEscapes {
 

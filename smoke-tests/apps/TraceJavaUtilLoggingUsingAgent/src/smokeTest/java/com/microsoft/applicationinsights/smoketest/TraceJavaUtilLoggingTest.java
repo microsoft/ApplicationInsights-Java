@@ -56,14 +56,14 @@ public class TraceJavaUtilLoggingTest extends AiWarSmokeTest {
     MessageData md2 = logs.get(1);
 
     assertEquals("This is jul warning.", md1.getMessage());
-    assertEquals(SeverityLevel.Warning, md1.getSeverityLevel());
+    assertEquals(SeverityLevel.WARNING, md1.getSeverityLevel());
     assertEquals("Logger", md1.getProperties().get("SourceType"));
     assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
     assertNotNull(md1.getProperties().get("ThreadName"));
     assertEquals(3, md1.getProperties().size());
 
     assertEquals("This is jul severe.", md2.getMessage());
-    assertEquals(SeverityLevel.Error, md2.getSeverityLevel());
+    assertEquals(SeverityLevel.ERROR, md2.getSeverityLevel());
     assertEquals("Logger", md2.getProperties().get("SourceType"));
     assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
     assertNotNull(md2.getProperties().get("ThreadName"));
@@ -93,7 +93,7 @@ public class TraceJavaUtilLoggingTest extends AiWarSmokeTest {
     ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();
 
     assertEquals("Fake Exception", ed.getExceptions().get(0).getMessage());
-    assertEquals(SeverityLevel.Error, ed.getSeverityLevel());
+    assertEquals(SeverityLevel.ERROR, ed.getSeverityLevel());
     assertEquals("This is an exception!", ed.getProperties().get("Logger Message"));
     assertEquals("Logger", ed.getProperties().get("SourceType"));
     assertEquals("smoketestapp", ed.getProperties().get("LoggerName"));

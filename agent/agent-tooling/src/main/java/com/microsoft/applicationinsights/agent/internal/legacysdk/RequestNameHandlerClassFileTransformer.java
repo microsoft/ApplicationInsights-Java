@@ -27,7 +27,7 @@ import static org.objectweb.asm.Opcodes.IRETURN;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -44,7 +44,8 @@ public class RequestNameHandlerClassFileTransformer implements ClassFileTransfor
       UnshadedSdkPackageName.get() + "/web/spring/RequestNameHandlerInterceptorAdapter";
 
   @Override
-  public byte /*@Nullable*/[] transform(
+  @Nullable
+  public byte[] transform(
       @Nullable ClassLoader loader,
       @Nullable String className,
       @Nullable Class<?> classBeingRedefined,
@@ -82,7 +83,7 @@ public class RequestNameHandlerClassFileTransformer implements ClassFileTransfor
         String name,
         String descriptor,
         @Nullable String signature,
-        String /*@Nullable*/[] exceptions) {
+        @Nullable String[] exceptions) {
       MethodVisitor mv = cw.visitMethod(access, name, descriptor, signature, exceptions);
       if (name.equals("preHandle")
           && descriptor.equals(

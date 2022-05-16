@@ -45,6 +45,7 @@ public class ServiceProfilerIndex {
   private final Map<String, String> sampleEvent = new HashMap<>();
   private final Map<String, Double> metrics = new HashMap<>();
 
+  @SuppressWarnings("TooManyParameters")
   public ServiceProfilerIndex(
       String triggeredBy,
       String fileId,

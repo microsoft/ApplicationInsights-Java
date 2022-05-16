@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.smoketest.telemetry;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 /**
  * This class lets its users to define an interval of time which can be defined in terms of days,

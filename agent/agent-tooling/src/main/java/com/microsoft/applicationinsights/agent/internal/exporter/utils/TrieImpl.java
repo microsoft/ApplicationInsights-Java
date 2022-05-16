@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 // copied from io.opentelemetry.javaagent.instrumentation.api.util.TrieImpl
 public final class TrieImpl<V> implements Trie<V> {

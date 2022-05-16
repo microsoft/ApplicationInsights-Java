@@ -17,6 +17,8 @@ dependencies {
 
   implementation(project(":etw:java"))
 
+  testCompileOnly("com.google.code.findbugs:jsr305")
+
   testImplementation("org.junit.jupiter:junit-jupiter")
   testImplementation("org.assertj:assertj-core")
   testImplementation("org.mockito:mockito-core")

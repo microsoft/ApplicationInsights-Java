@@ -30,15 +30,16 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.spi.FilterReply;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsTestHelper;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class ApplicationInsightsDiagnosticsLogFilterTests {
 
-  private ApplicationInsightsDiagnosticsLogFilter filter;
+  @Nullable private ApplicationInsightsDiagnosticsLogFilter filter;
 
-  private ILoggingEvent mockEvent;
+  @Nullable private ILoggingEvent mockEvent;
 
   @BeforeEach
   void setup() {

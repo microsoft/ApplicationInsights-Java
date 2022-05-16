@@ -62,7 +62,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -795,7 +795,8 @@ public class Exporter implements SpanExporter {
     return spanName;
   }
 
-  private static String nullAwareConcat(String str1, String str2, String separator) {
+  private static String nullAwareConcat(
+      @Nullable String str1, @Nullable String str2, String separator) {
     if (str1 == null) {
       return str2;
     }

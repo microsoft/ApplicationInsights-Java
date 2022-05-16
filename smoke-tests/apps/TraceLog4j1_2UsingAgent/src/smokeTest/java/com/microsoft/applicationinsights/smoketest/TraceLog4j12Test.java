@@ -59,7 +59,7 @@ public class TraceLog4j12Test extends AiWarSmokeTest {
     MessageData md3 = logs.get(2);
 
     assertEquals("This is log4j1.2 warn.", md1.getMessage());
-    assertEquals(SeverityLevel.Warning, md1.getSeverityLevel());
+    assertEquals(SeverityLevel.WARNING, md1.getSeverityLevel());
     assertEquals("Logger", md1.getProperties().get("SourceType"));
     assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
     assertNotNull(md1.getProperties().get("ThreadName"));
@@ -67,14 +67,14 @@ public class TraceLog4j12Test extends AiWarSmokeTest {
     assertEquals(4, md1.getProperties().size());
 
     assertEquals("This is log4j1.2 error.", md2.getMessage());
-    assertEquals(SeverityLevel.Error, md2.getSeverityLevel());
+    assertEquals(SeverityLevel.ERROR, md2.getSeverityLevel());
     assertEquals("Logger", md2.getProperties().get("SourceType"));
     assertEquals("smoketestapp", md2.getProperties().get("LoggerName"));
     assertNotNull(md2.getProperties().get("ThreadName"));
     assertEquals(3, md2.getProperties().size());
 
     assertEquals("This is log4j1.2 fatal.", md3.getMessage());
-    assertEquals(SeverityLevel.Critical, md3.getSeverityLevel());
+    assertEquals(SeverityLevel.CRITICAL, md3.getSeverityLevel());
     assertEquals("Logger", md3.getProperties().get("SourceType"));
     assertEquals("smoketestapp", md3.getProperties().get("LoggerName"));
     assertNotNull(md3.getProperties().get("ThreadName"));
@@ -105,7 +105,7 @@ public class TraceLog4j12Test extends AiWarSmokeTest {
     ExceptionDetails ex = details.get(0);
 
     assertEquals("Fake Exception", ex.getMessage());
-    assertEquals(SeverityLevel.Error, ed.getSeverityLevel());
+    assertEquals(SeverityLevel.ERROR, ed.getSeverityLevel());
     assertEquals("This is an exception!", ed.getProperties().get("Logger Message"));
     assertEquals("Logger", ed.getProperties().get("SourceType"));
     assertEquals("smoketestapp", ed.getProperties().get("LoggerName"));

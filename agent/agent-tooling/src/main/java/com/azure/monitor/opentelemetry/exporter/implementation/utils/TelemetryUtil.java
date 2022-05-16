@@ -28,6 +28,7 @@ import io.opentelemetry.instrumentation.api.internal.cache.Cache;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +69,7 @@ public class TelemetryUtil {
   }
 
   private static ExceptionDetailBuilder createWithStackInfo(
-      Throwable exception, ExceptionDetailBuilder parentExceptionDetails) {
+      Throwable exception, @Nullable ExceptionDetailBuilder parentExceptionDetails) {
     if (exception == null) {
       throw new IllegalArgumentException("exception cannot be null");
     }
@@ -144,7 +145,7 @@ public class TelemetryUtil {
         + getStackFrameLength(assembly);
   }
 
-  private static int getStackFrameLength(String text) {
+  private static int getStackFrameLength(@Nullable String text) {
     return text == null ? 0 : text.length();
   }
 
@@ -214,10 +215,6 @@ public class TelemetryUtil {
 
     public float orElse(float other) {
       return present ? value : other;
-    }
-
-    public boolean isEmpty() {
-      return !present;
     }
   }
 

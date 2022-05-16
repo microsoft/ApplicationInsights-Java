@@ -56,6 +56,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.After;
@@ -118,15 +119,15 @@ public abstract class AiSmokeTest {
   protected static String currentImageName;
   protected static short appServerPort;
   protected static File warFile;
-  protected static String agentMode;
-  protected static String networkId;
+  @Nullable protected static String agentMode;
+  @Nullable protected static String networkId;
   protected static String networkName = "aismoke-net";
   protected static boolean requestCaptureEnabled = true; // we will assume request capturing is on
   // endregion
 
   // region: application fields
-  protected String targetUri;
-  protected String httpMethod;
+  @Nullable protected String targetUri;
+  @Nullable protected String httpMethod;
   protected long targetUriDelayMs;
   protected long targetUriCallCount;
   // endregion
@@ -899,7 +900,7 @@ public abstract class AiSmokeTest {
     Objects.requireNonNull(name, "name");
     return new Predicate<Envelope>() {
       @Override
-      public boolean test(Envelope input) {
+      public boolean test(@Nullable Envelope input) {
         if (input == null) {
           return false;
         }

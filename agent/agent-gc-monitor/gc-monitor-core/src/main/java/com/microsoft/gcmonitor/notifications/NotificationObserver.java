@@ -25,6 +25,7 @@ import com.microsoft.gcmonitor.collectors.JmxGarbageCollectorStats;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import org.slf4j.Logger;
@@ -56,7 +57,7 @@ public class NotificationObserver implements NotificationListener {
 
   /** Enqueue notification to be executed. */
   @Override
-  public void handleNotification(Notification notification, Object handback) {
+  public void handleNotification(@Nullable Notification notification, Object handback) {
     try {
       if (notification != null) {
         workQueue.put(new NotificationJob((JmxGarbageCollectorStats) handback, notification));

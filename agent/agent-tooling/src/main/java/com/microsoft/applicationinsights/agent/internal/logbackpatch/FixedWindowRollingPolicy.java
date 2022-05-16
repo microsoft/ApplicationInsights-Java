@@ -108,7 +108,7 @@ public class FixedWindowRollingPolicy extends RollingPolicyBase {
       maxIndex = minIndex;
     }
 
-    final int maxWindowSize = getMaxWindowSize();
+    int maxWindowSize = getMaxWindowSize();
     if ((maxIndex - minIndex) > maxWindowSize) {
       addWarn("Large window sizes are not allowed.");
       maxIndex = minIndex + maxWindowSize;

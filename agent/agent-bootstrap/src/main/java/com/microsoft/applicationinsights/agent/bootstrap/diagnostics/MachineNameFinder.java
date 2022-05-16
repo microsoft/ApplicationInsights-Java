@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 public class MachineNameFinder extends CachedDiagnosticsValueFinder {
   public static final String PROPERTY_NAME = "MachineName";

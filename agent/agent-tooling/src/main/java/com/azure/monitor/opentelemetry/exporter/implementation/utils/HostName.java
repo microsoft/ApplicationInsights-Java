@@ -23,7 +23,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

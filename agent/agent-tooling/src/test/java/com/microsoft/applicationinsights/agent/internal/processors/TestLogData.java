@@ -28,7 +28,6 @@ import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
-import javax.annotation.Nullable;
 
 public class TestLogData implements LogData {
 
@@ -81,7 +80,6 @@ public class TestLogData implements LogData {
     return severity;
   }
 
-  @Nullable
   @Override
   public String getSeverityText() {
     return severityText;

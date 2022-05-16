@@ -41,7 +41,8 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-@SuppressWarnings({"SystemOut", "CatchAndPrintStackTrace"})
+// TODO (trask) revisit Java8ApiChecker suppression
+@SuppressWarnings({"Java8ApiChecker", "SystemOut", "CatchAndPrintStackTrace"})
 public class GcProcessRunner {
   private InputStream errorStream;
   private InputStream stdOut;

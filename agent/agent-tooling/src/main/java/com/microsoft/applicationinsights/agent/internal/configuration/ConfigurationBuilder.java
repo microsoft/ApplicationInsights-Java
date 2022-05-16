@@ -44,10 +44,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.apache.commons.text.StringSubstitutor;
 import org.apache.commons.text.lookup.StringLookup;
 import org.apache.commons.text.lookup.StringLookupFactory;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.LoggerFactory;
 
 public class ConfigurationBuilder {
@@ -120,7 +120,7 @@ public class ConfigurationBuilder {
 
   // using deprecated fields to give warning message to user if they are still using them
   @SuppressWarnings("deprecation")
-  public static Configuration create(Path agentJarPath, RpConfiguration rpConfiguration)
+  public static Configuration create(Path agentJarPath, @Nullable RpConfiguration rpConfiguration)
       throws IOException {
     Configuration config = loadConfigurationFile(agentJarPath);
     if (config.instrumentation.micrometer.reportingIntervalSeconds != 60) {
@@ -593,7 +593,7 @@ public class ConfigurationBuilder {
     return Strings.trimAndEmptyToNull(System.getenv(name));
   }
 
-  private static boolean isTrimEmpty(String value) {
+  private static boolean isTrimEmpty(@Nullable String value) {
     return value == null || value.trim().isEmpty();
   }
 
@@ -692,7 +692,7 @@ public class ConfigurationBuilder {
         message, "env var " + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
   }
 
-  static String getJsonEncodingExceptionMessage(String message, String location) {
+  static String getJsonEncodingExceptionMessage(@Nullable String message, String location) {
     if (message != null && !message.isEmpty()) {
       return message;
     }

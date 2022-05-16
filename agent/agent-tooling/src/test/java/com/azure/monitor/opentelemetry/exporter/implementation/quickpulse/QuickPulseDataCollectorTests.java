@@ -69,7 +69,7 @@ class QuickPulseDataCollectorTests {
     collector.enable(FAKE_CONNECTION_STRING::getInstrumentationKey);
 
     // add a success and peek
-    final long duration = 112233L;
+    long duration = 112233L;
     TelemetryItem telemetry =
         createRequestTelemetry("request-test", new Date(), duration, "200", true);
     telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
@@ -77,10 +77,10 @@ class QuickPulseDataCollectorTests {
     QuickPulseDataCollector.FinalCounters counters = collector.peek();
     assertThat(counters.requests).isEqualTo(1);
     assertThat(counters.unsuccessfulRequests).isEqualTo(0);
-    assertThat(counters.requestsDuration).isEqualTo(duration);
+    assertThat(counters.requestsDuration).isEqualTo((double) duration);
 
     // add another success and peek
-    final long duration2 = 65421L;
+    long duration2 = 65421L;
     telemetry = createRequestTelemetry("request-test-2", new Date(), duration2, "200", true);
     telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
     collector.add(telemetry);
@@ -91,7 +91,7 @@ class QuickPulseDataCollectorTests {
     assertThat(counters.requestsDuration).isEqualTo(total);
 
     // add a failure and get/reset
-    final long duration3 = 9988L;
+    long duration3 = 9988L;
     telemetry = createRequestTelemetry("request-test-3", new Date(), duration3, "400", false);
     telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
     collector.add(telemetry);
@@ -112,7 +112,7 @@ class QuickPulseDataCollectorTests {
     collector.enable(FAKE_CONNECTION_STRING::getInstrumentationKey);
 
     // add a success and peek.
-    final long duration = 112233L;
+    long duration = 112233L;
     TelemetryItem telemetry =
         createRemoteDependencyTelemetry("dep-test", "dep-test-cmd", duration, true);
     telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
@@ -120,10 +120,10 @@ class QuickPulseDataCollectorTests {
     QuickPulseDataCollector.FinalCounters counters = collector.peek();
     assertThat(counters.rdds).isEqualTo(1);
     assertThat(counters.unsuccessfulRdds).isEqualTo(0);
-    assertThat(counters.rddsDuration).isEqualTo(duration);
+    assertThat(counters.rddsDuration).isEqualTo((double) duration);
 
     // add another success and peek.
-    final long duration2 = 334455L;
+    long duration2 = 334455L;
     telemetry = createRemoteDependencyTelemetry("dep-test-2", "dep-test-cmd-2", duration2, true);
     telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
     collector.add(telemetry);
@@ -134,7 +134,7 @@ class QuickPulseDataCollectorTests {
     assertThat(counters.rddsDuration).isEqualTo(total);
 
     // add a failure and get/reset.
-    final long duration3 = 123456L;
+    long duration3 = 123456L;
     telemetry = createRemoteDependencyTelemetry("dep-test-3", "dep-test-cmd-3", duration3, false);
     telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
     collector.add(telemetry);
@@ -171,8 +171,8 @@ class QuickPulseDataCollectorTests {
 
   @Test
   void encodeDecodeIsIdentity() {
-    final long count = 456L;
-    final long duration = 112233L;
+    long count = 456L;
+    long duration = 112233L;
     long encoded = QuickPulseDataCollector.Counters.encodeCountAndDuration(count, duration);
     QuickPulseDataCollector.CountAndDuration inputs =
         QuickPulseDataCollector.Counters.decodeCountAndDuration(encoded);
@@ -252,7 +252,7 @@ class QuickPulseDataCollectorTests {
     collector.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
     collector.enable(FAKE_CONNECTION_STRING::getInstrumentationKey);
 
-    final long duration = 112233L;
+    long duration = 112233L;
     TelemetryItem telemetry =
         createRequestTelemetry("request-test", new Date(), duration, "200", true);
     telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);

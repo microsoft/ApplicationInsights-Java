@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.heartbeat;
 
+import javax.annotation.Nullable;
+
 /**
  * Defines the Payload class to store and send heartbeat properties and allowing to keep track of
  * updates to them.
@@ -43,7 +45,7 @@ public class HeartBeatPropertyPayload {
    *
    * @param payloadValue value of the property
    */
-  public void setPayloadValue(String payloadValue) {
+  public void setPayloadValue(@Nullable String payloadValue) {
     if (payloadValue != null && !this.payloadValue.equals(payloadValue)) {
       this.payloadValue = payloadValue;
     }

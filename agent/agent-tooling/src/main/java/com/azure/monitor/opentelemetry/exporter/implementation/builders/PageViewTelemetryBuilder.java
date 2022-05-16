@@ -26,6 +26,7 @@ import static com.azure.monitor.opentelemetry.exporter.implementation.builders.T
 import com.azure.monitor.opentelemetry.exporter.implementation.models.PageViewData;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 public final class PageViewTelemetryBuilder extends AbstractTelemetryBuilder {
 
@@ -62,7 +63,7 @@ public final class PageViewTelemetryBuilder extends AbstractTelemetryBuilder {
     data.setReferredUri(truncateTelemetry(referredUri, MAX_URL_LENGTH, "PageView.referredUri"));
   }
 
-  public void addMeasurement(String key, Double value) {
+  public void addMeasurement(@Nullable String key, Double value) {
     if (key == null || key.isEmpty() || key.length() > MAX_MEASUREMENT_KEY_LENGTH) {
       // TODO (trask) log
       return;

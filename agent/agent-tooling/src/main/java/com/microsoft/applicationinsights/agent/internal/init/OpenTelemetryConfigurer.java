@@ -38,7 +38,6 @@ import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterW
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
@@ -87,9 +86,6 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
             (builder, config) -> configureMetrics(builder, telemetryClient, configuration));
   }
 
-  @SuppressFBWarnings(
-      value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
-      justification = "this method is only called once during initialization")
   private static SdkTracerProviderBuilder configureTracing(
       SdkTracerProviderBuilder tracerProvider,
       TelemetryClient telemetryClient,

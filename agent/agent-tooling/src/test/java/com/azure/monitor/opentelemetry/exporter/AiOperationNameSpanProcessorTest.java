@@ -75,7 +75,7 @@ public class AiOperationNameSpanProcessorTest {
   @Test
   public void operationNameFromParentTest() throws InterruptedException {
     CountDownLatch exporterCountDown = new CountDownLatch(1);
-    final Tracer tracer =
+    Tracer tracer =
         configureAzureMonitorExporter(
             new ValidationPolicy(exporterCountDown, Arrays.asList("child-span", "myop")));
 
@@ -104,7 +104,7 @@ public class AiOperationNameSpanProcessorTest {
   @Test
   public void operationNameEmptyFromParentTest() throws InterruptedException {
     CountDownLatch exporterCountDown = new CountDownLatch(1);
-    final Tracer tracer =
+    Tracer tracer =
         configureAzureMonitorExporter(
             new ValidationPolicy(
                 exporterCountDown, Arrays.asList("child-span", "POST parent-span-changed")));
@@ -129,7 +129,7 @@ public class AiOperationNameSpanProcessorTest {
   @Test
   public void operationNameAsSpanNameTest() throws InterruptedException {
     CountDownLatch exporterCountDown = new CountDownLatch(1);
-    final Tracer tracer =
+    Tracer tracer =
         configureAzureMonitorExporter(
             new ValidationPolicy(
                 exporterCountDown, Arrays.asList("child-span", "parent-span-changed")));
