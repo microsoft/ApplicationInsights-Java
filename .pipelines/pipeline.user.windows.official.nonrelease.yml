@@ -6,7 +6,6 @@ version:
 build:
   commands:
     - !!buildcommand
-      # TODO (heya) why do we need to upload the build scripts?
       name: 'Upload Build Scripts'
       command: '.scripts/copy-source.cmd' # this file is empty
       artifacts:
