@@ -1,6 +1,4 @@
 plugins {
-  id("groovy")
-
   id("ai.java-conventions")
   id("ai.javaagent-instrumentation")
 
@@ -10,24 +8,17 @@ plugins {
 
 muzzle {
   pass {
-    group.set("com.microsoft.azure")
-    module.set("applicationinsights-web")
-    versions.set("[2.3.0,)")
+    group.set("javax.servlet")
+    module.set("servlet-api")
+    versions.set("[2.3,)")
+    assertInverse.set(true)
   }
 }
 
 val otelInstrumentationVersionAlpha: String by project
-val otelVersion: String by project
 
 dependencies {
-  compileOnly("com.microsoft.azure:applicationinsights-web:2.3.0")
-
-  testImplementation("io.opentelemetry:opentelemetry-extension-annotations:$otelVersion")
-
-  testImplementation("com.microsoft.azure:applicationinsights-web:2.3.0")
-  testImplementation("javax.servlet:javax.servlet-api:3.0.1")
-
-  add("codegen", "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.0:$otelInstrumentationVersionAlpha")
+  compileOnly("javax.servlet:servlet-api:2.3")
 
   // TODO remove when start using io.opentelemetry.instrumentation.javaagent-instrumentation plugin
   add("codegen", "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:$otelInstrumentationVersionAlpha")
