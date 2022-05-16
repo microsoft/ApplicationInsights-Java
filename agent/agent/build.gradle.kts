@@ -29,12 +29,13 @@ val upstreamAgent: Configuration by configurations.creating {
   isCanBeConsumed = false
 }
 
-val otelInstrumentationVersion = "1.14.0.1"
+val otelInstrumentationVersion: String by project
+val otelInstrumentationAlphaVersion: String by project
 
 dependencies {
 
   // required to access OpenTelemetryAgent
-  compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:$otelInstrumentationVersion")
+  compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:$otelInstrumentationAlphaVersion")
 
   bootstrapLibs(project(":agent:agent-bootstrap"))
 

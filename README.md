@@ -16,16 +16,6 @@ Download the main repo and submodule:
 ```
 git clone https://github.com/microsoft/ApplicationInsights-Java
 cd ApplicationInsights-Java
-git submodule init
-git submodule update
-```
-
-Publish all the artifacts from the submodule to your local maven repository:
-
-```
-cd otel
-./gradlew publishToMavenLocal
-cd ..
 ```
 
 Build the agent jar file:

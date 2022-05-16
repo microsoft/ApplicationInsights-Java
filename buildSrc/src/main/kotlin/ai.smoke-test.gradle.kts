@@ -5,10 +5,6 @@ plugins {
   `java-library`
 }
 
-// TODO (trask) this is copy-paste from :test:smoke
-val sharedOutputRoot = project(":test:smoke").projectDir.absolutePath + "/shared-tmp"
-val sharedResourcesDir = "$sharedOutputRoot/resources"
-
 val aiSmokeTest = extensions.create<AiSmokeTestExtension>("aiSmokeTest")
 
 sourceSets {
@@ -52,7 +48,7 @@ val dependencyManagement by configurations.creating {
 }
 
 dependencies {
-// FIXME (trask) copy-pasted from ai.java-conventions.gradle
+  // FIXME (trask) copy-pasted from ai.java-conventions.gradle
   dependencyManagement(platform(project(":dependencyManagement")))
   afterEvaluate {
     configurations.configureEach {
@@ -62,9 +58,7 @@ dependencies {
     }
   }
 
-  smokeTestImplementation(project(":test:smoke:framework:testCore"))
-  smokeTestImplementation(project(":test:smoke:framework:utils"))
-  smokeTestImplementation(project(":test:fakeIngestion:standalone"))
+  smokeTestImplementation(project(":smoke-tests:framework"))
 
   // NOTE not updating smoke tests to JUnit 5, because AiSmokeTest has deep dependency on JUnit 4 infra,
   // and so would take a good amount of work, and eventually want to migrate to otel smoke tests anyways
@@ -91,8 +85,7 @@ tasks {
     // this is just to force building the agent first
     dependsOn(":agent:agent:shadowJar")
 
-    // TODO this adds the whole tree rooted at :appServers. Could this depend on :appServers which depends on :appServers:*:build?
-    dependsOn(project(":test:smoke:appServers").getTasksByName("buildDockerImage", true))
+    dependsOn(":smoke-tests:servers:buildDockerImage")
     dependsOn(assemble)
     dependsOn(pullDependencyContainers)
 
@@ -100,8 +93,11 @@ tasks {
     classpath = sourceSets["smokeTest"].runtimeClasspath
 
     doFirst {
+
+      val warFile = aiSmokeTest.testAppArtifactDir.file(aiSmokeTest.testAppArtifactFilename.get()).get()
+
       // need to delay for project to configure the extension
-      jvmArgs("-Dai.smoketest.testAppWarFile=${aiSmokeTest.testAppArtifactFilename.get()}")
+      jvmArgs("-Dai.smoketest.testAppWarFile=$warFile")
 
       // There's no real harm in setting this for all tests even if any happen to not be using
       // context propagation.
@@ -118,12 +114,5 @@ tasks {
     // TODO (trask) this is still a problem
     //  e.g. changes in agent-tooling do not cause smoke tests to re-run
     outputs.upToDateWhen { false }
-  }
-
-  // copies test app WARs and shared resources into smoke test resources folder
-
-  named<Copy>("processSmokeTestResources") {
-    from(aiSmokeTest.testAppArtifactDir.file(aiSmokeTest.testAppArtifactFilename.get()))
-    from(sharedResourcesDir)
   }
 }

@@ -12,6 +12,13 @@ plugins {
   id("ai.spotless-conventions")
 }
 
+repositories {
+  mavenCentral()
+  maven {
+    url = uri("https://oss.sonatype.org/content/repositories/snapshots")
+  }
+}
+
 java {
   toolchain {
     languageVersion.set(JavaLanguageVersion.of(11))

@@ -50,7 +50,7 @@ spotless {
 }
 
 allprojects {
-  if (!it.path.startsWith(":test")) {
+  if (!it.path.startsWith(":smoke-tests")) {
     configurations {
       runtimeClasspath {
         resolutionStrategy.activateDependencyLocking()
@@ -66,17 +66,6 @@ allprojects {
     doLast {
       if (configurations.findByName("runtimeClasspath") != null) {
         configurations.runtimeClasspath.resolve()
-      }
-    }
-  }
-
-  task downloadDependencies {
-    doLast {
-      [configurations, buildscript.configurations].flatten().findAll {
-        // dependencyManagement gets in the way of resolving the "default" configuration
-        it.canBeResolved && it.name != "default"
-      }.each {
-        it.resolve()
       }
     }
   }

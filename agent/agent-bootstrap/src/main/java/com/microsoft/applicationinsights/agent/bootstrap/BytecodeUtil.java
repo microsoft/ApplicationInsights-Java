@@ -28,8 +28,6 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import io.opentelemetry.instrumentation.api.aisdk.MicrometerUtil;
-import io.opentelemetry.instrumentation.api.aisdk.MicrometerUtil.MicrometerUtilDelegate;
 import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
@@ -45,7 +43,7 @@ public class BytecodeUtil {
     if (BytecodeUtil.delegate == null) {
       BytecodeUtil.delegate = delegate;
       MicrometerUtil.setDelegate(
-          new MicrometerUtilDelegate() {
+          new MicrometerUtil.MicrometerUtilDelegate() {
             @Override
             public void trackMetric(
                 String name,
