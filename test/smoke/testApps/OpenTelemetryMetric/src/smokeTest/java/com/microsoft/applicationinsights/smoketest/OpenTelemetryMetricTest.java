@@ -110,10 +110,6 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
 
     // validate custom dimension
     Map<String, String> properties = md.getProperties();
-    int aggregationIntervalMs = Integer.parseInt(properties.get("_MS.AggregationIntervalMs"));
-    assertThat(aggregationIntervalMs, greaterThanOrEqualTo(5000));
-    // https://github.com/open-telemetry/opentelemetry-java/issues/4400
-    // assertThat(aggregationIntervalMs, lessThanOrEqualTo(15000));
     assertEquals(properties.get("tag1"), "abc");
     assertEquals(properties.get("tag2"), "def");
   }
@@ -148,10 +144,6 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
 
     // validate custom dimension
     Map<String, String> properties = md.getProperties();
-    int aggregationIntervalMs = Integer.parseInt(properties.get("_MS.AggregationIntervalMs"));
-    assertThat(aggregationIntervalMs, greaterThanOrEqualTo(5000));
-    // https://github.com/open-telemetry/opentelemetry-java/issues/4400
-    // assertThat(aggregationIntervalMs, lessThanOrEqualTo(15000));
     assertEquals(properties.get("tag1"), "abc");
     assertEquals(properties.get("tag2"), "def");
     assertEquals(properties.get("thing1"), "thing2");
@@ -197,10 +189,6 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
 
     // validate custom dimension
     Map<String, String> properties = md.getProperties();
-    int aggregationIntervalMs = Integer.parseInt(properties.get("_MS.AggregationIntervalMs"));
-    assertThat(aggregationIntervalMs, greaterThanOrEqualTo(5000));
-    // https://github.com/open-telemetry/opentelemetry-java/issues/4400
-    // assertThat(aggregationIntervalMs, lessThanOrEqualTo(15000));
     assertEquals(properties.get("tag1"), "abc");
     assertEquals(properties.get("tag2"), "def");
     assertEquals(properties.get("name"), "apple");
@@ -227,10 +215,6 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
 
     // validate custom dimension
     properties = md.getProperties();
-    aggregationIntervalMs = Integer.parseInt(properties.get("_MS.AggregationIntervalMs"));
-    assertThat(aggregationIntervalMs, greaterThanOrEqualTo(5000));
-    // https://github.com/open-telemetry/opentelemetry-java/issues/4400
-    // assertThat(aggregationIntervalMs, lessThanOrEqualTo(15000));
     assertEquals(properties.get("tag1"), "abc");
     assertEquals(properties.get("tag2"), "def");
     assertEquals(properties.get("name"), "apple");
@@ -257,10 +241,6 @@ public class OpenTelemetryMetricTest extends AiSmokeTest {
 
     // validate custom dimension
     properties = md.getProperties();
-    aggregationIntervalMs = Integer.parseInt(properties.get("_MS.AggregationIntervalMs"));
-    assertThat(aggregationIntervalMs, greaterThanOrEqualTo(5000));
-    // https://github.com/open-telemetry/opentelemetry-java/issues/4400
-    // assertThat(aggregationIntervalMs, lessThanOrEqualTo(15000));
     assertEquals(properties.get("tag1"), "abc");
     assertEquals(properties.get("tag2"), "def");
     assertEquals(properties.get("name"), "lemon");
