@@ -17,6 +17,7 @@ repositories {
   mavenCentral()
   gradlePluginPortal()
   maven {
+    // TODO (trask) remove this before making a release
     url = uri("https://oss.sonatype.org/content/repositories/snapshots")
   }
 }
