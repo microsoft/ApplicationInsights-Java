@@ -117,7 +117,7 @@ public abstract class AiSmokeTest {
   protected static Deque<ContainerInfo> allContainers = new ArrayDeque<>();
   protected static String currentImageName;
   protected static short appServerPort;
-  protected static String warFileName;
+  protected static File warFile;
   protected static String agentMode;
   protected static String networkId;
   protected static String networkName = "aismoke-net";
@@ -313,6 +313,7 @@ public abstract class AiSmokeTest {
 
   // region: before test helper methods
   protected static String getAppContext() {
+    String warFileName = warFile.getName();
     if (warFileName.endsWith(".jar")) {
       // spring boot jar
       return "";
@@ -333,7 +334,7 @@ public abstract class AiSmokeTest {
   protected static void waitForApplicationToStart() throws Exception {
     ContainerInfo containerInfo = currentContainerInfo.get();
     try {
-      System.out.printf("Test app health check: Waiting for %s to start...%n", warFileName);
+      System.out.printf("Test app health check: Waiting for %s to start...%n", warFile);
       String contextRootUrl = getBaseUrl() + "/";
       waitForUrlWithRetries(
           contextRootUrl,
@@ -447,7 +448,7 @@ public abstract class AiSmokeTest {
   }
 
   protected static void setupProperties(String appServer, String os, String jreVersion) {
-    warFileName = System.getProperty("ai.smoketest.testAppWarFile");
+    warFile = new File(System.getProperty("ai.smoketest.testAppWarFile"));
     currentImageName = String.format("%s_%s_%s", appServer, os, jreVersion);
     appServerPort = currentPortNumber++;
   }
@@ -625,8 +626,8 @@ public abstract class AiSmokeTest {
     }
 
     try {
-      System.out.printf("Deploying test application: %s...%n", warFileName);
-      docker.copyAndDeployToContainer(containerId, new File(warFileName));
+      System.out.printf("Deploying test application: %s...%n", warFile.getName());
+      docker.copyAndDeployToContainer(containerId, warFile);
       System.out.println("Test application deployed.");
     } catch (Exception e) {
       System.err.println("Error deploying test application.");
