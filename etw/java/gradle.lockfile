@@ -3,7 +3,7 @@
 # This file is expected to be part of source control.
 com.google.guava:guava-bom:31.0.1-jre=runtimeClasspath
 io.netty:netty-bom:4.1.72.Final=runtimeClasspath
-io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.14.0-alpha-SNAPSHOT=runtimeClasspath
+io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.14.0-alpha=runtimeClasspath
 io.opentelemetry:opentelemetry-bom-alpha:1.14.0-alpha=runtimeClasspath
 io.opentelemetry:opentelemetry-bom:1.14.0=runtimeClasspath
 org.junit:junit-bom:5.7.2=runtimeClasspath
