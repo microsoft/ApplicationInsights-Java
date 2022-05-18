@@ -40,6 +40,7 @@ import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -80,6 +81,9 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
       // agent failed during startup
       return;
     }
+
+    // TODO (trask) add this method to AutoConfigurationCustomizer upstream?
+    ((AutoConfiguredOpenTelemetrySdkBuilder) autoConfiguration).registerShutdownHook(false);
 
     Configuration configuration = MainEntryPoint.getConfiguration();
 
@@ -193,7 +197,7 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
               .setScheduleDelay(getBatchProcessorDelay())
               .build();
 
-      tracerProvider.addSpanProcessor(new ShutdownHookAvoidingSpanProcessor(batchSpanProcessor));
+      tracerProvider.addSpanProcessor(batchSpanProcessor);
     }
 
     return tracerProvider;
@@ -253,15 +257,12 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
     batchLogProcessor =
         BatchLogProcessor.builder(logExporter).setScheduleDelay(getBatchProcessorDelay()).build();
 
-    ShutdownHookAvoidingLogProcessor shutdownHookAvoidingLogProcessor =
-        new ShutdownHookAvoidingLogProcessor(batchLogProcessor);
-
     // inherited attributes log processor also handles operation name, ikey and role name attributes
     // and these all need access to Span.current(), so must be run before passing off to the
     // BatchLogProcessor
     return builder.addLogProcessor(
         new InheritedAttributesLogProcessor(
-            configuration.preview.inheritedAttributes, shutdownHookAvoidingLogProcessor));
+            configuration.preview.inheritedAttributes, batchLogProcessor));
   }
 
   private static LogExporter createLogExporter(
@@ -327,10 +328,7 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
             .setInterval(Duration.ofSeconds(configuration.preview.metricIntervalSeconds))
             .build();
 
-    ShutdownHookAvoidingMetricReader shutdownHookAvoidingMetricReader =
-        new ShutdownHookAvoidingMetricReader(metricReader);
-
-    return builder.registerMetricReader(shutdownHookAvoidingMetricReader);
+    return builder.registerMetricReader(metricReader);
   }
 
   private static class BackCompatHttpUrlProcessor implements SpanExporter {
