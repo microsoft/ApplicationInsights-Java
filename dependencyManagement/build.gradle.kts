@@ -13,8 +13,8 @@ rootProject.extra["versions"] = dependencyVersions
 
 val otelVersion = "1.14.0"
 // IMPORTANT when updating opentelemetry instrumentation version, be sure to update bytebuddy version to match
-val otelInstrumentationVersion = "1.14.0-SNAPSHOT"
-val otelInstrumentationAlphaVersion = "1.14.0-alpha-SNAPSHOT"
+val otelInstrumentationVersion = "1.14.0"
+val otelInstrumentationAlphaVersion = "1.14.0-alpha"
 
 rootProject.extra["otelVersion"] = otelVersion
 rootProject.extra["otelInstrumentationVersion"] = otelInstrumentationVersion
