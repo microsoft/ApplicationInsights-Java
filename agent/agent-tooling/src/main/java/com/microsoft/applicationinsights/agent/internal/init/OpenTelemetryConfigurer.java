@@ -48,6 +48,7 @@ import io.opentelemetry.sdk.logs.SdkLogEmitterProviderBuilder;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -59,6 +60,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -66,6 +68,10 @@ import javax.annotation.Nullable;
 public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvider {
 
   @Nullable public static LoggerExporter loggerExporter;
+
+  @Nullable private static BatchLogProcessor batchLogProcessor;
+  @Nullable private static BatchSpanProcessor batchSpanProcessor;
+  @Nullable private static MetricReader metricReader;
 
   @Override
   public void customize(AutoConfigurationCustomizer autoConfiguration) {
@@ -84,6 +90,41 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
             (builder, config) -> configureLogging(builder, telemetryClient, configuration))
         .addMeterProviderCustomizer(
             (builder, config) -> configureMetrics(builder, telemetryClient, configuration));
+
+    Runtime.getRuntime()
+        .addShutdownHook(new Thread(() -> flushAll(telemetryClient).join(10, TimeUnit.SECONDS)));
+  }
+
+  private static CompletableResultCode flushAll(TelemetryClient telemetryClient) {
+    List<CompletableResultCode> results = new ArrayList<>();
+    if (batchSpanProcessor != null) {
+      results.add(batchSpanProcessor.forceFlush());
+    }
+    if (metricReader != null) {
+      results.add(metricReader.forceFlush());
+    }
+    if (batchLogProcessor != null) {
+      results.add(batchLogProcessor.forceFlush());
+    }
+    CompletableResultCode overallResult = new CompletableResultCode();
+    CompletableResultCode initialResult = CompletableResultCode.ofAll(results);
+    initialResult.whenComplete(
+        () -> {
+          if (initialResult.isSuccess()) {
+            CompletableResultCode telemetryClientResult = telemetryClient.forceFlush();
+            telemetryClientResult.whenComplete(
+                () -> {
+                  if (telemetryClientResult.isSuccess()) {
+                    overallResult.succeed();
+                  } else {
+                    overallResult.fail();
+                  }
+                });
+          } else {
+            overallResult.fail();
+          }
+        });
+    return overallResult;
   }
 
   private static SdkTracerProviderBuilder configureTracing(
@@ -147,13 +188,12 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
               telemetryClient, configuration, configuration.preview.captureHttpServer4xxAsError);
 
       // using BatchSpanProcessor in order to get off of the application thread as soon as possible
-      BatchSpanProcessor batchSpanProcessor =
+      batchSpanProcessor =
           BatchSpanProcessor.builder(spanExporter)
               .setScheduleDelay(getBatchProcessorDelay())
               .build();
 
-      tracerProvider.addSpanProcessor(
-          new TelemetryClientFlushingSpanProcessor(batchSpanProcessor, telemetryClient));
+      tracerProvider.addSpanProcessor(new ShutdownHookAvoidingSpanProcessor(batchSpanProcessor));
     }
 
     return tracerProvider;
@@ -210,18 +250,18 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
     LogExporter logExporter = createLogExporter(telemetryClient, configuration);
 
     // using BatchLogProcessor in order to get off of the application thread as soon as possible
-    BatchLogProcessor batchLogProcessor =
+    batchLogProcessor =
         BatchLogProcessor.builder(logExporter).setScheduleDelay(getBatchProcessorDelay()).build();
 
-    TelemetryClientFlushingLogProcessor telemetryClientFlushingLogProcessor =
-        new TelemetryClientFlushingLogProcessor(batchLogProcessor, telemetryClient);
+    ShutdownHookAvoidingLogProcessor shutdownHookAvoidingLogProcessor =
+        new ShutdownHookAvoidingLogProcessor(batchLogProcessor);
 
     // inherited attributes log processor also handles operation name, ikey and role name attributes
     // and these all need access to Span.current(), so must be run before passing off to the
     // BatchLogProcessor
     return builder.addLogProcessor(
         new InheritedAttributesLogProcessor(
-            configuration.preview.inheritedAttributes, telemetryClientFlushingLogProcessor));
+            configuration.preview.inheritedAttributes, shutdownHookAvoidingLogProcessor));
   }
 
   private static LogExporter createLogExporter(
@@ -282,15 +322,15 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
       TelemetryClient telemetryClient,
       Configuration configuration) {
 
-    PeriodicMetricReader metricReader =
+    metricReader =
         PeriodicMetricReader.builder(new AzureMonitorMetricExporter(telemetryClient))
             .setInterval(Duration.ofSeconds(configuration.preview.metricIntervalSeconds))
             .build();
 
-    TelemetryClientFlushingMetricReader telemetryClientFlushingMetricReader =
-        new TelemetryClientFlushingMetricReader(metricReader, telemetryClient);
+    ShutdownHookAvoidingMetricReader shutdownHookAvoidingMetricReader =
+        new ShutdownHookAvoidingMetricReader(metricReader);
 
-    return builder.registerMetricReader(telemetryClientFlushingMetricReader);
+    return builder.registerMetricReader(shutdownHookAvoidingMetricReader);
   }
 
   private static class BackCompatHttpUrlProcessor implements SpanExporter {

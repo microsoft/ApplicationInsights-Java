@@ -21,22 +21,18 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 
-public class TelemetryClientFlushingSpanProcessor implements SpanProcessor {
+public class ShutdownHookAvoidingSpanProcessor implements SpanProcessor {
 
   private final SpanProcessor delegate;
-  private final TelemetryClient telemetryClient;
 
-  public TelemetryClientFlushingSpanProcessor(
-      SpanProcessor delegate, TelemetryClient telemetryClient) {
+  public ShutdownHookAvoidingSpanProcessor(SpanProcessor delegate) {
     this.delegate = delegate;
-    this.telemetryClient = telemetryClient;
   }
 
   @Override
@@ -61,34 +57,12 @@ public class TelemetryClientFlushingSpanProcessor implements SpanProcessor {
 
   @Override
   public CompletableResultCode shutdown() {
-
-    // TODO? de-dupe flushing of TelemetryClient three times for spans, logs and metrics
-
-    // see https://github.com/open-telemetry/opentelemetry-java/issues/4416
-    return forceFlush();
+    return CompletableResultCode.ofSuccess();
   }
 
   @Override
   public CompletableResultCode forceFlush() {
-    CompletableResultCode overallResult = new CompletableResultCode();
-    CompletableResultCode delegateResult = delegate.forceFlush();
-    delegateResult.whenComplete(
-        () -> {
-          if (delegateResult.isSuccess()) {
-            CompletableResultCode telemetryClientResult = telemetryClient.forceFlush();
-            telemetryClientResult.whenComplete(
-                () -> {
-                  if (telemetryClientResult.isSuccess()) {
-                    overallResult.succeed();
-                  } else {
-                    overallResult.fail();
-                  }
-                });
-          } else {
-            overallResult.fail();
-          }
-        });
-    return overallResult;
+    return CompletableResultCode.ofSuccess();
   }
 
   @Override
