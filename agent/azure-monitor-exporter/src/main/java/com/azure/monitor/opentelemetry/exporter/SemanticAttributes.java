@@ -21,12 +21,6 @@
 
 package com.azure.monitor.opentelemetry.exporter;
 
-import static io.opentelemetry.api.common.AttributeKey.booleanKey;
-import static io.opentelemetry.api.common.AttributeKey.doubleKey;
-import static io.opentelemetry.api.common.AttributeKey.longKey;
-import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
-
 import io.opentelemetry.api.common.AttributeKey;
 import java.util.List;
 
@@ -42,23 +36,23 @@ final class SemanticAttributes {
    * An identifier for the database management system (DBMS) product being used. See below for a
    * list of well-known identifiers.
    */
-  static final AttributeKey<String> DB_SYSTEM = stringKey("db.system");
+  static final AttributeKey<String> DB_SYSTEM = AttributeKey.stringKey("db.system");
 
   /**
    * The connection string used to connect to the database. It is recommended to remove embedded
    * credentials.
    */
-  static final AttributeKey<String> DB_CONNECTION_STRING = stringKey("db.connection_string");
+  static final AttributeKey<String> DB_CONNECTION_STRING = AttributeKey.stringKey("db.connection_string");
 
   /** Username for accessing the database. */
-  static final AttributeKey<String> DB_USER = stringKey("db.user");
+  static final AttributeKey<String> DB_USER = AttributeKey.stringKey("db.user");
 
   /**
    * The fully-qualified class name of the [Java Database Connectivity
    * (JDBC)](https://docs.oracle.com/javase/8/docs/technotes/guides/jdbc/) driver used to connect.
    */
   static final AttributeKey<String> DB_JDBC_DRIVER_CLASSNAME =
-      stringKey("db.jdbc.driver_classname");
+      AttributeKey.stringKey("db.jdbc.driver_classname");
 
   /**
    * If no [tech-specific attribute](#call-level-attributes-for-specific-technologies) is defined,
@@ -67,14 +61,14 @@ final class SemanticAttributes {
    *
    * <p>Note: In some SQL databases, the database name to be used is called &#34;schema name&#34;.
    */
-  static final AttributeKey<String> DB_NAME = stringKey("db.name");
+  static final AttributeKey<String> DB_NAME = AttributeKey.stringKey("db.name");
 
   /**
    * The database statement being executed.
    *
    * <p>Note: The value may be sanitized to exclude sensitive information.
    */
-  static final AttributeKey<String> DB_STATEMENT = stringKey("db.statement");
+  static final AttributeKey<String> DB_STATEMENT = AttributeKey.stringKey("db.statement");
 
   /**
    * The name of the operation being executed, e.g. the [MongoDB command
@@ -86,7 +80,7 @@ final class SemanticAttributes {
    * is provided by the library being instrumented. If the SQL statement has an ambiguous operation,
    * or performs more than one operation, this value may be omitted.
    */
-  static final AttributeKey<String> DB_OPERATION = stringKey("db.operation");
+  static final AttributeKey<String> DB_OPERATION = AttributeKey.stringKey("db.operation");
 
   /**
    * The Microsoft SQL Server [instance
@@ -96,22 +90,22 @@ final class SemanticAttributes {
    * <p>Note: If setting a `db.mssql.instance_name`, `net.peer.port` is no longer required (but
    * still recommended if non-standard).
    */
-  static final AttributeKey<String> DB_MSSQL_INSTANCE_NAME = stringKey("db.mssql.instance_name");
+  static final AttributeKey<String> DB_MSSQL_INSTANCE_NAME = AttributeKey.stringKey("db.mssql.instance_name");
 
   /**
    * The name of the keyspace being accessed. To be used instead of the generic `db.name` attribute.
    */
-  static final AttributeKey<String> DB_CASSANDRA_KEYSPACE = stringKey("db.cassandra.keyspace");
+  static final AttributeKey<String> DB_CASSANDRA_KEYSPACE = AttributeKey.stringKey("db.cassandra.keyspace");
 
   /** The fetch size used for paging, i.e. how many rows will be returned at once. */
-  static final AttributeKey<Long> DB_CASSANDRA_PAGE_SIZE = longKey("db.cassandra.page_size");
+  static final AttributeKey<Long> DB_CASSANDRA_PAGE_SIZE = AttributeKey.longKey("db.cassandra.page_size");
 
   /**
    * The consistency level of the query. Based on consistency values from
    * [CQL](https://docs.datastax.com/en/cassandra-oss/3.0/cassandra/dml/dmlConfigConsistency.html).
    */
   static final AttributeKey<String> DB_CASSANDRA_CONSISTENCY_LEVEL =
-      stringKey("db.cassandra.consistency_level");
+      AttributeKey.stringKey("db.cassandra.consistency_level");
 
   /**
    * The name of the primary table that the operation is acting upon, including the schema name (if
@@ -123,42 +117,42 @@ final class SemanticAttributes {
    * operation is acting upon an anonymous table, or more than one table, this value MUST NOT be
    * set.
    */
-  static final AttributeKey<String> DB_CASSANDRA_TABLE = stringKey("db.cassandra.table");
+  static final AttributeKey<String> DB_CASSANDRA_TABLE = AttributeKey.stringKey("db.cassandra.table");
 
   /** Whether or not the query is idempotent. */
   static final AttributeKey<Boolean> DB_CASSANDRA_IDEMPOTENCE =
-      booleanKey("db.cassandra.idempotence");
+      AttributeKey.booleanKey("db.cassandra.idempotence");
 
   /**
    * The number of times a query was speculatively executed. Not set or `0` if the query was not
    * executed speculatively.
    */
   static final AttributeKey<Long> DB_CASSANDRA_SPECULATIVE_EXECUTION_COUNT =
-      longKey("db.cassandra.speculative_execution_count");
+      AttributeKey.longKey("db.cassandra.speculative_execution_count");
 
   /** The ID of the coordinating node for a query. */
   static final AttributeKey<String> DB_CASSANDRA_COORDINATOR_ID =
-      stringKey("db.cassandra.coordinator.id");
+      AttributeKey.stringKey("db.cassandra.coordinator.id");
 
   /** The data center of the coordinating node for a query. */
   static final AttributeKey<String> DB_CASSANDRA_COORDINATOR_DC =
-      stringKey("db.cassandra.coordinator.dc");
+      AttributeKey.stringKey("db.cassandra.coordinator.dc");
 
   /**
    * The [HBase namespace](https://hbase.apache.org/book.html#_namespace) being accessed. To be used
    * instead of the generic `db.name` attribute.
    */
-  static final AttributeKey<String> DB_HBASE_NAMESPACE = stringKey("db.hbase.namespace");
+  static final AttributeKey<String> DB_HBASE_NAMESPACE = AttributeKey.stringKey("db.hbase.namespace");
 
   /**
    * The index of the database being accessed as used in the [`SELECT`
    * command](https://redis.io/commands/select), provided as an integer. To be used instead of the
    * generic `db.name` attribute.
    */
-  static final AttributeKey<Long> DB_REDIS_DATABASE_INDEX = longKey("db.redis.database_index");
+  static final AttributeKey<Long> DB_REDIS_DATABASE_INDEX = AttributeKey.longKey("db.redis.database_index");
 
   /** The collection being accessed within the database stated in `db.name`. */
-  static final AttributeKey<String> DB_MONGODB_COLLECTION = stringKey("db.mongodb.collection");
+  static final AttributeKey<String> DB_MONGODB_COLLECTION = AttributeKey.stringKey("db.mongodb.collection");
 
   /**
    * The name of the primary table that the operation is acting upon, including the schema name (if
@@ -169,22 +163,22 @@ final class SemanticAttributes {
    * operation is acting upon an anonymous table, or more than one table, this value MUST NOT be
    * set.
    */
-  static final AttributeKey<String> DB_SQL_TABLE = stringKey("db.sql.table");
+  static final AttributeKey<String> DB_SQL_TABLE = AttributeKey.stringKey("db.sql.table");
 
   /**
    * The type of the exception (its fully-qualified class name, if applicable). The dynamic type of
    * the exception should be preferred over the static type in languages that support it.
    */
-  static final AttributeKey<String> EXCEPTION_TYPE = stringKey("exception.type");
+  static final AttributeKey<String> EXCEPTION_TYPE = AttributeKey.stringKey("exception.type");
 
   /** The exception message. */
-  static final AttributeKey<String> EXCEPTION_MESSAGE = stringKey("exception.message");
+  static final AttributeKey<String> EXCEPTION_MESSAGE = AttributeKey.stringKey("exception.message");
 
   /**
    * A stacktrace as a string in the natural representation for the language runtime. The
    * representation is to be determined and documented by each language SIG.
    */
-  static final AttributeKey<String> EXCEPTION_STACKTRACE = stringKey("exception.stacktrace");
+  static final AttributeKey<String> EXCEPTION_STACKTRACE = AttributeKey.stringKey("exception.stacktrace");
 
   /**
    * SHOULD be set to true if the exception event is recorded at a point where it is known that the
@@ -205,120 +199,120 @@ final class SemanticAttributes {
    * `exception.escaped` attribute was not set or set to false, since the event might have been
    * recorded at a time where it was not clear whether the exception will escape.
    */
-  static final AttributeKey<Boolean> EXCEPTION_ESCAPED = booleanKey("exception.escaped");
+  static final AttributeKey<Boolean> EXCEPTION_ESCAPED = AttributeKey.booleanKey("exception.escaped");
 
   /** Type of the trigger on which the function is executed. */
-  static final AttributeKey<String> FAAS_TRIGGER = stringKey("faas.trigger");
+  static final AttributeKey<String> FAAS_TRIGGER = AttributeKey.stringKey("faas.trigger");
 
   /** The execution ID of the current function execution. */
-  static final AttributeKey<String> FAAS_EXECUTION = stringKey("faas.execution");
+  static final AttributeKey<String> FAAS_EXECUTION = AttributeKey.stringKey("faas.execution");
 
   /**
    * The name of the source on which the triggering operation was performed. For example, in Cloud
    * Storage or S3 corresponds to the bucket name, and in Cosmos DB to the database name.
    */
   static final AttributeKey<String> FAAS_DOCUMENT_COLLECTION =
-      stringKey("faas.document.collection");
+      AttributeKey.stringKey("faas.document.collection");
 
   /** Describes the type of the operation that was performed on the data. */
-  static final AttributeKey<String> FAAS_DOCUMENT_OPERATION = stringKey("faas.document.operation");
+  static final AttributeKey<String> FAAS_DOCUMENT_OPERATION = AttributeKey.stringKey("faas.document.operation");
 
   /**
    * A string containing the time when the data was accessed in the [ISO
    * 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format expressed in
    * [UTC](https://www.w3.org/TR/NOTE-datetime).
    */
-  static final AttributeKey<String> FAAS_DOCUMENT_TIME = stringKey("faas.document.time");
+  static final AttributeKey<String> FAAS_DOCUMENT_TIME = AttributeKey.stringKey("faas.document.time");
 
   /**
    * The document name/table subjected to the operation. For example, in Cloud Storage or S3 is the
    * name of the file, and in Cosmos DB the table name.
    */
-  static final AttributeKey<String> FAAS_DOCUMENT_NAME = stringKey("faas.document.name");
+  static final AttributeKey<String> FAAS_DOCUMENT_NAME = AttributeKey.stringKey("faas.document.name");
 
   /**
    * A string containing the function invocation time in the [ISO
    * 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format expressed in
    * [UTC](https://www.w3.org/TR/NOTE-datetime).
    */
-  static final AttributeKey<String> FAAS_TIME = stringKey("faas.time");
+  static final AttributeKey<String> FAAS_TIME = AttributeKey.stringKey("faas.time");
 
   /**
    * A string containing the schedule period as [Cron
    * Expression](https://docs.oracle.com/cd/E12058_01/doc/doc.1014/e12030/cron_expressions.htm).
    */
-  static final AttributeKey<String> FAAS_CRON = stringKey("faas.cron");
+  static final AttributeKey<String> FAAS_CRON = AttributeKey.stringKey("faas.cron");
 
   /**
    * A boolean that is true if the serverless function is executed for the first time (aka
    * cold-start).
    */
-  static final AttributeKey<Boolean> FAAS_COLDSTART = booleanKey("faas.coldstart");
+  static final AttributeKey<Boolean> FAAS_COLDSTART = AttributeKey.booleanKey("faas.coldstart");
 
   /**
    * The name of the invoked function.
    *
    * <p>Note: SHOULD be equal to the `faas.name` resource attribute of the invoked function.
    */
-  static final AttributeKey<String> FAAS_INVOKED_NAME = stringKey("faas.invoked_name");
+  static final AttributeKey<String> FAAS_INVOKED_NAME = AttributeKey.stringKey("faas.invoked_name");
 
   /**
    * The cloud provider of the invoked function.
    *
    * <p>Note: SHOULD be equal to the `cloud.provider` resource attribute of the invoked function.
    */
-  static final AttributeKey<String> FAAS_INVOKED_PROVIDER = stringKey("faas.invoked_provider");
+  static final AttributeKey<String> FAAS_INVOKED_PROVIDER = AttributeKey.stringKey("faas.invoked_provider");
 
   /**
    * The cloud region of the invoked function.
    *
    * <p>Note: SHOULD be equal to the `cloud.region` resource attribute of the invoked function.
    */
-  static final AttributeKey<String> FAAS_INVOKED_REGION = stringKey("faas.invoked_region");
+  static final AttributeKey<String> FAAS_INVOKED_REGION = AttributeKey.stringKey("faas.invoked_region");
 
   /** Transport protocol used. See note below. */
-  static final AttributeKey<String> NET_TRANSPORT = stringKey("net.transport");
+  static final AttributeKey<String> NET_TRANSPORT = AttributeKey.stringKey("net.transport");
 
   /**
    * Remote address of the peer (dotted decimal for IPv4 or
    * [RFC5952](https://tools.ietf.org/html/rfc5952) for IPv6).
    */
-  static final AttributeKey<String> NET_PEER_IP = stringKey("net.peer.ip");
+  static final AttributeKey<String> NET_PEER_IP = AttributeKey.stringKey("net.peer.ip");
 
   /** Remote port number. */
-  static final AttributeKey<Long> NET_PEER_PORT = longKey("net.peer.port");
+  static final AttributeKey<Long> NET_PEER_PORT = AttributeKey.longKey("net.peer.port");
 
   /** Remote hostname or similar, see note below. */
-  static final AttributeKey<String> NET_PEER_NAME = stringKey("net.peer.name");
+  static final AttributeKey<String> NET_PEER_NAME = AttributeKey.stringKey("net.peer.name");
 
   /** Like `net.peer.ip` but for the host IP. Useful in case of a multi-IP host. */
-  static final AttributeKey<String> NET_HOST_IP = stringKey("net.host.ip");
+  static final AttributeKey<String> NET_HOST_IP = AttributeKey.stringKey("net.host.ip");
 
   /** Like `net.peer.port` but for the host port. */
-  static final AttributeKey<Long> NET_HOST_PORT = longKey("net.host.port");
+  static final AttributeKey<Long> NET_HOST_PORT = AttributeKey.longKey("net.host.port");
 
   /** Local hostname or similar, see note below. */
-  static final AttributeKey<String> NET_HOST_NAME = stringKey("net.host.name");
+  static final AttributeKey<String> NET_HOST_NAME = AttributeKey.stringKey("net.host.name");
 
   /**
    * The [`service.name`](../../resource/semantic_conventions/README.md#service) of the remote
    * service. SHOULD be equal to the actual `service.name` resource attribute of the remote service
    * if any.
    */
-  static final AttributeKey<String> PEER_SERVICE = stringKey("peer.service");
+  static final AttributeKey<String> PEER_SERVICE = AttributeKey.stringKey("peer.service");
 
   /**
    * Username or client_id extracted from the access token or
    * [Authorization](https://tools.ietf.org/html/rfc7235#section-4.2) header in the inbound request
    * from outside the system.
    */
-  static final AttributeKey<String> ENDUSER_ID = stringKey("enduser.id");
+  static final AttributeKey<String> ENDUSER_ID = AttributeKey.stringKey("enduser.id");
 
   /**
    * Actual/assumed role the client is making the request under extracted from token or application
    * security context.
    */
-  static final AttributeKey<String> ENDUSER_ROLE = stringKey("enduser.role");
+  static final AttributeKey<String> ENDUSER_ROLE = AttributeKey.stringKey("enduser.role");
 
   /**
    * Scopes or granted authorities the client currently possesses extracted from token or
@@ -327,41 +321,41 @@ final class SemanticAttributes {
    * 2.0
    * Assertion](http://docs.oasis-open.org/security/saml/Post2.0/sstc-saml-tech-overview-2.0.html).
    */
-  static final AttributeKey<String> ENDUSER_SCOPE = stringKey("enduser.scope");
+  static final AttributeKey<String> ENDUSER_SCOPE = AttributeKey.stringKey("enduser.scope");
 
   /** Current &#34;managed&#34; thread ID (as opposed to OS thread ID). */
-  static final AttributeKey<Long> THREAD_ID = longKey("thread.id");
+  static final AttributeKey<Long> THREAD_ID = AttributeKey.longKey("thread.id");
 
   /** Current thread name. */
-  static final AttributeKey<String> THREAD_NAME = stringKey("thread.name");
+  static final AttributeKey<String> THREAD_NAME = AttributeKey.stringKey("thread.name");
 
   /**
    * The method or function name, or equivalent (usually rightmost part of the code unit&#39;s
    * name).
    */
-  static final AttributeKey<String> CODE_FUNCTION = stringKey("code.function");
+  static final AttributeKey<String> CODE_FUNCTION = AttributeKey.stringKey("code.function");
 
   /**
    * The &#34;namespace&#34; within which `code.function` is defined. Usually the qualified class or
    * module name, such that `code.namespace` + some separator + `code.function` form a unique
    * identifier for the code unit.
    */
-  static final AttributeKey<String> CODE_NAMESPACE = stringKey("code.namespace");
+  static final AttributeKey<String> CODE_NAMESPACE = AttributeKey.stringKey("code.namespace");
 
   /**
    * The source code file name that identifies the code unit as uniquely as possible (preferably an
    * absolute file path).
    */
-  static final AttributeKey<String> CODE_FILEPATH = stringKey("code.filepath");
+  static final AttributeKey<String> CODE_FILEPATH = AttributeKey.stringKey("code.filepath");
 
   /**
    * The line number in `code.filepath` best representing the operation. It SHOULD point within the
    * code unit named in `code.function`.
    */
-  static final AttributeKey<Long> CODE_LINENO = longKey("code.lineno");
+  static final AttributeKey<Long> CODE_LINENO = AttributeKey.longKey("code.lineno");
 
   /** HTTP request method. */
-  static final AttributeKey<String> HTTP_METHOD = stringKey("http.method");
+  static final AttributeKey<String> HTTP_METHOD = AttributeKey.stringKey("http.method");
 
   /**
    * Full HTTP request URL in the form `scheme://host[:port]/path?query[#fragment]`. Usually the
@@ -371,22 +365,22 @@ final class SemanticAttributes {
    * `https://username:password@www.example.com/`. In such case the attribute&#39;s value should be
    * `https://www.example.com/`.
    */
-  static final AttributeKey<String> HTTP_URL = stringKey("http.url");
+  static final AttributeKey<String> HTTP_URL = AttributeKey.stringKey("http.url");
 
   /** The full request target as passed in a HTTP request line or equivalent. */
-  static final AttributeKey<String> HTTP_TARGET = stringKey("http.target");
+  static final AttributeKey<String> HTTP_TARGET = AttributeKey.stringKey("http.target");
 
   /**
    * The value of the [HTTP host header](https://tools.ietf.org/html/rfc7230#section-5.4). When the
    * header is empty or not present, this attribute should be the same.
    */
-  static final AttributeKey<String> HTTP_HOST = stringKey("http.host");
+  static final AttributeKey<String> HTTP_HOST = AttributeKey.stringKey("http.host");
 
   /** The URI scheme identifying the used protocol. */
-  static final AttributeKey<String> HTTP_SCHEME = stringKey("http.scheme");
+  static final AttributeKey<String> HTTP_SCHEME = AttributeKey.stringKey("http.scheme");
 
   /** [HTTP response status code](https://tools.ietf.org/html/rfc7231#section-6). */
-  static final AttributeKey<Long> HTTP_STATUS_CODE = longKey("http.status_code");
+  static final AttributeKey<Long> HTTP_STATUS_CODE = AttributeKey.longKey("http.status_code");
 
   /**
    * Kind of HTTP protocol used.
@@ -394,13 +388,13 @@ final class SemanticAttributes {
    * <p>Note: If `net.transport` is not specified, it can be assumed to be `IP.TCP` except if
    * `http.flavor` is `QUIC`, in which case `IP.UDP` is assumed.
    */
-  static final AttributeKey<String> HTTP_FLAVOR = stringKey("http.flavor");
+  static final AttributeKey<String> HTTP_FLAVOR = AttributeKey.stringKey("http.flavor");
 
   /**
    * Value of the [HTTP User-Agent](https://tools.ietf.org/html/rfc7231#section-5.5.3) header sent
    * by the client.
    */
-  static final AttributeKey<String> HTTP_USER_AGENT = stringKey("http.user_agent");
+  static final AttributeKey<String> HTTP_USER_AGENT = AttributeKey.stringKey("http.user_agent");
 
   /**
    * The size of the request payload body in bytes. This is the number of bytes transferred
@@ -409,14 +403,14 @@ final class SemanticAttributes {
    * transport encoding, this should be the compressed size.
    */
   static final AttributeKey<Long> HTTP_REQUEST_CONTENT_LENGTH =
-      longKey("http.request_content_length");
+      AttributeKey.longKey("http.request_content_length");
 
   /**
    * The size of the uncompressed request payload body after transport decoding. Not set if
    * transport encoding not used.
    */
   static final AttributeKey<Long> HTTP_REQUEST_CONTENT_LENGTH_UNCOMPRESSED =
-      longKey("http.request_content_length_uncompressed");
+      AttributeKey.longKey("http.request_content_length_uncompressed");
 
   /**
    * The size of the response payload body in bytes. This is the number of bytes transferred
@@ -425,14 +419,14 @@ final class SemanticAttributes {
    * transport encoding, this should be the compressed size.
    */
   static final AttributeKey<Long> HTTP_RESPONSE_CONTENT_LENGTH =
-      longKey("http.response_content_length");
+      AttributeKey.longKey("http.response_content_length");
 
   /**
    * The size of the uncompressed response payload body after transport decoding. Not set if
    * transport encoding not used.
    */
   static final AttributeKey<Long> HTTP_RESPONSE_CONTENT_LENGTH_UNCOMPRESSED =
-      longKey("http.response_content_length_uncompressed");
+      AttributeKey.longKey("http.response_content_length_uncompressed");
 
   /**
    * The primary server name of the matched virtual host. This should be obtained via configuration.
@@ -444,10 +438,10 @@ final class SemanticAttributes {
    * open-telemetry/opentelemetry-python/pull/148). It is thus preferred to supply the raw data that
    * is available.
    */
-  static final AttributeKey<String> HTTP_SERVER_NAME = stringKey("http.server_name");
+  static final AttributeKey<String> HTTP_SERVER_NAME = AttributeKey.stringKey("http.server_name");
 
   /** The matched route (path template). */
-  static final AttributeKey<String> HTTP_ROUTE = stringKey("http.route");
+  static final AttributeKey<String> HTTP_ROUTE = AttributeKey.stringKey("http.route");
 
   /**
    * The IP address of the original client behind all proxies, if known (e.g. from
@@ -456,151 +450,151 @@ final class SemanticAttributes {
    * <p>Note: This is not necessarily the same as `net.peer.ip`, which would identify the
    * network-level peer, which may be a proxy.
    */
-  static final AttributeKey<String> HTTP_CLIENT_IP = stringKey("http.client_ip");
+  static final AttributeKey<String> HTTP_CLIENT_IP = AttributeKey.stringKey("http.client_ip");
 
   /** The keys in the `RequestItems` object field. */
   static final AttributeKey<List<String>> AWS_DYNAMODB_TABLE_NAMES =
-      stringArrayKey("aws.dynamodb.table_names");
+      AttributeKey.stringArrayKey("aws.dynamodb.table_names");
 
   /** The JSON-serialized value of each item in the `ConsumedCapacity` response field. */
   static final AttributeKey<List<String>> AWS_DYNAMODB_CONSUMED_CAPACITY =
-      stringArrayKey("aws.dynamodb.consumed_capacity");
+      AttributeKey.stringArrayKey("aws.dynamodb.consumed_capacity");
 
   /** The JSON-serialized value of the `ItemCollectionMetrics` response field. */
   static final AttributeKey<String> AWS_DYNAMODB_ITEM_COLLECTION_METRICS =
-      stringKey("aws.dynamodb.item_collection_metrics");
+      AttributeKey.stringKey("aws.dynamodb.item_collection_metrics");
 
   /** The value of the `ProvisionedThroughput.ReadCapacityUnits` request parameter. */
   static final AttributeKey<Double> AWS_DYNAMODB_PROVISIONED_READ_CAPACITY =
-      doubleKey("aws.dynamodb.provisioned_read_capacity");
+      AttributeKey.doubleKey("aws.dynamodb.provisioned_read_capacity");
 
   /** The value of the `ProvisionedThroughput.WriteCapacityUnits` request parameter. */
   static final AttributeKey<Double> AWS_DYNAMODB_PROVISIONED_WRITE_CAPACITY =
-      doubleKey("aws.dynamodb.provisioned_write_capacity");
+      AttributeKey.doubleKey("aws.dynamodb.provisioned_write_capacity");
 
   /** The value of the `ConsistentRead` request parameter. */
   static final AttributeKey<Boolean> AWS_DYNAMODB_CONSISTENT_READ =
-      booleanKey("aws.dynamodb.consistent_read");
+      AttributeKey.booleanKey("aws.dynamodb.consistent_read");
 
   /** The value of the `ProjectionExpression` request parameter. */
-  static final AttributeKey<String> AWS_DYNAMODB_PROJECTION = stringKey("aws.dynamodb.projection");
+  static final AttributeKey<String> AWS_DYNAMODB_PROJECTION = AttributeKey.stringKey("aws.dynamodb.projection");
 
   /** The value of the `Limit` request parameter. */
-  static final AttributeKey<Long> AWS_DYNAMODB_LIMIT = longKey("aws.dynamodb.limit");
+  static final AttributeKey<Long> AWS_DYNAMODB_LIMIT = AttributeKey.longKey("aws.dynamodb.limit");
 
   /** The value of the `AttributesToGet` request parameter. */
   static final AttributeKey<List<String>> AWS_DYNAMODB_ATTRIBUTES_TO_GET =
-      stringArrayKey("aws.dynamodb.attributes_to_get");
+      AttributeKey.stringArrayKey("aws.dynamodb.attributes_to_get");
 
   /** The value of the `IndexName` request parameter. */
-  static final AttributeKey<String> AWS_DYNAMODB_INDEX_NAME = stringKey("aws.dynamodb.index_name");
+  static final AttributeKey<String> AWS_DYNAMODB_INDEX_NAME = AttributeKey.stringKey("aws.dynamodb.index_name");
 
   /** The value of the `Select` request parameter. */
-  static final AttributeKey<String> AWS_DYNAMODB_SELECT = stringKey("aws.dynamodb.select");
+  static final AttributeKey<String> AWS_DYNAMODB_SELECT = AttributeKey.stringKey("aws.dynamodb.select");
 
   /** The JSON-serialized value of each item of the `GlobalSecondaryIndexes` request field. */
   static final AttributeKey<List<String>> AWS_DYNAMODB_GLOBAL_SECONDARY_INDEXES =
-      stringArrayKey("aws.dynamodb.global_secondary_indexes");
+      AttributeKey.stringArrayKey("aws.dynamodb.global_secondary_indexes");
 
   /** The JSON-serialized value of each item of the `LocalSecondaryIndexes` request field. */
   static final AttributeKey<List<String>> AWS_DYNAMODB_LOCAL_SECONDARY_INDEXES =
-      stringArrayKey("aws.dynamodb.local_secondary_indexes");
+      AttributeKey.stringArrayKey("aws.dynamodb.local_secondary_indexes");
 
   /** The value of the `ExclusiveStartTableName` request parameter. */
   static final AttributeKey<String> AWS_DYNAMODB_EXCLUSIVE_START_TABLE =
-      stringKey("aws.dynamodb.exclusive_start_table");
+      AttributeKey.stringKey("aws.dynamodb.exclusive_start_table");
 
   /** The the number of items in the `TableNames` response parameter. */
-  static final AttributeKey<Long> AWS_DYNAMODB_TABLE_COUNT = longKey("aws.dynamodb.table_count");
+  static final AttributeKey<Long> AWS_DYNAMODB_TABLE_COUNT = AttributeKey.longKey("aws.dynamodb.table_count");
 
   /** The value of the `ScanIndexForward` request parameter. */
   static final AttributeKey<Boolean> AWS_DYNAMODB_SCAN_FORWARD =
-      booleanKey("aws.dynamodb.scan_forward");
+      AttributeKey.booleanKey("aws.dynamodb.scan_forward");
 
   /** The value of the `Segment` request parameter. */
-  static final AttributeKey<Long> AWS_DYNAMODB_SEGMENT = longKey("aws.dynamodb.segment");
+  static final AttributeKey<Long> AWS_DYNAMODB_SEGMENT = AttributeKey.longKey("aws.dynamodb.segment");
 
   /** The value of the `TotalSegments` request parameter. */
   static final AttributeKey<Long> AWS_DYNAMODB_TOTAL_SEGMENTS =
-      longKey("aws.dynamodb.total_segments");
+      AttributeKey.longKey("aws.dynamodb.total_segments");
 
   /** The value of the `Count` response parameter. */
-  static final AttributeKey<Long> AWS_DYNAMODB_COUNT = longKey("aws.dynamodb.count");
+  static final AttributeKey<Long> AWS_DYNAMODB_COUNT = AttributeKey.longKey("aws.dynamodb.count");
 
   /** The value of the `ScannedCount` response parameter. */
   static final AttributeKey<Long> AWS_DYNAMODB_SCANNED_COUNT =
-      longKey("aws.dynamodb.scanned_count");
+      AttributeKey.longKey("aws.dynamodb.scanned_count");
 
   /** The JSON-serialized value of each item in the `AttributeDefinitions` request field. */
   static final AttributeKey<List<String>> AWS_DYNAMODB_ATTRIBUTE_DEFINITIONS =
-      stringArrayKey("aws.dynamodb.attribute_definitions");
+      AttributeKey.stringArrayKey("aws.dynamodb.attribute_definitions");
 
   /**
    * The JSON-serialized value of each item in the the `GlobalSecondaryIndexUpdates` request field.
    */
   static final AttributeKey<List<String>> AWS_DYNAMODB_GLOBAL_SECONDARY_INDEX_UPDATES =
-      stringArrayKey("aws.dynamodb.global_secondary_index_updates");
+      AttributeKey.stringArrayKey("aws.dynamodb.global_secondary_index_updates");
 
   /** A string identifying the messaging system. */
-  static final AttributeKey<String> MESSAGING_SYSTEM = stringKey("messaging.system");
+  static final AttributeKey<String> MESSAGING_SYSTEM = AttributeKey.stringKey("messaging.system");
 
   /**
    * The message destination name. This might be equal to the span name but is required
    * nevertheless.
    */
-  static final AttributeKey<String> MESSAGING_DESTINATION = stringKey("messaging.destination");
+  static final AttributeKey<String> MESSAGING_DESTINATION = AttributeKey.stringKey("messaging.destination");
 
   /** The kind of message destination. */
   static final AttributeKey<String> MESSAGING_DESTINATION_KIND =
-      stringKey("messaging.destination_kind");
+      AttributeKey.stringKey("messaging.destination_kind");
 
   /** A boolean that is true if the message destination is temporary. */
   static final AttributeKey<Boolean> MESSAGING_TEMP_DESTINATION =
-      booleanKey("messaging.temp_destination");
+      AttributeKey.booleanKey("messaging.temp_destination");
 
   /** The name of the transport protocol. */
-  static final AttributeKey<String> MESSAGING_PROTOCOL = stringKey("messaging.protocol");
+  static final AttributeKey<String> MESSAGING_PROTOCOL = AttributeKey.stringKey("messaging.protocol");
 
   /** The version of the transport protocol. */
   static final AttributeKey<String> MESSAGING_PROTOCOL_VERSION =
-      stringKey("messaging.protocol_version");
+      AttributeKey.stringKey("messaging.protocol_version");
 
   /** Connection string. */
-  static final AttributeKey<String> MESSAGING_URL = stringKey("messaging.url");
+  static final AttributeKey<String> MESSAGING_URL = AttributeKey.stringKey("messaging.url");
 
   /**
    * A value used by the messaging system as an identifier for the message, represented as a string.
    */
-  static final AttributeKey<String> MESSAGING_MESSAGE_ID = stringKey("messaging.message_id");
+  static final AttributeKey<String> MESSAGING_MESSAGE_ID = AttributeKey.stringKey("messaging.message_id");
 
   /**
    * The [conversation ID](#conversations) identifying the conversation to which the message
    * belongs, represented as a string. Sometimes called &#34;Correlation ID&#34;.
    */
   static final AttributeKey<String> MESSAGING_CONVERSATION_ID =
-      stringKey("messaging.conversation_id");
+      AttributeKey.stringKey("messaging.conversation_id");
 
   /**
    * The (uncompressed) size of the message payload in bytes. Also use this attribute if it is
    * unknown whether the compressed or uncompressed payload size is reported.
    */
   static final AttributeKey<Long> MESSAGING_MESSAGE_PAYLOAD_SIZE_BYTES =
-      longKey("messaging.message_payload_size_bytes");
+      AttributeKey.longKey("messaging.message_payload_size_bytes");
 
   /** The compressed size of the message payload in bytes. */
   static final AttributeKey<Long> MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES =
-      longKey("messaging.message_payload_compressed_size_bytes");
+      AttributeKey.longKey("messaging.message_payload_compressed_size_bytes");
 
   /**
    * A string identifying the kind of message consumption as defined in the [Operation
    * names](#operation-names) section above. If the operation is &#34;send&#34;, this attribute MUST
    * NOT be set, since the operation can be inferred from the span kind in that case.
    */
-  static final AttributeKey<String> MESSAGING_OPERATION = stringKey("messaging.operation");
+  static final AttributeKey<String> MESSAGING_OPERATION = AttributeKey.stringKey("messaging.operation");
 
   /** RabbitMQ message routing key. */
   static final AttributeKey<String> MESSAGING_RABBITMQ_ROUTING_KEY =
-      stringKey("messaging.rabbitmq.routing_key");
+      AttributeKey.stringKey("messaging.rabbitmq.routing_key");
 
   /**
    * Message keys in Kafka are used for grouping alike messages to ensure they&#39;re processed on
@@ -612,67 +606,67 @@ final class SemanticAttributes {
    * value.
    */
   static final AttributeKey<String> MESSAGING_KAFKA_MESSAGE_KEY =
-      stringKey("messaging.kafka.message_key");
+      AttributeKey.stringKey("messaging.kafka.message_key");
 
   /**
    * Name of the Kafka Consumer Group that is handling the message. Only applies to consumers, not
    * producers.
    */
   static final AttributeKey<String> MESSAGING_KAFKA_CONSUMER_GROUP =
-      stringKey("messaging.kafka.consumer_group");
+      AttributeKey.stringKey("messaging.kafka.consumer_group");
 
   /** Client Id for the Consumer or Producer that is handling the message. */
   static final AttributeKey<String> MESSAGING_KAFKA_CLIENT_ID =
-      stringKey("messaging.kafka.client_id");
+      AttributeKey.stringKey("messaging.kafka.client_id");
 
   /** Partition the message is sent to. */
-  static final AttributeKey<Long> MESSAGING_KAFKA_PARTITION = longKey("messaging.kafka.partition");
+  static final AttributeKey<Long> MESSAGING_KAFKA_PARTITION = AttributeKey.longKey("messaging.kafka.partition");
 
   /** A boolean that is true if the message is a tombstone. */
   static final AttributeKey<Boolean> MESSAGING_KAFKA_TOMBSTONE =
-      booleanKey("messaging.kafka.tombstone");
+      AttributeKey.booleanKey("messaging.kafka.tombstone");
 
   /** A string identifying the remoting system. */
-  static final AttributeKey<String> RPC_SYSTEM = stringKey("rpc.system");
+  static final AttributeKey<String> RPC_SYSTEM = AttributeKey.stringKey("rpc.system");
 
   /** The full name of the service being called, including its package name, if applicable. */
-  static final AttributeKey<String> RPC_SERVICE = stringKey("rpc.service");
+  static final AttributeKey<String> RPC_SERVICE = AttributeKey.stringKey("rpc.service");
 
   /** The name of the method being called, must be equal to the $method part in the span name. */
-  static final AttributeKey<String> RPC_METHOD = stringKey("rpc.method");
+  static final AttributeKey<String> RPC_METHOD = AttributeKey.stringKey("rpc.method");
 
   /**
    * The [numeric status code](https://github.com/grpc/grpc/blob/v1.33.2/doc/statuscodes.md) of the
    * gRPC request.
    */
-  static final AttributeKey<Long> RPC_GRPC_STATUS_CODE = longKey("rpc.grpc.status_code");
+  static final AttributeKey<Long> RPC_GRPC_STATUS_CODE = AttributeKey.longKey("rpc.grpc.status_code");
 
   /**
    * Protocol version as in `jsonrpc` property of request/response. Since JSON-RPC 1.0 does not
    * specify this, the value can be omitted.
    */
-  static final AttributeKey<String> RPC_JSONRPC_VERSION = stringKey("rpc.jsonrpc.version");
+  static final AttributeKey<String> RPC_JSONRPC_VERSION = AttributeKey.stringKey("rpc.jsonrpc.version");
 
   /**
    * `method` property from request. Unlike `rpc.method`, this may not relate to the actual method
    * being called. Useful for client-side traces since client does not know what will be called on
    * the server.
    */
-  static final AttributeKey<String> RPC_JSONRPC_METHOD = stringKey("rpc.jsonrpc.method");
+  static final AttributeKey<String> RPC_JSONRPC_METHOD = AttributeKey.stringKey("rpc.jsonrpc.method");
 
   /**
    * `id` property of request or response. Since protocol allows id to be int, string, `null` or
    * missing (for notifications), value is expected to be cast to string for simplicity. Use empty
    * string in case of `null` value. Omit entirely if this is a notification.
    */
-  static final AttributeKey<String> RPC_JSONRPC_REQUEST_ID = stringKey("rpc.jsonrpc.request_id");
+  static final AttributeKey<String> RPC_JSONRPC_REQUEST_ID = AttributeKey.stringKey("rpc.jsonrpc.request_id");
 
   /** `error.code` property of response if it is an error response. */
-  static final AttributeKey<Long> RPC_JSONRPC_ERROR_CODE = longKey("rpc.jsonrpc.error_code");
+  static final AttributeKey<Long> RPC_JSONRPC_ERROR_CODE = AttributeKey.longKey("rpc.jsonrpc.error_code");
 
   /** `error.message` property of response if it is an error response. */
   static final AttributeKey<String> RPC_JSONRPC_ERROR_MESSAGE =
-      stringKey("rpc.jsonrpc.error_message");
+      AttributeKey.stringKey("rpc.jsonrpc.error_message");
 
   // Enum definitions
   static final class DbSystemValues {

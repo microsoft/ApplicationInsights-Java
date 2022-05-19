@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.exporter.utils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Trie;
 import org.junit.jupiter.api.Test;
 
 class TrieTest {

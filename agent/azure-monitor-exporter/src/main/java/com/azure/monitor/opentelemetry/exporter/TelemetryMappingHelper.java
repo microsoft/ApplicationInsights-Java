@@ -21,7 +21,6 @@
 
 package com.azure.monitor.opentelemetry.exporter;
 
-import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -74,8 +73,8 @@ public final class TelemetryMappingHelper {
       AttributeKey.longKey("x-opt-enqueued-time");
 
   private static final AttributeKey<Long> KAFKA_RECORD_QUEUE_TIME_MS =
-      longKey("kafka.record.queue_time_ms");
-  private static final AttributeKey<Long> KAFKA_OFFSET = longKey("kafka.offset");
+      AttributeKey.longKey("kafka.record.queue_time_ms");
+  private static final AttributeKey<Long> KAFKA_OFFSET = AttributeKey.longKey("kafka.offset");
 
   private static final ClientLogger LOGGER = new ClientLogger(TelemetryMappingHelper.class);
 

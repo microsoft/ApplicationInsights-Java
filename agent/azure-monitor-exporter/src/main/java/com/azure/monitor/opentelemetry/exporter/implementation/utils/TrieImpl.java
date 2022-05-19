@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.exporter.utils;
+package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
 import java.util.Arrays;
 import java.util.HashMap;

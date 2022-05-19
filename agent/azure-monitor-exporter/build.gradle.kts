@@ -3,6 +3,13 @@ plugins {
   id("ai.sdk-version-file")
 }
 
+// Adding this step to copy playback test results from session-records to build/classes/java/test. Azure core testing framework follows this directory structure.
+sourceSets {
+  test {
+    output.setResourcesDir("build/classes/java/test")
+  }
+}
+
 dependencies {
   compileOnly("com.google.auto.service:auto-service")
   annotationProcessor("com.google.auto.service:auto-service")
@@ -15,7 +22,6 @@ dependencies {
   implementation(project(":agent:agent-profiler:agent-alerting"))
   implementation(project(":agent:agent-gc-monitor:gc-monitor-api"))
   implementation(project(":agent:agent-gc-monitor:gc-monitor-core"))
-  implementation(project(":agent:azure-monitor-exporter"))
 
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")

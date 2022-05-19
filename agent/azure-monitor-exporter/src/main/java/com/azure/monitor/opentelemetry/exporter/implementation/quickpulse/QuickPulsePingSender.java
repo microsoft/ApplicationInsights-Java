@@ -32,7 +32,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.microsoft.applicationinsights.agent.internal.init.MainEntryPoint;
 import java.net.URL;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,7 +47,7 @@ class QuickPulsePingSender {
   private static final ObjectMapper mapper;
 
   // TODO (trask) need to break this dependency on agent code
-  private static final String quickPulseVersion = MainEntryPoint.getAgentVersion();
+  private static final String quickPulseVersion = "";
 
   private static final OperationLogger operationLogger =
       new OperationLogger(QuickPulsePingSender.class, "Pinging live metrics endpoint");

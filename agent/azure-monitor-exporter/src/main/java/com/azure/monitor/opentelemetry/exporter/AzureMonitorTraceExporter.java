@@ -21,7 +21,6 @@
 
 package com.azure.monitor.opentelemetry.exporter;
 
-import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -43,9 +42,9 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Trie;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.UrlParser;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.VersionGenerator;
-import com.microsoft.applicationinsights.agent.internal.exporter.utils.Trie;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
@@ -91,8 +90,8 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
       AttributeKey.longKey("x-opt-enqueued-time");
 
   private static final AttributeKey<Long> KAFKA_RECORD_QUEUE_TIME_MS =
-      longKey("kafka.record.queue_time_ms");
-  private static final AttributeKey<Long> KAFKA_OFFSET = longKey("kafka.offset");
+      AttributeKey.longKey("kafka.record.queue_time_ms");
+  private static final AttributeKey<Long> KAFKA_OFFSET = AttributeKey.longKey("kafka.offset");
 
   private static final ClientLogger LOGGER = new ClientLogger(AzureMonitorTraceExporter.class);
 
