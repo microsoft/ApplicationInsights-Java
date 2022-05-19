@@ -71,13 +71,16 @@ tasks {
 
     archiveFileName.set("javaagentLibs-relocated.jar")
 
-    // exclude known bootstrap dependencies - they can't appear in the inst/ directory
     dependencies {
+      // exclude known bootstrap dependencies - they can't appear in the inst/ directory
       exclude(dependency("org.slf4j:slf4j-api"))
       exclude(dependency("io.opentelemetry:opentelemetry-api"))
       exclude(dependency("io.opentelemetry:opentelemetry-api-metrics"))
       exclude(dependency("io.opentelemetry:opentelemetry-context"))
       exclude(dependency("io.opentelemetry:opentelemetry-semconv"))
+
+      // TODO (trask) Azure SDK: why is this included in azure-core?
+      exclude(dependency("io.netty:netty-tcnative-boringssl-static"))
     }
   }
 
