@@ -87,7 +87,7 @@ public class QuickPulse {
       @Nullable String roleName,
       @Nullable String roleInstance,
       boolean useNormalizedValueForNonNormalizedCpuPercentage,
-      @Nullable String sdkVersion) {
+      String sdkVersion) {
 
     String quickPulseId = UUID.randomUUID().toString().replace("-", "");
     ArrayBlockingQueue<HttpRequest> sendQueue = new ArrayBlockingQueue<>(256, true);
