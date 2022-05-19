@@ -37,12 +37,22 @@ import com.azure.core.util.ClientOptions;
 import com.azure.core.util.Configuration;
 import com.azure.core.util.CoreUtils;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.VersionGenerator;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class provides a fluent builder API to instantiate {@link AzureMonitorTraceExporter} that
@@ -251,8 +261,45 @@ public final class AzureMonitorExporterBuilder {
       httpPipelinePolicies.add(authenticationPolicy);
     }
 
+    if (httpPipeline == null) {
+      httpPipeline = createHttpPipeline();
+    }
+
+    TelemetryPipeline pipeline = new TelemetryPipeline(httpPipeline, endpoint);
+
+    File tempDir =
+        TempDirs.getApplicationInsightsTempDir(
+            LoggerFactory.getLogger(AzureMonitorTraceExporter.class),
+            "Telemetry will not be stored to disk and retried later"
+                + " on sporadic network failures");
+
+    TelemetryItemExporter telemetryItemExporter;
+    if (tempDir != null) {
+      telemetryItemExporter =
+          new TelemetryItemExporter(
+              pipeline,
+              new LocalStorageTelemetryPipelineListener(
+                  TempDirs.getSubDir(tempDir, "telemetry"),
+                  pipeline,
+                  LocalStorageStats.noop(),
+                  false));
+    } else {
+      telemetryItemExporter = new TelemetryItemExporter(pipeline, TelemetryPipelineListener.noop());
+    }
+
     return new AzureMonitorTraceExporter(
-        httpPipeline == null ? createHttpPipeline() : httpPipeline, endpoint, instrumentationKey);
+        true,
+        builder -> {
+          builder.setInstrumentationKey(instrumentationKey);
+          builder.addTag(
+              ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), VersionGenerator.getSdkVersion());
+        },
+        (event, instrumentationName) -> false,
+        telemetryItemExporter::send,
+        telemetryItemExporter::flush,
+        telemetryItemExporter::shutdown,
+        () -> true,
+        () -> null);
   }
 
   private HttpPipeline createHttpPipeline() {

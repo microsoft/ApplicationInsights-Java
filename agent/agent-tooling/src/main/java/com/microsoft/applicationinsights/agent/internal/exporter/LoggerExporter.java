@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
 import com.azure.core.util.CoreUtils;
+import com.azure.monitor.opentelemetry.exporter.AzureMonitorTraceExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.Exceptions;
@@ -53,7 +54,7 @@ public class LoggerExporter implements LogExporter {
       AttributeKey.stringKey("applicationinsights.internal.operation_name");
 
   private static final OperationLogger exportingLogLogger =
-      new OperationLogger(Exporter.class, "Exporting log");
+      new OperationLogger(LoggerExporter.class, "Exporting log");
 
   private final TelemetryClient telemetryClient;
   private final boolean captureLoggingLevelAsCustomDimension;
@@ -244,7 +245,7 @@ public class LoggerExporter implements LogExporter {
           if (stringKey.startsWith("exception.")) {
             return;
           }
-          String val = Exporter.convertToString(value, key.getType());
+          String val = AzureMonitorTraceExporter.convertToString(value, key.getType());
           if (val != null) {
             telemetryBuilder.addProperty(key.getKey(), val);
           }
