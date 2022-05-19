@@ -46,7 +46,7 @@ class QuickPulsePingSender {
 
   private static final ObjectMapper mapper;
 
-  // TODO (trask) need to break this dependency on agent code
+  // TODO (heya) need to figure out how to pass MainEntryPoint.getAgentVersion() to this module
   private static final String quickPulseVersion = "";
 
   private static final OperationLogger operationLogger =
