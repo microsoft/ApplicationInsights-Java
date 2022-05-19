@@ -46,9 +46,6 @@ class QuickPulsePingSender {
 
   private static final ObjectMapper mapper;
 
-  // TODO (heya) need to figure out how to pass MainEntryPoint.getAgentVersion() to this module
-  private static final String quickPulseVersion = "";
-
   private static final OperationLogger operationLogger =
       new OperationLogger(QuickPulsePingSender.class, "Pinging live metrics endpoint");
 
@@ -73,6 +70,7 @@ class QuickPulsePingSender {
   private final String machineName;
   private final String quickPulseId;
   private long lastValidTransmission = 0;
+  private final String sdkVersion;
 
   QuickPulsePingSender(
       HttpPipeline httpPipeline,
@@ -81,7 +79,8 @@ class QuickPulsePingSender {
       String roleName,
       String instanceName,
       String machineName,
-      String quickPulseId) {
+      String quickPulseId,
+      String sdkVersion) {
     this.httpPipeline = httpPipeline;
     this.endpointUrl = endpointUrl;
     this.instrumentationKey = instrumentationKey;
@@ -89,6 +88,7 @@ class QuickPulsePingSender {
     this.instanceName = instanceName;
     this.machineName = machineName;
     this.quickPulseId = quickPulseId;
+    this.sdkVersion = sdkVersion;
     if (logger.isTraceEnabled()) {
       logger.trace(
           "{} using endpoint {}",
@@ -176,7 +176,7 @@ class QuickPulsePingSender {
       pingEnvelope.setMachineName(machineName);
       pingEnvelope.setRoleName(roleName);
       pingEnvelope.setStreamId(quickPulseId);
-      pingEnvelope.setVersion(quickPulseVersion);
+      pingEnvelope.setVersion(sdkVersion);
     }
     pingEnvelope.setTimeStamp("/Date(" + timeInMillis + ")/");
     return mapper.writeValueAsString(pingEnvelope);

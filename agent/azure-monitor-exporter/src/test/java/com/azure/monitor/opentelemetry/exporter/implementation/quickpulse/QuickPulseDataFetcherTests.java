@@ -119,7 +119,8 @@ class QuickPulseDataFetcherTests {
             null,
             "instance1",
             "machine1",
-            "qpid123");
+            "qpid123",
+            "testSdkVersion");
     QuickPulseHeaderInfo quickPulseHeaderInfo = quickPulsePingSender.ping(null);
     assertThat(QuickPulseStatus.QP_IS_ON).isEqualTo(quickPulseHeaderInfo.getQuickPulseStatus());
     assertThat(1000).isEqualTo(quickPulseHeaderInfo.getQpsServicePollingInterval());

@@ -1,6 +1,5 @@
 plugins {
   id("ai.java-conventions")
-  id("ai.sdk-version-file")
 }
 
 // Adding this step to copy playback test results from session-records to build/classes/java/test. Azure core testing framework follows this directory structure.

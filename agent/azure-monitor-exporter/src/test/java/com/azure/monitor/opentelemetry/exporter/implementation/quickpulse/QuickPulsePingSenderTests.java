@@ -48,6 +48,7 @@ class QuickPulsePingSenderTests {
             null,
             null,
             null,
+            null,
             null);
     String quickPulseEndpoint = quickPulsePingSender.getQuickPulseEndpoint();
     String endpointUrl = quickPulsePingSender.getQuickPulsePingUri(quickPulseEndpoint);
@@ -68,6 +69,7 @@ class QuickPulsePingSenderTests {
             null,
             connectionString::getLiveEndpoint,
             connectionString::getInstrumentationKey,
+            null,
             null,
             null,
             null,
@@ -104,7 +106,8 @@ class QuickPulsePingSenderTests {
             null,
             "instance1",
             "machine1",
-            "qpid123");
+            "qpid123",
+            "testSdkVersion");
     QuickPulseHeaderInfo quickPulseHeaderInfo = quickPulsePingSender.ping(null);
     assertThat(QuickPulseStatus.QP_IS_ON).isEqualTo(quickPulseHeaderInfo.getQuickPulseStatus());
     assertThat(1000).isEqualTo(quickPulseHeaderInfo.getQpsServicePollingInterval());

@@ -43,6 +43,7 @@ public class LiveMetricsSpanProcessor implements SpanProcessor {
   private final QuickPulse quickPulse;
   private final String instrumentationKey;
 
+  // todo this is never used.
   public LiveMetricsSpanProcessor(
       HttpPipeline httpPipeline,
       URL endpointUrl,
@@ -57,7 +58,8 @@ public class LiveMetricsSpanProcessor implements SpanProcessor {
             () -> instrumentationKey,
             roleName,
             roleInstance,
-            true);
+            true,
+            null);
   }
 
   @Override

@@ -47,7 +47,8 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
         null,
         "instance1",
         "machine1",
-        "qpid123");
+        "qpid123",
+        "testSdkVersion");
   }
 
   private QuickPulsePingSender getQuickPulsePingSenderWithAuthentication() {
@@ -58,7 +59,8 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
         null,
         "instance1",
         "machine1",
-        "qpid123");
+        "qpid123",
+        "testSdkVersion");
   }
 
   private QuickPulsePingSender getQuickPulsePingSenderWithValidator(HttpPipelinePolicy validator) {
@@ -69,7 +71,8 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
         null,
         "instance1",
         "machine1",
-        "qpid123");
+        "qpid123",
+        "testSdkVersion");
   }
 
   @Test
