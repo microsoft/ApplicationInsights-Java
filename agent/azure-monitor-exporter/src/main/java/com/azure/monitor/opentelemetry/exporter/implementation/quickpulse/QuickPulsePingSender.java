@@ -70,7 +70,7 @@ class QuickPulsePingSender {
   private final String machineName;
   private final String quickPulseId;
   private long lastValidTransmission = 0;
-  private final String sdkVersion;
+  @Nullable private final String sdkVersion;
 
   QuickPulsePingSender(
       HttpPipeline httpPipeline,
