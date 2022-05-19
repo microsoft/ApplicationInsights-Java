@@ -47,7 +47,7 @@ public class QuickPulse {
       @Nullable String roleName,
       @Nullable String roleInstance,
       boolean useNormalizedValueForNonNormalizedCpuPercentage,
-      @Nullable String sdkVersion) {
+      String sdkVersion) {
 
     QuickPulse quickPulse = new QuickPulse();
 

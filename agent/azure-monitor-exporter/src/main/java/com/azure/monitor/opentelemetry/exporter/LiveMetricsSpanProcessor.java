@@ -49,7 +49,8 @@ public class LiveMetricsSpanProcessor implements SpanProcessor {
       URL endpointUrl,
       String instrumentationKey,
       @Nullable String roleName,
-      @Nullable String roleInstance) {
+      @Nullable String roleInstance,
+      String sdkVersion) {
     this.instrumentationKey = instrumentationKey;
     quickPulse =
         QuickPulse.create(
@@ -59,7 +60,7 @@ public class LiveMetricsSpanProcessor implements SpanProcessor {
             roleName,
             roleInstance,
             true,
-            null);
+            sdkVersion);
   }
 
   @Override
