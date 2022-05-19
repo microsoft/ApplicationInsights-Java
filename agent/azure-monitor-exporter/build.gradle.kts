@@ -51,7 +51,6 @@ dependencies {
   testImplementation("uk.org.webcompere:system-stubs-jupiter:1.1.0")
   testImplementation("io.github.hakky54:logcaptor")
 
-  // needed temporarily while hosting azure-monitor-opentelemetry-exporter in this repo
   testImplementation("com.azure:azure-data-appconfiguration:1.3.2")
   testImplementation("com.azure:azure-messaging-eventhubs:5.11.2")
   testImplementation("com.azure:azure-messaging-eventhubs-checkpointstore-blob:1.12.1")
