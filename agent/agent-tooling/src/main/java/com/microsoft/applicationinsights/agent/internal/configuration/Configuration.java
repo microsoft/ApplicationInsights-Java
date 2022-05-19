@@ -344,7 +344,7 @@ public class Configuration {
 
   public static class InheritedAttribute {
     public String key;
-    public SpanAttributeType type;
+    public AttributeType type;
 
     public AttributeKey<?> getAttributeKey() {
       switch (type) {
@@ -374,7 +374,7 @@ public class Configuration {
     public List<String> responseHeaders = new ArrayList<>();
   }
 
-  public enum SpanAttributeType {
+  public enum AttributeType {
     @JsonProperty("string")
     STRING,
     @JsonProperty("boolean")

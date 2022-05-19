@@ -182,14 +182,28 @@ class SamplingOverrides {
 
     private static TempPredicate toPredicate(SamplingOverrideAttribute attribute) {
       if (attribute.matchType == MatchType.STRICT) {
-        return new StrictMatcher(attribute.key, attribute.value);
+        if (isHttpHeaderAttribute(attribute)) {
+          return new StrictArrayContainsMatcher(attribute.key, attribute.value);
+        } else {
+          return new StrictMatcher(attribute.key, attribute.value);
+        }
       } else if (attribute.matchType == MatchType.REGEXP) {
-        return new RegexpMatcher(attribute.key, attribute.value);
+        if (isHttpHeaderAttribute(attribute)) {
+          return new RegexpArrayContainsMatcher(attribute.key, attribute.value);
+        } else {
+          return new RegexpMatcher(attribute.key, attribute.value);
+        }
       } else if (attribute.matchType == null) {
         return new KeyOnlyMatcher(attribute.key);
       } else {
         throw new IllegalStateException("Unexpected match type: " + attribute.matchType);
       }
+    }
+
+    private static boolean isHttpHeaderAttribute(SamplingOverrideAttribute attribute) {
+      // note that response headers are not typically available for sampling
+      return attribute.key.startsWith("http.request.header.")
+          || attribute.key.startsWith("http.response.header.");
     }
   }
 
@@ -212,6 +226,22 @@ class SamplingOverrides {
     }
   }
 
+  private static class StrictArrayContainsMatcher implements TempPredicate {
+    private final AttributeKey<List<String>> key;
+    private final String value;
+
+    private StrictArrayContainsMatcher(String key, String value) {
+      this.key = AttributeKey.stringArrayKey(key);
+      this.value = value;
+    }
+
+    @Override
+    public boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
+      List<String> val = attributes.get(key);
+      return val != null && val.contains(value);
+    }
+  }
+
   private static class RegexpMatcher implements TempPredicate {
     private final AttributeKey<String> key;
     private final Pattern value;
@@ -228,6 +258,30 @@ class SamplingOverrides {
         val = lazyHttpUrl.get();
       }
       return val != null && value.matcher(val).matches();
+    }
+  }
+
+  private static class RegexpArrayContainsMatcher implements TempPredicate {
+    private final AttributeKey<List<String>> key;
+    private final Pattern value;
+
+    private RegexpArrayContainsMatcher(String key, String value) {
+      this.key = AttributeKey.stringArrayKey(key);
+      this.value = Pattern.compile(value);
+    }
+
+    @Override
+    public boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
+      List<String> val = attributes.get(key);
+      if (val == null) {
+        return false;
+      }
+      for (String v : val) {
+        if (value.matcher(v).matches()) {
+          return true;
+        }
+      }
+      return false;
     }
   }
 

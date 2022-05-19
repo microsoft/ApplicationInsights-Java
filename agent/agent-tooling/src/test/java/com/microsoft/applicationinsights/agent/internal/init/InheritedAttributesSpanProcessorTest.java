@@ -87,7 +87,7 @@ public class InheritedAttributesSpanProcessorTest {
   public void shouldInheritAttribute() {
     Configuration.InheritedAttribute inheritedAttribute = new Configuration.InheritedAttribute();
     inheritedAttribute.key = "one";
-    inheritedAttribute.type = Configuration.SpanAttributeType.STRING;
+    inheritedAttribute.type = Configuration.AttributeType.STRING;
 
     Tracer tracer = newTracer(Collections.singletonList(inheritedAttribute));
     Span span =
@@ -127,7 +127,7 @@ public class InheritedAttributesSpanProcessorTest {
   public void shouldNotInheritAttributeWithSameNameButDifferentType() {
     Configuration.InheritedAttribute inheritedAttribute = new Configuration.InheritedAttribute();
     inheritedAttribute.key = "one";
-    inheritedAttribute.type = Configuration.SpanAttributeType.STRING;
+    inheritedAttribute.type = Configuration.AttributeType.STRING;
 
     Tracer tracer = newTracer(Collections.singletonList(inheritedAttribute));
     Span span = tracer.spanBuilder("parent").setNoParent().setAttribute(oneLongKey, 1L).startSpan();
