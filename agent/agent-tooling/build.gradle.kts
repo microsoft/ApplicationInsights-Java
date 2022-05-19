@@ -40,9 +40,6 @@ dependencies {
 
   implementation(project(":agent:agent-profiler:agent-profiler-api"))
 
-  // commented out temporarily while hosting azure-monitor-opentelemetry-exporter in this repo
-  // implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.4")
-
   implementation("com.azure:azure-core")
   implementation("com.azure:azure-identity") {
     // "This dependency can be excluded if IntelliJ Credential is not being used for authentication
@@ -91,9 +88,4 @@ dependencies {
 
   testImplementation("com.microsoft.jfr:jfr-streaming")
   testImplementation("com.azure:azure-storage-blob")
-
-  // needed temporarily while hosting azure-monitor-opentelemetry-exporter in this repo
-  testImplementation("com.azure:azure-data-appconfiguration:1.3.2")
-  testImplementation("com.azure:azure-messaging-eventhubs:5.11.2")
-  testImplementation("com.azure:azure-messaging-eventhubs-checkpointstore-blob:1.12.1")
 }
