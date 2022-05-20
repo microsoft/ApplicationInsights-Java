@@ -389,7 +389,7 @@ public class TelemetryClient {
     return telemetry;
   }
 
-  private void populateDefaults(AbstractTelemetryBuilder telemetryBuilder) {
+  public void populateDefaults(AbstractTelemetryBuilder telemetryBuilder) {
     telemetryBuilder.setInstrumentationKey(getInstrumentationKey());
     for (Map.Entry<String, String> entry : globalTags.entrySet()) {
       telemetryBuilder.addTag(entry.getKey(), entry.getValue());
