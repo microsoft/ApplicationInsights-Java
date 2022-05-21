@@ -160,15 +160,15 @@ public final class SpanDataMapper {
     return map(span, samplingPercentage);
   }
 
-  public void map(SpanData span, List<TelemetryItem> telemetryItems) {
+  public void map(SpanData span, Consumer<TelemetryItem> consumer) {
     float samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
     TelemetryItem telemetryItem = map(span, samplingPercentage);
-    telemetryItems.add(telemetryItem);
+    consumer.accept(telemetryItem);
     exportEvents(
         span,
         telemetryItem.getTags().get(ContextTagKeys.AI_OPERATION_NAME.toString()),
         samplingPercentage,
-        telemetryItems);
+        consumer);
   }
 
   public TelemetryItem map(SpanData span, float samplingPercentage) {
@@ -777,7 +777,7 @@ public final class SpanDataMapper {
       SpanData span,
       @Nullable String operationName,
       float samplingPercentage,
-      List<TelemetryItem> telemetryItems) {
+      Consumer<TelemetryItem> consumer) {
     for (EventData event : span.getEvents()) {
       String instrumentationScopeName = span.getInstrumentationScopeInfo().getName();
       if (eventSuppressor.test(event, instrumentationScopeName)) {
@@ -789,7 +789,7 @@ public final class SpanDataMapper {
         // TODO (trask) map OpenTelemetry exception to Application Insights exception better
         String stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
         if (stacktrace != null) {
-          trackException(stacktrace, span, operationName, samplingPercentage, telemetryItems);
+          consumer.accept(trackException(stacktrace, span, operationName, samplingPercentage));
         }
         return;
       }
@@ -812,16 +812,13 @@ public final class SpanDataMapper {
       // set message-specific properties
       telemetryBuilder.setMessage(event.getName());
 
-      telemetryItems.add(telemetryBuilder.build());
+      consumer.accept(telemetryBuilder.build());
     }
   }
 
-  private void trackException(
-      String errorStack,
-      SpanData span,
-      @Nullable String operationName,
-      float samplingPercentage,
-      List<TelemetryItem> telemetryItems) {
+  private TelemetryItem trackException(
+      String errorStack, SpanData span, @Nullable String operationName, float samplingPercentage) {
+
     ExceptionTelemetryBuilder telemetryBuilder = ExceptionTelemetryBuilder.create();
     defaultsPopulator.accept(telemetryBuilder);
 
@@ -839,7 +836,7 @@ public final class SpanDataMapper {
     // set exception-specific properties
     telemetryBuilder.setExceptions(Exceptions.minimalParse(errorStack));
 
-    telemetryItems.add(telemetryBuilder.build());
+    return telemetryBuilder.build();
   }
 
   private static void setTime(AbstractTelemetryBuilder telemetryBuilder, long epochNanos) {

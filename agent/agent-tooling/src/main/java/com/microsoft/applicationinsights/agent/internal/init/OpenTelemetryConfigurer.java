@@ -22,10 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.azure.monitor.opentelemetry.exporter.AiOperationNameSpanProcessor;
-import com.azure.monitor.opentelemetry.exporter.AzureMonitorTraceExporter;
 import com.azure.monitor.opentelemetry.exporter.SpanDataMapper;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.bootstrap.AiAppId;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -41,6 +38,8 @@ import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
 import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
+import com.microsoft.applicationinsights.agent.internal.telemetry.AgentSpanExporter;
+import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -234,21 +233,12 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
             },
             AiAppId::getAppId);
 
-    AzureMonitorTraceExporter azureMonitorTraceExporter =
-        new AzureMonitorTraceExporter(
-            telemetryItems -> {
-              for (TelemetryItem telemetryItem : telemetryItems) {
-                telemetryClient.trackAsync(telemetryItem);
-              }
-              return CompletableResultCode.ofSuccess();
-            },
-            CompletableResultCode::ofSuccess,
-            CompletableResultCode::ofSuccess,
-            () -> !Strings.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey()),
-            mapper);
+    BatchItemProcessor batchItemProcessor = telemetryClient.getGeneralBatchItemProcessor();
 
     SpanExporter spanExporter =
-        new StatsbeatSpanExporter(azureMonitorTraceExporter, telemetryClient.getStatsbeatModule());
+        new StatsbeatSpanExporter(
+            new AgentSpanExporter(mapper, batchItemProcessor),
+            telemetryClient.getStatsbeatModule());
 
     List<ProcessorConfig> processorConfigs = getSpanProcessorConfigs(configuration);
     // NOTE if changing the span processor to something async, flush it in the shutdown hook before

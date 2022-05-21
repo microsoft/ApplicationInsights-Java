@@ -24,14 +24,13 @@ package com.azure.monitor.opentelemetry.exporter;
 import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * This class is an implementation of OpenTelemetry {@link SpanExporter} that allows different
@@ -45,10 +44,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
   private static final OperationLogger exportingSpanLogger =
       new OperationLogger(SpanDataMapper.class, "Exporting span");
 
-  private final Function<List<TelemetryItem>, CompletableResultCode> exportFn;
-  private final Supplier<CompletableResultCode> flushFn;
-  private final Supplier<CompletableResultCode> shutdownFn;
-  private final Supplier<Boolean> active;
+  private final TelemetryItemExporter telemetryItemExporter;
   private final SpanDataMapper mapper;
 
   /**
@@ -56,34 +52,22 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
    * telemetry events to Application Insights resource identified by the instrumentation key.
    */
   public AzureMonitorTraceExporter(
-      Function<List<TelemetryItem>, CompletableResultCode> exportFn,
-      Supplier<CompletableResultCode> flushFn,
-      Supplier<CompletableResultCode> shutdownFn,
-      Supplier<Boolean> active,
-      SpanDataMapper mapper) {
+      SpanDataMapper mapper, TelemetryItemExporter telemetryItemExporter) {
 
-    this.exportFn = exportFn;
-    this.flushFn = flushFn;
-    this.shutdownFn = shutdownFn;
-    this.active = active;
     this.mapper = mapper;
+    this.telemetryItemExporter = telemetryItemExporter;
   }
 
   /** {@inheritDoc} */
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
-    if (!active.get()) {
-      LOGGER.verbose("exporter is not active");
-      return CompletableResultCode.ofSuccess();
-    }
-
     List<TelemetryItem> telemetryItems = new ArrayList<>();
 
     boolean mappingFailure = false;
     for (SpanData span : spans) {
       LOGGER.verbose("exporting span: {}", span);
       try {
-        mapper.map(span, telemetryItems);
+        mapper.map(span, telemetryItems::add);
         exportingSpanLogger.recordSuccess();
       } catch (Throwable t) {
         exportingSpanLogger.recordFailure(t.getMessage(), t);
@@ -96,7 +80,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
     }
 
     CompletableResultCode overallResult = new CompletableResultCode();
-    CompletableResultCode exportResult = exportFn.apply(telemetryItems);
+    CompletableResultCode exportResult = telemetryItemExporter.send(telemetryItems);
     boolean mappingFailureFinal = mappingFailure;
     exportResult.whenComplete(
         () -> {
@@ -113,12 +97,12 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
   /** {@inheritDoc} */
   @Override
   public CompletableResultCode flush() {
-    return flushFn.get();
+    return telemetryItemExporter.flush();
   }
 
   /** {@inheritDoc} */
   @Override
   public CompletableResultCode shutdown() {
-    return shutdownFn.get();
+    return telemetryItemExporter.shutdown();
   }
 }

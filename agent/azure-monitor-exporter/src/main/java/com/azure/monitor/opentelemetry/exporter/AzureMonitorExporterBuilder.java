@@ -299,12 +299,7 @@ public final class AzureMonitorExporterBuilder {
             (event, instrumentationName) -> false,
             () -> null);
 
-    return new AzureMonitorTraceExporter(
-        telemetryItemExporter::send,
-        telemetryItemExporter::flush,
-        telemetryItemExporter::shutdown,
-        () -> true,
-        mapper);
+    return new AzureMonitorTraceExporter(mapper, telemetryItemExporter);
   }
 
   private HttpPipeline createHttpPipeline() {

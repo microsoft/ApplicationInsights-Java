@@ -226,7 +226,7 @@ public class TelemetryClient {
     return CompletableResultCode.ofAll(resultCodes);
   }
 
-  private BatchItemProcessor getGeneralBatchItemProcessor() {
+  public BatchItemProcessor getGeneralBatchItemProcessor() {
     if (generalBatchItemProcessor == null) {
       synchronized (batchItemProcessorInitLock) {
         if (generalBatchItemProcessor == null) {
