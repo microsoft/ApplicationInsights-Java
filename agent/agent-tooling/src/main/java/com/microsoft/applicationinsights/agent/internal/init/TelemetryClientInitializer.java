@@ -89,8 +89,6 @@ public class TelemetryClientInitializer {
     }
     PerformanceCounterContainer.INSTANCE.register(new JvmHeapMemoryUsedPerformanceCounter());
     PerformanceCounterContainer.INSTANCE.register(new GcPerformanceCounter());
-
-    telemetryClient.setQuickPulse(configuration, telemetryClient);
   }
 
   private static boolean isAgentRunningInSandboxEnvWindows() {

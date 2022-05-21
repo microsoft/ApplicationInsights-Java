@@ -19,98 +19,54 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.exporter;
+package com.azure.monitor.opentelemetry.exporter.implementation;
 
-import com.azure.core.util.CoreUtils;
-import com.azure.monitor.opentelemetry.exporter.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.Exceptions;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageTelemetryBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
-import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import java.util.Collection;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LoggerExporter implements LogExporter {
+public class LogDataMapper {
 
-  private static final Logger logger = LoggerFactory.getLogger(LoggerExporter.class);
+  private static final Logger logger = LoggerFactory.getLogger(LogDataMapper.class);
 
   private static final AttributeKey<String> AI_OPERATION_NAME_KEY =
       AttributeKey.stringKey("applicationinsights.internal.operation_name");
 
-  private static final OperationLogger exportingLogLogger =
-      new OperationLogger(LoggerExporter.class, "Exporting log");
-
-  private final TelemetryClient telemetryClient;
   private final boolean captureLoggingLevelAsCustomDimension;
-
   // TODO (trask) could implement this in a filtering LogExporter instead
   private volatile Severity threshold;
+  private final Consumer<AbstractTelemetryBuilder> defaultsPopulator;
 
-  public LoggerExporter(
-      TelemetryClient telemetryClient,
+  public LogDataMapper(
+      boolean captureLoggingLevelAsCustomDimension,
       Severity threshold,
-      boolean captureLoggingLevelAsCustomDimension) {
-    this.telemetryClient = telemetryClient;
+      Consumer<AbstractTelemetryBuilder> defaultsPopulator) {
     this.threshold = threshold;
     this.captureLoggingLevelAsCustomDimension = captureLoggingLevelAsCustomDimension;
+    this.defaultsPopulator = defaultsPopulator;
   }
 
   public void setThreshold(Severity threshold) {
     this.threshold = threshold;
   }
 
-  @Override
-  public CompletableResultCode export(Collection<LogData> logs) {
-    if (CoreUtils.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey())) {
-      logger.debug("Instrumentation key is null or empty. Fail to export logs.");
-      return CompletableResultCode.ofFailure();
-    }
-
-    boolean failure = false;
-    for (LogData log : logs) {
-      logger.debug("exporting log: {}", log);
-      try {
-        internalExport(log);
-        exportingLogLogger.recordSuccess();
-      } catch (Throwable t) {
-        exportingLogLogger.recordFailure(t.getMessage(), t);
-        failure = true;
-      }
-    }
-
-    // batching, retry, throttling, and writing to disk on failure occur downstream
-    // for simplicity not reporting back success/failure from this layer
-    // only that it was successfully delivered to the next layer
-    return failure ? CompletableResultCode.ofFailure() : CompletableResultCode.ofSuccess();
-  }
-
-  @Override
-  public CompletableResultCode flush() {
-    return CompletableResultCode.ofSuccess();
-  }
-
-  @Override
-  public CompletableResultCode shutdown() {
-    return CompletableResultCode.ofSuccess();
-  }
-
-  private void internalExport(LogData log) {
+  public void map(LogData log, Consumer<TelemetryItem> consumer) {
     int severity = log.getSeverity().getSeverityNumber();
     int threshold = this.threshold.getSeverityNumber();
     if (severity < threshold) {
@@ -119,14 +75,15 @@ public class LoggerExporter implements LogExporter {
 
     String stack = log.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
     if (stack == null) {
-      trackMessage(log);
+      consumer.accept(trackMessage(log));
     } else {
       trackMessageAsException(log, stack);
     }
   }
 
-  private void trackMessage(LogData log) {
-    MessageTelemetryBuilder telemetryBuilder = telemetryClient.newMessageTelemetryBuilder();
+  private TelemetryItem trackMessage(LogData log) {
+    MessageTelemetryBuilder telemetryBuilder = MessageTelemetryBuilder.create();
+    defaultsPopulator.accept(telemetryBuilder);
 
     Attributes attributes = log.getAttributes();
 
@@ -150,12 +107,13 @@ public class LoggerExporter implements LogExporter {
         attributes.get(SemanticAttributes.THREAD_NAME),
         log.getSeverity());
 
-    // export
-    telemetryClient.trackAsync(telemetryBuilder.build());
+    return telemetryBuilder.build();
   }
 
-  private void trackMessageAsException(LogData log, String stack) {
-    ExceptionTelemetryBuilder telemetryBuilder = telemetryClient.newExceptionTelemetryBuilder();
+  private TelemetryItem trackMessageAsException(LogData log, String stack) {
+    ExceptionTelemetryBuilder telemetryBuilder = ExceptionTelemetryBuilder.create();
+    defaultsPopulator.accept(telemetryBuilder);
+
     Attributes attributes = log.getAttributes();
 
     // set standard properties
@@ -177,8 +135,8 @@ public class LoggerExporter implements LogExporter {
     if (log.getBody() != null) {
       telemetryBuilder.addProperty("Logger Message", log.getBody().asString());
     }
-    // export
-    telemetryClient.trackAsync(telemetryBuilder.build());
+
+    return telemetryBuilder.build();
   }
 
   private static void setOperationTags(AbstractTelemetryBuilder telemetryBuilder, LogData log) {

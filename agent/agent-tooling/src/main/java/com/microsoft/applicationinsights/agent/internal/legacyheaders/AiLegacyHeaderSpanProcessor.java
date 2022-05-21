@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.legacyheaders;
 
-import com.azure.monitor.opentelemetry.exporter.SpanDataMapper;
+import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;

@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
-import com.azure.monitor.opentelemetry.exporter.SpanDataMapper;
+import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;

@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter;
+package com.azure.monitor.opentelemetry.exporter.implementation;
 
 import io.opentelemetry.api.common.AttributeKey;
 import java.util.List;

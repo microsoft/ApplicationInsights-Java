@@ -25,7 +25,7 @@ import ch.qos.logback.classic.LoggerContext;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.microsoft.applicationinsights.agent.bootstrap.AiLazyConfiguration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.exporter.LoggerExporter;
+import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -40,13 +40,15 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
   private static final Logger logger = LoggerFactory.getLogger(LazyConfigurationAccessor.class);
 
   private final TelemetryClient telemetryClient;
-  private final LoggerExporter loggerExporter;
+  private final AgentLogExporter agentLogExporter;
   private final AppIdSupplier appIdSupplier;
 
   public LazyConfigurationAccessor(
-      TelemetryClient telemetryClient, LoggerExporter loggerExporter, AppIdSupplier appIdSupplier) {
+      TelemetryClient telemetryClient,
+      AgentLogExporter agentLogExporter,
+      AppIdSupplier appIdSupplier) {
     this.telemetryClient = telemetryClient;
-    this.loggerExporter = loggerExporter;
+    this.agentLogExporter = agentLogExporter;
     this.appIdSupplier = appIdSupplier;
   }
 
@@ -74,7 +76,7 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
         System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY"));
     setWebsiteSiteName(System.getenv("WEBSITE_SITE_NAME"));
     setSelfDiagnosticsLevel(System.getenv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL"));
-    loggerExporter.setThreshold(
+    agentLogExporter.setThreshold(
         Configuration.LoggingInstrumentation.getSeverity(
             System.getenv("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL")));
   }

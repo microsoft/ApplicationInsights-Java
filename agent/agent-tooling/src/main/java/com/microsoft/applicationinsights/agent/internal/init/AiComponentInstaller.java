@@ -156,7 +156,7 @@ class AiComponentInstaller {
     if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
       AiLazyConfiguration.setAccessor(
           new LazyConfigurationAccessor(
-              telemetryClient, OpenTelemetryConfigurer.loggerExporter, appIdSupplier));
+              telemetryClient, OpenTelemetryConfigurer.agentLogExporter, appIdSupplier));
     }
 
     // this is currently used by Micrometer instrumentation in addition to 2.x SDK

@@ -36,6 +36,7 @@ import com.azure.core.http.policy.UserAgentPolicy;
 import com.azure.core.util.ClientOptions;
 import com.azure.core.util.Configuration;
 import com.azure.core.util.CoreUtils;
+import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;

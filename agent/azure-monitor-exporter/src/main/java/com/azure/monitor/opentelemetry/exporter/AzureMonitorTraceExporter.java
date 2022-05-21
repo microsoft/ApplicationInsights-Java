@@ -22,6 +22,7 @@
 package com.azure.monitor.opentelemetry.exporter;
 
 import com.azure.core.util.logging.ClientLogger;
+import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;

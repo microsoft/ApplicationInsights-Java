@@ -21,6 +21,7 @@
 
 package com.azure.monitor.opentelemetry.exporter;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;

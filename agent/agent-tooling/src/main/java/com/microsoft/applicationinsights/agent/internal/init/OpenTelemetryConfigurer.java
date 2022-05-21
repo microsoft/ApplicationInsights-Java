@@ -21,14 +21,19 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import com.azure.monitor.opentelemetry.exporter.AiOperationNameSpanProcessor;
-import com.azure.monitor.opentelemetry.exporter.SpanDataMapper;
+import com.azure.monitor.opentelemetry.exporter.implementation.AiOperationNameSpanProcessor;
+import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
+import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.bootstrap.AiAppId;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
+import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
+import com.microsoft.applicationinsights.agent.internal.exporter.AgentSpanExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.AzureMonitorMetricExporter;
-import com.microsoft.applicationinsights.agent.internal.exporter.LoggerExporter;
+import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHeaderSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithLogProcessor;
@@ -38,7 +43,6 @@ import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
 import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
-import com.microsoft.applicationinsights.agent.internal.telemetry.AgentSpanExporter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.api.common.Attributes;
@@ -71,7 +75,7 @@ import javax.annotation.Nullable;
 @AutoService(AutoConfigurationCustomizerProvider.class)
 public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvider {
 
-  @Nullable public static LoggerExporter loggerExporter;
+  @Nullable public static AgentLogExporter agentLogExporter;
 
   @Nullable private static BatchLogProcessor batchLogProcessor;
   @Nullable private static BatchSpanProcessor batchSpanProcessor;
@@ -90,11 +94,33 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
 
     Configuration configuration = MainEntryPoint.getConfiguration();
 
+    QuickPulse quickPulse;
+    if (configuration.preview.liveMetrics.enabled) {
+      quickPulse =
+          QuickPulse.create(
+              LazyHttpClient.newHttpPipeLineWithDefaultRedirect(
+                  configuration.preview.authentication),
+              () -> {
+                ConnectionString connectionString = telemetryClient.getConnectionString();
+                return connectionString == null ? null : connectionString.getLiveEndpoint();
+              },
+              telemetryClient::getInstrumentationKey,
+              telemetryClient.getRoleName(),
+              telemetryClient.getRoleInstance(),
+              configuration.preview.useNormalizedValueForNonNormalizedCpuPercentage,
+              MainEntryPoint.getAgentVersion());
+    } else {
+      quickPulse = null;
+    }
+    telemetryClient.setQuickPulse(quickPulse);
+
     autoConfiguration
         .addTracerProviderCustomizer(
-            (builder, config) -> configureTracing(builder, telemetryClient, config, configuration))
+            (builder, config) ->
+                configureTracing(builder, telemetryClient, quickPulse, config, configuration))
         .addLogEmitterProviderCustomizer(
-            (builder, config) -> configureLogging(builder, telemetryClient, configuration))
+            (builder, config) ->
+                configureLogging(builder, telemetryClient, quickPulse, configuration))
         .addMeterProviderCustomizer(
             (builder, config) -> configureMetrics(builder, telemetryClient, configuration));
 
@@ -137,6 +163,7 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
   private static SdkTracerProviderBuilder configureTracing(
       SdkTracerProviderBuilder tracerProvider,
       TelemetryClient telemetryClient,
+      @Nullable QuickPulse quickPulse,
       ConfigProperties config,
       Configuration configuration) {
 
@@ -192,7 +219,10 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
     if ("none".equals(tracesExporter)) { // "none" is the default set in ConfigOverride
       SpanExporter spanExporter =
           createSpanExporter(
-              telemetryClient, configuration, configuration.preview.captureHttpServer4xxAsError);
+              telemetryClient,
+              quickPulse,
+              configuration,
+              configuration.preview.captureHttpServer4xxAsError);
 
       // using BatchSpanProcessor in order to get off of the application thread as soon as possible
       batchSpanProcessor =
@@ -208,6 +238,7 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
 
   private static SpanExporter createSpanExporter(
       TelemetryClient telemetryClient,
+      @Nullable QuickPulse quickPulse,
       Configuration configuration,
       boolean captureHttpServer4xxAsError) {
 
@@ -237,7 +268,7 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
 
     SpanExporter spanExporter =
         new StatsbeatSpanExporter(
-            new AgentSpanExporter(mapper, batchItemProcessor),
+            new AgentSpanExporter(mapper, quickPulse, batchItemProcessor),
             telemetryClient.getStatsbeatModule());
 
     List<ProcessorConfig> processorConfigs = getSpanProcessorConfigs(configuration);
@@ -280,9 +311,10 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
   private static SdkLogEmitterProviderBuilder configureLogging(
       SdkLogEmitterProviderBuilder builder,
       TelemetryClient telemetryClient,
+      @Nullable QuickPulse quickPulse,
       Configuration configuration) {
 
-    LogExporter logExporter = createLogExporter(telemetryClient, configuration);
+    LogExporter logExporter = createLogExporter(telemetryClient, quickPulse, configuration);
 
     // using BatchLogProcessor in order to get off of the application thread as soon as possible
     batchLogProcessor =
@@ -297,15 +329,20 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
   }
 
   private static LogExporter createLogExporter(
-      TelemetryClient telemetryClient, Configuration configuration) {
+      TelemetryClient telemetryClient,
+      @Nullable QuickPulse quickPulse,
+      Configuration configuration) {
 
-    loggerExporter =
-        new LoggerExporter(
-            telemetryClient,
+    LogDataMapper mapper =
+        new LogDataMapper(
+            configuration.preview.captureLoggingLevelAsCustomDimension,
             configuration.instrumentation.logging.getSeverity(),
-            configuration.preview.captureLoggingLevelAsCustomDimension);
+            telemetryClient::populateDefaults);
 
-    LogExporter logExporter = loggerExporter;
+    agentLogExporter =
+        new AgentLogExporter(mapper, quickPulse, telemetryClient.getGeneralBatchItemProcessor());
+
+    LogExporter logExporter = agentLogExporter;
 
     List<ProcessorConfig> processorConfigs = getLogProcessorConfigs(configuration);
     if (!processorConfigs.isEmpty()) {

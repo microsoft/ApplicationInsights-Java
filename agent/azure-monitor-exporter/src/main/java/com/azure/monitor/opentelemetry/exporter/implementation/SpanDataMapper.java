@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter;
+package com.azure.monitor.opentelemetry.exporter.implementation;
 
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
