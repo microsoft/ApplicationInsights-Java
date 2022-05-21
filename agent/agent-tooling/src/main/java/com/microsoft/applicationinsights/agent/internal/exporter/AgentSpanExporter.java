@@ -31,13 +31,14 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class AgentSpanExporter implements io.opentelemetry.sdk.trace.export.SpanExporter {
+public final class AgentSpanExporter implements SpanExporter {
 
   private static final Logger logger = LoggerFactory.getLogger(AgentSpanExporter.class);
 

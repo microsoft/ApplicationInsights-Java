@@ -36,54 +36,9 @@ import org.mockito.stubbing.Answer;
 class HeartbeatTests {
 
   @Test
-  void initializeHeartBeatModuleDoesNotThrow() {
-    HeartBeatModule module = new HeartBeatModule();
-    module.initialize(null);
-  }
-
-  @Test
-  void initializeHeartBeatTwiceDoesNotFail() {
-    HeartBeatModule module = new HeartBeatModule();
-    module.initialize(null);
-    module.initialize(null);
-  }
-
-  @Test
-  void initializeHeartBeatWithNonDefaultIntervalSetsCorrectly() {
-    long heartBeatInterval = 45;
-    HeartBeatModule module = new HeartBeatModule();
-    module.setHeartBeatInterval(heartBeatInterval);
-    module.initialize(null);
-    assertThat(module.getHeartBeatInterval()).isEqualTo(heartBeatInterval);
-  }
-
-  @Test
-  void initializeHeatBeatWithValueLessThanMinimumSetsToMinimum() {
-    long heartBeatInterval = 0;
-    HeartBeatModule module = new HeartBeatModule();
-    module.setHeartBeatInterval(heartBeatInterval);
-    module.initialize(null);
-    assertThat(module.getHeartBeatInterval()).isNotEqualTo(heartBeatInterval);
-    assertThat(module.getHeartBeatInterval())
-        .isEqualTo(HeartBeatProvider.MINIMUM_HEARTBEAT_INTERVAL);
-  }
-
-  @Test
-  void canExtendHeartBeatPayload() throws Exception {
-    HeartBeatModule module = new HeartBeatModule();
-    module.initialize(TelemetryClient.createForTest());
-
-    Field field = module.getClass().getDeclaredField("heartBeatProvider");
-    field.setAccessible(true);
-    HeartBeatProvider hbi = (HeartBeatProvider) field.get(module);
-    assertThat(hbi.addHeartBeatProperty("test01", "This is value", true)).isTrue();
-  }
-
-  @Test
   void heartBeatPayloadContainsDataByDefault() throws InterruptedException {
     // given
-    HeartBeatProvider provider = new HeartBeatProvider();
-    provider.initialize(TelemetryClient.createForTest());
+    HeartBeatProvider provider = new HeartBeatProvider(60, TelemetryClient.createForTest());
 
     // some of the initialization above happens in a separate thread
     Thread.sleep(500);
@@ -97,8 +52,7 @@ class HeartbeatTests {
   @Test
   void heartBeatPayloadContainsSpecificProperties() {
     // given
-    HeartBeatProvider provider = new HeartBeatProvider();
-    provider.initialize(TelemetryClient.createForTest());
+    HeartBeatProvider provider = new HeartBeatProvider(60, TelemetryClient.createForTest());
 
     // then
     assertThat(provider.addHeartBeatProperty("test", "testVal", true)).isTrue();
@@ -110,8 +64,7 @@ class HeartbeatTests {
   @Test
   void heartbeatMetricIsNonZeroWhenFailureConditionPresent() {
     // given
-    HeartBeatProvider provider = new HeartBeatProvider();
-    provider.initialize(TelemetryClient.createForTest());
+    HeartBeatProvider provider = new HeartBeatProvider(60, TelemetryClient.createForTest());
 
     // then
     assertThat(provider.addHeartBeatProperty("test", "testVal", false)).isTrue();
@@ -123,8 +76,7 @@ class HeartbeatTests {
   @Test
   void heartbeatMetricCountsForAllFailures() {
     // given
-    HeartBeatProvider provider = new HeartBeatProvider();
-    provider.initialize(TelemetryClient.createForTest());
+    HeartBeatProvider provider = new HeartBeatProvider(60, TelemetryClient.createForTest());
 
     // then
     assertThat(provider.addHeartBeatProperty("test", "testVal", false)).isTrue();
@@ -164,8 +116,7 @@ class HeartbeatTests {
   @Test
   void heartBeatProviderDoesNotAllowDuplicateProperties() {
     // given
-    HeartBeatProvider provider = new HeartBeatProvider();
-    provider.initialize(TelemetryClient.createForTest());
+    HeartBeatProvider provider = new HeartBeatProvider(60, TelemetryClient.createForTest());
 
     // then
     provider.addHeartBeatProperty("test01", "test val", true);
@@ -182,8 +133,7 @@ class HeartbeatTests {
     Set<String> defaultFields = (Set<String>) field.get(base);
     defaultFields.add(testKey);
 
-    HeartBeatProvider provider = new HeartBeatProvider();
-    provider.initialize(TelemetryClient.createForTest());
+    HeartBeatProvider provider = new HeartBeatProvider(60, TelemetryClient.createForTest());
 
     base.setDefaultPayload(provider).call();
     MetricsData data = (MetricsData) provider.gatherData().getData().getBaseData();

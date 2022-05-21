@@ -29,7 +29,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickP
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
@@ -43,9 +42,6 @@ import org.slf4j.LoggerFactory;
 public class AgentLogExporter implements LogExporter {
 
   private static final Logger logger = LoggerFactory.getLogger(AgentLogExporter.class);
-
-  private static final AttributeKey<String> AI_OPERATION_NAME_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.operation_name");
 
   private static final OperationLogger exportingLogLogger =
       new OperationLogger(AgentLogExporter.class, "Exporting log");

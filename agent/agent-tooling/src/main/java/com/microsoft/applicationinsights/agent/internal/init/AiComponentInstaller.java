@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.microsoft.applicationinsights.agent.bootstrap.AiAppId;
@@ -32,6 +34,7 @@ import com.microsoft.applicationinsights.agent.internal.common.SystemInformation
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
+import com.microsoft.applicationinsights.agent.internal.heartbeat.HeartBeatProvider;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.legacysdk.ApplicationInsightsAppenderClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.legacysdk.BytecodeUtilImpl;
@@ -124,9 +127,20 @@ class AiComponentInstaller {
             .setGeneralExportQueueSize(config.preview.generalExportQueueCapacity)
             .setMetricsExportQueueSize(config.preview.metricsExportQueueCapacity)
             .setAadAuthentication(config.preview.authentication)
+            .setConnectionStrings(
+                config.connectionString,
+                config.internal.statsbeat.instrumentationKey,
+                config.internal.statsbeat.endpoint)
+            .setRoleName(config.role.name)
+            .setRoleInstance(config.role.instance)
             .build();
 
-    TelemetryClientInitializer.initialize(telemetryClient, config);
+    PerformanceCounterInitializer.initialize(telemetryClient, config);
+
+    // interval longer than 15 minutes is not allowed since we use this data for usage telemetry
+    long intervalSeconds = Math.min(config.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
+    HeartBeatProvider.start(intervalSeconds, telemetryClient);
+
     TelemetryClient.setActive(telemetryClient);
 
     BytecodeUtilImpl.samplingPercentage = config.sampling.percentage;

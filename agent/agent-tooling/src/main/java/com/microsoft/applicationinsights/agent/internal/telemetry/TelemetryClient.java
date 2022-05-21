@@ -136,6 +136,10 @@ public class TelemetryClient {
     this.generalExportQueueCapacity = builder.generalExportQueueCapacity;
     this.metricsExportQueueCapacity = builder.metricsExportQueueCapacity;
     this.aadAuthentication = builder.aadAuthentication;
+    this.connectionString = builder.connectionString;
+    this.statsbeatConnectionString = builder.statsbeatConnectionString;
+    this.roleName = builder.roleName;
+    this.roleInstance = builder.roleInstance;
   }
 
   public static TelemetryClient getActive() {
@@ -454,6 +458,10 @@ public class TelemetryClient {
     private int generalExportQueueCapacity;
     private int metricsExportQueueCapacity;
     @Nullable private Configuration.AadAuthentication aadAuthentication;
+    @Nullable private ConnectionString connectionString;
+    @Nullable private StatsbeatConnectionString statsbeatConnectionString;
+    @Nullable private String roleName;
+    @Nullable private String roleInstance;
 
     public Builder setCustomDimensions(Map<String, String> customDimensions) {
       StringSubstitutor substitutor = new StringSubstitutor(System.getenv());
@@ -506,6 +514,27 @@ public class TelemetryClient {
 
     public Builder setAadAuthentication(Configuration.AadAuthentication aadAuthentication) {
       this.aadAuthentication = aadAuthentication;
+      return this;
+    }
+
+    public Builder setConnectionStrings(
+        @Nullable String connectionString,
+        @Nullable String statsbeatInstrumentationKey,
+        @Nullable String statsbeatEndpoint) {
+      this.connectionString = ConnectionString.parse(connectionString);
+      this.statsbeatConnectionString =
+          StatsbeatConnectionString.create(
+              this.connectionString, statsbeatInstrumentationKey, statsbeatEndpoint);
+      return this;
+    }
+
+    public Builder setRoleName(@Nullable String roleName) {
+      this.roleName = roleName;
+      return this;
+    }
+
+    public Builder setRoleInstance(@Nullable String roleInstance) {
+      this.roleInstance = roleInstance;
       return this;
     }
 
