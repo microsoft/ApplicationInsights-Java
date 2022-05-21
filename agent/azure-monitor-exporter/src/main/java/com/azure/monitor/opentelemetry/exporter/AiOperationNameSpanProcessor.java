@@ -72,9 +72,9 @@ public class AiOperationNameSpanProcessor implements SpanProcessor {
 
     String spanName = span.getName();
     String httpMethod = span.getAttribute(SemanticAttributes.HTTP_METHOD);
-    if (httpMethod == null || httpMethod.isEmpty()) {
-      return spanName;
+    if (httpMethod != null && !httpMethod.isEmpty() && spanName.startsWith("/")) {
+      return httpMethod + " " + spanName;
     }
-    return httpMethod + " " + spanName;
+    return spanName;
   }
 }

@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
 import com.azure.core.util.CoreUtils;
-import com.azure.monitor.opentelemetry.exporter.AzureMonitorTraceExporter;
+import com.azure.monitor.opentelemetry.exporter.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.Exceptions;
@@ -245,7 +245,7 @@ public class LoggerExporter implements LogExporter {
           if (stringKey.startsWith("exception.")) {
             return;
           }
-          String val = AzureMonitorTraceExporter.convertToString(value, key.getType());
+          String val = SpanDataMapper.convertToString(value, key.getType());
           if (val != null) {
             telemetryBuilder.addProperty(key.getKey(), val);
           }

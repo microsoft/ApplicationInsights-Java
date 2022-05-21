@@ -74,6 +74,10 @@ public class QuickPulse {
     return quickPulse;
   }
 
+  public boolean isEnabled() {
+    return collector.isEnabled();
+  }
+
   public void add(TelemetryItem telemetryItem) {
     if (collector != null) {
       collector.add(telemetryItem);

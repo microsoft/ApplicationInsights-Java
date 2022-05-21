@@ -287,19 +287,24 @@ public final class AzureMonitorExporterBuilder {
       telemetryItemExporter = new TelemetryItemExporter(pipeline, TelemetryPipelineListener.noop());
     }
 
+    SpanDataMapper mapper =
+        new SpanDataMapper(
+            true,
+            builder -> {
+              builder.setInstrumentationKey(instrumentationKey);
+              builder.addTag(
+                  ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(),
+                  VersionGenerator.getSdkVersion());
+            },
+            (event, instrumentationName) -> false,
+            () -> null);
+
     return new AzureMonitorTraceExporter(
-        true,
-        builder -> {
-          builder.setInstrumentationKey(instrumentationKey);
-          builder.addTag(
-              ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), VersionGenerator.getSdkVersion());
-        },
-        (event, instrumentationName) -> false,
         telemetryItemExporter::send,
         telemetryItemExporter::flush,
         telemetryItemExporter::shutdown,
         () -> true,
-        () -> null);
+        mapper);
   }
 
   private HttpPipeline createHttpPipeline() {

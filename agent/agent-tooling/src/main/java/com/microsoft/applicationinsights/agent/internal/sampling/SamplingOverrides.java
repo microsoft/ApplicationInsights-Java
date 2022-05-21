@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
-import com.azure.monitor.opentelemetry.exporter.AzureMonitorTraceExporter;
+import com.azure.monitor.opentelemetry.exporter.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
@@ -260,7 +260,7 @@ class SamplingOverrides {
 
     private String get() {
       if (!initialized) {
-        value = AzureMonitorTraceExporter.getHttpUrlFromServerSpan(attributes);
+        value = SpanDataMapper.getHttpUrlFromServerSpan(attributes);
         initialized = true;
       }
       return value;

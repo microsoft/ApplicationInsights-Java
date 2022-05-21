@@ -107,9 +107,9 @@ public class AiOperationNameSpanProcessorTest {
     Tracer tracer =
         configureAzureMonitorExporter(
             new ValidationPolicy(
-                exporterCountDown, Arrays.asList("child-span", "POST parent-span-changed")));
+                exporterCountDown, Arrays.asList("child-span", "POST /parent-span-changed")));
     Span parentSpan = tracer.spanBuilder("parent-span").startSpan();
-    parentSpan.updateName("parent-span-changed");
+    parentSpan.updateName("/parent-span-changed");
     parentSpan.setAttribute(SemanticAttributes.HTTP_METHOD, "POST");
     try (Scope parentScope = parentSpan.makeCurrent()) {
       Span childSpan = tracer.spanBuilder("child-span").startSpan();

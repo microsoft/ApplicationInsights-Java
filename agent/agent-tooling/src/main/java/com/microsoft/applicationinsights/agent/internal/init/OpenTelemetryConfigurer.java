@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.azure.monitor.opentelemetry.exporter.AiOperationNameSpanProcessor;
 import com.azure.monitor.opentelemetry.exporter.AzureMonitorTraceExporter;
+import com.azure.monitor.opentelemetry.exporter.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.google.auto.service.AutoService;
@@ -211,8 +212,8 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
       Configuration configuration,
       boolean captureHttpServer4xxAsError) {
 
-    AzureMonitorTraceExporter azureMonitorTraceExporter =
-        new AzureMonitorTraceExporter(
+    SpanDataMapper mapper =
+        new SpanDataMapper(
             captureHttpServer4xxAsError,
             telemetryClient::populateDefaults,
             (event, instrumentationName) -> {
@@ -231,6 +232,10 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
               }
               return false;
             },
+            AiAppId::getAppId);
+
+    AzureMonitorTraceExporter azureMonitorTraceExporter =
+        new AzureMonitorTraceExporter(
             telemetryItems -> {
               for (TelemetryItem telemetryItem : telemetryItems) {
                 telemetryClient.trackAsync(telemetryItem);
@@ -240,7 +245,7 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
             CompletableResultCode::ofSuccess,
             CompletableResultCode::ofSuccess,
             () -> !Strings.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey()),
-            AiAppId::getAppId);
+            mapper);
 
     SpanExporter spanExporter =
         new StatsbeatSpanExporter(azureMonitorTraceExporter, telemetryClient.getStatsbeatModule());
@@ -390,7 +395,7 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
         // already has http.url
         return span;
       }
-      String httpUrl = AzureMonitorTraceExporter.getHttpUrlFromServerSpan(attributes);
+      String httpUrl = SpanDataMapper.getHttpUrlFromServerSpan(attributes);
       if (httpUrl == null) {
         return span;
       }
