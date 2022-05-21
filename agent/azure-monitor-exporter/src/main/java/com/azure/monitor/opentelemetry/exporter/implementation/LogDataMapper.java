@@ -49,30 +49,16 @@ public class LogDataMapper {
       AttributeKey.stringKey("applicationinsights.internal.operation_name");
 
   private final boolean captureLoggingLevelAsCustomDimension;
-  // TODO (trask) could implement this in a filtering LogExporter instead
-  private volatile Severity threshold;
   private final Consumer<AbstractTelemetryBuilder> defaultsPopulator;
 
   public LogDataMapper(
       boolean captureLoggingLevelAsCustomDimension,
-      Severity threshold,
       Consumer<AbstractTelemetryBuilder> defaultsPopulator) {
-    this.threshold = threshold;
     this.captureLoggingLevelAsCustomDimension = captureLoggingLevelAsCustomDimension;
     this.defaultsPopulator = defaultsPopulator;
   }
 
-  public void setThreshold(Severity threshold) {
-    this.threshold = threshold;
-  }
-
   public void map(LogData log, Consumer<TelemetryItem> consumer) {
-    int severity = log.getSeverity().getSeverityNumber();
-    int threshold = this.threshold.getSeverityNumber();
-    if (severity < threshold) {
-      return;
-    }
-
     String stack = log.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
     if (stack == null) {
       consumer.accept(trackMessage(log));

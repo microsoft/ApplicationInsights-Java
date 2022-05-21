@@ -46,16 +46,18 @@ public class AgentLogExporter implements LogExporter {
   private static final OperationLogger exportingLogLogger =
       new OperationLogger(AgentLogExporter.class, "Exporting log");
 
-  private final LogDataMapper mapper;
-  private final Consumer<TelemetryItem> telemetryItemConsumer;
-
   // TODO (trask) could implement this in a filtering LogExporter instead
   private volatile Severity threshold;
 
+  private final LogDataMapper mapper;
+  private final Consumer<TelemetryItem> telemetryItemConsumer;
+
   public AgentLogExporter(
+      Severity threshold,
       LogDataMapper mapper,
       @Nullable QuickPulse quickPulse,
       BatchItemProcessor batchItemProcessor) {
+    this.threshold = threshold;
     this.mapper = mapper;
     telemetryItemConsumer =
         telemetryItem -> {

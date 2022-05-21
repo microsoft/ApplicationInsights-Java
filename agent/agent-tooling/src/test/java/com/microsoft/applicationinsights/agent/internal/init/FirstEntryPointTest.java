@@ -26,19 +26,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import org.junit.jupiter.api.Test;
 
-class MainEntryPointTest {
+class FirstEntryPointTest {
   @Test
   void getFriendlyExceptionTest() {
     FriendlyException friendlyException =
-        MainEntryPoint.getFriendlyException(new FriendlyException("<message>", "<action>"));
+        FirstEntryPoint.getFriendlyException(new FriendlyException("<message>", "<action>"));
     FriendlyException nonFriendlyException =
-        MainEntryPoint.getFriendlyException(new IllegalArgumentException());
+        FirstEntryPoint.getFriendlyException(new IllegalArgumentException());
     FriendlyException nestedFriendlyException =
-        MainEntryPoint.getFriendlyException(
+        FirstEntryPoint.getFriendlyException(
             new RuntimeException(
                 "Run time Exception", new FriendlyException("<message>", "<action>")));
     FriendlyException nestedNonFriendlyException =
-        MainEntryPoint.getFriendlyException(
+        FirstEntryPoint.getFriendlyException(
             new RuntimeException("Run time Exception", new IllegalArgumentException()));
     assertThat(friendlyException).isNotNull();
     assertThat(nonFriendlyException).isNull();

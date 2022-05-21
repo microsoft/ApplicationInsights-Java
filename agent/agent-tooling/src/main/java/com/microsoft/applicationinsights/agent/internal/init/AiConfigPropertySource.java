@@ -38,7 +38,7 @@ public class AiConfigPropertySource implements ConfigPropertySource {
 
   @Override
   public Map<String, String> getProperties() {
-    Configuration config = MainEntryPoint.getConfiguration();
+    Configuration config = FirstEntryPoint.getConfiguration();
 
     Map<String, String> properties = new HashMap<>();
     properties.put(

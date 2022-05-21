@@ -52,7 +52,7 @@ import org.slf4j.MDC;
 // this class initializes configuration and logging before passing control to
 // opentelemetry-java-instrumentation
 @AutoService(LoggingCustomizer.class)
-public class MainEntryPoint implements LoggingCustomizer {
+public class FirstEntryPoint implements LoggingCustomizer {
 
   private static final boolean DEBUG_SIGNED_JAR_ACCESS =
       Boolean.getBoolean("applicationinsights.debug.signedJarAccess");
@@ -103,8 +103,7 @@ public class MainEntryPoint implements LoggingCustomizer {
       StatusFile.startupLogger = startupLogger;
       ConfigurationBuilder.logConfigurationWarnMessages();
 
-      AppIdSupplier appIdSupplier = AiComponentInstaller.beforeAgent();
-      StartAppIdRetrieval.setAppIdSupplier(appIdSupplier);
+      LegacyInstrumentation.install();
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }
