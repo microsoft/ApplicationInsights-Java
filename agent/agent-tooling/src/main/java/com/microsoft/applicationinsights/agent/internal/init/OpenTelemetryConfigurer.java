@@ -25,7 +25,7 @@ import com.azure.monitor.opentelemetry.exporter.AiOperationNameSpanProcessor;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
-import com.microsoft.applicationinsights.agent.internal.exporter.AzureMonitorMetricExporter;
+import com.azure.monitor.opentelemetry.exporter.AzureMonitorMetricExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.LoggerExporter;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHeaderSpanProcessor;

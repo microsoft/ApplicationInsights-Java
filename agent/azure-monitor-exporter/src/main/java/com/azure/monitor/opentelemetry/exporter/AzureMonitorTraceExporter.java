@@ -194,7 +194,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
 
   private void internalExport(SpanData span, List<TelemetryItem> telemetryItems) {
     SpanKind kind = span.getKind();
-    String instrumentationName = span.getInstrumentationLibraryInfo().getName();
+    String instrumentationName = span.getInstrumentationScopeInfo().getName();
     if (kind == SpanKind.INTERNAL) {
       if (instrumentationName.startsWith("io.opentelemetry.spring-scheduling-")
           && !span.getParentSpanContext().isValid()) {

@@ -37,6 +37,7 @@ import com.azure.core.util.ClientOptions;
 import com.azure.core.util.Configuration;
 import com.azure.core.util.CoreUtils;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.net.URL;
 import java.util.ArrayList;
@@ -233,6 +234,24 @@ public final class AzureMonitorExporterBuilder {
    *     environment variable "APPLICATIONINSIGHTS_CONNECTION_STRING" is not set.
    */
   public AzureMonitorTraceExporter buildTraceExporter() {
+    init();
+    return new AzureMonitorTraceExporter(httpPipeline, endpoint, instrumentationKey);
+  }
+
+  /**
+   * Creates an {@link AzureMonitorMetricExporter} based on the options set in the builder. This
+   * exporter is an implementation of OpenTelemetry {@link MetricExporter}.
+   *
+   * @return An instance of {@link AzureMonitorMetricExporter}.
+   * @throws NullPointerException if the connection string is not set on this builder or if the
+   *     environment variable "APPLICATIONINSIGHTS_CONNECTION_STRING" is not set.
+   */
+  public AzureMonitorMetricExporter buildMetricExporter() {
+    init();
+    return new AzureMonitorMetricExporter(httpPipeline, endpoint, instrumentationKey);
+  }
+
+  private void init() {
     if (this.connectionString == null) {
       // if connection string is not set, try loading from configuration
       Configuration configuration = Configuration.getGlobalConfiguration().clone();
@@ -251,8 +270,9 @@ public final class AzureMonitorExporterBuilder {
       httpPipelinePolicies.add(authenticationPolicy);
     }
 
-    return new AzureMonitorTraceExporter(
-        httpPipeline == null ? createHttpPipeline() : httpPipeline, endpoint, instrumentationKey);
+    if (httpPipeline == null) {
+      httpPipeline = createHttpPipeline();
+    }
   }
 
   private HttpPipeline createHttpPipeline() {
