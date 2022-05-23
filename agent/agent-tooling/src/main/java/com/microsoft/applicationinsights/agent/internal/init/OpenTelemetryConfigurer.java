@@ -22,10 +22,10 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.azure.monitor.opentelemetry.exporter.AiOperationNameSpanProcessor;
+import com.azure.monitor.opentelemetry.exporter.AzureMonitorExporterBuilder;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
-import com.azure.monitor.opentelemetry.exporter.AzureMonitorMetricExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.LoggerExporter;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHeaderSpanProcessor;
@@ -92,8 +92,7 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
             (builder, config) -> configureTracing(builder, telemetryClient, config, configuration))
         .addLogEmitterProviderCustomizer(
             (builder, config) -> configureLogging(builder, telemetryClient, configuration))
-        .addMeterProviderCustomizer(
-            (builder, config) -> configureMetrics(builder, telemetryClient, configuration));
+        .addMeterProviderCustomizer((builder, config) -> configureMetrics(builder, configuration));
 
     Runtime.getRuntime()
         .addShutdownHook(new Thread(() -> flushAll(telemetryClient).join(10, TimeUnit.SECONDS)));
@@ -319,12 +318,13 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
   }
 
   private static SdkMeterProviderBuilder configureMetrics(
-      SdkMeterProviderBuilder builder,
-      TelemetryClient telemetryClient,
-      Configuration configuration) {
+      SdkMeterProviderBuilder builder, Configuration configuration) {
 
     metricReader =
-        PeriodicMetricReader.builder(new AzureMonitorMetricExporter(telemetryClient))
+        PeriodicMetricReader.builder(
+                new AzureMonitorExporterBuilder()
+                    .connectionString(configuration.connectionString)
+                    .buildMetricExporter())
             .setInterval(Duration.ofSeconds(configuration.preview.metricIntervalSeconds))
             .build();
 
