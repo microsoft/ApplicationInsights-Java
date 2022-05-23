@@ -44,6 +44,7 @@ public final class MetricTelemetryBuilder extends AbstractTelemetryBuilder {
 
     point.setName(name);
     point.setValue(value);
+    telemetryBuilder.setMetricPoint(point);
 
     telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
 
