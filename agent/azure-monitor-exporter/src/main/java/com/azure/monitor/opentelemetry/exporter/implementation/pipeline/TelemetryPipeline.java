@@ -35,6 +35,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 public class TelemetryPipeline {
@@ -42,8 +44,11 @@ public class TelemetryPipeline {
   // Based on Stamp specific redirects design doc
   private static final int MAX_REDIRECTS = 10;
 
+  private static final Logger logger = LoggerFactory.getLogger(TelemetryItemExporter.class);
+
   private final HttpPipeline pipeline;
   private final URL endpoint;
+  private boolean stopSending;
 
   // key is instrumentationKey, value is redirectUrl
   private final Map<String, URL> redirectCache =
@@ -86,6 +91,10 @@ public class TelemetryPipeline {
       TelemetryPipelineListener listener,
       CompletableResultCode result,
       int remainingRedirects) {
+
+    if (this.stopSending) {
+      return;
+    }
 
     // Add instrumentation key to context to use in StatsbeatHttpPipelinePolicy
     Map<Object, Object> contextKeyValues = new HashMap<>();
@@ -131,6 +140,12 @@ public class TelemetryPipeline {
       int remainingRedirects) {
 
     int responseCode = response.getStatusCode();
+
+    int newDailyQuotaExceeded = 402;
+    if (responseCode == newDailyQuotaExceeded) {
+      logger.warn("Stop sending telemetry data because new daily quota exceeded.");
+      this.stopSending = true;
+    }
 
     if (StatusCodes.isRedirect(responseCode) && remainingRedirects > 0) {
       String location = response.getHeaderValue("Location");
