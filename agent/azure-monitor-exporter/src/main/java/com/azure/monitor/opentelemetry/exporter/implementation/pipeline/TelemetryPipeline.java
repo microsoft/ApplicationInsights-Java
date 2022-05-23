@@ -177,6 +177,7 @@ public class TelemetryPipeline {
       }
     }
   }
+
   private static boolean isNewDailyQuotaExceeded(HttpResponse response) {
     int responseCode = response.getStatusCode();
     return responseCode == 402;
