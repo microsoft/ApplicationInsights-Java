@@ -70,7 +70,6 @@ public class MicrometerTest extends AiJarSmokeTest {
 
     DataPoint point = points.get(0);
 
-    assertEquals(DataPointType.MEASUREMENT, point.getKind());
     assertEquals(1, point.getValue(), 0); // (this was verified above in Predicate also)
     assertEquals("test_counter", point.getName());
     assertNull("getCount was non-null", point.getCount());

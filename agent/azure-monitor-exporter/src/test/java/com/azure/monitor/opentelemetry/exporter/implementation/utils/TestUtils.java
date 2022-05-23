@@ -48,7 +48,6 @@ public final class TestUtils {
     MetricsData data = new MetricsData();
     List<MetricDataPoint> dataPoints = new ArrayList<>();
     MetricDataPoint dataPoint = new MetricDataPoint();
-    dataPoint.setDataPointType(DataPointType.MEASUREMENT);
     dataPoint.setName(name);
     dataPoint.setValue(value);
     dataPoint.setCount(1);
