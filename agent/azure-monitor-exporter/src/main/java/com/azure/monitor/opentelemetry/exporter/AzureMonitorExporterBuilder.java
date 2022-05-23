@@ -313,10 +313,10 @@ public final class AzureMonitorExporterBuilder {
           new BearerTokenAuthenticationPolicy(
               this.credential, APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE);
       httpPipelinePolicies.add(authenticationPolicy);
+    }
 
-      if (httpPipeline == null) {
-        httpPipeline = createHttpPipeline();
-      }
+    if (httpPipeline == null) {
+      httpPipeline = createHttpPipeline();
     }
   }
 
