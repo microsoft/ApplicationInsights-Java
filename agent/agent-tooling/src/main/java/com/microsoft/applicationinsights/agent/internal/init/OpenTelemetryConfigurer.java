@@ -23,10 +23,13 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.azure.monitor.opentelemetry.exporter.AiOperationNameSpanProcessor;
 import com.azure.monitor.opentelemetry.exporter.AzureMonitorExporterBuilder;
+import com.azure.monitor.opentelemetry.exporter.AzureMonitorTraceExporter;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.google.auto.service.AutoService;
+import com.microsoft.applicationinsights.agent.bootstrap.AiAppId;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
-import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.LoggerExporter;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHeaderSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
@@ -207,7 +210,40 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
       Configuration configuration,
       boolean captureHttpServer4xxAsError) {
 
-    SpanExporter spanExporter = new Exporter(telemetryClient, captureHttpServer4xxAsError);
+    AzureMonitorTraceExporter azureMonitorTraceExporter =
+        new AzureMonitorTraceExporter(
+            captureHttpServer4xxAsError,
+            telemetryClient::populateDefaults,
+            (event, instrumentationName) -> {
+              boolean lettuce51 = instrumentationName.equals("io.opentelemetry.lettuce-5.1");
+              if (lettuce51 && event.getName().startsWith("redis.encode.")) {
+                // special case as these are noisy and come from the underlying library itself
+                return true;
+              }
+              boolean grpc16 = instrumentationName.equals("io.opentelemetry.grpc-1.6");
+              if (grpc16 && event.getName().equals("message")) {
+                // OpenTelemetry semantic conventions define semi-noisy grpc events
+                // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/rpc.md#events
+                //
+                // we want to suppress these (at least by default)
+                return true;
+              }
+              return false;
+            },
+            telemetryItems -> {
+              for (TelemetryItem telemetryItem : telemetryItems) {
+                telemetryClient.trackAsync(telemetryItem);
+              }
+              return CompletableResultCode.ofSuccess();
+            },
+            CompletableResultCode::ofSuccess,
+            CompletableResultCode::ofSuccess,
+            () -> !Strings.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey()),
+            AiAppId::getAppId);
+
+    SpanExporter spanExporter =
+        new StatsbeatSpanExporter(azureMonitorTraceExporter, telemetryClient.getStatsbeatModule());
+
     List<ProcessorConfig> processorConfigs = getSpanProcessorConfigs(configuration);
     // NOTE if changing the span processor to something async, flush it in the shutdown hook before
     // flushing TelemetryClient
@@ -354,7 +390,7 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
         // already has http.url
         return span;
       }
-      String httpUrl = Exporter.getHttpUrlFromServerSpan(attributes);
+      String httpUrl = AzureMonitorTraceExporter.getHttpUrlFromServerSpan(attributes);
       if (httpUrl == null) {
         return span;
       }

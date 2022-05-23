@@ -21,11 +21,11 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
+import com.azure.monitor.opentelemetry.exporter.AzureMonitorTraceExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverrideAttribute;
-import com.microsoft.applicationinsights.agent.internal.exporter.Exporter;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
@@ -260,7 +260,7 @@ class SamplingOverrides {
 
     private String get() {
       if (!initialized) {
-        value = Exporter.getHttpUrlFromServerSpan(attributes);
+        value = AzureMonitorTraceExporter.getHttpUrlFromServerSpan(attributes);
         initialized = true;
       }
       return value;

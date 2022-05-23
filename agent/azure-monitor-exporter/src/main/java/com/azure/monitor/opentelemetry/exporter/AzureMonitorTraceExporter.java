@@ -24,7 +24,6 @@ package com.azure.monitor.opentelemetry.exporter;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import com.azure.core.http.HttpPipeline;
 import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
@@ -32,31 +31,26 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.Exceptio
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDependencyTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
-import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
+import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
-import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
-import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Trie;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.UrlParser;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.VersionGenerator;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -64,21 +58,49 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiPredicate;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class is an implementation of OpenTelemetry {@link SpanExporter} that allows different
  * tracing services to export recorded data for sampled spans in their own format.
  */
+// TODO (trask) move this class into internal package
 public final class AzureMonitorTraceExporter implements SpanExporter {
+
+  private static final ClientLogger LOGGER = new ClientLogger(AzureMonitorTraceExporter.class);
 
   private static final Set<String> SQL_DB_SYSTEMS;
 
   private static final Trie<Boolean> STANDARD_ATTRIBUTE_PREFIX_TRIE;
 
-  private static final AttributeKey<String> AI_OPERATION_NAME_KEY =
+  // TODO (trask) add to generated ContextTagKeys class
+  private static final ContextTagKeys AI_DEVICE_OS = ContextTagKeys.fromString("ai.device.os");
+
+  // TODO (trask) this can go away once new indexer is rolled out to gov clouds
+  private static final AttributeKey<List<String>> AI_REQUEST_CONTEXT_KEY =
+      AttributeKey.stringArrayKey("http.response.header.request_context");
+
+  public static final AttributeKey<String> AI_OPERATION_NAME_KEY =
       AttributeKey.stringKey("applicationinsights.internal.operation_name");
+  public static final AttributeKey<String> AI_LEGACY_PARENT_ID_KEY =
+      AttributeKey.stringKey("applicationinsights.internal.legacy_parent_id");
+  public static final AttributeKey<String> AI_LEGACY_ROOT_ID_KEY =
+      AttributeKey.stringKey("applicationinsights.internal.legacy_root_id");
+
+  // this is only used by the 2.x web interop bridge
+  // for ThreadContext.getRequestTelemetryContext().getRequestTelemetry().setSource()
+  private static final AttributeKey<String> AI_SPAN_SOURCE_KEY =
+      AttributeKey.stringKey("applicationinsights.internal.source");
+  private static final AttributeKey<String> AI_SESSION_ID_KEY =
+      AttributeKey.stringKey("applicationinsights.internal.session_id");
+  private static final AttributeKey<String> AI_DEVICE_OS_KEY =
+      AttributeKey.stringKey("applicationinsights.internal.operating_system");
+  private static final AttributeKey<String> AI_DEVICE_OS_VERSION_KEY =
+      AttributeKey.stringKey("applicationinsights.internal.operating_system_version");
 
   private static final AttributeKey<String> AZURE_NAMESPACE =
       AttributeKey.stringKey("az.namespace");
@@ -93,7 +115,8 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
       AttributeKey.longKey("kafka.record.queue_time_ms");
   private static final AttributeKey<Long> KAFKA_OFFSET = AttributeKey.longKey("kafka.offset");
 
-  private static final ClientLogger LOGGER = new ClientLogger(AzureMonitorTraceExporter.class);
+  private static final OperationLogger exportingSpanLogger =
+      new OperationLogger(AzureMonitorTraceExporter.class, "Exporting span");
 
   static {
     Set<String> dbSystems = new HashSet<>();
@@ -129,70 +152,92 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
             .build();
   }
 
-  private final TelemetryItemExporter telemetryItemExporter;
-  private final String instrumentationKey;
+  private final boolean captureHttpServer4xxAsError;
+  private final Consumer<AbstractTelemetryBuilder> defaultsPopulator;
+  private final BiPredicate<EventData, String> eventSuppressor;
+  private final Function<List<TelemetryItem>, CompletableResultCode> exportFn;
+  private final Supplier<CompletableResultCode> flushFn;
+  private final Supplier<CompletableResultCode> shutdownFn;
+  private final Supplier<Boolean> active;
+  private final Supplier<String> appIdSupplier;
 
   /**
    * Creates an instance of exporter that is configured with given exporter client that sends
    * telemetry events to Application Insights resource identified by the instrumentation key.
-   *
-   * @param httpPipeline The http pipeline used to send data to Azure Monitor.
-   * @param endpoint the ingestion endpoint used to send data to Azure Monitor.
-   * @param instrumentationKey The instrumentation key of Application Insights resource.
    */
-  AzureMonitorTraceExporter(HttpPipeline httpPipeline, URL endpoint, String instrumentationKey) {
-    TelemetryPipeline pipeline = new TelemetryPipeline(httpPipeline, endpoint);
-
-    File tempDir =
-        TempDirs.getApplicationInsightsTempDir(
-            LoggerFactory.getLogger(AzureMonitorTraceExporter.class),
-            "Telemetry will not be stored to disk and retried later"
-                + " on sporadic network failures");
-
-    if (tempDir != null) {
-      telemetryItemExporter =
-          new TelemetryItemExporter(
-              pipeline,
-              new LocalStorageTelemetryPipelineListener(
-                  TempDirs.getSubDir(tempDir, "telemetry"),
-                  pipeline,
-                  LocalStorageStats.noop(),
-                  false));
-    } else {
-      telemetryItemExporter = new TelemetryItemExporter(pipeline, TelemetryPipelineListener.noop());
-    }
-    this.instrumentationKey = instrumentationKey;
+  public AzureMonitorTraceExporter(
+      boolean captureHttpServer4xxAsError,
+      Consumer<AbstractTelemetryBuilder> defaultsPopulator,
+      BiPredicate<EventData, String> eventSuppressor,
+      Function<List<TelemetryItem>, CompletableResultCode> exportFn,
+      Supplier<CompletableResultCode> flushFn,
+      Supplier<CompletableResultCode> shutdownFn,
+      Supplier<Boolean> active,
+      Supplier<String> appIdSupplier) {
+    this.captureHttpServer4xxAsError = captureHttpServer4xxAsError;
+    this.defaultsPopulator = defaultsPopulator;
+    this.eventSuppressor = eventSuppressor;
+    this.exportFn = exportFn;
+    this.flushFn = flushFn;
+    this.shutdownFn = shutdownFn;
+    this.active = active;
+    this.appIdSupplier = appIdSupplier;
   }
 
   /** {@inheritDoc} */
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
-    List<TelemetryItem> telemetryItems = new ArrayList<>();
-    try {
-      for (SpanData span : spans) {
-        LOGGER.verbose("exporting span: {}", span);
-        internalExport(span, telemetryItems);
-      }
-      return telemetryItemExporter.send(telemetryItems);
-    } catch (Throwable t) {
-      LOGGER.error(t.getMessage(), t);
-      return CompletableResultCode.ofFailure();
+    if (!active.get()) {
+      LOGGER.verbose("exporter is not active");
+      return CompletableResultCode.ofSuccess();
     }
+
+    List<TelemetryItem> telemetryItems = new ArrayList<>();
+
+    boolean mappingFailure = false;
+    for (SpanData span : spans) {
+      LOGGER.verbose("exporting span: {}", span);
+      try {
+        map(span, telemetryItems);
+        exportingSpanLogger.recordSuccess();
+      } catch (Throwable t) {
+        exportingSpanLogger.recordFailure(t.getMessage(), t);
+        mappingFailure = true;
+      }
+    }
+
+    if (telemetryItems.isEmpty()) {
+      return mappingFailure ? CompletableResultCode.ofFailure() : CompletableResultCode.ofSuccess();
+    }
+
+    CompletableResultCode overallResult = new CompletableResultCode();
+    CompletableResultCode exportResult = exportFn.apply(telemetryItems);
+    boolean mappingFailureFinal = mappingFailure;
+    exportResult.whenComplete(
+        () -> {
+          if (exportResult.isSuccess() && !mappingFailureFinal) {
+            overallResult.succeed();
+          } else {
+            overallResult.fail();
+          }
+        });
+
+    return overallResult;
   }
 
   /** {@inheritDoc} */
   @Override
   public CompletableResultCode flush() {
-    return telemetryItemExporter.flush();
+    return flushFn.get();
   }
 
   /** {@inheritDoc} */
   @Override
   public CompletableResultCode shutdown() {
-    return telemetryItemExporter.shutdown();
+    return shutdownFn.get();
   }
 
-  private void internalExport(SpanData span, List<TelemetryItem> telemetryItems) {
+  private void map(SpanData span, List<TelemetryItem> telemetryItems) {
     SpanKind kind = span.getKind();
     String instrumentationName = span.getInstrumentationScopeInfo().getName();
     if (kind == SpanKind.INTERNAL) {
@@ -212,16 +257,16 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
     } else if (kind == SpanKind.SERVER || kind == SpanKind.CONSUMER) {
       exportRequest(span, telemetryItems);
     } else {
-      throw LOGGER.logExceptionAsError(new UnsupportedOperationException(kind.name()));
+      throw new UnsupportedOperationException(kind.name());
     }
   }
 
   private void exportRemoteDependency(
       SpanData span, boolean inProc, List<TelemetryItem> telemetryItems) {
     RemoteDependencyTelemetryBuilder telemetryBuilder = RemoteDependencyTelemetryBuilder.create();
-    initTelemetry(telemetryBuilder);
+    defaultsPopulator.accept(telemetryBuilder);
 
-    float samplingPercentage = 100; // TODO
+    float samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
 
     // set standard properties
     setOperationTags(telemetryBuilder, span);
@@ -286,7 +331,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
     return path.isEmpty() ? method + " /" : method + " " + path;
   }
 
-  private static void applySemanticConventions(
+  private void applySemanticConventions(
       RemoteDependencyTelemetryBuilder telemetryBuilder, SpanData span) {
     Attributes attributes = span.getAttributes();
     String httpMethod = attributes.get(SemanticAttributes.HTTP_METHOD);
@@ -304,16 +349,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
       applyDatabaseClientSpan(telemetryBuilder, dbSystem, attributes);
       return;
     }
-    String azureNamespace = attributes.get(AZURE_NAMESPACE);
-    if ("Microsoft.EventHub".equals(azureNamespace)) {
-      applyEventHubsSpan(telemetryBuilder, attributes);
-      return;
-    }
-    if ("Microsoft.ServiceBus".equals(azureNamespace)) {
-      applyServiceBusSpan(telemetryBuilder, attributes);
-      return;
-    }
-    String messagingSystem = attributes.get(SemanticAttributes.MESSAGING_SYSTEM);
+    String messagingSystem = getMessagingSystem(attributes);
     if (messagingSystem != null) {
       applyMessagingClientSpan(telemetryBuilder, span.getKind(), messagingSystem, attributes);
       return;
@@ -334,6 +370,16 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
     // so we mark these as InProc, even though they aren't INTERNAL spans,
     // in order to prevent App Map from considering them
     telemetryBuilder.setType("InProc");
+  }
+
+  @Nullable
+  private static String getMessagingSystem(Attributes attributes) {
+    String azureNamespace = attributes.get(AZURE_NAMESPACE);
+    if (isAzureSdkMessaging(azureNamespace)) {
+      // special case needed until Azure SDK moves to OTel semantic conventions
+      return azureNamespace;
+    }
+    return attributes.get(SemanticAttributes.MESSAGING_SYSTEM);
   }
 
   private static void setOperationTags(AbstractTelemetryBuilder telemetryBuilder, SpanData span) {
@@ -366,13 +412,24 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
     telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_NAME.toString(), operationName);
   }
 
-  private static void applyHttpClientSpan(
+  private void applyHttpClientSpan(
       RemoteDependencyTelemetryBuilder telemetryBuilder, Attributes attributes) {
 
     String target = getTargetForHttpClientSpan(attributes);
 
-    telemetryBuilder.setType("Http");
-    telemetryBuilder.setTarget(target);
+    String targetAppId = getTargetAppId(attributes);
+
+    if (targetAppId == null || targetAppId.equals(appIdSupplier.get())) {
+      telemetryBuilder.setType("Http");
+      telemetryBuilder.setTarget(target);
+    } else {
+      // using "Http (tracked component)" is important for dependencies that go cross-component
+      // (have an appId in their target field)
+      // if you use just HTTP, Breeze will remove appid from the target
+      // TODO (trask) remove this once confirmed by zakima that it is no longer needed
+      telemetryBuilder.setType("Http (tracked component)");
+      telemetryBuilder.setTarget(target + " | " + targetAppId);
+    }
 
     Long httpStatusCode = attributes.get(SemanticAttributes.HTTP_STATUS_CODE);
     if (httpStatusCode != null) {
@@ -381,6 +438,20 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
 
     String url = attributes.get(SemanticAttributes.HTTP_URL);
     telemetryBuilder.setData(url);
+  }
+
+  @Nullable
+  private static String getTargetAppId(Attributes attributes) {
+    List<String> requestContextList = attributes.get(AI_REQUEST_CONTEXT_KEY);
+    if (requestContextList == null || requestContextList.isEmpty()) {
+      return null;
+    }
+    String requestContext = requestContextList.get(0);
+    int index = requestContext.indexOf('=');
+    if (index == -1) {
+      return null;
+    }
+    return requestContext.substring(index + 1);
   }
 
   private static String getTargetForHttpClientSpan(Attributes attributes) {
@@ -523,33 +594,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
       // e.g. CONSUMER kind (without remote parent) and CLIENT kind
       telemetryBuilder.setType(messagingSystem);
     }
-    String destination = attributes.get(SemanticAttributes.MESSAGING_DESTINATION);
-    if (destination != null) {
-      telemetryBuilder.setTarget(destination);
-    } else {
-      telemetryBuilder.setTarget(messagingSystem);
-    }
-  }
-
-  // special case needed until Azure SDK moves to OTel semantic conventions
-  private static void applyEventHubsSpan(
-      RemoteDependencyTelemetryBuilder telemetryBuilder, Attributes attributes) {
-    telemetryBuilder.setType("Microsoft.EventHub");
-    telemetryBuilder.setTarget(getAzureSdkTargetSource(attributes));
-  }
-
-  // special case needed until Azure SDK moves to OTel semantic conventions
-  private static void applyServiceBusSpan(
-      RemoteDependencyTelemetryBuilder telemetryBuilder, Attributes attributes) {
-    // TODO(trask) change this to Microsoft.ServiceBus once that is supported in U/X E2E view
-    telemetryBuilder.setType("AZURE SERVICE BUS");
-    telemetryBuilder.setTarget(getAzureSdkTargetSource(attributes));
-  }
-
-  private static String getAzureSdkTargetSource(Attributes attributes) {
-    String peerAddress = attributes.get(AZURE_SDK_PEER_ADDRESS);
-    String destination = attributes.get(AZURE_SDK_MESSAGE_BUS_DESTINATION);
-    return peerAddress + "/" + destination;
+    telemetryBuilder.setTarget(getMessagingTargetSource(attributes));
   }
 
   private static int getDefaultPortForDbSystem(String dbSystem) {
@@ -586,11 +631,11 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
 
   private void exportRequest(SpanData span, List<TelemetryItem> telemetryItems) {
     RequestTelemetryBuilder telemetryBuilder = RequestTelemetryBuilder.create();
-    initTelemetry(telemetryBuilder);
+    defaultsPopulator.accept(telemetryBuilder);
 
     Attributes attributes = span.getAttributes();
     long startEpochNanos = span.getStartEpochNanos();
-    float samplingPercentage = 100; // TODO
+    float samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
 
     // set standard properties
     telemetryBuilder.setId(span.getSpanId());
@@ -603,8 +648,20 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
     telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_NAME.toString(), operationName);
     telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_ID.toString(), span.getTraceId());
 
-    telemetryBuilder.addTag(
-        ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), span.getParentSpanContext().getSpanId());
+    // see behavior specified at https://github.com/microsoft/ApplicationInsights-Java/issues/1174
+    String aiLegacyParentId = span.getAttributes().get(AI_LEGACY_PARENT_ID_KEY);
+    if (aiLegacyParentId != null) {
+      // this was the real (legacy) parent id, but it didn't fit span id format
+      telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), aiLegacyParentId);
+    } else if (span.getParentSpanContext().isValid()) {
+      telemetryBuilder.addTag(
+          ContextTagKeys.AI_OPERATION_PARENT_ID.toString(),
+          span.getParentSpanContext().getSpanId());
+    }
+    String aiLegacyRootId = span.getAttributes().get(AI_LEGACY_ROOT_ID_KEY);
+    if (aiLegacyRootId != null) {
+      telemetryBuilder.addTag("ai_legacyRootID", aiLegacyRootId);
+    }
 
     // set request-specific properties
     telemetryBuilder.setName(operationName);
@@ -636,9 +693,28 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
       telemetryBuilder.addTag(ContextTagKeys.AI_LOCATION_IP.toString(), locationIp);
     }
 
-    telemetryBuilder.setSource(getSource(attributes));
+    telemetryBuilder.setSource(getSource(attributes, span.getSpanContext()));
 
-    // TODO (trask): for batch consumer, enqueuedTime should be the average of this attribute
+    String sessionId = attributes.get(AI_SESSION_ID_KEY);
+    if (sessionId != null) {
+      // this is only used by the 2.x web interop bridge for
+      // ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getSession().setId()
+      telemetryBuilder.addTag(ContextTagKeys.AI_SESSION_ID.toString(), sessionId);
+    }
+    String deviceOs = attributes.get(AI_DEVICE_OS_KEY);
+    if (deviceOs != null) {
+      // this is only used by the 2.x web interop bridge for
+      // ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getDevice().setOperatingSystem()
+      telemetryBuilder.addTag(AI_DEVICE_OS.toString(), deviceOs);
+    }
+    String deviceOsVersion = attributes.get(AI_DEVICE_OS_VERSION_KEY);
+    if (deviceOsVersion != null) {
+      // this is only used by the 2.x web interop bridge for
+      // ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getDevice().setOperatingSystemVersion()
+      telemetryBuilder.addTag(ContextTagKeys.AI_DEVICE_OS_VERSION.toString(), deviceOsVersion);
+    }
+
+    // TODO(trask)? for batch consumer, enqueuedTime should be the average of this attribute
     //  across all links
     Long enqueuedTime = attributes.get(AZURE_SDK_ENQUEUED_TIME);
     if (enqueuedTime != null) {
@@ -656,7 +732,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
     exportEvents(span, operationName, samplingPercentage, telemetryItems);
   }
 
-  private static boolean getSuccess(SpanData span) {
+  private boolean getSuccess(SpanData span) {
     switch (span.getStatus().getStatusCode()) {
       case ERROR:
         return false;
@@ -664,16 +740,17 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
         // instrumentation never sets OK, so this is explicit user override
         return true;
       case UNSET:
-        // TODO (trask) should http server 4xx behavior be configurable?
-        Long statusCode = span.getAttributes().get(SemanticAttributes.HTTP_STATUS_CODE);
-        return statusCode == null || statusCode < 400;
-      default:
+        if (captureHttpServer4xxAsError) {
+          Long statusCode = span.getAttributes().get(SemanticAttributes.HTTP_STATUS_CODE);
+          return statusCode == null || statusCode < 400;
+        }
         return true;
     }
+    return true;
   }
 
   @Nullable
-  private static String getHttpUrlFromServerSpan(Attributes attributes) {
+  public static String getHttpUrlFromServerSpan(Attributes attributes) {
     String httpUrl = attributes.get(SemanticAttributes.HTTP_URL);
     if (httpUrl != null) {
       return httpUrl;
@@ -694,31 +771,50 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
   }
 
   @Nullable
-  private static String getSource(Attributes attributes) {
-    if (isAzureQueue(attributes)) {
-      return getAzureSdkTargetSource(attributes);
+  private String getSource(Attributes attributes, @Nullable SpanContext spanContext) {
+    // this is only used by the 2.x web interop bridge
+    // for ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setSource()
+    String source = attributes.get(AI_SPAN_SOURCE_KEY);
+    if (source != null) {
+      return source;
     }
-    String messagingSystem = attributes.get(SemanticAttributes.MESSAGING_SYSTEM);
-    if (messagingSystem != null) {
-      // TODO (trask) AI mapping: should this pass default port for messaging.system?
-      String source =
-          nullAwareConcat(
-              getTargetFromPeerAttributes(attributes, 0),
-              attributes.get(SemanticAttributes.MESSAGING_DESTINATION),
-              "/");
-      if (source != null) {
-        return source;
-      }
-      // fallback
-      return messagingSystem;
+    if (spanContext != null) {
+      source = spanContext.getTraceState().get("az");
     }
-    return null;
+    if (source != null && !source.equals(appIdSupplier.get())) {
+      return source;
+    }
+    return getMessagingTargetSource(attributes);
   }
 
-  private static boolean isAzureQueue(Attributes attributes) {
-    String azureNamespace = attributes.get(AZURE_NAMESPACE);
-    return "Microsoft.EventHub".equals(azureNamespace)
-        || "Microsoft.ServiceBus".equals(azureNamespace);
+  @Nullable
+  private static String getMessagingTargetSource(Attributes attributes) {
+    if (isAzureSdkMessaging(attributes.get(AZURE_NAMESPACE))) {
+      // special case needed until Azure SDK moves to OTel semantic conventions
+      String peerAddress = attributes.get(AZURE_SDK_PEER_ADDRESS);
+      String destination = attributes.get(AZURE_SDK_MESSAGE_BUS_DESTINATION);
+      return peerAddress + "/" + destination;
+    }
+    String messagingSystem = attributes.get(SemanticAttributes.MESSAGING_SYSTEM);
+    if (messagingSystem == null) {
+      return null;
+    }
+    // TODO (trask) AI mapping: should this pass default port for messaging.system?
+    String source =
+        nullAwareConcat(
+            getTargetFromPeerAttributes(attributes, 0),
+            attributes.get(SemanticAttributes.MESSAGING_DESTINATION),
+            "/");
+    if (source != null) {
+      return source;
+    }
+    // fallback
+    return messagingSystem;
+  }
+
+  private static boolean isAzureSdkMessaging(String messagingSystem) {
+    return "Microsoft.EventHub".equals(messagingSystem)
+        || "Microsoft.ServiceBus".equals(messagingSystem);
   }
 
   private static String getOperationName(SpanData span) {
@@ -747,6 +843,10 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
       float samplingPercentage,
       List<TelemetryItem> telemetryItems) {
     for (EventData event : span.getEvents()) {
+      String instrumentationScopeName = span.getInstrumentationScopeInfo().getName();
+      if (eventSuppressor.test(event, instrumentationScopeName)) {
+        continue;
+      }
 
       if (event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE) != null
           || event.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE) != null) {
@@ -759,7 +859,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
       }
 
       MessageTelemetryBuilder telemetryBuilder = MessageTelemetryBuilder.create();
-      initTelemetry(telemetryBuilder);
+      defaultsPopulator.accept(telemetryBuilder);
 
       // set standard properties
       setOperationId(telemetryBuilder, span.getTraceId());
@@ -787,7 +887,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
       float samplingPercentage,
       List<TelemetryItem> telemetryItems) {
     ExceptionTelemetryBuilder telemetryBuilder = ExceptionTelemetryBuilder.create();
-    initTelemetry(telemetryBuilder);
+    defaultsPopulator.accept(telemetryBuilder);
 
     // set standard properties
     setOperationId(telemetryBuilder, span.getTraceId());
@@ -806,13 +906,6 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
     telemetryItems.add(telemetryBuilder.build());
   }
 
-  private void initTelemetry(AbstractTelemetryBuilder telemetryBuilder) {
-    telemetryBuilder.setInstrumentationKey(instrumentationKey);
-    // Set AI Internal SDK Version
-    telemetryBuilder.addTag(
-        ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), VersionGenerator.getSdkVersion());
-  }
-
   private static void setTime(AbstractTelemetryBuilder telemetryBuilder, long epochNanos) {
     telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(epochNanos));
   }
@@ -822,6 +915,10 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
     if (samplingPercentage != 100) {
       telemetryBuilder.setSampleRate(samplingPercentage);
     }
+  }
+
+  private static float getSamplingPercentage(TraceState traceState) {
+    return TelemetryUtil.getSamplingPercentage(traceState, 100, true);
   }
 
   private static void addLinks(AbstractTelemetryBuilder telemetryBuilder, List<LinkData> links) {
@@ -851,6 +948,9 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
     attributes.forEach(
         (key, value) -> {
           String stringKey = key.getKey();
+          if (stringKey.startsWith("applicationinsights.internal.")) {
+            return;
+          }
           if (stringKey.equals(AZURE_NAMESPACE.getKey())
               || stringKey.equals(AZURE_SDK_MESSAGE_BUS_DESTINATION.getKey())
               || stringKey.equals(AZURE_SDK_ENQUEUED_TIME.getKey())) {
@@ -862,6 +962,9 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
               || stringKey.equals(KAFKA_OFFSET.getKey())) {
             return;
           }
+          if (stringKey.equals(AI_REQUEST_CONTEXT_KEY.getKey())) {
+            return;
+          }
           // special case mappings
           if (stringKey.equals(SemanticAttributes.ENDUSER_ID.getKey()) && value instanceof String) {
             telemetryBuilder.addTag(ContextTagKeys.AI_USER_ID.toString(), (String) value);
@@ -870,6 +973,23 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
           if (stringKey.equals(SemanticAttributes.HTTP_USER_AGENT.getKey())
               && value instanceof String) {
             telemetryBuilder.addTag("ai.user.userAgent", (String) value);
+            return;
+          }
+          if (stringKey.equals("ai.preview.instrumentation_key") && value instanceof String) {
+            telemetryBuilder.setInstrumentationKey((String) value);
+            return;
+          }
+          if (stringKey.equals("ai.preview.service_name") && value instanceof String) {
+            telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), (String) value);
+            return;
+          }
+          if (stringKey.equals("ai.preview.service_instance_id") && value instanceof String) {
+            telemetryBuilder.addTag(
+                ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), (String) value);
+            return;
+          }
+          if (stringKey.equals("ai.preview.service_version") && value instanceof String) {
+            telemetryBuilder.addTag(ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
             return;
           }
           if (STANDARD_ATTRIBUTE_PREFIX_TRIE.getOrDefault(stringKey, false)
@@ -885,7 +1005,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
   }
 
   @Nullable
-  private static String convertToString(Object value, AttributeType type) {
+  public static String convertToString(Object value, AttributeType type) {
     switch (type) {
       case STRING:
       case BOOLEAN:
@@ -897,10 +1017,9 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
       case LONG_ARRAY:
       case DOUBLE_ARRAY:
         return join((List<?>) value);
-      default:
-        LOGGER.warning("unexpected attribute type: {}", type);
-        return null;
     }
+    LOGGER.warning("unexpected attribute type: {}", type);
+    return null;
   }
 
   private static <T> String join(List<T> values) {
