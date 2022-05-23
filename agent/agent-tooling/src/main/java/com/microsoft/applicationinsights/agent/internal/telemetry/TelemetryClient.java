@@ -530,11 +530,13 @@ public class TelemetryClient {
 
     public Builder setRoleName(@Nullable String roleName) {
       this.roleName = roleName;
+      globalTags.put(ContextTagKeys.AI_CLOUD_ROLE.toString(), roleName);
       return this;
     }
 
     public Builder setRoleInstance(@Nullable String roleInstance) {
       this.roleInstance = roleInstance;
+      globalTags.put(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), roleInstance);
       return this;
     }
 
