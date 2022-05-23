@@ -177,12 +177,12 @@ public class TelemetryPipeline {
       }
     }
   }
-  private boolean isNewDailyQuotaExceeded(HttpResponse response) {
+  private static boolean isNewDailyQuotaExceeded(HttpResponse response) {
     int responseCode = response.getStatusCode();
     return responseCode == 402;
   }
 
-  private boolean isRetriedAfter(HttpResponse response) {
+  private static boolean isRetriedAfter(HttpResponse response) {
     return response.getHeaderValue("retry-after") != null;
   }
 }
