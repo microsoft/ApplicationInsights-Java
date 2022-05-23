@@ -168,22 +168,13 @@ public class TelemetryPipeline {
 
   private void manageDailyQuota(HttpResponse response) {
     if (isNewDailyQuotaExceeded(response)) {
-      if (isRetriedAfter(response)) {
-        this.stopSending = false;
-        logger.info("Re-enable telemetry data sending.");
-      } else {
-        this.stopSending = true;
-        logger.warn("Stop sending telemetry data because new daily quota exceeded.");
-      }
+      this.stopSending = true;
+      logger.warn("Stop sending telemetry data because new daily quota exceeded.");
     }
   }
 
   private static boolean isNewDailyQuotaExceeded(HttpResponse response) {
     int responseCode = response.getStatusCode();
     return responseCode == 402;
-  }
-
-  private static boolean isRetriedAfter(HttpResponse response) {
-    return response.getHeaderValue("retry-after") != null;
   }
 }
