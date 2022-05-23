@@ -159,7 +159,6 @@ public class LocalFileLoaderTests {
 
       if (i < 7) { // metrics is only applicable to Metric Telemetry type
         assertThat(metrics.get(0).get("name").asText()).isEqualTo(expectedMetricsName(i));
-        assertThat(metrics.get(0).get("kind").asInt()).isEqualTo(0);
         assertThat(metrics.get(0).get("value").asInt()).isEqualTo(expectedMetricsValue(i));
       }
 
