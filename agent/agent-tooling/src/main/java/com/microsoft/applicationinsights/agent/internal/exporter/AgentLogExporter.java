@@ -95,7 +95,8 @@ public class AgentLogExporter implements LogExporter {
         exportingLogLogger.recordFailure(t.getMessage(), t);
       }
     }
-    return CompletableResultCode.ofFailure();
+    // always returning success, because all error handling is performed internally
+    return CompletableResultCode.ofSuccess();
   }
 
   @Override

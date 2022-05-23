@@ -80,6 +80,7 @@ public final class AgentSpanExporter implements SpanExporter {
         exportingSpanLogger.recordFailure(t.getMessage(), t);
       }
     }
+    // always returning success, because all error handling is performed internally
     return CompletableResultCode.ofSuccess();
   }
 
