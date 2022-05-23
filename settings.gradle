@@ -73,9 +73,9 @@ include(":dependencyManagement")
 
 // Projects for smokeTests
 include ':smoke-tests:servers'
-//include ':smoke-tests:servers:Tomcat.8.5'
-//include ':smoke-tests:servers:Wildfly.11'
-//include ':smoke-tests:servers:Jetty.9'
+include ':smoke-tests:servers:Tomcat.8.5'
+include ':smoke-tests:servers:Wildfly.11'
+include ':smoke-tests:servers:Jetty.9'
 include ':smoke-tests:servers:JavaSE'
 
 include ':smoke-tests:framework'
