@@ -63,7 +63,7 @@ public class LogDataMapper {
     if (stack == null) {
       consumer.accept(trackMessage(log));
     } else {
-      trackMessageAsException(log, stack);
+      consumer.accept(trackMessageAsException(log, stack));
     }
   }
 
