@@ -243,7 +243,6 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
     final double expectedValue = 111222333.0;
     double epsilon = Math.ulp(expectedValue);
-    assertEquals(DataPointType.MEASUREMENT, dp.getKind());
     assertEquals(expectedValue, dp.getValue(), epsilon);
     assertEquals("TimeToRespond", dp.getName());
 

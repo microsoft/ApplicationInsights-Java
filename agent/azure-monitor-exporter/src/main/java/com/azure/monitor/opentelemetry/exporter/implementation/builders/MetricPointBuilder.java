@@ -23,7 +23,6 @@ package com.azure.monitor.opentelemetry.exporter.implementation.builders;
 
 import static com.azure.monitor.opentelemetry.exporter.implementation.builders.TelemetryTruncation.truncateTelemetry;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 
 public final class MetricPointBuilder {
@@ -40,10 +39,6 @@ public final class MetricPointBuilder {
 
   public void setName(String name) {
     data.setName(truncateTelemetry(name, MAX_NAME_LENGTH, "MetricPoint.name"));
-  }
-
-  public void setDataPointType(DataPointType dataPointType) {
-    data.setDataPointType(dataPointType);
   }
 
   public void setValue(double value) {
