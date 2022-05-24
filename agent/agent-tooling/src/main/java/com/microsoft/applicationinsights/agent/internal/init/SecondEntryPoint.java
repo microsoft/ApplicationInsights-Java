@@ -398,6 +398,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
         .collect(Collectors.toCollection(ArrayList::new));
   }
 
+  // QuickPulse is injected into the logging pipeline because QuickPulse displays exception
+  // telemetry and exception telemetry can be reported as either span events or as log records with
+  // an exception stack traces
   private static SdkLogEmitterProviderBuilder configureLogging(
       SdkLogEmitterProviderBuilder builder,
       TelemetryClient telemetryClient,
