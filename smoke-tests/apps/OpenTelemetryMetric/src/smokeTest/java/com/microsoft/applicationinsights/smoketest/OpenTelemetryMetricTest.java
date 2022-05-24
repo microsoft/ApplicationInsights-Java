@@ -100,7 +100,6 @@ public class OpenTelemetryMetricTest extends AiWarSmokeTest {
     assertEquals(1, dataPointList.size());
     DataPoint dp = dataPointList.get(0);
     assertEquals(456, dp.getValue(), 0);
-    assertEquals(DataPointType.AGGREGATION, dp.getKind());
     assertEquals(name, dp.getName());
     assertEquals(1, dp.getCount(), 0);
     assertEquals(456, dp.getMin(), 0);
@@ -137,7 +136,6 @@ public class OpenTelemetryMetricTest extends AiWarSmokeTest {
     assertEquals(1, dataPointList.size());
     DataPoint dp = dataPointList.get(0);
     assertEquals(10, dp.getValue(), 0);
-    assertEquals(DataPointType.MEASUREMENT, dp.getKind());
     assertEquals(name, dp.getName());
 
     // validate custom dimension
@@ -182,7 +180,6 @@ public class OpenTelemetryMetricTest extends AiWarSmokeTest {
     assertEquals(1, dataPointList.size());
     DataPoint dp = dataPointList.get(0);
     assertEquals(2.0, dp.getValue(), 0);
-    assertEquals(DataPointType.AGGREGATION, dp.getKind());
     assertEquals(name, dp.getName());
 
     // validate custom dimension
@@ -208,7 +205,6 @@ public class OpenTelemetryMetricTest extends AiWarSmokeTest {
     assertEquals(1, dataPointList.size());
     dp = dataPointList.get(0);
     assertEquals(6.0, dp.getValue(), 0);
-    assertEquals(DataPointType.AGGREGATION, dp.getKind());
     assertEquals(name, dp.getName());
 
     // validate custom dimension
@@ -234,7 +230,6 @@ public class OpenTelemetryMetricTest extends AiWarSmokeTest {
     assertEquals(1, dataPointList.size());
     dp = dataPointList.get(0);
     assertEquals(7.0, dp.getValue(), 0);
-    assertEquals(DataPointType.AGGREGATION, dp.getKind());
     assertEquals(name, dp.getName());
 
     // validate custom dimension

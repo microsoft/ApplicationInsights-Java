@@ -57,17 +57,6 @@ public class DataPoint {
     this.name = value;
   }
 
-  /** Gets the Kind property. */
-  // used by smoke tests
-  public DataPointType getKind() {
-    return this.kind;
-  }
-
-  /** Sets the Kind property. */
-  public void setKind(DataPointType value) {
-    this.kind = value;
-  }
-
   /** Gets the Value property. */
   public double getValue() {
     return this.value;
