@@ -140,17 +140,17 @@ public final class SpanDataMapper {
   }
 
   private final boolean captureHttpServer4xxAsError;
-  private final Consumer<AbstractTelemetryBuilder> defaultsPopulator;
+  private final Consumer<AbstractTelemetryBuilder> telemetryInitializer;
   private final BiPredicate<EventData, String> eventSuppressor;
   private final Supplier<String> appIdSupplier;
 
   public SpanDataMapper(
       boolean captureHttpServer4xxAsError,
-      Consumer<AbstractTelemetryBuilder> defaultsPopulator,
+      Consumer<AbstractTelemetryBuilder> telemetryInitializer,
       BiPredicate<EventData, String> eventSuppressor,
       Supplier<String> appIdSupplier) {
     this.captureHttpServer4xxAsError = captureHttpServer4xxAsError;
-    this.defaultsPopulator = defaultsPopulator;
+    this.telemetryInitializer = telemetryInitializer;
     this.eventSuppressor = eventSuppressor;
     this.appIdSupplier = appIdSupplier;
   }
@@ -200,7 +200,7 @@ public final class SpanDataMapper {
   private TelemetryItem exportRemoteDependency(
       SpanData span, boolean inProc, float samplingPercentage) {
     RemoteDependencyTelemetryBuilder telemetryBuilder = RemoteDependencyTelemetryBuilder.create();
-    defaultsPopulator.accept(telemetryBuilder);
+    telemetryInitializer.accept(telemetryBuilder);
 
     // set standard properties
     setOperationTags(telemetryBuilder, span);
@@ -564,7 +564,7 @@ public final class SpanDataMapper {
 
   private TelemetryItem exportRequest(SpanData span, float samplingPercentage) {
     RequestTelemetryBuilder telemetryBuilder = RequestTelemetryBuilder.create();
-    defaultsPopulator.accept(telemetryBuilder);
+    telemetryInitializer.accept(telemetryBuilder);
 
     Attributes attributes = span.getAttributes();
     long startEpochNanos = span.getStartEpochNanos();
@@ -796,7 +796,7 @@ public final class SpanDataMapper {
       }
 
       MessageTelemetryBuilder telemetryBuilder = MessageTelemetryBuilder.create();
-      defaultsPopulator.accept(telemetryBuilder);
+      telemetryInitializer.accept(telemetryBuilder);
 
       // set standard properties
       setOperationId(telemetryBuilder, span.getTraceId());
@@ -821,7 +821,7 @@ public final class SpanDataMapper {
       String errorStack, SpanData span, @Nullable String operationName, float samplingPercentage) {
 
     ExceptionTelemetryBuilder telemetryBuilder = ExceptionTelemetryBuilder.create();
-    defaultsPopulator.accept(telemetryBuilder);
+    telemetryInitializer.accept(telemetryBuilder);
 
     // set standard properties
     setOperationId(telemetryBuilder, span.getTraceId());

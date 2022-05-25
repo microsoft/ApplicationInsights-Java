@@ -49,13 +49,13 @@ public class LogDataMapper {
       AttributeKey.stringKey("applicationinsights.internal.operation_name");
 
   private final boolean captureLoggingLevelAsCustomDimension;
-  private final Consumer<AbstractTelemetryBuilder> defaultsPopulator;
+  private final Consumer<AbstractTelemetryBuilder> telemetryInitializer;
 
   public LogDataMapper(
       boolean captureLoggingLevelAsCustomDimension,
-      Consumer<AbstractTelemetryBuilder> defaultsPopulator) {
+      Consumer<AbstractTelemetryBuilder> telemetryInitializer) {
     this.captureLoggingLevelAsCustomDimension = captureLoggingLevelAsCustomDimension;
-    this.defaultsPopulator = defaultsPopulator;
+    this.telemetryInitializer = telemetryInitializer;
   }
 
   public void map(LogData log, Consumer<TelemetryItem> consumer) {
@@ -69,7 +69,7 @@ public class LogDataMapper {
 
   private TelemetryItem createMessageTelemetryItem(LogData log) {
     MessageTelemetryBuilder telemetryBuilder = MessageTelemetryBuilder.create();
-    defaultsPopulator.accept(telemetryBuilder);
+    telemetryInitializer.accept(telemetryBuilder);
 
     Attributes attributes = log.getAttributes();
 
@@ -98,7 +98,7 @@ public class LogDataMapper {
 
   private TelemetryItem createExceptionTelemetryItem(LogData log, String stack) {
     ExceptionTelemetryBuilder telemetryBuilder = ExceptionTelemetryBuilder.create();
-    defaultsPopulator.accept(telemetryBuilder);
+    telemetryInitializer.accept(telemetryBuilder);
 
     Attributes attributes = log.getAttributes();
 
