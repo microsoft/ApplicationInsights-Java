@@ -21,7 +21,6 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorBase;
@@ -48,7 +47,6 @@ public final class TestUtils {
     MetricsData data = new MetricsData();
     List<MetricDataPoint> dataPoints = new ArrayList<>();
     MetricDataPoint dataPoint = new MetricDataPoint();
-    dataPoint.setDataPointType(DataPointType.MEASUREMENT);
     dataPoint.setName(name);
     dataPoint.setValue(value);
     dataPoint.setCount(1);

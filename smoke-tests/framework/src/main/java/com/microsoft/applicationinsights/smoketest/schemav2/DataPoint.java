@@ -26,9 +26,6 @@ public class DataPoint {
   /** Backing field for property Name. */
   private String name;
 
-  /** Backing field for property Kind. */
-  private DataPointType kind = DataPointType.MEASUREMENT;
-
   /** Backing field for property Value. */
   private double value;
 
@@ -55,17 +52,6 @@ public class DataPoint {
   /** Sets the Name property. */
   public void setName(String value) {
     this.name = value;
-  }
-
-  /** Gets the Kind property. */
-  // used by smoke tests
-  public DataPointType getKind() {
-    return this.kind;
-  }
-
-  /** Sets the Kind property. */
-  public void setKind(DataPointType value) {
-    this.kind = value;
   }
 
   /** Gets the Value property. */

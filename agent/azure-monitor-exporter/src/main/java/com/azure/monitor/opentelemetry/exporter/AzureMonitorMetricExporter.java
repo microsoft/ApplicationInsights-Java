@@ -35,7 +35,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTe
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
@@ -178,23 +177,18 @@ public class AzureMonitorMetricExporter implements MetricExporter {
     MetricDataType type = metricData.getType();
     switch (type) {
       case LONG_SUM:
-        pointBuilder.setDataPointType(DataPointType.AGGREGATION);
         pointBuilder.setValue((double) ((LongPointData) pointData).getValue());
         break;
       case LONG_GAUGE:
-        pointBuilder.setDataPointType(DataPointType.MEASUREMENT);
         pointBuilder.setValue((double) ((LongPointData) pointData).getValue());
         break;
       case DOUBLE_SUM:
-        pointBuilder.setDataPointType(DataPointType.AGGREGATION);
         pointBuilder.setValue(((DoublePointData) pointData).getValue());
         break;
       case DOUBLE_GAUGE:
-        pointBuilder.setDataPointType(DataPointType.MEASUREMENT);
         pointBuilder.setValue(((DoublePointData) pointData).getValue());
         break;
       case HISTOGRAM:
-        pointBuilder.setDataPointType(DataPointType.AGGREGATION);
         long histogramCount = ((HistogramPointData) pointData).getCount();
         if (histogramCount <= Integer.MAX_VALUE && histogramCount >= Integer.MIN_VALUE) {
           pointBuilder.setCount((int) histogramCount);

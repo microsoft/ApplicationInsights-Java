@@ -29,7 +29,6 @@ import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import io.opentelemetry.api.OpenTelemetry;
@@ -210,7 +209,6 @@ public class AzureMonitorMetricExporterTest {
     assertThat(metricsData.getMetrics().size()).isEqualTo(1);
     MetricDataPoint metricDataPoint = metricsData.getMetrics().get(0);
     assertThat(metricDataPoint.getValue()).isEqualTo(2);
-    assertThat(metricDataPoint.getDataPointType()).isEqualTo(DataPointType.AGGREGATION);
 
     Map<String, String> properties = metricsData.getProperties();
     assertThat(properties.size()).isEqualTo(2);
@@ -223,7 +221,6 @@ public class AzureMonitorMetricExporterTest {
     assertThat(metricsData.getMetrics().size()).isEqualTo(1);
     metricDataPoint = metricsData.getMetrics().get(0);
     assertThat(metricDataPoint.getValue()).isEqualTo(6);
-    assertThat(metricDataPoint.getDataPointType()).isEqualTo(DataPointType.AGGREGATION);
 
     properties = metricsData.getProperties();
     assertThat(properties.size()).isEqualTo(2);
@@ -236,7 +233,6 @@ public class AzureMonitorMetricExporterTest {
     assertThat(metricsData.getMetrics().size()).isEqualTo(1);
     metricDataPoint = metricsData.getMetrics().get(0);
     assertThat(metricDataPoint.getValue()).isEqualTo(7);
-    assertThat(metricDataPoint.getDataPointType()).isEqualTo(DataPointType.AGGREGATION);
 
     properties = metricsData.getProperties();
     assertThat(properties.size()).isEqualTo(2);
