@@ -61,13 +61,13 @@ public class LogDataMapper {
   public void map(LogData log, Consumer<TelemetryItem> consumer) {
     String stack = log.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
     if (stack == null) {
-      consumer.accept(trackMessage(log));
+      consumer.accept(createMessageTelemetryItem(log));
     } else {
-      consumer.accept(trackMessageAsException(log, stack));
+      consumer.accept(createExceptionTelemetryItem(log, stack));
     }
   }
 
-  private TelemetryItem trackMessage(LogData log) {
+  private TelemetryItem createMessageTelemetryItem(LogData log) {
     MessageTelemetryBuilder telemetryBuilder = MessageTelemetryBuilder.create();
     defaultsPopulator.accept(telemetryBuilder);
 
@@ -96,7 +96,7 @@ public class LogDataMapper {
     return telemetryBuilder.build();
   }
 
-  private TelemetryItem trackMessageAsException(LogData log, String stack) {
+  private TelemetryItem createExceptionTelemetryItem(LogData log, String stack) {
     ExceptionTelemetryBuilder telemetryBuilder = ExceptionTelemetryBuilder.create();
     defaultsPopulator.accept(telemetryBuilder);
 
