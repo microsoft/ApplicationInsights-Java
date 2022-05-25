@@ -43,7 +43,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
   private static final ClientLogger LOGGER = new ClientLogger(AzureMonitorTraceExporter.class);
 
   private static final OperationLogger exportingSpanLogger =
-      new OperationLogger(SpanDataMapper.class, "Exporting span");
+      new OperationLogger(AzureMonitorTraceExporter.class, "Exporting span");
 
   private final TelemetryItemExporter telemetryItemExporter;
   private final SpanDataMapper mapper;
