@@ -21,93 +21,35 @@
 
 package com.azure.monitor.opentelemetry.exporter;
 
-import static io.opentelemetry.api.internal.Utils.checkArgument;
-import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_GAUGE;
-import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_SUM;
-import static io.opentelemetry.sdk.metrics.data.MetricDataType.HISTOGRAM;
-import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_GAUGE;
-import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM;
-
-import com.azure.core.http.HttpPipeline;
-import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricPointBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
-import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
+import com.azure.core.util.logging.ClientLogger;
+import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
+import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
-import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
-import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.VersionGenerator;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.HistogramPointData;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricDataType;
-import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class AzureMonitorMetricExporter implements MetricExporter {
 
-  private static final List<String> EXCLUDED_METRIC_NAMES = new ArrayList<>();
-
-  private final String instrumentationKey;
-  private final TelemetryItemExporter telemetryItemExporter;
-  private static final Logger logger = LoggerFactory.getLogger(AzureMonitorMetricExporter.class);
+  private static final ClientLogger LOGGER = new ClientLogger(AzureMonitorMetricExporter.class);
+  private static final OperationLogger exportingMetricLogger =
+      new OperationLogger(AzureMonitorMetricExporter.class, "Exporting metric");
   private final AtomicBoolean stopped = new AtomicBoolean();
-  private final Consumer<AbstractTelemetryBuilder> defaultPopulator;
+  private final MetricDataMapper mapper;
+  private final TelemetryItemExporter telemetryItemExporter;
 
   public AzureMonitorMetricExporter(
-      HttpPipeline httpPipeline,
-      URL endpoint,
-      String instrumentationKey,
-      Consumer<AbstractTelemetryBuilder> defaultPopulator) {
-    TelemetryPipeline pipeline = new TelemetryPipeline(httpPipeline, endpoint);
-
-    File tempDir =
-        TempDirs.getApplicationInsightsTempDir(
-            logger,
-            "Telemetry will not be stored to disk and retried later"
-                + " on sporadic network failures");
-
-    if (tempDir != null) {
-      telemetryItemExporter =
-          new TelemetryItemExporter(
-              pipeline,
-              new LocalStorageTelemetryPipelineListener(
-                  TempDirs.getSubDir(tempDir, "telemetry"),
-                  pipeline,
-                  LocalStorageStats.noop(),
-                  false));
-    } else {
-      telemetryItemExporter = new TelemetryItemExporter(pipeline, TelemetryPipelineListener.noop());
-    }
-    this.instrumentationKey = instrumentationKey;
-    this.defaultPopulator = defaultPopulator;
-  }
-
-  static {
-    EXCLUDED_METRIC_NAMES.add("http.server.active_requests"); // Servlet
-    EXCLUDED_METRIC_NAMES.add("http.server.duration"); // Servlet
-    EXCLUDED_METRIC_NAMES.add("http.client.duration"); // HttpClient
-    EXCLUDED_METRIC_NAMES.add("rpc.client.duration"); // gRPC
-    EXCLUDED_METRIC_NAMES.add("rpc.server.duration"); // gRPC
+      MetricDataMapper mapper, TelemetryItemExporter telemetryItemExporter) {
+    this.mapper = mapper;
+    this.telemetryItemExporter = telemetryItemExporter;
   }
 
   @Override
@@ -122,23 +64,18 @@ public class AzureMonitorMetricExporter implements MetricExporter {
       return CompletableResultCode.ofFailure();
     }
 
+    List<TelemetryItem> telemetryItems = new ArrayList<>();
     for (MetricData metricData : metrics) {
-      if (EXCLUDED_METRIC_NAMES.contains(metricData.getName())) {
-        continue;
-      }
-
-      MetricDataType type = metricData.getType();
-      if (type == DOUBLE_SUM
-          || type == DOUBLE_GAUGE
-          || type == LONG_SUM
-          || type == LONG_GAUGE
-          || type == HISTOGRAM) {
-        telemetryItemExporter.send(convertOtelMetricToAzureMonitorMetric(metricData));
-      } else {
-        logger.warn("metric data type {} is not supported yet.", type);
+      LOGGER.verbose("exporting metric: {}", metricData);
+      try {
+        mapper.map(metricData, telemetryItems::addAll);
+        exportingMetricLogger.recordSuccess();
+      } catch (Throwable t) {
+        exportingMetricLogger.recordFailure(t.getMessage(), t);
       }
     }
-    return CompletableResultCode.ofSuccess();
+
+    return telemetryItemExporter.send(telemetryItems);
   }
 
   @Override
@@ -150,67 +87,5 @@ public class AzureMonitorMetricExporter implements MetricExporter {
   public CompletableResultCode shutdown() {
     stopped.set(true);
     return CompletableResultCode.ofSuccess();
-  }
-
-  private List<TelemetryItem> convertOtelMetricToAzureMonitorMetric(MetricData metricData) {
-    List<TelemetryItem> telemetryItems = new ArrayList<>();
-    for (PointData pointData : metricData.getData().getPoints()) {
-      MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
-      defaultPopulator.accept(builder);
-      builder.setInstrumentationKey(instrumentationKey);
-      builder.addTag(
-          ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), VersionGenerator.getSdkVersion());
-      builder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(pointData.getEpochNanos()));
-      builder.setSampleRate(100); // TODO make this configurable?
-      updateMetricPointBuilder(builder, metricData, pointData);
-      telemetryItems.add(builder.build());
-    }
-    return telemetryItems;
-  }
-
-  // visible for testing
-  static void updateMetricPointBuilder(
-      MetricTelemetryBuilder metricTelemetryBuilder, MetricData metricData, PointData pointData) {
-    checkArgument(metricData != null, "MetricData cannot be null.");
-
-    MetricPointBuilder pointBuilder = new MetricPointBuilder();
-    MetricDataType type = metricData.getType();
-    switch (type) {
-      case LONG_SUM:
-        pointBuilder.setValue((double) ((LongPointData) pointData).getValue());
-        break;
-      case LONG_GAUGE:
-        pointBuilder.setValue((double) ((LongPointData) pointData).getValue());
-        break;
-      case DOUBLE_SUM:
-        pointBuilder.setValue(((DoublePointData) pointData).getValue());
-        break;
-      case DOUBLE_GAUGE:
-        pointBuilder.setValue(((DoublePointData) pointData).getValue());
-        break;
-      case HISTOGRAM:
-        long histogramCount = ((HistogramPointData) pointData).getCount();
-        if (histogramCount <= Integer.MAX_VALUE && histogramCount >= Integer.MIN_VALUE) {
-          pointBuilder.setCount((int) histogramCount);
-        }
-        HistogramPointData histogramPointData = (HistogramPointData) pointData;
-        pointBuilder.setValue(histogramPointData.getSum());
-        pointBuilder.setMin(histogramPointData.getMin());
-        pointBuilder.setMax(histogramPointData.getMax());
-        break;
-      case SUMMARY: // not supported yet in OpenTelemetry SDK
-      case EXPONENTIAL_HISTOGRAM: // not supported yet in OpenTelemetry SDK
-      default:
-        throw new IllegalArgumentException("metric data type '" + type + "' is not supported yet");
-    }
-
-    pointBuilder.setName(metricData.getName());
-
-    metricTelemetryBuilder.setMetricPoint(pointBuilder);
-
-    pointData
-        .getAttributes()
-        .forEach(
-            (key, value) -> metricTelemetryBuilder.addProperty(key.getKey(), value.toString()));
   }
 }

@@ -36,6 +36,7 @@ import com.azure.core.http.policy.UserAgentPolicy;
 import com.azure.core.util.ClientOptions;
 import com.azure.core.util.Configuration;
 import com.azure.core.util.CoreUtils;
+import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
@@ -85,6 +86,7 @@ public final class AzureMonitorExporterBuilder {
   private HttpLogOptions httpLogOptions;
   private RetryPolicy retryPolicy;
   private final List<HttpPipelinePolicy> httpPipelinePolicies = new ArrayList<>();
+  private TelemetryItemExporter telemetryItemExporter;
 
   private Configuration configuration;
   private ClientOptions clientOptions;
@@ -246,30 +248,7 @@ public final class AzureMonitorExporterBuilder {
    *     environment variable "APPLICATIONINSIGHTS_CONNECTION_STRING" is not set.
    */
   public AzureMonitorTraceExporter buildTraceExporter() {
-    init();
-
-    TelemetryPipeline pipeline = new TelemetryPipeline(httpPipeline, endpoint);
-
-    File tempDir =
-        TempDirs.getApplicationInsightsTempDir(
-            LoggerFactory.getLogger(AzureMonitorTraceExporter.class),
-            "Telemetry will not be stored to disk and retried later"
-                + " on sporadic network failures");
-
-    TelemetryItemExporter telemetryItemExporter;
-    if (tempDir != null) {
-      telemetryItemExporter =
-          new TelemetryItemExporter(
-              pipeline,
-              new LocalStorageTelemetryPipelineListener(
-                  TempDirs.getSubDir(tempDir, "telemetry"),
-                  pipeline,
-                  LocalStorageStats.noop(),
-                  false));
-    } else {
-      telemetryItemExporter = new TelemetryItemExporter(pipeline, TelemetryPipelineListener.noop());
-    }
-
+    initExpoterBuilder();
     return new AzureMonitorTraceExporter(
         true,
         builder -> {
@@ -295,12 +274,12 @@ public final class AzureMonitorExporterBuilder {
    */
   public AzureMonitorMetricExporter buildMetricExporter(
       Consumer<AbstractTelemetryBuilder> defaultPopulator) {
-    init();
+    initExpoterBuilder();
     return new AzureMonitorMetricExporter(
-        httpPipeline, endpoint, instrumentationKey, defaultPopulator);
+        new MetricDataMapper(instrumentationKey, defaultPopulator), telemetryItemExporter);
   }
 
-  private void init() {
+  private void initExpoterBuilder() {
     if (this.connectionString == null) {
       // if connection string is not set, try loading from configuration
       Configuration configuration = Configuration.getGlobalConfiguration().clone();
@@ -321,6 +300,27 @@ public final class AzureMonitorExporterBuilder {
 
     if (httpPipeline == null) {
       httpPipeline = createHttpPipeline();
+    }
+
+    TelemetryPipeline pipeline = new TelemetryPipeline(httpPipeline, endpoint);
+
+    File tempDir =
+        TempDirs.getApplicationInsightsTempDir(
+            LoggerFactory.getLogger(AzureMonitorExporterBuilder.class),
+            "Telemetry will not be stored to disk and retried later"
+                + " on sporadic network failures");
+
+    if (tempDir != null) {
+      telemetryItemExporter =
+          new TelemetryItemExporter(
+              pipeline,
+              new LocalStorageTelemetryPipelineListener(
+                  TempDirs.getSubDir(tempDir, "telemetry"),
+                  pipeline,
+                  LocalStorageStats.noop(),
+                  false));
+    } else {
+      telemetryItemExporter = new TelemetryItemExporter(pipeline, TelemetryPipelineListener.noop());
     }
   }
 
