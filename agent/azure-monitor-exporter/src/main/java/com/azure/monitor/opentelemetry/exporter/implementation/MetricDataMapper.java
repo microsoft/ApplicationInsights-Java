@@ -53,7 +53,7 @@ public class MetricDataMapper {
 
   private static final Logger logger = LoggerFactory.getLogger(MetricDataMapper.class);
   private final String instrumentationKey;
-  private final Consumer<AbstractTelemetryBuilder> defaultPopulator;
+  private final Consumer<AbstractTelemetryBuilder> telemetryInitializer;
 
   static {
     EXCLUDED_METRIC_NAMES.add("http.server.active_requests"); // Servlet
@@ -64,9 +64,9 @@ public class MetricDataMapper {
   }
 
   public MetricDataMapper(
-      String instrumentationKey, Consumer<AbstractTelemetryBuilder> defaultPopulator) {
+      String instrumentationKey, Consumer<AbstractTelemetryBuilder> telemetryInitializer) {
     this.instrumentationKey = instrumentationKey;
-    this.defaultPopulator = defaultPopulator;
+    this.telemetryInitializer = telemetryInitializer;
   }
 
   public void map(MetricData metricData, Consumer<List<TelemetryItem>> consumer) {
@@ -90,7 +90,7 @@ public class MetricDataMapper {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
     for (PointData pointData : metricData.getData().getPoints()) {
       MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
-      defaultPopulator.accept(builder);
+      telemetryInitializer.accept(builder);
       builder.setInstrumentationKey(instrumentationKey);
       builder.addTag(
           ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), VersionGenerator.getSdkVersion());

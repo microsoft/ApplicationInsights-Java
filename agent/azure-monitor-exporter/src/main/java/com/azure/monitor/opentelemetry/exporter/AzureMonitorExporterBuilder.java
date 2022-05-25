@@ -273,10 +273,10 @@ public final class AzureMonitorExporterBuilder {
    *     environment variable "APPLICATIONINSIGHTS_CONNECTION_STRING" is not set.
    */
   public AzureMonitorMetricExporter buildMetricExporter(
-      Consumer<AbstractTelemetryBuilder> defaultPopulator) {
+      Consumer<AbstractTelemetryBuilder> telemetryInitializer) {
     initExpoterBuilder();
     return new AzureMonitorMetricExporter(
-        new MetricDataMapper(instrumentationKey, defaultPopulator), telemetryItemExporter);
+        new MetricDataMapper(instrumentationKey, telemetryInitializer), telemetryItemExporter);
   }
 
   private void initExpoterBuilder() {
