@@ -95,7 +95,8 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
             (builder, config) -> configureTracing(builder, telemetryClient, config, configuration))
         .addLogEmitterProviderCustomizer(
             (builder, config) -> configureLogging(builder, telemetryClient, configuration))
-        .addMeterProviderCustomizer((builder, config) -> configureMetrics(builder, configuration));
+        .addMeterProviderCustomizer(
+            (builder, config) -> configureMetrics(builder, telemetryClient, configuration));
 
     Runtime.getRuntime()
         .addShutdownHook(new Thread(() -> flushAll(telemetryClient).join(10, TimeUnit.SECONDS)));
@@ -354,13 +355,15 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
   }
 
   private static SdkMeterProviderBuilder configureMetrics(
-      SdkMeterProviderBuilder builder, Configuration configuration) {
+      SdkMeterProviderBuilder builder,
+      TelemetryClient telemetryClient,
+      Configuration configuration) {
 
     metricReader =
         PeriodicMetricReader.builder(
                 new AzureMonitorExporterBuilder()
                     .connectionString(configuration.connectionString)
-                    .buildMetricExporter())
+                    .buildMetricExporter(telemetryClient::populateDefaults))
             .setInterval(Duration.ofSeconds(configuration.preview.metricIntervalSeconds))
             .build();
 

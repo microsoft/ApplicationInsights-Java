@@ -29,6 +29,7 @@ import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_GAUGE;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM;
 
 import com.azure.core.http.HttpPipeline;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricPointBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
@@ -59,6 +60,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,9 +72,13 @@ public class AzureMonitorMetricExporter implements MetricExporter {
   private final TelemetryItemExporter telemetryItemExporter;
   private static final Logger logger = LoggerFactory.getLogger(AzureMonitorMetricExporter.class);
   private final AtomicBoolean stopped = new AtomicBoolean();
+  private final Consumer<AbstractTelemetryBuilder> defaultPopulator;
 
   public AzureMonitorMetricExporter(
-      HttpPipeline httpPipeline, URL endpoint, String instrumentationKey) {
+      HttpPipeline httpPipeline,
+      URL endpoint,
+      String instrumentationKey,
+      Consumer<AbstractTelemetryBuilder> defaultPopulator) {
     TelemetryPipeline pipeline = new TelemetryPipeline(httpPipeline, endpoint);
 
     File tempDir =
@@ -94,6 +100,7 @@ public class AzureMonitorMetricExporter implements MetricExporter {
       telemetryItemExporter = new TelemetryItemExporter(pipeline, TelemetryPipelineListener.noop());
     }
     this.instrumentationKey = instrumentationKey;
+    this.defaultPopulator = defaultPopulator;
   }
 
   static {
@@ -150,6 +157,7 @@ public class AzureMonitorMetricExporter implements MetricExporter {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
     for (PointData pointData : metricData.getData().getPoints()) {
       MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
+      defaultPopulator.accept(builder);
       builder.setInstrumentationKey(instrumentationKey);
       builder.addTag(
           ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), VersionGenerator.getSdkVersion());

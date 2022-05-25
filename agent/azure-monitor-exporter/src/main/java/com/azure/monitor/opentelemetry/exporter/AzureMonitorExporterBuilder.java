@@ -36,6 +36,7 @@ import com.azure.core.http.policy.UserAgentPolicy;
 import com.azure.core.util.ClientOptions;
 import com.azure.core.util.Configuration;
 import com.azure.core.util.CoreUtils;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
@@ -53,6 +54,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -291,9 +293,11 @@ public final class AzureMonitorExporterBuilder {
    * @throws NullPointerException if the connection string is not set on this builder or if the
    *     environment variable "APPLICATIONINSIGHTS_CONNECTION_STRING" is not set.
    */
-  public AzureMonitorMetricExporter buildMetricExporter() {
+  public AzureMonitorMetricExporter buildMetricExporter(
+      Consumer<AbstractTelemetryBuilder> defaultPopulator) {
     init();
-    return new AzureMonitorMetricExporter(httpPipeline, endpoint, instrumentationKey);
+    return new AzureMonitorMetricExporter(
+        httpPipeline, endpoint, instrumentationKey, defaultPopulator);
   }
 
   private void init() {
