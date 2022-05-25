@@ -37,7 +37,7 @@ import java.lang.instrument.Instrumentation;
 
 class LegacyInstrumentation {
 
-  static void install() {
+  static void registerTransformers() {
     Instrumentation instrumentation = InstrumentationHolder.getInstrumentation();
 
     // add sdk instrumentation after ensuring Global.getTelemetryClient() will not return null

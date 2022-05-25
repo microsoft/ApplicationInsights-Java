@@ -103,7 +103,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
       StatusFile.startupLogger = startupLogger;
       ConfigurationBuilder.logConfigurationWarnMessages();
 
-      LegacyInstrumentation.install();
+      LegacyInstrumentation.registerTransformers();
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }
