@@ -30,7 +30,6 @@ import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricPointBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -135,23 +134,18 @@ public class AzureMonitorMetricExporter implements MetricExporter {
     MetricDataType type = metricData.getType();
     switch (type) {
       case LONG_SUM:
-        pointBuilder.setDataPointType(DataPointType.AGGREGATION);
         pointBuilder.setValue((double) ((LongPointData) pointData).getValue());
         break;
       case LONG_GAUGE:
-        pointBuilder.setDataPointType(DataPointType.MEASUREMENT);
         pointBuilder.setValue((double) ((LongPointData) pointData).getValue());
         break;
       case DOUBLE_SUM:
-        pointBuilder.setDataPointType(DataPointType.AGGREGATION);
         pointBuilder.setValue(((DoublePointData) pointData).getValue());
         break;
       case DOUBLE_GAUGE:
-        pointBuilder.setDataPointType(DataPointType.MEASUREMENT);
         pointBuilder.setValue(((DoublePointData) pointData).getValue());
         break;
       case HISTOGRAM:
-        pointBuilder.setDataPointType(DataPointType.AGGREGATION);
         long histogramCount = ((HistogramPointData) pointData).getCount();
         if (histogramCount <= Integer.MAX_VALUE && histogramCount >= Integer.MIN_VALUE) {
           pointBuilder.setCount((int) histogramCount);

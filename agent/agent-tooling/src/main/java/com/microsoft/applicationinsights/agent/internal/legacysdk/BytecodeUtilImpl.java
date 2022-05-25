@@ -35,7 +35,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.PageView
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDependencyTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
@@ -130,11 +129,6 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     point.setMin(min);
     point.setMax(max);
     point.setStdDev(stdDev);
-    if (count != null || min != null || max != null || stdDev != null) {
-      point.setDataPointType(DataPointType.AGGREGATION);
-    } else {
-      point.setDataPointType(DataPointType.MEASUREMENT);
-    }
     telemetryBuilder.setMetricPoint(point);
 
     for (Map.Entry<String, String> entry : properties.entrySet()) {

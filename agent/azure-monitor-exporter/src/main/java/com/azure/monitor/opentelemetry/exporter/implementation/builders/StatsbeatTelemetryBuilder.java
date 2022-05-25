@@ -21,7 +21,6 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.builders;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
@@ -40,7 +39,6 @@ public final class StatsbeatTelemetryBuilder extends AbstractTelemetryBuilder {
     MetricDataPoint point = new MetricDataPoint();
     point.setName(name);
     point.setValue(value);
-    point.setDataPointType(DataPointType.MEASUREMENT);
     telemetryBuilder.setMetricDataPoint(point);
 
     telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
