@@ -35,7 +35,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
-import java.util.List;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,18 +47,16 @@ public class AgentMetricExporter implements MetricExporter {
       new OperationLogger(AgentMetricExporter.class, "Exporting metric");
 
   private final MetricDataMapper mapper;
-  private final Consumer<List<TelemetryItem>> telemetryItemsConsumer;
+  private final Consumer<TelemetryItem> telemetryItemConsumer;
 
   public AgentMetricExporter(MetricDataMapper mapper, BatchItemProcessor batchItemProcessor) {
     this.mapper = mapper;
-    this.telemetryItemsConsumer =
-        telemetryItems -> {
-          for (TelemetryItem telemetryItem : telemetryItems) {
-            TelemetryObservers.INSTANCE
-                .getObservers()
-                .forEach(consumer -> consumer.accept(telemetryItem));
-            batchItemProcessor.trackAsync(telemetryItem);
-          }
+    this.telemetryItemConsumer =
+        telemetryItem -> {
+          TelemetryObservers.INSTANCE
+              .getObservers()
+              .forEach(consumer -> consumer.accept(telemetryItem));
+          batchItemProcessor.trackAsync(telemetryItem);
         };
   }
 
@@ -73,7 +70,7 @@ public class AgentMetricExporter implements MetricExporter {
     for (MetricData metricData : metrics) {
       logger.debug("exporting metric: {}", metricData);
       try {
-        mapper.map(metricData, telemetryItemsConsumer);
+        mapper.map(metricData, telemetryItemConsumer);
         exportingMetricLogger.recordSuccess();
       } catch (Throwable t) {
         exportingMetricLogger.recordFailure(t.getMessage(), t);

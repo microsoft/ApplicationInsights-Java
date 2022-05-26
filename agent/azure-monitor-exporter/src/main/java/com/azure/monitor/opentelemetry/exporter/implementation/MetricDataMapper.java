@@ -71,7 +71,7 @@ public class MetricDataMapper {
     this.telemetryInitializer = telemetryInitializer;
   }
 
-  public void map(MetricData metricData, Consumer<List<TelemetryItem>> consumer) {
+  public void map(MetricData metricData, Consumer<TelemetryItem> consumer) {
     if (EXCLUDED_METRIC_NAMES.contains(metricData.getName())) {
       return;
     }
@@ -82,7 +82,10 @@ public class MetricDataMapper {
         || type == LONG_SUM
         || type == LONG_GAUGE
         || type == HISTOGRAM) {
-      consumer.accept(convertOtelMetricToAzureMonitorMetric(metricData));
+      List<TelemetryItem> telemetryItemList = convertOtelMetricToAzureMonitorMetric(metricData);
+      for (TelemetryItem telemetryItem : telemetryItemList) {
+        consumer.accept(telemetryItem);
+      }
     } else {
       logger.warn("metric data type {} is not supported yet.", metricData.getType());
     }
