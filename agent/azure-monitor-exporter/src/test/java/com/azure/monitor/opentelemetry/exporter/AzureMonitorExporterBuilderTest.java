@@ -131,7 +131,7 @@ public class AzureMonitorExporterBuilderTest extends MonitorExporterClientTestBa
             .build();
 
     doubleHistogram.record(25.45);
-    Thread.sleep(100);
+    Thread.sleep(1000);
 
     return inMemoryMetricExporter.getFinishedMetricItems();
   }
