@@ -243,7 +243,7 @@ public class TelemetryClient {
 
   // metrics get flooded every 60 seconds by default, so need much larger queue size to avoid
   // dropping telemetry (they are much smaller so a larger queue size and larger batch size are ok)
-  private BatchItemProcessor getMetricsBatchItemProcessor() {
+  public BatchItemProcessor getMetricsBatchItemProcessor() {
     if (metricsBatchItemProcessor == null) {
       synchronized (batchItemProcessorInitLock) {
         if (metricsBatchItemProcessor == null) {

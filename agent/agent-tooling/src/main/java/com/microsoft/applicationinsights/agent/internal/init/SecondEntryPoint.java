@@ -493,7 +493,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             telemetryClient.getInstrumentationKey(), telemetryClient::populateDefaults);
     metricReader =
         PeriodicMetricReader.builder(
-                new AgentMetricExporter(mapper, telemetryClient.getGeneralBatchItemProcessor()))
+                new AgentMetricExporter(mapper, telemetryClient.getMetricsBatchItemProcessor()))
             .setInterval(Duration.ofSeconds(configuration.preview.metricIntervalSeconds))
             .build();
 
