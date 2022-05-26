@@ -64,7 +64,6 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
   public CompletableResultCode export(Collection<SpanData> spans) {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
 
-    boolean mappingFailure = false;
     for (SpanData span : spans) {
       LOGGER.verbose("exporting span: {}", span);
       try {
@@ -72,27 +71,11 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
         exportingSpanLogger.recordSuccess();
       } catch (Throwable t) {
         exportingSpanLogger.recordFailure(t.getMessage(), t);
-        mappingFailure = true;
+        return CompletableResultCode.ofFailure();
       }
     }
 
-    if (telemetryItems.isEmpty()) {
-      return mappingFailure ? CompletableResultCode.ofFailure() : CompletableResultCode.ofSuccess();
-    }
-
-    CompletableResultCode overallResult = new CompletableResultCode();
-    CompletableResultCode exportResult = telemetryItemExporter.send(telemetryItems);
-    boolean mappingFailureFinal = mappingFailure;
-    exportResult.whenComplete(
-        () -> {
-          if (exportResult.isSuccess() && !mappingFailureFinal) {
-            overallResult.succeed();
-          } else {
-            overallResult.fail();
-          }
-        });
-
-    return overallResult;
+    return telemetryItemExporter.send(telemetryItems);
   }
 
   /** {@inheritDoc} */
