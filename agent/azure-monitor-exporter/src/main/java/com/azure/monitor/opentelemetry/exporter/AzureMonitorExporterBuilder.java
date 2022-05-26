@@ -74,9 +74,14 @@ public final class AzureMonitorExporterBuilder {
       CoreUtils.getProperties("azure-monitor-opentelemetry-exporter.properties");
 
   private String instrumentationKey;
-  private String connectionString;
+
+  // visible for testing
+  public String connectionString;
   private URL endpoint;
-  private TokenCredential credential;
+
+  // visible for testing
+
+  public TokenCredential credential;
 
   // suppress warnings is needed in ApplicationInsights-Java repo, can be removed when upstreaming
   @SuppressWarnings({"UnusedVariable", "FieldCanBeLocal"})
@@ -87,6 +92,7 @@ public final class AzureMonitorExporterBuilder {
   private HttpLogOptions httpLogOptions;
   private RetryPolicy retryPolicy;
   private final List<HttpPipelinePolicy> httpPipelinePolicies = new ArrayList<>();
+
   private TelemetryItemExporter telemetryItemExporter;
 
   private Configuration configuration;
