@@ -19,63 +19,68 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter;
+package com.microsoft.applicationinsights.agent.internal.exporter;
 
-import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
+import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class AzureMonitorMetricExporter implements MetricExporter {
+public class AgentMetricExporter implements MetricExporter {
 
-  private static final ClientLogger LOGGER = new ClientLogger(AzureMonitorMetricExporter.class);
+  private static final Logger logger = LoggerFactory.getLogger(AgentMetricExporter.class);
+
   private static final OperationLogger exportingMetricLogger =
-      new OperationLogger(AzureMonitorMetricExporter.class, "Exporting metric");
-  private final AtomicBoolean stopped = new AtomicBoolean();
+      new OperationLogger(AgentMetricExporter.class, "Exporting metric");
+
   private final MetricDataMapper mapper;
-  private final TelemetryItemExporter telemetryItemExporter;
+  private final Consumer<List<TelemetryItem>> telemetryItemsConsumer;
 
-  AzureMonitorMetricExporter(MetricDataMapper mapper, TelemetryItemExporter telemetryItemExporter) {
+  public AgentMetricExporter(MetricDataMapper mapper, BatchItemProcessor batchItemProcessor) {
     this.mapper = mapper;
-    this.telemetryItemExporter = telemetryItemExporter;
-  }
-
-  @Override
-  public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
-    return AggregationTemporalitySelector.deltaPreferred()
-        .getAggregationTemporality(instrumentType);
+    this.telemetryItemsConsumer =
+        telemetryItems -> {
+          for (TelemetryItem telemetryItem : telemetryItems) {
+            TelemetryObservers.INSTANCE
+                .getObservers()
+                .forEach(consumer -> consumer.accept(telemetryItem));
+            batchItemProcessor.trackAsync(telemetryItem);
+          }
+        };
   }
 
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
-    if (stopped.get()) {
-      return CompletableResultCode.ofFailure();
+    if (Strings.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey())) {
+      logger.debug("exporter is not active");
+      return CompletableResultCode.ofSuccess();
     }
 
-    List<TelemetryItem> telemetryItems = new ArrayList<>();
     for (MetricData metricData : metrics) {
-      LOGGER.verbose("exporting metric: {}", metricData);
+      logger.debug("exporting metric: {}", metricData);
       try {
-        mapper.map(metricData, telemetryItems::addAll);
+        mapper.map(metricData, telemetryItemsConsumer);
         exportingMetricLogger.recordSuccess();
       } catch (Throwable t) {
         exportingMetricLogger.recordFailure(t.getMessage(), t);
-        return CompletableResultCode.ofFailure();
       }
     }
-
-    return telemetryItemExporter.send(telemetryItems);
+    // always returning success, because all error handling is performed internally
+    return CompletableResultCode.ofSuccess();
   }
 
   @Override
@@ -85,7 +90,12 @@ public class AzureMonitorMetricExporter implements MetricExporter {
 
   @Override
   public CompletableResultCode shutdown() {
-    stopped.set(true);
     return CompletableResultCode.ofSuccess();
+  }
+
+  @Override
+  public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    return AggregationTemporalitySelector.deltaPreferred()
+        .getAggregationTemporality(instrumentType);
   }
 }

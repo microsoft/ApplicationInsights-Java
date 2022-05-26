@@ -52,8 +52,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
    * Creates an instance of exporter that is configured with given exporter client that sends
    * telemetry events to Application Insights resource identified by the instrumentation key.
    */
-  public AzureMonitorTraceExporter(
-      SpanDataMapper mapper, TelemetryItemExporter telemetryItemExporter) {
+  AzureMonitorTraceExporter(SpanDataMapper mapper, TelemetryItemExporter telemetryItemExporter) {
 
     this.mapper = mapper;
     this.telemetryItemExporter = telemetryItemExporter;

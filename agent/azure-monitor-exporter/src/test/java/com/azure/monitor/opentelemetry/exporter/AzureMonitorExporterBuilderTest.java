@@ -52,7 +52,7 @@ public class AzureMonitorExporterBuilderTest extends MonitorExporterClientTestBa
   @Test
   public void testBuildMetricExporter() throws InterruptedException {
     AzureMonitorMetricExporter azureMonitorMetricExporter =
-        getClientBuilder().connectionString(METRIC_CONNECTION_STRING).buildMetricExporter(null);
+        getClientBuilder().connectionString(METRIC_CONNECTION_STRING).buildMetricExporter();
     List<MetricData> metricDataList = generateMetricData();
     Assertions.assertTrue(metricDataList.size() > 0);
     CompletableResultCode export = azureMonitorMetricExporter.export(metricDataList);
@@ -74,7 +74,7 @@ public class AzureMonitorExporterBuilderTest extends MonitorExporterClientTestBa
     Assertions.assertTrue(export.isSuccess());
 
     AzureMonitorMetricExporter azureMonitorMetricExporter =
-        getClientBuilder().connectionString(METRIC_CONNECTION_STRING).buildMetricExporter(null);
+        getClientBuilder().connectionString(METRIC_CONNECTION_STRING).buildMetricExporter();
     List<MetricData> metricDataList = generateMetricData();
     Assertions.assertTrue(metricDataList.size() > 0);
     export = azureMonitorMetricExporter.export(metricDataList);

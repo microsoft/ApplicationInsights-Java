@@ -23,9 +23,9 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
-import com.azure.monitor.opentelemetry.exporter.AzureMonitorExporterBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.AiOperationNameSpanProcessor;
 import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
+import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
@@ -39,6 +39,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
+import com.microsoft.applicationinsights.agent.internal.exporter.AgentMetricExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentSpanExporter;
 import com.microsoft.applicationinsights.agent.internal.heartbeat.HeartBeatProvider;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
@@ -487,11 +488,12 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       TelemetryClient telemetryClient,
       Configuration configuration) {
 
+    MetricDataMapper mapper =
+        new MetricDataMapper(
+            telemetryClient.getInstrumentationKey(), telemetryClient::populateDefaults);
     metricReader =
         PeriodicMetricReader.builder(
-                new AzureMonitorExporterBuilder()
-                    .connectionString(configuration.connectionString)
-                    .buildMetricExporter(telemetryClient::populateDefaults))
+                new AgentMetricExporter(mapper, telemetryClient.getGeneralBatchItemProcessor()))
             .setInterval(Duration.ofSeconds(configuration.preview.metricIntervalSeconds))
             .build();
 

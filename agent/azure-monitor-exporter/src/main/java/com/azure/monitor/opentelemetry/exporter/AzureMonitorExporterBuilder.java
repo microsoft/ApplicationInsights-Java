@@ -38,7 +38,6 @@ import com.azure.core.util.Configuration;
 import com.azure.core.util.CoreUtils;
 import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
-import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
@@ -56,7 +55,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Consumer;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -274,11 +272,10 @@ public final class AzureMonitorExporterBuilder {
    * @throws NullPointerException if the connection string is not set on this builder or if the
    *     environment variable "APPLICATIONINSIGHTS_CONNECTION_STRING" is not set.
    */
-  public AzureMonitorMetricExporter buildMetricExporter(
-      Consumer<AbstractTelemetryBuilder> telemetryInitializer) {
+  public AzureMonitorMetricExporter buildMetricExporter() {
     initExporterBuilder();
     return new AzureMonitorMetricExporter(
-        new MetricDataMapper(instrumentationKey, telemetryInitializer), telemetryItemExporter);
+        new MetricDataMapper(instrumentationKey, null), telemetryItemExporter);
   }
 
   private void initExporterBuilder() {

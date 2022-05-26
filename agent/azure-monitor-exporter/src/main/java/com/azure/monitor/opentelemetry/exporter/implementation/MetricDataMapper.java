@@ -44,6 +44,7 @@ import io.opentelemetry.sdk.metrics.data.PointData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +54,7 @@ public class MetricDataMapper {
 
   private static final Logger logger = LoggerFactory.getLogger(MetricDataMapper.class);
   private final String instrumentationKey;
-  private final Consumer<AbstractTelemetryBuilder> telemetryInitializer;
+  @Nullable private final Consumer<AbstractTelemetryBuilder> telemetryInitializer;
 
   static {
     EXCLUDED_METRIC_NAMES.add("http.server.active_requests"); // Servlet
@@ -64,7 +65,8 @@ public class MetricDataMapper {
   }
 
   public MetricDataMapper(
-      String instrumentationKey, Consumer<AbstractTelemetryBuilder> telemetryInitializer) {
+      String instrumentationKey,
+      @Nullable Consumer<AbstractTelemetryBuilder> telemetryInitializer) {
     this.instrumentationKey = instrumentationKey;
     this.telemetryInitializer = telemetryInitializer;
   }
