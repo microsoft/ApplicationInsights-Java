@@ -75,13 +75,9 @@ public final class AzureMonitorExporterBuilder {
 
   private String instrumentationKey;
 
-  // visible for testing
-  public String connectionString;
+  private String connectionString;
   private URL endpoint;
-
-  // visible for testing
-
-  public TokenCredential credential;
+  private TokenCredential credential;
 
   // suppress warnings is needed in ApplicationInsights-Java repo, can be removed when upstreaming
   @SuppressWarnings({"UnusedVariable", "FieldCanBeLocal"})
