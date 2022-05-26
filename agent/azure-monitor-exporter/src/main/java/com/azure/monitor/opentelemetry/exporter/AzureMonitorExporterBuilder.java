@@ -74,7 +74,6 @@ public final class AzureMonitorExporterBuilder {
       CoreUtils.getProperties("azure-monitor-opentelemetry-exporter.properties");
 
   private String instrumentationKey;
-
   private String connectionString;
   private URL endpoint;
   private TokenCredential credential;
