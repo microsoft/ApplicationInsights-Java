@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.exporter;
+package com.azure.monitor.opentelemetry.exporter;
 
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_GAUGE;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_SUM;
@@ -28,10 +28,10 @@ import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_GAUGE;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -99,8 +99,8 @@ public class AzureMonitorMetricExporterTest {
 
     MetricData metricData = metricDatas.get(0);
     for (PointData pointData : metricData.getData().getPoints()) {
-      MetricTelemetryBuilder builder = TelemetryClient.createForTest().newMetricTelemetryBuilder();
-      AzureMonitorMetricExporter.updateMetricPointBuilder(builder, metricDatas.get(0), pointData);
+      MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
+      MetricDataMapper.updateMetricPointBuilder(builder, metricDatas.get(0), pointData);
       MetricsData metricsData = (MetricsData) builder.build().getData().getBaseData();
       assertThat(metricsData.getMetrics().size()).isEqualTo(1);
       assertThat(metricsData.getMetrics().get(0).getValue()).isEqualTo(3.1415);
@@ -128,8 +128,8 @@ public class AzureMonitorMetricExporterTest {
 
     MetricData metricData = metricDataList.get(0);
     for (PointData pointData : metricData.getData().getPoints()) {
-      MetricTelemetryBuilder builder = TelemetryClient.createForTest().newMetricTelemetryBuilder();
-      AzureMonitorMetricExporter.updateMetricPointBuilder(builder, metricData, pointData);
+      MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
+      MetricDataMapper.updateMetricPointBuilder(builder, metricData, pointData);
       MetricsData metricsData = (MetricsData) builder.build().getData().getBaseData();
       assertThat(metricsData.getMetrics().size()).isEqualTo(1);
       assertThat(metricsData.getMetrics().get(0).getValue()).isEqualTo(20.0);
@@ -204,8 +204,8 @@ public class AzureMonitorMetricExporterTest {
     assertThat(longPointData3.getAttributes().get(AttributeKey.stringKey("color")))
         .isEqualTo("yellow");
 
-    MetricTelemetryBuilder builder = TelemetryClient.createForTest().newMetricTelemetryBuilder();
-    AzureMonitorMetricExporter.updateMetricPointBuilder(builder, metricData, longPointData1);
+    MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
+    MetricDataMapper.updateMetricPointBuilder(builder, metricData, longPointData1);
     MetricsData metricsData = (MetricsData) builder.build().getData().getBaseData();
     assertThat(metricsData.getMetrics().size()).isEqualTo(1);
     MetricDataPoint metricDataPoint = metricsData.getMetrics().get(0);
@@ -216,8 +216,8 @@ public class AzureMonitorMetricExporterTest {
     assertThat(properties.get("name")).isEqualTo("apple");
     assertThat(properties.get("color")).isEqualTo("green");
 
-    builder = TelemetryClient.createForTest().newMetricTelemetryBuilder();
-    AzureMonitorMetricExporter.updateMetricPointBuilder(builder, metricData, longPointData2);
+    builder = MetricTelemetryBuilder.create();
+    MetricDataMapper.updateMetricPointBuilder(builder, metricData, longPointData2);
     metricsData = (MetricsData) builder.build().getData().getBaseData();
     assertThat(metricsData.getMetrics().size()).isEqualTo(1);
     metricDataPoint = metricsData.getMetrics().get(0);
@@ -228,8 +228,8 @@ public class AzureMonitorMetricExporterTest {
     assertThat(properties.get("name")).isEqualTo("apple");
     assertThat(properties.get("color")).isEqualTo("red");
 
-    builder = TelemetryClient.createForTest().newMetricTelemetryBuilder();
-    AzureMonitorMetricExporter.updateMetricPointBuilder(builder, metricData, longPointData3);
+    builder = MetricTelemetryBuilder.create();
+    MetricDataMapper.updateMetricPointBuilder(builder, metricData, longPointData3);
     metricsData = (MetricsData) builder.build().getData().getBaseData();
     assertThat(metricsData.getMetrics().size()).isEqualTo(1);
     metricDataPoint = metricsData.getMetrics().get(0);
@@ -263,8 +263,8 @@ public class AzureMonitorMetricExporterTest {
 
     MetricData metricData = metricDataList.get(0);
     for (PointData pointData : metricData.getData().getPoints()) {
-      MetricTelemetryBuilder builder = TelemetryClient.createForTest().newMetricTelemetryBuilder();
-      AzureMonitorMetricExporter.updateMetricPointBuilder(builder, metricData, pointData);
+      MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
+      MetricDataMapper.updateMetricPointBuilder(builder, metricData, pointData);
       MetricsData metricsData = (MetricsData) builder.build().getData().getBaseData();
       assertThat(metricsData.getMetrics().size()).isEqualTo(1);
       assertThat(metricsData.getMetrics().get(0).getValue()).isEqualTo(20);
@@ -294,8 +294,8 @@ public class AzureMonitorMetricExporterTest {
     MetricData metricData = metricDataList.get(0);
     assertThat(metricData.getData().getPoints().size()).isEqualTo(1);
     PointData pointData = metricData.getData().getPoints().iterator().next();
-    MetricTelemetryBuilder builder = TelemetryClient.createForTest().newMetricTelemetryBuilder();
-    AzureMonitorMetricExporter.updateMetricPointBuilder(builder, metricData, pointData);
+    MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
+    MetricDataMapper.updateMetricPointBuilder(builder, metricData, pointData);
     MetricsData metricsData = (MetricsData) builder.build().getData().getBaseData();
     assertThat(metricsData.getMetrics().size()).isEqualTo(1);
     assertThat(metricsData.getMetrics().get(0).getCount()).isEqualTo(1);

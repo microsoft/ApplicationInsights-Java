@@ -29,7 +29,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 /** Unit tests for {@link AzureMonitorExporterBuilder}. */
 public class AzureMonitorExporterBuilderTest {
-
   @ParameterizedTest
   @MethodSource("getInvalidConnectionStrings")
   public <T extends RuntimeException> void testInvalidConnectionStrings(
