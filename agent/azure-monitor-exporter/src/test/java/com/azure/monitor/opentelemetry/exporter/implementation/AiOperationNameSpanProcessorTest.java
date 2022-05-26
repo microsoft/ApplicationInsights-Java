@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter;
+package com.azure.monitor.opentelemetry.exporter.implementation;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,6 +30,8 @@ import com.azure.core.http.HttpResponse;
 import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.core.util.Configuration;
 import com.azure.core.util.FluxUtil;
+import com.azure.monitor.opentelemetry.exporter.AzureMonitorExporterBuilder;
+import com.azure.monitor.opentelemetry.exporter.AzureMonitorTraceExporter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
@@ -107,9 +109,9 @@ public class AiOperationNameSpanProcessorTest {
     Tracer tracer =
         configureAzureMonitorExporter(
             new ValidationPolicy(
-                exporterCountDown, Arrays.asList("child-span", "POST parent-span-changed")));
+                exporterCountDown, Arrays.asList("child-span", "POST /parent-span-changed")));
     Span parentSpan = tracer.spanBuilder("parent-span").startSpan();
-    parentSpan.updateName("parent-span-changed");
+    parentSpan.updateName("/parent-span-changed");
     parentSpan.setAttribute(SemanticAttributes.HTTP_METHOD, "POST");
     try (Scope parentScope = parentSpan.makeCurrent()) {
       Span childSpan = tracer.spanBuilder("child-span").startSpan();

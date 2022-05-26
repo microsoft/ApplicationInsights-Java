@@ -36,6 +36,7 @@ import com.azure.core.http.policy.UserAgentPolicy;
 import com.azure.core.util.ClientOptions;
 import com.azure.core.util.Configuration;
 import com.azure.core.util.CoreUtils;
+import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
@@ -287,19 +288,19 @@ public final class AzureMonitorExporterBuilder {
       telemetryItemExporter = new TelemetryItemExporter(pipeline, TelemetryPipelineListener.noop());
     }
 
-    return new AzureMonitorTraceExporter(
-        true,
-        builder -> {
-          builder.setInstrumentationKey(instrumentationKey);
-          builder.addTag(
-              ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), VersionGenerator.getSdkVersion());
-        },
-        (event, instrumentationName) -> false,
-        telemetryItemExporter::send,
-        telemetryItemExporter::flush,
-        telemetryItemExporter::shutdown,
-        () -> true,
-        () -> null);
+    SpanDataMapper mapper =
+        new SpanDataMapper(
+            true,
+            builder -> {
+              builder.setInstrumentationKey(instrumentationKey);
+              builder.addTag(
+                  ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(),
+                  VersionGenerator.getSdkVersion());
+            },
+            (event, instrumentationName) -> false,
+            () -> null);
+
+    return new AzureMonitorTraceExporter(mapper, telemetryItemExporter);
   }
 
   private HttpPipeline createHttpPipeline() {

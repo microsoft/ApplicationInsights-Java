@@ -42,14 +42,6 @@ public class HeartBeatProvider {
 
   private static final Logger logger = LoggerFactory.getLogger(HeartBeatProvider.class);
 
-  /** Default interval in seconds to transmit heartbeat pulse. */
-  // visible for testing
-  static final long DEFAULT_HEARTBEAT_INTERVAL = TimeUnit.MINUTES.toSeconds(15);
-
-  /** Minimum interval which can be configured by user to transmit heartbeat pulse. */
-  // visible for testing
-  static final long MINIMUM_HEARTBEAT_INTERVAL = 30;
-
   /** The name of the heartbeat metric. */
   private static final String HEARTBEAT_SYNTHETIC_METRIC_NAME = "HeartbeatState";
 
@@ -58,9 +50,6 @@ public class HeartBeatProvider {
 
   /** Map to hold heartbeat properties. */
   private final ConcurrentMap<String, HeartBeatPropertyPayload> heartbeatProperties;
-
-  /** Interval at which heartbeat would be sent. */
-  private long interval;
 
   /** Telemetry client instance used to send heartbeat. */
   private TelemetryClient telemetryClient;
@@ -71,13 +60,13 @@ public class HeartBeatProvider {
   /** Threadpool used to send data heartbeat telemetry. */
   private final ScheduledExecutorService heartBeatSenderService;
 
-  /** Heartbeat enabled state. */
-  private final boolean isEnabled;
+  public static void start(long intervalSeconds, TelemetryClient telemetryClient) {
+    new HeartBeatProvider(intervalSeconds, telemetryClient);
+  }
 
-  public HeartBeatProvider() {
-    this.interval = DEFAULT_HEARTBEAT_INTERVAL;
+  // visible for tests
+  HeartBeatProvider(long intervalSeconds, TelemetryClient telemetryClient) {
     this.heartbeatProperties = new ConcurrentHashMap<>();
-    this.isEnabled = true;
     this.heartbeatsSent = 0;
     this.propertyUpdateService =
         Executors.newCachedThreadPool(
@@ -87,20 +76,17 @@ public class HeartBeatProvider {
         Executors.newSingleThreadScheduledExecutor(
             ThreadPoolUtils.createDaemonThreadFactory(
                 HeartBeatProvider.class, "heartBeatSenderService"));
-  }
 
-  public void initialize(TelemetryClient telemetryClient) {
-    if (isEnabled) {
-      if (this.telemetryClient == null) {
-        this.telemetryClient = telemetryClient;
-      }
-
-      // Submit task to set properties to dictionary using separate thread. we do not wait for the
-      // results to come out as some I/O bound properties may take time.
-      propertyUpdateService.submit(HeartbeatDefaultPayload.populateDefaultPayload(this));
-
-      heartBeatSenderService.scheduleAtFixedRate(this::send, interval, interval, TimeUnit.SECONDS);
+    if (this.telemetryClient == null) {
+      this.telemetryClient = telemetryClient;
     }
+
+    // Submit task to set properties to dictionary using separate thread. we do not wait for the
+    // results to come out as some I/O bound properties may take time.
+    propertyUpdateService.submit(HeartbeatDefaultPayload.populateDefaultPayload(this));
+
+    heartBeatSenderService.scheduleAtFixedRate(
+        this::send, intervalSeconds, intervalSeconds, TimeUnit.SECONDS);
   }
 
   public boolean addHeartBeatProperty(
@@ -119,15 +105,6 @@ public class HeartBeatProvider {
     heartbeatProperties.put(propertyName, payload);
     logger.trace("added heartbeat property {} - {}", propertyName, propertyValue);
     return true;
-  }
-
-  public long getHeartBeatInterval() {
-    return this.interval;
-  }
-
-  public void setHeartBeatInterval(long timeUnit) {
-    // user set time unit in seconds
-    this.interval = Math.max(timeUnit, MINIMUM_HEARTBEAT_INTERVAL);
   }
 
   /** Send the heartbeat item synchronously to application insights backend. */

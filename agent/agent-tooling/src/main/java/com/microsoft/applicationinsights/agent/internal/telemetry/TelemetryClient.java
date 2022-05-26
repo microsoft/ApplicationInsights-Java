@@ -50,7 +50,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
-import com.microsoft.applicationinsights.agent.internal.init.MainEntryPoint;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeatHttpPipelinePolicy;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
@@ -137,6 +136,10 @@ public class TelemetryClient {
     this.generalExportQueueCapacity = builder.generalExportQueueCapacity;
     this.metricsExportQueueCapacity = builder.metricsExportQueueCapacity;
     this.aadAuthentication = builder.aadAuthentication;
+    this.connectionString = builder.connectionString;
+    this.statsbeatConnectionString = builder.statsbeatConnectionString;
+    this.roleName = builder.roleName;
+    this.roleInstance = builder.roleInstance;
   }
 
   public static TelemetryClient getActive() {
@@ -226,7 +229,7 @@ public class TelemetryClient {
     return CompletableResultCode.ofAll(resultCodes);
   }
 
-  private BatchItemProcessor getGeneralBatchItemProcessor() {
+  public BatchItemProcessor getGeneralBatchItemProcessor() {
     if (generalBatchItemProcessor == null) {
       synchronized (batchItemProcessorInitLock) {
         if (generalBatchItemProcessor == null) {
@@ -409,6 +412,7 @@ public class TelemetryClient {
     globalTags.put(ContextTagKeys.AI_CLOUD_ROLE.toString(), roleName);
   }
 
+  @Nullable
   public String getRoleInstance() {
     return roleInstance;
   }
@@ -440,22 +444,8 @@ public class TelemetryClient {
     return statsbeatModule;
   }
 
-  public void setQuickPulse(Configuration configuration, TelemetryClient telemetryClient) {
-    if (configuration.preview.liveMetrics.enabled) {
-      quickPulse =
-          QuickPulse.create(
-              LazyHttpClient.newHttpPipeLineWithDefaultRedirect(
-                  configuration.preview.authentication),
-              () -> {
-                ConnectionString connectionString = telemetryClient.getConnectionString();
-                return connectionString == null ? null : connectionString.getLiveEndpoint();
-              },
-              telemetryClient::getInstrumentationKey,
-              telemetryClient.getRoleName(),
-              telemetryClient.getRoleInstance(),
-              configuration.preview.useNormalizedValueForNonNormalizedCpuPercentage,
-              MainEntryPoint.getAgentVersion());
-    }
+  public void setQuickPulse(@Nullable QuickPulse quickPulse) {
+    this.quickPulse = quickPulse;
   }
 
   public static class Builder {
@@ -468,6 +458,10 @@ public class TelemetryClient {
     private int generalExportQueueCapacity;
     private int metricsExportQueueCapacity;
     @Nullable private Configuration.AadAuthentication aadAuthentication;
+    @Nullable private ConnectionString connectionString;
+    @Nullable private StatsbeatConnectionString statsbeatConnectionString;
+    @Nullable private String roleName;
+    @Nullable private String roleInstance;
 
     public Builder setCustomDimensions(Map<String, String> customDimensions) {
       StringSubstitutor substitutor = new StringSubstitutor(System.getenv());
@@ -520,6 +514,29 @@ public class TelemetryClient {
 
     public Builder setAadAuthentication(Configuration.AadAuthentication aadAuthentication) {
       this.aadAuthentication = aadAuthentication;
+      return this;
+    }
+
+    public Builder setConnectionStrings(
+        @Nullable String connectionString,
+        @Nullable String statsbeatInstrumentationKey,
+        @Nullable String statsbeatEndpoint) {
+      this.connectionString = ConnectionString.parse(connectionString);
+      this.statsbeatConnectionString =
+          StatsbeatConnectionString.create(
+              this.connectionString, statsbeatInstrumentationKey, statsbeatEndpoint);
+      return this;
+    }
+
+    public Builder setRoleName(@Nullable String roleName) {
+      this.roleName = roleName;
+      globalTags.put(ContextTagKeys.AI_CLOUD_ROLE.toString(), roleName);
+      return this;
+    }
+
+    public Builder setRoleInstance(@Nullable String roleInstance) {
+      this.roleInstance = roleInstance;
+      globalTags.put(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), roleInstance);
       return this;
     }
 
