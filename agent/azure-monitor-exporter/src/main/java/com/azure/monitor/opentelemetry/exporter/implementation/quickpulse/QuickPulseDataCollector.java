@@ -133,13 +133,12 @@ final class QuickPulseDataCollector {
   }
 
   void add(TelemetryItem telemetryItem) {
-    String instrumentationKey = instrumentationKeySupplier.get();
-    if (instrumentationKey == null || quickPulseStatus != QuickPulseStatus.QP_IS_ON) {
+    if (!isEnabled()) {
       // quick pulse is not enabled or quick pulse data sender is not enabled
       return;
     }
 
-    if (!telemetryItem.getInstrumentationKey().equals(instrumentationKey)) {
+    if (!telemetryItem.getInstrumentationKey().equals(instrumentationKeySupplier.get())) {
       return;
     }
 
@@ -159,6 +158,10 @@ final class QuickPulseDataCollector {
     } else if (data instanceof TelemetryExceptionData) {
       addException((TelemetryExceptionData) data, itemCount);
     }
+  }
+
+  boolean isEnabled() {
+    return quickPulseStatus == QuickPulseStatus.QP_IS_ON;
   }
 
   @Nullable

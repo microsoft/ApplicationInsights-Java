@@ -21,18 +21,30 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import com.azure.monitor.opentelemetry.exporter.AiOperationNameSpanProcessor;
-import com.azure.monitor.opentelemetry.exporter.AzureMonitorExporterBuilder;
-import com.azure.monitor.opentelemetry.exporter.AzureMonitorTraceExporter;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import static java.util.concurrent.TimeUnit.MINUTES;
+
+import com.azure.monitor.opentelemetry.exporter.implementation.AiOperationNameSpanProcessor;
+import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
+import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.bootstrap.AiAppId;
+import com.microsoft.applicationinsights.agent.bootstrap.AiLazyConfiguration;
+import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
-import com.microsoft.applicationinsights.agent.internal.exporter.LoggerExporter;
+import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
+import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
+import com.microsoft.applicationinsights.agent.internal.exporter.AgentSpanExporter;
+import com.microsoft.applicationinsights.agent.internal.exporter.AzureMonitorMetricExporter;
+import com.microsoft.applicationinsights.agent.internal.heartbeat.HeartBeatProvider;
+import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHeaderSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
+import com.microsoft.applicationinsights.agent.internal.legacysdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithLogProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.LogExporterWithAttributeProcessor;
@@ -40,6 +52,9 @@ import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
 import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
+import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
+import com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -59,6 +74,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.io.File;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,11 +83,16 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @AutoService(AutoConfigurationCustomizerProvider.class)
-public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvider {
+public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
-  @Nullable public static LoggerExporter loggerExporter;
+  private static final Logger startupLogger =
+      LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
+
+  @Nullable public static AgentLogExporter agentLogExporter;
 
   @Nullable private static BatchLogProcessor batchLogProcessor;
   @Nullable private static BatchSpanProcessor batchSpanProcessor;
@@ -79,24 +100,119 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
 
   @Override
   public void customize(AutoConfigurationCustomizer autoConfiguration) {
-    TelemetryClient telemetryClient = TelemetryClient.getActive();
-    if (telemetryClient == null) {
-      // agent failed during startup
-      return;
+
+    File tempDir =
+        TempDirs.getApplicationInsightsTempDir(
+            startupLogger,
+            "Telemetry will not be stored to disk and retried later"
+                + " on sporadic network failures");
+
+    Configuration config = FirstEntryPoint.getConfiguration();
+    if (Strings.isNullOrEmpty(config.connectionString)) {
+      if (!"java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+        throw new FriendlyException(
+            "No connection string provided", "Please provide connection string.");
+      }
     }
+    // TODO (trask) should configuration validation be performed earlier?
+    config.validate();
+
+    if (config.proxy.host != null) {
+      LazyHttpClient.proxyHost = config.proxy.host;
+      LazyHttpClient.proxyPortNumber = config.proxy.port;
+      LazyHttpClient.proxyUsername = config.proxy.username;
+      LazyHttpClient.proxyPassword = config.proxy.password;
+    }
+
+    List<MetricFilter> metricFilters =
+        config.preview.processors.stream()
+            .filter(processor -> processor.type == Configuration.ProcessorType.METRIC_FILTER)
+            .map(MetricFilter::new)
+            .collect(Collectors.toList());
+
+    StatsbeatModule statsbeatModule = new StatsbeatModule();
+    TelemetryClient telemetryClient =
+        TelemetryClient.builder()
+            .setCustomDimensions(config.customDimensions)
+            .setMetricFilters(metricFilters)
+            .setStatsbeatModule(statsbeatModule)
+            .setTempDir(tempDir)
+            .setGeneralExportQueueSize(config.preview.generalExportQueueCapacity)
+            .setMetricsExportQueueSize(config.preview.metricsExportQueueCapacity)
+            .setAadAuthentication(config.preview.authentication)
+            .setConnectionStrings(
+                config.connectionString,
+                config.internal.statsbeat.instrumentationKey,
+                config.internal.statsbeat.endpoint)
+            .setRoleName(config.role.name)
+            .setRoleInstance(config.role.instance)
+            .build();
+
+    PerformanceCounterInitializer.initialize(telemetryClient, config);
+
+    // interval longer than 15 minutes is not allowed since we use this data for usage telemetry
+    long intervalSeconds = Math.min(config.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
+    HeartBeatProvider.start(intervalSeconds, telemetryClient);
+
+    TelemetryClient.setActive(telemetryClient);
+
+    BytecodeUtilImpl.samplingPercentage = config.sampling.percentage;
+
+    AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient.getConnectionString());
+    AiAppId.setSupplier(appIdSupplier);
+
+    if (config.preview.profiler.enabled) {
+      ProfilingInitializer.initialize(tempDir, appIdSupplier, config, telemetryClient);
+    }
+
+    // this is for Azure Function Linux consumption plan support.
+    if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+      AiLazyConfiguration.setAccessor(
+          new LazyConfigurationAccessor(
+              telemetryClient, SecondEntryPoint.agentLogExporter, appIdSupplier));
+    }
+
+    RpConfiguration rpConfiguration = FirstEntryPoint.getRpConfiguration();
+    if (rpConfiguration != null) {
+      RpConfigurationPolling.startPolling(rpConfiguration, config, telemetryClient, appIdSupplier);
+    }
+
+    // initialize StatsbeatModule
+    statsbeatModule.start(telemetryClient, config);
+
+    StartAppIdRetrieval.setAppIdSupplier(appIdSupplier);
 
     // TODO (trask) add this method to AutoConfigurationCustomizer upstream?
     ((AutoConfiguredOpenTelemetrySdkBuilder) autoConfiguration).registerShutdownHook(false);
 
-    Configuration configuration = MainEntryPoint.getConfiguration();
+    QuickPulse quickPulse;
+    if (config.preview.liveMetrics.enabled) {
+      quickPulse =
+          QuickPulse.create(
+              LazyHttpClient.newHttpPipeLineWithDefaultRedirect(config.preview.authentication),
+              () -> {
+                ConnectionString connectionString = telemetryClient.getConnectionString();
+                return connectionString == null ? null : connectionString.getLiveEndpoint();
+              },
+              telemetryClient::getInstrumentationKey,
+              telemetryClient.getRoleName(),
+              telemetryClient.getRoleInstance(),
+              config.preview.useNormalizedValueForNonNormalizedCpuPercentage,
+              FirstEntryPoint.getAgentVersion());
+    } else {
+      quickPulse = null;
+    }
+    telemetryClient.setQuickPulse(quickPulse);
 
     autoConfiguration
         .addTracerProviderCustomizer(
-            (builder, config) -> configureTracing(builder, telemetryClient, config, configuration))
+            (builder, configProperties) ->
+                configureTracing(builder, telemetryClient, quickPulse, configProperties, config))
         .addLogEmitterProviderCustomizer(
-            (builder, config) -> configureLogging(builder, telemetryClient, configuration))
+            (builder, configProperties) ->
+                configureLogging(builder, telemetryClient, quickPulse, config))
         .addMeterProviderCustomizer(
-            (builder, config) -> configureMetrics(builder, telemetryClient, configuration));
+            (builder, configProperties) -> configureMetrics(builder, telemetryClient, config));
 
     Runtime.getRuntime()
         .addShutdownHook(new Thread(() -> flushAll(telemetryClient).join(10, TimeUnit.SECONDS)));
@@ -137,6 +253,7 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
   private static SdkTracerProviderBuilder configureTracing(
       SdkTracerProviderBuilder tracerProvider,
       TelemetryClient telemetryClient,
+      @Nullable QuickPulse quickPulse,
       ConfigProperties config,
       Configuration configuration) {
 
@@ -192,7 +309,10 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
     if ("none".equals(tracesExporter)) { // "none" is the default set in ConfigOverride
       SpanExporter spanExporter =
           createSpanExporter(
-              telemetryClient, configuration, configuration.preview.captureHttpServer4xxAsError);
+              telemetryClient,
+              quickPulse,
+              configuration,
+              configuration.preview.captureHttpServer4xxAsError);
 
       // using BatchSpanProcessor in order to get off of the application thread as soon as possible
       batchSpanProcessor =
@@ -208,11 +328,12 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
 
   private static SpanExporter createSpanExporter(
       TelemetryClient telemetryClient,
+      @Nullable QuickPulse quickPulse,
       Configuration configuration,
       boolean captureHttpServer4xxAsError) {
 
-    AzureMonitorTraceExporter azureMonitorTraceExporter =
-        new AzureMonitorTraceExporter(
+    SpanDataMapper mapper =
+        new SpanDataMapper(
             captureHttpServer4xxAsError,
             telemetryClient::populateDefaults,
             (event, instrumentationName) -> {
@@ -231,19 +352,14 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
               }
               return false;
             },
-            telemetryItems -> {
-              for (TelemetryItem telemetryItem : telemetryItems) {
-                telemetryClient.trackAsync(telemetryItem);
-              }
-              return CompletableResultCode.ofSuccess();
-            },
-            CompletableResultCode::ofSuccess,
-            CompletableResultCode::ofSuccess,
-            () -> !Strings.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey()),
             AiAppId::getAppId);
 
+    BatchItemProcessor batchItemProcessor = telemetryClient.getGeneralBatchItemProcessor();
+
     SpanExporter spanExporter =
-        new StatsbeatSpanExporter(azureMonitorTraceExporter, telemetryClient.getStatsbeatModule());
+        new StatsbeatSpanExporter(
+            new AgentSpanExporter(mapper, quickPulse, batchItemProcessor),
+            telemetryClient.getStatsbeatModule());
 
     List<ProcessorConfig> processorConfigs = getSpanProcessorConfigs(configuration);
     // NOTE if changing the span processor to something async, flush it in the shutdown hook before
@@ -282,12 +398,16 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
         .collect(Collectors.toCollection(ArrayList::new));
   }
 
+  // QuickPulse is injected into the logging pipeline because QuickPulse displays exception
+  // telemetry and exception telemetry can be reported as either span events or as log records with
+  // an exception stack traces
   private static SdkLogEmitterProviderBuilder configureLogging(
       SdkLogEmitterProviderBuilder builder,
       TelemetryClient telemetryClient,
+      @Nullable QuickPulse quickPulse,
       Configuration configuration) {
 
-    LogExporter logExporter = createLogExporter(telemetryClient, configuration);
+    LogExporter logExporter = createLogExporter(telemetryClient, quickPulse, configuration);
 
     // using BatchLogProcessor in order to get off of the application thread as soon as possible
     batchLogProcessor =
@@ -302,15 +422,23 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
   }
 
   private static LogExporter createLogExporter(
-      TelemetryClient telemetryClient, Configuration configuration) {
+      TelemetryClient telemetryClient,
+      @Nullable QuickPulse quickPulse,
+      Configuration configuration) {
 
-    loggerExporter =
-        new LoggerExporter(
-            telemetryClient,
+    LogDataMapper mapper =
+        new LogDataMapper(
+            configuration.preview.captureLoggingLevelAsCustomDimension,
+            telemetryClient::populateDefaults);
+
+    agentLogExporter =
+        new AgentLogExporter(
             configuration.instrumentation.logging.getSeverity(),
-            configuration.preview.captureLoggingLevelAsCustomDimension);
+            mapper,
+            quickPulse,
+            telemetryClient.getGeneralBatchItemProcessor());
 
-    LogExporter logExporter = loggerExporter;
+    LogExporter logExporter = agentLogExporter;
 
     List<ProcessorConfig> processorConfigs = getLogProcessorConfigs(configuration);
     if (!processorConfigs.isEmpty()) {
@@ -393,7 +521,7 @@ public class OpenTelemetryConfigurer implements AutoConfigurationCustomizerProvi
         // already has http.url
         return span;
       }
-      String httpUrl = AzureMonitorTraceExporter.getHttpUrlFromServerSpan(attributes);
+      String httpUrl = SpanDataMapper.getHttpUrlFromServerSpan(attributes);
       if (httpUrl == null) {
         return span;
       }

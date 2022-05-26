@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.legacyheaders;
 
-import com.azure.monitor.opentelemetry.exporter.AzureMonitorTraceExporter;
+import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
@@ -41,10 +41,9 @@ public class AiLegacyHeaderSpanProcessor implements SpanProcessor {
     // AiLegacyPropagator, because only want to add these properties to the request span
     if (legacyIds != null
         && legacyIds.spanContext.equals(Span.fromContext(parentContext).getSpanContext())) {
-      span.setAttribute(
-          AzureMonitorTraceExporter.AI_LEGACY_PARENT_ID_KEY, legacyIds.legacyParentId);
+      span.setAttribute(SpanDataMapper.AI_LEGACY_PARENT_ID_KEY, legacyIds.legacyParentId);
       if (legacyIds.legacyRootId != null) {
-        span.setAttribute(AzureMonitorTraceExporter.AI_LEGACY_ROOT_ID_KEY, legacyIds.legacyRootId);
+        span.setAttribute(SpanDataMapper.AI_LEGACY_ROOT_ID_KEY, legacyIds.legacyRootId);
       }
     }
   }

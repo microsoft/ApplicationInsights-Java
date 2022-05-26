@@ -21,84 +21,25 @@
 
 package com.azure.monitor.opentelemetry.exporter;
 
-import com.azure.core.http.HttpPipeline;
-import com.azure.core.util.logging.ClientLogger;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import javax.annotation.Nullable;
 
 public class LiveMetricsSpanProcessor implements SpanProcessor {
 
-  private static final ClientLogger LOGGER = new ClientLogger(AzureMonitorTraceExporter.class);
-
   private final QuickPulse quickPulse;
-  private final String instrumentationKey;
+  private final SpanDataMapper mapper;
 
-  // todo this is never used.
-  public LiveMetricsSpanProcessor(
-      HttpPipeline httpPipeline,
-      URL endpointUrl,
-      String instrumentationKey,
-      @Nullable String roleName,
-      @Nullable String roleInstance,
-      String sdkVersion) {
-    this.instrumentationKey = instrumentationKey;
-    quickPulse =
-        QuickPulse.create(
-            httpPipeline,
-            () -> endpointUrl,
-            () -> instrumentationKey,
-            roleName,
-            roleInstance,
-            true,
-            sdkVersion);
+  public LiveMetricsSpanProcessor(QuickPulse quickPulse, SpanDataMapper mapper) {
+    this.quickPulse = quickPulse;
+    this.mapper = mapper;
   }
 
   @Override
-  public void onStart(Context context, ReadWriteSpan readWriteSpan) {
-    SpanData spanData = readWriteSpan.toSpanData();
-    SpanKind kind = spanData.getKind();
-    String instrumentationName = spanData.getInstrumentationLibraryInfo().getName();
-
-    List<TelemetryItem> telemetryItems = new ArrayList<>();
-    if (kind == SpanKind.INTERNAL) {
-      if (instrumentationName.startsWith("io.opentelemetry.spring-scheduling-")
-          && !spanData.getParentSpanContext().isValid()) {
-        // if (!span.getParentSpanContext().isValid()) {
-        // TODO (trask) AI mapping: need semantic convention for determining whether to map INTERNAL
-        // to request or dependency (or need clarification to use SERVER for this)
-        TelemetryMappingHelper.addRequestTelemetryItem(
-            spanData, instrumentationKey, telemetryItems);
-      } else {
-        TelemetryMappingHelper.addRemoteDependencyTelemetryItem(
-            spanData, true, instrumentationKey, telemetryItems);
-      }
-    } else if (kind == SpanKind.CLIENT || kind == SpanKind.PRODUCER) {
-      TelemetryMappingHelper.addRemoteDependencyTelemetryItem(
-          spanData, false, instrumentationKey, telemetryItems);
-    } else if (kind == SpanKind.CONSUMER
-        && "receive".equals(spanData.getAttributes().get(SemanticAttributes.MESSAGING_OPERATION))) {
-      TelemetryMappingHelper.addRemoteDependencyTelemetryItem(
-          spanData, false, instrumentationKey, telemetryItems);
-    } else if (kind == SpanKind.SERVER || kind == SpanKind.CONSUMER) {
-      TelemetryMappingHelper.addRequestTelemetryItem(spanData, instrumentationKey, telemetryItems);
-    } else {
-      throw LOGGER.logExceptionAsError(new UnsupportedOperationException(kind.name()));
-    }
-
-    for (TelemetryItem telemetryItem : telemetryItems) {
-      quickPulse.add(telemetryItem);
-    }
-  }
+  public void onStart(Context context, ReadWriteSpan readWriteSpan) {}
 
   @Override
   public boolean isStartRequired() {
@@ -106,10 +47,15 @@ public class LiveMetricsSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void onEnd(ReadableSpan readableSpan) {}
+  public void onEnd(ReadableSpan readableSpan) {
+    if (quickPulse.isEnabled()) {
+      // TODO (trask) can we do anything better here in terms of double conversion?
+      quickPulse.add(mapper.map(readableSpan.toSpanData()));
+    }
+  }
 
   @Override
   public boolean isEndRequired() {
-    return false;
+    return true;
   }
 }

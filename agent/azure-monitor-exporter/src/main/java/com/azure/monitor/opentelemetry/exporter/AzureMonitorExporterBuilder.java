@@ -38,6 +38,7 @@ import com.azure.core.util.Configuration;
 import com.azure.core.util.CoreUtils;
 import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
@@ -322,6 +323,20 @@ public final class AzureMonitorExporterBuilder {
     } else {
       telemetryItemExporter = new TelemetryItemExporter(pipeline, TelemetryPipelineListener.noop());
     }
+
+    SpanDataMapper mapper =
+        new SpanDataMapper(
+            true,
+            builder -> {
+              builder.setInstrumentationKey(instrumentationKey);
+              builder.addTag(
+                  ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(),
+                  VersionGenerator.getSdkVersion());
+            },
+            (event, instrumentationName) -> false,
+            () -> null);
+
+    return new AzureMonitorTraceExporter(mapper, telemetryItemExporter);
   }
 
   private HttpPipeline createHttpPipeline() {

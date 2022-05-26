@@ -21,14 +21,9 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
-
-import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
-import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.heartbeat.HeartBeatModule;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.DeadLockDetectorPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.FreeMemoryPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.GcPerformanceCounter;
@@ -50,18 +45,11 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Initializer class for telemetry client instances. */
-public class TelemetryClientInitializer {
+public class PerformanceCounterInitializer {
 
-  private static final Logger logger = LoggerFactory.getLogger(TelemetryClientInitializer.class);
+  private static final Logger logger = LoggerFactory.getLogger(PerformanceCounterInitializer.class);
 
   public static void initialize(TelemetryClient telemetryClient, Configuration configuration) {
-
-    setConnectionString(configuration, telemetryClient);
-    setRoleName(configuration, telemetryClient);
-    setRoleInstance(configuration, telemetryClient);
-
-    addHeartBeatModule(configuration, telemetryClient);
 
     PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(
         configuration.preview.metricIntervalSeconds);
@@ -89,60 +77,11 @@ public class TelemetryClientInitializer {
     }
     PerformanceCounterContainer.INSTANCE.register(new JvmHeapMemoryUsedPerformanceCounter());
     PerformanceCounterContainer.INSTANCE.register(new GcPerformanceCounter());
-
-    telemetryClient.setQuickPulse(configuration, telemetryClient);
   }
 
   private static boolean isAgentRunningInSandboxEnvWindows() {
     String qualifiedSdkVersion = PropertyHelper.getQualifiedSdkVersionString();
     return qualifiedSdkVersion.startsWith("awr") || qualifiedSdkVersion.startsWith("fwr");
-  }
-
-  private static void setConnectionString(
-      Configuration configuration, TelemetryClient telemetryClient) {
-
-    String connectionString = configuration.connectionString;
-
-    if (connectionString != null) {
-      ConnectionString connectionStringObj = ConnectionString.parse(connectionString);
-      telemetryClient.setConnectionString(connectionStringObj);
-      telemetryClient.setStatsbeatConnectionString(
-          StatsbeatConnectionString.create(
-              connectionStringObj,
-              configuration.internal.statsbeat.instrumentationKey,
-              configuration.internal.statsbeat.endpoint));
-    }
-  }
-
-  private static void setRoleName(Configuration configuration, TelemetryClient telemetryClient) {
-    String roleName = configuration.role.name;
-    if (roleName == null) {
-      return;
-    }
-
-    roleName = roleName.trim();
-    if (roleName.length() == 0) {
-      return;
-    }
-
-    telemetryClient.setRoleName(roleName);
-  }
-
-  private static void setRoleInstance(
-      Configuration configuration, TelemetryClient telemetryClient) {
-    String roleInstance;
-
-    roleInstance = configuration.role.instance;
-    if (roleInstance == null) {
-      return;
-    }
-
-    roleInstance = roleInstance.trim();
-    if (roleInstance.length() == 0) {
-      return;
-    }
-
-    telemetryClient.setRoleInstance(roleInstance);
   }
 
   /**
@@ -197,23 +136,5 @@ public class TelemetryClientInitializer {
     }
   }
 
-  /**
-   * Adds heartbeat module with default configuration.
-   *
-   * @param telemetryClient telemetry client instance
-   */
-  private static void addHeartBeatModule(
-      Configuration configuration, TelemetryClient telemetryClient) {
-    HeartBeatModule module = new HeartBeatModule();
-
-    // do not allow interval longer than 15 minutes, since we use the heartbeat data for usage
-    // telemetry
-    long intervalSeconds = Math.min(configuration.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
-
-    module.setHeartBeatInterval(intervalSeconds);
-
-    module.initialize(telemetryClient);
-  }
-
-  private TelemetryClientInitializer() {}
+  private PerformanceCounterInitializer() {}
 }

@@ -19,91 +19,78 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter;
+package com.microsoft.applicationinsights.agent.internal.exporter;
 
-import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
+import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
+import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.function.Consumer;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * This class is an implementation of OpenTelemetry {@link SpanExporter} that allows different
- * tracing services to export recorded data for sampled spans in their own format.
- */
-// TODO (trask) move this class into internal package
-public final class AzureMonitorTraceExporter implements SpanExporter {
+public final class AgentSpanExporter implements SpanExporter {
 
-  private static final ClientLogger LOGGER = new ClientLogger(AzureMonitorTraceExporter.class);
+  private static final Logger logger = LoggerFactory.getLogger(AgentSpanExporter.class);
 
   private static final OperationLogger exportingSpanLogger =
-      new OperationLogger(AzureMonitorTraceExporter.class, "Exporting span");
+      new OperationLogger(SpanDataMapper.class, "Exporting span");
 
-  private final TelemetryItemExporter telemetryItemExporter;
   private final SpanDataMapper mapper;
+  private final Consumer<TelemetryItem> telemetryItemConsumer;
 
-  /**
-   * Creates an instance of exporter that is configured with given exporter client that sends
-   * telemetry events to Application Insights resource identified by the instrumentation key.
-   */
-  public AzureMonitorTraceExporter(
-      SpanDataMapper mapper, TelemetryItemExporter telemetryItemExporter) {
-
+  public AgentSpanExporter(
+      SpanDataMapper mapper,
+      @Nullable QuickPulse quickPulse,
+      BatchItemProcessor batchItemProcessor) {
     this.mapper = mapper;
-    this.telemetryItemExporter = telemetryItemExporter;
+    telemetryItemConsumer =
+        telemetryItem -> {
+          if (quickPulse != null) {
+            quickPulse.add(telemetryItem);
+          }
+          TelemetryObservers.INSTANCE
+              .getObservers()
+              .forEach(consumer -> consumer.accept(telemetryItem));
+          batchItemProcessor.trackAsync(telemetryItem);
+        };
   }
 
-  /** {@inheritDoc} */
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
-    List<TelemetryItem> telemetryItems = new ArrayList<>();
-
-    boolean mappingFailure = false;
+    if (Strings.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey())) {
+      logger.debug("exporter is not active");
+      return CompletableResultCode.ofSuccess();
+    }
     for (SpanData span : spans) {
-      LOGGER.verbose("exporting span: {}", span);
+      logger.debug("exporting span: {}", span);
       try {
-        mapper.map(span, telemetryItems::add);
+        mapper.map(span, telemetryItemConsumer);
         exportingSpanLogger.recordSuccess();
       } catch (Throwable t) {
         exportingSpanLogger.recordFailure(t.getMessage(), t);
-        mappingFailure = true;
       }
     }
-
-    if (telemetryItems.isEmpty()) {
-      return mappingFailure ? CompletableResultCode.ofFailure() : CompletableResultCode.ofSuccess();
-    }
-
-    CompletableResultCode overallResult = new CompletableResultCode();
-    CompletableResultCode exportResult = telemetryItemExporter.send(telemetryItems);
-    boolean mappingFailureFinal = mappingFailure;
-    exportResult.whenComplete(
-        () -> {
-          if (exportResult.isSuccess() && !mappingFailureFinal) {
-            overallResult.succeed();
-          } else {
-            overallResult.fail();
-          }
-        });
-
-    return overallResult;
+    // always returning success, because all error handling is performed internally
+    return CompletableResultCode.ofSuccess();
   }
 
-  /** {@inheritDoc} */
   @Override
   public CompletableResultCode flush() {
-    return telemetryItemExporter.flush();
+    return CompletableResultCode.ofSuccess();
   }
 
-  /** {@inheritDoc} */
   @Override
   public CompletableResultCode shutdown() {
-    return telemetryItemExporter.shutdown();
+    return CompletableResultCode.ofSuccess();
   }
 }
