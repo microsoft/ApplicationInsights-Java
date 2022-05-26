@@ -275,7 +275,7 @@ public final class AzureMonitorExporterBuilder {
   public AzureMonitorMetricExporter buildMetricExporter() {
     initExporterBuilder();
     return new AzureMonitorMetricExporter(
-        new MetricDataMapper(instrumentationKey, null), telemetryItemExporter);
+        new MetricDataMapper(instrumentationKey, t -> {}), telemetryItemExporter);
   }
 
   private void initExporterBuilder() {
