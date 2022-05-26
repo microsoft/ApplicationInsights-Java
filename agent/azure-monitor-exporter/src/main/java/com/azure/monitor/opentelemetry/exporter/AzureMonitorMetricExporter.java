@@ -72,6 +72,7 @@ public class AzureMonitorMetricExporter implements MetricExporter {
         exportingMetricLogger.recordSuccess();
       } catch (Throwable t) {
         exportingMetricLogger.recordFailure(t.getMessage(), t);
+        return CompletableResultCode.ofFailure();
       }
     }
 

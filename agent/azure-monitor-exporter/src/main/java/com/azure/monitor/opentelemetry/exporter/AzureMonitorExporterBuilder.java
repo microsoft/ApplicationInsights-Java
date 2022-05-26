@@ -248,7 +248,7 @@ public final class AzureMonitorExporterBuilder {
    *     environment variable "APPLICATIONINSIGHTS_CONNECTION_STRING" is not set.
    */
   public AzureMonitorTraceExporter buildTraceExporter() {
-    initExpoterBuilder();
+    initExporterBuilder();
     return new AzureMonitorTraceExporter(
         true,
         builder -> {
@@ -274,12 +274,12 @@ public final class AzureMonitorExporterBuilder {
    */
   public AzureMonitorMetricExporter buildMetricExporter(
       Consumer<AbstractTelemetryBuilder> telemetryInitializer) {
-    initExpoterBuilder();
+    initExporterBuilder();
     return new AzureMonitorMetricExporter(
         new MetricDataMapper(instrumentationKey, telemetryInitializer), telemetryItemExporter);
   }
 
-  private void initExpoterBuilder() {
+  private void initExporterBuilder() {
     if (this.connectionString == null) {
       // if connection string is not set, try loading from configuration
       Configuration configuration = Configuration.getGlobalConfiguration().clone();
