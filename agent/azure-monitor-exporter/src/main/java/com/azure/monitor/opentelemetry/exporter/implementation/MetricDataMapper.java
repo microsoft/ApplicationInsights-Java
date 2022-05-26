@@ -98,7 +98,6 @@ public class MetricDataMapper {
       builder.addTag(
           ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), VersionGenerator.getSdkVersion());
       builder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(pointData.getEpochNanos()));
-      builder.setSampleRate(100); // TODO make this configurable?
       updateMetricPointBuilder(builder, metricData, pointData);
       telemetryItems.add(builder.build());
     }
