@@ -86,8 +86,6 @@ public final class AzureMonitorExporterBuilder {
   private RetryPolicy retryPolicy;
   private final List<HttpPipelinePolicy> httpPipelinePolicies = new ArrayList<>();
 
-  private TelemetryItemExporter telemetryItemExporter;
-
   private Configuration configuration;
   private ClientOptions clientOptions;
 
@@ -248,7 +246,6 @@ public final class AzureMonitorExporterBuilder {
    *     environment variable "APPLICATIONINSIGHTS_CONNECTION_STRING" is not set.
    */
   public AzureMonitorTraceExporter buildTraceExporter() {
-    initExporterBuilder();
     SpanDataMapper mapper =
         new SpanDataMapper(
             true,
@@ -261,7 +258,7 @@ public final class AzureMonitorExporterBuilder {
             (event, instrumentationName) -> false,
             () -> null);
 
-    return new AzureMonitorTraceExporter(mapper, telemetryItemExporter);
+    return new AzureMonitorTraceExporter(mapper, initExporterBuilder());
   }
 
   /**
@@ -273,12 +270,11 @@ public final class AzureMonitorExporterBuilder {
    *     environment variable "APPLICATIONINSIGHTS_CONNECTION_STRING" is not set.
    */
   public AzureMonitorMetricExporter buildMetricExporter() {
-    initExporterBuilder();
     return new AzureMonitorMetricExporter(
-        new MetricDataMapper(instrumentationKey, t -> {}), telemetryItemExporter);
+        new MetricDataMapper(instrumentationKey, t -> {}), initExporterBuilder());
   }
 
-  private void initExporterBuilder() {
+  private TelemetryItemExporter initExporterBuilder() {
     if (this.connectionString == null) {
       // if connection string is not set, try loading from configuration
       Configuration configuration = Configuration.getGlobalConfiguration().clone();
@@ -309,6 +305,7 @@ public final class AzureMonitorExporterBuilder {
             "Telemetry will not be stored to disk and retried later"
                 + " on sporadic network failures");
 
+    TelemetryItemExporter telemetryItemExporter;
     if (tempDir != null) {
       telemetryItemExporter =
           new TelemetryItemExporter(
@@ -321,6 +318,7 @@ public final class AzureMonitorExporterBuilder {
     } else {
       telemetryItemExporter = new TelemetryItemExporter(pipeline, TelemetryPipelineListener.noop());
     }
+    return telemetryItemExporter;
   }
 
   private HttpPipeline createHttpPipeline() {
