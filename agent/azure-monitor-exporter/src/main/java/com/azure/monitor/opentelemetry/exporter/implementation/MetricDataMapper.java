@@ -93,9 +93,7 @@ public class MetricDataMapper {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
     for (PointData pointData : metricData.getData().getPoints()) {
       MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
-      if (telemetryInitializer != null) {
-        telemetryInitializer.accept(builder);
-      }
+      telemetryInitializer.accept(builder);
       builder.setInstrumentationKey(instrumentationKey);
       builder.addTag(
           ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), VersionGenerator.getSdkVersion());
