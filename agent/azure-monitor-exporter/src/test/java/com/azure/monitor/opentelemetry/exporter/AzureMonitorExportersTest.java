@@ -104,8 +104,8 @@ public class AzureMonitorExportersTest extends MonitorExporterClientTestBase {
   public void testBuildLogExporter() {
     AzureMonitorLogExporter azureMonitorLogExporter =
         getClientBuilder().connectionString(TRACE_CONNECTION_STRING).buildLogExporter();
-    CompletableResultCode export = azureMonitorLogExporter
-        .export(Collections.singleton(new MockLogData()));
+    CompletableResultCode export =
+        azureMonitorLogExporter.export(Collections.singleton(new MockLogData()));
     export.join(30, TimeUnit.SECONDS);
     Assertions.assertTrue(export.isDone());
     Assertions.assertTrue(export.isSuccess());
@@ -133,8 +133,7 @@ public class AzureMonitorExportersTest extends MonitorExporterClientTestBase {
 
     AzureMonitorLogExporter azureMonitorLogExporter =
         getClientBuilder().connectionString(TRACE_CONNECTION_STRING).buildLogExporter();
-    export = azureMonitorLogExporter
-        .export(Collections.singleton(new MockLogData()));
+    export = azureMonitorLogExporter.export(Collections.singleton(new MockLogData()));
     export.join(30, TimeUnit.SECONDS);
     Assertions.assertTrue(export.isDone());
     Assertions.assertTrue(export.isSuccess());

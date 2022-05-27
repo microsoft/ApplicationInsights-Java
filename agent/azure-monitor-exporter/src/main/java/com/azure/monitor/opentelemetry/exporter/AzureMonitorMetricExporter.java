@@ -37,6 +37,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * This class is an implementation of OpenTelemetry {@link MetricExporter}
+ */
 public class AzureMonitorMetricExporter implements MetricExporter {
 
   private static final ClientLogger LOGGER = new ClientLogger(AzureMonitorMetricExporter.class);
@@ -46,6 +49,10 @@ public class AzureMonitorMetricExporter implements MetricExporter {
   private final MetricDataMapper mapper;
   private final TelemetryItemExporter telemetryItemExporter;
 
+  /**
+   * Creates an instance of metric exporter that is configured with given exporter client that sends
+   * metrics to Application Insights resource identified by the instrumentation key.
+   */
   AzureMonitorMetricExporter(MetricDataMapper mapper, TelemetryItemExporter telemetryItemExporter) {
     this.mapper = mapper;
     this.telemetryItemExporter = telemetryItemExporter;
@@ -57,6 +64,7 @@ public class AzureMonitorMetricExporter implements MetricExporter {
         .getAggregationTemporality(instrumentType);
   }
 
+  /** {@inheritDoc} */
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
     if (stopped.get()) {
@@ -78,11 +86,13 @@ public class AzureMonitorMetricExporter implements MetricExporter {
     return telemetryItemExporter.send(telemetryItems);
   }
 
+  /** {@inheritDoc} */
   @Override
   public CompletableResultCode flush() {
     return telemetryItemExporter.flush();
   }
 
+  /** {@inheritDoc} */
   @Override
   public CompletableResultCode shutdown() {
     stopped.set(true);
