@@ -37,9 +37,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * This class is an implementation of OpenTelemetry {@link MetricExporter}
- */
+/** This class is an implementation of OpenTelemetry {@link MetricExporter} */
 public class AzureMonitorMetricExporter implements MetricExporter {
 
   private static final ClientLogger LOGGER = new ClientLogger(AzureMonitorMetricExporter.class);
