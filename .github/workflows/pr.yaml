@@ -71,6 +71,8 @@ jobs:
           java-version: 11
       - name: Test
         uses: gradle/gradle-build-action@v2
+        env:
+          GRADLE_BUILD_ACTION_CACHE_KEY_PREFIX: verison1
         with:
           arguments: ${{ matrix.module }}:smokeTest
 
