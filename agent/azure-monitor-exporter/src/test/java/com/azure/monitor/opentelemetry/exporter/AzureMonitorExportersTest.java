@@ -22,15 +22,27 @@
 package com.azure.monitor.opentelemetry.exporter;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.logs.data.Body;
+import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -89,7 +101,18 @@ public class AzureMonitorExportersTest extends MonitorExporterClientTestBase {
   }
 
   @Test
-  public void testBuildTraceExporterAndBuildMetricExporterConsecutively() {
+  public void testBuildLogExporter() {
+    AzureMonitorLogExporter azureMonitorLogExporter =
+        getClientBuilder().connectionString(TRACE_CONNECTION_STRING).buildLogExporter();
+    CompletableResultCode export = azureMonitorLogExporter
+        .export(Collections.singleton(new MockLogData()));
+    export.join(30, TimeUnit.SECONDS);
+    Assertions.assertTrue(export.isDone());
+    Assertions.assertTrue(export.isSuccess());
+  }
+
+  @Test
+  public void testBuildTraceMetricLogExportersConsecutively() {
     AzureMonitorTraceExporter azureMonitorTraceExporter =
         getClientBuilder().connectionString(TRACE_CONNECTION_STRING).buildTraceExporter();
     CompletableResultCode export =
@@ -107,5 +130,66 @@ public class AzureMonitorExportersTest extends MonitorExporterClientTestBase {
     export.join(30, TimeUnit.SECONDS);
     Assertions.assertTrue(export.isDone());
     Assertions.assertTrue(export.isSuccess());
+
+    AzureMonitorLogExporter azureMonitorLogExporter =
+        getClientBuilder().connectionString(TRACE_CONNECTION_STRING).buildLogExporter();
+    export = azureMonitorLogExporter
+        .export(Collections.singleton(new MockLogData()));
+    export.join(30, TimeUnit.SECONDS);
+    Assertions.assertTrue(export.isDone());
+    Assertions.assertTrue(export.isSuccess());
+  }
+
+  static class MockLogData implements LogData {
+
+    @Override
+    public Resource getResource() {
+      return null;
+    }
+
+    @Override
+    public InstrumentationScopeInfo getInstrumentationScopeInfo() {
+      return InstrumentationScopeInfo.create("Testing Instrumentation", "1", null);
+    }
+
+    @Override
+    public long getEpochNanos() {
+      return Instant.now().getEpochSecond();
+    }
+
+    @Override
+    public SpanContext getSpanContext() {
+      return SpanContext.create(
+          TraceId.fromLongs(10L, 2L),
+          SpanId.fromLong(1),
+          TraceFlags.getDefault(),
+          TraceState.builder().build());
+    }
+
+    @Override
+    public Severity getSeverity() {
+      return Severity.DEBUG;
+    }
+
+    @Override
+    public String getSeverityText() {
+      return "DEBUG";
+    }
+
+    @Override
+    public Body getBody() {
+      return Body.string("testing log");
+    }
+
+    @Override
+    public Attributes getAttributes() {
+      return Attributes.builder()
+          .put("one", "1")
+          .put("two", 2L)
+          .put("db.svc", "location")
+          .put("operation", "get")
+          .put("id", "1234")
+          .build();
+    }
   }
 }

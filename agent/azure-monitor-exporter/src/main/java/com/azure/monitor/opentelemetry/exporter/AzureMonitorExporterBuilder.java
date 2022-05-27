@@ -36,6 +36,7 @@ import com.azure.core.http.policy.UserAgentPolicy;
 import com.azure.core.util.ClientOptions;
 import com.azure.core.util.Configuration;
 import com.azure.core.util.CoreUtils;
+import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
@@ -272,6 +273,11 @@ public final class AzureMonitorExporterBuilder {
   public AzureMonitorMetricExporter buildMetricExporter() {
     return new AzureMonitorMetricExporter(
         new MetricDataMapper(instrumentationKey, t -> {}), initExporterBuilder());
+  }
+
+  public AzureMonitorLogExporter buildLogExporter() {
+    return new AzureMonitorLogExporter(
+        new LogDataMapper(true, t -> {}), initExporterBuilder());
   }
 
   private TelemetryItemExporter initExporterBuilder() {

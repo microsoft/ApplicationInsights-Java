@@ -13,10 +13,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * This class is an implementation of OpenTelemetry {@link LogExporter} that allows different
- * logging services to export recorded data for sampled logs in their own format.
- */
 public class AzureMonitorLogExporter implements LogExporter {
 
   private static final ClientLogger LOGGER = new ClientLogger(AzureMonitorLogExporter.class);
@@ -31,7 +27,6 @@ public class AzureMonitorLogExporter implements LogExporter {
     this.telemetryItemExporter = telemetryItemExporter;
   }
 
-  /** {@inheritDoc} */
   @Override
   public CompletableResultCode export(Collection<LogData> logs) {
     if (stopped.get()) {
@@ -53,13 +48,11 @@ public class AzureMonitorLogExporter implements LogExporter {
     return telemetryItemExporter.send(telemetryItems);
   }
 
-  /** {@inheritDoc} */
   @Override
   public CompletableResultCode flush() {
     return telemetryItemExporter.flush();
   }
 
-  /** {@inheritDoc} */
   @Override
   public CompletableResultCode shutdown() {
     stopped.set(true);

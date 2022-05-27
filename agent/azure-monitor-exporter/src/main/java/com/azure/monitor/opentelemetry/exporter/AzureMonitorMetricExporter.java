@@ -80,12 +80,12 @@ public class AzureMonitorMetricExporter implements MetricExporter {
 
   @Override
   public CompletableResultCode flush() {
-    return CompletableResultCode.ofSuccess();
+    return telemetryItemExporter.flush();
   }
 
   @Override
   public CompletableResultCode shutdown() {
     stopped.set(true);
-    return CompletableResultCode.ofSuccess();
+    return telemetryItemExporter.shutdown();
   }
 }
