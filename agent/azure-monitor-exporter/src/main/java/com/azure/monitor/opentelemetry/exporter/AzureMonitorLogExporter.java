@@ -22,62 +22,55 @@
 package com.azure.monitor.opentelemetry.exporter;
 
 import com.azure.core.util.logging.ClientLogger;
-import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
+import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.metrics.InstrumentType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
-import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.export.LogExporter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/** This class is an implementation of OpenTelemetry {@link MetricExporter} */
-public class AzureMonitorMetricExporter implements MetricExporter {
+/**
+ * This class is an implementation of OpenTelemetry {@link LogExporter} that allows different
+ * logging services to export recorded data for sampled logs in their own format.
+ */
+public class AzureMonitorLogExporter implements LogExporter {
 
-  private static final ClientLogger LOGGER = new ClientLogger(AzureMonitorMetricExporter.class);
-  private static final OperationLogger exportingMetricLogger =
-      new OperationLogger(AzureMonitorMetricExporter.class, "Exporting metric");
+  private static final ClientLogger LOGGER = new ClientLogger(AzureMonitorLogExporter.class);
+  private static final OperationLogger exportingLogLogger =
+      new OperationLogger(AzureMonitorLogExporter.class, "Exporting log");
   private final AtomicBoolean stopped = new AtomicBoolean();
-  private final MetricDataMapper mapper;
+  private final LogDataMapper mapper;
   private final TelemetryItemExporter telemetryItemExporter;
 
   /**
-   * Creates an instance of metric exporter that is configured with given exporter client that sends
-   * metrics to Application Insights resource identified by the instrumentation key.
+   * Creates an instance of log exporter that is configured with given exporter client that sends
+   * telemetry events to Application Insights resource identified by the instrumentation key.
    */
-  AzureMonitorMetricExporter(MetricDataMapper mapper, TelemetryItemExporter telemetryItemExporter) {
+  AzureMonitorLogExporter(LogDataMapper mapper, TelemetryItemExporter telemetryItemExporter) {
     this.mapper = mapper;
     this.telemetryItemExporter = telemetryItemExporter;
   }
 
   /** {@inheritDoc} */
   @Override
-  public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
-    return AggregationTemporalitySelector.deltaPreferred()
-        .getAggregationTemporality(instrumentType);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public CompletableResultCode export(Collection<MetricData> metrics) {
+  public CompletableResultCode export(Collection<LogData> logs) {
     if (stopped.get()) {
       return CompletableResultCode.ofFailure();
     }
 
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-    for (MetricData metricData : metrics) {
-      LOGGER.verbose("exporting metric: {}", metricData);
+    for (LogData log : logs) {
+      LOGGER.verbose("exporting log: {}", log);
       try {
-        mapper.map(metricData, telemetryItems::add);
-        exportingMetricLogger.recordSuccess();
+        mapper.map(log, telemetryItems::add);
+        exportingLogLogger.recordSuccess();
       } catch (Throwable t) {
-        exportingMetricLogger.recordFailure(t.getMessage(), t);
+        exportingLogLogger.recordFailure(t.getMessage(), t);
         return CompletableResultCode.ofFailure();
       }
     }
