@@ -48,6 +48,8 @@ public class LoggingLevelConfigurator {
     updateLoggerLevel(loggerContext.getLogger("io.grpc.Context"));
     updateLoggerLevel(loggerContext.getLogger("io.opentelemetry.javaagent.tooling.VersionLogger"));
     updateLoggerLevel(loggerContext.getLogger("io.opentelemetry.exporter.logging"));
+    updateLoggerLevel(
+        loggerContext.getLogger("io.opentelemetry.sdk.metrics.internal.state.DeltaMetricStorage"));
     updateLoggerLevel(loggerContext.getLogger("io.opentelemetry"));
     updateLoggerLevel(loggerContext.getLogger("muzzleMatcher"));
     updateLoggerLevel(
@@ -80,6 +82,8 @@ public class LoggingLevelConfigurator {
       // in case user enables OpenTelemetry logging exporters via otel.traces.exporter,
       // otel.metrics.exporter, or otel.logs.exporter
       loggerLevel = level;
+    } else if (name.equals("io.opentelemetry.sdk.metrics.internal.state.DeltaMetricStorage")) {
+      loggerLevel = getDeltaMetricStorageLoggerLevel(level);
     } else if (name.startsWith("io.opentelemetry")) {
       // OpenTelemetry instrumentation debug log has lots of things that look like errors
       // which has been confusing customers, so only enable it when user configures "trace" level
@@ -133,6 +137,13 @@ public class LoggingLevelConfigurator {
       return Level.OFF;
     } else if (level == Level.DEBUG) {
       return Level.INFO;
+    }
+    return level;
+  }
+
+  private static Level getDeltaMetricStorageLoggerLevel(Level level) {
+    if (level == Level.INFO || level == Level.WARN) {
+      return Level.ERROR;
     }
     return level;
   }
