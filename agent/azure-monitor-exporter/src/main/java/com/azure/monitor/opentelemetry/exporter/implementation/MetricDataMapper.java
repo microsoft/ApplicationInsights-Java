@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.exporter;
+package com.azure.monitor.opentelemetry.exporter.implementation;
 
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_GAUGE;
@@ -28,40 +28,32 @@ import static io.opentelemetry.sdk.metrics.data.MetricDataType.HISTOGRAM;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_GAUGE;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricPointBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.metrics.InstrumentType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.VersionGenerator;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
-import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
-import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AzureMonitorMetricExporter implements MetricExporter {
+public class MetricDataMapper {
 
   private static final List<String> EXCLUDED_METRIC_NAMES = new ArrayList<>();
 
-  private final TelemetryClient telemetryClient;
-  private static final Logger logger = LoggerFactory.getLogger(AzureMonitorMetricExporter.class);
-  private final AtomicBoolean stopped = new AtomicBoolean();
-
-  public AzureMonitorMetricExporter(TelemetryClient telemetryClient) {
-    this.telemetryClient = telemetryClient;
-  }
+  private static final Logger logger = LoggerFactory.getLogger(MetricDataMapper.class);
+  private final String instrumentationKey;
+  private final Consumer<AbstractTelemetryBuilder> telemetryInitializer;
 
   static {
     EXCLUDED_METRIC_NAMES.add("http.server.active_requests"); // Servlet
@@ -71,53 +63,40 @@ public class AzureMonitorMetricExporter implements MetricExporter {
     EXCLUDED_METRIC_NAMES.add("rpc.server.duration"); // gRPC
   }
 
-  @Override
-  public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
-    return AggregationTemporalitySelector.deltaPreferred()
-        .getAggregationTemporality(instrumentType);
+  public MetricDataMapper(
+      String instrumentationKey, Consumer<AbstractTelemetryBuilder> telemetryInitializer) {
+    this.instrumentationKey = instrumentationKey;
+    this.telemetryInitializer = telemetryInitializer;
   }
 
-  @Override
-  public CompletableResultCode export(Collection<MetricData> metrics) {
-    if (stopped.get()) {
-      return CompletableResultCode.ofFailure();
+  public void map(MetricData metricData, Consumer<TelemetryItem> consumer) {
+    if (EXCLUDED_METRIC_NAMES.contains(metricData.getName())) {
+      return;
     }
 
-    for (MetricData metricData : metrics) {
-      if (EXCLUDED_METRIC_NAMES.contains(metricData.getName())) {
-        continue;
+    MetricDataType type = metricData.getType();
+    if (type == DOUBLE_SUM
+        || type == DOUBLE_GAUGE
+        || type == LONG_SUM
+        || type == LONG_GAUGE
+        || type == HISTOGRAM) {
+      List<TelemetryItem> telemetryItemList = convertOtelMetricToAzureMonitorMetric(metricData);
+      for (TelemetryItem telemetryItem : telemetryItemList) {
+        consumer.accept(telemetryItem);
       }
-
-      MetricDataType type = metricData.getType();
-      if (type == DOUBLE_SUM
-          || type == DOUBLE_GAUGE
-          || type == LONG_SUM
-          || type == LONG_GAUGE
-          || type == HISTOGRAM) {
-        convertOtelMetricToAzureMonitorMetric(metricData).forEach(telemetryClient::trackAsync);
-      } else {
-        logger.warn("metric data type {} is not supported yet.", type);
-      }
+    } else {
+      logger.warn("metric data type {} is not supported yet.", metricData.getType());
     }
-    return CompletableResultCode.ofSuccess();
-  }
-
-  @Override
-  public CompletableResultCode flush() {
-    return CompletableResultCode.ofSuccess();
-  }
-
-  @Override
-  public CompletableResultCode shutdown() {
-    stopped.set(true);
-    return CompletableResultCode.ofSuccess();
   }
 
   private List<TelemetryItem> convertOtelMetricToAzureMonitorMetric(MetricData metricData) {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-
     for (PointData pointData : metricData.getData().getPoints()) {
-      MetricTelemetryBuilder builder = telemetryClient.newMetricTelemetryBuilder();
+      MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
+      telemetryInitializer.accept(builder);
+      builder.setInstrumentationKey(instrumentationKey);
+      builder.addTag(
+          ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), VersionGenerator.getSdkVersion());
       builder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(pointData.getEpochNanos()));
       updateMetricPointBuilder(builder, metricData, pointData);
       telemetryItems.add(builder.build());
@@ -126,7 +105,7 @@ public class AzureMonitorMetricExporter implements MetricExporter {
   }
 
   // visible for testing
-  static void updateMetricPointBuilder(
+  public static void updateMetricPointBuilder(
       MetricTelemetryBuilder metricTelemetryBuilder, MetricData metricData, PointData pointData) {
     checkArgument(metricData != null, "MetricData cannot be null.");
 

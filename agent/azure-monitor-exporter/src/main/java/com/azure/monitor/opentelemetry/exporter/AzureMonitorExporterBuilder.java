@@ -36,6 +36,7 @@ import com.azure.core.http.policy.UserAgentPolicy;
 import com.azure.core.util.ClientOptions;
 import com.azure.core.util.Configuration;
 import com.azure.core.util.CoreUtils;
+import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
@@ -46,6 +47,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.VersionGenerator;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.File;
 import java.net.URL;
@@ -244,6 +246,35 @@ public final class AzureMonitorExporterBuilder {
    *     environment variable "APPLICATIONINSIGHTS_CONNECTION_STRING" is not set.
    */
   public AzureMonitorTraceExporter buildTraceExporter() {
+    SpanDataMapper mapper =
+        new SpanDataMapper(
+            true,
+            builder -> {
+              builder.setInstrumentationKey(instrumentationKey);
+              builder.addTag(
+                  ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(),
+                  VersionGenerator.getSdkVersion());
+            },
+            (event, instrumentationName) -> false,
+            () -> null);
+
+    return new AzureMonitorTraceExporter(mapper, initExporterBuilder());
+  }
+
+  /**
+   * Creates an {@link AzureMonitorMetricExporter} based on the options set in the builder. This
+   * exporter is an implementation of OpenTelemetry {@link MetricExporter}.
+   *
+   * @return An instance of {@link AzureMonitorMetricExporter}.
+   * @throws NullPointerException if the connection string is not set on this builder or if the
+   *     environment variable "APPLICATIONINSIGHTS_CONNECTION_STRING" is not set.
+   */
+  public AzureMonitorMetricExporter buildMetricExporter() {
+    return new AzureMonitorMetricExporter(
+        new MetricDataMapper(instrumentationKey, t -> {}), initExporterBuilder());
+  }
+
+  private TelemetryItemExporter initExporterBuilder() {
     if (this.connectionString == null) {
       // if connection string is not set, try loading from configuration
       Configuration configuration = Configuration.getGlobalConfiguration().clone();
@@ -270,7 +301,7 @@ public final class AzureMonitorExporterBuilder {
 
     File tempDir =
         TempDirs.getApplicationInsightsTempDir(
-            LoggerFactory.getLogger(AzureMonitorTraceExporter.class),
+            LoggerFactory.getLogger(AzureMonitorExporterBuilder.class),
             "Telemetry will not be stored to disk and retried later"
                 + " on sporadic network failures");
 
@@ -287,20 +318,7 @@ public final class AzureMonitorExporterBuilder {
     } else {
       telemetryItemExporter = new TelemetryItemExporter(pipeline, TelemetryPipelineListener.noop());
     }
-
-    SpanDataMapper mapper =
-        new SpanDataMapper(
-            true,
-            builder -> {
-              builder.setInstrumentationKey(instrumentationKey);
-              builder.addTag(
-                  ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(),
-                  VersionGenerator.getSdkVersion());
-            },
-            (event, instrumentationName) -> false,
-            () -> null);
-
-    return new AzureMonitorTraceExporter(mapper, telemetryItemExporter);
+    return telemetryItemExporter;
   }
 
   private HttpPipeline createHttpPipeline() {
