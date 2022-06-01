@@ -45,10 +45,16 @@ public class TestController {
 
   @GetMapping("/clientHeaders")
   public String clientHeaders() throws IOException {
+    callMockCodes200(false);
+    callMockCodes200(true);
+    return "OK!";
+  }
+
+  private void callMockCodes200(boolean nope) throws IOException {
     URL obj = new URL("https://mock.codes/200");
 
     HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
-    connection.setRequestProperty("abc", "testing123");
+    connection.setRequestProperty("abc", nope ? "nope" : "testing123");
     // calling getContentType() first, since this triggered a bug previously in the instrumentation
     // previously
     connection.getContentType();
@@ -57,7 +63,5 @@ public class TestController {
     byte[] buffer = new byte[1024];
     while (content.read(buffer) != -1) {}
     content.close();
-
-    return "OK!";
   }
 }
