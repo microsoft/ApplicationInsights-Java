@@ -175,6 +175,7 @@ public class Configuration {
     public LoggingInstrumentation logging = new LoggingInstrumentation();
     public MicrometerInstrumentation micrometer = new MicrometerInstrumentation();
     public EnabledByDefaultInstrumentation mongo = new EnabledByDefaultInstrumentation();
+    public EnabledByDefaultInstrumentation quartz = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation rabbitmq = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation redis = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation springScheduling = new EnabledByDefaultInstrumentation();
@@ -424,6 +425,8 @@ public class Configuration {
     @Deprecated
     public DisabledByDefaultInstrumentation jaxws = new DisabledByDefaultInstrumentation();
 
+    // this is just here to detect if using this old setting in order to give a helpful message
+    @Deprecated
     public DisabledByDefaultInstrumentation quartz = new DisabledByDefaultInstrumentation();
 
     // this is just here to detect if using this old setting in order to give a helpful message

@@ -49,7 +49,7 @@ enum Feature {
   LEGACY_PROPAGATION_ENABLED(18), // legacy propagation is disabled by default
   GRIZZLY_ENABLED(19), // preview instrumentation, grizzly is OFF by default in OTEL
   STATSBEAT_DISABLED(20), // disable non-essential statsbeat
-  QUARTZ_DISABLED(21), // preview instrumentation, quartz is ON by default in OTEL
+  QUARTZ_DISABLED(21),
   APACHE_CAMEL_DISABLED(22), // preview instrumentation, apache camel is ON by default in OTEL
   AKKA_DISABLED(23), // preview instrumentation, akka is ON by default in OTEL
   PROPAGATION_DISABLED(24),
