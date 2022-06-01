@@ -40,7 +40,7 @@ public class TempDirs {
     tempDir = maybeAddUserSubDir(tempDir);
     tempDir = new File(tempDir, "applicationinsights");
 
-    if ((!tempDir.exists() && !tempDir.mkdir())) {
+    if (!tempDir.exists() && !tempDir.mkdirs()) {
       logger.info(
           "Unable to create directory: {}. {}. If this is unexpected, please check"
               + " that the process has the necessary permissions to create the directory.",
@@ -70,7 +70,7 @@ public class TempDirs {
   public static File getSubDir(File parent, String name) {
     File dir = new File(parent, name);
 
-    if (!dir.exists() && !dir.mkdir()) {
+    if (!dir.exists() && !dir.mkdirs()) {
       throw new IllegalArgumentException("Unable to create directory: " + dir);
     }
     if (!dir.canRead()) {
