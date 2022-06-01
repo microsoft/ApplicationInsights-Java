@@ -165,6 +165,7 @@ public class ConfigurationBuilder {
               + " and it is now enabled by default,"
               + " so no need to enable it under preview configuration");
     }
+    logWarningIfUsingInternalAttributes(config);
 
     overlayFromEnv(config, agentJarPath.getParent());
     config.sampling.percentage = roundToNearest(config.sampling.percentage, true);
@@ -183,6 +184,50 @@ public class ConfigurationBuilder {
       config.role.instance = hostname == null ? "unknown" : hostname;
     }
     return config;
+  }
+
+  private static void logWarningIfUsingInternalAttributes(Configuration config) {
+    for (Configuration.ProcessorConfig processor : config.preview.processors) {
+      if (processor.include != null) {
+        logWarningIfUsingInternalAttributes(processor.include);
+      }
+      if (processor.exclude != null) {
+        logWarningIfUsingInternalAttributes(processor.exclude);
+      }
+      for (Configuration.ProcessorAction action : processor.actions) {
+        logWarningIfUsingInternalAttributes(action);
+      }
+    }
+    for (SamplingOverride override : config.preview.sampling.overrides) {
+      for (Configuration.SamplingOverrideAttribute attribute : override.attributes) {
+        logWarningIfUsingInternalAttributes(attribute.key);
+      }
+    }
+  }
+
+  private static void logWarningIfUsingInternalAttributes(
+      Configuration.ProcessorIncludeExclude includeExclude) {
+    for (Configuration.ProcessorAttribute attribute : includeExclude.attributes) {
+      logWarningIfUsingInternalAttributes(attribute.key);
+    }
+  }
+
+  private static void logWarningIfUsingInternalAttributes(Configuration.ProcessorAction action) {
+    if (action.key != null) {
+      logWarningIfUsingInternalAttributes(action.key.getKey());
+    }
+    if (action.fromAttribute != null) {
+      logWarningIfUsingInternalAttributes(action.fromAttribute.getKey());
+    }
+  }
+
+  private static void logWarningIfUsingInternalAttributes(String attributeKey) {
+    if (attributeKey.startsWith("applicationinsights.internal.")) {
+      configurationLogger.warn(
+          "Usage of internal attributes in processor configurations is not supported"
+              + " and will be removed in a future version: "
+              + attributeKey);
+    }
   }
 
   private static void overlayProfilerEnvVars(Configuration config) {
