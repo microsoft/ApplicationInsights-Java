@@ -131,7 +131,7 @@ public class SpringBootControllerSpansEnabledTest extends AiWarSmokeTest {
                 return !data.getProperties().containsKey("LoggerName");
               }
             },
-            2,
+            1,
             10,
             TimeUnit.SECONDS);
     assertEquals(0, mockedIngestion.getCountForType("EventData"));
@@ -155,8 +155,8 @@ public class SpringBootControllerSpansEnabledTest extends AiWarSmokeTest {
     assertTrue(rdd1.getProperties().isEmpty());
     assertFalse(rdd1.getSuccess());
 
+    assertParentChild(rd, rdEnvelope, edEnvelope1, "GET /SpringBootTest/throwsException");
     assertParentChild(rd, rdEnvelope, rddEnvelope1, "GET /SpringBootTest/throwsException");
-    assertParentChild(rdd1, rddEnvelope1, edEnvelope1, "GET /SpringBootTest/throwsException");
   }
 
   @Test
