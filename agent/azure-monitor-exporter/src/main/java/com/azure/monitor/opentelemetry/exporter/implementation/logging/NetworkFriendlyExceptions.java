@@ -201,14 +201,14 @@ public class NetworkFriendlyExceptions {
     @Override
     public String message(String url) {
       return populateFriendlyMessage(
-          "Unable to resolve host in end point url",
+          "Unable to resolve host in url",
           getUnknownHostFriendlyExceptionAction(url),
           getFriendlyExceptionBanner(url),
           "This message is only logged the first time it occurs after startup.");
     }
 
     private static String getUnknownHostFriendlyExceptionAction(String url) {
-      return "Please upgrade your network to resolve the host in url :"
+      return "Please update your network configuration so that the host in this url can be resolved: "
           + url
           + "\nLearn more about troubleshooting unknown host exception here: https://go.microsoft.com/fwlink/?linkid=2185830";
     }
