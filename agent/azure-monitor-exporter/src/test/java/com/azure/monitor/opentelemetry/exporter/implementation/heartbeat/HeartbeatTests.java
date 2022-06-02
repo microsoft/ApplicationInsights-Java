@@ -19,26 +19,52 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.heartbeat;
+package com.azure.monitor.opentelemetry.exporter.implementation.heartbeat;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
+import com.azure.core.http.HttpClient;
+import com.azure.core.http.HttpPipelineBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
+import java.io.File;
 import java.lang.reflect.Field;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
 class HeartbeatTests {
 
+  private TelemetryItemExporter telemetryItemExporter;
+
+  @TempDir File tempFolder;
+
+  @BeforeEach
+  void setup() throws MalformedURLException {
+    HttpPipelineBuilder pipelineBuilder =
+        new HttpPipelineBuilder().httpClient(mock(HttpClient.class));
+    TelemetryPipeline telemetryPipeline =
+        new TelemetryPipeline(pipelineBuilder.build(), new URL("http://foo.bar"));
+    telemetryItemExporter =
+        new TelemetryItemExporter(
+            telemetryPipeline,
+            new LocalStorageTelemetryPipelineListener(tempFolder, telemetryPipeline, null, false));
+  }
+
   @Test
   void heartBeatPayloadContainsDataByDefault() throws InterruptedException {
     // given
-    HeartBeatProvider provider = new HeartBeatProvider(60, TelemetryClient.createForTest());
+    HeartBeatProvider provider = new HeartBeatProvider(60, telemetryItemExporter, t -> {});
 
     // some of the initialization above happens in a separate thread
     Thread.sleep(500);
@@ -52,7 +78,7 @@ class HeartbeatTests {
   @Test
   void heartBeatPayloadContainsSpecificProperties() {
     // given
-    HeartBeatProvider provider = new HeartBeatProvider(60, TelemetryClient.createForTest());
+    HeartBeatProvider provider = new HeartBeatProvider(60, telemetryItemExporter, t -> {});
 
     // then
     assertThat(provider.addHeartBeatProperty("test", "testVal", true)).isTrue();
@@ -64,7 +90,7 @@ class HeartbeatTests {
   @Test
   void heartbeatMetricIsNonZeroWhenFailureConditionPresent() {
     // given
-    HeartBeatProvider provider = new HeartBeatProvider(60, TelemetryClient.createForTest());
+    HeartBeatProvider provider = new HeartBeatProvider(60, telemetryItemExporter, t -> {});
 
     // then
     assertThat(provider.addHeartBeatProperty("test", "testVal", false)).isTrue();
@@ -76,7 +102,7 @@ class HeartbeatTests {
   @Test
   void heartbeatMetricCountsForAllFailures() {
     // given
-    HeartBeatProvider provider = new HeartBeatProvider(60, TelemetryClient.createForTest());
+    HeartBeatProvider provider = new HeartBeatProvider(60, telemetryItemExporter, t -> {});
 
     // then
     assertThat(provider.addHeartBeatProperty("test", "testVal", false)).isTrue();
@@ -116,7 +142,7 @@ class HeartbeatTests {
   @Test
   void heartBeatProviderDoesNotAllowDuplicateProperties() {
     // given
-    HeartBeatProvider provider = new HeartBeatProvider(60, TelemetryClient.createForTest());
+    HeartBeatProvider provider = new HeartBeatProvider(60, telemetryItemExporter, t -> {});
 
     // then
     provider.addHeartBeatProperty("test01", "test val", true);
@@ -133,7 +159,7 @@ class HeartbeatTests {
     Set<String> defaultFields = (Set<String>) field.get(base);
     defaultFields.add(testKey);
 
-    HeartBeatProvider provider = new HeartBeatProvider(60, TelemetryClient.createForTest());
+    HeartBeatProvider provider = new HeartBeatProvider(60, telemetryItemExporter, t -> {});
 
     base.setDefaultPayload(provider).call();
     MetricsData data = (MetricsData) provider.gatherData().getData().getBaseData();

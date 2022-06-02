@@ -19,13 +19,15 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.heartbeat;
+package com.azure.monitor.opentelemetry.exporter.implementation.heartbeat;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,6 +36,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,8 +54,10 @@ public class HeartBeatProvider {
   /** Map to hold heartbeat properties. */
   private final ConcurrentMap<String, HeartBeatPropertyPayload> heartbeatProperties;
 
-  /** Telemetry client instance used to send heartbeat. */
-  private TelemetryClient telemetryClient;
+  /** Telemetry item exporter instance used to send heartbeat. */
+  private TelemetryItemExporter telemetryItemExporter;
+
+  private Consumer<AbstractTelemetryBuilder> telemetryInitializer;
 
   /** ThreadPool used for adding properties to concurrent dictionary. */
   private final ExecutorService propertyUpdateService;
@@ -60,12 +65,18 @@ public class HeartBeatProvider {
   /** Threadpool used to send data heartbeat telemetry. */
   private final ScheduledExecutorService heartBeatSenderService;
 
-  public static void start(long intervalSeconds, TelemetryClient telemetryClient) {
-    new HeartBeatProvider(intervalSeconds, telemetryClient);
+  public static void start(
+      long intervalSeconds,
+      TelemetryItemExporter telemetryItemExporter,
+      Consumer<AbstractTelemetryBuilder> telemetryInitializer) {
+    new HeartBeatProvider(intervalSeconds, telemetryItemExporter, telemetryInitializer);
   }
 
   // visible for tests
-  HeartBeatProvider(long intervalSeconds, TelemetryClient telemetryClient) {
+  HeartBeatProvider(
+      long intervalSeconds,
+      TelemetryItemExporter telemetryItemExporter,
+      Consumer<AbstractTelemetryBuilder> telemetryInitializer) {
     this.heartbeatProperties = new ConcurrentHashMap<>();
     this.heartbeatsSent = 0;
     this.propertyUpdateService =
@@ -77,8 +88,12 @@ public class HeartBeatProvider {
             ThreadPoolUtils.createDaemonThreadFactory(
                 HeartBeatProvider.class, "heartBeatSenderService"));
 
-    if (this.telemetryClient == null) {
-      this.telemetryClient = telemetryClient;
+    if (this.telemetryItemExporter == null) {
+      this.telemetryItemExporter = telemetryItemExporter;
+    }
+
+    if (this.telemetryInitializer == null) {
+      this.telemetryInitializer = telemetryInitializer;
     }
 
     // Submit task to set properties to dictionary using separate thread. we do not wait for the
@@ -110,7 +125,7 @@ public class HeartBeatProvider {
   /** Send the heartbeat item synchronously to application insights backend. */
   private void send() {
     try {
-      telemetryClient.trackAsync(gatherData());
+      telemetryItemExporter.send(Collections.singletonList(gatherData()));
       logger.trace("No of heartbeats sent, {}", ++heartbeatsSent);
     } catch (RuntimeException e) {
       logger.warn("Error occured while sending heartbeat");
@@ -132,8 +147,8 @@ public class HeartBeatProvider {
       numHealthy += payload.isHealthy() ? 0 : 1;
     }
     MetricTelemetryBuilder telemetryBuilder =
-        telemetryClient.newMetricTelemetryBuilder(HEARTBEAT_SYNTHETIC_METRIC_NAME, numHealthy);
-
+        MetricTelemetryBuilder.create(HEARTBEAT_SYNTHETIC_METRIC_NAME, numHealthy);
+    telemetryInitializer.accept(telemetryBuilder);
     telemetryBuilder.addTag(
         ContextTagKeys.AI_OPERATION_SYNTHETIC_SOURCE.toString(), HEARTBEAT_SYNTHETIC_METRIC_NAME);
 

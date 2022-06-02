@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.heartbeat;
+package com.azure.monitor.opentelemetry.exporter.implementation.heartbeat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import java.util.HashSet;

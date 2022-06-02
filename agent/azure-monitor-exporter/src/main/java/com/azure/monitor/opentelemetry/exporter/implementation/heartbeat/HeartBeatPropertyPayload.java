@@ -19,28 +19,49 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.heartbeat;
+package com.azure.monitor.opentelemetry.exporter.implementation.heartbeat;
 
-import java.util.concurrent.Callable;
+import javax.annotation.Nullable;
 
 /**
- *
- *
- * <h1>Interface for setting default properties</h1>
- *
- * <p>This interface is used to set the default payload of a provider and defines implementation for
- * some helper methods to assist it.
- *
- * <p>The default concrete implementations are {@link DefaultHeartBeatPropertyProvider} and {@link
- * WebAppsHeartbeatProvider}
+ * Defines the Payload class to store and send heartbeat properties and allowing to keep track of
+ * updates to them.
  */
-public interface HeartBeatPayloadProviderInterface {
+public class HeartBeatPropertyPayload {
+
+  /** Value of payload on initialization. Ready for transmission. */
+  private String payloadValue = "";
+
+  /** Is this healthy property or not. */
+  private boolean isHealthy = false;
+
+  /** Returns the payload value. */
+  String getPayloadValue() {
+    return payloadValue;
+  }
 
   /**
-   * Returns a callable which can be executed to set the payload based on the parameters.
+   * This is used to set the payload.
    *
-   * @param provider The current heartbeat provider
-   * @return Callable which can be executed to add the payload
+   * @param payloadValue value of the property
    */
-  Callable<Boolean> setDefaultPayload(HeartBeatProvider provider);
+  public void setPayloadValue(@Nullable String payloadValue) {
+    if (payloadValue != null && !this.payloadValue.equals(payloadValue)) {
+      this.payloadValue = payloadValue;
+    }
+  }
+
+  /** Returns the value of payload is healthy. */
+  public boolean isHealthy() {
+    return isHealthy;
+  }
+
+  /**
+   * Sets the health of the payload.
+   *
+   * @param healthy boolean value representing the health.
+   */
+  public void setHealthy(boolean healthy) {
+    this.isHealthy = healthy;
+  }
 }
