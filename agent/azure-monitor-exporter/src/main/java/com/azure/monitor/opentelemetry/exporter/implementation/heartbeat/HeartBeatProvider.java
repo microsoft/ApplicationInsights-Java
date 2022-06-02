@@ -131,7 +131,8 @@ public class HeartBeatProvider {
       properties.put(entry.getKey(), payload.getPayloadValue());
       numHealthy += payload.isHealthy() ? 0 : 1;
     }
-    MetricTelemetryBuilder telemetryBuilder = MetricTelemetryBuilder.create(HEARTBEAT_SYNTHETIC_METRIC_NAME, numHealthy);
+    MetricTelemetryBuilder telemetryBuilder =
+        MetricTelemetryBuilder.create(HEARTBEAT_SYNTHETIC_METRIC_NAME, numHealthy);
     telemetryBuilder.addTag(
         ContextTagKeys.AI_OPERATION_SYNTHETIC_SOURCE.toString(), HEARTBEAT_SYNTHETIC_METRIC_NAME);
 

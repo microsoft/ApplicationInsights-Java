@@ -78,7 +78,6 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.io.File;
-import java.net.URL;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -504,7 +503,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     return builder.registerMetricReader(metricReader);
   }
 
-  private static Consumer<TelemetryItem> getHeartbeatTelemetryItemConsumer(TelemetryClient telemetryClient) {
+  private static Consumer<TelemetryItem> getHeartbeatTelemetryItemConsumer(
+      TelemetryClient telemetryClient) {
     Consumer<TelemetryItem> telemetryItemConsumer =
         telemetryItem -> {
           TelemetryObservers.INSTANCE
@@ -514,7 +514,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
         };
     return telemetryItemConsumer;
   }
-
 
   private static class BackCompatHttpUrlProcessor implements SpanExporter {
 
