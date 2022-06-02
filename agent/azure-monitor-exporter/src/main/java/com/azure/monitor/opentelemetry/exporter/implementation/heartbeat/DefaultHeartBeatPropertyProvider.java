@@ -68,7 +68,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
   }
 
   @Override
-  public Callable<Boolean> setDefaultPayload(HeartBeatProvider provider) {
+  public Callable<Boolean> setDefaultPayload(HeartbeatExporter provider) {
     return new Callable<Boolean>() {
 
       final Set<String> enabledProperties = defaultFields;

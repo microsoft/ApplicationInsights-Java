@@ -39,9 +39,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Concrete implementation of Heartbeat functionality. */
-public class HeartBeatProvider {
+public class HeartbeatExporter {
 
-  private static final Logger logger = LoggerFactory.getLogger(HeartBeatProvider.class);
+  private static final Logger logger = LoggerFactory.getLogger(HeartbeatExporter.class);
 
   /** The name of the heartbeat metric. */
   private static final String HEARTBEAT_SYNTHETIC_METRIC_NAME = "HeartbeatState";
@@ -62,20 +62,20 @@ public class HeartBeatProvider {
   private final ScheduledExecutorService heartBeatSenderService;
 
   public static void start(long intervalSeconds, TelemetryItemExporter telemetryItemExporter) {
-    new HeartBeatProvider(intervalSeconds, telemetryItemExporter);
+    new HeartbeatExporter(intervalSeconds, telemetryItemExporter);
   }
 
-  public HeartBeatProvider(long intervalSeconds, TelemetryItemExporter telemetryItemExporter) {
+  public HeartbeatExporter(long intervalSeconds, TelemetryItemExporter telemetryItemExporter) {
     this.heartbeatProperties = new ConcurrentHashMap<>();
     this.heartbeatsSent = 0;
     this.propertyUpdateService =
         Executors.newCachedThreadPool(
             ThreadPoolUtils.createDaemonThreadFactory(
-                HeartBeatProvider.class, "propertyUpdateService"));
+                HeartbeatExporter.class, "propertyUpdateService"));
     this.heartBeatSenderService =
         Executors.newSingleThreadScheduledExecutor(
             ThreadPoolUtils.createDaemonThreadFactory(
-                HeartBeatProvider.class, "heartBeatSenderService"));
+                HeartbeatExporter.class, "heartBeatSenderService"));
 
     if (this.telemetryItemExporter == null) {
       this.telemetryItemExporter = telemetryItemExporter;

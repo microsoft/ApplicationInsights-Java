@@ -28,7 +28,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
-import com.azure.monitor.opentelemetry.exporter.implementation.heartbeat.HeartBeatProvider;
+import com.azure.monitor.opentelemetry.exporter.implementation.heartbeat.HeartbeatExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
@@ -153,7 +153,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     // interval longer than 15 minutes is not allowed since we use this data for usage telemetry
     long intervalSeconds = Math.min(config.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
-    HeartBeatProvider.start(
+    HeartbeatExporter.start(
         intervalSeconds, telemetryClient.getMetricsBatchItemProcessor().getTelemetryItemExporter());
 
     TelemetryClient.setActive(telemetryClient);
