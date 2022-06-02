@@ -235,6 +235,9 @@ public class AiConfigPropertySource implements ConfigPropertySource {
     if (config.instrumentation.mongo.enabled) {
       properties.put("otel.instrumentation.mongo.enabled", "true");
     }
+    if (config.instrumentation.quartz.enabled) {
+      properties.put("otel.instrumentation.quartz.enabled", "true");
+    }
     if (config.instrumentation.rabbitmq.enabled) {
       properties.put("otel.instrumentation.rabbitmq.enabled", "true");
       properties.put("otel.instrumentation.spring-rabbitmq.enabled", "true");
@@ -259,9 +262,6 @@ public class AiConfigPropertySource implements ConfigPropertySource {
     if (config.preview.instrumentation.grizzly.enabled) {
       // note: grizzly instrumentation is off by default upstream
       properties.put("otel.instrumentation.grizzly.enabled", "true");
-    }
-    if (config.preview.instrumentation.quartz.enabled) {
-      properties.put("otel.instrumentation.quartz.enabled", "true");
     }
     if (config.preview.instrumentation.springIntegration.enabled) {
       properties.put("otel.instrumentation.spring-integration.enabled", "true");

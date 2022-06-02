@@ -159,6 +159,12 @@ public class ConfigurationBuilder {
               + " and it is now enabled by default,"
               + " so no need to enable it under preview configuration");
     }
+    if (config.preview.instrumentation.quartz.enabled) {
+      configurationLogger.warn(
+          "\"quartz\" instrumentation is no longer in preview"
+              + " and it is now enabled by default,"
+              + " so no need to enable it under preview configuration");
+    }
     if (config.preview.instrumentation.rabbitmq.enabled) {
       configurationLogger.warn(
           "\"rabbitmq\" instrumentation is no longer in preview"
