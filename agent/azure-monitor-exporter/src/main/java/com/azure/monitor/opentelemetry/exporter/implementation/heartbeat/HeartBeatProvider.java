@@ -21,13 +21,10 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.heartbeat;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,10 +51,8 @@ public class HeartBeatProvider {
   /** Map to hold heartbeat properties. */
   private final ConcurrentMap<String, HeartBeatPropertyPayload> heartbeatProperties;
 
-  /** Telemetry item exporter instance used to send heartbeat. */
-  private TelemetryItemExporter telemetryItemExporter;
-
-  private Consumer<AbstractTelemetryBuilder> telemetryInitializer;
+  /** Telemetry item consumer used to send heartbeat. */
+  private Consumer<TelemetryItem> telemetryItemConsumer;
 
   /** ThreadPool used for adding properties to concurrent dictionary. */
   private final ExecutorService propertyUpdateService;
@@ -65,18 +60,12 @@ public class HeartBeatProvider {
   /** Threadpool used to send data heartbeat telemetry. */
   private final ScheduledExecutorService heartBeatSenderService;
 
-  public static void start(
-      long intervalSeconds,
-      TelemetryItemExporter telemetryItemExporter,
-      Consumer<AbstractTelemetryBuilder> telemetryInitializer) {
-    new HeartBeatProvider(intervalSeconds, telemetryItemExporter, telemetryInitializer);
+  public static void start(long intervalSeconds, Consumer<TelemetryItem> telemetryItemConsumer) {
+    new HeartBeatProvider(intervalSeconds, telemetryItemConsumer);
   }
 
   // visible for tests
-  HeartBeatProvider(
-      long intervalSeconds,
-      TelemetryItemExporter telemetryItemExporter,
-      Consumer<AbstractTelemetryBuilder> telemetryInitializer) {
+  HeartBeatProvider(long intervalSeconds, Consumer<TelemetryItem> telemetryItemConsumer) {
     this.heartbeatProperties = new ConcurrentHashMap<>();
     this.heartbeatsSent = 0;
     this.propertyUpdateService =
@@ -88,12 +77,8 @@ public class HeartBeatProvider {
             ThreadPoolUtils.createDaemonThreadFactory(
                 HeartBeatProvider.class, "heartBeatSenderService"));
 
-    if (this.telemetryItemExporter == null) {
-      this.telemetryItemExporter = telemetryItemExporter;
-    }
-
-    if (this.telemetryInitializer == null) {
-      this.telemetryInitializer = telemetryInitializer;
+    if (this.telemetryItemConsumer == null) {
+      this.telemetryItemConsumer = telemetryItemConsumer;
     }
 
     // Submit task to set properties to dictionary using separate thread. we do not wait for the
@@ -125,7 +110,7 @@ public class HeartBeatProvider {
   /** Send the heartbeat item synchronously to application insights backend. */
   private void send() {
     try {
-      telemetryItemExporter.send(Collections.singletonList(gatherData()));
+      telemetryItemConsumer.accept(gatherData());
       logger.trace("No of heartbeats sent, {}", ++heartbeatsSent);
     } catch (RuntimeException e) {
       logger.warn("Error occured while sending heartbeat");
@@ -146,9 +131,7 @@ public class HeartBeatProvider {
       properties.put(entry.getKey(), payload.getPayloadValue());
       numHealthy += payload.isHealthy() ? 0 : 1;
     }
-    MetricTelemetryBuilder telemetryBuilder =
-        MetricTelemetryBuilder.create(HEARTBEAT_SYNTHETIC_METRIC_NAME, numHealthy);
-    telemetryInitializer.accept(telemetryBuilder);
+    MetricTelemetryBuilder telemetryBuilder = MetricTelemetryBuilder.create(HEARTBEAT_SYNTHETIC_METRIC_NAME, numHealthy);
     telemetryBuilder.addTag(
         ContextTagKeys.AI_OPERATION_SYNTHETIC_SOURCE.toString(), HEARTBEAT_SYNTHETIC_METRIC_NAME);
 
