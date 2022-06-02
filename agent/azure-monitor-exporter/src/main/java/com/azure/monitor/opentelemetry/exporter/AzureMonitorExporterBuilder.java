@@ -21,6 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+
 import com.azure.core.credential.TokenCredential;
 import com.azure.core.http.HttpClient;
 import com.azure.core.http.HttpPipeline;
@@ -40,6 +42,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.heartbeat.HeartBeatProvider;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
@@ -286,6 +289,11 @@ public final class AzureMonitorExporterBuilder {
    */
   public AzureMonitorLogExporter buildLogExporter() {
     return new AzureMonitorLogExporter(new LogDataMapper(true, t -> {}), initExporterBuilder());
+  }
+
+  /** @return An instance of {@link HeartBeatProvider}. */
+  public HeartBeatProvider buildHeartBeatProvider() {
+    return new HeartBeatProvider(MINUTES.toSeconds(15), initExporterBuilder());
   }
 
   private TelemetryItemExporter initExporterBuilder() {

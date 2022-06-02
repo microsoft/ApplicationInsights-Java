@@ -29,7 +29,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.heartbeat.HeartBeatProvider;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
@@ -58,7 +57,6 @@ import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModul
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder;
@@ -84,7 +82,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -156,7 +153,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     // interval longer than 15 minutes is not allowed since we use this data for usage telemetry
     long intervalSeconds = Math.min(config.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
-    HeartBeatProvider.start(intervalSeconds, getHeartbeatTelemetryItemConsumer(telemetryClient));
+    HeartBeatProvider.start(
+        intervalSeconds, telemetryClient.getMetricsBatchItemProcessor().getTelemetryItemExporter());
 
     TelemetryClient.setActive(telemetryClient);
 
@@ -501,18 +499,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             .build();
 
     return builder.registerMetricReader(metricReader);
-  }
-
-  private static Consumer<TelemetryItem> getHeartbeatTelemetryItemConsumer(
-      TelemetryClient telemetryClient) {
-    Consumer<TelemetryItem> telemetryItemConsumer =
-        telemetryItem -> {
-          TelemetryObservers.INSTANCE
-              .getObservers()
-              .forEach(consumer -> consumer.accept(telemetryItem));
-          telemetryClient.getMetricsBatchItemProcessor().trackAsync(telemetryItem);
-        };
-    return telemetryItemConsumer;
   }
 
   private static class BackCompatHttpUrlProcessor implements SpanExporter {

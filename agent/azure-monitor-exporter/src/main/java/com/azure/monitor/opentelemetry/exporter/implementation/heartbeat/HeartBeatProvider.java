@@ -24,7 +24,9 @@ package com.azure.monitor.opentelemetry.exporter.implementation.heartbeat;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,7 +35,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,8 +52,8 @@ public class HeartBeatProvider {
   /** Map to hold heartbeat properties. */
   private final ConcurrentMap<String, HeartBeatPropertyPayload> heartbeatProperties;
 
-  /** Telemetry item consumer used to send heartbeat. */
-  private Consumer<TelemetryItem> telemetryItemConsumer;
+  /** Telemetry item exporter used to send heartbeat. */
+  private TelemetryItemExporter telemetryItemExporter;
 
   /** ThreadPool used for adding properties to concurrent dictionary. */
   private final ExecutorService propertyUpdateService;
@@ -60,12 +61,11 @@ public class HeartBeatProvider {
   /** Threadpool used to send data heartbeat telemetry. */
   private final ScheduledExecutorService heartBeatSenderService;
 
-  public static void start(long intervalSeconds, Consumer<TelemetryItem> telemetryItemConsumer) {
-    new HeartBeatProvider(intervalSeconds, telemetryItemConsumer);
+  public static void start(long intervalSeconds, TelemetryItemExporter telemetryItemExporter) {
+    new HeartBeatProvider(intervalSeconds, telemetryItemExporter);
   }
 
-  // visible for tests
-  HeartBeatProvider(long intervalSeconds, Consumer<TelemetryItem> telemetryItemConsumer) {
+  public HeartBeatProvider(long intervalSeconds, TelemetryItemExporter telemetryItemExporter) {
     this.heartbeatProperties = new ConcurrentHashMap<>();
     this.heartbeatsSent = 0;
     this.propertyUpdateService =
@@ -77,8 +77,8 @@ public class HeartBeatProvider {
             ThreadPoolUtils.createDaemonThreadFactory(
                 HeartBeatProvider.class, "heartBeatSenderService"));
 
-    if (this.telemetryItemConsumer == null) {
-      this.telemetryItemConsumer = telemetryItemConsumer;
+    if (this.telemetryItemExporter == null) {
+      this.telemetryItemExporter = telemetryItemExporter;
     }
 
     // Submit task to set properties to dictionary using separate thread. we do not wait for the
@@ -110,7 +110,7 @@ public class HeartBeatProvider {
   /** Send the heartbeat item synchronously to application insights backend. */
   private void send() {
     try {
-      telemetryItemConsumer.accept(gatherData());
+      telemetryItemExporter.send(Collections.singletonList(gatherData()));
       logger.trace("No of heartbeats sent, {}", ++heartbeatsSent);
     } catch (RuntimeException e) {
       logger.warn("Error occured while sending heartbeat");
