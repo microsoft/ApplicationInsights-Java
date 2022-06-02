@@ -195,7 +195,12 @@ public class ConfigurationBuilder {
         logWarningIfUsingInternalAttributes(processor.exclude);
       }
       for (Configuration.ProcessorAction action : processor.actions) {
-        logWarningIfUsingInternalAttributes(action);
+        if (action.key != null) {
+          logWarningIfUsingInternalAttributes(action.key.getKey());
+        }
+        if (action.fromAttribute != null) {
+          logWarningIfUsingInternalAttributes(action.fromAttribute.getKey());
+        }
       }
     }
     for (SamplingOverride override : config.preview.sampling.overrides) {
@@ -209,15 +214,6 @@ public class ConfigurationBuilder {
       Configuration.ProcessorIncludeExclude includeExclude) {
     for (Configuration.ProcessorAttribute attribute : includeExclude.attributes) {
       logWarningIfUsingInternalAttributes(attribute.key);
-    }
-  }
-
-  private static void logWarningIfUsingInternalAttributes(Configuration.ProcessorAction action) {
-    if (action.key != null) {
-      logWarningIfUsingInternalAttributes(action.key.getKey());
-    }
-    if (action.fromAttribute != null) {
-      logWarningIfUsingInternalAttributes(action.fromAttribute.getKey());
     }
   }
 
