@@ -270,13 +270,18 @@ public final class AzureMonitorExporterBuilder {
    * Creates an {@link AzureMonitorMetricExporter} based on the options set in the builder. This
    * exporter is an implementation of OpenTelemetry {@link MetricExporter}.
    *
+   * <p>When a new {@link MetricExporter} is created, it will automatically start {@link
+   * HeartbeatExporter}.
+   *
    * @return An instance of {@link AzureMonitorMetricExporter}.
    * @throws NullPointerException if the connection string is not set on this builder or if the
    *     environment variable "APPLICATIONINSIGHTS_CONNECTION_STRING" is not set.
    */
   public AzureMonitorMetricExporter buildMetricExporter() {
+    TelemetryItemExporter telemetryItemExporter = initExporterBuilder();
+    HeartbeatExporter.start(MINUTES.toSeconds(15), t -> {}, telemetryItemExporter::send);
     return new AzureMonitorMetricExporter(
-        new MetricDataMapper(instrumentationKey, t -> {}), initExporterBuilder());
+        new MetricDataMapper(instrumentationKey, t -> {}), telemetryItemExporter);
   }
 
   /**
@@ -289,11 +294,6 @@ public final class AzureMonitorExporterBuilder {
    */
   public AzureMonitorLogExporter buildLogExporter() {
     return new AzureMonitorLogExporter(new LogDataMapper(true, t -> {}), initExporterBuilder());
-  }
-
-  /** @return An instance of {@link HeartbeatExporter}. */
-  public HeartbeatExporter buildHeartbeatExporter() {
-    return new HeartbeatExporter(MINUTES.toSeconds(15), t -> {}, initExporterBuilder());
   }
 
   private TelemetryItemExporter initExporterBuilder() {

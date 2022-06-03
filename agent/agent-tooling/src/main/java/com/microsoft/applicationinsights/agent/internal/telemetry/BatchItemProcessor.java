@@ -47,7 +47,6 @@ public final class BatchItemProcessor {
 
   private final Worker worker;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
-  private static TelemetryItemExporter telemetryItemExporter;
 
   /**
    * Returns a new Builder for {@link BatchItemProcessor}.
@@ -57,7 +56,6 @@ public final class BatchItemProcessor {
    * @throws NullPointerException if the {@code exporter} is {@code null}.
    */
   public static BatchItemProcessorBuilder builder(TelemetryItemExporter exporter) {
-    telemetryItemExporter = exporter;
     return new BatchItemProcessorBuilder(exporter);
   }
 
@@ -97,10 +95,6 @@ public final class BatchItemProcessor {
 
   public CompletableResultCode forceFlush() {
     return worker.forceFlush();
-  }
-
-  public TelemetryItemExporter getTelemetryItemExporter() {
-    return telemetryItemExporter;
   }
 
   // Worker is a thread that batches multiple items and calls the registered TelemetryItemExporter
