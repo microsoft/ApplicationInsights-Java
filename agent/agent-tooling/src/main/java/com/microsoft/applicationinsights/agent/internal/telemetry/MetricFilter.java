@@ -43,7 +43,7 @@ public class MetricFilter {
     this.exclude = new IncludeExclude(metricFilterConfiguration.exclude);
   }
 
-  boolean matches(String metricName) {
+  public boolean matches(String metricName) {
     return !exclude.matches(metricName);
   }
 
