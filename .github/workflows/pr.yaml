@@ -29,6 +29,7 @@ jobs:
       - name: Test
         uses: gradle/gradle-build-action@v2
         with:
+          cache-disabled: true
           arguments: check assemble
       - name: Upload snapshot
         # only upload from windows since only that build includes etw
