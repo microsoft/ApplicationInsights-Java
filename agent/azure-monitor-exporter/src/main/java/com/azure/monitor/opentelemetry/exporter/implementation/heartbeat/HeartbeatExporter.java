@@ -53,7 +53,7 @@ public class HeartbeatExporter {
   private final ConcurrentMap<String, HeartBeatPropertyPayload> heartbeatProperties;
 
   /** Telemetry item exporter used to send heartbeat. */
-  private TelemetryItemExporter telemetryItemExporter;
+  private final TelemetryItemExporter telemetryItemExporter;
 
   /** ThreadPool used for adding properties to concurrent dictionary. */
   private final ExecutorService propertyUpdateService;
@@ -77,9 +77,7 @@ public class HeartbeatExporter {
             ThreadPoolUtils.createDaemonThreadFactory(
                 HeartbeatExporter.class, "heartBeatSenderService"));
 
-    if (this.telemetryItemExporter == null) {
-      this.telemetryItemExporter = telemetryItemExporter;
-    }
+    this.telemetryItemExporter = telemetryItemExporter;
 
     // Submit task to set properties to dictionary using separate thread. we do not wait for the
     // results to come out as some I/O bound properties may take time.

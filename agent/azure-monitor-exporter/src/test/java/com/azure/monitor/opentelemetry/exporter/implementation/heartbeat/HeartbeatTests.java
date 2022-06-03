@@ -24,42 +24,19 @@ package com.azure.monitor.opentelemetry.exporter.implementation.heartbeat;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import com.azure.core.http.HttpClient;
-import com.azure.core.http.HttpPipelineBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
-import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
-import java.io.File;
 import java.lang.reflect.Field;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
 class HeartbeatTests {
 
-  private TelemetryItemExporter telemetryItemExporter;
-
-  @TempDir File tempFolder;
-
-  @BeforeEach
-  void setup() throws MalformedURLException {
-    HttpPipelineBuilder pipelineBuilder =
-        new HttpPipelineBuilder().httpClient(mock(HttpClient.class));
-    TelemetryPipeline telemetryPipeline =
-        new TelemetryPipeline(pipelineBuilder.build(), new URL("http://foo.bar"));
-    telemetryItemExporter =
-        new TelemetryItemExporter(
-            telemetryPipeline,
-            new LocalStorageTelemetryPipelineListener(tempFolder, telemetryPipeline, null, false));
-  }
+  private final TelemetryItemExporter telemetryItemExporter = mock(TelemetryItemExporter.class);
 
   @Test
   void heartBeatPayloadContainsDataByDefault() throws InterruptedException {
