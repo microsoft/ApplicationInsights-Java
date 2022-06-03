@@ -1,9 +1,19 @@
 # CHANGELOG
 
+# Version 3.3.0-BETA.2
+* Update OpenTelemetry to 1.14.
+* Reduce jar file size [#2295](https://github.com/microsoft/ApplicationInsights-Java/pull/2295).
+* Stop capturing exception records on dependencies [#2307](https://github.com/microsoft/ApplicationInsights-Java/pull/2307).
+* Add support for sampling overrides on http request headers [#2308](https://github.com/microsoft/ApplicationInsights-Java/pull/2308).
+* Enable quartz instrumentation by default [#2313](https://github.com/microsoft/ApplicationInsights-Java/pull/2313).
+* Add warning message on internal attribute usage [#2314](https://github.com/microsoft/ApplicationInsights-Java/pull/2314).
+* Lots of refactorings and improvements.
+* Continue to add support for OpenTelemetry metrics API.
+
 # Version 3.3.0-BETA
 * Update OpenTelemetry to 1.13 [#2257](https://github.com/microsoft/ApplicationInsights-Java/pull/2257).
 * Deprecate logs' LoggingLevel custom property [#2254](https://github.com/microsoft/ApplicationInsights-Java/pull/2254).
-* Add support for OpenTelemetry metrics API
+* Add support for OpenTelemetry metrics API.
 * Lots of refactorings and improvements.
 
 # Version 3.2.11 GA
