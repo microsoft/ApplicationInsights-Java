@@ -226,6 +226,6 @@ class MicrometerTest extends AgentInstrumentationSpecification {
     def measurements = delegate.getMeasurements().stream()
       .filter({ it.name == name && it.value != 0 })
       .collect(Collectors.toList())
-    return measurements.get(measurements.size() - 1)
+    return measurements.size() > 0 ? measurements.get(measurements.size() - 1) : null;
   }
 }
