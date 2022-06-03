@@ -213,7 +213,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             (builder, configProperties) ->
                 configureLogging(builder, telemetryClient, quickPulse, config))
         .addMeterProviderCustomizer(
-            (builder, configProperties) -> configureMetrics(builder, telemetryClient, config));
+            (builder, configProperties) ->
+                configureMetrics(metricFilters, builder, telemetryClient, config));
 
     Runtime.getRuntime()
         .addShutdownHook(new Thread(() -> flushAll(telemetryClient).join(10, TimeUnit.SECONDS)));
@@ -484,6 +485,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
   }
 
   private static SdkMeterProviderBuilder configureMetrics(
+      List<MetricFilter> metricFilters,
       SdkMeterProviderBuilder builder,
       TelemetryClient telemetryClient,
       Configuration configuration) {
@@ -493,7 +495,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             telemetryClient.getInstrumentationKey(), telemetryClient::populateDefaults);
     metricReader =
         PeriodicMetricReader.builder(
-                new AgentMetricExporter(mapper, telemetryClient.getMetricsBatchItemProcessor()))
+                new AgentMetricExporter(
+                    metricFilters, mapper, telemetryClient.getMetricsBatchItemProcessor()))
             .setInterval(Duration.ofSeconds(configuration.preview.metricIntervalSeconds))
             .build();
 
