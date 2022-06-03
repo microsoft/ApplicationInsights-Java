@@ -21,17 +21,15 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
-import static java.util.Arrays.asList;
-
 import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-import com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
+import com.microsoft.applicationinsights.agent.internal.utils.Constant;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -39,9 +37,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,16 +48,6 @@ public class AgentMetricExporter implements MetricExporter {
 
   private static final OperationLogger exportingMetricLogger =
       new OperationLogger(AgentMetricExporter.class, "Exporting metric");
-
-  private final Set<String> NON_FILTERABLE_METRIC_NAMES =
-      new HashSet<>(
-          asList(
-              MetricNames.TOTAL_CPU_PERCENTAGE,
-              MetricNames.PROCESS_CPU_PERCENTAGE,
-              MetricNames.PROCESS_CPU_PERCENTAGE_NORMALIZED,
-              MetricNames.PROCESS_MEMORY,
-              MetricNames.TOTAL_MEMORY,
-              MetricNames.PROCESS_IO));
 
   private final List<MetricFilter> metricFilters;
   private final MetricDataMapper mapper;
@@ -89,7 +75,7 @@ public class AgentMetricExporter implements MetricExporter {
       return CompletableResultCode.ofSuccess();
     }
     for (MetricData metricData : metrics) {
-      if (!NON_FILTERABLE_METRIC_NAMES.contains(metricData.getName())) {
+      if (!Constant.NON_FILTERABLE_METRIC_NAMES.contains(metricData.getName())) {
         for (MetricFilter metricFilter : metricFilters) {
           if (!metricFilter.matches(metricData.getName())) {
             // user configuration filtered out this metric name
