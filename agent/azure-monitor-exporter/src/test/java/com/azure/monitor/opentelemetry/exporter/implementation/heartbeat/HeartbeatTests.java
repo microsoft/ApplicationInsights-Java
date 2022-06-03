@@ -25,23 +25,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
-import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
 class HeartbeatTests {
 
-  private final TelemetryItemExporter telemetryItemExporter = mock(TelemetryItemExporter.class);
+  private final Consumer<List<TelemetryItem>> telemetryItemsConsumer = mock(Consumer.class);
 
   @Test
   void heartBeatPayloadContainsDataByDefault() throws InterruptedException {
     // given
-    HeartbeatExporter provider = new HeartbeatExporter(60, t -> {}, telemetryItemExporter);
+    HeartbeatExporter provider = new HeartbeatExporter(60, t -> {}, telemetryItemsConsumer);
 
     // some of the initialization above happens in a separate thread
     Thread.sleep(500);
@@ -55,7 +57,7 @@ class HeartbeatTests {
   @Test
   void heartBeatPayloadContainsSpecificProperties() {
     // given
-    HeartbeatExporter provider = new HeartbeatExporter(60, t -> {}, telemetryItemExporter);
+    HeartbeatExporter provider = new HeartbeatExporter(60, t -> {}, telemetryItemsConsumer);
 
     // then
     assertThat(provider.addHeartBeatProperty("test", "testVal", true)).isTrue();
@@ -67,7 +69,7 @@ class HeartbeatTests {
   @Test
   void heartbeatMetricIsNonZeroWhenFailureConditionPresent() {
     // given
-    HeartbeatExporter provider = new HeartbeatExporter(60, t -> {}, telemetryItemExporter);
+    HeartbeatExporter provider = new HeartbeatExporter(60, t -> {}, telemetryItemsConsumer);
 
     // then
     assertThat(provider.addHeartBeatProperty("test", "testVal", false)).isTrue();
@@ -79,7 +81,7 @@ class HeartbeatTests {
   @Test
   void heartbeatMetricCountsForAllFailures() {
     // given
-    HeartbeatExporter provider = new HeartbeatExporter(60, t -> {}, telemetryItemExporter);
+    HeartbeatExporter provider = new HeartbeatExporter(60, t -> {}, telemetryItemsConsumer);
 
     // then
     assertThat(provider.addHeartBeatProperty("test", "testVal", false)).isTrue();
@@ -119,7 +121,7 @@ class HeartbeatTests {
   @Test
   void heartBeatProviderDoesNotAllowDuplicateProperties() {
     // given
-    HeartbeatExporter provider = new HeartbeatExporter(60, t -> {}, telemetryItemExporter);
+    HeartbeatExporter provider = new HeartbeatExporter(60, t -> {}, telemetryItemsConsumer);
 
     // then
     provider.addHeartBeatProperty("test01", "test val", true);
@@ -136,7 +138,7 @@ class HeartbeatTests {
     Set<String> defaultFields = (Set<String>) field.get(base);
     defaultFields.add(testKey);
 
-    HeartbeatExporter provider = new HeartbeatExporter(60, t -> {}, telemetryItemExporter);
+    HeartbeatExporter provider = new HeartbeatExporter(60, t -> {}, telemetryItemsConsumer);
 
     base.setDefaultPayload(provider).call();
     MetricsData data = (MetricsData) provider.gatherData().getData().getBaseData();
