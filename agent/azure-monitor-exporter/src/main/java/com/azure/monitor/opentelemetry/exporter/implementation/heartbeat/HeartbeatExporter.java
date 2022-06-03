@@ -21,6 +21,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.heartbeat;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
@@ -35,6 +36,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,17 +57,26 @@ public class HeartbeatExporter {
   /** Telemetry item exporter used to send heartbeat. */
   private final TelemetryItemExporter telemetryItemExporter;
 
+  /** Telemetry builder consumer used to populate defaults properties. */
+  private final Consumer<AbstractTelemetryBuilder> telemetryInitializer;
+
   /** ThreadPool used for adding properties to concurrent dictionary. */
   private final ExecutorService propertyUpdateService;
 
   /** Threadpool used to send data heartbeat telemetry. */
   private final ScheduledExecutorService heartBeatSenderService;
 
-  public static void start(long intervalSeconds, TelemetryItemExporter telemetryItemExporter) {
-    new HeartbeatExporter(intervalSeconds, telemetryItemExporter);
+  public static void start(
+      long intervalSeconds,
+      Consumer<AbstractTelemetryBuilder> telemetryInitializer,
+      TelemetryItemExporter telemetryItemExporter) {
+    new HeartbeatExporter(intervalSeconds, telemetryInitializer, telemetryItemExporter);
   }
 
-  public HeartbeatExporter(long intervalSeconds, TelemetryItemExporter telemetryItemExporter) {
+  public HeartbeatExporter(
+      long intervalSeconds,
+      Consumer<AbstractTelemetryBuilder> telemetryInitializer,
+      TelemetryItemExporter telemetryItemExporter) {
     this.heartbeatProperties = new ConcurrentHashMap<>();
     this.heartbeatsSent = 0;
     this.propertyUpdateService =
@@ -78,6 +89,7 @@ public class HeartbeatExporter {
                 HeartbeatExporter.class, "heartBeatSenderService"));
 
     this.telemetryItemExporter = telemetryItemExporter;
+    this.telemetryInitializer = telemetryInitializer;
 
     // Submit task to set properties to dictionary using separate thread. we do not wait for the
     // results to come out as some I/O bound properties may take time.
@@ -131,6 +143,7 @@ public class HeartbeatExporter {
     }
     MetricTelemetryBuilder telemetryBuilder =
         MetricTelemetryBuilder.create(HEARTBEAT_SYNTHETIC_METRIC_NAME, numHealthy);
+    telemetryInitializer.accept(telemetryBuilder);
     telemetryBuilder.addTag(
         ContextTagKeys.AI_OPERATION_SYNTHETIC_SOURCE.toString(), HEARTBEAT_SYNTHETIC_METRIC_NAME);
 

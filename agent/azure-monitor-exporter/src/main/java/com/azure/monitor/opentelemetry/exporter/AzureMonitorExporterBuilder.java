@@ -293,7 +293,7 @@ public final class AzureMonitorExporterBuilder {
 
   /** @return An instance of {@link HeartbeatExporter}. */
   public HeartbeatExporter buildHeartbeatExporter() {
-    return new HeartbeatExporter(MINUTES.toSeconds(15), initExporterBuilder());
+    return new HeartbeatExporter(MINUTES.toSeconds(15), t -> {}, initExporterBuilder());
   }
 
   private TelemetryItemExporter initExporterBuilder() {

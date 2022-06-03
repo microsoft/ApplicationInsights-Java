@@ -154,7 +154,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     // interval longer than 15 minutes is not allowed since we use this data for usage telemetry
     long intervalSeconds = Math.min(config.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
     HeartbeatExporter.start(
-        intervalSeconds, telemetryClient.getMetricsBatchItemProcessor().getTelemetryItemExporter());
+        intervalSeconds,
+        telemetryClient.populateDefaults(),
+        telemetryClient.getMetricsBatchItemProcessor().getTelemetryItemExporter());
 
     TelemetryClient.setActive(telemetryClient);
 
