@@ -155,7 +155,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     long intervalSeconds = Math.min(config.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
     HeartbeatExporter.start(
         intervalSeconds,
-        telemetryClient.populateDefaults(),
+        telemetryClient::populateDefaults,
         telemetryClient.getMetricsBatchItemProcessor().getTelemetryItemExporter());
 
     TelemetryClient.setActive(telemetryClient);
