@@ -27,7 +27,7 @@ import com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Constant {
+public final class Constant {
 
   public static final Set<String> NON_FILTERABLE_METRIC_NAMES =
       new HashSet<>(
@@ -38,4 +38,6 @@ public class Constant {
               MetricNames.PROCESS_MEMORY,
               MetricNames.TOTAL_MEMORY,
               MetricNames.PROCESS_IO));
+
+  private Constant() {}
 }
