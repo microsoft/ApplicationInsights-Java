@@ -21,6 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+
 import com.azure.core.credential.TokenCredential;
 import com.azure.core.http.HttpClient;
 import com.azure.core.http.HttpPipeline;
@@ -40,6 +42,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.heartbeat.HeartbeatExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
@@ -267,13 +270,18 @@ public final class AzureMonitorExporterBuilder {
    * Creates an {@link AzureMonitorMetricExporter} based on the options set in the builder. This
    * exporter is an implementation of OpenTelemetry {@link MetricExporter}.
    *
+   * <p>When a new {@link MetricExporter} is created, it will automatically start {@link
+   * HeartbeatExporter}.
+   *
    * @return An instance of {@link AzureMonitorMetricExporter}.
    * @throws NullPointerException if the connection string is not set on this builder or if the
    *     environment variable "APPLICATIONINSIGHTS_CONNECTION_STRING" is not set.
    */
   public AzureMonitorMetricExporter buildMetricExporter() {
+    TelemetryItemExporter telemetryItemExporter = initExporterBuilder();
+    HeartbeatExporter.start(MINUTES.toSeconds(15), t -> {}, telemetryItemExporter::send);
     return new AzureMonitorMetricExporter(
-        new MetricDataMapper(instrumentationKey, t -> {}), initExporterBuilder());
+        new MetricDataMapper(instrumentationKey, t -> {}), telemetryItemExporter);
   }
 
   /**

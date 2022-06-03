@@ -41,6 +41,8 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS
 
 class MicrometerTest extends AgentInstrumentationSpecification {
 
+  private static final long SLEEP_MILLISECONDS = 1000;
+
   static final AgentTestingMicrometerDelegate delegate = new AgentTestingMicrometerDelegate()
 
   static {
@@ -77,7 +79,7 @@ class MicrometerTest extends AgentInstrumentationSpecification {
     TimeGauge.builder("test-time-gauge", "", MILLISECONDS, { 11d }).register(registry)
 
     when:
-    Thread.sleep(500)
+    Thread.sleep(SLEEP_MILLISECONDS)
 
     then:
     def measurement = getLastMeasurement("test-time-gauge")
@@ -93,7 +95,7 @@ class MicrometerTest extends AgentInstrumentationSpecification {
 
     when:
     Gauge.builder("test-gauge", { 22 }).register(registry)
-    Thread.sleep(500)
+    Thread.sleep(SLEEP_MILLISECONDS)
 
     then:
     def measurement = getLastMeasurement("test-gauge")
@@ -110,7 +112,7 @@ class MicrometerTest extends AgentInstrumentationSpecification {
     when:
     def counter = Counter.builder("test-counter").register(registry)
     counter.increment(3.3)
-    Thread.sleep(500)
+    Thread.sleep(SLEEP_MILLISECONDS)
 
     then:
     def measurement = getLastMeasurement("test-counter")
@@ -128,7 +130,7 @@ class MicrometerTest extends AgentInstrumentationSpecification {
     when:
     timer.record(44, MILLISECONDS)
     timer.record(55, MILLISECONDS)
-    Thread.sleep(500)
+    Thread.sleep(SLEEP_MILLISECONDS)
 
     then:
     def measurement = getLastMeasurement("test-timer")
@@ -146,7 +148,7 @@ class MicrometerTest extends AgentInstrumentationSpecification {
     when:
     distributionSummary.record(4.4)
     distributionSummary.record(5.5)
-    Thread.sleep(500)
+    Thread.sleep(SLEEP_MILLISECONDS)
 
     then:
     def measurement = getLastMeasurement("test-summary")
@@ -173,7 +175,7 @@ class MicrometerTest extends AgentInstrumentationSpecification {
         Thread.sleep(Long.MAX_VALUE)
       })
     })
-    Thread.sleep(500)
+    Thread.sleep(SLEEP_MILLISECONDS)
 
     then:
     def activeMeasurement = getLastMeasurement("test-long-task-timer_active")
@@ -195,7 +197,7 @@ class MicrometerTest extends AgentInstrumentationSpecification {
 
     when:
     FunctionCounter.builder("test-function-counter", "", { 6.6d }).register(registry)
-    Thread.sleep(500)
+    Thread.sleep(SLEEP_MILLISECONDS)
 
     then:
     def measurements = getLastMeasurement("test-function-counter")
@@ -212,7 +214,7 @@ class MicrometerTest extends AgentInstrumentationSpecification {
     when:
     FunctionTimer.builder("test-function-timer", "", { 2L }, { 4.4d }, MILLISECONDS)
       .register(registry)
-    Thread.sleep(500)
+    Thread.sleep(SLEEP_MILLISECONDS)
 
     then:
     def measurement = getLastMeasurement("test-function-timer")
@@ -226,6 +228,6 @@ class MicrometerTest extends AgentInstrumentationSpecification {
     def measurements = delegate.getMeasurements().stream()
       .filter({ it.name == name && it.value != 0 })
       .collect(Collectors.toList())
-    return measurements.get(measurements.size() - 1)
+    return measurements.get(measurements.size() - 1);
   }
 }

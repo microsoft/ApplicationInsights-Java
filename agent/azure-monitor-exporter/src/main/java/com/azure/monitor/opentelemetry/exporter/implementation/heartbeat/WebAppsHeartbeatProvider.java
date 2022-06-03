@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.heartbeat;
+package com.azure.monitor.opentelemetry.exporter.implementation.heartbeat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import java.util.HashSet;
@@ -67,7 +67,7 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
   }
 
   @Override
-  public Callable<Boolean> setDefaultPayload(HeartBeatProvider provider) {
+  public Callable<Boolean> setDefaultPayload(HeartbeatExporter provider) {
     return new Callable<Boolean>() {
 
       final Set<String> enabledProperties = defaultFields;

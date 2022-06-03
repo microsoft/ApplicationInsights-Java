@@ -19,9 +19,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.heartbeat;
+package com.azure.monitor.opentelemetry.exporter.implementation.heartbeat;
 
-import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.VersionGenerator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -68,7 +68,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
   }
 
   @Override
-  public Callable<Boolean> setDefaultPayload(HeartBeatProvider provider) {
+  public Callable<Boolean> setDefaultPayload(HeartbeatExporter provider) {
     return new Callable<Boolean>() {
 
       final Set<String> enabledProperties = defaultFields;
@@ -132,7 +132,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
 
   /** Returns the Application Insights SDK version user is using to instrument his application. */
   private static String getSdkVersion() {
-    return PropertyHelper.getQualifiedSdkVersionString();
+    return VersionGenerator.getSdkVersion();
   }
 
   /** Returns the OS version on which application is running. */

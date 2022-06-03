@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.heartbeat;
+package com.azure.monitor.opentelemetry.exporter.implementation.heartbeat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +43,7 @@ public class HeartbeatDefaultPayload {
    * @param provider The HeartBeat provider
    * @return Callable to perform execution
    */
-  public static Callable<Boolean> populateDefaultPayload(HeartBeatProvider provider) {
+  public static Callable<Boolean> populateDefaultPayload(HeartbeatExporter provider) {
     return new Callable<Boolean>() {
       @Override
       public Boolean call() throws Exception {

@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.heartbeat;
+package com.azure.monitor.opentelemetry.exporter.implementation.heartbeat;
 
 import java.util.concurrent.Callable;
 
@@ -42,5 +42,5 @@ public interface HeartBeatPayloadProviderInterface {
    * @param provider The current heartbeat provider
    * @return Callable which can be executed to add the payload
    */
-  Callable<Boolean> setDefaultPayload(HeartBeatProvider provider);
+  Callable<Boolean> setDefaultPayload(HeartbeatExporter provider);
 }
