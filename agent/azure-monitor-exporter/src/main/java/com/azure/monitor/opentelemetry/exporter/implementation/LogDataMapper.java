@@ -74,8 +74,8 @@ public class LogDataMapper {
     Attributes attributes = log.getAttributes();
 
     // set standard properties
-    telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(log.getEpochNanos()));
     setOperationTags(telemetryBuilder, log);
+    setTime(telemetryBuilder, log.getEpochNanos());
     setSampleRate(telemetryBuilder, log);
     setExtraAttributes(telemetryBuilder, attributes);
 
@@ -104,7 +104,7 @@ public class LogDataMapper {
 
     // set standard properties
     setOperationTags(telemetryBuilder, log);
-    telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(log.getEpochNanos()));
+    setTime(telemetryBuilder, log.getEpochNanos());
     setSampleRate(telemetryBuilder, log);
     setExtraAttributes(telemetryBuilder, attributes);
 
@@ -145,6 +145,10 @@ public class LogDataMapper {
     if (operationName != null) {
       telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_NAME.toString(), operationName);
     }
+  }
+
+  private static void setTime(AbstractTelemetryBuilder telemetryBuilder, long epochNanos) {
+    telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(epochNanos));
   }
 
   private static void setSampleRate(AbstractTelemetryBuilder telemetryBuilder, LogData log) {
