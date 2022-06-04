@@ -80,17 +80,26 @@ public class NetworkFriendlyExceptions {
     return false;
   }
 
-  private static <T extends Exception> T getCausedByOfType(Throwable throwable, Class<T> type) {
-    if (type.isInstance(throwable)) {
-      @SuppressWarnings("unchecked")
-      T ofType = (T) throwable;
-      return ofType;
+  private static boolean hasCausedByWithMessage(Throwable throwable, String message) {
+    if (throwable.getMessage().contains(message)) {
+      return true;
     }
     Throwable cause = throwable.getCause();
     if (cause == null) {
-      return null;
+      return false;
     }
-    return getCausedByOfType(cause, type);
+    return hasCausedByWithMessage(cause, message);
+  }
+
+  private static boolean hasCausedByOfType(Throwable throwable, Class<?> type) {
+    if (type.isInstance(throwable)) {
+      return true;
+    }
+    Throwable cause = throwable.getCause();
+    if (cause == null) {
+      return false;
+    }
+    return hasCausedByOfType(cause, type);
   }
 
   private static String getFriendlyExceptionBanner(String url) {
@@ -139,8 +148,11 @@ public class NetworkFriendlyExceptions {
       if (error instanceof SslHandshakeTimeoutException) {
         return false;
       }
-      SSLHandshakeException sslException = getCausedByOfType(error, SSLHandshakeException.class);
-      return sslException != null;
+      // we are getting lots of SSLHandshakeExceptions in app services, and we suspect some may not
+      // be certificate errors, so further restricting the condition to include the message
+      return hasCausedByOfType(error, SSLHandshakeException.class)
+          && hasCausedByWithMessage(
+              error, "unable to find valid certification path to requested target");
     }
 
     @Override
@@ -193,9 +205,7 @@ public class NetworkFriendlyExceptions {
 
     @Override
     public boolean detect(Throwable error) {
-      UnknownHostException unknownHostException =
-          getCausedByOfType(error, UnknownHostException.class);
-      return unknownHostException != null;
+      return hasCausedByOfType(error, UnknownHostException.class);
     }
 
     @Override
@@ -235,8 +245,7 @@ public class NetworkFriendlyExceptions {
 
     @Override
     public boolean detect(Throwable error) {
-      IOException exception = getCausedByOfType(error, IOException.class);
-      if (exception == null) {
+      if (!hasCausedByOfType(error, IOException.class)) {
         return false;
       }
       for (String cipher : EXPECTED_CIPHERS) {
