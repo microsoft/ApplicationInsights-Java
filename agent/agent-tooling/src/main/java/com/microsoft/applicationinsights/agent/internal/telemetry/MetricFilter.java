@@ -106,6 +106,7 @@ public class MetricFilter {
     if (!MetricFilter.NON_FILTERABLE_METRIC_NAMES.contains(metricName)) {
       for (MetricFilter metricFilter : metricFilters) {
         if (!metricFilter.matches(metricName)) {
+          // user configuration filtered out this metric name
           return true;
         }
       }
