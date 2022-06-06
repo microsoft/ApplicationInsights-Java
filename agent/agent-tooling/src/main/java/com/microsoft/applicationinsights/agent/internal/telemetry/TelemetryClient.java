@@ -156,7 +156,7 @@ public class TelemetryClient {
       }
       MetricDataPoint point = metricsData.getMetrics().get(0);
       String metricName = point.getName();
-      if (!MetricFilter.shouldSkip(metricName, metricFilters)) {
+      if (MetricFilter.shouldSkip(metricName, metricFilters)) {
         return;
       }
 
