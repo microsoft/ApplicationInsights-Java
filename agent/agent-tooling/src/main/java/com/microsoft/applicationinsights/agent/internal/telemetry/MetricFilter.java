@@ -21,7 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
+import static java.util.Arrays.asList;
+
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -30,6 +33,16 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public class MetricFilter {
+
+  private static final Set<String> NON_FILTERABLE_METRIC_NAMES =
+      new HashSet<>(
+          asList(
+              MetricNames.TOTAL_CPU_PERCENTAGE,
+              MetricNames.PROCESS_CPU_PERCENTAGE,
+              MetricNames.PROCESS_CPU_PERCENTAGE_NORMALIZED,
+              MetricNames.PROCESS_MEMORY,
+              MetricNames.TOTAL_MEMORY,
+              MetricNames.PROCESS_IO));
 
   // OpenTelemetry Collector also supports include
   // but we aren't adding this support, at least not yet, since it implicitly excludes everything
@@ -87,5 +100,16 @@ public class MetricFilter {
       }
       throw new AssertionError("Unexpected match type: " + matchType);
     }
+  }
+
+  public static boolean shouldSkip(String metricName, List<MetricFilter> metricFilters) {
+    if (!MetricFilter.NON_FILTERABLE_METRIC_NAMES.contains(metricName)) {
+      for (MetricFilter metricFilter : metricFilters) {
+        if (!metricFilter.matches(metricName)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 }

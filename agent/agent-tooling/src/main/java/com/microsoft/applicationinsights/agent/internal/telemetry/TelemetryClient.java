@@ -51,7 +51,6 @@ import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClien
 import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeatHttpPipelinePolicy;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatTelemetryPipelineListener;
-import com.microsoft.applicationinsights.agent.internal.utils.Constant;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.File;
 import java.util.ArrayList;
@@ -157,13 +156,8 @@ public class TelemetryClient {
       }
       MetricDataPoint point = metricsData.getMetrics().get(0);
       String metricName = point.getName();
-      if (!Constant.NON_FILTERABLE_METRIC_NAMES.contains(metricName)) {
-        for (MetricFilter metricFilter : metricFilters) {
-          if (!metricFilter.matches(metricName)) {
-            // user configuration filtered out this metric name
-            return;
-          }
-        }
+      if (!MetricFilter.shouldSkip(metricName, metricFilters)) {
+        return;
       }
 
       if (!Double.isFinite(point.getValue())) {

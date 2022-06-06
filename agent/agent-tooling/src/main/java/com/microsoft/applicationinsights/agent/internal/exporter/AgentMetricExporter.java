@@ -29,7 +29,6 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProce
 import com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
-import com.microsoft.applicationinsights.agent.internal.utils.Constant;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -75,13 +74,8 @@ public class AgentMetricExporter implements MetricExporter {
       return CompletableResultCode.ofSuccess();
     }
     for (MetricData metricData : metrics) {
-      if (!Constant.NON_FILTERABLE_METRIC_NAMES.contains(metricData.getName())) {
-        for (MetricFilter metricFilter : metricFilters) {
-          if (!metricFilter.matches(metricData.getName())) {
-            // user configuration filtered out this metric name
-            return CompletableResultCode.ofSuccess();
-          }
-        }
+      if (MetricFilter.shouldSkip(metricData.getName(), metricFilters)) {
+        return CompletableResultCode.ofSuccess();
       }
       logger.debug("exporting metric: {}", metricData);
       try {
