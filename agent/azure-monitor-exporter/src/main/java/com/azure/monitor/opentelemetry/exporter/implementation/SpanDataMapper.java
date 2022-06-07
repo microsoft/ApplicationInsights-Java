@@ -812,8 +812,8 @@ public final class SpanDataMapper {
         setOperationName(telemetryBuilder, span.getAttributes());
       }
       setTime(telemetryBuilder, event.getEpochNanos());
-      setExtraAttributes(telemetryBuilder, event.getAttributes());
       setSampleRate(telemetryBuilder, samplingPercentage);
+      setExtraAttributes(telemetryBuilder, event.getAttributes());
 
       // set message-specific properties
       telemetryBuilder.setMessage(event.getName());
@@ -838,6 +838,7 @@ public final class SpanDataMapper {
     }
     setTime(telemetryBuilder, span.getEndEpochNanos());
     setSampleRate(telemetryBuilder, samplingPercentage);
+    setExtraAttributes(telemetryBuilder, span.getAttributes());
 
     // set exception-specific properties
     telemetryBuilder.setExceptions(Exceptions.minimalParse(errorStack));
