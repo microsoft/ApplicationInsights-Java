@@ -52,8 +52,18 @@ public class NetworkFriendlyExceptionsTest {
   }
 
   @Test
-  public void testSslExceptionDetector() {
+  public void testSslExceptionDetectorWithWrongMessage() {
     Exception sslException = new SSLHandshakeException("sample");
+    NetworkFriendlyExceptions.SslExceptionDetector sslExceptionDetector =
+        new NetworkFriendlyExceptions.SslExceptionDetector();
+    assertThat(sslExceptionDetector.detect(sslException)).isEqualTo(false);
+  }
+
+  @Test
+  public void testSslExceptionDetectorWithRightMessage() {
+    Exception sslException =
+        new SSLHandshakeException(
+            "stuff: unable to find valid certification path to requested target");
     NetworkFriendlyExceptions.SslExceptionDetector sslExceptionDetector =
         new NetworkFriendlyExceptions.SslExceptionDetector();
     assertThat(sslExceptionDetector.detect(sslException)).isEqualTo(true);
