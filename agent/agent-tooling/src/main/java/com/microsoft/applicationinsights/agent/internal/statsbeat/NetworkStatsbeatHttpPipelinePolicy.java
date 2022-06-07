@@ -58,20 +58,20 @@ public class NetworkStatsbeatHttpPipelinePolicy implements HttpPipelinePolicy {
                 // these are not tracked as success or failure since they are just redirects
               } else if (statusCode == 402 || statusCode == 439) {
                 networkStatsbeat.incrementThrottlingCount(
-                    instrumentationKey, host, Integer.valueOf(statusCode));
+                    instrumentationKey, host, statusCode);
               } else if (StatusCodes.isRetryable(statusCode)) {
                 networkStatsbeat.incrementRetryCount(
-                    instrumentationKey, host, Integer.valueOf(statusCode));
+                    instrumentationKey, host, statusCode);
               } else {
                 // 400 and 404 will be tracked as failure count
                 networkStatsbeat.incrementRequestFailureCount(
-                    instrumentationKey, host, Integer.valueOf(statusCode));
+                    instrumentationKey, host, statusCode);
               }
             })
         .doOnError(
             throwable -> {
               networkStatsbeat.incrementExceptionCount(
-                  instrumentationKey, host, throwable.getClass().toString());
+                  instrumentationKey, host, throwable.getClass().getName());
             });
   }
 }
