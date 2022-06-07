@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 
 public class NetworkStatsbeat extends BaseStatsbeat {
 
@@ -84,7 +85,10 @@ public class NetworkStatsbeat extends BaseStatsbeat {
 
   public void incrementRequestFailureCount(String ikey, String host, Integer statusCode) {
     doWithIntervalMetrics(
-        ikey, host, statusCode, intervalMetrics -> intervalMetrics.requestFailureCount.incrementAndGet());
+        ikey,
+        host,
+        statusCode,
+        intervalMetrics -> intervalMetrics.requestFailureCount.incrementAndGet());
   }
 
   // TODO (heya) this is never called
@@ -95,13 +99,19 @@ public class NetworkStatsbeat extends BaseStatsbeat {
 
   public void incrementThrottlingCount(String ikey, String host, Integer statusCode) {
     doWithIntervalMetrics(
-        ikey, host, statusCode, intervalMetrics -> intervalMetrics.throttlingCount.incrementAndGet());
+        ikey,
+        host,
+        statusCode,
+        intervalMetrics -> intervalMetrics.throttlingCount.incrementAndGet());
   }
 
   // TODO (heya) this is never called
   void incrementExceptionCount(String ikey, String host, String exceptionType) {
     doWithIntervalMetrics(
-        ikey, host, exceptionType, intervalMetrics -> intervalMetrics.exceptionCount.incrementAndGet());
+        ikey,
+        host,
+        exceptionType,
+        intervalMetrics -> intervalMetrics.exceptionCount.incrementAndGet());
   }
 
   // only used by tests
@@ -152,7 +162,8 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     }
   }
 
-  private <T> void doWithIntervalMetrics(String ikey, String host, T cause, Consumer<IntervalMetrics> update) {
+  private <T> void doWithIntervalMetrics(
+      String ikey, String host, @Nullable T cause, Consumer<IntervalMetrics> update) {
     synchronized (lock) {
       IntervalMetrics intervalMetrics =
           instrumentationKeyCounterMap.computeIfAbsent(ikey, k -> new IntervalMetrics());
@@ -218,16 +229,17 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   }
 
   private static <T> void addCommonProperties(
-      StatsbeatTelemetryBuilder telemetryBuilder, String ikey, String host, T cause) {
+      StatsbeatTelemetryBuilder telemetryBuilder, String ikey, String host, @Nullable T cause) {
     telemetryBuilder.addProperty("endpoint", BREEZE_ENDPOINT);
     telemetryBuilder.addProperty("cikey", ikey);
     telemetryBuilder.addProperty("host", host);
     if (cause != null) {
-      // track 'statusCode' for Failure/Retry/Throttle count and track 'exceptionType' for Exception Count
+      // track 'statusCode' for Failure/Retry/Throttle count and track 'exceptionType' for Exception
+      // Count
       if (cause instanceof Integer) {
-        telemetryBuilder.addProperty("statusCode", (String)cause);
+        telemetryBuilder.addProperty("statusCode", ((Integer) cause).toString());
       } else if (cause instanceof String) {
-        telemetryBuilder.addProperty("exceptionType", ((Integer)cause).toString());
+        telemetryBuilder.addProperty("exceptionType", (String) cause);
       }
     }
   }
