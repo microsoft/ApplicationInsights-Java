@@ -75,7 +75,7 @@ public class AgentMetricExporter implements MetricExporter {
     }
     for (MetricData metricData : metrics) {
       if (MetricFilter.shouldSkip(metricData.getName(), metricFilters)) {
-        return CompletableResultCode.ofSuccess();
+        continue;
       }
       logger.debug("exporting metric: {}", metricData);
       try {
