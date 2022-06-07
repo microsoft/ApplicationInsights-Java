@@ -52,32 +52,32 @@ public class NetworkStatsbeatTest {
   @Test
   public void testIncrementRequestFailureCount() {
     assertThat(networkStatsbeat.getRequestFailureCount(IKEY)).isEqualTo(0);
-    networkStatsbeat.incrementRequestFailureCount(IKEY, "host");
-    networkStatsbeat.incrementRequestFailureCount(IKEY, "host");
+    networkStatsbeat.incrementRequestFailureCount(IKEY, "host", 400);
+    networkStatsbeat.incrementRequestFailureCount(IKEY, "host", 500);
     assertThat(networkStatsbeat.getRequestFailureCount(IKEY)).isEqualTo(2);
   }
 
   @Test
   public void testIncrementRetryCount() {
     assertThat(networkStatsbeat.getRetryCount(IKEY)).isEqualTo(0);
-    networkStatsbeat.incrementRetryCount(IKEY, "host");
-    networkStatsbeat.incrementRetryCount(IKEY, "host");
+    networkStatsbeat.incrementRetryCount(IKEY, "host", 500);
+    networkStatsbeat.incrementRetryCount(IKEY, "host", 500);
     assertThat(networkStatsbeat.getRetryCount(IKEY)).isEqualTo(2);
   }
 
   @Test
   public void testIncrementThrottlingCount() {
     assertThat(networkStatsbeat.getThrottlingCount(IKEY)).isEqualTo(0);
-    networkStatsbeat.incrementThrottlingCount(IKEY, "host");
-    networkStatsbeat.incrementThrottlingCount(IKEY, "host");
+    networkStatsbeat.incrementThrottlingCount(IKEY, "host", 402);
+    networkStatsbeat.incrementThrottlingCount(IKEY, "host", 402);
     assertThat(networkStatsbeat.getThrottlingCount(IKEY)).isEqualTo(2);
   }
 
   @Test
   public void testIncrementExceptionCount() {
     assertThat(networkStatsbeat.getExceptionCount(IKEY)).isEqualTo(0);
-    networkStatsbeat.incrementExceptionCount(IKEY, "host");
-    networkStatsbeat.incrementExceptionCount(IKEY, "host");
+    networkStatsbeat.incrementExceptionCount(IKEY, "host", "NullPointerException");
+    networkStatsbeat.incrementExceptionCount(IKEY, "host", "NullPointerException");
     assertThat(networkStatsbeat.getExceptionCount(IKEY)).isEqualTo(2);
   }
 
@@ -91,10 +91,10 @@ public class NetworkStatsbeatTest {
             public void run() {
               for (int j = 0; j < 1000; j++) {
                 networkStatsbeat.incrementRequestSuccessCount(j % 2 == 0 ? 5 : 10, IKEY, "host");
-                networkStatsbeat.incrementRequestFailureCount(IKEY, "host");
-                networkStatsbeat.incrementRetryCount(IKEY, "host");
-                networkStatsbeat.incrementThrottlingCount(IKEY, "host");
-                networkStatsbeat.incrementExceptionCount(IKEY, "host");
+                networkStatsbeat.incrementRequestFailureCount(IKEY, "host", 400);
+                networkStatsbeat.incrementRetryCount(IKEY, "host", 500);
+                networkStatsbeat.incrementThrottlingCount(IKEY, "host", 402);
+                networkStatsbeat.incrementExceptionCount(IKEY, "host", "NullPointerException");
               }
             }
           });

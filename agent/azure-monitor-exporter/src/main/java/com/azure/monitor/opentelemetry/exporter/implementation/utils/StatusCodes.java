@@ -24,8 +24,8 @@ package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 public class StatusCodes {
 
   public static boolean isRetryable(int statusCode) {
-    return statusCode == 401
-        || statusCode == 403
+    return statusCode == 401 // Unauthorized
+        || statusCode == 403 // Forbidden
         || statusCode == 408 // REQUEST TIMEOUT
         || statusCode == 429 // TOO MANY REQUESTS
         || statusCode == 500 // INTERNAL SERVER ERROR
