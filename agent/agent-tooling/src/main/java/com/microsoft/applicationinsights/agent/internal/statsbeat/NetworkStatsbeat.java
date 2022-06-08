@@ -85,7 +85,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         });
   }
 
-  public void incrementRequestFailureCount(String ikey, String host, Integer statusCode) {
+  public void incrementRequestFailureCount(String ikey, String host, int statusCode) {
     doWithIntervalMetrics(
         ikey,
         host,
@@ -94,12 +94,12 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   }
 
   // TODO (heya) this is never called
-  public void incrementRetryCount(String ikey, String host, Integer statusCode) {
+  public void incrementRetryCount(String ikey, String host, int statusCode) {
     doWithIntervalMetrics(
         ikey, host, statusCode, intervalMetrics -> intervalMetrics.retryCount.incrementAndGet());
   }
 
-  public void incrementThrottlingCount(String ikey, String host, Integer statusCode) {
+  public void incrementThrottlingCount(String ikey, String host, int statusCode) {
     doWithIntervalMetrics(
         ikey,
         host,
@@ -143,7 +143,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   }
 
   // only used by tests
-  long getRetryCount(String ikey, int cause) {
+  long getRetryCount(String ikey, int statusCode) {
     synchronized (lock) {
       IntervalMetrics intervalMetrics =
           instrumentationKeyCounterMap.get(IntervalMetricsKey.create(ikey, cause));
@@ -152,7 +152,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   }
 
   // only used by tests
-  long getThrottlingCount(String ikey, int cause) {
+  long getThrottlingCount(String ikey, int statusCode) {
     synchronized (lock) {
       IntervalMetrics intervalMetrics =
           instrumentationKeyCounterMap.get(IntervalMetricsKey.create(ikey, cause));
