@@ -53,7 +53,7 @@ public class NetworkStatsbeatTest {
   public void testIncrementRequestFailureCount() {
     assertThat(networkStatsbeat.getRequestFailureCount(IKEY)).isEqualTo(0);
     networkStatsbeat.incrementRequestFailureCount(IKEY, "host", 400);
-    networkStatsbeat.incrementRequestFailureCount(IKEY, "host", 500);
+    networkStatsbeat.incrementRequestFailureCount(IKEY, "host", 400);
     assertThat(networkStatsbeat.getRequestFailureCount(IKEY)).isEqualTo(2);
   }
 

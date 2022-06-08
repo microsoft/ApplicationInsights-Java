@@ -124,7 +124,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   // only used by tests
   long getRequestFailureCount(String ikey) {
     synchronized (lock) {
-      IntervalMetrics intervalMetrics = instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, null));
+      IntervalMetrics intervalMetrics = instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, 400));
       return intervalMetrics == null ? 0L : intervalMetrics.requestFailureCount.get();
     }
   }
@@ -140,7 +140,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   // only used by tests
   long getRetryCount(String ikey) {
     synchronized (lock) {
-      IntervalMetrics intervalMetrics = instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, null));
+      IntervalMetrics intervalMetrics = instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, 500));
       return intervalMetrics == null ? 0L : intervalMetrics.retryCount.get();
     }
   }
@@ -148,7 +148,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   // only used by tests
   long getThrottlingCount(String ikey) {
     synchronized (lock) {
-      IntervalMetrics intervalMetrics = instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, null));
+      IntervalMetrics intervalMetrics = instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, 402));
       return intervalMetrics == null ? 0L : intervalMetrics.throttlingCount.get();
     }
   }
@@ -156,7 +156,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   // only used by tests
   long getExceptionCount(String ikey) {
     synchronized (lock) {
-      IntervalMetrics intervalMetrics = instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, null));
+      IntervalMetrics intervalMetrics = instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, "NullPointerException"));
       return intervalMetrics == null ? 0L : intervalMetrics.exceptionCount.get();
     }
   }
