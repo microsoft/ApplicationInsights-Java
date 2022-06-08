@@ -235,8 +235,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   }
 
   private static void addCommonProperties(
-      StatsbeatTelemetryBuilder telemetryBuilder,
-      IntervalMetricsKey key) {
+      StatsbeatTelemetryBuilder telemetryBuilder, IntervalMetricsKey key) {
     telemetryBuilder.addProperty("endpoint", BREEZE_ENDPOINT);
     telemetryBuilder.addProperty("cikey", key.getIkey());
     telemetryBuilder.addProperty("host", key.getHost());
