@@ -40,6 +40,7 @@ public class NetworkStatsbeatHttpPipelinePolicy implements HttpPipelinePolicy {
     this.networkStatsbeat = networkStatsbeat;
   }
 
+  @SuppressWarnings("ArgumentSelectionDefectChecker")
   @Override
   public Mono<HttpResponse> process(HttpPipelineCallContext context, HttpPipelineNextPolicy next) {
     // using AtomicLong for both mutable holder and volatile (but atomicity is not needed here)
