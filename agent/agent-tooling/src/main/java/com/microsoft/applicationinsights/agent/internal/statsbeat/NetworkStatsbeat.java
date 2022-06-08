@@ -175,7 +175,6 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       IntervalMetrics intervalMetrics =
           instrumentationKeyCounterMap.computeIfAbsent(
               IntervalMetricsKey.create(ikey, host, cause), k -> new IntervalMetrics());
-      intervalMetrics.host = host;
       update.accept(intervalMetrics);
     }
   }
@@ -188,7 +187,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
               telemetryClient,
               REQUEST_SUCCESS_COUNT_METRIC_NAME,
               (double) local.requestSuccessCount.get());
-      addCommonProperties(requestSuccessCountSt, key.getIkey(), local.host, key.getCause());
+      addCommonProperties(requestSuccessCountSt, key);
       telemetryClient.trackStatsbeatAsync(requestSuccessCountSt.build());
     }
 
@@ -198,7 +197,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
               telemetryClient,
               REQUEST_FAILURE_COUNT_METRIC_NAME,
               (double) local.requestFailureCount.get());
-      addCommonProperties(requestFailureCountSt, key.getIkey(), local.host, key.getCause());
+      addCommonProperties(requestFailureCountSt, key);
       telemetryClient.trackStatsbeatAsync(requestFailureCountSt.build());
     }
 
@@ -206,7 +205,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     if (durationAvg != 0) {
       StatsbeatTelemetryBuilder requestDurationSt =
           createStatsbeatTelemetry(telemetryClient, REQUEST_DURATION_METRIC_NAME, durationAvg);
-      addCommonProperties(requestDurationSt, key.getIkey(), local.host, key.getCause());
+      addCommonProperties(requestDurationSt, key);
       telemetryClient.trackStatsbeatAsync(requestDurationSt.build());
     }
 
@@ -214,7 +213,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       StatsbeatTelemetryBuilder retryCountSt =
           createStatsbeatTelemetry(
               telemetryClient, RETRY_COUNT_METRIC_NAME, (double) local.retryCount.get());
-      addCommonProperties(retryCountSt, key.getIkey(), local.host, key.getCause());
+      addCommonProperties(retryCountSt, key);
       telemetryClient.trackStatsbeatAsync(retryCountSt.build());
     }
 
@@ -222,7 +221,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       StatsbeatTelemetryBuilder throttleCountSt =
           createStatsbeatTelemetry(
               telemetryClient, THROTTLE_COUNT_METRIC_NAME, (double) local.throttlingCount.get());
-      addCommonProperties(throttleCountSt, key.getIkey(), local.host, key.getCause());
+      addCommonProperties(throttleCountSt, key);
       telemetryClient.trackStatsbeatAsync(throttleCountSt.build());
     }
 
@@ -230,19 +229,18 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       StatsbeatTelemetryBuilder exceptionCountSt =
           createStatsbeatTelemetry(
               telemetryClient, EXCEPTION_COUNT_METRIC_NAME, (double) local.exceptionCount.get());
-      addCommonProperties(exceptionCountSt, key.getIkey(), local.host, key.getCause());
+      addCommonProperties(exceptionCountSt, key);
       telemetryClient.trackStatsbeatAsync(exceptionCountSt.build());
     }
   }
 
   private static void addCommonProperties(
       StatsbeatTelemetryBuilder telemetryBuilder,
-      String ikey,
-      String host,
-      @Nullable Object cause) {
+      IntervalMetricsKey key) {
     telemetryBuilder.addProperty("endpoint", BREEZE_ENDPOINT);
-    telemetryBuilder.addProperty("cikey", ikey);
-    telemetryBuilder.addProperty("host", host);
+    telemetryBuilder.addProperty("cikey", key.getIkey());
+    telemetryBuilder.addProperty("host", key.getHost());
+    Object cause = key.getCause();
     if (cause != null) {
       // track 'statusCode' for Failure/Retry/Throttle count and track 'exceptionType' for Exception
       // Count
@@ -278,8 +276,6 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     private final AtomicLong retryCount = new AtomicLong();
     private final AtomicLong throttlingCount = new AtomicLong();
     private final AtomicLong exceptionCount = new AtomicLong();
-
-    private volatile String host;
 
     private double getRequestDurationAvg() {
       double sum = totalRequestDuration.get();
