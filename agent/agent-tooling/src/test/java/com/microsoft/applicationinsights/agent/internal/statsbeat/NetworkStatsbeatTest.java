@@ -84,8 +84,10 @@ public class NetworkStatsbeatTest {
   public void testIncrementExceptionCount() {
     String exceptionType = NullPointerException.class.getName();
     assertThat(networkStatsbeat.getExceptionCount(IKEY, FAKE_HOST, exceptionType)).isEqualTo(0);
-    networkStatsbeat.incrementExceptionCount(IKEY, FAKE_HOST, Constant.EXCEPTION_TYPE, exceptionType);
-    networkStatsbeat.incrementExceptionCount(IKEY, FAKE_HOST, Constant.EXCEPTION_TYPE, exceptionType);
+    networkStatsbeat.incrementExceptionCount(
+        IKEY, FAKE_HOST, Constant.EXCEPTION_TYPE, exceptionType);
+    networkStatsbeat.incrementExceptionCount(
+        IKEY, FAKE_HOST, Constant.EXCEPTION_TYPE, exceptionType);
     assertThat(networkStatsbeat.getExceptionCount(IKEY, FAKE_HOST, exceptionType)).isEqualTo(2);
   }
 
