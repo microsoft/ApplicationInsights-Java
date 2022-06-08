@@ -27,7 +27,6 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import io.opentelemetry.instrumentation.api.internal.GuardedBy;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -120,7 +119,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   long getRequestSuccessCount(String ikey) {
     synchronized (lock) {
       IntervalMetrics intervalMetrics =
-          instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, null));
+          instrumentationKeyCounterMap.get(IntervalMetricsKey.create(ikey, null));
       return intervalMetrics == null ? 0L : intervalMetrics.requestSuccessCount.get();
     }
   }
@@ -129,7 +128,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   long getRequestFailureCount(String ikey, int statusCode) {
     synchronized (lock) {
       IntervalMetrics intervalMetrics =
-          instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, statusCode));
+          instrumentationKeyCounterMap.get(IntervalMetricsKey.create(ikey, statusCode));
       return intervalMetrics == null ? 0L : intervalMetrics.requestFailureCount.get();
     }
   }
@@ -138,7 +137,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   double getRequestDurationAvg(String ikey) {
     synchronized (lock) {
       IntervalMetrics intervalMetrics =
-          instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, null));
+          instrumentationKeyCounterMap.get(IntervalMetricsKey.create(ikey, null));
       return intervalMetrics == null ? 0L : intervalMetrics.getRequestDurationAvg();
     }
   }
@@ -147,7 +146,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   long getRetryCount(String ikey, int cause) {
     synchronized (lock) {
       IntervalMetrics intervalMetrics =
-          instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, cause));
+          instrumentationKeyCounterMap.get(IntervalMetricsKey.create(ikey, cause));
       return intervalMetrics == null ? 0L : intervalMetrics.retryCount.get();
     }
   }
@@ -156,7 +155,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   long getThrottlingCount(String ikey, int cause) {
     synchronized (lock) {
       IntervalMetrics intervalMetrics =
-          instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, cause));
+          instrumentationKeyCounterMap.get(IntervalMetricsKey.create(ikey, cause));
       return intervalMetrics == null ? 0L : intervalMetrics.throttlingCount.get();
     }
   }
@@ -165,7 +164,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   long getExceptionCount(String ikey, String exceptionType) {
     synchronized (lock) {
       IntervalMetrics intervalMetrics =
-          instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, exceptionType));
+          instrumentationKeyCounterMap.get(IntervalMetricsKey.create(ikey, exceptionType));
       return intervalMetrics == null ? 0L : intervalMetrics.exceptionCount.get();
     }
   }
@@ -175,7 +174,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     synchronized (lock) {
       IntervalMetrics intervalMetrics =
           instrumentationKeyCounterMap.computeIfAbsent(
-              new IntervalMetricsKey(ikey, cause), k -> new IntervalMetrics());
+              IntervalMetricsKey.create(ikey, cause), k -> new IntervalMetrics());
       intervalMetrics.host = host;
       update.accept(intervalMetrics);
     }
@@ -189,7 +188,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
               telemetryClient,
               REQUEST_SUCCESS_COUNT_METRIC_NAME,
               (double) local.requestSuccessCount.get());
-      addCommonProperties(requestSuccessCountSt, key.ikey, local.host, key.cause);
+      addCommonProperties(requestSuccessCountSt, key.getIkey(), local.host, key.getCause());
       telemetryClient.trackStatsbeatAsync(requestSuccessCountSt.build());
     }
 
@@ -199,7 +198,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
               telemetryClient,
               REQUEST_FAILURE_COUNT_METRIC_NAME,
               (double) local.requestFailureCount.get());
-      addCommonProperties(requestFailureCountSt, key.ikey, local.host, key.cause);
+      addCommonProperties(requestFailureCountSt, key.getIkey(), local.host, key.getCause());
       telemetryClient.trackStatsbeatAsync(requestFailureCountSt.build());
     }
 
@@ -207,7 +206,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     if (durationAvg != 0) {
       StatsbeatTelemetryBuilder requestDurationSt =
           createStatsbeatTelemetry(telemetryClient, REQUEST_DURATION_METRIC_NAME, durationAvg);
-      addCommonProperties(requestDurationSt, key.ikey, local.host, key.cause);
+      addCommonProperties(requestDurationSt, key.getIkey(), local.host, key.getCause());
       telemetryClient.trackStatsbeatAsync(requestDurationSt.build());
     }
 
@@ -215,7 +214,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       StatsbeatTelemetryBuilder retryCountSt =
           createStatsbeatTelemetry(
               telemetryClient, RETRY_COUNT_METRIC_NAME, (double) local.retryCount.get());
-      addCommonProperties(retryCountSt, key.ikey, local.host, key.cause);
+      addCommonProperties(retryCountSt, key.getIkey(), local.host, key.getCause());
       telemetryClient.trackStatsbeatAsync(retryCountSt.build());
     }
 
@@ -223,7 +222,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       StatsbeatTelemetryBuilder throttleCountSt =
           createStatsbeatTelemetry(
               telemetryClient, THROTTLE_COUNT_METRIC_NAME, (double) local.throttlingCount.get());
-      addCommonProperties(throttleCountSt, key.ikey, local.host, key.cause);
+      addCommonProperties(throttleCountSt, key.getIkey(), local.host, key.getCause());
       telemetryClient.trackStatsbeatAsync(throttleCountSt.build());
     }
 
@@ -231,7 +230,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       StatsbeatTelemetryBuilder exceptionCountSt =
           createStatsbeatTelemetry(
               telemetryClient, EXCEPTION_COUNT_METRIC_NAME, (double) local.exceptionCount.get());
-      addCommonProperties(exceptionCountSt, key.ikey, local.host, key.cause);
+      addCommonProperties(exceptionCountSt, key.getIkey(), local.host, key.getCause());
       telemetryClient.trackStatsbeatAsync(exceptionCountSt.build());
     }
   }
@@ -256,16 +255,16 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   }
 
   @AutoValue
-  static class IntervalMetricsKey {
+  abstract static class IntervalMetricsKey {
 
-    private final String ikey;
-    // cause can be an integer for statusCode and a string for exceptionType
-    @Nullable private final Object cause;
-
-    IntervalMetricsKey(String ikey, @Nullable Object cause) {
-      this.ikey = ikey;
-      this.cause = cause;
+    static IntervalMetricsKey create(String ikey, @Nullable Object cause) {
+      return new AutoValue_NetworkStatsbeat_IntervalMetricsKey(ikey, cause);
     }
+
+    abstract String getIkey();
+
+    // cause can be an integer for statusCode and a string for exceptionType
+    abstract Object getCause();
   }
 
   private static class IntervalMetrics {
