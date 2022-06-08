@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
-import static java.util.Arrays.asList;
-
 import com.azure.core.http.HttpPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.EventTelemetryBuilder;
@@ -50,7 +48,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
-import com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeatHttpPipelinePolicy;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatTelemetryPipelineListener;
@@ -58,10 +55,8 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.apache.commons.text.StringSubstitutor;
@@ -72,16 +67,6 @@ public class TelemetryClient {
   private static final String STATSBEAT_FOLDER_NAME = "statsbeat";
 
   @Nullable private static volatile TelemetryClient active;
-
-  private final Set<String> nonFilterableMetricNames =
-      new HashSet<>(
-          asList(
-              MetricNames.TOTAL_CPU_PERCENTAGE,
-              MetricNames.PROCESS_CPU_PERCENTAGE,
-              MetricNames.PROCESS_CPU_PERCENTAGE_NORMALIZED,
-              MetricNames.PROCESS_MEMORY,
-              MetricNames.TOTAL_MEMORY,
-              MetricNames.PROCESS_IO));
 
   @Nullable private volatile ConnectionString connectionString;
   @Nullable private volatile StatsbeatConnectionString statsbeatConnectionString;
@@ -171,13 +156,8 @@ public class TelemetryClient {
       }
       MetricDataPoint point = metricsData.getMetrics().get(0);
       String metricName = point.getName();
-      if (!nonFilterableMetricNames.contains(metricName)) {
-        for (MetricFilter metricFilter : metricFilters) {
-          if (!metricFilter.matches(metricName)) {
-            // user configuration filtered out this metric name
-            return;
-          }
-        }
+      if (MetricFilter.shouldSkip(metricName, metricFilters)) {
+        return;
       }
 
       if (!Double.isFinite(point.getValue())) {

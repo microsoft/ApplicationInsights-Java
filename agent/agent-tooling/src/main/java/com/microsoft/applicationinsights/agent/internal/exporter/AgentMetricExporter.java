@@ -26,6 +26,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.logging.Operation
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
+import com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -35,6 +36,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,10 +48,15 @@ public class AgentMetricExporter implements MetricExporter {
   private static final OperationLogger exportingMetricLogger =
       new OperationLogger(AgentMetricExporter.class, "Exporting metric");
 
+  private final List<MetricFilter> metricFilters;
   private final MetricDataMapper mapper;
   private final Consumer<TelemetryItem> telemetryItemConsumer;
 
-  public AgentMetricExporter(MetricDataMapper mapper, BatchItemProcessor batchItemProcessor) {
+  public AgentMetricExporter(
+      List<MetricFilter> metricFilters,
+      MetricDataMapper mapper,
+      BatchItemProcessor batchItemProcessor) {
+    this.metricFilters = metricFilters;
     this.mapper = mapper;
     this.telemetryItemConsumer =
         telemetryItem -> {
@@ -66,8 +73,10 @@ public class AgentMetricExporter implements MetricExporter {
       logger.debug("exporter is not active");
       return CompletableResultCode.ofSuccess();
     }
-
     for (MetricData metricData : metrics) {
+      if (MetricFilter.shouldSkip(metricData.getName(), metricFilters)) {
+        continue;
+      }
       logger.debug("exporting metric: {}", metricData);
       try {
         mapper.map(metricData, telemetryItemConsumer);
