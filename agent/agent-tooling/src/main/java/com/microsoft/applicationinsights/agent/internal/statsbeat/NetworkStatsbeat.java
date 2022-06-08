@@ -47,7 +47,8 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   private final Object lock = new Object();
 
   @GuardedBy("lock")
-  private final Map<IntervalMetricsKey, IntervalMetrics> instrumentationKeyCounterMap = new HashMap<>();
+  private final Map<IntervalMetricsKey, IntervalMetrics> instrumentationKeyCounterMap =
+      new HashMap<>();
 
   // only used by tests
   public NetworkStatsbeat() {
@@ -116,15 +117,17 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   // only used by tests
   long getRequestSuccessCount(String ikey) {
     synchronized (lock) {
-      IntervalMetrics intervalMetrics = instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, null));
+      IntervalMetrics intervalMetrics =
+          instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, null));
       return intervalMetrics == null ? 0L : intervalMetrics.requestSuccessCount.get();
     }
   }
 
   // only used by tests
-  long getRequestFailureCount(String ikey) {
+  long getRequestFailureCount(String ikey, int statusCode) {
     synchronized (lock) {
-      IntervalMetrics intervalMetrics = instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, 400));
+      IntervalMetrics intervalMetrics =
+          instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, statusCode));
       return intervalMetrics == null ? 0L : intervalMetrics.requestFailureCount.get();
     }
   }
@@ -132,31 +135,35 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   // only used by tests
   double getRequestDurationAvg(String ikey) {
     synchronized (lock) {
-      IntervalMetrics intervalMetrics = instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, null));
+      IntervalMetrics intervalMetrics =
+          instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, null));
       return intervalMetrics == null ? 0L : intervalMetrics.getRequestDurationAvg();
     }
   }
 
   // only used by tests
-  long getRetryCount(String ikey) {
+  long getRetryCount(String ikey, int cause) {
     synchronized (lock) {
-      IntervalMetrics intervalMetrics = instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, 500));
+      IntervalMetrics intervalMetrics =
+          instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, cause));
       return intervalMetrics == null ? 0L : intervalMetrics.retryCount.get();
     }
   }
 
   // only used by tests
-  long getThrottlingCount(String ikey) {
+  long getThrottlingCount(String ikey, int cause) {
     synchronized (lock) {
-      IntervalMetrics intervalMetrics = instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, 402));
+      IntervalMetrics intervalMetrics =
+          instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, cause));
       return intervalMetrics == null ? 0L : intervalMetrics.throttlingCount.get();
     }
   }
 
   // only used by tests
-  long getExceptionCount(String ikey) {
+  long getExceptionCount(String ikey, String exceptionType) {
     synchronized (lock) {
-      IntervalMetrics intervalMetrics = instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, "NullPointerException"));
+      IntervalMetrics intervalMetrics =
+          instrumentationKeyCounterMap.get(new IntervalMetricsKey(ikey, exceptionType));
       return intervalMetrics == null ? 0L : intervalMetrics.exceptionCount.get();
     }
   }
@@ -165,7 +172,8 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       String ikey, String host, @Nullable Object cause, Consumer<IntervalMetrics> update) {
     synchronized (lock) {
       IntervalMetrics intervalMetrics =
-          instrumentationKeyCounterMap.computeIfAbsent(new IntervalMetricsKey(ikey, cause), k -> new IntervalMetrics());
+          instrumentationKeyCounterMap.computeIfAbsent(
+              new IntervalMetricsKey(ikey, cause), k -> new IntervalMetrics());
       intervalMetrics.host = host;
       update.accept(intervalMetrics);
     }
@@ -227,7 +235,10 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   }
 
   private static void addCommonProperties(
-      StatsbeatTelemetryBuilder telemetryBuilder, String ikey, String host, @Nullable Object cause) {
+      StatsbeatTelemetryBuilder telemetryBuilder,
+      String ikey,
+      String host,
+      @Nullable Object cause) {
     telemetryBuilder.addProperty("endpoint", BREEZE_ENDPOINT);
     telemetryBuilder.addProperty("cikey", ikey);
     telemetryBuilder.addProperty("host", host);
@@ -250,6 +261,19 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     IntervalMetricsKey(String ikey, Object cause) {
       this.ikey = ikey;
       this.cause = cause;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (o == this) {
+        return true;
+      }
+      if (!(o instanceof IntervalMetricsKey)) {
+        return false;
+      }
+      IntervalMetricsKey intervalMetricsKey = (IntervalMetricsKey) o;
+      return intervalMetricsKey.ikey.equals(this.ikey)
+          && intervalMetricsKey.cause.equals(this.cause);
     }
   }
 
