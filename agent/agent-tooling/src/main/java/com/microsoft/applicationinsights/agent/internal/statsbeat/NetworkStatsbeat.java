@@ -22,10 +22,12 @@
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.StatsbeatTelemetryBuilder;
+import com.google.auto.value.AutoValue;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.instrumentation.api.internal.GuardedBy;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -253,27 +255,16 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     }
   }
 
+  @AutoValue
   private static class IntervalMetricsKey {
+
     private final String ikey;
     // cause can be an integer for statusCode and a string for exceptionType
-    private final Object cause;
+    @Nullable private final Object cause;
 
-    IntervalMetricsKey(String ikey, Object cause) {
+    IntervalMetricsKey(String ikey, @Nullable Object cause) {
       this.ikey = ikey;
       this.cause = cause;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (o == this) {
-        return true;
-      }
-      if (!(o instanceof IntervalMetricsKey)) {
-        return false;
-      }
-      IntervalMetricsKey intervalMetricsKey = (IntervalMetricsKey) o;
-      return intervalMetricsKey.ikey.equals(this.ikey)
-          && intervalMetricsKey.cause.equals(this.cause);
     }
   }
 
