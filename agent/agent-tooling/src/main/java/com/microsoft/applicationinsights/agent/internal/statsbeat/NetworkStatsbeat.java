@@ -116,55 +116,55 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   }
 
   // only used by tests
-  long getRequestSuccessCount(String ikey) {
+  long getRequestSuccessCount(String ikey, String host) {
     synchronized (lock) {
       IntervalMetrics intervalMetrics =
-          instrumentationKeyCounterMap.get(IntervalMetricsKey.create(ikey, null));
+          instrumentationKeyCounterMap.get(IntervalMetricsKey.create(ikey, host, null));
       return intervalMetrics == null ? 0L : intervalMetrics.requestSuccessCount.get();
     }
   }
 
   // only used by tests
-  long getRequestFailureCount(String ikey, int statusCode) {
+  long getRequestFailureCount(String ikey, String host, int statusCode) {
     synchronized (lock) {
       IntervalMetrics intervalMetrics =
-          instrumentationKeyCounterMap.get(IntervalMetricsKey.create(ikey, statusCode));
+          instrumentationKeyCounterMap.get(IntervalMetricsKey.create(ikey, host, statusCode));
       return intervalMetrics == null ? 0L : intervalMetrics.requestFailureCount.get();
     }
   }
 
   // only used by tests
-  double getRequestDurationAvg(String ikey) {
+  double getRequestDurationAvg(String ikey, String host) {
     synchronized (lock) {
       IntervalMetrics intervalMetrics =
-          instrumentationKeyCounterMap.get(IntervalMetricsKey.create(ikey, null));
+          instrumentationKeyCounterMap.get(IntervalMetricsKey.create(ikey, host, null));
       return intervalMetrics == null ? 0L : intervalMetrics.getRequestDurationAvg();
     }
   }
 
   // only used by tests
-  long getRetryCount(String ikey, int statusCode) {
+  long getRetryCount(String ikey, String host, int statusCode) {
     synchronized (lock) {
       IntervalMetrics intervalMetrics =
-          instrumentationKeyCounterMap.get(IntervalMetricsKey.create(ikey, cause));
+          instrumentationKeyCounterMap.get(IntervalMetricsKey.create(ikey, host, statusCode));
       return intervalMetrics == null ? 0L : intervalMetrics.retryCount.get();
     }
   }
 
   // only used by tests
-  long getThrottlingCount(String ikey, int statusCode) {
+  long getThrottlingCount(String ikey, String host, int statusCode) {
     synchronized (lock) {
       IntervalMetrics intervalMetrics =
-          instrumentationKeyCounterMap.get(IntervalMetricsKey.create(ikey, cause));
+          instrumentationKeyCounterMap.get(IntervalMetricsKey.create(ikey, host, statusCode));
       return intervalMetrics == null ? 0L : intervalMetrics.throttlingCount.get();
     }
   }
 
   // only used by tests
-  long getExceptionCount(String ikey, String exceptionType) {
+  long getExceptionCount(String ikey, String host, String exceptionType) {
     synchronized (lock) {
       IntervalMetrics intervalMetrics =
-          instrumentationKeyCounterMap.get(IntervalMetricsKey.create(ikey, exceptionType));
+          instrumentationKeyCounterMap.get(IntervalMetricsKey.create(ikey, host, exceptionType));
       return intervalMetrics == null ? 0L : intervalMetrics.exceptionCount.get();
     }
   }
@@ -174,7 +174,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     synchronized (lock) {
       IntervalMetrics intervalMetrics =
           instrumentationKeyCounterMap.computeIfAbsent(
-              IntervalMetricsKey.create(ikey, cause), k -> new IntervalMetrics());
+              IntervalMetricsKey.create(ikey, host, cause), k -> new IntervalMetrics());
       intervalMetrics.host = host;
       update.accept(intervalMetrics);
     }
@@ -257,14 +257,17 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   @AutoValue
   abstract static class IntervalMetricsKey {
 
-    static IntervalMetricsKey create(String ikey, @Nullable Object cause) {
-      return new AutoValue_NetworkStatsbeat_IntervalMetricsKey(ikey, cause);
+    static IntervalMetricsKey create(String ikey, String host, @Nullable Object cause) {
+      return new AutoValue_NetworkStatsbeat_IntervalMetricsKey(ikey, host, cause);
     }
 
     abstract String getIkey();
 
+    abstract String getHost();
+
     // cause can be an integer for statusCode and a string for exceptionType
-    @Nullable abstract Object getCause();
+    @Nullable
+    abstract Object getCause();
   }
 
   private static class IntervalMetrics {

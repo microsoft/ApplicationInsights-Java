@@ -33,6 +33,7 @@ public class NetworkStatsbeatTest {
 
   private NetworkStatsbeat networkStatsbeat;
   private static final String IKEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
+  private static final String FAKE_HOST = "fake-host";
 
   @BeforeEach
   public void init() {
@@ -41,48 +42,48 @@ public class NetworkStatsbeatTest {
 
   @Test
   public void testIncrementRequestSuccessCount() {
-    assertThat(networkStatsbeat.getRequestSuccessCount(IKEY)).isEqualTo(0);
-    assertThat(networkStatsbeat.getRequestDurationAvg(IKEY)).isEqualTo(0);
-    networkStatsbeat.incrementRequestSuccessCount(1000, IKEY, "host");
-    networkStatsbeat.incrementRequestSuccessCount(3000, IKEY, "host");
-    assertThat(networkStatsbeat.getRequestSuccessCount(IKEY)).isEqualTo(2);
-    assertThat(networkStatsbeat.getRequestDurationAvg(IKEY)).isEqualTo(2000.0);
+    assertThat(networkStatsbeat.getRequestSuccessCount(IKEY, FAKE_HOST)).isEqualTo(0);
+    assertThat(networkStatsbeat.getRequestDurationAvg(IKEY, FAKE_HOST)).isEqualTo(0);
+    networkStatsbeat.incrementRequestSuccessCount(1000, IKEY, FAKE_HOST);
+    networkStatsbeat.incrementRequestSuccessCount(3000, IKEY, FAKE_HOST);
+    assertThat(networkStatsbeat.getRequestSuccessCount(IKEY, FAKE_HOST)).isEqualTo(2);
+    assertThat(networkStatsbeat.getRequestDurationAvg(IKEY, FAKE_HOST)).isEqualTo(2000.0);
   }
 
   @Test
   public void testIncrementRequestFailureCount() {
     int statusCode = 400;
-    assertThat(networkStatsbeat.getRequestFailureCount(IKEY, statusCode)).isEqualTo(0);
-    networkStatsbeat.incrementRequestFailureCount(IKEY, "host", statusCode);
-    networkStatsbeat.incrementRequestFailureCount(IKEY, "host", statusCode);
-    assertThat(networkStatsbeat.getRequestFailureCount(IKEY, statusCode)).isEqualTo(2);
+    assertThat(networkStatsbeat.getRequestFailureCount(IKEY, FAKE_HOST, statusCode)).isEqualTo(0);
+    networkStatsbeat.incrementRequestFailureCount(IKEY, FAKE_HOST, statusCode);
+    networkStatsbeat.incrementRequestFailureCount(IKEY, FAKE_HOST, statusCode);
+    assertThat(networkStatsbeat.getRequestFailureCount(IKEY, FAKE_HOST, statusCode)).isEqualTo(2);
   }
 
   @Test
   public void testIncrementRetryCount() {
     int statusCode = 500;
-    assertThat(networkStatsbeat.getRetryCount(IKEY, statusCode)).isEqualTo(0);
-    networkStatsbeat.incrementRetryCount(IKEY, "host", statusCode);
-    networkStatsbeat.incrementRetryCount(IKEY, "host", statusCode);
-    assertThat(networkStatsbeat.getRetryCount(IKEY, statusCode)).isEqualTo(2);
+    assertThat(networkStatsbeat.getRetryCount(IKEY, FAKE_HOST, statusCode)).isEqualTo(0);
+    networkStatsbeat.incrementRetryCount(IKEY, FAKE_HOST, statusCode);
+    networkStatsbeat.incrementRetryCount(IKEY, FAKE_HOST, statusCode);
+    assertThat(networkStatsbeat.getRetryCount(IKEY, FAKE_HOST, statusCode)).isEqualTo(2);
   }
 
   @Test
   public void testIncrementThrottlingCount() {
     int statusCode = 402;
-    assertThat(networkStatsbeat.getThrottlingCount(IKEY, statusCode)).isEqualTo(0);
-    networkStatsbeat.incrementThrottlingCount(IKEY, "host", statusCode);
-    networkStatsbeat.incrementThrottlingCount(IKEY, "host", statusCode);
-    assertThat(networkStatsbeat.getThrottlingCount(IKEY, statusCode)).isEqualTo(2);
+    assertThat(networkStatsbeat.getThrottlingCount(IKEY, FAKE_HOST, statusCode)).isEqualTo(0);
+    networkStatsbeat.incrementThrottlingCount(IKEY, FAKE_HOST, statusCode);
+    networkStatsbeat.incrementThrottlingCount(IKEY, FAKE_HOST, statusCode);
+    assertThat(networkStatsbeat.getThrottlingCount(IKEY, FAKE_HOST, statusCode)).isEqualTo(2);
   }
 
   @Test
   public void testIncrementExceptionCount() {
     String exceptionType = NullPointerException.class.getName();
-    assertThat(networkStatsbeat.getExceptionCount(IKEY, exceptionType)).isEqualTo(0);
-    networkStatsbeat.incrementExceptionCount(IKEY, "host", exceptionType);
-    networkStatsbeat.incrementExceptionCount(IKEY, "host", exceptionType);
-    assertThat(networkStatsbeat.getExceptionCount(IKEY, exceptionType)).isEqualTo(2);
+    assertThat(networkStatsbeat.getExceptionCount(IKEY, FAKE_HOST, exceptionType)).isEqualTo(0);
+    networkStatsbeat.incrementExceptionCount(IKEY, FAKE_HOST, exceptionType);
+    networkStatsbeat.incrementExceptionCount(IKEY, FAKE_HOST, exceptionType);
+    assertThat(networkStatsbeat.getExceptionCount(IKEY, FAKE_HOST, exceptionType)).isEqualTo(2);
   }
 
   @Test
@@ -94,12 +95,12 @@ public class NetworkStatsbeatTest {
             @Override
             public void run() {
               for (int j = 0; j < 1000; j++) {
-                networkStatsbeat.incrementRequestSuccessCount(j % 2 == 0 ? 5 : 10, IKEY, "host");
-                networkStatsbeat.incrementRequestFailureCount(IKEY, "host", 400);
-                networkStatsbeat.incrementRetryCount(IKEY, "host", 500);
-                networkStatsbeat.incrementThrottlingCount(IKEY, "host", 402);
+                networkStatsbeat.incrementRequestSuccessCount(j % 2 == 0 ? 5 : 10, IKEY, FAKE_HOST);
+                networkStatsbeat.incrementRequestFailureCount(IKEY, FAKE_HOST, 400);
+                networkStatsbeat.incrementRetryCount(IKEY, FAKE_HOST, 500);
+                networkStatsbeat.incrementThrottlingCount(IKEY, FAKE_HOST, 402);
                 networkStatsbeat.incrementExceptionCount(
-                    IKEY, "host", NullPointerException.class.getName());
+                    IKEY, FAKE_HOST, NullPointerException.class.getName());
               }
             }
           });
@@ -107,13 +108,15 @@ public class NetworkStatsbeatTest {
 
     executorService.shutdown();
     executorService.awaitTermination(10, TimeUnit.MINUTES);
-    assertThat(networkStatsbeat.getRequestSuccessCount(IKEY)).isEqualTo(100000);
-    assertThat(networkStatsbeat.getRequestFailureCount(IKEY, 400)).isEqualTo(100000);
-    assertThat(networkStatsbeat.getRetryCount(IKEY, 500)).isEqualTo(100000);
-    assertThat(networkStatsbeat.getThrottlingCount(IKEY, 402)).isEqualTo(100000);
-    assertThat(networkStatsbeat.getExceptionCount(IKEY, NullPointerException.class.getName()))
+    assertThat(networkStatsbeat.getRequestSuccessCount(IKEY, FAKE_HOST)).isEqualTo(100000);
+    assertThat(networkStatsbeat.getRequestFailureCount(IKEY, FAKE_HOST, 400)).isEqualTo(100000);
+    assertThat(networkStatsbeat.getRetryCount(IKEY, FAKE_HOST, 500)).isEqualTo(100000);
+    assertThat(networkStatsbeat.getThrottlingCount(IKEY, FAKE_HOST, 402)).isEqualTo(100000);
+    assertThat(
+            networkStatsbeat.getExceptionCount(
+                IKEY, FAKE_HOST, NullPointerException.class.getName()))
         .isEqualTo(100000);
-    assertThat(networkStatsbeat.getRequestDurationAvg(IKEY)).isEqualTo(7.5);
+    assertThat(networkStatsbeat.getRequestDurationAvg(IKEY, FAKE_HOST)).isEqualTo(7.5);
   }
 
   @Test
