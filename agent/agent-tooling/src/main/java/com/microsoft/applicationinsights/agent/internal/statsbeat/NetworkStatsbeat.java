@@ -256,7 +256,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   }
 
   @AutoValue
-  private static class IntervalMetricsKey {
+  static class IntervalMetricsKey {
 
     private final String ikey;
     // cause can be an integer for statusCode and a string for exceptionType
