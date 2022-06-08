@@ -26,6 +26,7 @@ import com.azure.core.http.HttpPipelineNextPolicy;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.StatusCodes;
+import com.microsoft.applicationinsights.agent.internal.utils.Constant;
 import java.util.concurrent.atomic.AtomicLong;
 import reactor.core.publisher.Mono;
 
@@ -39,6 +40,7 @@ public class NetworkStatsbeatHttpPipelinePolicy implements HttpPipelinePolicy {
     this.networkStatsbeat = networkStatsbeat;
   }
 
+  @SuppressWarnings("ArgumentSelectionDefectChecker")
   @Override
   public Mono<HttpResponse> process(HttpPipelineCallContext context, HttpPipelineNextPolicy next) {
     // using AtomicLong for both mutable holder and volatile (but atomicity is not needed here)
@@ -57,17 +59,24 @@ public class NetworkStatsbeatHttpPipelinePolicy implements HttpPipelinePolicy {
               } else if (StatusCodes.isRedirect(statusCode)) {
                 // these are not tracked as success or failure since they are just redirects
               } else if (statusCode == 402 || statusCode == 439) {
-                networkStatsbeat.incrementThrottlingCount(instrumentationKey, host);
+                networkStatsbeat.incrementThrottlingCount(
+                    instrumentationKey, host, Constant.STATUS_CODE, statusCode);
               } else if (StatusCodes.isRetryable(statusCode)) {
-                networkStatsbeat.incrementRetryCount(instrumentationKey, host);
+                networkStatsbeat.incrementRetryCount(
+                    instrumentationKey, host, Constant.STATUS_CODE, statusCode);
               } else {
-                // note: 401 and 403 are currently tracked as failures
-                networkStatsbeat.incrementRequestFailureCount(instrumentationKey, host);
+                // 400 and 404 will be tracked as failure count
+                networkStatsbeat.incrementRequestFailureCount(
+                    instrumentationKey, host, Constant.STATUS_CODE, statusCode);
               }
             })
         .doOnError(
             throwable -> {
-              networkStatsbeat.incrementExceptionCount(instrumentationKey, host);
+              networkStatsbeat.incrementExceptionCount(
+                  instrumentationKey,
+                  host,
+                  Constant.EXCEPTION_TYPE,
+                  throwable.getClass().getName());
             });
   }
 }

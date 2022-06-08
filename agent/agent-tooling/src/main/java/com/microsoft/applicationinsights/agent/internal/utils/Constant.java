@@ -19,22 +19,12 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter.implementation.utils;
+package com.microsoft.applicationinsights.agent.internal.utils;
 
-public class StatusCodes {
+public final class Constant {
 
-  public static boolean isRetryable(int statusCode) {
-    return statusCode == 401 // Unauthorized
-        || statusCode == 403 // Forbidden
-        || statusCode == 408 // REQUEST TIMEOUT
-        || statusCode == 429 // TOO MANY REQUESTS
-        || statusCode == 500 // INTERNAL SERVER ERROR
-        || statusCode == 503; // SERVICE UNAVAILABLE
-  }
+  public static final String STATUS_CODE = "statusCode";
+  public static final String EXCEPTION_TYPE = "exceptionType";
 
-  public static boolean isRedirect(int statusCode) {
-    return statusCode == 307 || statusCode == 308;
-  }
-
-  private StatusCodes() {}
+  private Constant() {}
 }

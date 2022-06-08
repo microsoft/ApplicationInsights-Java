@@ -73,6 +73,9 @@ dependencies {
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support")
 
+  compileOnly("com.google.auto.value:auto-value-annotations")
+  annotationProcessor("com.google.auto.value:auto-value")
+
   testImplementation(project(":agent:agent-bootstrap"))
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
