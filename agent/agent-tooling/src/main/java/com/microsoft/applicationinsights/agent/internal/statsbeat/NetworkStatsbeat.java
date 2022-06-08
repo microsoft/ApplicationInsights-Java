@@ -264,7 +264,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     abstract String getIkey();
 
     // cause can be an integer for statusCode and a string for exceptionType
-    abstract Object getCause();
+    @Nullable abstract Object getCause();
   }
 
   private static class IntervalMetrics {
