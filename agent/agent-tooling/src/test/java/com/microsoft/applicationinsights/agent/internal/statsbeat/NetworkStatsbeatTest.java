@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.microsoft.applicationinsights.agent.internal.utils.Constant;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -54,8 +55,10 @@ public class NetworkStatsbeatTest {
   public void testIncrementRequestFailureCount() {
     int statusCode = 400;
     assertThat(networkStatsbeat.getRequestFailureCount(IKEY, FAKE_HOST, statusCode)).isEqualTo(0);
-    networkStatsbeat.incrementRequestFailureCount(IKEY, FAKE_HOST, statusCode);
-    networkStatsbeat.incrementRequestFailureCount(IKEY, FAKE_HOST, statusCode);
+    networkStatsbeat.incrementRequestFailureCount(
+        IKEY, FAKE_HOST, Constant.STATUS_CODE, statusCode);
+    networkStatsbeat.incrementRequestFailureCount(
+        IKEY, FAKE_HOST, Constant.STATUS_CODE, statusCode);
     assertThat(networkStatsbeat.getRequestFailureCount(IKEY, FAKE_HOST, statusCode)).isEqualTo(2);
   }
 
@@ -63,8 +66,8 @@ public class NetworkStatsbeatTest {
   public void testIncrementRetryCount() {
     int statusCode = 500;
     assertThat(networkStatsbeat.getRetryCount(IKEY, FAKE_HOST, statusCode)).isEqualTo(0);
-    networkStatsbeat.incrementRetryCount(IKEY, FAKE_HOST, statusCode);
-    networkStatsbeat.incrementRetryCount(IKEY, FAKE_HOST, statusCode);
+    networkStatsbeat.incrementRetryCount(IKEY, FAKE_HOST, Constant.STATUS_CODE, statusCode);
+    networkStatsbeat.incrementRetryCount(IKEY, FAKE_HOST, Constant.STATUS_CODE, statusCode);
     assertThat(networkStatsbeat.getRetryCount(IKEY, FAKE_HOST, statusCode)).isEqualTo(2);
   }
 
@@ -72,8 +75,8 @@ public class NetworkStatsbeatTest {
   public void testIncrementThrottlingCount() {
     int statusCode = 402;
     assertThat(networkStatsbeat.getThrottlingCount(IKEY, FAKE_HOST, statusCode)).isEqualTo(0);
-    networkStatsbeat.incrementThrottlingCount(IKEY, FAKE_HOST, statusCode);
-    networkStatsbeat.incrementThrottlingCount(IKEY, FAKE_HOST, statusCode);
+    networkStatsbeat.incrementThrottlingCount(IKEY, FAKE_HOST, Constant.STATUS_CODE, statusCode);
+    networkStatsbeat.incrementThrottlingCount(IKEY, FAKE_HOST, Constant.STATUS_CODE, statusCode);
     assertThat(networkStatsbeat.getThrottlingCount(IKEY, FAKE_HOST, statusCode)).isEqualTo(2);
   }
 
@@ -81,8 +84,8 @@ public class NetworkStatsbeatTest {
   public void testIncrementExceptionCount() {
     String exceptionType = NullPointerException.class.getName();
     assertThat(networkStatsbeat.getExceptionCount(IKEY, FAKE_HOST, exceptionType)).isEqualTo(0);
-    networkStatsbeat.incrementExceptionCount(IKEY, FAKE_HOST, exceptionType);
-    networkStatsbeat.incrementExceptionCount(IKEY, FAKE_HOST, exceptionType);
+    networkStatsbeat.incrementExceptionCount(IKEY, FAKE_HOST, Constant.STATUS_CODE, exceptionType);
+    networkStatsbeat.incrementExceptionCount(IKEY, FAKE_HOST, Constant.STATUS_CODE, exceptionType);
     assertThat(networkStatsbeat.getExceptionCount(IKEY, FAKE_HOST, exceptionType)).isEqualTo(2);
   }
 
@@ -96,11 +99,13 @@ public class NetworkStatsbeatTest {
             public void run() {
               for (int j = 0; j < 1000; j++) {
                 networkStatsbeat.incrementRequestSuccessCount(j % 2 == 0 ? 5 : 10, IKEY, FAKE_HOST);
-                networkStatsbeat.incrementRequestFailureCount(IKEY, FAKE_HOST, 400);
-                networkStatsbeat.incrementRetryCount(IKEY, FAKE_HOST, 500);
-                networkStatsbeat.incrementThrottlingCount(IKEY, FAKE_HOST, 402);
+                networkStatsbeat.incrementRequestFailureCount(
+                    IKEY, FAKE_HOST, Constant.STATUS_CODE, 400);
+                networkStatsbeat.incrementRetryCount(IKEY, FAKE_HOST, Constant.STATUS_CODE, 500);
+                networkStatsbeat.incrementThrottlingCount(
+                    IKEY, FAKE_HOST, Constant.STATUS_CODE, 402);
                 networkStatsbeat.incrementExceptionCount(
-                    IKEY, FAKE_HOST, NullPointerException.class.getName());
+                    IKEY, FAKE_HOST, Constant.EXCEPTION_TYPE, NullPointerException.class.getName());
               }
             }
           });
