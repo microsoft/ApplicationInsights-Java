@@ -52,10 +52,6 @@ public class ApplicationInsights {
     }
 
     RuntimeAttach.attachJavaagentToCurrentJVM();
-
-    if (!agentIsAttached()) {
-      System.setProperty(RUNTIME_ATTACHED_PROPERTY, "false");
-    }
   }
 
   private static boolean agentIsAttached() {
