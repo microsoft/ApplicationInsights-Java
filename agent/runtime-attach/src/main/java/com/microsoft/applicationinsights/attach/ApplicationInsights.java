@@ -27,9 +27,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 /** This class allows you to attach the Application Insights agent for Java at runtime. */
 public class ApplicationInsights {
+
+  private static final Logger LOGGER = Logger.getLogger(ApplicationInsights.class.getName());
 
   public static final String RUNTIME_ATTACHED_PROPERTY = "agent.runtime.attached";
 
@@ -41,9 +44,12 @@ public class ApplicationInsights {
    */
   public static void attach() {
 
-    if (!agentIsAttached()) {
-      System.setProperty(RUNTIME_ATTACHED_PROPERTY, "true");
+    if (agentIsAttached()) {
+      LOGGER.warning("Application Insights is already attached. It is not attached a second time.");
+      return;
     }
+
+    System.setProperty(RUNTIME_ATTACHED_PROPERTY, "true");
 
     Optional<File> optionalConfigFile = searchConfigFile();
     if (optionalConfigFile.isPresent()) {
