@@ -33,11 +33,11 @@ public class ApplicationInsights {
 
   public static final String RUNTIME_ATTACHED_PROPERTY = "agent.runtime.attached";
 
-  private ApplicationInsights() {
-  }
+  private ApplicationInsights() {}
 
   /**
-   * Attach the Application Insights agent for Java to the current JVM. The attachment must be requested at the beginning of the main method.
+   * Attach the Application Insights agent for Java to the current JVM. The attachment must be
+   * requested at the beginning of the main method.
    */
   public static void attach() {
 
