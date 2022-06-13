@@ -259,7 +259,16 @@ public class FirstEntryPoint implements LoggingCustomizer {
           .warn("could not detect os: {}", System.getProperty("os.name"));
       sdkNamePrefix.append("u");
     }
-    sdkNamePrefix.append("r_"); // "r" is for "recommended"
+    if (isRuntimeAttached()) {
+      sdkNamePrefix.append("ra_");
+    } else {
+      sdkNamePrefix.append("r_"); // "r" is for "recommended"
+    }
     return sdkNamePrefix.toString();
+  }
+
+  private static boolean isRuntimeAttached() {
+    String runtimeAttachedProp = System.getProperty("agent.runtime.attached");
+    return "true".equals(runtimeAttachedProp);
   }
 }

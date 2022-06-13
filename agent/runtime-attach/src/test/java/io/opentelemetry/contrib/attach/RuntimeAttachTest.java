@@ -18,26 +18,32 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+package io.opentelemetry.contrib.attach;
 
-package com.microsoft.applicationinsights.smoketestapp;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.attach.ApplicationInsights;
-import java.io.IOException;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import io.opentelemetry.extension.annotations.WithSpan;
+import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.Span;
+import org.junit.jupiter.api.Test;
 
-@SpringBootApplication
-public class SpringBootApp extends SpringBootServletInitializer {
+public class RuntimeAttachTest {
 
-  public static void main(String[] args) throws IOException {
+  @Test
+  void shouldAttach() {
+    disableMainThreadCheck();
     ApplicationInsights.attach();
-    SpringApplication.run(SpringBootApp.class, args);
+    verifyAttachment();
   }
 
-  @Override
-  protected SpringApplicationBuilder configure(SpringApplicationBuilder applicationBuilder) {
-    return applicationBuilder.sources(SpringBootApp.class);
+  void disableMainThreadCheck() {
+    // See io.opentelemetry.contrib.attach.RuntimeAttach
+    System.setProperty("otel.javaagent.runtimeattach.mainthreadcheck", "false");
+  }
+
+  @WithSpan
+  void verifyAttachment() {
+    boolean isAttached = Span.current().getSpanContext().isValid();
+    assertThat(isAttached).as("Agent should be attached").isTrue();
   }
 }
