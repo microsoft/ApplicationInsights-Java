@@ -44,7 +44,7 @@ public final class VersionGenerator {
         "java"
             + getJavaVersion()
             + ":"
-            + "ot"
+            + "otel"
             + getOpenTelemetryApiVersion()
             + ":"
             + "ext"
