@@ -22,12 +22,10 @@
 package com.microsoft.applicationinsights.attach;
 
 import io.opentelemetry.contrib.attach.RuntimeAttach;
-import java.io.IOException;
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -54,9 +52,10 @@ public class ApplicationInsights {
 
     System.setProperty(RUNTIME_ATTACHED_PROPERTY, "true");
 
-    Optional<String> optionalConfigPath = searchConfigPath();
-    if (optionalConfigPath.isPresent()) {
-      System.setProperty("applicationinsights.configuration.file", optionalConfigPath.get());
+    Optional<File> optionalConfigFile = searchConfigFile();
+    if (optionalConfigFile.isPresent()) {
+      File configFile = optionalConfigFile.get();
+      System.setProperty("applicationinsights.configuration.file", configFile.getAbsolutePath());
     }
 
     RuntimeAttach.attachJavaagentToCurrentJVM();
@@ -71,7 +70,7 @@ public class ApplicationInsights {
     }
   }
 
-  private static Optional<String> searchConfigPath() {
+  private static Optional<File> searchConfigFile() {
 
     URL jsonUrl = ApplicationInsights.class.getResource("/applicationinsights.json");
 
@@ -80,12 +79,15 @@ public class ApplicationInsights {
       return Optional.empty();
     }
 
+    return buildFileFrom(jsonUrl);
+  }
+
+  private static Optional<File> buildFileFrom(URL jsonConfigFileUrl) {
     try {
-      URI jsonUri = jsonUrl.toURI();
-      Path path = Paths.get(jsonUri);
-      Path realPath = path.toRealPath();
-      return Optional.of(realPath.toString());
-    } catch (URISyntaxException | IOException e) {
+      URI jsonUri = jsonConfigFileUrl.toURI();
+      File jsonFile = new File(jsonUri);
+      return Optional.of(jsonFile);
+    } catch (URISyntaxException e) {
       return Optional.empty();
     }
   }
