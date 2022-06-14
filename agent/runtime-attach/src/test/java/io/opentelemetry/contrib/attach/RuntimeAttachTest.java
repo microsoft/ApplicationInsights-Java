@@ -39,7 +39,7 @@ public class RuntimeAttachTest {
 
   void disableMainThreadCheck() {
     // See io.opentelemetry.contrib.attach.RuntimeAttach
-    System.setProperty("otel.javaagent.runtimeattach.mainthreadcheck", "false");
+    System.setProperty("otel.javaagent.testing.runtime-attach.main-thread-check", "false");
   }
 
   @WithSpan
