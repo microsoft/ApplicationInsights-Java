@@ -267,7 +267,6 @@ public class FirstEntryPoint implements LoggingCustomizer {
   }
 
   private static boolean isRuntimeAttached() {
-    String runtimeAttachedProp = System.getProperty("agent.runtime.attached");
-    return "true".equals(runtimeAttachedProp);
+    return Boolean.getBoolean("agent.runtime.attached");
   }
 }
