@@ -1,7 +1,7 @@
 # Java runtime attachment for Application Insights
 
 If you can't update the JVM arguments to attach the Application Insights agent for Java (_
--javaagent:path/to/applicationinsights-agent-3.2.11.jar_), this project allows you to do attachment
+-javaagent:path/to/applicationinsights-agent-{latest-java-agent-version}.jar_), this project allows you to do attachment
 programmatically.
 
 The ```com.microsoft.applicationinsights.attach.ApplicationInsights``` class has an ```attach()```
