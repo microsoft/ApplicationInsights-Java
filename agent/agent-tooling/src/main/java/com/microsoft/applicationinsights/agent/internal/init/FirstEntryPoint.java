@@ -248,6 +248,9 @@ public class FirstEntryPoint implements LoggingCustomizer {
     if (!DiagnosticsHelper.isRpIntegration()) {
       return null;
     }
+    if (isRuntimeAttached()) {
+      return "ra_";
+    }
     StringBuilder sdkNamePrefix = new StringBuilder(4);
     sdkNamePrefix.append(DiagnosticsHelper.rpIntegrationChar());
     if (SystemInformation.isWindows()) {
@@ -259,11 +262,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
           .warn("could not detect os: {}", System.getProperty("os.name"));
       sdkNamePrefix.append("u");
     }
-    if (isRuntimeAttached()) {
-      sdkNamePrefix.append("ra_");
-    } else {
-      sdkNamePrefix.append("r_"); // "r" is for "recommended"
-    }
+    sdkNamePrefix.append("r_"); // "r" is for "recommended"
     return sdkNamePrefix.toString();
   }
 
