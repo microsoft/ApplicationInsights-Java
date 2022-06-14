@@ -36,6 +36,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestDat
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.ResourceParser;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Trie;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.UrlParser;
@@ -209,6 +210,7 @@ public final class SpanDataMapper {
     setTime(telemetryBuilder, span.getStartEpochNanos());
     setSampleRate(telemetryBuilder, samplingPercentage);
     setExtraAttributes(telemetryBuilder, span.getAttributes());
+    ResourceParser.updateRoleNameAndInstance(telemetryBuilder, span.getResource());
     addLinks(telemetryBuilder, span.getLinks());
 
     // set dependency-specific properties
@@ -576,6 +578,7 @@ public final class SpanDataMapper {
     setTime(telemetryBuilder, startEpochNanos);
     setSampleRate(telemetryBuilder, samplingPercentage);
     setExtraAttributes(telemetryBuilder, attributes);
+    ResourceParser.updateRoleNameAndInstance(telemetryBuilder, span.getResource());
     addLinks(telemetryBuilder, span.getLinks());
 
     String operationName = getOperationName(span);
@@ -814,6 +817,7 @@ public final class SpanDataMapper {
       setTime(telemetryBuilder, event.getEpochNanos());
       setSampleRate(telemetryBuilder, samplingPercentage);
       setExtraAttributes(telemetryBuilder, event.getAttributes());
+      ResourceParser.updateRoleNameAndInstance(telemetryBuilder, span.getResource());
 
       // set message-specific properties
       telemetryBuilder.setMessage(event.getName());
@@ -839,6 +843,7 @@ public final class SpanDataMapper {
     setTime(telemetryBuilder, span.getEndEpochNanos());
     setSampleRate(telemetryBuilder, samplingPercentage);
     setExtraAttributes(telemetryBuilder, span.getAttributes());
+    ResourceParser.updateRoleNameAndInstance(telemetryBuilder, span.getResource());
 
     // set exception-specific properties
     telemetryBuilder.setExceptions(Exceptions.minimalParse(errorStack));

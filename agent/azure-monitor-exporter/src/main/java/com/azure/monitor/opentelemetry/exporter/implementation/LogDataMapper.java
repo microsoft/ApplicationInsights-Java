@@ -29,6 +29,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTag
 import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.ResourceParser;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -78,6 +79,7 @@ public class LogDataMapper {
     setTime(telemetryBuilder, log.getEpochNanos());
     setSampleRate(telemetryBuilder, log);
     setExtraAttributes(telemetryBuilder, attributes);
+    ResourceParser.updateRoleNameAndInstance(telemetryBuilder, log.getResource());
 
     telemetryBuilder.setSeverityLevel(toSeverityLevel(log.getSeverity()));
     String body = log.getBody().asString();
@@ -107,6 +109,7 @@ public class LogDataMapper {
     setTime(telemetryBuilder, log.getEpochNanos());
     setSampleRate(telemetryBuilder, log);
     setExtraAttributes(telemetryBuilder, attributes);
+    ResourceParser.updateRoleNameAndInstance(telemetryBuilder, log.getResource());
 
     telemetryBuilder.setExceptions(Exceptions.minimalParse(stack));
     telemetryBuilder.setSeverityLevel(toSeverityLevel(log.getSeverity()));
