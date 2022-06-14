@@ -34,7 +34,8 @@ public class ApplicationInsights {
 
   private static final Logger LOGGER = Logger.getLogger(ApplicationInsights.class.getName());
 
-  public static final String RUNTIME_ATTACHED_PROPERTY = "applicationinsights.internal.runtime.attached";
+  public static final String RUNTIME_ATTACHED_PROPERTY =
+      "applicationinsights.internal.runtime.attached";
 
   private ApplicationInsights() {}
 
