@@ -4,9 +4,9 @@ If you can't update the JVM arguments to attach the Application Insights agent f
 -javaagent:path/to/applicationinsights-agent-{latest-java-agent-version}.jar_), this project allows you to do attachment
 programmatically.
 
-The ```com.microsoft.applicationinsights.attach.ApplicationInsights``` class has an ```attach()```
+The `com.microsoft.applicationinsights.attach.ApplicationInsights` class has an `attach()`
 method that triggers the attachment of the agent. _The attachment must be requested at the beginning
-of the ```main``` method._ The runtime attachment feature is initially developed for Spring Boot
+of the `main` method._ The runtime attachment feature is initially developed for Spring Boot
 applications:
 
 ```java
