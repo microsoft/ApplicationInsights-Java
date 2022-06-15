@@ -28,7 +28,8 @@ import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
 public final class ResourceParser {
 
-  public static void updateRoleNameAndInstance(AbstractTelemetryBuilder builder, Resource resource) {
+  public static void updateRoleNameAndInstance(
+      AbstractTelemetryBuilder builder, Resource resource) {
     String serviceName = resource.getAttribute(ResourceAttributes.SERVICE_NAME);
     String serviceNamespace = resource.getAttribute(ResourceAttributes.SERVICE_NAMESPACE);
     String roleName = null;
@@ -36,7 +37,7 @@ public final class ResourceParser {
       roleName = serviceNamespace + "." + serviceName;
     } else if (serviceName != null) {
       roleName = serviceName;
-    } else if (serviceNamespace != null){
+    } else if (serviceNamespace != null) {
       roleName = serviceNamespace + ".";
     }
 
