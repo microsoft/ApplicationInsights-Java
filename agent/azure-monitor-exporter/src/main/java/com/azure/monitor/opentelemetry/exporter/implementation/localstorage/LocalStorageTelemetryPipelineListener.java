@@ -40,6 +40,7 @@ public class LocalStorageTelemetryPipelineListener implements TelemetryPipelineL
 
   // telemetryFolder must already exist and be writable
   public LocalStorageTelemetryPipelineListener(
+      int diskPersistenceMaxSizeMb,
       File telemetryFolder,
       TelemetryPipeline pipeline,
       LocalStorageStats stats,
@@ -48,7 +49,9 @@ public class LocalStorageTelemetryPipelineListener implements TelemetryPipelineL
     LocalFileCache localFileCache = new LocalFileCache(telemetryFolder);
     LocalFileLoader loader =
         new LocalFileLoader(localFileCache, telemetryFolder, stats, suppressWarnings);
-    localFileWriter = new LocalFileWriter(localFileCache, telemetryFolder, stats, suppressWarnings);
+    localFileWriter =
+        new LocalFileWriter(
+            diskPersistenceMaxSizeMb, localFileCache, telemetryFolder, stats, suppressWarnings);
 
     localFileSender = new LocalFileSender(loader, pipeline, suppressWarnings);
     localFilePurger = new LocalFilePurger(telemetryFolder, suppressWarnings);

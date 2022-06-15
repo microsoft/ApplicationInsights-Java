@@ -90,6 +90,7 @@ public class TelemetryClient {
   @Nullable private final File tempDir;
   private final int generalExportQueueCapacity;
   private final int metricsExportQueueCapacity;
+  private final int diskPersistenceMaxSizeMb;
 
   @Nullable private final Configuration.AadAuthentication aadAuthentication;
 
@@ -125,6 +126,7 @@ public class TelemetryClient {
     this.statsbeatConnectionString = builder.statsbeatConnectionString;
     this.roleName = builder.roleName;
     this.roleInstance = builder.roleInstance;
+    this.diskPersistenceMaxSizeMb = builder.diskPersistenceMaxSizeMb;
   }
 
   public static TelemetryClient getActive() {
@@ -259,6 +261,7 @@ public class TelemetryClient {
               new DiagnosticTelemetryPipelineListener(
                   "Sending telemetry to the ingestion service", true),
               new LocalStorageTelemetryPipelineListener(
+                  diskPersistenceMaxSizeMb,
                   TempDirs.getSubDir(tempDir, TELEMETRY_FOLDER_NAME),
                   telemetryPipeline,
                   statsbeatModule.getNonessentialStatsbeat(),
@@ -290,6 +293,7 @@ public class TelemetryClient {
           } else {
             LocalStorageTelemetryPipelineListener localStorageTelemetryPipelineListener =
                 new LocalStorageTelemetryPipelineListener(
+                    diskPersistenceMaxSizeMb,
                     TempDirs.getSubDir(tempDir, STATSBEAT_FOLDER_NAME),
                     telemetryPipeline,
                     LocalStorageStats.noop(),
@@ -442,6 +446,7 @@ public class TelemetryClient {
     @Nullable private StatsbeatConnectionString statsbeatConnectionString;
     @Nullable private String roleName;
     @Nullable private String roleInstance;
+    private int diskPersistenceMaxSizeMb;
 
     public Builder setCustomDimensions(Map<String, String> customDimensions) {
       StringSubstitutor substitutor = new StringSubstitutor(System.getenv());
@@ -517,6 +522,11 @@ public class TelemetryClient {
     public Builder setRoleInstance(@Nullable String roleInstance) {
       this.roleInstance = roleInstance;
       globalTags.put(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), roleInstance);
+      return this;
+    }
+
+    public Builder setDiskPersistenceMaxSizeMb(int diskPersistenceMaxSizeMb) {
+      this.diskPersistenceMaxSizeMb = diskPersistenceMaxSizeMb;
       return this;
     }
 

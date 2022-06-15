@@ -333,6 +333,7 @@ public final class AzureMonitorExporterBuilder {
           new TelemetryItemExporter(
               pipeline,
               new LocalStorageTelemetryPipelineListener(
+                  50, // default to 50MB
                   TempDirs.getSubDir(tempDir, "telemetry"),
                   pipeline,
                   LocalStorageStats.noop(),
