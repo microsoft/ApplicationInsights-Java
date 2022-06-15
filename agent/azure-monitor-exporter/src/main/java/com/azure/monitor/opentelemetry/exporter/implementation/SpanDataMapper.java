@@ -209,8 +209,8 @@ public final class SpanDataMapper {
     setOperationTags(telemetryBuilder, span);
     setTime(telemetryBuilder, span.getStartEpochNanos());
     setSampleRate(telemetryBuilder, samplingPercentage);
-    setExtraAttributes(telemetryBuilder, span.getAttributes());
     ResourceParser.updateRoleNameAndInstance(telemetryBuilder, span.getResource());
+    setExtraAttributes(telemetryBuilder, span.getAttributes());
     addLinks(telemetryBuilder, span.getLinks());
 
     // set dependency-specific properties
@@ -577,8 +577,8 @@ public final class SpanDataMapper {
     telemetryBuilder.setId(span.getSpanId());
     setTime(telemetryBuilder, startEpochNanos);
     setSampleRate(telemetryBuilder, samplingPercentage);
-    setExtraAttributes(telemetryBuilder, attributes);
     ResourceParser.updateRoleNameAndInstance(telemetryBuilder, span.getResource());
+    setExtraAttributes(telemetryBuilder, attributes);
     addLinks(telemetryBuilder, span.getLinks());
 
     String operationName = getOperationName(span);
@@ -816,8 +816,8 @@ public final class SpanDataMapper {
       }
       setTime(telemetryBuilder, event.getEpochNanos());
       setSampleRate(telemetryBuilder, samplingPercentage);
-      setExtraAttributes(telemetryBuilder, event.getAttributes());
       ResourceParser.updateRoleNameAndInstance(telemetryBuilder, span.getResource());
+      setExtraAttributes(telemetryBuilder, event.getAttributes());
 
       // set message-specific properties
       telemetryBuilder.setMessage(event.getName());
@@ -842,8 +842,8 @@ public final class SpanDataMapper {
     }
     setTime(telemetryBuilder, span.getEndEpochNanos());
     setSampleRate(telemetryBuilder, samplingPercentage);
-    setExtraAttributes(telemetryBuilder, span.getAttributes());
     ResourceParser.updateRoleNameAndInstance(telemetryBuilder, span.getResource());
+    setExtraAttributes(telemetryBuilder, span.getAttributes());
 
     // set exception-specific properties
     telemetryBuilder.setExceptions(Exceptions.minimalParse(errorStack));
