@@ -185,7 +185,7 @@ public class LocalFileLoaderTests {
   public void testWriteAndReadRandomText() {
     String text = "hello world";
     LocalFileCache cache = new LocalFileCache(tempFolder);
-    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder, null, false);
+    LocalFileWriter writer = new LocalFileWriter(50, cache, tempFolder, null, false);
     writer.writeToDisk(INSTRUMENTATION_KEY, singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))));
 
     LocalFileLoader loader = new LocalFileLoader(cache, tempFolder, null, false);
@@ -215,7 +215,7 @@ public class LocalFileLoaderTests {
     // write gzipped bytes[] to disk
     byte[] result = byteArrayOutputStream.toByteArray();
     LocalFileCache cache = new LocalFileCache(tempFolder);
-    LocalFileWriter writer = new LocalFileWriter(cache, tempFolder, null, false);
+    LocalFileWriter writer = new LocalFileWriter(50, cache, tempFolder, null, false);
     writer.writeToDisk(INSTRUMENTATION_KEY, singletonList(ByteBuffer.wrap(result)));
 
     // read gzipped byte[] from disk
@@ -242,7 +242,8 @@ public class LocalFileLoaderTests {
     HttpClient mockedClient = getMockHttpClientSuccess();
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
     LocalFileCache localFileCache = new LocalFileCache(tempFolder);
-    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder, null, false);
+    LocalFileWriter localFileWriter =
+        new LocalFileWriter(50, localFileCache, tempFolder, null, false);
     LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null, false);
 
     TelemetryPipeline telemetryPipeline =
@@ -294,7 +295,8 @@ public class LocalFileLoaderTests {
     LocalFileCache localFileCache = new LocalFileCache(tempFolder);
 
     LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null, false);
-    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache, tempFolder, null, false);
+    LocalFileWriter localFileWriter =
+        new LocalFileWriter(50, localFileCache, tempFolder, null, false);
 
     TelemetryPipeline telemetryPipeline =
         new TelemetryPipeline(pipelineBuilder.build(), new URL("http://foo.bar"));
