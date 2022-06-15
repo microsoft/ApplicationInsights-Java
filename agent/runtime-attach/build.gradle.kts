@@ -9,6 +9,5 @@ dependencies {
   implementation("io.opentelemetry.contrib:opentelemetry-runtime-attach:$otelContribAlphaVersion")
   implementation(project(":agent:agent", configuration = "shadow"))
   testImplementation("io.opentelemetry:opentelemetry-extension-annotations:$otelVersion")
-  testImplementation("org.assertj:assertj-core:3.23.1")
-  testImplementation("org.junit.jupiter:junit-jupiter-api:.8.2")
+  testImplementation("org.assertj:assertj-core")
 }
