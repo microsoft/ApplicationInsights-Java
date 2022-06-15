@@ -32,7 +32,7 @@ import java.util.logging.Logger;
 /** This class allows you to attach the Application Insights agent for Java at runtime. */
 public final class ApplicationInsights {
 
-  private static final Logger LOGGER = Logger.getLogger(ApplicationInsights.class.getName());
+  private static final Logger logger = Logger.getLogger(ApplicationInsights.class.getName());
 
   public static final String RUNTIME_ATTACHED_PROPERTY =
       "applicationinsights.internal.runtime.attached";
@@ -46,7 +46,7 @@ public final class ApplicationInsights {
   public static void attach() {
 
     if (agentIsAttached()) {
-      LOGGER.warning("Application Insights is already attached. It is not attached a second time.");
+      logger.warning("Application Insights is already attached. It is not attached a second time.");
       return;
     }
 
