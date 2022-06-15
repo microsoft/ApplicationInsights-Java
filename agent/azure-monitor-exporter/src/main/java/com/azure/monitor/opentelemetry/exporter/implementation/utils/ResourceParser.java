@@ -25,6 +25,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.Abstract
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -34,24 +35,21 @@ public final class ResourceParser {
   public static void updateRoleNameAndInstance(
       AbstractTelemetryBuilder builder, Resource resource) {
     Map<ContextTagKeys, String> resourceMap = ResourceParser.parseRoleNameAndInstance(resource);
-    if (resourceMap != null && !resourceMap.isEmpty()) {
+    if (!resourceMap.isEmpty()) {
+      // map contains AI_CLOUD_ROLE and AI_CLOUD_ROLE_INSTANCE
       resourceMap.forEach(
           (key, value) -> {
-            String stringKey = key.toString();
-            if (ContextTagKeys.AI_CLOUD_ROLE.toString().equals(stringKey)
-                || ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString().equals(stringKey)) {
-              builder.addTag(stringKey, value);
-            }
+            builder.addTag(key.toString(), value);
           });
     }
   }
 
   // visible for test
-  @Nullable
   static Map<ContextTagKeys, String> parseRoleNameAndInstance(@Nullable Resource resource) {
     if (resource == null) {
-      return null;
+      return Collections.emptyMap();
     }
+
     String serviceName = resource.getAttribute(ResourceAttributes.SERVICE_NAME);
     if (serviceName == null || serviceName.isEmpty()) {
       serviceName = Resource.getDefault().getAttribute(ResourceAttributes.SERVICE_NAME);
