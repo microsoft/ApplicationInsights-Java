@@ -36,7 +36,7 @@ final class LocalFileWriter {
 
   private static final String PERMANENT_FILE_EXTENSION = ".trn";
 
-  private final long diskPersistenceMaxSizeMb;
+  private final long diskPersistenceMaxSizeBytes;
   private final LocalFileCache localFileCache;
   private final File telemetryFolder;
   private final LocalStorageStats stats;
@@ -52,7 +52,7 @@ final class LocalFileWriter {
     this.telemetryFolder = telemetryFolder;
     this.localFileCache = localFileCache;
     this.stats = stats;
-    this.diskPersistenceMaxSizeMb = diskPersistenceMaxSizeMb * 1024L * 1024L;
+    this.diskPersistenceMaxSizeBytes = diskPersistenceMaxSizeMb * 1024L * 1024L;
 
     operationLogger =
         suppressWarnings
@@ -64,7 +64,7 @@ final class LocalFileWriter {
 
   void writeToDisk(String instrumentationKey, List<ByteBuffer> buffers) {
     long size = getTotalSizeOfPersistedFiles(telemetryFolder);
-    if (size >= diskPersistenceMaxSizeMb) {
+    if (size >= diskPersistenceMaxSizeBytes) {
       operationLogger.recordFailure(
           "Local persistent storage capacity has been reached. It's currently at ("
               + (size / 1024)
