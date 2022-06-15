@@ -25,46 +25,19 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.Abstract
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import javax.annotation.Nullable;
 
 public final class ResourceParser {
 
-  public static void updateRoleNameAndInstance(
-      AbstractTelemetryBuilder builder, Resource resource) {
-    Map<ContextTagKeys, String> resourceMap = ResourceParser.parseRoleNameAndInstance(resource);
-    if (!resourceMap.isEmpty()) {
-      // map contains AI_CLOUD_ROLE and AI_CLOUD_ROLE_INSTANCE
-      resourceMap.forEach(
-          (key, value) -> {
-            builder.addTag(key.toString(), value);
-          });
-    }
-  }
-
-  // visible for test
-  static Map<ContextTagKeys, String> parseRoleNameAndInstance(@Nullable Resource resource) {
-    if (resource == null) {
-      return Collections.emptyMap();
-    }
-
+  public static void updateRoleNameAndInstance(AbstractTelemetryBuilder builder, Resource resource) {
     String serviceName = resource.getAttribute(ResourceAttributes.SERVICE_NAME);
-    if (serviceName == null || serviceName.isEmpty()) {
-      serviceName = Resource.getDefault().getAttribute(ResourceAttributes.SERVICE_NAME);
-    }
-
     String serviceNamespace = resource.getAttribute(ResourceAttributes.SERVICE_NAMESPACE);
-    if (serviceNamespace == null || serviceNamespace.isEmpty()) {
-      serviceNamespace = Resource.getDefault().getAttribute(ResourceAttributes.SERVICE_NAMESPACE);
-    }
-
-    String roleName;
+    String roleName = null;
     if (serviceName != null && serviceNamespace != null) {
       roleName = serviceNamespace + "." + serviceName;
-    } else {
+    } else if (serviceName != null) {
       roleName = serviceName;
+    } else if (serviceNamespace != null){
+      roleName = serviceNamespace + ".";
     }
 
     String roleInstance = resource.getAttribute(ResourceAttributes.SERVICE_INSTANCE_ID);
@@ -72,15 +45,12 @@ public final class ResourceParser {
       roleInstance = System.getenv("HOSTNAME"); // default hostname
     }
 
-    Map<ContextTagKeys, String> map = new HashMap<>(2);
     if (roleName != null) {
-      map.put(ContextTagKeys.AI_CLOUD_ROLE, roleName);
+      builder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), roleName);
     }
     if (roleInstance != null) {
-      map.put(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE, roleInstance);
+      builder.addTag(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), roleInstance);
     }
-
-    return map;
   }
 
   private ResourceParser() {}
