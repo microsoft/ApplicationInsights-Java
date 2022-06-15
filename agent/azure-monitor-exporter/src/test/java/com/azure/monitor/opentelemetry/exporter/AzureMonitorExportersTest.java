@@ -142,7 +142,7 @@ public class AzureMonitorExportersTest extends MonitorExporterClientTestBase {
 
     @Override
     public Resource getResource() {
-      return null;
+      return Resource.create(Attributes.empty());
     }
 
     @Override
