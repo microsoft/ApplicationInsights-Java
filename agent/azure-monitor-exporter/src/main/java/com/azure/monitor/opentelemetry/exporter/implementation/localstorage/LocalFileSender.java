@@ -52,7 +52,6 @@ class LocalFileSender implements Runnable {
       LocalFileLoader localFileLoader,
       TelemetryPipeline telemetryPipeline,
       boolean suppressWarnings) { // used to suppress warnings from statsbeat
-
     this.localFileLoader = localFileLoader;
     this.telemetryPipeline = telemetryPipeline;
 
