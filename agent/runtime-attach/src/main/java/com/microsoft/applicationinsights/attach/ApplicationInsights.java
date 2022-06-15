@@ -30,7 +30,7 @@ import java.util.Optional;
 import java.util.logging.Logger;
 
 /** This class allows you to attach the Application Insights agent for Java at runtime. */
-public class ApplicationInsights {
+public final class ApplicationInsights {
 
   private static final Logger LOGGER = Logger.getLogger(ApplicationInsights.class.getName());
 
