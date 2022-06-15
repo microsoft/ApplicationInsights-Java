@@ -70,16 +70,16 @@ public class LogDataMapper {
 
   private TelemetryItem createMessageTelemetryItem(LogData log) {
     MessageTelemetryBuilder telemetryBuilder = MessageTelemetryBuilder.create();
-    telemetryInitializer.accept(telemetryBuilder);
-
-    Attributes attributes = log.getAttributes();
-
     // set standard properties
     setOperationTags(telemetryBuilder, log);
     setTime(telemetryBuilder, log.getEpochNanos());
     setSampleRate(telemetryBuilder, log);
+    Attributes attributes = log.getAttributes();
     setExtraAttributes(telemetryBuilder, attributes);
+
+    // update tags
     ResourceParser.updateRoleNameAndInstance(telemetryBuilder, log.getResource());
+    telemetryInitializer.accept(telemetryBuilder);
 
     telemetryBuilder.setSeverityLevel(toSeverityLevel(log.getSeverity()));
     String body = log.getBody().asString();

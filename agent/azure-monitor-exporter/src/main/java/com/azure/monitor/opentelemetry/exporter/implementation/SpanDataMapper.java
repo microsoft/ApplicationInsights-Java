@@ -203,13 +203,15 @@ public final class SpanDataMapper {
   private TelemetryItem exportRemoteDependency(
       SpanData span, boolean inProc, float samplingPercentage) {
     RemoteDependencyTelemetryBuilder telemetryBuilder = RemoteDependencyTelemetryBuilder.create();
-    telemetryInitializer.accept(telemetryBuilder);
 
     // set standard properties
     setOperationTags(telemetryBuilder, span);
     setTime(telemetryBuilder, span.getStartEpochNanos());
     setSampleRate(telemetryBuilder, samplingPercentage);
+
+    // update tags
     ResourceParser.updateRoleNameAndInstance(telemetryBuilder, span.getResource());
+    telemetryInitializer.accept(telemetryBuilder);
     setExtraAttributes(telemetryBuilder, span.getAttributes());
     addLinks(telemetryBuilder, span.getLinks());
 

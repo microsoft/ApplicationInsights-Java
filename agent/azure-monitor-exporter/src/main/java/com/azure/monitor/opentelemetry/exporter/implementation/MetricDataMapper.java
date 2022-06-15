@@ -94,13 +94,15 @@ public class MetricDataMapper {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
     for (PointData pointData : metricData.getData().getPoints()) {
       MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
-      telemetryInitializer.accept(builder);
       builder.setInstrumentationKey(instrumentationKey);
       builder.addTag(
           ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), VersionGenerator.getSdkVersion());
       builder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(pointData.getEpochNanos()));
       updateMetricPointBuilder(builder, metricData, pointData);
+
+      // update tags
       ResourceParser.updateRoleNameAndInstance(builder, metricData.getResource());
+      telemetryInitializer.accept(builder);
       telemetryItems.add(builder.build());
     }
     return telemetryItems;
