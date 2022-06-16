@@ -22,20 +22,23 @@
 package com.microsoft.applicationinsights.attach;
 
 import io.opentelemetry.contrib.attach.RuntimeAttach;
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Optional;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /** This class allows you to attach the Application Insights agent for Java at runtime. */
 public final class ApplicationInsights {
 
   private static final Logger logger = Logger.getLogger(ApplicationInsights.class.getName());
 
-  public static final String RUNTIME_ATTACHED_PROPERTY =
-      "applicationinsights.internal.runtime.attached";
+  static final String RUNTIME_ATTACHED_ENABLED_PROPERTY =
+      "applicationinsights.internal.runtime.attached.enabled";
+
+  static final String RUNTIME_ATTACHED_JSON_PROPERTY =
+      "applicationinsights.internal.runtime.attached.json";
 
   private ApplicationInsights() {}
 
@@ -50,15 +53,31 @@ public final class ApplicationInsights {
       return;
     }
 
-    System.setProperty(RUNTIME_ATTACHED_PROPERTY, "true");
+    System.setProperty(RUNTIME_ATTACHED_ENABLED_PROPERTY, "true");
 
-    Optional<File> optionalConfigFile = searchConfigFile();
-    if (optionalConfigFile.isPresent()) {
-      File configFile = optionalConfigFile.get();
-      System.setProperty("applicationinsights.configuration.file", configFile.getAbsolutePath());
+    // tester avec config dans system property
+    // refaire partie config builder
+    if (jsonAppInsightsExists()) {
+      String jsonConfig = findJsonConfig();
+      System.setProperty(RUNTIME_ATTACHED_JSON_PROPERTY, jsonConfig);
     }
 
     RuntimeAttach.attachJavaagentToCurrentJVM();
+  }
+
+  private static boolean jsonAppInsightsExists() {
+    return ApplicationInsights.class.getResourceAsStream("/applicationinsights.json") != null;
+  }
+
+  private static String findJsonConfig() {
+    InputStream configContentAsInputStream =
+        ApplicationInsights.class.getResourceAsStream("/applicationinsights.json");
+    String configContent =
+        new BufferedReader(
+                new InputStreamReader(configContentAsInputStream, StandardCharsets.UTF_8))
+            .lines()
+            .collect(Collectors.joining(""));
+    return configContent;
   }
 
   private static boolean agentIsAttached() {
@@ -67,28 +86,6 @@ public final class ApplicationInsights {
       return true;
     } catch (ClassNotFoundException e) {
       return false;
-    }
-  }
-
-  private static Optional<File> searchConfigFile() {
-
-    URL jsonUrl = ApplicationInsights.class.getResource("/applicationinsights.json");
-
-    boolean jsonFileNotFound = jsonUrl == null;
-    if (jsonFileNotFound) {
-      return Optional.empty();
-    }
-
-    return buildFileFrom(jsonUrl);
-  }
-
-  private static Optional<File> buildFileFrom(URL jsonConfigFileUrl) {
-    try {
-      URI jsonUri = jsonConfigFileUrl.toURI();
-      File jsonFile = new File(jsonUri);
-      return Optional.of(jsonFile);
-    } catch (URISyntaxException e) {
-      return Optional.empty();
     }
   }
 }

@@ -267,6 +267,6 @@ public class FirstEntryPoint implements LoggingCustomizer {
   }
 
   private static boolean isRuntimeAttached() {
-    return Boolean.getBoolean("applicationinsights.internal.runtime.attached");
+    return Boolean.getBoolean("applicationinsights.internal.runtime.attached.enabled");
   }
 }
