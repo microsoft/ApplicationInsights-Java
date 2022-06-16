@@ -114,6 +114,20 @@ class ResourceParserTest {
         .isEqualTo("fake-instance");
   }
 
+  @Test
+  void testDoNotOverrideCustomRoleNameAndInstance() {
+    builder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), "myrolename");
+    builder.addTag(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), "myroleinstance");
+    Resource resource =
+        createTestResource("fake-service-name", "fake-service-namespace", "fake-instance");
+    ResourceParser.updateRoleNameAndInstance(builder, resource);
+    Map<String, String> tags = builder.build().getTags();
+    assertThat(tags.get(ContextTagKeys.AI_CLOUD_ROLE.toString()))
+        .isEqualTo("myrolename");
+    assertThat(tags.get(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString()))
+        .isEqualTo("myroleinstance");
+  }
+
   private static Resource createTestResource(
       @Nullable String serviceName,
       @Nullable String serviceNameSpace,
