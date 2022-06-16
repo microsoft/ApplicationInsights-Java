@@ -203,6 +203,7 @@ public final class SpanDataMapper {
   private TelemetryItem exportRemoteDependency(
       SpanData span, boolean inProc, float samplingPercentage) {
     RemoteDependencyTelemetryBuilder telemetryBuilder = RemoteDependencyTelemetryBuilder.create();
+    telemetryInitializer.accept(telemetryBuilder);
 
     // set standard properties
     setOperationTags(telemetryBuilder, span);
@@ -211,7 +212,6 @@ public final class SpanDataMapper {
 
     // update tags
     ResourceParser.updateRoleNameAndInstance(telemetryBuilder, span.getResource());
-    telemetryInitializer.accept(telemetryBuilder);
     setExtraAttributes(telemetryBuilder, span.getAttributes());
 
     addLinks(telemetryBuilder, span.getLinks());
@@ -571,6 +571,7 @@ public final class SpanDataMapper {
 
   private TelemetryItem exportRequest(SpanData span, float samplingPercentage) {
     RequestTelemetryBuilder telemetryBuilder = RequestTelemetryBuilder.create();
+    telemetryInitializer.accept(telemetryBuilder);
 
     Attributes attributes = span.getAttributes();
     long startEpochNanos = span.getStartEpochNanos();
@@ -582,7 +583,6 @@ public final class SpanDataMapper {
 
     // update tags
     ResourceParser.updateRoleNameAndInstance(telemetryBuilder, span.getResource());
-    telemetryInitializer.accept(telemetryBuilder);
     setExtraAttributes(telemetryBuilder, attributes);
 
     addLinks(telemetryBuilder, span.getLinks());
@@ -810,6 +810,7 @@ public final class SpanDataMapper {
       }
 
       MessageTelemetryBuilder telemetryBuilder = MessageTelemetryBuilder.create();
+      telemetryInitializer.accept(telemetryBuilder);
 
       // set standard properties
       setOperationId(telemetryBuilder, span.getTraceId());
@@ -824,7 +825,6 @@ public final class SpanDataMapper {
 
       // update tags
       ResourceParser.updateRoleNameAndInstance(telemetryBuilder, span.getResource());
-      telemetryInitializer.accept(telemetryBuilder);
       setExtraAttributes(telemetryBuilder, event.getAttributes());
 
       // set message-specific properties

@@ -25,32 +25,39 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.Abstract
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import java.util.Map;
 
 public final class ResourceParser {
 
   public static void updateRoleNameAndInstance(
       AbstractTelemetryBuilder builder, Resource resource) {
-    String serviceName = resource.getAttribute(ResourceAttributes.SERVICE_NAME);
-    String serviceNamespace = resource.getAttribute(ResourceAttributes.SERVICE_NAMESPACE);
-    String roleName = null;
-    if (serviceName != null && serviceNamespace != null) {
-      roleName = "[" + serviceNamespace + "]/" + serviceName;
-    } else if (serviceName != null) {
-      roleName = serviceName;
-    } else if (serviceNamespace != null) {
-      roleName = "[" + serviceNamespace + "]";
+    Map<String, String> existingTags = builder.build().getTags();
+    if (existingTags == null
+        || !existingTags.containsKey(ContextTagKeys.AI_CLOUD_ROLE.toString())) {
+      String serviceName = resource.getAttribute(ResourceAttributes.SERVICE_NAME);
+      String serviceNamespace = resource.getAttribute(ResourceAttributes.SERVICE_NAMESPACE);
+      String roleName = null;
+      if (serviceName != null && serviceNamespace != null) {
+        roleName = "[" + serviceNamespace + "]/" + serviceName;
+      } else if (serviceName != null) {
+        roleName = serviceName;
+      } else if (serviceNamespace != null) {
+        roleName = "[" + serviceNamespace + "]";
+      }
+      if (roleName != null) {
+        builder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), roleName);
+      }
     }
 
-    String roleInstance = resource.getAttribute(ResourceAttributes.SERVICE_INSTANCE_ID);
-    if (roleInstance == null) {
-      roleInstance = System.getenv("HOSTNAME"); // default hostname
-    }
-
-    if (roleName != null) {
-      builder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), roleName);
-    }
-    if (roleInstance != null) {
-      builder.addTag(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), roleInstance);
+    if (existingTags == null
+        || !existingTags.containsKey(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString())) {
+      String roleInstance = resource.getAttribute(ResourceAttributes.SERVICE_INSTANCE_ID);
+      if (roleInstance == null) {
+        roleInstance = System.getenv("HOSTNAME"); // default hostname
+      }
+      if (roleInstance != null) {
+        builder.addTag(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), roleInstance);
+      }
     }
   }
 
