@@ -34,11 +34,11 @@ public final class ResourceParser {
     String serviceNamespace = resource.getAttribute(ResourceAttributes.SERVICE_NAMESPACE);
     String roleName = null;
     if (serviceName != null && serviceNamespace != null) {
-      roleName = serviceNamespace + "." + serviceName;
+      roleName = "[" + serviceNamespace + "]/" + serviceName;
     } else if (serviceName != null) {
       roleName = serviceName;
     } else if (serviceNamespace != null) {
-      roleName = serviceNamespace + ".";
+      roleName = "[" + serviceNamespace + "]";
     }
 
     String roleInstance = resource.getAttribute(ResourceAttributes.SERVICE_INSTANCE_ID);

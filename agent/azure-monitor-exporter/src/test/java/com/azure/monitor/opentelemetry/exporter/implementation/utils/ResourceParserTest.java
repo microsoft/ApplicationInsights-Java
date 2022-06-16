@@ -87,7 +87,7 @@ class ResourceParserTest {
     ResourceParser.updateRoleNameAndInstance(builder, resource);
     Map<String, String> tags = builder.build().getTags();
     assertThat(tags.get(ContextTagKeys.AI_CLOUD_ROLE.toString()))
-        .isEqualTo("fake-service-namespace.");
+        .isEqualTo("[fake-service-namespace]");
     assertThat(tags.get(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString()))
         .isEqualTo(DEFAULT_ROLE_INSTANCE);
   }
@@ -109,7 +109,7 @@ class ResourceParserTest {
     ResourceParser.updateRoleNameAndInstance(builder, resource);
     Map<String, String> tags = builder.build().getTags();
     assertThat(tags.get(ContextTagKeys.AI_CLOUD_ROLE.toString()))
-        .isEqualTo("fake-service-namespace.fake-service-name");
+        .isEqualTo("[fake-service-namespace]/fake-service-name");
     assertThat(tags.get(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString()))
         .isEqualTo("fake-instance");
   }
