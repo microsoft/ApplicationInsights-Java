@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.attach;
 
 import io.opentelemetry.contrib.attach.RuntimeAttach;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -55,8 +56,6 @@ public final class ApplicationInsights {
 
     System.setProperty(RUNTIME_ATTACHED_ENABLED_PROPERTY, "true");
 
-    // tester avec config dans system property
-    // refaire partie config builder
     if (jsonAppInsightsExists()) {
       String jsonConfig = findJsonConfig();
       System.setProperty(RUNTIME_ATTACHED_JSON_PROPERTY, jsonConfig);
@@ -72,12 +71,14 @@ public final class ApplicationInsights {
   private static String findJsonConfig() {
     InputStream configContentAsInputStream =
         ApplicationInsights.class.getResourceAsStream("/applicationinsights.json");
-    String configContent =
-        new BufferedReader(
-                new InputStreamReader(configContentAsInputStream, StandardCharsets.UTF_8))
-            .lines()
-            .collect(Collectors.joining(""));
-    return configContent;
+    try (InputStreamReader inputStreamReader =
+            new InputStreamReader(configContentAsInputStream, StandardCharsets.UTF_8);
+        BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+      return bufferedReader.lines().collect(Collectors.joining(""));
+    } catch (IOException e) {
+      throw new IllegalStateException(
+          "Unexpected issue during loading of JSON configuration file: " + e.getMessage());
+    }
   }
 
   private static boolean agentIsAttached() {
