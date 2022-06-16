@@ -213,6 +213,7 @@ public final class SpanDataMapper {
     ResourceParser.updateRoleNameAndInstance(telemetryBuilder, span.getResource());
     telemetryInitializer.accept(telemetryBuilder);
     setExtraAttributes(telemetryBuilder, span.getAttributes());
+
     addLinks(telemetryBuilder, span.getLinks());
 
     // set dependency-specific properties
@@ -570,7 +571,6 @@ public final class SpanDataMapper {
 
   private TelemetryItem exportRequest(SpanData span, float samplingPercentage) {
     RequestTelemetryBuilder telemetryBuilder = RequestTelemetryBuilder.create();
-    telemetryInitializer.accept(telemetryBuilder);
 
     Attributes attributes = span.getAttributes();
     long startEpochNanos = span.getStartEpochNanos();
@@ -579,8 +579,12 @@ public final class SpanDataMapper {
     telemetryBuilder.setId(span.getSpanId());
     setTime(telemetryBuilder, startEpochNanos);
     setSampleRate(telemetryBuilder, samplingPercentage);
+
+    // update tags
     ResourceParser.updateRoleNameAndInstance(telemetryBuilder, span.getResource());
+    telemetryInitializer.accept(telemetryBuilder);
     setExtraAttributes(telemetryBuilder, attributes);
+
     addLinks(telemetryBuilder, span.getLinks());
 
     String operationName = getOperationName(span);
@@ -806,7 +810,6 @@ public final class SpanDataMapper {
       }
 
       MessageTelemetryBuilder telemetryBuilder = MessageTelemetryBuilder.create();
-      telemetryInitializer.accept(telemetryBuilder);
 
       // set standard properties
       setOperationId(telemetryBuilder, span.getTraceId());
@@ -818,7 +821,10 @@ public final class SpanDataMapper {
       }
       setTime(telemetryBuilder, event.getEpochNanos());
       setSampleRate(telemetryBuilder, samplingPercentage);
+
+      // update tags
       ResourceParser.updateRoleNameAndInstance(telemetryBuilder, span.getResource());
+      telemetryInitializer.accept(telemetryBuilder);
       setExtraAttributes(telemetryBuilder, event.getAttributes());
 
       // set message-specific properties
