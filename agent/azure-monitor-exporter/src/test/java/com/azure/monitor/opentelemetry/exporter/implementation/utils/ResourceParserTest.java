@@ -122,8 +122,7 @@ class ResourceParserTest {
         createTestResource("fake-service-name", "fake-service-namespace", "fake-instance");
     ResourceParser.updateRoleNameAndInstance(builder, resource);
     Map<String, String> tags = builder.build().getTags();
-    assertThat(tags.get(ContextTagKeys.AI_CLOUD_ROLE.toString()))
-        .isEqualTo("myrolename");
+    assertThat(tags.get(ContextTagKeys.AI_CLOUD_ROLE.toString())).isEqualTo("myrolename");
     assertThat(tags.get(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString()))
         .isEqualTo("myroleinstance");
   }
