@@ -31,10 +31,8 @@ import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricPointBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.VersionGenerator;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
@@ -102,10 +100,6 @@ public class MetricDataMapper {
       builder.setInstrumentationKey(instrumentationKey);
       builder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(pointData.getEpochNanos()));
       updateMetricPointBuilder(builder, metricData, pointData);
-
-      // update tags
-      builder.addTag(
-          ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), VersionGenerator.getSdkVersion());
 
       telemetryItems.add(builder.build());
     }
