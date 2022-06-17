@@ -915,31 +915,12 @@ public final class SpanDataMapper {
           if (stringKey.equals(AI_REQUEST_CONTEXT_KEY.getKey())) {
             return;
           }
-          // special case mappings
-          if (stringKey.equals(SemanticAttributes.ENDUSER_ID.getKey()) && value instanceof String) {
-            telemetryBuilder.addTag(ContextTagKeys.AI_USER_ID.toString(), (String) value);
-            return;
-          }
           if (stringKey.equals(SemanticAttributes.HTTP_USER_AGENT.getKey())
               && value instanceof String) {
             telemetryBuilder.addTag("ai.user.userAgent", (String) value);
             return;
           }
-          if (stringKey.equals("ai.preview.instrumentation_key") && value instanceof String) {
-            telemetryBuilder.setInstrumentationKey((String) value);
-            return;
-          }
-          if (stringKey.equals("ai.preview.service_name") && value instanceof String) {
-            telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), (String) value);
-            return;
-          }
-          if (stringKey.equals("ai.preview.service_instance_id") && value instanceof String) {
-            telemetryBuilder.addTag(
-                ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), (String) value);
-            return;
-          }
-          if (stringKey.equals("ai.preview.service_version") && value instanceof String) {
-            telemetryBuilder.addTag(ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
+          if (applyCommonTags(telemetryBuilder, value, stringKey)) {
             return;
           }
           if (STANDARD_ATTRIBUTE_PREFIX_TRIE.getOrDefault(stringKey, false)
@@ -952,6 +933,32 @@ public final class SpanDataMapper {
             telemetryBuilder.addProperty(key.getKey(), val);
           }
         });
+  }
+
+  static boolean applyCommonTags(
+      AbstractTelemetryBuilder telemetryBuilder, Object value, String stringKey) {
+
+    if (stringKey.equals(SemanticAttributes.ENDUSER_ID.getKey()) && value instanceof String) {
+      telemetryBuilder.addTag(ContextTagKeys.AI_USER_ID.toString(), (String) value);
+      return true;
+    }
+    if (stringKey.equals("ai.preview.instrumentation_key") && value instanceof String) {
+      telemetryBuilder.setInstrumentationKey((String) value);
+      return true;
+    }
+    if (stringKey.equals("ai.preview.service_name") && value instanceof String) {
+      telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), (String) value);
+      return true;
+    }
+    if (stringKey.equals("ai.preview.service_instance_id") && value instanceof String) {
+      telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), (String) value);
+      return true;
+    }
+    if (stringKey.equals("ai.preview.service_version") && value instanceof String) {
+      telemetryBuilder.addTag(ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
+      return true;
+    }
+    return false;
   }
 
   @Nullable

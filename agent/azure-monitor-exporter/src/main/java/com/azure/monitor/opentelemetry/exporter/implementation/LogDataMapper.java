@@ -173,6 +173,9 @@ public class LogDataMapper {
     attributes.forEach(
         (key, value) -> {
           String stringKey = key.getKey();
+          if (stringKey.startsWith("applicationinsights.internal.")) {
+            return;
+          }
           if (stringKey.startsWith(LOG4J2_CONTEXT_DATA_PREFIX)) {
             telemetryBuilder.addProperty(
                 stringKey.substring(LOG4J2_CONTEXT_DATA_PREFIX.length()), String.valueOf(value));
@@ -188,7 +191,7 @@ public class LogDataMapper {
                 stringKey.substring(LOG4J1_2_MDC_PREFIX.length()), String.valueOf(value));
             return;
           }
-          if (stringKey.equals(AI_OPERATION_NAME_KEY.getKey())) {
+          if (SpanDataMapper.applyCommonTags(telemetryBuilder, value, stringKey)) {
             return;
           }
           if (stringKey.startsWith("thread.")) {
