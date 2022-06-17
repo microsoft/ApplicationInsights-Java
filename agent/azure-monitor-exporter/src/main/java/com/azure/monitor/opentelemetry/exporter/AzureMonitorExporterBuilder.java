@@ -255,10 +255,7 @@ public final class AzureMonitorExporterBuilder {
   public AzureMonitorTraceExporter buildTraceExporter() {
     SpanDataMapper mapper =
         new SpanDataMapper(
-            true,
-            this::updateRoleNameAndInstance,
-            (event, instrumentationName) -> false,
-            () -> null);
+            true, this::populateDefaults, (event, instrumentationName) -> false, () -> null);
 
     return new AzureMonitorTraceExporter(mapper, initExporterBuilder());
   }
@@ -277,9 +274,9 @@ public final class AzureMonitorExporterBuilder {
   public AzureMonitorMetricExporter buildMetricExporter() {
     TelemetryItemExporter telemetryItemExporter = initExporterBuilder();
     HeartbeatExporter.start(
-        MINUTES.toSeconds(15), this::updateRoleNameAndInstance, telemetryItemExporter::send);
+        MINUTES.toSeconds(15), this::populateDefaults, telemetryItemExporter::send);
     return new AzureMonitorMetricExporter(
-        new MetricDataMapper(this::updateRoleNameAndInstance), telemetryItemExporter);
+        new MetricDataMapper(this::populateDefaults), telemetryItemExporter);
   }
 
   /**
@@ -292,7 +289,7 @@ public final class AzureMonitorExporterBuilder {
    */
   public AzureMonitorLogExporter buildLogExporter() {
     return new AzureMonitorLogExporter(
-        new LogDataMapper(true, this::updateRoleNameAndInstance), initExporterBuilder());
+        new LogDataMapper(true, this::populateDefaults), initExporterBuilder());
   }
 
   private TelemetryItemExporter initExporterBuilder() {
@@ -369,7 +366,7 @@ public final class AzureMonitorExporterBuilder {
         .build();
   }
 
-  void updateRoleNameAndInstance(AbstractTelemetryBuilder builder, Resource resource) {
+  void populateDefaults(AbstractTelemetryBuilder builder, Resource resource) {
     builder.setInstrumentationKey(instrumentationKey);
     builder.addTag(
         ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), VersionGenerator.getSdkVersion());
