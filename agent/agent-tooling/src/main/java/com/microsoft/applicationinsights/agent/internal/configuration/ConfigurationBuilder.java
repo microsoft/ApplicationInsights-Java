@@ -57,6 +57,9 @@ public class ConfigurationBuilder {
   private static final String APPLICATIONINSIGHTS_CONFIGURATION_CONTENT =
       "APPLICATIONINSIGHTS_CONFIGURATION_CONTENT";
 
+  private static final String APPLICATIONINSIGHTS_RUNTIME_ATTACHED_CONFIGURATION_CONTENT =
+      "applicationinsights.internal.runtime.attached.json";
+
   private static final String APPLICATIONINSIGHTS_CONNECTION_STRING_ENV =
       "APPLICATIONINSIGHTS_CONNECTION_STRING";
 
@@ -366,6 +369,13 @@ public class ConfigurationBuilder {
     String configurationContent = getEnvVar(APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
     if (configurationContent != null) {
       return getConfigurationFromEnvVar(configurationContent, true);
+    }
+
+    String runtimeAttachedConfigurationContent =
+        System.getProperty(APPLICATIONINSIGHTS_RUNTIME_ATTACHED_CONFIGURATION_CONTENT);
+    if (runtimeAttachedConfigurationContent != null) {
+      return getConfiguration(
+          runtimeAttachedConfigurationContent, true, ConfigurationOrigin.ENV_VAR);
     }
 
     String configPathStr = getConfigPath();
@@ -689,7 +699,28 @@ public class ConfigurationBuilder {
     }
   }
 
+  enum ConfigurationOrigin {
+    ENV_VAR,
+    RUNTIME_ATTACHED
+  }
+
   static Configuration getConfigurationFromEnvVar(String content, boolean strict) {
+
+    Configuration configuration = getConfiguration(content, strict, ConfigurationOrigin.ENV_VAR);
+
+    if (configuration.connectionString != null) {
+      throw new ConfigurationException(
+          "\"connectionString\" attribute is not supported inside of "
+              + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT
+              + ", please use "
+              + APPLICATIONINSIGHTS_CONNECTION_STRING_ENV
+              + " to specify the connection string");
+    }
+    return configuration;
+  }
+
+  private static Configuration getConfiguration(
+      String content, boolean strict, ConfigurationOrigin configurationOrigin) {
     Configuration configuration;
     ObjectMapper mapper = new ObjectMapper();
     if (!strict) {
@@ -703,29 +734,25 @@ public class ConfigurationBuilder {
         configuration = getConfigurationFromEnvVar(content, false);
         // cannot use logger before loading configuration, so need to store warning messages locally
         // until logger is initialized
-        configurationLogger.warn(getJsonEncodingExceptionMessageForEnvVar(ex.getMessage()));
+        configurationLogger.warn(
+            getJsonEncodingExceptionMessage(ex.getMessage(), configurationOrigin));
       } else {
         throw new FriendlyException(
-            getJsonEncodingExceptionMessageForEnvVar(ex.getMessage()),
+            getJsonEncodingExceptionMessage(ex.getMessage(), configurationOrigin),
             "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
       }
     } catch (JsonMappingException | JsonParseException ex) {
       throw new FriendlyException(
-          getJsonEncodingExceptionMessageForEnvVar(ex.getMessage()),
+          getJsonEncodingExceptionMessage(ex.getMessage(), configurationOrigin),
           "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
     } catch (Exception e) {
-      throw new ConfigurationException(
-          "Error parsing configuration from env var: " + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT,
-          e);
-    }
-
-    if (configuration.connectionString != null) {
-      throw new ConfigurationException(
-          "\"connectionString\" attribute is not supported inside of "
-              + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT
-              + ", please use "
-              + APPLICATIONINSIGHTS_CONNECTION_STRING_ENV
-              + " to specify the connection string");
+      if (ConfigurationOrigin.ENV_VAR.equals(configurationOrigin)) {
+        throw new ConfigurationException(
+            "Error parsing configuration from env var: "
+                + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT,
+            e);
+      }
+      throw new ConfigurationException("Error parsing configuration with runtime attachment", e);
     }
     return configuration;
   }
@@ -734,9 +761,13 @@ public class ConfigurationBuilder {
     return getJsonEncodingExceptionMessage(message, "file " + configPath.toAbsolutePath());
   }
 
-  static String getJsonEncodingExceptionMessageForEnvVar(String message) {
-    return getJsonEncodingExceptionMessage(
-        message, "env var " + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
+  static String getJsonEncodingExceptionMessage(
+      String message, ConfigurationOrigin configurationOrigin) {
+    if (ConfigurationOrigin.ENV_VAR.equals(configurationOrigin)) {
+      return getJsonEncodingExceptionMessage(
+          message, "env var " + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
+    }
+    return getJsonEncodingExceptionMessage(message, "JSON file coming from runtime attachment");
   }
 
   static String getJsonEncodingExceptionMessage(@Nullable String message, String location) {
