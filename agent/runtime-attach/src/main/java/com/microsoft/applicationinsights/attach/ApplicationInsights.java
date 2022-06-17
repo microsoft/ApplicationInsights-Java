@@ -40,7 +40,7 @@ public final class ApplicationInsights {
       "applicationinsights.internal.runtime.attached.enabled";
 
   static final String RUNTIME_ATTACHED_JSON_PROPERTY =
-      "applicationinsights.internal.runtime.attached.json";
+      "applicationinsights.internal.runtime.attach.json";
 
   private ApplicationInsights() {}
 
