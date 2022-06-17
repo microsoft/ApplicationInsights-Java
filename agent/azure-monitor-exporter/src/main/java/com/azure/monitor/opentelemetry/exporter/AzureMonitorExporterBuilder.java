@@ -254,11 +254,12 @@ public final class AzureMonitorExporterBuilder {
     SpanDataMapper mapper =
         new SpanDataMapper(
             true,
-            builder -> {
+            (builder, resource) -> {
               builder.setInstrumentationKey(instrumentationKey);
               builder.addTag(
                   ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(),
                   VersionGenerator.getSdkVersion());
+              ResourceParser.updateRoleNameAndInstance(builder, resource);
             },
             (event, instrumentationName) -> false,
             () -> null);
@@ -279,9 +280,13 @@ public final class AzureMonitorExporterBuilder {
    */
   public AzureMonitorMetricExporter buildMetricExporter() {
     TelemetryItemExporter telemetryItemExporter = initExporterBuilder();
-    HeartbeatExporter.start(MINUTES.toSeconds(15), t -> {}, telemetryItemExporter::send);
+    HeartbeatExporter.start(
+        MINUTES.toSeconds(15),
+        ResourceParser::updateRoleNameAndInstance,
+        telemetryItemExporter::send);
     return new AzureMonitorMetricExporter(
-        new MetricDataMapper(instrumentationKey, t -> {}), telemetryItemExporter);
+        new MetricDataMapper(instrumentationKey, ResourceParser::updateRoleNameAndInstance),
+        telemetryItemExporter);
   }
 
   /**
@@ -293,7 +298,8 @@ public final class AzureMonitorExporterBuilder {
    *     environment variable "APPLICATIONINSIGHTS_CONNECTION_STRING" is not set.
    */
   public AzureMonitorLogExporter buildLogExporter() {
-    return new AzureMonitorLogExporter(new LogDataMapper(true, t -> {}), initExporterBuilder());
+    return new AzureMonitorLogExporter(
+        new LogDataMapper(true, ResourceParser::updateRoleNameAndInstance), initExporterBuilder());
   }
 
   private TelemetryItemExporter initExporterBuilder() {

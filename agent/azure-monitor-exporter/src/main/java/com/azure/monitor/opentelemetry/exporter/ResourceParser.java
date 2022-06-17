@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter.implementation.utils;
+package com.azure.monitor.opentelemetry.exporter;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
@@ -27,10 +27,9 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Map;
 
-public final class ResourceParser {
+final class ResourceParser {
 
-  public static void updateRoleNameAndInstance(
-      AbstractTelemetryBuilder builder, Resource resource) {
+  static void updateRoleNameAndInstance(AbstractTelemetryBuilder builder, Resource resource) {
     Map<String, String> existingTags = builder.build().getTags();
     if (existingTags == null
         || !existingTags.containsKey(ContextTagKeys.AI_CLOUD_ROLE.toString())) {

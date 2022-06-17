@@ -29,14 +29,15 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTag
 import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.ResourceParser;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -50,11 +51,11 @@ public class LogDataMapper {
       AttributeKey.stringKey("applicationinsights.internal.operation_name");
 
   private final boolean captureLoggingLevelAsCustomDimension;
-  private final Consumer<AbstractTelemetryBuilder> telemetryInitializer;
+  private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
 
   public LogDataMapper(
       boolean captureLoggingLevelAsCustomDimension,
-      Consumer<AbstractTelemetryBuilder> telemetryInitializer) {
+      BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer) {
     this.captureLoggingLevelAsCustomDimension = captureLoggingLevelAsCustomDimension;
     this.telemetryInitializer = telemetryInitializer;
   }
@@ -70,7 +71,7 @@ public class LogDataMapper {
 
   private TelemetryItem createMessageTelemetryItem(LogData log) {
     MessageTelemetryBuilder telemetryBuilder = MessageTelemetryBuilder.create();
-    telemetryInitializer.accept(telemetryBuilder);
+    telemetryInitializer.accept(telemetryBuilder, log.getResource());
 
     // set standard properties
     setOperationTags(telemetryBuilder, log);
@@ -78,7 +79,6 @@ public class LogDataMapper {
     setSampleRate(telemetryBuilder, log);
 
     // update tags
-    ResourceParser.updateRoleNameAndInstance(telemetryBuilder, log.getResource());
     Attributes attributes = log.getAttributes();
     setExtraAttributes(telemetryBuilder, attributes);
 
@@ -101,7 +101,7 @@ public class LogDataMapper {
 
   private TelemetryItem createExceptionTelemetryItem(LogData log, String stack) {
     ExceptionTelemetryBuilder telemetryBuilder = ExceptionTelemetryBuilder.create();
-    telemetryInitializer.accept(telemetryBuilder);
+    telemetryInitializer.accept(telemetryBuilder, log.getResource());
 
     // set standard properties
     setOperationTags(telemetryBuilder, log);
@@ -109,7 +109,6 @@ public class LogDataMapper {
     setSampleRate(telemetryBuilder, log);
 
     // update tags
-    ResourceParser.updateRoleNameAndInstance(telemetryBuilder, log.getResource());
     Attributes attributes = log.getAttributes();
     setExtraAttributes(telemetryBuilder, attributes);
 

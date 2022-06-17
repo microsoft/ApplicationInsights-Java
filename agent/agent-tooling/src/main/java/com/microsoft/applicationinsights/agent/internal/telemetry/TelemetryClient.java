@@ -52,6 +52,7 @@ import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbe
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatTelemetryPipelineListener;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.resources.Resource;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -372,7 +373,12 @@ public class TelemetryClient {
     return telemetry;
   }
 
-  public void populateDefaults(AbstractTelemetryBuilder telemetryBuilder) {
+  public void populateDefaults(AbstractTelemetryBuilder telemetryBuilder, Resource resource) {
+    // the agent does not currently factor the resource attributes into the cloud role
+    populateDefaults(telemetryBuilder);
+  }
+
+  private void populateDefaults(AbstractTelemetryBuilder telemetryBuilder) {
     telemetryBuilder.setInstrumentationKey(getInstrumentationKey());
     for (Map.Entry<String, String> entry : globalTags.entrySet()) {
       telemetryBuilder.addTag(entry.getKey(), entry.getValue());

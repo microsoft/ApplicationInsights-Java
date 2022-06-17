@@ -34,7 +34,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTe
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.ResourceParser;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.VersionGenerator;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
@@ -42,8 +41,10 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +55,7 @@ public class MetricDataMapper {
 
   private static final Logger logger = LoggerFactory.getLogger(MetricDataMapper.class);
   private final String instrumentationKey;
-  private final Consumer<AbstractTelemetryBuilder> telemetryInitializer;
+  private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
 
   static {
     EXCLUDED_METRIC_NAMES.add("http.server.active_requests"); // Servlet
@@ -65,7 +66,8 @@ public class MetricDataMapper {
   }
 
   public MetricDataMapper(
-      String instrumentationKey, Consumer<AbstractTelemetryBuilder> telemetryInitializer) {
+      String instrumentationKey,
+      BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer) {
     this.instrumentationKey = instrumentationKey;
     this.telemetryInitializer = telemetryInitializer;
   }
@@ -95,7 +97,7 @@ public class MetricDataMapper {
 
     for (PointData pointData : metricData.getData().getPoints()) {
       MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
-      telemetryInitializer.accept(builder);
+      telemetryInitializer.accept(builder, metricData.getResource());
 
       builder.setInstrumentationKey(instrumentationKey);
       builder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(pointData.getEpochNanos()));
@@ -104,7 +106,6 @@ public class MetricDataMapper {
       // update tags
       builder.addTag(
           ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), VersionGenerator.getSdkVersion());
-      ResourceParser.updateRoleNameAndInstance(builder, metricData.getResource());
 
       telemetryItems.add(builder.build());
     }
