@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.attach;
 
-import io.opentelemetry.contrib.attach.RuntimeAttach;
+import io.opentelemetry.contrib.attach.override.RuntimeAttach;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
