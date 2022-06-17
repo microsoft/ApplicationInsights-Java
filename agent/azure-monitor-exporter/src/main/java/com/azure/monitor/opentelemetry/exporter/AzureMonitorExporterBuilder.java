@@ -279,8 +279,7 @@ public final class AzureMonitorExporterBuilder {
     HeartbeatExporter.start(
         MINUTES.toSeconds(15), this::updateRoleNameAndInstance, telemetryItemExporter::send);
     return new AzureMonitorMetricExporter(
-        new MetricDataMapper(instrumentationKey, this::updateRoleNameAndInstance),
-        telemetryItemExporter);
+        new MetricDataMapper(this::updateRoleNameAndInstance), telemetryItemExporter);
   }
 
   /**

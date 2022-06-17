@@ -52,7 +52,6 @@ public class MetricDataMapper {
   private static final List<String> EXCLUDED_METRIC_NAMES = new ArrayList<>();
 
   private static final Logger logger = LoggerFactory.getLogger(MetricDataMapper.class);
-  private final String instrumentationKey;
   private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
 
   static {
@@ -63,10 +62,7 @@ public class MetricDataMapper {
     EXCLUDED_METRIC_NAMES.add("rpc.server.duration"); // gRPC
   }
 
-  public MetricDataMapper(
-      String instrumentationKey,
-      BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer) {
-    this.instrumentationKey = instrumentationKey;
+  public MetricDataMapper(BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer) {
     this.telemetryInitializer = telemetryInitializer;
   }
 
@@ -97,7 +93,6 @@ public class MetricDataMapper {
       MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
       telemetryInitializer.accept(builder, metricData.getResource());
 
-      builder.setInstrumentationKey(instrumentationKey);
       builder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(pointData.getEpochNanos()));
       updateMetricPointBuilder(builder, metricData, pointData);
 
