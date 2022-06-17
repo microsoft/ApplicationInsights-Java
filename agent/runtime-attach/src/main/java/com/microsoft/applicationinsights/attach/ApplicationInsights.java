@@ -36,9 +36,11 @@ public final class ApplicationInsights {
 
   private static final Logger logger = Logger.getLogger(ApplicationInsights.class.getName());
 
-  static final String RUNTIME_ATTACHED_ENABLED_PROPERTY = "applicationinsights.internal.runtime.attached.enabled";
+  static final String RUNTIME_ATTACHED_ENABLED_PROPERTY =
+      "applicationinsights.internal.runtime.attached.enabled";
 
-  static final String RUNTIME_ATTACHED_JSON_PROPERTY = "applicationinsights.internal.runtime.attached.json";
+  static final String RUNTIME_ATTACHED_JSON_PROPERTY =
+      "applicationinsights.internal.runtime.attached.json";
 
   private ApplicationInsights() {}
 
@@ -65,14 +67,14 @@ public final class ApplicationInsights {
 
   private static Optional<String> findJsonConfig() {
 
-    InputStream configContentAsInputStream = ApplicationInsights.class.getResourceAsStream(
-        "/applicationinsights.json");
+    InputStream configContentAsInputStream =
+        ApplicationInsights.class.getResourceAsStream("/applicationinsights.json");
     if (configContentAsInputStream == null) {
       return Optional.empty();
     }
-    try (InputStreamReader inputStreamReader = new InputStreamReader(configContentAsInputStream,
-        StandardCharsets.UTF_8); BufferedReader bufferedReader = new BufferedReader(
-        inputStreamReader)) {
+    try (InputStreamReader inputStreamReader =
+            new InputStreamReader(configContentAsInputStream, StandardCharsets.UTF_8);
+        BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
       String json = bufferedReader.lines().collect(Collectors.joining(""));
       return Optional.of(json);
     } catch (IOException e) {
