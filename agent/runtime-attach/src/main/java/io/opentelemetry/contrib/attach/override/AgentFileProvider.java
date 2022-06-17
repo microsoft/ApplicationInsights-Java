@@ -33,27 +33,22 @@ import java.security.CodeSource;
 // Class to replace by an OTel class from the java contrib repo after next java contrib release
 final class AgentFileProvider {
 
-  private Path tempDirPath;
-
-  private Path agentJarPath;
-
-  File getAgentFile() {
+  static File getAgentFile() {
 
     verifyExistenceOfAgentJarFile();
 
-    this.tempDirPath = createTempDir();
+    Path tempDirPath = createTempDir();
 
-    return createTempAgentJarFile(tempDirPath);
+    Path tempAgentJarPath = createTempAgentJarFile(tempDirPath);
+
+    deleteTempDirOnJvmExit(tempDirPath, tempAgentJarPath);
+
+    return tempAgentJarPath.toFile();
   }
 
-  void deleteTempDir() {
-    try {
-      Files.delete(this.agentJarPath);
-      Files.delete(this.tempDirPath);
-    } catch (IOException e) {
-      agentJarPath.toFile().deleteOnExit();
-      tempDirPath.toFile().deleteOnExit();
-    }
+  private static void deleteTempDirOnJvmExit(Path tempDirPath, Path tempAgentJarPath) {
+    tempAgentJarPath.toFile().deleteOnExit();
+    tempDirPath.toFile().deleteOnExit();
   }
 
   private static void verifyExistenceOfAgentJarFile() {
@@ -73,15 +68,14 @@ final class AgentFileProvider {
     return tempDir;
   }
 
-  private File createTempAgentJarFile(Path tempDir) {
+  private static Path createTempAgentJarFile(Path tempDir) {
     URL url = OpenTelemetryAgent.class.getProtectionDomain().getCodeSource().getLocation();
     try {
-      this.agentJarPath = copyTo(url, tempDir, "agent.jar");
+      return copyTo(url, tempDir, "agent.jar");
     } catch (IOException e) {
       throw new IllegalStateException(
           "Runtime attachment can't create agent jar file in temp directory", e);
     }
-    return agentJarPath.toFile();
   }
 
   private static Path copyTo(URL url, Path tempDir, String fileName) throws IOException {
@@ -92,5 +86,5 @@ final class AgentFileProvider {
     return tempFile;
   }
 
-  AgentFileProvider() {}
+  private AgentFileProvider() {}
 }

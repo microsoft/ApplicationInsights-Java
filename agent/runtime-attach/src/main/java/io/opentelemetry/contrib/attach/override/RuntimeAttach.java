@@ -41,14 +41,9 @@ public final class RuntimeAttach {
       return;
     }
 
-    AgentFileProvider agentFileProvider = new AgentFileProvider();
-    File agentFile = agentFileProvider.getAgentFile();
+    File agentFile = AgentFileProvider.getAgentFile();
 
-    try {
-      ByteBuddyAgent.attach(agentFile, getPid());
-    } finally {
-      agentFileProvider.deleteTempDir();
-    }
+    ByteBuddyAgent.attach(agentFile, getPid());
   }
 
   private static boolean shouldAttach() {
