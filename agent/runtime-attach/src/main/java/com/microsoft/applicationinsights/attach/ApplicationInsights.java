@@ -58,7 +58,7 @@ public final class ApplicationInsights {
       System.setProperty("applicationinsights.configuration.file", configFile.getAbsolutePath());
     }
 
-    RuntimeAttach.attachJavaagentToCurrentJVM();
+    RuntimeAttach.attachJavaagentToCurrentJvm();
   }
 
   private static boolean agentIsAttached() {

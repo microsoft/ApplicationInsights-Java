@@ -28,7 +28,7 @@ import net.bytebuddy.agent.ByteBuddyAgent;
 // Class to replace by an OTel class from the java contrib repo after next java contrib release
 public final class RuntimeAttach {
 
-  public static void attachJavaagentToCurrentJVM() {
+  public static void attachJavaagentToCurrentJvm() {
     if (agentIsDisabled()) {
       return;
     }
