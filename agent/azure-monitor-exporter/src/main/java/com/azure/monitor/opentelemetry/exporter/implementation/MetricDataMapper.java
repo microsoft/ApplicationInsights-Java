@@ -31,18 +31,18 @@ import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricPointBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.VersionGenerator;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,8 +52,7 @@ public class MetricDataMapper {
   private static final List<String> EXCLUDED_METRIC_NAMES = new ArrayList<>();
 
   private static final Logger logger = LoggerFactory.getLogger(MetricDataMapper.class);
-  private final String instrumentationKey;
-  private final Consumer<AbstractTelemetryBuilder> telemetryInitializer;
+  private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
 
   static {
     EXCLUDED_METRIC_NAMES.add("http.server.active_requests"); // Servlet
@@ -63,9 +62,7 @@ public class MetricDataMapper {
     EXCLUDED_METRIC_NAMES.add("rpc.server.duration"); // gRPC
   }
 
-  public MetricDataMapper(
-      String instrumentationKey, Consumer<AbstractTelemetryBuilder> telemetryInitializer) {
-    this.instrumentationKey = instrumentationKey;
+  public MetricDataMapper(BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer) {
     this.telemetryInitializer = telemetryInitializer;
   }
 
@@ -91,14 +88,14 @@ public class MetricDataMapper {
 
   private List<TelemetryItem> convertOtelMetricToAzureMonitorMetric(MetricData metricData) {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
+
     for (PointData pointData : metricData.getData().getPoints()) {
       MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
-      telemetryInitializer.accept(builder);
-      builder.setInstrumentationKey(instrumentationKey);
-      builder.addTag(
-          ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), VersionGenerator.getSdkVersion());
+      telemetryInitializer.accept(builder, metricData.getResource());
+
       builder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(pointData.getEpochNanos()));
       updateMetricPointBuilder(builder, metricData, pointData);
+
       telemetryItems.add(builder.build());
     }
     return telemetryItems;

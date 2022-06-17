@@ -43,7 +43,7 @@ class HeartbeatTests {
   @Test
   void heartBeatPayloadContainsDataByDefault() throws InterruptedException {
     // given
-    HeartbeatExporter provider = new HeartbeatExporter(60, t -> {}, telemetryItemsConsumer);
+    HeartbeatExporter provider = new HeartbeatExporter(60, (b, r) -> {}, telemetryItemsConsumer);
 
     // some of the initialization above happens in a separate thread
     Thread.sleep(500);
@@ -57,7 +57,7 @@ class HeartbeatTests {
   @Test
   void heartBeatPayloadContainsSpecificProperties() {
     // given
-    HeartbeatExporter provider = new HeartbeatExporter(60, t -> {}, telemetryItemsConsumer);
+    HeartbeatExporter provider = new HeartbeatExporter(60, (b, r) -> {}, telemetryItemsConsumer);
 
     // then
     assertThat(provider.addHeartBeatProperty("test", "testVal", true)).isTrue();
@@ -69,7 +69,7 @@ class HeartbeatTests {
   @Test
   void heartbeatMetricIsNonZeroWhenFailureConditionPresent() {
     // given
-    HeartbeatExporter provider = new HeartbeatExporter(60, t -> {}, telemetryItemsConsumer);
+    HeartbeatExporter provider = new HeartbeatExporter(60, (b, r) -> {}, telemetryItemsConsumer);
 
     // then
     assertThat(provider.addHeartBeatProperty("test", "testVal", false)).isTrue();
@@ -81,7 +81,7 @@ class HeartbeatTests {
   @Test
   void heartbeatMetricCountsForAllFailures() {
     // given
-    HeartbeatExporter provider = new HeartbeatExporter(60, t -> {}, telemetryItemsConsumer);
+    HeartbeatExporter provider = new HeartbeatExporter(60, (b, r) -> {}, telemetryItemsConsumer);
 
     // then
     assertThat(provider.addHeartBeatProperty("test", "testVal", false)).isTrue();
@@ -121,7 +121,7 @@ class HeartbeatTests {
   @Test
   void heartBeatProviderDoesNotAllowDuplicateProperties() {
     // given
-    HeartbeatExporter provider = new HeartbeatExporter(60, t -> {}, telemetryItemsConsumer);
+    HeartbeatExporter provider = new HeartbeatExporter(60, (b, r) -> {}, telemetryItemsConsumer);
 
     // then
     provider.addHeartBeatProperty("test01", "test val", true);
@@ -138,7 +138,7 @@ class HeartbeatTests {
     Set<String> defaultFields = (Set<String>) field.get(base);
     defaultFields.add(testKey);
 
-    HeartbeatExporter provider = new HeartbeatExporter(60, t -> {}, telemetryItemsConsumer);
+    HeartbeatExporter provider = new HeartbeatExporter(60, (b, r) -> {}, telemetryItemsConsumer);
 
     base.setDefaultPayload(provider).call();
     MetricsData data = (MetricsData) provider.gatherData().getData().getBaseData();

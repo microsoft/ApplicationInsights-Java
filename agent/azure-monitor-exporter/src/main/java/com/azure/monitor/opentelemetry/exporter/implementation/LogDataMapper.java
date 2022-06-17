@@ -35,7 +35,9 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -49,11 +51,11 @@ public class LogDataMapper {
       AttributeKey.stringKey("applicationinsights.internal.operation_name");
 
   private final boolean captureLoggingLevelAsCustomDimension;
-  private final Consumer<AbstractTelemetryBuilder> telemetryInitializer;
+  private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
 
   public LogDataMapper(
       boolean captureLoggingLevelAsCustomDimension,
-      Consumer<AbstractTelemetryBuilder> telemetryInitializer) {
+      BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer) {
     this.captureLoggingLevelAsCustomDimension = captureLoggingLevelAsCustomDimension;
     this.telemetryInitializer = telemetryInitializer;
   }
@@ -69,14 +71,15 @@ public class LogDataMapper {
 
   private TelemetryItem createMessageTelemetryItem(LogData log) {
     MessageTelemetryBuilder telemetryBuilder = MessageTelemetryBuilder.create();
-    telemetryInitializer.accept(telemetryBuilder);
-
-    Attributes attributes = log.getAttributes();
+    telemetryInitializer.accept(telemetryBuilder, log.getResource());
 
     // set standard properties
     setOperationTags(telemetryBuilder, log);
     setTime(telemetryBuilder, log.getEpochNanos());
     setSampleRate(telemetryBuilder, log);
+
+    // update tags
+    Attributes attributes = log.getAttributes();
     setExtraAttributes(telemetryBuilder, attributes);
 
     telemetryBuilder.setSeverityLevel(toSeverityLevel(log.getSeverity()));
@@ -98,14 +101,15 @@ public class LogDataMapper {
 
   private TelemetryItem createExceptionTelemetryItem(LogData log, String stack) {
     ExceptionTelemetryBuilder telemetryBuilder = ExceptionTelemetryBuilder.create();
-    telemetryInitializer.accept(telemetryBuilder);
-
-    Attributes attributes = log.getAttributes();
+    telemetryInitializer.accept(telemetryBuilder, log.getResource());
 
     // set standard properties
     setOperationTags(telemetryBuilder, log);
     setTime(telemetryBuilder, log.getEpochNanos());
     setSampleRate(telemetryBuilder, log);
+
+    // update tags
+    Attributes attributes = log.getAttributes();
     setExtraAttributes(telemetryBuilder, attributes);
 
     telemetryBuilder.setExceptions(Exceptions.minimalParse(stack));
@@ -169,6 +173,9 @@ public class LogDataMapper {
     attributes.forEach(
         (key, value) -> {
           String stringKey = key.getKey();
+          if (stringKey.startsWith("applicationinsights.internal.")) {
+            return;
+          }
           if (stringKey.startsWith(LOG4J2_CONTEXT_DATA_PREFIX)) {
             telemetryBuilder.addProperty(
                 stringKey.substring(LOG4J2_CONTEXT_DATA_PREFIX.length()), String.valueOf(value));
@@ -184,7 +191,7 @@ public class LogDataMapper {
                 stringKey.substring(LOG4J1_2_MDC_PREFIX.length()), String.valueOf(value));
             return;
           }
-          if (stringKey.equals(AI_OPERATION_NAME_KEY.getKey())) {
+          if (SpanDataMapper.applyCommonTags(telemetryBuilder, value, stringKey)) {
             return;
           }
           if (stringKey.startsWith("thread.")) {

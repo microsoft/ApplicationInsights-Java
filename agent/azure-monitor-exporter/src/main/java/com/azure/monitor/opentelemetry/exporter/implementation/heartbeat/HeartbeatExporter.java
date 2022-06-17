@@ -26,6 +26,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTe
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +37,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +60,7 @@ public class HeartbeatExporter {
   private final Consumer<List<TelemetryItem>> telemetryItemsConsumer;
 
   /** Telemetry builder consumer used to populate defaults properties. */
-  private final Consumer<AbstractTelemetryBuilder> telemetryInitializer;
+  private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
 
   /** ThreadPool used for adding properties to concurrent dictionary. */
   private final ExecutorService propertyUpdateService;
@@ -68,14 +70,14 @@ public class HeartbeatExporter {
 
   public static void start(
       long intervalSeconds,
-      Consumer<AbstractTelemetryBuilder> telemetryInitializer,
+      BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer,
       Consumer<List<TelemetryItem>> telemetryItemsConsumer) {
     new HeartbeatExporter(intervalSeconds, telemetryInitializer, telemetryItemsConsumer);
   }
 
   public HeartbeatExporter(
       long intervalSeconds,
-      Consumer<AbstractTelemetryBuilder> telemetryInitializer,
+      BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer,
       Consumer<List<TelemetryItem>> telemetryItemsConsumer) {
     this.heartbeatProperties = new ConcurrentHashMap<>();
     this.heartbeatsSent = 0;
@@ -143,7 +145,13 @@ public class HeartbeatExporter {
     }
     MetricTelemetryBuilder telemetryBuilder =
         MetricTelemetryBuilder.create(HEARTBEAT_SYNTHETIC_METRIC_NAME, numHealthy);
-    telemetryInitializer.accept(telemetryBuilder);
+    // TODO (heya) this is an interesting problem how this should work
+    // we might want to think of the Heartbeat as "library instrumentation"
+    // and inject an "OpenTelemetry" instance into it, similar to how other
+    // "library instrumentation" works, and then emit real OpenTelemetry metrics from it which
+    // would then go through the normal metric exporter
+    // (this is not a problem we need to solve in this PR)
+    telemetryInitializer.accept(telemetryBuilder, Resource.empty());
     telemetryBuilder.addTag(
         ContextTagKeys.AI_OPERATION_SYNTHETIC_SOURCE.toString(), HEARTBEAT_SYNTHETIC_METRIC_NAME);
 

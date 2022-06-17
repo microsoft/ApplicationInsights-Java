@@ -41,6 +41,7 @@ import com.azure.core.util.CoreUtils;
 import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.heartbeat.HeartbeatExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
@@ -53,6 +54,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.VersionGenerator;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.File;
 import java.net.URL;
@@ -253,15 +255,7 @@ public final class AzureMonitorExporterBuilder {
   public AzureMonitorTraceExporter buildTraceExporter() {
     SpanDataMapper mapper =
         new SpanDataMapper(
-            true,
-            builder -> {
-              builder.setInstrumentationKey(instrumentationKey);
-              builder.addTag(
-                  ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(),
-                  VersionGenerator.getSdkVersion());
-            },
-            (event, instrumentationName) -> false,
-            () -> null);
+            true, this::populateDefaults, (event, instrumentationName) -> false, () -> null);
 
     return new AzureMonitorTraceExporter(mapper, initExporterBuilder());
   }
@@ -279,9 +273,10 @@ public final class AzureMonitorExporterBuilder {
    */
   public AzureMonitorMetricExporter buildMetricExporter() {
     TelemetryItemExporter telemetryItemExporter = initExporterBuilder();
-    HeartbeatExporter.start(MINUTES.toSeconds(15), t -> {}, telemetryItemExporter::send);
+    HeartbeatExporter.start(
+        MINUTES.toSeconds(15), this::populateDefaults, telemetryItemExporter::send);
     return new AzureMonitorMetricExporter(
-        new MetricDataMapper(instrumentationKey, t -> {}), telemetryItemExporter);
+        new MetricDataMapper(this::populateDefaults), telemetryItemExporter);
   }
 
   /**
@@ -293,7 +288,8 @@ public final class AzureMonitorExporterBuilder {
    *     environment variable "APPLICATIONINSIGHTS_CONNECTION_STRING" is not set.
    */
   public AzureMonitorLogExporter buildLogExporter() {
-    return new AzureMonitorLogExporter(new LogDataMapper(true, t -> {}), initExporterBuilder());
+    return new AzureMonitorLogExporter(
+        new LogDataMapper(true, this::populateDefaults), initExporterBuilder());
   }
 
   private TelemetryItemExporter initExporterBuilder() {
@@ -368,5 +364,12 @@ public final class AzureMonitorExporterBuilder {
         .policies(policies.toArray(new HttpPipelinePolicy[0]))
         .httpClient(httpClient)
         .build();
+  }
+
+  void populateDefaults(AbstractTelemetryBuilder builder, Resource resource) {
+    builder.setInstrumentationKey(instrumentationKey);
+    builder.addTag(
+        ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), VersionGenerator.getSdkVersion());
+    ResourceParser.updateRoleNameAndInstance(builder, resource);
   }
 }

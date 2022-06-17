@@ -54,4 +54,6 @@ dependencies {
   testImplementation("com.azure:azure-data-appconfiguration:1.3.2")
   testImplementation("com.azure:azure-messaging-eventhubs:5.11.2")
   testImplementation("com.azure:azure-messaging-eventhubs-checkpointstore-blob:1.12.1")
+
+  testCompileOnly("com.google.code.findbugs:jsr305")
 }

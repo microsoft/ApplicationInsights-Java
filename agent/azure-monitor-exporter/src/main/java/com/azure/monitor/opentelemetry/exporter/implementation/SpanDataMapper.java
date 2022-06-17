@@ -46,6 +46,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -54,6 +55,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -141,13 +143,13 @@ public final class SpanDataMapper {
   }
 
   private final boolean captureHttpServer4xxAsError;
-  private final Consumer<AbstractTelemetryBuilder> telemetryInitializer;
+  private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
   private final BiPredicate<EventData, String> eventSuppressor;
   private final Supplier<String> appIdSupplier;
 
   public SpanDataMapper(
       boolean captureHttpServer4xxAsError,
-      Consumer<AbstractTelemetryBuilder> telemetryInitializer,
+      BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer,
       BiPredicate<EventData, String> eventSuppressor,
       Supplier<String> appIdSupplier) {
     this.captureHttpServer4xxAsError = captureHttpServer4xxAsError;
@@ -202,13 +204,16 @@ public final class SpanDataMapper {
   private TelemetryItem exportRemoteDependency(
       SpanData span, boolean inProc, float samplingPercentage) {
     RemoteDependencyTelemetryBuilder telemetryBuilder = RemoteDependencyTelemetryBuilder.create();
-    telemetryInitializer.accept(telemetryBuilder);
+    telemetryInitializer.accept(telemetryBuilder, span.getResource());
 
     // set standard properties
     setOperationTags(telemetryBuilder, span);
     setTime(telemetryBuilder, span.getStartEpochNanos());
     setSampleRate(telemetryBuilder, samplingPercentage);
+
+    // update tags
     setExtraAttributes(telemetryBuilder, span.getAttributes());
+
     addLinks(telemetryBuilder, span.getLinks());
 
     // set dependency-specific properties
@@ -566,7 +571,7 @@ public final class SpanDataMapper {
 
   private TelemetryItem exportRequest(SpanData span, float samplingPercentage) {
     RequestTelemetryBuilder telemetryBuilder = RequestTelemetryBuilder.create();
-    telemetryInitializer.accept(telemetryBuilder);
+    telemetryInitializer.accept(telemetryBuilder, span.getResource());
 
     Attributes attributes = span.getAttributes();
     long startEpochNanos = span.getStartEpochNanos();
@@ -575,7 +580,10 @@ public final class SpanDataMapper {
     telemetryBuilder.setId(span.getSpanId());
     setTime(telemetryBuilder, startEpochNanos);
     setSampleRate(telemetryBuilder, samplingPercentage);
+
+    // update tags
     setExtraAttributes(telemetryBuilder, attributes);
+
     addLinks(telemetryBuilder, span.getLinks());
 
     String operationName = getOperationName(span);
@@ -801,7 +809,7 @@ public final class SpanDataMapper {
       }
 
       MessageTelemetryBuilder telemetryBuilder = MessageTelemetryBuilder.create();
-      telemetryInitializer.accept(telemetryBuilder);
+      telemetryInitializer.accept(telemetryBuilder, span.getResource());
 
       // set standard properties
       setOperationId(telemetryBuilder, span.getTraceId());
@@ -813,6 +821,8 @@ public final class SpanDataMapper {
       }
       setTime(telemetryBuilder, event.getEpochNanos());
       setSampleRate(telemetryBuilder, samplingPercentage);
+
+      // update tags
       setExtraAttributes(telemetryBuilder, event.getAttributes());
 
       // set message-specific properties
@@ -826,7 +836,7 @@ public final class SpanDataMapper {
       String errorStack, SpanData span, @Nullable String operationName, float samplingPercentage) {
 
     ExceptionTelemetryBuilder telemetryBuilder = ExceptionTelemetryBuilder.create();
-    telemetryInitializer.accept(telemetryBuilder);
+    telemetryInitializer.accept(telemetryBuilder, span.getResource());
 
     // set standard properties
     setOperationId(telemetryBuilder, span.getTraceId());
@@ -905,31 +915,12 @@ public final class SpanDataMapper {
           if (stringKey.equals(AI_REQUEST_CONTEXT_KEY.getKey())) {
             return;
           }
-          // special case mappings
-          if (stringKey.equals(SemanticAttributes.ENDUSER_ID.getKey()) && value instanceof String) {
-            telemetryBuilder.addTag(ContextTagKeys.AI_USER_ID.toString(), (String) value);
-            return;
-          }
           if (stringKey.equals(SemanticAttributes.HTTP_USER_AGENT.getKey())
               && value instanceof String) {
             telemetryBuilder.addTag("ai.user.userAgent", (String) value);
             return;
           }
-          if (stringKey.equals("ai.preview.instrumentation_key") && value instanceof String) {
-            telemetryBuilder.setInstrumentationKey((String) value);
-            return;
-          }
-          if (stringKey.equals("ai.preview.service_name") && value instanceof String) {
-            telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), (String) value);
-            return;
-          }
-          if (stringKey.equals("ai.preview.service_instance_id") && value instanceof String) {
-            telemetryBuilder.addTag(
-                ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), (String) value);
-            return;
-          }
-          if (stringKey.equals("ai.preview.service_version") && value instanceof String) {
-            telemetryBuilder.addTag(ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
+          if (applyCommonTags(telemetryBuilder, value, stringKey)) {
             return;
           }
           if (STANDARD_ATTRIBUTE_PREFIX_TRIE.getOrDefault(stringKey, false)
@@ -942,6 +933,32 @@ public final class SpanDataMapper {
             telemetryBuilder.addProperty(key.getKey(), val);
           }
         });
+  }
+
+  static boolean applyCommonTags(
+      AbstractTelemetryBuilder telemetryBuilder, Object value, String stringKey) {
+
+    if (stringKey.equals(SemanticAttributes.ENDUSER_ID.getKey()) && value instanceof String) {
+      telemetryBuilder.addTag(ContextTagKeys.AI_USER_ID.toString(), (String) value);
+      return true;
+    }
+    if (stringKey.equals("ai.preview.instrumentation_key") && value instanceof String) {
+      telemetryBuilder.setInstrumentationKey((String) value);
+      return true;
+    }
+    if (stringKey.equals("ai.preview.service_name") && value instanceof String) {
+      telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), (String) value);
+      return true;
+    }
+    if (stringKey.equals("ai.preview.service_instance_id") && value instanceof String) {
+      telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), (String) value);
+      return true;
+    }
+    if (stringKey.equals("ai.preview.service_version") && value instanceof String) {
+      telemetryBuilder.addTag(ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
+      return true;
+    }
+    return false;
   }
 
   @Nullable
