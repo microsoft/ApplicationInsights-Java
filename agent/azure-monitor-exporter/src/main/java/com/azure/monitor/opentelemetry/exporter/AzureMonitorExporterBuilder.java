@@ -41,6 +41,7 @@ import com.azure.core.util.CoreUtils;
 import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.heartbeat.HeartbeatExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
@@ -53,6 +54,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.VersionGenerator;
 import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.File;
 import java.net.URL;
@@ -254,13 +256,7 @@ public final class AzureMonitorExporterBuilder {
     SpanDataMapper mapper =
         new SpanDataMapper(
             true,
-            (builder, resource) -> {
-              builder.setInstrumentationKey(instrumentationKey);
-              builder.addTag(
-                  ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(),
-                  VersionGenerator.getSdkVersion());
-              ResourceParser.updateRoleNameAndInstance(builder, resource);
-            },
+            this::updateRoleNameAndInstance,
             (event, instrumentationName) -> false,
             () -> null);
 
@@ -281,11 +277,9 @@ public final class AzureMonitorExporterBuilder {
   public AzureMonitorMetricExporter buildMetricExporter() {
     TelemetryItemExporter telemetryItemExporter = initExporterBuilder();
     HeartbeatExporter.start(
-        MINUTES.toSeconds(15),
-        ResourceParser::updateRoleNameAndInstance,
-        telemetryItemExporter::send);
+        MINUTES.toSeconds(15), this::updateRoleNameAndInstance, telemetryItemExporter::send);
     return new AzureMonitorMetricExporter(
-        new MetricDataMapper(instrumentationKey, ResourceParser::updateRoleNameAndInstance),
+        new MetricDataMapper(instrumentationKey, this::updateRoleNameAndInstance),
         telemetryItemExporter);
   }
 
@@ -299,7 +293,7 @@ public final class AzureMonitorExporterBuilder {
    */
   public AzureMonitorLogExporter buildLogExporter() {
     return new AzureMonitorLogExporter(
-        new LogDataMapper(true, ResourceParser::updateRoleNameAndInstance), initExporterBuilder());
+        new LogDataMapper(true, this::updateRoleNameAndInstance), initExporterBuilder());
   }
 
   private TelemetryItemExporter initExporterBuilder() {
@@ -374,5 +368,12 @@ public final class AzureMonitorExporterBuilder {
         .policies(policies.toArray(new HttpPipelinePolicy[0]))
         .httpClient(httpClient)
         .build();
+  }
+
+  void updateRoleNameAndInstance(AbstractTelemetryBuilder builder, Resource resource) {
+    builder.setInstrumentationKey(instrumentationKey);
+    builder.addTag(
+        ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), VersionGenerator.getSdkVersion());
+    ResourceParser.updateRoleNameAndInstance(builder, resource);
   }
 }
