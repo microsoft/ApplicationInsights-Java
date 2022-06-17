@@ -21,7 +21,6 @@
 
 package io.opentelemetry.contrib.attach.override;
 
-import io.opentelemetry.contrib.attach.RuntimeAttach;
 import io.opentelemetry.javaagent.OpenTelemetryAgent;
 import java.io.File;
 import java.io.IOException;
@@ -30,13 +29,10 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.CodeSource;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 // Class to replace by an OTel class from the java contrib repo after next java contrib release
 final class AgentFileProvider {
 
-  private static final Logger logger = Logger.getLogger(RuntimeAttach.class.getName());
   private Path tempDirPath;
 
   private Path agentJarPath;
@@ -52,13 +48,11 @@ final class AgentFileProvider {
 
   void deleteTempDir() {
     try {
-      Files.delete(this.tempDirPath);
       Files.delete(this.agentJarPath);
+      Files.delete(this.tempDirPath);
     } catch (IOException e) {
-      logger.log(
-          Level.WARNING,
-          "Error during deletion of the temp dir used by the runtime attachement",
-          e);
+      agentJarPath.toFile().deleteOnExit();
+      tempDirPath.toFile().deleteOnExit();
     }
   }
 
@@ -91,7 +85,7 @@ final class AgentFileProvider {
   }
 
   private static Path copyTo(URL url, Path tempDir, String fileName) throws IOException {
-    Path tempFile = tempDir.resolveSibling(fileName);
+    Path tempFile = tempDir.resolve(fileName);
     try (InputStream in = url.openStream()) {
       Files.copy(in, tempFile);
     }
