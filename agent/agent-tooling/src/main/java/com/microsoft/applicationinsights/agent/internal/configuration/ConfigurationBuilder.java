@@ -375,7 +375,7 @@ public class ConfigurationBuilder {
         System.getProperty(APPLICATIONINSIGHTS_RUNTIME_ATTACHED_CONFIGURATION_CONTENT);
     if (runtimeAttachedConfigurationContent != null) {
       return getConfiguration(
-          runtimeAttachedConfigurationContent, true, ConfigurationOrigin.ENV_VAR);
+          runtimeAttachedConfigurationContent, true, ConfigurationOrigin.RUNTIME_ATTACHED);
     }
 
     String configPathStr = getConfigPath();
@@ -731,7 +731,7 @@ public class ConfigurationBuilder {
     } catch (UnrecognizedPropertyException ex) {
       if (strict) {
         // Try extracting the configuration without failOnUnknown
-        configuration = getConfigurationFromEnvVar(content, false);
+        configuration = getConfiguration(content, false, configurationOrigin);
         // cannot use logger before loading configuration, so need to store warning messages locally
         // until logger is initialized
         configurationLogger.warn(
