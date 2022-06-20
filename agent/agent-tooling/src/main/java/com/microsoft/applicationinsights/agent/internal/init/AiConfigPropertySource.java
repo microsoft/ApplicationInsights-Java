@@ -114,8 +114,7 @@ public class AiConfigPropertySource implements ConfigPropertySource {
 
     String metricsExporter = getProperty("otel.metrics.exporter");
     if (metricsExporter == null) {
-      // currently Application Insights exports metrics directly, not through OpenTelemetry
-      // exporter (this will change in the future)
+      // the metrics exporter is configured later in this case
       properties.put("otel.metrics.exporter", "none");
     } else {
       properties.put("otel.metrics.exporter", metricsExporter);
@@ -123,8 +122,7 @@ public class AiConfigPropertySource implements ConfigPropertySource {
 
     String logsExporter = getProperty("otel.logs.exporter");
     if (logsExporter == null) {
-      // currently Application Insights exports logs directly, not through OpenTelemetry
-      // exporter (this will change in the future)
+      // the logs exporter is configured later in this case
       properties.put("otel.logs.exporter", "none");
     } else {
       properties.put("otel.logs.exporter", logsExporter);
@@ -171,7 +169,7 @@ public class AiConfigPropertySource implements ConfigPropertySource {
     properties.put("otel.instrumentation.cxf.enabled", "true");
     properties.put("otel.instrumentation.metro.enabled", "true");
 
-    properties.put("otel.instrumentation.jboss-logmanager.enabled", "true");
+    properties.put("otel.instrumentation.jboss-logmanager-appender.enabled", "true");
     properties.put("otel.instrumentation.jboss-logmanager-mdc.enabled", "true");
     properties.put("otel.instrumentation.jetty.enabled", "true");
     properties.put("otel.instrumentation.jetty-httpclient.enabled", "true");
@@ -254,7 +252,8 @@ public class AiConfigPropertySource implements ConfigPropertySource {
       properties.put("otel.instrumentation.akka-http.enabled", "true");
     }
     if (config.preview.instrumentation.play.enabled) {
-      properties.put("otel.instrumentation.play.enabled", "true");
+      properties.put("otel.instrumentation.play-mvc.enabled", "true");
+      properties.put("otel.instrumentation.play-ws.enabled", "true");
     }
     if (config.preview.instrumentation.apacheCamel.enabled) {
       properties.put("otel.instrumentation.apache-camel.enabled", "true");
