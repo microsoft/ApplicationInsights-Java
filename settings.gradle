@@ -67,6 +67,7 @@ include ':agent:instrumentation:netty-4.0'
 include ':agent:instrumentation:netty-4.1'
 include ':agent:instrumentation:servlet'
 include ':agent:agent'
+include ':agent:runtime-attach'
 
 // misc
 include(":dependencyManagement")
