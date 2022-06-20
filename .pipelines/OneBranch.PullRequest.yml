@@ -8,7 +8,7 @@
 # Support:        https://aka.ms/onebranchsup                                   #
 #################################################################################
 
-trigger: none # https://aka.ms/obpipelines/triggers
+trigger: main # https://aka.ms/obpipelines/triggers
 
 parameters: # parameters are shown up in ADO UI in a build queue time
   - name: 'debug'
