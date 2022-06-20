@@ -304,6 +304,9 @@ public class Configuration {
     // telemetry (they are much smaller so a larger queue size is ok)
     public int metricsExportQueueCapacity = 65536;
 
+    // disk persistence has a default capacity of 50MB
+    public int diskPersistenceMaxSizeMb = 50;
+
     // unfortunately the Java SDK behavior has always been to report the "% Processor Time" number
     // as "normalized" (divided by # of CPU cores), even though it should be non-normalized
     // we cannot change this existing behavior as it would break existing customers' alerts, but at

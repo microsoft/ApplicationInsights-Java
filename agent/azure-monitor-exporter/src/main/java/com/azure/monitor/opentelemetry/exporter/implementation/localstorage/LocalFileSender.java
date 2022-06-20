@@ -38,9 +38,6 @@ class LocalFileSender implements Runnable {
 
   private static final Logger logger = LoggerFactory.getLogger(LocalFileSender.class);
 
-  // send persisted telemetries from local disk every 30 seconds.
-  private static final long INTERVAL_SECONDS = 30;
-
   private final LocalFileLoader localFileLoader;
   private final TelemetryPipeline telemetryPipeline;
 
@@ -51,6 +48,7 @@ class LocalFileSender implements Runnable {
   private final TelemetryPipelineListener diagnosticListener;
 
   LocalFileSender(
+      long intervalSeconds,
       LocalFileLoader localFileLoader,
       TelemetryPipeline telemetryPipeline,
       boolean suppressWarnings) { // used to suppress warnings from statsbeat
@@ -64,7 +62,7 @@ class LocalFileSender implements Runnable {
                 "Sending telemetry to the ingestion service (retry from disk)", false);
 
     scheduledExecutor.scheduleWithFixedDelay(
-        this, INTERVAL_SECONDS, INTERVAL_SECONDS, TimeUnit.SECONDS);
+        this, intervalSeconds, intervalSeconds, TimeUnit.SECONDS);
   }
 
   void shutdown() {

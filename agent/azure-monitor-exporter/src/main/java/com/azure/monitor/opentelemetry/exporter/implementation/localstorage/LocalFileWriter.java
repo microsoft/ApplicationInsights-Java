@@ -34,10 +34,9 @@ import java.util.List;
 /** This class manages writing a list of {@link ByteBuffer} to the file system. */
 final class LocalFileWriter {
 
-  // 50MB per folder for all apps.
-  private static final long MAX_FILE_SIZE_IN_BYTES = 52428800; // 50MB
   private static final String PERMANENT_FILE_EXTENSION = ".trn";
 
+  private final long diskPersistenceMaxSizeBytes;
   private final LocalFileCache localFileCache;
   private final File telemetryFolder;
   private final LocalStorageStats stats;
@@ -45,6 +44,7 @@ final class LocalFileWriter {
   private final OperationLogger operationLogger;
 
   LocalFileWriter(
+      int diskPersistenceMaxSizeMb,
       LocalFileCache localFileCache,
       File telemetryFolder,
       LocalStorageStats stats,
@@ -52,6 +52,7 @@ final class LocalFileWriter {
     this.telemetryFolder = telemetryFolder;
     this.localFileCache = localFileCache;
     this.stats = stats;
+    this.diskPersistenceMaxSizeBytes = diskPersistenceMaxSizeMb * 1024L * 1024L;
 
     operationLogger =
         suppressWarnings
@@ -63,7 +64,7 @@ final class LocalFileWriter {
 
   void writeToDisk(String instrumentationKey, List<ByteBuffer> buffers) {
     long size = getTotalSizeOfPersistedFiles(telemetryFolder);
-    if (size >= MAX_FILE_SIZE_IN_BYTES) {
+    if (size >= diskPersistenceMaxSizeBytes) {
       operationLogger.recordFailure(
           "Local persistent storage capacity has been reached. It's currently at ("
               + (size / 1024)

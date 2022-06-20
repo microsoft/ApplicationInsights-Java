@@ -150,6 +150,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 config.internal.statsbeat.endpoint)
             .setRoleName(config.role.name)
             .setRoleInstance(config.role.instance)
+            .setDiskPersistenceMaxSizeMb(config.preview.diskPersistenceMaxSizeMb)
             .build();
 
     PerformanceCounterInitializer.initialize(telemetryClient, config);

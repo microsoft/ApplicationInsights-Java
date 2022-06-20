@@ -96,7 +96,7 @@ public class IntegrationTests {
         new TelemetryItemExporter(
             telemetryPipeline,
             new LocalStorageTelemetryPipelineListener(
-                tempFolder, telemetryPipeline, LocalStorageStats.noop(), false));
+                50, tempFolder, telemetryPipeline, LocalStorageStats.noop(), false));
   }
 
   @Test

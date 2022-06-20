@@ -71,7 +71,7 @@ public class TelemetryItemExporterTest {
 
     return new TelemetryItemExporter(
         telemetryPipeline,
-        new LocalStorageTelemetryPipelineListener(tempFolder, telemetryPipeline, null, false));
+        new LocalStorageTelemetryPipelineListener(50, tempFolder, telemetryPipeline, null, false));
   }
 
   private static String getRequestBodyString(Flux<ByteBuffer> requestBody) {
