@@ -368,7 +368,7 @@ public class ConfigurationBuilder {
   private static Configuration loadConfigurationFile(Path agentJarPath) throws IOException {
     String configurationContent = getEnvVar(APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
     if (configurationContent != null) {
-      return getConfigurationFromEnvVar(configurationContent, true);
+      return getConfigurationFromEnvVar(configurationContent);
     }
 
     String runtimeAttachedConfigurationContent =
@@ -704,9 +704,9 @@ public class ConfigurationBuilder {
     RUNTIME_ATTACHED
   }
 
-  static Configuration getConfigurationFromEnvVar(String content, boolean strict) {
+  static Configuration getConfigurationFromEnvVar(String content) {
 
-    Configuration configuration = getConfiguration(content, strict, ConfigurationOrigin.ENV_VAR);
+    Configuration configuration = getConfiguration(content, true, ConfigurationOrigin.ENV_VAR);
 
     if (configuration.connectionString != null) {
       throw new ConfigurationException(
