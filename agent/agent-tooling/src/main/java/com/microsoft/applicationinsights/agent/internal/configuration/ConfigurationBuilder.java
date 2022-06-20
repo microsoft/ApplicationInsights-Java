@@ -57,6 +57,9 @@ public class ConfigurationBuilder {
   private static final String APPLICATIONINSIGHTS_CONFIGURATION_CONTENT =
       "APPLICATIONINSIGHTS_CONFIGURATION_CONTENT";
 
+  private static final String APPLICATIONINSIGHTS_RUNTIME_ATTACHED_CONFIGURATION_CONTENT =
+      "applicationinsights.internal.runtime.attached.json";
+
   private static final String APPLICATIONINSIGHTS_CONNECTION_STRING_ENV =
       "APPLICATIONINSIGHTS_CONNECTION_STRING";
 
@@ -365,7 +368,14 @@ public class ConfigurationBuilder {
   private static Configuration loadConfigurationFile(Path agentJarPath) throws IOException {
     String configurationContent = getEnvVar(APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
     if (configurationContent != null) {
-      return getConfigurationFromEnvVar(configurationContent, true);
+      return getConfigurationFromEnvVar(configurationContent);
+    }
+
+    String runtimeAttachedConfigurationContent =
+        System.getProperty(APPLICATIONINSIGHTS_RUNTIME_ATTACHED_CONFIGURATION_CONTENT);
+    if (runtimeAttachedConfigurationContent != null) {
+      return getConfiguration(
+          runtimeAttachedConfigurationContent, true, ConfigurationOrigin.RUNTIME_ATTACHED);
     }
 
     String configPathStr = getConfigPath();
@@ -689,35 +699,14 @@ public class ConfigurationBuilder {
     }
   }
 
-  static Configuration getConfigurationFromEnvVar(String content, boolean strict) {
-    Configuration configuration;
-    ObjectMapper mapper = new ObjectMapper();
-    if (!strict) {
-      mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
-    try {
-      configuration = mapper.readValue(content, Configuration.class);
-    } catch (UnrecognizedPropertyException ex) {
-      if (strict) {
-        // Try extracting the configuration without failOnUnknown
-        configuration = getConfigurationFromEnvVar(content, false);
-        // cannot use logger before loading configuration, so need to store warning messages locally
-        // until logger is initialized
-        configurationLogger.warn(getJsonEncodingExceptionMessageForEnvVar(ex.getMessage()));
-      } else {
-        throw new FriendlyException(
-            getJsonEncodingExceptionMessageForEnvVar(ex.getMessage()),
-            "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
-      }
-    } catch (JsonMappingException | JsonParseException ex) {
-      throw new FriendlyException(
-          getJsonEncodingExceptionMessageForEnvVar(ex.getMessage()),
-          "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
-    } catch (Exception e) {
-      throw new ConfigurationException(
-          "Error parsing configuration from env var: " + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT,
-          e);
-    }
+  enum ConfigurationOrigin {
+    ENV_VAR,
+    RUNTIME_ATTACHED
+  }
+
+  static Configuration getConfigurationFromEnvVar(String content) {
+
+    Configuration configuration = getConfiguration(content, true, ConfigurationOrigin.ENV_VAR);
 
     if (configuration.connectionString != null) {
       throw new ConfigurationException(
@@ -730,13 +719,55 @@ public class ConfigurationBuilder {
     return configuration;
   }
 
+  private static Configuration getConfiguration(
+      String content, boolean strict, ConfigurationOrigin configurationOrigin) {
+    Configuration configuration;
+    ObjectMapper mapper = new ObjectMapper();
+    if (!strict) {
+      mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+    try {
+      configuration = mapper.readValue(content, Configuration.class);
+    } catch (UnrecognizedPropertyException ex) {
+      if (strict) {
+        // Try extracting the configuration without failOnUnknown
+        configuration = getConfiguration(content, false, configurationOrigin);
+        // cannot use logger before loading configuration, so need to store warning messages locally
+        // until logger is initialized
+        configurationLogger.warn(
+            getJsonEncodingExceptionMessage(ex.getMessage(), configurationOrigin));
+      } else {
+        throw new FriendlyException(
+            getJsonEncodingExceptionMessage(ex.getMessage(), configurationOrigin),
+            "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
+      }
+    } catch (JsonMappingException | JsonParseException ex) {
+      throw new FriendlyException(
+          getJsonEncodingExceptionMessage(ex.getMessage(), configurationOrigin),
+          "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
+    } catch (Exception e) {
+      if (ConfigurationOrigin.ENV_VAR.equals(configurationOrigin)) {
+        throw new ConfigurationException(
+            "Error parsing configuration from env var: "
+                + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT,
+            e);
+      }
+      throw new ConfigurationException("Error parsing configuration with runtime attachment", e);
+    }
+    return configuration;
+  }
+
   static String getJsonEncodingExceptionMessageForFile(Path configPath, String message) {
     return getJsonEncodingExceptionMessage(message, "file " + configPath.toAbsolutePath());
   }
 
-  static String getJsonEncodingExceptionMessageForEnvVar(String message) {
-    return getJsonEncodingExceptionMessage(
-        message, "env var " + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
+  static String getJsonEncodingExceptionMessage(
+      String message, ConfigurationOrigin configurationOrigin) {
+    if (ConfigurationOrigin.ENV_VAR.equals(configurationOrigin)) {
+      return getJsonEncodingExceptionMessage(
+          message, "env var " + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
+    }
+    return getJsonEncodingExceptionMessage(message, "JSON file coming from runtime attachment");
   }
 
   static String getJsonEncodingExceptionMessage(@Nullable String message, String location) {

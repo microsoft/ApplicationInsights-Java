@@ -248,6 +248,9 @@ public class FirstEntryPoint implements LoggingCustomizer {
     if (!DiagnosticsHelper.isRpIntegration()) {
       return null;
     }
+    if (isRuntimeAttached()) {
+      return "ra_";
+    }
     StringBuilder sdkNamePrefix = new StringBuilder(4);
     sdkNamePrefix.append(DiagnosticsHelper.rpIntegrationChar());
     if (SystemInformation.isWindows()) {
@@ -261,5 +264,9 @@ public class FirstEntryPoint implements LoggingCustomizer {
     }
     sdkNamePrefix.append("r_"); // "r" is for "recommended"
     return sdkNamePrefix.toString();
+  }
+
+  private static boolean isRuntimeAttached() {
+    return Boolean.getBoolean("applicationinsights.internal.runtime.attached");
   }
 }
