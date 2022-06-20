@@ -1,5 +1,6 @@
 plugins {
   id("ai.java-conventions")
+  id("ai.publish-conventions")
 }
 
 val otelContribAlphaVersion: String by project
