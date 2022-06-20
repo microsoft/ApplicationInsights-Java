@@ -114,8 +114,7 @@ public class AiConfigPropertySource implements ConfigPropertySource {
 
     String metricsExporter = getProperty("otel.metrics.exporter");
     if (metricsExporter == null) {
-      // currently Application Insights exports metrics directly, not through OpenTelemetry
-      // exporter (this will change in the future)
+      // the metrics exporter is configured later in this case
       properties.put("otel.metrics.exporter", "none");
     } else {
       properties.put("otel.metrics.exporter", metricsExporter);
@@ -123,8 +122,7 @@ public class AiConfigPropertySource implements ConfigPropertySource {
 
     String logsExporter = getProperty("otel.logs.exporter");
     if (logsExporter == null) {
-      // currently Application Insights exports logs directly, not through OpenTelemetry
-      // exporter (this will change in the future)
+      // the logs exporter is configured later in this case
       properties.put("otel.logs.exporter", "none");
     } else {
       properties.put("otel.logs.exporter", logsExporter);

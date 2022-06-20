@@ -321,7 +321,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     }
 
     String tracesExporter = config.getString("otel.traces.exporter");
-    if ("none".equals(tracesExporter)) { // "none" is the default set in ConfigOverride
+    if ("none".equals(tracesExporter)) { // "none" is the default set in AiConfigPropertySource
       SpanExporter spanExporter =
           createSpanExporter(
               telemetryClient,
