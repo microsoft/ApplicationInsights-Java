@@ -22,5 +22,5 @@ dependencies {
   testImplementation("org.junit.jupiter:junit-jupiter")
   testImplementation("org.assertj:assertj-core")
   testImplementation("org.mockito:mockito-core")
-  testImplementation("uk.org.webcompere:system-stubs-jupiter:1.1.0")
+  testImplementation("uk.org.webcompere:system-stubs-jupiter:2.0.1")
 }

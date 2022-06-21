@@ -82,11 +82,11 @@ dependencies {
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support")
 
   testImplementation("org.junit.jupiter:junit-jupiter")
-  testImplementation("com.azure:azure-core-test:1.7.10")
+  testImplementation("com.azure:azure-core-test")
   testImplementation("org.assertj:assertj-core")
   testImplementation("org.awaitility:awaitility")
   testImplementation("org.mockito:mockito-core")
-  testImplementation("uk.org.webcompere:system-stubs-jupiter:1.1.0")
+  testImplementation("uk.org.webcompere:system-stubs-jupiter:2.0.1")
   testImplementation("io.github.hakky54:logcaptor")
 
   testImplementation("com.microsoft.jfr:jfr-streaming")

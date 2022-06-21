@@ -23,12 +23,12 @@ rootProject.extra["otelInstrumentationAlphaVersion"] = otelInstrumentationAlphaV
 rootProject.extra["otelContribAlphaVersion"] = otelContribAlphaVersion
 
 val DEPENDENCY_BOMS = listOf(
-  "com.google.guava:guava-bom:31.0.1-jre",
+  "com.google.guava:guava-bom:31.1-jre",
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
-  "org.junit:junit-bom:5.7.2",
-  "io.netty:netty-bom:4.1.72.Final",
+  "com.azure:azure-sdk-bom:1.2.2",
+  "org.junit:junit-bom:5.8.2"
 )
 
 // TODO consolidate to just one json library
@@ -37,7 +37,7 @@ val DEPENDENCY_BOMS = listOf(
 val DEPENDENCY_SETS = listOf(
   DependencySet(
     "com.google.auto.value",
-    "1.8.1",
+    "1.9",
     listOf("auto-value", "auto-value-annotations")
   ),
   DependencySet(
@@ -53,7 +53,7 @@ val DEPENDENCY_SETS = listOf(
   ),
   DependencySet(
     "org.mockito",
-    "3.11.1",
+    "4.6.1",
     listOf("mockito-core", "mockito-junit-jupiter")
   ),
   DependencySet(
@@ -97,14 +97,12 @@ val DEPENDENCY_SETS = listOf(
 val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.2.8",
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
-  "com.google.auto.service:auto-service:1.0",
+  "com.google.auto.service:auto-service:1.0.1",
   "com.uber.nullaway:nullaway:0.9.1",
   "commons-codec:commons-codec:1.15",
   "org.apache.commons:commons-text:1.9",
   "com.google.code.gson:gson:2.8.2",
-  "com.azure:azure-core:1.27.0",
-  "com.azure:azure-storage-blob:12.16.0",
-  "com.azure:azure-identity:1.5.0",
+  "com.azure:azure-core-test:1.9.1",
   "com.github.oshi:oshi-core:5.8.0",
   "org.assertj:assertj-core:3.22.0",
   "org.awaitility:awaitility:4.1.0",

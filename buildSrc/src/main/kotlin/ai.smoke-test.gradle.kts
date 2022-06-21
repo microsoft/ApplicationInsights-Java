@@ -62,8 +62,8 @@ dependencies {
 
   // NOTE not updating smoke tests to JUnit 5, because AiSmokeTest has deep dependency on JUnit 4 infra,
   // and so would take a good amount of work, and eventually want to migrate to otel smoke tests anyways
-  smokeTestImplementation("org.hamcrest:hamcrest-core:1.3")
-  smokeTestImplementation("org.hamcrest:hamcrest-library:1.3")
+  smokeTestImplementation("org.hamcrest:hamcrest-core:2.2")
+  smokeTestImplementation("org.hamcrest:hamcrest-library:2.2")
   smokeTestImplementation("junit:junit:4.13.2")
 }
 
