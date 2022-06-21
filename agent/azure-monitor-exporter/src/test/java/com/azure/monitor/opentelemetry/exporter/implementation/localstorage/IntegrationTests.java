@@ -37,8 +37,8 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TestUtils;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.InputStream;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -51,8 +51,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
-import okio.BufferedSource;
-import okio.Okio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -170,20 +168,18 @@ public class IntegrationTests {
 
   private ByteBuffer getByteBufferFromFile(String filename) throws Exception {
     Path path = new File(getClass().getClassLoader().getResource(filename).getPath()).toPath();
-
-    InputStream in = Files.newInputStream(path);
-    BufferedSource source = Okio.buffer(Okio.source(in));
-    ByteBuffer result = ByteBuffer.wrap(source.readByteArray());
-    source.close();
-    in.close();
-
-    return result;
+    return ByteBuffer.wrap(Files.readAllBytes(path));
   }
 
   private static String ungzip(byte[] rawBytes) throws Exception {
     try (GZIPInputStream in = new GZIPInputStream(new ByteArrayInputStream(rawBytes))) {
-      BufferedSource source = Okio.buffer(Okio.source(in));
-      return source.readString(StandardCharsets.UTF_8);
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      byte[] data = new byte[1024];
+      int read;
+      while ((read = in.read(data, 0, data.length)) != -1) {
+        baos.write(data, 0, read);
+      }
+      return new String(baos.toByteArray(), StandardCharsets.UTF_8);
     }
   }
 }

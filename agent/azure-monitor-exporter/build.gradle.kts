@@ -33,8 +33,6 @@ dependencies {
   testImplementation("io.opentelemetry:opentelemetry-sdk-logs")
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
 
-  testImplementation("com.squareup.okio:okio:2.8.0")
-
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support")
@@ -44,16 +42,16 @@ dependencies {
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support")
 
   testImplementation("org.junit.jupiter:junit-jupiter")
-  testImplementation("com.azure:azure-core-test:1.7.10")
+  testImplementation("com.azure:azure-core-test")
   testImplementation("org.assertj:assertj-core")
   testImplementation("org.awaitility:awaitility")
   testImplementation("org.mockito:mockito-core")
-  testImplementation("uk.org.webcompere:system-stubs-jupiter:1.1.0")
+  testImplementation("uk.org.webcompere:system-stubs-jupiter:2.0.1")
   testImplementation("io.github.hakky54:logcaptor")
 
-  testImplementation("com.azure:azure-data-appconfiguration:1.3.2")
-  testImplementation("com.azure:azure-messaging-eventhubs:5.11.2")
-  testImplementation("com.azure:azure-messaging-eventhubs-checkpointstore-blob:1.12.1")
+  testImplementation("com.azure:azure-data-appconfiguration:1.3.4")
+  testImplementation("com.azure:azure-messaging-eventhubs:5.12.1")
+  testImplementation("com.azure:azure-messaging-eventhubs-checkpointstore-blob:1.13.0")
 
   testCompileOnly("com.google.code.findbugs:jsr305")
 }

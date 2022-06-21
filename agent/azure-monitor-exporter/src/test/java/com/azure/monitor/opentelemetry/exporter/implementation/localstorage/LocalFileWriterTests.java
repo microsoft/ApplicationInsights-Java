@@ -37,8 +37,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import okio.BufferedSource;
-import okio.Okio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -58,10 +56,14 @@ public class LocalFileWriterTests {
     Path path =
         new File(getClass().getClassLoader().getResource("write-transmission.txt").getPath())
             .toPath();
-    try {
-      InputStream in = Files.newInputStream(path);
-      BufferedSource source = Okio.buffer(Okio.source(in));
-      buffer = ByteBuffer.wrap(source.readByteArray());
+    try (InputStream in = Files.newInputStream(path)) {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      byte[] data = new byte[1024];
+      int read;
+      while ((read = in.read(data, 0, data.length)) != -1) {
+        baos.write(data, 0, read);
+      }
+      buffer = ByteBuffer.wrap(baos.toByteArray());
     } catch (IOException ignored) {
     }
   }
