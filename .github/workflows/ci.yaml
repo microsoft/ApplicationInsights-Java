@@ -32,7 +32,7 @@ jobs:
       - name: Upload snapshot
         # only upload from windows since only that build includes etw
         if: matrix.os == 'windows-2019'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           path: agent/agent/build/libs/applicationinsights-agent-*-SNAPSHOT.jar
 
