@@ -2,6 +2,7 @@
 
 # Version 3.3.0 GA
 * Update OpenTelemetry to 1.15 [#2332](https://github.com/microsoft/ApplicationInsights-Java/pull/2332).
+* Update dependencies [#2333](https://github.com/microsoft/ApplicationInsights-Java/pull/2333).
 * Add configuration for disk persistence capacity [#2329](https://github.com/microsoft/ApplicationInsights-Java/pull/2329).
 * Change ai.cloud.role format [#2326](https://github.com/microsoft/ApplicationInsights-Java/pull/2326).
 * Add support for runtime attach [#2325](https://github.com/microsoft/ApplicationInsights-Java/pull/2325).
