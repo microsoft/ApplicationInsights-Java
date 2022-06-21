@@ -3,6 +3,8 @@ registries:
   gradle-plugin-portal:
     type: maven-repository
     url: https://plugins.gradle.org/m2
+    username: "" # Required by dependabot
+    password: "" # Required by dependabot
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
