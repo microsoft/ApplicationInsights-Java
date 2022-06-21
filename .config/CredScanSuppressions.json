@@ -1,0 +1,11 @@
+{
+  "tool": "Credential Scanner",
+  "suppressions": [
+    {
+      "file": [
+        "C:\\source\\.github\\dependabot.yml"
+      ],
+      "_justification": "The is not a secret."
+    }
+  ]
+}
