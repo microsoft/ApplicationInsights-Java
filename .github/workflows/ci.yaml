@@ -75,15 +75,3 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           arguments: ${{ matrix.module }}:smokeTest
-
-  accept-pr:
-    needs: [ build, smoke-test ]
-    runs-on: ubuntu-latest
-    if: always()
-    steps:
-      # run this action to get workflow conclusion
-      # You can get conclusion by env (env.WORKFLOW_CONCLUSION)
-      - uses: technote-space/workflow-conclusion-action@v3
-      - name: Fail build
-        if: env.WORKFLOW_CONCLUSION == 'failure' # notify only if failure
-        run: exit 1
