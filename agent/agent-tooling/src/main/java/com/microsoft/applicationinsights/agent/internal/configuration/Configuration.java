@@ -32,6 +32,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.Stat
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.logs.data.Severity;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -521,8 +522,12 @@ public class Configuration {
 
     private static String getDefaultPath() {
       if (!DiagnosticsHelper.isRpIntegration()) {
-        // this will be relative to the directory where agent jar is located
-        return DEFAULT_NAME;
+        if (isRuntimeAttached()) { // With runtime attachment, the agent jar is located in a temp
+          // folder that is dropped when the JVM shuts down
+          String userDir = System.getProperty("user.dir");
+          return userDir + File.separator + DEFAULT_NAME;
+        }
+        return DEFAULT_NAME; // this will be relative to the directory where agent jar is located
       }
       if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
         return StatusFile.getLogDir() + "/" + DEFAULT_NAME;
@@ -534,6 +539,10 @@ public class Configuration {
       // azure spring cloud
       return DEFAULT_NAME;
     }
+  }
+
+  private static boolean isRuntimeAttached() {
+    return Boolean.getBoolean("applicationinsights.internal.runtime.attached");
   }
 
   public static class SamplingOverride {
