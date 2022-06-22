@@ -25,7 +25,7 @@ import com.azure.core.http.HttpPipelineCallContext;
 import com.azure.core.http.HttpPipelineNextPolicy;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.http.policy.HttpPipelinePolicy;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.StatusCodes;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.StatusCode;
 import com.microsoft.applicationinsights.agent.internal.utils.Constant;
 import java.util.concurrent.atomic.AtomicLong;
 import reactor.core.publisher.Mono;
@@ -56,12 +56,12 @@ public class NetworkStatsbeatHttpPipelinePolicy implements HttpPipelinePolicy {
               if (statusCode == 200) {
                 networkStatsbeat.incrementRequestSuccessCount(
                     System.currentTimeMillis() - startTime.get(), instrumentationKey, host);
-              } else if (StatusCodes.isRedirect(statusCode)) {
+              } else if (StatusCode.isRedirect(statusCode)) {
                 // these are not tracked as success or failure since they are just redirects
               } else if (statusCode == 402 || statusCode == 439) {
                 networkStatsbeat.incrementThrottlingCount(
                     instrumentationKey, host, Constant.STATUS_CODE, statusCode);
-              } else if (StatusCodes.isRetryable(statusCode)) {
+              } else if (StatusCode.isRetryable(statusCode)) {
                 networkStatsbeat.incrementRetryCount(
                     instrumentationKey, host, Constant.STATUS_CODE, statusCode);
               } else {

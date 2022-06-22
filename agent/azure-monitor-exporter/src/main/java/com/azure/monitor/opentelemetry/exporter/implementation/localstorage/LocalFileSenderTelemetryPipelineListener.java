@@ -24,7 +24,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineRequest;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineResponse;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.StatusCodes;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.StatusCode;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.File;
 
@@ -44,7 +44,7 @@ class LocalFileSenderTelemetryPipelineListener implements TelemetryPipelineListe
     if (responseCode == 200) {
       localFileLoader.updateProcessedFileStatus(true, file);
     } else {
-      localFileLoader.updateProcessedFileStatus(!StatusCodes.isRetryable(responseCode), file);
+      localFileLoader.updateProcessedFileStatus(!StatusCode.isRetryable(responseCode), file);
     }
   }
 

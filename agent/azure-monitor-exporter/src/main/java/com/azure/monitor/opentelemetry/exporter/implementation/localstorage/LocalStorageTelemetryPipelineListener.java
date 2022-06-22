@@ -25,7 +25,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineRequest;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineResponse;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.StatusCodes;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.StatusCode;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -62,7 +62,7 @@ public class LocalStorageTelemetryPipelineListener implements TelemetryPipelineL
 
   @Override
   public void onResponse(TelemetryPipelineRequest request, TelemetryPipelineResponse response) {
-    if (StatusCodes.isRetryable(response.getStatusCode())) {
+    if (StatusCode.isRetryable(response.getStatusCode())) {
       localFileWriter.writeToDisk(request.getInstrumentationKey(), request.getTelemetry());
     }
   }
