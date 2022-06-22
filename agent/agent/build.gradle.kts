@@ -3,23 +3,18 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
   id("ai.java-conventions")
   id("ai.shadow-conventions")
-  id("maven-publish")
+  id("ai.publish-conventions")
 }
 
 base.archivesName.set("applicationinsights-agent")
 
-java {
-  withJavadocJar()
-  withSourcesJar()
-}
-
 // this configuration collects libs that will be placed in the bootstrap classloader
-val bootstrapLibs: Configuration by configurations.creating {
+val bootstrapLibs by configurations.creating {
   isCanBeResolved = true
   isCanBeConsumed = false
 }
 // this configuration collects libs that will be placed in the agent classloader, isolated from the instrumented application code
-val javaagentLibs: Configuration by configurations.creating {
+val javaagentLibs by configurations.creating {
   isCanBeResolved = true
   isCanBeConsumed = false
 }
@@ -57,10 +52,6 @@ project(":agent:instrumentation").subprojects {
 }
 
 tasks {
-  jar {
-    enabled = false
-  }
-
   // building the final javaagent jar is done in 3 steps:
 
   // 1. all distro-specific javaagent libs are relocated (by the ai.shadow-conventions plugin)
@@ -103,79 +94,46 @@ tasks {
     dependsOn(isolateJavaagentLibs)
     from(isolateJavaagentLibs.get().outputs)
 
-    archiveClassifier.set("all")
-
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
+    archiveClassifier.set("")
+
     manifest {
+      attributes(jar.get().manifest.attributes)
       attributes(
-        mapOf(
-          "Premain-Class" to "com.microsoft.applicationinsights.agent.Agent",
-          // Agent-Class is provided only for dynamic attach in the first line of main
-          // there are many problematic edge cases around dynamic attach any later than that
-          "Agent-Class" to "com.microsoft.applicationinsights.agent.Agent",
-          "Can-Redefine-Classes" to true,
-          "Can-Retransform-Classes" to true
-        )
+        "Agent-Class" to "com.microsoft.applicationinsights.agent.Agent",
+        "Premain-Class" to "com.microsoft.applicationinsights.agent.Agent",
+        "Can-Redefine-Classes" to true,
+        "Can-Retransform-Classes" to true
       )
     }
   }
 
-  // a separate task to create a no-classifier jar that's exactly the same as the -all one
-  // because a no-classifier (main) jar is required by sonatype
-  val mainShadowJar by registering(Jar::class) {
-    archiveClassifier.set("")
-
-    from(zipTree(shadowJar.get().archiveFile))
-
-    manifest {
-      attributes(shadowJar.get().manifest.attributes)
-    }
+  jar {
+    // Empty jar that cannot be used for anything and isn't published.
+    archiveClassifier.set("dontuse")
   }
 
   assemble {
-    dependsOn(shadowJar, mainShadowJar)
+    dependsOn(shadowJar)
   }
 
-  val t = this
-  publishing {
-    publications {
-      register<MavenPublication>("maven") {
-        artifactId = "applicationinsights-agent"
-        groupId = "com.microsoft.azure"
-        version = project.version.toString()
+  // Because we reconfigure publishing to only include the shadow jar, the Gradle metadata is not correct.
+  // Since we are fully bundled and have no dependencies, Gradle metadata wouldn't provide any advantage over
+  // the POM anyways so in practice we shouldn't be losing anything.
+  withType<GenerateModuleMetadata>().configureEach {
+    enabled = false
+  }
+}
 
-        artifact(shadowJar)
-        artifact(mainShadowJar)
-        artifact(t.named("sourcesJar"))
-        artifact(t.named("javadocJar"))
-
-        pom {
-          name.set("Microsoft Application Insights Java Agent")
-          description.set("Microsoft Application Insights Java Agent")
-          url.set("https://github.com/Microsoft/ApplicationInsights-Java")
-          packaging = "jar"
-
-          licenses {
-            license {
-              name.set("MIT License")
-              url.set("http://www.opensource.org/licenses/mit-license.php")
-            }
-          }
-
-          developers {
-            developer {
-              id.set("Microsoft")
-              name.set("Microsoft")
-            }
-          }
-
-          scm {
-            connection.set("scm:git:git://github.com/Microsoft/ApplicationInsights-Java.git")
-            url.set("scm:git:https://github.com/Microsoft/ApplicationInsights-Java")
-          }
-        }
-      }
+// Don't publish non-shadowed jar (shadowJar is in shadowRuntimeElements)
+with(components["java"] as AdhocComponentWithVariants) {
+  configurations.forEach {
+    withVariantsFromConfiguration(configurations["apiElements"]) {
+      skip()
+    }
+    withVariantsFromConfiguration(configurations["runtimeElements"]) {
+      skip()
     }
   }
 }
