@@ -3,6 +3,8 @@ plugins {
   id("ai.publish-conventions")
 }
 
+base.archivesName.set("applicationinsights-runtime-attach")
+
 val otelContribAlphaVersion: String by project
 val otelVersion: String by project
 

@@ -21,7 +21,7 @@ publishing {
 
       afterEvaluate {
         groupId = "com.microsoft.azure"
-        artifactId = "applicationinsights-" + base.archivesName.get()
+        artifactId = base.archivesName.get()
 
         pom.description.set(
           project.description

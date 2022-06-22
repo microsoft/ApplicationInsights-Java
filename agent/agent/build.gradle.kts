@@ -6,6 +6,8 @@ plugins {
   id("ai.publish-conventions")
 }
 
+base.archivesName.set("applicationinsights-agent")
+
 // this configuration collects libs that will be placed in the bootstrap classloader
 val bootstrapLibs by configurations.creating {
   isCanBeResolved = true
