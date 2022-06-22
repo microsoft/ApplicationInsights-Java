@@ -36,10 +36,10 @@ public final class ApplicationInsights {
 
   private static final Logger logger = Logger.getLogger(ApplicationInsights.class.getName());
 
-  static final String RUNTIME_ATTACHED_ENABLED_PROPERTY =
+  private static final String RUNTIME_ATTACHED_ENABLED_PROPERTY =
       "applicationinsights.internal.runtime.attached";
 
-  static final String RUNTIME_ATTACHED_JSON_PROPERTY =
+  private static final String RUNTIME_ATTACHED_JSON_PROPERTY =
       "applicationinsights.internal.runtime.attached.json";
 
   private ApplicationInsights() {}
