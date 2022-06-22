@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# Version 3.3.0 GA
+* Update OpenTelemetry to 1.15 [#2332](https://github.com/microsoft/ApplicationInsights-Java/pull/2332).
+* Add configuration for disk persistence capacity [#2329](https://github.com/microsoft/ApplicationInsights-Java/pull/2329).
+* Add support for runtime attach [#2325](https://github.com/microsoft/ApplicationInsights-Java/pull/2325).
+* Continue to add support for OpenTelemetry metrics API.
+
 # Version 3.3.0-BETA.2
 * Update OpenTelemetry to 1.14.
 * Reduce jar file size [#2295](https://github.com/microsoft/ApplicationInsights-Java/pull/2295).
