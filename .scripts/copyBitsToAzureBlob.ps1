@@ -19,12 +19,12 @@ param (
 Write-Host "Jar path: $JarPath"
 $Env:AZCOPY_SPA_CLIENT_SECRET=$ServicePrincipalKey
 azcopy login --service-principal --application-id $ServicePrincipleClientId
-azcopy copy "$JarPath/$SDKVersionNumber/applicationinsights-agent-$SDKVersionNumber.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
-azcopy copy "$JarPath/$SDKVersionNumber/applicationinsights-agent-$SDKVersionNumber-javadoc.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
-azcopy copy "$JarPath/$SDKVersionNumber/applicationinsights-agent-$SDKVersionNumber-sources.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
-azcopy copy "$JarPath/$SDKVersionNumber/applicationinsights-agent-$SDKVersionNumber.pom" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
-azcopy copy "$JarPath/$SDKVersionNumber/applicationinsights-runtime-attach-$SDKVersionNumber.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
-azcopy copy "$JarPath/$SDKVersionNumber/applicationinsights-runtime-attach-$SDKVersionNumber-javadoc.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
-azcopy copy "$JarPath/$SDKVersionNumber/applicationinsights-runtime-attach-$SDKVersionNumber-sources.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
-azcopy copy "$JarPath/$SDKVersionNumber/applicationinsights-runtime-attach-$SDKVersionNumber.pom" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$JarPath/agent/$SDKVersionNumber/applicationinsights-agent-$SDKVersionNumber.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$JarPath/agent/$SDKVersionNumber/applicationinsights-agent-$SDKVersionNumber-javadoc.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$JarPath/agent/$SDKVersionNumber/applicationinsights-agent-$SDKVersionNumber-sources.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$JarPath/agent/$SDKVersionNumber/applicationinsights-agent-$SDKVersionNumber.pom" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$JarPath/runtime-attach/$SDKVersionNumber/applicationinsights-runtime-attach-$SDKVersionNumber.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$JarPath/runtime-attach/$SDKVersionNumber/applicationinsights-runtime-attach-$SDKVersionNumber-javadoc.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$JarPath/runtime-attach/$SDKVersionNumber/applicationinsights-runtime-attach-$SDKVersionNumber-sources.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$JarPath/runtime-attach/$SDKVersionNumber/applicationinsights-runtime-attach-$SDKVersionNumber.pom" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
 Remove-Item Env:AZCOPY_SPA_CLIENT_SECRET
