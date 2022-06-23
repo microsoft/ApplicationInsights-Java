@@ -45,6 +45,7 @@ public class LoggingLevelConfigurator {
     updateLoggerLevel(loggerContext.getLogger("reactor.netty"));
     updateLoggerLevel(loggerContext.getLogger("reactor.util"));
     updateLoggerLevel(loggerContext.getLogger("io.netty"));
+    updateLoggerLevel(loggerContext.getLogger("io.netty.handler.ssl"));
     updateLoggerLevel(loggerContext.getLogger("io.grpc.Context"));
     updateLoggerLevel(loggerContext.getLogger("io.opentelemetry.javaagent.tooling.VersionLogger"));
     updateLoggerLevel(loggerContext.getLogger("io.opentelemetry.exporter.logging"));
@@ -67,6 +68,8 @@ public class LoggingLevelConfigurator {
     String name = logger.getName();
     if (name.startsWith("oshi")) {
       loggerLevel = getOshiLoggerLevel(level);
+    } else if (name.startsWith("io.netty.handler.ssl")) {
+      loggerLevel = getDefaultLibraryLevel(level);
     } else if (name.startsWith("reactor.netty") || name.startsWith("io.netty")) {
       loggerLevel = getNettyLevel(level);
     } else if (name.startsWith("reactor.util")) {
