@@ -88,15 +88,21 @@ tasks {
 
   // 3. the relocated and isolated javaagent libs are merged together with the bootstrap libs (which undergo relocation
   // in this task) and the upstream javaagent jar; duplicates are removed
-  shadowJar {
+  val shadowJarWithDuplicates by registering(ShadowJar::class) {
     configurations = listOf(bootstrapLibs, upstreamAgent)
+
+    // using logback in this distro
+    // this excludes slf4j-simple from the upstream agent
+    // but it doesn't exclude logback's files in this package since they haven't been shaded
+    // into this package yet at the time exclusion takes place
+    exclude("io/opentelemetry/javaagent/slf4j/impl/**")
 
     dependsOn(isolateJavaagentLibs)
     from(isolateJavaagentLibs.get().outputs)
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
-    archiveClassifier.set("")
+    archiveClassifier.set("dontuse")
 
     manifest {
       attributes(jar.get().manifest.attributes)
@@ -109,9 +115,21 @@ tasks {
     }
   }
 
+  // a separate task is needed to get rid of duplicates
+  shadowJar {
+    archiveClassifier.set("")
+
+    dependsOn(shadowJarWithDuplicates)
+
+    from(zipTree(shadowJarWithDuplicates.get().archiveFile))
+
+    manifest {
+      attributes(shadowJarWithDuplicates.get().manifest.attributes)
+    }
+  }
+
   jar {
-    // Empty jar that cannot be used for anything and isn't published.
-    archiveClassifier.set("dontuse")
+    enabled = false
   }
 
   assemble {
