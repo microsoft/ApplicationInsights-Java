@@ -22,7 +22,6 @@
 package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
 public enum StatusCode {
-
   UNAUTHORIZED(401),
   FORBIDDEN(403),
   REQUEST_TIMEOUT(408),
@@ -35,7 +34,7 @@ public enum StatusCode {
   private final int code;
 
   StatusCode(int code) {
-      this.code = code;
+    this.code = code;
   }
 
   public static boolean isRetryable(int statusCode) {
