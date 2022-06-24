@@ -238,7 +238,7 @@ public class AiConfigPropertySource implements ConfigPropertySource {
     }
     if (config.instrumentation.rabbitmq.enabled) {
       properties.put("otel.instrumentation.rabbitmq.enabled", "true");
-      properties.put("otel.instrumentation.spring-rabbitmq.enabled", "true");
+      properties.put("otel.instrumentation.spring-rabbit.enabled", "true");
     }
     if (config.instrumentation.redis.enabled) {
       properties.put("otel.instrumentation.jedis.enabled", "true");
