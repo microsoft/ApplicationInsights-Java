@@ -21,20 +21,32 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
-public class StatusCodes {
+public enum StatusCode {
+  UNAUTHORIZED(401),
+  FORBIDDEN(403),
+  REQUEST_TIMEOUT(408),
+  TOO_MANY_REQUESTS(429),
+  INTERNAL_SERVER_ERROR(500),
+  SERVICE_UNAVAILABLE(503),
+  TEMPORARY_REDIRECT(307),
+  PERMANENTY_REDIRECT(308);
+
+  private final int code;
+
+  StatusCode(int code) {
+    this.code = code;
+  }
 
   public static boolean isRetryable(int statusCode) {
-    return statusCode == 401 // Unauthorized
-        || statusCode == 403 // Forbidden
-        || statusCode == 408 // REQUEST TIMEOUT
-        || statusCode == 429 // TOO MANY REQUESTS
-        || statusCode == 500 // INTERNAL SERVER ERROR
-        || statusCode == 503; // SERVICE UNAVAILABLE
+    return statusCode == UNAUTHORIZED.code
+        || statusCode == FORBIDDEN.code
+        || statusCode == REQUEST_TIMEOUT.code
+        || statusCode == TOO_MANY_REQUESTS.code
+        || statusCode == INTERNAL_SERVER_ERROR.code
+        || statusCode == SERVICE_UNAVAILABLE.code;
   }
 
   public static boolean isRedirect(int statusCode) {
     return statusCode == 307 || statusCode == 308;
   }
-
-  private StatusCodes() {}
 }

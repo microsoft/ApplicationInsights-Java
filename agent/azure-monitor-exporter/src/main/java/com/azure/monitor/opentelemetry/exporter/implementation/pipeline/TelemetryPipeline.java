@@ -25,7 +25,7 @@ import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.util.Context;
 import com.azure.core.util.tracing.Tracer;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.StatusCodes;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.StatusCode;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -132,7 +132,7 @@ public class TelemetryPipeline {
 
     int responseCode = response.getStatusCode();
 
-    if (StatusCodes.isRedirect(responseCode) && remainingRedirects > 0) {
+    if (StatusCode.isRedirect(responseCode) && remainingRedirects > 0) {
       String location = response.getHeaderValue("Location");
       URL locationUrl;
       try {

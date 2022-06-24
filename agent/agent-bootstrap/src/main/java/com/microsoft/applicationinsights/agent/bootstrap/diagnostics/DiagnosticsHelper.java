@@ -70,6 +70,7 @@ public class DiagnosticsHelper {
     }
   }
 
+  /** Is resource provider (Azure Spring Cloud, AppService, Azure Functions, AKS, VM...). */
   public static boolean isRpIntegration() {
     return rpIntegrationChar != 0;
   }
