@@ -11,9 +11,6 @@ tasks.withType<ShadowJar>().configureEach {
 
   exclude("**/module-info.class")
 
-  // using logback in this distro
-  exclude("io/opentelemetry/javaagent/slf4j/impl/**")
-
   // Prevents conflict with other SLF4J instances. Important for premain.
   relocate("org.slf4j", "io.opentelemetry.javaagent.slf4j")
   // rewrite dependencies calling Logger.getLogger
