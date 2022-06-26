@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.alerting.config;
 
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
@@ -29,7 +29,7 @@ public class CollectionPlanConfiguration {
 
   private final boolean single;
   private final EngineMode mode;
-  private final ZonedDateTime expiration;
+  private final Instant expiration;
   private final long immediateProfilingDuration;
   private final String settingsMoniker;
 
@@ -51,7 +51,7 @@ public class CollectionPlanConfiguration {
   public CollectionPlanConfiguration(
       boolean single,
       EngineMode mode,
-      ZonedDateTime expiration,
+      Instant expiration,
       long immediateProfilingDuration,
       String settingsMoniker) {
     this.single = single;
@@ -69,7 +69,7 @@ public class CollectionPlanConfiguration {
     return mode;
   }
 
-  public ZonedDateTime getExpiration() {
+  public Instant getExpiration() {
     return expiration;
   }
 

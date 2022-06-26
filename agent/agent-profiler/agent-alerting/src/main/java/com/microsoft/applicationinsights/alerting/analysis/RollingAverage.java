@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.alerting.analysis;
 
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalDouble;
@@ -59,7 +59,7 @@ public class RollingAverage {
   }
 
   public double track(TelemetryDataPoint telemetryDataPoint) {
-    ZonedDateTime now = timeSource.getNow();
+    Instant now = timeSource.getNow();
     telemetryDataPoints.add(telemetryDataPoint);
 
     removeOldValues(now);
@@ -77,8 +77,8 @@ public class RollingAverage {
     return telemetryDataPoints.stream().mapToDouble(TelemetryDataPoint::getValue).average();
   }
 
-  private void removeOldValues(ZonedDateTime now) {
-    ZonedDateTime cutOff = now.minusSeconds(windowLengthInSec);
+  private void removeOldValues(Instant now) {
+    Instant cutOff = now.minusSeconds(windowLengthInSec);
 
     // Ensure that we keep at least 2 values in our buffer so that we are not reacting to a single
     // value

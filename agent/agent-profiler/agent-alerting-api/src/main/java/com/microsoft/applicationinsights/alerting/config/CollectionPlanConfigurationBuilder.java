@@ -25,12 +25,11 @@ import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfigura
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 
 public class CollectionPlanConfigurationBuilder {
   private boolean single = false;
   private EngineMode mode;
-  private ZonedDateTime expiration;
+  private Instant expiration;
   private long immediateProfilingDuration;
   private String settingsMoniker;
 
@@ -54,12 +53,12 @@ public class CollectionPlanConfigurationBuilder {
     return this;
   }
 
-  public static ZonedDateTime parseBinaryDate(long expiration) {
+  public static Instant parseBinaryDate(long expiration) {
     long ticks = expiration & 0x3fffffffffffffffL;
     long seconds = ticks / 10000000L;
     long nanos = (ticks % 10000000L) * 100L;
     long offset = OffsetDateTime.of(1, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC).toEpochSecond();
-    return Instant.ofEpochSecond(seconds + offset, nanos).atZone(ZoneOffset.UTC);
+    return Instant.ofEpochSecond(seconds + offset, nanos);
   }
 
   public CollectionPlanConfigurationBuilder setImmediateProfilingDuration(

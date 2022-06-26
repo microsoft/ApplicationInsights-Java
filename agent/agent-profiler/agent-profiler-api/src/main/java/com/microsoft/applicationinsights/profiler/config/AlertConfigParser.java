@@ -32,7 +32,6 @@ import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfigurationBuilder;
 import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -54,7 +53,7 @@ public class AlertConfigParser {
   private static CollectionPlanConfiguration parseCollectionPlan(@Nullable String collectionPlan) {
     if (collectionPlan == null) {
       return new CollectionPlanConfiguration(
-          false, EngineMode.immediate, Instant.ofEpochMilli(0).atZone(ZoneOffset.UTC), 0, "");
+          false, EngineMode.immediate, Instant.ofEpochMilli(0), 0, "");
     }
 
     String[] tokens = collectionPlan.split(" ");

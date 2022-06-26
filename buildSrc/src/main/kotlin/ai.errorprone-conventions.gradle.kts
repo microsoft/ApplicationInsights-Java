@@ -33,9 +33,6 @@ tasks {
       // Needed for legacy 2.x bridge
       disable("JavaUtilDate")
 
-      // TODO (trask) reconsider this
-      disable("JavaTimeDefaultTimeZone")
-
       // Doesn't work well with Java 8
       disable("FutureReturnValueIgnored")
 

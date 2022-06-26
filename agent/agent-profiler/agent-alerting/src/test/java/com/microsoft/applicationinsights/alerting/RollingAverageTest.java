@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.microsoft.applicationinsights.alerting.analysis.RollingAverage;
 import com.microsoft.applicationinsights.alerting.analysis.TelemetryDataPoint;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -68,8 +68,8 @@ class RollingAverageTest {
     TimeSource timeSource =
         new TimeSource() {
           @Override
-          public ZonedDateTime getNow() {
-            return ZonedDateTime.now().plusSeconds(offset.get());
+          public Instant getNow() {
+            return Instant.now().plusSeconds(offset.get());
           }
         };
 

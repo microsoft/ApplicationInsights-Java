@@ -32,7 +32,7 @@ import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.A
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -99,8 +99,7 @@ public class AlertingSubsystem {
                 .setCooldown(0)
                 .createAlertConfiguration(),
             new DefaultConfiguration(false, 0, 0),
-            new CollectionPlanConfiguration(
-                false, EngineMode.immediate, ZonedDateTime.now(), 0, "")));
+            new CollectionPlanConfiguration(false, EngineMode.immediate, Instant.now(), 0, "")));
     return alertingSubsystem;
   }
 
@@ -189,7 +188,7 @@ public class AlertingSubsystem {
     boolean shouldTrigger =
         config.isSingle()
             && config.getMode() == EngineMode.immediate
-            && ZonedDateTime.now().isBefore(config.getExpiration())
+            && Instant.now().isBefore(config.getExpiration())
             && !manualTriggersExecuted.contains(config.getSettingsMoniker());
 
     if (shouldTrigger) {

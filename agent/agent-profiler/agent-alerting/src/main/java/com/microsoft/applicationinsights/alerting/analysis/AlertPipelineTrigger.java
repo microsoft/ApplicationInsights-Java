@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.alerting.analysis;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.function.Consumer;
 
 /**
@@ -38,7 +38,7 @@ import java.util.function.Consumer;
 public class AlertPipelineTrigger implements Consumer<Double> {
   private final AlertConfiguration alertConfig;
   private final Consumer<AlertBreach> action;
-  private ZonedDateTime lastAlertTime;
+  private Instant lastAlertTime;
 
   public AlertPipelineTrigger(AlertConfiguration alertConfiguration, Consumer<AlertBreach> action) {
     this.alertConfig = alertConfiguration;
@@ -49,18 +49,18 @@ public class AlertPipelineTrigger implements Consumer<Double> {
   public void accept(Double telemetry) {
     if (alertConfig.isEnabled() && telemetry > alertConfig.getThreshold()) {
       if (isOffCooldown()) {
-        lastAlertTime = ZonedDateTime.now();
+        lastAlertTime = Instant.now();
         action.accept(new AlertBreach(alertConfig.getType(), telemetry, alertConfig));
       }
     }
   }
 
   public boolean isOffCooldown() {
-    ZonedDateTime coolDownCutOff = ZonedDateTime.now().minusSeconds(alertConfig.getCooldown());
+    Instant coolDownCutOff = Instant.now().minusSeconds(alertConfig.getCooldown());
     return lastAlertTime == null || lastAlertTime.isBefore(coolDownCutOff);
   }
 
-  public ZonedDateTime getLastAlertTime() {
+  public Instant getLastAlertTime() {
     return lastAlertTime;
   }
 }

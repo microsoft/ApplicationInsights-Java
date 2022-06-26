@@ -22,17 +22,17 @@
 package com.microsoft.applicationinsights.alerting.analysis;
 
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
 /** Individual sample of telemetry data. */
 public class TelemetryDataPoint implements Comparable<TelemetryDataPoint> {
   private final AlertMetricType type;
-  private final ZonedDateTime time;
+  private final Instant time;
   private final double value;
 
-  public TelemetryDataPoint(AlertMetricType type, ZonedDateTime time, double value) {
+  public TelemetryDataPoint(AlertMetricType type, Instant time, double value) {
     this.type = type;
     this.time = time;
     this.value = value;
@@ -42,7 +42,7 @@ public class TelemetryDataPoint implements Comparable<TelemetryDataPoint> {
     return value;
   }
 
-  public ZonedDateTime getTime() {
+  public Instant getTime() {
     return time;
   }
 
