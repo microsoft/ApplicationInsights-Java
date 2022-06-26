@@ -28,12 +28,12 @@ tasks {
       // Still Java 8
       disable("Varifier")
 
-      // TEMPORARILY until time to revisit
-      disable("WildcardImport")
-      disable("BadImport")
       disable("BooleanParameter")
+
+      // Needed for legacy 2.x bridge
       disable("JavaUtilDate")
-      disable("ImmutableEnumChecker")
+
+      // TODO (trask) reconsider this
       disable("JavaTimeDefaultTimeZone")
 
       // Doesn't work well with Java 8
@@ -52,11 +52,6 @@ tasks {
       disable("AndroidJdkLibsChecker")
       disable("Java7ApiChecker")
       disable("StaticOrDefaultInterfaceMethod")
-
-      // Common to avoid an allocation. Revisit if it's worth opt-in suppressing instead of
-      // disabling entirely.
-      // TODO (trask) consider enabling
-      disable("MixedMutabilityReturnType")
 
       // We don't use tools that recognize.
       disable("InlineMeSuggester")

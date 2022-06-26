@@ -21,6 +21,7 @@
 
 package com.microsoft.gcmonitor.garbagecollectors;
 
+import com.google.errorprone.annotations.Immutable;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
@@ -41,6 +42,7 @@ public enum GarbageCollectors {
   SHENANDOAH_PAUSES(ShenandoahPauses.NAME, ShenandoahPauses::new),
   Z_GC(Zgc.NAME, Zgc::new);
 
+  @Immutable
   interface GarbageCollectorFactory extends Function<GarbageCollectorStats, GarbageCollector> {}
 
   final String name;

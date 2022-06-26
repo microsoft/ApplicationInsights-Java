@@ -45,6 +45,7 @@ public enum MemoryManagers {
 
   ZGC(GarbageCollectors.Zgc.class);
 
+  @SuppressWarnings("ImmutableEnumChecker")
   private final Class<? extends GarbageCollector>[] managers;
 
   public static MemoryManagers of(MemoryManagement manager) {

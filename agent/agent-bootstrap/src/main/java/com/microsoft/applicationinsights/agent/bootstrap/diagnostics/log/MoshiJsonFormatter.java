@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log;
 
 import ch.qos.logback.contrib.json.JsonFormatter;
 import com.squareup.moshi.Moshi;
-import com.squareup.moshi.Moshi.Builder;
 import java.util.Map;
 
 public class MoshiJsonFormatter implements JsonFormatter {
@@ -33,7 +32,7 @@ public class MoshiJsonFormatter implements JsonFormatter {
 
   @Override
   public String toJsonString(Map m) {
-    Moshi moshi = new Builder().build();
+    Moshi moshi = new Moshi.Builder().build();
     if (prettyPrint) {
       return moshi.adapter(Map.class).indent("  ").toJson(m);
     } else {

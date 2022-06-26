@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
  *
  * <p>The container will be stopped automatically when the application exists.
  */
+@SuppressWarnings("ImmutableEnumChecker")
 public enum PerformanceCounterContainer {
   INSTANCE;
 

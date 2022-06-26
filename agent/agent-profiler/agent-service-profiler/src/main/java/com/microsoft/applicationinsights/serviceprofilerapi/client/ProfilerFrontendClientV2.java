@@ -30,7 +30,7 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.Arti
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.TimestampContract;
 import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi.Builder;
+import com.squareup.moshi.Moshi;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -142,7 +142,7 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
               }
               try {
                 JsonAdapter<ArtifactAcceptedResponse> builder =
-                    new Builder().build().adapter(ArtifactAcceptedResponse.class);
+                    new Moshi.Builder().build().adapter(ArtifactAcceptedResponse.class);
 
                 ArtifactAcceptedResponse data = builder.fromJson(json);
                 if (data == null) {
