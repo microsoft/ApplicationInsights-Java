@@ -48,7 +48,7 @@ public class TelemetryUtil {
 
   private static void convertExceptionTree(
       Throwable exception,
-      ExceptionDetailBuilder parentExceptionDetails,
+      @Nullable ExceptionDetailBuilder parentExceptionDetails,
       List<ExceptionDetailBuilder> exceptions,
       int stackSize) {
     if (exception == null) {
@@ -139,7 +139,8 @@ public class TelemetryUtil {
 
   /** Returns the stack frame length for only the strings in the stack frame. */
   // this is the same logic used to limit length on the Breeze side
-  private static int getStackFrameLength(String method, String fileName, String assembly) {
+  private static int getStackFrameLength(
+      String method, String fileName, @Nullable String assembly) {
     return getStackFrameLength(method)
         + getStackFrameLength(fileName)
         + getStackFrameLength(assembly);

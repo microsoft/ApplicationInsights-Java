@@ -114,9 +114,9 @@ class StatusFileTests {
   }
 
   void assertMapHasExpectedInformation(
-      Map<String, Object> inputMap, @Nullable String key, String value) {
+      Map<String, Object> inputMap, @Nullable String key, @Nullable String value) {
     int size = 5;
-    if (key != null) {
+    if (key != null && value != null) {
       size = 6;
       assertThat(inputMap).containsEntry(key, value);
     }

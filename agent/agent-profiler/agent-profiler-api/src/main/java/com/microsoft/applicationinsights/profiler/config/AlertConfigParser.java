@@ -162,7 +162,7 @@ public class AlertConfigParser {
   }
 
   private interface ConfigParser<T> {
-    T parse(T config, String arg);
+    T parse(T config, @Nullable String arg);
   }
 
   private static class ParseConfigValue<T> {

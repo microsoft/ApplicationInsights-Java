@@ -33,7 +33,6 @@ tasks {
       disable("BadImport")
       disable("BooleanParameter")
       disable("JavaUtilDate")
-      disable("HashCodeToString")
       disable("ImmutableEnumChecker")
       disable("JavaTimeDefaultTimeZone")
 
@@ -69,7 +68,6 @@ tasks {
       disable("InconsistentOverloads")
 
       if (name.contains("Jmh") || name.contains("Test")) {
-        disable("HashCodeToString")
         disable("MemberName")
       }
     }

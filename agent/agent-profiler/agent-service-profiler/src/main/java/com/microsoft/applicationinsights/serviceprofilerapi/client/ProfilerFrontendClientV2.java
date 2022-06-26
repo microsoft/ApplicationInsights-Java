@@ -36,6 +36,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -57,10 +58,13 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
   private final URL hostUrl;
   private final String instrumentationKey;
   private final HttpPipeline httpPipeline;
-  private final String userAgent;
+  @Nullable private final String userAgent;
 
   public ProfilerFrontendClientV2(
-      URL hostUrl, String instrumentationKey, HttpPipeline httpPipeline, String userAgent) {
+      URL hostUrl,
+      String instrumentationKey,
+      HttpPipeline httpPipeline,
+      @Nullable String userAgent) {
     this.hostUrl = hostUrl;
     this.instrumentationKey = instrumentationKey;
     this.httpPipeline = httpPipeline;

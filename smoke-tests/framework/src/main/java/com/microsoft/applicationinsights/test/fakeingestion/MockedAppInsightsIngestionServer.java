@@ -32,6 +32,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -170,13 +171,13 @@ public class MockedAppInsightsIngestionServer {
 
   // if operationId is null, then matches all items, otherwise only matches items with that
   // operationId
-  public List<Envelope> waitForItems(String type, int numItems, String operationId)
+  public List<Envelope> waitForItems(String type, int numItems, @Nullable String operationId)
       throws InterruptedException, ExecutionException, TimeoutException {
     return waitForItems(type, numItems, operationId, envelope -> true);
   }
 
   public List<Envelope> waitForItems(
-      String type, int numItems, String operationId, Predicate<Envelope> condition)
+      String type, int numItems, @Nullable String operationId, Predicate<Envelope> condition)
       throws InterruptedException, ExecutionException, TimeoutException {
     List<Envelope> items =
         waitForItems(
