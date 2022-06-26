@@ -28,6 +28,7 @@ tasks {
       // Still Java 8
       disable("Varifier")
 
+      // Intellij does a nice job of displaying parameter names
       disable("BooleanParameter")
 
       // Needed for legacy 2.x bridge
@@ -50,16 +51,12 @@ tasks {
       disable("Java7ApiChecker")
       disable("StaticOrDefaultInterfaceMethod")
 
-      // We don't use tools that recognize.
-      disable("InlineMeSuggester")
-      disable("DoNotCallSuggester")
-
       // needed temporarily while hosting azure-monitor-opentelemetry-exporter in this repo
       disable("MissingSummary")
       disable("UnnecessaryDefaultInEnumSwitch")
       disable("InconsistentOverloads")
 
-      if (name.contains("Jmh") || name.contains("Test")) {
+      if (name.contains("Jmh")) {
         disable("MemberName")
       }
     }
