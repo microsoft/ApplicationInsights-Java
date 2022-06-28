@@ -70,6 +70,7 @@ public class AgentMetricExporter implements MetricExporter {
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
     if (Strings.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey())) {
+      // Azure Functions consumption plan
       logger.debug("exporter is not active");
       return CompletableResultCode.ofSuccess();
     }
