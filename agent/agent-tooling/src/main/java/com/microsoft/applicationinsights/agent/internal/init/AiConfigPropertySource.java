@@ -139,6 +139,8 @@ public class AiConfigPropertySource implements ConfigPropertySource {
   private static void enableInstrumentations(Configuration config, Map<String, String> properties) {
     properties.put("otel.instrumentation.common.default-enabled", "false");
 
+    properties.put("otel.instrumentation.experimental.span-suppression-strategy", "client");
+
     // TODO (trask) remove these two after
     // https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/5989
     properties.put("otel.instrumentation.oshi-metrics.enabled", "false");
