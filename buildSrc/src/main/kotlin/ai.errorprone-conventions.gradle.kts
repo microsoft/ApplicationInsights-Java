@@ -28,14 +28,11 @@ tasks {
       // Still Java 8
       disable("Varifier")
 
-      // TEMPORARILY until time to revisit
-      disable("WildcardImport")
-      disable("BadImport")
+      // Intellij does a nice job of displaying parameter names
       disable("BooleanParameter")
+
+      // Needed for legacy 2.x bridge
       disable("JavaUtilDate")
-      disable("HashCodeToString")
-      disable("ImmutableEnumChecker")
-      disable("JavaTimeDefaultTimeZone")
 
       // Doesn't work well with Java 8
       disable("FutureReturnValueIgnored")
@@ -54,22 +51,12 @@ tasks {
       disable("Java7ApiChecker")
       disable("StaticOrDefaultInterfaceMethod")
 
-      // Common to avoid an allocation. Revisit if it's worth opt-in suppressing instead of
-      // disabling entirely.
-      // TODO (trask) consider enabling
-      disable("MixedMutabilityReturnType")
-
-      // We don't use tools that recognize.
-      disable("InlineMeSuggester")
-      disable("DoNotCallSuggester")
-
       // needed temporarily while hosting azure-monitor-opentelemetry-exporter in this repo
       disable("MissingSummary")
       disable("UnnecessaryDefaultInEnumSwitch")
       disable("InconsistentOverloads")
 
-      if (name.contains("Jmh") || name.contains("Test")) {
-        disable("HashCodeToString")
+      if (name.contains("Jmh")) {
         disable("MemberName")
       }
     }

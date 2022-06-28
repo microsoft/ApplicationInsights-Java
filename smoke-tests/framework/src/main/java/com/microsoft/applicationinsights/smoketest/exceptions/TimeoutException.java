@@ -22,18 +22,24 @@
 package com.microsoft.applicationinsights.smoketest.exceptions;
 
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 public class TimeoutException extends SmokeTestException {
   public TimeoutException(String componentName, long timeout, TimeUnit unit) {
     this(componentName, timeout, unit, null, "");
   }
 
-  public TimeoutException(String componentName, long timeout, TimeUnit unit, Throwable cause) {
+  public TimeoutException(
+      String componentName, long timeout, TimeUnit unit, @Nullable Throwable cause) {
     this(componentName, timeout, unit, cause, "");
   }
 
   public TimeoutException(
-      String componentName, long timeout, TimeUnit unit, Throwable cause, String message) {
+      String componentName,
+      long timeout,
+      TimeUnit unit,
+      @Nullable Throwable cause,
+      String message) {
     super(
         String.format(
             "Timeout reached (%d %s) waiting for %s. %s",

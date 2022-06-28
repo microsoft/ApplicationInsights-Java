@@ -30,12 +30,13 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.Arti
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.TimestampContract;
 import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi.Builder;
+import com.squareup.moshi.Moshi;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -57,10 +58,13 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
   private final URL hostUrl;
   private final String instrumentationKey;
   private final HttpPipeline httpPipeline;
-  private final String userAgent;
+  @Nullable private final String userAgent;
 
   public ProfilerFrontendClientV2(
-      URL hostUrl, String instrumentationKey, HttpPipeline httpPipeline, String userAgent) {
+      URL hostUrl,
+      String instrumentationKey,
+      HttpPipeline httpPipeline,
+      @Nullable String userAgent) {
     this.hostUrl = hostUrl;
     this.instrumentationKey = instrumentationKey;
     this.httpPipeline = httpPipeline;
@@ -138,7 +142,7 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
               }
               try {
                 JsonAdapter<ArtifactAcceptedResponse> builder =
-                    new Builder().build().adapter(ArtifactAcceptedResponse.class);
+                    new Moshi.Builder().build().adapter(ArtifactAcceptedResponse.class);
 
                 ArtifactAcceptedResponse data = builder.fromJson(json);
                 if (data == null) {

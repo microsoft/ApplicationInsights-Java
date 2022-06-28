@@ -275,27 +275,27 @@ public class BytecodeUtil {
   public interface BytecodeUtilDelegate {
 
     void trackEvent(
-        Date timestamp,
+        @Nullable Date timestamp,
         String name,
         Map<String, String> properties,
         Map<String, String> tags,
         Map<String, Double> metrics,
-        String instrumentationKey);
+        @Nullable String instrumentationKey);
 
     void trackMetric(
-        Date timestamp,
+        @Nullable Date timestamp,
         String name,
         double value,
         Integer count,
         Double min,
         Double max,
-        Double stdDev,
+        @Nullable Double stdDev,
         Map<String, String> properties,
         Map<String, String> tags,
-        String instrumentationKey);
+        @Nullable String instrumentationKey);
 
     void trackDependency(
-        Date timestamp,
+        @Nullable Date timestamp,
         String name,
         String id,
         String resultCode,
@@ -307,31 +307,31 @@ public class BytecodeUtil {
         Map<String, String> properties,
         Map<String, String> tags,
         Map<String, Double> metrics,
-        String instrumentationKey);
+        @Nullable String instrumentationKey);
 
     void trackPageView(
-        Date timestamp,
+        @Nullable Date timestamp,
         String name,
         URI uri,
         long totalMillis,
         Map<String, String> properties,
         Map<String, String> tags,
         Map<String, Double> metrics,
-        String instrumentationKey);
+        @Nullable String instrumentationKey);
 
     void trackTrace(
-        Date timestamp,
+        @Nullable Date timestamp,
         String message,
         int severityLevel,
         Map<String, String> properties,
         Map<String, String> tags,
-        String instrumentationKey);
+        @Nullable String instrumentationKey);
 
     void trackRequest(
         String id,
         String name,
         URL url,
-        Date timestamp,
+        @Nullable Date timestamp,
         Long duration,
         String responseCode,
         boolean success,
@@ -339,17 +339,17 @@ public class BytecodeUtil {
         Map<String, String> properties,
         Map<String, String> tags,
         Map<String, Double> metrics,
-        String instrumentationKey);
+        @Nullable String instrumentationKey);
 
     // TODO also handle cases where ExceptionTelemetry parsedStack is used directly instead of
     // indirectly through Exception
     void trackException(
-        Date timestamp,
+        @Nullable Date timestamp,
         Exception exception,
         Map<String, String> properties,
         Map<String, String> tags,
         Map<String, Double> metrics,
-        String instrumentationKey);
+        @Nullable String instrumentationKey);
 
     void flush();
 

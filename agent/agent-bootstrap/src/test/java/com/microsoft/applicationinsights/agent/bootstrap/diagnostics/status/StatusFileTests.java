@@ -30,7 +30,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.AgentExtens
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsTestHelper;
 import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi.Builder;
+import com.squareup.moshi.Moshi;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -114,9 +114,9 @@ class StatusFileTests {
   }
 
   void assertMapHasExpectedInformation(
-      Map<String, Object> inputMap, @Nullable String key, String value) {
+      Map<String, Object> inputMap, @Nullable String key, @Nullable String value) {
     int size = 5;
-    if (key != null) {
+    if (key != null && value != null) {
       size = 6;
       assertThat(inputMap).containsEntry(key, value);
     }
@@ -164,7 +164,7 @@ class StatusFileTests {
   }
 
   Map parseJsonFile(File tempFolder) throws IOException {
-    JsonAdapter<Map> adapter = new Builder().build().adapter(Map.class);
+    JsonAdapter<Map> adapter = new Moshi.Builder().build().adapter(Map.class);
     String fileName = StatusFile.constructFileName(StatusFile.getJsonMap());
     String contents =
         new String(Files.readAllBytes(new File(tempFolder, fileName).toPath()), UTF_8);

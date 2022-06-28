@@ -30,7 +30,7 @@ import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.A
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
@@ -49,7 +49,7 @@ class AlertingSubsystemTest {
             new AlertConfiguration(AlertMetricType.MEMORY, true, 20, 120, 14400),
             new DefaultConfiguration(true, 5, 120),
             new CollectionPlanConfiguration(
-                true, EngineMode.immediate, ZonedDateTime.now(), 120, "a-settings-moniker")));
+                true, EngineMode.immediate, Instant.now(), 120, "a-settings-moniker")));
     return monitor;
   }
 
@@ -87,7 +87,7 @@ class AlertingSubsystemTest {
             new CollectionPlanConfiguration(
                 true,
                 EngineMode.immediate,
-                ZonedDateTime.now().plus(100, ChronoUnit.SECONDS),
+                Instant.now().plus(100, ChronoUnit.SECONDS),
                 120,
                 "a-settings-moniker")));
 
@@ -110,7 +110,7 @@ class AlertingSubsystemTest {
             new CollectionPlanConfiguration(
                 true,
                 EngineMode.immediate,
-                ZonedDateTime.now().minus(100, ChronoUnit.SECONDS),
+                Instant.now().minus(100, ChronoUnit.SECONDS),
                 120,
                 "a-settings-moniker")));
 

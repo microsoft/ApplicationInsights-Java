@@ -21,6 +21,7 @@
 
 package com.microsoft.gcmonitor.memorypools;
 
+import com.google.errorprone.annotations.Immutable;
 import com.microsoft.gcmonitor.garbagecollectors.GarbageCollector;
 import java.lang.management.MemoryPoolMXBean;
 import java.util.Arrays;
@@ -64,6 +65,7 @@ public enum MemoryPools {
   SHENANDOAH(Shenandoah.POOL_NAME, Shenandoah::new),
   Z_HEAP(ZHeap.POOL_NAME, ZHeap::new);
 
+  @Immutable
   interface MemoryPoolFactory extends Function<Set<GarbageCollector>, MemoryPool> {}
 
   private final String poolName;

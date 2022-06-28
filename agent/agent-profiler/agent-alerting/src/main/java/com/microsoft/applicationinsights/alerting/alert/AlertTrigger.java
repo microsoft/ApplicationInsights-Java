@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.alerting.alert;
 
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.function.Consumer;
 
 /**
@@ -38,7 +38,7 @@ public class AlertTrigger implements Consumer<Double> {
 
   private final AlertConfiguration alertConfig;
   private final Consumer<AlertBreach> action;
-  private ZonedDateTime lastAlertTime;
+  private Instant lastAlertTime;
 
   public AlertTrigger(AlertConfiguration alertConfiguration, Consumer<AlertBreach> action) {
     this.alertConfig = alertConfiguration;
@@ -48,9 +48,9 @@ public class AlertTrigger implements Consumer<Double> {
   @Override
   public void accept(Double telemetry) {
     if (alertConfig.isEnabled() && telemetry > alertConfig.getThreshold()) {
-      ZonedDateTime coolDownCutOff = ZonedDateTime.now().minusSeconds(alertConfig.getCooldown());
+      Instant coolDownCutOff = Instant.now().minusSeconds(alertConfig.getCooldown());
       if (lastAlertTime == null || lastAlertTime.isBefore(coolDownCutOff)) {
-        lastAlertTime = ZonedDateTime.now();
+        lastAlertTime = Instant.now();
         action.accept(new AlertBreach(alertConfig.getType(), telemetry, alertConfig));
       }
     }
