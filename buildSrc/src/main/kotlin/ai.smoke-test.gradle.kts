@@ -3,6 +3,8 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
   `java-library`
+
+  id("org.gradle.test-retry")
 }
 
 val aiSmokeTest = extensions.create<AiSmokeTestExtension>("aiSmokeTest")
@@ -104,6 +106,12 @@ tasks {
       jvmArgs("-Dio.opentelemetry.context.enableStrictContext=true")
       // TODO (trask): Have agent map unshaded to shaded.
       jvmArgs("-Dio.opentelemetry.javaagent.shaded.io.opentelemetry.context.enableStrictContext=true")
+    }
+
+    retry {
+      val retryTests = System.getenv("CI") != null || rootProject.hasProperty("retryTests")
+      // You can see tests that were retried by this mechanism in the collected test reports and build scans.
+      maxRetries.set(if (retryTests) 5 else 0)
     }
 
     testLogging {
