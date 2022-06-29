@@ -22,9 +22,10 @@
 package com.microsoft.applicationinsights.alerting;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-import com.microsoft.applicationinsights.alerting.analysis.AlertPipelines;
-import com.microsoft.applicationinsights.alerting.analysis.TelemetryDataPoint;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
+import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
+import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipeline;
+import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipelines;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
@@ -35,6 +36,7 @@ import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
@@ -131,8 +133,17 @@ public class AlertingSubsystem {
   }
 
   /** Add telemetry to alert processing pipeline. */
-  public void track(AlertMetricType type, double value) {
-    workQueue.add(new TelemetryDataPoint(type, timeSource.getNow(), value));
+  public void track(@Nullable AlertMetricType type, @Nullable Number value) {
+    if (type != null && value != null) {
+      trackTelemetryDataPoint(
+          new TelemetryDataPoint(type, timeSource.getNow(), type.name(), value.doubleValue()));
+    }
+  }
+
+  public void trackTelemetryDataPoint(@Nullable TelemetryDataPoint value) {
+    if (value != null) {
+      workQueue.add(value);
+    }
   }
 
   /** Block until work queue is empty. */
@@ -151,7 +162,10 @@ public class AlertingSubsystem {
   }
 
   /** Deliver data to pipelines. */
-  public void process(TelemetryDataPoint telemetryDataPoint) {
+  private void process(@Nullable TelemetryDataPoint telemetryDataPoint) {
+    if (telemetryDataPoint == null) {
+      return;
+    }
     LOGGER.trace(
         "Tracking " + telemetryDataPoint.getType().name() + " " + telemetryDataPoint.getValue());
     alertPipelines.process(telemetryDataPoint);
@@ -203,8 +217,13 @@ public class AlertingSubsystem {
                   .setProfileDuration(config.getImmediateProfilingDuration())
                   .setThreshold(0.0f)
                   .setCooldown(0)
-                  .createAlertConfiguration());
+                  .createAlertConfiguration(),
+              UUID.randomUUID().toString());
       alertHandler.accept(alertBreach);
     }
+  }
+
+  public void setPipeline(AlertMetricType type, AlertPipeline alertPipeline) {
+    alertPipelines.setAlertPipeline(type, alertPipeline);
   }
 }

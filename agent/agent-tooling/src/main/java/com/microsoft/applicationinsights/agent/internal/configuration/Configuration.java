@@ -1223,6 +1223,62 @@ public class Configuration {
     }
   }
 
+  public enum SpanFilterType {
+    REGEX
+  }
+
+  public static class SpanFilter {
+    public SpanFilterType type;
+    public String value;
+  }
+
+  public static class SpanAggregationConfig {
+    public int percentile = 95;
+  }
+
+  public enum SpanAggregationType {
+    PERCENTILE
+  }
+
+  public static class SpanAggregation {
+    public SpanAggregationType type = SpanAggregationType.PERCENTILE;
+    public long windowSize = 60000; // in ms
+    public String evaluationFrequency = "every_sample";
+    public SpanAggregationConfig configuration = new SpanAggregationConfig();
+  }
+
+  public enum SpanTriggerThresholdType {
+    GREATER_THAN
+  }
+
+  public static class SpanTriggerThreshold {
+    public SpanTriggerThresholdType type = SpanTriggerThresholdType.GREATER_THAN;
+    public long value = 5000; // In ms
+  }
+
+  public enum SpanTriggerThrottlingType {
+    COOLDOWN
+  }
+
+  public static class SpanTriggerThrottling {
+    public SpanTriggerThrottlingType type = SpanTriggerThrottlingType.COOLDOWN;
+    public long value = 60000; // in ms
+  }
+
+  public enum SpanTriggerType {
+    LATENCY
+  }
+
+  public static class SpanTrigger {
+    public String name;
+    public SpanTriggerType type = SpanTriggerType.LATENCY;
+    public SpanFilter filter = new SpanFilter();
+    public SpanAggregation aggregation = new SpanAggregation();
+    public SpanTriggerThreshold threshold = new SpanTriggerThreshold();
+    public SpanTriggerThrottling throttling = new SpanTriggerThrottling();
+    public long profileDuration = 30; // in s
+  }
+
   public static class ProfilerConfiguration {
     public int configPollPeriodSeconds = 60;
     public int periodicRecordingDurationSeconds = 120;
@@ -1230,6 +1286,9 @@ public class Configuration {
     public boolean enabled = false;
     public String memoryTriggeredSettings = "profile";
     public String cpuTriggeredSettings = "profile";
+    @Nullable public String serviceProfilerFrontEndPoint = null;
+    public boolean enableResponseTriggering = false;
+    public SpanTrigger[] responseTriggerEndpoints = {};
   }
 
   public static class GcEventConfiguration {

@@ -29,20 +29,21 @@ import com.microsoft.applicationinsights.profiler.Profiler;
 import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
 import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
+import com.microsoft.applicationinsights.profiler.uploader.UploadCompleteHandler;
 import com.microsoft.jfr.FlightRecorderConnection;
 import com.microsoft.jfr.JfrStreamingException;
 import com.microsoft.jfr.Recording;
 import com.microsoft.jfr.RecordingConfiguration;
 import com.microsoft.jfr.RecordingOptions;
 import com.microsoft.jfr.dcmd.FlightRecorderDiagnosticCommandConnection;
+import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Locale;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -63,8 +64,6 @@ import org.slf4j.LoggerFactory;
  */
 public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
   private static final Logger LOGGER = LoggerFactory.getLogger(JfrProfiler.class);
-  public static final String REDUCED_MEMORY_PROFILE = "reduced-memory-profile.jfc";
-  public static final String REDUCED_CPU_PROFILE = "reduced-cpu-profile.jfc";
 
   // service execution context
   private ScheduledExecutorService scheduledExecutorService;
@@ -73,15 +72,17 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
   private ProfileHandler profileHandler;
 
   private FlightRecorderConnection flightRecorderConnection;
-  private RecordingOptions recordingOptions;
+  private RecordingOptions.Builder recordingOptionsBuilder;
 
   private final AlertConfiguration periodicConfig;
 
   private final Object activeRecordingLock = new Object();
   @Nullable private Recording activeRecording = null;
+  @Nullable private File activeRecordingFile = null;
 
   private final RecordingConfiguration memoryRecordingConfiguration;
   private final RecordingConfiguration cpuRecordingConfiguration;
+  private final RecordingConfiguration spanRecordingConfiguration;
 
   private final File temporaryDirectory;
 
@@ -94,48 +95,11 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
             configuration.getPeriodicRecordingDuration(),
             configuration.getPeriodicRecordingInterval());
 
-    memoryRecordingConfiguration = getMemoryProfileConfig(configuration);
-    cpuRecordingConfiguration = getCpuProfileConfig(configuration);
+    memoryRecordingConfiguration =
+        AlternativeJfrConfigurations.getMemoryProfileConfig(configuration);
+    cpuRecordingConfiguration = AlternativeJfrConfigurations.getCpuProfileConfig(configuration);
+    spanRecordingConfiguration = AlternativeJfrConfigurations.getSpanProfileConfig(configuration);
     temporaryDirectory = configuration.tempDirectory();
-  }
-
-  private static RecordingConfiguration getMemoryProfileConfig(
-      ServiceProfilerServiceConfig configuration) {
-    return getRecordingConfiguration(
-        configuration.memoryTriggeredSettings(), REDUCED_MEMORY_PROFILE);
-  }
-
-  private static RecordingConfiguration getCpuProfileConfig(
-      ServiceProfilerServiceConfig configuration) {
-    return getRecordingConfiguration(configuration.cpuTriggeredSettings(), REDUCED_CPU_PROFILE);
-  }
-
-  private static RecordingConfiguration getRecordingConfiguration(
-      @Nullable String triggeredSettings, String reducedProfile) {
-    if (triggeredSettings != null) {
-      try {
-        ProfileTypes profile = ProfileTypes.valueOf(triggeredSettings.toUpperCase(Locale.ROOT));
-
-        if (profile == ProfileTypes.PROFILE) {
-          return RecordingConfiguration.PROFILE_CONFIGURATION;
-        } else if (profile == ProfileTypes.PROFILE_WITHOUT_ENV_DATA) {
-          return new RecordingConfiguration.JfcFileConfiguration(
-              JfrProfiler.class.getResourceAsStream(reducedProfile));
-        }
-      } catch (IllegalArgumentException e) {
-        // NOP, to be expected if a file is provided
-      }
-
-      try {
-        FileInputStream fis = new FileInputStream(triggeredSettings);
-        return new RecordingConfiguration.JfcFileConfiguration(fis);
-      } catch (FileNotFoundException e) {
-        LOGGER.error(
-            "Failed to find custom JFC file " + triggeredSettings + " using default profile");
-      }
-    }
-
-    return RecordingConfiguration.PROFILE_CONFIGURATION;
   }
 
   /**
@@ -153,7 +117,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
     this.scheduledExecutorService = scheduledExecutorService;
 
     // TODO -  allow user configuration of profile options
-    recordingOptions = new RecordingOptions.Builder().build();
+    recordingOptionsBuilder = new RecordingOptions.Builder();
 
     try {
       // connect to mbeans
@@ -180,14 +144,17 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
     // TODO update periodic profile configuration
   }
 
-  protected void profileAndUpload(AlertBreach alertBreach, Duration duration) {
+  protected void profileAndUpload(
+      AlertBreach alertBreach, Duration duration, UploadCompleteHandler uploadCompleteHandler) {
     Instant recordingStart = Instant.now();
     executeProfile(
-        alertBreach.getType(), duration, uploadNewRecording(alertBreach, recordingStart));
+        alertBreach.getType(),
+        duration,
+        uploadNewRecording(alertBreach, recordingStart, uploadCompleteHandler));
   }
 
   @Nullable
-  private Recording startRecording(AlertMetricType alertType) {
+  protected Recording startRecording(AlertMetricType alertType, Duration duration) {
     synchronized (activeRecordingLock) {
       if (activeRecording != null) {
         LOGGER.warn("Alert received, however a profile is already in progress, ignoring request.");
@@ -199,6 +166,9 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
         case CPU:
           recordingConfiguration = cpuRecordingConfiguration;
           break;
+        case SPAN:
+          recordingConfiguration = spanRecordingConfiguration;
+          break;
         case MEMORY:
           recordingConfiguration = memoryRecordingConfiguration;
           break;
@@ -206,24 +176,38 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
           recordingConfiguration = RecordingConfiguration.PROFILE_CONFIGURATION;
       }
 
-      activeRecording =
-          flightRecorderConnection.newRecording(recordingOptions, recordingConfiguration);
-      return activeRecording;
+      try {
+        activeRecordingFile = createJfrFile(duration);
+
+        RecordingOptions recordingOptions = recordingOptionsBuilder.build();
+
+        this.activeRecording = createRecording(recordingOptions, recordingConfiguration);
+
+        return activeRecording;
+      } catch (IOException e) {
+        LOGGER.error("Failed to create jfr file", e);
+        return null;
+      }
     }
+  }
+
+  protected Recording createRecording(
+      RecordingOptions recordingOptions, RecordingConfiguration recordingConfiguration) {
+    return flightRecorderConnection.newRecording(recordingOptions, recordingConfiguration);
   }
 
   /** Perform a profile and notify the handler. */
   protected void executeProfile(
       AlertMetricType alertType, Duration duration, Consumer<Recording> handler) {
 
-    LOGGER.info("Starting profile");
+    LOGGER.info("Received " + alertType + " alert, Starting profile");
 
     if (flightRecorderConnection == null) {
       LOGGER.error("Flight recorder not initialised");
       return;
     }
 
-    Recording newRecording = startRecording(alertType);
+    Recording newRecording = startRecording(alertType, duration);
 
     if (newRecording == null) {
       return;
@@ -248,19 +232,20 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
   }
 
   /** When a profile has been created, upload it to service profiler. */
+  @SuppressWarnings("CatchingUnchecked")
   protected Consumer<Recording> uploadNewRecording(
-      AlertBreach alertBreach, Instant recordingStart) {
+      AlertBreach alertBreach,
+      Instant recordingStart,
+      UploadCompleteHandler uploadCompleteHandler) {
     return recording -> {
       LOGGER.info("Closing and uploading recording");
-      File file = null;
       try {
-        Instant recordingEnd = Instant.now();
-
         // dump profile to file
-        file = createJfrFile(recording, recordingStart, recordingEnd);
+        closeRecording(activeRecording, activeRecordingFile);
 
         // notify handler of a new profile
-        profileHandler.receive(alertBreach, recordingStart.toEpochMilli(), file);
+        profileHandler.receive(
+            alertBreach, recordingStart.toEpochMilli(), activeRecordingFile, uploadCompleteHandler);
 
       } catch (Exception e) {
         LOGGER.error("Failed to upload recording", e);
@@ -269,110 +254,118 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
         LOGGER.error("Failed to upload recording", e);
         throw e;
       } finally {
-        try {
-          // close recording
-          recording.stop();
-          recording.close();
-        } catch (IOException e) {
-          LOGGER.error("Failed to close recording", e);
-        } catch (JfrStreamingException internalError) {
-          LOGGER.error("Internal JFR Error", internalError);
-        }
-
-        // delete uploaded profile
-        if (file != null) {
-          if (file.exists()) {
-            if (!file.delete()) {
-              LOGGER.error("Failed to remove file " + file.getAbsolutePath());
-            }
-          }
-        }
-
         clearActiveRecording();
       }
     };
   }
 
+  private static void closeRecording(Recording recording, File recordingFile) {
+    try {
+      // close recording
+      recording.dump(recordingFile.getAbsolutePath());
+    } catch (IOException e) {
+      LOGGER.error("Failed to close recording", e);
+    } catch (JfrStreamingException internalError) {
+      // Sometimes the  mbean dump fails...Try alternative of streaming data out
+      try {
+        writeFileFromStream(recording, recordingFile);
+      } catch (IOException e) {
+        LOGGER.error("Failed to close recording", e);
+      } catch (JfrStreamingException e) {
+        LOGGER.error("Internal JFR Error", e);
+      } finally {
+        try {
+          recording.stop();
+          recording.close();
+        } catch (IOException e) {
+          LOGGER.error("Failed to close recording", e);
+        } catch (JfrStreamingException e) {
+          LOGGER.error("Internal JFR Error", e);
+        }
+      }
+    }
+  }
+
+  private static void writeFileFromStream(Recording recording, File recordingFile)
+      throws IOException, JfrStreamingException {
+    if (recordingFile.exists()) {
+      recordingFile.delete();
+    }
+    recordingFile.createNewFile();
+
+    BufferedInputStream stream = null;
+    FileOutputStream fos = null;
+    try {
+      stream = new BufferedInputStream(recording.getStream(null, null));
+      fos = new FileOutputStream(recordingFile);
+      int read;
+      byte[] buffer = new byte[10 * 1024];
+      while ((read = stream.read(buffer)) != -1) {
+        fos.write(buffer, 0, read);
+      }
+    } finally {
+      if (stream != null) {
+        stream.close();
+      }
+      if (fos != null) {
+        fos.close();
+      }
+    }
+  }
+
   private void clearActiveRecording() {
     synchronized (activeRecordingLock) {
       activeRecording = null;
+
+      // delete uploaded profile
+      if (activeRecordingFile != null && activeRecordingFile.exists()) {
+        if (!activeRecordingFile.delete()) {
+          LOGGER.error("Failed to remove file " + activeRecordingFile.getAbsolutePath());
+        }
+      }
+      activeRecordingFile = null;
     }
   }
 
   /** Dump JFR profile to file. */
-  protected File createJfrFile(Recording recording, Instant recordingStart, Instant recordingEnd)
-      throws IOException {
-    try {
-      if (!temporaryDirectory.exists()) {
-        if (!temporaryDirectory.mkdirs()) {
-          throw new IOException(
-              "Failed to create temporary directory " + temporaryDirectory.getAbsolutePath());
-        }
+  protected File createJfrFile(Duration duration) throws IOException {
+    if (!temporaryDirectory.exists()) {
+      if (!temporaryDirectory.mkdirs()) {
+        throw new IOException(
+            "Failed to create temporary directory " + temporaryDirectory.getAbsolutePath());
       }
-
-      File file =
-          new File(
-              temporaryDirectory,
-              "recording_"
-                  + recordingStart.toEpochMilli()
-                  + "-"
-                  + recordingEnd.toEpochMilli()
-                  + ".jfr");
-      recording.dump(file.getAbsolutePath());
-      return file;
-    } catch (JfrStreamingException internalError) {
-      throw new IOException(internalError);
     }
-  }
 
-  /** Action to be performed on a CPU breach. */
-  public void performCpuProfile(AlertBreach alertBreach) {
-    LOGGER.info("Received CPU alert, profiling");
-    profileAndUpload(
-        alertBreach, Duration.ofSeconds(alertBreach.getAlertConfiguration().getProfileDuration()));
-  }
+    Instant recordingStart = Instant.now();
+    Instant recordingEnd = recordingStart.plus(duration);
 
-  /** Action to be performed on a MEMORY breach. */
-  public void performMemoryProfile(AlertBreach alertBreach) {
-    LOGGER.info("Received Memory alert, profiling");
-    profileAndUpload(
-        alertBreach, Duration.ofSeconds(alertBreach.getAlertConfiguration().getProfileDuration()));
-  }
-
-  /** Action to be performed on a MANUAL profile request. */
-  public void performManualProfile(AlertBreach alertBreach) {
-    LOGGER.info("Received manual alert, profiling");
-    profileAndUpload(
-        alertBreach, Duration.ofSeconds(alertBreach.getAlertConfiguration().getProfileDuration()));
+    return new File(
+        temporaryDirectory,
+        "recording_" + recordingStart.toEpochMilli() + "-" + recordingEnd.toEpochMilli() + ".jfr");
   }
 
   /** Action to be performed on a periodic profile request. */
-  public void performPeriodicProfile() {
+  public void performPeriodicProfile(UploadCompleteHandler uploadCompleteHandler) {
     LOGGER.info("Received periodic profile request");
+    AlertBreach breach =
+        new AlertBreach(AlertMetricType.PERIODIC, 0, periodicConfig, UUID.randomUUID().toString());
     profileAndUpload(
-        new AlertBreach(AlertMetricType.PERIODIC, 0, periodicConfig),
-        Duration.ofSeconds(periodicConfig.getProfileDuration()));
+        breach,
+        Duration.ofSeconds(breach.getAlertConfiguration().getProfileDuration()),
+        uploadCompleteHandler);
   }
 
   /** Dispatch alert breach event to handler. */
   @Override
-  public void accept(AlertBreach alertBreach) {
-    switch (alertBreach.getType()) {
-      case CPU:
-        performCpuProfile(alertBreach);
-        break;
+  public void accept(AlertBreach alertBreach, UploadCompleteHandler uploadCompleteHandler) {
 
-      case MEMORY:
-        performMemoryProfile(alertBreach);
-        break;
-
-      case MANUAL:
-        performManualProfile(alertBreach);
-        break;
-
-      case PERIODIC:
-        performPeriodicProfile();
-        break;
+    if (alertBreach.getType() == AlertMetricType.PERIODIC) {
+      performPeriodicProfile(uploadCompleteHandler);
+    } else {
+      profileAndUpload(
+          alertBreach,
+          Duration.ofSeconds(alertBreach.getAlertConfiguration().getProfileDuration()),
+          uploadCompleteHandler);
     }
   }
 }

@@ -27,7 +27,6 @@ import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
 import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
-import com.microsoft.applicationinsights.profiler.uploader.UploadCompleteHandler;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFrontendClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler;
@@ -49,7 +48,6 @@ public class JfrProfilerServiceFactory implements ProfilerServiceFactory {
   @Override
   public synchronized Future<ProfilerService> initialize(
       Supplier<String> appIdSupplier,
-      UploadCompleteHandler uploadCompleteObserver,
       ProfilerConfigurationHandler profilerConfigurationHandler,
       String processId,
       ServiceProfilerServiceConfig config,
@@ -77,7 +75,6 @@ public class JfrProfilerServiceFactory implements ProfilerServiceFactory {
               config,
               new JfrProfiler(config),
               profilerConfigurationHandler,
-              uploadCompleteObserver,
               serviceProfilerClient,
               uploader,
               serviceProfilerExecutorService);

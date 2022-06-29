@@ -19,62 +19,56 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.alerting.analysis;
+package com.microsoft.applicationinsights.alerting.analysis.aggregations;
 
+import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
+import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.OptionalDouble;
-import java.util.function.Consumer;
 
-/** Applies a time window to data and calculates a mean of the data during that window. */
-public class RollingAverage {
+/** Applies a time window to data. I.e holds the last n seconds of data. */
+public class WindowedAggregation {
 
   private final long windowLengthInSec;
   private final TimeSource timeSource;
-  private final List<TelemetryDataPoint> telemetryDataPoints = new ArrayList<>();
-  private Consumer<Double> consumer;
+  private final List<TelemetryDataPoint> telemetryDataPoints =
+      Collections.synchronizedList(new ArrayList<>());
   private static final int DEFAULT_ROLLING_AVERAGE_WINDOW_IN_SEC =
       Integer.parseInt(
           System.getProperty(
               "applicationinsights.preview.profiler.rolling-average-window-in-sec", "120"));
 
-  public RollingAverage() {
+  public WindowedAggregation() {
     windowLengthInSec = DEFAULT_ROLLING_AVERAGE_WINDOW_IN_SEC;
     timeSource = TimeSource.DEFAULT;
   }
 
-  public RollingAverage(long windowLengthInSec, TimeSource timeSource) {
+  public WindowedAggregation(long windowLengthInSec) {
+    this(windowLengthInSec, TimeSource.DEFAULT);
+  }
+
+  public WindowedAggregation(long windowLengthInSec, TimeSource timeSource) {
     this.windowLengthInSec = windowLengthInSec;
     this.timeSource = timeSource;
+  }
+
+  public List<TelemetryDataPoint> getTelemetryDataPoints() {
+    return telemetryDataPoints;
   }
 
   public long getWindowLengthInSec() {
     return windowLengthInSec;
   }
 
-  public RollingAverage setConsumer(Consumer<Double> consumer) {
-    this.consumer = consumer;
-    return this;
-  }
-
-  public double track(TelemetryDataPoint telemetryDataPoint) {
+  public List<TelemetryDataPoint> update(TelemetryDataPoint telemetryDataPoint) {
     Instant now = timeSource.getNow();
     telemetryDataPoints.add(telemetryDataPoint);
 
     removeOldValues(now);
 
-    OptionalDouble average = calculateAverage();
-    if (average.isPresent()) {
-      consumer.accept(average.getAsDouble());
-      return average.getAsDouble();
-    } else {
-      return 0.0d;
-    }
-  }
-
-  public OptionalDouble calculateAverage() {
-    return telemetryDataPoints.stream().mapToDouble(TelemetryDataPoint::getValue).average();
+    return telemetryDataPoints;
   }
 
   private void removeOldValues(Instant now) {

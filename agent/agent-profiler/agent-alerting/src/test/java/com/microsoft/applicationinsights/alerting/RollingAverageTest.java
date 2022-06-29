@@ -24,9 +24,9 @@ package com.microsoft.applicationinsights.alerting;
 import static com.microsoft.applicationinsights.alerting.config.AlertMetricType.CPU;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.microsoft.applicationinsights.alerting.analysis.RollingAverage;
-import com.microsoft.applicationinsights.alerting.analysis.TelemetryDataPoint;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
+import com.microsoft.applicationinsights.alerting.analysis.aggregations.RollingAverage;
+import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -39,9 +39,10 @@ class RollingAverageTest {
   void alertsConsumer() {
     AtomicReference<Double> called = new AtomicReference<>();
     Consumer<Double> consumer = called::set;
-    RollingAverage rollingAverage = new RollingAverage().setConsumer(consumer);
+    RollingAverage rollingAverage = new RollingAverage();
+    rollingAverage.setConsumer(consumer);
 
-    rollingAverage.track(createDataPoint(0.1));
+    rollingAverage.update(createDataPoint(0.1));
 
     assertThat(called.get()).isNotNull();
   }
@@ -50,11 +51,12 @@ class RollingAverageTest {
   void givesCorrectValue() {
     AtomicReference<Double> called = new AtomicReference<>();
     Consumer<Double> consumer = called::set;
-    RollingAverage rollingAverage = new RollingAverage().setConsumer(consumer);
+    RollingAverage rollingAverage = new RollingAverage();
+    rollingAverage.setConsumer(consumer);
 
-    rollingAverage.track(createDataPoint(0.0));
-    rollingAverage.track(createDataPoint(0.5));
-    rollingAverage.track(createDataPoint(1.0));
+    rollingAverage.update(createDataPoint(0.0));
+    rollingAverage.update(createDataPoint(0.5));
+    rollingAverage.update(createDataPoint(1.0));
 
     assertThat(called.get()).isEqualTo(0.5d);
   }
@@ -73,21 +75,22 @@ class RollingAverageTest {
           }
         };
 
-    RollingAverage rollingAverage = new RollingAverage(120, timeSource).setConsumer(consumer);
+    RollingAverage rollingAverage = new RollingAverage(120, timeSource);
+    rollingAverage.setConsumer(consumer);
 
-    rollingAverage.track(createDataPoint(0.0));
-    rollingAverage.track(createDataPoint(0.5));
-    rollingAverage.track(createDataPoint(1.0));
+    rollingAverage.update(createDataPoint(0.0));
+    rollingAverage.update(createDataPoint(0.5));
+    rollingAverage.update(createDataPoint(1.0));
     offset.set(150);
-    rollingAverage.track(createDataPoint(0.1));
-    rollingAverage.track(createDataPoint(0.1));
+    rollingAverage.update(createDataPoint(0.1));
+    rollingAverage.update(createDataPoint(0.1));
 
-    assertThat(rollingAverage.track(createDataPoint(0.1))).isEqualTo(0.1d);
+    assertThat(rollingAverage.update(createDataPoint(0.1))).isEqualTo(0.1d);
 
     assertThat(called.get()).isEqualTo(0.1d);
   }
 
   private static TelemetryDataPoint createDataPoint(double v) {
-    return new TelemetryDataPoint(CPU, TimeSource.DEFAULT.getNow(), v);
+    return new TelemetryDataPoint(CPU, TimeSource.DEFAULT.getNow(), CPU.name(), v);
   }
 }

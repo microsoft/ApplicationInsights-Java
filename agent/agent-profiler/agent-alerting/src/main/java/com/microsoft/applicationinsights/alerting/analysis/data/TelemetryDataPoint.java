@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.alerting.analysis;
+package com.microsoft.applicationinsights.alerting.analysis.data;
 
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import java.time.Instant;
@@ -31,15 +31,21 @@ public class TelemetryDataPoint implements Comparable<TelemetryDataPoint> {
   private final AlertMetricType type;
   private final Instant time;
   private final double value;
+  private final String name;
 
-  public TelemetryDataPoint(AlertMetricType type, Instant time, double value) {
+  public TelemetryDataPoint(AlertMetricType type, Instant time, String name, double value) {
     this.type = type;
     this.time = time;
     this.value = value;
+    this.name = name;
   }
 
   public double getValue() {
     return value;
+  }
+
+  public String getName() {
+    return name;
   }
 
   public Instant getTime() {
@@ -53,6 +59,8 @@ public class TelemetryDataPoint implements Comparable<TelemetryDataPoint> {
       return time.compareTo(telemetryDataPoint.time);
     } else if (value != telemetryDataPoint.getValue()) {
       return Double.compare(value, telemetryDataPoint.value);
+    } else if (!name.equals(telemetryDataPoint.getName())) {
+      return name.compareTo(telemetryDataPoint.getName());
     } else {
       return type.compareTo(telemetryDataPoint.type);
     }
@@ -73,11 +81,12 @@ public class TelemetryDataPoint implements Comparable<TelemetryDataPoint> {
     TelemetryDataPoint telemetryDataPoint = (TelemetryDataPoint) obj;
     return Double.compare(telemetryDataPoint.value, value) == 0
         && type == telemetryDataPoint.type
+        && name.equals(telemetryDataPoint.getName())
         && Objects.equals(time, telemetryDataPoint.time);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(type, time, value);
+    return Objects.hash(type, time, value, name);
   }
 }

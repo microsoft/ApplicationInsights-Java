@@ -52,6 +52,7 @@ import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithS
 import com.microsoft.applicationinsights.agent.internal.processors.LogExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
 import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
+import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanExporter;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
@@ -400,6 +401,11 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       // this is temporary until semantic attributes stabilize and we make breaking change
       // then can use java.util.functions.Predicate<Attributes>
       spanExporter = new BackCompatHttpUrlProcessor(spanExporter);
+    }
+
+    if (configuration.preview.profiler.enabled
+        && configuration.preview.profiler.enableResponseTriggering) {
+      spanExporter = AlertTriggerSpanExporter.build(spanExporter);
     }
 
     return spanExporter;

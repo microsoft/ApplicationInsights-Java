@@ -19,31 +19,15 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.alerting.analysis;
+package com.microsoft.applicationinsights.diagnostics;
 
-// This class name must end in MXBean (case sensitive)
-@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
-public interface AlertPipelineMXBean {
+import java.util.concurrent.ScheduledExecutorService;
 
-  // Attributes
-  long getCoolDown();
-
-  long getRollingAverageWindow();
-
-  long getProfilerDuration();
-
-  float getThreshold();
-
-  double getCurrentAverage();
-
-  boolean getEnabled();
-
-  boolean isOffCooldown();
-
-  String getLastAlertTime();
-
-  // Operations
-  // - no operations currently implemented
-  // Notifications
-  // - no notifications currently implemented
+/**
+ * Factory to be invoked to create a DiagnosticEngine. This factory will be service loaded by the
+ * agent and invoked. It is up to the provider of a DiagnosticEngine to provide a service loader for
+ * this interface.
+ */
+public interface DiagnosticEngineFactory {
+  DiagnosticEngine create(ScheduledExecutorService executorService);
 }

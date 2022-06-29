@@ -22,14 +22,22 @@
 package com.microsoft.applicationinsights.profiler;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
+import com.microsoft.applicationinsights.profiler.uploader.UploadCompleteHandler;
 import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.function.Consumer;
 import javax.management.InstanceNotFoundException;
 
-/** A service that is able to perform a profile and pass the results to to profileHandler. */
-public interface Profiler extends ProfilerConfigurationHandler, Consumer<AlertBreach> {
+/** A service that when invoked to perform a profile. */
+public interface Profiler extends ProfilerConfigurationHandler {
+
+  /** profileHandler handler will be invoked with a completed profile. */
   boolean initialize(
       ProfileHandler profileHandler, ScheduledExecutorService scheduledExecutorService)
       throws IOException, InstanceNotFoundException;
+
+  /**
+   * Causes a profile to occur, then calls uploadCompleteHandler once the profile has been completed
+   * and uploaded.
+   */
+  void accept(AlertBreach alertBreach, UploadCompleteHandler uploadCompleteHandler);
 }

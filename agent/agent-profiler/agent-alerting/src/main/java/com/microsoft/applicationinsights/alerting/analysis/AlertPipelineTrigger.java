@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.alerting.analysis;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 import java.time.Instant;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 /**
@@ -50,7 +51,9 @@ public class AlertPipelineTrigger implements Consumer<Double> {
     if (alertConfig.isEnabled() && telemetry > alertConfig.getThreshold()) {
       if (isOffCooldown()) {
         lastAlertTime = Instant.now();
-        action.accept(new AlertBreach(alertConfig.getType(), telemetry, alertConfig));
+        UUID profileId = UUID.randomUUID();
+        action.accept(
+            new AlertBreach(alertConfig.getType(), telemetry, alertConfig, profileId.toString()));
       }
     }
   }

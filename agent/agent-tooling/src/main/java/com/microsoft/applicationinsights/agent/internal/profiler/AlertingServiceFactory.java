@@ -26,29 +26,57 @@ import static com.microsoft.applicationinsights.agent.internal.perfcounter.Metri
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.profiler.triggers.SpanAlertPipelineBuilder;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
+import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipeline;
+import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipelineMultiplexer;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /** Creates AlertMonitor and wires it up to observe telemetry. */
 public class AlertingServiceFactory {
+
+  private static AlertingSubsystem alertingSubsystem;
+
   public static AlertingSubsystem create(
+      Configuration configuration,
       Consumer<AlertBreach> alertAction,
       TelemetryObservers telemetryObservers,
       TelemetryClient telemetryClient,
-      ExecutorService executorService,
-      GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
-    AlertingSubsystem alertingSubsystem = AlertingSubsystem.create(alertAction, executorService);
+      ExecutorService executorService) {
+    alertingSubsystem = AlertingSubsystem.create(alertAction, executorService);
+
+    if (configuration.preview.profiler.enableResponseTriggering) {
+      List<AlertPipeline> spanPipelines =
+          Arrays.stream(configuration.preview.profiler.responseTriggerEndpoints)
+              .map(it -> SpanAlertPipelineBuilder.build(it, alertAction))
+              .collect(Collectors.toList());
+
+      alertingSubsystem.setPipeline(
+          AlertMetricType.SPAN, new AlertPipelineMultiplexer(spanPipelines));
+    }
 
     addObserver(alertingSubsystem, telemetryObservers);
 
     monitorGcActivity(
-        alertingSubsystem, telemetryClient, executorService, gcEventMonitorConfiguration);
+        alertingSubsystem,
+        telemetryClient,
+        executorService,
+        formGcEventMonitorConfiguration(configuration.preview.gcEvents));
     return alertingSubsystem;
+  }
+
+  private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(
+      Configuration.GcEventConfiguration gcEvents) {
+    return new GcEventMonitor.GcEventMonitorConfiguration(gcEvents.reportingLevel);
   }
 
   private static void monitorGcActivity(
@@ -81,4 +109,8 @@ public class AlertingServiceFactory {
   }
 
   private AlertingServiceFactory() {}
+
+  public static AlertingSubsystem getAlertingSubsystem() {
+    return alertingSubsystem;
+  }
 }

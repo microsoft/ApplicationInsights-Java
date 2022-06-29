@@ -29,9 +29,9 @@ import reactor.core.publisher.Mono;
 
 /** Client that can interact with the Service Profiler endpoint. */
 public interface ServiceProfilerClientV2 {
-  Mono<BlobAccessPass> getUploadAccess(UUID profileId);
+  Mono<BlobAccessPass> getUploadAccess(UUID profileId, String extension);
 
-  Mono<ArtifactAcceptedResponse> reportUploadFinish(UUID profileId, String etag);
+  Mono<ArtifactAcceptedResponse> reportUploadFinish(UUID profileId, String extension, String etag);
 
   Mono<String> getSettings(Date oldTimeStamp);
 }

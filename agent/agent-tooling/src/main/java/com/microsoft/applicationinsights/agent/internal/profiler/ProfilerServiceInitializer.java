@@ -21,16 +21,22 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler;
 
+import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpPipeline;
+import com.azure.core.http.policy.DefaultRedirectStrategy;
+import com.azure.core.http.policy.RedirectPolicy;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.EventTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
+import com.microsoft.applicationinsights.diagnostics.DiagnosticEngine;
+import com.microsoft.applicationinsights.diagnostics.DiagnosticEngineFactory;
 import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
 import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
@@ -38,6 +44,8 @@ import com.microsoft.applicationinsights.profiler.config.AlertConfigParser;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import com.microsoft.applicationinsights.profiler.uploader.ServiceProfilerIndex;
 import com.microsoft.applicationinsights.profiler.uploader.UploadCompleteHandler;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -64,6 +72,7 @@ public class ProfilerServiceInitializer {
 
   private static boolean initialized = false;
   private static ProfilerService profilerService;
+  private static DiagnosticEngine diagnosticEngine;
 
   public static synchronized void initialize(
       Supplier<String> appIdSupplier,
@@ -73,10 +82,18 @@ public class ProfilerServiceInitializer {
       String roleName,
       TelemetryClient telemetryClient,
       String userAgent,
-      GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
+      Configuration configuration) {
 
+    // Cannot use default creator, as we need to add POST to the allowed redirects
     HttpPipeline httpPipeline =
-        LazyHttpClient.newHttpPipeLineWithDefaultRedirect(telemetryClient.getAadAuthentication());
+        LazyHttpClient.newHttpPipeLine(
+            telemetryClient.getAadAuthentication(),
+            new RedirectPolicy(
+                new DefaultRedirectStrategy(
+                    3,
+                    "Location",
+                    new HashSet<>(
+                        Arrays.asList(HttpMethod.GET, HttpMethod.HEAD, HttpMethod.POST)))));
 
     initialize(
         appIdSupplier,
@@ -86,7 +103,7 @@ public class ProfilerServiceInitializer {
         roleName,
         telemetryClient,
         userAgent,
-        gcEventMonitorConfiguration,
+        configuration,
         httpPipeline);
   }
 
@@ -98,7 +115,7 @@ public class ProfilerServiceInitializer {
       String roleName,
       TelemetryClient telemetryClient,
       String userAgent,
-      GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration,
+      Configuration configuration,
       HttpPipeline httpPipeline) {
     if (!initialized) {
       initialized = true;
@@ -116,9 +133,12 @@ public class ProfilerServiceInitializer {
         return;
       }
 
+      // Initialise diagnostic service
+      startDiagnosticEngine();
+
       ScheduledExecutorService serviceProfilerExecutorService =
           Executors.newScheduledThreadPool(
-              2,
+              1,
               ThreadPoolUtils.createDaemonThreadFactory(
                   ProfilerServiceFactory.class, "ServiceProfilerService"));
 
@@ -129,13 +149,11 @@ public class ProfilerServiceInitializer {
                   ProfilerServiceFactory.class, "ServiceProfilerAlertingService"));
 
       AlertingSubsystem alerting =
-          createAlertMonitor(
-              alertServiceExecutorService, telemetryClient, gcEventMonitorConfiguration);
+          createAlertMonitor(alertServiceExecutorService, telemetryClient, configuration);
 
       Future<ProfilerService> future =
           factory.initialize(
               appIdSupplier,
-              sendServiceProfilerIndex(telemetryClient),
               updateAlertingConfig(alerting),
               processId,
               config,
@@ -163,8 +181,35 @@ public class ProfilerServiceInitializer {
     }
   }
 
+  private static void startDiagnosticEngine() {
+    try {
+      DiagnosticEngineFactory diagnosticEngineFactory = loadDiagnosticEngineFactory();
+      if (diagnosticEngineFactory != null) {
+        ScheduledExecutorService diagnosticEngineExecutorService =
+            Executors.newScheduledThreadPool(
+                1, ThreadPoolUtils.createNamedDaemonThreadFactory("DiagnosisThreadPool"));
+
+        diagnosticEngine = diagnosticEngineFactory.create(diagnosticEngineExecutorService);
+
+        if (diagnosticEngine != null) {
+          diagnosticEngine.init();
+        } else {
+          diagnosticEngineExecutorService.shutdown();
+        }
+      } else {
+        LOGGER.warn("No diagnostic engine implementation provided");
+      }
+    } catch (RuntimeException e) {
+      LOGGER.error("Failed to load profiler factory", e);
+    }
+  }
+
   private static ProfilerServiceFactory loadProfilerServiceFactory() {
     return findServiceLoader(ProfilerServiceFactory.class);
+  }
+
+  private static DiagnosticEngineFactory loadDiagnosticEngineFactory() {
+    return findServiceLoader(DiagnosticEngineFactory.class);
   }
 
   protected static <T> T findServiceLoader(Class<T> clazz) {
@@ -208,25 +253,34 @@ public class ProfilerServiceInitializer {
   static AlertingSubsystem createAlertMonitor(
       ScheduledExecutorService alertServiceExecutorService,
       TelemetryClient telemetryClient,
-      GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
+      Configuration configuration) {
     return AlertingServiceFactory.create(
+        configuration,
         alertAction(telemetryClient),
         TelemetryObservers.INSTANCE,
         telemetryClient,
-        alertServiceExecutorService,
-        gcEventMonitorConfiguration);
+        alertServiceExecutorService);
   }
 
-  private static Consumer<AlertBreach> alertAction(TelemetryClient telemetryClient) {
+  public static Consumer<AlertBreach> alertAction(TelemetryClient telemetryClient) {
     return alert -> {
       if (profilerService != null) {
         // This is an event that the backend specifically looks for to track when a profile is
         // started
         sendMessageTelemetry(telemetryClient, "StartProfiler triggered.");
 
-        profilerService.getProfiler().accept(alert);
+        profilerService.getProfiler().accept(alert, sendServiceProfilerIndex(telemetryClient));
+
+        scheduleDiagnoses(alert);
       }
     };
+  }
+
+  // Invokes the diagnostic engine while a profile is in progress
+  private static void scheduleDiagnoses(AlertBreach alert) {
+    if (diagnosticEngine != null) {
+      diagnosticEngine.performDiagnosis(alert);
+    }
   }
 
   private static void sendMessageTelemetry(TelemetryClient telemetryClient, String message) {
