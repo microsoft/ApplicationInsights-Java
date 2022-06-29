@@ -69,6 +69,7 @@ public final class AgentSpanExporter implements SpanExporter {
   public CompletableResultCode export(Collection<SpanData> spans) {
     if (Strings.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey())) {
       logger.debug("exporter is not active");
+      // Azure Functions consumption plan
       return CompletableResultCode.ofSuccess();
     }
     for (SpanData span : spans) {

@@ -63,11 +63,7 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
       return;
     }
 
-    boolean lazySetOptIn = Boolean.parseBoolean(System.getProperty("LazySetOptIn"));
-    String enableAgent = System.getenv("APPLICATIONINSIGHTS_ENABLE_AGENT");
-    logger.debug("lazySetOptIn: {}", lazySetOptIn);
-    logger.debug("APPLICATIONINSIGHTS_ENABLE_AGENT: {}", enableAgent);
-    if (!shouldSetConnectionString(lazySetOptIn, enableAgent)) {
+    if (!isAgentEnabled()) {
       return;
     }
 
@@ -142,18 +138,23 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
     logger.debug("self-diagnostics logging level has been updated.");
   }
 
-  static boolean shouldSetConnectionString(boolean lazySetOptIn, @Nullable String enableAgent) {
-    if (lazySetOptIn) {
-      // when LazySetOptIn is on, enable agent if APPLICATIONINSIGHTS_ENABLE_AGENT is null or true
-      if (enableAgent == null || Boolean.parseBoolean(enableAgent)) {
-        return true;
-      }
-    } else {
-      // when LazySetOptIn is off, enable agent if APPLICATIONINSIGHTS_ENABLE_AGENT is true
-      if (Boolean.parseBoolean(enableAgent)) {
-        return true;
-      }
+  // since the agent is already running at this point, this really just determines whether the
+  // telemetry is sent to the ingestion service or not (essentially behaving to the user as if the
+  // agent is not enabled)
+  static boolean isAgentEnabled() {
+    String enableAgent = System.getenv("APPLICATIONINSIGHTS_ENABLE_AGENT");
+    boolean enableAgentDefault = Boolean.parseBoolean(System.getProperty("LazySetOptIn"));
+    logger.debug("APPLICATIONINSIGHTS_ENABLE_AGENT: {}", enableAgent);
+    logger.debug("LazySetOptIn: {}", enableAgentDefault);
+    return isAgentEnabled(enableAgent, enableAgentDefault);
+  }
+
+  // visible for tests
+  static boolean isAgentEnabled(@Nullable String enableAgent, boolean defaultValue) {
+    if (enableAgent == null) {
+      // APPLICATIONINSIGHTS_ENABLE_AGENT is not set, use the default value (LazySetOptIn)
+      return defaultValue;
     }
-    return false;
+    return Boolean.parseBoolean(enableAgent);
   }
 }
