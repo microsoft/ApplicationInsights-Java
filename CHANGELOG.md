@@ -1,5 +1,8 @@
 # CHANGELOG
 
+# Version 3.3.1 GA
+* Suppress nested dependencies (regression in 3.3.0) [#2357](https://github.com/microsoft/ApplicationInsights-Java/pull/2357).
+
 # Version 3.3.0 GA
 * Update OpenTelemetry to 1.15 [#2332](https://github.com/microsoft/ApplicationInsights-Java/pull/2332).
 * Add configuration for disk persistence capacity [#2329](https://github.com/microsoft/ApplicationInsights-Java/pull/2329).
