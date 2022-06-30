@@ -114,6 +114,9 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     if (!config.instrumentation.mongo.enabled) {
       featureList.add(Feature.MONGO_DISABLED);
     }
+    if (!config.instrumentation.quartz.enabled) {
+      featureList.add(Feature.QUARTZ_DISABLED);
+    }
     if (!config.instrumentation.rabbitmq.enabled) {
       featureList.add(Feature.RABBITMQ_DISABLED);
     }
@@ -136,9 +139,6 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     }
     if (!config.preview.instrumentation.play.enabled) {
       featureList.add(Feature.PLAY_DISABLED);
-    }
-    if (!config.preview.instrumentation.quartz.enabled) {
-      featureList.add(Feature.QUARTZ_DISABLED);
     }
     if (!config.preview.instrumentation.springIntegration.enabled) {
       featureList.add(Feature.SPRING_INTEGRATION_DISABLED);

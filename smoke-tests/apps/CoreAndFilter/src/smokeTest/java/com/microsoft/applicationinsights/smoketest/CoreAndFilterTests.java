@@ -30,6 +30,7 @@ import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMa
 import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasResponseCode;
 import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasSuccess;
 import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasUrl;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -39,14 +40,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers;
 import com.microsoft.applicationinsights.smoketest.matchers.TraceDataMatchers;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
-import com.microsoft.applicationinsights.smoketest.schemav2.DataPointType;
 import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.EventData;
