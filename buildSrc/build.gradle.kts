@@ -41,10 +41,10 @@ dependencies {
 
   // When updating, also update dependencyManagement/dependencyManagement.gradle.kts
   // we need to use byte buddy variant that does not shade asm
-  implementation("net.bytebuddy:byte-buddy-gradle-plugin:1.12.9") {
+  implementation("net.bytebuddy:byte-buddy-gradle-plugin:1.12.10") {
     exclude(group = "net.bytebuddy", module = "byte-buddy")
   }
-  implementation("net.bytebuddy:byte-buddy-dep:1.12.9")
+  implementation("net.bytebuddy:byte-buddy-dep:1.12.10")
 
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:2.0.2")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.1.0")

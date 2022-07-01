@@ -7,6 +7,6 @@ io.opentelemetry.contrib:opentelemetry-runtime-attach:1.15.0-alpha=runtimeClassp
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.15.0-alpha=runtimeClasspath
 io.opentelemetry:opentelemetry-bom-alpha:1.15.0-alpha=runtimeClasspath
 io.opentelemetry:opentelemetry-bom:1.15.0=runtimeClasspath
-net.bytebuddy:byte-buddy-agent:1.12.9=runtimeClasspath
+net.bytebuddy:byte-buddy-agent:1.12.10=runtimeClasspath
 org.junit:junit-bom:5.8.2=runtimeClasspath
 empty=
