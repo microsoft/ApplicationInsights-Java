@@ -84,8 +84,10 @@ class ProfilingInitializer {
       try {
         serviceProfilerFrontEndPoint = new URL(configuration.serviceProfilerFrontEndPoint);
       } catch (MalformedURLException e) {
-        throw new RuntimeException(
-            "Failed to parse url: " + configuration.serviceProfilerFrontEndPoint);
+        throw new FriendlyException(
+            "Failed to parse url: " + configuration.serviceProfilerFrontEndPoint,
+            "Ensure that the service profiler endpoint is a valid url",
+            e);
       }
     }
 
