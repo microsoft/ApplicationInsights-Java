@@ -32,7 +32,6 @@ import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfigura
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
@@ -40,8 +39,7 @@ import org.junit.jupiter.api.Test;
 class AlertingSubsystemTest {
 
   private static AlertingSubsystem getAlertMonitor(Consumer<AlertBreach> consumer) {
-    AlertingSubsystem monitor =
-        AlertingSubsystem.create(consumer, Executors.newSingleThreadExecutor());
+    AlertingSubsystem monitor = AlertingSubsystem.create(consumer);
 
     monitor.updateConfiguration(
         new AlertingConfiguration(
@@ -65,8 +63,6 @@ class AlertingSubsystemTest {
     service.track(AlertMetricType.CPU, 90.0);
     service.track(AlertMetricType.CPU, 90.0);
 
-    service.awaitQueueFlush();
-
     assertThat(called.get().getType()).isEqualTo(AlertMetricType.CPU);
     assertThat(called.get().getAlertValue()).isEqualTo(90.0);
   }
@@ -76,8 +72,7 @@ class AlertingSubsystemTest {
     AtomicReference<AlertBreach> called = new AtomicReference<>();
     Consumer<AlertBreach> consumer = called::set;
 
-    AlertingSubsystem service =
-        AlertingSubsystem.create(consumer, Executors.newSingleThreadExecutor());
+    AlertingSubsystem service = AlertingSubsystem.create(consumer);
 
     service.updateConfiguration(
         new AlertingConfiguration(
@@ -99,8 +94,7 @@ class AlertingSubsystemTest {
     AtomicReference<AlertBreach> called = new AtomicReference<>();
     Consumer<AlertBreach> consumer = called::set;
 
-    AlertingSubsystem service =
-        AlertingSubsystem.create(consumer, Executors.newSingleThreadExecutor());
+    AlertingSubsystem service = AlertingSubsystem.create(consumer);
 
     service.updateConfiguration(
         new AlertingConfiguration(

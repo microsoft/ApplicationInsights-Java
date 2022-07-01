@@ -32,6 +32,7 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
+import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipeline;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipelineMultiplexer;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
@@ -52,12 +53,12 @@ public class AlertingServiceFactory {
       TelemetryObservers telemetryObservers,
       TelemetryClient telemetryClient,
       ExecutorService executorService) {
-    alertingSubsystem = AlertingSubsystem.create(alertAction, executorService);
+    alertingSubsystem = AlertingSubsystem.create(alertAction);
 
     if (configuration.preview.profiler.enableResponseTriggering) {
       List<AlertPipeline> spanPipelines =
           Arrays.stream(configuration.preview.profiler.responseTriggerEndpoints)
-              .map(it -> SpanAlertPipelineBuilder.build(it, alertAction))
+              .map(it -> SpanAlertPipelineBuilder.build(it, alertAction, TimeSource.DEFAULT))
               .collect(Collectors.toList());
 
       alertingSubsystem.setPipeline(

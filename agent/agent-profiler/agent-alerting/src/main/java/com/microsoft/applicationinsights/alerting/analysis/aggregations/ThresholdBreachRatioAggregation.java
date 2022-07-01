@@ -21,32 +21,33 @@
 
 package com.microsoft.applicationinsights.alerting.analysis.aggregations;
 
+import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
 import java.util.OptionalDouble;
-import java.util.function.DoubleConsumer;
-import javax.annotation.Nullable;
 
-/** A process that consumes data points and computes metrics. */
-public abstract class Aggregation {
-  @Nullable protected DoubleConsumer consumer = null;
+public class ThresholdBreachRatioAggregation extends Aggregation {
 
-  /** Add new data to the aggregation. */
-  public OptionalDouble update(TelemetryDataPoint telemetryDataPoint) {
-    OptionalDouble value = processUpdate(telemetryDataPoint);
-    if (value.isPresent() && consumer != null) {
-      consumer.accept(value.getAsDouble());
-    }
+  private final BreachedRatio breachRatio;
+  private final double thresholdMs;
 
-    return value;
+  public ThresholdBreachRatioAggregation(
+      long thresholdMs, long minimumSamples, long windowLengthInSec, TimeSource timeSource) {
+    this.breachRatio = new BreachedRatio(windowLengthInSec, minimumSamples, timeSource);
+    this.thresholdMs = thresholdMs;
   }
 
-  protected abstract OptionalDouble processUpdate(TelemetryDataPoint telemetryDataPoint);
-
-  /** Add a consumer that is notified when new aggregated data is available. */
-  public void setConsumer(DoubleConsumer consumer) {
-    this.consumer = consumer;
+  public ThresholdBreachRatioAggregation(
+      long threshold, long minimumSamples, long windowLengthInSec) {
+    this(threshold, minimumSamples, windowLengthInSec, TimeSource.DEFAULT);
   }
 
-  /** Compute the current aggregation of the data. */
-  public abstract OptionalDouble compute();
+  @Override
+  public OptionalDouble processUpdate(TelemetryDataPoint telemetryDataPoint) {
+    return this.breachRatio.update(telemetryDataPoint.getValue() >= thresholdMs);
+  }
+
+  @Override
+  public OptionalDouble compute() {
+    return this.breachRatio.calculateRatio();
+  }
 }

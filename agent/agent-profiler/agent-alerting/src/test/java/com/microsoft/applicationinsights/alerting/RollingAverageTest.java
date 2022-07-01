@@ -28,9 +28,10 @@ import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.aggregations.RollingAverage;
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
 import java.time.Instant;
+import java.util.OptionalDouble;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
 import org.junit.jupiter.api.Test;
 
 class RollingAverageTest {
@@ -38,7 +39,7 @@ class RollingAverageTest {
   @Test
   void alertsConsumer() {
     AtomicReference<Double> called = new AtomicReference<>();
-    Consumer<Double> consumer = called::set;
+    DoubleConsumer consumer = called::set;
     RollingAverage rollingAverage = new RollingAverage();
     rollingAverage.setConsumer(consumer);
 
@@ -50,7 +51,7 @@ class RollingAverageTest {
   @Test
   void givesCorrectValue() {
     AtomicReference<Double> called = new AtomicReference<>();
-    Consumer<Double> consumer = called::set;
+    DoubleConsumer consumer = called::set;
     RollingAverage rollingAverage = new RollingAverage();
     rollingAverage.setConsumer(consumer);
 
@@ -64,7 +65,7 @@ class RollingAverageTest {
   @Test
   void throwsAwayDataOutsidePeriod() {
     AtomicReference<Double> called = new AtomicReference<>();
-    Consumer<Double> consumer = called::set;
+    DoubleConsumer consumer = called::set;
 
     AtomicLong offset = new AtomicLong(0);
     TimeSource timeSource =
@@ -85,7 +86,7 @@ class RollingAverageTest {
     rollingAverage.update(createDataPoint(0.1));
     rollingAverage.update(createDataPoint(0.1));
 
-    assertThat(rollingAverage.update(createDataPoint(0.1))).isEqualTo(0.1d);
+    assertThat(rollingAverage.update(createDataPoint(0.1))).isEqualTo(OptionalDouble.of(0.1d));
 
     assertThat(called.get()).isEqualTo(0.1d);
   }

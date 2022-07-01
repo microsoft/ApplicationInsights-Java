@@ -37,8 +37,6 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -55,12 +53,6 @@ public class AlertingSubsystem {
   // Downstream observer of alerts produced by the alerting system
   private final Consumer<AlertBreach> alertHandler;
 
-  // Execution context of the alerting subsytem
-  private final ExecutorService executorService;
-
-  // queue of telemetry data to be processed
-  private final LinkedBlockingQueue<TelemetryDataPoint> workQueue = new LinkedBlockingQueue<>();
-
   // List of manual triggers that have already been processed
   private final Set<String> manualTriggersExecuted = new HashSet<>();
 
@@ -70,19 +62,14 @@ public class AlertingSubsystem {
   // Current configuration of the alerting subsystem
   private AlertingConfiguration alertConfig;
 
-  // monitor to guard the notification that the work list has been processed
-  private final Object monitor = new Object();
-
-  protected AlertingSubsystem(Consumer<AlertBreach> alertHandler, ExecutorService executorService) {
+  protected AlertingSubsystem(Consumer<AlertBreach> alertHandler) {
     this.alertHandler = alertHandler;
     alertPipelines = new AlertPipelines(alertHandler);
-    this.executorService = executorService;
     timeSource = TimeSource.DEFAULT;
   }
 
-  public static AlertingSubsystem create(
-      Consumer<AlertBreach> alertHandler, ExecutorService executorService) {
-    AlertingSubsystem alertingSubsystem = new AlertingSubsystem(alertHandler, executorService);
+  public static AlertingSubsystem create(Consumer<AlertBreach> alertHandler) {
+    AlertingSubsystem alertingSubsystem = new AlertingSubsystem(alertHandler);
     // init with disabled config
     alertingSubsystem.initialize(
         new AlertingConfiguration(
@@ -107,29 +94,7 @@ public class AlertingSubsystem {
 
   /** Create alerting pipelines with default configuration. */
   public void initialize(AlertingConfiguration alertConfig) {
-
     updateConfiguration(alertConfig);
-
-    executorService.execute(
-        () -> {
-          while (true) {
-            try {
-              process(workQueue.take());
-            } catch (InterruptedException e) {
-              Thread.currentThread().interrupt();
-              return;
-            } catch (RuntimeException e) {
-              LOGGER.error("Exception while evaluating alert", e);
-            } catch (Error e) {
-              LOGGER.error("Exception while evaluating alert", e);
-              throw e;
-            }
-
-            synchronized (monitor) {
-              monitor.notifyAll();
-            }
-          }
-        });
   }
 
   /** Add telemetry to alert processing pipeline. */
@@ -140,29 +105,8 @@ public class AlertingSubsystem {
     }
   }
 
-  public void trackTelemetryDataPoint(@Nullable TelemetryDataPoint value) {
-    if (value != null) {
-      workQueue.add(value);
-    }
-  }
-
-  /** Block until work queue is empty. */
-  public void awaitQueueFlush() {
-    while (workQueue.size() > 0) {
-      synchronized (monitor) {
-        try {
-          if (workQueue.size() > 0) {
-            monitor.wait();
-          }
-        } catch (InterruptedException e) {
-          return;
-        }
-      }
-    }
-  }
-
   /** Deliver data to pipelines. */
-  private void process(@Nullable TelemetryDataPoint telemetryDataPoint) {
+  public void trackTelemetryDataPoint(@Nullable TelemetryDataPoint telemetryDataPoint) {
     if (telemetryDataPoint == null) {
       return;
     }

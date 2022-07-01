@@ -23,8 +23,9 @@ package com.microsoft.applicationinsights.agent.internal.profiler.triggers;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
+import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.aggregations.Aggregation;
-import com.microsoft.applicationinsights.alerting.analysis.aggregations.QuantileAggregation;
+import com.microsoft.applicationinsights.alerting.analysis.aggregations.ThresholdBreachRatioAggregation;
 import com.microsoft.applicationinsights.alerting.analysis.filter.AlertSpanFilter;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipeline;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.SingleAlertPipeline;
@@ -41,7 +42,9 @@ public class SpanAlertPipelineBuilder {
   /** Form a single trigger context from configuration. */
   @Nullable
   public static AlertPipeline build(
-      Configuration.SpanTrigger configuration, Consumer<AlertBreach> alertAction) {
+      Configuration.SpanTrigger configuration,
+      Consumer<AlertBreach> alertAction,
+      TimeSource timeSource) {
 
     AlertSpanFilter filter = AlertSpanFilterBuilder.build(configuration.filter);
 
@@ -49,7 +52,7 @@ public class SpanAlertPipelineBuilder {
       return null;
     }
 
-    Aggregation aggregation = getAggregation(configuration);
+    Aggregation aggregation = getAggregation(configuration, timeSource);
 
     // TODO make threshold and throttling responsive to type argument
     AlertingConfiguration.AlertConfiguration config =
@@ -64,10 +67,14 @@ public class SpanAlertPipelineBuilder {
   }
 
   @Nullable
-  private static Aggregation getAggregation(Configuration.SpanTrigger configuration) {
-    if (configuration.aggregation.type == Configuration.SpanAggregationType.PERCENTILE) {
-      return new QuantileAggregation(
-          configuration.aggregation.configuration.percentile, configuration.aggregation.windowSize);
+  private static Aggregation getAggregation(
+      Configuration.SpanTrigger configuration, TimeSource timeSource) {
+    if (configuration.aggregation.type == Configuration.SpanAggregationType.BREACH_RATIO) {
+      return new ThresholdBreachRatioAggregation(
+          configuration.aggregation.configuration.thresholdMs,
+          configuration.aggregation.configuration.minimumSamples,
+          configuration.aggregation.windowSize / 1000,
+          timeSource);
     }
     return null;
   }

@@ -19,34 +19,20 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.alerting.analysis.aggregations;
+package com.microsoft.applicationinsights.agent.internal.profiler;
 
-import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
-import java.util.OptionalDouble;
-import java.util.function.DoubleConsumer;
-import javax.annotation.Nullable;
+import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
+import java.time.Instant;
 
-/** A process that consumes data points and computes metrics. */
-public abstract class Aggregation {
-  @Nullable protected DoubleConsumer consumer = null;
+public class TestTimeSource extends TimeSource {
+  Instant now = Instant.now();
 
-  /** Add new data to the aggregation. */
-  public OptionalDouble update(TelemetryDataPoint telemetryDataPoint) {
-    OptionalDouble value = processUpdate(telemetryDataPoint);
-    if (value.isPresent() && consumer != null) {
-      consumer.accept(value.getAsDouble());
-    }
-
-    return value;
+  @Override
+  public Instant getNow() {
+    return now;
   }
 
-  protected abstract OptionalDouble processUpdate(TelemetryDataPoint telemetryDataPoint);
-
-  /** Add a consumer that is notified when new aggregated data is available. */
-  public void setConsumer(DoubleConsumer consumer) {
-    this.consumer = consumer;
+  public void setNow(Instant now) {
+    this.now = now;
   }
-
-  /** Compute the current aggregation of the data. */
-  public abstract OptionalDouble compute();
 }

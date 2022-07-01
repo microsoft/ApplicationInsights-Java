@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanExporter;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.SpanAlertPipelineBuilder;
@@ -31,16 +30,17 @@ import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipeli
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -48,91 +48,114 @@ import org.mockito.Mockito;
 public class AlertTriggerSpanExporterTest {
 
   interface Handle {
-    void accept(AlertTriggerSpanExporter spanExporter, CountDownLatch alertCalled)
+    void accept(
+        AlertTriggerSpanExporter spanExporter, AtomicBoolean alertCalled, TestTimeSource timeSource)
         throws InterruptedException;
   }
 
   @Test
   public void matchingFilterCausesAlert() throws InterruptedException {
     run(
-        (spanExporter, alertCalled) -> {
-          spanExporter.export(
-              Collections.singletonList(
-                  TestSpanData.builder()
-                      .setName("fooBar")
-                      .setStartEpochNanos(0L)
-                      .setEndEpochNanos(2000000L)
-                      .setHasEnded(true)
-                      .setKind(SpanKind.SERVER)
-                      .setStatus(StatusData.ok())
-                      .build()));
+        (spanExporter, alertCalled, timeSource) -> {
+          spanExporter.export(buildSampleSpan("fooBar", 20000000000L));
 
           spanExporter.flush();
 
-          Assertions.assertTrue(alertCalled.await(10, TimeUnit.SECONDS));
+          Assertions.assertTrue(alertCalled.get());
         });
+  }
+
+  @Test
+  public void underThresholdDataDoesNotCauseAlert() throws InterruptedException {
+    run(
+        (spanExporter, alertCalled, timeSource) -> {
+          for (int i = 0; i < 100000; i += 10) {
+            timeSource.setNow(Instant.EPOCH.plus(i, ChronoUnit.MILLIS));
+            spanExporter.export(buildSampleSpan("fooBar", 2000000000L));
+          }
+
+          spanExporter.flush();
+
+          Assertions.assertFalse(alertCalled.get());
+        });
+  }
+
+  @Test
+  public void underThenOverThresholdDataDoesCauseAlert() throws InterruptedException {
+    run(
+        (spanExporter, alertCalled, timeSource) -> {
+          for (int i = 0; i < 100000; i += 10) {
+            timeSource.setNow(Instant.EPOCH.plus(i, ChronoUnit.MILLIS));
+            spanExporter.export(buildSampleSpan("fooBar", 2000000000L));
+          }
+
+          spanExporter.flush();
+
+          Assertions.assertFalse(alertCalled.get());
+
+          for (int i = 100000; i < 200000; i += 10) {
+            timeSource.setNow(Instant.EPOCH.plus(i, ChronoUnit.MILLIS));
+            spanExporter.export(buildSampleSpan("fooBar", 200000000000L));
+          }
+
+          spanExporter.flush();
+
+          Assertions.assertTrue(alertCalled.get());
+        });
+  }
+
+  @NotNull
+  private static List<SpanData> buildSampleSpan(String fooBar, long epochNanos) {
+    return Collections.singletonList(
+        TestSpanData.builder()
+            .setName(fooBar)
+            .setStartEpochNanos(0L)
+            .setEndEpochNanos(epochNanos)
+            .setHasEnded(true)
+            .setKind(SpanKind.SERVER)
+            .setStatus(StatusData.ok())
+            .build());
   }
 
   @Test
   public void nonMatchingFilterDoesNotCauseAlert() throws InterruptedException {
     run(
-        (spanExporter, alertCalled) -> {
-          spanExporter.export(
-              Collections.singletonList(
-                  TestSpanData.builder()
-                      .setName("does-not-match")
-                      .setStartEpochNanos(0L)
-                      .setEndEpochNanos(2000000L)
-                      .setHasEnded(true)
-                      .setKind(SpanKind.SERVER)
-                      .setStatus(StatusData.ok())
-                      .build()));
+        (spanExporter, alertCalled, timeSource) -> {
+          spanExporter.export(buildSampleSpan("does-not-match", 20000000000L));
 
           spanExporter.flush();
 
-          Assertions.assertFalse(alertCalled.await(100, TimeUnit.MILLISECONDS));
+          Assertions.assertFalse(alertCalled.get());
         });
   }
 
-  static class StubAlertingSubsystem extends AlertingSubsystem {
-    protected StubAlertingSubsystem(
-        Consumer<AlertBreach> alertHandler, ExecutorService executorService) {
-      super(alertHandler, executorService);
-    }
-  }
-
   private static void run(Handle handle) throws InterruptedException {
-    ScheduledExecutorService executorService =
-        Executors.newScheduledThreadPool(
-            3,
-            ThreadPoolUtils.createDaemonThreadFactory(
-                AlertTriggerSpanExporter.class, "AlertSpanProcessor"));
-    try {
-      SpanExporter delegateSpanExporter = Mockito.mock(SpanExporter.class);
+    SpanExporter delegateSpanExporter = Mockito.mock(SpanExporter.class);
 
-      CountDownLatch called = new CountDownLatch(1);
-      Consumer<AlertBreach> alertAction = alertBreach -> called.countDown();
+    AtomicBoolean called = new AtomicBoolean(false);
+    Consumer<AlertBreach> alertAction =
+        alertBreach -> {
+          called.set(true);
+        };
 
-      Configuration.SpanTrigger triggerConfig = new Configuration.SpanTrigger();
-      triggerConfig.filter.type = Configuration.SpanFilterType.REGEX;
-      triggerConfig.filter.value = "foo.*";
-      triggerConfig.threshold.value = 1;
+    Configuration.SpanTrigger triggerConfig = new Configuration.SpanTrigger();
+    triggerConfig.filter.type = Configuration.SpanFilterType.REGEX;
+    triggerConfig.filter.value = "foo.*";
+    triggerConfig.threshold.value = 0.75f;
 
-      AlertingSubsystem alertingSubsystem = AlertingSubsystem.create(alertAction, executorService);
+    AlertingSubsystem alertingSubsystem = AlertingSubsystem.create(alertAction);
 
-      alertingSubsystem.setPipeline(
-          AlertMetricType.SPAN,
-          new AlertPipelineMultiplexer(
-              Arrays.asList(SpanAlertPipelineBuilder.build(triggerConfig, alertAction))));
+    TestTimeSource timeSource = new TestTimeSource();
+    timeSource.setNow(Instant.EPOCH);
 
-      AlertTriggerSpanExporter spanExporter =
-          new AlertTriggerSpanExporter(
-              delegateSpanExporter, executorService, () -> alertingSubsystem);
+    alertingSubsystem.setPipeline(
+        AlertMetricType.SPAN,
+        new AlertPipelineMultiplexer(
+            Arrays.asList(SpanAlertPipelineBuilder.build(triggerConfig, alertAction, timeSource))));
 
-      handle.accept(spanExporter, called);
+    AlertTriggerSpanExporter spanExporter =
+        new AlertTriggerSpanExporter(delegateSpanExporter, () -> alertingSubsystem);
 
-    } finally {
-      executorService.shutdownNow();
-    }
+    handle.accept(spanExporter, called, timeSource);
   }
 }

@@ -1233,15 +1233,22 @@ public class Configuration {
   }
 
   public static class SpanAggregationConfig {
-    public int percentile = 95;
+
+    // Threshold in ms over which a span will consider to be a breach
+    // Used by the breach ratio aggregation
+    public int thresholdMs = 5000;
+
+    // Minimum number of samples that must have been collected in order for the aggregation to
+    // produce data. Avoids volatile aggregation output on small sample sizes.
+    public int minimumSamples = 0;
   }
 
   public enum SpanAggregationType {
-    PERCENTILE
+    BREACH_RATIO
   }
 
   public static class SpanAggregation {
-    public SpanAggregationType type = SpanAggregationType.PERCENTILE;
+    public SpanAggregationType type = SpanAggregationType.BREACH_RATIO;
     public long windowSize = 60000; // in ms
     public String evaluationFrequency = "every_sample";
     public SpanAggregationConfig configuration = new SpanAggregationConfig();
@@ -1253,7 +1260,15 @@ public class Configuration {
 
   public static class SpanTriggerThreshold {
     public SpanTriggerThresholdType type = SpanTriggerThresholdType.GREATER_THAN;
-    public long value = 5000; // In ms
+
+    // Threshold value applied to the output of the aggregation
+    // i.e :
+    //  - For the BreachRatio aggregation, 0.75 means this will trigger if 75% of sample breach the
+    // threshold.
+    //  - For a rolling average aggregation 0.75 will mean this will trigger if the average span
+    // processing time
+    //      breaches 0.75ms
+    public float value = 0.75f;
   }
 
   public enum SpanTriggerThrottlingType {

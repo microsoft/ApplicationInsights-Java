@@ -88,8 +88,7 @@ class GcEventMonitorTest {
 
   private static AlertingSubsystem getAlertingSubsystem(
       CompletableFuture<AlertBreach> alertFuture) {
-    AlertingSubsystem alertingSubsystem =
-        AlertingSubsystem.create(alertFuture::complete, Executors.newSingleThreadExecutor());
+    AlertingSubsystem alertingSubsystem = AlertingSubsystem.create(alertFuture::complete);
 
     AlertingConfiguration config =
         AlertConfigParser.parse(
