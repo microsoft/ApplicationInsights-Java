@@ -77,7 +77,11 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.javaagent.bootstrap.servlet.SnippetHolder;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -102,6 +106,16 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
   @Nullable private static BatchSpanProcessor batchSpanProcessor;
   @Nullable private static MetricReader metricReader;
 
+  public String readFile(String resourceName) throws IOException {
+    InputStream is = getClass().getClassLoader().getResourceAsStream(resourceName);
+    ByteArrayOutputStream result = new ByteArrayOutputStream();
+    byte[] buffer = new byte[1024];
+    int length;
+    while ((length = is.read(buffer)) != -1) {
+      result.write(buffer, 0, length);
+    }
+    return result.toString("UTF-8");
+  }
   @Override
   public void customize(AutoConfigurationCustomizer autoConfiguration) {
 
@@ -154,6 +168,18 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             .build();
 
     PerformanceCounterInitializer.initialize(telemetryClient, config);
+
+    String connectionKey = "InstrumentationKey=" + telemetryClient.getInstrumentationKey() + ";IngestionEndpoint=" + telemetryClient.getConnectionString().getIngestionEndpoint() + ";LiveEndpoint=" + telemetryClient.getConnectionString().getLiveEndpoint();
+
+    String snippet = "";
+    try {
+      snippet = readFile("SnippetInjection.js");
+      snippet = snippet.replace("MyConnectionString", connectionKey);
+    } catch (IOException e) {
+      System.out.println("snippet injection failed to set " + e);
+    }
+    
+    SnippetHolder.setSnippet(snippet);
 
     // interval longer than 15 minutes is not allowed since we use this data for usage telemetry
     long intervalSeconds = Math.min(config.heartbeat.intervalSeconds, MINUTES.toSeconds(15));

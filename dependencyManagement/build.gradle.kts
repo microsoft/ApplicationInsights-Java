@@ -81,6 +81,12 @@ val DEPENDENCY_SETS = listOf(
       "opentelemetry-javaagent-extension-api")
   ),
   DependencySet(
+    "io.opentelemetry.javaagent.instrumentation",
+    "${otelInstrumentationAlphaVersion}",
+    listOf(
+      "opentelemetry-javaagent-servlet-common-bootstrap")
+  ),
+  DependencySet(
     "com.microsoft.azure",
     "2.6.4", // need the latest version for Java 16+ support without having to use --illegal-access=permit
     listOf(
