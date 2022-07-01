@@ -1287,6 +1287,7 @@ public class Configuration {
     public String memoryTriggeredSettings = "profile";
     public String cpuTriggeredSettings = "profile";
     @Nullable public String serviceProfilerFrontEndPoint = null;
+    public boolean enableDiagnostics = false;
     public boolean enableResponseTriggering = false;
     public SpanTrigger[] responseTriggerEndpoints = {};
   }

@@ -178,7 +178,11 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     AiAppId.setSupplier(appIdSupplier);
 
     if (config.preview.profiler.enabled) {
-      ProfilingInitializer.initialize(tempDir, appIdSupplier, config, telemetryClient);
+      try {
+        ProfilingInitializer.initialize(tempDir, appIdSupplier, config, telemetryClient);
+      } catch (Exception e) {
+        startupLogger.warn("Failed to initialize profiler", e);
+      }
     }
 
     // this is for Azure Function Linux consumption plan support.

@@ -84,8 +84,8 @@ class ProfilingInitializer {
       try {
         serviceProfilerFrontEndPoint = new URL(configuration.serviceProfilerFrontEndPoint);
       } catch (MalformedURLException e) {
-        // startupLogger.error("Failed to parse url: " +
-        // configuration.serviceProfilerFrontEndPoint);
+        throw new RuntimeException(
+            "Failed to parse url: " + configuration.serviceProfilerFrontEndPoint);
       }
     }
 
@@ -96,7 +96,8 @@ class ProfilingInitializer {
         serviceProfilerFrontEndPoint,
         configuration.memoryTriggeredSettings,
         configuration.cpuTriggeredSettings,
-        TempDirs.getSubDir(tempDir, "profiles"));
+        TempDirs.getSubDir(tempDir, "profiles"),
+        configuration.enableDiagnostics);
   }
 
   private ProfilingInitializer() {}

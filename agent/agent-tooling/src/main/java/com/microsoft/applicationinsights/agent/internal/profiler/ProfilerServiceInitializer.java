@@ -133,8 +133,10 @@ public class ProfilerServiceInitializer {
         return;
       }
 
-      // Initialise diagnostic service
-      startDiagnosticEngine();
+      if (config.enableDiagnostics()) {
+        // Initialise diagnostic service
+        startDiagnosticEngine();
+      }
 
       ScheduledExecutorService serviceProfilerExecutorService =
           Executors.newScheduledThreadPool(
