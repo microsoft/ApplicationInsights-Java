@@ -36,12 +36,12 @@ import org.junit.Test;
 @WithDependencyContainers({
   @DependencyContainer(
       value = "confluentinc/cp-zookeeper",
-      portMapping = "2181",
+      exposedPort = 2181,
       environmentVariables = {"ZOOKEEPER_CLIENT_PORT=2181"},
       hostnameEnvironmentVariable = "ZOOKEEPER"),
   @DependencyContainer(
       value = "confluentinc/cp-kafka",
-      portMapping = "9092",
+      exposedPort = 9092,
       environmentVariables = {
         "KAFKA_ZOOKEEPER_CONNECT=${ZOOKEEPER}:2181",
         "KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://${CONTAINERNAME}:9092",

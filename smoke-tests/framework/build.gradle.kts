@@ -13,5 +13,7 @@ dependencies {
 
   implementation("org.eclipse.jetty.aggregate:jetty-all:9.4.39.v20210325")
 
+  implementation("org.testcontainers:testcontainers:1.17.3")
+
   testImplementation("org.assertj:assertj-core")
 }

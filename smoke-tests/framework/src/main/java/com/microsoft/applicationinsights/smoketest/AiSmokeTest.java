@@ -21,16 +21,13 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import com.google.common.base.CaseFormat;
 import com.google.common.base.Stopwatch;
-import com.microsoft.applicationinsights.smoketest.docker.AiDockerClient;
-import com.microsoft.applicationinsights.smoketest.docker.ContainerInfo;
-import com.microsoft.applicationinsights.smoketest.exceptions.SmokeTestException;
 import com.microsoft.applicationinsights.smoketest.exceptions.TimeoutException;
 import com.microsoft.applicationinsights.smoketest.fixtures.AfterWithParams;
 import com.microsoft.applicationinsights.smoketest.fixtures.BeforeWithParams;
@@ -52,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -72,6 +70,9 @@ import org.junit.runners.MethodSorters;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
+import org.testcontainers.utility.DockerImageName;
 
 /** This is the base class for smoke tests. */
 @RunWith(Parameterized.class)
@@ -93,20 +94,18 @@ public abstract class AiSmokeTest {
   // region: container fields
   private static final short BASE_PORT_NUMBER = 28080;
 
-  private static final AiDockerClient docker = AiDockerClient.createLinuxClient();
-
-  protected static void stopContainer(ContainerInfo info) throws Exception {
-    System.out.printf("Stopping container: %s%n", info);
+  protected static void stopContainer(GenericContainer<?> container) {
+    System.out.printf("Stopping container: %s%n", container);
     Stopwatch killTimer = Stopwatch.createUnstarted();
     try {
       killTimer.start();
-      docker.stopContainer(info.getContainerId());
+      container.stop();
       System.out.printf(
-          "Container stopped (%s) in %dms%n", info, killTimer.elapsed(TimeUnit.MILLISECONDS));
-    } catch (Exception e) {
+          "Container stopped (%s) in %dms%n", container, killTimer.elapsed(TimeUnit.MILLISECONDS));
+    } catch (RuntimeException e) {
       System.err.printf(
           "Error stopping container (in %dms): %s%n",
-          killTimer.elapsed(TimeUnit.MILLISECONDS), info);
+          killTimer.elapsed(TimeUnit.MILLISECONDS), container);
       throw e;
     }
   }
@@ -114,14 +113,14 @@ public abstract class AiSmokeTest {
   protected static short currentPortNumber = BASE_PORT_NUMBER;
 
   private static final List<DependencyContainer> dependencyImages = new ArrayList<>();
-  protected static AtomicReference<ContainerInfo> currentContainerInfo = new AtomicReference<>();
-  protected static Deque<ContainerInfo> allContainers = new ArrayDeque<>();
+  protected static AtomicReference<GenericContainer<?>> targetContainer = new AtomicReference<>();
+  protected static Deque<GenericContainer<?>> allContainers = new ArrayDeque<>();
+  private static final Map<String, String> hostnameEnvVars = new HashMap<>();
   protected static String currentImageName;
-  protected static short appServerPort;
+  protected static int appServerPort;
   protected static File warFile;
   @Nullable protected static String agentMode;
-  @Nullable protected static String networkId;
-  protected static String networkName = "aismoke-net";
+  @Nullable private static Network network;
   protected static boolean requestCaptureEnabled = true; // we will assume request capturing is on
   // endregion
 
@@ -175,15 +174,12 @@ public abstract class AiSmokeTest {
         @Override
         protected void failed(Throwable t, Description description) {
           // NOTE this happens after @After :)
-          String containerId = currentContainerInfo.get().getContainerId();
+          String containerId = targetContainer.get().getContainerId();
           System.out.println("Test failure detected.");
-          printContainerLogs(containerId);
-        }
 
-        private void printContainerLogs(String containerId) {
           try {
             System.out.println("\nFetching container logs for " + containerId);
-            AiDockerClient.printContainerLogs(containerId);
+            printContainerLogs(containerId);
           } catch (Exception e) {
             System.err.println("Error copying logs to stream");
             e.printStackTrace();
@@ -203,16 +199,16 @@ public abstract class AiSmokeTest {
                 new Runnable() {
                   @Override
                   public void run() {
-                    ContainerInfo containerInfo = currentContainerInfo.get();
-                    if (containerInfo == null) {
+                    GenericContainer<?> container = targetContainer.get();
+                    if (container == null) {
                       return;
                     }
                     try {
-                      stopContainer(containerInfo);
-                    } catch (Exception e) {
+                      stopContainer(container);
+                    } catch (RuntimeException e) {
                       System.err.println(
                           "Error while stopping container id="
-                              + containerInfo.getContainerId()
+                              + container.getContainerId()
                               + ". This must be stopped manually.");
                       e.printStackTrace();
                     }
@@ -272,20 +268,20 @@ public abstract class AiSmokeTest {
       throws Exception {
     System.out.println("Preparing environment...");
     try {
-      ContainerInfo containerInfo = currentContainerInfo.get();
+      GenericContainer<?> containerInfo = targetContainer.get();
       if (containerInfo != null) {
         // test cleanup didn't take...try to clean up
-        if (docker.isContainerRunning(containerInfo.getContainerId())) {
+        if (containerInfo.isRunning()) {
           System.err.println("From last test run, container is still running: " + containerInfo);
           try {
-            docker.stopContainer(containerInfo.getContainerId());
-          } catch (Exception e) {
+            containerInfo.stop();
+          } catch (RuntimeException e) {
             System.err.println("Couldn't clean up environment. Must be done manually.");
             throw e;
           }
         } else {
           // container must have stopped after timeout reached.
-          currentContainerInfo.set(null);
+          targetContainer.set(null);
         }
       }
       checkParams(appServer, os, jreVersion);
@@ -333,7 +329,7 @@ public abstract class AiSmokeTest {
   }
 
   protected static void waitForApplicationToStart() throws Exception {
-    ContainerInfo containerInfo = currentContainerInfo.get();
+    GenericContainer<?> targetContainer = AiSmokeTest.targetContainer.get();
     try {
       System.out.printf("Test app health check: Waiting for %s to start...%n", warFile);
       String contextRootUrl = getBaseUrl() + "/";
@@ -341,14 +337,14 @@ public abstract class AiSmokeTest {
           contextRootUrl,
           APPLICATION_READY_TIMEOUT_SECONDS,
           TimeUnit.SECONDS,
-          String.format("%s on %s", getAppContext(), containerInfo.getImageName()),
+          String.format("%s on %s", getAppContext(), targetContainer.getContainerName()),
           HEALTH_CHECK_RETRIES);
       System.out.println("Test app health check complete.");
       waitForHealthCheckTelemetryIfNeeded(contextRootUrl);
     } catch (Exception e) {
-      for (ContainerInfo container : allContainers) {
+      for (GenericContainer<?> container : allContainers) {
         System.out.println("========== dumping container log: " + container.getContainerId());
-        AiDockerClient.printContainerLogs(container.getContainerId());
+        printContainerLogs(container.getContainerId());
         System.out.println("end of container log ==========");
       }
       throw e;
@@ -451,7 +447,8 @@ public abstract class AiSmokeTest {
   protected static void setupProperties(String appServer, String os, String jreVersion) {
     warFile = new File(System.getProperty("ai.smoketest.testAppWarFile"));
     currentImageName = String.format("%s_%s_%s", appServer, os, jreVersion);
-    appServerPort = currentPortNumber++;
+    currentImageName =
+        "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.72-jdk8-20211216.1584506476";
   }
 
   protected static void startMockedIngestion() throws Exception {
@@ -466,11 +463,11 @@ public abstract class AiSmokeTest {
             if (deviceId == null) {
               return true;
             }
-            ContainerInfo containerInfo = currentContainerInfo.get();
-            if (containerInfo == null) { // ignore telemetry in after container is cleaned up.
+            GenericContainer<?> container = targetContainer.get();
+            if (container == null) { // ignore telemetry in after container is cleaned up.
               return false;
             }
-            boolean belongsToCurrentContainer = containerInfo.getContainerId().startsWith(deviceId);
+            boolean belongsToCurrentContainer = container.getContainerId().startsWith(deviceId);
             if (!belongsToCurrentContainer) {
               System.out.println("Telemetry from previous container");
             }
@@ -490,36 +487,36 @@ public abstract class AiSmokeTest {
     assertEquals(MockedAppInsightsIngestionServer.PONG, postResponse);
   }
 
-  private static void createDockerNetwork() throws Exception {
+  private static void createDockerNetwork() {
     try {
-      System.out.printf("Creating network '%s'...%n", networkName);
-      networkId = docker.createNetwork(networkName);
-    } catch (Exception e) {
-      System.err.printf("Error creating network named '%s'%n", networkName);
+      System.out.printf("Creating network...%n");
+      network = Network.newNetwork();
+    } catch (RuntimeException e) {
+      System.err.printf("Error creating network%n");
       e.printStackTrace();
       throw e;
     }
   }
 
   private static void cleanUpDockerNetwork() {
-    if (networkId == null) {
+    if (network == null) {
       System.out.println("No network id....nothing to clean up");
       return;
     }
     try {
-      System.out.printf("Deleting network '%s'...%n", networkName);
-      docker.deleteNetwork(networkName);
-    } catch (Exception e) {
+      System.out.printf("Deleting network '%s'...%n", network.getId());
+      network.close();
+    } catch (RuntimeException e) {
       try {
         // try once more since this has sporadically failed before
-        docker.deleteNetwork(networkName);
-      } catch (Exception ignored) {
-        System.err.printf("Error deleting network named '%s' (%s)%n", networkName, networkId);
+        network.close();
+      } catch (RuntimeException ignored) {
+        System.err.printf("Error deleting network (%s)%n", network.getId());
         // log original exception
         e.printStackTrace();
       }
     } finally {
-      networkId = null;
+      network = null;
     }
   }
 
@@ -528,21 +525,30 @@ public abstract class AiSmokeTest {
     startTestApplicationContainer();
   }
 
-  private static void startDependencyContainers() throws IOException, InterruptedException {
+  private static void startDependencyContainers() throws InterruptedException {
     if (dependencyImages.isEmpty()) {
       System.out.println("No dependency containers to start.");
       return;
     }
 
-    Map<String, String> hostnameEnvVars = new HashMap<>();
     for (DependencyContainer dc : dependencyImages) {
       String imageName = dc.imageName().isEmpty() ? dc.value() : dc.imageName();
       System.out.printf("Starting container: %s%n", imageName);
       String containerName = "dependency" + new Random().nextInt(Integer.MAX_VALUE);
       String[] envVars = substitue(dc.environmentVariables(), hostnameEnvVars, containerName);
-      String containerId =
-          AiDockerClient.startDependencyContainer(
-              imageName, envVars, dc.portMapping(), networkId, containerName);
+      Map<String, String> envVarMap = new HashMap<>();
+      for (String envVar : envVars) {
+        String[] parts = envVar.split("=");
+        envVarMap.put(parts[0], parts[1]);
+      }
+      GenericContainer<?> container =
+          new GenericContainer<>(DockerImageName.parse(imageName))
+              .withEnv(envVarMap)
+              .withNetwork(network)
+              .withNetworkAliases(containerName)
+              .withExposedPorts(dc.exposedPort());
+      container.start();
+      String containerId = container.getContainerId();
       if (containerId == null || containerId.isEmpty()) {
         throw new AssertionError(
             "'containerId' was null/empty attempting to start container: " + imageName);
@@ -552,11 +558,8 @@ public abstract class AiSmokeTest {
       if (!dc.hostnameEnvironmentVariable().isEmpty()) {
         hostnameEnvVars.put(dc.hostnameEnvironmentVariable(), containerName);
       }
-      ContainerInfo depConInfo = new ContainerInfo(containerId, containerName);
-      depConInfo.setContainerName(containerName);
-      depConInfo.setDependencyContainerInfo(dc);
       System.out.printf("Dependency container name for %s: %s%n", imageName, containerName);
-      allContainers.push(depConInfo);
+      allContainers.push(container);
       TimeUnit.MILLISECONDS.sleep(500); // wait a bit after starting a server.
     }
   }
@@ -583,26 +586,32 @@ public abstract class AiSmokeTest {
   private static void startTestApplicationContainer() throws Exception {
     System.out.printf("Starting container: %s%n", currentImageName);
     Map<String, String> envVars = generateAppContainerEnvVarMap();
-    String containerId =
-        AiDockerClient.startContainer(
-            currentImageName, appServerPort + ":8080", networkId, null, envVars, false);
+    GenericContainer<?> container =
+        new GenericContainer<>(currentImageName)
+            .withEnv(envVars)
+            .withNetwork(network)
+            .withExposedPorts(8080);
+    container.start();
+
+    appServerPort = container.getMappedPort(8080);
+
+    String containerId = container.getContainerId();
     if (containerId == null || containerId.isEmpty()) {
       throw new AssertionError(
           "'containerId' was null/empty attempting to start container: " + currentImageName);
     }
     System.out.printf("Container started: %s (%s)%n", currentImageName, containerId);
 
-    ContainerInfo containerInfo = new ContainerInfo(containerId, currentImageName);
-    currentContainerInfo.set(containerInfo);
+    targetContainer.set(container);
     if (currentImageName.startsWith("javase_")) {
       // can proceed straight to deploying the app
       // (there's nothing running at this point, unlike images based on servlet containers)
-      allContainers.push(containerInfo);
+      allContainers.push(container);
     } else {
       try {
         String url = String.format("http://localhost:%s/", String.valueOf(appServerPort));
         System.out.printf("Verifying appserver has started (%s)...%n", url);
-        allContainers.push(containerInfo);
+        allContainers.push(container);
         waitForUrlWithRetries(
             url,
             APPSERVER_HEALTH_CHECK_TIMEOUT,
@@ -612,15 +621,15 @@ public abstract class AiSmokeTest {
         System.out.println("App server is ready.");
       } catch (RuntimeException e) {
         System.err.println("Error starting app server");
-        if (docker.isContainerRunning(containerInfo.getContainerId())) {
+        if (container.isRunning()) {
           System.out.println("Container is not running.");
-          allContainers.remove(containerInfo);
+          allContainers.remove(container);
         } else {
           System.out.println("Yet, the container is running.");
         }
         System.out.println("Printing container logs: ");
         System.out.println("# LOGS START =========================");
-        AiDockerClient.printContainerLogs(containerInfo.getContainerId());
+        printContainerLogs(container.getContainerId());
         System.out.println("# LOGS END ===========================");
         throw e;
       }
@@ -628,9 +637,10 @@ public abstract class AiSmokeTest {
 
     try {
       System.out.printf("Deploying test application: %s...%n", warFile.getName());
-      docker.copyAndDeployToContainer(containerId, warFile);
+      // FIXME
+      // docker.copyAndDeployToContainer(containerId, warFile);
       System.out.println("Test application deployed.");
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       System.err.println("Error deploying test application.");
       throw e;
     }
@@ -641,22 +651,7 @@ public abstract class AiSmokeTest {
     if (agentMode != null) {
       map.put("AI_AGENT_MODE", agentMode);
     }
-    for (ContainerInfo info : allContainers) {
-      if (!info.isDependency()) {
-        continue;
-      }
-      DependencyContainer dc = info.getDependencyContainerInfo();
-      String varname = dc.hostnameEnvironmentVariable();
-      if (varname.isEmpty()) {
-        varname = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, dc.value());
-      }
-      String containerName = info.getContainerName();
-      if (containerName == null || containerName.isEmpty()) {
-        throw new SmokeTestException("Null/empty container name for dependency container");
-      }
-      map.put(varname, containerName);
-      System.out.printf("Adding env var to test app container: %s=%s%n", varname, containerName);
-    }
+    map.putAll(hostnameEnvVars);
     return map;
   }
   // endregion
@@ -684,40 +679,40 @@ public abstract class AiSmokeTest {
     }
   }
 
-  public static void stopAllContainers() throws Exception {
+  public static void stopAllContainers() {
     if (allContainers.isEmpty()) {
       System.out.println("No containers to stop");
       return;
     }
 
     System.out.printf("Stopping %d containers...", allContainers.size());
-    List<ContainerInfo> failedToStop = new ArrayList<>();
+    List<GenericContainer<?>> failedToStop = new ArrayList<>();
     while (!allContainers.isEmpty()) {
-      ContainerInfo c = allContainers.pop();
-      if (c.equals(currentContainerInfo.get())) {
+      GenericContainer<?> c = allContainers.pop();
+      if (c.equals(targetContainer.get())) {
         System.out.println("Cleaning up app container");
-        currentContainerInfo.set(null);
+        targetContainer.set(null);
       }
       stopContainer(c);
-      if (docker.isContainerRunning(c.getContainerId())) {
+      if (c.isRunning()) {
         System.err.printf("ERROR: Container failed to stop: %s%n", c.toString());
         failedToStop.add(c);
       }
     }
 
-    ContainerInfo containerInfo = currentContainerInfo.get();
-    if (containerInfo != null) {
+    GenericContainer<?> container = targetContainer.get();
+    if (container != null) {
       System.err.println("Could not find app container in stack. Stopping...");
-      stopContainer(containerInfo);
-      if (!docker.isContainerRunning(containerInfo.getContainerId())) {
-        currentContainerInfo.set(null);
+      stopContainer(container);
+      if (!container.isRunning()) {
+        targetContainer.set(null);
       }
     }
 
     if (!failedToStop.isEmpty()) {
       System.err.println("Some containers failed to stop. Subsequent tests may fail.");
-      for (ContainerInfo c : failedToStop) {
-        if (docker.isContainerRunning(c.getContainerId())) {
+      for (GenericContainer<?> c : failedToStop) {
+        if (c.isRunning()) {
           System.err.println("Failed to stop: " + c.toString());
         }
       }
@@ -911,5 +906,27 @@ public abstract class AiSmokeTest {
         return name.equals(md.getMetrics().get(0).getName());
       }
     };
+  }
+
+  public static void printContainerLogs(String containerId) throws IOException {
+    Objects.requireNonNull(containerId, "containerId");
+
+    Process p = buildProcess("docker", "container", "logs", containerId).start();
+    flushStdout(p);
+  }
+
+  private static ProcessBuilder buildProcess(String... cmdLine) {
+    return new ProcessBuilder(cmdLine).redirectErrorStream(true);
+  }
+
+  @SuppressWarnings("SystemOut")
+  private static void flushStdout(Process p) {
+    Objects.requireNonNull(p);
+
+    try (Scanner r = new Scanner(p.getInputStream(), UTF_8.name())) {
+      while (r.hasNext()) {
+        System.out.println(r.nextLine());
+      }
+    }
   }
 }

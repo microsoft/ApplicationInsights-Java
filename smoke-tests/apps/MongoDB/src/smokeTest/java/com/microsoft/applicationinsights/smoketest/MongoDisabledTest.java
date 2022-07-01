@@ -30,7 +30,7 @@ import org.junit.Test;
 @WithDependencyContainers(
     @DependencyContainer(
         value = "mongo:4",
-        portMapping = "27017",
+        exposedPort = 27017,
         hostnameEnvironmentVariable = "MONGO"))
 public class MongoDisabledTest extends AiWarSmokeTest {
 

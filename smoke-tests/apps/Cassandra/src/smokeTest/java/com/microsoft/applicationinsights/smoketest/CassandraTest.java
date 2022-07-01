@@ -31,7 +31,7 @@ import org.junit.Test;
 @WithDependencyContainers(
     @DependencyContainer(
         value = "cassandra:3",
-        portMapping = "9042",
+        exposedPort = 9042,
         hostnameEnvironmentVariable = "CASSANDRA"))
 public class CassandraTest extends AiWarSmokeTest {
 

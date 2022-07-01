@@ -32,17 +32,17 @@ import org.junit.Test;
   @DependencyContainer(
       value = "mysql:5",
       environmentVariables = {"MYSQL_ROOT_PASSWORD=password"},
-      portMapping = "3306",
+      exposedPort = 3306,
       hostnameEnvironmentVariable = "MYSQL"),
   @DependencyContainer(
       value = "postgres:11",
-      portMapping = "5432",
+      exposedPort = 5432,
       environmentVariables = {"POSTGRES_PASSWORD=passw0rd2"},
       hostnameEnvironmentVariable = "POSTGRES"),
   @DependencyContainer(
       value = "mcr.microsoft.com/mssql/server:2019-latest",
       environmentVariables = {"ACCEPT_EULA=Y", "SA_PASSWORD=Password1"},
-      portMapping = "1433",
+      exposedPort = 1433,
       hostnameEnvironmentVariable = "SQLSERVER")
 })
 public class JdbcTest extends AiWarSmokeTest {

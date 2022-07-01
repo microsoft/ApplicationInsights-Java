@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 @UseAgent("disabled_redis")
-@WithDependencyContainers(@DependencyContainer(value = "redis", portMapping = "6379"))
+@WithDependencyContainers(@DependencyContainer(value = "redis", exposedPort = 6379))
 public class LettuceDisabledTest extends AiWarSmokeTest {
 
   @Test
