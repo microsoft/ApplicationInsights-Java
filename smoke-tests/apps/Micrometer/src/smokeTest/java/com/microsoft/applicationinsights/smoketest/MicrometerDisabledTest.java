@@ -26,7 +26,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-@UseAgent("disabled_micrometer")
+@UseAgent("/disabled_applicationinsights.json")
 public class MicrometerDisabledTest extends AiJarSmokeTest {
 
   @Test

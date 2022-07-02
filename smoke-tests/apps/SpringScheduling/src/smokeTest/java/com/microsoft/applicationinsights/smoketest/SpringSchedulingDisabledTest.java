@@ -26,7 +26,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-@UseAgent("disabled_springscheduling")
+@UseAgent("/disabled_applicationinsights.json")
 public class SpringSchedulingDisabledTest extends AiWarSmokeTest {
 
   @Test

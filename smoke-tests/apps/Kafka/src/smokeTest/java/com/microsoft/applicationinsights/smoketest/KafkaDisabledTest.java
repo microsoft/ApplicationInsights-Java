@@ -31,7 +31,7 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
 import org.junit.Test;
 
-@UseAgent("disabled_kafka")
+@UseAgent(value = "/disabled_applicationinsights.json")
 @WithDependencyContainers({
   @DependencyContainer(
       value = "confluentinc/cp-zookeeper",

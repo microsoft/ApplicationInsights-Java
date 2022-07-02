@@ -26,7 +26,6 @@ import static org.junit.Assert.assertNotNull;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
-import com.microsoft.applicationinsights.smoketest.schemav2.DataPointType;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
@@ -36,7 +35,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
-@UseAgent("opentelemetry_metric")
+@UseAgent
 public class OpenTelemetryMetricTest extends AiWarSmokeTest {
 
   @Test

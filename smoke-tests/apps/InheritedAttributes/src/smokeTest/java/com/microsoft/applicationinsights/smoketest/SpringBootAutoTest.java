@@ -33,7 +33,7 @@ import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import java.util.List;
 import org.junit.Test;
 
-@UseAgent("inheritedattributes")
+@UseAgent
 public class SpringBootAutoTest extends AiJarSmokeTest {
 
   @Test

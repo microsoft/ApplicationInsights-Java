@@ -1,0 +1,7 @@
+{
+  "instrumentation": {
+    "springScheduling": {
+      "enabled": false
+    }
+  }
+}

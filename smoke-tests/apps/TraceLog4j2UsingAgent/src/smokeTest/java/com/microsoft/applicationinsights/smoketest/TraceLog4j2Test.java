@@ -35,7 +35,7 @@ import java.util.Comparator;
 import java.util.List;
 import org.junit.Test;
 
-@UseAgent("logging")
+@UseAgent
 public class TraceLog4j2Test extends AiWarSmokeTest {
 
   @Test

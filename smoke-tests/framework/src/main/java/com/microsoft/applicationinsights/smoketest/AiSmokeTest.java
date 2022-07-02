@@ -41,6 +41,12 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServer;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -70,9 +76,11 @@ import org.junit.runners.MethodSorters;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
+import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 /** This is the base class for smoke tests. */
 @RunWith(Parameterized.class)
@@ -81,63 +89,57 @@ import org.testcontainers.utility.DockerImageName;
 @SuppressWarnings({"SystemOut", "InterruptedExceptionSwallowed"})
 public abstract class AiSmokeTest {
 
+  protected static final boolean USE_MATRIX = Boolean.getBoolean("ai.smoketest.matrix");
+
+  private static final boolean REMOTE_DEBUG = Boolean.getBoolean("ai.smoketest.remote-debug");
+
   @Parameter(0)
-  public String appServer;
+  public String imageName;
 
   @Parameter(1)
-  public String os;
-
-  @Parameter(2)
-  public String jreVersion;
-  // endregion
-
-  // region: container fields
-  private static final short BASE_PORT_NUMBER = 28080;
+  public String imageAppDir;
 
   protected static void stopContainer(GenericContainer<?> container) {
-    System.out.printf("Stopping container: %s%n", container);
+    String containerName = container.getContainerName();
+    System.out.printf("Stopping container: %s%n", containerName);
     Stopwatch killTimer = Stopwatch.createUnstarted();
     try {
       killTimer.start();
       container.stop();
       System.out.printf(
-          "Container stopped (%s) in %dms%n", container, killTimer.elapsed(TimeUnit.MILLISECONDS));
+          "Container stopped (%s) in %dms%n",
+          containerName, killTimer.elapsed(TimeUnit.MILLISECONDS));
     } catch (RuntimeException e) {
       System.err.printf(
           "Error stopping container (in %dms): %s%n",
-          killTimer.elapsed(TimeUnit.MILLISECONDS), container);
+          killTimer.elapsed(TimeUnit.MILLISECONDS), containerName);
       throw e;
     }
   }
 
-  protected static short currentPortNumber = BASE_PORT_NUMBER;
-
   private static final List<DependencyContainer> dependencyImages = new ArrayList<>();
-  protected static AtomicReference<GenericContainer<?>> targetContainer = new AtomicReference<>();
-  protected static Deque<GenericContainer<?>> allContainers = new ArrayDeque<>();
+  private static final AtomicReference<GenericContainer<?>> targetContainer =
+      new AtomicReference<>();
+  private static final Deque<GenericContainer<?>> allContainers = new ArrayDeque<>();
   private static final Map<String, String> hostnameEnvVars = new HashMap<>();
   protected static String currentImageName;
-  protected static int appServerPort;
-  protected static File warFile;
-  @Nullable protected static String agentMode;
+  private static String currentImageAppDir;
+  private static int appServerPort;
+  private static File appFile;
+  private static File javaagentFile;
+  @Nullable private static String agentMode;
   @Nullable private static Network network;
-  protected static boolean requestCaptureEnabled = true; // we will assume request capturing is on
-  // endregion
+  private static boolean requestCaptureEnabled = true; // we will assume request capturing is on
 
-  // region: application fields
-  @Nullable protected String targetUri;
-  @Nullable protected String httpMethod;
-  protected long targetUriDelayMs;
-  protected long targetUriCallCount;
-  // endregion
+  @Nullable private String targetUri;
+  @Nullable private String httpMethod;
+  private long targetUriDelayMs;
+  private long targetUriCallCount;
 
-  // region: options
-  public static final int APPLICATION_READY_TIMEOUT_SECONDS = 120;
-  public static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 60;
-  public static final int DELAY_AFTER_CONTAINER_STOP_MILLISECONDS = 1500;
-  public static final int HEALTH_CHECK_RETRIES = 2;
-  public static final int APPSERVER_HEALTH_CHECK_TIMEOUT = 75;
-  // endregion
+  private static final int APPLICATION_READY_TIMEOUT_SECONDS = 120;
+  private static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 60;
+  private static final int DELAY_AFTER_CONTAINER_STOP_MILLISECONDS = 1500;
+  private static final int HEALTH_CHECK_RETRIES = 2;
 
   protected static final MockedAppInsightsIngestionServer mockedIngestion =
       new MockedAppInsightsIngestionServer();
@@ -264,8 +266,7 @@ public abstract class AiSmokeTest {
       };
 
   @BeforeWithParams
-  public static void configureEnvironment(String appServer, String os, String jreVersion)
-      throws Exception {
+  public static void configureEnvironment(String imageName, String imageAppDir) throws Exception {
     System.out.println("Preparing environment...");
     try {
       GenericContainer<?> containerInfo = targetContainer.get();
@@ -284,8 +285,7 @@ public abstract class AiSmokeTest {
           targetContainer.set(null);
         }
       }
-      checkParams(appServer, os, jreVersion);
-      setupProperties(appServer, os, jreVersion);
+      setupProperties(imageName, imageAppDir);
       startMockedIngestion();
       createDockerNetwork();
       startAllContainers();
@@ -308,14 +308,13 @@ public abstract class AiSmokeTest {
     callTargetUriAndWaitForTelemetry();
   }
 
-  // region: before test helper methods
   protected static String getAppContext() {
-    String warFileName = warFile.getName();
-    if (warFileName.endsWith(".jar")) {
+    String appFileName = appFile.getName();
+    if (appFileName.endsWith(".jar")) {
       // spring boot jar
       return "";
     } else {
-      return warFileName.replace(".war", "");
+      return appFileName.replace(".war", "");
     }
   }
 
@@ -331,7 +330,7 @@ public abstract class AiSmokeTest {
   protected static void waitForApplicationToStart() throws Exception {
     GenericContainer<?> targetContainer = AiSmokeTest.targetContainer.get();
     try {
-      System.out.printf("Test app health check: Waiting for %s to start...%n", warFile);
+      System.out.printf("Test app health check: Waiting for %s to start...%n", appFile);
       String contextRootUrl = getBaseUrl() + "/";
       waitForUrlWithRetries(
           contextRootUrl,
@@ -436,19 +435,11 @@ public abstract class AiSmokeTest {
     assertTrue("mocked ingestion has no data", mockedIngestion.hasData());
   }
 
-  protected static void checkParams(String appServer, String os, String jreVersion) {
-    String fmt =
-        "Missing required framework parameter: %s - this indicates an error in the parameter generator";
-    assertNotNull(String.format(fmt, "appServer"), appServer);
-    assertNotNull(String.format(fmt, "os"), os);
-    assertNotNull(String.format(fmt, "jreVersion"), jreVersion);
-  }
-
-  protected static void setupProperties(String appServer, String os, String jreVersion) {
-    warFile = new File(System.getProperty("ai.smoketest.testAppWarFile"));
-    currentImageName = String.format("%s_%s_%s", appServer, os, jreVersion);
-    currentImageName =
-        "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.72-jdk8-20211216.1584506476";
+  protected static void setupProperties(String imageName, String imageAppDir) {
+    appFile = new File(System.getProperty("ai.smoketest.testAppFile"));
+    javaagentFile = new File(System.getProperty("ai.smoketest.javaagentFile"));
+    currentImageName = imageName;
+    currentImageAppDir = imageAppDir;
   }
 
   protected static void startMockedIngestion() throws Exception {
@@ -546,7 +537,8 @@ public abstract class AiSmokeTest {
               .withEnv(envVarMap)
               .withNetwork(network)
               .withNetworkAliases(containerName)
-              .withExposedPorts(dc.exposedPort());
+              .withExposedPorts(dc.exposedPort())
+              .withStartupTimeout(Duration.ofSeconds(90));
       container.start();
       String containerId = container.getContainerId();
       if (containerId == null || containerId.isEmpty()) {
@@ -585,12 +577,57 @@ public abstract class AiSmokeTest {
 
   private static void startTestApplicationContainer() throws Exception {
     System.out.printf("Starting container: %s%n", currentImageName);
-    Map<String, String> envVars = generateAppContainerEnvVarMap();
+
+    Testcontainers.exposeHostPorts(6060);
+
     GenericContainer<?> container =
         new GenericContainer<>(currentImageName)
-            .withEnv(envVars)
+            .withEnv(hostnameEnvVars)
+            .withEnv(
+                "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;"
+                    + "IngestionEndpoint=http://host.testcontainers.internal:6060/")
+            .withEnv("APPLICATIONINSIGHTS_ROLE_NAME", "testrolename")
+            .withEnv("APPLICATIONINSIGHTS_ROLE_INSTANCE", "testroleinstance")
             .withNetwork(network)
-            .withExposedPorts(8080);
+            .withExposedPorts(8080)
+            .withCopyFileToContainer(
+                MountableFile.forHostPath(appFile.toPath()),
+                currentImageAppDir + "/" + appFile.getName());
+
+    List<String> javaToolOptions = new ArrayList<>();
+    if (REMOTE_DEBUG) {
+      javaToolOptions.add("-agentlib:jdwp=transport=dt_socket,address=5005,server=y,suspend=y");
+    }
+    if (agentMode != null) {
+      // runtime attach doesn't use agent
+      javaToolOptions.add("-javaagent:/applicationinsights-agent.jar");
+    }
+    if (!javaToolOptions.isEmpty()) {
+      container.withEnv("JAVA_TOOL_OPTIONS", String.join(" ", javaToolOptions));
+    }
+
+    if (agentMode != null) {
+      container =
+          container.withCopyFileToContainer(
+              MountableFile.forHostPath(javaagentFile.toPath()), "/applicationinsights-agent.jar");
+      URL resource = AiSmokeTest.class.getResource(agentMode);
+      if (resource != null) {
+        File json = File.createTempFile("applicationinsights", ".json");
+        Path jsonPath = json.toPath();
+        try (InputStream in = resource.openStream()) {
+          Files.copy(in, jsonPath, StandardCopyOption.REPLACE_EXISTING);
+        }
+        container =
+            container.withCopyFileToContainer(
+                MountableFile.forHostPath(jsonPath), "/applicationinsights.json");
+      }
+    }
+
+    if (appFile.getName().endsWith(".jar")) {
+      container = container.withCommand("java -jar " + appFile.getName());
+    }
+
     container.start();
 
     appServerPort = container.getMappedPort(8080);
@@ -603,58 +640,8 @@ public abstract class AiSmokeTest {
     System.out.printf("Container started: %s (%s)%n", currentImageName, containerId);
 
     targetContainer.set(container);
-    if (currentImageName.startsWith("javase_")) {
-      // can proceed straight to deploying the app
-      // (there's nothing running at this point, unlike images based on servlet containers)
-      allContainers.push(container);
-    } else {
-      try {
-        String url = String.format("http://localhost:%s/", String.valueOf(appServerPort));
-        System.out.printf("Verifying appserver has started (%s)...%n", url);
-        allContainers.push(container);
-        waitForUrlWithRetries(
-            url,
-            APPSERVER_HEALTH_CHECK_TIMEOUT,
-            TimeUnit.SECONDS,
-            String.format("app server on image '%s'", currentImageName),
-            HEALTH_CHECK_RETRIES);
-        System.out.println("App server is ready.");
-      } catch (RuntimeException e) {
-        System.err.println("Error starting app server");
-        if (container.isRunning()) {
-          System.out.println("Container is not running.");
-          allContainers.remove(container);
-        } else {
-          System.out.println("Yet, the container is running.");
-        }
-        System.out.println("Printing container logs: ");
-        System.out.println("# LOGS START =========================");
-        printContainerLogs(container.getContainerId());
-        System.out.println("# LOGS END ===========================");
-        throw e;
-      }
-    }
-
-    try {
-      System.out.printf("Deploying test application: %s...%n", warFile.getName());
-      // FIXME
-      // docker.copyAndDeployToContainer(containerId, warFile);
-      System.out.println("Test application deployed.");
-    } catch (RuntimeException e) {
-      System.err.println("Error deploying test application.");
-      throw e;
-    }
+    allContainers.push(container);
   }
-
-  private static Map<String, String> generateAppContainerEnvVarMap() {
-    Map<String, String> map = new HashMap<>();
-    if (agentMode != null) {
-      map.put("AI_AGENT_MODE", agentMode);
-    }
-    map.putAll(hostnameEnvVars);
-    return map;
-  }
-  // endregion
 
   @After
   public void resetMockedIngestion() {
@@ -664,9 +651,7 @@ public abstract class AiSmokeTest {
 
   @AfterWithParams
   public static void tearDownContainer(
-      @SuppressWarnings("unused") String appServer,
-      @SuppressWarnings("unused") String os,
-      @SuppressWarnings("unused") String jreVersion)
+      @SuppressWarnings("unused") String imageName, @SuppressWarnings("unused") String imageAppDir)
       throws Exception {
     stopAllContainers();
     cleanUpDockerNetwork();
@@ -718,9 +703,6 @@ public abstract class AiSmokeTest {
       }
     }
   }
-
-  // region: test helper methods
-  /// This section has methods to be used inside tests ///
 
   @SuppressWarnings("TypeParameterUnusedInFormals")
   protected static <T extends Domain> T getBaseData(Envelope envelope) {
@@ -779,7 +761,6 @@ public abstract class AiSmokeTest {
   protected <T extends Domain> T getTelemetryDataForType(int index, String type) {
     return mockedIngestion.getBaseDataForType(index, type);
   }
-  // endregion
 
   protected static Telemetry getTelemetry(int rddCount) throws Exception {
     return getTelemetry(rddCount, rdd -> true);

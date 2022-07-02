@@ -26,7 +26,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-@UseAgent("disabled_cassandra")
+@UseAgent("/disabled_applicationinsights.json")
 @WithDependencyContainers(
     @DependencyContainer(
         value = "cassandra:3",

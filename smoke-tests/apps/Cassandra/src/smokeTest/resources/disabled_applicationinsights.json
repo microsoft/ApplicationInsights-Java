@@ -1,0 +1,7 @@
+{
+  "instrumentation": {
+    "cassandra": {
+      "enabled": false
+    }
+  }
+}

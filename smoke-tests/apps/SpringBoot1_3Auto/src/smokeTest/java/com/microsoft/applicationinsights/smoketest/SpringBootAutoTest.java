@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runners.Parameterized;
@@ -30,12 +29,9 @@ import org.junit.runners.Parameterized;
 public class SpringBootAutoTest extends AiSmokeTest {
 
   // Spring Boot 1.3 does not support Java 11+
-  @Parameterized.Parameters(name = "{index}: {0}, {1}, {2}")
+  @Parameterized.Parameters(name = "{index}: {0}, {1}")
   public static List<Object[]> parameterGenerator() {
-    return Arrays.asList(
-        new Object[] {"jetty9", "linux", "azul_zulu-openjdk_8"},
-        new Object[] {"tomcat85", "linux", "azul_zulu-openjdk_8"},
-        new Object[] {"wildfly11", "linux", "azul_zulu-openjdk_8"});
+    return AiWarSmokeTest.parameterGeneratorJava8();
   }
 
   @Test

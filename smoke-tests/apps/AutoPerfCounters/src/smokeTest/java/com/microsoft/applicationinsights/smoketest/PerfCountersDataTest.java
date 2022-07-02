@@ -25,7 +25,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
-import com.microsoft.applicationinsights.smoketest.schemav2.DataPointType;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.List;
@@ -34,8 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import org.junit.Test;
 
-@UseAgent("fastmetrics")
-@SuppressWarnings("deprecation")
+@UseAgent
 public class PerfCountersDataTest extends AiWarSmokeTest {
   @Test
   @TargetUri(value = "index.jsp", delay = 5000)

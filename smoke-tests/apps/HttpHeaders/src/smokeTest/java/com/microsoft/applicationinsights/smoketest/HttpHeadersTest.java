@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-@UseAgent("httpheaders")
+@UseAgent
 public class HttpHeadersTest extends AiWarSmokeTest {
 
   @Test

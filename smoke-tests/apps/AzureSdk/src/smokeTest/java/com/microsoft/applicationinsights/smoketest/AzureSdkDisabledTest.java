@@ -26,7 +26,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-@UseAgent("disabled_azuresdk")
+@UseAgent(value = "disabled_azuresdk")
 public class AzureSdkDisabledTest extends AiWarSmokeTest {
 
   @Test

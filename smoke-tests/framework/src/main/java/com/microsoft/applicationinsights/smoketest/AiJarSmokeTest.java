@@ -22,16 +22,21 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.junit.runners.Parameterized;
 
 public abstract class AiJarSmokeTest extends AiSmokeTest {
 
-  @Parameterized.Parameters(name = "{index}: {0}, {1}, {2}")
+  @Parameterized.Parameters(name = "{index}: {0}, {1}")
   public static List<Object[]> parameterGenerator() {
-    return Arrays.asList(
-        new Object[] {"javase", "linux", "azul_zulu-openjdk_8"},
-        new Object[] {"javase", "linux", "azul_zulu-openjdk_11"},
-        new Object[] {"javase", "linux", "azul_zulu-openjdk_17"});
+    if (USE_MATRIX) {
+      return Arrays.asList(
+          new Object[] {"azul/zulu-openjdk:8", ""},
+          new Object[] {"azul/zulu-openjdk:11", ""},
+          new Object[] {"azul/zulu-openjdk:17", ""});
+    } else {
+      return Collections.singletonList(new Object[] {"azul/zulu-openjdk:8", ""});
+    }
   }
 }

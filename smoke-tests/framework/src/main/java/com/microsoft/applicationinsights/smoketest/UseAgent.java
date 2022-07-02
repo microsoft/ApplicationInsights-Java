@@ -29,21 +29,10 @@ import java.lang.annotation.Target;
 /**
  * Indicates that this test class should use the agent and selects the configuration file for the
  * agent to use.
- *
- * <p>The configuration files should be placed in {@code
- * /test/smoke/appServers/global-resources/{mode}_applicationinsights.json}.
- *
- * <p>The {mode} prefix differentiates the configurations for various purposes and the mode is
- * selected by the {@link #value()} in this annotation. For example, a configuration file named
- * {@code myconfig_applicationinsights.json} can be selected by annotating a class with
- * {@code @UseAgent("myconfig")}.
- *
- * <p>When the configuration file is used, the selected configuration file is copied to the agent
- * library's directory and renamed to {@code applicationinsights.json}.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface UseAgent {
-  /** Sets the agent mode, i.e. chooses the config file to use. */
-  String value() default "default";
+
+  String value() default "/applicationinsights.json";
 }

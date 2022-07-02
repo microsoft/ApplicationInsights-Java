@@ -28,7 +28,7 @@ import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import java.util.List;
 import org.junit.Test;
 
-@UseAgent("telemetryprocessors")
+@UseAgent
 public class SpringBootAutoTest extends AiWarSmokeTest {
 
   @Test
