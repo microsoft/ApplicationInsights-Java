@@ -25,7 +25,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-@UseAgent("/disabled_applicationinsights.json")
+@UseAgent("disabled_applicationinsights.json")
 public class MicrometerDisabledTest extends AiJarSmokeTest {
 
   @Test

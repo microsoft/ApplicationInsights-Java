@@ -228,6 +228,7 @@ public abstract class AiSmokeTest {
     createDockerNetwork();
     startAllContainers();
     clearOutAnyInitLogs();
+    mockedIngestion.enableTelemetryLogging();
     System.out.println("Environment preparation complete.");
   }
 
@@ -257,7 +258,7 @@ public abstract class AiSmokeTest {
 
   private static void clearOutAnyInitLogs() throws Exception {
     String contextRootUrl = getBaseUrl() + "/";
-    HttpHelper.get(contextRootUrl);
+    HttpHelper.getResponseCodeEnsuringSampled(contextRootUrl);
     waitForHealthCheckTelemetryIfNeeded(contextRootUrl);
     System.out.println("Clearing any RequestData from health check.");
     mockedIngestion.resetData();
@@ -280,7 +281,6 @@ public abstract class AiSmokeTest {
       System.out.printf(
           "Received request telemetry after %.3f seconds...%n",
           receivedTelemetryTimer.elapsed(TimeUnit.MILLISECONDS) / 1000.0);
-      System.out.println("Clearing any RequestData from health check.");
     } catch (TimeoutException e) {
       TimeoutException withMessage =
           new TimeoutException("request telemetry from application health check");
@@ -470,7 +470,7 @@ public abstract class AiSmokeTest {
       container =
           container.withCopyFileToContainer(
               MountableFile.forHostPath(javaagentFile.toPath()), "/applicationinsights-agent.jar");
-      URL resource = AiSmokeTest.class.getResource(agentConfigurationPath);
+      URL resource = AiSmokeTest.class.getClassLoader().getResource(agentConfigurationPath);
       if (resource != null) {
         File json = File.createTempFile("applicationinsights", ".json");
         Path jsonPath = json.toPath();

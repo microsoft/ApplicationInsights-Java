@@ -55,14 +55,18 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
 
   private final ExecutorService itemExecutor = Executors.newSingleThreadExecutor();
 
+  private volatile boolean loggingEnabled;
+
   MockedAppInsightsIngestionServlet() {
     type2envelope = MultimapBuilder.treeKeys().arrayListValues().build();
     filters = new ArrayList<>();
   }
 
   @SuppressWarnings("SystemOut")
-  private static void logit(String message) {
-    System.out.println("FAKE INGESTION: INFO - " + message);
+  private void logit(String message) {
+    if (loggingEnabled) {
+      System.out.println("FAKE INGESTION: INFO - " + message);
+    }
   }
 
   void addIngestionFilter(Predicate<Envelope> filter) {
@@ -177,5 +181,9 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
     } else {
       resp.sendError(404, "Unknown URI");
     }
+  }
+
+  public void enableTelemetryLogging() {
+    loggingEnabled = true;
   }
 }

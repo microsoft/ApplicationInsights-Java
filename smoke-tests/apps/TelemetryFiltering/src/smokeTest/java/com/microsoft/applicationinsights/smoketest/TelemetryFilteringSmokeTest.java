@@ -36,7 +36,7 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
 import org.junit.Test;
 
-@UseAgent("/telemetryfiltering_applicationinsights.json")
+@UseAgent("telemetryfiltering_applicationinsights.json")
 public class TelemetryFilteringSmokeTest extends AiWarSmokeTest {
 
   @Test

@@ -34,5 +34,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface UseAgent {
 
-  String value() default "/applicationinsights.json";
+  String value() default "applicationinsights.json";
 }

@@ -26,7 +26,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-@UseAgent("/disabled_applicationinsights.json")
+@UseAgent("disabled_applicationinsights.json")
 public class JdbcDisabledTest extends AiWarSmokeTest {
 
   @Test

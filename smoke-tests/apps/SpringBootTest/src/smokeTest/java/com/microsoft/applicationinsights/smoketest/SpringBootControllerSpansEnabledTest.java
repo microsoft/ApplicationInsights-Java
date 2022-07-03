@@ -44,7 +44,7 @@ import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
 
-@UseAgent("/controller_spans_enabled_applicationinsights.json")
+@UseAgent("controller_spans_enabled_applicationinsights.json")
 public class SpringBootControllerSpansEnabledTest extends AiWarSmokeTest {
 
   @Test

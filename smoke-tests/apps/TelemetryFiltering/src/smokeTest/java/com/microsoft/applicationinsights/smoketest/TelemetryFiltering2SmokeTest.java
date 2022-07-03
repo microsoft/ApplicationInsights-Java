@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.smoketest;
 
 import org.junit.Test;
 
-@UseAgent("/telemetryfiltering2_applicationinsights.json")
+@UseAgent("telemetryfiltering2_applicationinsights.json")
 public class TelemetryFiltering2SmokeTest extends AiWarSmokeTest {
 
   @Test

@@ -1,5 +1,5 @@
 {
   "heartbeat": {
-    "intervalSeconds": 30
+    "intervalSeconds": 5
   }
 }

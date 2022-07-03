@@ -32,7 +32,7 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
 import org.junit.Test;
 
-@UseAgent("/controller_spans_enabled_applicationinsights.json")
+@UseAgent("controller_spans_enabled_applicationinsights.json")
 @WithDependencyContainers({
   @DependencyContainer(
       value = "confluentinc/cp-zookeeper",

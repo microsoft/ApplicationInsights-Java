@@ -269,4 +269,8 @@ public class MockedAppInsightsIngestionServer {
                 }));
     i.startServer();
   }
+
+  public void enableTelemetryLogging() {
+    servlet.enableTelemetryLogging();
+  }
 }
