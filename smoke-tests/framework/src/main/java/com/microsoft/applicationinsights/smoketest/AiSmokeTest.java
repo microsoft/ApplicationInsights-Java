@@ -28,7 +28,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.base.Stopwatch;
-import com.microsoft.applicationinsights.smoketest.exceptions.TimeoutException;
 import com.microsoft.applicationinsights.smoketest.fakeingestion.MockedAppInsightsIngestionServer;
 import com.microsoft.applicationinsights.smoketest.fixtures.AfterWithParams;
 import com.microsoft.applicationinsights.smoketest.fixtures.BeforeWithParams;
@@ -57,12 +56,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Scanner;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -120,9 +118,7 @@ public abstract class AiSmokeTest {
   @Nullable private String targetUri;
   private long targetUriCallCount;
 
-  private static final int APPLICATION_READY_TIMEOUT_SECONDS = 120;
   private static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 60;
-  private static final int HEALTH_CHECK_RETRIES = 2;
 
   protected static final MockedAppInsightsIngestionServer mockedIngestion =
       new MockedAppInsightsIngestionServer();
@@ -221,39 +217,28 @@ public abstract class AiSmokeTest {
   @BeforeWithParams
   public static void configureEnvironment(String imageName, String imageAppDir) throws Exception {
     System.out.println("Preparing environment...");
-    try {
-      GenericContainer<?> containerInfo = targetContainer.get();
-      if (containerInfo != null) {
-        // test cleanup didn't take...try to clean up
-        if (containerInfo.isRunning()) {
-          System.err.println("From last test run, container is still running: " + containerInfo);
-          try {
-            containerInfo.stop();
-          } catch (RuntimeException e) {
-            System.err.println("Couldn't clean up environment. Must be done manually.");
-            throw e;
-          }
-        } else {
-          // container must have stopped after timeout reached.
-          targetContainer.set(null);
+
+    GenericContainer<?> containerInfo = targetContainer.get();
+    if (containerInfo != null) {
+      // test cleanup didn't take...try to clean up
+      if (containerInfo.isRunning()) {
+        System.err.println("From last test run, container is still running: " + containerInfo);
+        try {
+          containerInfo.stop();
+        } catch (RuntimeException e) {
+          System.err.println("Couldn't clean up environment. Must be done manually.");
+          throw e;
         }
-      }
-      setupProperties(imageName, imageAppDir);
-      startMockedIngestion();
-      createDockerNetwork();
-      startAllContainers();
-      waitForApplicationToStart();
-      System.out.println("Environment preparation complete.");
-    } catch (Exception e) {
-      String additionalMessage;
-      if (e instanceof TimeoutException) {
-        additionalMessage = e.getLocalizedMessage();
       } else {
-        additionalMessage = ExceptionUtils.getStackTrace(e);
+        // container must have stopped after timeout reached.
+        targetContainer.set(null);
       }
-      System.err.println("Could not configure environment: " + additionalMessage);
-      throw e;
     }
+    setupProperties(imageName, imageAppDir);
+    startMockedIngestion();
+    createDockerNetwork();
+    startAllContainers();
+    System.out.println("Environment preparation complete.");
   }
 
   @Before
@@ -277,64 +262,6 @@ public abstract class AiSmokeTest {
       return "http://localhost:" + appServerPort;
     } else {
       return "http://localhost:" + appServerPort + "/" + appContext;
-    }
-  }
-
-  protected static void waitForApplicationToStart() throws Exception {
-    GenericContainer<?> targetContainer = AiSmokeTest.targetContainer.get();
-    try {
-      System.out.println("Test app health check: Waiting for app to start: " + appFile);
-      String contextRootUrl = getBaseUrl() + "/";
-      waitForUrlWithRetries(
-          contextRootUrl,
-          APPLICATION_READY_TIMEOUT_SECONDS,
-          TimeUnit.SECONDS,
-          String.format("%s on %s", getAppContext(), targetContainer.getContainerName()),
-          HEALTH_CHECK_RETRIES);
-      System.out.println("Test app health check complete.");
-      waitForHealthCheckTelemetryIfNeeded(contextRootUrl);
-    } catch (Exception e) {
-      for (GenericContainer<?> container : allContainers) {
-        System.out.println("========== dumping container log: " + container.getContainerId());
-        printContainerLogs(container.getContainerId());
-        System.out.println("end of container log ==========");
-      }
-      throw e;
-    } finally {
-      mockedIngestion.resetData();
-    }
-  }
-
-  private static void waitForHealthCheckTelemetryIfNeeded(String contextRootUrl)
-      throws InterruptedException, ExecutionException {
-    Stopwatch receivedTelemetryTimer = Stopwatch.createStarted();
-    int requestTelemetryFromHealthCheckTimeout;
-    if (currentImageName.startsWith("javase_")) {
-      requestTelemetryFromHealthCheckTimeout = APPLICATION_READY_TIMEOUT_SECONDS;
-    } else {
-      requestTelemetryFromHealthCheckTimeout = TELEMETRY_RECEIVE_TIMEOUT_SECONDS;
-    }
-    try {
-      mockedIngestion.waitForItem(
-          input -> {
-            if (!"RequestData".equals(input.getData().getBaseType())) {
-              return false;
-            }
-            RequestData data = (RequestData) ((Data<?>) input.getData()).getBaseData();
-            return contextRootUrl.equals(data.getUrl()) && "200".equals(data.getResponseCode());
-          },
-          requestTelemetryFromHealthCheckTimeout,
-          TimeUnit.SECONDS);
-      System.out.printf(
-          "Received request telemetry after %.3f seconds...%n",
-          receivedTelemetryTimer.elapsed(TimeUnit.MILLISECONDS) / 1000.0);
-      System.out.println("Clearing any RequestData from health check.");
-    } catch (java.util.concurrent.TimeoutException e) {
-      throw new TimeoutException(
-          "request telemetry from application health check",
-          requestTelemetryFromHealthCheckTimeout,
-          TimeUnit.SECONDS,
-          e);
     }
   }
 
@@ -585,14 +512,14 @@ public abstract class AiSmokeTest {
   }
 
   protected static void waitForUrl(String url, long timeout, TimeUnit timeoutUnit, String appName)
-      throws InterruptedException {
+      throws InterruptedException, TimeoutException {
 
     int rval = 404;
     Stopwatch watch = Stopwatch.createStarted();
     boolean first = true;
     while (rval == 404) {
       if (watch.elapsed(timeoutUnit) > timeout) {
-        throw new TimeoutException(appName, timeout, timeoutUnit);
+        throw new TimeoutException(appName);
       }
 
       try {
@@ -610,7 +537,8 @@ public abstract class AiSmokeTest {
   }
 
   protected static void waitForUrlWithRetries(
-      String url, long timeout, TimeUnit timeoutUnit, String appName, int numberOfRetries) {
+      String url, long timeout, TimeUnit timeoutUnit, String appName, int numberOfRetries)
+      throws TimeoutException {
     int triedCount = 0;
     boolean success = false;
     Throwable lastThrowable = null;
@@ -628,12 +556,9 @@ public abstract class AiSmokeTest {
       }
     } while (!success && triedCount++ < numberOfRetries);
     if (!success) {
-      throw new TimeoutException(
-          appName,
-          timeout * triedCount,
-          timeoutUnit,
-          lastThrowable,
-          String.format("Tried %d times to hit %s", triedCount, url));
+      TimeoutException e = new TimeoutException(appName);
+      e.initCause(lastThrowable);
+      throw e;
     }
   }
 

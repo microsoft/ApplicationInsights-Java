@@ -60,6 +60,11 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
     filters = new ArrayList<>();
   }
 
+  @SuppressWarnings("SystemOut")
+  private static void logit(String message) {
+    System.out.println("FAKE INGESTION: INFO - " + message);
+  }
+
   void addIngestionFilter(Predicate<Envelope> filter) {
     this.filters.add(filter);
   }
@@ -133,6 +138,7 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
     CharStreams.copy(reader, sw);
     String body = sw.toString();
     resp.setContentType("application/json");
+    logit("raw payload:\n\n" + body + "\n");
 
     String[] lines = body.split("\n");
     for (String line : lines) {

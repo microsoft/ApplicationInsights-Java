@@ -17,5 +17,7 @@ dependencies {
 
   implementation("org.awaitility:awaitility:4.2.0")
 
+  implementation("ch.qos.logback:logback-classic")
+
   testImplementation("org.assertj:assertj-core")
 }

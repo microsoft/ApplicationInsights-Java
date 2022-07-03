@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.smoketest.fakeingestion;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
-import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -124,8 +123,7 @@ public class MockedAppInsightsIngestionServer {
     List<Envelope> items = getItemsEnvelopeDataType("MessageData");
     List<T> dataItems = new ArrayList<>();
     for (Envelope e : items) {
-      String message = ((MessageData) ((Data<?>) e.getData()).getBaseData()).getMessage();
-      if (e.getTags().containsKey("ai.operation.id") && !ignoreMessageData(message)) {
+      if (e.getTags().containsKey("ai.operation.id")) {
         Data<T> dt = (Data<T>) e.getData();
         dataItems.add(dt.getBaseData());
       }
@@ -237,13 +235,8 @@ public class MockedAppInsightsIngestionServer {
             new Predicate<Envelope>() {
               @Override
               public boolean test(Envelope input) {
-                if (!input.getData().getBaseType().equals("MessageData")
-                    || !input.getTags().containsKey("ai.operation.id")) {
-                  return false;
-                }
-                String message =
-                    ((MessageData) ((Data<?>) input.getData()).getBaseData()).getMessage();
-                return !ignoreMessageData(message);
+                return input.getData().getBaseType().equals("MessageData")
+                    && input.getTags().containsKey("ai.operation.id");
               }
             },
             numItems,
@@ -254,11 +247,6 @@ public class MockedAppInsightsIngestionServer {
           "Expecting " + numItems + " of type MessageData, but received " + items.size());
     }
     return items;
-  }
-
-  private static boolean ignoreMessageData(String message) {
-    return message.contains("The profile fetch task will not execute for next")
-        || message.contains("pending resolution of instrumentation key");
   }
 
   @SuppressWarnings("SystemOut")
