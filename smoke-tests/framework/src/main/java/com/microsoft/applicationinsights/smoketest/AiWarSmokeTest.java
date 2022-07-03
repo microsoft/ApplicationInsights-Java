@@ -40,11 +40,12 @@ public abstract class AiWarSmokeTest extends AiSmokeTest {
     if (USE_MATRIX) {
       return Arrays.asList(
           new Object[] {PREFIX + "-tomcat:8.5.72-jdk8-" + SUFFIX, TOMCAT_APP_DIR},
+          new Object[] {PREFIX + "-tomcat:8.5.72-jdk8-openj9-" + SUFFIX, TOMCAT_APP_DIR},
           new Object[] {PREFIX + "-tomcat:8.5.72-jdk11-" + SUFFIX, TOMCAT_APP_DIR},
+          new Object[] {PREFIX + "-tomcat:8.5.72-jdk11-openj9-" + SUFFIX, TOMCAT_APP_DIR},
           new Object[] {PREFIX + "-tomcat:8.5.72-jdk17-" + SUFFIX, TOMCAT_APP_DIR},
-          new Object[] {PREFIX + "-wildfly:13.0.0.Final-jdk8-" + SUFFIX, WILDFLY_APP_DIR},
-          new Object[] {PREFIX + "-wildfly:13.0.0.Final-jdk11-" + SUFFIX, WILDFLY_APP_DIR},
-          new Object[] {PREFIX + "-wildfly:13.0.0.Final-jdk17-" + SUFFIX, WILDFLY_APP_DIR});
+          new Object[] {PREFIX + "-tomcat:8.5.72-jdk18-" + SUFFIX, TOMCAT_APP_DIR},
+          new Object[] {PREFIX + "-wildfly:13.0.0.Final-jdk8-" + SUFFIX, WILDFLY_APP_DIR});
     } else {
       return Collections.singletonList(
           new Object[] {PREFIX + "-tomcat:8.5.72-jdk8-" + SUFFIX, TOMCAT_APP_DIR});

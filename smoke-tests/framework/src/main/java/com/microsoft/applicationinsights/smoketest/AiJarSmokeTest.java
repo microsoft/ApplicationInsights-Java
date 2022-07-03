@@ -34,7 +34,8 @@ public abstract class AiJarSmokeTest extends AiSmokeTest {
       return Arrays.asList(
           new Object[] {"azul/zulu-openjdk:8", ""},
           new Object[] {"azul/zulu-openjdk:11", ""},
-          new Object[] {"azul/zulu-openjdk:17", ""});
+          new Object[] {"azul/zulu-openjdk:17", ""},
+          new Object[] {"azul/zulu-openjdk:18", ""});
     } else {
       return Collections.singletonList(new Object[] {"azul/zulu-openjdk:8", ""});
     }
