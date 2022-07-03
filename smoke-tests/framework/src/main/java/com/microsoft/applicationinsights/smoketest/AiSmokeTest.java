@@ -77,6 +77,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 import org.testcontainers.Testcontainers;
+import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
@@ -582,8 +583,16 @@ public abstract class AiSmokeTest {
 
     Testcontainers.exposeHostPorts(6060);
 
-    GenericContainer<?> container =
-        new GenericContainer<>(currentImageName)
+    GenericContainer<?> container;
+    if (REMOTE_DEBUG) {
+      container =
+          new FixedHostPortGenericContainer<>(currentImageName).withFixedExposedPort(5005, 5005);
+    } else {
+      container = new GenericContainer<>(currentImageName);
+    }
+
+    container =
+        container
             .withEnv(hostnameEnvVars)
             .withEnv(
                 "APPLICATIONINSIGHTS_CONNECTION_STRING",
@@ -600,7 +609,6 @@ public abstract class AiSmokeTest {
     List<String> javaToolOptions = new ArrayList<>();
     if (REMOTE_DEBUG) {
       javaToolOptions.add("-agentlib:jdwp=transport=dt_socket,address=5005,server=y,suspend=y");
-      container = container.withExposedPorts(5005);
     }
     if (agentMode != null) {
       // runtime attach doesn't use agent
