@@ -29,6 +29,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.base.Stopwatch;
 import com.microsoft.applicationinsights.smoketest.exceptions.TimeoutException;
+import com.microsoft.applicationinsights.smoketest.fakeingestion.MockedAppInsightsIngestionServer;
 import com.microsoft.applicationinsights.smoketest.fixtures.AfterWithParams;
 import com.microsoft.applicationinsights.smoketest.fixtures.BeforeWithParams;
 import com.microsoft.applicationinsights.smoketest.fixtures.ParameterizedRunnerWithFixturesFactory;
@@ -38,7 +39,6 @@ import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
-import com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServer;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -118,12 +118,10 @@ public abstract class AiSmokeTest {
   @Nullable private static Network network;
 
   @Nullable private String targetUri;
-  private long targetUriDelayMs;
   private long targetUriCallCount;
 
   private static final int APPLICATION_READY_TIMEOUT_SECONDS = 120;
   private static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 60;
-  private static final int DELAY_AFTER_CONTAINER_STOP_MILLISECONDS = 1500;
   private static final int HEALTH_CHECK_RETRIES = 2;
 
   protected static final MockedAppInsightsIngestionServer mockedIngestion =
@@ -144,14 +142,12 @@ public abstract class AiSmokeTest {
           AiSmokeTest thiz = AiSmokeTest.this;
           if (targetUri == null) {
             thiz.targetUri = null;
-            thiz.targetUriDelayMs = 0L;
             thiz.targetUriCallCount = 1;
           } else {
             thiz.targetUri = targetUri.value();
             if (!thiz.targetUri.startsWith("/")) {
               thiz.targetUri = "/" + thiz.targetUri;
             }
-            thiz.targetUriDelayMs = targetUri.delay();
             thiz.targetUriCallCount = targetUri.callCount();
           }
         }
@@ -347,11 +343,6 @@ public abstract class AiSmokeTest {
       System.out.println("targetUri==null: automated testapp request disabled");
       return;
     }
-    if (targetUriDelayMs > 0) {
-      System.out.printf("Waiting %.3fs before calling uri...%n", targetUriDelayMs / 1000.0);
-      System.out.flush();
-      TimeUnit.MILLISECONDS.sleep(targetUriDelayMs);
-    }
     System.out.println("Calling " + targetUri + " ...");
     String url = getBaseUrl() + targetUri;
     if (targetUriCallCount == 1) {
@@ -408,16 +399,6 @@ public abstract class AiSmokeTest {
           }
         });
     mockedIngestion.startServer();
-    TimeUnit.SECONDS.sleep(2);
-    checkMockedIngestionHealth();
-  }
-
-  protected static void checkMockedIngestionHealth() throws Exception {
-    String ok = HttpHelper.get("http://localhost:" + mockedIngestion.getPort() + "/");
-    assertEquals(MockedAppInsightsIngestionServer.ENDPOINT_HEALTH_CHECK_RESPONSE, ok);
-    String postResponse =
-        HttpHelper.post("http://localhost:6060/v2.1/track", MockedAppInsightsIngestionServer.PING);
-    assertEquals(MockedAppInsightsIngestionServer.PONG, postResponse);
   }
 
   private static void createDockerNetwork() {
@@ -441,12 +422,7 @@ public abstract class AiSmokeTest {
     startTestApplicationContainer();
   }
 
-  private static void startDependencyContainers() throws InterruptedException {
-    if (dependencyImages.isEmpty()) {
-      System.out.println("No dependency containers to start.");
-      return;
-    }
-
+  private static void startDependencyContainers() {
     for (DependencyContainer dc : dependencyImages) {
       String imageName = dc.imageName().isEmpty() ? dc.value() : dc.imageName();
       System.out.println("Starting container: " + imageName);
@@ -477,7 +453,6 @@ public abstract class AiSmokeTest {
       }
       System.out.printf("Dependency container name for %s: %s%n", imageName, containerName);
       allContainers.push(container);
-      TimeUnit.MILLISECONDS.sleep(500); // wait a bit after starting a server.
     }
   }
 
@@ -582,7 +557,6 @@ public abstract class AiSmokeTest {
       throws Exception {
     stopAllContainers();
     cleanUpDockerNetwork();
-    TimeUnit.MILLISECONDS.sleep(DELAY_AFTER_CONTAINER_STOP_MILLISECONDS);
     mockedIngestion.stopServer();
   }
 
@@ -612,21 +586,26 @@ public abstract class AiSmokeTest {
 
   protected static void waitForUrl(String url, long timeout, TimeUnit timeoutUnit, String appName)
       throws InterruptedException {
+
     int rval = 404;
     Stopwatch watch = Stopwatch.createStarted();
-    do {
+    boolean first = true;
+    while (rval == 404) {
       if (watch.elapsed(timeoutUnit) > timeout) {
         throw new TimeoutException(appName, timeout, timeoutUnit);
       }
 
       try {
-        TimeUnit.MILLISECONDS.sleep(250);
+        if (!first) {
+          TimeUnit.MILLISECONDS.sleep(250);
+        }
         rval = HttpHelper.getResponseCodeEnsuringSampled(url);
       } catch (InterruptedException e) {
         throw e;
       } catch (Exception ignored) {
       }
-    } while (rval == 404);
+    }
+
     assertEquals(200, rval);
   }
 

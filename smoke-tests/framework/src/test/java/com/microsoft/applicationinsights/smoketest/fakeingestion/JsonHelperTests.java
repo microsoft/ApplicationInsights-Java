@@ -19,11 +19,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.smoketest;
+package com.microsoft.applicationinsights.smoketest.fakeingestion;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.microsoft.applicationinsights.smoketest.telemetry.Duration;
+import com.microsoft.applicationinsights.smoketest.schemav2.Duration;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("SystemOut")

@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.test.fakeingestion;
+package com.microsoft.applicationinsights.smoketest.fakeingestion;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
@@ -40,11 +40,6 @@ import org.eclipse.jetty.servlet.ServletHolder;
 public class MockedAppInsightsIngestionServer {
   public static final int DEFAULT_PORT = 6060;
 
-  public static final String ENDPOINT_HEALTH_CHECK_RESPONSE =
-      MockedAppInsightsIngestionServlet.ENDPOINT_HEALTH_CHECK_RESPONSE;
-  public static final String PING = MockedAppInsightsIngestionServlet.PING;
-  public static final String PONG = MockedAppInsightsIngestionServlet.PONG;
-
   private final MockedAppInsightsIngestionServlet servlet;
   private final Server server;
 
@@ -56,10 +51,6 @@ public class MockedAppInsightsIngestionServer {
     servlet = new MockedAppInsightsIngestionServlet();
 
     handler.addServletWithMapping(new ServletHolder(servlet), "/*");
-  }
-
-  public int getPort() {
-    return DEFAULT_PORT;
   }
 
   @SuppressWarnings("SystemOut")

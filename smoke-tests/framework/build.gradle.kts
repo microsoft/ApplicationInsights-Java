@@ -15,5 +15,7 @@ dependencies {
 
   implementation("org.testcontainers:testcontainers:1.17.3")
 
+  implementation("org.awaitility:awaitility:4.2.0")
+
   testImplementation("org.assertj:assertj-core")
 }

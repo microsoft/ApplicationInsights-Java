@@ -31,9 +31,6 @@ import java.lang.annotation.Target;
 public @interface TargetUri {
   String value();
 
-  /** The delay in milliseconds to wait before calling the target uri. */
-  long delay() default 0L;
-
   /** The number of times to call the target uri. */
   int callCount() default 1;
 }

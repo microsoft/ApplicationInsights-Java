@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.smoketest;
+package com.microsoft.applicationinsights.smoketest.fakeingestion;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -32,6 +32,7 @@ import com.google.gson.reflect.TypeToken;
 import com.microsoft.applicationinsights.smoketest.schemav2.Base;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
+import com.microsoft.applicationinsights.smoketest.schemav2.Duration;
 import com.microsoft.applicationinsights.smoketest.schemav2.EventData;
 import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
@@ -39,14 +40,13 @@ import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import com.microsoft.applicationinsights.smoketest.schemav2.PageViewData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
-import com.microsoft.applicationinsights.smoketest.telemetry.Duration;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
-public class JsonHelper {
-  public static final Gson GSON =
+class JsonHelper {
+
+  static final Gson GSON =
       new GsonBuilder()
           .serializeNulls()
           .registerTypeHierarchyAdapter(Base.class, new BaseDataContractDeserializer())
@@ -77,29 +77,20 @@ public class JsonHelper {
     }
 
     @Override
-    @SuppressWarnings("SystemOut")
     public Base deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
       JsonObject jo = json.getAsJsonObject();
       String baseType = jo.get(discriminatorField).getAsString();
-      try {
-        Data<Domain> rval = Data.class.getDeclaredConstructor().newInstance();
-        JsonObject baseData = jo.get("baseData").getAsJsonObject();
-        Class<? extends Domain> domainClass = classMap.get(baseType);
-        if (domainClass == null) {
-          throw new JsonParseException("Unknown Domain type: " + baseType);
-        }
-        rval.setBaseType(baseType);
-        Domain deserialize = context.deserialize(baseData, TypeToken.get(domainClass).getType());
-        rval.setBaseData(deserialize);
-        return rval;
-      } catch (InstantiationException
-          | IllegalAccessException
-          | NoSuchMethodException
-          | InvocationTargetException e) {
-        System.err.println("Error deserializing data");
-        e.printStackTrace();
-        throw new JsonParseException(e);
+
+      Data<Domain> rval = new Data<>();
+      JsonObject baseData = jo.get("baseData").getAsJsonObject();
+      Class<? extends Domain> domainClass = classMap.get(baseType);
+      if (domainClass == null) {
+        throw new JsonParseException("Unknown Domain type: " + baseType);
       }
+      rval.setBaseType(baseType);
+      Domain deserialize = context.deserialize(baseData, TypeToken.get(domainClass).getType());
+      rval.setBaseData(deserialize);
+      return rval;
     }
   }
 
@@ -116,10 +107,9 @@ public class JsonHelper {
       long[] conversionFactor = new long[] {86400000, 3600000, 60000, 1000, 1};
       int conversionIndex = hasDays ? 0 : 1;
       long duration = 0;
-      for (int i = 0; i < parts.length; i++) {
-        String part =
-            (conversionIndex == conversionFactor.length - 1) ? parts[i].substring(0, 3) : parts[i];
-        duration += Long.parseLong(part) * conversionFactor[conversionIndex++];
+      for (String part : parts) {
+        String str = (conversionIndex == conversionFactor.length - 1) ? part.substring(0, 3) : part;
+        duration += Long.parseLong(str) * conversionFactor[conversionIndex++];
       }
 
       return new Duration(duration);

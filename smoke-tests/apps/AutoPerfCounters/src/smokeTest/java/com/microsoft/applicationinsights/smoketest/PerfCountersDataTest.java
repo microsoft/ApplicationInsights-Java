@@ -36,7 +36,7 @@ import org.junit.Test;
 @UseAgent
 public class PerfCountersDataTest extends AiWarSmokeTest {
   @Test
-  @TargetUri(value = "index.jsp", delay = 5000)
+  @TargetUri(value = "index.jsp")
   public void testPerformanceCounterData() throws Exception {
     System.out.println("Waiting for performance data...");
     long start = System.currentTimeMillis();

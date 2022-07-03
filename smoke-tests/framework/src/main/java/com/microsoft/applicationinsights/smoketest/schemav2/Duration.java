@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.smoketest.telemetry;
+package com.microsoft.applicationinsights.smoketest.schemav2;
 
 import javax.annotation.Nullable;
 
