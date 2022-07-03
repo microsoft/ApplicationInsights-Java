@@ -107,6 +107,8 @@ tasks {
       val smokeTestMatrix = findProperty("smokeTestMatrix") ?: System.getenv("CI") != null
       systemProperty("ai.smoke-test.matrix", smokeTestMatrix)
 
+      findProperty("smokeTestRemoteDebug")?.let { systemProperty("ai.smoke-test.remote-debug", it) }
+
       systemProperty("io.opentelemetry.context.enableStrictContext", true)
       systemProperty("io.opentelemetry.javaagent.shaded.io.opentelemetry.context.enableStrictContext", true)
     }

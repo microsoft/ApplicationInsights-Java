@@ -89,8 +89,10 @@ import org.testcontainers.utility.MountableFile;
 @SuppressWarnings({"SystemOut", "InterruptedExceptionSwallowed"})
 public abstract class AiSmokeTest {
 
+  // use -PsmokeTestMatrix=true at gradle command line to enable (see ai.smoke-test.gradle.kts)
   protected static final boolean USE_MATRIX = Boolean.getBoolean("ai.smoke-test.matrix");
 
+  // use -PsmokeTestRemoteDebug=true at gradle command line to enable (see ai.smoke-test.gradle.kts)
   private static final boolean REMOTE_DEBUG = Boolean.getBoolean("ai.smoke-test.remote-debug");
 
   @Parameter(0)
@@ -598,6 +600,7 @@ public abstract class AiSmokeTest {
     List<String> javaToolOptions = new ArrayList<>();
     if (REMOTE_DEBUG) {
       javaToolOptions.add("-agentlib:jdwp=transport=dt_socket,address=5005,server=y,suspend=y");
+      container = container.withExposedPorts(5005);
     }
     if (agentMode != null) {
       // runtime attach doesn't use agent
