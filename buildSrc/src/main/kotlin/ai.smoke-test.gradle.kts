@@ -101,16 +101,13 @@ tasks {
       val javaagentFile = agent.singleFile
 
       // need to delay for project to configure the extension
-      systemProperty("ai.smoketest.testAppFile", appFile)
-      systemProperty("ai.smoketest.javaagentFile", javaagentFile)
+      systemProperty("ai.smoke-test.test-app-file", appFile)
+      systemProperty("ai.smoke-test.javaagent-file", javaagentFile)
 
       val smokeTestMatrix = findProperty("smokeTestMatrix") ?: System.getenv("CI") != null
-      systemProperty("ai.smoketest.matrix", smokeTestMatrix)
+      systemProperty("ai.smoke-test.matrix", smokeTestMatrix)
 
-      // There's no real harm in setting this for all tests even if any happen to not be using
-      // context propagation.
       systemProperty("io.opentelemetry.context.enableStrictContext", true)
-      // TODO (trask): Have agent map unshaded to shaded.
       systemProperty("io.opentelemetry.javaagent.shaded.io.opentelemetry.context.enableStrictContext", true)
     }
 

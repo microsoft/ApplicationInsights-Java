@@ -89,9 +89,9 @@ import org.testcontainers.utility.MountableFile;
 @SuppressWarnings({"SystemOut", "InterruptedExceptionSwallowed"})
 public abstract class AiSmokeTest {
 
-  protected static final boolean USE_MATRIX = Boolean.getBoolean("ai.smoketest.matrix");
+  protected static final boolean USE_MATRIX = Boolean.getBoolean("ai.smoke-test.matrix");
 
-  private static final boolean REMOTE_DEBUG = Boolean.getBoolean("ai.smoketest.remote-debug");
+  private static final boolean REMOTE_DEBUG = Boolean.getBoolean("ai.smoke-test.remote-debug");
 
   @Parameter(0)
   public String imageName;
@@ -436,8 +436,8 @@ public abstract class AiSmokeTest {
   }
 
   protected static void setupProperties(String imageName, String imageAppDir) {
-    appFile = new File(System.getProperty("ai.smoketest.testAppFile"));
-    javaagentFile = new File(System.getProperty("ai.smoketest.javaagentFile"));
+    appFile = new File(System.getProperty("ai.smoke-test.test-app-file"));
+    javaagentFile = new File(System.getProperty("ai.smoke-test.javaagent-file"));
     currentImageName = imageName;
     currentImageAppDir = imageAppDir;
   }
