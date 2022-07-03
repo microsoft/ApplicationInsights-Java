@@ -228,7 +228,7 @@ public class MockedAppInsightsIngestionServer {
 
   // this is used to filter out some sporadic messages that are captured via java.util.logging
   // instrumentation
-  public List<Envelope> waitForMessageItemsInRequest(int numItems)
+  public List<Envelope> waitForMessageItemsInRequest(int numItems, String operationId)
       throws ExecutionException, InterruptedException, TimeoutException {
     List<Envelope> items =
         waitForItems(
@@ -236,7 +236,7 @@ public class MockedAppInsightsIngestionServer {
               @Override
               public boolean test(Envelope input) {
                 return input.getData().getBaseType().equals("MessageData")
-                    && input.getTags().containsKey("ai.operation.id");
+                    && operationId.equals(input.getTags().get("ai.operation.id"));
               }
             },
             numItems,

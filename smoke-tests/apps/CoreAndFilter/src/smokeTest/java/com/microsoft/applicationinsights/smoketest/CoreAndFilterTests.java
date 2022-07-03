@@ -253,9 +253,11 @@ public class CoreAndFilterTests extends AiSmokeTest {
   @TargetUri("/trackTrace")
   public void testTrackTrace() throws Exception {
     List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-    List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(3);
 
     Envelope rdEnvelope = rdList.get(0);
+    String operationId = rdEnvelope.getTags().get("ai.operation.id");
+    List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(3, operationId);
+
     Envelope mdEnvelope1 = mdList.get(0);
     Envelope mdEnvelope2 = mdList.get(1);
     Envelope mdEnvelope3 = mdList.get(2);

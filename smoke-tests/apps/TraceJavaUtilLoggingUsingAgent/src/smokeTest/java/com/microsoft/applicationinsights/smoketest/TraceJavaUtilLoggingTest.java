@@ -41,9 +41,11 @@ public class TraceJavaUtilLoggingTest extends AiWarSmokeTest {
   @TargetUri("/traceJavaUtilLogging")
   public void testTraceJavaUtilLogging() throws Exception {
     List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-    List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(2);
 
     Envelope rdEnvelope = rdList.get(0);
+    String operationId = rdEnvelope.getTags().get("ai.operation.id");
+    List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(2, operationId);
+
     Envelope mdEnvelope1 = mdList.get(0);
     Envelope mdEnvelope2 = mdList.get(1);
 

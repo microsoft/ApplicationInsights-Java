@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -39,7 +38,6 @@ import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
@@ -55,7 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
-import java.util.Scanner;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -151,18 +149,9 @@ public abstract class AiSmokeTest {
         @Override
         protected void failed(Throwable t, Description description) {
           // NOTE this happens after @After :)
-          String containerId = targetContainer.get().getContainerId();
           System.out.println("Test failure detected.");
-
-          try {
-            System.out.println("\nFetching container logs for " + containerId);
-            printContainerLogs(containerId);
-          } catch (Exception e) {
-            System.err.println("Error copying logs to stream");
-            e.printStackTrace();
-          } finally {
-            System.out.println("\nFinished gathering logs.");
-          }
+          System.out.println("Container logs:");
+          System.out.println(targetContainer.get().getLogs());
         }
       };
 
@@ -238,6 +227,7 @@ public abstract class AiSmokeTest {
     startMockedIngestion();
     createDockerNetwork();
     startAllContainers();
+    clearOutAnyInitLogs();
     System.out.println("Environment preparation complete.");
   }
 
@@ -262,6 +252,40 @@ public abstract class AiSmokeTest {
       return "http://localhost:" + appServerPort;
     } else {
       return "http://localhost:" + appServerPort + "/" + appContext;
+    }
+  }
+
+  private static void clearOutAnyInitLogs() throws Exception {
+    String contextRootUrl = getBaseUrl() + "/";
+    HttpHelper.get(contextRootUrl);
+    waitForHealthCheckTelemetryIfNeeded(contextRootUrl);
+    System.out.println("Clearing any RequestData from health check.");
+    mockedIngestion.resetData();
+  }
+
+  private static void waitForHealthCheckTelemetryIfNeeded(String contextRootUrl)
+      throws InterruptedException, ExecutionException, TimeoutException {
+    Stopwatch receivedTelemetryTimer = Stopwatch.createStarted();
+    try {
+      mockedIngestion.waitForItem(
+          input -> {
+            if (!"RequestData".equals(input.getData().getBaseType())) {
+              return false;
+            }
+            RequestData data = (RequestData) ((Data<?>) input.getData()).getBaseData();
+            return contextRootUrl.equals(data.getUrl()) && "200".equals(data.getResponseCode());
+          },
+          TELEMETRY_RECEIVE_TIMEOUT_SECONDS,
+          TimeUnit.SECONDS);
+      System.out.printf(
+          "Received request telemetry after %.3f seconds...%n",
+          receivedTelemetryTimer.elapsed(TimeUnit.MILLISECONDS) / 1000.0);
+      System.out.println("Clearing any RequestData from health check.");
+    } catch (TimeoutException e) {
+      TimeoutException withMessage =
+          new TimeoutException("request telemetry from application health check");
+      withMessage.initCause(e);
+      throw withMessage;
     }
   }
 
@@ -402,6 +426,7 @@ public abstract class AiSmokeTest {
     return envVar;
   }
 
+  @SuppressWarnings("deprecation") // intentionally using FixedHostPortGenericContainer
   private static void startTestApplicationContainer() throws Exception {
     System.out.println("Starting container: " + currentImageName);
 
@@ -509,57 +534,6 @@ public abstract class AiSmokeTest {
   @SuppressWarnings("TypeParameterUnusedInFormals")
   protected static <T extends Domain> T getBaseData(Envelope envelope) {
     return ((Data<T>) envelope.getData()).getBaseData();
-  }
-
-  protected static void waitForUrl(String url, long timeout, TimeUnit timeoutUnit, String appName)
-      throws InterruptedException, TimeoutException {
-
-    int rval = 404;
-    Stopwatch watch = Stopwatch.createStarted();
-    boolean first = true;
-    while (rval == 404) {
-      if (watch.elapsed(timeoutUnit) > timeout) {
-        throw new TimeoutException(appName);
-      }
-
-      try {
-        if (!first) {
-          TimeUnit.MILLISECONDS.sleep(250);
-        }
-        rval = HttpHelper.getResponseCodeEnsuringSampled(url);
-      } catch (InterruptedException e) {
-        throw e;
-      } catch (Exception ignored) {
-      }
-    }
-
-    assertEquals(200, rval);
-  }
-
-  protected static void waitForUrlWithRetries(
-      String url, long timeout, TimeUnit timeoutUnit, String appName, int numberOfRetries)
-      throws TimeoutException {
-    int triedCount = 0;
-    boolean success = false;
-    Throwable lastThrowable = null;
-    do {
-      try {
-        waitForUrl(url, timeout, timeoutUnit, appName);
-        success = true;
-      } catch (ThreadDeath td) {
-        throw td;
-      } catch (Throwable t) {
-        lastThrowable = t;
-        System.out.printf(
-            "WARNING: '%s' health check failed (%s). %d retries left. Exception: %s%n",
-            appName, url, numberOfRetries - triedCount, t);
-      }
-    } while (!success && triedCount++ < numberOfRetries);
-    if (!success) {
-      TimeoutException e = new TimeoutException(appName);
-      e.initCause(lastThrowable);
-      throw e;
-    }
   }
 
   @SuppressWarnings("TypeParameterUnusedInFormals")
@@ -679,40 +653,15 @@ public abstract class AiSmokeTest {
 
   public static Predicate<Envelope> getMetricPredicate(String name) {
     Objects.requireNonNull(name, "name");
-    return new Predicate<Envelope>() {
-      @Override
-      public boolean test(@Nullable Envelope input) {
-        if (input == null) {
-          return false;
-        }
-        if (!input.getData().getBaseType().equals("MetricData")) {
-          return false;
-        }
-        MetricData md = getBaseData(input);
-        return name.equals(md.getMetrics().get(0).getName());
+    return input -> {
+      if (input == null) {
+        return false;
       }
+      if (!input.getData().getBaseType().equals("MetricData")) {
+        return false;
+      }
+      MetricData md = getBaseData(input);
+      return name.equals(md.getMetrics().get(0).getName());
     };
-  }
-
-  public static void printContainerLogs(String containerId) throws IOException {
-    Objects.requireNonNull(containerId, "containerId");
-
-    Process p = buildProcess("docker", "container", "logs", containerId).start();
-    flushStdout(p);
-  }
-
-  private static ProcessBuilder buildProcess(String... cmdLine) {
-    return new ProcessBuilder(cmdLine).redirectErrorStream(true);
-  }
-
-  @SuppressWarnings("SystemOut")
-  private static void flushStdout(Process p) {
-    Objects.requireNonNull(p);
-
-    try (Scanner r = new Scanner(p.getInputStream(), UTF_8.name())) {
-      while (r.hasNext()) {
-        System.out.println(r.nextLine());
-      }
-    }
   }
 }

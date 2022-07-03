@@ -40,9 +40,11 @@ public class SpringBootAutoTest extends AiJarSmokeTest {
   @TargetUri("/test")
   public void test() throws Exception {
     List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-    List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(1);
 
     Envelope rdEnvelope = rdList.get(0);
+    String operationId = rdEnvelope.getTags().get("ai.operation.id");
+    List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(1, operationId);
+
     Envelope mdEnvelope = mdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     MessageData md = (MessageData) ((Data<?>) mdEnvelope.getData()).getBaseData();
