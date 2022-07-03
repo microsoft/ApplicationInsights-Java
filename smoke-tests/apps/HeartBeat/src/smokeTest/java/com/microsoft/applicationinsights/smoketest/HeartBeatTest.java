@@ -35,7 +35,7 @@ import org.junit.Test;
 public class HeartBeatTest extends AiWarSmokeTest {
 
   @Test
-  @TargetUri(value = "/index.jsp")
+  @TargetUri("/index.jsp")
   public void testHeartBeat() throws Exception {
     List<Envelope> metrics =
         mockedIngestion.waitForItems(getMetricPredicate("HeartbeatState"), 2, 70, TimeUnit.SECONDS);
