@@ -52,16 +52,16 @@ abstract class StatsbeatSmokeTest {
 
     MetricData data = (MetricData) ((Data<?>) metrics.get(0).getData()).getBaseData();
     assertCommon(data);
-    assertThat(data.getProperties().get("feature")).isNotNull();
-    assertThat(data.getProperties().get("type")).isNotNull();
+    assertThat(data.getProperties()).containsKey("feature");
+    assertThat(data.getProperties()).containsKey("type");
     assertThat(data.getProperties()).containsEntry("type", "0");
     assertThat(data.getProperties()).hasSize(9);
 
     MetricData instrumentationData =
         (MetricData) ((Data<?>) metrics.get(1).getData()).getBaseData();
     assertCommon(instrumentationData);
-    assertThat(instrumentationData.getProperties().get("feature")).isNotNull();
-    assertThat(instrumentationData.getProperties().get("type")).isNotNull();
+    assertThat(instrumentationData.getProperties()).containsKey("feature");
+    assertThat(instrumentationData.getProperties()).containsKey("type");
     assertThat(instrumentationData.getProperties()).containsEntry("type", "1");
     assertThat(instrumentationData.getProperties()).hasSize(9);
 
@@ -71,7 +71,7 @@ abstract class StatsbeatSmokeTest {
 
     MetricData attachData = (MetricData) ((Data<?>) attachMetrics.get(0).getData()).getBaseData();
     assertCommon(attachData);
-    assertThat(attachData.getProperties().get("rpId")).isNotNull();
+    assertThat(attachData.getProperties()).containsKey("rpId");
     assertThat(attachData.getProperties()).hasSize(8);
 
     List<Envelope> requestSuccessCountMetrics =
@@ -81,8 +81,8 @@ abstract class StatsbeatSmokeTest {
     MetricData requestSuccessCountData =
         (MetricData) ((Data<?>) requestSuccessCountMetrics.get(0).getData()).getBaseData();
     assertCommon(requestSuccessCountData);
-    assertThat(requestSuccessCountData.getProperties().get("endpoint")).isNotNull();
-    assertThat(requestSuccessCountData.getProperties().get("host")).isNotNull();
+    assertThat(requestSuccessCountData.getProperties()).containsKey("endpoint");
+    assertThat(requestSuccessCountData.getProperties()).containsKey("host");
     assertThat(requestSuccessCountData.getProperties()).hasSize(9);
 
     List<Envelope> requestDurationMetrics =
@@ -92,19 +92,19 @@ abstract class StatsbeatSmokeTest {
     MetricData requestDurationData =
         (MetricData) ((Data<?>) requestDurationMetrics.get(0).getData()).getBaseData();
     assertCommon(requestDurationData);
-    assertThat(requestSuccessCountData.getProperties().get("endpoint")).isNotNull();
-    assertThat(requestSuccessCountData.getProperties().get("host")).isNotNull();
+    assertThat(requestSuccessCountData.getProperties()).containsKey("endpoint");
+    assertThat(requestSuccessCountData.getProperties()).containsKey("host");
     assertThat(requestDurationData.getProperties()).hasSize(9);
   }
 
   private void assertCommon(MetricData metricData) {
-    assertThat(metricData.getProperties().get("rp")).isNotNull();
-    assertThat(metricData.getProperties().get("attach")).isNotNull();
-    assertThat(metricData.getProperties().get("cikey")).isNotNull();
-    assertThat(metricData.getProperties().get("runtimeVersion")).isNotNull();
-    assertThat(metricData.getProperties().get("os")).isNotNull();
-    assertThat(metricData.getProperties().get("language")).isNotNull();
-    assertThat(metricData.getProperties().get("version")).isNotNull();
+    assertThat(metricData.getProperties()).containsKey("rp");
+    assertThat(metricData.getProperties()).containsKey("attach");
+    assertThat(metricData.getProperties()).containsKey("cikey");
+    assertThat(metricData.getProperties()).containsKey("runtimeVersion");
+    assertThat(metricData.getProperties()).containsKey("os");
+    assertThat(metricData.getProperties()).containsKey("language");
+    assertThat(metricData.getProperties()).containsKey("version");
   }
 
   @Environment(TOMCAT_8_JAVA_8)

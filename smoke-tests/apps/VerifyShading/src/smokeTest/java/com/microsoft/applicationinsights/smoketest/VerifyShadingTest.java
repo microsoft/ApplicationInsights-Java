@@ -22,12 +22,16 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Environment(JAVA_8)
 @UseAgent
 class VerifyShadingTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/verifyShading")

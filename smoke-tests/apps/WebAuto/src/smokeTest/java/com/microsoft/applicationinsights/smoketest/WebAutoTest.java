@@ -30,9 +30,12 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WI
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
 abstract class WebAutoTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/test")

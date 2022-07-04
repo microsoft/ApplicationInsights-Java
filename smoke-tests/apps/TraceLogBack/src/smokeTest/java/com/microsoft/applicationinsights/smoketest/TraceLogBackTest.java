@@ -28,6 +28,7 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TO
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -38,9 +39,12 @@ import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import java.util.Comparator;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
 abstract class TraceLogBackTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/traceLogBack")
@@ -66,7 +70,7 @@ abstract class TraceLogBackTest {
     assertThat(md1.getSeverityLevel()).isEqualTo(SeverityLevel.WARNING);
     assertThat(md1.getProperties()).containsEntry("SourceType", "Logger");
     assertThat(md1.getProperties()).containsEntry("LoggerName", "smoketestapp");
-    assertThat(md1.getProperties().get("ThreadName")).isNotNull();
+    assertThat(md1.getProperties()).containsKey("ThreadName");
     // TODO add MDC instrumentation for jboss logging
     if (!currentImageName.contains("wildfly")) {
       assertThat(md1.getProperties()).containsEntry("MDC key", "MDC value");
@@ -79,7 +83,7 @@ abstract class TraceLogBackTest {
     assertThat(md2.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
     assertThat(md2.getProperties()).containsEntry("SourceType", "Logger");
     assertThat(md2.getProperties()).containsEntry("LoggerName", "smoketestapp");
-    assertThat(md2.getProperties().get("ThreadName")).isNotNull();
+    assertThat(md2.getProperties()).containsKey("ThreadName");
     assertThat(md2.getProperties()).hasSize(3);
 
     AiSmokeTest.assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /TraceLogBack/traceLogBack");
@@ -107,7 +111,7 @@ abstract class TraceLogBackTest {
     assertThat(ed.getProperties()).containsEntry("Logger Message", "This is an exception!");
     assertThat(ed.getProperties()).containsEntry("SourceType", "Logger");
     assertThat(ed.getProperties()).containsEntry("LoggerName", "smoketestapp");
-    assertThat(ed.getProperties().get("ThreadName")).isNotNull();
+    assertThat(ed.getProperties()).containsKey("ThreadName");
     // TODO add MDC instrumentation for jboss logging
     if (!currentImageName.contains("wildfly")) {
       assertThat(ed.getProperties()).containsEntry("MDC key", "MDC value");

@@ -71,7 +71,7 @@ abstract class SpringBootAutoTest {
     assertThat(md.getSeverityLevel()).isEqualTo(SeverityLevel.INFORMATION);
     assertThat(md.getProperties()).containsEntry("SourceType", "Logger");
     assertThat(md.getProperties()).containsEntry("LoggerName", "smoketestapp");
-    assertThat(md.getProperties().get("ThreadName")).isNotNull();
+    assertThat(md.getProperties()).containsKey("ThreadName");
     assertThat(md.getProperties()).hasSize(3);
   }
 

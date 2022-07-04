@@ -52,11 +52,11 @@ abstract class HeartBeatTest {
     assertThat(metrics).hasSize(2);
 
     MetricData data = (MetricData) ((Data<?>) metrics.get(0).getData()).getBaseData();
-    assertThat(data.getProperties().get("jreVersion")).isNotNull();
-    assertThat(data.getProperties().get("sdkVersion")).isNotNull();
-    assertThat(data.getProperties().get("osVersion")).isNotNull();
-    assertThat(data.getProperties().get("processSessionId")).isNotNull();
-    assertThat(data.getProperties().get("osType")).isNotNull();
+    assertThat(data.getProperties()).containsKey("jreVersion");
+    assertThat(data.getProperties()).containsKey("sdkVersion");
+    assertThat(data.getProperties()).containsKey("osVersion");
+    assertThat(data.getProperties()).containsKey("processSessionId");
+    assertThat(data.getProperties()).containsKey("osType");
     assertThat(data.getProperties()).hasSize(5);
   }
 

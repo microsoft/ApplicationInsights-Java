@@ -70,14 +70,14 @@ abstract class TraceJavaUtilLoggingTest {
     assertThat(md1.getSeverityLevel()).isEqualTo(SeverityLevel.WARNING);
     assertThat(md1.getProperties()).containsEntry("SourceType", "Logger");
     assertThat(md1.getProperties()).containsEntry("LoggerName", "smoketestapp");
-    assertThat(md1.getProperties().get("ThreadName")).isNotNull();
+    assertThat(md1.getProperties()).containsKey("ThreadName");
     assertThat(md1.getProperties()).hasSize(3);
 
     assertThat(md2.getMessage()).isEqualTo("This is jul severe.");
     assertThat(md2.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
     assertThat(md2.getProperties()).containsEntry("SourceType", "Logger");
     assertThat(md1.getProperties()).containsEntry("LoggerName", "smoketestapp");
-    assertThat(md2.getProperties().get("ThreadName")).isNotNull();
+    assertThat(md2.getProperties()).containsKey("ThreadName");
     assertThat(md2.getProperties()).hasSize(3);
 
     AiSmokeTest.assertParentChild(
@@ -108,7 +108,7 @@ abstract class TraceJavaUtilLoggingTest {
     assertThat(ed.getProperties()).containsEntry("Logger Message", "This is an exception!");
     assertThat(ed.getProperties()).containsEntry("SourceType", "Logger");
     assertThat(ed.getProperties()).containsEntry("LoggerName", "smoketestapp");
-    assertThat(ed.getProperties().get("ThreadName")).isNotNull();
+    assertThat(ed.getProperties()).containsKey("ThreadName");
     assertThat(ed.getProperties()).hasSize(4);
 
     AiSmokeTest.assertParentChild(
