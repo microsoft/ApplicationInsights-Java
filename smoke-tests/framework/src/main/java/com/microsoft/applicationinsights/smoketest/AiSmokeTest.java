@@ -89,7 +89,7 @@ public class AiSmokeTest
   private final AtomicReference<GenericContainer<?>> targetContainer = new AtomicReference<>();
   private final Deque<GenericContainer<?>> allContainers = new ArrayDeque<>();
   private final Map<String, String> hostnameEnvVars = new HashMap<>();
-  protected String currentImageName;
+  private String currentImageName;
   private String currentImageAppDir;
   private int appServerPort;
 
@@ -429,6 +429,9 @@ public class AiSmokeTest
     cleanUpDockerNetwork();
     mockedIngestion.stopServer();
     mockedIngestion.setRequestLoggingEnabled(false);
+    dependencyImages.clear();
+    allContainers.clear();
+    hostnameEnvVars.clear();
   }
 
   public void stopAllContainers() {
