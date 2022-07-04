@@ -81,7 +81,7 @@ class OpenTelemetryApiSupportControllerSpansEnabledTest {
 
   @Test
   @TargetUri("/test-overriding-ikey-etc")
-  public void testOverridingIkeyEtc() throws Exception {
+  void testOverridingIkeyEtc() throws Exception {
     Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getName())
@@ -124,7 +124,7 @@ class OpenTelemetryApiSupportControllerSpansEnabledTest {
 
   @Test
   @TargetUri("/test-annotations")
-  public void testAnnotations() throws Exception {
+  void testAnnotations() throws Exception {
     Telemetry telemetry = testing.getTelemetry(2);
 
     if (!telemetry.rdd1.getName().equals("TestController.testAnnotations")) {

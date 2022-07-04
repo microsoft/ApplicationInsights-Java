@@ -71,7 +71,7 @@ abstract class OpenTelemetryApiSupportTest {
 
   @Test
   @TargetUri("/test-overriding-ikey-etc")
-  public void testOverridingIkeyEtc() throws Exception {
+  void testOverridingIkeyEtc() throws Exception {
     Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getName())
@@ -98,7 +98,7 @@ abstract class OpenTelemetryApiSupportTest {
 
   @Test
   @TargetUri("/test-annotations")
-  public void testAnnotations() throws Exception {
+  void testAnnotations() throws Exception {
     Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /OpenTelemetryApiSupport/test-annotations");

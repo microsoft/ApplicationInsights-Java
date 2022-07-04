@@ -34,13 +34,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-class CustomDimensionsTest {
+abstract class CustomDimensionsTest {
 
   @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/test")
-  public void doMostBasicTest() throws Exception {
+  void doMostBasicTest() throws Exception {
     Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getProperties()).containsEntry("test", "value");

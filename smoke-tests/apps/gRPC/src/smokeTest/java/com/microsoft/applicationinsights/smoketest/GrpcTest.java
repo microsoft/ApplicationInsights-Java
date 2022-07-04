@@ -76,7 +76,7 @@ abstract class GrpcTest {
 
   @Test
   @TargetUri("/conversation")
-  public void doConversationTest() throws Exception {
+  void doConversationTest() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 2);
 
     Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /conversation");

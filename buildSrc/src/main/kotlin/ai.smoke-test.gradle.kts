@@ -62,28 +62,15 @@ dependencies {
 
   smokeTestImplementation(project(":smoke-tests:framework"))
 
-  smokeTestImplementation("org.junit.jupiter:junit-jupiter")
   smokeTestImplementation("org.junit.jupiter:junit-jupiter-api")
   smokeTestImplementation("org.junit.jupiter:junit-jupiter-params")
+
   smokeTestImplementation("org.assertj:assertj-core")
 
   agent(project(":agent:agent", configuration = "shadow"))
 }
 
 tasks {
-  // This task addresses the issue of dependency containers not existing when the app runs and the test fails due to timeout.
-  val pullDependencyContainers by registering {
-    doLast {
-      aiSmokeTest.dependencyContainers.get().forEach { dc ->
-        logger.info("Pulling $dc...")
-        exec {
-          executable = "docker"
-          args = listOf("pull", dc)
-        }
-      }
-    }
-  }
-
   task<Test>("smokeTest") {
     useJUnitPlatform()
 
@@ -91,7 +78,6 @@ tasks {
     dependsOn(":agent:agent:shadowJar")
 
     dependsOn(assemble)
-    dependsOn(pullDependencyContainers)
 
     testClassesDirs = sourceSets["smokeTest"].output.classesDirs
     classpath = sourceSets["smokeTest"].runtimeClasspath

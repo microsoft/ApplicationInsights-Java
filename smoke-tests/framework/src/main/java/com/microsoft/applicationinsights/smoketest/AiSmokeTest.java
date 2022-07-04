@@ -101,7 +101,7 @@ public class AiSmokeTest
       new MockedAppInsightsIngestionServer();
 
   @Override
-  public void beforeAll(ExtensionContext context) throws Exception {
+  public void beforeAll(ExtensionContext context) {
     try {
       beforeAllInternal(context);
     } catch (Exception e) {
@@ -131,9 +131,12 @@ public class AiSmokeTest
 
   @Override
   public void testFailed(ExtensionContext context, Throwable cause) {
-    System.out.println("Test failure detected.");
-    System.out.println("Container logs:");
-    System.out.println(targetContainer.get().getLogs());
+    GenericContainer<?> container = targetContainer.get();
+    if (container != null) {
+      System.out.println("Test failure detected.");
+      System.out.println("Container logs:");
+      System.out.println(container.getLogs());
+    }
   }
 
   @Override
@@ -172,25 +175,8 @@ public class AiSmokeTest
     assertTrue("mocked ingestion has no data", mockedIngestion.hasData());
   }
 
-  public void configureEnvironment(String imageName, String imageAppDir) throws Exception {
+  private void configureEnvironment(String imageName, String imageAppDir) throws Exception {
     System.out.println("Preparing environment...");
-
-    GenericContainer<?> containerInfo = targetContainer.get();
-    if (containerInfo != null) {
-      // test cleanup didn't take...try to clean up
-      if (containerInfo.isRunning()) {
-        System.err.println("From last test run, container is still running: " + containerInfo);
-        try {
-          containerInfo.stop();
-        } catch (RuntimeException e) {
-          System.err.println("Couldn't clean up environment. Must be done manually.");
-          throw e;
-        }
-      } else {
-        // container must have stopped after timeout reached.
-        targetContainer.set(null);
-      }
-    }
     setupProperties(imageName, imageAppDir);
     startMockedIngestion();
     createDockerNetwork();
@@ -360,8 +346,9 @@ public class AiSmokeTest
       "deprecation") // intentionally using FixedHostPortGenericContainer when remote debugging
   // enabled
   private void startTestApplicationContainer() throws Exception {
-    System.out.println("Starting app container");
+    System.out.println("Starting app container...");
 
+    // TODO (trask) make this port dynamic so can run tests in parallel
     Testcontainers.exposeHostPorts(6060);
 
     GenericContainer<?> container;
@@ -445,17 +432,9 @@ public class AiSmokeTest
   }
 
   public void stopAllContainers() {
-    if (allContainers.isEmpty()) {
-      System.out.println("No containers to stop");
-      return;
-    }
-
-    System.out.println("Stopping containers");
+    System.out.println("Stopping containers...");
     while (!allContainers.isEmpty()) {
       GenericContainer<?> c = allContainers.pop();
-      if (c.equals(targetContainer.get())) {
-        targetContainer.set(null);
-      }
       c.stop();
       if (c.isRunning()) {
         System.err.printf("ERROR: Container failed to stop: " + c.getContainerName());
