@@ -35,16 +35,16 @@ public class OpenTelemetryApiSupportTest extends AiWarSmokeTest {
   public void testApi() throws Exception {
     Telemetry telemetry = getTelemetry(0);
 
-    assertEquals("myspanname", telemetry.rd.getName());
+    assertThat(telemetry.rd.getName()).isEqualTo("myspanname");
     assertTrue(
         telemetry.rd.getUrl().matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-api"));
-    assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getSuccess());
-    assertNull(telemetry.rd.getSource());
+    assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
+    assertThat(telemetry.rd.getSuccess()).isTrue();
+    assertThat(telemetry.rd.getSource()).isNull();
     assertEquals(2, telemetry.rd.getProperties().size());
     assertEquals("myvalue1", telemetry.rd.getProperties().get("myattr1"));
     assertEquals("myvalue2", telemetry.rd.getProperties().get("myattr2"));
-    assertTrue(telemetry.rd.getMeasurements().isEmpty());
+    assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
     // ideally want the properties below on rd, but can't get SERVER span yet
     // see
@@ -64,17 +64,18 @@ public class OpenTelemetryApiSupportTest extends AiWarSmokeTest {
   public void testOverridingIkeyEtc() throws Exception {
     Telemetry telemetry = getTelemetry(0);
 
-    assertEquals("GET /OpenTelemetryApiSupport/test-overriding-ikey-etc", telemetry.rd.getName());
+    assertThat(telemetry.rd.getName())
+        .isEqualTo("GET /OpenTelemetryApiSupport/test-overriding-ikey-etc");
     assertTrue(
         telemetry
             .rd
             .getUrl()
             .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-overriding-ikey-etc"));
-    assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getSuccess());
-    assertNull(telemetry.rd.getSource());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getMeasurements().isEmpty());
+    assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
+    assertThat(telemetry.rd.getSuccess()).isTrue();
+    assertThat(telemetry.rd.getSource()).isNull();
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
     // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are
     // from the agent
@@ -91,22 +92,22 @@ public class OpenTelemetryApiSupportTest extends AiWarSmokeTest {
   public void testAnnotations() throws Exception {
     Telemetry telemetry = getTelemetry(1);
 
-    assertEquals("GET /OpenTelemetryApiSupport/test-annotations", telemetry.rd.getName());
+    assertThat(telemetry.rd.getName()).isEqualTo("GET /OpenTelemetryApiSupport/test-annotations");
     assertTrue(
         telemetry
             .rd
             .getUrl()
             .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-annotations"));
-    assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getSuccess());
-    assertNull(telemetry.rd.getSource());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getMeasurements().isEmpty());
+    assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
+    assertThat(telemetry.rd.getSuccess()).isTrue();
+    assertThat(telemetry.rd.getSource()).isNull();
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
-    assertEquals("TestController.underAnnotation", telemetry.rdd1.getName());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("TestController.underAnnotation");
     assertNull(telemetry.rdd1.getData());
-    assertEquals("InProc", telemetry.rdd1.getType());
-    assertNull(telemetry.rdd1.getTarget());
+    assertThat(telemetry.rdd1.getType()).isEqualTo("InProc");
+    assertThat(telemetry.rdd1.getTarget()).isNull();
     assertEquals("a message", telemetry.rdd1.getProperties().get("message"));
     assertEquals(1, telemetry.rdd1.getProperties().size());
     assertThat(telemetry.rdd1.getSuccess()).isTrue();

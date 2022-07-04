@@ -47,7 +47,7 @@ abstract class PerfCountersDataTest {
 
   @Test
   @TargetUri(value = "index.jsp")
-  public void testPerformanceCounterData() throws Exception {
+  void testPerformanceCounterData() throws Exception {
     System.out.println("Waiting for performance data...");
     long start = System.currentTimeMillis();
 

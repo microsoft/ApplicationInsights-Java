@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -52,12 +51,12 @@ public class JdbcTest extends AiWarSmokeTest {
   public void hsqldbPreparedStatement() throws Exception {
     Telemetry telemetry = getTelemetry(1);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("SELECT testdb.abc", telemetry.rdd1.getName());
-    assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getData());
-    assertEquals("SQL", telemetry.rdd1.getType());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT testdb.abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where xyz = ?");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
     assertEquals("testdb", telemetry.rdd1.getTarget());
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
@@ -71,12 +70,12 @@ public class JdbcTest extends AiWarSmokeTest {
   public void hsqldbStatement() throws Exception {
     Telemetry telemetry = getTelemetry(1);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("SELECT testdb.abc", telemetry.rdd1.getName());
-    assertEquals("select * from abc", telemetry.rdd1.getData());
-    assertEquals("SQL", telemetry.rdd1.getType());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT testdb.abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
     assertEquals("testdb", telemetry.rdd1.getTarget());
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
@@ -90,8 +89,8 @@ public class JdbcTest extends AiWarSmokeTest {
   public void hsqldbLargeStatement() throws Exception {
     Telemetry telemetry = getTelemetry(1);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
     StringBuilder a2000 = new StringBuilder();
     for (int i = 0; i < 2000; i++) {
@@ -101,9 +100,9 @@ public class JdbcTest extends AiWarSmokeTest {
     String query = "select * from abc" + largeStr;
     String truncatedQuery = query.substring(0, Math.min(query.length(), 1024));
 
-    assertEquals("SELECT testdb.abc", telemetry.rdd1.getName());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT testdb.abc");
     assertEquals(query, telemetry.rdd1.getData());
-    assertEquals("SQL", telemetry.rdd1.getType());
+    assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
     assertEquals("testdb", telemetry.rdd1.getTarget());
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
@@ -117,12 +116,12 @@ public class JdbcTest extends AiWarSmokeTest {
   public void hsqldbBatchPreparedStatement() throws Exception {
     Telemetry telemetry = getTelemetry(1);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("INSERT testdb.abc", telemetry.rdd1.getName());
-    assertEquals("insert into abc (xyz) values (?)", telemetry.rdd1.getData());
-    assertEquals("SQL", telemetry.rdd1.getType());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("INSERT testdb.abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("insert into abc (xyz) values (?)");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
     assertEquals("testdb", telemetry.rdd1.getTarget());
     // assertEquals(" [Batch of 3]", telemetry.rdd1.getProperties().get("Args"));
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
@@ -139,15 +138,15 @@ public class JdbcTest extends AiWarSmokeTest {
   public void hsqldbBatchStatement() throws Exception {
     Telemetry telemetry = getTelemetry(1);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("insert testdb.abc", telemetry.rdd1.getName());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("insert testdb.abc");
     assertEquals(
         "insert into abc (xyz) values ('t'); insert into abc (xyz) values ('u');"
             + " insert into abc (xyz) values ('v')",
         telemetry.rdd1.getData());
-    assertEquals("SQL", telemetry.rdd1.getType());
+    assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
     assertEquals("testdb", telemetry.rdd1.getTarget());
     assertEquals(1, telemetry.rdd1.getProperties().size());
     assertEquals(" [Batch]", telemetry.rdd1.getProperties().get("Args"));
@@ -164,14 +163,14 @@ public class JdbcTest extends AiWarSmokeTest {
     Telemetry telemetry =
         getTelemetry(1, rdd -> !rdd.getData().startsWith("/* mysql-connector-java? "));
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("SELECT mysql.abc", telemetry.rdd1.getName());
-    assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getData());
-    assertEquals("mysql", telemetry.rdd1.getType());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT mysql.abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where xyz = ?");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("mysql");
     // not the best test, because this is both the db.name and db.system
-    assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+ \\| mysql"));
+    assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+ \\| mysql");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
@@ -186,14 +185,14 @@ public class JdbcTest extends AiWarSmokeTest {
     Telemetry telemetry =
         getTelemetry(1, rdd -> !rdd.getData().startsWith("/* mysql-connector-java? "));
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("SELECT mysql.abc", telemetry.rdd1.getName());
-    assertEquals("select * from abc", telemetry.rdd1.getData());
-    assertEquals("mysql", telemetry.rdd1.getType());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT mysql.abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("mysql");
     // not the best test, because this is both the db.name and db.system
-    assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+ \\| mysql"));
+    assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+ \\| mysql");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
@@ -206,14 +205,14 @@ public class JdbcTest extends AiWarSmokeTest {
   public void postgresPreparedStatement() throws Exception {
     Telemetry telemetry = getTelemetry(1);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("SELECT postgres.abc", telemetry.rdd1.getName());
-    assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getData());
-    assertEquals("postgresql", telemetry.rdd1.getType());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT postgres.abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where xyz = ?");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("postgresql");
     // not the best test, because this is both the db.name and db.system
-    assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+ \\| postgres"));
+    assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+ \\| postgres");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
@@ -226,14 +225,14 @@ public class JdbcTest extends AiWarSmokeTest {
   public void postgresStatement() throws Exception {
     Telemetry telemetry = getTelemetry(1);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("SELECT postgres.abc", telemetry.rdd1.getName());
-    assertEquals("select * from abc", telemetry.rdd1.getData());
-    assertEquals("postgresql", telemetry.rdd1.getType());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT postgres.abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("postgresql");
     // not the best test, because this is both the db.name and db.system
-    assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+ \\| postgres"));
+    assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+ \\| postgres");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
@@ -246,13 +245,13 @@ public class JdbcTest extends AiWarSmokeTest {
   public void sqlServerPreparedStatement() throws Exception {
     Telemetry telemetry = getTelemetry(1);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("SELECT abc", telemetry.rdd1.getName());
-    assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getData());
-    assertEquals("SQL", telemetry.rdd1.getType());
-    assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+"));
+    assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where xyz = ?");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
+    assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
@@ -265,13 +264,13 @@ public class JdbcTest extends AiWarSmokeTest {
   public void sqlServerStatement() throws Exception {
     Telemetry telemetry = getTelemetry(1);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("SELECT abc", telemetry.rdd1.getName());
-    assertEquals("select * from abc", telemetry.rdd1.getData());
-    assertEquals("SQL", telemetry.rdd1.getType());
-    assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+"));
+    assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
+    assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
@@ -285,13 +284,13 @@ public class JdbcTest extends AiWarSmokeTest {
   public void oraclePreparedStatement() throws Exception {
     Telemetry telemetry = getTelemetry(1);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("SELECT abc", telemetry.rdd1.getName());
-    assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getData());
-    assertEquals("SQL", telemetry.rdd1.getType());
-    assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+"));
+    assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where xyz = ?");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
+    assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
@@ -305,13 +304,13 @@ public class JdbcTest extends AiWarSmokeTest {
   public void oracleStatement() throws Exception {
     Telemetry telemetry = getTelemetry(1);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("SELECT abc", telemetry.rdd1.getName());
-    assertEquals("select * from abc", telemetry.rdd1.getData());
-    assertEquals("SQL", telemetry.rdd1.getType());
-    assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+"));
+    assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
+    assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 

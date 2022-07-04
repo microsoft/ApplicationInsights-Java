@@ -21,6 +21,9 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -29,10 +32,13 @@ import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-public class GrpcTest {
+abstract class GrpcTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/simple")
@@ -129,4 +135,13 @@ public class GrpcTest {
     }
     throw new IllegalStateException("Could not find dependency with name: " + name);
   }
+
+  @Environment(JAVA_8)
+  static class Java8Test extends GrpcTest {}
+
+  @Environment(JAVA_11)
+  static class Java11Test extends GrpcTest {}
+
+  @Environment(JAVA_17)
+  static class Java17Test extends GrpcTest {}
 }

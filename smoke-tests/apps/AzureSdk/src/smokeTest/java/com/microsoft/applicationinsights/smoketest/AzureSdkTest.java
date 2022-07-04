@@ -40,7 +40,7 @@ abstract class AzureSdkTest {
 
   @Test
   @TargetUri("/test")
-  public void test() throws Exception {
+  void test() throws Exception {
     Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /AzureSdk/test");

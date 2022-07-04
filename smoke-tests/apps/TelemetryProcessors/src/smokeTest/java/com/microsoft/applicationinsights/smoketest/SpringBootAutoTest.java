@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import java.util.List;
@@ -41,7 +40,7 @@ public class SpringBootAutoTest extends AiWarSmokeTest {
     assertEquals("sensitiveData1", telemetry.rd.getProperties().get("sensitiveAttribute1"));
     assertEquals("*/TelemetryProcessors/test*", telemetry.rd.getProperties().get("httpPath"));
     assertEquals(4, telemetry.rd.getProperties().size());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getSuccess()).isTrue();
     // Log processor test
     List<MessageData> logs = mockedIngestion.getMessageDataInRequest();
     MessageData md1 = logs.get(0);
@@ -53,13 +52,13 @@ public class SpringBootAutoTest extends AiWarSmokeTest {
   public void doSimpleTestPiiData() throws Exception {
     Telemetry telemetry = getTelemetry(0);
 
-    assertEquals("testValue1::testValue2", telemetry.rd.getName());
+    assertThat(telemetry.rd.getName()).isEqualTo("testValue1::testValue2");
     assertEquals("testValue1", telemetry.rd.getProperties().get("attribute1"));
     assertEquals("testValue2", telemetry.rd.getProperties().get("attribute2"));
     assertEquals("redacted", telemetry.rd.getProperties().get("sensitiveAttribute1"));
     assertEquals(
         "*/TelemetryProcessors/sensitivedata*", telemetry.rd.getProperties().get("httpPath"));
     assertEquals(4, telemetry.rd.getProperties().size());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getSuccess()).isTrue();
   }
 }

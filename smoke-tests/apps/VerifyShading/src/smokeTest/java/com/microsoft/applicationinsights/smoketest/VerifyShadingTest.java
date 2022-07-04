@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
 
 @UseAgent
@@ -33,6 +31,6 @@ public class VerifyShadingTest extends AiJarSmokeTest {
   public void verifyShading() throws Exception {
     Telemetry telemetry = getTelemetry(0);
 
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getSuccess()).isTrue();
   }
 }

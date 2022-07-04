@@ -21,10 +21,6 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
 
 @UseAgent
@@ -40,18 +36,18 @@ public class JedisTest extends AiWarSmokeTest {
   public void jedis() throws Exception {
     Telemetry telemetry = getTelemetry(1);
 
-    assertEquals("GET /Jedis/*", telemetry.rd.getName());
-    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/Jedis/jedis"));
-    assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getSuccess());
-    assertNull(telemetry.rd.getSource());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getMeasurements().isEmpty());
+    assertThat(telemetry.rd.getName()).isEqualTo("GET /Jedis/*");
+    assertThat(telemetry.rd.getUrl()).matches("http://localhost:[0-9]+/Jedis/jedis");
+    assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
+    assertThat(telemetry.rd.getSuccess()).isTrue();
+    assertThat(telemetry.rd.getSource()).isNull();
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
-    assertEquals("GET", telemetry.rdd1.getName());
-    assertEquals("GET test", telemetry.rdd1.getData());
-    assertEquals("redis", telemetry.rdd1.getType());
-    assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+"));
+    assertThat(telemetry.rdd1.getName()).isEqualTo("GET");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("GET test");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("redis");
+    assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 

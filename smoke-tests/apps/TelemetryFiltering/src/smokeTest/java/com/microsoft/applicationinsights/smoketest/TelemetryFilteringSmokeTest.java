@@ -63,7 +63,7 @@ public class TelemetryFilteringSmokeTest extends AiWarSmokeTest {
   public void testNoisyJdbc() throws Exception {
     List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
     Thread.sleep(10000);
-    assertEquals(0, mockedIngestion.getCountForType("RemoteDependencyData"));
+    assertThat(mockedIngestion.getCountForType("RemoteDependencyData")).isZero();
 
     Envelope rdEnvelope = rdList.get(0);
 

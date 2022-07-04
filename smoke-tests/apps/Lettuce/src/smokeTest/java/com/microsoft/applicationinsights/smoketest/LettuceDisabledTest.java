@@ -21,9 +21,6 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
 
 @UseAgent("disabled_applicationinsights.json")
@@ -39,11 +36,11 @@ public class LettuceDisabledTest extends AiWarSmokeTest {
   public void lettuce() throws Exception {
     Telemetry telemetry = getTelemetry(0);
 
-    assertEquals("GET /Lettuce/*", telemetry.rd.getName());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getName()).isEqualTo("GET /Lettuce/*");
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
     // sleep a bit and make sure no lettuce dependencies are reported
     Thread.sleep(5000);
-    assertEquals(0, mockedIngestion.getCountForType("RemoteDependencyData"));
+    assertThat(mockedIngestion.getCountForType("RemoteDependencyData")).isZero();
   }
 }

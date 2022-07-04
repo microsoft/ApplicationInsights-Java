@@ -42,7 +42,7 @@ abstract class MicrometerTest {
 
   @Test
   @TargetUri("/test")
-  public void doMostBasicTest() throws Exception {
+  void doMostBasicTest() throws Exception {
     testing.mockedIngestion.waitForItems("RequestData", 1);
 
     List<Envelope> metricItems =

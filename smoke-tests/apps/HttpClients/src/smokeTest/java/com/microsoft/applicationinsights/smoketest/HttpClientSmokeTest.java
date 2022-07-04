@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.smoketest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -87,14 +86,14 @@ public class HttpClientSmokeTest extends AiWarSmokeTest {
   private static void verify(String successUrlWithQueryString) throws Exception {
     Telemetry telemetry = getTelemetry(3);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
     // TODO (trask) add this check in all smoke tests?
     assertNull(telemetry.rdEnvelope.getSampleRate());
 
-    assertEquals("GET /200", telemetry.rdd1.getName());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("GET /200");
     assertEquals(successUrlWithQueryString, telemetry.rdd1.getData());
-    assertEquals("Http", telemetry.rdd1.getType());
+    assertThat(telemetry.rdd1.getType()).isEqualTo("Http");
     assertEquals("mock.codes", telemetry.rdd1.getTarget());
     assertEquals("200", telemetry.rdd1.getResultCode());
     assertThat(telemetry.rdd1.getProperties()).isEmpty();

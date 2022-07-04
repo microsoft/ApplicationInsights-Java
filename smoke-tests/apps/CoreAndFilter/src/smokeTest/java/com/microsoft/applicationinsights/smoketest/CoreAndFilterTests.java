@@ -21,6 +21,10 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.ExceptionDetailsMatchers.withMessage;
 import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.hasException;
 import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.hasMeasurement;
@@ -30,7 +34,7 @@ import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMa
 import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasResponseCode;
 import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasSuccess;
 import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasUrl;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -61,17 +65,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
-import org.junit.Test;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
 
 @UseAgent
-public class CoreAndFilterTests extends AiSmokeTest {
-
-  // old Application Insights version that do not support Java 11+
-  @Parameterized.Parameters(name = "{index}: {0}, {1}")
-  public static List<Object[]> parameterGenerator() {
-    return AiWarSmokeTest.parameterGeneratorJava8();
-  }
+abstract class CoreAndFilterTests extends AiSmokeTest {
 
   @Test
   @TargetUri("/trackDependency")
@@ -80,14 +77,14 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
     Duration expectedDuration = new Duration(0, 0, 1, 1, 1);
 
-    assertEquals("DependencyTest", telemetry.rdd1.getName());
-    assertEquals("commandName", telemetry.rdd1.getData());
-    assertNull(telemetry.rdd1.getType());
-    assertNull(telemetry.rdd1.getTarget());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("DependencyTest");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("commandName");
+    assertThat(telemetry.rdd1.getType()).isNull();
+    assertThat(telemetry.rdd1.getTarget()).isNull();
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertEquals(expectedDuration, telemetry.rdd1.getDuration());
+    assertThat(telemetry.rdd1.getDuration()).isEqualTo(expectedDuration);
 
     AiSmokeTest.assertParentChild(
         telemetry.rd,
@@ -499,4 +496,18 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
     assertEquals(operationName, rdEnvelope.getTags().get("ai.operation.name"));
   }
+
+  // old Application Insights version that do not support Java 11+
+
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends CoreAndFilterTests {}
+
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends CoreAndFilterTests {}
+
+  @Environment(WILDFLY_13_JAVA_8)
+  static class Wildfly13Java8Test extends CoreAndFilterTests {}
+
+  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
+  static class Wildfly13Java8OpenJ9Test extends CoreAndFilterTests {}
 }

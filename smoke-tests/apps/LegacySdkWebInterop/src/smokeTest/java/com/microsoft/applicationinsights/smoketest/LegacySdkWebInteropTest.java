@@ -34,7 +34,7 @@ public class LegacySdkWebInteropTest extends AiWarSmokeTest {
   public void doMostBasicTest() throws Exception {
     Telemetry telemetry = getTelemetry(0);
 
-    assertEquals("myspanname", telemetry.rd.getName());
+    assertThat(telemetry.rd.getName()).isEqualTo("myspanname");
     assertEquals("mysource", telemetry.rd.getSource());
     assertEquals("myuser", telemetry.rdEnvelope.getTags().get("ai.user.id"));
     assertEquals("mysessionid", telemetry.rdEnvelope.getTags().get("ai.session.id"));

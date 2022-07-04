@@ -29,13 +29,13 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Environment(TOMCAT_8_JAVA_8)
 @UseAgent("disabled_applicationinsights.json")
-public class AzureSdkDisabledTest {
+class AzureSdkDisabledTest {
 
   @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/test")
-  public void test() throws Exception {
+  void test() throws Exception {
     Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /AzureSdk/test");

@@ -37,19 +37,19 @@ public class OpenTelemetryApiSupportControllerSpansEnabledTest extends AiWarSmok
   public void testApi() throws Exception {
     Telemetry telemetry = getTelemetry(1);
 
-    assertEquals("GET /OpenTelemetryApiSupport/test-api", telemetry.rd.getName());
+    assertThat(telemetry.rd.getName()).isEqualTo("GET /OpenTelemetryApiSupport/test-api");
     assertTrue(
         telemetry.rd.getUrl().matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-api"));
-    assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getSuccess());
-    assertNull(telemetry.rd.getSource());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getMeasurements().isEmpty());
+    assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
+    assertThat(telemetry.rd.getSuccess()).isTrue();
+    assertThat(telemetry.rd.getSource()).isNull();
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
-    assertEquals("myspanname", telemetry.rdd1.getName());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("myspanname");
     assertNull(telemetry.rdd1.getData());
-    assertEquals("InProc", telemetry.rdd1.getType());
-    assertNull(telemetry.rdd1.getTarget());
+    assertThat(telemetry.rdd1.getType()).isEqualTo("InProc");
+    assertThat(telemetry.rdd1.getTarget()).isNull();
     assertEquals(2, telemetry.rdd1.getProperties().size());
     assertEquals("myvalue1", telemetry.rdd1.getProperties().get("myattr1"));
     assertEquals("myvalue2", telemetry.rdd1.getProperties().get("myattr2"));
@@ -80,22 +80,23 @@ public class OpenTelemetryApiSupportControllerSpansEnabledTest extends AiWarSmok
   public void testOverridingIkeyEtc() throws Exception {
     Telemetry telemetry = getTelemetry(1);
 
-    assertEquals("GET /OpenTelemetryApiSupport/test-overriding-ikey-etc", telemetry.rd.getName());
+    assertThat(telemetry.rd.getName())
+        .isEqualTo("GET /OpenTelemetryApiSupport/test-overriding-ikey-etc");
     assertTrue(
         telemetry
             .rd
             .getUrl()
             .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-overriding-ikey-etc"));
-    assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getSuccess());
-    assertNull(telemetry.rd.getSource());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getMeasurements().isEmpty());
+    assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
+    assertThat(telemetry.rd.getSuccess()).isTrue();
+    assertThat(telemetry.rd.getSource()).isNull();
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
-    assertEquals("TestController.testOverridingIkeyEtc", telemetry.rdd1.getName());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("TestController.testOverridingIkeyEtc");
     assertNull(telemetry.rdd1.getData());
-    assertEquals("InProc", telemetry.rdd1.getType());
-    assertNull(telemetry.rdd1.getTarget());
+    assertThat(telemetry.rdd1.getType()).isEqualTo("InProc");
+    assertThat(telemetry.rdd1.getTarget()).isNull();
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
@@ -135,22 +136,22 @@ public class OpenTelemetryApiSupportControllerSpansEnabledTest extends AiWarSmok
       telemetry.rddEnvelope2 = rddEnvelopeTemp;
     }
 
-    assertEquals("GET /OpenTelemetryApiSupport/test-annotations", telemetry.rd.getName());
+    assertThat(telemetry.rd.getName()).isEqualTo("GET /OpenTelemetryApiSupport/test-annotations");
     assertTrue(
         telemetry
             .rd
             .getUrl()
             .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-annotations"));
-    assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getSuccess());
-    assertNull(telemetry.rd.getSource());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getMeasurements().isEmpty());
+    assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
+    assertThat(telemetry.rd.getSuccess()).isTrue();
+    assertThat(telemetry.rd.getSource()).isNull();
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
-    assertEquals("TestController.testAnnotations", telemetry.rdd1.getName());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("TestController.testAnnotations");
     assertNull(telemetry.rdd1.getData());
-    assertEquals("InProc", telemetry.rdd1.getType());
-    assertNull(telemetry.rdd1.getTarget());
+    assertThat(telemetry.rdd1.getType()).isEqualTo("InProc");
+    assertThat(telemetry.rdd1.getTarget()).isNull();
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 

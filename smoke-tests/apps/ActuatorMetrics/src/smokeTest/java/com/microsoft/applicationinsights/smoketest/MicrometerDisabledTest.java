@@ -35,7 +35,7 @@ class MicrometerDisabledTest {
 
   @Test
   @TargetUri("/test")
-  public void doMostBasicTest() throws Exception {
+  void doMostBasicTest() throws Exception {
     testing.mockedIngestion.waitForItems("RequestData", 1);
 
     // sleep a bit and make sure no micrometer metrics are reported

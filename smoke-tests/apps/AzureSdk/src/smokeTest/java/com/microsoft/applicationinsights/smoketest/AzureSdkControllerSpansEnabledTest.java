@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -28,14 +29,15 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+@Environment(TOMCAT_8_JAVA_8)
 @UseAgent("controller_spans_enabled_applicationinsights.json")
-public class AzureSdkControllerSpansEnabledTest {
+class AzureSdkControllerSpansEnabledTest {
 
   @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/test")
-  public void test() throws Exception {
+  void test() throws Exception {
     Telemetry telemetry = testing.getTelemetry(2);
 
     if (!telemetry.rdd1.getName().equals("TestController.test")) {
