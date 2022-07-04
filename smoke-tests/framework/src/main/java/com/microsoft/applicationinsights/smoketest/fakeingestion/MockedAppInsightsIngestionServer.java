@@ -270,7 +270,7 @@ public class MockedAppInsightsIngestionServer {
     i.startServer();
   }
 
-  public void enableTelemetryLogging() {
-    servlet.enableTelemetryLogging();
+  public void setRequestLoggingEnabled(boolean enabled) {
+    servlet.setRequestLoggingEnabled(enabled);
   }
 }

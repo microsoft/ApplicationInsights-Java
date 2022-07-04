@@ -183,7 +183,7 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
     }
   }
 
-  public void enableTelemetryLogging() {
-    loggingEnabled = true;
+  public void setRequestLoggingEnabled(boolean enabled) {
+    loggingEnabled = enabled;
   }
 }

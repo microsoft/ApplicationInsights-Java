@@ -228,7 +228,7 @@ public abstract class AiSmokeTest {
     createDockerNetwork();
     startAllContainers();
     clearOutAnyInitLogs();
-    mockedIngestion.enableTelemetryLogging();
+    mockedIngestion.setRequestLoggingEnabled(true);
     System.out.println("Environment preparation complete.");
   }
 
@@ -391,18 +391,15 @@ public abstract class AiSmokeTest {
               .withNetworkAliases(containerName)
               .withExposedPorts(dc.exposedPort())
               .withStartupTimeout(Duration.ofSeconds(90));
+      Stopwatch stopwatch = Stopwatch.createStarted();
       container.start();
-      String containerId = container.getContainerId();
-      if (containerId == null || containerId.isEmpty()) {
-        throw new AssertionError(
-            "'containerId' was null/empty attempting to start container: " + imageName);
-      }
-      System.out.printf("Dependency container started: %s (%s)%n", imageName, containerId);
+      System.out.printf(
+          "Dependency container %s started after %.3f seconds%n",
+          imageName, stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000.0);
 
       if (!dc.hostnameEnvironmentVariable().isEmpty()) {
         hostnameEnvVars.put(dc.hostnameEnvironmentVariable(), containerName);
       }
-      System.out.printf("Dependency container name for %s: %s%n", imageName, containerName);
       allContainers.push(container);
     }
   }
@@ -486,11 +483,15 @@ public abstract class AiSmokeTest {
       container = container.withCommand("java -jar " + appFile.getName());
     }
 
+    Stopwatch stopwatch = Stopwatch.createStarted();
     container.start();
+    System.out.printf(
+        "App container started after %.3f seconds%n",
+        stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000.0);
 
     appServerPort = container.getMappedPort(8080);
 
-    System.out.printf("Container started: " + currentImageName);
+    System.out.println("Container started: " + currentImageName);
 
     targetContainer.set(container);
     allContainers.push(container);
@@ -509,6 +510,7 @@ public abstract class AiSmokeTest {
     stopAllContainers();
     cleanUpDockerNetwork();
     mockedIngestion.stopServer();
+    mockedIngestion.setRequestLoggingEnabled(false);
   }
 
   public static void stopAllContainers() {
