@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
-import static org.junit.Assert.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
@@ -40,6 +39,6 @@ class SpringSchedulingDisabledTest {
 
     // sleep a bit and make sure no spring scheduling "requests" are reported
     Thread.sleep(5000);
-    assertEquals(1, testing.mockedIngestion.getCountForType("RequestData"));
+    assertThat(testing.mockedIngestion.getCountForType("RequestData")).isEqualTo(1);
   }
 }

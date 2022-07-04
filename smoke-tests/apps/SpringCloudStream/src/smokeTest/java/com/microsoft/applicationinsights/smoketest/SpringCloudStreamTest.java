@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.smoketest;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
-import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -84,8 +83,8 @@ abstract class SpringCloudStreamTest {
 
     assertThat(rd2.getName()).isEqualTo("greetings process");
     assertThat(rd2.getSource()).isEqualTo("greetings");
-    assertTrue(rd2.getProperties().isEmpty());
-    assertTrue(rd2.getSuccess());
+    assertThat(rd2.getProperties()).isEmpty();
+    assertThat(rd2.getSuccess()).isTrue();
 
     AiSmokeTest.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
     AiSmokeTest.assertParentChild(

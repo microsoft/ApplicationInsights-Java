@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.smoketest;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -32,9 +32,12 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
 abstract class JmsTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/sendMessage")
@@ -72,8 +75,8 @@ abstract class JmsTest {
 
     assertThat(rd2.getName()).isEqualTo("message process");
     assertThat(rd2.getSource()).isEqualTo("message");
-    assertTrue(rd2.getProperties().isEmpty());
-    assertTrue(rd2.getSuccess());
+    assertThat(rd2.getProperties()).isEmpty();
+    assertThat(rd2.getSuccess()).isTrue();
 
     assertThat(rdd2.getName()).isEqualTo("GET /");
     assertThat(rdd2.getData()).isEqualTo("https://www.bing.com");

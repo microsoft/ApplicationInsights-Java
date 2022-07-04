@@ -24,8 +24,7 @@ package com.microsoft.applicationinsights.smoketest;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -35,9 +34,12 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
 abstract class SpringBootAutoTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/spawn-another-java-process")
@@ -55,8 +57,8 @@ abstract class SpringBootAutoTest {
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
     MessageData md = (MessageData) ((Data<?>) mdEnvelope.getData()).getBaseData();
 
-    assertTrue(rd.getProperties().isEmpty());
-    assertTrue(rd.getSuccess());
+    assertThat(rd.getProperties()).isEmpty();
+    assertThat(rd.getSuccess()).isTrue();
 
     assertThat(rdd.getName()).isEqualTo("GET /search");
     assertThat(rdd.getType()).isEqualTo("Http");
@@ -66,7 +68,7 @@ abstract class SpringBootAutoTest {
     assertThat(rdd.getSuccess()).isTrue();
 
     assertThat(md.getMessage()).isEqualTo("done");
-    assertEquals(SeverityLevel.INFORMATION, md.getSeverityLevel());
+    assertThat(md.getSeverityLevel()).isEqualTo(SeverityLevel.INFORMATION);
     assertThat(md.getProperties().get("SourceType")).isEqualTo("Logger");
     assertThat(md.getProperties().get("LoggerName")).isEqualTo("smoketestapp");
     assertThat(md.getProperties().get("ThreadName")).isNotNull();

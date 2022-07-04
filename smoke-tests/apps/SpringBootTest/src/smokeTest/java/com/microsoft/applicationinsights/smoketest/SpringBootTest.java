@@ -31,7 +31,6 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WI
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -145,7 +144,7 @@ abstract class SpringBootTest {
 
     assertThat(rd.getName()).isEqualTo("GET /SpringBootTest/throwsException");
     assertThat(rd.getResponseCode()).isEqualTo("500");
-    assertTrue(rd.getProperties().isEmpty());
+    assertThat(rd.getProperties()).isEmpty();
     assertFalse(rd.getSuccess());
 
     AiSmokeTest.assertParentChild(
@@ -171,8 +170,8 @@ abstract class SpringBootTest {
 
     assertThat(rd.getName()).isEqualTo("GET /SpringBootTest/asyncDependencyCall");
     assertThat(rd.getResponseCode()).isEqualTo("200");
-    assertTrue(rd.getProperties().isEmpty());
-    assertTrue(rd.getSuccess());
+    assertThat(rd.getProperties()).isEmpty();
+    assertThat(rd.getSuccess()).isTrue();
 
     assertThat(rdd1.getName()).isEqualTo("GET /");
     assertThat(rdd1.getData()).isEqualTo("https://www.bing.com");

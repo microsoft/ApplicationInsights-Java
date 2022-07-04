@@ -319,20 +319,21 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
     PageViewData pv3 = (PageViewData) ((Data<?>) pvdEnvelope3.getData()).getBaseData();
 
     assertThat(pv1).isNotNull();
-    assertEquals(new Duration(0), pv1.getDuration());
+    assertThat(pv1.getDuration()).isEqualTo(new Duration(0));
     // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are
     // from the agent
     assertThat(pvdEnvelope1.getIKey()).isEqualTo("00000000-0000-0000-0000-0FEEDDADBEEF");
-    assertThat(pvdEnvelope1.getTags().get("ai.cloud.role")).isEqualTo("testrolename");
-    assertThat(pvdEnvelope1.getTags().get("ai.cloud.roleInstance")).isEqualTo("testroleinstance");
-    assertTrue(pvdEnvelope1.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
+    assertThat(pvdEnvelope1.getTags()).containsEntry("ai.cloud.role", "testrolename");
+    assertThat(pvdEnvelope1.getTags()).containsEntry("ai.cloud.roleInstance", "testroleinstance");
+    assertThat(pvdEnvelope1.getTags())
+        .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("java:3."));
 
     assertThat(pv2).isNotNull();
-    assertEquals(new Duration(123456), pv2.getDuration());
+    assertThat(pv2.getDuration()).isEqualTo(new Duration(123456));
     assertThat(pvdEnvelope2.getTime()).isEqualTo("2010-10-10T00:00:00Z");
-    assertThat(pv2.getProperties().get("key")).isEqualTo("value");
-    assertThat(pv2.getProperties().get("a-prop")).isEqualTo("a-value");
-    assertThat(pv2.getProperties().get("another-prop")).isEqualTo("another-value");
+    assertThat(pv2.getProperties()).containsEntry("key", "value");
+    assertThat(pv2.getProperties()).containsEntry("a-prop", "a-value");
+    assertThat(pv2.getProperties()).containsEntry("another-prop", "another-value");
     // operation name is verified below in assertParentChild()
     assertThat(pvdEnvelope2.getTags().get("ai.user.id")).isEqualTo("user-id-goes-here");
     assertThat(pvdEnvelope2.getTags().get("ai.user.accountId")).isEqualTo("account-id-goes-here");

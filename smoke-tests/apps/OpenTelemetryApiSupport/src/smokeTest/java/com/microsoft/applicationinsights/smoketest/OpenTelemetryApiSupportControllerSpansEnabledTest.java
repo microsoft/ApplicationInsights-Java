@@ -22,16 +22,20 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Environment(TOMCAT_8_JAVA_8)
 @UseAgent("controller_spans_enabled_applicationinsights.json")
 class OpenTelemetryApiSupportControllerSpansEnabledTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/test-api")
@@ -39,8 +43,8 @@ class OpenTelemetryApiSupportControllerSpansEnabledTest {
     Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /OpenTelemetryApiSupport/test-api");
-    assertTrue(
-        telemetry.rd.getUrl().matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-api"));
+    assertThat(telemetry.rd.getUrl())
+        .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-api");
     assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rd.getSource()).isNull();
@@ -66,8 +70,8 @@ class OpenTelemetryApiSupportControllerSpansEnabledTest {
     assertThat(telemetry.rddEnvelope1.getTags().get("ai.cloud.role")).isEqualTo("testrolename");
     assertThat(telemetry.rddEnvelope1.getTags().get("ai.cloud.roleInstance"))
         .isEqualTo("testroleinstance");
-    assertTrue(
-        telemetry.rddEnvelope1.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
+    assertThat(telemetry.rddEnvelope1.getTags())
+        .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("java:3."));
     assertThat(telemetry.rddEnvelope1.getTags().get("ai.user.id")).isEqualTo("myuser");
 
     AiSmokeTest.assertParentChild(

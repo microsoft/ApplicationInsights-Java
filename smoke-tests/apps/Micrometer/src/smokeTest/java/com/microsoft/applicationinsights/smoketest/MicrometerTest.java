@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.smoketest;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
@@ -33,9 +33,12 @@ import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
 abstract class MicrometerTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/test")
@@ -70,12 +73,12 @@ abstract class MicrometerTest {
 
     DataPoint point = points.get(0);
 
-    assertEquals(1, point.getValue(), 0); // (this was verified above in Predicate also)
+    assertThat(point.getValue()).isEqualTo(1); // (this was verified above in Predicate also)
     assertThat(point.getName()).isEqualTo("test_counter");
-    assertThat("getCount was non-null", point.getCount()).isNull();
-    assertThat("getMin was non-null", point.getMin()).isNull();
-    assertThat("getMax was non-null", point.getMax()).isNull();
-    assertThat("getStdDev was non-null", point.getStdDev()).isNull();
+    assertThat(point.getCount()).isNull();
+    assertThat(point.getMin()).isNull();
+    assertThat(point.getMax()).isNull();
+    assertThat(point.getStdDev()).isNull();
     assertThat(data.getProperties()).hasSize(1);
     assertThat(data.getProperties().get("tag1")).isEqualTo("value1");
   }

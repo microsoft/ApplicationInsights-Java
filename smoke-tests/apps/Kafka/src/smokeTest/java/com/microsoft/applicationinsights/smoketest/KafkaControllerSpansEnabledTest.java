@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -30,6 +30,7 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Environment(JAVA_8)
 @UseAgent("controller_spans_enabled_applicationinsights.json")
@@ -50,6 +51,8 @@ import org.junit.jupiter.api.Test;
       hostnameEnvironmentVariable = "KAFKA")
 })
 class KafkaControllerSpansEnabledTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/sendMessage")
@@ -97,9 +100,9 @@ class KafkaControllerSpansEnabledTest {
 
     assertThat(rd2.getName()).isEqualTo("mytopic process");
     assertThat(rd2.getSource()).isEqualTo("mytopic");
-    assertTrue(rd2.getProperties().isEmpty());
-    assertTrue(rd2.getSuccess());
-    assertTrue(rd2.getMeasurements().containsKey("timeSinceEnqueued"));
+    assertThat(rd2.getProperties()).isEmpty();
+    assertThat(rd2.getSuccess()).isTrue();
+    assertThat(rd2.getMeasurements()).containsKey("timeSinceEnqueued");
 
     assertThat(rdd3.getName()).isEqualTo("GET /");
     assertThat(rdd3.getData()).isEqualTo("https://www.bing.com");

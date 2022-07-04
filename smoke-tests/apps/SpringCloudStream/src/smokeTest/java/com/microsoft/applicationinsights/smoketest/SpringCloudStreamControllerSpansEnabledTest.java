@@ -103,8 +103,8 @@ class SpringCloudStreamControllerSpansEnabledTest {
 
     assertThat(rd2.getName()).isEqualTo("greetings process");
     assertThat(rd2.getSource()).isEqualTo("greetings");
-    assertTrue(rd2.getProperties().isEmpty());
-    assertTrue(rd2.getSuccess());
+    assertThat(rd2.getProperties()).isEmpty();
+    assertThat(rd2.getSuccess()).isTrue();
     assertTrue(rd2.getMeasurements().containsKey("timeSinceEnqueued"));
 
     AiSmokeTest.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");

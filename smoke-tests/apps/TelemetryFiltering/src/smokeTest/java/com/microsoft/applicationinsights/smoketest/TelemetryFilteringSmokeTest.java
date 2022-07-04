@@ -33,8 +33,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -78,7 +76,7 @@ abstract class TelemetryFilteringSmokeTest {
 
     assertThat(rdEnvelope.getIKey()).isEqualTo("00000000-0000-0000-0000-0FEEDDADBEEF");
     assertThat(rdEnvelope.getTags().get("ai.cloud.role")).isEqualTo("testrolename");
-    assertTrue(rd.getSuccess());
+    assertThat(rd.getSuccess()).isTrue();
   }
 
   @Test
@@ -101,7 +99,7 @@ abstract class TelemetryFilteringSmokeTest {
 
     assertThat(rdEnvelope.getIKey()).isEqualTo("87654321-0000-0000-0000-0FEEDDADBEEF");
     assertThat(rdEnvelope.getTags().get("ai.cloud.role")).isEqualTo("app3");
-    assertTrue(rd.getSuccess());
+    assertThat(rd.getSuccess()).isTrue();
 
     assertThat(rdd.getType()).isEqualTo("SQL");
     assertThat(rdd.getTarget()).isEqualTo("testdb");

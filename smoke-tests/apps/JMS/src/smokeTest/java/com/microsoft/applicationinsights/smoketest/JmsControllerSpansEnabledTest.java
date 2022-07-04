@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -85,8 +84,8 @@ class JmsControllerSpansEnabledTest {
 
     assertThat(rd2.getName()).isEqualTo("message process");
     assertThat(rd2.getSource()).isEqualTo("message");
-    assertTrue(rd2.getProperties().isEmpty());
-    assertTrue(rd2.getSuccess());
+    assertThat(rd2.getProperties()).isEmpty();
+    assertThat(rd2.getSuccess()).isTrue();
 
     assertThat(rdd3.getName()).isEqualTo("GET /");
     assertThat(rdd3.getData()).isEqualTo("https://www.bing.com");

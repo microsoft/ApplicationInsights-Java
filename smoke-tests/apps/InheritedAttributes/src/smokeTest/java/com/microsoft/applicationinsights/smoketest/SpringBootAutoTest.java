@@ -25,7 +25,6 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JA
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -58,7 +57,7 @@ abstract class SpringBootAutoTest {
     assertThat(rd.getResponseCode()).isEqualTo("200");
     assertThat(rd.getProperties().get("tenant")).isEqualTo("z");
     assertThat(rd.getProperties()).hasSize(1);
-    assertTrue(rd.getSuccess());
+    assertThat(rd.getSuccess()).isTrue();
 
     assertThat(md.getMessage()).isEqualTo("hello");
     assertThat(md.getSeverityLevel()).isEqualTo(SeverityLevel.INFORMATION);

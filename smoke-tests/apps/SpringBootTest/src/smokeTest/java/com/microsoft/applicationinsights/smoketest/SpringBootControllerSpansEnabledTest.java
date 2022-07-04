@@ -25,7 +25,6 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TO
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -145,7 +144,7 @@ class SpringBootControllerSpansEnabledTest {
 
     assertThat(rd.getName()).isEqualTo("GET /SpringBootTest/throwsException");
     assertThat(rd.getResponseCode()).isEqualTo("500");
-    assertTrue(rd.getProperties().isEmpty());
+    assertThat(rd.getProperties()).isEmpty();
     assertFalse(rd.getSuccess());
 
     assertThat(rdd1.getName()).isEqualTo("TestController.resultCodeTest");
@@ -186,8 +185,8 @@ class SpringBootControllerSpansEnabledTest {
 
     assertThat(rd.getName()).isEqualTo("GET /SpringBootTest/asyncDependencyCall");
     assertThat(rd.getResponseCode()).isEqualTo("200");
-    assertTrue(rd.getProperties().isEmpty());
-    assertTrue(rd.getSuccess());
+    assertThat(rd.getProperties()).isEmpty();
+    assertThat(rd.getSuccess()).isTrue();
 
     assertThat(rdd1.getName()).isEqualTo("TestController.asyncDependencyCall");
     assertThat(rdd1.getData()).isNull();
