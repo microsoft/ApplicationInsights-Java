@@ -456,15 +456,14 @@ public abstract class AiSmokeTest {
                 currentImageAppDir + "/" + appFile.getName());
 
     List<String> javaToolOptions = new ArrayList<>();
+    javaToolOptions.add("-Dapplicationinsights.testing.batch-schedule-delay-millis=500");
     if (REMOTE_DEBUG) {
       javaToolOptions.add("-agentlib:jdwp=transport=dt_socket,address=5005,server=y,suspend=y");
     }
     if (useAgent) {
       javaToolOptions.add("-javaagent:/applicationinsights-agent.jar");
     }
-    if (!javaToolOptions.isEmpty()) {
-      container.withEnv("JAVA_TOOL_OPTIONS", String.join(" ", javaToolOptions));
-    }
+    container.withEnv("JAVA_TOOL_OPTIONS", String.join(" ", javaToolOptions));
 
     if (useAgent) {
       container =
