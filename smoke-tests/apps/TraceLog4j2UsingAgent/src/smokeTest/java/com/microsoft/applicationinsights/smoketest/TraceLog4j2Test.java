@@ -28,7 +28,6 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TO
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
-import static org.junit.Assert.assertEquals;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -67,7 +66,7 @@ abstract class TraceLog4j2Test {
     MessageData md3 = logs.get(2);
 
     assertThat(md1.getMessage()).isEqualTo("This is log4j2 warn.");
-    assertEquals(SeverityLevel.WARNING, md1.getSeverityLevel());
+    assertThat(md1.getSeverityLevel()).isEqualTo(SeverityLevel.WARNING);
     assertThat(md1.getProperties()).containsEntry("SourceType", "Logger");
     assertThat(md1.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(md1.getProperties().get("ThreadName")).isNotNull();
@@ -75,14 +74,14 @@ abstract class TraceLog4j2Test {
     assertThat(md1.getProperties()).hasSize(4);
 
     assertThat(md2.getMessage()).isEqualTo("This is log4j2 error.");
-    assertEquals(SeverityLevel.ERROR, md2.getSeverityLevel());
+    assertThat(md2.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
     assertThat(md2.getProperties()).containsEntry("SourceType", "Logger");
     assertThat(md1.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(md1.getProperties().get("ThreadName")).isNotNull();
     assertThat(md2.getProperties()).hasSize(3);
 
     assertThat(md3.getMessage()).isEqualTo("This is log4j2 fatal.");
-    assertEquals(SeverityLevel.CRITICAL, md3.getSeverityLevel());
+    assertThat(md3.getSeverityLevel()).isEqualTo(SeverityLevel.CRITICAL);
     assertThat(md3.getProperties()).containsEntry("SourceType", "Logger");
     assertThat(md3.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(md3.getProperties().get("ThreadName")).isNotNull();
@@ -116,7 +115,7 @@ abstract class TraceLog4j2Test {
     ExceptionDetails ex = details.get(0);
 
     assertThat(ex.getMessage()).isEqualTo("Fake Exception");
-    assertEquals(SeverityLevel.ERROR, ed.getSeverityLevel());
+    assertThat(ed.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
     assertThat(ed.getProperties()).containsEntry("Logger Message", "This is an exception!");
     assertThat(ed.getProperties()).containsEntry("SourceType", "Logger");
     assertThat(ed.getProperties()).containsEntry("LoggerName", "smoketestapp");

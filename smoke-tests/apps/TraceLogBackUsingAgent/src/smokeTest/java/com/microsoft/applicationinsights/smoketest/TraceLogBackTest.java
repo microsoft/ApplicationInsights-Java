@@ -28,7 +28,6 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TO
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
-import static org.junit.Assert.assertEquals;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -64,7 +63,7 @@ abstract class TraceLogBackTest {
     MessageData md2 = logs.get(1);
 
     assertThat(md1.getMessage()).isEqualTo("This is logback warn.");
-    assertEquals(SeverityLevel.WARNING, md1.getSeverityLevel());
+    assertThat(md1.getSeverityLevel()).isEqualTo(SeverityLevel.WARNING);
     assertThat(md1.getProperties()).containsEntry("SourceType", "Logger");
     assertThat(md1.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(md1.getProperties().get("ThreadName")).isNotNull();
@@ -77,7 +76,7 @@ abstract class TraceLogBackTest {
     }
 
     assertThat(md2.getMessage()).isEqualTo("This is logback error.");
-    assertEquals(SeverityLevel.ERROR, md2.getSeverityLevel());
+    assertThat(md2.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
     assertThat(md2.getProperties()).containsEntry("SourceType", "Logger");
     assertThat(md2.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(md2.getProperties().get("ThreadName")).isNotNull();
@@ -106,7 +105,7 @@ abstract class TraceLogBackTest {
     ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();
 
     assertThat(ed.getExceptions().get(0).getMessage()).isEqualTo("Fake Exception");
-    assertEquals(SeverityLevel.ERROR, ed.getSeverityLevel());
+    assertThat(ed.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
     assertThat(ed.getProperties()).containsEntry("Logger Message", "This is an exception!");
     assertThat(ed.getProperties()).containsEntry("SourceType", "Logger");
     assertThat(ed.getProperties()).containsEntry("LoggerName", "smoketestapp");
