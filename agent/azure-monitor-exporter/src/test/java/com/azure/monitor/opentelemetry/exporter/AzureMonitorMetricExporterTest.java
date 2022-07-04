@@ -213,8 +213,8 @@ public class AzureMonitorMetricExporterTest {
 
     Map<String, String> properties = metricsData.getProperties();
     assertThat(properties.size()).isEqualTo(2);
-    assertThat(properties.get("name")).isEqualTo("apple");
-    assertThat(properties.get("color")).isEqualTo("green");
+    assertThat(properties).containsEntry("name", "apple");
+    assertThat(properties).containsEntry("color", "green");
 
     builder = MetricTelemetryBuilder.create();
     MetricDataMapper.updateMetricPointBuilder(builder, metricData, longPointData2);
@@ -225,8 +225,8 @@ public class AzureMonitorMetricExporterTest {
 
     properties = metricsData.getProperties();
     assertThat(properties.size()).isEqualTo(2);
-    assertThat(properties.get("name")).isEqualTo("apple");
-    assertThat(properties.get("color")).isEqualTo("red");
+    assertThat(properties).containsEntry("name", "apple");
+    assertThat(properties).containsEntry("color", "red");
 
     builder = MetricTelemetryBuilder.create();
     MetricDataMapper.updateMetricPointBuilder(builder, metricData, longPointData3);
@@ -237,8 +237,8 @@ public class AzureMonitorMetricExporterTest {
 
     properties = metricsData.getProperties();
     assertThat(properties.size()).isEqualTo(2);
-    assertThat(properties.get("name")).isEqualTo("lemon");
-    assertThat(properties.get("color")).isEqualTo("yellow");
+    assertThat(properties).containsEntry("name", "lemon");
+    assertThat(properties).containsEntry("color", "yellow");
 
     assertThat(metricData.getType()).isEqualTo(LONG_SUM);
     assertThat(metricData.getName()).isEqualTo("testLongCounter");

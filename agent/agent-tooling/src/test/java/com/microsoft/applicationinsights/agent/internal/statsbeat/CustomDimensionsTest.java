@@ -75,7 +75,7 @@ public class CustomDimensionsTest {
     String version = sdkVersion.substring(sdkVersion.lastIndexOf(':') + 1);
 
     MetricsData data = (MetricsData) telemetryBuilder.build().getData().getBaseData();
-    assertThat(data.getProperties().get("version")).isEqualTo(version);
+    assertThat(data.getProperties()).containsEntry("version", version);
   }
 
   @Test
