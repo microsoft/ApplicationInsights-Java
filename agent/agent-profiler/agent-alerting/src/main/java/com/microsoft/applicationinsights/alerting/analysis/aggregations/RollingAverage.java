@@ -24,11 +24,11 @@ package com.microsoft.applicationinsights.alerting.analysis.aggregations;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
 import java.util.OptionalDouble;
-import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
 
 /** Applies a time window to data and calculates a mean of the data during that window. */
 public class RollingAverage implements Aggregation {
-  private Consumer<Double> consumer;
+  private DoubleConsumer consumer;
   private final WindowedAggregation windowedAggregation;
 
   public RollingAverage() {
@@ -44,7 +44,7 @@ public class RollingAverage implements Aggregation {
   }
 
   @Override
-  public void setConsumer(Consumer<Double> consumer) {
+  public void setConsumer(DoubleConsumer consumer) {
     this.consumer = consumer;
   }
 

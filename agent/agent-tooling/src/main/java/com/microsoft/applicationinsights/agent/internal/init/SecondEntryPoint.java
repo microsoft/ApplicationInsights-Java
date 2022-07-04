@@ -409,7 +409,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     if (configuration.preview.profiler.enabled
         && configuration.preview.profiler.enableResponseTriggering) {
-      spanExporter = AlertTriggerSpanExporter.build(spanExporter);
+      spanExporter =
+          AlertTriggerSpanExporter.build(
+              spanExporter, configuration.preview.profiler.maximumProcessingQueueLength);
     }
 
     return spanExporter;

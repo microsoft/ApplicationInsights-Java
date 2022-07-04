@@ -1290,6 +1290,8 @@ public class Configuration {
     public boolean enableDiagnostics = false;
     public boolean enableResponseTriggering = false;
     public SpanTrigger[] responseTriggerEndpoints = {};
+
+    public int maximumProcessingQueueLength = 100;
   }
 
   public static class GcEventConfiguration {

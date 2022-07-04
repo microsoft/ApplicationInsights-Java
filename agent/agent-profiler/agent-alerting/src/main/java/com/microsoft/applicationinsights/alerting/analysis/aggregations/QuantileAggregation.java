@@ -25,13 +25,13 @@ import com.google.common.math.Quantiles;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
 import java.util.OptionalDouble;
-import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
 
 /** Applies a time window to data and calculates a quantile of the data during that window. */
 public class QuantileAggregation implements Aggregation {
 
   private final int quantile;
-  private Consumer<Double> consumer;
+  private DoubleConsumer consumer;
   private final WindowedAggregation windowedAggregation;
 
   /** Quantile is the quantile to calculate, i.e 95 would calculate the 95th quantile. */
@@ -50,7 +50,7 @@ public class QuantileAggregation implements Aggregation {
   }
 
   @Override
-  public void setConsumer(Consumer<Double> consumer) {
+  public void setConsumer(DoubleConsumer consumer) {
     this.consumer = consumer;
   }
 

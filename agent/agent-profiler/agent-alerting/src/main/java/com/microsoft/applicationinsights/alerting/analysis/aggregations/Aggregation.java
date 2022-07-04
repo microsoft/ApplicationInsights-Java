@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.alerting.analysis.aggregations;
 
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
 import java.util.OptionalDouble;
-import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
 
 /** A process that consumes data points and computes metrics. */
 public interface Aggregation {
@@ -32,7 +32,7 @@ public interface Aggregation {
   double update(TelemetryDataPoint telemetryDataPoint);
 
   /** Add a consumer that is notified when new aggregated data is available. */
-  void setConsumer(Consumer<Double> consumer);
+  void setConsumer(DoubleConsumer consumer);
 
   /** Compute the current aggregation of the data. */
   OptionalDouble compute();

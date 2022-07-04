@@ -30,7 +30,7 @@ import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoi
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
 import org.junit.jupiter.api.Test;
 
 class RollingAverageTest {
@@ -38,7 +38,7 @@ class RollingAverageTest {
   @Test
   void alertsConsumer() {
     AtomicReference<Double> called = new AtomicReference<>();
-    Consumer<Double> consumer = called::set;
+    DoubleConsumer consumer = called::set;
     RollingAverage rollingAverage = new RollingAverage();
     rollingAverage.setConsumer(consumer);
 
@@ -50,7 +50,7 @@ class RollingAverageTest {
   @Test
   void givesCorrectValue() {
     AtomicReference<Double> called = new AtomicReference<>();
-    Consumer<Double> consumer = called::set;
+    DoubleConsumer consumer = called::set;
     RollingAverage rollingAverage = new RollingAverage();
     rollingAverage.setConsumer(consumer);
 
@@ -64,7 +64,7 @@ class RollingAverageTest {
   @Test
   void throwsAwayDataOutsidePeriod() {
     AtomicReference<Double> called = new AtomicReference<>();
-    Consumer<Double> consumer = called::set;
+    DoubleConsumer consumer = called::set;
 
     AtomicLong offset = new AtomicLong(0);
     TimeSource timeSource =

@@ -32,10 +32,11 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -56,7 +57,7 @@ public class AlertTriggerSpanExporter implements SpanExporter {
   private final Future<?> spanProcessor;
 
   // Spans to be processed
-  private final LinkedBlockingQueue<SpanData> queue = new LinkedBlockingQueue<>();
+  private final BlockingQueue<SpanData> queue;
   private final Supplier<AlertingSubsystem> alertingSubsystemSupplier;
 
   @Override
@@ -119,24 +120,32 @@ public class AlertTriggerSpanExporter implements SpanExporter {
     }
   }
 
-  public static AlertTriggerSpanExporter build(SpanExporter delegate) {
+  public static AlertTriggerSpanExporter build(
+      SpanExporter delegate, int maximumProcessingQueueLength) {
     ScheduledExecutorService executorService =
         Executors.newSingleThreadScheduledExecutor(
             ThreadPoolUtils.createDaemonThreadFactory(
                 AlertTriggerSpanExporter.class, "AlertSpanProcessor"));
-    return new AlertTriggerSpanExporter(delegate, executorService);
-  }
-
-  public AlertTriggerSpanExporter(SpanExporter delegate, ExecutorService executorService) {
-    this(delegate, executorService, AlertingServiceFactory::getAlertingSubsystem);
+    return new AlertTriggerSpanExporter(delegate, executorService, maximumProcessingQueueLength);
   }
 
   public AlertTriggerSpanExporter(
+      SpanExporter delegate, ExecutorService executorService, int maximumProcessingQueueLength) {
+    this(
+        maximumProcessingQueueLength,
+        delegate,
+        executorService,
+        AlertingServiceFactory::getAlertingSubsystem);
+  }
+
+  public AlertTriggerSpanExporter(
+      int maximumProcessingQueueLength,
       SpanExporter delegate,
       ExecutorService executorService,
       Supplier<AlertingSubsystem> alertingSubsystemSupplier) {
     this.delegate = delegate;
     this.spanProcessor = executorService.submit(new ProcessSpans());
     this.alertingSubsystemSupplier = alertingSubsystemSupplier;
+    queue = new ArrayBlockingQueue<>(maximumProcessingQueueLength);
   }
 }

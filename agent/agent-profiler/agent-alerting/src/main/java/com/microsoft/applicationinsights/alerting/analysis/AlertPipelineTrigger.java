@@ -26,6 +26,7 @@ import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.A
 import java.time.Instant;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
 
 /**
  * Observes a stream of data, and calls a downstream alert action if the below conditions are met.
@@ -36,7 +37,7 @@ import java.util.function.Consumer;
  *   <li>alert is enabled
  * </ul>
  */
-public class AlertPipelineTrigger implements Consumer<Double> {
+public class AlertPipelineTrigger implements DoubleConsumer {
   private final AlertConfiguration alertConfig;
   private final Consumer<AlertBreach> action;
   private Instant lastAlertTime;
@@ -47,7 +48,7 @@ public class AlertPipelineTrigger implements Consumer<Double> {
   }
 
   @Override
-  public void accept(Double telemetry) {
+  public void accept(double telemetry) {
     if (alertConfig.isEnabled() && telemetry > alertConfig.getThreshold()) {
       if (isOffCooldown()) {
         lastAlertTime = Instant.now();

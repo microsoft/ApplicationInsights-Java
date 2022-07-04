@@ -127,7 +127,7 @@ public class AlertTriggerSpanExporterTest {
 
       AlertTriggerSpanExporter spanExporter =
           new AlertTriggerSpanExporter(
-              delegateSpanExporter, executorService, () -> alertingSubsystem);
+              100, delegateSpanExporter, executorService, () -> alertingSubsystem);
 
       handle.accept(spanExporter, called);
 
