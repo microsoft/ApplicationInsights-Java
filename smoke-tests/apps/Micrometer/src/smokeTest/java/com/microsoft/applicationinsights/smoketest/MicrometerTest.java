@@ -80,7 +80,7 @@ abstract class MicrometerTest {
     assertThat(point.getMax()).isNull();
     assertThat(point.getStdDev()).isNull();
     assertThat(data.getProperties()).hasSize(1);
-    assertThat(data.getProperties().get("tag1")).isEqualTo("value1");
+    assertThat(data.getProperties()).containsEntry("tag1", "value1");
   }
 
   @Environment(JAVA_8)

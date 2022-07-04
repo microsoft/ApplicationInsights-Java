@@ -35,14 +35,6 @@ import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMa
 import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasSuccess;
 import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasUrl;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.both;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers;
 import com.microsoft.applicationinsights.smoketest.matchers.TraceDataMatchers;
@@ -116,8 +108,8 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
     EventData ed2 = events.get(1);
 
     assertThat(ed1.getName()).isEqualTo("EventDataPropertyTest");
-    assertThat(ed1.getProperties().get("key")).isEqualTo("value");
-    assertEquals((Double) 1.0, ed1.getMeasurements().get("key"));
+    assertThat(ed1.getProperties()).containsEntry("key", "value");
+    assertThat(ed1.getMeasurements()).containsEntry("key", 1.0);
 
     assertThat(ed2.getName()).isEqualTo("EventDataTest");
 
@@ -236,14 +228,13 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
     DataPoint dp = metrics.get(0);
 
     final double expectedValue = 111222333.0;
-    double epsilon = Math.ulp(expectedValue);
-    assertEquals(expectedValue, dp.getValue(), epsilon);
+    assertThat(dp.getValue()).isEqualTo(expectedValue);
     assertThat(dp.getName()).isEqualTo("TimeToRespond");
 
-    assertThat("getCount was non-null", dp.getCount()).isNull();
-    assertThat("getMin was non-null", dp.getMin()).isNull();
-    assertThat("getMax was non-null", dp.getMax()).isNull();
-    assertThat("getStdDev was non-null", dp.getStdDev()).isNull();
+    assertThat(dp.getCount()).isNull();
+    assertThat(dp.getMin()).isNull();
+    assertThat(dp.getMax()).isNull();
+    assertThat(dp.getStdDev()).isNull();
 
     AiSmokeTest.assertParentChild(rd, rdEnvelope, mdEnvelope, "GET /CoreAndFilter/trackMetric");
   }
@@ -347,14 +338,15 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
     assertThat(pvdEnvelope2.getTags().get("ai.cloud.roleInstance"))
         .isEqualTo("role-instance-goes-here");
     // checking that sdk version is from the agent
-    assertTrue(pvdEnvelope2.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
+    assertThat(pvdEnvelope2.getTags())
+        .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("java:3."));
 
     assertThat(pv3).isNotNull();
-    assertEquals(new Duration(123456), pv3.getDuration());
+    assertThat(pv3.getDuration()).isEqualTo(new Duration(123456));
     assertThat(pvdEnvelope3.getTime()).isEqualTo("2010-10-10T00:00:00Z");
-    assertThat(pv3.getProperties().get("key")).isEqualTo("value");
-    assertThat(pv3.getProperties().get("a-prop")).isEqualTo("a-value");
-    assertThat(pv3.getProperties().get("another-prop")).isEqualTo("another-value");
+    assertThat(pv3.getProperties()).containsEntry("key", "value");
+    assertThat(pv3.getProperties()).containsEntry("a-prop", "a-value");
+    assertThat(pv3.getProperties()).containsEntry("another-prop", "another-value");
     // operation name is verified below in assertParentChild()
     assertThat(pvdEnvelope3.getTags()).containsEntry("ai.user.id", "user-id-goes-here");
     assertThat(pvdEnvelope3.getTags()).containsEntry("ai.user.accountId", "account-id-goes-here");
@@ -367,19 +359,20 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
     assertThat(pvdEnvelope3.getTags()).containsEntry("ai.cloud.role", "testrolename");
     assertThat(pvdEnvelope3.getTags()).containsEntry("ai.cloud.roleInstance", "testroleinstance");
     // checking that sdk version is from the agent
-    assertTrue(pvdEnvelope3.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
+    assertThat(pvdEnvelope3.getTags())
+        .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("java:3."));
 
     AiSmokeTest.assertParentChild(rd, rdEnvelope, pvdEnvelope1, "GET /CoreAndFilter/trackPageView");
 
     assertThat(pvdEnvelope2.getTags()).containsEntry("ai.operation.id", "operation-id-goes-here");
-    assertEquals(
-        "operation-parent-id-goes-here", pvdEnvelope2.getTags().get("ai.operation.parentId"));
+    assertThat(pvdEnvelope2.getTags())
+        .containsEntry("ai.operation.parentId", "operation-parent-id-goes-here");
     assertThat(pvdEnvelope2.getTags().get("ai.operation.name"))
         .isEqualTo("operation-name-goes-here");
 
     assertThat(pvdEnvelope3.getTags()).containsEntry("ai.operation.id", "operation-id-goes-here");
-    assertEquals(
-        "operation-parent-id-goes-here", pvdEnvelope3.getTags().get("ai.operation.parentId"));
+    assertThat(pvdEnvelope3.getTags())
+        .containsEntry("ai.operation.parentId", "operation-parent-id-goes-here");
     assertThat(pvdEnvelope3.getTags().get("ai.operation.name"))
         .isEqualTo("operation-name-goes-here");
   }
@@ -401,7 +394,7 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
 
     PageViewData pv = (PageViewData) ((Data<?>) pvdEnvelope.getData()).getBaseData();
     assertThat(pv.getName()).isEqualTo("doPageView");
-    assertEquals(new Duration(0), pv.getDuration());
+    assertThat(pv.getDuration()).isEqualTo(new Duration(0));
 
     AiSmokeTest.assertParentChild(rd, rdEnvelope, pvdEnvelope, "GET /CoreAndFilter/doPageView.jsp");
   }
@@ -415,7 +408,7 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-    assertEquals(false, rd.getSuccess());
+    assertThat(rd.getSuccess()).isFalse();
     assertThat(rd.getResponseCode()).isEqualTo("404");
 
     assertThat(rdEnvelope.getTags()).containsEntry("ai.operation.name", "GET /CoreAndFilter/*");
@@ -465,7 +458,7 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();
 
-    assertFalse(rd.getSuccess());
+    assertThat(rd.getSuccess()).isFalse();
 
     ExceptionDetails details = getExceptionDetails(ed);
     assertThat(details.getMessage()).isEqualTo("This is a auto thrown exception !");
@@ -500,7 +493,7 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
     System.out.printf("Slow response time: expected=%d, actual=%d%n", expected, actual);
     assertThat(actual, both(greaterThanOrEqualTo(min)).and(lessThan(max)));
 
-    assertEquals(operationName, rdEnvelope.getTags().get("ai.operation.name"));
+    assertThat(rdEnvelope.getTags()).containsEntry("ai.operation.name", operationName);
   }
 
   // old Application Insights version that do not support Java 11+

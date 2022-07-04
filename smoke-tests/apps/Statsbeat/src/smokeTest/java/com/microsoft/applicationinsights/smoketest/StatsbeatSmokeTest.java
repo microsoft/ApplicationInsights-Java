@@ -50,7 +50,7 @@ abstract class StatsbeatSmokeTest {
     assertCommon(data);
     assertThat(data.getProperties().get("feature")).isNotNull();
     assertThat(data.getProperties().get("type")).isNotNull();
-    assertThat(data.getProperties().get("type")).isEqualTo("0");
+    assertThat(data.getProperties()).containsEntry("type", "0");
     assertThat(data.getProperties()).hasSize(9);
 
     MetricData instrumentationData =
@@ -58,7 +58,7 @@ abstract class StatsbeatSmokeTest {
     assertCommon(instrumentationData);
     assertThat(instrumentationData.getProperties().get("feature")).isNotNull();
     assertThat(instrumentationData.getProperties().get("type")).isNotNull();
-    assertThat(instrumentationData.getProperties().get("type")).isEqualTo("1");
+    assertThat(instrumentationData.getProperties()).containsEntry("type", "1");
     assertThat(instrumentationData.getProperties()).hasSize(9);
 
     List<Envelope> attachMetrics =

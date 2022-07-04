@@ -55,16 +55,16 @@ abstract class SpringBootAutoTest {
 
     assertThat(rd.getName()).isEqualTo("GET /test");
     assertThat(rd.getResponseCode()).isEqualTo("200");
-    assertThat(rd.getProperties().get("tenant")).isEqualTo("z");
+    assertThat(rd.getProperties()).containsEntry("tenant", "z");
     assertThat(rd.getProperties()).hasSize(1);
     assertThat(rd.getSuccess()).isTrue();
 
     assertThat(md.getMessage()).isEqualTo("hello");
     assertThat(md.getSeverityLevel()).isEqualTo(SeverityLevel.INFORMATION);
-    assertThat(md.getProperties().get("SourceType")).isEqualTo("Logger");
-    assertThat(md.getProperties().get("LoggerName")).isEqualTo("smoketestapp");
+    assertThat(md.getProperties()).containsEntry("SourceType", "Logger");
+    assertThat(md.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(md.getProperties().get("ThreadName")).isNotNull();
-    assertThat(md.getProperties().get("tenant")).isEqualTo("z");
+    assertThat(md.getProperties()).containsEntry("tenant", "z");
     assertThat(md.getProperties()).hasSize(4);
   }
 

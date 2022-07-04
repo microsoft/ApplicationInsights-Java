@@ -132,7 +132,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rdd1.getData()).isEqualTo("insert into abc (xyz) values (?)");
     assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
     assertThat(telemetry.rdd1.getTarget()).isEqualTo("testdb");
-    // assertThat(telemetry.rdd1.getProperties().get("Args")).isEqualTo(" [Batch of 3]");
+    // assertThat(telemetry.rdd1.getProperties()).containsEntry("Args", " [Batch of 3]");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
@@ -157,7 +157,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
     assertThat(telemetry.rdd1.getTarget()).isEqualTo("testdb");
     assertThat(telemetry.rdd1.getProperties()).hasSize(1);
-    assertThat(telemetry.rdd1.getProperties().get("Args")).isEqualTo(" [Batch]");
+    assertThat(telemetry.rdd1.getProperties()).containsEntry("Args", " [Batch]");
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
     AiSmokeTest.assertParentChild(

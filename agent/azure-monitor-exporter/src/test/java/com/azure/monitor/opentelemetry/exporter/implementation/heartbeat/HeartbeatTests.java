@@ -63,7 +63,7 @@ class HeartbeatTests {
     assertThat(provider.addHeartBeatProperty("test", "testVal", true)).isTrue();
 
     MetricsData data = (MetricsData) provider.gatherData().getData().getBaseData();
-    assertThat(data.getProperties().get("test")).isEqualTo("testVal");
+    assertThat(data.getProperties()).containsEntry("test", "testVal");
   }
 
   @Test

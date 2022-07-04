@@ -28,7 +28,7 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TO
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
@@ -40,9 +40,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
 abstract class OpenTelemetryMetricTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/trackDoubleCounterMetric")
@@ -83,77 +86,80 @@ abstract class OpenTelemetryMetricTest {
   private void validateHistogramMetric(String name) throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     List<Envelope> metrics =
-        testing.mockedIngestion.waitForItems(getMetricPredicate(name), 1, 40, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForItems(
+            AiSmokeTest.getMetricPredicate(name), 1, 40, TimeUnit.SECONDS);
     assertThat(metrics).hasSize(1);
 
     Envelope rdEnvelope = rdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-    assertEquals("GET /OpenTelemetryMetric/" + name, rd.getName());
+    assertThat(rd.getName()).isEqualTo("GET /OpenTelemetryMetric/" + name);
 
     Envelope envelope = metrics.get(0);
 
     // validate tags
     Map<String, String> tags = envelope.getTags();
-    assertThat(tags.get("ai.internal.sdkVersion")).isNotNull();
-    assertEquals(tags.get("ai.cloud.roleInstance"), "testroleinstance");
-    assertEquals(tags.get("ai.cloud.role"), "testrolename");
-    assertEquals(tags.get("ai.application.ver"), "123");
+    assertThat(tags).containsKey("ai.internal.sdkVersion");
+    assertThat(tags).containsEntry("ai.cloud.roleInstance", "testroleinstance");
+    assertThat(tags).containsEntry("ai.cloud.role", "testrolename");
+    assertThat(tags).containsEntry("ai.application.ver", "123");
 
     // validate base data
     MetricData md = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
     List<DataPoint> dataPointList = md.getMetrics();
     assertThat(dataPointList).hasSize(1);
     DataPoint dp = dataPointList.get(0);
-    assertEquals(456, dp.getValue(), 0);
-    assertEquals(name, dp.getName());
-    assertEquals(1, dp.getCount(), 0);
-    assertEquals(456, dp.getMin(), 0);
-    assertEquals(456, dp.getMax(), 0);
+    assertThat(dp.getValue()).isEqualTo(456);
+    assertThat(dp.getName()).isEqualTo(name);
+    assertThat(dp.getCount()).isEqualTo(1);
+    assertThat(dp.getMin()).isEqualTo(456);
+    assertThat(dp.getMax()).isEqualTo(456);
 
     // validate custom dimension
     Map<String, String> properties = md.getProperties();
-    assertEquals(properties.get("tag1"), "abc");
-    assertEquals(properties.get("tag2"), "def");
+    assertThat(properties).containsEntry("tag1", "abc");
+    assertThat(properties).containsEntry("tag2", "def");
   }
 
   private void validateGaugeMetric(String name) throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     List<Envelope> metrics =
-        testing.mockedIngestion.waitForItems(getMetricPredicate(name), 1, 40, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForItems(
+            AiSmokeTest.getMetricPredicate(name), 1, 40, TimeUnit.SECONDS);
     assertThat(metrics).hasSize(1);
 
     Envelope rdEnvelope = rdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-    assertEquals("GET /OpenTelemetryMetric/" + name, rd.getName());
+    assertThat(rd.getName()).isEqualTo("GET /OpenTelemetryMetric/" + name);
 
     Envelope envelope = metrics.get(0);
 
     // validate tags
     Map<String, String> tags = envelope.getTags();
     assertThat(tags.get("ai.internal.sdkVersion")).isNotNull();
-    assertEquals(tags.get("ai.cloud.roleInstance"), "testroleinstance");
-    assertEquals(tags.get("ai.cloud.role"), "testrolename");
-    assertEquals(tags.get("ai.application.ver"), "123");
+    assertThat(tags).containsEntry("ai.cloud.roleInstance", "testroleinstance");
+    assertThat(tags).containsEntry("ai.cloud.role", "testrolename");
+    assertThat(tags).containsEntry("ai.application.ver", "123");
 
     // validate base data
     MetricData md = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
     List<DataPoint> dataPointList = md.getMetrics();
     assertThat(dataPointList).hasSize(1);
     DataPoint dp = dataPointList.get(0);
-    assertEquals(10, dp.getValue(), 0);
-    assertEquals(name, dp.getName());
+    assertThat(dp.getValue()).isEqualTo(10);
+    assertThat(dp.getName()).isEqualTo(name);
 
     // validate custom dimension
     Map<String, String> properties = md.getProperties();
-    assertEquals(properties.get("tag1"), "abc");
-    assertEquals(properties.get("tag2"), "def");
-    assertEquals(properties.get("thing1"), "thing2");
+    assertThat(properties).containsEntry("tag1", "abc");
+    assertThat(properties).containsEntry("tag2", "def");
+    assertThat(properties).containsEntry("thing1", "thing2");
   }
 
   private void validateCounterMetric(String name) throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     List<Envelope> metrics =
-        testing.mockedIngestion.waitForItems(getMetricPredicate(name), 3, 40, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForItems(
+            AiSmokeTest.getMetricPredicate(name), 3, 40, TimeUnit.SECONDS);
     assertThat(metrics).hasSize(3);
 
     metrics.sort(
@@ -167,7 +173,7 @@ abstract class OpenTelemetryMetricTest {
 
     Envelope rdEnvelope = rdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-    assertEquals("GET /OpenTelemetryMetric/" + name, rd.getName());
+    assertThat(rd.getName()).isEqualTo("GET /OpenTelemetryMetric/" + name);
 
     // validate 1st metric
     Envelope envelope1 = metrics.get(0);
@@ -175,24 +181,24 @@ abstract class OpenTelemetryMetricTest {
     // validate tags
     Map<String, String> tags = envelope1.getTags();
     assertThat(tags.get("ai.internal.sdkVersion")).isNotNull();
-    assertEquals(tags.get("ai.cloud.roleInstance"), "testroleinstance");
-    assertEquals(tags.get("ai.cloud.role"), "testrolename");
-    assertEquals(tags.get("ai.application.ver"), "123");
+    assertThat(tags).containsEntry("ai.cloud.roleInstance", "testroleinstance");
+    assertThat(tags).containsEntry("ai.cloud.role", "testrolename");
+    assertThat(tags).containsEntry("ai.application.ver", "123");
 
     // validate base data
     MetricData md = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
     List<DataPoint> dataPointList = md.getMetrics();
     assertThat(dataPointList).hasSize(1);
     DataPoint dp = dataPointList.get(0);
-    assertEquals(2.0, dp.getValue(), 0);
-    assertEquals(name, dp.getName());
+    assertThat(dp.getValue()).isEqualTo(2.0);
+    assertThat(dp.getName()).isEqualTo(name);
 
     // validate custom dimension
     Map<String, String> properties = md.getProperties();
-    assertEquals(properties.get("tag1"), "abc");
-    assertEquals(properties.get("tag2"), "def");
-    assertEquals(properties.get("name"), "apple");
-    assertEquals(properties.get("color"), "green");
+    assertThat(properties).containsEntry("tag1", "abc");
+    assertThat(properties).containsEntry("tag2", "def");
+    assertThat(properties).containsEntry("name", "apple");
+    assertThat(properties).containsEntry("color", "green");
 
     // validate 2nd metric
     Envelope envelope2 = metrics.get(1);
@@ -200,24 +206,24 @@ abstract class OpenTelemetryMetricTest {
     // validate tags
     tags = envelope2.getTags();
     assertThat(tags.get("ai.internal.sdkVersion")).isNotNull();
-    assertEquals(tags.get("ai.cloud.roleInstance"), "testroleinstance");
-    assertEquals(tags.get("ai.cloud.role"), "testrolename");
-    assertEquals(tags.get("ai.application.ver"), "123");
+    assertThat(tags).containsEntry("ai.cloud.roleInstance", "testroleinstance");
+    assertThat(tags).containsEntry("ai.cloud.role", "testrolename");
+    assertThat(tags).containsEntry("ai.application.ver", "123");
 
     // validate base data
     md = (MetricData) ((Data<?>) envelope2.getData()).getBaseData();
     dataPointList = md.getMetrics();
     assertThat(dataPointList).hasSize(1);
     dp = dataPointList.get(0);
-    assertEquals(6.0, dp.getValue(), 0);
-    assertEquals(name, dp.getName());
+    assertThat(dp.getValue()).isEqualTo(6.0);
+    assertThat(dp.getName()).isEqualTo(name);
 
     // validate custom dimension
     properties = md.getProperties();
-    assertEquals(properties.get("tag1"), "abc");
-    assertEquals(properties.get("tag2"), "def");
-    assertEquals(properties.get("name"), "apple");
-    assertEquals(properties.get("color"), "red");
+    assertThat(properties).containsEntry("tag1", "abc");
+    assertThat(properties).containsEntry("tag2", "def");
+    assertThat(properties).containsEntry("name", "apple");
+    assertThat(properties).containsEntry("color", "red");
 
     // validate 3rd metric
     Envelope envelope3 = metrics.get(2);
@@ -225,24 +231,24 @@ abstract class OpenTelemetryMetricTest {
     // validate tags
     tags = envelope3.getTags();
     assertThat(tags.get("ai.internal.sdkVersion")).isNotNull();
-    assertEquals(tags.get("ai.cloud.roleInstance"), "testroleinstance");
-    assertEquals(tags.get("ai.cloud.role"), "testrolename");
-    assertEquals(tags.get("ai.application.ver"), "123");
+    assertThat(tags).containsEntry("ai.cloud.roleInstance", "testroleinstance");
+    assertThat(tags).containsEntry("ai.cloud.role", "testrolename");
+    assertThat(tags).containsEntry("ai.application.ver", "123");
 
     // validate base data
     md = (MetricData) ((Data<?>) envelope3.getData()).getBaseData();
     dataPointList = md.getMetrics();
     assertThat(dataPointList).hasSize(1);
     dp = dataPointList.get(0);
-    assertEquals(7.0, dp.getValue(), 0);
-    assertEquals(name, dp.getName());
+    assertThat(dp.getValue()).isEqualTo(7.0);
+    assertThat(dp.getName()).isEqualTo(name);
 
     // validate custom dimension
     properties = md.getProperties();
-    assertEquals(properties.get("tag1"), "abc");
-    assertEquals(properties.get("tag2"), "def");
-    assertEquals(properties.get("name"), "lemon");
-    assertEquals(properties.get("color"), "yellow");
+    assertThat(properties).containsEntry("tag1", "abc");
+    assertThat(properties).containsEntry("tag2", "def");
+    assertThat(properties).containsEntry("name", "lemon");
+    assertThat(properties).containsEntry("color", "yellow");
   }
 
   @Environment(TOMCAT_8_JAVA_8)

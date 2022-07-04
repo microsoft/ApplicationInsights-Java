@@ -50,8 +50,8 @@ abstract class LegacySdkWebInteropTest {
     assertThat(telemetry.rdEnvelope.getTags()).containsEntry("ai.device.os", "mydeviceos");
     assertThat(telemetry.rdEnvelope.getTags().get("ai.device.osVersion"))
         .isEqualTo("mydeviceosversion");
-    assertThat(telemetry.rd.getProperties().get("myattr1")).isEqualTo("myvalue1");
-    assertThat(telemetry.rd.getProperties().get("myattr2")).isEqualTo("myvalue2");
+    assertThat(telemetry.rd.getProperties()).containsEntry("myattr1", "myvalue1");
+    assertThat(telemetry.rd.getProperties()).containsEntry("myattr2", "myvalue2");
     assertThat(telemetry.rd.getProperties()).hasSize(2);
 
     assertThat(telemetry.rd.getSuccess()).isFalse();

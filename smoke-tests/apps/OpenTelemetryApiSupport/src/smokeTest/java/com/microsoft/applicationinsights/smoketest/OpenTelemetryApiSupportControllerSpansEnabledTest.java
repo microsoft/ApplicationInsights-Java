@@ -56,8 +56,8 @@ class OpenTelemetryApiSupportControllerSpansEnabledTest {
     assertThat(telemetry.rdd1.getType()).isEqualTo("InProc");
     assertThat(telemetry.rdd1.getTarget()).isNull();
     assertThat(telemetry.rdd1.getProperties()).hasSize(2);
-    assertThat(telemetry.rdd1.getProperties().get("myattr1")).isEqualTo("myvalue1");
-    assertThat(telemetry.rdd1.getProperties().get("myattr2")).isEqualTo("myvalue2");
+    assertThat(telemetry.rdd1.getProperties()).containsEntry("myattr1", "myvalue1");
+    assertThat(telemetry.rdd1.getProperties()).containsEntry("myattr2", "myvalue2");
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
     // ideally want the properties below on rd, but can't get SERVER span yet
@@ -165,7 +165,7 @@ class OpenTelemetryApiSupportControllerSpansEnabledTest {
     assertThat(telemetry.rdd2.getData()).isNull();
     assertThat(telemetry.rdd2.getType()).isEqualTo("InProc");
     assertThat(telemetry.rdd2.getTarget()).isNull();
-    assertThat(telemetry.rdd2.getProperties().get("message")).isEqualTo("a message");
+    assertThat(telemetry.rdd2.getProperties()).containsEntry("message", "a message");
     assertThat(telemetry.rdd2.getProperties()).hasSize(1);
     assertThat(telemetry.rdd2.getSuccess()).isTrue();
 

@@ -42,9 +42,9 @@ abstract class SpringBootAutoTest {
   void doMostBasicTest() throws Exception {
     Telemetry telemetry = testing.getTelemetry(0);
 
-    assertThat(telemetry.rd.getProperties().get("attribute1")).isEqualTo("testValue1");
-    assertThat(telemetry.rd.getProperties().get("attribute2")).isEqualTo("testValue2");
-    assertThat(telemetry.rd.getProperties().get("sensitiveAttribute1")).isEqualTo("sensitiveData1");
+    assertThat(telemetry.rd.getProperties()).containsEntry("attribute1", "testValue1");
+    assertThat(telemetry.rd.getProperties()).containsEntry("attribute2", "testValue2");
+    assertThat(telemetry.rd.getProperties()).containsEntry("sensitiveAttribute1", "sensitiveData1");
     assertThat(telemetry.rd.getProperties().get("httpPath"))
         .isEqualTo("*/TelemetryProcessors/test*");
     assertThat(telemetry.rd.getProperties()).hasSize(4);
@@ -61,9 +61,9 @@ abstract class SpringBootAutoTest {
     Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getName()).isEqualTo("testValue1::testValue2");
-    assertThat(telemetry.rd.getProperties().get("attribute1")).isEqualTo("testValue1");
-    assertThat(telemetry.rd.getProperties().get("attribute2")).isEqualTo("testValue2");
-    assertThat(telemetry.rd.getProperties().get("sensitiveAttribute1")).isEqualTo("redacted");
+    assertThat(telemetry.rd.getProperties()).containsEntry("attribute1", "testValue1");
+    assertThat(telemetry.rd.getProperties()).containsEntry("attribute2", "testValue2");
+    assertThat(telemetry.rd.getProperties()).containsEntry("sensitiveAttribute1", "redacted");
     assertEquals(
         "*/TelemetryProcessors/sensitivedata*", telemetry.rd.getProperties().get("httpPath"));
     assertThat(telemetry.rd.getProperties()).hasSize(4);

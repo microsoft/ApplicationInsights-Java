@@ -134,7 +134,7 @@ public class AzureMonitorMetricExporterTest {
       assertThat(metricsData.getMetrics().size()).isEqualTo(1);
       assertThat(metricsData.getMetrics().get(0).getValue()).isEqualTo(20.0);
       assertThat(metricsData.getProperties().size()).isEqualTo(1);
-      assertThat(metricsData.getProperties().get("thing")).isEqualTo("engine");
+      assertThat(metricsData.getProperties()).containsEntry("thing", "engine");
     }
 
     assertThat(metricData.getType()).isEqualTo(DOUBLE_GAUGE);
@@ -269,7 +269,7 @@ public class AzureMonitorMetricExporterTest {
       assertThat(metricsData.getMetrics().size()).isEqualTo(1);
       assertThat(metricsData.getMetrics().get(0).getValue()).isEqualTo(20);
       assertThat(metricsData.getProperties().size()).isEqualTo(1);
-      assertThat(metricsData.getProperties().get("thing")).isEqualTo("engine");
+      assertThat(metricsData.getProperties()).containsEntry("thing", "engine");
     }
 
     assertThat(metricData.getType()).isEqualTo(LONG_GAUGE);

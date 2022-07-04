@@ -68,23 +68,23 @@ abstract class TraceLog4j12Test {
 
     assertThat(md1.getMessage()).isEqualTo("This is log4j1.2 warn.");
     assertEquals(SeverityLevel.WARNING, md1.getSeverityLevel());
-    assertThat(md1.getProperties().get("SourceType")).isEqualTo("Logger");
-    assertThat(md1.getProperties().get("LoggerName")).isEqualTo("smoketestapp");
+    assertThat(md1.getProperties()).containsEntry("SourceType", "Logger");
+    assertThat(md1.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(md1.getProperties().get("ThreadName")).isNotNull();
-    assertThat(md1.getProperties().get("MDC key")).isEqualTo("MDC value");
+    assertThat(md1.getProperties()).containsEntry("MDC key", "MDC value");
     assertThat(md1.getProperties()).hasSize(4);
 
     assertThat(md2.getMessage()).isEqualTo("This is log4j1.2 error.");
     assertEquals(SeverityLevel.ERROR, md2.getSeverityLevel());
-    assertThat(md2.getProperties().get("SourceType")).isEqualTo("Logger");
-    assertThat(md2.getProperties().get("LoggerName")).isEqualTo("smoketestapp");
+    assertThat(md2.getProperties()).containsEntry("SourceType", "Logger");
+    assertThat(md2.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(md2.getProperties().get("ThreadName")).isNotNull();
     assertThat(md2.getProperties()).hasSize(3);
 
     assertThat(md3.getMessage()).isEqualTo("This is log4j1.2 fatal.");
     assertEquals(SeverityLevel.CRITICAL, md3.getSeverityLevel());
-    assertThat(md3.getProperties().get("SourceType")).isEqualTo("Logger");
-    assertThat(md3.getProperties().get("LoggerName")).isEqualTo("smoketestapp");
+    assertThat(md3.getProperties()).containsEntry("SourceType", "Logger");
+    assertThat(md3.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(md3.getProperties().get("ThreadName")).isNotNull();
     assertThat(md3.getProperties()).hasSize(3);
 
@@ -114,11 +114,11 @@ abstract class TraceLog4j12Test {
 
     assertThat(ex.getMessage()).isEqualTo("Fake Exception");
     assertEquals(SeverityLevel.ERROR, ed.getSeverityLevel());
-    assertThat(ed.getProperties().get("Logger Message")).isEqualTo("This is an exception!");
-    assertThat(ed.getProperties().get("SourceType")).isEqualTo("Logger");
-    assertThat(ed.getProperties().get("LoggerName")).isEqualTo("smoketestapp");
+    assertThat(ed.getProperties()).containsEntry("Logger Message", "This is an exception!");
+    assertThat(ed.getProperties()).containsEntry("SourceType", "Logger");
+    assertThat(ed.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(ed.getProperties().get("ThreadName")).isNotNull();
-    assertThat(ed.getProperties().get("MDC key")).isEqualTo("MDC value");
+    assertThat(ed.getProperties()).containsEntry("MDC key", "MDC value");
     assertThat(ed.getProperties()).hasSize(5);
 
     AiSmokeTest.assertParentChild(

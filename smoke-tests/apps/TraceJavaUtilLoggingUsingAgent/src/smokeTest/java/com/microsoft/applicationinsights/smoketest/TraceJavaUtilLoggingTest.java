@@ -65,15 +65,15 @@ abstract class TraceJavaUtilLoggingTest {
 
     assertThat(md1.getMessage()).isEqualTo("This is jul warning.");
     assertEquals(SeverityLevel.WARNING, md1.getSeverityLevel());
-    assertThat(md1.getProperties().get("SourceType")).isEqualTo("Logger");
-    assertThat(md1.getProperties().get("LoggerName")).isEqualTo("smoketestapp");
+    assertThat(md1.getProperties()).containsEntry("SourceType", "Logger");
+    assertThat(md1.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(md1.getProperties().get("ThreadName")).isNotNull();
     assertThat(md1.getProperties()).hasSize(3);
 
     assertThat(md2.getMessage()).isEqualTo("This is jul severe.");
     assertEquals(SeverityLevel.ERROR, md2.getSeverityLevel());
-    assertThat(md2.getProperties().get("SourceType")).isEqualTo("Logger");
-    assertThat(md1.getProperties().get("LoggerName")).isEqualTo("smoketestapp");
+    assertThat(md2.getProperties()).containsEntry("SourceType", "Logger");
+    assertThat(md1.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(md2.getProperties().get("ThreadName")).isNotNull();
     assertThat(md2.getProperties()).hasSize(3);
 
@@ -102,9 +102,9 @@ abstract class TraceJavaUtilLoggingTest {
 
     assertThat(ed.getExceptions().get(0).getMessage()).isEqualTo("Fake Exception");
     assertEquals(SeverityLevel.ERROR, ed.getSeverityLevel());
-    assertThat(ed.getProperties().get("Logger Message")).isEqualTo("This is an exception!");
-    assertThat(ed.getProperties().get("SourceType")).isEqualTo("Logger");
-    assertThat(ed.getProperties().get("LoggerName")).isEqualTo("smoketestapp");
+    assertThat(ed.getProperties()).containsEntry("Logger Message", "This is an exception!");
+    assertThat(ed.getProperties()).containsEntry("SourceType", "Logger");
+    assertThat(ed.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(ed.getProperties().get("ThreadName")).isNotNull();
     assertThat(ed.getProperties()).hasSize(4);
 
