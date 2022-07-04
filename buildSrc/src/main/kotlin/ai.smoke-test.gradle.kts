@@ -62,11 +62,8 @@ dependencies {
 
   smokeTestImplementation(project(":smoke-tests:framework"))
 
-  // NOTE not updating smoke tests to JUnit 5, because AiSmokeTest has deep dependency on JUnit 4 infra,
-  // and so would take a good amount of work, and eventually want to migrate to otel smoke tests anyways
-  smokeTestImplementation("org.hamcrest:hamcrest-core:2.2")
-  smokeTestImplementation("org.hamcrest:hamcrest-library:2.2")
-  smokeTestImplementation("junit:junit:4.13.2")
+  smokeTestImplementation("org.junit.jupiter:junit-jupiter")
+  smokeTestImplementation("org.assertj:assertj-core")
 
   agent(project(":agent:agent", configuration = "shadow"))
 }
@@ -86,6 +83,8 @@ tasks {
   }
 
   task<Test>("smokeTest") {
+    useJUnitPlatform()
+
     // this is just to force building the agent first
     dependsOn(":agent:agent:shadowJar")
 
@@ -94,6 +93,9 @@ tasks {
 
     testClassesDirs = sourceSets["smokeTest"].output.classesDirs
     classpath = sourceSets["smokeTest"].runtimeClasspath
+
+    // TODO (trask) experiment with parallelization
+    // maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
 
     doFirst {
 

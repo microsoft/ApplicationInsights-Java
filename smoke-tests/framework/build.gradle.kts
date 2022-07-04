@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
   implementation("com.google.guava:guava")
-  implementation("junit:junit:4.13.2")
+  implementation("org.junit.jupiter:junit-jupiter")
   implementation("org.apache.commons:commons-lang3:3.12.0")
 
   implementation("com.google.code.gson:gson")

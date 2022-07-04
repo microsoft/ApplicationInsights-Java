@@ -28,9 +28,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.base.Stopwatch;
 import com.microsoft.applicationinsights.smoketest.fakeingestion.MockedAppInsightsIngestionServer;
-import com.microsoft.applicationinsights.smoketest.fixtures.AfterWithParams;
-import com.microsoft.applicationinsights.smoketest.fixtures.BeforeWithParams;
-import com.microsoft.applicationinsights.smoketest.fixtures.ParameterizedRunnerWithFixturesFactory;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -59,19 +56,12 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.FixMethodOrder;
-import org.junit.Rule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.UseParametersRunnerFactory;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.TestWatcher;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
@@ -79,132 +69,110 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-/** This is the base class for smoke tests. */
-@RunWith(Parameterized.class)
-@UseParametersRunnerFactory(ParameterizedRunnerWithFixturesFactory.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @SuppressWarnings({"SystemOut", "InterruptedExceptionSwallowed"})
-public abstract class AiSmokeTest {
-
-  // use -PsmokeTestMatrix=true at gradle command line to enable (see ai.smoke-test.gradle.kts)
-  protected static final boolean USE_MATRIX = Boolean.getBoolean("ai.smoke-test.matrix");
+public class AiSmokeTest
+    implements BeforeAllCallback,
+        BeforeEachCallback,
+        AfterAllCallback,
+        AfterEachCallback,
+        TestWatcher {
 
   // use -PsmokeTestRemoteDebug=true at gradle command line to enable (see ai.smoke-test.gradle.kts)
   private static final boolean REMOTE_DEBUG = Boolean.getBoolean("ai.smoke-test.remote-debug");
 
-  @Parameter(0)
-  public String imageName;
+  private static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 60;
 
-  @Parameter(1)
-  public String imageAppDir;
-
-  private static final List<DependencyContainer> dependencyImages = new ArrayList<>();
-  private static final AtomicReference<GenericContainer<?>> targetContainer =
-      new AtomicReference<>();
-  private static final Deque<GenericContainer<?>> allContainers = new ArrayDeque<>();
-  private static final Map<String, String> hostnameEnvVars = new HashMap<>();
-  protected static String currentImageName;
-  private static String currentImageAppDir;
-  private static int appServerPort;
   private static File appFile;
   private static File javaagentFile;
 
-  private static boolean useAgent;
-  @Nullable private static String agentConfigurationPath;
-  @Nullable private static Network network;
+  private final List<DependencyContainer> dependencyImages = new ArrayList<>();
+  private final AtomicReference<GenericContainer<?>> targetContainer = new AtomicReference<>();
+  private final Deque<GenericContainer<?>> allContainers = new ArrayDeque<>();
+  private final Map<String, String> hostnameEnvVars = new HashMap<>();
+  protected String currentImageName;
+  private String currentImageAppDir;
+  private int appServerPort;
 
-  @Nullable private String targetUri;
-  private long targetUriCallCount;
+  private boolean useAgent;
+  @Nullable private String agentConfigurationPath;
+  @Nullable private Network network;
 
-  private static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 60;
-
-  protected static final MockedAppInsightsIngestionServer mockedIngestion =
+  protected final MockedAppInsightsIngestionServer mockedIngestion =
       new MockedAppInsightsIngestionServer();
 
-  /**
-   * This rule does a few things: 1. failure detection: logs are only grabbed when the test fails.
-   * 2. reads test metadata from annotations
-   */
-  @Rule
-  public TestWatcher theWatchman =
-      new TestWatcher() {
-
-        @Override
-        protected void starting(Description description) {
-          System.out.println("Configuring test...");
-          TargetUri targetUri = description.getAnnotation(TargetUri.class);
-          AiSmokeTest thiz = AiSmokeTest.this;
-          if (targetUri == null) {
-            thiz.targetUri = null;
-            thiz.targetUriCallCount = 1;
-          } else {
-            thiz.targetUri = targetUri.value();
-            if (!thiz.targetUri.startsWith("/")) {
-              thiz.targetUri = "/" + thiz.targetUri;
-            }
-            thiz.targetUriCallCount = targetUri.callCount();
-          }
-        }
-
-        @Override
-        protected void failed(Throwable t, Description description) {
-          // NOTE this happens after @After :)
-          System.out.println("Test failure detected.");
-          System.out.println("Container logs:");
-          System.out.println(targetContainer.get().getLogs());
-        }
-      };
-
-  @BeforeClass
-  public static void configureShutdownHook() {
-    // NOTE the JUnit runner (or gradle) forces this to happen. The synchronized block and check for
-    // empty should avoid any issues
-    Runtime.getRuntime()
-        .addShutdownHook(
-            new Thread(
-                () -> {
-                  GenericContainer<?> container = targetContainer.get();
-                  if (container == null) {
-                    return;
-                  }
-                  try {
-                    container.stop();
-                  } catch (RuntimeException e) {
-                    System.err.println(
-                        "Error while stopping container id="
-                            + container.getContainerId()
-                            + ". This must be stopped manually.");
-                    e.printStackTrace();
-                  }
-                }));
+  @Override
+  public void beforeAll(ExtensionContext context) throws Exception {
+    try {
+      beforeAllInternal(context);
+    } catch (Exception e) {
+      testFailed(context, e);
+    }
   }
 
-  @ClassRule
-  public static TestWatcher classOptionsLoader =
-      new TestWatcher() {
-        @Override
-        protected void starting(Description description) {
-          UseAgent ua = description.getAnnotation(UseAgent.class);
-          if (ua != null) {
-            useAgent = true;
-            agentConfigurationPath = ua.value();
-          }
-          WithDependencyContainers wdc = description.getAnnotation(WithDependencyContainers.class);
-          if (wdc != null) {
-            Collections.addAll(dependencyImages, wdc.value());
-          }
-        }
+  private void beforeAllInternal(ExtensionContext context) throws Exception {
+    Class<?> testClass = context.getRequiredTestClass();
 
-        @Override
-        protected void finished(Description description) {
-          dependencyImages.clear();
-          useAgent = false;
-          agentConfigurationPath = null;
-        }
-      };
+    Environment environment = testClass.getAnnotation(Environment.class);
+    String imageName = environment.value().getImageName();
+    String imageAppDir = environment.value().getImageAppDir();
 
-  @BeforeWithParams
-  public static void configureEnvironment(String imageName, String imageAppDir) throws Exception {
+    UseAgent ua = testClass.getAnnotation(UseAgent.class);
+    if (ua != null) {
+      useAgent = true;
+      agentConfigurationPath = ua.value();
+    }
+    WithDependencyContainers wdc = testClass.getAnnotation(WithDependencyContainers.class);
+    if (wdc != null) {
+      Collections.addAll(dependencyImages, wdc.value());
+    }
+
+    configureEnvironment(imageName, imageAppDir);
+  }
+
+  @Override
+  public void testFailed(ExtensionContext context, Throwable cause) {
+    System.out.println("Test failure detected.");
+    System.out.println("Container logs:");
+    System.out.println(targetContainer.get().getLogs());
+  }
+
+  @Override
+  public void beforeEach(ExtensionContext context) throws Exception {
+    System.out.println("Configuring test...");
+    TargetUri targetUri = context.getRequiredTestMethod().getAnnotation(TargetUri.class);
+    if (targetUri == null) {
+      System.out.println("targetUri==null: automated testapp request disabled");
+      return;
+    }
+
+    System.out.println("Calling " + targetUri.value() + " ...");
+    String url = getBaseUrl() + targetUri.value();
+    if (targetUri.callCount() == 1) {
+      System.out.println("calling " + url);
+    } else {
+      System.out.println("calling " + url + " " + targetUri.callCount() + " times");
+    }
+    for (int i = 0; i < targetUri.callCount(); i++) {
+      String content = HttpHelper.get(url);
+      String expectationMessage = "The base context in testApps should return a nonempty response.";
+      assertNotNull(
+          String.format(
+              "Null response from targetUri: '%s'. %s", targetUri.value(), expectationMessage),
+          content);
+      assertTrue(
+          String.format(
+              "Empty response from targetUri: '%s'. %s", targetUri.value(), expectationMessage),
+          content.length() > 0);
+    }
+    Stopwatch sw = Stopwatch.createStarted();
+    mockedIngestion.awaitAnyItems(TELEMETRY_RECEIVE_TIMEOUT_SECONDS * 1000, TimeUnit.MILLISECONDS);
+    System.out.printf(
+        "Telemetry received after %.3f seconds.%n", sw.elapsed(TimeUnit.MILLISECONDS) / 1000.0);
+    System.out.println("Starting validation...");
+    assertTrue("mocked ingestion has no data", mockedIngestion.hasData());
+  }
+
+  public void configureEnvironment(String imageName, String imageAppDir) throws Exception {
     System.out.println("Preparing environment...");
 
     GenericContainer<?> containerInfo = targetContainer.get();
@@ -232,11 +200,6 @@ public abstract class AiSmokeTest {
     System.out.println("Environment preparation complete.");
   }
 
-  @Before
-  public void setupTest() throws Exception {
-    callTargetUriAndWaitForTelemetry();
-  }
-
   protected static String getAppContext() {
     String appFileName = appFile.getName();
     if (appFileName.endsWith(".jar")) {
@@ -247,7 +210,7 @@ public abstract class AiSmokeTest {
     }
   }
 
-  protected static String getBaseUrl() {
+  protected String getBaseUrl() {
     String appContext = getAppContext();
     if (appContext.isEmpty()) {
       return "http://localhost:" + appServerPort;
@@ -256,7 +219,7 @@ public abstract class AiSmokeTest {
     }
   }
 
-  private static void clearOutAnyInitLogs() throws Exception {
+  private void clearOutAnyInitLogs() throws Exception {
     String contextRootUrl = getBaseUrl() + "/";
     HttpHelper.getResponseCodeEnsuringSampled(contextRootUrl);
     waitForHealthCheckTelemetryIfNeeded(contextRootUrl);
@@ -264,7 +227,7 @@ public abstract class AiSmokeTest {
     mockedIngestion.resetData();
   }
 
-  private static void waitForHealthCheckTelemetryIfNeeded(String contextRootUrl)
+  private void waitForHealthCheckTelemetryIfNeeded(String contextRootUrl)
       throws InterruptedException, ExecutionException, TimeoutException {
     Stopwatch receivedTelemetryTimer = Stopwatch.createStarted();
     try {
@@ -289,44 +252,14 @@ public abstract class AiSmokeTest {
     }
   }
 
-  protected void callTargetUriAndWaitForTelemetry() throws Exception {
-    if (targetUri == null) {
-      System.out.println("targetUri==null: automated testapp request disabled");
-      return;
-    }
-    System.out.println("Calling " + targetUri + " ...");
-    String url = getBaseUrl() + targetUri;
-    if (targetUriCallCount == 1) {
-      System.out.println("calling " + url);
-    } else {
-      System.out.println("calling " + url + " " + targetUriCallCount + " times");
-    }
-    for (int i = 0; i < targetUriCallCount; i++) {
-      String content = HttpHelper.get(url);
-      String expectationMessage = "The base context in testApps should return a nonempty response.";
-      assertNotNull(
-          String.format("Null response from targetUri: '%s'. %s", targetUri, expectationMessage),
-          content);
-      assertTrue(
-          String.format("Empty response from targetUri: '%s'. %s", targetUri, expectationMessage),
-          content.length() > 0);
-    }
-    Stopwatch sw = Stopwatch.createStarted();
-    mockedIngestion.awaitAnyItems(TELEMETRY_RECEIVE_TIMEOUT_SECONDS * 1000, TimeUnit.MILLISECONDS);
-    System.out.printf(
-        "Telemetry received after %.3f seconds.%n", sw.elapsed(TimeUnit.MILLISECONDS) / 1000.0);
-    System.out.println("Starting validation...");
-    assertTrue("mocked ingestion has no data", mockedIngestion.hasData());
-  }
-
-  protected static void setupProperties(String imageName, String imageAppDir) {
+  protected void setupProperties(String imageName, String imageAppDir) {
     appFile = new File(System.getProperty("ai.smoke-test.test-app-file"));
     javaagentFile = new File(System.getProperty("ai.smoke-test.javaagent-file"));
     currentImageName = imageName;
     currentImageAppDir = imageAppDir;
   }
 
-  protected static void startMockedIngestion() throws Exception {
+  protected void startMockedIngestion() throws Exception {
     mockedIngestion.addIngestionFilter(
         new Predicate<Envelope>() {
           @Override
@@ -352,12 +285,12 @@ public abstract class AiSmokeTest {
     mockedIngestion.startServer();
   }
 
-  private static void createDockerNetwork() {
+  private void createDockerNetwork() {
     System.out.println("Creating network...");
     network = Network.newNetwork();
   }
 
-  private static void cleanUpDockerNetwork() {
+  private void cleanUpDockerNetwork() {
     if (network == null) {
       return;
     }
@@ -368,12 +301,12 @@ public abstract class AiSmokeTest {
     }
   }
 
-  private static void startAllContainers() throws Exception {
+  private void startAllContainers() throws Exception {
     startDependencyContainers();
     startTestApplicationContainer();
   }
 
-  private static void startDependencyContainers() {
+  private void startDependencyContainers() {
     for (DependencyContainer dc : dependencyImages) {
       String imageName = dc.imageName().isEmpty() ? dc.value() : dc.imageName();
       System.out.println("Starting container: " + imageName);
@@ -394,8 +327,8 @@ public abstract class AiSmokeTest {
       Stopwatch stopwatch = Stopwatch.createStarted();
       container.start();
       System.out.printf(
-          "Dependency container %s started after %.3f seconds%n",
-          imageName, stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000.0);
+          "Dependency container %s (%s) started after %.3f seconds%n",
+          imageName, container.getContainerId(), stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000.0);
 
       if (!dc.hostnameEnvironmentVariable().isEmpty()) {
         hostnameEnvVars.put(dc.hostnameEnvironmentVariable(), containerName);
@@ -423,9 +356,11 @@ public abstract class AiSmokeTest {
     return envVar;
   }
 
-  @SuppressWarnings("deprecation") // intentionally using FixedHostPortGenericContainer
-  private static void startTestApplicationContainer() throws Exception {
-    System.out.println("Starting container: " + currentImageName);
+  @SuppressWarnings(
+      "deprecation") // intentionally using FixedHostPortGenericContainer when remote debugging
+  // enabled
+  private void startTestApplicationContainer() throws Exception {
+    System.out.println("Starting app container");
 
     Testcontainers.exposeHostPorts(6060);
 
@@ -486,34 +421,30 @@ public abstract class AiSmokeTest {
     Stopwatch stopwatch = Stopwatch.createStarted();
     container.start();
     System.out.printf(
-        "App container started after %.3f seconds%n",
-        stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000.0);
+        "App container (%s) started after %.3f seconds%n",
+        container.getContainerId(), stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000.0);
 
     appServerPort = container.getMappedPort(8080);
-
-    System.out.println("Container started: " + currentImageName);
 
     targetContainer.set(container);
     allContainers.push(container);
   }
 
-  @After
-  public void resetMockedIngestion() {
+  @Override
+  public void afterEach(ExtensionContext context) {
     mockedIngestion.resetData();
     System.out.println("Mocked ingestion reset.");
   }
 
-  @AfterWithParams
-  public static void tearDownContainer(
-      @SuppressWarnings("unused") String imageName, @SuppressWarnings("unused") String imageAppDir)
-      throws Exception {
+  @Override
+  public void afterAll(ExtensionContext context) throws Exception {
     stopAllContainers();
     cleanUpDockerNetwork();
     mockedIngestion.stopServer();
     mockedIngestion.setRequestLoggingEnabled(false);
   }
 
-  public static void stopAllContainers() {
+  public void stopAllContainers() {
     if (allContainers.isEmpty()) {
       System.out.println("No containers to stop");
       return;
@@ -537,16 +468,11 @@ public abstract class AiSmokeTest {
     return ((Data<T>) envelope.getData()).getBaseData();
   }
 
-  @SuppressWarnings("TypeParameterUnusedInFormals")
-  protected <T extends Domain> T getTelemetryDataForType(int index, String type) {
-    return mockedIngestion.getBaseDataForType(index, type);
-  }
-
-  protected static Telemetry getTelemetry(int rddCount) throws Exception {
+  protected Telemetry getTelemetry(int rddCount) throws Exception {
     return getTelemetry(rddCount, rdd -> true);
   }
 
-  protected static Telemetry getTelemetry(int rddCount, Predicate<RemoteDependencyData> condition)
+  protected Telemetry getTelemetry(int rddCount, Predicate<RemoteDependencyData> condition)
       throws Exception {
 
     if (rddCount > 3) {
