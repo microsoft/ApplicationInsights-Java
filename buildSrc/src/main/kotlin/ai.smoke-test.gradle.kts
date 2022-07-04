@@ -63,6 +63,8 @@ dependencies {
   smokeTestImplementation(project(":smoke-tests:framework"))
 
   smokeTestImplementation("org.junit.jupiter:junit-jupiter")
+  smokeTestImplementation("org.junit.jupiter:junit-jupiter-api")
+  smokeTestImplementation("org.junit.jupiter:junit-jupiter-params")
   smokeTestImplementation("org.assertj:assertj-core")
 
   agent(project(":agent:agent", configuration = "shadow"))
