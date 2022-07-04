@@ -527,21 +527,9 @@ public class AiSmokeTest
     return telemetry;
   }
 
-  public static class Telemetry {
-    public Envelope rdEnvelope;
-    public Envelope rddEnvelope1;
-    public Envelope rddEnvelope2;
-    public Envelope rddEnvelope3;
-
-    public RequestData rd;
-    public RemoteDependencyData rdd1;
-    public RemoteDependencyData rdd2;
-    public RemoteDependencyData rdd3;
-  }
-
   public static void assertParentChild(
       RequestData rd, Envelope parentEnvelope, Envelope childEnvelope, String operationName) {
-    assertParentChild(
+    AiSmokeTest.assertParentChild(
         rd.getId(), parentEnvelope, childEnvelope, operationName, operationName, true);
   }
 
@@ -550,7 +538,7 @@ public class AiSmokeTest
       Envelope parentEnvelope,
       Envelope childEnvelope,
       String operationName) {
-    assertParentChild(
+    AiSmokeTest.assertParentChild(
         rdd.getId(), parentEnvelope, childEnvelope, operationName, operationName, false);
   }
 

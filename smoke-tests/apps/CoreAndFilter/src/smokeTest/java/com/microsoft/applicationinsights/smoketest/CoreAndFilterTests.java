@@ -84,12 +84,12 @@ public class CoreAndFilterTests extends AiSmokeTest {
     assertEquals("commandName", telemetry.rdd1.getData());
     assertNull(telemetry.rdd1.getType());
     assertNull(telemetry.rdd1.getTarget());
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
     assertEquals(expectedDuration, telemetry.rdd1.getDuration());
 
-    assertParentChild(
+    AiSmokeTest.assertParentChild(
         telemetry.rd,
         telemetry.rdEnvelope,
         telemetry.rddEnvelope1,
@@ -122,8 +122,8 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
     assertEquals("EventDataTest", ed2.getName());
 
-    assertParentChild(rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter/trackEvent");
-    assertParentChild(rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter/trackEvent");
+    AiSmokeTest.assertParentChild(rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter/trackEvent");
+    AiSmokeTest.assertParentChild(rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter/trackEvent");
   }
 
   @Test
@@ -162,9 +162,9 @@ public class CoreAndFilterTests extends AiSmokeTest {
         hasItem(
             allOf(hasException(withMessage(expectedName)), hasSeverityLevel(SeverityLevel.ERROR))));
 
-    assertParentChild(rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter/trackException");
-    assertParentChild(rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter/trackException");
-    assertParentChild(rd, rdEnvelope, edEnvelope3, "GET /CoreAndFilter/trackException");
+    AiSmokeTest.assertParentChild(rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter/trackException");
+    AiSmokeTest.assertParentChild(rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter/trackException");
+    AiSmokeTest.assertParentChild(rd, rdEnvelope, edEnvelope3, "GET /CoreAndFilter/trackException");
   }
 
   @Test
@@ -246,7 +246,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
     assertNull("getMax was non-null", dp.getMax());
     assertNull("getStdDev was non-null", dp.getStdDev());
 
-    assertParentChild(rd, rdEnvelope, mdEnvelope, "GET /CoreAndFilter/trackMetric");
+    AiSmokeTest.assertParentChild(rd, rdEnvelope, mdEnvelope, "GET /CoreAndFilter/trackMetric");
   }
 
   @Test
@@ -282,9 +282,9 @@ public class CoreAndFilterTests extends AiSmokeTest {
                 TraceDataMatchers.hasSeverityLevel(SeverityLevel.INFORMATION),
                 TraceDataMatchers.hasProperty("key", "value"))));
 
-    assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /CoreAndFilter/trackTrace");
-    assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /CoreAndFilter/trackTrace");
-    assertParentChild(rd, rdEnvelope, mdEnvelope3, "GET /CoreAndFilter/trackTrace");
+    AiSmokeTest.assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /CoreAndFilter/trackTrace");
+    AiSmokeTest.assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /CoreAndFilter/trackTrace");
+    AiSmokeTest.assertParentChild(rd, rdEnvelope, mdEnvelope3, "GET /CoreAndFilter/trackTrace");
   }
 
   @Test
@@ -368,7 +368,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
     // checking that sdk version is from the agent
     assertTrue(pvdEnvelope3.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
 
-    assertParentChild(rd, rdEnvelope, pvdEnvelope1, "GET /CoreAndFilter/trackPageView");
+    AiSmokeTest.assertParentChild(rd, rdEnvelope, pvdEnvelope1, "GET /CoreAndFilter/trackPageView");
 
     assertEquals("operation-id-goes-here", pvdEnvelope2.getTags().get("ai.operation.id"));
     assertEquals(
@@ -400,7 +400,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
     assertEquals("doPageView", pv.getName());
     assertEquals(new Duration(0), pv.getDuration());
 
-    assertParentChild(rd, rdEnvelope, pvdEnvelope, "GET /CoreAndFilter/doPageView.jsp");
+    AiSmokeTest.assertParentChild(rd, rdEnvelope, pvdEnvelope, "GET /CoreAndFilter/doPageView.jsp");
   }
 
   @Test

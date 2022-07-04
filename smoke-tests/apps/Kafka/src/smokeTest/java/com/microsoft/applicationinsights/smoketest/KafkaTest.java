@@ -97,10 +97,10 @@ public class KafkaTest extends AiJarSmokeTest {
     assertTrue(rdd2.getProperties().isEmpty());
     assertTrue(rdd2.getSuccess());
 
-    assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
-    assertParentChild(
+    AiSmokeTest.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
+    AiSmokeTest.assertParentChild(
         rdd1.getId(), rddEnvelope1, rdEnvelope2, "GET /sendMessage", "mytopic process", false);
-    assertParentChild(
+    AiSmokeTest.assertParentChild(
         rd2.getId(), rdEnvelope2, rddEnvelope2, "mytopic process", "mytopic process", false);
   }
 

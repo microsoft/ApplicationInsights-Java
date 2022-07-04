@@ -91,11 +91,11 @@ public class JmsControllerSpansEnabledTest extends AiJarSmokeTest {
     assertTrue(rdd3.getProperties().isEmpty());
     assertTrue(rdd3.getSuccess());
 
-    assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
-    assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /sendMessage");
-    assertParentChild(
+    AiSmokeTest.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
+    AiSmokeTest.assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /sendMessage");
+    AiSmokeTest.assertParentChild(
         rdd2.getId(), rddEnvelope2, rdEnvelope2, "GET /sendMessage", "message process", false);
-    assertParentChild(
+    AiSmokeTest.assertParentChild(
         rd2.getId(), rdEnvelope2, rddEnvelope3, "message process", "message process", false);
   }
 

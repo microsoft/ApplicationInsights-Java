@@ -71,9 +71,9 @@ public class TraceJavaUtilLoggingTest extends AiWarSmokeTest {
     assertNotNull(md2.getProperties().get("ThreadName"));
     assertEquals(3, md2.getProperties().size());
 
-    assertParentChild(
+    AiSmokeTest.assertParentChild(
         rd, rdEnvelope, mdEnvelope1, "GET /TraceJavaUtilLoggingUsingAgent/traceJavaUtilLogging");
-    assertParentChild(
+    AiSmokeTest.assertParentChild(
         rd, rdEnvelope, mdEnvelope2, "GET /TraceJavaUtilLoggingUsingAgent/traceJavaUtilLogging");
   }
 
@@ -102,7 +102,7 @@ public class TraceJavaUtilLoggingTest extends AiWarSmokeTest {
     assertNotNull(ed.getProperties().get("ThreadName"));
     assertEquals(4, ed.getProperties().size());
 
-    assertParentChild(
+    AiSmokeTest.assertParentChild(
         rd,
         rdEnvelope,
         edEnvelope,

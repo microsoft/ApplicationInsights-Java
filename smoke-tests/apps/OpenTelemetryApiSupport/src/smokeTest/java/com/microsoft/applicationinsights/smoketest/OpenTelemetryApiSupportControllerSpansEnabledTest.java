@@ -53,7 +53,7 @@ public class OpenTelemetryApiSupportControllerSpansEnabledTest extends AiWarSmok
     assertEquals(2, telemetry.rdd1.getProperties().size());
     assertEquals("myvalue1", telemetry.rdd1.getProperties().get("myattr1"));
     assertEquals("myvalue2", telemetry.rdd1.getProperties().get("myattr2"));
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
     // ideally want the properties below on rd, but can't get SERVER span yet
     // see
@@ -68,7 +68,7 @@ public class OpenTelemetryApiSupportControllerSpansEnabledTest extends AiWarSmok
         telemetry.rddEnvelope1.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
     assertEquals("myuser", telemetry.rddEnvelope1.getTags().get("ai.user.id"));
 
-    assertParentChild(
+    AiSmokeTest.assertParentChild(
         telemetry.rd,
         telemetry.rdEnvelope,
         telemetry.rddEnvelope1,
@@ -96,8 +96,8 @@ public class OpenTelemetryApiSupportControllerSpansEnabledTest extends AiWarSmok
     assertNull(telemetry.rdd1.getData());
     assertEquals("InProc", telemetry.rdd1.getType());
     assertNull(telemetry.rdd1.getTarget());
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
     // ideally want the properties below on rd, but can't get SERVER span yet, see
     // https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1726#issuecomment-731890267
@@ -113,7 +113,7 @@ public class OpenTelemetryApiSupportControllerSpansEnabledTest extends AiWarSmok
     assertTrue(
         telemetry.rddEnvelope1.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
 
-    assertParentChild(
+    AiSmokeTest.assertParentChild(
         telemetry.rd,
         telemetry.rdEnvelope,
         telemetry.rddEnvelope1,
@@ -151,8 +151,8 @@ public class OpenTelemetryApiSupportControllerSpansEnabledTest extends AiWarSmok
     assertNull(telemetry.rdd1.getData());
     assertEquals("InProc", telemetry.rdd1.getType());
     assertNull(telemetry.rdd1.getTarget());
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
     assertEquals("TestController.underAnnotation", telemetry.rdd2.getName());
     assertNull(telemetry.rdd2.getData());
@@ -160,14 +160,14 @@ public class OpenTelemetryApiSupportControllerSpansEnabledTest extends AiWarSmok
     assertNull(telemetry.rdd2.getTarget());
     assertEquals("a message", telemetry.rdd2.getProperties().get("message"));
     assertEquals(1, telemetry.rdd2.getProperties().size());
-    assertTrue(telemetry.rdd2.getSuccess());
+    assertThat(telemetry.rdd2.getSuccess()).isTrue();
 
-    assertParentChild(
+    AiSmokeTest.assertParentChild(
         telemetry.rd,
         telemetry.rdEnvelope,
         telemetry.rddEnvelope1,
         "GET /OpenTelemetryApiSupport/test-annotations");
-    assertParentChild(
+    AiSmokeTest.assertParentChild(
         telemetry.rdd1,
         telemetry.rddEnvelope1,
         telemetry.rddEnvelope2,

@@ -32,7 +32,7 @@ import java.util.List;
 import org.junit.Test;
 
 @UseAgent
-public class GrpcTest extends AiJarSmokeTest {
+public class GrpcTest {
 
   @Test
   @TargetUri("/simple")
@@ -64,8 +64,8 @@ public class GrpcTest extends AiJarSmokeTest {
 
     // TODO (trask): verify rd2
 
-    assertParentChild(rd1, rdEnvelope1, rddEnvelope, "GET /simple");
-    assertParentChild(
+    AiSmokeTest.assertParentChild(rd1, rdEnvelope1, rddEnvelope, "GET /simple");
+    AiSmokeTest.assertParentChild(
         rdd.getId(), rddEnvelope, rdEnvelope2, "GET /simple", "example.Greeter/SayHello", false);
   }
 
@@ -99,8 +99,8 @@ public class GrpcTest extends AiJarSmokeTest {
 
     // TODO (trask): verify rd2
 
-    assertParentChild(rd1, rdEnvelope1, rddEnvelope, "GET /conversation");
-    assertParentChild(
+    AiSmokeTest.assertParentChild(rd1, rdEnvelope1, rddEnvelope, "GET /conversation");
+    AiSmokeTest.assertParentChild(
         rdd.getId(),
         rddEnvelope,
         rdEnvelope2,

@@ -53,6 +53,6 @@ public class HttpHeadersTest extends AiWarSmokeTest {
     assertEquals("testing123", telemetry.rdd1.getProperties().get("http.request.header.abc"));
     assertNotNull(telemetry.rdd1.getProperties().get("http.response.header.date"));
     assertEquals(2, telemetry.rdd1.getProperties().size());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
   }
 }

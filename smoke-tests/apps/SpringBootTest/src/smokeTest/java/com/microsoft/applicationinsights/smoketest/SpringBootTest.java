@@ -142,7 +142,8 @@ public class SpringBootTest extends AiWarSmokeTest {
     assertTrue(rd.getProperties().isEmpty());
     assertFalse(rd.getSuccess());
 
-    assertParentChild(rd, rdEnvelope, edEnvelope1, "GET /SpringBootTest/throwsException");
+    AiSmokeTest.assertParentChild(
+        rd, rdEnvelope, edEnvelope1, "GET /SpringBootTest/throwsException");
   }
 
   @Test
@@ -173,6 +174,7 @@ public class SpringBootTest extends AiWarSmokeTest {
     assertTrue(rdd1.getProperties().isEmpty());
     assertTrue(rdd1.getSuccess());
 
-    assertParentChild(rd, rdEnvelope, rddEnvelope1, "GET /SpringBootTest/asyncDependencyCall");
+    AiSmokeTest.assertParentChild(
+        rd, rdEnvelope, rddEnvelope1, "GET /SpringBootTest/asyncDependencyCall");
   }
 }

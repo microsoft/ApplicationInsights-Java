@@ -104,6 +104,6 @@ public class TelemetryFilteringSmokeTest extends AiWarSmokeTest {
     assertEquals("app3", rddEnvelope.getTags().get("ai.cloud.role"));
     assertTrue(rdd.getSuccess());
 
-    assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /TelemetryFiltering/*");
+    AiSmokeTest.assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /TelemetryFiltering/*");
   }
 }

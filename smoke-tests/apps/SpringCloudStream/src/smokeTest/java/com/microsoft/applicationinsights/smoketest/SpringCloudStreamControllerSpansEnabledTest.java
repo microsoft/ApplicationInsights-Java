@@ -107,9 +107,9 @@ public class SpringCloudStreamControllerSpansEnabledTest extends AiJarSmokeTest 
     assertTrue(rd2.getSuccess());
     assertTrue(rd2.getMeasurements().containsKey("timeSinceEnqueued"));
 
-    assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
-    assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /sendMessage");
-    assertParentChild(
+    AiSmokeTest.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
+    AiSmokeTest.assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /sendMessage");
+    AiSmokeTest.assertParentChild(
         rdd2.getId(), rddEnvelope2, rdEnvelope2, "GET /sendMessage", "greetings process", false);
   }
 }

@@ -77,8 +77,10 @@ public class TraceLogBackTest extends AiWarSmokeTest {
     assertNotNull(md2.getProperties().get("ThreadName"));
     assertEquals(3, md2.getProperties().size());
 
-    assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /TraceLogBackUsingAgent/traceLogBack");
-    assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /TraceLogBackUsingAgent/traceLogBack");
+    AiSmokeTest.assertParentChild(
+        rd, rdEnvelope, mdEnvelope1, "GET /TraceLogBackUsingAgent/traceLogBack");
+    AiSmokeTest.assertParentChild(
+        rd, rdEnvelope, mdEnvelope2, "GET /TraceLogBackUsingAgent/traceLogBack");
   }
 
   @Test
@@ -111,7 +113,7 @@ public class TraceLogBackTest extends AiWarSmokeTest {
       assertEquals(4, ed.getProperties().size());
     }
 
-    assertParentChild(
+    AiSmokeTest.assertParentChild(
         rd, rdEnvelope, edEnvelope, "GET /TraceLogBackUsingAgent/traceLogBackWithException");
   }
 }

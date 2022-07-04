@@ -59,10 +59,11 @@ public class JdbcTest extends AiWarSmokeTest {
     assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getData());
     assertEquals("SQL", telemetry.rdd1.getType());
     assertEquals("testdb", telemetry.rdd1.getTarget());
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    AiSmokeTest.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
   @Test
@@ -77,10 +78,11 @@ public class JdbcTest extends AiWarSmokeTest {
     assertEquals("select * from abc", telemetry.rdd1.getData());
     assertEquals("SQL", telemetry.rdd1.getType());
     assertEquals("testdb", telemetry.rdd1.getTarget());
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    AiSmokeTest.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
   @Test
@@ -103,10 +105,11 @@ public class JdbcTest extends AiWarSmokeTest {
     assertEquals(query, telemetry.rdd1.getData());
     assertEquals("SQL", telemetry.rdd1.getType());
     assertEquals("testdb", telemetry.rdd1.getTarget());
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    AiSmokeTest.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
   @Test
@@ -122,10 +125,11 @@ public class JdbcTest extends AiWarSmokeTest {
     assertEquals("SQL", telemetry.rdd1.getType());
     assertEquals("testdb", telemetry.rdd1.getTarget());
     // assertEquals(" [Batch of 3]", telemetry.rdd1.getProperties().get("Args"));
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    AiSmokeTest.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
   @Ignore // OpenTelemetry auto-instrumentation does not support non- prepared statement batching
@@ -147,9 +151,10 @@ public class JdbcTest extends AiWarSmokeTest {
     assertEquals("testdb", telemetry.rdd1.getTarget());
     assertEquals(1, telemetry.rdd1.getProperties().size());
     assertEquals(" [Batch]", telemetry.rdd1.getProperties().get("Args"));
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    AiSmokeTest.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
   @Test
@@ -167,10 +172,11 @@ public class JdbcTest extends AiWarSmokeTest {
     assertEquals("mysql", telemetry.rdd1.getType());
     // not the best test, because this is both the db.name and db.system
     assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+ \\| mysql"));
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    AiSmokeTest.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
   @Test
@@ -188,10 +194,11 @@ public class JdbcTest extends AiWarSmokeTest {
     assertEquals("mysql", telemetry.rdd1.getType());
     // not the best test, because this is both the db.name and db.system
     assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+ \\| mysql"));
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    AiSmokeTest.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
   @Test
@@ -207,10 +214,11 @@ public class JdbcTest extends AiWarSmokeTest {
     assertEquals("postgresql", telemetry.rdd1.getType());
     // not the best test, because this is both the db.name and db.system
     assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+ \\| postgres"));
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    AiSmokeTest.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
   @Test
@@ -226,10 +234,11 @@ public class JdbcTest extends AiWarSmokeTest {
     assertEquals("postgresql", telemetry.rdd1.getType());
     // not the best test, because this is both the db.name and db.system
     assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+ \\| postgres"));
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    AiSmokeTest.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
   @Test
@@ -244,10 +253,11 @@ public class JdbcTest extends AiWarSmokeTest {
     assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getData());
     assertEquals("SQL", telemetry.rdd1.getType());
     assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+"));
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    AiSmokeTest.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
   @Test
@@ -262,10 +272,11 @@ public class JdbcTest extends AiWarSmokeTest {
     assertEquals("select * from abc", telemetry.rdd1.getData());
     assertEquals("SQL", telemetry.rdd1.getType());
     assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+"));
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    AiSmokeTest.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
   @Ignore("FIXME: need custom container with oracle db")
@@ -281,10 +292,11 @@ public class JdbcTest extends AiWarSmokeTest {
     assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getData());
     assertEquals("SQL", telemetry.rdd1.getType());
     assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+"));
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    AiSmokeTest.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
   @Ignore("FIXME: need custom container with oracle db")
@@ -300,9 +312,10 @@ public class JdbcTest extends AiWarSmokeTest {
     assertEquals("select * from abc", telemetry.rdd1.getData());
     assertEquals("SQL", telemetry.rdd1.getType());
     assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+"));
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    AiSmokeTest.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 }

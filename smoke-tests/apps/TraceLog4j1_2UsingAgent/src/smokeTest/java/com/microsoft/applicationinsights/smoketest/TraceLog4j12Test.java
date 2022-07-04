@@ -82,9 +82,12 @@ public class TraceLog4j12Test extends AiWarSmokeTest {
     assertNotNull(md3.getProperties().get("ThreadName"));
     assertEquals(3, md3.getProperties().size());
 
-    assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /TraceLog4j1_2UsingAgent/traceLog4j12");
-    assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /TraceLog4j1_2UsingAgent/traceLog4j12");
-    assertParentChild(rd, rdEnvelope, mdEnvelope3, "GET /TraceLog4j1_2UsingAgent/traceLog4j12");
+    AiSmokeTest.assertParentChild(
+        rd, rdEnvelope, mdEnvelope1, "GET /TraceLog4j1_2UsingAgent/traceLog4j12");
+    AiSmokeTest.assertParentChild(
+        rd, rdEnvelope, mdEnvelope2, "GET /TraceLog4j1_2UsingAgent/traceLog4j12");
+    AiSmokeTest.assertParentChild(
+        rd, rdEnvelope, mdEnvelope3, "GET /TraceLog4j1_2UsingAgent/traceLog4j12");
   }
 
   @Test
@@ -115,7 +118,7 @@ public class TraceLog4j12Test extends AiWarSmokeTest {
     assertEquals("MDC value", ed.getProperties().get("MDC key"));
     assertEquals(5, ed.getProperties().size());
 
-    assertParentChild(
+    AiSmokeTest.assertParentChild(
         rd, rdEnvelope, edEnvelope, "GET /TraceLog4j1_2UsingAgent/traceLog4j1_2WithException");
   }
 }

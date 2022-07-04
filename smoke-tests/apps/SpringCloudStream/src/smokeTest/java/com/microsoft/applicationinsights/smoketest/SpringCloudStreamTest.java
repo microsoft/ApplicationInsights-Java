@@ -86,8 +86,8 @@ public class SpringCloudStreamTest extends AiJarSmokeTest {
     assertTrue(rd2.getProperties().isEmpty());
     assertTrue(rd2.getSuccess());
 
-    assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
-    assertParentChild(
+    AiSmokeTest.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
+    AiSmokeTest.assertParentChild(
         rdd1.getId(), rddEnvelope1, rdEnvelope2, "GET /sendMessage", "greetings process", false);
   }
 }

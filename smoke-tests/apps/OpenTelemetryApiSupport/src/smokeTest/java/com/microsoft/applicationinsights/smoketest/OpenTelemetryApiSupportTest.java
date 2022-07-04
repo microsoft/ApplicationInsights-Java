@@ -109,9 +109,9 @@ public class OpenTelemetryApiSupportTest extends AiWarSmokeTest {
     assertNull(telemetry.rdd1.getTarget());
     assertEquals("a message", telemetry.rdd1.getProperties().get("message"));
     assertEquals(1, telemetry.rdd1.getProperties().size());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(
+    AiSmokeTest.assertParentChild(
         telemetry.rd,
         telemetry.rdEnvelope,
         telemetry.rddEnvelope1,

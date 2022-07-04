@@ -97,8 +97,8 @@ public class HttpClientSmokeTest extends AiWarSmokeTest {
     assertEquals("Http", telemetry.rdd1.getType());
     assertEquals("mock.codes", telemetry.rdd1.getTarget());
     assertEquals("200", telemetry.rdd1.getResultCode());
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
     assertNull(telemetry.rddEnvelope1.getSampleRate());
 
     assertEquals("GET /404", telemetry.rdd2.getName());
@@ -106,7 +106,7 @@ public class HttpClientSmokeTest extends AiWarSmokeTest {
     assertEquals("Http", telemetry.rdd2.getType());
     assertEquals("mock.codes", telemetry.rdd2.getTarget());
     assertEquals("404", telemetry.rdd2.getResultCode());
-    assertTrue(telemetry.rdd2.getProperties().isEmpty());
+    assertThat(telemetry.rdd2.getProperties()).isEmpty();
     assertFalse(telemetry.rdd2.getSuccess());
     assertNull(telemetry.rddEnvelope2.getSampleRate());
 
@@ -115,15 +115,15 @@ public class HttpClientSmokeTest extends AiWarSmokeTest {
     assertEquals("Http", telemetry.rdd3.getType());
     assertEquals("mock.codes", telemetry.rdd3.getTarget());
     assertEquals("500", telemetry.rdd3.getResultCode());
-    assertTrue(telemetry.rdd3.getProperties().isEmpty());
+    assertThat(telemetry.rdd3.getProperties()).isEmpty();
     assertFalse(telemetry.rdd3.getSuccess());
     assertNull(telemetry.rddEnvelope3.getSampleRate());
 
-    assertParentChild(
+    AiSmokeTest.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /HttpClients/*");
-    assertParentChild(
+    AiSmokeTest.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope2, "GET /HttpClients/*");
-    assertParentChild(
+    AiSmokeTest.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope3, "GET /HttpClients/*");
   }
 }

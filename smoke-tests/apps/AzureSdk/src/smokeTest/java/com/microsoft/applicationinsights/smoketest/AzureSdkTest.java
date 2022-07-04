@@ -21,36 +21,65 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-public class AzureSdkTest extends AiWarSmokeTest {
+abstract class AzureSdkTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/test")
   public void test() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+    Telemetry telemetry = testing.getTelemetry(1);
 
-    assertEquals("GET /AzureSdk/test", telemetry.rd.getName());
-    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/AzureSdk/test"));
-    assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getSuccess());
-    assertNull(telemetry.rd.getSource());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getMeasurements().isEmpty());
+    assertThat(telemetry.rd.getName()).isEqualTo("GET /AzureSdk/test");
+    assertThat(telemetry.rd.getUrl()).matches("http://localhost:[0-9]+/AzureSdk/test");
+    assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
+    assertThat(telemetry.rd.getSuccess()).isTrue();
+    assertThat(telemetry.rd.getSource()).isNull();
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
-    assertEquals("hello", telemetry.rdd1.getName());
-    assertNull(telemetry.rdd1.getData());
-    assertEquals("InProc", telemetry.rdd1.getType());
-    assertNull(telemetry.rdd1.getTarget());
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("hello");
+    assertThat(telemetry.rdd1.getData()).isNull();
+    assertThat(telemetry.rdd1.getType()).isEqualTo("InProc");
+    assertThat(telemetry.rdd1.getTarget()).isNull();
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(
+    AiSmokeTest.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /AzureSdk/test");
   }
+
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends AzureSdkTest {}
+
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends AzureSdkTest {}
+
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends AzureSdkTest {}
+
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends AzureSdkTest {}
+
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends AzureSdkTest {}
+
+  @Environment(WILDFLY_13_JAVA_8)
+  static class Wildfly13Java8Test extends AzureSdkTest {}
+
+  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
+  static class Wildfly13Java8OpenJ9Test extends AzureSdkTest {}
 }

@@ -155,8 +155,10 @@ public class SpringBootControllerSpansEnabledTest extends AiWarSmokeTest {
     assertTrue(rdd1.getProperties().isEmpty());
     assertFalse(rdd1.getSuccess());
 
-    assertParentChild(rd, rdEnvelope, edEnvelope1, "GET /SpringBootTest/throwsException");
-    assertParentChild(rd, rdEnvelope, rddEnvelope1, "GET /SpringBootTest/throwsException");
+    AiSmokeTest.assertParentChild(
+        rd, rdEnvelope, edEnvelope1, "GET /SpringBootTest/throwsException");
+    AiSmokeTest.assertParentChild(
+        rd, rdEnvelope, rddEnvelope1, "GET /SpringBootTest/throwsException");
   }
 
   @Test
@@ -205,14 +207,17 @@ public class SpringBootControllerSpansEnabledTest extends AiWarSmokeTest {
     assertTrue(rdd3.getProperties().isEmpty());
     assertTrue(rdd3.getSuccess());
 
-    assertParentChild(rd, rdEnvelope, rddEnvelope1, "GET /SpringBootTest/asyncDependencyCall");
-    assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /SpringBootTest/asyncDependencyCall");
+    AiSmokeTest.assertParentChild(
+        rd, rdEnvelope, rddEnvelope1, "GET /SpringBootTest/asyncDependencyCall");
+    AiSmokeTest.assertParentChild(
+        rdd1, rddEnvelope1, rddEnvelope2, "GET /SpringBootTest/asyncDependencyCall");
     try {
-      assertParentChild(
+      AiSmokeTest.assertParentChild(
           rdd1, rddEnvelope1, rddEnvelope3, "GET /SpringBootTest/asyncDependencyCall");
     } catch (AssertionError e) {
       // on wildfly the duplicate controller spans is nested under the request span for some reason
-      assertParentChild(rd, rdEnvelope, rddEnvelope3, "GET /SpringBootTest/asyncDependencyCall");
+      AiSmokeTest.assertParentChild(
+          rd, rdEnvelope, rddEnvelope3, "GET /SpringBootTest/asyncDependencyCall");
     }
   }
 }

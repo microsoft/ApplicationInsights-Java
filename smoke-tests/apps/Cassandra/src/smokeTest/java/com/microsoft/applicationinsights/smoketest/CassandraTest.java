@@ -52,10 +52,10 @@ public class CassandraTest extends AiWarSmokeTest {
     assertEquals("select * from test.test", telemetry.rdd1.getData());
     assertEquals("cassandra", telemetry.rdd1.getType());
     assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+"));
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(
+    AiSmokeTest.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Cassandra/*");
   }
 }

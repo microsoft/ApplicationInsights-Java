@@ -41,7 +41,7 @@ class CustomDimensionsTest {
   @Test
   @TargetUri("/test")
   public void doMostBasicTest() throws Exception {
-    AiSmokeTest.Telemetry telemetry = testing.getTelemetry(0);
+    Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getProperties()).containsEntry("test", "value");
     assertThat(telemetry.rd.getProperties()).containsKey("home");
