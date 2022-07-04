@@ -41,7 +41,7 @@ abstract class GrpcTest {
 
   @Test
   @TargetUri("/simple")
-  public void doSimpleTest() throws Exception {
+  void doSimpleTest() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 2);
 
     Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /simple");

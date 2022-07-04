@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
@@ -36,7 +35,7 @@ public class HttpServer4xxDefaultTest extends AiWarSmokeTest {
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /HttpServer4xx/test4xx");
     assertThat(telemetry.rd.getUrl()).matches("http://localhost:[0-9]+/HttpServer4xx/test4xx");
-    assertEquals("400", telemetry.rd.getResponseCode());
+    assertThat(telemetry.rd.getResponseCode()).isEqualTo("400");
     assertFalse(telemetry.rd.getSuccess());
     assertThat(telemetry.rd.getSource()).isNull();
     assertThat(telemetry.rd.getProperties()).isEmpty();

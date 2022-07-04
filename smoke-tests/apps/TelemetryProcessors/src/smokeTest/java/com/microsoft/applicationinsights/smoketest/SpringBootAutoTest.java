@@ -35,16 +35,17 @@ public class SpringBootAutoTest extends AiWarSmokeTest {
   public void doMostBasicTest() throws Exception {
     Telemetry telemetry = getTelemetry(0);
 
-    assertEquals("testValue1", telemetry.rd.getProperties().get("attribute1"));
-    assertEquals("testValue2", telemetry.rd.getProperties().get("attribute2"));
-    assertEquals("sensitiveData1", telemetry.rd.getProperties().get("sensitiveAttribute1"));
-    assertEquals("*/TelemetryProcessors/test*", telemetry.rd.getProperties().get("httpPath"));
+    assertThat(telemetry.rd.getProperties().get("attribute1")).isEqualTo("testValue1");
+    assertThat(telemetry.rd.getProperties().get("attribute2")).isEqualTo("testValue2");
+    assertThat(telemetry.rd.getProperties().get("sensitiveAttribute1")).isEqualTo("sensitiveData1");
+    assertThat(telemetry.rd.getProperties().get("httpPath"))
+        .isEqualTo("*/TelemetryProcessors/test*");
     assertThat(telemetry.rd.getProperties()).hasSize(4);
     assertThat(telemetry.rd.getSuccess()).isTrue();
     // Log processor test
     List<MessageData> logs = testing.mockedIngestion.getMessageDataInRequest();
     MessageData md1 = logs.get(0);
-    assertEquals("testValue1::testValue2", md1.getMessage());
+    assertThat(md1.getMessage()).isEqualTo("testValue1::testValue2");
   }
 
   @Test
@@ -53,9 +54,9 @@ public class SpringBootAutoTest extends AiWarSmokeTest {
     Telemetry telemetry = getTelemetry(0);
 
     assertThat(telemetry.rd.getName()).isEqualTo("testValue1::testValue2");
-    assertEquals("testValue1", telemetry.rd.getProperties().get("attribute1"));
-    assertEquals("testValue2", telemetry.rd.getProperties().get("attribute2"));
-    assertEquals("redacted", telemetry.rd.getProperties().get("sensitiveAttribute1"));
+    assertThat(telemetry.rd.getProperties().get("attribute1")).isEqualTo("testValue1");
+    assertThat(telemetry.rd.getProperties().get("attribute2")).isEqualTo("testValue2");
+    assertThat(telemetry.rd.getProperties().get("sensitiveAttribute1")).isEqualTo("redacted");
     assertEquals(
         "*/TelemetryProcessors/sensitivedata*", telemetry.rd.getProperties().get("httpPath"));
     assertThat(telemetry.rd.getProperties()).hasSize(4);

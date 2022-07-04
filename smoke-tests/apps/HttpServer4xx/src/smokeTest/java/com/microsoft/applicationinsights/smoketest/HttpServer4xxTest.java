@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Test;
 
 @UseAgent("httpserver4xx_applicationinsights.json")
@@ -35,7 +33,7 @@ public class HttpServer4xxTest extends AiWarSmokeTest {
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /HttpServer4xx/test4xx");
     assertThat(telemetry.rd.getUrl()).matches("http://localhost:[0-9]+/HttpServer4xx/test4xx");
-    assertEquals("400", telemetry.rd.getResponseCode());
+    assertThat(telemetry.rd.getResponseCode()).isEqualTo("400");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rd.getSource()).isNull();
     assertThat(telemetry.rd.getProperties()).isEmpty();

@@ -60,8 +60,8 @@ public class KafkaDisabledTest extends AiJarSmokeTest {
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     assertEquals(0, testing.mockedIngestion.getCountForType("EventData"));
 
-    assertEquals("GET /sendMessage", rd.getName());
-    assertEquals("200", rd.getResponseCode());
+    assertThat(rd.getName()).isEqualTo("GET /sendMessage");
+    assertThat(rd.getResponseCode()).isEqualTo("200");
     assertTrue(rd.getProperties().isEmpty());
     assertTrue(rd.getSuccess());
 
@@ -71,8 +71,8 @@ public class KafkaDisabledTest extends AiJarSmokeTest {
     RemoteDependencyData rdd =
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-    assertEquals("GET /", rdd.getName());
-    assertEquals("https://www.bing.com", rdd.getData());
+    assertThat(rdd.getName()).isEqualTo("GET /");
+    assertThat(rdd.getData()).isEqualTo("https://www.bing.com");
     assertThat(rdd.getProperties()).isEmpty();
     assertThat(rdd.getSuccess()).isTrue();
 

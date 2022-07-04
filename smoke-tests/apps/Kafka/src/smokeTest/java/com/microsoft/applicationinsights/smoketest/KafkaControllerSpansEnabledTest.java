@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
@@ -77,34 +76,34 @@ public class KafkaControllerSpansEnabledTest extends AiJarSmokeTest {
     RemoteDependencyData rdd3 =
         (RemoteDependencyData) ((Data<?>) rddEnvelope3.getData()).getBaseData();
 
-    assertEquals("GET /sendMessage", rd1.getName());
+    assertThat(rd1.getName()).isEqualTo("GET /sendMessage");
     assertThat(rd1.getProperties()).isEmpty();
     assertThat(rd1.getSuccess()).isTrue();
 
-    assertEquals("HelloController.sendMessage", rdd1.getName());
-    assertNull(rdd1.getData());
-    assertEquals("InProc", rdd1.getType());
-    assertNull(rdd1.getTarget());
+    assertThat(rdd1.getName()).isEqualTo("HelloController.sendMessage");
+    assertThat(rdd1.getData()).isNull();
+    assertThat(rdd1.getType()).isEqualTo("InProc");
+    assertThat(rdd1.getTarget()).isNull();
     assertTrue(rdd1.getProperties().isEmpty());
     assertTrue(rdd1.getSuccess());
 
-    assertEquals("mytopic send", rdd2.getName());
-    assertNull(rdd2.getData());
-    assertEquals("Queue Message | kafka", rdd2.getType());
-    assertEquals("mytopic", rdd2.getTarget());
+    assertThat(rdd2.getName()).isEqualTo("mytopic send");
+    assertThat(rdd2.getData()).isNull();
+    assertThat(rdd2.getType()).isEqualTo("Queue Message | kafka");
+    assertThat(rdd2.getTarget()).isEqualTo("mytopic");
     assertTrue(rdd2.getProperties().isEmpty());
     assertTrue(rdd2.getSuccess());
 
-    assertEquals("mytopic process", rd2.getName());
-    assertEquals("mytopic", rd2.getSource());
+    assertThat(rd2.getName()).isEqualTo("mytopic process");
+    assertThat(rd2.getSource()).isEqualTo("mytopic");
     assertTrue(rd2.getProperties().isEmpty());
     assertTrue(rd2.getSuccess());
     assertTrue(rd2.getMeasurements().containsKey("timeSinceEnqueued"));
 
-    assertEquals("GET /", rdd3.getName());
-    assertEquals("https://www.bing.com", rdd3.getData());
-    assertEquals("Http", rdd3.getType());
-    assertEquals("www.bing.com", rdd3.getTarget());
+    assertThat(rdd3.getName()).isEqualTo("GET /");
+    assertThat(rdd3.getData()).isEqualTo("https://www.bing.com");
+    assertThat(rdd3.getType()).isEqualTo("Http");
+    assertThat(rdd3.getTarget()).isEqualTo("www.bing.com");
     assertTrue(rdd3.getProperties().isEmpty());
     assertTrue(rdd3.getSuccess());
 

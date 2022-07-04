@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -42,8 +41,8 @@ public class OpenTelemetryApiSupportTest extends AiWarSmokeTest {
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rd.getSource()).isNull();
     assertThat(telemetry.rd.getProperties()).hasSize(2);
-    assertEquals("myvalue1", telemetry.rd.getProperties().get("myattr1"));
-    assertEquals("myvalue2", telemetry.rd.getProperties().get("myattr2"));
+    assertThat(telemetry.rd.getProperties().get("myattr1")).isEqualTo("myvalue1");
+    assertThat(telemetry.rd.getProperties().get("myattr2")).isEqualTo("myvalue2");
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
     // ideally want the properties below on rd, but can't get SERVER span yet
@@ -52,11 +51,12 @@ public class OpenTelemetryApiSupportTest extends AiWarSmokeTest {
 
     // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are
     // from the agent
-    assertEquals("00000000-0000-0000-0000-0FEEDDADBEEF", telemetry.rdEnvelope.getIKey());
-    assertEquals("testrolename", telemetry.rdEnvelope.getTags().get("ai.cloud.role"));
-    assertEquals("testroleinstance", telemetry.rdEnvelope.getTags().get("ai.cloud.roleInstance"));
+    assertThat(telemetry.rdEnvelope.getIKey()).isEqualTo("00000000-0000-0000-0000-0FEEDDADBEEF");
+    assertThat(telemetry.rdEnvelope.getTags().get("ai.cloud.role")).isEqualTo("testrolename");
+    assertThat(telemetry.rdEnvelope.getTags().get("ai.cloud.roleInstance"))
+        .isEqualTo("testroleinstance");
     assertTrue(telemetry.rdEnvelope.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
-    assertEquals("myuser", telemetry.rdEnvelope.getTags().get("ai.user.id"));
+    assertThat(telemetry.rdEnvelope.getTags().get("ai.user.id")).isEqualTo("myuser");
   }
 
   @Test
@@ -79,9 +79,10 @@ public class OpenTelemetryApiSupportTest extends AiWarSmokeTest {
 
     // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are
     // from the agent
-    assertEquals("12341234-1234-1234-1234-123412341234", telemetry.rdEnvelope.getIKey());
-    assertEquals("role-name-here", telemetry.rdEnvelope.getTags().get("ai.cloud.role"));
-    assertEquals("role-instance-here", telemetry.rdEnvelope.getTags().get("ai.cloud.roleInstance"));
+    assertThat(telemetry.rdEnvelope.getIKey()).isEqualTo("12341234-1234-1234-1234-123412341234");
+    assertThat(telemetry.rdEnvelope.getTags().get("ai.cloud.role")).isEqualTo("role-name-here");
+    assertThat(telemetry.rdEnvelope.getTags().get("ai.cloud.roleInstance"))
+        .isEqualTo("role-instance-here");
     assertEquals(
         "application-version-here", telemetry.rdEnvelope.getTags().get("ai.application.ver"));
     assertTrue(telemetry.rdEnvelope.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
@@ -105,10 +106,10 @@ public class OpenTelemetryApiSupportTest extends AiWarSmokeTest {
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("TestController.underAnnotation");
-    assertNull(telemetry.rdd1.getData());
+    assertThat(telemetry.rdd1.getData()).isNull();
     assertThat(telemetry.rdd1.getType()).isEqualTo("InProc");
     assertThat(telemetry.rdd1.getTarget()).isNull();
-    assertEquals("a message", telemetry.rdd1.getProperties().get("message"));
+    assertThat(telemetry.rdd1.getProperties().get("message")).isEqualTo("a message");
     assertThat(telemetry.rdd1.getProperties()).hasSize(1);
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 

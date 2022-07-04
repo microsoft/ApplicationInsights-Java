@@ -57,7 +57,7 @@ public class JdbcTest extends AiWarSmokeTest {
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT testdb.abc");
     assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where xyz = ?");
     assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
-    assertEquals("testdb", telemetry.rdd1.getTarget());
+    assertThat(telemetry.rdd1.getTarget()).isEqualTo("testdb");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
@@ -76,7 +76,7 @@ public class JdbcTest extends AiWarSmokeTest {
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT testdb.abc");
     assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc");
     assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
-    assertEquals("testdb", telemetry.rdd1.getTarget());
+    assertThat(telemetry.rdd1.getTarget()).isEqualTo("testdb");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
@@ -103,7 +103,7 @@ public class JdbcTest extends AiWarSmokeTest {
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT testdb.abc");
     assertEquals(query, telemetry.rdd1.getData());
     assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
-    assertEquals("testdb", telemetry.rdd1.getTarget());
+    assertThat(telemetry.rdd1.getTarget()).isEqualTo("testdb");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
@@ -122,8 +122,8 @@ public class JdbcTest extends AiWarSmokeTest {
     assertThat(telemetry.rdd1.getName()).isEqualTo("INSERT testdb.abc");
     assertThat(telemetry.rdd1.getData()).isEqualTo("insert into abc (xyz) values (?)");
     assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
-    assertEquals("testdb", telemetry.rdd1.getTarget());
-    // assertEquals(" [Batch of 3]", telemetry.rdd1.getProperties().get("Args"));
+    assertThat(telemetry.rdd1.getTarget()).isEqualTo("testdb");
+    // assertThat(telemetry.rdd1.getProperties().get("Args")).isEqualTo(" [Batch of 3]");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
@@ -147,9 +147,9 @@ public class JdbcTest extends AiWarSmokeTest {
             + " insert into abc (xyz) values ('v')",
         telemetry.rdd1.getData());
     assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
-    assertEquals("testdb", telemetry.rdd1.getTarget());
+    assertThat(telemetry.rdd1.getTarget()).isEqualTo("testdb");
     assertThat(telemetry.rdd1.getProperties()).hasSize(1);
-    assertEquals(" [Batch]", telemetry.rdd1.getProperties().get("Args"));
+    assertThat(telemetry.rdd1.getProperties().get("Args")).isEqualTo(" [Batch]");
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
     AiSmokeTest.assertParentChild(

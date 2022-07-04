@@ -21,7 +21,6 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -29,7 +28,8 @@ import org.junit.jupiter.api.Test;
 public class VersionTest {
   @Test
   public void testArtifactName() {
-    assertEquals("azure-monitor-opentelemetry-exporter", VersionGenerator.getArtifactName());
+    assertThat(VersionGenerator.getArtifactName())
+        .isEqualTo("azure-monitor-opentelemetry-exporter");
   }
 
   @Test

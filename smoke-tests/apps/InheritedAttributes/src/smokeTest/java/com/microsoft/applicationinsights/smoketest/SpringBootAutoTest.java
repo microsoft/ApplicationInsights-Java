@@ -48,18 +48,18 @@ public class SpringBootAutoTest extends AiJarSmokeTest {
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     MessageData md = (MessageData) ((Data<?>) mdEnvelope.getData()).getBaseData();
 
-    assertEquals("GET /test", rd.getName());
-    assertEquals("200", rd.getResponseCode());
-    assertEquals("z", rd.getProperties().get("tenant"));
+    assertThat(rd.getName()).isEqualTo("GET /test");
+    assertThat(rd.getResponseCode()).isEqualTo("200");
+    assertThat(rd.getProperties().get("tenant")).isEqualTo("z");
     assertThat(rd.getProperties()).hasSize(1);
     assertTrue(rd.getSuccess());
 
-    assertEquals("hello", md.getMessage());
+    assertThat(md.getMessage()).isEqualTo("hello");
     assertEquals(SeverityLevel.INFORMATION, md.getSeverityLevel());
-    assertEquals("Logger", md.getProperties().get("SourceType"));
-    assertEquals("smoketestapp", md.getProperties().get("LoggerName"));
+    assertThat(md.getProperties().get("SourceType")).isEqualTo("Logger");
+    assertThat(md.getProperties().get("LoggerName")).isEqualTo("smoketestapp");
     assertThat(md.getProperties().get("ThreadName")).isNotNull();
-    assertEquals("z", md.getProperties().get("tenant"));
+    assertThat(md.getProperties().get("tenant")).isEqualTo("z");
     assertThat(md.getProperties()).hasSize(4);
   }
 }

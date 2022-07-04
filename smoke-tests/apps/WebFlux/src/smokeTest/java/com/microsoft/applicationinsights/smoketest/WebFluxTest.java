@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
@@ -50,7 +49,7 @@ public class WebFluxTest extends AiJarSmokeTest {
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /exception");
     assertThat(telemetry.rd.getUrl()).matches("http://localhost:[0-9]+/exception");
-    assertEquals("500", telemetry.rd.getResponseCode());
+    assertThat(telemetry.rd.getResponseCode()).isEqualTo("500");
     assertFalse(telemetry.rd.getSuccess());
     assertThat(telemetry.rd.getSource()).isNull();
     assertThat(telemetry.rd.getProperties()).isEmpty();
@@ -64,7 +63,7 @@ public class WebFluxTest extends AiJarSmokeTest {
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /futureException");
     assertThat(telemetry.rd.getUrl()).matches("http://localhost:[0-9]+/futureException");
-    assertEquals("500", telemetry.rd.getResponseCode());
+    assertThat(telemetry.rd.getResponseCode()).isEqualTo("500");
     assertFalse(telemetry.rd.getSuccess());
     assertThat(telemetry.rd.getSource()).isNull();
     assertThat(telemetry.rd.getProperties()).isEmpty();

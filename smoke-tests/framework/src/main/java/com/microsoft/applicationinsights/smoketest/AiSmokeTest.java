@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.base.Stopwatch;
@@ -555,7 +554,7 @@ public class AiSmokeTest
 
     String operationParentId = parentEnvelope.getTags().get("ai.operation.parentId");
     if (topLevelParent) {
-      assertNull(operationParentId);
+      assertThat(operationParentId).isNull();
     } else {
       assertThat(operationParentId).isNotNull();
     }

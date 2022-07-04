@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Test;
 
 @UseAgent
@@ -33,7 +31,8 @@ public class HttpHeadersTest extends AiWarSmokeTest {
   public void testServerHeaders() throws Exception {
     Telemetry telemetry = getTelemetry(0);
 
-    assertEquals("testing123", telemetry.rd.getProperties().get("http.response.header.abc"));
+    assertThat(telemetry.rd.getProperties().get("http.response.header.abc"))
+        .isEqualTo("testing123");
     assertThat(telemetry.rd.getProperties().get("http.request.header.host")).isNotNull();
     assertThat(telemetry.rd.getProperties()).hasSize(2);
     assertThat(telemetry.rd.getSuccess()).isTrue();
@@ -48,7 +47,8 @@ public class HttpHeadersTest extends AiWarSmokeTest {
     assertThat(telemetry.rd.getProperties()).hasSize(1);
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("testing123", telemetry.rdd1.getProperties().get("http.request.header.abc"));
+    assertThat(telemetry.rdd1.getProperties().get("http.request.header.abc"))
+        .isEqualTo("testing123");
     assertThat(telemetry.rdd1.getProperties().get("http.response.header.date")).isNotNull();
     assertThat(telemetry.rdd1.getProperties()).hasSize(2);
     assertThat(telemetry.rdd1.getSuccess()).isTrue();

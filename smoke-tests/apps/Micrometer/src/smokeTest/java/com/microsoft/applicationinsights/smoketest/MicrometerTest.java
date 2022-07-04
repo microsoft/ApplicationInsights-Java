@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
@@ -69,12 +68,12 @@ public class MicrometerTest extends AiJarSmokeTest {
     DataPoint point = points.get(0);
 
     assertEquals(1, point.getValue(), 0); // (this was verified above in Predicate also)
-    assertEquals("test_counter", point.getName());
-    assertNull("getCount was non-null", point.getCount());
-    assertNull("getMin was non-null", point.getMin());
-    assertNull("getMax was non-null", point.getMax());
-    assertNull("getStdDev was non-null", point.getStdDev());
+    assertThat(point.getName()).isEqualTo("test_counter");
+    assertThat("getCount was non-null", point.getCount()).isNull();
+    assertThat("getMin was non-null", point.getMin()).isNull();
+    assertThat("getMax was non-null", point.getMax()).isNull();
+    assertThat("getStdDev was non-null", point.getStdDev()).isNull();
     assertThat(data.getProperties()).hasSize(1);
-    assertEquals("value1", data.getProperties().get("tag1"));
+    assertThat(data.getProperties().get("tag1")).isEqualTo("value1");
   }
 }

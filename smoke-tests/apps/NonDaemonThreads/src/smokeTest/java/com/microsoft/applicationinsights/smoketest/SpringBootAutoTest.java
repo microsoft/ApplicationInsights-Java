@@ -55,17 +55,17 @@ public class SpringBootAutoTest extends AiJarSmokeTest {
     assertTrue(rd.getProperties().isEmpty());
     assertTrue(rd.getSuccess());
 
-    assertEquals("GET /search", rdd.getName());
-    assertEquals("Http", rdd.getType());
+    assertThat(rdd.getName()).isEqualTo("GET /search");
+    assertThat(rdd.getType()).isEqualTo("Http");
     assertThat(rdd.getTarget()).isEqualTo("www.bing.com");
-    assertEquals("https://www.bing.com/search?q=test", rdd.getData());
+    assertThat(rdd.getData()).isEqualTo("https://www.bing.com/search?q=test");
     assertThat(rdd.getProperties()).isEmpty();
     assertThat(rdd.getSuccess()).isTrue();
 
-    assertEquals("done", md.getMessage());
+    assertThat(md.getMessage()).isEqualTo("done");
     assertEquals(SeverityLevel.INFORMATION, md.getSeverityLevel());
-    assertEquals("Logger", md.getProperties().get("SourceType"));
-    assertEquals("smoketestapp", md.getProperties().get("LoggerName"));
+    assertThat(md.getProperties().get("SourceType")).isEqualTo("Logger");
+    assertThat(md.getProperties().get("LoggerName")).isEqualTo("smoketestapp");
     assertThat(md.getProperties().get("ThreadName")).isNotNull();
     assertThat(md.getProperties()).hasSize(3);
   }

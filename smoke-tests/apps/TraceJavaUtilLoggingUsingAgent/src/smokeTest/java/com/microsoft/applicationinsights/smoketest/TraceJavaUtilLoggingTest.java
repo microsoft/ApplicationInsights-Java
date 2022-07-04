@@ -56,17 +56,17 @@ public class TraceJavaUtilLoggingTest extends AiWarSmokeTest {
     MessageData md1 = logs.get(0);
     MessageData md2 = logs.get(1);
 
-    assertEquals("This is jul warning.", md1.getMessage());
+    assertThat(md1.getMessage()).isEqualTo("This is jul warning.");
     assertEquals(SeverityLevel.WARNING, md1.getSeverityLevel());
-    assertEquals("Logger", md1.getProperties().get("SourceType"));
-    assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
+    assertThat(md1.getProperties().get("SourceType")).isEqualTo("Logger");
+    assertThat(md1.getProperties().get("LoggerName")).isEqualTo("smoketestapp");
     assertThat(md1.getProperties().get("ThreadName")).isNotNull();
     assertThat(md1.getProperties()).hasSize(3);
 
-    assertEquals("This is jul severe.", md2.getMessage());
+    assertThat(md2.getMessage()).isEqualTo("This is jul severe.");
     assertEquals(SeverityLevel.ERROR, md2.getSeverityLevel());
-    assertEquals("Logger", md2.getProperties().get("SourceType"));
-    assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
+    assertThat(md2.getProperties().get("SourceType")).isEqualTo("Logger");
+    assertThat(md1.getProperties().get("LoggerName")).isEqualTo("smoketestapp");
     assertThat(md2.getProperties().get("ThreadName")).isNotNull();
     assertThat(md2.getProperties()).hasSize(3);
 
@@ -93,11 +93,11 @@ public class TraceJavaUtilLoggingTest extends AiWarSmokeTest {
 
     ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();
 
-    assertEquals("Fake Exception", ed.getExceptions().get(0).getMessage());
+    assertThat(ed.getExceptions().get(0).getMessage()).isEqualTo("Fake Exception");
     assertEquals(SeverityLevel.ERROR, ed.getSeverityLevel());
-    assertEquals("This is an exception!", ed.getProperties().get("Logger Message"));
-    assertEquals("Logger", ed.getProperties().get("SourceType"));
-    assertEquals("smoketestapp", ed.getProperties().get("LoggerName"));
+    assertThat(ed.getProperties().get("Logger Message")).isEqualTo("This is an exception!");
+    assertThat(ed.getProperties().get("SourceType")).isEqualTo("Logger");
+    assertThat(ed.getProperties().get("LoggerName")).isEqualTo("smoketestapp");
     assertThat(ed.getProperties().get("ThreadName")).isNotNull();
     assertThat(ed.getProperties()).hasSize(4);
 

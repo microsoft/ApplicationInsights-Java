@@ -39,13 +39,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-public class HeartBeatTest {
+class HeartBeatTest {
 
   @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/index.jsp")
-  public void testHeartBeat() throws Exception {
+  void testHeartBeat() throws Exception {
     List<Envelope> metrics =
         testing.mockedIngestion.waitForItems(
             testing.getMetricPredicate("HeartbeatState"), 2, 30, TimeUnit.SECONDS);

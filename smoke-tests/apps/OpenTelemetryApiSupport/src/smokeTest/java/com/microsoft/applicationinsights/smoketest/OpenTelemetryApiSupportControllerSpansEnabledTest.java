@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -47,12 +46,12 @@ public class OpenTelemetryApiSupportControllerSpansEnabledTest extends AiWarSmok
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("myspanname");
-    assertNull(telemetry.rdd1.getData());
+    assertThat(telemetry.rdd1.getData()).isNull();
     assertThat(telemetry.rdd1.getType()).isEqualTo("InProc");
     assertThat(telemetry.rdd1.getTarget()).isNull();
     assertThat(telemetry.rdd1.getProperties()).hasSize(2);
-    assertEquals("myvalue1", telemetry.rdd1.getProperties().get("myattr1"));
-    assertEquals("myvalue2", telemetry.rdd1.getProperties().get("myattr2"));
+    assertThat(telemetry.rdd1.getProperties().get("myattr1")).isEqualTo("myvalue1");
+    assertThat(telemetry.rdd1.getProperties().get("myattr2")).isEqualTo("myvalue2");
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
     // ideally want the properties below on rd, but can't get SERVER span yet
@@ -61,12 +60,13 @@ public class OpenTelemetryApiSupportControllerSpansEnabledTest extends AiWarSmok
 
     // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are
     // from the agent
-    assertEquals("00000000-0000-0000-0000-0FEEDDADBEEF", telemetry.rddEnvelope1.getIKey());
-    assertEquals("testrolename", telemetry.rddEnvelope1.getTags().get("ai.cloud.role"));
-    assertEquals("testroleinstance", telemetry.rddEnvelope1.getTags().get("ai.cloud.roleInstance"));
+    assertThat(telemetry.rddEnvelope1.getIKey()).isEqualTo("00000000-0000-0000-0000-0FEEDDADBEEF");
+    assertThat(telemetry.rddEnvelope1.getTags().get("ai.cloud.role")).isEqualTo("testrolename");
+    assertThat(telemetry.rddEnvelope1.getTags().get("ai.cloud.roleInstance"))
+        .isEqualTo("testroleinstance");
     assertTrue(
         telemetry.rddEnvelope1.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
-    assertEquals("myuser", telemetry.rddEnvelope1.getTags().get("ai.user.id"));
+    assertThat(telemetry.rddEnvelope1.getTags().get("ai.user.id")).isEqualTo("myuser");
 
     AiSmokeTest.assertParentChild(
         telemetry.rd,
@@ -94,7 +94,7 @@ public class OpenTelemetryApiSupportControllerSpansEnabledTest extends AiWarSmok
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("TestController.testOverridingIkeyEtc");
-    assertNull(telemetry.rdd1.getData());
+    assertThat(telemetry.rdd1.getData()).isNull();
     assertThat(telemetry.rdd1.getType()).isEqualTo("InProc");
     assertThat(telemetry.rdd1.getTarget()).isNull();
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
@@ -105,8 +105,8 @@ public class OpenTelemetryApiSupportControllerSpansEnabledTest extends AiWarSmok
 
     // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are
     // from the agent
-    assertEquals("12341234-1234-1234-1234-123412341234", telemetry.rddEnvelope1.getIKey());
-    assertEquals("role-name-here", telemetry.rddEnvelope1.getTags().get("ai.cloud.role"));
+    assertThat(telemetry.rddEnvelope1.getIKey()).isEqualTo("12341234-1234-1234-1234-123412341234");
+    assertThat(telemetry.rddEnvelope1.getTags().get("ai.cloud.role")).isEqualTo("role-name-here");
     assertEquals(
         "role-instance-here", telemetry.rddEnvelope1.getTags().get("ai.cloud.roleInstance"));
     assertEquals(
@@ -149,17 +149,17 @@ public class OpenTelemetryApiSupportControllerSpansEnabledTest extends AiWarSmok
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("TestController.testAnnotations");
-    assertNull(telemetry.rdd1.getData());
+    assertThat(telemetry.rdd1.getData()).isNull();
     assertThat(telemetry.rdd1.getType()).isEqualTo("InProc");
     assertThat(telemetry.rdd1.getTarget()).isNull();
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertEquals("TestController.underAnnotation", telemetry.rdd2.getName());
-    assertNull(telemetry.rdd2.getData());
-    assertEquals("InProc", telemetry.rdd2.getType());
-    assertNull(telemetry.rdd2.getTarget());
-    assertEquals("a message", telemetry.rdd2.getProperties().get("message"));
+    assertThat(telemetry.rdd2.getName()).isEqualTo("TestController.underAnnotation");
+    assertThat(telemetry.rdd2.getData()).isNull();
+    assertThat(telemetry.rdd2.getType()).isEqualTo("InProc");
+    assertThat(telemetry.rdd2.getTarget()).isNull();
+    assertThat(telemetry.rdd2.getProperties().get("message")).isEqualTo("a message");
     assertThat(telemetry.rdd2.getProperties()).hasSize(1);
     assertThat(telemetry.rdd2.getSuccess()).isTrue();
 

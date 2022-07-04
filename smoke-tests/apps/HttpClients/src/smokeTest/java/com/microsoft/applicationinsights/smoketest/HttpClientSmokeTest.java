@@ -21,14 +21,24 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-public class HttpClientSmokeTest extends AiWarSmokeTest {
+public class HttpClientSmokeTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/apacheHttpClient4")
@@ -84,39 +94,39 @@ public class HttpClientSmokeTest extends AiWarSmokeTest {
   }
 
   private static void verify(String successUrlWithQueryString) throws Exception {
-    Telemetry telemetry = getTelemetry(3);
+    Telemetry telemetry = testing.getTelemetry(3);
 
     assertThat(telemetry.rd.getProperties()).isEmpty();
     assertThat(telemetry.rd.getSuccess()).isTrue();
     // TODO (trask) add this check in all smoke tests?
-    assertNull(telemetry.rdEnvelope.getSampleRate());
+    assertThat(telemetry.rdEnvelope.getSampleRate()).isNull();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("GET /200");
     assertEquals(successUrlWithQueryString, telemetry.rdd1.getData());
     assertThat(telemetry.rdd1.getType()).isEqualTo("Http");
-    assertEquals("mock.codes", telemetry.rdd1.getTarget());
-    assertEquals("200", telemetry.rdd1.getResultCode());
+    assertThat(telemetry.rdd1.getTarget()).isEqualTo("mock.codes");
+    assertThat(telemetry.rdd1.getResultCode()).isEqualTo("200");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
-    assertNull(telemetry.rddEnvelope1.getSampleRate());
+    assertThat(telemetry.rddEnvelope1.getSampleRate()).isNull();
 
-    assertEquals("GET /404", telemetry.rdd2.getName());
-    assertEquals("https://mock.codes/404", telemetry.rdd2.getData());
-    assertEquals("Http", telemetry.rdd2.getType());
-    assertEquals("mock.codes", telemetry.rdd2.getTarget());
-    assertEquals("404", telemetry.rdd2.getResultCode());
+    assertThat(telemetry.rdd2.getName()).isEqualTo("GET /404");
+    assertThat(telemetry.rdd2.getData()).isEqualTo("https://mock.codes/404");
+    assertThat(telemetry.rdd2.getType()).isEqualTo("Http");
+    assertThat(telemetry.rdd2.getTarget()).isEqualTo("mock.codes");
+    assertThat(telemetry.rdd2.getResultCode()).isEqualTo("404");
     assertThat(telemetry.rdd2.getProperties()).isEmpty();
     assertFalse(telemetry.rdd2.getSuccess());
-    assertNull(telemetry.rddEnvelope2.getSampleRate());
+    assertThat(telemetry.rddEnvelope2.getSampleRate()).isNull();
 
-    assertEquals("GET /500", telemetry.rdd3.getName());
-    assertEquals("https://mock.codes/500", telemetry.rdd3.getData());
-    assertEquals("Http", telemetry.rdd3.getType());
-    assertEquals("mock.codes", telemetry.rdd3.getTarget());
-    assertEquals("500", telemetry.rdd3.getResultCode());
+    assertThat(telemetry.rdd3.getName()).isEqualTo("GET /500");
+    assertThat(telemetry.rdd3.getData()).isEqualTo("https://mock.codes/500");
+    assertThat(telemetry.rdd3.getType()).isEqualTo("Http");
+    assertThat(telemetry.rdd3.getTarget()).isEqualTo("mock.codes");
+    assertThat(telemetry.rdd3.getResultCode()).isEqualTo("500");
     assertThat(telemetry.rdd3.getProperties()).isEmpty();
     assertFalse(telemetry.rdd3.getSuccess());
-    assertNull(telemetry.rddEnvelope3.getSampleRate());
+    assertThat(telemetry.rddEnvelope3.getSampleRate()).isNull();
 
     AiSmokeTest.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /HttpClients/*");
@@ -125,4 +135,25 @@ public class HttpClientSmokeTest extends AiWarSmokeTest {
     AiSmokeTest.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope3, "GET /HttpClients/*");
   }
+
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends HttpClientSmokeTest {}
+
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends HttpClientSmokeTest {}
+
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends HttpClientSmokeTest {}
+
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends HttpClientSmokeTest {}
+
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends HttpClientSmokeTest {}
+
+  @Environment(WILDFLY_13_JAVA_8)
+  static class Wildfly13Java8Test extends HttpClientSmokeTest {}
+
+  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
+  static class Wildfly13Java8OpenJ9Test extends HttpClientSmokeTest {}
 }

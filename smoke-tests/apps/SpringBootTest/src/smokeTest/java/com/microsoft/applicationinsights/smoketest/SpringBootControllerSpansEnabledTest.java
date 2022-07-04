@@ -25,7 +25,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
@@ -143,15 +142,15 @@ public class SpringBootControllerSpansEnabledTest extends AiWarSmokeTest {
     RemoteDependencyData rdd1 =
         (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
 
-    assertEquals("GET /SpringBootTest/throwsException", rd.getName());
-    assertEquals("500", rd.getResponseCode());
+    assertThat(rd.getName()).isEqualTo("GET /SpringBootTest/throwsException");
+    assertThat(rd.getResponseCode()).isEqualTo("500");
     assertTrue(rd.getProperties().isEmpty());
     assertFalse(rd.getSuccess());
 
-    assertEquals("TestController.resultCodeTest", rdd1.getName());
-    assertNull(rdd1.getData());
-    assertEquals("InProc", rdd1.getType());
-    assertNull(rdd1.getTarget());
+    assertThat(rdd1.getName()).isEqualTo("TestController.resultCodeTest");
+    assertThat(rdd1.getData()).isNull();
+    assertThat(rdd1.getType()).isEqualTo("InProc");
+    assertThat(rdd1.getTarget()).isNull();
     assertTrue(rdd1.getProperties().isEmpty());
     assertFalse(rdd1.getSuccess());
 
@@ -184,26 +183,26 @@ public class SpringBootControllerSpansEnabledTest extends AiWarSmokeTest {
     RemoteDependencyData rdd3 =
         (RemoteDependencyData) ((Data<?>) rddEnvelope3.getData()).getBaseData();
 
-    assertEquals("GET /SpringBootTest/asyncDependencyCall", rd.getName());
-    assertEquals("200", rd.getResponseCode());
+    assertThat(rd.getName()).isEqualTo("GET /SpringBootTest/asyncDependencyCall");
+    assertThat(rd.getResponseCode()).isEqualTo("200");
     assertTrue(rd.getProperties().isEmpty());
     assertTrue(rd.getSuccess());
 
-    assertEquals("TestController.asyncDependencyCall", rdd1.getName());
-    assertNull(rdd1.getData());
-    assertEquals("InProc", rdd1.getType());
-    assertNull(rdd1.getTarget());
+    assertThat(rdd1.getName()).isEqualTo("TestController.asyncDependencyCall");
+    assertThat(rdd1.getData()).isNull();
+    assertThat(rdd1.getType()).isEqualTo("InProc");
+    assertThat(rdd1.getTarget()).isNull();
     assertTrue(rdd1.getProperties().isEmpty());
     assertTrue(rdd1.getSuccess());
 
-    assertEquals("GET /", rdd2.getName());
-    assertEquals("https://www.bing.com", rdd2.getData());
-    assertEquals("www.bing.com", rdd2.getTarget());
+    assertThat(rdd2.getName()).isEqualTo("GET /");
+    assertThat(rdd2.getData()).isEqualTo("https://www.bing.com");
+    assertThat(rdd2.getTarget()).isEqualTo("www.bing.com");
     assertTrue(rdd2.getProperties().isEmpty());
     assertTrue(rdd2.getSuccess());
 
     // TODO (trask): why is spring-webmvc instrumentation capturing this twice?
-    assertEquals("TestController.asyncDependencyCall", rdd3.getName());
+    assertThat(rdd3.getName()).isEqualTo("TestController.asyncDependencyCall");
     assertTrue(rdd3.getProperties().isEmpty());
     assertTrue(rdd3.getSuccess());
 

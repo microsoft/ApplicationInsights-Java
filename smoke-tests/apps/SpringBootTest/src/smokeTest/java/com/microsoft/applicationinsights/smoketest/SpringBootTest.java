@@ -137,8 +137,8 @@ public class SpringBootTest extends AiWarSmokeTest {
 
     RequestData rd = getTelemetryDataForType(0, "RequestData");
 
-    assertEquals("GET /SpringBootTest/throwsException", rd.getName());
-    assertEquals("500", rd.getResponseCode());
+    assertThat(rd.getName()).isEqualTo("GET /SpringBootTest/throwsException");
+    assertThat(rd.getResponseCode()).isEqualTo("500");
     assertTrue(rd.getProperties().isEmpty());
     assertFalse(rd.getSuccess());
 
@@ -163,14 +163,14 @@ public class SpringBootTest extends AiWarSmokeTest {
     RemoteDependencyData rdd1 =
         (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
 
-    assertEquals("GET /SpringBootTest/asyncDependencyCall", rd.getName());
-    assertEquals("200", rd.getResponseCode());
+    assertThat(rd.getName()).isEqualTo("GET /SpringBootTest/asyncDependencyCall");
+    assertThat(rd.getResponseCode()).isEqualTo("200");
     assertTrue(rd.getProperties().isEmpty());
     assertTrue(rd.getSuccess());
 
-    assertEquals("GET /", rdd1.getName());
-    assertEquals("https://www.bing.com", rdd1.getData());
-    assertEquals("www.bing.com", rdd1.getTarget());
+    assertThat(rdd1.getName()).isEqualTo("GET /");
+    assertThat(rdd1.getData()).isEqualTo("https://www.bing.com");
+    assertThat(rdd1.getTarget()).isEqualTo("www.bing.com");
     assertTrue(rdd1.getProperties().isEmpty());
     assertTrue(rdd1.getSuccess());
 

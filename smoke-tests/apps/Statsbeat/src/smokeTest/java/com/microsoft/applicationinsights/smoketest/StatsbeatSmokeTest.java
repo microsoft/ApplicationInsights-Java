@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
@@ -44,7 +42,7 @@ public class StatsbeatSmokeTest extends AiWarSmokeTest {
     assertCommon(data);
     assertThat(data.getProperties().get("feature")).isNotNull();
     assertThat(data.getProperties().get("type")).isNotNull();
-    assertEquals("0", data.getProperties().get("type"));
+    assertThat(data.getProperties().get("type")).isEqualTo("0");
     assertThat(data.getProperties()).hasSize(9);
 
     MetricData instrumentationData =
@@ -52,7 +50,7 @@ public class StatsbeatSmokeTest extends AiWarSmokeTest {
     assertCommon(instrumentationData);
     assertThat(instrumentationData.getProperties().get("feature")).isNotNull();
     assertThat(instrumentationData.getProperties().get("type")).isNotNull();
-    assertEquals("1", instrumentationData.getProperties().get("type"));
+    assertThat(instrumentationData.getProperties().get("type")).isEqualTo("1");
     assertThat(instrumentationData.getProperties()).hasSize(9);
 
     List<Envelope> attachMetrics =

@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
@@ -35,13 +34,14 @@ public class LegacySdkWebInteropTest extends AiWarSmokeTest {
     Telemetry telemetry = getTelemetry(0);
 
     assertThat(telemetry.rd.getName()).isEqualTo("myspanname");
-    assertEquals("mysource", telemetry.rd.getSource());
-    assertEquals("myuser", telemetry.rdEnvelope.getTags().get("ai.user.id"));
-    assertEquals("mysessionid", telemetry.rdEnvelope.getTags().get("ai.session.id"));
-    assertEquals("mydeviceos", telemetry.rdEnvelope.getTags().get("ai.device.os"));
-    assertEquals("mydeviceosversion", telemetry.rdEnvelope.getTags().get("ai.device.osVersion"));
-    assertEquals("myvalue1", telemetry.rd.getProperties().get("myattr1"));
-    assertEquals("myvalue2", telemetry.rd.getProperties().get("myattr2"));
+    assertThat(telemetry.rd.getSource()).isEqualTo("mysource");
+    assertThat(telemetry.rdEnvelope.getTags().get("ai.user.id")).isEqualTo("myuser");
+    assertThat(telemetry.rdEnvelope.getTags().get("ai.session.id")).isEqualTo("mysessionid");
+    assertThat(telemetry.rdEnvelope.getTags().get("ai.device.os")).isEqualTo("mydeviceos");
+    assertThat(telemetry.rdEnvelope.getTags().get("ai.device.osVersion"))
+        .isEqualTo("mydeviceosversion");
+    assertThat(telemetry.rd.getProperties().get("myattr1")).isEqualTo("myvalue1");
+    assertThat(telemetry.rd.getProperties().get("myattr2")).isEqualTo("myvalue2");
     assertThat(telemetry.rd.getProperties()).hasSize(2);
 
     assertFalse(telemetry.rd.getSuccess());

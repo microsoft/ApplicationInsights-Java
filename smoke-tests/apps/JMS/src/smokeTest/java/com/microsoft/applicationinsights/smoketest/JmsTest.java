@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
@@ -58,26 +57,26 @@ public class JmsTest extends AiJarSmokeTest {
     RemoteDependencyData rdd2 =
         (RemoteDependencyData) ((Data<?>) rddEnvelope2.getData()).getBaseData();
 
-    assertEquals("GET /sendMessage", rd1.getName());
+    assertThat(rd1.getName()).isEqualTo("GET /sendMessage");
     assertThat(rd1.getProperties()).isEmpty();
     assertThat(rd1.getSuccess()).isTrue();
 
-    assertEquals("message send", rdd1.getName());
-    assertNull(rdd1.getData());
-    assertEquals("Queue Message | jms", rdd1.getType());
-    assertEquals("message", rdd1.getTarget());
+    assertThat(rdd1.getName()).isEqualTo("message send");
+    assertThat(rdd1.getData()).isNull();
+    assertThat(rdd1.getType()).isEqualTo("Queue Message | jms");
+    assertThat(rdd1.getTarget()).isEqualTo("message");
     assertTrue(rdd1.getProperties().isEmpty());
     assertTrue(rdd1.getSuccess());
 
-    assertEquals("message process", rd2.getName());
-    assertEquals("message", rd2.getSource());
+    assertThat(rd2.getName()).isEqualTo("message process");
+    assertThat(rd2.getSource()).isEqualTo("message");
     assertTrue(rd2.getProperties().isEmpty());
     assertTrue(rd2.getSuccess());
 
-    assertEquals("GET /", rdd2.getName());
-    assertEquals("https://www.bing.com", rdd2.getData());
-    assertEquals("Http", rdd2.getType());
-    assertEquals("www.bing.com", rdd2.getTarget());
+    assertThat(rdd2.getName()).isEqualTo("GET /");
+    assertThat(rdd2.getData()).isEqualTo("https://www.bing.com");
+    assertThat(rdd2.getType()).isEqualTo("Http");
+    assertThat(rdd2.getTarget()).isEqualTo("www.bing.com");
     assertTrue(rdd2.getProperties().isEmpty());
     assertTrue(rdd2.getSuccess());
 
