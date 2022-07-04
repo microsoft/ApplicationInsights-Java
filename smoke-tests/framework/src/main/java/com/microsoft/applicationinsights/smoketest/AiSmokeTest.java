@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -465,6 +466,11 @@ public class AiSmokeTest
   @SuppressWarnings("TypeParameterUnusedInFormals")
   protected static <T extends Domain> T getBaseData(Envelope envelope) {
     return ((Data<T>) envelope.getData()).getBaseData();
+  }
+
+  @SuppressWarnings("TypeParameterUnusedInFormals")
+  protected <T extends Domain> T getTelemetryDataForType(int index, String type) {
+    return mockedIngestion.getBaseDataForType(index, type);
   }
 
   protected Telemetry getTelemetry(int rddCount) throws Exception {

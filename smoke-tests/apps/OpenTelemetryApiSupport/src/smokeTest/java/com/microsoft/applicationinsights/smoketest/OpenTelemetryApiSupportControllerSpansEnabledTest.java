@@ -23,8 +23,6 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
@@ -88,11 +86,8 @@ class OpenTelemetryApiSupportControllerSpansEnabledTest {
 
     assertThat(telemetry.rd.getName())
         .isEqualTo("GET /OpenTelemetryApiSupport/test-overriding-ikey-etc");
-    assertTrue(
-        telemetry
-            .rd
-            .getUrl()
-            .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-overriding-ikey-etc"));
+    assertThat(telemetry.rd.getUrl())
+        .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-overriding-ikey-etc");
     assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rd.getSource()).isNull();
@@ -113,12 +108,12 @@ class OpenTelemetryApiSupportControllerSpansEnabledTest {
     // from the agent
     assertThat(telemetry.rddEnvelope1.getIKey()).isEqualTo("12341234-1234-1234-1234-123412341234");
     assertThat(telemetry.rddEnvelope1.getTags()).containsEntry("ai.cloud.role", "role-name-here");
-    assertEquals(
-        "role-instance-here", telemetry.rddEnvelope1.getTags().get("ai.cloud.roleInstance"));
-    assertEquals(
-        "application-version-here", telemetry.rddEnvelope1.getTags().get("ai.application.ver"));
-    assertTrue(
-        telemetry.rddEnvelope1.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
+    assertThat(telemetry.rddEnvelope1.getTags())
+        .containsEntry("ai.cloud.roleInstance", "role-instance-here");
+    assertThat(telemetry.rddEnvelope1.getTags())
+        .containsEntry("ai.application.ver", "application-version-here");
+    assertThat(telemetry.rddEnvelope1.getTags())
+        .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("java:3."));
 
     AiSmokeTest.assertParentChild(
         telemetry.rd,
@@ -143,11 +138,8 @@ class OpenTelemetryApiSupportControllerSpansEnabledTest {
     }
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /OpenTelemetryApiSupport/test-annotations");
-    assertTrue(
-        telemetry
-            .rd
-            .getUrl()
-            .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-annotations"));
+    assertThat(telemetry.rd.getUrl())
+        .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-annotations");
     assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rd.getSource()).isNull();

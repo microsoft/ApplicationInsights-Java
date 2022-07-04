@@ -9,7 +9,6 @@ dependencies {
 
   implementation("com.google.code.gson:gson")
   implementation("org.apache.httpcomponents:httpclient:4.5.13")
-  implementation("org.hamcrest:hamcrest-library:2.2")
 
   implementation("org.eclipse.jetty.aggregate:jetty-all:9.4.39.v20210325")
 
@@ -19,5 +18,5 @@ dependencies {
 
   implementation("ch.qos.logback:logback-classic")
 
-  testImplementation("org.assertj:assertj-core")
+  implementation("org.assertj:assertj-core")
 }

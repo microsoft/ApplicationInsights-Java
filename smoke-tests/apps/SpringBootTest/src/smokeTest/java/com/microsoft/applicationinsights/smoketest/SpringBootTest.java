@@ -29,7 +29,6 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TO
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.hasItem;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -38,13 +37,7 @@ import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
-import org.hamcrest.TypeSafeMatcher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -64,52 +57,16 @@ abstract class SpringBootTest {
 
     // TODO get event data envelope and verify value
     List<EventData> data = testing.mockedIngestion.getTelemetryDataByTypeInRequest("EventData");
-    assertThat(
-        data,
-        hasItem(
-            new TypeSafeMatcher<EventData>() {
-              final String name = "EventDataTest";
-              final Matcher<String> nameMatcher = Matchers.equalTo(name);
 
-              @Override
-              protected boolean matchesSafely(EventData item) {
-                return nameMatcher.matches(item.getName());
-              }
+    assertThat(data).anySatisfy(ed -> assertThat(ed.getName()).isEqualTo("EventDataTest"));
 
-              @Override
-              void describeTo(Description description) {
-                description.appendDescriptionOf(nameMatcher);
-              }
-            }));
-
-    assertThat(
-        data,
-        hasItem(
-            new TypeSafeMatcher<EventData>() {
-              final String expectedKey = "key";
-              final String expectedName = "EventDataPropertyTest";
-              final String expectedPropertyValue = "value";
-              final Double expectedMetricValue = 1d;
-              final Matcher<Map<? extends String, ? extends Double>> metricMatcher =
-                  Matchers.hasEntry(expectedKey, expectedMetricValue);
-              final Matcher<Map<? extends String, ? extends String>> propertyMatcher =
-                  Matchers.hasEntry(expectedKey, expectedPropertyValue);
-              final Matcher<String> nameMatcher = Matchers.equalTo(expectedName);
-
-              @Override
-              void describeTo(Description description) {
-                description.appendDescriptionOf(nameMatcher);
-                description.appendDescriptionOf(propertyMatcher);
-                description.appendDescriptionOf(metricMatcher);
-              }
-
-              @Override
-              protected boolean matchesSafely(EventData item) {
-                return nameMatcher.matches(item.getName())
-                    && propertyMatcher.matches(item.getProperties())
-                    && metricMatcher.matches(item.getMeasurements());
-              }
-            }));
+    assertThat(data)
+        .anySatisfy(
+            ed -> {
+              assertThat(ed.getName()).isEqualTo("EventDataPropertyTest");
+              assertThat(ed.getProperties()).containsEntry("key", "value");
+              assertThat(ed.getMeasurements()).containsEntry("key", 1.0);
+            });
   }
 
   @Test
@@ -121,19 +78,16 @@ abstract class SpringBootTest {
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     List<Envelope> edList =
         testing.mockedIngestion.waitForItems(
-            new Predicate<Envelope>() {
-              @Override
-              public boolean test(Envelope input) {
-                if (!"ExceptionData".equals(input.getData().getBaseType())) {
-                  return false;
-                }
-                if (!operationId.equals(input.getTags().get("ai.operation.id"))) {
-                  return false;
-                }
-                // lastly, filter out ExceptionData captured from tomcat logger
-                ExceptionData data = (ExceptionData) ((Data<?>) input.getData()).getBaseData();
-                return !data.getProperties().containsKey("LoggerName");
+            input -> {
+              if (!"ExceptionData".equals(input.getData().getBaseType())) {
+                return false;
               }
+              if (!operationId.equals(input.getTags().get("ai.operation.id"))) {
+                return false;
+              }
+              // lastly, filter out ExceptionData captured from tomcat logger
+              ExceptionData data = (ExceptionData) ((Data<?>) input.getData()).getBaseData();
+              return !data.getProperties().containsKey("LoggerName");
             },
             1,
             10,

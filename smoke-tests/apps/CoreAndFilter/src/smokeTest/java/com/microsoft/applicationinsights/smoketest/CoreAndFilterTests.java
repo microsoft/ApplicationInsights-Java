@@ -25,22 +25,10 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TO
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.ExceptionDetailsMatchers.withMessage;
-import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.hasException;
-import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.hasMeasurement;
-import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.hasSeverityLevel;
-import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasDuration;
-import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasName;
-import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasResponseCode;
-import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasSuccess;
-import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasUrl;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers;
-import com.microsoft.applicationinsights.smoketest.matchers.TraceDataMatchers;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
-import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
 import com.microsoft.applicationinsights.smoketest.schemav2.Duration;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.EventData;
@@ -140,18 +128,29 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
 
     List<ExceptionData> exceptions =
         testing.mockedIngestion.getTelemetryDataByTypeInRequest("ExceptionData");
-    assertThat(exceptions, hasItem(hasException(withMessage(expectedName))));
-    assertThat(
-        exceptions,
-        hasItem(
-            allOf(
-                hasException(withMessage(expectedName)),
-                ExceptionDataMatchers.hasProperty("key", expectedProperties),
-                hasMeasurement("key", expectedMetrice))));
-    assertThat(
-        exceptions,
-        hasItem(
-            allOf(hasException(withMessage(expectedName)), hasSeverityLevel(SeverityLevel.ERROR))));
+    assertThat(exceptions)
+        .anySatisfy(
+            e ->
+                assertThat(e.getExceptions())
+                    .extracting(ExceptionDetails::getMessage)
+                    .contains(expectedName));
+    assertThat(exceptions)
+        .anySatisfy(
+            e -> {
+              assertThat(e.getExceptions())
+                  .extracting(ExceptionDetails::getMessage)
+                  .contains(expectedName);
+              assertThat(e.getProperties()).containsEntry("key", expectedProperties);
+              assertThat(e.getMeasurements()).containsEntry("key", expectedMetrice);
+            });
+    assertThat(exceptions)
+        .anySatisfy(
+            e -> {
+              assertThat(e.getExceptions())
+                  .extracting(ExceptionDetails::getMessage)
+                  .contains(expectedName);
+              assertThat(e.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
+            });
 
     AiSmokeTest.assertParentChild(rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter/trackException");
     AiSmokeTest.assertParentChild(rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter/trackException");
@@ -164,51 +163,45 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
     testing.mockedIngestion.waitForItems("RequestData", 5);
 
     int totalItems = testing.mockedIngestion.getItemCount();
-    int expectedItems = 5;
-    assertEquals(
-        String.format("There were %d extra telemetry items received.", totalItems - expectedItems),
-        expectedItems,
-        totalItems);
+    assertThat(totalItems).isEqualTo(5);
 
     // TODO get HttpRequest data envelope and verify value
-    List<Domain> requests = testing.mockedIngestion.getTelemetryDataByType("RequestData");
-    // true
-    assertThat(
-        requests,
-        hasItem(
-            allOf(
-                hasName("HttpRequestDataTest"),
-                hasResponseCode("200"),
-                hasDuration(new Duration(4711)),
-                hasSuccess(true))));
-    assertThat(
-        requests,
-        hasItem(
-            allOf(
-                hasName("PingTest"),
-                hasResponseCode("200"),
-                hasDuration(new Duration(1)),
-                hasSuccess(true),
-                hasUrl("http://tempuri.org/ping"))));
+    List<RequestData> requests = testing.mockedIngestion.getTelemetryDataByType("RequestData");
 
-    // false
-    assertThat(
-        requests,
-        hasItem(
-            allOf(
-                hasName("FailedHttpRequest"),
-                hasResponseCode("404"),
-                hasDuration(new Duration(6666)),
-                hasSuccess(false))));
-    assertThat(
-        requests,
-        hasItem(
-            allOf(
-                hasName("FailedHttpRequest2"),
-                hasResponseCode("505"),
-                hasDuration(new Duration(8888)),
-                hasSuccess(false),
-                hasUrl("https://www.bingasdasdasdasda.com/"))));
+    assertThat(requests)
+        .anySatisfy(
+            r -> {
+              assertThat(r.getName()).isEqualTo("HttpRequestDataTest");
+              assertThat(r.getResponseCode()).isEqualTo("200");
+              assertThat(r.getDuration()).isEqualTo(new Duration(4711));
+              assertThat(r.getSuccess()).isTrue();
+            });
+    assertThat(requests)
+        .anySatisfy(
+            r -> {
+              assertThat(r.getName()).isEqualTo("PingTest");
+              assertThat(r.getResponseCode()).isEqualTo("200");
+              assertThat(r.getDuration()).isEqualTo(new Duration(1));
+              assertThat(r.getSuccess()).isTrue();
+              assertThat(r.getUrl()).isEqualTo("http://tempuri.org/ping");
+            });
+    assertThat(requests)
+        .anySatisfy(
+            r -> {
+              assertThat(r.getName()).isEqualTo("FailedHttpRequest");
+              assertThat(r.getResponseCode()).isEqualTo("404");
+              assertThat(r.getDuration()).isEqualTo(new Duration(6666));
+              assertThat(r.getSuccess()).isFalse();
+            });
+    assertThat(requests)
+        .anySatisfy(
+            r -> {
+              assertThat(r.getName()).isEqualTo("FailedHttpRequest2");
+              assertThat(r.getResponseCode()).isEqualTo("505");
+              assertThat(r.getDuration()).isEqualTo(new Duration(8888));
+              assertThat(r.getSuccess()).isFalse();
+              assertThat(r.getUrl()).isEqualTo("https://www.bingasdasdasdasda.com/");
+            });
   }
 
   @Test
@@ -255,22 +248,24 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
     List<MessageData> messages = testing.mockedIngestion.getMessageDataInRequest();
-    assertThat(messages, hasItem(TraceDataMatchers.hasMessage("This is first trace message.")));
 
-    assertThat(
-        messages,
-        hasItem(
-            allOf(
-                TraceDataMatchers.hasMessage("This is second trace message."),
-                TraceDataMatchers.hasSeverityLevel(SeverityLevel.ERROR))));
+    assertThat(messages)
+        .anySatisfy(m -> assertThat(m.getMessage()).isEqualTo("This is first trace message."));
 
-    assertThat(
-        messages,
-        hasItem(
-            allOf(
-                TraceDataMatchers.hasMessage("This is third trace message."),
-                TraceDataMatchers.hasSeverityLevel(SeverityLevel.INFORMATION),
-                TraceDataMatchers.hasProperty("key", "value"))));
+    assertThat(messages)
+        .anySatisfy(
+            m -> {
+              assertThat(m.getMessage()).isEqualTo("This is second trace message.");
+              assertThat(m.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
+            });
+
+    assertThat(messages)
+        .anySatisfy(
+            m -> {
+              assertThat(m.getMessage()).isEqualTo("This is third trace message.");
+              assertThat(m.getSeverityLevel()).isEqualTo(SeverityLevel.INFORMATION);
+              assertThat(m.getProperties()).containsEntry("key", "value");
+            });
 
     AiSmokeTest.assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /CoreAndFilter/trackTrace");
     AiSmokeTest.assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /CoreAndFilter/trackTrace");
@@ -491,7 +486,8 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
     long max = expected + tolerance;
 
     System.out.printf("Slow response time: expected=%d, actual=%d%n", expected, actual);
-    assertThat(actual, both(greaterThanOrEqualTo(min)).and(lessThan(max)));
+    assertThat(actual).isGreaterThanOrEqualTo(min);
+    assertThat(actual).isLessThan(max);
 
     assertThat(rdEnvelope.getTags()).containsEntry("ai.operation.name", operationName);
   }
