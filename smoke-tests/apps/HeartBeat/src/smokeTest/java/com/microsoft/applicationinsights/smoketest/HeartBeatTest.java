@@ -39,7 +39,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-class HeartBeatTest {
+abstract class HeartBeatTest {
 
   @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 

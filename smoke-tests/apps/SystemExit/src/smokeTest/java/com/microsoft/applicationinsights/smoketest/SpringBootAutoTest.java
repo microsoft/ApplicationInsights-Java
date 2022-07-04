@@ -21,17 +21,21 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
+
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @UseAgent
-public class SpringBootAutoTest extends AiJarSmokeTest {
+abstract class SpringBootAutoTest {
 
   @Test
   @TargetUri("/delayedSystemExit")
-  public void doDelayedSystemExitTest() throws Exception {
+  void doDelayedSystemExitTest() throws Exception {
     testing.mockedIngestion.waitForItems("RequestData", 1);
     testing.mockedIngestion.waitForItems("RemoteDependencyData", 1);
     testing.mockedIngestion.waitForItem(
@@ -46,4 +50,13 @@ public class SpringBootAutoTest extends AiJarSmokeTest {
         TimeUnit.SECONDS);
     testing.mockedIngestion.waitForItem(getMetricPredicate("counter"), 10, TimeUnit.SECONDS);
   }
+
+  @Environment(JAVA_8)
+  static class Java8Test extends SpringBootAutoTest {}
+
+  @Environment(JAVA_11)
+  static class Java11Test extends SpringBootAutoTest {}
+
+  @Environment(JAVA_17)
+  static class Java17Test extends SpringBootAutoTest {}
 }

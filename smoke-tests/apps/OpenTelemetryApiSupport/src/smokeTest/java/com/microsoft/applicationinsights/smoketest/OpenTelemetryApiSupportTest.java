@@ -21,18 +21,25 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @UseAgent
-public class OpenTelemetryApiSupportTest extends AiWarSmokeTest {
+abstract class OpenTelemetryApiSupportTest {
 
   @Test
   @TargetUri("/test-api")
-  public void testApi() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void testApi() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getName()).isEqualTo("myspanname");
     assertTrue(
@@ -62,7 +69,7 @@ public class OpenTelemetryApiSupportTest extends AiWarSmokeTest {
   @Test
   @TargetUri("/test-overriding-ikey-etc")
   public void testOverridingIkeyEtc() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+    Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getName())
         .isEqualTo("GET /OpenTelemetryApiSupport/test-overriding-ikey-etc");
@@ -91,7 +98,7 @@ public class OpenTelemetryApiSupportTest extends AiWarSmokeTest {
   @Test
   @TargetUri("/test-annotations")
   public void testAnnotations() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+    Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /OpenTelemetryApiSupport/test-annotations");
     assertTrue(
@@ -119,4 +126,25 @@ public class OpenTelemetryApiSupportTest extends AiWarSmokeTest {
         telemetry.rddEnvelope1,
         "GET /OpenTelemetryApiSupport/test-annotations");
   }
+
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends OpenTelemetryApiSupportTest {}
+
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends OpenTelemetryApiSupportTest {}
+
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends OpenTelemetryApiSupportTest {}
+
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends OpenTelemetryApiSupportTest {}
+
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends OpenTelemetryApiSupportTest {}
+
+  @Environment(WILDFLY_13_JAVA_8)
+  static class Wildfly13Java8Test extends OpenTelemetryApiSupportTest {}
+
+  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
+  static class Wildfly13Java8OpenJ9Test extends OpenTelemetryApiSupportTest {}
 }

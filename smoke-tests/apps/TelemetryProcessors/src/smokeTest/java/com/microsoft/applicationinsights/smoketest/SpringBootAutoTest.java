@@ -21,19 +21,26 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.junit.Assert.assertEquals;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @UseAgent
-public class SpringBootAutoTest extends AiWarSmokeTest {
+abstract class SpringBootAutoTest {
 
   @Test
   @TargetUri("/test")
-  public void doMostBasicTest() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void doMostBasicTest() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getProperties().get("attribute1")).isEqualTo("testValue1");
     assertThat(telemetry.rd.getProperties().get("attribute2")).isEqualTo("testValue2");
@@ -50,8 +57,8 @@ public class SpringBootAutoTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/sensitivedata")
-  public void doSimpleTestPiiData() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void doSimpleTestPiiData() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getName()).isEqualTo("testValue1::testValue2");
     assertThat(telemetry.rd.getProperties().get("attribute1")).isEqualTo("testValue1");
@@ -62,4 +69,25 @@ public class SpringBootAutoTest extends AiWarSmokeTest {
     assertThat(telemetry.rd.getProperties()).hasSize(4);
     assertThat(telemetry.rd.getSuccess()).isTrue();
   }
+
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends SpringBootAutoTest {}
+
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends SpringBootAutoTest {}
+
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends SpringBootAutoTest {}
+
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends SpringBootAutoTest {}
+
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends SpringBootAutoTest {}
+
+  @Environment(WILDFLY_13_JAVA_8)
+  static class Wildfly13Java8Test extends SpringBootAutoTest {}
+
+  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
+  static class Wildfly13Java8OpenJ9Test extends SpringBootAutoTest {}
 }

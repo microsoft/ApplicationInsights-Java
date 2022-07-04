@@ -21,15 +21,23 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import org.junit.Test;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-public class JettyNativeHandlerTest extends AiJarSmokeTest {
+abstract class JettyNativeHandlerTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/path")
-  public void doSimpleTest() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void doSimpleTest() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getName()).isEqualTo("HTTP GET");
     assertThat(telemetry.rd.getUrl()).matches("http://localhost:[0-9]+/path");
@@ -39,4 +47,13 @@ public class JettyNativeHandlerTest extends AiJarSmokeTest {
     assertThat(telemetry.rd.getProperties()).isEmpty();
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
   }
+
+  @Environment(JAVA_8)
+  static class Java8Test extends JettyNativeHandlerTest {}
+
+  @Environment(JAVA_11)
+  static class Java11Test extends JettyNativeHandlerTest {}
+
+  @Environment(JAVA_17)
+  static class Java17Test extends JettyNativeHandlerTest {}
 }

@@ -29,62 +29,60 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TO
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-public class HttpClientSmokeTest {
+abstract class HttpClientSmokeTest {
 
   @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/apacheHttpClient4")
-  public void testApacheHttpClient4() throws Exception {
+  void testApacheHttpClient4() throws Exception {
     verify();
   }
 
   @Test
   @TargetUri("/apacheHttpClient4WithResponseHandler")
-  public void testApacheHttpClient4WithResponseHandler() throws Exception {
+  void testApacheHttpClient4WithResponseHandler() throws Exception {
     verify();
   }
 
   @Test
   @TargetUri("/apacheHttpClient3")
-  public void testApacheHttpClient3() throws Exception {
+  void testApacheHttpClient3() throws Exception {
     verify();
   }
 
   @Test
   @TargetUri("/apacheHttpAsyncClient")
-  public void testApacheHttpAsyncClient() throws Exception {
+  void testApacheHttpAsyncClient() throws Exception {
     verify();
   }
 
   @Test
   @TargetUri("/okHttp3")
-  public void testOkHttp3() throws Exception {
+  void testOkHttp3() throws Exception {
     verify();
   }
 
   @Test
   @TargetUri("/okHttp2")
-  public void testOkHttp2() throws Exception {
+  void testOkHttp2() throws Exception {
     verify();
   }
 
   @Test
   @TargetUri("/httpUrlConnection")
-  public void testHttpUrlConnection() throws Exception {
+  void testHttpUrlConnection() throws Exception {
     verify();
   }
 
   @Test
   @TargetUri("/springWebClient")
-  public void testSpringWebClient() throws Exception {
+  void testSpringWebClient() throws Exception {
     // TODO investigate why %2520 is captured instead of %20
     verify("https://mock.codes/200?q=spaces%2520test");
   }
@@ -102,7 +100,7 @@ public class HttpClientSmokeTest {
     assertThat(telemetry.rdEnvelope.getSampleRate()).isNull();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("GET /200");
-    assertEquals(successUrlWithQueryString, telemetry.rdd1.getData());
+    assertThat(telemetry.rdd1.getData()).isEqualTo(successUrlWithQueryString);
     assertThat(telemetry.rdd1.getType()).isEqualTo("Http");
     assertThat(telemetry.rdd1.getTarget()).isEqualTo("mock.codes");
     assertThat(telemetry.rdd1.getResultCode()).isEqualTo("200");
@@ -116,7 +114,7 @@ public class HttpClientSmokeTest {
     assertThat(telemetry.rdd2.getTarget()).isEqualTo("mock.codes");
     assertThat(telemetry.rdd2.getResultCode()).isEqualTo("404");
     assertThat(telemetry.rdd2.getProperties()).isEmpty();
-    assertFalse(telemetry.rdd2.getSuccess());
+    assertThat(telemetry.rdd2.getSuccess()).isFalse();
     assertThat(telemetry.rddEnvelope2.getSampleRate()).isNull();
 
     assertThat(telemetry.rdd3.getName()).isEqualTo("GET /500");
@@ -125,7 +123,7 @@ public class HttpClientSmokeTest {
     assertThat(telemetry.rdd3.getTarget()).isEqualTo("mock.codes");
     assertThat(telemetry.rdd3.getResultCode()).isEqualTo("500");
     assertThat(telemetry.rdd3.getProperties()).isEmpty();
-    assertFalse(telemetry.rdd3.getSuccess());
+    assertThat(telemetry.rdd3.getSuccess()).isFalse();
     assertThat(telemetry.rddEnvelope3.getSampleRate()).isNull();
 
     AiSmokeTest.assertParentChild(

@@ -21,14 +21,18 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
+
 import org.junit.Test;
 
-public class SpringBootAttachInMainTest extends AiJarSmokeTest {
+abstract class SpringBootAttachInMainTest {
 
   @Test
   @TargetUri("/test")
-  public void doMostBasicTest() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void doMostBasicTest() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /test");
     assertThat(telemetry.rd.getUrl()).matches("http://localhost:[0-9]+/test");
@@ -38,4 +42,13 @@ public class SpringBootAttachInMainTest extends AiJarSmokeTest {
     assertThat(telemetry.rd.getProperties()).isEmpty();
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
   }
+
+  @Environment(JAVA_8)
+  static class Java8Test extends SpringBootAttachInMainTest {}
+
+  @Environment(JAVA_11)
+  static class Java11Test extends SpringBootAttachInMainTest {}
+
+  @Environment(JAVA_17)
+  static class Java17Test extends SpringBootAttachInMainTest {}
 }

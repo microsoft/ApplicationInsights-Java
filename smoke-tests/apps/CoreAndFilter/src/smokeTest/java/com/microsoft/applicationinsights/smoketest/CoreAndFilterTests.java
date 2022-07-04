@@ -64,14 +64,17 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
 abstract class CoreAndFilterTests extends AiSmokeTest {
 
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+
   @Test
   @TargetUri("/trackDependency")
   void trackDependency() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+    Telemetry telemetry = testing.getTelemetry(1);
 
     Duration expectedDuration = new Duration(0, 0, 1, 1, 1);
 
@@ -131,7 +134,7 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     List<Envelope> edList =
         testing.mockedIngestion.waitForItemsInOperation("ExceptionData", 3, operationId);
-    assertEquals(0, testing.mockedIngestion.getCountForType("EventData"));
+    assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope edEnvelope1 = edList.get(0);
     Envelope edEnvelope2 = edList.get(1);
@@ -290,7 +293,7 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
 
     Envelope rdEnvelope = rdList.get(0);
     List<Envelope> pvdList = testing.mockedIngestion.waitForItems("PageViewData", 3);
-    assertEquals(0, testing.mockedIngestion.getCountForType("EventData"));
+    assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
@@ -389,7 +392,7 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     List<Envelope> pvdList =
         testing.mockedIngestion.waitForItemsInOperation("PageViewData", 1, operationId);
-    assertEquals(0, testing.mockedIngestion.getCountForType("EventData"));
+    assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope pvdEnvelope = pvdList.get(0);
 

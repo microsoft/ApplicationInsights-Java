@@ -21,7 +21,9 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
@@ -29,7 +31,7 @@ import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @UseAgent
 @WithDependencyContainers({
@@ -48,18 +50,18 @@ import org.junit.Test;
       },
       hostnameEnvironmentVariable = "KAFKA")
 })
-public class SpringCloudStreamTest extends AiJarSmokeTest {
+abstract class SpringCloudStreamTest {
 
   @Test
   @TargetUri("/sendMessage")
-  public void doMostBasicTest() throws Exception {
+  void doMostBasicTest() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 2);
 
     Envelope rdEnvelope1 = rdList.get(0);
     String operationId = rdEnvelope1.getTags().get("ai.operation.id");
     List<Envelope> rddList =
         testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
-    assertEquals(0, testing.mockedIngestion.getCountForType("EventData"));
+    assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope rdEnvelope2 = rdList.get(1);
     Envelope rddEnvelope1 = rddList.get(0);
@@ -77,8 +79,8 @@ public class SpringCloudStreamTest extends AiJarSmokeTest {
     assertThat(rdd1.getData()).isNull();
     assertThat(rdd1.getType()).isEqualTo("Queue Message | kafka");
     assertThat(rdd1.getTarget()).isEqualTo("greetings");
-    assertTrue(rdd1.getProperties().isEmpty());
-    assertTrue(rdd1.getSuccess());
+    assertThat(rdd1.getProperties()).isEmpty();
+    assertThat(rdd1.getSuccess()).isTrue();
 
     assertThat(rd2.getName()).isEqualTo("greetings process");
     assertThat(rd2.getSource()).isEqualTo("greetings");
@@ -89,4 +91,13 @@ public class SpringCloudStreamTest extends AiJarSmokeTest {
     AiSmokeTest.assertParentChild(
         rdd1.getId(), rddEnvelope1, rdEnvelope2, "GET /sendMessage", "greetings process", false);
   }
+
+  @Environment(JAVA_8)
+  static class Java8Test extends SpringCloudStreamTest {}
+
+  @Environment(JAVA_11)
+  static class Java11Test extends SpringCloudStreamTest {}
+
+  @Environment(JAVA_17)
+  static class Java17Test extends SpringCloudStreamTest {}
 }

@@ -21,17 +21,19 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+@Environment(TOMCAT_8_JAVA_8)
 @UseAgent("disabled_applicationinsights.json")
-public class SpringSchedulingDisabledTest extends AiWarSmokeTest {
+class SpringSchedulingDisabledTest {
 
   @Test
   @TargetUri("/scheduler")
-  public void fixedRateSchedulerTest() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void fixedRateSchedulerTest() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /SpringScheduling/scheduler");
     assertThat(telemetry.rd.getSuccess()).isTrue();

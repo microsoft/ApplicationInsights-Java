@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
@@ -29,8 +29,9 @@ import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+@Environment(JAVA_8)
 @UseAgent("controller_spans_enabled_applicationinsights.json")
 @WithDependencyContainers({
   @DependencyContainer(
@@ -48,18 +49,18 @@ import org.junit.Test;
       },
       hostnameEnvironmentVariable = "KAFKA")
 })
-public class SpringCloudStreamControllerSpansEnabledTest extends AiJarSmokeTest {
+class SpringCloudStreamControllerSpansEnabledTest {
 
   @Test
   @TargetUri("/sendMessage")
-  public void doMostBasicTest() throws Exception {
+  void doMostBasicTest() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 2);
 
     Envelope rdEnvelope1 = rdList.get(0);
     String operationId = rdEnvelope1.getTags().get("ai.operation.id");
     List<Envelope> rddList =
         testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 2, operationId);
-    assertEquals(0, testing.mockedIngestion.getCountForType("EventData"));
+    assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope rdEnvelope2 = rdList.get(1);
     Envelope rddEnvelope1 = rddList.get(0);
@@ -90,15 +91,15 @@ public class SpringCloudStreamControllerSpansEnabledTest extends AiJarSmokeTest 
     assertThat(rdd1.getData()).isNull();
     assertThat(rdd1.getType()).isEqualTo("InProc");
     assertThat(rdd1.getTarget()).isNull();
-    assertTrue(rdd1.getProperties().isEmpty());
-    assertTrue(rdd1.getSuccess());
+    assertThat(rdd1.getProperties()).isEmpty();
+    assertThat(rdd1.getSuccess()).isTrue();
 
     assertThat(rdd2.getName()).isEqualTo("greetings send");
     assertThat(rdd2.getData()).isNull();
     assertThat(rdd2.getType()).isEqualTo("Queue Message | kafka");
     assertThat(rdd2.getTarget()).isEqualTo("greetings");
-    assertTrue(rdd2.getProperties().isEmpty());
-    assertTrue(rdd2.getSuccess());
+    assertThat(rdd2.getProperties()).isEmpty();
+    assertThat(rdd2.getSuccess()).isTrue();
 
     assertThat(rd2.getName()).isEqualTo("greetings process");
     assertThat(rd2.getSource()).isEqualTo("greetings");

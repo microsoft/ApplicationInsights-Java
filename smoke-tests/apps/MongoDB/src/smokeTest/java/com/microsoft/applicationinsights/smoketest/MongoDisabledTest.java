@@ -21,20 +21,23 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import org.junit.Test;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
 
+import org.junit.jupiter.api.Test;
+
+@Environment(TOMCAT_8_JAVA_8)
 @UseAgent("disabled_applicationinsights.json")
 @WithDependencyContainers(
     @DependencyContainer(
         value = "mongo:4",
         exposedPort = 27017,
         hostnameEnvironmentVariable = "MONGO"))
-public class MongoDisabledTest extends AiWarSmokeTest {
+class MongoDisabledTest {
 
   @Test
   @TargetUri("/mongo")
-  public void mongo() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void mongo() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /MongoDB/*");
     assertThat(telemetry.rd.getSuccess()).isTrue();

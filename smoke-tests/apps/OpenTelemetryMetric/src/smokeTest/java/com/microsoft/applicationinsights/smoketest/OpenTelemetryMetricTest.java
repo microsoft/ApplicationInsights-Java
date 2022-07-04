@@ -21,6 +21,13 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.junit.Assert.assertEquals;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
@@ -32,44 +39,44 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @UseAgent
-public class OpenTelemetryMetricTest extends AiWarSmokeTest {
+abstract class OpenTelemetryMetricTest {
 
   @Test
   @TargetUri("/trackDoubleCounterMetric")
-  public void trackDoubleCounterMetric() throws Exception {
+  void trackDoubleCounterMetric() throws Exception {
     validateCounterMetric("trackDoubleCounterMetric");
   }
 
   @Test
   @TargetUri("/trackLongCounterMetric")
-  public void trackLongCounterMetric() throws Exception {
+  void trackLongCounterMetric() throws Exception {
     validateCounterMetric("trackLongCounterMetric");
   }
 
   @Test
   @TargetUri("/trackDoubleGaugeMetric")
-  public void trackDoubleGaugeMetric() throws Exception {
+  void trackDoubleGaugeMetric() throws Exception {
     validateGaugeMetric("trackDoubleGaugeMetric");
   }
 
   @Test
   @TargetUri("/trackLongGaugeMetric")
-  public void trackLongGaugeMetric() throws Exception {
+  void trackLongGaugeMetric() throws Exception {
     validateGaugeMetric("trackLongGaugeMetric");
   }
 
   @Test
   @TargetUri("/trackDoubleHistogramMetric")
-  public void trackDoubleHistogramMetric() throws Exception {
+  void trackDoubleHistogramMetric() throws Exception {
     validateHistogramMetric("trackDoubleHistogramMetric");
   }
 
   @Test
   @TargetUri("/trackLongHistogramMetric")
-  public void trackLongHistogramMetric() throws Exception {
+  void trackLongHistogramMetric() throws Exception {
     validateHistogramMetric("trackLongHistogramMetric");
   }
 
@@ -237,4 +244,25 @@ public class OpenTelemetryMetricTest extends AiWarSmokeTest {
     assertEquals(properties.get("name"), "lemon");
     assertEquals(properties.get("color"), "yellow");
   }
+
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends OpenTelemetryMetricTest {}
+
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends OpenTelemetryMetricTest {}
+
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends OpenTelemetryMetricTest {}
+
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends OpenTelemetryMetricTest {}
+
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends OpenTelemetryMetricTest {}
+
+  @Environment(WILDFLY_13_JAVA_8)
+  static class Wildfly13Java8Test extends OpenTelemetryMetricTest {}
+
+  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
+  static class Wildfly13Java8OpenJ9Test extends OpenTelemetryMetricTest {}
 }

@@ -21,15 +21,22 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import org.junit.Test;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+@Environment(TOMCAT_8_JAVA_8)
 @UseAgent("disabled_applicationinsights.json")
-public class JdbcDisabledTest extends AiWarSmokeTest {
+class JdbcDisabledTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/hsqldbPreparedStatement")
-  public void hsqldbPreparedStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void hsqldbPreparedStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /Jdbc/*");
     assertThat(telemetry.rd.getSuccess()).isTrue();

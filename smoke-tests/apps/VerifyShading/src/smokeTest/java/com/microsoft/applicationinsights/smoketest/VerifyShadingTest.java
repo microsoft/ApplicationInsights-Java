@@ -21,15 +21,18 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import org.junit.Test;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
 
+import org.junit.jupiter.api.Test;
+
+@Environment(JAVA_8)
 @UseAgent
-public class VerifyShadingTest extends AiJarSmokeTest {
+class VerifyShadingTest {
 
   @Test
   @TargetUri("/verifyShading")
-  public void verifyShading() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void verifyShading() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getSuccess()).isTrue();
   }

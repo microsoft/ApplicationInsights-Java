@@ -21,20 +21,27 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import org.junit.Test;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+@Environment(TOMCAT_8_JAVA_8)
 @UseAgent("disabled_applicationinsights.json")
 @WithDependencyContainers(
     @DependencyContainer(
         value = "redis",
         exposedPort = 6379,
         hostnameEnvironmentVariable = "REDIS"))
-public class JedisDisabledTest extends AiWarSmokeTest {
+class JedisDisabledTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/jedis")
-  public void jedis() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void jedis() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /Jedis/*");
     assertThat(telemetry.rd.getSuccess()).isTrue();

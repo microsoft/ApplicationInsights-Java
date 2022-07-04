@@ -21,6 +21,13 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -34,14 +41,14 @@ import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @UseAgent("telemetryfiltering_applicationinsights.json")
-public class TelemetryFilteringSmokeTest extends AiWarSmokeTest {
+abstract class TelemetryFilteringSmokeTest {
 
   @Test
   @TargetUri(value = "/health-check", callCount = 100)
-  public void testSampling() throws Exception {
+  void testSampling() throws Exception {
     // super super low chance that number of sampled requests is less than 25
     long start = System.nanoTime();
     while (testing.mockedIngestion.getCountForType("RequestData") < 25
@@ -60,7 +67,7 @@ public class TelemetryFilteringSmokeTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/noisy-jdbc")
-  public void testNoisyJdbc() throws Exception {
+  void testNoisyJdbc() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     Thread.sleep(10000);
     assertThat(testing.mockedIngestion.getCountForType("RemoteDependencyData")).isZero();
@@ -76,7 +83,7 @@ public class TelemetryFilteringSmokeTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/regular-jdbc")
-  public void testRegularJdbc() throws Exception {
+  void testRegularJdbc() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
@@ -84,7 +91,7 @@ public class TelemetryFilteringSmokeTest extends AiWarSmokeTest {
 
     List<Envelope> rddList =
         testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
-    assertEquals(0, testing.mockedIngestion.getCountForType("EventData"));
+    assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope rddEnvelope = rddList.get(0);
 
@@ -106,4 +113,25 @@ public class TelemetryFilteringSmokeTest extends AiWarSmokeTest {
 
     AiSmokeTest.assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /TelemetryFiltering/*");
   }
+
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends TelemetryFilteringSmokeTest {}
+
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends TelemetryFilteringSmokeTest {}
+
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends TelemetryFilteringSmokeTest {}
+
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends TelemetryFilteringSmokeTest {}
+
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends TelemetryFilteringSmokeTest {}
+
+  @Environment(WILDFLY_13_JAVA_8)
+  static class Wildfly13Java8Test extends TelemetryFilteringSmokeTest {}
+
+  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
+  static class Wildfly13Java8OpenJ9Test extends TelemetryFilteringSmokeTest {}
 }

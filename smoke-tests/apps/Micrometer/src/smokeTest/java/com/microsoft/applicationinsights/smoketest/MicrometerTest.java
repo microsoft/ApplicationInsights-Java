@@ -21,6 +21,9 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
 import static org.junit.Assert.assertEquals;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
@@ -29,15 +32,15 @@ import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @UseAgent
-public class MicrometerTest extends AiJarSmokeTest {
+abstract class MicrometerTest {
 
   @Test
   @TargetUri("/test")
-  public void doMostBasicTest() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void doMostBasicTest() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /test");
     assertThat(telemetry.rd.getUrl()).matches("http://localhost:[0-9]+/test");
@@ -76,4 +79,13 @@ public class MicrometerTest extends AiJarSmokeTest {
     assertThat(data.getProperties()).hasSize(1);
     assertThat(data.getProperties().get("tag1")).isEqualTo("value1");
   }
+
+  @Environment(JAVA_8)
+  static class Java8Test extends MicrometerTest {}
+
+  @Environment(JAVA_11)
+  static class Java11Test extends MicrometerTest {}
+
+  @Environment(JAVA_17)
+  static class Java17Test extends MicrometerTest {}
 }

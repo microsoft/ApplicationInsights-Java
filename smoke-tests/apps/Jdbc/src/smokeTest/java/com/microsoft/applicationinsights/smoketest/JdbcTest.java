@@ -21,10 +21,17 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
 @WithDependencyContainers({
@@ -44,12 +51,14 @@ import org.junit.Test;
       exposedPort = 1433,
       hostnameEnvironmentVariable = "SQLSERVER")
 })
-public class JdbcTest extends AiWarSmokeTest {
+abstract class JdbcTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/hsqldbPreparedStatement")
-  public void hsqldbPreparedStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void hsqldbPreparedStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties()).isEmpty();
     assertThat(telemetry.rd.getSuccess()).isTrue();
@@ -67,8 +76,8 @@ public class JdbcTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/hsqldbStatement")
-  public void hsqldbStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void hsqldbStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties()).isEmpty();
     assertThat(telemetry.rd.getSuccess()).isTrue();
@@ -86,8 +95,8 @@ public class JdbcTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/hsqldbLargeStatement")
-  public void hsqldbLargeStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void hsqldbLargeStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties()).isEmpty();
     assertThat(telemetry.rd.getSuccess()).isTrue();
@@ -101,7 +110,7 @@ public class JdbcTest extends AiWarSmokeTest {
     String truncatedQuery = query.substring(0, Math.min(query.length(), 1024));
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT testdb.abc");
-    assertEquals(query, telemetry.rdd1.getData());
+    assertThat(telemetry.rdd1.getData()).isEqualTo(query);
     assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
     assertThat(telemetry.rdd1.getTarget()).isEqualTo("testdb");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
@@ -113,8 +122,8 @@ public class JdbcTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/hsqldbBatchPreparedStatement")
-  public void hsqldbBatchPreparedStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void hsqldbBatchPreparedStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties()).isEmpty();
     assertThat(telemetry.rd.getSuccess()).isTrue();
@@ -131,21 +140,20 @@ public class JdbcTest extends AiWarSmokeTest {
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
-  @Ignore // OpenTelemetry auto-instrumentation does not support non- prepared statement batching
-  // yet
-  @Test
+  // OpenTelemetry auto-instrumentation does not support non- prepared statement batching yet
+  // @Test
   @TargetUri("/hsqldbBatchStatement")
-  public void hsqldbBatchStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void hsqldbBatchStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties()).isEmpty();
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("insert testdb.abc");
-    assertEquals(
-        "insert into abc (xyz) values ('t'); insert into abc (xyz) values ('u');"
-            + " insert into abc (xyz) values ('v')",
-        telemetry.rdd1.getData());
+    assertThat(telemetry.rdd1.getData())
+        .isEqualTo(
+            "insert into abc (xyz) values ('t'); insert into abc (xyz) values ('u');"
+                + " insert into abc (xyz) values ('v')");
     assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
     assertThat(telemetry.rdd1.getTarget()).isEqualTo("testdb");
     assertThat(telemetry.rdd1.getProperties()).hasSize(1);
@@ -158,10 +166,10 @@ public class JdbcTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/mysqlPreparedStatement")
-  public void mysqlPreparedStatement() throws Exception {
+  void mysqlPreparedStatement() throws Exception {
     // exclude internal queries
     Telemetry telemetry =
-        getTelemetry(1, rdd -> !rdd.getData().startsWith("/* mysql-connector-java? "));
+        testing.getTelemetry(1, rdd -> !rdd.getData().startsWith("/* mysql-connector-java? "));
 
     assertThat(telemetry.rd.getProperties()).isEmpty();
     assertThat(telemetry.rd.getSuccess()).isTrue();
@@ -180,10 +188,10 @@ public class JdbcTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/mysqlStatement")
-  public void mysqlStatement() throws Exception {
+  void mysqlStatement() throws Exception {
     // exclude internal queries
     Telemetry telemetry =
-        getTelemetry(1, rdd -> !rdd.getData().startsWith("/* mysql-connector-java? "));
+        testing.getTelemetry(1, rdd -> !rdd.getData().startsWith("/* mysql-connector-java? "));
 
     assertThat(telemetry.rd.getProperties()).isEmpty();
     assertThat(telemetry.rd.getSuccess()).isTrue();
@@ -202,8 +210,8 @@ public class JdbcTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/postgresPreparedStatement")
-  public void postgresPreparedStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void postgresPreparedStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties()).isEmpty();
     assertThat(telemetry.rd.getSuccess()).isTrue();
@@ -222,8 +230,8 @@ public class JdbcTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/postgresStatement")
-  public void postgresStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void postgresStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties()).isEmpty();
     assertThat(telemetry.rd.getSuccess()).isTrue();
@@ -242,8 +250,8 @@ public class JdbcTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/sqlServerPreparedStatement")
-  public void sqlServerPreparedStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void sqlServerPreparedStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties()).isEmpty();
     assertThat(telemetry.rd.getSuccess()).isTrue();
@@ -261,8 +269,8 @@ public class JdbcTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/sqlServerStatement")
-  public void sqlServerStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void sqlServerStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties()).isEmpty();
     assertThat(telemetry.rd.getSuccess()).isTrue();
@@ -278,11 +286,11 @@ public class JdbcTest extends AiWarSmokeTest {
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
-  @Ignore("FIXME: need custom container with oracle db")
-  @Test
+  // FIXME: need custom container with oracle db
+  // @Test
   @TargetUri("/oraclePreparedStatement")
-  public void oraclePreparedStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void oraclePreparedStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties()).isEmpty();
     assertThat(telemetry.rd.getSuccess()).isTrue();
@@ -298,11 +306,11 @@ public class JdbcTest extends AiWarSmokeTest {
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
-  @Ignore("FIXME: need custom container with oracle db")
-  @Test
+  // FIXME: need custom container with oracle db
+  // @Test
   @TargetUri("/oracleStatement")
-  public void oracleStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void oracleStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties()).isEmpty();
     assertThat(telemetry.rd.getSuccess()).isTrue();
@@ -317,4 +325,25 @@ public class JdbcTest extends AiWarSmokeTest {
     AiSmokeTest.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
+
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends JdbcTest {}
+
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends JdbcTest {}
+
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends JdbcTest {}
+
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends JdbcTest {}
+
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends JdbcTest {}
+
+  @Environment(WILDFLY_13_JAVA_8)
+  static class Wildfly13Java8Test extends JdbcTest {}
+
+  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
+  static class Wildfly13Java8OpenJ9Test extends JdbcTest {}
 }

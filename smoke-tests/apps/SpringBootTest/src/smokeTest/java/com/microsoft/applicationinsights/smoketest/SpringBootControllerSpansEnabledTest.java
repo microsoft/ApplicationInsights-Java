@@ -21,9 +21,9 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -41,14 +41,15 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+@Environment(TOMCAT_8_JAVA_8)
 @UseAgent("controller_spans_enabled_applicationinsights.json")
-public class SpringBootControllerSpansEnabledTest extends AiWarSmokeTest {
+class SpringBootControllerSpansEnabledTest {
 
   @Test
   @TargetUri("/basic/trackEvent")
-  public void trackEvent() throws Exception {
+  void trackEvent() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
@@ -70,7 +71,7 @@ public class SpringBootControllerSpansEnabledTest extends AiWarSmokeTest {
               }
 
               @Override
-              public void describeTo(Description description) {
+              void describeTo(Description description) {
                 description.appendDescriptionOf(nameMatcher);
               }
             }));
@@ -90,7 +91,7 @@ public class SpringBootControllerSpansEnabledTest extends AiWarSmokeTest {
               final Matcher<String> nameMatcher = Matchers.equalTo(expectedName);
 
               @Override
-              public void describeTo(Description description) {
+              void describeTo(Description description) {
                 description.appendDescriptionOf(nameMatcher);
                 description.appendDescriptionOf(propertyMatcher);
                 description.appendDescriptionOf(metricMatcher);
@@ -107,7 +108,7 @@ public class SpringBootControllerSpansEnabledTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/throwsException")
-  public void testResultCodeWhenRestControllerThrows() throws Exception {
+  void testResultCodeWhenRestControllerThrows() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
@@ -133,12 +134,12 @@ public class SpringBootControllerSpansEnabledTest extends AiWarSmokeTest {
             1,
             10,
             TimeUnit.SECONDS);
-    assertEquals(0, testing.mockedIngestion.getCountForType("EventData"));
+    assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope rddEnvelope1 = rddList.get(0);
     Envelope edEnvelope1 = edList.get(0);
 
-    RequestData rd = getTelemetryDataForType(0, "RequestData");
+    RequestData rd = testing.getTelemetryDataForType(0, "RequestData");
     RemoteDependencyData rdd1 =
         (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
 
@@ -151,7 +152,7 @@ public class SpringBootControllerSpansEnabledTest extends AiWarSmokeTest {
     assertThat(rdd1.getData()).isNull();
     assertThat(rdd1.getType()).isEqualTo("InProc");
     assertThat(rdd1.getTarget()).isNull();
-    assertTrue(rdd1.getProperties().isEmpty());
+    assertThat(rdd1.getProperties()).isEmpty();
     assertFalse(rdd1.getSuccess());
 
     AiSmokeTest.assertParentChild(
@@ -162,14 +163,14 @@ public class SpringBootControllerSpansEnabledTest extends AiWarSmokeTest {
 
   @Test
   @TargetUri("/asyncDependencyCall")
-  public void testAsyncDependencyCall() throws Exception {
+  void testAsyncDependencyCall() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     List<Envelope> rddList =
         testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 3, operationId);
-    assertEquals(0, testing.mockedIngestion.getCountForType("EventData"));
+    assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope rddEnvelope1 = rddList.get(0);
     Envelope rddEnvelope2 = rddList.get(1);
@@ -192,19 +193,19 @@ public class SpringBootControllerSpansEnabledTest extends AiWarSmokeTest {
     assertThat(rdd1.getData()).isNull();
     assertThat(rdd1.getType()).isEqualTo("InProc");
     assertThat(rdd1.getTarget()).isNull();
-    assertTrue(rdd1.getProperties().isEmpty());
-    assertTrue(rdd1.getSuccess());
+    assertThat(rdd1.getProperties()).isEmpty();
+    assertThat(rdd1.getSuccess()).isTrue();
 
     assertThat(rdd2.getName()).isEqualTo("GET /");
     assertThat(rdd2.getData()).isEqualTo("https://www.bing.com");
     assertThat(rdd2.getTarget()).isEqualTo("www.bing.com");
-    assertTrue(rdd2.getProperties().isEmpty());
-    assertTrue(rdd2.getSuccess());
+    assertThat(rdd2.getProperties()).isEmpty();
+    assertThat(rdd2.getSuccess()).isTrue();
 
     // TODO (trask): why is spring-webmvc instrumentation capturing this twice?
     assertThat(rdd3.getName()).isEqualTo("TestController.asyncDependencyCall");
-    assertTrue(rdd3.getProperties().isEmpty());
-    assertTrue(rdd3.getSuccess());
+    assertThat(rdd3.getProperties()).isEmpty();
+    assertThat(rdd3.getSuccess()).isTrue();
 
     AiSmokeTest.assertParentChild(
         rd, rdEnvelope, rddEnvelope1, "GET /SpringBootTest/asyncDependencyCall");

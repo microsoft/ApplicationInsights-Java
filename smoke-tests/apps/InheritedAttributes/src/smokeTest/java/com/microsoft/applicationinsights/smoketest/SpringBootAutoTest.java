@@ -21,8 +21,11 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -30,14 +33,17 @@ import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-public class SpringBootAutoTest extends AiJarSmokeTest {
+abstract class SpringBootAutoTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/test")
-  public void test() throws Exception {
+  void test() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
@@ -55,11 +61,20 @@ public class SpringBootAutoTest extends AiJarSmokeTest {
     assertTrue(rd.getSuccess());
 
     assertThat(md.getMessage()).isEqualTo("hello");
-    assertEquals(SeverityLevel.INFORMATION, md.getSeverityLevel());
+    assertThat(md.getSeverityLevel()).isEqualTo(SeverityLevel.INFORMATION);
     assertThat(md.getProperties().get("SourceType")).isEqualTo("Logger");
     assertThat(md.getProperties().get("LoggerName")).isEqualTo("smoketestapp");
     assertThat(md.getProperties().get("ThreadName")).isNotNull();
     assertThat(md.getProperties().get("tenant")).isEqualTo("z");
     assertThat(md.getProperties()).hasSize(4);
   }
+
+  @Environment(JAVA_8)
+  static class Java8Test extends SpringBootAutoTest {}
+
+  @Environment(JAVA_11)
+  static class Java11Test extends SpringBootAutoTest {}
+
+  @Environment(JAVA_17)
+  static class Java17Test extends SpringBootAutoTest {}
 }

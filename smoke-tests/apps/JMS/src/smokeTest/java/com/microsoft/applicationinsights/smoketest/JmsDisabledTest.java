@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -29,19 +30,20 @@ import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+@Environment(JAVA_8)
 @UseAgent("disabled_applicationinsights.json")
-public class JmsDisabledTest extends AiJarSmokeTest {
+class JmsDisabledTest {
 
   @Test
   @TargetUri("/sendMessage")
-  public void doMostBasicTest() throws Exception {
+  void doMostBasicTest() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     Envelope rdEnvelope = rdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-    assertEquals(0, testing.mockedIngestion.getCountForType("EventData"));
+    assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     assertThat(rd.getName()).isEqualTo("GET /sendMessage");
     assertThat(rd.getResponseCode()).isEqualTo("200");

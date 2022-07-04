@@ -21,6 +21,9 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -31,14 +34,14 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @UseAgent
-public class SpringBootAutoTest extends AiJarSmokeTest {
+abstract class SpringBootAutoTest {
 
   @Test
   @TargetUri("/spawn-another-java-process")
-  public void spawnAnotherJavaProcess() throws Exception {
+  void spawnAnotherJavaProcess() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     List<Envelope> rddList = testing.mockedIngestion.waitForItems("RemoteDependencyData", 1);
     List<Envelope> mdList = testing.mockedIngestion.waitForItems("MessageData", 1);
@@ -69,4 +72,13 @@ public class SpringBootAutoTest extends AiJarSmokeTest {
     assertThat(md.getProperties().get("ThreadName")).isNotNull();
     assertThat(md.getProperties()).hasSize(3);
   }
+
+  @Environment(JAVA_8)
+  static class Java8Test extends SpringBootAutoTest {}
+
+  @Environment(JAVA_11)
+  static class Java11Test extends SpringBootAutoTest {}
+
+  @Environment(JAVA_17)
+  static class Java17Test extends SpringBootAutoTest {}
 }

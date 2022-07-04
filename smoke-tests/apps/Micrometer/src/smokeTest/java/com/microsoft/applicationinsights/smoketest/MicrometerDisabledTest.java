@@ -21,17 +21,19 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+@Environment(JAVA_8)
 @UseAgent("disabled_applicationinsights.json")
-public class MicrometerDisabledTest extends AiJarSmokeTest {
+class MicrometerDisabledTest {
 
   @Test
   @TargetUri("/test")
-  public void doMostBasicTest() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void doMostBasicTest() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /test");
     assertThat(telemetry.rd.getSuccess()).isTrue();

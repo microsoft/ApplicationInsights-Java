@@ -21,20 +21,22 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+@Environment(TOMCAT_8_JAVA_8)
 @UseAgent("controller_spans_enabled_applicationinsights.json")
-public class OpenTelemetryApiSupportControllerSpansEnabledTest extends AiWarSmokeTest {
+class OpenTelemetryApiSupportControllerSpansEnabledTest {
 
   @Test
   @TargetUri("/test-api")
-  public void testApi() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void testApi() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /OpenTelemetryApiSupport/test-api");
     assertTrue(
@@ -78,7 +80,7 @@ public class OpenTelemetryApiSupportControllerSpansEnabledTest extends AiWarSmok
   @Test
   @TargetUri("/test-overriding-ikey-etc")
   public void testOverridingIkeyEtc() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+    Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getName())
         .isEqualTo("GET /OpenTelemetryApiSupport/test-overriding-ikey-etc");
@@ -124,7 +126,7 @@ public class OpenTelemetryApiSupportControllerSpansEnabledTest extends AiWarSmok
   @Test
   @TargetUri("/test-annotations")
   public void testAnnotations() throws Exception {
-    Telemetry telemetry = getTelemetry(2);
+    Telemetry telemetry = testing.getTelemetry(2);
 
     if (!telemetry.rdd1.getName().equals("TestController.testAnnotations")) {
       RemoteDependencyData rddTemp = telemetry.rdd1;
