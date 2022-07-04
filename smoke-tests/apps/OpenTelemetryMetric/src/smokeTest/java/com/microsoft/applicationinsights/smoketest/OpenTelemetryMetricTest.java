@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
@@ -78,7 +77,7 @@ public class OpenTelemetryMetricTest extends AiWarSmokeTest {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     List<Envelope> metrics =
         testing.mockedIngestion.waitForItems(getMetricPredicate(name), 1, 40, TimeUnit.SECONDS);
-    assertEquals(1, metrics.size());
+    assertThat(metrics).hasSize(1);
 
     Envelope rdEnvelope = rdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
@@ -88,7 +87,7 @@ public class OpenTelemetryMetricTest extends AiWarSmokeTest {
 
     // validate tags
     Map<String, String> tags = envelope.getTags();
-    assertNotNull(tags.get("ai.internal.sdkVersion"));
+    assertThat(tags.get("ai.internal.sdkVersion")).isNotNull();
     assertEquals(tags.get("ai.cloud.roleInstance"), "testroleinstance");
     assertEquals(tags.get("ai.cloud.role"), "testrolename");
     assertEquals(tags.get("ai.application.ver"), "123");
@@ -96,7 +95,7 @@ public class OpenTelemetryMetricTest extends AiWarSmokeTest {
     // validate base data
     MetricData md = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
     List<DataPoint> dataPointList = md.getMetrics();
-    assertEquals(1, dataPointList.size());
+    assertThat(dataPointList).hasSize(1);
     DataPoint dp = dataPointList.get(0);
     assertEquals(456, dp.getValue(), 0);
     assertEquals(name, dp.getName());
@@ -114,7 +113,7 @@ public class OpenTelemetryMetricTest extends AiWarSmokeTest {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     List<Envelope> metrics =
         testing.mockedIngestion.waitForItems(getMetricPredicate(name), 1, 40, TimeUnit.SECONDS);
-    assertEquals(1, metrics.size());
+    assertThat(metrics).hasSize(1);
 
     Envelope rdEnvelope = rdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
@@ -124,7 +123,7 @@ public class OpenTelemetryMetricTest extends AiWarSmokeTest {
 
     // validate tags
     Map<String, String> tags = envelope.getTags();
-    assertNotNull(tags.get("ai.internal.sdkVersion"));
+    assertThat(tags.get("ai.internal.sdkVersion")).isNotNull();
     assertEquals(tags.get("ai.cloud.roleInstance"), "testroleinstance");
     assertEquals(tags.get("ai.cloud.role"), "testrolename");
     assertEquals(tags.get("ai.application.ver"), "123");
@@ -132,7 +131,7 @@ public class OpenTelemetryMetricTest extends AiWarSmokeTest {
     // validate base data
     MetricData md = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
     List<DataPoint> dataPointList = md.getMetrics();
-    assertEquals(1, dataPointList.size());
+    assertThat(dataPointList).hasSize(1);
     DataPoint dp = dataPointList.get(0);
     assertEquals(10, dp.getValue(), 0);
     assertEquals(name, dp.getName());
@@ -148,7 +147,7 @@ public class OpenTelemetryMetricTest extends AiWarSmokeTest {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     List<Envelope> metrics =
         testing.mockedIngestion.waitForItems(getMetricPredicate(name), 3, 40, TimeUnit.SECONDS);
-    assertEquals(3, metrics.size());
+    assertThat(metrics).hasSize(3);
 
     metrics.sort(
         Comparator.comparing(
@@ -168,7 +167,7 @@ public class OpenTelemetryMetricTest extends AiWarSmokeTest {
 
     // validate tags
     Map<String, String> tags = envelope1.getTags();
-    assertNotNull(tags.get("ai.internal.sdkVersion"));
+    assertThat(tags.get("ai.internal.sdkVersion")).isNotNull();
     assertEquals(tags.get("ai.cloud.roleInstance"), "testroleinstance");
     assertEquals(tags.get("ai.cloud.role"), "testrolename");
     assertEquals(tags.get("ai.application.ver"), "123");
@@ -176,7 +175,7 @@ public class OpenTelemetryMetricTest extends AiWarSmokeTest {
     // validate base data
     MetricData md = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
     List<DataPoint> dataPointList = md.getMetrics();
-    assertEquals(1, dataPointList.size());
+    assertThat(dataPointList).hasSize(1);
     DataPoint dp = dataPointList.get(0);
     assertEquals(2.0, dp.getValue(), 0);
     assertEquals(name, dp.getName());
@@ -193,7 +192,7 @@ public class OpenTelemetryMetricTest extends AiWarSmokeTest {
 
     // validate tags
     tags = envelope2.getTags();
-    assertNotNull(tags.get("ai.internal.sdkVersion"));
+    assertThat(tags.get("ai.internal.sdkVersion")).isNotNull();
     assertEquals(tags.get("ai.cloud.roleInstance"), "testroleinstance");
     assertEquals(tags.get("ai.cloud.role"), "testrolename");
     assertEquals(tags.get("ai.application.ver"), "123");
@@ -201,7 +200,7 @@ public class OpenTelemetryMetricTest extends AiWarSmokeTest {
     // validate base data
     md = (MetricData) ((Data<?>) envelope2.getData()).getBaseData();
     dataPointList = md.getMetrics();
-    assertEquals(1, dataPointList.size());
+    assertThat(dataPointList).hasSize(1);
     dp = dataPointList.get(0);
     assertEquals(6.0, dp.getValue(), 0);
     assertEquals(name, dp.getName());
@@ -218,7 +217,7 @@ public class OpenTelemetryMetricTest extends AiWarSmokeTest {
 
     // validate tags
     tags = envelope3.getTags();
-    assertNotNull(tags.get("ai.internal.sdkVersion"));
+    assertThat(tags.get("ai.internal.sdkVersion")).isNotNull();
     assertEquals(tags.get("ai.cloud.roleInstance"), "testroleinstance");
     assertEquals(tags.get("ai.cloud.role"), "testrolename");
     assertEquals(tags.get("ai.application.ver"), "123");
@@ -226,7 +225,7 @@ public class OpenTelemetryMetricTest extends AiWarSmokeTest {
     // validate base data
     md = (MetricData) ((Data<?>) envelope3.getData()).getBaseData();
     dataPointList = md.getMetrics();
-    assertEquals(1, dataPointList.size());
+    assertThat(dataPointList).hasSize(1);
     dp = dataPointList.get(0);
     assertEquals(7.0, dp.getValue(), 0);
     assertEquals(name, dp.getName());

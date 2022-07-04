@@ -50,7 +50,7 @@ public class OpenTelemetryApiSupportControllerSpansEnabledTest extends AiWarSmok
     assertNull(telemetry.rdd1.getData());
     assertThat(telemetry.rdd1.getType()).isEqualTo("InProc");
     assertThat(telemetry.rdd1.getTarget()).isNull();
-    assertEquals(2, telemetry.rdd1.getProperties().size());
+    assertThat(telemetry.rdd1.getProperties()).hasSize(2);
     assertEquals("myvalue1", telemetry.rdd1.getProperties().get("myattr1"));
     assertEquals("myvalue2", telemetry.rdd1.getProperties().get("myattr2"));
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
@@ -160,7 +160,7 @@ public class OpenTelemetryApiSupportControllerSpansEnabledTest extends AiWarSmok
     assertEquals("InProc", telemetry.rdd2.getType());
     assertNull(telemetry.rdd2.getTarget());
     assertEquals("a message", telemetry.rdd2.getProperties().get("message"));
-    assertEquals(1, telemetry.rdd2.getProperties().size());
+    assertThat(telemetry.rdd2.getProperties()).hasSize(1);
     assertThat(telemetry.rdd2.getSuccess()).isTrue();
 
     AiSmokeTest.assertParentChild(

@@ -64,7 +64,7 @@ public class MicrometerTest extends AiJarSmokeTest {
 
     MetricData data = (MetricData) ((Data<?>) metricItems.get(0).getData()).getBaseData();
     List<DataPoint> points = data.getMetrics();
-    assertEquals(1, points.size());
+    assertThat(points).hasSize(1);
 
     DataPoint point = points.get(0);
 
@@ -74,7 +74,7 @@ public class MicrometerTest extends AiJarSmokeTest {
     assertNull("getMin was non-null", point.getMin());
     assertNull("getMax was non-null", point.getMax());
     assertNull("getStdDev was non-null", point.getStdDev());
-    assertEquals(1, data.getProperties().size());
+    assertThat(data.getProperties()).hasSize(1);
     assertEquals("value1", data.getProperties().get("tag1"));
   }
 }

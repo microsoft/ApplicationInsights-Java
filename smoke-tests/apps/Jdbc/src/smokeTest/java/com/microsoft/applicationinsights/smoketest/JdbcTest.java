@@ -148,7 +148,7 @@ public class JdbcTest extends AiWarSmokeTest {
         telemetry.rdd1.getData());
     assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
     assertEquals("testdb", telemetry.rdd1.getTarget());
-    assertEquals(1, telemetry.rdd1.getProperties().size());
+    assertThat(telemetry.rdd1.getProperties()).hasSize(1);
     assertEquals(" [Batch]", telemetry.rdd1.getProperties().get("Args"));
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 

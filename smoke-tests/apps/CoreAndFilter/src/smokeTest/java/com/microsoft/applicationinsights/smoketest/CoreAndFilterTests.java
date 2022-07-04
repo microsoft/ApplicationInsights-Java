@@ -42,7 +42,6 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -231,7 +230,7 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
     MetricData md = (MetricData) ((Data<?>) mdEnvelope.getData()).getBaseData();
 
     List<DataPoint> metrics = md.getMetrics();
-    assertEquals(1, metrics.size());
+    assertThat(metrics).hasSize(1);
     DataPoint dp = metrics.get(0);
 
     final double expectedValue = 111222333.0;
@@ -317,7 +316,7 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
     PageViewData pv2 = (PageViewData) ((Data<?>) pvdEnvelope2.getData()).getBaseData();
     PageViewData pv3 = (PageViewData) ((Data<?>) pvdEnvelope3.getData()).getBaseData();
 
-    assertNotNull(pv1);
+    assertThat(pv1).isNotNull();
     assertEquals(new Duration(0), pv1.getDuration());
     // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are
     // from the agent
@@ -326,7 +325,7 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
     assertEquals("testroleinstance", pvdEnvelope1.getTags().get("ai.cloud.roleInstance"));
     assertTrue(pvdEnvelope1.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
 
-    assertNotNull(pv2);
+    assertThat(pv2).isNotNull();
     assertEquals(new Duration(123456), pv2.getDuration());
     assertEquals("2010-10-10T00:00:00Z", pvdEnvelope2.getTime());
     assertEquals("value", pv2.getProperties().get("key"));
@@ -346,7 +345,7 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
     // checking that sdk version is from the agent
     assertTrue(pvdEnvelope2.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
 
-    assertNotNull(pv3);
+    assertThat(pv3).isNotNull();
     assertEquals(new Duration(123456), pv3.getDuration());
     assertEquals("2010-10-10T00:00:00Z", pvdEnvelope3.getTime());
     assertEquals("value", pv3.getProperties().get("key"));

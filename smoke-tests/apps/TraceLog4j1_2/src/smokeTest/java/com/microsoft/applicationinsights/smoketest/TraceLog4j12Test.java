@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -64,23 +63,23 @@ public class TraceLog4j12Test extends AiWarSmokeTest {
     assertEquals(SeverityLevel.WARNING, md1.getSeverityLevel());
     assertEquals("Logger", md1.getProperties().get("SourceType"));
     assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
-    assertNotNull(md1.getProperties().get("ThreadName"));
+    assertThat(md1.getProperties().get("ThreadName")).isNotNull();
     assertEquals("MDC value", md1.getProperties().get("MDC key"));
-    assertEquals(4, md1.getProperties().size());
+    assertThat(md1.getProperties()).hasSize(4);
 
     assertEquals("This is log4j1.2 error.", md2.getMessage());
     assertEquals(SeverityLevel.ERROR, md2.getSeverityLevel());
     assertEquals("Logger", md2.getProperties().get("SourceType"));
     assertEquals("smoketestapp", md2.getProperties().get("LoggerName"));
-    assertNotNull(md2.getProperties().get("ThreadName"));
-    assertEquals(3, md2.getProperties().size());
+    assertThat(md2.getProperties().get("ThreadName")).isNotNull();
+    assertThat(md2.getProperties()).hasSize(3);
 
     assertEquals("This is log4j1.2 fatal.", md3.getMessage());
     assertEquals(SeverityLevel.CRITICAL, md3.getSeverityLevel());
     assertEquals("Logger", md3.getProperties().get("SourceType"));
     assertEquals("smoketestapp", md3.getProperties().get("LoggerName"));
-    assertNotNull(md3.getProperties().get("ThreadName"));
-    assertEquals(3, md3.getProperties().size());
+    assertThat(md3.getProperties().get("ThreadName")).isNotNull();
+    assertThat(md3.getProperties()).hasSize(3);
 
     AiSmokeTest.assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /TraceLog4j1_2/traceLog4j12");
     AiSmokeTest.assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /TraceLog4j1_2/traceLog4j12");
@@ -111,9 +110,9 @@ public class TraceLog4j12Test extends AiWarSmokeTest {
     assertEquals("This is an exception!", ed.getProperties().get("Logger Message"));
     assertEquals("Logger", ed.getProperties().get("SourceType"));
     assertEquals("smoketestapp", ed.getProperties().get("LoggerName"));
-    assertNotNull(ed.getProperties().get("ThreadName"));
+    assertThat(ed.getProperties().get("ThreadName")).isNotNull();
     assertEquals("MDC value", ed.getProperties().get("MDC key"));
-    assertEquals(5, ed.getProperties().size());
+    assertThat(ed.getProperties()).hasSize(5);
 
     AiSmokeTest.assertParentChild(
         rd, rdEnvelope, edEnvelope, "GET /TraceLog4j1_2/traceLog4j1_2WithException");

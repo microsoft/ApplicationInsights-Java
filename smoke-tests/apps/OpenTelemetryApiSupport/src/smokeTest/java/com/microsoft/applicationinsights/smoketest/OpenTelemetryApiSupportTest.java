@@ -41,7 +41,7 @@ public class OpenTelemetryApiSupportTest extends AiWarSmokeTest {
     assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rd.getSource()).isNull();
-    assertEquals(2, telemetry.rd.getProperties().size());
+    assertThat(telemetry.rd.getProperties()).hasSize(2);
     assertEquals("myvalue1", telemetry.rd.getProperties().get("myattr1"));
     assertEquals("myvalue2", telemetry.rd.getProperties().get("myattr2"));
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
@@ -109,7 +109,7 @@ public class OpenTelemetryApiSupportTest extends AiWarSmokeTest {
     assertThat(telemetry.rdd1.getType()).isEqualTo("InProc");
     assertThat(telemetry.rdd1.getTarget()).isNull();
     assertEquals("a message", telemetry.rdd1.getProperties().get("message"));
-    assertEquals(1, telemetry.rdd1.getProperties().size());
+    assertThat(telemetry.rdd1.getProperties()).hasSize(1);
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
     AiSmokeTest.assertParentChild(

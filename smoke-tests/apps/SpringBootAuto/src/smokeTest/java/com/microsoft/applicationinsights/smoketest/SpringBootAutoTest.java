@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -37,7 +36,7 @@ public class SpringBootAutoTest extends AiWarSmokeTest {
     // TODO verify browser and other envelope tags somewhere else
     assertTrue(
         telemetry.rdEnvelope.getTags().get("ai.user.userAgent").startsWith("Apache-HttpClient/"));
-    assertNotNull(telemetry.rdEnvelope.getTags().get("ai.location.ip"));
+    assertThat(telemetry.rdEnvelope.getTags().get("ai.location.ip")).isNotNull();
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /SpringBootAuto/test");
     assertThat(telemetry.rd.getUrl()).matches("http://localhost:[0-9]+/SpringBootAuto/test");

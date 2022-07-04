@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
@@ -35,8 +34,8 @@ public class HttpHeadersTest extends AiWarSmokeTest {
     Telemetry telemetry = getTelemetry(0);
 
     assertEquals("testing123", telemetry.rd.getProperties().get("http.response.header.abc"));
-    assertNotNull(telemetry.rd.getProperties().get("http.request.header.host"));
-    assertEquals(2, telemetry.rd.getProperties().size());
+    assertThat(telemetry.rd.getProperties().get("http.request.header.host")).isNotNull();
+    assertThat(telemetry.rd.getProperties()).hasSize(2);
     assertThat(telemetry.rd.getSuccess()).isTrue();
   }
 
@@ -45,13 +44,13 @@ public class HttpHeadersTest extends AiWarSmokeTest {
   public void testClientHeaders() throws Exception {
     Telemetry telemetry = getTelemetry(1);
 
-    assertNotNull(telemetry.rd.getProperties().get("http.request.header.host"));
-    assertEquals(1, telemetry.rd.getProperties().size());
+    assertThat(telemetry.rd.getProperties().get("http.request.header.host")).isNotNull();
+    assertThat(telemetry.rd.getProperties()).hasSize(1);
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertEquals("testing123", telemetry.rdd1.getProperties().get("http.request.header.abc"));
-    assertNotNull(telemetry.rdd1.getProperties().get("http.response.header.date"));
-    assertEquals(2, telemetry.rdd1.getProperties().size());
+    assertThat(telemetry.rdd1.getProperties().get("http.response.header.date")).isNotNull();
+    assertThat(telemetry.rdd1.getProperties()).hasSize(2);
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
   }
 }

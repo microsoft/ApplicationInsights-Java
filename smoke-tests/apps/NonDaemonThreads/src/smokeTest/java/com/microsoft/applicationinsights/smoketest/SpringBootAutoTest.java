@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
@@ -67,7 +66,7 @@ public class SpringBootAutoTest extends AiJarSmokeTest {
     assertEquals(SeverityLevel.INFORMATION, md.getSeverityLevel());
     assertEquals("Logger", md.getProperties().get("SourceType"));
     assertEquals("smoketestapp", md.getProperties().get("LoggerName"));
-    assertNotNull(md.getProperties().get("ThreadName"));
-    assertEquals(3, md.getProperties().size());
+    assertThat(md.getProperties().get("ThreadName")).isNotNull();
+    assertThat(md.getProperties()).hasSize(3);
   }
 }

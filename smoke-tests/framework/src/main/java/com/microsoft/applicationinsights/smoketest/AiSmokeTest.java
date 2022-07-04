@@ -550,14 +550,14 @@ public class AiSmokeTest
       String childOperationName,
       boolean topLevelParent) {
     String operationId = parentEnvelope.getTags().get("ai.operation.id");
-    assertNotNull(operationId);
+    assertThat(operationId).isNotNull();
     assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
 
     String operationParentId = parentEnvelope.getTags().get("ai.operation.parentId");
     if (topLevelParent) {
       assertNull(operationParentId);
     } else {
-      assertNotNull(operationParentId);
+      assertThat(operationParentId).isNotNull();
     }
 
     assertEquals(parentId, childEnvelope.getTags().get("ai.operation.parentId"));

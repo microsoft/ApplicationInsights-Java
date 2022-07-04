@@ -42,7 +42,7 @@ public class LegacySdkWebInteropTest extends AiWarSmokeTest {
     assertEquals("mydeviceosversion", telemetry.rdEnvelope.getTags().get("ai.device.osVersion"));
     assertEquals("myvalue1", telemetry.rd.getProperties().get("myattr1"));
     assertEquals("myvalue2", telemetry.rd.getProperties().get("myattr2"));
-    assertEquals(2, telemetry.rd.getProperties().size());
+    assertThat(telemetry.rd.getProperties()).hasSize(2);
 
     assertFalse(telemetry.rd.getSuccess());
   }
