@@ -40,9 +40,9 @@ public class SpringBootAutoTest extends AiJarSmokeTest {
   @Test
   @TargetUri("/spawn-another-java-process")
   public void spawnAnotherJavaProcess() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-    List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
-    List<Envelope> mdList = mockedIngestion.waitForItems("MessageData", 1);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> rddList = testing.mockedIngestion.waitForItems("RemoteDependencyData", 1);
+    List<Envelope> mdList = testing.mockedIngestion.waitForItems("MessageData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     Envelope rddEnvelope = rddList.get(0);
@@ -58,10 +58,10 @@ public class SpringBootAutoTest extends AiJarSmokeTest {
 
     assertEquals("GET /search", rdd.getName());
     assertEquals("Http", rdd.getType());
-    assertEquals("www.bing.com", rdd.getTarget());
+    assertThat(rdd.getTarget()).isEqualTo("www.bing.com");
     assertEquals("https://www.bing.com/search?q=test", rdd.getData());
-    assertTrue(rdd.getProperties().isEmpty());
-    assertTrue(rdd.getSuccess());
+    assertThat(rdd.getProperties()).isEmpty();
+    assertThat(rdd.getSuccess()).isTrue();
 
     assertEquals("done", md.getMessage());
     assertEquals(SeverityLevel.INFORMATION, md.getSeverityLevel());

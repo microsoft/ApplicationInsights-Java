@@ -41,6 +41,6 @@ public class MongoDisabledTest extends AiWarSmokeTest {
 
     // sleep a bit and make sure no mongo dependencies are reported
     Thread.sleep(5000);
-    assertThat(mockedIngestion.getCountForType("RemoteDependencyData")).isZero();
+    assertThat(testing.mockedIngestion.getCountForType("RemoteDependencyData")).isZero();
   }
 }

@@ -40,13 +40,14 @@ public class SamplingTest extends AiWarSmokeTest {
   public void testSampling() throws Exception {
     // super super low chance that number of sampled requests is less than 25
     long start = System.nanoTime();
-    while (mockedIngestion.getCountForType("RequestData") < 25
+    while (testing.mockedIngestion.getCountForType("RequestData") < 25
         && NANOSECONDS.toSeconds(System.nanoTime() - start) < 10) {}
     // wait ten more seconds before checking that we didn't receive too many
     Thread.sleep(SECONDS.toMillis(10));
 
-    List<Envelope> requestEnvelopes = mockedIngestion.getItemsEnvelopeDataType("RequestData");
-    List<Envelope> eventEnvelopes = mockedIngestion.getItemsEnvelopeDataType("EventData");
+    List<Envelope> requestEnvelopes =
+        testing.mockedIngestion.getItemsEnvelopeDataType("RequestData");
+    List<Envelope> eventEnvelopes = testing.mockedIngestion.getItemsEnvelopeDataType("EventData");
     // super super low chance that number of sampled requests/dependencies/events
     // is less than 25 or greater than 75
     assertThat(requestEnvelopes.size(), greaterThanOrEqualTo(25));
@@ -63,7 +64,7 @@ public class SamplingTest extends AiWarSmokeTest {
 
     for (Envelope requestEnvelope : requestEnvelopes) {
       String operationId = requestEnvelope.getTags().get("ai.operation.id");
-      mockedIngestion.waitForItemsInOperation("EventData", 1, operationId);
+      testing.mockedIngestion.waitForItemsInOperation("EventData", 1, operationId);
     }
   }
 }

@@ -24,8 +24,7 @@ package com.microsoft.applicationinsights.smoketest;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -43,16 +42,16 @@ abstract class GrpcTest {
   @Test
   @TargetUri("/simple")
   public void doSimpleTest() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 2);
 
     Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /simple");
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "example.Greeter/SayHello");
     String operationId = rdEnvelope1.getTags().get("ai.operation.id");
 
     List<Envelope> rddList =
-        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
     // auto-collected grpc events are suppressed by exporter because they are noisy
-    assertEquals(0, mockedIngestion.getCountForType("MessageData", operationId));
+    assertThat(testing.mockedIngestion.getCountForType("MessageData", operationId)).isZero();
 
     Envelope rddEnvelope = getDependencyEnvelope(rddList, "example.Greeter/SayHello");
 
@@ -60,13 +59,13 @@ abstract class GrpcTest {
     RemoteDependencyData rdd =
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-    assertEquals("localhost:10203", rdd.getTarget());
+    assertThat(rdd.getTarget()).isEqualTo("localhost:10203");
 
-    assertTrue(rd1.getProperties().isEmpty());
-    assertTrue(rd1.getSuccess());
+    assertThat(rd1.getProperties()).isEmpty();
+    assertThat(rd1.getSuccess()).isTrue();
 
-    assertTrue(rdd.getProperties().isEmpty());
-    assertTrue(rdd.getSuccess());
+    assertThat(rdd.getProperties()).isEmpty();
+    assertThat(rdd.getSuccess()).isTrue();
 
     // TODO (trask): verify rd2
 
@@ -78,16 +77,16 @@ abstract class GrpcTest {
   @Test
   @TargetUri("/conversation")
   public void doConversationTest() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 2);
 
     Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /conversation");
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "example.Greeter/Conversation");
     String operationId = rdEnvelope1.getTags().get("ai.operation.id");
 
     List<Envelope> rddList =
-        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
     // auto-collected grpc events are suppressed by exporter because they are noisy
-    assertEquals(0, mockedIngestion.getCountForType("MessageData", operationId));
+    assertThat(testing.mockedIngestion.getCountForType("MessageData", operationId)).isZero();
 
     Envelope rddEnvelope = getDependencyEnvelope(rddList, "example.Greeter/Conversation");
 
@@ -95,13 +94,13 @@ abstract class GrpcTest {
     RemoteDependencyData rdd =
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-    assertEquals("localhost:10203", rdd.getTarget());
+    assertThat(rdd.getTarget()).isEqualTo("localhost:10203");
 
-    assertTrue(rd1.getProperties().isEmpty());
-    assertTrue(rd1.getSuccess());
+    assertThat(rd1.getProperties()).isEmpty();
+    assertThat(rd1.getSuccess()).isTrue();
 
-    assertTrue(rdd.getProperties().isEmpty());
-    assertTrue(rdd.getSuccess());
+    assertThat(rdd.getProperties()).isEmpty();
+    assertThat(rdd.getSuccess()).isTrue();
 
     // TODO (trask): verify rd2
 

@@ -54,13 +54,13 @@ public class SpringCloudStreamTest extends AiJarSmokeTest {
   @Test
   @TargetUri("/sendMessage")
   public void doMostBasicTest() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 2);
 
     Envelope rdEnvelope1 = rdList.get(0);
     String operationId = rdEnvelope1.getTags().get("ai.operation.id");
     List<Envelope> rddList =
-        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
+        testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+    assertEquals(0, testing.mockedIngestion.getCountForType("EventData"));
 
     Envelope rdEnvelope2 = rdList.get(1);
     Envelope rddEnvelope1 = rddList.get(0);
@@ -71,8 +71,8 @@ public class SpringCloudStreamTest extends AiJarSmokeTest {
         (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
 
     assertEquals("GET /sendMessage", rd1.getName());
-    assertTrue(rd1.getProperties().isEmpty());
-    assertTrue(rd1.getSuccess());
+    assertThat(rd1.getProperties()).isEmpty();
+    assertThat(rd1.getSuccess()).isTrue();
 
     assertEquals("greetings send", rdd1.getName());
     assertNull(rdd1.getData());

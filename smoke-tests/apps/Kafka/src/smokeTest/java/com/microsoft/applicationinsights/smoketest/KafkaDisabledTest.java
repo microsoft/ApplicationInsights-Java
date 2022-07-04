@@ -53,12 +53,12 @@ public class KafkaDisabledTest extends AiJarSmokeTest {
   @Test
   @TargetUri("/sendMessage")
   public void doMostBasicTest() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     Envelope rdEnvelope = rdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
+    assertEquals(0, testing.mockedIngestion.getCountForType("EventData"));
 
     assertEquals("GET /sendMessage", rd.getName());
     assertEquals("200", rd.getResponseCode());
@@ -66,19 +66,19 @@ public class KafkaDisabledTest extends AiJarSmokeTest {
     assertTrue(rd.getSuccess());
 
     // verify the downstream http dependency that is no longer part of the same trace
-    List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+    List<Envelope> rddList = testing.mockedIngestion.waitForItems("RemoteDependencyData", 1);
     Envelope rddEnvelope = rddList.get(0);
     RemoteDependencyData rdd =
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
     assertEquals("GET /", rdd.getName());
     assertEquals("https://www.bing.com", rdd.getData());
-    assertTrue(rdd.getProperties().isEmpty());
-    assertTrue(rdd.getSuccess());
+    assertThat(rdd.getProperties()).isEmpty();
+    assertThat(rdd.getSuccess()).isTrue();
 
     // sleep a bit and make sure no kafka "requests" or dependencies are reported
     Thread.sleep(5000);
-    assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-    assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
+    assertEquals(1, testing.mockedIngestion.getCountForType("RequestData"));
+    assertEquals(1, testing.mockedIngestion.getCountForType("RemoteDependencyData"));
   }
 }

@@ -75,9 +75,9 @@ public class OpenTelemetryMetricTest extends AiWarSmokeTest {
   }
 
   private void validateHistogramMetric(String name) throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     List<Envelope> metrics =
-        mockedIngestion.waitForItems(getMetricPredicate(name), 1, 40, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForItems(getMetricPredicate(name), 1, 40, TimeUnit.SECONDS);
     assertEquals(1, metrics.size());
 
     Envelope rdEnvelope = rdList.get(0);
@@ -111,9 +111,9 @@ public class OpenTelemetryMetricTest extends AiWarSmokeTest {
   }
 
   private void validateGaugeMetric(String name) throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     List<Envelope> metrics =
-        mockedIngestion.waitForItems(getMetricPredicate(name), 1, 40, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForItems(getMetricPredicate(name), 1, 40, TimeUnit.SECONDS);
     assertEquals(1, metrics.size());
 
     Envelope rdEnvelope = rdList.get(0);
@@ -145,9 +145,9 @@ public class OpenTelemetryMetricTest extends AiWarSmokeTest {
   }
 
   private void validateCounterMetric(String name) throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     List<Envelope> metrics =
-        mockedIngestion.waitForItems(getMetricPredicate(name), 3, 40, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForItems(getMetricPredicate(name), 3, 40, TimeUnit.SECONDS);
     assertEquals(3, metrics.size());
 
     metrics.sort(

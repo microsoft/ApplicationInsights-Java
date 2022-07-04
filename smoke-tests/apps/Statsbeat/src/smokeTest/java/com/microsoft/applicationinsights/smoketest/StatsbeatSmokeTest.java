@@ -38,7 +38,8 @@ public class StatsbeatSmokeTest extends AiWarSmokeTest {
   @TargetUri(value = "/index.jsp")
   public void testStatsbeat() throws Exception {
     List<Envelope> metrics =
-        mockedIngestion.waitForItems(getMetricPredicate("Feature"), 2, 70, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForItems(
+            getMetricPredicate("Feature"), 2, 70, TimeUnit.SECONDS);
 
     MetricData data = (MetricData) ((Data<?>) metrics.get(0).getData()).getBaseData();
     assertCommon(data);
@@ -56,7 +57,7 @@ public class StatsbeatSmokeTest extends AiWarSmokeTest {
     assertEquals(9, instrumentationData.getProperties().size());
 
     List<Envelope> attachMetrics =
-        mockedIngestion.waitForItems(getMetricPredicate("Attach"), 1, 70, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForItems(getMetricPredicate("Attach"), 1, 70, TimeUnit.SECONDS);
 
     MetricData attachData = (MetricData) ((Data<?>) attachMetrics.get(0).getData()).getBaseData();
     assertCommon(attachData);
@@ -64,7 +65,7 @@ public class StatsbeatSmokeTest extends AiWarSmokeTest {
     assertEquals(8, attachData.getProperties().size());
 
     List<Envelope> requestSuccessCountMetrics =
-        mockedIngestion.waitForItems(
+        testing.mockedIngestion.waitForItems(
             getMetricPredicate("Request Success Count"), 1, 70, TimeUnit.SECONDS);
 
     MetricData requestSuccessCountData =
@@ -75,7 +76,7 @@ public class StatsbeatSmokeTest extends AiWarSmokeTest {
     assertEquals(9, requestSuccessCountData.getProperties().size());
 
     List<Envelope> requestDurationMetrics =
-        mockedIngestion.waitForItems(
+        testing.mockedIngestion.waitForItems(
             getMetricPredicate("Request Duration"), 1, 70, TimeUnit.SECONDS);
 
     MetricData requestDurationData =

@@ -50,14 +50,14 @@ public class SpringBootControllerSpansEnabledTest extends AiWarSmokeTest {
   @Test
   @TargetUri("/basic/trackEvent")
   public void trackEvent() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
 
-    mockedIngestion.waitForItemsInOperation("EventData", 2, operationId);
+    testing.mockedIngestion.waitForItemsInOperation("EventData", 2, operationId);
 
     // TODO get event data envelope and verify value
-    List<EventData> data = mockedIngestion.getTelemetryDataByTypeInRequest("EventData");
+    List<EventData> data = testing.mockedIngestion.getTelemetryDataByTypeInRequest("EventData");
     assertThat(
         data,
         hasItem(
@@ -109,14 +109,14 @@ public class SpringBootControllerSpansEnabledTest extends AiWarSmokeTest {
   @Test
   @TargetUri("/throwsException")
   public void testResultCodeWhenRestControllerThrows() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     List<Envelope> rddList =
-        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
     List<Envelope> edList =
-        mockedIngestion.waitForItems(
+        testing.mockedIngestion.waitForItems(
             new Predicate<Envelope>() {
               @Override
               public boolean test(Envelope input) {
@@ -134,7 +134,7 @@ public class SpringBootControllerSpansEnabledTest extends AiWarSmokeTest {
             1,
             10,
             TimeUnit.SECONDS);
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
+    assertEquals(0, testing.mockedIngestion.getCountForType("EventData"));
 
     Envelope rddEnvelope1 = rddList.get(0);
     Envelope edEnvelope1 = edList.get(0);
@@ -164,13 +164,13 @@ public class SpringBootControllerSpansEnabledTest extends AiWarSmokeTest {
   @Test
   @TargetUri("/asyncDependencyCall")
   public void testAsyncDependencyCall() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     List<Envelope> rddList =
-        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 3, operationId);
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
+        testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 3, operationId);
+    assertEquals(0, testing.mockedIngestion.getCountForType("EventData"));
 
     Envelope rddEnvelope1 = rddList.get(0);
     Envelope rddEnvelope2 = rddList.get(1);

@@ -29,6 +29,6 @@ public class WebAutoTest extends AiWarSmokeTest {
   @Test
   @TargetUri("/test")
   public void doMostBasicTest() throws Exception {
-    mockedIngestion.waitForItems("RequestData", 1);
+    testing.mockedIngestion.waitForItems("RequestData", 1);
   }
 }

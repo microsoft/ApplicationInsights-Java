@@ -44,12 +44,12 @@ public class TelemetryFilteringSmokeTest extends AiWarSmokeTest {
   public void testSampling() throws Exception {
     // super super low chance that number of sampled requests is less than 25
     long start = System.nanoTime();
-    while (mockedIngestion.getCountForType("RequestData") < 25
+    while (testing.mockedIngestion.getCountForType("RequestData") < 25
         && NANOSECONDS.toSeconds(System.nanoTime() - start) < 10) {}
     // wait ten more seconds to before checking that we didn't receive too many
     Thread.sleep(SECONDS.toMillis(10));
-    int requestCount = mockedIngestion.getCountForType("RequestData");
-    int dependencyCount = mockedIngestion.getCountForType("RemoteDependencyData");
+    int requestCount = testing.mockedIngestion.getCountForType("RequestData");
+    int dependencyCount = testing.mockedIngestion.getCountForType("RemoteDependencyData");
     // super super low chance that number of sampled requests/dependencies
     // is less than 25 or greater than 75
     assertThat(requestCount, greaterThanOrEqualTo(25));
@@ -61,9 +61,9 @@ public class TelemetryFilteringSmokeTest extends AiWarSmokeTest {
   @Test
   @TargetUri("/noisy-jdbc")
   public void testNoisyJdbc() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     Thread.sleep(10000);
-    assertThat(mockedIngestion.getCountForType("RemoteDependencyData")).isZero();
+    assertThat(testing.mockedIngestion.getCountForType("RemoteDependencyData")).isZero();
 
     Envelope rdEnvelope = rdList.get(0);
 
@@ -77,14 +77,14 @@ public class TelemetryFilteringSmokeTest extends AiWarSmokeTest {
   @Test
   @TargetUri("/regular-jdbc")
   public void testRegularJdbc() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
 
     List<Envelope> rddList =
-        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
+        testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+    assertEquals(0, testing.mockedIngestion.getCountForType("EventData"));
 
     Envelope rddEnvelope = rddList.get(0);
 
@@ -97,12 +97,12 @@ public class TelemetryFilteringSmokeTest extends AiWarSmokeTest {
     assertTrue(rd.getSuccess());
 
     assertEquals("SQL", rdd.getType());
-    assertEquals("testdb", rdd.getTarget());
+    assertThat(rdd.getTarget()).isEqualTo("testdb");
     assertEquals("SELECT testdb.abc", rdd.getName());
     assertEquals("select * from abc", rdd.getData());
     assertEquals("87654321-0000-0000-0000-0FEEDDADBEEF", rddEnvelope.getIKey());
     assertEquals("app3", rddEnvelope.getTags().get("ai.cloud.role"));
-    assertTrue(rdd.getSuccess());
+    assertThat(rdd.getSuccess()).isTrue();
 
     AiSmokeTest.assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /TelemetryFiltering/*");
   }

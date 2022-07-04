@@ -42,7 +42,7 @@ public class SpringBootAutoTest extends AiWarSmokeTest {
     assertEquals(4, telemetry.rd.getProperties().size());
     assertThat(telemetry.rd.getSuccess()).isTrue();
     // Log processor test
-    List<MessageData> logs = mockedIngestion.getMessageDataInRequest();
+    List<MessageData> logs = testing.mockedIngestion.getMessageDataInRequest();
     MessageData md1 = logs.get(0);
     assertEquals("testValue1::testValue2", md1.getMessage());
   }

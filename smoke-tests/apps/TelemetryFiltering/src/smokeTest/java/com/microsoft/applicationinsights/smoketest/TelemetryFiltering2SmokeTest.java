@@ -29,7 +29,7 @@ public class TelemetryFiltering2SmokeTest extends AiWarSmokeTest {
   @Test
   @TargetUri(value = "/login", callCount = 100)
   public void testSampling() throws Exception {
-    mockedIngestion.waitForItems("RequestData", 100);
-    mockedIngestion.waitForItems("RemoteDependencyData", 100);
+    testing.mockedIngestion.waitForItems("RequestData", 100);
+    testing.mockedIngestion.waitForItems("RemoteDependencyData", 100);
   }
 }

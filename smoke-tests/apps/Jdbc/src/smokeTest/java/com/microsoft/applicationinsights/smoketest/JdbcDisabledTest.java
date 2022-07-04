@@ -36,6 +36,6 @@ public class JdbcDisabledTest extends AiWarSmokeTest {
 
     // sleep a bit and make sure no jdbc dependencies are reported
     Thread.sleep(5000);
-    assertThat(mockedIngestion.getCountForType("RemoteDependencyData")).isZero();
+    assertThat(testing.mockedIngestion.getCountForType("RemoteDependencyData")).isZero();
   }
 }

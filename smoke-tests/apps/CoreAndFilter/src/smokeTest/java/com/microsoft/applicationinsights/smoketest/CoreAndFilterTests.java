@@ -96,18 +96,19 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
   @Test
   @TargetUri("/trackEvent")
   public void testTrackEvent() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
-    List<Envelope> edList = mockedIngestion.waitForItemsInOperation("EventData", 2, operationId);
+    List<Envelope> edList =
+        testing.mockedIngestion.waitForItemsInOperation("EventData", 2, operationId);
 
     Envelope edEnvelope1 = edList.get(0);
     Envelope edEnvelope2 = edList.get(1);
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-    List<EventData> events = mockedIngestion.getTelemetryDataByTypeInRequest("EventData");
+    List<EventData> events = testing.mockedIngestion.getTelemetryDataByTypeInRequest("EventData");
     events.sort(Comparator.comparing(EventData::getName));
 
     EventData ed1 = events.get(0);
@@ -126,13 +127,13 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
   @Test
   @TargetUri("/trackException")
   public void testTrackException() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     List<Envelope> edList =
-        mockedIngestion.waitForItemsInOperation("ExceptionData", 3, operationId);
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
+        testing.mockedIngestion.waitForItemsInOperation("ExceptionData", 3, operationId);
+    assertEquals(0, testing.mockedIngestion.getCountForType("EventData"));
 
     Envelope edEnvelope1 = edList.get(0);
     Envelope edEnvelope2 = edList.get(1);
@@ -145,7 +146,7 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
     final Double expectedMetrice = 1d;
 
     List<ExceptionData> exceptions =
-        mockedIngestion.getTelemetryDataByTypeInRequest("ExceptionData");
+        testing.mockedIngestion.getTelemetryDataByTypeInRequest("ExceptionData");
     assertThat(exceptions, hasItem(hasException(withMessage(expectedName))));
     assertThat(
         exceptions,
@@ -167,9 +168,9 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
   @Test
   @TargetUri("/trackHttpRequest")
   public void testHttpRequest() throws Exception {
-    mockedIngestion.waitForItems("RequestData", 5);
+    testing.mockedIngestion.waitForItems("RequestData", 5);
 
-    int totalItems = mockedIngestion.getItemCount();
+    int totalItems = testing.mockedIngestion.getItemCount();
     int expectedItems = 5;
     assertEquals(
         String.format("There were %d extra telemetry items received.", totalItems - expectedItems),
@@ -177,7 +178,7 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
         totalItems);
 
     // TODO get HttpRequest data envelope and verify value
-    List<Domain> requests = mockedIngestion.getTelemetryDataByType("RequestData");
+    List<Domain> requests = testing.mockedIngestion.getTelemetryDataByType("RequestData");
     // true
     assertThat(
         requests,
@@ -220,8 +221,8 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
   @Test
   @TargetUri("/trackMetric")
   public void trackMetric() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-    List<Envelope> mdList = mockedIngestion.waitForItems("MetricData", 1);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> mdList = testing.mockedIngestion.waitForItems("MetricData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     Envelope mdEnvelope = mdList.get(0);
@@ -249,11 +250,11 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
   @Test
   @TargetUri("/trackTrace")
   public void testTrackTrace() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
-    List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(3, operationId);
+    List<Envelope> mdList = testing.mockedIngestion.waitForMessageItemsInRequest(3, operationId);
 
     Envelope mdEnvelope1 = mdList.get(0);
     Envelope mdEnvelope2 = mdList.get(1);
@@ -261,7 +262,7 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-    List<MessageData> messages = mockedIngestion.getMessageDataInRequest();
+    List<MessageData> messages = testing.mockedIngestion.getMessageDataInRequest();
     assertThat(messages, hasItem(TraceDataMatchers.hasMessage("This is first trace message.")));
 
     assertThat(
@@ -287,11 +288,11 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
   @Test
   @TargetUri("/trackPageView")
   public void testTrackPageView() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
-    List<Envelope> pvdList = mockedIngestion.waitForItems("PageViewData", 3);
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
+    List<Envelope> pvdList = testing.mockedIngestion.waitForItems("PageViewData", 3);
+    assertEquals(0, testing.mockedIngestion.getCountForType("EventData"));
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
@@ -381,13 +382,13 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
   @Test
   @TargetUri("/doPageView.jsp")
   public void testTrackPageViewJsp() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     List<Envelope> pvdList =
-        mockedIngestion.waitForItemsInOperation("PageViewData", 1, operationId);
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
+        testing.mockedIngestion.waitForItemsInOperation("PageViewData", 1, operationId);
+    assertEquals(0, testing.mockedIngestion.getCountForType("EventData"));
 
     Envelope pvdEnvelope = pvdList.get(0);
 
@@ -403,7 +404,7 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
   @Test
   @TargetUri("/autoFailedRequestWithResultCode")
   public void testAutoFailedRequestWithResultCode() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
 
@@ -430,12 +431,12 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
   @Test
   @TargetUri("/autoExceptionWithFailedRequest")
   public void testAutoExceptionWithFailedRequest() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     List<Envelope> edList =
-        mockedIngestion.waitForItems(
+        testing.mockedIngestion.waitForItems(
             new Predicate<Envelope>() {
               @Override
               public boolean test(Envelope input) {
@@ -468,7 +469,7 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
   @Test
   @TargetUri("/index.jsp")
   public void testRequestJsp() throws Exception {
-    mockedIngestion.waitForItems("RequestData", 1);
+    testing.mockedIngestion.waitForItems("RequestData", 1);
   }
 
   private static ExceptionDetails getExceptionDetails(ExceptionData exceptionData) {
@@ -478,7 +479,7 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
 
   private void validateSlowTest(int expectedDurationSeconds, String operationName)
       throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
 

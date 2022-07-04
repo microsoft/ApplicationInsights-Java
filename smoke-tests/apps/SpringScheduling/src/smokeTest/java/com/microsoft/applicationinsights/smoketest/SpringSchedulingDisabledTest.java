@@ -38,6 +38,6 @@ public class SpringSchedulingDisabledTest extends AiWarSmokeTest {
 
     // sleep a bit and make sure no spring scheduling "requests" are reported
     Thread.sleep(5000);
-    assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+    assertEquals(1, testing.mockedIngestion.getCountForType("RequestData"));
   }
 }

@@ -38,6 +38,6 @@ public class MicrometerDisabledTest extends AiJarSmokeTest {
 
     // sleep a bit and make sure no micrometer metrics are reported
     Thread.sleep(10000);
-    assertEquals(0, mockedIngestion.getCountForType("MetricData"));
+    assertEquals(0, testing.mockedIngestion.getCountForType("MetricData"));
   }
 }

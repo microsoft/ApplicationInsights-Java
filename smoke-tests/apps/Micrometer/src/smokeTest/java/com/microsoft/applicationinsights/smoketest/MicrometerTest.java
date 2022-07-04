@@ -52,7 +52,7 @@ public class MicrometerTest extends AiJarSmokeTest {
     Thread.sleep(10000);
 
     List<Envelope> metricItems =
-        mockedIngestion.getItemsEnvelopeDataType("MetricData").stream()
+        testing.mockedIngestion.getItemsEnvelopeDataType("MetricData").stream()
             .filter(
                 e -> {
                   MetricData data = (MetricData) ((Data<?>) e.getData()).getBaseData();

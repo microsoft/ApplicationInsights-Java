@@ -41,11 +41,11 @@ public class TraceLog4j12Test extends AiWarSmokeTest {
   @Test
   @TargetUri("/traceLog4j12")
   public void testTraceLog4j12() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
-    List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(3, operationId);
+    List<Envelope> mdList = testing.mockedIngestion.waitForMessageItemsInRequest(3, operationId);
 
     Envelope mdEnvelope1 = mdList.get(0);
     Envelope mdEnvelope2 = mdList.get(1);
@@ -53,7 +53,7 @@ public class TraceLog4j12Test extends AiWarSmokeTest {
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-    List<MessageData> logs = mockedIngestion.getMessageDataInRequest();
+    List<MessageData> logs = testing.mockedIngestion.getMessageDataInRequest();
     logs.sort(Comparator.comparing(MessageData::getSeverityLevel));
 
     MessageData md1 = logs.get(0);
@@ -90,13 +90,13 @@ public class TraceLog4j12Test extends AiWarSmokeTest {
   @Test
   @TargetUri("traceLog4j1_2WithException")
   public void testTraceLog4j1_2WithExeption() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     List<Envelope> edList =
-        mockedIngestion.waitForItemsInOperation("ExceptionData", 1, operationId);
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
+        testing.mockedIngestion.waitForItemsInOperation("ExceptionData", 1, operationId);
+    assertEquals(0, testing.mockedIngestion.getCountForType("EventData"));
 
     Envelope edEnvelope = edList.get(0);
 
