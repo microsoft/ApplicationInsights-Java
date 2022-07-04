@@ -1,0 +1,10 @@
+{
+  "preview": {
+    "inheritedAttributes": [
+      {
+        "key": "tenant",
+        "type": "string"
+      }
+    ]
+  }
+}

@@ -36,7 +36,7 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
 import org.junit.Test;
 
-@UseAgent("telemetryfiltering")
+@UseAgent("telemetryfiltering_applicationinsights.json")
 public class TelemetryFilteringSmokeTest extends AiWarSmokeTest {
 
   @Test
@@ -70,7 +70,7 @@ public class TelemetryFilteringSmokeTest extends AiWarSmokeTest {
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
     assertEquals("00000000-0000-0000-0000-0FEEDDADBEEF", rdEnvelope.getIKey());
-    assertEquals("app", rdEnvelope.getTags().get("ai.cloud.role"));
+    assertEquals("testrolename", rdEnvelope.getTags().get("ai.cloud.role"));
     assertTrue(rd.getSuccess());
   }
 

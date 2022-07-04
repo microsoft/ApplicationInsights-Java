@@ -29,7 +29,7 @@ import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import org.junit.Test;
 
-@UseAgent("controller_spans_enabled")
+@UseAgent("controller_spans_enabled_applicationinsights.json")
 public class AzureSdkControllerSpansEnabledTest extends AiWarSmokeTest {
 
   @Test

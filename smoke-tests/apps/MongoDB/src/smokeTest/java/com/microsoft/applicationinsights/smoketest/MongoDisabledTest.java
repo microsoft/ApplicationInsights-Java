@@ -26,11 +26,11 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-@UseAgent("disabled_mongo")
+@UseAgent("disabled_applicationinsights.json")
 @WithDependencyContainers(
     @DependencyContainer(
         value = "mongo:4",
-        portMapping = "27017",
+        exposedPort = 27017,
         hostnameEnvironmentVariable = "MONGO"))
 public class MongoDisabledTest extends AiWarSmokeTest {
 

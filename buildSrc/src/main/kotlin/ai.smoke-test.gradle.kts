@@ -47,6 +47,8 @@ val dependencyManagement by configurations.creating {
   isVisible = false
 }
 
+val agent by configurations.creating
+
 dependencies {
   // FIXME (trask) copy-pasted from ai.java-conventions.gradle
   dependencyManagement(platform(project(":dependencyManagement")))
@@ -65,6 +67,8 @@ dependencies {
   smokeTestImplementation("org.hamcrest:hamcrest-core:2.2")
   smokeTestImplementation("org.hamcrest:hamcrest-library:2.2")
   smokeTestImplementation("junit:junit:4.13.2")
+
+  agent(project(":agent:agent", configuration = "shadow"))
 }
 
 tasks {
@@ -85,7 +89,6 @@ tasks {
     // this is just to force building the agent first
     dependsOn(":agent:agent:shadowJar")
 
-    dependsOn(":smoke-tests:servers:buildDockerImage")
     dependsOn(assemble)
     dependsOn(pullDependencyContainers)
 
@@ -94,16 +97,20 @@ tasks {
 
     doFirst {
 
-      val warFile = aiSmokeTest.testAppArtifactDir.file(aiSmokeTest.testAppArtifactFilename.get()).get()
+      val appFile = aiSmokeTest.testAppArtifactDir.file(aiSmokeTest.testAppArtifactFilename.get()).get()
+      val javaagentFile = agent.singleFile
 
       // need to delay for project to configure the extension
-      jvmArgs("-Dai.smoketest.testAppWarFile=$warFile")
+      systemProperty("ai.smoke-test.test-app-file", appFile)
+      systemProperty("ai.smoke-test.javaagent-file", javaagentFile)
 
-      // There's no real harm in setting this for all tests even if any happen to not be using
-      // context propagation.
-      jvmArgs("-Dio.opentelemetry.context.enableStrictContext=true")
-      // TODO (trask): Have agent map unshaded to shaded.
-      jvmArgs("-Dio.opentelemetry.javaagent.shaded.io.opentelemetry.context.enableStrictContext=true")
+      val smokeTestMatrix = findProperty("smokeTestMatrix") ?: System.getenv("CI") != null
+      systemProperty("ai.smoke-test.matrix", smokeTestMatrix)
+
+      findProperty("smokeTestRemoteDebug")?.let { systemProperty("ai.smoke-test.remote-debug", it) }
+
+      systemProperty("io.opentelemetry.context.enableStrictContext", true)
+      systemProperty("io.opentelemetry.javaagent.shaded.io.opentelemetry.context.enableStrictContext", true)
     }
 
     testLogging {

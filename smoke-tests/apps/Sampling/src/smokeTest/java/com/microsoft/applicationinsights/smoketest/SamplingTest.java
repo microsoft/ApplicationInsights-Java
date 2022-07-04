@@ -32,7 +32,7 @@ import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import java.util.List;
 import org.junit.Test;
 
-@UseAgent("sampling")
+@UseAgent
 public class SamplingTest extends AiWarSmokeTest {
 
   @Test

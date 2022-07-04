@@ -22,11 +22,12 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-@UseAgent("customdimensions")
+@UseAgent
 public class CustomDimensionsTest extends AiWarSmokeTest {
 
   @Test
@@ -35,7 +36,7 @@ public class CustomDimensionsTest extends AiWarSmokeTest {
     Telemetry telemetry = getTelemetry(0);
 
     assertEquals("value", telemetry.rd.getProperties().get("test"));
-    assertEquals("/root", telemetry.rd.getProperties().get("home"));
+    assertNotNull(telemetry.rd.getProperties().get("home"));
     assertEquals(2, telemetry.rd.getProperties().size());
     assertTrue(telemetry.rd.getSuccess());
 

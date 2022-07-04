@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.smoketest.schemav2;
 
-import com.microsoft.applicationinsights.smoketest.telemetry.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 

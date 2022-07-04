@@ -47,6 +47,7 @@ import com.microsoft.applicationinsights.smoketest.matchers.TraceDataMatchers;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
 import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
+import com.microsoft.applicationinsights.smoketest.schemav2.Duration;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.EventData;
 import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionData;
@@ -56,8 +57,6 @@ import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import com.microsoft.applicationinsights.smoketest.schemav2.PageViewData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
-import com.microsoft.applicationinsights.smoketest.telemetry.Duration;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -69,12 +68,9 @@ import org.junit.runners.Parameterized;
 public class CoreAndFilterTests extends AiSmokeTest {
 
   // old Application Insights version that do not support Java 11+
-  @Parameterized.Parameters(name = "{index}: {0}, {1}, {2}")
+  @Parameterized.Parameters(name = "{index}: {0}, {1}")
   public static List<Object[]> parameterGenerator() {
-    return Arrays.asList(
-        new Object[] {"jetty9", "linux", "azul_zulu-openjdk_8"},
-        new Object[] {"tomcat85", "linux", "azul_zulu-openjdk_8"},
-        new Object[] {"wildfly11", "linux", "azul_zulu-openjdk_8"});
+    return AiWarSmokeTest.parameterGeneratorJava8();
   }
 
   @Test
@@ -257,9 +253,11 @@ public class CoreAndFilterTests extends AiSmokeTest {
   @TargetUri("/trackTrace")
   public void testTrackTrace() throws Exception {
     List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-    List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(3);
 
     Envelope rdEnvelope = rdList.get(0);
+    String operationId = rdEnvelope.getTags().get("ai.operation.id");
+    List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(3, operationId);
+
     Envelope mdEnvelope1 = mdList.get(0);
     Envelope mdEnvelope2 = mdList.get(1);
     Envelope mdEnvelope3 = mdList.get(2);

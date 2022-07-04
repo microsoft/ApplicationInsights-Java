@@ -31,7 +31,7 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
 import org.junit.Test;
 
-@UseAgent("disabled_jms")
+@UseAgent("disabled_applicationinsights.json")
 public class JmsDisabledTest extends AiJarSmokeTest {
 
   @Test

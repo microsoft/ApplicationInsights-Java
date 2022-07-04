@@ -22,21 +22,44 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.junit.runners.Parameterized;
 
 public abstract class AiWarSmokeTest extends AiSmokeTest {
 
-  @Parameterized.Parameters(name = "{index}: {0}, {1}, {2}")
+  private static final String PREFIX =
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet";
+  private static final String SUFFIX = "20211216.1584506476";
+
+  private static final String TOMCAT_APP_DIR = "/server/webapps";
+  private static final String WILDFLY_APP_DIR = "/opt/jboss/wildfly/standalone/deployments";
+
+  @Parameterized.Parameters(name = "{index}: {0} {1}")
   public static List<Object[]> parameterGenerator() {
-    return Arrays.asList(
-        new Object[] {"jetty9", "linux", "azul_zulu-openjdk_8"},
-        new Object[] {"jetty9", "linux", "azul_zulu-openjdk_11"},
-        new Object[] {"jetty9", "linux", "azul_zulu-openjdk_17"},
-        new Object[] {"tomcat85", "linux", "azul_zulu-openjdk_8"},
-        new Object[] {"tomcat85", "linux", "azul_zulu-openjdk_11"},
-        new Object[] {"tomcat85", "linux", "azul_zulu-openjdk_17"},
-        // wildfly 11 doesn't support Java 11+
-        new Object[] {"wildfly11", "linux", "azul_zulu-openjdk_8"});
+    if (USE_MATRIX) {
+      return Arrays.asList(
+          // TODO (trask) add Java 18
+          new Object[] {PREFIX + "-tomcat:8.5.72-jdk8-" + SUFFIX, TOMCAT_APP_DIR},
+          new Object[] {PREFIX + "-tomcat:8.5.72-jdk8-openj9-" + SUFFIX, TOMCAT_APP_DIR},
+          new Object[] {PREFIX + "-tomcat:8.5.72-jdk11-" + SUFFIX, TOMCAT_APP_DIR},
+          new Object[] {PREFIX + "-tomcat:8.5.72-jdk11-openj9-" + SUFFIX, TOMCAT_APP_DIR},
+          new Object[] {PREFIX + "-tomcat:8.5.72-jdk17-" + SUFFIX, TOMCAT_APP_DIR},
+          new Object[] {PREFIX + "-wildfly:13.0.0.Final-jdk8-" + SUFFIX, WILDFLY_APP_DIR});
+    } else {
+      return Collections.singletonList(
+          new Object[] {PREFIX + "-tomcat:8.5.72-jdk8-" + SUFFIX, TOMCAT_APP_DIR});
+    }
+  }
+
+  public static List<Object[]> parameterGeneratorJava8() {
+    if (USE_MATRIX) {
+      return Arrays.asList(
+          new Object[] {PREFIX + "-tomcat:8.5.72-jdk8-" + SUFFIX, TOMCAT_APP_DIR},
+          new Object[] {PREFIX + "-wildfly:13.0.0.Final-jdk8-" + SUFFIX, WILDFLY_APP_DIR});
+    } else {
+      return Collections.singletonList(
+          new Object[] {PREFIX + "-tomcat:8.5.72-jdk8-" + SUFFIX, TOMCAT_APP_DIR});
+    }
   }
 }

@@ -27,7 +27,6 @@ import static org.junit.Assert.assertNull;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
-import com.microsoft.applicationinsights.smoketest.schemav2.DataPointType;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.List;
@@ -35,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import org.junit.Test;
 
-@UseAgent("micrometer")
+@UseAgent
 public class MicrometerTest extends AiJarSmokeTest {
 
   @Test

@@ -1,0 +1,10 @@
+{
+  "preview": {
+    "metricIntervalSeconds": 10
+  },
+  "customDimensions": {
+    "tag1": "abc",
+    "tag2": "def",
+    "service.version": "123"
+  }
+}

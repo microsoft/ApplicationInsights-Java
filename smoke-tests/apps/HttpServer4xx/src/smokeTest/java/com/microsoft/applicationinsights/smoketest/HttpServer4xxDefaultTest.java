@@ -28,7 +28,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-@UseAgent()
+@UseAgent
 public class HttpServer4xxDefaultTest extends AiWarSmokeTest {
 
   @Test

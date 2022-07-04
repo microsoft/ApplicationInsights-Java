@@ -1,0 +1,21 @@
+{
+  "preview": {
+    "statsbeat": {
+      "disabled": false
+    }
+  },
+  "customDimensions": {
+    "tag1": "abc",
+    "tag2": "def",
+    "service.version": "123"
+  },
+  "internal": {
+    "statsbeat": {
+      "disabledAll": false,
+      "instrumentationKey": "00000000-0000-0000-0000-0FEEDDADBEEG",
+      "endpoint": "http://host.testcontainers.internal:6060/",
+      "shortIntervalSeconds": 30,
+      "longIntervalSeconds": 30
+    }
+  }
+}

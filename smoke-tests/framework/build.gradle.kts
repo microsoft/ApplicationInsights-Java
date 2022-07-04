@@ -13,5 +13,11 @@ dependencies {
 
   implementation("org.eclipse.jetty.aggregate:jetty-all:9.4.39.v20210325")
 
+  implementation("org.testcontainers:testcontainers:1.17.3")
+
+  implementation("org.awaitility:awaitility:4.2.0")
+
+  implementation("ch.qos.logback:logback-classic")
+
   testImplementation("org.assertj:assertj-core")
 }

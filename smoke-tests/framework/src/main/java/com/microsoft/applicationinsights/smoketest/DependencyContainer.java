@@ -34,7 +34,7 @@ public @interface DependencyContainer {
 
   String[] environmentVariables() default {};
 
-  String portMapping();
+  int exposedPort();
 
   /**
    * The environment variable used to specify the hostname of this DependencyContainer. If empty,
