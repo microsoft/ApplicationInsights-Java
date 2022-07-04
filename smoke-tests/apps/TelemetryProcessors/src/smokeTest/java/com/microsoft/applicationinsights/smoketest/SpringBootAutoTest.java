@@ -28,14 +28,17 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TO
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
 abstract class SpringBootAutoTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/test")
@@ -64,8 +67,8 @@ abstract class SpringBootAutoTest {
     assertThat(telemetry.rd.getProperties()).containsEntry("attribute1", "testValue1");
     assertThat(telemetry.rd.getProperties()).containsEntry("attribute2", "testValue2");
     assertThat(telemetry.rd.getProperties()).containsEntry("sensitiveAttribute1", "redacted");
-    assertEquals(
-        "*/TelemetryProcessors/sensitivedata*", telemetry.rd.getProperties().get("httpPath"));
+    assertThat(telemetry.rd.getProperties().get("httpPath"))
+        .isEqualTo("*/TelemetryProcessors/sensitivedata*");
     assertThat(telemetry.rd.getProperties()).hasSize(4);
     assertThat(telemetry.rd.getSuccess()).isTrue();
   }

@@ -22,9 +22,8 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertFalse;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -41,10 +40,13 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Environment(TOMCAT_8_JAVA_8)
 @UseAgent("controller_spans_enabled_applicationinsights.json")
 class SpringBootControllerSpansEnabledTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/basic/trackEvent")
@@ -145,14 +147,14 @@ class SpringBootControllerSpansEnabledTest {
     assertThat(rd.getName()).isEqualTo("GET /SpringBootTest/throwsException");
     assertThat(rd.getResponseCode()).isEqualTo("500");
     assertThat(rd.getProperties()).isEmpty();
-    assertFalse(rd.getSuccess());
+    assertThat(rd.getSuccess()).isFalse();
 
     assertThat(rdd1.getName()).isEqualTo("TestController.resultCodeTest");
     assertThat(rdd1.getData()).isNull();
     assertThat(rdd1.getType()).isEqualTo("InProc");
     assertThat(rdd1.getTarget()).isNull();
     assertThat(rdd1.getProperties()).isEmpty();
-    assertFalse(rdd1.getSuccess());
+    assertThat(rdd1.getSuccess()).isFalse();
 
     AiSmokeTest.assertParentChild(
         rd, rdEnvelope, edEnvelope1, "GET /SpringBootTest/throwsException");

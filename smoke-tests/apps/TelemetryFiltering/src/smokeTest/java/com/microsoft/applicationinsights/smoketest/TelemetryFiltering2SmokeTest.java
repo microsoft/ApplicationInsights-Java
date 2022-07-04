@@ -30,9 +30,12 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WI
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent("telemetryfiltering2_applicationinsights.json")
 abstract class TelemetryFiltering2SmokeTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri(value = "/login", callCount = 100)

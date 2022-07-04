@@ -35,9 +35,12 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
 abstract class SpringSchedulingTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/scheduler")

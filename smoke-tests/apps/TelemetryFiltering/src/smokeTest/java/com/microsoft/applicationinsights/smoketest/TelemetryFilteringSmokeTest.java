@@ -30,9 +30,7 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WI
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -40,9 +38,12 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent("telemetryfiltering_applicationinsights.json")
 abstract class TelemetryFilteringSmokeTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri(value = "/health-check", callCount = 100)
@@ -57,10 +58,10 @@ abstract class TelemetryFilteringSmokeTest {
     int dependencyCount = testing.mockedIngestion.getCountForType("RemoteDependencyData");
     // super super low chance that number of sampled requests/dependencies
     // is less than 25 or greater than 75
-    assertThat(requestCount, greaterThanOrEqualTo(25));
-    assertThat(dependencyCount, greaterThanOrEqualTo(25));
-    assertThat(requestCount, lessThanOrEqualTo(75));
-    assertThat(dependencyCount, lessThanOrEqualTo(75));
+    assertThat(requestCount).isGreaterThanOrEqualTo(25);
+    assertThat(dependencyCount).isGreaterThanOrEqualTo(25);
+    assertThat(requestCount).isLessThanOrEqualTo(75);
+    assertThat(dependencyCount).isLessThanOrEqualTo(75);
   }
 
   @Test

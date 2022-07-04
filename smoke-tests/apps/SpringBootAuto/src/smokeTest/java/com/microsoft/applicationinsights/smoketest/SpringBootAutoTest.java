@@ -28,12 +28,15 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TO
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
 abstract class SpringBootAutoTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/test")
@@ -41,9 +44,10 @@ abstract class SpringBootAutoTest {
     Telemetry telemetry = testing.getTelemetry(0);
 
     // TODO verify browser and other envelope tags somewhere else
-    assertTrue(
-        telemetry.rdEnvelope.getTags().get("ai.user.userAgent").startsWith("Apache-HttpClient/"));
-    assertThat(telemetry.rdEnvelope.getTags().get("ai.location.ip")).isNotNull();
+    assertThat(telemetry.rdEnvelope.getTags())
+        .hasEntrySatisfying(
+            "ai.user.userAgent", v -> assertThat(v).startsWith("Apache-HttpClient/"));
+    assertThat(telemetry.rdEnvelope.getTags()).containsKey("ai.location.ip");
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /SpringBootAuto/test");
     assertThat(telemetry.rd.getUrl()).matches("http://localhost:[0-9]+/SpringBootAuto/test");

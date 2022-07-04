@@ -28,6 +28,7 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TO
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -35,16 +36,19 @@ import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
 abstract class StatsbeatSmokeTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri(value = "/index.jsp")
   void testStatsbeat() throws Exception {
     List<Envelope> metrics =
         testing.mockedIngestion.waitForItems(
-            getMetricPredicate("Feature"), 2, 70, TimeUnit.SECONDS);
+            AiSmokeTest.getMetricPredicate("Feature"), 2, 70, TimeUnit.SECONDS);
 
     MetricData data = (MetricData) ((Data<?>) metrics.get(0).getData()).getBaseData();
     assertCommon(data);
@@ -62,7 +66,8 @@ abstract class StatsbeatSmokeTest {
     assertThat(instrumentationData.getProperties()).hasSize(9);
 
     List<Envelope> attachMetrics =
-        testing.mockedIngestion.waitForItems(getMetricPredicate("Attach"), 1, 70, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForItems(
+            AiSmokeTest.getMetricPredicate("Attach"), 1, 70, TimeUnit.SECONDS);
 
     MetricData attachData = (MetricData) ((Data<?>) attachMetrics.get(0).getData()).getBaseData();
     assertCommon(attachData);
@@ -71,7 +76,7 @@ abstract class StatsbeatSmokeTest {
 
     List<Envelope> requestSuccessCountMetrics =
         testing.mockedIngestion.waitForItems(
-            getMetricPredicate("Request Success Count"), 1, 70, TimeUnit.SECONDS);
+            AiSmokeTest.getMetricPredicate("Request Success Count"), 1, 70, TimeUnit.SECONDS);
 
     MetricData requestSuccessCountData =
         (MetricData) ((Data<?>) requestSuccessCountMetrics.get(0).getData()).getBaseData();
@@ -82,7 +87,7 @@ abstract class StatsbeatSmokeTest {
 
     List<Envelope> requestDurationMetrics =
         testing.mockedIngestion.waitForItems(
-            getMetricPredicate("Request Duration"), 1, 70, TimeUnit.SECONDS);
+            AiSmokeTest.getMetricPredicate("Request Duration"), 1, 70, TimeUnit.SECONDS);
 
     MetricData requestDurationData =
         (MetricData) ((Data<?>) requestDurationMetrics.get(0).getData()).getBaseData();

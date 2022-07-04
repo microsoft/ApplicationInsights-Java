@@ -30,17 +30,17 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WI
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
 abstract class SamplingTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri(value = "/sampling", callCount = 100)
@@ -57,16 +57,16 @@ abstract class SamplingTest {
     List<Envelope> eventEnvelopes = testing.mockedIngestion.getItemsEnvelopeDataType("EventData");
     // super super low chance that number of sampled requests/dependencies/events
     // is less than 25 or greater than 75
-    assertThat(requestEnvelopes.size(), greaterThanOrEqualTo(25));
-    assertThat(requestEnvelopes.size(), lessThanOrEqualTo(75));
-    assertThat(eventEnvelopes.size(), greaterThanOrEqualTo(25));
-    assertThat(eventEnvelopes.size(), lessThanOrEqualTo(75));
+    assertThat(requestEnvelopes.size()).isGreaterThanOrEqualTo(25);
+    assertThat(requestEnvelopes.size()).isLessThanOrEqualTo(75);
+    assertThat(eventEnvelopes.size()).isGreaterThanOrEqualTo(25);
+    assertThat(eventEnvelopes.size()).isLessThanOrEqualTo(75);
 
     for (Envelope requestEnvelope : requestEnvelopes) {
-      assertEquals(50, requestEnvelope.getSampleRate(), 0);
+      assertThat(requestEnvelope.getSampleRate()).isEqualTo(50);
     }
     for (Envelope eventEnvelope : eventEnvelopes) {
-      assertEquals(50, eventEnvelope.getSampleRate(), 0);
+      assertThat(eventEnvelope.getSampleRate()).isEqualTo(50);
     }
 
     for (Envelope requestEnvelope : requestEnvelopes) {

@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.smoketest;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -31,6 +32,7 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
 @WithDependencyContainers({
@@ -50,6 +52,8 @@ import org.junit.jupiter.api.Test;
       hostnameEnvironmentVariable = "KAFKA")
 })
 abstract class SpringCloudStreamTest {
+
+  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
   @Test
   @TargetUri("/sendMessage")
