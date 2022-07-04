@@ -335,15 +335,15 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
     assertThat(pv2.getProperties()).containsEntry("a-prop", "a-value");
     assertThat(pv2.getProperties()).containsEntry("another-prop", "another-value");
     // operation name is verified below in assertParentChild()
-    assertThat(pvdEnvelope2.getTags().get("ai.user.id")).isEqualTo("user-id-goes-here");
-    assertThat(pvdEnvelope2.getTags().get("ai.user.accountId")).isEqualTo("account-id-goes-here");
-    assertThat(pvdEnvelope2.getTags().get("ai.user.userAgent")).isEqualTo("user-agent-goes-here");
-    assertThat(pvdEnvelope2.getTags().get("ai.device.os")).isEqualTo("os-goes-here");
-    assertThat(pvdEnvelope2.getTags().get("ai.session.id")).isEqualTo("session-id-goes-here");
-    assertThat(pvdEnvelope2.getTags().get("ai.location.ip")).isEqualTo("1.2.3.4");
+    assertThat(pvdEnvelope2.getTags()).containsEntry("ai.user.id", "user-id-goes-here");
+    assertThat(pvdEnvelope2.getTags()).containsEntry("ai.user.accountId", "account-id-goes-here");
+    assertThat(pvdEnvelope2.getTags()).containsEntry("ai.user.userAgent", "user-agent-goes-here");
+    assertThat(pvdEnvelope2.getTags()).containsEntry("ai.device.os", "os-goes-here");
+    assertThat(pvdEnvelope2.getTags()).containsEntry("ai.session.id", "session-id-goes-here");
+    assertThat(pvdEnvelope2.getTags()).containsEntry("ai.location.ip", "1.2.3.4");
     // checking that instrumentation key, cloud role name and cloud role instance are overridden
     assertThat(pvdEnvelope2.getIKey()).isEqualTo("12341234-1234-1234-1234-123412341234");
-    assertThat(pvdEnvelope2.getTags().get("ai.cloud.role")).isEqualTo("role-goes-here");
+    assertThat(pvdEnvelope2.getTags()).containsEntry("ai.cloud.role", "role-goes-here");
     assertThat(pvdEnvelope2.getTags().get("ai.cloud.roleInstance"))
         .isEqualTo("role-instance-goes-here");
     // checking that sdk version is from the agent
@@ -356,28 +356,28 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
     assertThat(pv3.getProperties().get("a-prop")).isEqualTo("a-value");
     assertThat(pv3.getProperties().get("another-prop")).isEqualTo("another-value");
     // operation name is verified below in assertParentChild()
-    assertThat(pvdEnvelope3.getTags().get("ai.user.id")).isEqualTo("user-id-goes-here");
-    assertThat(pvdEnvelope3.getTags().get("ai.user.accountId")).isEqualTo("account-id-goes-here");
-    assertThat(pvdEnvelope3.getTags().get("ai.user.userAgent")).isEqualTo("user-agent-goes-here");
-    assertThat(pvdEnvelope3.getTags().get("ai.device.os")).isEqualTo("os-goes-here");
-    assertThat(pvdEnvelope3.getTags().get("ai.session.id")).isEqualTo("session-id-goes-here");
-    assertThat(pvdEnvelope3.getTags().get("ai.location.ip")).isEqualTo("1.2.3.4");
+    assertThat(pvdEnvelope3.getTags()).containsEntry("ai.user.id", "user-id-goes-here");
+    assertThat(pvdEnvelope3.getTags()).containsEntry("ai.user.accountId", "account-id-goes-here");
+    assertThat(pvdEnvelope3.getTags()).containsEntry("ai.user.userAgent", "user-agent-goes-here");
+    assertThat(pvdEnvelope3.getTags()).containsEntry("ai.device.os", "os-goes-here");
+    assertThat(pvdEnvelope3.getTags()).containsEntry("ai.session.id", "session-id-goes-here");
+    assertThat(pvdEnvelope3.getTags()).containsEntry("ai.location.ip", "1.2.3.4");
     // checking that instrumentation key, cloud role name and cloud role instance are from the agent
     assertThat(pvdEnvelope3.getIKey()).isEqualTo("00000000-0000-0000-0000-0FEEDDADBEEF");
-    assertThat(pvdEnvelope3.getTags().get("ai.cloud.role")).isEqualTo("testrolename");
-    assertThat(pvdEnvelope3.getTags().get("ai.cloud.roleInstance")).isEqualTo("testroleinstance");
+    assertThat(pvdEnvelope3.getTags()).containsEntry("ai.cloud.role", "testrolename");
+    assertThat(pvdEnvelope3.getTags()).containsEntry("ai.cloud.roleInstance", "testroleinstance");
     // checking that sdk version is from the agent
     assertTrue(pvdEnvelope3.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
 
     AiSmokeTest.assertParentChild(rd, rdEnvelope, pvdEnvelope1, "GET /CoreAndFilter/trackPageView");
 
-    assertThat(pvdEnvelope2.getTags().get("ai.operation.id")).isEqualTo("operation-id-goes-here");
+    assertThat(pvdEnvelope2.getTags()).containsEntry("ai.operation.id", "operation-id-goes-here");
     assertEquals(
         "operation-parent-id-goes-here", pvdEnvelope2.getTags().get("ai.operation.parentId"));
     assertThat(pvdEnvelope2.getTags().get("ai.operation.name"))
         .isEqualTo("operation-name-goes-here");
 
-    assertThat(pvdEnvelope3.getTags().get("ai.operation.id")).isEqualTo("operation-id-goes-here");
+    assertThat(pvdEnvelope3.getTags()).containsEntry("ai.operation.id", "operation-id-goes-here");
     assertEquals(
         "operation-parent-id-goes-here", pvdEnvelope3.getTags().get("ai.operation.parentId"));
     assertThat(pvdEnvelope3.getTags().get("ai.operation.name"))
@@ -418,7 +418,7 @@ abstract class CoreAndFilterTests extends AiSmokeTest {
     assertEquals(false, rd.getSuccess());
     assertThat(rd.getResponseCode()).isEqualTo("404");
 
-    assertThat(rdEnvelope.getTags().get("ai.operation.name")).isEqualTo("GET /CoreAndFilter/*");
+    assertThat(rdEnvelope.getTags()).containsEntry("ai.operation.name", "GET /CoreAndFilter/*");
   }
 
   @Test

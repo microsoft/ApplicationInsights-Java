@@ -59,11 +59,11 @@ abstract class OpenTelemetryApiSupportTest {
     // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are
     // from the agent
     assertThat(telemetry.rdEnvelope.getIKey()).isEqualTo("00000000-0000-0000-0000-0FEEDDADBEEF");
-    assertThat(telemetry.rdEnvelope.getTags().get("ai.cloud.role")).isEqualTo("testrolename");
+    assertThat(telemetry.rdEnvelope.getTags()).containsEntry("ai.cloud.role", "testrolename");
     assertThat(telemetry.rdEnvelope.getTags().get("ai.cloud.roleInstance"))
         .isEqualTo("testroleinstance");
     assertTrue(telemetry.rdEnvelope.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
-    assertThat(telemetry.rdEnvelope.getTags().get("ai.user.id")).isEqualTo("myuser");
+    assertThat(telemetry.rdEnvelope.getTags()).containsEntry("ai.user.id", "myuser");
   }
 
   @Test
@@ -87,7 +87,7 @@ abstract class OpenTelemetryApiSupportTest {
     // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are
     // from the agent
     assertThat(telemetry.rdEnvelope.getIKey()).isEqualTo("12341234-1234-1234-1234-123412341234");
-    assertThat(telemetry.rdEnvelope.getTags().get("ai.cloud.role")).isEqualTo("role-name-here");
+    assertThat(telemetry.rdEnvelope.getTags()).containsEntry("ai.cloud.role", "role-name-here");
     assertThat(telemetry.rdEnvelope.getTags().get("ai.cloud.roleInstance"))
         .isEqualTo("role-instance-here");
     assertEquals(

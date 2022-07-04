@@ -75,7 +75,7 @@ abstract class TelemetryFilteringSmokeTest {
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
     assertThat(rdEnvelope.getIKey()).isEqualTo("00000000-0000-0000-0000-0FEEDDADBEEF");
-    assertThat(rdEnvelope.getTags().get("ai.cloud.role")).isEqualTo("testrolename");
+    assertThat(rdEnvelope.getTags()).containsEntry("ai.cloud.role", "testrolename");
     assertThat(rd.getSuccess()).isTrue();
   }
 
@@ -98,7 +98,7 @@ abstract class TelemetryFilteringSmokeTest {
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
     assertThat(rdEnvelope.getIKey()).isEqualTo("87654321-0000-0000-0000-0FEEDDADBEEF");
-    assertThat(rdEnvelope.getTags().get("ai.cloud.role")).isEqualTo("app3");
+    assertThat(rdEnvelope.getTags()).containsEntry("ai.cloud.role", "app3");
     assertThat(rd.getSuccess()).isTrue();
 
     assertThat(rdd.getType()).isEqualTo("SQL");
@@ -106,7 +106,7 @@ abstract class TelemetryFilteringSmokeTest {
     assertThat(rdd.getName()).isEqualTo("SELECT testdb.abc");
     assertThat(rdd.getData()).isEqualTo("select * from abc");
     assertThat(rddEnvelope.getIKey()).isEqualTo("87654321-0000-0000-0000-0FEEDDADBEEF");
-    assertThat(rddEnvelope.getTags().get("ai.cloud.role")).isEqualTo("app3");
+    assertThat(rddEnvelope.getTags()).containsEntry("ai.cloud.role", "app3");
     assertThat(rdd.getSuccess()).isTrue();
 
     AiSmokeTest.assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /TelemetryFiltering/*");
