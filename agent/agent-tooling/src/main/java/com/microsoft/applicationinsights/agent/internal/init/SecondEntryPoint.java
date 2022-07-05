@@ -106,7 +106,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
   @Nullable private static BatchSpanProcessor batchSpanProcessor;
   @Nullable private static MetricReader metricReader;
 
-  public String readFile(String resourceName) throws IOException {
+  private static String readFile(String resourceName) throws IOException {
     InputStream is = getClass().getClassLoader().getResourceAsStream(resourceName);
     ByteArrayOutputStream result = new ByteArrayOutputStream();
     byte[] buffer = new byte[1024];
