@@ -21,32 +21,14 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.ExceptionDetailsMatchers.withMessage;
-import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.hasException;
-import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.hasMeasurement;
-import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.hasSeverityLevel;
-import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasDuration;
-import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasName;
-import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasResponseCode;
-import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasSuccess;
-import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasUrl;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.both;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers;
-import com.microsoft.applicationinsights.smoketest.matchers.TraceDataMatchers;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
-import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
 import com.microsoft.applicationinsights.smoketest.schemav2.Duration;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.EventData;
@@ -61,35 +43,31 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
-import org.junit.Test;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-public class CoreAndFilterTests extends AiSmokeTest {
+abstract class CoreAndFilterTests {
 
-  // old Application Insights version that do not support Java 11+
-  @Parameterized.Parameters(name = "{index}: {0}, {1}")
-  public static List<Object[]> parameterGenerator() {
-    return AiWarSmokeTest.parameterGeneratorJava8();
-  }
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/trackDependency")
-  public void trackDependency() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void trackDependency() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
     Duration expectedDuration = new Duration(0, 0, 1, 1, 1);
 
-    assertEquals("DependencyTest", telemetry.rdd1.getName());
-    assertEquals("commandName", telemetry.rdd1.getData());
-    assertNull(telemetry.rdd1.getType());
-    assertNull(telemetry.rdd1.getTarget());
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("DependencyTest");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("commandName");
+    assertThat(telemetry.rdd1.getType()).isNull();
+    assertThat(telemetry.rdd1.getTarget()).isNull();
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertEquals(expectedDuration, telemetry.rdd1.getDuration());
+    assertThat(telemetry.rdd1.getDuration()).isEqualTo(expectedDuration);
 
-    assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd,
         telemetry.rdEnvelope,
         telemetry.rddEnvelope1,
@@ -98,44 +76,47 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
   @Test
   @TargetUri("/trackEvent")
-  public void testTrackEvent() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+  void testTrackEvent() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
-    List<Envelope> edList = mockedIngestion.waitForItemsInOperation("EventData", 2, operationId);
+    List<Envelope> edList =
+        testing.mockedIngestion.waitForItemsInOperation("EventData", 2, operationId);
 
     Envelope edEnvelope1 = edList.get(0);
     Envelope edEnvelope2 = edList.get(1);
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-    List<EventData> events = mockedIngestion.getTelemetryDataByTypeInRequest("EventData");
+    List<EventData> events = testing.mockedIngestion.getTelemetryDataByTypeInRequest("EventData");
     events.sort(Comparator.comparing(EventData::getName));
 
     EventData ed1 = events.get(0);
     EventData ed2 = events.get(1);
 
-    assertEquals("EventDataPropertyTest", ed1.getName());
-    assertEquals("value", ed1.getProperties().get("key"));
-    assertEquals((Double) 1.0, ed1.getMeasurements().get("key"));
+    assertThat(ed1.getName()).isEqualTo("EventDataPropertyTest");
+    assertThat(ed1.getProperties()).containsEntry("key", "value");
+    assertThat(ed1.getMeasurements()).containsEntry("key", 1.0);
 
-    assertEquals("EventDataTest", ed2.getName());
+    assertThat(ed2.getName()).isEqualTo("EventDataTest");
 
-    assertParentChild(rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter/trackEvent");
-    assertParentChild(rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter/trackEvent");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter/trackEvent");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter/trackEvent");
   }
 
   @Test
   @TargetUri("/trackException")
-  public void testTrackException() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+  void testTrackException() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     List<Envelope> edList =
-        mockedIngestion.waitForItemsInOperation("ExceptionData", 3, operationId);
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
+        testing.mockedIngestion.waitForItemsInOperation("ExceptionData", 3, operationId);
+    assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope edEnvelope1 = edList.get(0);
     Envelope edEnvelope2 = edList.get(1);
@@ -148,83 +129,91 @@ public class CoreAndFilterTests extends AiSmokeTest {
     final Double expectedMetrice = 1d;
 
     List<ExceptionData> exceptions =
-        mockedIngestion.getTelemetryDataByTypeInRequest("ExceptionData");
-    assertThat(exceptions, hasItem(hasException(withMessage(expectedName))));
-    assertThat(
-        exceptions,
-        hasItem(
-            allOf(
-                hasException(withMessage(expectedName)),
-                ExceptionDataMatchers.hasProperty("key", expectedProperties),
-                hasMeasurement("key", expectedMetrice))));
-    assertThat(
-        exceptions,
-        hasItem(
-            allOf(hasException(withMessage(expectedName)), hasSeverityLevel(SeverityLevel.ERROR))));
+        testing.mockedIngestion.getTelemetryDataByTypeInRequest("ExceptionData");
+    assertThat(exceptions)
+        .anySatisfy(
+            e ->
+                assertThat(e.getExceptions())
+                    .extracting(ExceptionDetails::getMessage)
+                    .contains(expectedName));
+    assertThat(exceptions)
+        .anySatisfy(
+            e -> {
+              assertThat(e.getExceptions())
+                  .extracting(ExceptionDetails::getMessage)
+                  .contains(expectedName);
+              assertThat(e.getProperties()).containsEntry("key", expectedProperties);
+              assertThat(e.getMeasurements()).containsEntry("key", expectedMetrice);
+            });
+    assertThat(exceptions)
+        .anySatisfy(
+            e -> {
+              assertThat(e.getExceptions())
+                  .extracting(ExceptionDetails::getMessage)
+                  .contains(expectedName);
+              assertThat(e.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
+            });
 
-    assertParentChild(rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter/trackException");
-    assertParentChild(rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter/trackException");
-    assertParentChild(rd, rdEnvelope, edEnvelope3, "GET /CoreAndFilter/trackException");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter/trackException");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter/trackException");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, edEnvelope3, "GET /CoreAndFilter/trackException");
   }
 
   @Test
   @TargetUri("/trackHttpRequest")
-  public void testHttpRequest() throws Exception {
-    mockedIngestion.waitForItems("RequestData", 5);
+  void testHttpRequest() throws Exception {
+    testing.mockedIngestion.waitForItems("RequestData", 5);
 
-    int totalItems = mockedIngestion.getItemCount();
-    int expectedItems = 5;
-    assertEquals(
-        String.format("There were %d extra telemetry items received.", totalItems - expectedItems),
-        expectedItems,
-        totalItems);
+    int totalItems = testing.mockedIngestion.getItemCount();
+    assertThat(totalItems).isEqualTo(5);
 
     // TODO get HttpRequest data envelope and verify value
-    List<Domain> requests = mockedIngestion.getTelemetryDataByType("RequestData");
-    // true
-    assertThat(
-        requests,
-        hasItem(
-            allOf(
-                hasName("HttpRequestDataTest"),
-                hasResponseCode("200"),
-                hasDuration(new Duration(4711)),
-                hasSuccess(true))));
-    assertThat(
-        requests,
-        hasItem(
-            allOf(
-                hasName("PingTest"),
-                hasResponseCode("200"),
-                hasDuration(new Duration(1)),
-                hasSuccess(true),
-                hasUrl("http://tempuri.org/ping"))));
+    List<RequestData> requests = testing.mockedIngestion.getTelemetryDataByType("RequestData");
 
-    // false
-    assertThat(
-        requests,
-        hasItem(
-            allOf(
-                hasName("FailedHttpRequest"),
-                hasResponseCode("404"),
-                hasDuration(new Duration(6666)),
-                hasSuccess(false))));
-    assertThat(
-        requests,
-        hasItem(
-            allOf(
-                hasName("FailedHttpRequest2"),
-                hasResponseCode("505"),
-                hasDuration(new Duration(8888)),
-                hasSuccess(false),
-                hasUrl("https://www.bingasdasdasdasda.com/"))));
+    assertThat(requests)
+        .anySatisfy(
+            r -> {
+              assertThat(r.getName()).isEqualTo("HttpRequestDataTest");
+              assertThat(r.getResponseCode()).isEqualTo("200");
+              assertThat(r.getDuration()).isEqualTo(new Duration(4711));
+              assertThat(r.getSuccess()).isTrue();
+            });
+    assertThat(requests)
+        .anySatisfy(
+            r -> {
+              assertThat(r.getName()).isEqualTo("PingTest");
+              assertThat(r.getResponseCode()).isEqualTo("200");
+              assertThat(r.getDuration()).isEqualTo(new Duration(1));
+              assertThat(r.getSuccess()).isTrue();
+              assertThat(r.getUrl()).isEqualTo("http://tempuri.org/ping");
+            });
+    assertThat(requests)
+        .anySatisfy(
+            r -> {
+              assertThat(r.getName()).isEqualTo("FailedHttpRequest");
+              assertThat(r.getResponseCode()).isEqualTo("404");
+              assertThat(r.getDuration()).isEqualTo(new Duration(6666));
+              assertThat(r.getSuccess()).isFalse();
+            });
+    assertThat(requests)
+        .anySatisfy(
+            r -> {
+              assertThat(r.getName()).isEqualTo("FailedHttpRequest2");
+              assertThat(r.getResponseCode()).isEqualTo("505");
+              assertThat(r.getDuration()).isEqualTo(new Duration(8888));
+              assertThat(r.getSuccess()).isFalse();
+              assertThat(r.getUrl()).isEqualTo("https://www.bingasdasdasdasda.com/");
+            });
   }
 
   @Test
   @TargetUri("/trackMetric")
-  public void trackMetric() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-    List<Envelope> mdList = mockedIngestion.waitForItems("MetricData", 1);
+  void trackMetric() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> mdList = testing.mockedIngestion.waitForItems("MetricData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     Envelope mdEnvelope = mdList.get(0);
@@ -233,30 +222,30 @@ public class CoreAndFilterTests extends AiSmokeTest {
     MetricData md = (MetricData) ((Data<?>) mdEnvelope.getData()).getBaseData();
 
     List<DataPoint> metrics = md.getMetrics();
-    assertEquals(1, metrics.size());
+    assertThat(metrics).hasSize(1);
     DataPoint dp = metrics.get(0);
 
     final double expectedValue = 111222333.0;
-    double epsilon = Math.ulp(expectedValue);
-    assertEquals(expectedValue, dp.getValue(), epsilon);
-    assertEquals("TimeToRespond", dp.getName());
+    assertThat(dp.getValue()).isEqualTo(expectedValue);
+    assertThat(dp.getName()).isEqualTo("TimeToRespond");
 
-    assertNull("getCount was non-null", dp.getCount());
-    assertNull("getMin was non-null", dp.getMin());
-    assertNull("getMax was non-null", dp.getMax());
-    assertNull("getStdDev was non-null", dp.getStdDev());
+    assertThat(dp.getCount()).isNull();
+    assertThat(dp.getMin()).isNull();
+    assertThat(dp.getMax()).isNull();
+    assertThat(dp.getStdDev()).isNull();
 
-    assertParentChild(rd, rdEnvelope, mdEnvelope, "GET /CoreAndFilter/trackMetric");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, mdEnvelope, "GET /CoreAndFilter/trackMetric");
   }
 
   @Test
   @TargetUri("/trackTrace")
-  public void testTrackTrace() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+  void testTrackTrace() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
-    List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(3, operationId);
+    List<Envelope> mdList = testing.mockedIngestion.waitForMessageItemsInRequest(3, operationId);
 
     Envelope mdEnvelope1 = mdList.get(0);
     Envelope mdEnvelope2 = mdList.get(1);
@@ -264,37 +253,42 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-    List<MessageData> messages = mockedIngestion.getMessageDataInRequest();
-    assertThat(messages, hasItem(TraceDataMatchers.hasMessage("This is first trace message.")));
+    List<MessageData> messages = testing.mockedIngestion.getMessageDataInRequest();
 
-    assertThat(
-        messages,
-        hasItem(
-            allOf(
-                TraceDataMatchers.hasMessage("This is second trace message."),
-                TraceDataMatchers.hasSeverityLevel(SeverityLevel.ERROR))));
+    assertThat(messages)
+        .anySatisfy(m -> assertThat(m.getMessage()).isEqualTo("This is first trace message."));
 
-    assertThat(
-        messages,
-        hasItem(
-            allOf(
-                TraceDataMatchers.hasMessage("This is third trace message."),
-                TraceDataMatchers.hasSeverityLevel(SeverityLevel.INFORMATION),
-                TraceDataMatchers.hasProperty("key", "value"))));
+    assertThat(messages)
+        .anySatisfy(
+            m -> {
+              assertThat(m.getMessage()).isEqualTo("This is second trace message.");
+              assertThat(m.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
+            });
 
-    assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /CoreAndFilter/trackTrace");
-    assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /CoreAndFilter/trackTrace");
-    assertParentChild(rd, rdEnvelope, mdEnvelope3, "GET /CoreAndFilter/trackTrace");
+    assertThat(messages)
+        .anySatisfy(
+            m -> {
+              assertThat(m.getMessage()).isEqualTo("This is third trace message.");
+              assertThat(m.getSeverityLevel()).isEqualTo(SeverityLevel.INFORMATION);
+              assertThat(m.getProperties()).containsEntry("key", "value");
+            });
+
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, mdEnvelope1, "GET /CoreAndFilter/trackTrace");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, mdEnvelope2, "GET /CoreAndFilter/trackTrace");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, mdEnvelope3, "GET /CoreAndFilter/trackTrace");
   }
 
   @Test
   @TargetUri("/trackPageView")
-  public void testTrackPageView() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+  void testTrackPageView() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
-    List<Envelope> pvdList = mockedIngestion.waitForItems("PageViewData", 3);
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
+    List<Envelope> pvdList = testing.mockedIngestion.waitForItems("PageViewData", 3);
+    assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
@@ -319,126 +313,134 @@ public class CoreAndFilterTests extends AiSmokeTest {
     PageViewData pv2 = (PageViewData) ((Data<?>) pvdEnvelope2.getData()).getBaseData();
     PageViewData pv3 = (PageViewData) ((Data<?>) pvdEnvelope3.getData()).getBaseData();
 
-    assertNotNull(pv1);
-    assertEquals(new Duration(0), pv1.getDuration());
+    assertThat(pv1).isNotNull();
+    assertThat(pv1.getDuration()).isEqualTo(new Duration(0));
     // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are
     // from the agent
-    assertEquals("00000000-0000-0000-0000-0FEEDDADBEEF", pvdEnvelope1.getIKey());
-    assertEquals("testrolename", pvdEnvelope1.getTags().get("ai.cloud.role"));
-    assertEquals("testroleinstance", pvdEnvelope1.getTags().get("ai.cloud.roleInstance"));
-    assertTrue(pvdEnvelope1.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
+    assertThat(pvdEnvelope1.getIKey()).isEqualTo("00000000-0000-0000-0000-0FEEDDADBEEF");
+    assertThat(pvdEnvelope1.getTags()).containsEntry("ai.cloud.role", "testrolename");
+    assertThat(pvdEnvelope1.getTags()).containsEntry("ai.cloud.roleInstance", "testroleinstance");
+    assertThat(pvdEnvelope1.getTags())
+        .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("java:3."));
 
-    assertNotNull(pv2);
-    assertEquals(new Duration(123456), pv2.getDuration());
-    assertEquals("2010-10-10T00:00:00Z", pvdEnvelope2.getTime());
-    assertEquals("value", pv2.getProperties().get("key"));
-    assertEquals("a-value", pv2.getProperties().get("a-prop"));
-    assertEquals("another-value", pv2.getProperties().get("another-prop"));
+    assertThat(pv2).isNotNull();
+    assertThat(pv2.getDuration()).isEqualTo(new Duration(123456));
+    assertThat(pvdEnvelope2.getTime()).isEqualTo("2010-10-10T00:00:00Z");
+    assertThat(pv2.getProperties()).containsEntry("key", "value");
+    assertThat(pv2.getProperties()).containsEntry("a-prop", "a-value");
+    assertThat(pv2.getProperties()).containsEntry("another-prop", "another-value");
     // operation name is verified below in assertParentChild()
-    assertEquals("user-id-goes-here", pvdEnvelope2.getTags().get("ai.user.id"));
-    assertEquals("account-id-goes-here", pvdEnvelope2.getTags().get("ai.user.accountId"));
-    assertEquals("user-agent-goes-here", pvdEnvelope2.getTags().get("ai.user.userAgent"));
-    assertEquals("os-goes-here", pvdEnvelope2.getTags().get("ai.device.os"));
-    assertEquals("session-id-goes-here", pvdEnvelope2.getTags().get("ai.session.id"));
-    assertEquals("1.2.3.4", pvdEnvelope2.getTags().get("ai.location.ip"));
+    assertThat(pvdEnvelope2.getTags()).containsEntry("ai.user.id", "user-id-goes-here");
+    assertThat(pvdEnvelope2.getTags()).containsEntry("ai.user.accountId", "account-id-goes-here");
+    assertThat(pvdEnvelope2.getTags()).containsEntry("ai.user.userAgent", "user-agent-goes-here");
+    assertThat(pvdEnvelope2.getTags()).containsEntry("ai.device.os", "os-goes-here");
+    assertThat(pvdEnvelope2.getTags()).containsEntry("ai.session.id", "session-id-goes-here");
+    assertThat(pvdEnvelope2.getTags()).containsEntry("ai.location.ip", "1.2.3.4");
     // checking that instrumentation key, cloud role name and cloud role instance are overridden
-    assertEquals("12341234-1234-1234-1234-123412341234", pvdEnvelope2.getIKey());
-    assertEquals("role-goes-here", pvdEnvelope2.getTags().get("ai.cloud.role"));
-    assertEquals("role-instance-goes-here", pvdEnvelope2.getTags().get("ai.cloud.roleInstance"));
+    assertThat(pvdEnvelope2.getIKey()).isEqualTo("12341234-1234-1234-1234-123412341234");
+    assertThat(pvdEnvelope2.getTags()).containsEntry("ai.cloud.role", "role-goes-here");
+    assertThat(pvdEnvelope2.getTags().get("ai.cloud.roleInstance"))
+        .isEqualTo("role-instance-goes-here");
     // checking that sdk version is from the agent
-    assertTrue(pvdEnvelope2.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
+    assertThat(pvdEnvelope2.getTags())
+        .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("java:3."));
 
-    assertNotNull(pv3);
-    assertEquals(new Duration(123456), pv3.getDuration());
-    assertEquals("2010-10-10T00:00:00Z", pvdEnvelope3.getTime());
-    assertEquals("value", pv3.getProperties().get("key"));
-    assertEquals("a-value", pv3.getProperties().get("a-prop"));
-    assertEquals("another-value", pv3.getProperties().get("another-prop"));
+    assertThat(pv3).isNotNull();
+    assertThat(pv3.getDuration()).isEqualTo(new Duration(123456));
+    assertThat(pvdEnvelope3.getTime()).isEqualTo("2010-10-10T00:00:00Z");
+    assertThat(pv3.getProperties()).containsEntry("key", "value");
+    assertThat(pv3.getProperties()).containsEntry("a-prop", "a-value");
+    assertThat(pv3.getProperties()).containsEntry("another-prop", "another-value");
     // operation name is verified below in assertParentChild()
-    assertEquals("user-id-goes-here", pvdEnvelope3.getTags().get("ai.user.id"));
-    assertEquals("account-id-goes-here", pvdEnvelope3.getTags().get("ai.user.accountId"));
-    assertEquals("user-agent-goes-here", pvdEnvelope3.getTags().get("ai.user.userAgent"));
-    assertEquals("os-goes-here", pvdEnvelope3.getTags().get("ai.device.os"));
-    assertEquals("session-id-goes-here", pvdEnvelope3.getTags().get("ai.session.id"));
-    assertEquals("1.2.3.4", pvdEnvelope3.getTags().get("ai.location.ip"));
+    assertThat(pvdEnvelope3.getTags()).containsEntry("ai.user.id", "user-id-goes-here");
+    assertThat(pvdEnvelope3.getTags()).containsEntry("ai.user.accountId", "account-id-goes-here");
+    assertThat(pvdEnvelope3.getTags()).containsEntry("ai.user.userAgent", "user-agent-goes-here");
+    assertThat(pvdEnvelope3.getTags()).containsEntry("ai.device.os", "os-goes-here");
+    assertThat(pvdEnvelope3.getTags()).containsEntry("ai.session.id", "session-id-goes-here");
+    assertThat(pvdEnvelope3.getTags()).containsEntry("ai.location.ip", "1.2.3.4");
     // checking that instrumentation key, cloud role name and cloud role instance are from the agent
-    assertEquals("00000000-0000-0000-0000-0FEEDDADBEEF", pvdEnvelope3.getIKey());
-    assertEquals("testrolename", pvdEnvelope3.getTags().get("ai.cloud.role"));
-    assertEquals("testroleinstance", pvdEnvelope3.getTags().get("ai.cloud.roleInstance"));
+    assertThat(pvdEnvelope3.getIKey()).isEqualTo("00000000-0000-0000-0000-0FEEDDADBEEF");
+    assertThat(pvdEnvelope3.getTags()).containsEntry("ai.cloud.role", "testrolename");
+    assertThat(pvdEnvelope3.getTags()).containsEntry("ai.cloud.roleInstance", "testroleinstance");
     // checking that sdk version is from the agent
-    assertTrue(pvdEnvelope3.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
+    assertThat(pvdEnvelope3.getTags())
+        .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("java:3."));
 
-    assertParentChild(rd, rdEnvelope, pvdEnvelope1, "GET /CoreAndFilter/trackPageView");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, pvdEnvelope1, "GET /CoreAndFilter/trackPageView");
 
-    assertEquals("operation-id-goes-here", pvdEnvelope2.getTags().get("ai.operation.id"));
-    assertEquals(
-        "operation-parent-id-goes-here", pvdEnvelope2.getTags().get("ai.operation.parentId"));
-    assertEquals("operation-name-goes-here", pvdEnvelope2.getTags().get("ai.operation.name"));
+    assertThat(pvdEnvelope2.getTags()).containsEntry("ai.operation.id", "operation-id-goes-here");
+    assertThat(pvdEnvelope2.getTags())
+        .containsEntry("ai.operation.parentId", "operation-parent-id-goes-here");
+    assertThat(pvdEnvelope2.getTags().get("ai.operation.name"))
+        .isEqualTo("operation-name-goes-here");
 
-    assertEquals("operation-id-goes-here", pvdEnvelope3.getTags().get("ai.operation.id"));
-    assertEquals(
-        "operation-parent-id-goes-here", pvdEnvelope3.getTags().get("ai.operation.parentId"));
-    assertEquals("operation-name-goes-here", pvdEnvelope3.getTags().get("ai.operation.name"));
+    assertThat(pvdEnvelope3.getTags()).containsEntry("ai.operation.id", "operation-id-goes-here");
+    assertThat(pvdEnvelope3.getTags())
+        .containsEntry("ai.operation.parentId", "operation-parent-id-goes-here");
+    assertThat(pvdEnvelope3.getTags().get("ai.operation.name"))
+        .isEqualTo("operation-name-goes-here");
   }
 
   @Test
   @TargetUri("/doPageView.jsp")
-  public void testTrackPageViewJsp() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+  void testTrackPageViewJsp() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     List<Envelope> pvdList =
-        mockedIngestion.waitForItemsInOperation("PageViewData", 1, operationId);
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
+        testing.mockedIngestion.waitForItemsInOperation("PageViewData", 1, operationId);
+    assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope pvdEnvelope = pvdList.get(0);
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
     PageViewData pv = (PageViewData) ((Data<?>) pvdEnvelope.getData()).getBaseData();
-    assertEquals("doPageView", pv.getName());
-    assertEquals(new Duration(0), pv.getDuration());
+    assertThat(pv.getName()).isEqualTo("doPageView");
+    assertThat(pv.getDuration()).isEqualTo(new Duration(0));
 
-    assertParentChild(rd, rdEnvelope, pvdEnvelope, "GET /CoreAndFilter/doPageView.jsp");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, pvdEnvelope, "GET /CoreAndFilter/doPageView.jsp");
   }
 
   @Test
   @TargetUri("/autoFailedRequestWithResultCode")
-  public void testAutoFailedRequestWithResultCode() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+  void testAutoFailedRequestWithResultCode() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-    assertEquals(false, rd.getSuccess());
-    assertEquals("404", rd.getResponseCode());
+    assertThat(rd.getSuccess()).isFalse();
+    assertThat(rd.getResponseCode()).isEqualTo("404");
 
-    assertEquals("GET /CoreAndFilter/*", rdEnvelope.getTags().get("ai.operation.name"));
+    assertThat(rdEnvelope.getTags()).containsEntry("ai.operation.name", "GET /CoreAndFilter/*");
   }
 
   @Test
   @TargetUri("/requestSlow?sleeptime=20")
-  public void testRequestSlowWithResponseTime() throws Exception {
+  void testRequestSlowWithResponseTime() throws Exception {
     validateSlowTest(20, "GET /CoreAndFilter/requestSlow");
   }
 
   @Test
   @TargetUri("/slowLoop?responseTime=20")
-  public void testSlowRequestUsingCpuBoundLoop() throws Exception {
+  void testSlowRequestUsingCpuBoundLoop() throws Exception {
     validateSlowTest(20, "GET /CoreAndFilter/slowLoop");
   }
 
   @Test
   @TargetUri("/autoExceptionWithFailedRequest")
-  public void testAutoExceptionWithFailedRequest() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+  void testAutoExceptionWithFailedRequest() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     List<Envelope> edList =
-        mockedIngestion.waitForItems(
+        testing.mockedIngestion.waitForItems(
             new Predicate<Envelope>() {
               @Override
               public boolean test(Envelope input) {
@@ -462,16 +464,16 @@ public class CoreAndFilterTests extends AiSmokeTest {
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();
 
-    assertFalse(rd.getSuccess());
+    assertThat(rd.getSuccess()).isFalse();
 
     ExceptionDetails details = getExceptionDetails(ed);
-    assertEquals("This is a auto thrown exception !", details.getMessage());
+    assertThat(details.getMessage()).isEqualTo("This is a auto thrown exception !");
   }
 
   @Test
   @TargetUri("/index.jsp")
-  public void testRequestJsp() throws Exception {
-    mockedIngestion.waitForItems("RequestData", 1);
+  void testRequestJsp() throws Exception {
+    testing.mockedIngestion.waitForItems("RequestData", 1);
   }
 
   private static ExceptionDetails getExceptionDetails(ExceptionData exceptionData) {
@@ -481,7 +483,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
   private void validateSlowTest(int expectedDurationSeconds, String operationName)
       throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
 
@@ -495,8 +497,23 @@ public class CoreAndFilterTests extends AiSmokeTest {
     long max = expected + tolerance;
 
     System.out.printf("Slow response time: expected=%d, actual=%d%n", expected, actual);
-    assertThat(actual, both(greaterThanOrEqualTo(min)).and(lessThan(max)));
+    assertThat(actual).isGreaterThanOrEqualTo(min);
+    assertThat(actual).isLessThan(max);
 
-    assertEquals(operationName, rdEnvelope.getTags().get("ai.operation.name"));
+    assertThat(rdEnvelope.getTags()).containsEntry("ai.operation.name", operationName);
   }
+
+  // old Application Insights version that do not support Java 11+
+
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends CoreAndFilterTests {}
+
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends CoreAndFilterTests {}
+
+  @Environment(WILDFLY_13_JAVA_8)
+  static class Wildfly13Java8Test extends CoreAndFilterTests {}
+
+  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
+  static class Wildfly13Java8OpenJ9Test extends CoreAndFilterTests {}
 }

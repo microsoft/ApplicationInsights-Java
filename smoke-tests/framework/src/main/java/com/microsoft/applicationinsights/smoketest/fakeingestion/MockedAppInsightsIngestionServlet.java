@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.smoketest.fakeingestion;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.io.CharStreams;
@@ -34,9 +35,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
@@ -49,17 +47,13 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
 
   // guarded by multimapLock
   private final ListMultimap<String, Envelope> type2envelope;
-  private final List<Predicate<Envelope>> filters;
 
   private final Object multimapLock = new Object();
-
-  private final ExecutorService itemExecutor = Executors.newSingleThreadExecutor();
 
   private volatile boolean loggingEnabled;
 
   MockedAppInsightsIngestionServlet() {
     type2envelope = MultimapBuilder.treeKeys().arrayListValues().build();
-    filters = new ArrayList<>();
   }
 
   @SuppressWarnings("SystemOut")
@@ -67,10 +61,6 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
     if (loggingEnabled) {
       System.out.println("FAKE INGESTION: INFO - " + message);
     }
-  }
-
-  void addIngestionFilter(Predicate<Envelope> filter) {
-    this.filters.add(filter);
   }
 
   void resetData() {
@@ -101,27 +91,26 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
 
   List<Envelope> waitForItems(
       Predicate<Envelope> condition, int numItems, long timeout, TimeUnit timeUnit)
-      throws InterruptedException, ExecutionException, TimeoutException {
-    Future<List<Envelope>> future =
-        itemExecutor.submit(
-            () -> {
-              List<Envelope> targetCollection = new ArrayList<>(numItems);
-              while (targetCollection.size() < numItems) {
-                targetCollection.clear();
-                List<Envelope> currentValues;
-                synchronized (multimapLock) {
-                  currentValues = new ArrayList<>(type2envelope.values());
-                }
-                for (Envelope val : currentValues) {
-                  if (condition.test(val)) {
-                    targetCollection.add(val);
-                  }
-                }
-                TimeUnit.MILLISECONDS.sleep(75);
-              }
-              return targetCollection;
-            });
-    return future.get(timeout, timeUnit);
+      throws InterruptedException, TimeoutException {
+    Stopwatch stopwatch = Stopwatch.createStarted();
+    List<Envelope> targetCollection = new ArrayList<>(numItems);
+    while (stopwatch.elapsed(timeUnit) < timeout) {
+      targetCollection.clear();
+      List<Envelope> currentValues;
+      synchronized (multimapLock) {
+        currentValues = new ArrayList<>(type2envelope.values());
+      }
+      for (Envelope val : currentValues) {
+        if (condition.test(val)) {
+          targetCollection.add(val);
+        }
+      }
+      if (targetCollection.size() >= numItems) {
+        return targetCollection;
+      }
+      TimeUnit.MILLISECONDS.sleep(75);
+    }
+    throw new TimeoutException("timed out waiting for items");
   }
 
   @Override
@@ -148,24 +137,10 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
     for (String line : lines) {
       Envelope envelope = JsonHelper.GSON.fromJson(line.trim(), Envelope.class);
       String baseType = envelope.getData().getBaseType();
-      if (filtersAllowItem(envelope)) {
-        synchronized (multimapLock) {
-          type2envelope.put(baseType, envelope);
-        }
+      synchronized (multimapLock) {
+        type2envelope.put(baseType, envelope);
       }
     }
-  }
-
-  private boolean filtersAllowItem(Envelope item) {
-    if (this.filters.isEmpty()) {
-      return true;
-    }
-    for (Predicate<Envelope> filter : this.filters) {
-      if (!filter.test(item)) {
-        return false;
-      }
-    }
-    return true;
   }
 
   @Override
@@ -183,7 +158,7 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
     }
   }
 
-  public void enableTelemetryLogging() {
-    loggingEnabled = true;
+  public void setRequestLoggingEnabled(boolean enabled) {
+    loggingEnabled = enabled;
   }
 }

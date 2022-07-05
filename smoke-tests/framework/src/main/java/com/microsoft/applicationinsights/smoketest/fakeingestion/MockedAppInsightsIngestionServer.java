@@ -65,10 +65,6 @@ public class MockedAppInsightsIngestionServer {
     server.join();
   }
 
-  public void addIngestionFilter(Predicate<Envelope> filter) {
-    this.servlet.addIngestionFilter(filter);
-  }
-
   public void resetData() {
     this.servlet.resetData();
   }
@@ -270,7 +266,7 @@ public class MockedAppInsightsIngestionServer {
     i.startServer();
   }
 
-  public void enableTelemetryLogging() {
-    servlet.enableTelemetryLogging();
+  public void setRequestLoggingEnabled(boolean enabled) {
+    servlet.setRequestLoggingEnabled(enabled);
   }
 }

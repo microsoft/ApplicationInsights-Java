@@ -21,9 +21,10 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -32,17 +33,20 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-public class SpringBootAutoTest extends AiJarSmokeTest {
+abstract class SpringBootAutoTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/spawn-another-java-process")
-  public void spawnAnotherJavaProcess() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-    List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
-    List<Envelope> mdList = mockedIngestion.waitForItems("MessageData", 1);
+  void spawnAnotherJavaProcess() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> rddList = testing.mockedIngestion.waitForItems("RemoteDependencyData", 1);
+    List<Envelope> mdList = testing.mockedIngestion.waitForItems("MessageData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     Envelope rddEnvelope = rddList.get(0);
@@ -53,21 +57,30 @@ public class SpringBootAutoTest extends AiJarSmokeTest {
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
     MessageData md = (MessageData) ((Data<?>) mdEnvelope.getData()).getBaseData();
 
-    assertTrue(rd.getProperties().isEmpty());
-    assertTrue(rd.getSuccess());
+    assertThat(rd.getProperties()).isEmpty();
+    assertThat(rd.getSuccess()).isTrue();
 
-    assertEquals("GET /search", rdd.getName());
-    assertEquals("Http", rdd.getType());
-    assertEquals("www.bing.com", rdd.getTarget());
-    assertEquals("https://www.bing.com/search?q=test", rdd.getData());
-    assertTrue(rdd.getProperties().isEmpty());
-    assertTrue(rdd.getSuccess());
+    assertThat(rdd.getName()).isEqualTo("GET /search");
+    assertThat(rdd.getType()).isEqualTo("Http");
+    assertThat(rdd.getTarget()).isEqualTo("www.bing.com");
+    assertThat(rdd.getData()).isEqualTo("https://www.bing.com/search?q=test");
+    assertThat(rdd.getProperties()).isEmpty();
+    assertThat(rdd.getSuccess()).isTrue();
 
-    assertEquals("done", md.getMessage());
-    assertEquals(SeverityLevel.INFORMATION, md.getSeverityLevel());
-    assertEquals("Logger", md.getProperties().get("SourceType"));
-    assertEquals("smoketestapp", md.getProperties().get("LoggerName"));
-    assertNotNull(md.getProperties().get("ThreadName"));
-    assertEquals(3, md.getProperties().size());
+    assertThat(md.getMessage()).isEqualTo("done");
+    assertThat(md.getSeverityLevel()).isEqualTo(SeverityLevel.INFORMATION);
+    assertThat(md.getProperties()).containsEntry("SourceType", "Logger");
+    assertThat(md.getProperties()).containsEntry("LoggerName", "smoketestapp");
+    assertThat(md.getProperties()).containsKey("ThreadName");
+    assertThat(md.getProperties()).hasSize(3);
   }
+
+  @Environment(JAVA_8)
+  static class Java8Test extends SpringBootAutoTest {}
+
+  @Environment(JAVA_11)
+  static class Java11Test extends SpringBootAutoTest {}
+
+  @Environment(JAVA_17)
+  static class Java17Test extends SpringBootAutoTest {}
 }

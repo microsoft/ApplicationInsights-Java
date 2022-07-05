@@ -21,30 +21,38 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-public class OpenTelemetryApiSupportTest extends AiWarSmokeTest {
+abstract class OpenTelemetryApiSupportTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/test-api")
-  public void testApi() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void testApi() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
-    assertEquals("myspanname", telemetry.rd.getName());
-    assertTrue(
-        telemetry.rd.getUrl().matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-api"));
-    assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getSuccess());
-    assertNull(telemetry.rd.getSource());
-    assertEquals(2, telemetry.rd.getProperties().size());
-    assertEquals("myvalue1", telemetry.rd.getProperties().get("myattr1"));
-    assertEquals("myvalue2", telemetry.rd.getProperties().get("myattr2"));
-    assertTrue(telemetry.rd.getMeasurements().isEmpty());
+    assertThat(telemetry.rd.getName()).isEqualTo("myspanname");
+    assertThat(telemetry.rd.getUrl())
+        .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-api");
+    assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
+    assertThat(telemetry.rd.getSuccess()).isTrue();
+    assertThat(telemetry.rd.getSource()).isNull();
+    assertThat(telemetry.rd.getProperties()).hasSize(2);
+    assertThat(telemetry.rd.getProperties()).containsEntry("myattr1", "myvalue1");
+    assertThat(telemetry.rd.getProperties()).containsEntry("myattr2", "myvalue2");
+    assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
     // ideally want the properties below on rd, but can't get SERVER span yet
     // see
@@ -52,69 +60,89 @@ public class OpenTelemetryApiSupportTest extends AiWarSmokeTest {
 
     // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are
     // from the agent
-    assertEquals("00000000-0000-0000-0000-0FEEDDADBEEF", telemetry.rdEnvelope.getIKey());
-    assertEquals("testrolename", telemetry.rdEnvelope.getTags().get("ai.cloud.role"));
-    assertEquals("testroleinstance", telemetry.rdEnvelope.getTags().get("ai.cloud.roleInstance"));
-    assertTrue(telemetry.rdEnvelope.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
-    assertEquals("myuser", telemetry.rdEnvelope.getTags().get("ai.user.id"));
+    assertThat(telemetry.rdEnvelope.getIKey()).isEqualTo("00000000-0000-0000-0000-0FEEDDADBEEF");
+    assertThat(telemetry.rdEnvelope.getTags()).containsEntry("ai.cloud.role", "testrolename");
+    assertThat(telemetry.rdEnvelope.getTags().get("ai.cloud.roleInstance"))
+        .isEqualTo("testroleinstance");
+    assertThat(telemetry.rdEnvelope.getTags())
+        .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("java:3."));
+    assertThat(telemetry.rdEnvelope.getTags()).containsEntry("ai.user.id", "myuser");
   }
 
   @Test
   @TargetUri("/test-overriding-ikey-etc")
-  public void testOverridingIkeyEtc() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void testOverridingIkeyEtc() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
-    assertEquals("GET /OpenTelemetryApiSupport/test-overriding-ikey-etc", telemetry.rd.getName());
-    assertTrue(
-        telemetry
-            .rd
-            .getUrl()
-            .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-overriding-ikey-etc"));
-    assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getSuccess());
-    assertNull(telemetry.rd.getSource());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getMeasurements().isEmpty());
+    assertThat(telemetry.rd.getName())
+        .isEqualTo("GET /OpenTelemetryApiSupport/test-overriding-ikey-etc");
+    assertThat(telemetry.rd.getUrl())
+        .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-overriding-ikey-etc");
+    assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
+    assertThat(telemetry.rd.getSuccess()).isTrue();
+    assertThat(telemetry.rd.getSource()).isNull();
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
     // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are
     // from the agent
-    assertEquals("12341234-1234-1234-1234-123412341234", telemetry.rdEnvelope.getIKey());
-    assertEquals("role-name-here", telemetry.rdEnvelope.getTags().get("ai.cloud.role"));
-    assertEquals("role-instance-here", telemetry.rdEnvelope.getTags().get("ai.cloud.roleInstance"));
-    assertEquals(
-        "application-version-here", telemetry.rdEnvelope.getTags().get("ai.application.ver"));
-    assertTrue(telemetry.rdEnvelope.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
+    assertThat(telemetry.rdEnvelope.getIKey()).isEqualTo("12341234-1234-1234-1234-123412341234");
+    assertThat(telemetry.rdEnvelope.getTags()).containsEntry("ai.cloud.role", "role-name-here");
+    assertThat(telemetry.rdEnvelope.getTags().get("ai.cloud.roleInstance"))
+        .isEqualTo("role-instance-here");
+    assertThat(telemetry.rdEnvelope.getTags())
+        .containsEntry("ai.application.ver", "application-version-here");
+    assertThat(telemetry.rdEnvelope.getTags())
+        .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("java:3."));
   }
 
   @Test
   @TargetUri("/test-annotations")
-  public void testAnnotations() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void testAnnotations() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
-    assertEquals("GET /OpenTelemetryApiSupport/test-annotations", telemetry.rd.getName());
-    assertTrue(
-        telemetry
-            .rd
-            .getUrl()
-            .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-annotations"));
-    assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getSuccess());
-    assertNull(telemetry.rd.getSource());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getMeasurements().isEmpty());
+    assertThat(telemetry.rd.getName()).isEqualTo("GET /OpenTelemetryApiSupport/test-annotations");
+    assertThat(telemetry.rd.getUrl())
+        .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-annotations");
+    assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
+    assertThat(telemetry.rd.getSuccess()).isTrue();
+    assertThat(telemetry.rd.getSource()).isNull();
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
-    assertEquals("TestController.underAnnotation", telemetry.rdd1.getName());
-    assertNull(telemetry.rdd1.getData());
-    assertEquals("InProc", telemetry.rdd1.getType());
-    assertNull(telemetry.rdd1.getTarget());
-    assertEquals("a message", telemetry.rdd1.getProperties().get("message"));
-    assertEquals(1, telemetry.rdd1.getProperties().size());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("TestController.underAnnotation");
+    assertThat(telemetry.rdd1.getData()).isNull();
+    assertThat(telemetry.rdd1.getType()).isEqualTo("InProc");
+    assertThat(telemetry.rdd1.getTarget()).isNull();
+    assertThat(telemetry.rdd1.getProperties()).containsEntry("message", "a message");
+    assertThat(telemetry.rdd1.getProperties()).hasSize(1);
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd,
         telemetry.rdEnvelope,
         telemetry.rddEnvelope1,
         "GET /OpenTelemetryApiSupport/test-annotations");
   }
+
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends OpenTelemetryApiSupportTest {}
+
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends OpenTelemetryApiSupportTest {}
+
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends OpenTelemetryApiSupportTest {}
+
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends OpenTelemetryApiSupportTest {}
+
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends OpenTelemetryApiSupportTest {}
+
+  @Environment(WILDFLY_13_JAVA_8)
+  static class Wildfly13Java8Test extends OpenTelemetryApiSupportTest {}
+
+  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
+  static class Wildfly13Java8OpenJ9Test extends OpenTelemetryApiSupportTest {}
 }

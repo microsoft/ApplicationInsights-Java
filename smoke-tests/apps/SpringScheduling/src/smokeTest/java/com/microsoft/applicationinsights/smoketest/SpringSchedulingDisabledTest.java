@@ -21,24 +21,28 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
+@Environment(TOMCAT_8_JAVA_8)
 @UseAgent("disabled_applicationinsights.json")
-public class SpringSchedulingDisabledTest extends AiWarSmokeTest {
+class SpringSchedulingDisabledTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/scheduler")
-  public void fixedRateSchedulerTest() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void fixedRateSchedulerTest() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
-    assertEquals("GET /SpringScheduling/scheduler", telemetry.rd.getName());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getName()).isEqualTo("GET /SpringScheduling/scheduler");
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
     // sleep a bit and make sure no spring scheduling "requests" are reported
     Thread.sleep(5000);
-    assertEquals(1, mockedIngestion.getCountForType("RequestData"));
+    assertThat(testing.mockedIngestion.getCountForType("RequestData")).isEqualTo(1);
   }
 }

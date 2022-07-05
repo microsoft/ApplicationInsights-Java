@@ -21,70 +21,76 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent("telemetryfiltering_applicationinsights.json")
-public class TelemetryFilteringSmokeTest extends AiWarSmokeTest {
+abstract class TelemetryFilteringSmokeTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri(value = "/health-check", callCount = 100)
-  public void testSampling() throws Exception {
+  void testSampling() throws Exception {
     // super super low chance that number of sampled requests is less than 25
     long start = System.nanoTime();
-    while (mockedIngestion.getCountForType("RequestData") < 25
+    while (testing.mockedIngestion.getCountForType("RequestData") < 25
         && NANOSECONDS.toSeconds(System.nanoTime() - start) < 10) {}
     // wait ten more seconds to before checking that we didn't receive too many
     Thread.sleep(SECONDS.toMillis(10));
-    int requestCount = mockedIngestion.getCountForType("RequestData");
-    int dependencyCount = mockedIngestion.getCountForType("RemoteDependencyData");
+    int requestCount = testing.mockedIngestion.getCountForType("RequestData");
+    int dependencyCount = testing.mockedIngestion.getCountForType("RemoteDependencyData");
     // super super low chance that number of sampled requests/dependencies
     // is less than 25 or greater than 75
-    assertThat(requestCount, greaterThanOrEqualTo(25));
-    assertThat(dependencyCount, greaterThanOrEqualTo(25));
-    assertThat(requestCount, lessThanOrEqualTo(75));
-    assertThat(dependencyCount, lessThanOrEqualTo(75));
+    assertThat(requestCount).isGreaterThanOrEqualTo(25);
+    assertThat(dependencyCount).isGreaterThanOrEqualTo(25);
+    assertThat(requestCount).isLessThanOrEqualTo(75);
+    assertThat(dependencyCount).isLessThanOrEqualTo(75);
   }
 
   @Test
   @TargetUri("/noisy-jdbc")
-  public void testNoisyJdbc() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+  void testNoisyJdbc() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     Thread.sleep(10000);
-    assertEquals(0, mockedIngestion.getCountForType("RemoteDependencyData"));
+    assertThat(testing.mockedIngestion.getCountForType("RemoteDependencyData")).isZero();
 
     Envelope rdEnvelope = rdList.get(0);
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-    assertEquals("00000000-0000-0000-0000-0FEEDDADBEEF", rdEnvelope.getIKey());
-    assertEquals("testrolename", rdEnvelope.getTags().get("ai.cloud.role"));
-    assertTrue(rd.getSuccess());
+    assertThat(rdEnvelope.getIKey()).isEqualTo("00000000-0000-0000-0000-0FEEDDADBEEF");
+    assertThat(rdEnvelope.getTags()).containsEntry("ai.cloud.role", "testrolename");
+    assertThat(rd.getSuccess()).isTrue();
   }
 
   @Test
   @TargetUri("/regular-jdbc")
-  public void testRegularJdbc() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+  void testRegularJdbc() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
 
     List<Envelope> rddList =
-        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
+        testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+    assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope rddEnvelope = rddList.get(0);
 
@@ -92,18 +98,39 @@ public class TelemetryFilteringSmokeTest extends AiWarSmokeTest {
     RemoteDependencyData rdd =
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-    assertEquals("87654321-0000-0000-0000-0FEEDDADBEEF", rdEnvelope.getIKey());
-    assertEquals("app3", rdEnvelope.getTags().get("ai.cloud.role"));
-    assertTrue(rd.getSuccess());
+    assertThat(rdEnvelope.getIKey()).isEqualTo("87654321-0000-0000-0000-0FEEDDADBEEF");
+    assertThat(rdEnvelope.getTags()).containsEntry("ai.cloud.role", "app3");
+    assertThat(rd.getSuccess()).isTrue();
 
-    assertEquals("SQL", rdd.getType());
-    assertEquals("testdb", rdd.getTarget());
-    assertEquals("SELECT testdb.abc", rdd.getName());
-    assertEquals("select * from abc", rdd.getData());
-    assertEquals("87654321-0000-0000-0000-0FEEDDADBEEF", rddEnvelope.getIKey());
-    assertEquals("app3", rddEnvelope.getTags().get("ai.cloud.role"));
-    assertTrue(rdd.getSuccess());
+    assertThat(rdd.getType()).isEqualTo("SQL");
+    assertThat(rdd.getTarget()).isEqualTo("testdb");
+    assertThat(rdd.getName()).isEqualTo("SELECT testdb.abc");
+    assertThat(rdd.getData()).isEqualTo("select * from abc");
+    assertThat(rddEnvelope.getIKey()).isEqualTo("87654321-0000-0000-0000-0FEEDDADBEEF");
+    assertThat(rddEnvelope.getTags()).containsEntry("ai.cloud.role", "app3");
+    assertThat(rdd.getSuccess()).isTrue();
 
-    assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /TelemetryFiltering/*");
+    SmokeTestExtension.assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /TelemetryFiltering/*");
   }
+
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends TelemetryFilteringSmokeTest {}
+
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends TelemetryFilteringSmokeTest {}
+
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends TelemetryFilteringSmokeTest {}
+
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends TelemetryFilteringSmokeTest {}
+
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends TelemetryFilteringSmokeTest {}
+
+  @Environment(WILDFLY_13_JAVA_8)
+  static class Wildfly13Java8Test extends TelemetryFilteringSmokeTest {}
+
+  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
+  static class Wildfly13Java8OpenJ9Test extends TelemetryFilteringSmokeTest {}
 }

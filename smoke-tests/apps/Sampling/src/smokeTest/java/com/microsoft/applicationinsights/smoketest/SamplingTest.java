@@ -21,49 +21,78 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-public class SamplingTest extends AiWarSmokeTest {
+abstract class SamplingTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri(value = "/sampling", callCount = 100)
-  public void testSampling() throws Exception {
+  void testSampling() throws Exception {
     // super super low chance that number of sampled requests is less than 25
     long start = System.nanoTime();
-    while (mockedIngestion.getCountForType("RequestData") < 25
+    while (testing.mockedIngestion.getCountForType("RequestData") < 25
         && NANOSECONDS.toSeconds(System.nanoTime() - start) < 10) {}
     // wait ten more seconds before checking that we didn't receive too many
     Thread.sleep(SECONDS.toMillis(10));
 
-    List<Envelope> requestEnvelopes = mockedIngestion.getItemsEnvelopeDataType("RequestData");
-    List<Envelope> eventEnvelopes = mockedIngestion.getItemsEnvelopeDataType("EventData");
+    List<Envelope> requestEnvelopes =
+        testing.mockedIngestion.getItemsEnvelopeDataType("RequestData");
+    List<Envelope> eventEnvelopes = testing.mockedIngestion.getItemsEnvelopeDataType("EventData");
     // super super low chance that number of sampled requests/dependencies/events
     // is less than 25 or greater than 75
-    assertThat(requestEnvelopes.size(), greaterThanOrEqualTo(25));
-    assertThat(requestEnvelopes.size(), lessThanOrEqualTo(75));
-    assertThat(eventEnvelopes.size(), greaterThanOrEqualTo(25));
-    assertThat(eventEnvelopes.size(), lessThanOrEqualTo(75));
+    assertThat(requestEnvelopes.size()).isGreaterThanOrEqualTo(25);
+    assertThat(requestEnvelopes.size()).isLessThanOrEqualTo(75);
+    assertThat(eventEnvelopes.size()).isGreaterThanOrEqualTo(25);
+    assertThat(eventEnvelopes.size()).isLessThanOrEqualTo(75);
 
     for (Envelope requestEnvelope : requestEnvelopes) {
-      assertEquals(50, requestEnvelope.getSampleRate(), 0);
+      assertThat(requestEnvelope.getSampleRate()).isEqualTo(50);
     }
     for (Envelope eventEnvelope : eventEnvelopes) {
-      assertEquals(50, eventEnvelope.getSampleRate(), 0);
+      assertThat(eventEnvelope.getSampleRate()).isEqualTo(50);
     }
 
     for (Envelope requestEnvelope : requestEnvelopes) {
       String operationId = requestEnvelope.getTags().get("ai.operation.id");
-      mockedIngestion.waitForItemsInOperation("EventData", 1, operationId);
+      testing.mockedIngestion.waitForItemsInOperation("EventData", 1, operationId);
     }
   }
+
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends SamplingTest {}
+
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends SamplingTest {}
+
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends SamplingTest {}
+
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends SamplingTest {}
+
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends SamplingTest {}
+
+  @Environment(WILDFLY_13_JAVA_8)
+  static class Wildfly13Java8Test extends SamplingTest {}
+
+  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
+  static class Wildfly13Java8OpenJ9Test extends SamplingTest {}
 }

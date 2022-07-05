@@ -21,32 +21,37 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-public class GrpcTest extends AiJarSmokeTest {
+abstract class GrpcTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/simple")
-  public void doSimpleTest() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
+  void doSimpleTest() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 2);
 
     Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /simple");
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "example.Greeter/SayHello");
     String operationId = rdEnvelope1.getTags().get("ai.operation.id");
 
     List<Envelope> rddList =
-        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
     // auto-collected grpc events are suppressed by exporter because they are noisy
-    assertEquals(0, mockedIngestion.getCountForType("MessageData", operationId));
+    assertThat(testing.mockedIngestion.getCountForType("MessageData", operationId)).isZero();
 
     Envelope rddEnvelope = getDependencyEnvelope(rddList, "example.Greeter/SayHello");
 
@@ -54,34 +59,34 @@ public class GrpcTest extends AiJarSmokeTest {
     RemoteDependencyData rdd =
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-    assertEquals("localhost:10203", rdd.getTarget());
+    assertThat(rdd.getTarget()).isEqualTo("localhost:10203");
 
-    assertTrue(rd1.getProperties().isEmpty());
-    assertTrue(rd1.getSuccess());
+    assertThat(rd1.getProperties()).isEmpty();
+    assertThat(rd1.getSuccess()).isTrue();
 
-    assertTrue(rdd.getProperties().isEmpty());
-    assertTrue(rdd.getSuccess());
+    assertThat(rdd.getProperties()).isEmpty();
+    assertThat(rdd.getSuccess()).isTrue();
 
     // TODO (trask): verify rd2
 
-    assertParentChild(rd1, rdEnvelope1, rddEnvelope, "GET /simple");
-    assertParentChild(
+    SmokeTestExtension.assertParentChild(rd1, rdEnvelope1, rddEnvelope, "GET /simple");
+    SmokeTestExtension.assertParentChild(
         rdd.getId(), rddEnvelope, rdEnvelope2, "GET /simple", "example.Greeter/SayHello", false);
   }
 
   @Test
   @TargetUri("/conversation")
-  public void doConversationTest() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
+  void doConversationTest() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 2);
 
     Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /conversation");
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "example.Greeter/Conversation");
     String operationId = rdEnvelope1.getTags().get("ai.operation.id");
 
     List<Envelope> rddList =
-        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
     // auto-collected grpc events are suppressed by exporter because they are noisy
-    assertEquals(0, mockedIngestion.getCountForType("MessageData", operationId));
+    assertThat(testing.mockedIngestion.getCountForType("MessageData", operationId)).isZero();
 
     Envelope rddEnvelope = getDependencyEnvelope(rddList, "example.Greeter/Conversation");
 
@@ -89,18 +94,18 @@ public class GrpcTest extends AiJarSmokeTest {
     RemoteDependencyData rdd =
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-    assertEquals("localhost:10203", rdd.getTarget());
+    assertThat(rdd.getTarget()).isEqualTo("localhost:10203");
 
-    assertTrue(rd1.getProperties().isEmpty());
-    assertTrue(rd1.getSuccess());
+    assertThat(rd1.getProperties()).isEmpty();
+    assertThat(rd1.getSuccess()).isTrue();
 
-    assertTrue(rdd.getProperties().isEmpty());
-    assertTrue(rdd.getSuccess());
+    assertThat(rdd.getProperties()).isEmpty();
+    assertThat(rdd.getSuccess()).isTrue();
 
     // TODO (trask): verify rd2
 
-    assertParentChild(rd1, rdEnvelope1, rddEnvelope, "GET /conversation");
-    assertParentChild(
+    SmokeTestExtension.assertParentChild(rd1, rdEnvelope1, rddEnvelope, "GET /conversation");
+    SmokeTestExtension.assertParentChild(
         rdd.getId(),
         rddEnvelope,
         rdEnvelope2,
@@ -129,4 +134,13 @@ public class GrpcTest extends AiJarSmokeTest {
     }
     throw new IllegalStateException("Could not find dependency with name: " + name);
   }
+
+  @Environment(JAVA_8)
+  static class Java8Test extends GrpcTest {}
+
+  @Environment(JAVA_11)
+  static class Java11Test extends GrpcTest {}
+
+  @Environment(JAVA_17)
+  static class Java17Test extends GrpcTest {}
 }

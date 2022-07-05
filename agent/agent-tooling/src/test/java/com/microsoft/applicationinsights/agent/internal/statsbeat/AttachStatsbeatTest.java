@@ -71,7 +71,7 @@ public class AttachStatsbeatTest {
     StatsbeatTelemetryBuilder telemetryBuilder = StatsbeatTelemetryBuilder.create("test", 1);
     customDimensions.populateProperties(telemetryBuilder, null);
     MetricsData data = (MetricsData) telemetryBuilder.build().getData().getBaseData();
-    assertThat(data.getProperties().get("os")).isEqualTo("Linux");
+    assertThat(data.getProperties()).containsEntry("os", "Linux");
   }
 
   @Test

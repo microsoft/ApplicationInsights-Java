@@ -21,47 +21,51 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
+@Environment(JAVA_8)
 @UseAgent("disabled_applicationinsights.json")
-public class JmsDisabledTest extends AiJarSmokeTest {
+class JmsDisabledTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/sendMessage")
-  public void doMostBasicTest() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+  void doMostBasicTest() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     Envelope rdEnvelope = rdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
+    assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
-    assertEquals("GET /sendMessage", rd.getName());
-    assertEquals("200", rd.getResponseCode());
-    assertTrue(rd.getProperties().isEmpty());
-    assertTrue(rd.getSuccess());
+    assertThat(rd.getName()).isEqualTo("GET /sendMessage");
+    assertThat(rd.getResponseCode()).isEqualTo("200");
+    assertThat(rd.getProperties()).isEmpty();
+    assertThat(rd.getSuccess()).isTrue();
 
     // verify the downstream http dependency that is no longer part of the same trace
-    List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+    List<Envelope> rddList = testing.mockedIngestion.waitForItems("RemoteDependencyData", 1);
     Envelope rddEnvelope = rddList.get(0);
     RemoteDependencyData rdd =
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-    assertEquals("GET /", rdd.getName());
-    assertEquals("https://www.bing.com", rdd.getData());
-    assertTrue(rdd.getProperties().isEmpty());
-    assertTrue(rdd.getSuccess());
+    assertThat(rdd.getName()).isEqualTo("GET /");
+    assertThat(rdd.getData()).isEqualTo("https://www.bing.com");
+    assertThat(rdd.getProperties()).isEmpty();
+    assertThat(rdd.getSuccess()).isTrue();
 
     // sleep a bit and make sure no kafka "requests" or dependencies are reported
     Thread.sleep(5000);
-    assertEquals(1, mockedIngestion.getCountForType("RequestData"));
-    assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
+    assertThat(testing.mockedIngestion.getCountForType("RequestData")).isEqualTo(1);
+    assertThat(testing.mockedIngestion.getCountForType("RemoteDependencyData")).isEqualTo(1);
   }
 }

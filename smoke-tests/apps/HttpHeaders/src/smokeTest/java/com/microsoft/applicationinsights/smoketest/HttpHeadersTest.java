@@ -21,38 +21,69 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-public class HttpHeadersTest extends AiWarSmokeTest {
+abstract class HttpHeadersTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/serverHeaders")
-  public void testServerHeaders() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void testServerHeaders() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
-    assertEquals("testing123", telemetry.rd.getProperties().get("http.response.header.abc"));
-    assertNotNull(telemetry.rd.getProperties().get("http.request.header.host"));
-    assertEquals(2, telemetry.rd.getProperties().size());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties().get("http.response.header.abc"))
+        .isEqualTo("testing123");
+    assertThat(telemetry.rd.getProperties()).containsKey("http.request.header.host");
+    assertThat(telemetry.rd.getProperties()).hasSize(2);
+    assertThat(telemetry.rd.getSuccess()).isTrue();
   }
 
   @Test
   @TargetUri("/clientHeaders")
-  public void testClientHeaders() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void testClientHeaders() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
-    assertNotNull(telemetry.rd.getProperties().get("http.request.header.host"));
-    assertEquals(1, telemetry.rd.getProperties().size());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).containsKey("http.request.header.host");
+    assertThat(telemetry.rd.getProperties()).hasSize(1);
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("testing123", telemetry.rdd1.getProperties().get("http.request.header.abc"));
-    assertNotNull(telemetry.rdd1.getProperties().get("http.response.header.date"));
-    assertEquals(2, telemetry.rdd1.getProperties().size());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getProperties().get("http.request.header.abc"))
+        .isEqualTo("testing123");
+    assertThat(telemetry.rdd1.getProperties()).containsKey("http.response.header.date");
+    assertThat(telemetry.rdd1.getProperties()).hasSize(2);
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
   }
+
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends HttpHeadersTest {}
+
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends HttpHeadersTest {}
+
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends HttpHeadersTest {}
+
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends HttpHeadersTest {}
+
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends HttpHeadersTest {}
+
+  @Environment(WILDFLY_13_JAVA_8)
+  static class Wildfly13Java8Test extends HttpHeadersTest {}
+
+  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
+  static class Wildfly13Java8OpenJ9Test extends HttpHeadersTest {}
 }

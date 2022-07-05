@@ -19,13 +19,20 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.smoketest.fixtures;
+package com.microsoft.applicationinsights.smoketest;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
+import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface BeforeWithParams {}
+public class Telemetry {
+  public Envelope rdEnvelope;
+  public Envelope rddEnvelope1;
+  public Envelope rddEnvelope2;
+  public Envelope rddEnvelope3;
+
+  public RequestData rd;
+  public RemoteDependencyData rdd1;
+  public RemoteDependencyData rdd2;
+  public RemoteDependencyData rdd3;
+}

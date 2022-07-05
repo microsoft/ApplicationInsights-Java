@@ -21,9 +21,10 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
@@ -31,36 +32,35 @@ import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-public class MicrometerTest extends AiJarSmokeTest {
+abstract class MicrometerTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/test")
-  public void doMostBasicTest() throws Exception {
-    mockedIngestion.waitForItems("RequestData", 1);
+  void doMostBasicTest() throws Exception {
+    testing.mockedIngestion.waitForItems("RequestData", 1);
 
     List<Envelope> metricItems =
-        mockedIngestion.waitForItems(
-            new Predicate<Envelope>() {
-              @Override
-              public boolean test(Envelope input) {
-                if (!input.getData().getBaseType().equals("MetricData")) {
-                  return false;
-                }
-                MetricData data = (MetricData) ((Data<?>) input.getData()).getBaseData();
-                if (!"/test".equals(data.getProperties().get("uri"))) {
-                  return false;
-                }
-                for (DataPoint point : data.getMetrics()) {
-                  if (point.getName().equals("http_server_requests") && point.getCount() == 1) {
-                    return true;
-                  }
-                }
+        testing.mockedIngestion.waitForItems(
+            input -> {
+              if (!input.getData().getBaseType().equals("MetricData")) {
                 return false;
               }
+              MetricData data = (MetricData) ((Data<?>) input.getData()).getBaseData();
+              if (!"/test".equals(data.getProperties().get("uri"))) {
+                return false;
+              }
+              for (DataPoint point : data.getMetrics()) {
+                if (point.getName().equals("http_server_requests") && point.getCount() == 1) {
+                  return true;
+                }
+              }
+              return false;
             },
             1,
             10,
@@ -68,16 +68,27 @@ public class MicrometerTest extends AiJarSmokeTest {
 
     MetricData data = (MetricData) ((Data<?>) metricItems.get(0).getData()).getBaseData();
     List<DataPoint> points = data.getMetrics();
-    assertEquals(1, points.size());
+    assertThat(points).hasSize(1);
 
     DataPoint point = points.get(0);
 
-    assertEquals(1, point.getCount(), 0); // (this was verified above in Predicate also)
-    assertEquals(
-        "http_server_requests", point.getName()); // (this was verified above in Predicate also)
-    assertNull("getMin was non-null", point.getMin()); // this isn't desired, but see
-    // https://github.com/micrometer-metrics/micrometer/issues/457
-    assertNotNull("getMax was null", point.getMax());
-    assertNull("getStdDev was non-null", point.getStdDev());
+    // these were verified above in Predicate also
+    assertThat(point.getCount()).isEqualTo(1);
+    assertThat(point.getName()).isEqualTo("http_server_requests");
+
+    // this isn't desired, but see https://github.com/micrometer-metrics/micrometer/issues/457
+    assertThat(point.getMin()).isNull();
+
+    assertThat(point.getMax()).isNotNull();
+    assertThat(point.getStdDev()).isNull();
   }
+
+  @Environment(JAVA_8)
+  static class Java8Test extends MicrometerTest {}
+
+  @Environment(JAVA_11)
+  static class Java11Test extends MicrometerTest {}
+
+  @Environment(JAVA_17)
+  static class Java17Test extends MicrometerTest {}
 }

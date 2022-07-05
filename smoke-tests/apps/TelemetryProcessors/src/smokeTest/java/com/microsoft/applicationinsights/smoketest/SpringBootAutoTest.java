@@ -21,45 +21,76 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-public class SpringBootAutoTest extends AiWarSmokeTest {
+abstract class SpringBootAutoTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/test")
-  public void doMostBasicTest() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void doMostBasicTest() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
-    assertEquals("testValue1", telemetry.rd.getProperties().get("attribute1"));
-    assertEquals("testValue2", telemetry.rd.getProperties().get("attribute2"));
-    assertEquals("sensitiveData1", telemetry.rd.getProperties().get("sensitiveAttribute1"));
-    assertEquals("*/TelemetryProcessors/test*", telemetry.rd.getProperties().get("httpPath"));
-    assertEquals(4, telemetry.rd.getProperties().size());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).containsEntry("attribute1", "testValue1");
+    assertThat(telemetry.rd.getProperties()).containsEntry("attribute2", "testValue2");
+    assertThat(telemetry.rd.getProperties()).containsEntry("sensitiveAttribute1", "sensitiveData1");
+    assertThat(telemetry.rd.getProperties().get("httpPath"))
+        .isEqualTo("*/TelemetryProcessors/test*");
+    assertThat(telemetry.rd.getProperties()).hasSize(4);
+    assertThat(telemetry.rd.getSuccess()).isTrue();
     // Log processor test
-    List<MessageData> logs = mockedIngestion.getMessageDataInRequest();
+    List<MessageData> logs = testing.mockedIngestion.getMessageDataInRequest();
     MessageData md1 = logs.get(0);
-    assertEquals("testValue1::testValue2", md1.getMessage());
+    assertThat(md1.getMessage()).isEqualTo("testValue1::testValue2");
   }
 
   @Test
   @TargetUri("/sensitivedata")
-  public void doSimpleTestPiiData() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void doSimpleTestPiiData() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
-    assertEquals("testValue1::testValue2", telemetry.rd.getName());
-    assertEquals("testValue1", telemetry.rd.getProperties().get("attribute1"));
-    assertEquals("testValue2", telemetry.rd.getProperties().get("attribute2"));
-    assertEquals("redacted", telemetry.rd.getProperties().get("sensitiveAttribute1"));
-    assertEquals(
-        "*/TelemetryProcessors/sensitivedata*", telemetry.rd.getProperties().get("httpPath"));
-    assertEquals(4, telemetry.rd.getProperties().size());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getName()).isEqualTo("testValue1::testValue2");
+    assertThat(telemetry.rd.getProperties()).containsEntry("attribute1", "testValue1");
+    assertThat(telemetry.rd.getProperties()).containsEntry("attribute2", "testValue2");
+    assertThat(telemetry.rd.getProperties()).containsEntry("sensitiveAttribute1", "redacted");
+    assertThat(telemetry.rd.getProperties().get("httpPath"))
+        .isEqualTo("*/TelemetryProcessors/sensitivedata*");
+    assertThat(telemetry.rd.getProperties()).hasSize(4);
+    assertThat(telemetry.rd.getSuccess()).isTrue();
   }
+
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends SpringBootAutoTest {}
+
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends SpringBootAutoTest {}
+
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends SpringBootAutoTest {}
+
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends SpringBootAutoTest {}
+
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends SpringBootAutoTest {}
+
+  @Environment(WILDFLY_13_JAVA_8)
+  static class Wildfly13Java8Test extends SpringBootAutoTest {}
+
+  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
+  static class Wildfly13Java8OpenJ9Test extends SpringBootAutoTest {}
 }

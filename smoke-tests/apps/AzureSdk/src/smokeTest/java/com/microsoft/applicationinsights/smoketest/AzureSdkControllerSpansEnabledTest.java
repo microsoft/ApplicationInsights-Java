@@ -21,21 +21,24 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
+@Environment(TOMCAT_8_JAVA_8)
 @UseAgent("controller_spans_enabled_applicationinsights.json")
-public class AzureSdkControllerSpansEnabledTest extends AiWarSmokeTest {
+class AzureSdkControllerSpansEnabledTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/test")
-  public void test() throws Exception {
-    Telemetry telemetry = getTelemetry(2);
+  void test() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(2);
 
     if (!telemetry.rdd1.getName().equals("TestController.test")) {
       RemoteDependencyData rddTemp = telemetry.rdd1;
@@ -47,31 +50,31 @@ public class AzureSdkControllerSpansEnabledTest extends AiWarSmokeTest {
       telemetry.rddEnvelope2 = rddEnvelopeTemp;
     }
 
-    assertEquals("GET /AzureSdk/test", telemetry.rd.getName());
-    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/AzureSdk/test"));
-    assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getSuccess());
-    assertNull(telemetry.rd.getSource());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getMeasurements().isEmpty());
+    assertThat(telemetry.rd.getName()).isEqualTo("GET /AzureSdk/test");
+    assertThat(telemetry.rd.getUrl()).matches("http://localhost:[0-9]+/AzureSdk/test");
+    assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
+    assertThat(telemetry.rd.getSuccess()).isTrue();
+    assertThat(telemetry.rd.getSource()).isNull();
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
-    assertEquals("TestController.test", telemetry.rdd1.getName());
-    assertNull(telemetry.rdd1.getData());
-    assertEquals("InProc", telemetry.rdd1.getType());
-    assertNull(telemetry.rdd1.getTarget());
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("TestController.test");
+    assertThat(telemetry.rdd1.getData()).isNull();
+    assertThat(telemetry.rdd1.getType()).isEqualTo("InProc");
+    assertThat(telemetry.rdd1.getTarget()).isNull();
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertEquals("hello", telemetry.rdd2.getName());
-    assertNull(telemetry.rdd2.getData());
-    assertEquals("InProc", telemetry.rdd2.getType());
-    assertNull(telemetry.rdd2.getTarget());
-    assertTrue(telemetry.rdd2.getProperties().isEmpty());
-    assertTrue(telemetry.rdd2.getSuccess());
+    assertThat(telemetry.rdd2.getName()).isEqualTo("hello");
+    assertThat(telemetry.rdd2.getData()).isNull();
+    assertThat(telemetry.rdd2.getType()).isEqualTo("InProc");
+    assertThat(telemetry.rdd2.getTarget()).isNull();
+    assertThat(telemetry.rdd2.getProperties()).isEmpty();
+    assertThat(telemetry.rdd2.getSuccess()).isTrue();
 
-    assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /AzureSdk/test");
-    assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rdd1, telemetry.rddEnvelope1, telemetry.rddEnvelope2, "GET /AzureSdk/test");
   }
 }

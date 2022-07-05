@@ -82,9 +82,9 @@ class ProfilerServiceTest {
         false,
         MetricTelemetryBuilder.create(TOTAL_CPU_PERCENTAGE, 100.0).build(),
         telemetry -> {
-          assertThat(telemetry.getProperties().get("Source")).isEqualTo("JFR-CPU");
-          assertThat(telemetry.getMeasurements().get("AverageCPUUsage")).isEqualTo(100.0);
-          assertThat(telemetry.getMeasurements().get("AverageMemoryUsage")).isEqualTo(0.0);
+          assertThat(telemetry.getProperties()).containsEntry("Source", "JFR-CPU");
+          assertThat(telemetry.getMeasurements()).containsEntry("AverageCPUUsage", 100.0);
+          assertThat(telemetry.getMeasurements()).containsEntry("AverageMemoryUsage", 0.0);
         });
   }
 
@@ -94,9 +94,9 @@ class ProfilerServiceTest {
         true,
         MetricTelemetryBuilder.create(HEAP_MEM_USED_PERCENTAGE, 0.0).build(),
         telemetry -> {
-          assertThat(telemetry.getProperties().get("Source")).isEqualTo("JFR-MANUAL");
-          assertThat(telemetry.getMeasurements().get("AverageCPUUsage")).isEqualTo(0.0);
-          assertThat(telemetry.getMeasurements().get("AverageMemoryUsage")).isEqualTo(0.0);
+          assertThat(telemetry.getProperties()).containsEntry("Source", "JFR-MANUAL");
+          assertThat(telemetry.getMeasurements()).containsEntry("AverageCPUUsage", 0.0);
+          assertThat(telemetry.getMeasurements()).containsEntry("AverageMemoryUsage", 0.0);
         });
   }
 
@@ -190,15 +190,15 @@ class ProfilerServiceTest {
     assertThat(profileInvoked.get()).isTrue();
 
     assertThat(serviceProfilerIndex.get()).isNotNull();
-    assertThat(serviceProfilerIndex.get().getProperties().get("ArtifactKind")).isEqualTo("Profile");
-    assertThat(serviceProfilerIndex.get().getProperties().get("EtlFileSessionId"))
-        .isEqualTo(timeStamp);
-    assertThat(serviceProfilerIndex.get().getProperties().get("DataCube")).isEqualTo(appId);
-    assertThat(serviceProfilerIndex.get().getProperties().get("Extension")).isEqualTo(jfrExtension);
-    assertThat(serviceProfilerIndex.get().getProperties().get("MachineName"))
-        .isEqualTo(machineName);
-    assertThat(serviceProfilerIndex.get().getProperties().get("ProcessId")).isEqualTo(processId);
-    assertThat(serviceProfilerIndex.get().getProperties().get("StampId")).isEqualTo(stampId);
+    assertThat(serviceProfilerIndex.get().getProperties()).containsEntry("ArtifactKind", "Profile");
+    assertThat(serviceProfilerIndex.get().getProperties())
+        .containsEntry("EtlFileSessionId", timeStamp);
+    assertThat(serviceProfilerIndex.get().getProperties()).containsEntry("DataCube", appId);
+    assertThat(serviceProfilerIndex.get().getProperties()).containsEntry("Extension", jfrExtension);
+    assertThat(serviceProfilerIndex.get().getProperties())
+        .containsEntry("MachineName", machineName);
+    assertThat(serviceProfilerIndex.get().getProperties()).containsEntry("ProcessId", processId);
+    assertThat(serviceProfilerIndex.get().getProperties()).containsEntry("StampId", stampId);
     assertTelemetry.accept(serviceProfilerIndex.get());
   }
 

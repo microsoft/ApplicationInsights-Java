@@ -21,8 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
 
@@ -32,7 +32,7 @@ class TrieTest {
     Trie<Integer> trie =
         Trie.<Integer>newBuilder().put("abc", 0).put("abcd", 10).put("abcde", 20).build();
 
-    assertNull(trie.getOrNull("ab"));
+    assertThat(trie.getOrNull("ab")).isNull();
     assertEquals(0, trie.getOrNull("abc"));
     assertEquals(10, trie.getOrNull("abcd"));
     assertEquals(20, trie.getOrNull("abcde"));
@@ -43,7 +43,7 @@ class TrieTest {
     Trie<Integer> trie =
         Trie.<Integer>newBuilder().put("abc", 0).put("abcde", 10).put("abcdfgh", 20).build();
 
-    assertNull(trie.getOrNull("ababababa"));
+    assertThat(trie.getOrNull("ababababa")).isNull();
     assertEquals(0, trie.getOrNull("abcd"));
     assertEquals(10, trie.getOrNull("abcdefgh"));
     assertEquals(20, trie.getOrNull("abcdfghjkl"));
