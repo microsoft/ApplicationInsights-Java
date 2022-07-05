@@ -47,7 +47,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-abstract class CoreAndFilterTests extends AiSmokeTest {
+abstract class CoreAndFilterTests {
 
   @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 

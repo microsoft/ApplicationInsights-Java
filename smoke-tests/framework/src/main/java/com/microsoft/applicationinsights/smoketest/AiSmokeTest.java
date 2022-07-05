@@ -41,10 +41,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +51,6 @@ import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.extension.AfterAllCallback;
@@ -82,23 +79,31 @@ public class AiSmokeTest
 
   private static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 60;
 
-  private static File appFile;
-  private static File javaagentFile;
+  private static final File appFile = new File(System.getProperty("ai.smoke-test.test-app-file"));
+  private static final File javaagentFile =
+      new File(System.getProperty("ai.smoke-test.javaagent-file"));
 
-  private final List<DependencyContainer> dependencyImages = new ArrayList<>();
-  private final AtomicReference<GenericContainer<?>> targetContainer = new AtomicReference<>();
-  private final Deque<GenericContainer<?>> allContainers = new ArrayDeque<>();
-  private final Map<String, String> hostnameEnvVars = new HashMap<>();
-  private String currentImageName;
-  private String currentImageAppDir;
-  private int appServerPort;
+  // TODO (trask) make private and expose methods on AiSmokeTest(?)
+  protected final MockedAppInsightsIngestionServer mockedIngestion =
+      new MockedAppInsightsIngestionServer();
+
+  AiSmokeTest() {
+    System.out.println("INIT-------------------------------------------");
+  }
 
   private boolean useAgent;
   @Nullable private String agentConfigurationPath;
-  @Nullable private Network network;
+  @Nullable private List<DependencyContainer> dependencyImages;
 
-  protected final MockedAppInsightsIngestionServer mockedIngestion =
-      new MockedAppInsightsIngestionServer();
+  @Nullable private String currentImageName;
+  @Nullable private String currentImageAppDir;
+
+  @Nullable private GenericContainer<?> targetContainer;
+  @Nullable private List<GenericContainer<?>> allContainers;
+  @Nullable private Map<String, String> hostnameEnvVars;
+  private int appServerPort;
+
+  @Nullable private Network network;
 
   @Override
   public void beforeAll(ExtensionContext context) {
@@ -120,23 +125,40 @@ public class AiSmokeTest
     if (ua != null) {
       useAgent = true;
       agentConfigurationPath = ua.value();
+    } else {
+      useAgent = false;
+      agentConfigurationPath = null;
     }
     WithDependencyContainers wdc = testClass.getAnnotation(WithDependencyContainers.class);
+    dependencyImages = new ArrayList<>();
     if (wdc != null) {
       Collections.addAll(dependencyImages, wdc.value());
     }
 
-    configureEnvironment(imageName, imageAppDir);
+    prepareEnvironment(imageName, imageAppDir);
   }
 
   @Override
   public void testFailed(ExtensionContext context, Throwable cause) {
-    GenericContainer<?> container = targetContainer.get();
-    if (container != null) {
+    if (targetContainer != null) {
       System.out.println("Test failure detected.");
       System.out.println("Container logs:");
-      System.out.println(container.getLogs());
+      System.out.println(targetContainer.getLogs());
     }
+  }
+
+  private void prepareEnvironment(String imageName, String imageAppDir) throws Exception {
+    System.out.println("Preparing environment...");
+    currentImageName = imageName;
+    currentImageAppDir = imageAppDir;
+    mockedIngestion.startServer();
+    network = Network.newNetwork();
+    allContainers = new ArrayList<>();
+    hostnameEnvVars = new HashMap<>();
+    startDependencyContainers();
+    startTestApplicationContainer();
+    clearOutAnyInitLogs();
+    mockedIngestion.setRequestLoggingEnabled(true);
   }
 
   @Override
@@ -175,15 +197,13 @@ public class AiSmokeTest
     assertTrue("mocked ingestion has no data", mockedIngestion.hasData());
   }
 
-  private void configureEnvironment(String imageName, String imageAppDir) throws Exception {
-    System.out.println("Preparing environment...");
-    setupProperties(imageName, imageAppDir);
-    startMockedIngestion();
-    createDockerNetwork();
-    startAllContainers();
-    clearOutAnyInitLogs();
-    mockedIngestion.setRequestLoggingEnabled(true);
-    System.out.println("Environment preparation complete.");
+  protected String getBaseUrl() {
+    String appContext = getAppContext();
+    if (appContext.isEmpty()) {
+      return "http://localhost:" + appServerPort;
+    } else {
+      return "http://localhost:" + appServerPort + "/" + appContext;
+    }
   }
 
   protected static String getAppContext() {
@@ -193,15 +213,6 @@ public class AiSmokeTest
       return "";
     } else {
       return appFileName.replace(".war", "");
-    }
-  }
-
-  protected String getBaseUrl() {
-    String appContext = getAppContext();
-    if (appContext.isEmpty()) {
-      return "http://localhost:" + appServerPort;
-    } else {
-      return "http://localhost:" + appServerPort + "/" + appContext;
     }
   }
 
@@ -238,66 +249,12 @@ public class AiSmokeTest
     }
   }
 
-  protected void setupProperties(String imageName, String imageAppDir) {
-    appFile = new File(System.getProperty("ai.smoke-test.test-app-file"));
-    javaagentFile = new File(System.getProperty("ai.smoke-test.javaagent-file"));
-    currentImageName = imageName;
-    currentImageAppDir = imageAppDir;
-  }
-
-  protected void startMockedIngestion() throws Exception {
-    mockedIngestion.addIngestionFilter(
-        new Predicate<Envelope>() {
-          @Override
-          public boolean test(Envelope input) {
-            if (input == null) {
-              return false;
-            }
-            String deviceId = input.getTags().get("ai.device.id");
-            if (deviceId == null) {
-              return true;
-            }
-            GenericContainer<?> container = targetContainer.get();
-            if (container == null) { // ignore telemetry in after container is cleaned up.
-              return false;
-            }
-            boolean belongsToCurrentContainer = container.getContainerId().startsWith(deviceId);
-            if (!belongsToCurrentContainer) {
-              System.out.println("Telemetry from previous container");
-            }
-            return belongsToCurrentContainer;
-          }
-        });
-    mockedIngestion.startServer();
-  }
-
-  private void createDockerNetwork() {
-    System.out.println("Creating network...");
-    network = Network.newNetwork();
-  }
-
-  private void cleanUpDockerNetwork() {
-    if (network == null) {
-      return;
-    }
-    try {
-      network.close();
-    } finally {
-      network = null;
-    }
-  }
-
-  private void startAllContainers() throws Exception {
-    startDependencyContainers();
-    startTestApplicationContainer();
-  }
-
   private void startDependencyContainers() {
     for (DependencyContainer dc : dependencyImages) {
       String imageName = dc.imageName().isEmpty() ? dc.value() : dc.imageName();
       System.out.println("Starting container: " + imageName);
       String containerName = "dependency" + new Random().nextInt(Integer.MAX_VALUE);
-      String[] envVars = substitue(dc.environmentVariables(), hostnameEnvVars, containerName);
+      String[] envVars = substitue(dc.environmentVariables(), containerName);
       Map<String, String> envVarMap = new HashMap<>();
       for (String envVar : envVars) {
         String[] parts = envVar.split("=");
@@ -319,21 +276,19 @@ public class AiSmokeTest
       if (!dc.hostnameEnvironmentVariable().isEmpty()) {
         hostnameEnvVars.put(dc.hostnameEnvironmentVariable(), containerName);
       }
-      allContainers.push(container);
+      allContainers.add(container);
     }
   }
 
-  private static String[] substitue(
-      String[] environmentVariables, Map<String, String> hostnameEnvVars, String containerName) {
+  private String[] substitue(String[] environmentVariables, String containerName) {
     String[] envVars = new String[environmentVariables.length];
     for (int i = 0; i < environmentVariables.length; i++) {
-      envVars[i] = substitute(environmentVariables[i], hostnameEnvVars, containerName);
+      envVars[i] = substitute(environmentVariables[i], containerName);
     }
     return envVars;
   }
 
-  private static String substitute(
-      String environmentVariable, Map<String, String> hostnameEnvVars, String containerName) {
+  private String substitute(String environmentVariable, String containerName) {
     String envVar = environmentVariable;
     for (Map.Entry<String, String> entry : hostnameEnvVars.entrySet()) {
       envVar = envVar.replace("${" + entry.getKey() + "}", entry.getValue());
@@ -413,8 +368,8 @@ public class AiSmokeTest
 
     appServerPort = container.getMappedPort(8080);
 
-    targetContainer.set(container);
-    allContainers.push(container);
+    targetContainer = container;
+    allContainers.add(container);
   }
 
   @Override
@@ -425,24 +380,17 @@ public class AiSmokeTest
 
   @Override
   public void afterAll(ExtensionContext context) throws Exception {
-    stopAllContainers();
-    cleanUpDockerNetwork();
-    mockedIngestion.stopServer();
-    mockedIngestion.setRequestLoggingEnabled(false);
-    dependencyImages.clear();
-    allContainers.clear();
-    hostnameEnvVars.clear();
-  }
-
-  public void stopAllContainers() {
-    System.out.println("Stopping containers...");
-    while (!allContainers.isEmpty()) {
-      GenericContainer<?> c = allContainers.pop();
-      c.stop();
-      if (c.isRunning()) {
-        System.err.printf("ERROR: Container failed to stop: " + c.getContainerName());
+    if (allContainers != null) {
+      System.out.println("Stopping containers...");
+      for (GenericContainer<?> container : allContainers) {
+        container.stop();
       }
     }
+    if (network != null) {
+      network.close();
+    }
+    mockedIngestion.stopServer();
+    mockedIngestion.setRequestLoggingEnabled(false);
   }
 
   @SuppressWarnings("TypeParameterUnusedInFormals")

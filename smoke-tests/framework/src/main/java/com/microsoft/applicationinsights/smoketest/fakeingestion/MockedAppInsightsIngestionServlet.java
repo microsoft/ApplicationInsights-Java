@@ -49,7 +49,6 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
 
   // guarded by multimapLock
   private final ListMultimap<String, Envelope> type2envelope;
-  private final List<Predicate<Envelope>> filters;
 
   private final Object multimapLock = new Object();
 
@@ -59,7 +58,6 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
 
   MockedAppInsightsIngestionServlet() {
     type2envelope = MultimapBuilder.treeKeys().arrayListValues().build();
-    filters = new ArrayList<>();
   }
 
   @SuppressWarnings("SystemOut")
@@ -67,10 +65,6 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
     if (loggingEnabled) {
       System.out.println("FAKE INGESTION: INFO - " + message);
     }
-  }
-
-  void addIngestionFilter(Predicate<Envelope> filter) {
-    this.filters.add(filter);
   }
 
   void resetData() {
@@ -148,24 +142,10 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
     for (String line : lines) {
       Envelope envelope = JsonHelper.GSON.fromJson(line.trim(), Envelope.class);
       String baseType = envelope.getData().getBaseType();
-      if (filtersAllowItem(envelope)) {
-        synchronized (multimapLock) {
-          type2envelope.put(baseType, envelope);
-        }
+      synchronized (multimapLock) {
+        type2envelope.put(baseType, envelope);
       }
     }
-  }
-
-  private boolean filtersAllowItem(Envelope item) {
-    if (this.filters.isEmpty()) {
-      return true;
-    }
-    for (Predicate<Envelope> filter : this.filters) {
-      if (!filter.test(item)) {
-        return false;
-      }
-    }
-    return true;
   }
 
   @Override

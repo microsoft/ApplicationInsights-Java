@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-abstract class SpringBootAutoTest extends AiSmokeTest {
+abstract class SpringBootAutoTest {
 
   @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
 
