@@ -1,3 +1,5 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
 pluginManagement {
   plugins {
     // TODO (trask) use this instead of current manual ai.sdk-version.properties rolling
@@ -35,13 +37,11 @@ gradleEnterprise {
 
 rootProject.name = 'applicationinsights-java'
 
-import org.apache.tools.ant.taskdefs.condition.Os
-
-def buildNative = !(System.properties['skipWinNative'] ?: 'false').toBoolean() && Os.isFamily(Os.FAMILY_WINDOWS);
+def buildNative = System.getenv("CI") != null && Os.isFamily(Os.FAMILY_WINDOWS)
 if (buildNative) {
   include ':etw:native'
 } else {
-  logger.quiet "Skipping build of :etw:native because skipWinNative=true. EtwAppender/EtwProvider will not work because library is missing"
+  logger.info "Skipping build of :etw:native. EtwAppender/EtwProvider will not work because library is missing"
 }
 include ':etw:java'
 // TODO (trask) ETW: is this really needed? if so, need to restore devtest configuration
