@@ -31,7 +31,7 @@ import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -53,19 +53,9 @@ abstract class MicrometerTest {
     assertThat(telemetry.rd.getProperties()).isEmpty();
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
-    // sleep a bit and make sure that the excluded metric is not reported
-    Thread.sleep(10000);
-
     List<Envelope> metricItems =
-        testing.mockedIngestion.getItemsEnvelopeDataType("MetricData").stream()
-            .filter(
-                e -> {
-                  MetricData data = (MetricData) ((Data<?>) e.getData()).getBaseData();
-                  List<DataPoint> points = data.getMetrics();
-                  DataPoint point = points.get(0);
-                  return point.getValue() == 1;
-                })
-            .collect(Collectors.toList());
+        testing.mockedIngestion.waitForItems(
+            MicrometerTest::isMicrometerMetric, 1, 10, TimeUnit.SECONDS);
 
     MetricData data = (MetricData) ((Data<?>) metricItems.get(0).getData()).getBaseData();
     List<DataPoint> points = data.getMetrics();
@@ -81,6 +71,19 @@ abstract class MicrometerTest {
     assertThat(point.getStdDev()).isNull();
     assertThat(data.getProperties()).hasSize(1);
     assertThat(data.getProperties()).containsEntry("tag1", "value1");
+  }
+
+  static boolean isMicrometerMetric(Envelope input) {
+    if (!input.getData().getBaseType().equals("MetricData")) {
+      return false;
+    }
+    MetricData data = (MetricData) ((Data<?>) input.getData()).getBaseData();
+    for (DataPoint point : data.getMetrics()) {
+      if (point.getName().contains("test_counter")) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Environment(JAVA_8)

@@ -40,6 +40,7 @@ class MicrometerDisabledTest {
 
     // sleep a bit and make sure no micrometer metrics are reported
     Thread.sleep(10000);
-    assertThat(testing.mockedIngestion.getCountForType("MetricData")).isZero();
+    assertThat(testing.mockedIngestion.getItemsEnvelopeDataType("MetricData"))
+        .noneMatch(MicrometerTest::isMicrometerMetric);
   }
 }
