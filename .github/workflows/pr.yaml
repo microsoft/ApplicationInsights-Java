@@ -31,7 +31,6 @@ jobs:
       - name: Test
         uses: gradle/gradle-build-action@v2
         with:
-          cache-disabled: true
           arguments: check assemble
 
       - name: Upload snapshot
@@ -74,7 +73,6 @@ jobs:
       - name: Test
         uses: gradle/gradle-build-action@v2
         with:
-          cache-disabled: true
           arguments: ${{ matrix.module }}:smokeTest
 
   required-status-check:
