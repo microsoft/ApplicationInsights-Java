@@ -28,12 +28,12 @@ import io.opentelemetry.javaagent.extension.AgentListener;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 
 @AutoService(AgentListener.class)
-public class StartAppIdRetrieval implements AgentListener {
+public class AfterAgentListener implements AgentListener {
 
   private static volatile AppIdSupplier appIdSupplier;
 
   public static void setAppIdSupplier(AppIdSupplier appIdSupplier) {
-    StartAppIdRetrieval.appIdSupplier = appIdSupplier;
+    AfterAgentListener.appIdSupplier = appIdSupplier;
   }
 
   @Override
@@ -50,5 +50,7 @@ public class StartAppIdRetrieval implements AgentListener {
     }
 
     LazyHttpClient.safeToInitLatch.countDown();
+
+    PerformanceCounterInitializer.initialize(FirstEntryPoint.getConfiguration());
   }
 }

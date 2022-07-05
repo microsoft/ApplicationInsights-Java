@@ -14,8 +14,8 @@
       "disabledAll": false,
       "instrumentationKey": "00000000-0000-0000-0000-0FEEDDADBEEG",
       "endpoint": "http://host.testcontainers.internal:6060/",
-      "shortIntervalSeconds": 30,
-      "longIntervalSeconds": 30
+      "shortIntervalSeconds": 5,
+      "longIntervalSeconds": 5
     }
   }
 }

@@ -47,24 +47,7 @@ abstract class MicrometerTest {
 
     List<Envelope> metricItems =
         testing.mockedIngestion.waitForItems(
-            input -> {
-              if (!input.getData().getBaseType().equals("MetricData")) {
-                return false;
-              }
-              MetricData data = (MetricData) ((Data<?>) input.getData()).getBaseData();
-              if (!"/test".equals(data.getProperties().get("uri"))) {
-                return false;
-              }
-              for (DataPoint point : data.getMetrics()) {
-                if (point.getName().equals("http_server_requests") && point.getCount() == 1) {
-                  return true;
-                }
-              }
-              return false;
-            },
-            1,
-            10,
-            TimeUnit.SECONDS);
+            MicrometerTest::isMicrometerMetric, 1, 10, TimeUnit.SECONDS);
 
     MetricData data = (MetricData) ((Data<?>) metricItems.get(0).getData()).getBaseData();
     List<DataPoint> points = data.getMetrics();
@@ -81,6 +64,22 @@ abstract class MicrometerTest {
 
     assertThat(point.getMax()).isNotNull();
     assertThat(point.getStdDev()).isNull();
+  }
+
+  static boolean isMicrometerMetric(Envelope input) {
+    if (!input.getData().getBaseType().equals("MetricData")) {
+      return false;
+    }
+    MetricData data = (MetricData) ((Data<?>) input.getData()).getBaseData();
+    if (!"/test".equals(data.getProperties().get("uri"))) {
+      return false;
+    }
+    for (DataPoint point : data.getMetrics()) {
+      if (point.getName().equals("http_server_requests") && point.getCount() == 1) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Environment(JAVA_8)

@@ -1,6 +1,6 @@
 {
   "preview": {
-    "metricIntervalSeconds": 10
+    "metricIntervalSeconds": 5
   },
   "customDimensions": {
     "tag1": "abc",

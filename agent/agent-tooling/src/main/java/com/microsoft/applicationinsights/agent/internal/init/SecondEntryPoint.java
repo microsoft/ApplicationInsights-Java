@@ -153,8 +153,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             .setDiskPersistenceMaxSizeMb(config.preview.diskPersistenceMaxSizeMb)
             .build();
 
-    PerformanceCounterInitializer.initialize(telemetryClient, config);
-
     // interval longer than 15 minutes is not allowed since we use this data for usage telemetry
     long intervalSeconds = Math.min(config.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
     Consumer<List<TelemetryItem>> telemetryItemsConsumer =
@@ -195,7 +193,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     // initialize StatsbeatModule
     statsbeatModule.start(telemetryClient, config);
 
-    StartAppIdRetrieval.setAppIdSupplier(appIdSupplier);
+    AfterAgentListener.setAppIdSupplier(appIdSupplier);
 
     // TODO (trask) add this method to AutoConfigurationCustomizer upstream?
     ((AutoConfiguredOpenTelemetrySdkBuilder) autoConfiguration).registerShutdownHook(false);
