@@ -39,16 +39,16 @@ val dependencyManagement by configurations.creating {
   isCanBeResolved = false
   isVisible = false
 }
+afterEvaluate {
+  configurations.configureEach {
+    if (isCanBeResolved && !isCanBeConsumed) {
+      extendsFrom(dependencyManagement)
+    }
+  }
+}
 
 dependencies {
   dependencyManagement(platform(project(":dependencyManagement")))
-  afterEvaluate {
-    configurations.configureEach {
-      if (isCanBeResolved && !isCanBeConsumed) {
-        extendsFrom(dependencyManagement)
-      }
-    }
-  }
 
   compileOnly("com.google.code.findbugs:jsr305")
 
