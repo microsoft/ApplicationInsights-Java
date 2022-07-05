@@ -21,75 +21,85 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
 @WithDependencyContainers({
   @DependencyContainer(
       value = "mysql:5",
       environmentVariables = {"MYSQL_ROOT_PASSWORD=password"},
-      portMapping = "3306",
+      exposedPort = 3306,
       hostnameEnvironmentVariable = "MYSQL"),
   @DependencyContainer(
       value = "postgres:11",
-      portMapping = "5432",
+      exposedPort = 5432,
       environmentVariables = {"POSTGRES_PASSWORD=passw0rd2"},
       hostnameEnvironmentVariable = "POSTGRES"),
   @DependencyContainer(
       value = "mcr.microsoft.com/mssql/server:2019-latest",
       environmentVariables = {"ACCEPT_EULA=Y", "SA_PASSWORD=Password1"},
-      portMapping = "1433",
+      exposedPort = 1433,
       hostnameEnvironmentVariable = "SQLSERVER")
 })
-public class JdbcTest extends AiWarSmokeTest {
+abstract class JdbcTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/hsqldbPreparedStatement")
-  public void hsqldbPreparedStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void hsqldbPreparedStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("SELECT testdb.abc", telemetry.rdd1.getName());
-    assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getData());
-    assertEquals("SQL", telemetry.rdd1.getType());
-    assertEquals("testdb", telemetry.rdd1.getTarget());
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT testdb.abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where xyz = ?");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
+    assertThat(telemetry.rdd1.getTarget()).isEqualTo("testdb");
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    SmokeTestExtension.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
   @Test
   @TargetUri("/hsqldbStatement")
-  public void hsqldbStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void hsqldbStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("SELECT testdb.abc", telemetry.rdd1.getName());
-    assertEquals("select * from abc", telemetry.rdd1.getData());
-    assertEquals("SQL", telemetry.rdd1.getType());
-    assertEquals("testdb", telemetry.rdd1.getTarget());
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT testdb.abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
+    assertThat(telemetry.rdd1.getTarget()).isEqualTo("testdb");
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    SmokeTestExtension.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
   @Test
   @TargetUri("/hsqldbLargeStatement")
-  public void hsqldbLargeStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void hsqldbLargeStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
     StringBuilder a2000 = new StringBuilder();
     for (int i = 0; i < 2000; i++) {
@@ -99,210 +109,241 @@ public class JdbcTest extends AiWarSmokeTest {
     String query = "select * from abc" + largeStr;
     String truncatedQuery = query.substring(0, Math.min(query.length(), 1024));
 
-    assertEquals("SELECT testdb.abc", telemetry.rdd1.getName());
-    assertEquals(query, telemetry.rdd1.getData());
-    assertEquals("SQL", telemetry.rdd1.getType());
-    assertEquals("testdb", telemetry.rdd1.getTarget());
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT testdb.abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo(query);
+    assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
+    assertThat(telemetry.rdd1.getTarget()).isEqualTo("testdb");
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    SmokeTestExtension.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
   @Test
   @TargetUri("/hsqldbBatchPreparedStatement")
-  public void hsqldbBatchPreparedStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void hsqldbBatchPreparedStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("INSERT testdb.abc", telemetry.rdd1.getName());
-    assertEquals("insert into abc (xyz) values (?)", telemetry.rdd1.getData());
-    assertEquals("SQL", telemetry.rdd1.getType());
-    assertEquals("testdb", telemetry.rdd1.getTarget());
-    // assertEquals(" [Batch of 3]", telemetry.rdd1.getProperties().get("Args"));
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("INSERT testdb.abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("insert into abc (xyz) values (?)");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
+    assertThat(telemetry.rdd1.getTarget()).isEqualTo("testdb");
+    // assertThat(telemetry.rdd1.getProperties()).containsEntry("Args", " [Batch of 3]");
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    SmokeTestExtension.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
-  @Ignore // OpenTelemetry auto-instrumentation does not support non- prepared statement batching
-  // yet
-  @Test
+  // OpenTelemetry auto-instrumentation does not support non- prepared statement batching yet
+  // @Test
   @TargetUri("/hsqldbBatchStatement")
-  public void hsqldbBatchStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void hsqldbBatchStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("insert testdb.abc", telemetry.rdd1.getName());
-    assertEquals(
-        "insert into abc (xyz) values ('t'); insert into abc (xyz) values ('u');"
-            + " insert into abc (xyz) values ('v')",
-        telemetry.rdd1.getData());
-    assertEquals("SQL", telemetry.rdd1.getType());
-    assertEquals("testdb", telemetry.rdd1.getTarget());
-    assertEquals(1, telemetry.rdd1.getProperties().size());
-    assertEquals(" [Batch]", telemetry.rdd1.getProperties().get("Args"));
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("insert testdb.abc");
+    assertThat(telemetry.rdd1.getData())
+        .isEqualTo(
+            "insert into abc (xyz) values ('t'); insert into abc (xyz) values ('u');"
+                + " insert into abc (xyz) values ('v')");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
+    assertThat(telemetry.rdd1.getTarget()).isEqualTo("testdb");
+    assertThat(telemetry.rdd1.getProperties()).hasSize(1);
+    assertThat(telemetry.rdd1.getProperties()).containsEntry("Args", " [Batch]");
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    SmokeTestExtension.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
   @Test
   @TargetUri("/mysqlPreparedStatement")
-  public void mysqlPreparedStatement() throws Exception {
+  void mysqlPreparedStatement() throws Exception {
     // exclude internal queries
     Telemetry telemetry =
-        getTelemetry(1, rdd -> !rdd.getData().startsWith("/* mysql-connector-java? "));
+        testing.getTelemetry(1, rdd -> !rdd.getData().startsWith("/* mysql-connector-java? "));
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("SELECT mysql.abc", telemetry.rdd1.getName());
-    assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getData());
-    assertEquals("mysql", telemetry.rdd1.getType());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT mysql.abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where xyz = ?");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("mysql");
     // not the best test, because this is both the db.name and db.system
-    assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+ \\| mysql"));
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+ \\| mysql");
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    SmokeTestExtension.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
   @Test
   @TargetUri("/mysqlStatement")
-  public void mysqlStatement() throws Exception {
+  void mysqlStatement() throws Exception {
     // exclude internal queries
     Telemetry telemetry =
-        getTelemetry(1, rdd -> !rdd.getData().startsWith("/* mysql-connector-java? "));
+        testing.getTelemetry(1, rdd -> !rdd.getData().startsWith("/* mysql-connector-java? "));
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("SELECT mysql.abc", telemetry.rdd1.getName());
-    assertEquals("select * from abc", telemetry.rdd1.getData());
-    assertEquals("mysql", telemetry.rdd1.getType());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT mysql.abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("mysql");
     // not the best test, because this is both the db.name and db.system
-    assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+ \\| mysql"));
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+ \\| mysql");
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    SmokeTestExtension.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
   @Test
   @TargetUri("/postgresPreparedStatement")
-  public void postgresPreparedStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void postgresPreparedStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("SELECT postgres.abc", telemetry.rdd1.getName());
-    assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getData());
-    assertEquals("postgresql", telemetry.rdd1.getType());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT postgres.abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where xyz = ?");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("postgresql");
     // not the best test, because this is both the db.name and db.system
-    assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+ \\| postgres"));
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+ \\| postgres");
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    SmokeTestExtension.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
   @Test
   @TargetUri("/postgresStatement")
-  public void postgresStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void postgresStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("SELECT postgres.abc", telemetry.rdd1.getName());
-    assertEquals("select * from abc", telemetry.rdd1.getData());
-    assertEquals("postgresql", telemetry.rdd1.getType());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT postgres.abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("postgresql");
     // not the best test, because this is both the db.name and db.system
-    assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+ \\| postgres"));
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+ \\| postgres");
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    SmokeTestExtension.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
   @Test
   @TargetUri("/sqlServerPreparedStatement")
-  public void sqlServerPreparedStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void sqlServerPreparedStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("SELECT abc", telemetry.rdd1.getName());
-    assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getData());
-    assertEquals("SQL", telemetry.rdd1.getType());
-    assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+"));
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where xyz = ?");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
+    assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+");
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    SmokeTestExtension.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
   @Test
   @TargetUri("/sqlServerStatement")
-  public void sqlServerStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void sqlServerStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("SELECT abc", telemetry.rdd1.getName());
-    assertEquals("select * from abc", telemetry.rdd1.getData());
-    assertEquals("SQL", telemetry.rdd1.getType());
-    assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+"));
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
+    assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+");
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    SmokeTestExtension.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
-  @Ignore("FIXME: need custom container with oracle db")
-  @Test
+  // FIXME: need custom container with oracle db
+  // @Test
   @TargetUri("/oraclePreparedStatement")
-  public void oraclePreparedStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void oraclePreparedStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("SELECT abc", telemetry.rdd1.getName());
-    assertEquals("select * from abc where xyz = ?", telemetry.rdd1.getData());
-    assertEquals("SQL", telemetry.rdd1.getType());
-    assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+"));
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where xyz = ?");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
+    assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+");
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    SmokeTestExtension.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
-  @Ignore("FIXME: need custom container with oracle db")
-  @Test
+  // FIXME: need custom container with oracle db
+  // @Test
   @TargetUri("/oracleStatement")
-  public void oracleStatement() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void oracleStatement() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertEquals("SELECT abc", telemetry.rdd1.getName());
-    assertEquals("select * from abc", telemetry.rdd1.getData());
-    assertEquals("SQL", telemetry.rdd1.getType());
-    assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+"));
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT abc");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
+    assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+");
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
+    SmokeTestExtension.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
+
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends JdbcTest {}
+
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends JdbcTest {}
+
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends JdbcTest {}
+
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends JdbcTest {}
+
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends JdbcTest {}
+
+  @Environment(WILDFLY_13_JAVA_8)
+  static class Wildfly13Java8Test extends JdbcTest {}
+
+  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
+  static class Wildfly13Java8OpenJ9Test extends JdbcTest {}
 }

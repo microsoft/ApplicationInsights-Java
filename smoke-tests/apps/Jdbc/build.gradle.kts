@@ -2,8 +2,6 @@ plugins {
   id("ai.smoke-test-war")
 }
 
-aiSmokeTest.dependencyContainers.addAll("mysql:5", "postgres:11", "mcr.microsoft.com/mssql/server:2019-latest")
-
 dependencies {
   implementation("org.hsqldb:hsqldb:2.3.6") // 2.4.0+ requires Java 8+
   implementation("mysql:mysql-connector-java:5.1.49")

@@ -21,32 +21,61 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-public class SpringBootAutoTest extends AiWarSmokeTest {
+abstract class SpringBootAutoTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/test")
-  public void doMostBasicTest() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void doMostBasicTest() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
     // TODO verify browser and other envelope tags somewhere else
-    assertTrue(
-        telemetry.rdEnvelope.getTags().get("ai.user.userAgent").startsWith("Apache-HttpClient/"));
-    assertNotNull(telemetry.rdEnvelope.getTags().get("ai.location.ip"));
+    assertThat(telemetry.rdEnvelope.getTags())
+        .hasEntrySatisfying(
+            "ai.user.userAgent", v -> assertThat(v).startsWith("Apache-HttpClient/"));
+    assertThat(telemetry.rdEnvelope.getTags()).containsKey("ai.location.ip");
 
-    assertEquals("GET /SpringBootAuto/test", telemetry.rd.getName());
-    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/SpringBootAuto/test"));
-    assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getSuccess());
-    assertNull(telemetry.rd.getSource());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getMeasurements().isEmpty());
+    assertThat(telemetry.rd.getName()).isEqualTo("GET /SpringBootAuto/test");
+    assertThat(telemetry.rd.getUrl()).matches("http://localhost:[0-9]+/SpringBootAuto/test");
+    assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
+    assertThat(telemetry.rd.getSuccess()).isTrue();
+    assertThat(telemetry.rd.getSource()).isNull();
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getMeasurements()).isEmpty();
   }
+
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends SpringBootAutoTest {}
+
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends SpringBootAutoTest {}
+
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends SpringBootAutoTest {}
+
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends SpringBootAutoTest {}
+
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends SpringBootAutoTest {}
+
+  @Environment(WILDFLY_13_JAVA_8)
+  static class Wildfly13Java8Test extends SpringBootAutoTest {}
+
+  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
+  static class Wildfly13Java8OpenJ9Test extends SpringBootAutoTest {}
 }

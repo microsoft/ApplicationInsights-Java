@@ -21,40 +21,43 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
-import com.microsoft.applicationinsights.smoketest.schemav2.DataPointType;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent("micrometer")
-public class MicrometerTest extends AiJarSmokeTest {
+@UseAgent
+abstract class MicrometerTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/test")
-  public void doMostBasicTest() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void doMostBasicTest() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
-    assertEquals("GET /test", telemetry.rd.getName());
-    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/test"));
-    assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getSuccess());
-    assertNull(telemetry.rd.getSource());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getMeasurements().isEmpty());
+    assertThat(telemetry.rd.getName()).isEqualTo("GET /test");
+    assertThat(telemetry.rd.getUrl()).matches("http://localhost:[0-9]+/test");
+    assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
+    assertThat(telemetry.rd.getSuccess()).isTrue();
+    assertThat(telemetry.rd.getSource()).isNull();
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
     // sleep a bit and make sure that the excluded metric is not reported
     Thread.sleep(10000);
 
     List<Envelope> metricItems =
-        mockedIngestion.getItemsEnvelopeDataType("MetricData").stream()
+        testing.mockedIngestion.getItemsEnvelopeDataType("MetricData").stream()
             .filter(
                 e -> {
                   MetricData data = (MetricData) ((Data<?>) e.getData()).getBaseData();
@@ -66,17 +69,26 @@ public class MicrometerTest extends AiJarSmokeTest {
 
     MetricData data = (MetricData) ((Data<?>) metricItems.get(0).getData()).getBaseData();
     List<DataPoint> points = data.getMetrics();
-    assertEquals(1, points.size());
+    assertThat(points).hasSize(1);
 
     DataPoint point = points.get(0);
 
-    assertEquals(1, point.getValue(), 0); // (this was verified above in Predicate also)
-    assertEquals("test_counter", point.getName());
-    assertNull("getCount was non-null", point.getCount());
-    assertNull("getMin was non-null", point.getMin());
-    assertNull("getMax was non-null", point.getMax());
-    assertNull("getStdDev was non-null", point.getStdDev());
-    assertEquals(1, data.getProperties().size());
-    assertEquals("value1", data.getProperties().get("tag1"));
+    assertThat(point.getValue()).isEqualTo(1); // (this was verified above in Predicate also)
+    assertThat(point.getName()).isEqualTo("test_counter");
+    assertThat(point.getCount()).isNull();
+    assertThat(point.getMin()).isNull();
+    assertThat(point.getMax()).isNull();
+    assertThat(point.getStdDev()).isNull();
+    assertThat(data.getProperties()).hasSize(1);
+    assertThat(data.getProperties()).containsEntry("tag1", "value1");
   }
+
+  @Environment(JAVA_8)
+  static class Java8Test extends MicrometerTest {}
+
+  @Environment(JAVA_11)
+  static class Java11Test extends MicrometerTest {}
+
+  @Environment(JAVA_17)
+  static class Java17Test extends MicrometerTest {}
 }

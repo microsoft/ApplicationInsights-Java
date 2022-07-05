@@ -39,23 +39,22 @@ val dependencyManagement by configurations.creating {
   isCanBeResolved = false
   isVisible = false
 }
+afterEvaluate {
+  configurations.configureEach {
+    if (isCanBeResolved && !isCanBeConsumed) {
+      extendsFrom(dependencyManagement)
+    }
+  }
+}
 
 dependencies {
   dependencyManagement(platform(project(":dependencyManagement")))
-  afterEvaluate {
-    configurations.configureEach {
-      if (isCanBeResolved && !isCanBeConsumed) {
-        extendsFrom(dependencyManagement)
-      }
-    }
-  }
 
   compileOnly("com.google.code.findbugs:jsr305")
 
   testImplementation("org.junit.jupiter:junit-jupiter-api")
   testImplementation("org.junit.jupiter:junit-jupiter-params")
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-  testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
 
   testImplementation("ch.qos.logback:logback-classic")
   testImplementation("org.slf4j:log4j-over-slf4j")

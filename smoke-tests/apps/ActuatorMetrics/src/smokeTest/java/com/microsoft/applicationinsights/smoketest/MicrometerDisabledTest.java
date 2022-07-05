@@ -21,20 +21,25 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent("disabled_micrometer")
-public class MicrometerDisabledTest extends AiJarSmokeTest {
+@Environment(JAVA_8)
+@UseAgent("disabled_applicationinsights.json")
+class MicrometerDisabledTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/test")
-  public void doMostBasicTest() throws Exception {
-    mockedIngestion.waitForItems("RequestData", 1);
+  void doMostBasicTest() throws Exception {
+    testing.mockedIngestion.waitForItems("RequestData", 1);
 
     // sleep a bit and make sure no micrometer metrics are reported
     Thread.sleep(10000);
-    assertEquals(0, mockedIngestion.getCountForType("MetricData"));
+    assertThat(testing.mockedIngestion.getCountForType("MetricData")).isZero();
   }
 }

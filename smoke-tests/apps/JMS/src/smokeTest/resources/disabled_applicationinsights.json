@@ -1,0 +1,7 @@
+{
+  "instrumentation": {
+    "jms": {
+      "enabled": false
+    }
+  }
+}

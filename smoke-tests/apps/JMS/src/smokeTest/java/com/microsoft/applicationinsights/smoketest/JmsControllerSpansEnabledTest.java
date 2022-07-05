@@ -21,30 +21,33 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent("controller_spans_enabled")
-public class JmsControllerSpansEnabledTest extends AiJarSmokeTest {
+@Environment(JAVA_8)
+@UseAgent("controller_spans_enabled_applicationinsights.json")
+class JmsControllerSpansEnabledTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/sendMessage")
-  public void doMostBasicTest() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
+  void doMostBasicTest() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 2);
 
     Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /sendMessage");
     String operationId = rdEnvelope1.getTags().get("ai.operation.id");
     List<Envelope> rddList =
-        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 3, operationId);
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
+        testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 3, operationId);
+    assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "message process");
     Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "HelloController.sendMessage");
@@ -61,41 +64,41 @@ public class JmsControllerSpansEnabledTest extends AiJarSmokeTest {
     RemoteDependencyData rdd3 =
         (RemoteDependencyData) ((Data<?>) rddEnvelope3.getData()).getBaseData();
 
-    assertEquals("GET /sendMessage", rd1.getName());
-    assertTrue(rd1.getProperties().isEmpty());
-    assertTrue(rd1.getSuccess());
+    assertThat(rd1.getName()).isEqualTo("GET /sendMessage");
+    assertThat(rd1.getProperties()).isEmpty();
+    assertThat(rd1.getSuccess()).isTrue();
 
-    assertEquals("HelloController.sendMessage", rdd1.getName());
-    assertNull(rdd1.getData());
-    assertEquals("InProc", rdd1.getType());
-    assertNull(rdd1.getTarget());
-    assertTrue(rdd1.getProperties().isEmpty());
-    assertTrue(rdd1.getSuccess());
+    assertThat(rdd1.getName()).isEqualTo("HelloController.sendMessage");
+    assertThat(rdd1.getData()).isNull();
+    assertThat(rdd1.getType()).isEqualTo("InProc");
+    assertThat(rdd1.getTarget()).isNull();
+    assertThat(rdd1.getProperties()).isEmpty();
+    assertThat(rdd1.getSuccess()).isTrue();
 
-    assertEquals("message send", rdd2.getName());
-    assertNull(rdd2.getData());
-    assertEquals("Queue Message | jms", rdd2.getType());
-    assertEquals("message", rdd2.getTarget());
-    assertTrue(rdd2.getProperties().isEmpty());
-    assertTrue(rdd2.getSuccess());
+    assertThat(rdd2.getName()).isEqualTo("message send");
+    assertThat(rdd2.getData()).isNull();
+    assertThat(rdd2.getType()).isEqualTo("Queue Message | jms");
+    assertThat(rdd2.getTarget()).isEqualTo("message");
+    assertThat(rdd2.getProperties()).isEmpty();
+    assertThat(rdd2.getSuccess()).isTrue();
 
-    assertEquals("message process", rd2.getName());
-    assertEquals("message", rd2.getSource());
-    assertTrue(rd2.getProperties().isEmpty());
-    assertTrue(rd2.getSuccess());
+    assertThat(rd2.getName()).isEqualTo("message process");
+    assertThat(rd2.getSource()).isEqualTo("message");
+    assertThat(rd2.getProperties()).isEmpty();
+    assertThat(rd2.getSuccess()).isTrue();
 
-    assertEquals("GET /", rdd3.getName());
-    assertEquals("https://www.bing.com", rdd3.getData());
-    assertEquals("Http", rdd3.getType());
-    assertEquals("www.bing.com", rdd3.getTarget());
-    assertTrue(rdd3.getProperties().isEmpty());
-    assertTrue(rdd3.getSuccess());
+    assertThat(rdd3.getName()).isEqualTo("GET /");
+    assertThat(rdd3.getData()).isEqualTo("https://www.bing.com");
+    assertThat(rdd3.getType()).isEqualTo("Http");
+    assertThat(rdd3.getTarget()).isEqualTo("www.bing.com");
+    assertThat(rdd3.getProperties()).isEmpty();
+    assertThat(rdd3.getSuccess()).isTrue();
 
-    assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
-    assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /sendMessage");
-    assertParentChild(
+    SmokeTestExtension.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
+    SmokeTestExtension.assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /sendMessage");
+    SmokeTestExtension.assertParentChild(
         rdd2.getId(), rddEnvelope2, rdEnvelope2, "GET /sendMessage", "message process", false);
-    assertParentChild(
+    SmokeTestExtension.assertParentChild(
         rd2.getId(), rdEnvelope2, rddEnvelope3, "message process", "message process", false);
   }
 

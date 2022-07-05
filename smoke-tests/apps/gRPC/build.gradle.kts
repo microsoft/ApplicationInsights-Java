@@ -1,8 +1,12 @@
-import com.google.protobuf.gradle.*
+import com.google.protobuf.gradle.generateProtoTasks
+import com.google.protobuf.gradle.id
+import com.google.protobuf.gradle.plugins
+import com.google.protobuf.gradle.protobuf
+import com.google.protobuf.gradle.protoc
 
 plugins {
   id("ai.smoke-test-jar")
-  id("com.google.protobuf") version "0.8.16"
+  id("com.google.protobuf") version "0.8.19"
 }
 
 val grpcVersion = "1.16.1"
@@ -33,4 +37,13 @@ dependencies {
   implementation("io.grpc:grpc-netty:$grpcVersion")
   implementation("io.grpc:grpc-protobuf:$grpcVersion")
   implementation("io.grpc:grpc-stub:$grpcVersion")
+}
+
+afterEvaluate {
+  // Classpath when compiling protos, we add dependency management directly
+  // since it doesn't follow Gradle conventions of naming / properties.
+  dependencies {
+    add("compileProtoPath", platform(project(":dependencyManagement")))
+    add("smokeTestCompileProtoPath", platform(project(":dependencyManagement")))
+  }
 }
