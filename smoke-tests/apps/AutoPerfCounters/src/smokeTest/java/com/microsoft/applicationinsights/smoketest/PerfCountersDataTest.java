@@ -51,8 +51,7 @@ abstract class PerfCountersDataTest {
     System.out.println("Waiting for performance data...");
     long start = System.currentTimeMillis();
 
-    // need to accommodate for START_COLLECTING_DELAY_IN_MILLIS = 60 seconds
-    int timeout = 70;
+    int timeout = 10;
 
     Envelope availableMem =
         testing.mockedIngestion.waitForItem(
