@@ -45,7 +45,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class OpenTelemetryMetricTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/trackDoubleCounterMetric")
@@ -87,7 +87,7 @@ abstract class OpenTelemetryMetricTest {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     List<Envelope> metrics =
         testing.mockedIngestion.waitForItems(
-            AiSmokeTest.getMetricPredicate(name), 1, 40, TimeUnit.SECONDS);
+            SmokeTestExtension.getMetricPredicate(name), 1, 40, TimeUnit.SECONDS);
     assertThat(metrics).hasSize(1);
 
     Envelope rdEnvelope = rdList.get(0);
@@ -124,7 +124,7 @@ abstract class OpenTelemetryMetricTest {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     List<Envelope> metrics =
         testing.mockedIngestion.waitForItems(
-            AiSmokeTest.getMetricPredicate(name), 1, 40, TimeUnit.SECONDS);
+            SmokeTestExtension.getMetricPredicate(name), 1, 40, TimeUnit.SECONDS);
     assertThat(metrics).hasSize(1);
 
     Envelope rdEnvelope = rdList.get(0);
@@ -159,7 +159,7 @@ abstract class OpenTelemetryMetricTest {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     List<Envelope> metrics =
         testing.mockedIngestion.waitForItems(
-            AiSmokeTest.getMetricPredicate(name), 3, 40, TimeUnit.SECONDS);
+            SmokeTestExtension.getMetricPredicate(name), 3, 40, TimeUnit.SECONDS);
     assertThat(metrics).hasSize(3);
 
     metrics.sort(

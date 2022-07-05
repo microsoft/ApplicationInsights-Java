@@ -41,14 +41,14 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class StatsbeatSmokeTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri(value = "/index.jsp")
   void testStatsbeat() throws Exception {
     List<Envelope> metrics =
         testing.mockedIngestion.waitForItems(
-            AiSmokeTest.getMetricPredicate("Feature"), 2, 70, TimeUnit.SECONDS);
+            SmokeTestExtension.getMetricPredicate("Feature"), 2, 70, TimeUnit.SECONDS);
 
     MetricData data = (MetricData) ((Data<?>) metrics.get(0).getData()).getBaseData();
     assertCommon(data);
@@ -67,7 +67,7 @@ abstract class StatsbeatSmokeTest {
 
     List<Envelope> attachMetrics =
         testing.mockedIngestion.waitForItems(
-            AiSmokeTest.getMetricPredicate("Attach"), 1, 70, TimeUnit.SECONDS);
+            SmokeTestExtension.getMetricPredicate("Attach"), 1, 70, TimeUnit.SECONDS);
 
     MetricData attachData = (MetricData) ((Data<?>) attachMetrics.get(0).getData()).getBaseData();
     assertCommon(attachData);
@@ -76,7 +76,10 @@ abstract class StatsbeatSmokeTest {
 
     List<Envelope> requestSuccessCountMetrics =
         testing.mockedIngestion.waitForItems(
-            AiSmokeTest.getMetricPredicate("Request Success Count"), 1, 70, TimeUnit.SECONDS);
+            SmokeTestExtension.getMetricPredicate("Request Success Count"),
+            1,
+            70,
+            TimeUnit.SECONDS);
 
     MetricData requestSuccessCountData =
         (MetricData) ((Data<?>) requestSuccessCountMetrics.get(0).getData()).getBaseData();
@@ -87,7 +90,7 @@ abstract class StatsbeatSmokeTest {
 
     List<Envelope> requestDurationMetrics =
         testing.mockedIngestion.waitForItems(
-            AiSmokeTest.getMetricPredicate("Request Duration"), 1, 70, TimeUnit.SECONDS);
+            SmokeTestExtension.getMetricPredicate("Request Duration"), 1, 70, TimeUnit.SECONDS);
 
     MetricData requestDurationData =
         (MetricData) ((Data<?>) requestDurationMetrics.get(0).getData()).getBaseData();

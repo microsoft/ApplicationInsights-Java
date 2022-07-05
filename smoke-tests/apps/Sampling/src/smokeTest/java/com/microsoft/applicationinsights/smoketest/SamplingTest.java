@@ -40,7 +40,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class SamplingTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri(value = "/sampling", callCount = 100)

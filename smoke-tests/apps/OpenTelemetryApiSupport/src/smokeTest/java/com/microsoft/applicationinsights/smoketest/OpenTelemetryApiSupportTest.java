@@ -36,7 +36,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class OpenTelemetryApiSupportTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/test-api")
@@ -118,7 +118,7 @@ abstract class OpenTelemetryApiSupportTest {
     assertThat(telemetry.rdd1.getProperties()).hasSize(1);
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd,
         telemetry.rdEnvelope,
         telemetry.rddEnvelope1,

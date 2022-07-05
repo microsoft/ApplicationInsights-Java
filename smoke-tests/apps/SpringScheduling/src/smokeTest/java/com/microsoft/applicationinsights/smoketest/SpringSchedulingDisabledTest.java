@@ -31,7 +31,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent("disabled_applicationinsights.json")
 class SpringSchedulingDisabledTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/scheduler")

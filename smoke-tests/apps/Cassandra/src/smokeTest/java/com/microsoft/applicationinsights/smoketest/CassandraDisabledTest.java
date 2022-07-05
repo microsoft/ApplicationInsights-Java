@@ -36,7 +36,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
         hostnameEnvironmentVariable = "CASSANDRA"))
 class CassandraDisabledTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/cassandra")

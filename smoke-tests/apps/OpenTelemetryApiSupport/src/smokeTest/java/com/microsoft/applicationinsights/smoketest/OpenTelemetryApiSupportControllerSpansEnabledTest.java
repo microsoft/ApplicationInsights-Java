@@ -33,7 +33,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent("controller_spans_enabled_applicationinsights.json")
 class OpenTelemetryApiSupportControllerSpansEnabledTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/test-api")
@@ -72,7 +72,7 @@ class OpenTelemetryApiSupportControllerSpansEnabledTest {
         .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("java:3."));
     assertThat(telemetry.rddEnvelope1.getTags()).containsEntry("ai.user.id", "myuser");
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd,
         telemetry.rdEnvelope,
         telemetry.rddEnvelope1,
@@ -115,7 +115,7 @@ class OpenTelemetryApiSupportControllerSpansEnabledTest {
     assertThat(telemetry.rddEnvelope1.getTags())
         .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("java:3."));
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd,
         telemetry.rdEnvelope,
         telemetry.rddEnvelope1,
@@ -161,12 +161,12 @@ class OpenTelemetryApiSupportControllerSpansEnabledTest {
     assertThat(telemetry.rdd2.getProperties()).hasSize(1);
     assertThat(telemetry.rdd2.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd,
         telemetry.rdEnvelope,
         telemetry.rddEnvelope1,
         "GET /OpenTelemetryApiSupport/test-annotations");
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rdd1,
         telemetry.rddEnvelope1,
         telemetry.rddEnvelope2,

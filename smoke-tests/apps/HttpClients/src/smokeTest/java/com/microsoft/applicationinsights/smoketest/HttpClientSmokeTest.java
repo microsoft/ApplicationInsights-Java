@@ -36,7 +36,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class HttpClientSmokeTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/apacheHttpClient4")
@@ -126,11 +126,11 @@ abstract class HttpClientSmokeTest {
     assertThat(telemetry.rdd3.getSuccess()).isFalse();
     assertThat(telemetry.rddEnvelope3.getSampleRate()).isNull();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /HttpClients/*");
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope2, "GET /HttpClients/*");
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope3, "GET /HttpClients/*");
   }
 

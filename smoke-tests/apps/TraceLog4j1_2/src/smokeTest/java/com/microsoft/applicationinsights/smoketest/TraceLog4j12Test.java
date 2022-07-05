@@ -45,7 +45,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class TraceLog4j12Test {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/traceLog4j12")
@@ -91,13 +91,16 @@ abstract class TraceLog4j12Test {
     assertThat(md3.getProperties()).containsKey("ThreadName");
     assertThat(md3.getProperties()).hasSize(3);
 
-    AiSmokeTest.assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /TraceLog4j1_2/traceLog4j12");
-    AiSmokeTest.assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /TraceLog4j1_2/traceLog4j12");
-    AiSmokeTest.assertParentChild(rd, rdEnvelope, mdEnvelope3, "GET /TraceLog4j1_2/traceLog4j12");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, mdEnvelope1, "GET /TraceLog4j1_2/traceLog4j12");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, mdEnvelope2, "GET /TraceLog4j1_2/traceLog4j12");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, mdEnvelope3, "GET /TraceLog4j1_2/traceLog4j12");
   }
 
   @Test
-  @TargetUri("traceLog4j1_2WithException")
+  @TargetUri("/traceLog4j1_2WithException")
   void testTraceLog4j1_2WithExeption() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
@@ -124,7 +127,7 @@ abstract class TraceLog4j12Test {
     assertThat(ed.getProperties()).containsEntry("MDC key", "MDC value");
     assertThat(ed.getProperties()).hasSize(5);
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         rd, rdEnvelope, edEnvelope, "GET /TraceLog4j1_2/traceLog4j1_2WithException");
   }
 

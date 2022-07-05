@@ -36,7 +36,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
         hostnameEnvironmentVariable = "REDIS"))
 class LettuceDisabledTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/lettuce")

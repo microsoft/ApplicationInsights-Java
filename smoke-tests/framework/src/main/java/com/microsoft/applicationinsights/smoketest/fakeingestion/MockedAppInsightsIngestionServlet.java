@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.smoketest.fakeingestion;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.io.CharStreams;
@@ -34,9 +35,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
@@ -51,8 +49,6 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
   private final ListMultimap<String, Envelope> type2envelope;
 
   private final Object multimapLock = new Object();
-
-  private final ExecutorService itemExecutor = Executors.newSingleThreadExecutor();
 
   private volatile boolean loggingEnabled;
 
@@ -95,27 +91,26 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
 
   List<Envelope> waitForItems(
       Predicate<Envelope> condition, int numItems, long timeout, TimeUnit timeUnit)
-      throws InterruptedException, ExecutionException, TimeoutException {
-    Future<List<Envelope>> future =
-        itemExecutor.submit(
-            () -> {
-              List<Envelope> targetCollection = new ArrayList<>(numItems);
-              while (targetCollection.size() < numItems) {
-                targetCollection.clear();
-                List<Envelope> currentValues;
-                synchronized (multimapLock) {
-                  currentValues = new ArrayList<>(type2envelope.values());
-                }
-                for (Envelope val : currentValues) {
-                  if (condition.test(val)) {
-                    targetCollection.add(val);
-                  }
-                }
-                TimeUnit.MILLISECONDS.sleep(75);
-              }
-              return targetCollection;
-            });
-    return future.get(timeout, timeUnit);
+      throws InterruptedException, TimeoutException {
+    Stopwatch stopwatch = Stopwatch.createStarted();
+    List<Envelope> targetCollection = new ArrayList<>(numItems);
+    while (stopwatch.elapsed(timeUnit) < timeout) {
+      targetCollection.clear();
+      List<Envelope> currentValues;
+      synchronized (multimapLock) {
+        currentValues = new ArrayList<>(type2envelope.values());
+      }
+      for (Envelope val : currentValues) {
+        if (condition.test(val)) {
+          targetCollection.add(val);
+        }
+      }
+      if (targetCollection.size() >= numItems) {
+        return targetCollection;
+      }
+      TimeUnit.MILLISECONDS.sleep(75);
+    }
+    throw new TimeoutException("timed out waiting for items");
   }
 
   @Override

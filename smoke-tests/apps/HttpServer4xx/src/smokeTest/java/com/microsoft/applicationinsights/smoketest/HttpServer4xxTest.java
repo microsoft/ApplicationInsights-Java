@@ -36,7 +36,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent("httpserver4xx_applicationinsights.json")
 abstract class HttpServer4xxTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/test4xx")

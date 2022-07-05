@@ -53,7 +53,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 })
 abstract class JdbcTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/hsqldbPreparedStatement")
@@ -70,7 +70,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
@@ -89,7 +89,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
@@ -116,7 +116,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
@@ -136,7 +136,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
@@ -160,7 +160,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rdd1.getProperties()).containsEntry("Args", " [Batch]");
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
@@ -182,7 +182,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
@@ -204,7 +204,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
@@ -224,7 +224,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
@@ -244,7 +244,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
@@ -263,7 +263,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
@@ -282,7 +282,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
@@ -302,7 +302,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
@@ -322,7 +322,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 

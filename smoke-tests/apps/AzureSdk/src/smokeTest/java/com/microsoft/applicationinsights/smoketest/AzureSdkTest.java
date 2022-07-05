@@ -36,7 +36,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class AzureSdkTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/test")
@@ -58,7 +58,7 @@ abstract class AzureSdkTest {
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /AzureSdk/test");
   }
 

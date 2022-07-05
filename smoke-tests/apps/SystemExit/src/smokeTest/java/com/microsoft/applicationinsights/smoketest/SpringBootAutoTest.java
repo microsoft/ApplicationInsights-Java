@@ -34,7 +34,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class SpringBootAutoTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/delayedSystemExit")
@@ -52,7 +52,7 @@ abstract class SpringBootAutoTest {
         10,
         TimeUnit.SECONDS);
     testing.mockedIngestion.waitForItem(
-        AiSmokeTest.getMetricPredicate("counter"), 10, TimeUnit.SECONDS);
+        SmokeTestExtension.getMetricPredicate("counter"), 10, TimeUnit.SECONDS);
   }
 
   @Environment(JAVA_8)

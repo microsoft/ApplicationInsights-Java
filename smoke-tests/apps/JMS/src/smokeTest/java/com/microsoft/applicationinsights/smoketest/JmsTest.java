@@ -37,7 +37,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class JmsTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/sendMessage")
@@ -85,10 +85,10 @@ abstract class JmsTest {
     assertThat(rdd2.getProperties()).isEmpty();
     assertThat(rdd2.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
+    SmokeTestExtension.assertParentChild(
         rdd1.getId(), rddEnvelope1, rdEnvelope2, "GET /sendMessage", "message process", false);
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         rd2.getId(), rdEnvelope2, rddEnvelope2, "message process", "message process", false);
   }
 

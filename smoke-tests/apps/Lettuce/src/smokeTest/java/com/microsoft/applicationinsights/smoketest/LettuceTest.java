@@ -41,7 +41,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
         hostnameEnvironmentVariable = "REDIS"))
 abstract class LettuceTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/lettuce")
@@ -63,7 +63,7 @@ abstract class LettuceTest {
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Lettuce/*");
   }
 

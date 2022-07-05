@@ -44,7 +44,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class TraceLogBackTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   protected boolean isWildfly() {
     return false;
@@ -90,12 +90,14 @@ abstract class TraceLogBackTest {
     assertThat(md2.getProperties()).containsKey("ThreadName");
     assertThat(md2.getProperties()).hasSize(3);
 
-    AiSmokeTest.assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /TraceLogBack/traceLogBack");
-    AiSmokeTest.assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /TraceLogBack/traceLogBack");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, mdEnvelope1, "GET /TraceLogBack/traceLogBack");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, mdEnvelope2, "GET /TraceLogBack/traceLogBack");
   }
 
   @Test
-  @TargetUri("traceLogBackWithException")
+  @TargetUri("/traceLogBackWithException")
   void testTraceLogBackWithExeption() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
@@ -124,7 +126,7 @@ abstract class TraceLogBackTest {
       assertThat(ed.getProperties()).hasSize(5);
     }
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         rd, rdEnvelope, edEnvelope, "GET /TraceLogBack/traceLogBackWithException");
   }
 

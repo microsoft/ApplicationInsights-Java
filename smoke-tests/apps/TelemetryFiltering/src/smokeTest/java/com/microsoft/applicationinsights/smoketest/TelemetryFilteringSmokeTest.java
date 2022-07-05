@@ -43,7 +43,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent("telemetryfiltering_applicationinsights.json")
 abstract class TelemetryFilteringSmokeTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri(value = "/health-check", callCount = 100)
@@ -110,7 +110,7 @@ abstract class TelemetryFilteringSmokeTest {
     assertThat(rddEnvelope.getTags()).containsEntry("ai.cloud.role", "app3");
     assertThat(rdd.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /TelemetryFiltering/*");
+    SmokeTestExtension.assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /TelemetryFiltering/*");
   }
 
   @Environment(TOMCAT_8_JAVA_8)

@@ -41,7 +41,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
         hostnameEnvironmentVariable = "MONGO"))
 abstract class MongoTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/mongo")
@@ -63,7 +63,7 @@ abstract class MongoTest {
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /MongoDB/*");
   }
 

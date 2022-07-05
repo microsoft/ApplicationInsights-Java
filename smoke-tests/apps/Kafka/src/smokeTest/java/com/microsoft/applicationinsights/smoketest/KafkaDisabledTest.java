@@ -52,7 +52,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 })
 class KafkaDisabledTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/sendMessage")

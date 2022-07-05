@@ -23,8 +23,6 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import com.google.common.base.Stopwatch;
 import com.microsoft.applicationinsights.smoketest.fakeingestion.MockedAppInsightsIngestionServer;
@@ -67,7 +65,7 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 @SuppressWarnings({"SystemOut", "InterruptedExceptionSwallowed"})
-public class AiSmokeTest
+public class SmokeTestExtension
     implements BeforeAllCallback,
         BeforeEachCallback,
         AfterAllCallback,
@@ -86,10 +84,6 @@ public class AiSmokeTest
   // TODO (trask) make private and expose methods on AiSmokeTest(?)
   protected final MockedAppInsightsIngestionServer mockedIngestion =
       new MockedAppInsightsIngestionServer();
-
-  AiSmokeTest() {
-    System.out.println("INIT-------------------------------------------");
-  }
 
   private boolean useAgent;
   @Nullable private String agentConfigurationPath;
@@ -170,7 +164,6 @@ public class AiSmokeTest
       return;
     }
 
-    System.out.println("Calling " + targetUri.value() + " ...");
     String url = getBaseUrl() + targetUri.value();
     if (targetUri.callCount() == 1) {
       System.out.println("calling " + url);
@@ -178,23 +171,8 @@ public class AiSmokeTest
       System.out.println("calling " + url + " " + targetUri.callCount() + " times");
     }
     for (int i = 0; i < targetUri.callCount(); i++) {
-      String content = HttpHelper.get(url);
-      String expectationMessage = "The base context in testApps should return a nonempty response.";
-      assertNotNull(
-          String.format(
-              "Null response from targetUri: '%s'. %s", targetUri.value(), expectationMessage),
-          content);
-      assertTrue(
-          String.format(
-              "Empty response from targetUri: '%s'. %s", targetUri.value(), expectationMessage),
-          content.length() > 0);
+      HttpHelper.get(url);
     }
-    Stopwatch sw = Stopwatch.createStarted();
-    mockedIngestion.awaitAnyItems(TELEMETRY_RECEIVE_TIMEOUT_SECONDS * 1000, TimeUnit.MILLISECONDS);
-    System.out.printf(
-        "Telemetry received after %.3f seconds.%n", sw.elapsed(TimeUnit.MILLISECONDS) / 1000.0);
-    System.out.println("Starting validation...");
-    assertTrue("mocked ingestion has no data", mockedIngestion.hasData());
   }
 
   protected String getBaseUrl() {
@@ -343,7 +321,7 @@ public class AiSmokeTest
       container =
           container.withCopyFileToContainer(
               MountableFile.forHostPath(javaagentFile.toPath()), "/applicationinsights-agent.jar");
-      URL resource = AiSmokeTest.class.getClassLoader().getResource(agentConfigurationPath);
+      URL resource = SmokeTestExtension.class.getClassLoader().getResource(agentConfigurationPath);
       if (resource != null) {
         File json = File.createTempFile("applicationinsights", ".json");
         Path jsonPath = json.toPath();
@@ -464,7 +442,7 @@ public class AiSmokeTest
 
   public static void assertParentChild(
       RequestData rd, Envelope parentEnvelope, Envelope childEnvelope, String operationName) {
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         rd.getId(), parentEnvelope, childEnvelope, operationName, operationName, true);
   }
 
@@ -473,7 +451,7 @@ public class AiSmokeTest
       Envelope parentEnvelope,
       Envelope childEnvelope,
       String operationName) {
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         rdd.getId(), parentEnvelope, childEnvelope, operationName, operationName, false);
   }
 

@@ -40,7 +40,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent("controller_spans_enabled_applicationinsights.json")
 class SpringBootControllerSpansEnabledTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/basic/trackEvent")
@@ -114,9 +114,9 @@ class SpringBootControllerSpansEnabledTest {
     assertThat(rdd1.getProperties()).isEmpty();
     assertThat(rdd1.getSuccess()).isFalse();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         rd, rdEnvelope, edEnvelope1, "GET /SpringBootTest/throwsException");
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         rd, rdEnvelope, rddEnvelope1, "GET /SpringBootTest/throwsException");
   }
 
@@ -166,16 +166,16 @@ class SpringBootControllerSpansEnabledTest {
     assertThat(rdd3.getProperties()).isEmpty();
     assertThat(rdd3.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         rd, rdEnvelope, rddEnvelope1, "GET /SpringBootTest/asyncDependencyCall");
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         rdd1, rddEnvelope1, rddEnvelope2, "GET /SpringBootTest/asyncDependencyCall");
     try {
-      AiSmokeTest.assertParentChild(
+      SmokeTestExtension.assertParentChild(
           rdd1, rddEnvelope1, rddEnvelope3, "GET /SpringBootTest/asyncDependencyCall");
     } catch (AssertionError e) {
       // on wildfly the duplicate controller spans is nested under the request span for some reason
-      AiSmokeTest.assertParentChild(
+      SmokeTestExtension.assertParentChild(
           rd, rdEnvelope, rddEnvelope3, "GET /SpringBootTest/asyncDependencyCall");
     }
   }

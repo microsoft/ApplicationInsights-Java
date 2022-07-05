@@ -36,7 +36,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent("controller_spans_enabled_applicationinsights.json")
 class JmsControllerSpansEnabledTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/sendMessage")
@@ -94,11 +94,11 @@ class JmsControllerSpansEnabledTest {
     assertThat(rdd3.getProperties()).isEmpty();
     assertThat(rdd3.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
-    AiSmokeTest.assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /sendMessage");
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
+    SmokeTestExtension.assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /sendMessage");
+    SmokeTestExtension.assertParentChild(
         rdd2.getId(), rddEnvelope2, rdEnvelope2, "GET /sendMessage", "message process", false);
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         rd2.getId(), rdEnvelope2, rddEnvelope3, "message process", "message process", false);
   }
 

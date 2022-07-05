@@ -44,7 +44,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class TraceJavaUtilLoggingTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/traceJavaUtilLogging")
@@ -80,14 +80,14 @@ abstract class TraceJavaUtilLoggingTest {
     assertThat(md2.getProperties()).containsKey("ThreadName");
     assertThat(md2.getProperties()).hasSize(3);
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         rd, rdEnvelope, mdEnvelope1, "GET /TraceJavaUtilLoggingUsingAgent/traceJavaUtilLogging");
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         rd, rdEnvelope, mdEnvelope2, "GET /TraceJavaUtilLoggingUsingAgent/traceJavaUtilLogging");
   }
 
   @Test
-  @TargetUri("traceJavaUtilLoggingWithException")
+  @TargetUri("/traceJavaUtilLoggingWithException")
   void testTraceJavaUtilLoggingWithExeption() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
@@ -111,7 +111,7 @@ abstract class TraceJavaUtilLoggingTest {
     assertThat(ed.getProperties()).containsKey("ThreadName");
     assertThat(ed.getProperties()).hasSize(4);
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         rd,
         rdEnvelope,
         edEnvelope,

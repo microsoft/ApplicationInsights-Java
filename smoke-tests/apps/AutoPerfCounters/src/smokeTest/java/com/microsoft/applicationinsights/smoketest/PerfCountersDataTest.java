@@ -43,7 +43,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class PerfCountersDataTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri(value = "index.jsp")
@@ -85,19 +85,19 @@ abstract class PerfCountersDataTest {
             TimeUnit.SECONDS);
     System.out.println("PerformanceCounterData are good: " + (System.currentTimeMillis() - start));
 
-    MetricData metricMem = AiSmokeTest.getBaseData(availableMem);
+    MetricData metricMem = SmokeTestExtension.getBaseData(availableMem);
     assertPerfMetric(metricMem);
     assertThat(metricMem.getMetrics().get(0).getName()).isEqualTo("\\Memory\\Available Bytes");
 
-    MetricData pdCpu = AiSmokeTest.getBaseData(totalCpu);
+    MetricData pdCpu = SmokeTestExtension.getBaseData(totalCpu);
     assertPerfMetric(pdCpu);
     assertThat(pdCpu.getMetrics().get(0).getName())
         .isEqualTo("\\Processor(_Total)\\% Processor Time");
 
-    assertPerfMetric(AiSmokeTest.getBaseData(processIo));
-    assertPerfMetric(AiSmokeTest.getBaseData(processMemUsed));
-    assertPerfMetric(AiSmokeTest.getBaseData(processCpu));
-    assertPerfMetric(AiSmokeTest.getBaseData(processCpuNormalized));
+    assertPerfMetric(SmokeTestExtension.getBaseData(processIo));
+    assertPerfMetric(SmokeTestExtension.getBaseData(processMemUsed));
+    assertPerfMetric(SmokeTestExtension.getBaseData(processCpu));
+    assertPerfMetric(SmokeTestExtension.getBaseData(processCpuNormalized));
 
     start = System.currentTimeMillis();
     System.out.println("Waiting for metric data...");
@@ -115,18 +115,18 @@ abstract class PerfCountersDataTest {
             getPerfMetricPredicate("GC Total Time"), timeout, TimeUnit.SECONDS);
     System.out.println("MetricData are good: " + (System.currentTimeMillis() - start));
 
-    MetricData mdDeadlocks = AiSmokeTest.getBaseData(deadlocks);
+    MetricData mdDeadlocks = SmokeTestExtension.getBaseData(deadlocks);
     assertPerfMetric(mdDeadlocks);
     assertThat(mdDeadlocks.getMetrics().get(0).getValue()).isEqualTo(0);
 
-    MetricData mdHeapUsed = AiSmokeTest.getBaseData(heapUsed);
+    MetricData mdHeapUsed = SmokeTestExtension.getBaseData(heapUsed);
     assertPerfMetric(mdHeapUsed);
     assertThat(mdHeapUsed.getMetrics().get(0).getValue()).isGreaterThan(0);
 
-    MetricData mdGcTotalCount = AiSmokeTest.getBaseData(gcTotalCount);
+    MetricData mdGcTotalCount = SmokeTestExtension.getBaseData(gcTotalCount);
     assertPerfMetric(mdGcTotalCount);
 
-    MetricData mdGcTotalTime = AiSmokeTest.getBaseData(gcTotalTime);
+    MetricData mdGcTotalTime = SmokeTestExtension.getBaseData(gcTotalTime);
     assertPerfMetric(mdGcTotalTime);
   }
 
@@ -143,7 +143,7 @@ abstract class PerfCountersDataTest {
         if (!input.getData().getBaseType().equals("MetricData")) {
           return false;
         }
-        MetricData md = AiSmokeTest.getBaseData(input);
+        MetricData md = SmokeTestExtension.getBaseData(input);
         return name.equals(md.getMetrics().get(0).getName());
       }
     };

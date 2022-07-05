@@ -33,7 +33,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent("controller_spans_enabled_applicationinsights.json")
 class AzureSdkControllerSpansEnabledTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/test")
@@ -72,9 +72,9 @@ class AzureSdkControllerSpansEnabledTest {
     assertThat(telemetry.rdd2.getProperties()).isEmpty();
     assertThat(telemetry.rdd2.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /AzureSdk/test");
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rdd1, telemetry.rddEnvelope1, telemetry.rddEnvelope2, "GET /AzureSdk/test");
   }
 }

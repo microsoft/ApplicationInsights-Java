@@ -37,7 +37,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class GrpcTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/simple")
@@ -69,8 +69,8 @@ abstract class GrpcTest {
 
     // TODO (trask): verify rd2
 
-    AiSmokeTest.assertParentChild(rd1, rdEnvelope1, rddEnvelope, "GET /simple");
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(rd1, rdEnvelope1, rddEnvelope, "GET /simple");
+    SmokeTestExtension.assertParentChild(
         rdd.getId(), rddEnvelope, rdEnvelope2, "GET /simple", "example.Greeter/SayHello", false);
   }
 
@@ -104,8 +104,8 @@ abstract class GrpcTest {
 
     // TODO (trask): verify rd2
 
-    AiSmokeTest.assertParentChild(rd1, rdEnvelope1, rddEnvelope, "GET /conversation");
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(rd1, rdEnvelope1, rddEnvelope, "GET /conversation");
+    SmokeTestExtension.assertParentChild(
         rdd.getId(),
         rddEnvelope,
         rdEnvelope2,

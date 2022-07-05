@@ -31,7 +31,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 class VerifyShadingTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/verifyShading")

@@ -52,7 +52,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 })
 class SpringCloudStreamControllerSpansEnabledTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/sendMessage")
@@ -110,9 +110,9 @@ class SpringCloudStreamControllerSpansEnabledTest {
     assertThat(rd2.getSuccess()).isTrue();
     assertThat(rd2.getMeasurements()).containsKey("timeSinceEnqueued");
 
-    AiSmokeTest.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
-    AiSmokeTest.assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /sendMessage");
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
+    SmokeTestExtension.assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /sendMessage");
+    SmokeTestExtension.assertParentChild(
         rdd2.getId(), rddEnvelope2, rdEnvelope2, "GET /sendMessage", "greetings process", false);
   }
 }

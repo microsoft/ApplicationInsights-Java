@@ -49,7 +49,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class CoreAndFilterTests {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/trackDependency")
@@ -67,7 +67,7 @@ abstract class CoreAndFilterTests {
 
     assertThat(telemetry.rdd1.getDuration()).isEqualTo(expectedDuration);
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         telemetry.rd,
         telemetry.rdEnvelope,
         telemetry.rddEnvelope1,
@@ -101,8 +101,10 @@ abstract class CoreAndFilterTests {
 
     assertThat(ed2.getName()).isEqualTo("EventDataTest");
 
-    AiSmokeTest.assertParentChild(rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter/trackEvent");
-    AiSmokeTest.assertParentChild(rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter/trackEvent");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter/trackEvent");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter/trackEvent");
   }
 
   @Test
@@ -152,9 +154,12 @@ abstract class CoreAndFilterTests {
               assertThat(e.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
             });
 
-    AiSmokeTest.assertParentChild(rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter/trackException");
-    AiSmokeTest.assertParentChild(rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter/trackException");
-    AiSmokeTest.assertParentChild(rd, rdEnvelope, edEnvelope3, "GET /CoreAndFilter/trackException");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter/trackException");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter/trackException");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, edEnvelope3, "GET /CoreAndFilter/trackException");
   }
 
   @Test
@@ -229,7 +234,8 @@ abstract class CoreAndFilterTests {
     assertThat(dp.getMax()).isNull();
     assertThat(dp.getStdDev()).isNull();
 
-    AiSmokeTest.assertParentChild(rd, rdEnvelope, mdEnvelope, "GET /CoreAndFilter/trackMetric");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, mdEnvelope, "GET /CoreAndFilter/trackMetric");
   }
 
   @Test
@@ -267,9 +273,12 @@ abstract class CoreAndFilterTests {
               assertThat(m.getProperties()).containsEntry("key", "value");
             });
 
-    AiSmokeTest.assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /CoreAndFilter/trackTrace");
-    AiSmokeTest.assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /CoreAndFilter/trackTrace");
-    AiSmokeTest.assertParentChild(rd, rdEnvelope, mdEnvelope3, "GET /CoreAndFilter/trackTrace");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, mdEnvelope1, "GET /CoreAndFilter/trackTrace");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, mdEnvelope2, "GET /CoreAndFilter/trackTrace");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, mdEnvelope3, "GET /CoreAndFilter/trackTrace");
   }
 
   @Test
@@ -357,7 +366,8 @@ abstract class CoreAndFilterTests {
     assertThat(pvdEnvelope3.getTags())
         .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("java:3."));
 
-    AiSmokeTest.assertParentChild(rd, rdEnvelope, pvdEnvelope1, "GET /CoreAndFilter/trackPageView");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, pvdEnvelope1, "GET /CoreAndFilter/trackPageView");
 
     assertThat(pvdEnvelope2.getTags()).containsEntry("ai.operation.id", "operation-id-goes-here");
     assertThat(pvdEnvelope2.getTags())
@@ -391,7 +401,8 @@ abstract class CoreAndFilterTests {
     assertThat(pv.getName()).isEqualTo("doPageView");
     assertThat(pv.getDuration()).isEqualTo(new Duration(0));
 
-    AiSmokeTest.assertParentChild(rd, rdEnvelope, pvdEnvelope, "GET /CoreAndFilter/doPageView.jsp");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, pvdEnvelope, "GET /CoreAndFilter/doPageView.jsp");
   }
 
   @Test

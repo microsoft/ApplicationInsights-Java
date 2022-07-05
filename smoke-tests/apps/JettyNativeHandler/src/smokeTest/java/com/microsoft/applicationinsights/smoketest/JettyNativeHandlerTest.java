@@ -32,7 +32,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class JettyNativeHandlerTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/path")

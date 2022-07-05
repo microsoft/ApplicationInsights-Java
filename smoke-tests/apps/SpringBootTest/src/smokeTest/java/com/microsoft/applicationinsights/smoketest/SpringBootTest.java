@@ -44,7 +44,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class SpringBootTest {
 
-  @RegisterExtension static final AiSmokeTest testing = new AiSmokeTest();
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/basic/trackEvent")
@@ -103,7 +103,7 @@ abstract class SpringBootTest {
     assertThat(rd.getProperties()).isEmpty();
     assertThat(rd.getSuccess()).isFalse();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         rd, rdEnvelope, edEnvelope1, "GET /SpringBootTest/throwsException");
   }
 
@@ -135,7 +135,7 @@ abstract class SpringBootTest {
     assertThat(rdd1.getProperties()).isEmpty();
     assertThat(rdd1.getSuccess()).isTrue();
 
-    AiSmokeTest.assertParentChild(
+    SmokeTestExtension.assertParentChild(
         rd, rdEnvelope, rddEnvelope1, "GET /SpringBootTest/asyncDependencyCall");
   }
 
