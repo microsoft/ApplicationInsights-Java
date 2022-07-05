@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - vnext
+  workflow_dispatch:
 
 jobs:
   build:
