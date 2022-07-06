@@ -295,7 +295,7 @@ public final class AzureMonitorExporterBuilder {
   private TelemetryItemExporter initExporterBuilder() {
     if (this.connectionString == null) {
       // if connection string is not set, try loading from configuration
-      Configuration configuration = Configuration.getGlobalConfiguration().clone();
+      Configuration configuration = Configuration.getGlobalConfiguration();
       connectionString(configuration.get(APPLICATIONINSIGHTS_CONNECTION_STRING));
     }
 

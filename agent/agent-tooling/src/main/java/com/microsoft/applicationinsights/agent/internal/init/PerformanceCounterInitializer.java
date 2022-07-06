@@ -34,7 +34,6 @@ import com.microsoft.applicationinsights.agent.internal.perfcounter.OshiPerforma
 import com.microsoft.applicationinsights.agent.internal.perfcounter.PerformanceCounterContainer;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.ProcessCpuPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.ProcessMemoryPerformanceCounter;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
@@ -49,7 +48,7 @@ public class PerformanceCounterInitializer {
 
   private static final Logger logger = LoggerFactory.getLogger(PerformanceCounterInitializer.class);
 
-  public static void initialize(TelemetryClient telemetryClient, Configuration configuration) {
+  public static void initialize(Configuration configuration) {
 
     PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(
         configuration.preview.metricIntervalSeconds);

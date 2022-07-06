@@ -56,9 +56,6 @@ public enum PerformanceCounterContainer {
 
   private static final Logger logger = LoggerFactory.getLogger(PerformanceCounterContainer.class);
 
-  // By default the container will wait 2 minutes before the collection of performance data.
-  private static final long START_COLLECTING_DELAY_IN_MILLIS = 60000;
-
   // By default the container will collect performance data every 1 minute.
   public static final long DEFAULT_COLLECTION_FREQUENCY_IN_SEC = 60;
   private static final long MIN_COLLECTION_FREQUENCY_IN_SEC = 1;
@@ -163,7 +160,7 @@ public enum PerformanceCounterContainer {
             }
           }
         },
-        START_COLLECTING_DELAY_IN_MILLIS,
+        collectionFrequencyInMillis,
         collectionFrequencyInMillis,
         TimeUnit.MILLISECONDS);
   }

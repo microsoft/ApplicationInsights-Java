@@ -1,0 +1,10 @@
+{
+  "instrumentation": {
+    "micrometer": {
+      "enabled": false
+    }
+  },
+  "preview": {
+    "metricIntervalSeconds": 5
+  }
+}

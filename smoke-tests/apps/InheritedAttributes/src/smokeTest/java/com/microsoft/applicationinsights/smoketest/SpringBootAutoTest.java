@@ -21,9 +21,10 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -31,34 +32,48 @@ import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent("inheritedattributes")
-public class SpringBootAutoTest extends AiJarSmokeTest {
+@UseAgent
+abstract class SpringBootAutoTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/test")
-  public void test() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-    List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(1);
+  void test() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
+    String operationId = rdEnvelope.getTags().get("ai.operation.id");
+    List<Envelope> mdList = testing.mockedIngestion.waitForMessageItemsInRequest(1, operationId);
+
     Envelope mdEnvelope = mdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     MessageData md = (MessageData) ((Data<?>) mdEnvelope.getData()).getBaseData();
 
-    assertEquals("GET /test", rd.getName());
-    assertEquals("200", rd.getResponseCode());
-    assertEquals("z", rd.getProperties().get("tenant"));
-    assertEquals(1, rd.getProperties().size());
-    assertTrue(rd.getSuccess());
+    assertThat(rd.getName()).isEqualTo("GET /test");
+    assertThat(rd.getResponseCode()).isEqualTo("200");
+    assertThat(rd.getProperties()).containsEntry("tenant", "z");
+    assertThat(rd.getProperties()).hasSize(1);
+    assertThat(rd.getSuccess()).isTrue();
 
-    assertEquals("hello", md.getMessage());
-    assertEquals(SeverityLevel.INFORMATION, md.getSeverityLevel());
-    assertEquals("Logger", md.getProperties().get("SourceType"));
-    assertEquals("smoketestapp", md.getProperties().get("LoggerName"));
-    assertNotNull(md.getProperties().get("ThreadName"));
-    assertEquals("z", md.getProperties().get("tenant"));
-    assertEquals(4, md.getProperties().size());
+    assertThat(md.getMessage()).isEqualTo("hello");
+    assertThat(md.getSeverityLevel()).isEqualTo(SeverityLevel.INFORMATION);
+    assertThat(md.getProperties()).containsEntry("SourceType", "Logger");
+    assertThat(md.getProperties()).containsEntry("LoggerName", "smoketestapp");
+    assertThat(md.getProperties()).containsKey("ThreadName");
+    assertThat(md.getProperties()).containsEntry("tenant", "z");
+    assertThat(md.getProperties()).hasSize(4);
   }
+
+  @Environment(JAVA_8)
+  static class Java8Test extends SpringBootAutoTest {}
+
+  @Environment(JAVA_11)
+  static class Java11Test extends SpringBootAutoTest {}
+
+  @Environment(JAVA_17)
+  static class Java17Test extends SpringBootAutoTest {}
 }

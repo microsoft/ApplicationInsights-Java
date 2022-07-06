@@ -60,8 +60,8 @@ class ConfigurationTest {
     assertThat(configuration.role.name).isEqualTo("Something Good");
     assertThat(configuration.role.instance).isEqualTo("xyz123");
     assertThat(configuration.customDimensions.size()).isEqualTo(2);
-    assertThat(configuration.customDimensions.get("some key")).isEqualTo("abc");
-    assertThat(configuration.customDimensions.get("another key")).isEqualTo("def");
+    assertThat(configuration.customDimensions).containsEntry("some key", "abc");
+    assertThat(configuration.customDimensions).containsEntry("another key", "def");
     assertThat(configuration.sampling.percentage).isEqualTo(10.0f);
     assertThat(configuration.jmxMetrics.size()).isEqualTo(3);
     assertThat(configuration.jmxMetrics.get(0).name).isEqualTo("Thread Count");

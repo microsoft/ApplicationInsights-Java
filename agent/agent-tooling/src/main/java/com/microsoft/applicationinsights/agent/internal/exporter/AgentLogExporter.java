@@ -78,6 +78,7 @@ public class AgentLogExporter implements LogExporter {
   @Override
   public CompletableResultCode export(Collection<LogData> logs) {
     if (CoreUtils.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey())) {
+      // Azure Functions consumption plan
       logger.debug("Instrumentation key is null or empty. Fail to export logs.");
       return CompletableResultCode.ofFailure();
     }

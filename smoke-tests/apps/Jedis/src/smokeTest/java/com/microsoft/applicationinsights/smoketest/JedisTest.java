@@ -21,36 +21,70 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-@WithDependencyContainers(@DependencyContainer(value = "redis", portMapping = "6379"))
-public class JedisTest extends AiWarSmokeTest {
+@WithDependencyContainers(
+    @DependencyContainer(
+        value = "redis",
+        exposedPort = 6379,
+        hostnameEnvironmentVariable = "REDIS"))
+abstract class JedisTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/jedis")
-  public void jedis() throws Exception {
-    Telemetry telemetry = getTelemetry(1);
+  void jedis() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
 
-    assertEquals("GET /Jedis/*", telemetry.rd.getName());
-    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/Jedis/jedis"));
-    assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getSuccess());
-    assertNull(telemetry.rd.getSource());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getMeasurements().isEmpty());
+    assertThat(telemetry.rd.getName()).isEqualTo("GET /Jedis/*");
+    assertThat(telemetry.rd.getUrl()).matches("http://localhost:[0-9]+/Jedis/jedis");
+    assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
+    assertThat(telemetry.rd.getSuccess()).isTrue();
+    assertThat(telemetry.rd.getSource()).isNull();
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
-    assertEquals("GET", telemetry.rdd1.getName());
-    assertEquals("GET test", telemetry.rdd1.getData());
-    assertEquals("redis", telemetry.rdd1.getType());
-    assertTrue(telemetry.rdd1.getTarget().matches("dependency[0-9]+"));
-    assertTrue(telemetry.rdd1.getProperties().isEmpty());
-    assertTrue(telemetry.rdd1.getSuccess());
+    assertThat(telemetry.rdd1.getName()).isEqualTo("GET");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("GET test");
+    assertThat(telemetry.rdd1.getType()).isEqualTo("redis");
+    assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+");
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertParentChild(telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jedis/*");
+    SmokeTestExtension.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jedis/*");
   }
+
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends JedisTest {}
+
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends JedisTest {}
+
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends JedisTest {}
+
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends JedisTest {}
+
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends JedisTest {}
+
+  @Environment(WILDFLY_13_JAVA_8)
+  static class Wildfly13Java8Test extends JedisTest {}
+
+  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
+  static class Wildfly13Java8OpenJ9Test extends JedisTest {}
 }

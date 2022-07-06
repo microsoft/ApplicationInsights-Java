@@ -21,26 +21,36 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import java.util.Arrays;
-import java.util.List;
-import org.junit.Test;
-import org.junit.runners.Parameterized;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-public class SpringBootAutoTest extends AiSmokeTest {
+abstract class SpringBootAutoTest {
 
-  // Spring Boot 1.3 does not support Java 11+
-  @Parameterized.Parameters(name = "{index}: {0}, {1}, {2}")
-  public static List<Object[]> parameterGenerator() {
-    return Arrays.asList(
-        new Object[] {"jetty9", "linux", "azul_zulu-openjdk_8"},
-        new Object[] {"tomcat85", "linux", "azul_zulu-openjdk_8"},
-        new Object[] {"wildfly11", "linux", "azul_zulu-openjdk_8"});
-  }
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/test")
-  public void doMostBasicTest() throws Exception {
-    mockedIngestion.waitForItems("RequestData", 1);
+  void doMostBasicTest() throws Exception {
+    testing.mockedIngestion.waitForItems("RequestData", 1);
   }
+
+  // Spring Boot 1.3 does not support Java 11+
+
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends SpringBootAutoTest {}
+
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends SpringBootAutoTest {}
+
+  @Environment(WILDFLY_13_JAVA_8)
+  static class Wildfly13Java8Test extends SpringBootAutoTest {}
+
+  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
+  static class Wildfly13Java8OpenJ9Test extends SpringBootAutoTest {}
 }

@@ -48,7 +48,7 @@ val DEPENDENCY_SETS = listOf(
   DependencySet(
     "net.bytebuddy",
     // When updating, also update buildSrc/build.gradle.kts
-    "1.12.9",
+    "1.12.10",
     listOf("byte-buddy", "byte-buddy-dep", "byte-buddy-agent", "byte-buddy-gradle-plugin")
   ),
   DependencySet(
@@ -63,7 +63,7 @@ val DEPENDENCY_SETS = listOf(
   ),
   DependencySet(
     "org.testcontainers",
-    "1.15.3",
+    "1.17.3",
     listOf("testcontainers", "junit-jupiter")
   ),
   DependencySet(
@@ -95,18 +95,18 @@ val DEPENDENCY_SETS = listOf(
 )
 
 val DEPENDENCIES = listOf(
-  "ch.qos.logback:logback-classic:1.2.8",
+  "ch.qos.logback:logback-classic:1.2.11",
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
   "com.google.auto.service:auto-service:1.0.1",
-  "com.uber.nullaway:nullaway:0.9.1",
+  "com.uber.nullaway:nullaway:0.9.8",
   "commons-codec:commons-codec:1.15",
   "org.apache.commons:commons-text:1.9",
   "com.google.code.gson:gson:2.8.2",
   "com.azure:azure-core-test:1.9.1",
-  "com.github.oshi:oshi-core:5.8.0",
-  "org.assertj:assertj-core:3.22.0",
-  "org.awaitility:awaitility:4.1.0",
-  "io.github.hakky54:logcaptor:2.5.0",
+  "com.github.oshi:oshi-core:6.2.0",
+  "org.assertj:assertj-core:3.23.1",
+  "org.awaitility:awaitility:4.2.0",
+  "io.github.hakky54:logcaptor:2.7.9",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
   "com.google.code.findbugs:jsr305:3.0.2"
 )

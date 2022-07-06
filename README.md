@@ -21,7 +21,7 @@ cd ApplicationInsights-Java
 Build the agent jar file:
 
 ```
-./gradlew -DskipWinNative=true :agent:agent:shadowJar
+./gradlew :agent:agent:shadowJar
 ```
 
 The agent jar file should now be available under `agent/agent/build/libs`.

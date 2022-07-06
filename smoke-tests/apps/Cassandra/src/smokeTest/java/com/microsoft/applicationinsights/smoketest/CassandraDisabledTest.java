@@ -21,29 +21,33 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent("disabled_cassandra")
+@Environment(TOMCAT_8_JAVA_8)
+@UseAgent("disabled_applicationinsights.json")
 @WithDependencyContainers(
     @DependencyContainer(
         value = "cassandra:3",
-        portMapping = "9042",
+        exposedPort = 9042,
         hostnameEnvironmentVariable = "CASSANDRA"))
-public class CassandraDisabledTest extends AiWarSmokeTest {
+class CassandraDisabledTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/cassandra")
-  public void cassandra() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void cassandra() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
-    assertEquals("GET /Cassandra/*", telemetry.rd.getName());
-    assertTrue(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getName()).isEqualTo("GET /Cassandra/*");
+    assertThat(telemetry.rd.getSuccess()).isTrue();
 
     // sleep a bit and make sure no cassandra dependencies are reported
     Thread.sleep(5000);
-    assertEquals(0, mockedIngestion.getCountForType("RemoteDependencyData"));
+    assertThat(testing.mockedIngestion.getCountForType("RemoteDependencyData")).isZero();
   }
 }

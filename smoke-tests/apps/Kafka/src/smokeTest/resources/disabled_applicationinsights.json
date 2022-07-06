@@ -1,0 +1,7 @@
+{
+  "instrumentation": {
+    "kafka": {
+      "enabled": false
+    }
+  }
+}

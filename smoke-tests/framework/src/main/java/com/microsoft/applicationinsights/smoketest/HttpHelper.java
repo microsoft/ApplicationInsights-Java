@@ -24,8 +24,6 @@ package com.microsoft.applicationinsights.smoketest;
 import java.io.IOException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
@@ -62,16 +60,6 @@ public class HttpHelper {
 
   private static CloseableHttpClient getHttpClient() {
     return HttpClientBuilder.create().disableAutomaticRetries().build();
-  }
-
-  public static String post(String url, String body) throws IOException {
-    try (CloseableHttpClient client = getHttpClient()) {
-      HttpPost post = new HttpPost(url);
-      post.setEntity(new StringEntity(body));
-      try (CloseableHttpResponse response = client.execute(post)) {
-        return EntityUtils.toString(response.getEntity());
-      }
-    }
   }
 
   private HttpHelper() {}

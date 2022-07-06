@@ -21,29 +21,60 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-public class LegacySdkWebInteropTest extends AiWarSmokeTest {
+abstract class LegacySdkWebInteropTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/test")
-  public void doMostBasicTest() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void doMostBasicTest() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
-    assertEquals("myspanname", telemetry.rd.getName());
-    assertEquals("mysource", telemetry.rd.getSource());
-    assertEquals("myuser", telemetry.rdEnvelope.getTags().get("ai.user.id"));
-    assertEquals("mysessionid", telemetry.rdEnvelope.getTags().get("ai.session.id"));
-    assertEquals("mydeviceos", telemetry.rdEnvelope.getTags().get("ai.device.os"));
-    assertEquals("mydeviceosversion", telemetry.rdEnvelope.getTags().get("ai.device.osVersion"));
-    assertEquals("myvalue1", telemetry.rd.getProperties().get("myattr1"));
-    assertEquals("myvalue2", telemetry.rd.getProperties().get("myattr2"));
-    assertEquals(2, telemetry.rd.getProperties().size());
+    assertThat(telemetry.rd.getName()).isEqualTo("myspanname");
+    assertThat(telemetry.rd.getSource()).isEqualTo("mysource");
+    assertThat(telemetry.rdEnvelope.getTags()).containsEntry("ai.user.id", "myuser");
+    assertThat(telemetry.rdEnvelope.getTags()).containsEntry("ai.session.id", "mysessionid");
+    assertThat(telemetry.rdEnvelope.getTags()).containsEntry("ai.device.os", "mydeviceos");
+    assertThat(telemetry.rdEnvelope.getTags().get("ai.device.osVersion"))
+        .isEqualTo("mydeviceosversion");
+    assertThat(telemetry.rd.getProperties()).containsEntry("myattr1", "myvalue1");
+    assertThat(telemetry.rd.getProperties()).containsEntry("myattr2", "myvalue2");
+    assertThat(telemetry.rd.getProperties()).hasSize(2);
 
-    assertFalse(telemetry.rd.getSuccess());
+    assertThat(telemetry.rd.getSuccess()).isFalse();
   }
+
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends LegacySdkWebInteropTest {}
+
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends LegacySdkWebInteropTest {}
+
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends LegacySdkWebInteropTest {}
+
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends LegacySdkWebInteropTest {}
+
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends LegacySdkWebInteropTest {}
+
+  @Environment(WILDFLY_13_JAVA_8)
+  static class Wildfly13Java8Test extends LegacySdkWebInteropTest {}
+
+  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
+  static class Wildfly13Java8OpenJ9Test extends LegacySdkWebInteropTest {}
 }
