@@ -79,6 +79,6 @@ public class QuantileAggregation implements Aggregation {
       return OptionalDouble.empty();
     }
 
-    return OptionalDouble.of(Quantiles.percentiles().index(quantile).compute(dataPoints));
+    return OptionalDouble.of(Quantiles.percentiles().index(quantile).computeInPlace(dataPoints));
   }
 }
