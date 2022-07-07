@@ -21,11 +21,14 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -34,127 +37,86 @@ import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
-import org.hamcrest.TypeSafeMatcher;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-public class SpringBootTest extends AiWarSmokeTest {
+abstract class SpringBootTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/basic/trackEvent")
-  public void trackEvent() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+  void trackEvent() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
 
-    mockedIngestion.waitForItemsInOperation("EventData", 2, operationId);
+    testing.mockedIngestion.waitForItemsInOperation("EventData", 2, operationId);
 
     // TODO get event data envelope and verify value
-    List<EventData> data = mockedIngestion.getTelemetryDataByTypeInRequest("EventData");
-    assertThat(
-        data,
-        hasItem(
-            new TypeSafeMatcher<EventData>() {
-              final String name = "EventDataTest";
-              final Matcher<String> nameMatcher = Matchers.equalTo(name);
+    List<EventData> data = testing.mockedIngestion.getTelemetryDataByTypeInRequest("EventData");
 
-              @Override
-              protected boolean matchesSafely(EventData item) {
-                return nameMatcher.matches(item.getName());
-              }
+    assertThat(data).anySatisfy(ed -> assertThat(ed.getName()).isEqualTo("EventDataTest"));
 
-              @Override
-              public void describeTo(Description description) {
-                description.appendDescriptionOf(nameMatcher);
-              }
-            }));
-
-    assertThat(
-        data,
-        hasItem(
-            new TypeSafeMatcher<EventData>() {
-              final String expectedKey = "key";
-              final String expectedName = "EventDataPropertyTest";
-              final String expectedPropertyValue = "value";
-              final Double expectedMetricValue = 1d;
-              final Matcher<Map<? extends String, ? extends Double>> metricMatcher =
-                  Matchers.hasEntry(expectedKey, expectedMetricValue);
-              final Matcher<Map<? extends String, ? extends String>> propertyMatcher =
-                  Matchers.hasEntry(expectedKey, expectedPropertyValue);
-              final Matcher<String> nameMatcher = Matchers.equalTo(expectedName);
-
-              @Override
-              public void describeTo(Description description) {
-                description.appendDescriptionOf(nameMatcher);
-                description.appendDescriptionOf(propertyMatcher);
-                description.appendDescriptionOf(metricMatcher);
-              }
-
-              @Override
-              protected boolean matchesSafely(EventData item) {
-                return nameMatcher.matches(item.getName())
-                    && propertyMatcher.matches(item.getProperties())
-                    && metricMatcher.matches(item.getMeasurements());
-              }
-            }));
+    assertThat(data)
+        .anySatisfy(
+            ed -> {
+              assertThat(ed.getName()).isEqualTo("EventDataPropertyTest");
+              assertThat(ed.getProperties()).containsEntry("key", "value");
+              assertThat(ed.getMeasurements()).containsEntry("key", 1.0);
+            });
   }
 
   @Test
   @TargetUri("/throwsException")
-  public void testResultCodeWhenRestControllerThrows() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+  void testResultCodeWhenRestControllerThrows() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     List<Envelope> edList =
-        mockedIngestion.waitForItems(
-            new Predicate<Envelope>() {
-              @Override
-              public boolean test(Envelope input) {
-                if (!"ExceptionData".equals(input.getData().getBaseType())) {
-                  return false;
-                }
-                if (!operationId.equals(input.getTags().get("ai.operation.id"))) {
-                  return false;
-                }
-                // lastly, filter out ExceptionData captured from tomcat logger
-                ExceptionData data = (ExceptionData) ((Data<?>) input.getData()).getBaseData();
-                return !data.getProperties().containsKey("LoggerName");
+        testing.mockedIngestion.waitForItems(
+            input -> {
+              if (!"ExceptionData".equals(input.getData().getBaseType())) {
+                return false;
               }
+              if (!operationId.equals(input.getTags().get("ai.operation.id"))) {
+                return false;
+              }
+              // lastly, filter out ExceptionData captured from tomcat logger
+              ExceptionData data = (ExceptionData) ((Data<?>) input.getData()).getBaseData();
+              return !data.getProperties().containsKey("LoggerName");
             },
             1,
             10,
             TimeUnit.SECONDS);
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
+    assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope edEnvelope1 = edList.get(0);
 
-    RequestData rd = getTelemetryDataForType(0, "RequestData");
+    RequestData rd = testing.getTelemetryDataForType(0, "RequestData");
 
-    assertEquals("GET /SpringBootTest/throwsException", rd.getName());
-    assertEquals("500", rd.getResponseCode());
-    assertTrue(rd.getProperties().isEmpty());
-    assertFalse(rd.getSuccess());
+    assertThat(rd.getName()).isEqualTo("GET /SpringBootTest/throwsException");
+    assertThat(rd.getResponseCode()).isEqualTo("500");
+    assertThat(rd.getProperties()).isEmpty();
+    assertThat(rd.getSuccess()).isFalse();
 
-    assertParentChild(rd, rdEnvelope, edEnvelope1, "GET /SpringBootTest/throwsException");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, edEnvelope1, "GET /SpringBootTest/throwsException");
   }
 
   @Test
   @TargetUri("/asyncDependencyCall")
-  public void testAsyncDependencyCall() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+  void testAsyncDependencyCall() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     List<Envelope> rddList =
-        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
+        testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+    assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope rddEnvelope1 = rddList.get(0);
 
@@ -162,17 +124,39 @@ public class SpringBootTest extends AiWarSmokeTest {
     RemoteDependencyData rdd1 =
         (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
 
-    assertEquals("GET /SpringBootTest/asyncDependencyCall", rd.getName());
-    assertEquals("200", rd.getResponseCode());
-    assertTrue(rd.getProperties().isEmpty());
-    assertTrue(rd.getSuccess());
+    assertThat(rd.getName()).isEqualTo("GET /SpringBootTest/asyncDependencyCall");
+    assertThat(rd.getResponseCode()).isEqualTo("200");
+    assertThat(rd.getProperties()).isEmpty();
+    assertThat(rd.getSuccess()).isTrue();
 
-    assertEquals("GET /", rdd1.getName());
-    assertEquals("https://www.bing.com", rdd1.getData());
-    assertEquals("www.bing.com", rdd1.getTarget());
-    assertTrue(rdd1.getProperties().isEmpty());
-    assertTrue(rdd1.getSuccess());
+    assertThat(rdd1.getName()).isEqualTo("GET /");
+    assertThat(rdd1.getData()).isEqualTo("https://www.bing.com");
+    assertThat(rdd1.getTarget()).isEqualTo("www.bing.com");
+    assertThat(rdd1.getProperties()).isEmpty();
+    assertThat(rdd1.getSuccess()).isTrue();
 
-    assertParentChild(rd, rdEnvelope, rddEnvelope1, "GET /SpringBootTest/asyncDependencyCall");
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, rddEnvelope1, "GET /SpringBootTest/asyncDependencyCall");
   }
+
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends SpringBootTest {}
+
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends SpringBootTest {}
+
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends SpringBootTest {}
+
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends SpringBootTest {}
+
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends SpringBootTest {}
+
+  @Environment(WILDFLY_13_JAVA_8)
+  static class Wildfly13Java8Test extends SpringBootTest {}
+
+  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
+  static class Wildfly13Java8OpenJ9Test extends SpringBootTest {}
 }

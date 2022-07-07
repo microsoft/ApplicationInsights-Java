@@ -46,64 +46,61 @@ val dependencyManagement by configurations.creating {
   isCanBeResolved = false
   isVisible = false
 }
+afterEvaluate {
+  configurations.configureEach {
+    if (isCanBeResolved && !isCanBeConsumed) {
+      extendsFrom(dependencyManagement)
+    }
+  }
+}
+
+val agent by configurations.creating
 
 dependencies {
   // FIXME (trask) copy-pasted from ai.java-conventions.gradle
   dependencyManagement(platform(project(":dependencyManagement")))
-  afterEvaluate {
-    configurations.configureEach {
-      if (isCanBeResolved && !isCanBeConsumed) {
-        extendsFrom(dependencyManagement)
-      }
-    }
-  }
 
   smokeTestImplementation(project(":smoke-tests:framework"))
 
-  // NOTE not updating smoke tests to JUnit 5, because AiSmokeTest has deep dependency on JUnit 4 infra,
-  // and so would take a good amount of work, and eventually want to migrate to otel smoke tests anyways
-  smokeTestImplementation("org.hamcrest:hamcrest-core:2.2")
-  smokeTestImplementation("org.hamcrest:hamcrest-library:2.2")
-  smokeTestImplementation("junit:junit:4.13.2")
+  smokeTestImplementation("org.junit.jupiter:junit-jupiter-api")
+  smokeTestImplementation("org.junit.jupiter:junit-jupiter-params")
+
+  smokeTestImplementation("org.assertj:assertj-core")
+
+  agent(project(":agent:agent", configuration = "shadow"))
 }
 
 tasks {
-  // This task addresses the issue of dependency containers not existing when the app runs and the test fails due to timeout.
-  val pullDependencyContainers by registering {
-    doLast {
-      aiSmokeTest.dependencyContainers.get().forEach { dc ->
-        logger.info("Pulling $dc...")
-        exec {
-          executable = "docker"
-          args = listOf("pull", dc)
-        }
-      }
-    }
-  }
-
   task<Test>("smokeTest") {
+    useJUnitPlatform()
+
     // this is just to force building the agent first
     dependsOn(":agent:agent:shadowJar")
 
-    dependsOn(":smoke-tests:servers:buildDockerImage")
     dependsOn(assemble)
-    dependsOn(pullDependencyContainers)
 
     testClassesDirs = sourceSets["smokeTest"].output.classesDirs
     classpath = sourceSets["smokeTest"].runtimeClasspath
 
+    // TODO (trask) experiment with parallelization
+    // maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
+
     doFirst {
 
-      val warFile = aiSmokeTest.testAppArtifactDir.file(aiSmokeTest.testAppArtifactFilename.get()).get()
+      val appFile = aiSmokeTest.testAppArtifactDir.file(aiSmokeTest.testAppArtifactFilename.get()).get()
+      val javaagentFile = agent.singleFile
 
       // need to delay for project to configure the extension
-      jvmArgs("-Dai.smoketest.testAppWarFile=$warFile")
+      systemProperty("ai.smoke-test.test-app-file", appFile)
+      systemProperty("ai.smoke-test.javaagent-file", javaagentFile)
 
-      // There's no real harm in setting this for all tests even if any happen to not be using
-      // context propagation.
-      jvmArgs("-Dio.opentelemetry.context.enableStrictContext=true")
-      // TODO (trask): Have agent map unshaded to shaded.
-      jvmArgs("-Dio.opentelemetry.javaagent.shaded.io.opentelemetry.context.enableStrictContext=true")
+      val smokeTestMatrix = findProperty("smokeTestMatrix") ?: System.getenv("CI") != null
+      systemProperty("ai.smoke-test.matrix", smokeTestMatrix)
+
+      findProperty("smokeTestRemoteDebug")?.let { systemProperty("ai.smoke-test.remote-debug", it) }
+
+      systemProperty("io.opentelemetry.context.enableStrictContext", true)
+      systemProperty("io.opentelemetry.javaagent.shaded.io.opentelemetry.context.enableStrictContext", true)
     }
 
     testLogging {

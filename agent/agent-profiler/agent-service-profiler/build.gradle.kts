@@ -14,7 +14,6 @@ dependencies {
   implementation("com.squareup.moshi:moshi-adapters")
   implementation("com.azure:azure-storage-blob")
 
-  testImplementation(platform("org.junit:junit-bom"))
   testImplementation("org.junit.jupiter:junit-jupiter")
   testImplementation("org.assertj:assertj-core")
   testImplementation("org.mockito:mockito-core")

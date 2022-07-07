@@ -2,8 +2,6 @@ plugins {
   id("ai.smoke-test-war")
 }
 
-aiSmokeTest.dependencyContainers.add("redis")
-
 dependencies {
   implementation("com.microsoft.azure:applicationinsights-web") {
     // applicationinsights-core is embedded in applicationinsights-web

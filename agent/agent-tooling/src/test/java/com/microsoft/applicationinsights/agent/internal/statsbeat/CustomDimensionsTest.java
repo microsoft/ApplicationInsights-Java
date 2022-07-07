@@ -61,7 +61,7 @@ public class CustomDimensionsTest {
     StatsbeatTelemetryBuilder telemetryBuilder = StatsbeatTelemetryBuilder.create("test", 1);
     customDimensions.populateProperties(telemetryBuilder, null);
     MetricsData data = (MetricsData) telemetryBuilder.build().getData().getBaseData();
-    assertThat(data.getProperties().get("cikey")).isNull();
+    assertThat(data.getProperties()).doesNotContainKey("cikey");
   }
 
   @Test
@@ -75,7 +75,7 @@ public class CustomDimensionsTest {
     String version = sdkVersion.substring(sdkVersion.lastIndexOf(':') + 1);
 
     MetricsData data = (MetricsData) telemetryBuilder.build().getData().getBaseData();
-    assertThat(data.getProperties().get("version")).isEqualTo(version);
+    assertThat(data.getProperties()).containsEntry("version", version);
   }
 
   @Test

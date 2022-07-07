@@ -1,3 +1,5 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
 plugins {
   id("ai.java-conventions")
 }
@@ -24,9 +26,7 @@ archivesBaseName = "applicationinsights-java-etw-provider"
 
 logger.info "project ${project.path} prop: ai.etw.native.build=${project.properties['ai.etw.native.build']}"
 
-import org.apache.tools.ant.taskdefs.condition.Os
-
-def buildNative = !(System.properties["skipWinNative"] ?: "false").toBoolean() && Os.isFamily(Os.FAMILY_WINDOWS);
+def buildNative = System.getenv("CI") != null && Os.isFamily(Os.FAMILY_WINDOWS)
 
 dependencies {
   implementation("org.slf4j:slf4j-api")
@@ -35,7 +35,7 @@ dependencies {
     jni32 project(path: ":etw:native", configuration: "${project.properties['ai.etw.native.build']}X86RuntimeElements")
     jni64 project(path: ":etw:native", configuration: "${project.properties['ai.etw.native.build']}X86-64RuntimeElements")
   } else {
-    logger.quiet "Skipping build of :etw:native because skipWinNative=true. EtwAppender/EtwProvider will not work because library is missing"
+    logger.info "Skipping build of :etw:native. EtwAppender/EtwProvider will not work because library is missing"
   }
 
   testImplementation("org.junit.jupiter:junit-jupiter")
