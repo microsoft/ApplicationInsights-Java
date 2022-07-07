@@ -108,7 +108,7 @@ public class AlertTriggerSpanExporter implements SpanExporter {
   }
 
   public void processSpan(SpanData span) {
-    if (span.getKind() == SpanKind.SERVER) {
+    if (SpanDataMapper.isRequest(span)) {
       double duration = (span.getEndEpochNanos() - span.getStartEpochNanos()) / 1_000_000.0d;
       AlertingSubsystem alertingSubsystem = alertingSubsystemSupplier.get();
 
