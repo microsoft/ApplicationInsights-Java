@@ -29,7 +29,7 @@ import java.util.function.DoubleConsumer;
 public interface Aggregation {
 
   /** Add new data to the aggregation. */
-  double update(TelemetryDataPoint telemetryDataPoint);
+  void update(TelemetryDataPoint telemetryDataPoint);
 
   /** Add a consumer that is notified when new aggregated data is available. */
   void setConsumer(DoubleConsumer consumer);
