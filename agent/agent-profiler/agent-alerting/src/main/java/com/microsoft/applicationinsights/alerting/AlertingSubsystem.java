@@ -147,6 +147,7 @@ public class AlertingSubsystem {
   }
 
   /** Block until work queue is empty. */
+  // only used by tests
   public void awaitQueueFlush() {
     while (workQueue.size() > 0) {
       synchronized (monitor) {
