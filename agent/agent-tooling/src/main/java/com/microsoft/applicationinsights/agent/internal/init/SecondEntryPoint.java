@@ -271,8 +271,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       ConfigProperties config,
       Configuration configuration) {
 
-    tracerProvider.setSampler(DelegatingSampler.getInstance());
-
     if (configuration.connectionString != null) {
       if (!configuration.preview.disablePropagation) {
         DelegatingPropagator.getInstance()

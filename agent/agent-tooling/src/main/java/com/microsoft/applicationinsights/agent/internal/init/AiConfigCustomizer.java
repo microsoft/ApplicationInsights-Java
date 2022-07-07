@@ -93,6 +93,8 @@ public class AiConfigCustomizer implements ConfigCustomizer {
 
     properties.put("otel.propagators", DelegatingPropagatorProvider.NAME);
 
+    properties.put("otel.traces.sampler", DelegatingSamplerProvider.NAME);
+
     String tracesExporter = getProperty("otel.traces.exporter");
     if (tracesExporter == null) {
       // currently Application Insights Exporter has to be configured manually because it relies on
