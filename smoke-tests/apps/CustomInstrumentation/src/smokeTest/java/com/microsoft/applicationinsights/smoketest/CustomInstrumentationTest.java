@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-public class CustomInstrumentationTest {
+public abstract class CustomInstrumentationTest {
 
   @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
