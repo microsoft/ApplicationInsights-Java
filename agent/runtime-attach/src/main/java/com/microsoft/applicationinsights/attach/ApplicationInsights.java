@@ -69,7 +69,7 @@ public final class ApplicationInsights {
     } catch (IllegalStateException e) {
       if (e.getMessage()
           .contains("No compatible attachment provider is available")) { // Byte Buddy exception
-        throw new RuntimeException("Runtime attachment was not done. You may use a JRE.", e);
+        throw new IllegalStateException("Runtime attachment was not done. You may use a JRE.", e);
       }
       throw e;
     }
