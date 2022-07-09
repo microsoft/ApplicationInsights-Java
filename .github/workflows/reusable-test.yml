@@ -18,7 +18,8 @@ jobs:
           - 17
         vm:
           - hotspot
-          - openj9
+          # TODO (trask) enable once profiler supports OpenJ9
+          # - openj9
         os:
           - windows-2019
           - ubuntu-latest
