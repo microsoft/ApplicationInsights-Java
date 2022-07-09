@@ -23,94 +23,73 @@ package com.microsoft.gcmonitortests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.condition.JRE.JAVA_11;
+import static org.junit.jupiter.api.condition.JRE.JAVA_17;
+import static org.junit.jupiter.api.condition.OS.LINUX;
+import static org.junit.jupiter.api.condition.OS.WINDOWS;
 
 import com.microsoft.gcmonitor.GcCollectionEvent;
-import com.microsoft.gcmonitor.UnableToMonitorMemoryException;
 import com.microsoft.gcmonitor.memorypools.MemoryPool;
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
+import org.junit.jupiter.api.condition.EnabledOnOs;
 
 class VariousCollectorsTest {
 
   @Test
-  void testCms() throws IOException, UnableToMonitorMemoryException, InterruptedException {
-    try {
-      List<GcCollectionEvent> events =
-          new GcProcessRunner("-XX:+UseConcMarkSweepGC", 50).getGcCollectionEvents();
+  void testCms() throws Exception {
+    testGc("-XX:+UseConcMarkSweepGC", 50);
+  }
 
-      assetGcsArePresent(events);
-    } catch (GcNotPresentException e) {
-      // CMS deprecated
-    }
+  @Test
+  void testParallel() throws Exception {
+    testGc("-XX:+UseParallelGC", 70);
+  }
+
+  @Test
+  void testG1() throws Exception {
+    testGc("-XX:+UseG1GC", 50);
+  }
+
+  @Test
+  void testSerial() throws Exception {
+    testGc("-XX:+UseSerialGC", 50);
+  }
+
+  @Test
+  @EnabledForJreRange(min = JAVA_11)
+  void testShenandoah() throws Exception {
+    testGc("-XX:+UseShenandoahGC", 50);
+  }
+
+  @Test
+  @EnabledForJreRange(min = JAVA_11)
+  @EnabledOnOs(LINUX)
+  void testZ_Linux() throws Exception {
+    testGc("-XX:+UseZGC", 200);
+  }
+
+  @Test
+  @EnabledForJreRange(min = JAVA_17)
+  @EnabledOnOs(WINDOWS)
+  void testZ_Windows() throws Exception {
+    testGc("-XX:+UseZGC", 200);
+  }
+
+  private static void testGc(String gcArg, int heapSizeInMb) throws Exception {
+    List<GcCollectionEvent> events =
+        new GcProcessRunner(gcArg, heapSizeInMb).getGcCollectionEvents();
+
+    assetGcsArePresent(events);
   }
 
   private static void assetGcsArePresent(List<GcCollectionEvent> events) {
     assertThat(youngGcIsPresent(events)).isTrue();
     assertThat(tenuredGcIsPresent(events)).isTrue();
     assertThat(systemGcIsPresent(events)).isTrue();
-  }
-
-  @Test
-  void testParallel()
-      throws IOException, UnableToMonitorMemoryException, InterruptedException,
-          GcNotPresentException {
-    List<GcCollectionEvent> events =
-        new GcProcessRunner("-XX:+UseParallelGC", 70).getGcCollectionEvents();
-
-    print(events);
-
-    assetGcsArePresent(events);
-  }
-
-  @Test
-  void testG1()
-      throws IOException, UnableToMonitorMemoryException, InterruptedException,
-          GcNotPresentException {
-    List<GcCollectionEvent> events =
-        new GcProcessRunner("-XX:+UseG1GC", 50).getGcCollectionEvents();
-
-    assetGcsArePresent(events);
-  }
-
-  @Test
-  void testSerial() throws IOException, UnableToMonitorMemoryException, InterruptedException {
-    try {
-      List<GcCollectionEvent> events =
-          new GcProcessRunner("-XX:+UseSerialGC", 50).getGcCollectionEvents();
-      assetGcsArePresent(events);
-    } catch (GcNotPresentException e) {
-      // to be expected for some time
-    }
-  }
-
-  @Test
-  @EnabledForJreRange(min = JAVA_11)
-  void testShenandoah() throws IOException, UnableToMonitorMemoryException, InterruptedException {
-    try {
-      List<GcCollectionEvent> events =
-          new GcProcessRunner("-XX:+UseShenandoahGC", 50).getGcCollectionEvents();
-
-      assetGcsArePresent(events);
-    } catch (GcNotPresentException e) {
-      // to be expected for some time
-    }
-  }
-
-  @Test
-  @EnabledForJreRange(min = JAVA_11)
-  void testZ() throws IOException, UnableToMonitorMemoryException, InterruptedException {
-    try {
-      List<GcCollectionEvent> events =
-          new GcProcessRunner("-XX:+UseZGC", 200).getGcCollectionEvents();
-      assetGcsArePresent(events);
-    } catch (GcNotPresentException e) {
-      // to be expected for some time
-    }
   }
 
   private static boolean tenuredGcIsPresent(List<GcCollectionEvent> events) {
@@ -139,7 +118,7 @@ class VariousCollectorsTest {
     return events.stream().anyMatch(predicate);
   }
 
-  @SuppressWarnings("SystemOut")
+  @SuppressWarnings({"SystemOut", "unused"})
   private static void print(List<GcCollectionEvent> events) {
     System.out.println("Obtained: " + events.size());
     events.forEach(
