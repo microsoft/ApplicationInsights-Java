@@ -23,9 +23,8 @@ package com.microsoft.gcmonitortests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.condition.JRE.JAVA_11;
-import static org.junit.jupiter.api.condition.JRE.JAVA_17;
+import static org.junit.jupiter.api.condition.JRE.JAVA_13;
 import static org.junit.jupiter.api.condition.OS.LINUX;
-import static org.junit.jupiter.api.condition.OS.WINDOWS;
 
 import com.microsoft.gcmonitor.GcCollectionEvent;
 import com.microsoft.gcmonitor.memorypools.MemoryPool;
@@ -40,6 +39,7 @@ import org.junit.jupiter.api.condition.EnabledOnOs;
 class VariousCollectorsTest {
 
   @Test
+  @EnabledForJreRange(max = JAVA_13)
   void testCms() throws Exception {
     testGc("-XX:+UseConcMarkSweepGC", 50);
   }
@@ -68,14 +68,7 @@ class VariousCollectorsTest {
   @Test
   @EnabledForJreRange(min = JAVA_11)
   @EnabledOnOs(LINUX)
-  void testZ_Linux() throws Exception {
-    testGc("-XX:+UseZGC", 200);
-  }
-
-  @Test
-  @EnabledForJreRange(min = JAVA_17)
-  @EnabledOnOs(WINDOWS)
-  void testZ_Windows() throws Exception {
+  void testZ() throws Exception {
     testGc("-XX:+UseZGC", 200);
   }
 
