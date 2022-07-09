@@ -1,0 +1,25 @@
+name: Build (daily)
+
+on:
+  schedule:
+    # strange schedule to reduce the risk of DDOS GitHub infra
+    - cron: "24 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  assemble:
+    uses: ./.github/workflows/reusable-assemble.yml
+
+  test:
+    uses: ./.github/workflows/reusable-test.yml
+
+  smoke-test:
+    uses: ./.github/workflows/reusable-smoke-test.yml
+
+  open-issue-on-failure:
+    needs:
+      - assemble
+      - test
+      - smoke-test
+    if: failure()
+    uses: ./.github/workflows/reusable-open-issue-on-failure.yml
