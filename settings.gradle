@@ -70,6 +70,9 @@ include ':agent:instrumentation:servlet'
 include ':agent:agent'
 include ':agent:runtime-attach'
 
+include ':legacy-sdk:core'
+include ':legacy-sdk:web'
+
 // misc
 include(":dependencyManagement")
 
