@@ -22,6 +22,7 @@
 package com.microsoft.gcmonitortests;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.condition.JRE.JAVA_11;
 
 import com.microsoft.gcmonitor.GcCollectionEvent;
 import com.microsoft.gcmonitor.UnableToMonitorMemoryException;
@@ -31,8 +32,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Predicate;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
 
 class VariousCollectorsTest {
 
@@ -87,9 +88,8 @@ class VariousCollectorsTest {
     }
   }
 
-  // TODO: Enable when this can use Java 11
-  @Disabled
   @Test
+  @EnabledForJreRange(min = JAVA_11)
   void testShenandoah() throws IOException, UnableToMonitorMemoryException, InterruptedException {
     try {
       List<GcCollectionEvent> events =
@@ -101,9 +101,8 @@ class VariousCollectorsTest {
     }
   }
 
-  // TODO: Enable when this can use Java 11
-  @Disabled
   @Test
+  @EnabledForJreRange(min = JAVA_11)
   void testZ() throws IOException, UnableToMonitorMemoryException, InterruptedException {
     try {
       List<GcCollectionEvent> events =
