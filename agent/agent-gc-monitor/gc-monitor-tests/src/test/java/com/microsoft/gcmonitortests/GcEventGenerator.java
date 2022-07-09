@@ -48,7 +48,7 @@ public class GcEventGenerator {
     System.out.println("Hit return to start");
 
     // Block until consumer sends the ready signal
-    Scanner scanner = new Scanner(System.in, UTF_8);
+    Scanner scanner = new Scanner(System.in, UTF_8.name());
     System.out.println(scanner.nextLine());
 
     // Allocate 1mb
