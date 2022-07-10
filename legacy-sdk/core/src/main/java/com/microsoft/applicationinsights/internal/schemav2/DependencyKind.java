@@ -19,15 +19,24 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.telemetry;
+package com.microsoft.applicationinsights.internal.schemav2;
 
 /**
- * Session states.
+ * Enum DependencyKind.
  */
-public enum SessionState {
-    /// Indicates that a user session started.
-    Start,
+public enum DependencyKind
+{
+    SQL(0),
+    Http(1),
+    Other(2);
 
-    /// Indicates that a user session ended.
-    End
+    private final int id;
+
+    public int getValue() {
+        return id;
+    }
+
+    DependencyKind(int id) {
+        this.id = id;
+    }
 }

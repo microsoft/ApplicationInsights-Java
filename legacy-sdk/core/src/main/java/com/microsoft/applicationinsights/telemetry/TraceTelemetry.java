@@ -22,111 +22,92 @@
 package com.microsoft.applicationinsights.telemetry;
 
 import com.microsoft.applicationinsights.internal.schemav2.MessageData;
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
-/**
- * Telemetry type used for log messages.
- */
+/** Telemetry type used for log messages. */
 public final class TraceTelemetry extends BaseSampleSourceTelemetry<MessageData> {
-    private Double samplingPercentage;
-    private final MessageData data;
+  private Double samplingPercentage;
+  private final MessageData data;
 
-    /**
-     * Envelope Name for this telemetry.
-     */
-    public static final String ENVELOPE_NAME = "Message";
+  /** Envelope Name for this telemetry. */
+  public static final String ENVELOPE_NAME = "Message";
 
+  /** Base Type for this telemetry. */
+  public static final String BASE_TYPE = "MessageData";
 
-    /**
-     * Base Type for this telemetry.
-     */
-    public static final String BASE_TYPE = "MessageData";
+  /** Default Ctor */
+  public TraceTelemetry() {
+    this("");
+  }
 
+  public TraceTelemetry(String message) {
+    this(message, null);
+  }
 
-    /**
-     * Default Ctor
-     */
-    public TraceTelemetry() {
-        this("");
-    }
+  /**
+   * Initializes a new instance of the class with the specified parameter 'message'.
+   *
+   * @param message The message. Max length 10000.
+   * @param severityLevel The severity level.
+   */
+  public TraceTelemetry(String message, SeverityLevel severityLevel) {
+    super();
 
-    public TraceTelemetry(String message) {
-        this(message, null);
-    }
+    data = new MessageData();
+    initialize(data.getProperties());
 
-    /**
-     * Initializes a new instance of the class with the specified parameter 'message'.
-     * @param message The message. Max length 10000.
-     * @param severityLevel The severity level.
-     */
-    public TraceTelemetry(String message, SeverityLevel severityLevel) {
-        super();
+    setMessage(message);
+    setSeverityLevel(severityLevel);
+  }
 
-        data = new MessageData();
-        initialize(data.getProperties());
+  @Override
+  public int getVer() {
+    return getData().getVer();
+  }
 
-        setMessage(message);
-        setSeverityLevel(severityLevel);
-    }
+  /**
+   * Gets the message text. For example, the text that would normally be written to a log file line.
+   *
+   * @return The message.
+   */
+  public String getMessage() {
+    return data.getMessage();
+  }
 
-    @Override
-    public int getVer() {
-        return getData().getVer();
-    }
+  /**
+   * Sets the message text. For example, the text that would normally be written to a log file line.
+   *
+   * @param message The message.
+   */
+  public void setMessage(String message) {
+    data.setMessage(message);
+  }
 
-    /**
-     * Gets the message text. For example, the text that would normally be written to a log file line.
-     * @return The message.
-     */
-    public String getMessage() {
-        return data.getMessage();
-    }
+  @Override
+  protected MessageData getData() {
+    return data;
+  }
 
-    /**
-     * Sets the message text. For example, the text that would normally be written to a log file line.
-     * @param message The message.
-     */
-    public void setMessage(String message) {
-        data.setMessage(message);
-    }
+  public void setSeverityLevel(SeverityLevel severityLevel) {
+    data.setSeverityLevel(
+        severityLevel == null
+            ? null
+            : com.microsoft.applicationinsights.internal.schemav2.SeverityLevel.values()[
+                severityLevel.getValue()]);
+  }
 
-    @Override
-    @Deprecated
-    protected void additionalSanitize() {
-        data.setMessage(Sanitizer.sanitizeMessage(data.getMessage()));
-    }
+  public SeverityLevel getSeverityLevel() {
+    return data.getSeverityLevel() == null
+        ? null
+        : SeverityLevel.values()[data.getSeverityLevel().getValue()];
+  }
 
-    @Override
-    protected MessageData getData() {
-        return data;
-    }
+  @Override
+  public Double getSamplingPercentage() {
+    return samplingPercentage;
+  }
 
-    public void setSeverityLevel(SeverityLevel severityLevel) {
-        data.setSeverityLevel(severityLevel == null ? null : com.microsoft.applicationinsights.internal.schemav2.SeverityLevel.values()[severityLevel.getValue()]);
-    }
-
-    public SeverityLevel getSeverityLevel() {
-        return data.getSeverityLevel() == null ? null : SeverityLevel.values()[data.getSeverityLevel().getValue()];
-    }
-
-    @Override
-    public Double getSamplingPercentage() {
-        return samplingPercentage;
-    }
-
-    @Override
-    public void setSamplingPercentage(Double samplingPercentage) {
-        this.samplingPercentage = samplingPercentage;
-    }
-
-    @Override
-    public String getEnvelopName() {
-        return ENVELOPE_NAME;
-    }
-
-    @Override
-    public String getBaseTypeName() {
-        return BASE_TYPE;
-    }
-
+  @Override
+  public void setSamplingPercentage(Double samplingPercentage) {
+    this.samplingPercentage = samplingPercentage;
+  }
 }
