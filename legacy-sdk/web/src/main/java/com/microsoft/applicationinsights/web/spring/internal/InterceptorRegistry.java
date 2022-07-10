@@ -26,18 +26,18 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 /**
- * This class registers the RequestNameHandlerInterceptorAdapter to the interceptors registry.
- * The registration enables the interceptor to extract the http request's controller and action names.
+ * This class registers the RequestNameHandlerInterceptorAdapter to the interceptors registry. The
+ * registration enables the interceptor to extract the http request's controller and action names.
  *
- * This class extends {@link WebMvcConfigurerAdapter} to add {@link RequestNameHandlerInterceptorAdapter}
- * instead of overriding @EnableWebMvc annotation.
- *
+ * <p>This class extends {@link WebMvcConfigurerAdapter} to add {@link
+ * RequestNameHandlerInterceptorAdapter} instead of overriding @EnableWebMvc annotation.
  */
 @Configuration
 public class InterceptorRegistry extends WebMvcConfigurerAdapter {
 
-    @Override
-    public void addInterceptors(org.springframework.web.servlet.config.annotation.InterceptorRegistry registry) {
-        registry.addInterceptor(new RequestNameHandlerInterceptorAdapter());
-    }
+  @Override
+  public void addInterceptors(
+      org.springframework.web.servlet.config.annotation.InterceptorRegistry registry) {
+    registry.addInterceptor(new RequestNameHandlerInterceptorAdapter());
+  }
 }

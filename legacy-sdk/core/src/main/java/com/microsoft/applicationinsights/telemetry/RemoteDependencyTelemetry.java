@@ -21,14 +21,8 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.schemav2.DependencyKind;
-import com.microsoft.applicationinsights.internal.schemav2.DependencySourceType;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import java.util.Map;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Telemetry sent to Azure Application Insights about dependencies - that is, calls from your
@@ -45,11 +39,20 @@ public final class RemoteDependencyTelemetry
   /** Base Type for this telemetry. */
   public static final String BASE_TYPE = "RemoteDependencyData";
 
-  /** Default Ctor */
-  public RemoteDependencyTelemetry() {
-    super();
-    data = new RemoteDependencyData();
-    initialize(this.data.getProperties());
+  /**
+   * Initializes an instnace with the given parameters.
+   *
+   * @param dependencyName The dependency name.
+   * @param commandName The command name or call details.
+   * @param duration How long it took to process the call.
+   * @param success Whether the remote call successful or not.
+   */
+  public RemoteDependencyTelemetry(
+      String dependencyName, String commandName, Duration duration, boolean success) {
+    this(dependencyName);
+    this.data.setData(commandName);
+    this.data.setDuration(duration);
+    this.data.setSuccess(success);
   }
 
   /**
@@ -62,21 +65,11 @@ public final class RemoteDependencyTelemetry
     setName(name);
   }
 
-  /**
-   * Initializes an instnace with the given parameters.
-   *
-   * @param dependencyName The dependency name.
-   * @param commandName The command name or call details.
-   * @param duration How long it took to process the call.
-   * @param success Whether the remote call successful or not.
-   */
-  public RemoteDependencyTelemetry(
-      String dependencyName, String commandName, Duration duration, boolean success) {
-    this(dependencyName);
-
-    this.data.setData(commandName);
-    this.data.setDuration(duration);
-    this.data.setSuccess(success);
+  /** Default Ctor */
+  public RemoteDependencyTelemetry() {
+    super();
+    data = new RemoteDependencyData();
+    initialize(this.data.getProperties());
   }
 
   @Override
@@ -113,10 +106,9 @@ public final class RemoteDependencyTelemetry
    * @param name The dependency name.
    */
   public void setName(String name) {
-    if (Strings.isNullOrEmpty(name)) {
+    if (name == null || name.isEmpty()) {
       throw new IllegalArgumentException("The event name cannot be null or empty");
     }
-
     data.setName(name);
   }
 
@@ -136,109 +128,6 @@ public final class RemoteDependencyTelemetry
    */
   public void setCommandName(String commandName) {
     this.data.setData(commandName);
-  }
-
-  /**
-   * @deprecated Gets the Count property.
-   * @return Count property.
-   */
-  @Deprecated
-  public Integer getCount() {
-    return null;
-  }
-
-  /**
-   * @deprecated Sets the Count property.
-   * @param value Count property.
-   */
-  @Deprecated
-  public void setCount(Integer value) {
-    // do nothing as this property is no longer in use
-  }
-
-  /**
-   * @deprecated Gets the Min property.
-   * @return Min property.
-   */
-  @Deprecated
-  public Double getMin() {
-    return null;
-  }
-
-  /**
-   * @deprecated Sets the Min property.
-   * @param value Min property.
-   */
-  @Deprecated
-  public void setMin(Double value) {}
-
-  /**
-   * @deprecated Gets the Max property.
-   * @return Max property.
-   */
-  @Deprecated
-  public Double getMax() {
-    return null;
-  }
-
-  /**
-   * @deprecated Sets the Max property.
-   * @param value Max property.
-   */
-  @Deprecated
-  public void setMax(Double value) {}
-
-  /**
-   * @deprecated Gets the Standard Deviation property.
-   * @return Standard Deviation property.
-   */
-  @Deprecated
-  public Double getStdDev() {
-    return null;
-  }
-
-  /**
-   * @deprecated Sets the StdDev property.
-   * @param value Standard Deviation property.
-   */
-  @Deprecated
-  public void setStdDev(Double value) {}
-
-  /**
-   * @deprecated Gets the Dependency Kind property.
-   * @return Dependency Kind property.
-   */
-  @Deprecated
-  public DependencyKind getDependencyKind() {
-    DependencyKind result = DependencyKind.Other;
-    String type = data.getType();
-    if (!LocalStringsUtils.isNullOrEmpty(type)) {
-      try {
-        result = Enum.valueOf(DependencyKind.class, type);
-      } catch (ThreadDeath td) {
-        throw td;
-      } catch (Throwable t) {
-        try {
-          InternalLogger.INSTANCE.error("Exception while getting dependency kind: Type is empty");
-          InternalLogger.INSTANCE.trace(
-              "Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
-        } catch (ThreadDeath td) {
-          throw td;
-        } catch (Throwable t2) {
-          // chomp
-        }
-      }
-    }
-    return result;
-  }
-
-  /**
-   * @deprecated Sets the Dependency Kind property.
-   * @param value Dependency Kind property.
-   */
-  @Deprecated
-  public void setDependencyKind(DependencyKind value) {
-    data.setType(value.toString());
   }
 
   /**
@@ -294,38 +183,6 @@ public final class RemoteDependencyTelemetry
   public void setSuccess(boolean value) {
     data.setSuccess(value);
   }
-
-  /**
-   * @deprecated Gets the Async property.
-   * @return True if async.
-   */
-  @Deprecated
-  public Boolean getAsync() {
-    return false;
-  }
-
-  /**
-   * @deprecated Sets the Async property.
-   * @param value True if async.
-   */
-  @Deprecated
-  public void setAsync(Boolean value) {}
-
-  /**
-   * @deprecated Gets the Dependency Source property.
-   * @return Dependency Source property.
-   */
-  @Deprecated
-  public DependencySourceType getDependencySource() {
-    return DependencySourceType.Undefined;
-  }
-
-  /**
-   * @deprecated Sets the Dependency Source property.
-   * @param value Dependency Source property.
-   */
-  @Deprecated
-  public void setDependencySource(DependencySourceType value) {}
 
   /**
    * Gets the duration.

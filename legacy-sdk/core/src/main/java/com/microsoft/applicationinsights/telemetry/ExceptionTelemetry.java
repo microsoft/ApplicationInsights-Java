@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.internal.schemav2.StackFrame;
@@ -36,14 +35,7 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
   private final ExceptionData data;
   private Throwable throwable;
 
-  /** Envelope Name for this telemetry. */
-  public static final String ENVELOPE_NAME = "Exception";
-
-  /** Base Type for this telemetry. */
-  public static final String BASE_TYPE = "ExceptionData";
-
   public ExceptionTelemetry() {
-    super();
     data = new ExceptionData();
     initialize(data.getProperties());
   }
@@ -89,22 +81,6 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     this.throwable = throwable;
     updateException(throwable, stackSize);
   }
-
-  /**
-   * @deprecated Gets the value indicated where the exception was handled.
-   * @return The value indicating the exception
-   */
-  @Deprecated
-  public ExceptionHandledAt getExceptionHandledAt() {
-    return ExceptionHandledAt.Unhandled;
-  }
-
-  /**
-   * @deprecated Sets the value indicated where the exception was handled.
-   * @param value The value indicating the exception
-   */
-  @Deprecated
-  public void setExceptionHandledAt(ExceptionHandledAt value) {}
 
   /**
    * Gets a map of application-defined exception metrics. The metrics appear along with the
@@ -188,7 +164,7 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     exceptionDetails.setTypeName(exception.getClass().getName());
 
     String exceptionMessage = exception.getMessage();
-    if (Strings.isNullOrEmpty(exceptionMessage)) {
+    if (exceptionMessage == null || exceptionMessage.isEmpty()) {
       exceptionMessage = exception.getClass().getName();
     }
     exceptionDetails.setMessage(exceptionMessage);
@@ -218,7 +194,7 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
         frame.setFileName(elem.getFileName());
         frame.setLine(elem.getLineNumber());
 
-        if (!Strings.isNullOrEmpty(className)) {
+        if (className != null && !className.isEmpty()) {
           frame.setMethod(elem.getClassName() + "." + elem.getMethodName());
         } else {
           frame.setMethod(elem.getMethodName());

@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
 import com.microsoft.applicationinsights.internal.schemav2.MetricData;
@@ -35,28 +34,9 @@ import com.microsoft.applicationinsights.internal.schemav2.MetricData;
  * sum of sampled data points.
  */
 public final class MetricTelemetry extends BaseTelemetry<MetricData> {
+
   private final MetricData data;
   private final DataPoint metric;
-
-  /** Envelope Name for this telemetry. */
-  public static final String ENVELOPE_NAME = "Metric";
-
-  /** Base Type for this telemetry. */
-  public static final String BASE_TYPE = "MetricData";
-
-  /** Default constructor */
-  public MetricTelemetry() {
-    super();
-    data = new MetricData();
-    metric = new DataPoint();
-    initialize(data.getProperties());
-    data.getMetrics().add(metric);
-  }
-
-  @Override
-  public int getVer() {
-    return getData().getVer();
-  }
 
   /**
    * Initializes the instance with a name and value
@@ -69,6 +49,19 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     this();
     setName(name);
     metric.setValue(value);
+  }
+
+  /** Default constructor */
+  public MetricTelemetry() {
+    data = new MetricData();
+    metric = new DataPoint();
+    initialize(data.getProperties());
+    data.getMetrics().add(metric);
+  }
+
+  @Override
+  public int getVer() {
+    return getData().getVer();
   }
 
   /**
@@ -96,10 +89,9 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
    * @throws IllegalArgumentException if the name is null or empty.
    */
   public void setName(String name) {
-    if (Strings.isNullOrEmpty(name)) {
+    if (name == null || name.isEmpty()) {
       throw new IllegalArgumentException("The metric name cannot be null or empty");
     }
-
     metric.setName(name);
   }
 

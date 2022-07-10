@@ -22,18 +22,16 @@
 package com.microsoft.applicationinsights.telemetry;
 
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
-import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
 /** Superclass for all telemetry data classes. */
 public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
+
   private TelemetryContext context;
   private Date timestamp;
   private String sequence;
-
-  public static final String TELEMETRY_NAME_PREFIX = "Microsoft.ApplicationInsights.";
 
   protected BaseTelemetry() {}
 
@@ -119,11 +117,9 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
 
   /**
    * Concrete classes should implement this method which supplies the data structure that this
-   * instance works with, which needs to implement {@link JsonSerializable}
+   * instance works with.
    *
    * @return The inner data structure
    */
   protected abstract T getData();
-
-  protected void setSampleRate(Envelope envelope) {}
 }

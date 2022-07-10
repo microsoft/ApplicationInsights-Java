@@ -21,27 +21,14 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
 import java.util.concurrent.ConcurrentMap;
 
 /** Telemetry type used to track custom events in Azure Application Insights. */
 public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
+
   private Double samplingPercentage;
   private final EventData data;
-
-  /** Envelope Name for this telemetry. */
-  public static final String ENVELOPE_NAME = "Event";
-
-  /** Base Type for this telemetry. */
-  public static final String BASE_TYPE = "EventData";
-
-  /** Default initialization for a new instance. */
-  public EventTelemetry() {
-    super();
-    data = new EventData();
-    initialize(data.getProperties());
-  }
 
   /**
    * Initializes a new instance.
@@ -51,6 +38,12 @@ public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
   public EventTelemetry(String name) {
     this();
     this.setName(name);
+  }
+
+  /** Default initialization for a new instance. */
+  public EventTelemetry() {
+    data = new EventData();
+    initialize(data.getProperties());
   }
 
   @Override
@@ -83,10 +76,9 @@ public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
    * @param name Name of the event. Max length 150.
    */
   public void setName(String name) {
-    if (Strings.isNullOrEmpty(name)) {
+    if (name == null || name.isEmpty()) {
       throw new IllegalArgumentException("The event name cannot be null or empty");
     }
-
     data.setName(name);
   }
 

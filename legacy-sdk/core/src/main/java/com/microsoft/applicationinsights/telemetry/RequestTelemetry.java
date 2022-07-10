@@ -36,43 +36,15 @@ import java.util.concurrent.ConcurrentMap;
  * com.microsoft.applicationinsights.TelemetryClient}
  */
 public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestData> {
+
   private Double samplingPercentage;
   private final RequestData data;
-  private String httpMethod;
-  private boolean allowAgentToOverrideName;
 
   /** Envelope Name for this telemetry. */
   public static final String ENVELOPE_NAME = "Request";
 
   /** Base Type for this telemetry. */
   public static final String BASE_TYPE = "RequestData";
-
-  /** Initializes a new instance of the HttpRequestTelemetry class. */
-  public RequestTelemetry() {
-    this.data = new RequestData();
-    initialize(this.data.getProperties());
-    setId(LocalStringsUtils.generateRandomIntegerId());
-
-    // Setting mandatory fields.
-    setTimestamp(new Date());
-    setResponseCode("200");
-    setSuccess(true);
-  }
-
-  /**
-   * Initializes a new instance of the HttpRequestTelemetry class with the given name, time stamp,
-   * duration, HTTP response code and success property values.
-   *
-   * @param name A user-friendly name for the request.
-   * @param timestamp The time of the request.
-   * @param duration The duration, in milliseconds, of the request processing.
-   * @param responseCode The HTTP response code.
-   * @param success 'true' if the request was a success, 'false' otherwise.
-   */
-  public RequestTelemetry(
-      String name, Date timestamp, long duration, String responseCode, boolean success) {
-    this(name, timestamp, new Duration(duration), responseCode, success);
-  }
 
   /**
    * Initializes a new instance of the HttpRequestTelemetry class with the given name, time stamp,
@@ -100,6 +72,33 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
     setSuccess(success);
   }
 
+  /**
+   * Initializes a new instance of the HttpRequestTelemetry class with the given name, time stamp,
+   * duration, HTTP response code and success property values.
+   *
+   * @param name A user-friendly name for the request.
+   * @param timestamp The time of the request.
+   * @param duration The duration, in milliseconds, of the request processing.
+   * @param responseCode The HTTP response code.
+   * @param success 'true' if the request was a success, 'false' otherwise.
+   */
+  public RequestTelemetry(
+      String name, Date timestamp, long duration, String responseCode, boolean success) {
+    this(name, timestamp, new Duration(duration), responseCode, success);
+  }
+
+  /** Initializes a new instance of the HttpRequestTelemetry class. */
+  public RequestTelemetry() {
+    this.data = new RequestData();
+    initialize(this.data.getProperties());
+    setId(LocalStringsUtils.generateRandomIntegerId());
+
+    // Setting mandatory fields.
+    setTimestamp(new Date());
+    setResponseCode("200");
+    setSuccess(true);
+  }
+
   @Override
   public int getVer() {
     return getData().getVer();
@@ -124,7 +123,6 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
     if (timestamp == null) {
       timestamp = new Date();
     }
-
     super.setTimestamp(timestamp);
   }
 
@@ -147,7 +145,6 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
       throw new IllegalArgumentException("The event name cannot be null or empty");
     }
     data.setName(name);
-    allowAgentToOverrideName = false;
   }
 
   /**
@@ -275,24 +272,6 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
   public void setUrl(String url) throws MalformedURLException {
     URL u = new URL(url); // to validate and normalize
     data.setUrl(u.toString());
-  }
-
-  /**
-   * @deprecated Gets the HTTP method of the request.
-   * @return The HTTP method
-   */
-  @Deprecated
-  public String getHttpMethod() {
-    return httpMethod;
-  }
-
-  /**
-   * @deprecated Sets the HTTP method of the request.
-   * @param httpMethod The HTTP method
-   */
-  @Deprecated
-  public void setHttpMethod(String httpMethod) {
-    this.httpMethod = httpMethod;
   }
 
   @Override

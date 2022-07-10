@@ -18,22 +18,53 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.web.javaee;
 
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+package com.microsoft.applicationinsights.internal.util;
 
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-import javax.interceptor.InterceptorBinding;
+import java.net.URI;
 
 /**
- * @author Daichi Isami
+ * Created by gupele on 1/7/2015.
+ *
+ * <p>Most of the methods of this class are now obsolete except URL methods which will be moved
+ * soon.
  */
-@Inherited
-@InterceptorBinding
-@Retention(RUNTIME)
-@Target({METHOD, TYPE})
-public @interface RequestName {}
+public final class Sanitizer {
+
+  public static final int MAX_URL_LENGTH = 2048;
+
+  public static URI sanitizeUri(String urlAsString) {
+    if (urlAsString != null && !urlAsString.isEmpty()) {
+
+      if (urlAsString.length() > MAX_URL_LENGTH) {
+        urlAsString = urlAsString.substring(0, MAX_URL_LENGTH);
+      }
+
+      // In case that the truncated string is invalid
+      // URI we will not do nothing and let the Endpoint to drop the property
+      URI temp = null;
+      try {
+        temp = new URI(urlAsString);
+        return temp;
+      } catch (Exception e) {
+        // Swallow the exception
+      }
+    }
+
+    return null;
+  }
+
+  public static URI safeStringToUri(String url) {
+    if (url == null || url.isEmpty()) {
+      return null;
+    }
+
+    URI result = null;
+    try {
+      result = new URI(url);
+    } catch (Exception e) {
+    }
+
+    return result;
+  }
+}

@@ -34,20 +34,9 @@ import java.util.concurrent.ConcurrentMap;
  * com.microsoft.applicationinsights.TelemetryClient}
  */
 public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewData> {
+
   private Double samplingPercentage;
   private PageViewData data;
-
-  /** Envelope Name for this telemetry. */
-  public static final String ENVELOPE_NAME = "PageView";
-
-  /** Base Type for this telemetry. */
-  public static final String BASE_TYPE = "PageViewData";
-
-  /** Default Ctor */
-  public PageViewTelemetry() {
-    data = new PageViewData();
-    initialize(data.getProperties());
-  }
 
   /**
    * Initializes a new instance of the class with the specified 'pageName'
@@ -57,6 +46,12 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
   public PageViewTelemetry(String pageName) {
     this();
     setName(pageName);
+  }
+
+  /** Default Ctor */
+  public PageViewTelemetry() {
+    data = new PageViewData();
+    initialize(data.getProperties());
   }
 
   @Override
@@ -92,7 +87,6 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
     if (result == null) {
       data.setUrl(null);
     }
-
     return result;
   }
 

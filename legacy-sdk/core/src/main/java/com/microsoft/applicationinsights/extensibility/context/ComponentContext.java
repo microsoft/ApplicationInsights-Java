@@ -19,29 +19,23 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.telemetry;
+package com.microsoft.applicationinsights.extensibility.context;
 
-/**
- * This enumeration is used by ExceptionTelemetry to identify if and where exception was handled.
- *
- * This Enum is now deprecated.
- * @deprecated As of 1.0.11
- */
-@Deprecated
-public enum ExceptionHandledAt
-{
-    /**
-     *  Exception was not handled. Application crashed.
-     */
-    Unhandled,
+import com.microsoft.applicationinsights.internal.util.MapUtil;
+import java.util.concurrent.ConcurrentMap;
 
-    /**
-     *  Exception was handled in user code.
-     */
-    UserCode,
+public final class ComponentContext {
+  private final ConcurrentMap<String, String> tags;
 
-    /**
-     *  Exception was handled by some platform handlers.
-     */
-    Platform
+  public ComponentContext(ConcurrentMap<String, String> tags) {
+    this.tags = tags;
+  }
+
+  String getVersion() {
+    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getApplicationVersion());
+  }
+
+  public void setVersion(String version) {
+    MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getApplicationVersion(), version);
+  }
 }

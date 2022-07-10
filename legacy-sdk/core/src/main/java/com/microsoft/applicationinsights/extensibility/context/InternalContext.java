@@ -19,41 +19,40 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.internal.correlation;
+package com.microsoft.applicationinsights.extensibility.context;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.microsoft.applicationinsights.internal.util.MapUtil;
+import java.util.concurrent.ConcurrentMap;
 
-/** Class responsible to store the correlation context information. */
-public class CorrelationContext {
+public final class InternalContext {
+  private final ConcurrentMap<String, String> tags;
 
-  /** Stores the correlation context as mappings. */
-  private final Map<String, String> mappings;
-
-  /** Stores the context as a string. */
-  private final StringBuilder contextAsString;
-
-  public CorrelationContext() {
-    this.mappings = new HashMap<String, String>();
-    this.contextAsString = new StringBuilder();
+  public InternalContext(ConcurrentMap<String, String> tags) {
+    this.tags = tags;
   }
 
-  /** Gets the correlation context key-value pairs. */
-  public Map<String, String> getMappings() {
-    return this.mappings;
+  public String getSdkVersion() {
+    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getInternalSdkVersion());
   }
 
-  /** Appends content to the correlation context. */
-  public void append(String content) {
-    if (this.contextAsString.length() > 0) {
-      this.contextAsString.append(",");
-    }
-    this.contextAsString.append(content);
+  public void setSdkVersion(String version) {
+    MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getInternalSdkVersion(), version);
   }
 
-  /** Returns a single string for the whole correlation context. */
-  @Override
-  public String toString() {
-    return this.contextAsString.toString();
+  public String getAgentVersion() {
+    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getInternalAgentVersion());
+  }
+
+  public void setAgentVersion(String version) {
+    MapUtil.setStringValueOrRemove(
+        tags, ContextTagKeys.getKeys().getInternalAgentVersion(), version);
+  }
+
+  public String getNodeName() {
+    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getInternalNodeName());
+  }
+
+  public void setNodeName(String nodeName) {
+    MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getInternalNodeName(), nodeName);
   }
 }
