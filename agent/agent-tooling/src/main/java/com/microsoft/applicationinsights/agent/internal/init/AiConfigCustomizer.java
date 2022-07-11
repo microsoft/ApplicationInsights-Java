@@ -91,6 +91,22 @@ public class AiConfigCustomizer implements ConfigCustomizer {
     // enable log4j 1.x MDC
     properties.put("otel.instrumentation.log4j-appender.experimental.capture-mdc-attributes", "*");
 
+    // custom instrumentation
+    if (!config.preview.customInstrumentation.isEmpty()) {
+      StringBuilder sb = new StringBuilder();
+      for (Configuration.CustomInstrumentation customInstrumentation :
+          config.preview.customInstrumentation) {
+        if (sb.length() > 0) {
+          sb.append(';');
+        }
+        sb.append(customInstrumentation.className);
+        sb.append('[');
+        sb.append(customInstrumentation.methodName);
+        sb.append(']');
+      }
+      properties.put("otel.instrumentation.methods.include", sb.toString());
+    }
+
     properties.put("otel.propagators", DelegatingPropagatorProvider.NAME);
 
     properties.put("otel.traces.sampler", DelegatingSamplerProvider.NAME);
@@ -143,11 +159,6 @@ public class AiConfigCustomizer implements ConfigCustomizer {
 
     properties.put("otel.instrumentation.experimental.span-suppression-strategy", "client");
 
-    // TODO (trask) remove these two after
-    // https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/5989
-    properties.put("otel.instrumentation.oshi-metrics.enabled", "false");
-    properties.put("otel.instrumentation.runtime-metrics.enabled", "false");
-
     // instrumentation that cannot be disabled (currently at least)
 
     properties.put("otel.instrumentation.ai-azure-functions.enabled", "true");
@@ -167,12 +178,6 @@ public class AiConfigCustomizer implements ConfigCustomizer {
     properties.put("otel.instrumentation.jaxrs-client.enabled", "true");
     properties.put("otel.instrumentation.jaxws.enabled", "true");
 
-    // TODO (trask) remove these three after
-    // https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/5980
-    properties.put("otel.instrumentation.axis2.enabled", "true");
-    properties.put("otel.instrumentation.cxf.enabled", "true");
-    properties.put("otel.instrumentation.metro.enabled", "true");
-
     properties.put("otel.instrumentation.jboss-logmanager-appender.enabled", "true");
     properties.put("otel.instrumentation.jboss-logmanager-mdc.enabled", "true");
     properties.put("otel.instrumentation.jetty.enabled", "true");
@@ -185,6 +190,7 @@ public class AiConfigCustomizer implements ConfigCustomizer {
     properties.put("otel.instrumentation.log4j-mdc.enabled", "true");
     properties.put("otel.instrumentation.log4j-context-data.enabled", "true");
     properties.put("otel.instrumentation.logback-mdc.enabled", "true");
+    properties.put("otel.instrumentation.methods.enabled", "true");
 
     // not supporting netty-3.8 for now
     properties.put("otel.instrumentation.netty-4.0.enabled", "true");
@@ -197,11 +203,6 @@ public class AiConfigCustomizer implements ConfigCustomizer {
     properties.put("otel.instrumentation.reactor.enabled", "true");
     properties.put("otel.instrumentation.reactor-netty.enabled", "true");
     properties.put("otel.instrumentation.rxjava.enabled", "true");
-
-    // TODO (trask) remove these two after
-    // https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/5984
-    properties.put("otel.instrumentation.rxjava2.enabled", "true");
-    properties.put("otel.instrumentation.rxjava3.enabled", "true");
 
     properties.put("otel.instrumentation.servlet.enabled", "true");
     properties.put("otel.instrumentation.spring-core.enabled", "true");
