@@ -67,8 +67,9 @@ public final class ApplicationInsights {
     try {
       RuntimeAttach.attachJavaagentToCurrentJvm(agentFile);
     } catch (IllegalStateException e) {
-      if (e.getMessage()
-          .contains("No compatible attachment provider is available")) { // Byte Buddy exception
+      if (e.getMessage() != null
+          && e.getMessage()
+              .contains("No compatible attachment provider is available")) { // Byte Buddy exception
         throw new IllegalStateException("Runtime attachment was not done. You may use a JRE.", e);
       }
       throw e;
