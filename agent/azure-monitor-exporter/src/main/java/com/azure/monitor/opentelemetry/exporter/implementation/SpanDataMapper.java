@@ -180,7 +180,8 @@ public final class SpanDataMapper {
     String instrumentationName = span.getInstrumentationScopeInfo().getName();
     TelemetryItem telemetryItem;
     if (kind == SpanKind.INTERNAL) {
-      if (instrumentationName.startsWith("io.opentelemetry.spring-scheduling-")
+      if ((instrumentationName.startsWith("io.opentelemetry.spring-scheduling-")
+              || instrumentationName.equals("io.opentelemetry.methods"))
           && !span.getParentSpanContext().isValid()) {
         // TODO (trask) AI mapping: need semantic convention for determining whether to map INTERNAL
         // to request or dependency (or need clarification to use SERVER for this)

@@ -64,7 +64,16 @@ public final class ApplicationInsights {
 
     File agentFile = AppInsightAgentFileProvider.getAgentFile();
 
-    RuntimeAttach.attachJavaagentToCurrentJvm(agentFile);
+    try {
+      RuntimeAttach.attachJavaagentToCurrentJvm(agentFile);
+    } catch (IllegalStateException e) {
+      if (e.getMessage() != null
+          && e.getMessage()
+              .contains("No compatible attachment provider is available")) { // Byte Buddy exception
+        throw new IllegalStateException("Runtime attachment was not done. You may use a JRE.", e);
+      }
+      throw e;
+    }
   }
 
   private static Optional<String> findJsonConfig() {
