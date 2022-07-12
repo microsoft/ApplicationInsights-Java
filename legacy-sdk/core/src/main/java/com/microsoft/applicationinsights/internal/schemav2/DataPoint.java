@@ -23,13 +23,9 @@
  */
 package com.microsoft.applicationinsights.internal.schemav2;
 
-import com.google.common.base.Preconditions;
-import com.microsoft.applicationinsights.telemetry.JsonSerializable;
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-import java.io.IOException;
-
 /** Data contract class DataPoint. */
-public class DataPoint implements JsonSerializable {
+public class DataPoint {
+
   /** Backing field for property Name. */
   private String name;
 
@@ -52,9 +48,7 @@ public class DataPoint implements JsonSerializable {
   private Double stdDev;
 
   /** Initializes a new instance of the DataPoint class. */
-  public DataPoint() {
-    this.InitializeFields();
-  }
+  public DataPoint() {}
 
   /** Gets the Name property. */
   public String getName() {
@@ -125,33 +119,4 @@ public class DataPoint implements JsonSerializable {
   public void setStdDev(Double value) {
     this.stdDev = value;
   }
-
-  /**
-   * Serializes the beginning of this object to the passed in writer.
-   *
-   * @param writer The writer to serialize this object to.
-   */
-  @Override
-  public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
-    Preconditions.checkNotNull(writer, "writer must be a non-null value");
-    this.serializeContent(writer);
-  }
-
-  /**
-   * Serializes the beginning of this object to the passed in writer.
-   *
-   * @param writer The writer to serialize this object to.
-   */
-  protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
-    writer.writeRequired("name", name, 1024);
-    writer.write("kind", kind);
-    writer.write("value", value);
-    writer.write("count", count);
-    writer.write("min", min);
-    writer.write("max", max);
-    writer.write("stdDev", stdDev);
-  }
-
-  /** Optionally initializes fields for the current context. */
-  protected void InitializeFields() {}
 }

@@ -23,36 +23,9 @@
  */
 package com.microsoft.applicationinsights.internal.schemav2;
 
-import com.google.common.base.Preconditions;
-import com.microsoft.applicationinsights.telemetry.JsonSerializable;
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-import java.io.IOException;
-
 /** Data contract class Domain. */
-public class Domain implements JsonSerializable {
+public class Domain {
+
   /** Initializes a new instance of the Domain class. */
-  public Domain() {
-    this.InitializeFields();
-  }
-
-  /**
-   * Serializes the beginning of this object to the passed in writer.
-   *
-   * @param writer The writer to serialize this object to.
-   */
-  @Override
-  public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
-    Preconditions.checkNotNull(writer, "writer must be a non-null value");
-    this.serializeContent(writer);
-  }
-
-  /**
-   * Serializes the beginning of this object to the passed in writer.
-   *
-   * @param writer The writer to serialize this object to.
-   */
-  protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {}
-
-  /** Optionally initializes fields for the current context. */
-  protected void InitializeFields() {}
+  public Domain() {}
 }

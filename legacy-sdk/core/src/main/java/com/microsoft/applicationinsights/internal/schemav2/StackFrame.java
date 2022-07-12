@@ -23,13 +23,9 @@
  */
 package com.microsoft.applicationinsights.internal.schemav2;
 
-import com.google.common.base.Preconditions;
-import com.microsoft.applicationinsights.telemetry.JsonSerializable;
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-import java.io.IOException;
-
 /** Data contract class StackFrame. */
-public class StackFrame implements JsonSerializable {
+public class StackFrame {
+
   /** Backing field for property Level. */
   private int level;
 
@@ -46,9 +42,7 @@ public class StackFrame implements JsonSerializable {
   private int line;
 
   /** Initializes a new instance of the StackFrame class. */
-  public StackFrame() {
-    this.InitializeFields();
-  }
+  public StackFrame() {}
 
   /** Gets the Level property. */
   public int getLevel() {
@@ -99,33 +93,4 @@ public class StackFrame implements JsonSerializable {
   public void setLine(int value) {
     this.line = value;
   }
-
-  /**
-   * Serializes the beginning of this object to the passed in writer.
-   *
-   * @param writer The writer to serialize this object to.
-   */
-  @Override
-  public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
-    Preconditions.checkNotNull(writer, "writer must be a non-null value");
-    this.serializeContent(writer);
-  }
-
-  /**
-   * Serializes the beginning of this object to the passed in writer.
-   *
-   * @param writer The writer to serialize this object to.
-   */
-  protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
-    writer.write("level", level);
-
-    writer.writeRequired("method", method, 1024);
-
-    writer.write("assembly", assembly, 1024);
-    writer.write("fileName", fileName, 1024);
-    writer.write("line", line);
-  }
-
-  /** Optionally initializes fields for the current context. */
-  protected void InitializeFields() {}
 }

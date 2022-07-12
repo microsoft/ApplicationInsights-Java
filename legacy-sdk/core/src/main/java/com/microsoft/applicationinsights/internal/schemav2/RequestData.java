@@ -24,15 +24,11 @@
 package com.microsoft.applicationinsights.internal.schemav2;
 
 import com.microsoft.applicationinsights.telemetry.Duration;
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /** Data contract class RequestData. */
 public class RequestData extends Domain {
-  /** Backing field for property Ver. */
-  private int ver = 2;
 
   /** Backing field for property Id. */
   private String id;
@@ -62,19 +58,7 @@ public class RequestData extends Domain {
   private ConcurrentMap<String, Double> measurements;
 
   /** Initializes a new instance of the RequestData class. */
-  public RequestData() {
-    this.InitializeFields();
-  }
-
-  /** Gets the Ver property. */
-  public int getVer() {
-    return this.ver;
-  }
-
-  /** Sets the Ver property. */
-  public void setVer(int value) {
-    this.ver = value;
-  }
+  public RequestData() {}
 
   /** Gets the Id property. */
   public String getId() {
@@ -171,26 +155,4 @@ public class RequestData extends Domain {
   public void setMeasurements(ConcurrentMap<String, Double> value) {
     this.measurements = value;
   }
-
-  /**
-   * Serializes the beginning of this object to the passed in writer.
-   *
-   * @param writer The writer to serialize this object to.
-   */
-  protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
-    super.serializeContent(writer);
-    writer.write("ver", ver);
-    writer.writeRequired("id", id, 128);
-    writer.write("duration", duration);
-    writer.writeRequired("responseCode", responseCode, 1024);
-    writer.write("success", success);
-    writer.write("source", source, 1024);
-    writer.write("name", name, 1024);
-    writer.write("url", url, 2048);
-    writer.write("properties", properties);
-    writer.write("measurements", measurements);
-  }
-
-  /** Optionally initializes fields for the current context. */
-  protected void InitializeFields() {}
 }

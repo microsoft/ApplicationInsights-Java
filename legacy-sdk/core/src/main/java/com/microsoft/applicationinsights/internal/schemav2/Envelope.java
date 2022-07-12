@@ -23,17 +23,11 @@
  */
 package com.microsoft.applicationinsights.internal.schemav2;
 
-import com.google.common.base.Preconditions;
-import com.microsoft.applicationinsights.telemetry.JsonSerializable;
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /** Data contract class Envelope. */
-public class Envelope implements JsonSerializable {
-  /** Backing field for property Ver. */
-  private int ver = 1;
+public class Envelope {
 
   /** Backing field for property Name. */
   private String name;
@@ -57,19 +51,7 @@ public class Envelope implements JsonSerializable {
   private Base data;
 
   /** Initializes a new instance of the Envelope class. */
-  public Envelope() {
-    this.InitializeFields();
-  }
-
-  /** Gets the Ver property. */
-  public int getVer() {
-    return this.ver;
-  }
-
-  /** Sets the Ver property. */
-  public void setVer(int value) {
-    this.ver = value;
-  }
+  public Envelope() {}
 
   /** Gets the Name property. */
   public String getName() {
@@ -143,36 +125,4 @@ public class Envelope implements JsonSerializable {
   public void setData(Base value) {
     this.data = value;
   }
-
-  /**
-   * Serializes the beginning of this object to the passed in writer.
-   *
-   * @param writer The writer to serialize this object to.
-   */
-  @Override
-  public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
-    Preconditions.checkNotNull(writer, "writer must be a non-null value");
-    this.serializeContent(writer);
-  }
-
-  /**
-   * Serializes the beginning of this object to the passed in writer.
-   *
-   * @param writer The writer to serialize this object to.
-   */
-  protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
-    writer.write("ver", ver);
-    writer.writeRequired("name", name, 1024);
-    writer.writeRequired("time", time, 64);
-    if (this.sampleRate > 0.0d) {
-      writer.write("sampleRate", sampleRate);
-    }
-    writer.write("seq", seq, 64);
-    writer.write("iKey", iKey, 40);
-    writer.write("tags", tags);
-    writer.write("data", data);
-  }
-
-  /** Optionally initializes fields for the current context. */
-  protected void InitializeFields() {}
 }

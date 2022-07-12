@@ -24,8 +24,6 @@
 package com.microsoft.applicationinsights.internal.schemav2;
 
 import com.microsoft.applicationinsights.telemetry.Duration;
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-import java.io.IOException;
 
 /** Data contract class PageViewPerfData. */
 public class PageViewPerfData extends PageViewData {
@@ -45,9 +43,7 @@ public class PageViewPerfData extends PageViewData {
   private Duration domProcessing = new Duration(0);
 
   /** Initializes a new instance of the PageViewPerfData class. */
-  public PageViewPerfData() {
-    this.InitializeFields();
-  }
+  public PageViewPerfData() {}
 
   /** Gets the PerfTotal property. */
   public Duration getPerfTotal() {
@@ -98,21 +94,4 @@ public class PageViewPerfData extends PageViewData {
   public void setDomProcessing(Duration value) {
     this.domProcessing = value;
   }
-
-  /**
-   * Serializes the beginning of this object to the passed in writer.
-   *
-   * @param writer The writer to serialize this object to.
-   */
-  protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
-    super.serializeContent(writer);
-    writer.write("perfTotal", perfTotal);
-    writer.write("networkConnect", networkConnect);
-    writer.write("sentRequest", sentRequest);
-    writer.write("receivedResponse", receivedResponse);
-    writer.write("domProcessing", domProcessing);
-  }
-
-  /** Optionally initializes fields for the current context. */
-  protected void InitializeFields() {}
 }

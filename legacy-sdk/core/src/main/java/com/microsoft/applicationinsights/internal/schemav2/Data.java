@@ -23,18 +23,13 @@
  */
 package com.microsoft.applicationinsights.internal.schemav2;
 
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-import java.io.IOException;
-
 /** Data contract class Data. */
 public class Data<TDomain extends Domain> extends Base {
   /** Backing field for property BaseData. */
   private TDomain baseData;
 
   /** Initializes a new instance of the Data{TDomain} class. */
-  public Data() {
-    this.InitializeFields();
-  }
+  public Data() {}
 
   /** Gets the BaseData property. */
   public TDomain getBaseData() {
@@ -45,17 +40,4 @@ public class Data<TDomain extends Domain> extends Base {
   public void setBaseData(TDomain value) {
     this.baseData = value;
   }
-
-  /**
-   * Serializes the beginning of this object to the passed in writer.
-   *
-   * @param writer The writer to serialize this object to.
-   */
-  protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
-    super.serializeContent(writer);
-    writer.write("baseData", baseData);
-  }
-
-  /** Optionally initializes fields for the current context. */
-  protected void InitializeFields() {}
 }

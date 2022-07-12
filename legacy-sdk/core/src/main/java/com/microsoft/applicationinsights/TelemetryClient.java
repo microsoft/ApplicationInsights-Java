@@ -57,9 +57,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  */
 public class TelemetryClient {
 
-  private final TelemetryConfiguration configuration;
   private volatile TelemetryContext context;
-  private TelemetryChannel channel;
 
   private static final Object TELEMETRY_STOP_HOOK_LOCK = new Object();
   private static final Object TELEMETRY_CONTEXT_LOCK = new Object();
@@ -119,19 +117,6 @@ public class TelemetryClient {
     return (Strings.isNullOrEmpty(configuration.getInstrumentationKey())
             && Strings.isNullOrEmpty(getContext().getInstrumentationKey()))
         || configuration.isTrackingDisabled();
-  }
-
-  /**
-   * Sends the specified state of a user session to Application Insights using {@link
-   * #trackEvent(String name)} as this method will be deprecated.
-   *
-   * @param sessionState {@link com.microsoft.applicationinsights.telemetry.SessionState} value
-   *     indicating the state of a user session.
-   * @deprecated This method will be deprecated in version 2.0.0 of the Java SDK.
-   */
-  @Deprecated
-  public void trackSessionState(SessionState sessionState) {
-    this.trackEvent("Track Session State: " + sessionState.toString());
   }
 
   /**

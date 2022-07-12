@@ -23,20 +23,13 @@
  */
 package com.microsoft.applicationinsights.internal.schemav2;
 
-import com.google.common.base.Preconditions;
-import com.microsoft.applicationinsights.telemetry.JsonSerializable;
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-import java.io.IOException;
-
 /** Data contract class Base. */
-public class Base implements JsonSerializable {
+public class Base {
   /** Backing field for property BaseType. */
   private String baseType;
 
   /** Initializes a new instance of the Base class. */
-  public Base() {
-    this.InitializeFields();
-  }
+  public Base() {}
 
   /** Gets the BaseType property. */
   public String getBaseType() {
@@ -47,27 +40,4 @@ public class Base implements JsonSerializable {
   public void setBaseType(String value) {
     this.baseType = value;
   }
-
-  /**
-   * Serializes the beginning of this object to the passed in writer.
-   *
-   * @param writer The writer to serialize this object to.
-   */
-  @Override
-  public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
-    Preconditions.checkNotNull(writer, "writer must be a non-null value");
-    this.serializeContent(writer);
-  }
-
-  /**
-   * Serializes the beginning of this object to the passed in writer.
-   *
-   * @param writer The writer to serialize this object to.
-   */
-  protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
-    writer.writeRequired("baseType", baseType, 1000);
-  }
-
-  /** Optionally initializes fields for the current context. */
-  protected void InitializeFields() {}
 }

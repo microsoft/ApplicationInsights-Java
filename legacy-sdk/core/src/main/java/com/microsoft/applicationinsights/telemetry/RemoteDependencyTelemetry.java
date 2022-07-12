@@ -72,11 +72,6 @@ public final class RemoteDependencyTelemetry
     initialize(this.data.getProperties());
   }
 
-  @Override
-  public int getVer() {
-    return getData().getVer();
-  }
-
   /** Gets the dependency Id. */
   public String getId() {
     return this.data.getId();

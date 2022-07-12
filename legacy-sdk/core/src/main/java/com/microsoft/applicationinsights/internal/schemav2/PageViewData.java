@@ -24,8 +24,6 @@
 package com.microsoft.applicationinsights.internal.schemav2;
 
 import com.microsoft.applicationinsights.telemetry.Duration;
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-import java.io.IOException;
 
 /** Data contract class PageViewData. */
 public class PageViewData extends EventData {
@@ -36,9 +34,7 @@ public class PageViewData extends EventData {
   private Duration duration = new Duration(0);
 
   /** Initializes a new instance of the PageViewData class. */
-  public PageViewData() {
-    this.InitializeFields();
-  }
+  public PageViewData() {}
 
   /** Gets the Url property. */
   public String getUrl() {
@@ -59,18 +55,4 @@ public class PageViewData extends EventData {
   public void setDuration(Duration value) {
     this.duration = value;
   }
-
-  /**
-   * Serializes the beginning of this object to the passed in writer.
-   *
-   * @param writer The writer to serialize this object to.
-   */
-  protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
-    super.serializeContent(writer);
-    writer.write("url", url, 2048);
-    writer.write("duration", duration);
-  }
-
-  /** Optionally initializes fields for the current context. */
-  protected void InitializeFields() {}
 }

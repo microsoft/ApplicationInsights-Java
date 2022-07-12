@@ -24,15 +24,11 @@
 package com.microsoft.applicationinsights.internal.schemav2;
 
 import com.microsoft.applicationinsights.telemetry.Duration;
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /** Data contract class RemoteDependencyData. */
 public class RemoteDependencyData extends Domain {
-  /** Backing field for property Ver. */
-  private int ver = 2;
 
   /** Backing field for property Name. */
   private String name;
@@ -65,19 +61,7 @@ public class RemoteDependencyData extends Domain {
   private ConcurrentMap<String, Double> measurements;
 
   /** Initializes a new instance of the RemoteDependencyData class. */
-  public RemoteDependencyData() {
-    this.InitializeFields();
-  }
-
-  /** Gets the Ver property. */
-  public int getVer() {
-    return this.ver;
-  }
-
-  /** Sets the Ver property. */
-  public void setVer(int value) {
-    this.ver = value;
-  }
+  public RemoteDependencyData() {}
 
   /** Gets the Name property. */
   public String getName() {
@@ -184,27 +168,4 @@ public class RemoteDependencyData extends Domain {
   public void setMeasurements(ConcurrentMap<String, Double> value) {
     this.measurements = value;
   }
-
-  /**
-   * Serializes the beginning of this object to the passed in writer.
-   *
-   * @param writer The writer to serialize this object to.
-   */
-  protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
-    super.serializeContent(writer);
-    writer.write("ver", ver);
-    writer.writeRequired("name", name, 1024);
-    writer.write("id", id, 128);
-    writer.write("resultCode", resultCode, 1024);
-    writer.write("duration", duration);
-    writer.write("success", success);
-    writer.write("data", data, 8192);
-    writer.write("type", type, 1024);
-    writer.write("target", target, 1024);
-    writer.write("properties", properties);
-    writer.write("measurements", measurements);
-  }
-
-  /** Optionally initializes fields for the current context. */
-  protected void InitializeFields() {}
 }

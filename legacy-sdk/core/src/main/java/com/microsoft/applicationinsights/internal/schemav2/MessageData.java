@@ -23,15 +23,11 @@
  */
 package com.microsoft.applicationinsights.internal.schemav2;
 
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /** Data contract class MessageData. */
 public class MessageData extends Domain {
-  /** Backing field for property Ver. */
-  private int ver = 2;
 
   /** Backing field for property Message. */
   private String message;
@@ -43,19 +39,7 @@ public class MessageData extends Domain {
   private ConcurrentMap<String, String> properties;
 
   /** Initializes a new instance of the MessageData class. */
-  public MessageData() {
-    this.InitializeFields();
-  }
-
-  /** Gets the Ver property. */
-  public int getVer() {
-    return this.ver;
-  }
-
-  /** Sets the Ver property. */
-  public void setVer(int value) {
-    this.ver = value;
-  }
+  public MessageData() {}
 
   /** Gets the Message property. */
   public String getMessage() {
@@ -89,20 +73,4 @@ public class MessageData extends Domain {
   public void setProperties(ConcurrentMap<String, String> value) {
     this.properties = value;
   }
-
-  /**
-   * Serializes the beginning of this object to the passed in writer.
-   *
-   * @param writer The writer to serialize this object to.
-   */
-  protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException {
-    super.serializeContent(writer);
-    writer.write("ver", ver);
-    writer.writeRequired("message", message, 32768);
-    writer.write("severityLevel", severityLevel);
-    writer.write("properties", properties);
-  }
-
-  /** Optionally initializes fields for the current context. */
-  protected void InitializeFields() {}
 }

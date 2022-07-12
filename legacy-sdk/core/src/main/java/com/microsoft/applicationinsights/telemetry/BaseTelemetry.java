@@ -44,8 +44,6 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     this.context = new TelemetryContext(properties, new ContextTagsMap());
   }
 
-  public abstract int getVer();
-
   /**
    * Sequence field used to track absolute order of uploaded events. It is a two-part value that
    * includes a stable identifier for the current boot session and an incrementing identifier for
