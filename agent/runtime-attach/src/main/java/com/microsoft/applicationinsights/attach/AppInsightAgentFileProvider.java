@@ -51,7 +51,9 @@ final class AppInsightAgentFileProvider {
     try {
       tempDir = Files.createTempDirectory("otel-agent");
     } catch (IOException e) {
-      throw new IllegalStateException("Runtime attachment can't create temp directory", e);
+      throw new IllegalStateException(
+          "Runtime attachment can't create a temp directory. You may use a read-only file system.",
+          e);
     }
     return tempDir;
   }
@@ -65,7 +67,7 @@ final class AppInsightAgentFileProvider {
       Files.copy(jarAsInputStream, agentJarPath);
     } catch (IOException e) {
       throw new IllegalStateException(
-          "Runtime attachment can't create agent jar file in temp directory", e);
+          "Runtime attachment has failed. Are you using a JRE (not a JDK)?", e);
     }
     return agentJarPath;
   }
