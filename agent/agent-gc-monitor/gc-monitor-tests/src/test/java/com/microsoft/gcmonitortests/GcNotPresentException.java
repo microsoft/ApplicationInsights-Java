@@ -21,4 +21,4 @@
 
 package com.microsoft.gcmonitortests;
 
-public class GcNotPresentException extends Throwable {}
+public class GcNotPresentException extends Exception {}

@@ -9,9 +9,3 @@ dependencies {
   testImplementation("org.junit.jupiter:junit-jupiter")
   testImplementation("org.assertj:assertj-core")
 }
-
-tasks {
-  withType<JavaCompile>().configureEach {
-    options.release.set(11)
-  }
-}

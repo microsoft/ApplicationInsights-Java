@@ -1,0 +1,31 @@
+name: Build (daily, --no-build-cache)
+
+on:
+  schedule:
+    # strange schedule to reduce the risk of DDOS GitHub infra
+    - cron: "48 4 * * *"
+  workflow_dispatch:
+
+jobs:
+  assemble:
+    uses: ./.github/workflows/reusable-assemble.yml
+    with:
+      no-build-cache: true
+
+  test:
+    uses: ./.github/workflows/reusable-test.yml
+    with:
+      no-build-cache: true
+
+  smoke-test:
+    uses: ./.github/workflows/reusable-smoke-test.yml
+    with:
+      no-build-cache: true
+
+  open-issue-on-failure:
+    needs:
+      - assemble
+      - test
+      - smoke-test
+    if: failure()
+    uses: ./.github/workflows/reusable-open-issue-on-failure.yml
