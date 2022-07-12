@@ -169,7 +169,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
         || !config.preview.captureHttpClientHeaders.responseHeaders.isEmpty()) {
       featureList.add(Feature.CAPTURE_HTTP_CLIENT_HEADERS);
     }
-    if(!config.preview.processors.isEmpty()) {
+    if (!config.preview.processors.isEmpty()) {
       featureList.add(Feature.TELEMETRY_PROCESSOR_ENABLED);
     }
 
