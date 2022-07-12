@@ -67,7 +67,7 @@ final class AppInsightAgentFileProvider {
       Files.copy(jarAsInputStream, agentJarPath);
     } catch (IOException e) {
       throw new IllegalStateException(
-          "Runtime attachment can't create agent jar file in temp directory", e);
+          "Runtime attachment has failed. Are you using a JRE (not a JDK)?", e);
     }
     return agentJarPath;
   }
