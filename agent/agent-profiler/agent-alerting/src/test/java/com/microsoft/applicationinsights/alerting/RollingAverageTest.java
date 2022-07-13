@@ -93,6 +93,6 @@ class RollingAverageTest {
   }
 
   private static TelemetryDataPoint createDataPoint(double v) {
-    return new TelemetryDataPoint(CPU, TimeSource.DEFAULT.getNow(), CPU.name(), v);
+    return TelemetryDataPoint.create(CPU, TimeSource.DEFAULT.getNow(), CPU.name(), v);
   }
 }

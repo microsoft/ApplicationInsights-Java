@@ -101,7 +101,7 @@ public class AlertingSubsystem {
   public void track(@Nullable AlertMetricType type, @Nullable Number value) {
     if (type != null && value != null) {
       trackTelemetryDataPoint(
-          new TelemetryDataPoint(type, timeSource.getNow(), type.name(), value.doubleValue()));
+          TelemetryDataPoint.create(type, timeSource.getNow(), type.name(), value.doubleValue()));
     }
   }
 

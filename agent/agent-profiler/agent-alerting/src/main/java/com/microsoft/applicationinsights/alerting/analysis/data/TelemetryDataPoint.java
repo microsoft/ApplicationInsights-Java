@@ -21,72 +21,24 @@
 
 package com.microsoft.applicationinsights.alerting.analysis.data;
 
+import com.google.auto.value.AutoValue;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import java.time.Instant;
-import java.util.Objects;
-import javax.annotation.Nullable;
 
 /** Individual sample of telemetry data. */
-public class TelemetryDataPoint implements Comparable<TelemetryDataPoint> {
-  private final AlertMetricType type;
-  private final Instant time;
-  private final double value;
-  private final String name;
+@AutoValue
+public abstract class TelemetryDataPoint {
 
-  public TelemetryDataPoint(AlertMetricType type, Instant time, String name, double value) {
-    this.type = type;
-    this.time = time;
-    this.value = value;
-    this.name = name;
+  public static TelemetryDataPoint create(
+      AlertMetricType type, Instant time, String name, double value) {
+    return new AutoValue_TelemetryDataPoint(type, time, name, value);
   }
 
-  public double getValue() {
-    return value;
-  }
+  public abstract AlertMetricType getType();
 
-  public String getName() {
-    return name;
-  }
+  public abstract Instant getTime();
 
-  public Instant getTime() {
-    return time;
-  }
+  public abstract String getName();
 
-  /** Sort first by timestamp, then value, then type. */
-  @Override
-  public int compareTo(TelemetryDataPoint telemetryDataPoint) {
-    if (!time.equals(telemetryDataPoint.time)) {
-      return time.compareTo(telemetryDataPoint.time);
-    } else if (value != telemetryDataPoint.getValue()) {
-      return Double.compare(value, telemetryDataPoint.value);
-    } else if (!name.equals(telemetryDataPoint.getName())) {
-      return name.compareTo(telemetryDataPoint.getName());
-    } else {
-      return type.compareTo(telemetryDataPoint.type);
-    }
-  }
-
-  public AlertMetricType getType() {
-    return type;
-  }
-
-  @Override
-  public boolean equals(@Nullable Object obj) {
-    if (obj == this) {
-      return true;
-    }
-    if (!(obj instanceof TelemetryDataPoint)) {
-      return false;
-    }
-    TelemetryDataPoint telemetryDataPoint = (TelemetryDataPoint) obj;
-    return Double.compare(telemetryDataPoint.value, value) == 0
-        && type == telemetryDataPoint.type
-        && name.equals(telemetryDataPoint.getName())
-        && Objects.equals(time, telemetryDataPoint.time);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(type, time, value, name);
-  }
+  public abstract double getValue();
 }
