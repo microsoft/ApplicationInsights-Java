@@ -206,6 +206,7 @@ public class AiConfigCustomizer implements ConfigCustomizer {
 
     properties.put("otel.instrumentation.servlet.enabled", "true");
     properties.put("otel.instrumentation.spring-core.enabled", "true");
+    properties.put("otel.instrumentation.spring-jms.enabled", "true");
     properties.put("otel.instrumentation.spring-web.enabled", "true");
     properties.put("otel.instrumentation.spring-webmvc.enabled", "true");
     properties.put("otel.instrumentation.spring-webflux.enabled", "true");
