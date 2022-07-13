@@ -51,9 +51,7 @@ abstract class SpringBootAttachInMainTest {
     assertThat(telemetry.rd.getProperties()).isEmpty();
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
-    List<Envelope> requestDataList = testing.mockedIngestion.waitForItems("RequestData", 1);
-    Envelope firstRequestData = requestDataList.get(0);
-    assertThat(firstRequestData.getTags())
+    assertThat(telemetry.rdEnvelope.getTags())
         .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("ra_java:3."));
 
   }
