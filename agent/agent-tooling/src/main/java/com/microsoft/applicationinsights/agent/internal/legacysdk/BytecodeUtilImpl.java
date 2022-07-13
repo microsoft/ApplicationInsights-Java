@@ -43,6 +43,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUt
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyPropagator;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingScoreGeneratorV2;
+import com.microsoft.applicationinsights.agent.internal.statsbeat.FeatureStatsbeat;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -66,6 +67,8 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
   private static final AtomicBoolean alreadyLoggedError = new AtomicBoolean();
 
   public static volatile float samplingPercentage = 100;
+
+  public static volatile FeatureStatsbeat featureStatsbeat;
 
   @Override
   public void trackEvent(
@@ -420,6 +423,10 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
           telemetryBuilder, operationId, operationParentId, operationName, context, applySampling);
     } else {
       trackAsStandalone(telemetryBuilder, operationId, applySampling);
+    }
+
+    if (featureStatsbeat != null) {
+      featureStatsbeat.track2xBridgeUsage();
     }
   }
 
