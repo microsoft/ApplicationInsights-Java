@@ -57,10 +57,10 @@ flags is found inside `Edit->Advanced` of this user interface.
    Alternatively, set the `APPLICATIONINSIGHTS_PROFILER_ENABLED` environment variable to true.
 2. Execute your process with the updated configuration.
 3. Configure the resource thresholds that will cause a profile to be collected:
-1. Browse to the Performance -> Profiler section of the associated Application Insights instance.
-2. Select "Triggers"
-3. Configure the required CPU and Memory thresholds. And Apply.
-4. Note, currently the Java profiler does not
+    1. Browse to the Performance -> Profiler section of the associated Application Insights instance.
+    2. Select "Triggers"
+    3. Configure the required CPU and Memory thresholds. And Apply.
+    4. Note, currently the Java profiler does not
    support the "Sampling" trigger, configuring this will have no effect.
 
 Once this has been completed, the agent will monitor the resource usage of your processes and
