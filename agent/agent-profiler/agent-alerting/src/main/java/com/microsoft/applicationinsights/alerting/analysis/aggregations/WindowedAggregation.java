@@ -67,8 +67,6 @@ public class WindowedAggregation {
     telemetryDataPoints.add(telemetryDataPoint);
 
     removeOldValues(now);
-
-    return telemetryDataPoints;
   }
 
   private void removeOldValues(Instant now) {
