@@ -176,31 +176,30 @@ public final class SpanDataMapper {
   }
 
   public TelemetryItem map(SpanData span, float samplingPercentage) {
-    if (isRequest(span)) {
-      return exportRequest(span, samplingPercentage);
-    } else {
-      return exportRemoteDependency(span, span.getKind() == SpanKind.INTERNAL, samplingPercentage);
-    }
-  }
-
-  public static boolean isRequest(SpanData span) {
     SpanKind kind = span.getKind();
     String instrumentationName = span.getInstrumentationScopeInfo().getName();
+    TelemetryItem telemetryItem;
     if (kind == SpanKind.INTERNAL) {
-      // TODO (trask) AI mapping: need semantic convention for determining whether to map INTERNAL
-      // to request or dependency (or need clarification to use SERVER for this)
-      return instrumentationName.startsWith("io.opentelemetry.spring-scheduling-")
-          && !span.getParentSpanContext().isValid();
+      if ((instrumentationName.startsWith("io.opentelemetry.spring-scheduling-")
+              || instrumentationName.equals("io.opentelemetry.methods"))
+          && !span.getParentSpanContext().isValid()) {
+        // TODO (trask) AI mapping: need semantic convention for determining whether to map INTERNAL
+        // to request or dependency (or need clarification to use SERVER for this)
+        telemetryItem = exportRequest(span, samplingPercentage);
+      } else {
+        telemetryItem = exportRemoteDependency(span, true, samplingPercentage);
+      }
     } else if (kind == SpanKind.CLIENT || kind == SpanKind.PRODUCER) {
-      return false;
+      telemetryItem = exportRemoteDependency(span, false, samplingPercentage);
     } else if (kind == SpanKind.CONSUMER
         && "receive".equals(span.getAttributes().get(SemanticAttributes.MESSAGING_OPERATION))) {
-      return false;
+      telemetryItem = exportRemoteDependency(span, false, samplingPercentage);
     } else if (kind == SpanKind.SERVER || kind == SpanKind.CONSUMER) {
-      return true;
+      telemetryItem = exportRequest(span, samplingPercentage);
     } else {
       throw new UnsupportedOperationException(kind.name());
     }
+    return telemetryItem;
   }
 
   private TelemetryItem exportRemoteDependency(

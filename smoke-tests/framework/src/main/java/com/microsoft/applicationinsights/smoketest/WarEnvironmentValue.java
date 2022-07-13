@@ -46,8 +46,11 @@ public enum WarEnvironmentValue {
       "/opt/jboss/wildfly/standalone/deployments"),
 
   JAVA_8("azul/zulu-openjdk:8", ""),
+  JAVA_8_OPENJ9("ibm-semeru-runtimes:open-8-jdk", ""),
   JAVA_11("azul/zulu-openjdk:11", ""),
-  JAVA_17("azul/zulu-openjdk:17", "");
+  JAVA_11_OPENJ9("ibm-semeru-runtimes:open-11-jdk", ""),
+  JAVA_17("azul/zulu-openjdk:17", ""),
+  JAVA_17_OPENJ9("ibm-semeru-runtimes:open-17-jdk", "");
 
   private final String imageName;
   private final String imageAppDir;

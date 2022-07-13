@@ -26,6 +26,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import com.microsoft.gcmonitor.GcCollectionEvent;
 import com.microsoft.gcmonitor.JmxMemoryManagement;
 import com.microsoft.gcmonitor.UnableToMonitorMemoryException;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -106,7 +107,7 @@ public class GcProcessRunner {
       } catch (RuntimeException e) {
         if (process.exitValue() != 0) {
           if (errorStream.available() > 0) {
-            String error = new String(errorStream.readAllBytes(), UTF_8);
+            String error = new String(readBytes(errorStream), UTF_8);
             if (error.contains("Unrecognized VM option")) {
               throw new GcNotPresentException();
             }
@@ -157,7 +158,7 @@ public class GcProcessRunner {
 
   private void printErrors() throws IOException {
     if (errorStream.available() > 0) {
-      String error = new String(errorStream.readNBytes(errorStream.available()), UTF_8);
+      String error = new String(readBytes(errorStream), UTF_8);
       System.err.println(error);
     }
   }
@@ -169,7 +170,7 @@ public class GcProcessRunner {
 
       if (!process.isAlive()) {
         if (errorStream.available() > 0) {
-          String error = new String(errorStream.readAllBytes(), UTF_8);
+          String error = new String(readBytes(errorStream), UTF_8);
           if (error.contains("Unrecognized VM option")) {
             throw new GcNotPresentException();
           }
@@ -179,7 +180,7 @@ public class GcProcessRunner {
       }
 
       if (stdOut.available() > 0) {
-        stdOutData += new String(stdOut.readNBytes(stdOut.available()), UTF_8);
+        stdOutData += new String(readBytes(stdOut), UTF_8);
 
         if (stdOutData.contains(waitFor)) {
           break;
@@ -246,5 +247,15 @@ public class GcProcessRunner {
           new File(new File(modulePath).getParentFile(), "classes/java/test").getAbsolutePath();
     }
     return classPath;
+  }
+
+  private static byte[] readBytes(InputStream in) throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    byte[] buffer = new byte[1024];
+    while (in.available() > 0) {
+      int read = in.read(buffer);
+      baos.write(buffer, 0, read);
+    }
+    return baos.toByteArray();
   }
 }

@@ -317,6 +317,8 @@ public class Configuration {
     // "% Processor Time Normalized"
     public boolean useNormalizedValueForNonNormalizedCpuPercentage = true;
 
+    public List<CustomInstrumentation> customInstrumentation = new ArrayList<>();
+
     private static final Set<String> VALID_ADDITIONAL_PROPAGATORS =
         new HashSet<>(asList("b3", "b3multi"));
 
@@ -491,6 +493,11 @@ public class Configuration {
             "Please provide a \"roleName\" for the role name override configuration.");
       }
     }
+  }
+
+  public static class CustomInstrumentation {
+    public String className;
+    public String methodName;
   }
 
   public static class EnabledByDefaultInstrumentation {

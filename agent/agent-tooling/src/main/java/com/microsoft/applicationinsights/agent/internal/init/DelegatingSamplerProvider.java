@@ -19,6 +19,26 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.gcmonitortests;
+package com.microsoft.applicationinsights.agent.internal.init;
 
-public class GcNotPresentException extends Exception {}
+import com.google.auto.service.AutoService;
+import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
+
+@AutoService(ConfigurableSamplerProvider.class)
+public class DelegatingSamplerProvider implements ConfigurableSamplerProvider {
+
+  public static final String NAME = "lazyinit";
+
+  @Override
+  public Sampler createSampler(ConfigProperties config) {
+    return DelegatingSampler.getInstance();
+  }
+
+  @Override
+  public String getName() {
+    return NAME;
+  }
+}

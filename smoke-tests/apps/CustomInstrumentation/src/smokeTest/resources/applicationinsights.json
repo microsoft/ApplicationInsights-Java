@@ -1,0 +1,10 @@
+{
+  "preview": {
+    "customInstrumentation": [
+      {
+        "className": "com.microsoft.applicationinsights.smoketestapp.TestController",
+        "methodName": "run"
+      }
+    ]
+  }
+}

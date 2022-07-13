@@ -19,6 +19,32 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.gcmonitortests;
+package com.microsoft.applicationinsights.smoketestapp;
 
-public class GcNotPresentException extends Exception {}
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class TestController {
+
+  private static final Logger logger = LoggerFactory.getLogger("smoketestapp");
+
+  @GetMapping("/")
+  public String root() {
+    return "OK";
+  }
+
+  @GetMapping("/test")
+  public String test() {
+    // spin off separate thread to simulate a top-level (request) instrumentation captured on the
+    // run() method
+    new Thread(this::run).start();
+    return "OK!";
+  }
+
+  private void run() {
+    logger.info("hello");
+  }
+}
