@@ -86,7 +86,8 @@ class RollingAverageTest {
     rollingAverage.update(createDataPoint(0.1));
     rollingAverage.update(createDataPoint(0.1));
 
-    assertThat(rollingAverage.update(createDataPoint(0.1))).isEqualTo(OptionalDouble.of(0.1d));
+    rollingAverage.update(createDataPoint(0.1));
+    assertThat(rollingAverage.compute()).isEqualTo(OptionalDouble.of(0.1d));
 
     assertThat(called.get()).isEqualTo(0.1d);
   }
