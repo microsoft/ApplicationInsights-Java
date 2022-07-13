@@ -62,7 +62,7 @@ public class WindowedAggregation {
     return windowLengthInSec;
   }
 
-  public List<TelemetryDataPoint> update(TelemetryDataPoint telemetryDataPoint) {
+  public void update(TelemetryDataPoint telemetryDataPoint) {
     Instant now = timeSource.getNow();
     telemetryDataPoints.add(telemetryDataPoint);
 
