@@ -62,7 +62,8 @@ enum Feature {
   JAXRS_ANNOTATIONS_DISABLED(
       31), // can cause startup slowness, jaxrs-annotations is ON by default in OTEL
   LOGGING_LEVEL_CUSTOM_PROPERTY_ENABLED(32), // preview opt-in to include LoggingLevel
-  TELEMETRY_PROCESSOR_ENABLED(33);
+  TELEMETRY_PROCESSOR_ENABLED(33),
+  PROFILER_ENABLED(35);
 
   private static final Map<String, Feature> javaVendorFeatureMap;
 
