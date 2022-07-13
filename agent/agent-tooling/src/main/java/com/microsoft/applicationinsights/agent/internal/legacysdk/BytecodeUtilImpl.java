@@ -426,7 +426,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     if (featureStatsbeat != null) {
-      featureStatsbeat.track2XBridgeUsage();
+      featureStatsbeat.track2xBridgeUsage();
     }
   }
 

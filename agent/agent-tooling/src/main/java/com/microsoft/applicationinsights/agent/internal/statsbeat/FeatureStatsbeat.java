@@ -64,7 +64,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
   }
 
   // this is used by ByteCodeUtil
-  public void track2XBridgeUsage() {
+  public void track2xBridgeUsage() {
     featureList.add(Feature.SDK_2X_BRIDGE_VIA_3X_AGENT);
   }
 
