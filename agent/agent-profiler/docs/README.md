@@ -1,36 +1,28 @@
+# Application Insights Java Profiler
 
-# agent-profiler
+The Application Insights Java Profiler provides a system for:
 
-The agent-profiler subsystem provides a system for:
 1. Generating profiles of the current JVM
-1. Monitoring local telemetry and generating an alertBreach if certain conditions are
-   met (such as breaching a threshold)
+2. Monitoring local resource usage and generating an alertBreach if certain conditions are
+   met (such as CPU or memory breaching a configured threshold)
 
+# Overview
 
-# Modules
-
-- agent-alerting-api - The API that defines an alerting system that can monitor telemetry and alertBreach
-  if certain conditions are met
-- agent-alerting - An implementation of the agent-alerting-api which implements monitoring of telemetery
-  applying a rolling average to the telemetry and then comparing against a threshold, and if breached
-  issuing an alertBreach.
-- agent-profiler-api - Defines the interface for a profiler subsystem.
-- agent-profiler - Implements the agent-profiler-api providing a implementation that profiles using JFR and
-  publishes profiles to the azure service profiler.
-
-
-# USAGE
+The Application Insights Java profiler uses the JFR profiler provided by the JVM to record profiling
+data. So that users may download the JFR recordings at a later time and analyse them to identify
+the cause of performance issues. This data is gathered on demand when trigger conditions are met.
+Currently, the available triggers are thresholds over CPU usage and Memory consumption. When a
+threshold is breached, a profile of the configured type and duration is gathered and uploaded. This
+profile is then visible within the performance blade of the associated Application Insights Portal
+UI.
 
 ## Warning
 
-The JFR profiler by default executes the "profile" profile from JFRs inbuilt configurations. This configuration includes
-some potentially sensitive information such as environment variables, arguments provided to the JVM and processes
-running on the system. If you wish to remove these from profiles that are uploaded you can do this by editing
-the `lib/jfr/profile.jfc` file inside your Java installation. Profiles can also be generated/edited in the JDK Mission 
-Control (JMC) user interface under the `Window->Flight Recording Template Manager` menu and control over individual 
-flags is found inside `Edit->Advanced` of this user interface.
-
-Some flags you may wish to disable are:
+The JFR profiler by default executes the "PROFILE_WITHOUT_ENV_DATA" profile. This configuration is
+similar to the "profile" configuration that ships with the JVM, however has had some events disabled
+that have the potential to contain sensitive deployment information such as environment variables,
+arguments provided to the JVM and processes running on the system. The flags that have been disabled
+are:
 
 - jdk.JVMInformation
 - jdk.InitialSystemProperty
@@ -38,64 +30,91 @@ Some flags you may wish to disable are:
 - jdk.InitialEnvironmentVariable
 - jdk.SystemProcess
 
-However, you should review all required flags.
+However, you should review all flags enabled to ensure that profiles do not contain sensitive data.
 
-## Requirements
+If you wish to provide a custom profile configuration, alter the `memoryTriggeredSettings`
+and `cpuTriggeredSettings` to provide the path to a `.jfc` file with your required configuration.
+Profiles can be generated/edited in the JDK Mission Control (JMC) user
+interface under the `Window->Flight Recording Template Manager` menu and control over individual
+flags is found inside `Edit->Advanced` of this user interface.
 
-- A JVM with JFR available.
-- The application insights agent installed on your application and an application insights instance created.
+# USAGE
+
+## Installation
+
+1. Inside the `applicationinsights.json` configuration of your process enable the profiler by
+   setting the `preview.profiler.enabled` setting:
+   ```json
+      {
+         "connectionString" : "...",
+         "preview" : {
+            "profiler" : {
+               "enabled" : true
+            }
+         }
+      }
+   ```
+   Alternatively, set the `APPLICATIONINSIGHTS_PROFILER_ENABLED` environment variable to true.
+2. Execute your process with the updated configuration.
+3. Configure the resource thresholds that will cause a profile to be collected:
+1. Browse to the Performance -> Profiler section of the associated Application Insights instance.
+2. Select "Triggers"
+3. Configure the required CPU and Memory thresholds. And Apply.
+4. Note, currently the Java profiler does not
+   support the "Sampling" trigger, configuring this will have no effect.
+
+Once this has been completed, the agent will monitor the resource usage of your processes and
+trigger a profile when required. Once a profile has been triggered and completed, it will be
+viewable from the
+Application Insights instance within the Performance -> Profiler section. From that screen the
+profile can be downloaded, once download the JFR recording file can be opened and analysed within a
+tool of the users choosing.
 
 ## Configuration
 
-Configuration of the profiler triggering settings, such as thresholds and profiling periods can be performed within the
-ApplicationInsights UI under the Performance, Profiler, Triggers UI.
+Configuration of the profiler triggering settings, such as thresholds and profiling periods can be
+performed within the ApplicationInsights UI under the Performance, Profiler, Triggers UI as
+described in [Installation](#Installation).
+
+Additionally, a number of parameters can be configured within environment variables and the
+`applicationinsights.json` configuration file.
+
+### Environment variables
 
 - APPLICATIONINSIGHTS_PROFILER_ENABLED: boolean (default false)
-    - Can be set as an environment variable to enable the profiler.
-    - While profiling is in beta it must be actively enabled.
-- APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS: int (default 60)
-    - Can be set as an environment variabl.
-    - Period in seconds that performance counters are sampled. This directly impacts the frequency that
-      Alerting thresholds are evaluated. Alerting thresholds by default apply an average over the last 2 min,
-      at the default of 60 seconds this will be 2 samples.
+  - Enables/Disables the profiling feature.
 
-Profiler may also be enabled via adding a config section to applicationinsights.json:
+### Configuration file
 
-```
+```json
 {
   "preview": {
     "profiler": {
-      "configPollPeriodSeconds": 60,
-      "enabled": true
+      "enabled": true,
+      "configPollPeriodSeconds": 50,
+      "cpuTriggeredSettings": "profile_without_env_data",
+      "memoryTriggeredSettings": "profile_without_env_data"
     }
   }
 }
+
 ```
 
-### Json Configuration Parameters
-`configPollPeriodSeconds` - The profiler periodically polls for configuration changes made within the UI.
+`configPollPeriodSeconds` - The profiler periodically polls for configuration changes made within
+the UI. This can control the frequency of that poll.
 
+`memoryTriggeredSettings` - This configuration will be used in the event of a memory profile is
+requested. This can be one of:
 
-`memoryTriggeredSettings` - This configuration will be used in the event of a memory profile is requested. This can be one of:
-  - "profile" (default value). Uses the `profile` jfc configuration that ships with JFR.
-    
-  - "profile_without_env_data". Uses a profile similar to the `profile` jfc configuration that ships with JFR, however
-    with the following settings disabled:
-    - jdk.JVMInformation
-    - jdk.InitialSystemProperty
-    - jdk.OSInformation
-    - jdk.InitialEnvironmentVariable
-    - jdk.SystemProcess
-  - A path to a custom jfc configuration file on the file system.
+- `profile_without_env_data` (default value). A profile with certain sensitive events disabled, see
+  [Warning](#Warning) section for details.
+- `profile`. Uses the `profile.jfc` configuration that ships with JFR.
+- A path to a custom jfc configuration file on the file system, i.e `/tmp/myconfig.jfc`.
 
-`cpuTriggeredSettings` - This configuration will be used in the event of a cpu profile is requested. This can be one of:
-- "profile" (default value). Uses the `profile` jfc configuration that ships with JFR.
+`cpuTriggeredSettings` - This configuration will be used in the event of a cpu profile is requested.
+This can be one of:
 
-- "profile_without_env_data". Uses a profile similar to the `profile` jfc configuration that ships with JFR, however
-  with the following settings disabled:
-    - jdk.JVMInformation
-    - jdk.InitialSystemProperty
-    - jdk.OSInformation
-    - jdk.InitialEnvironmentVariable
-    - jdk.SystemProcess
-- A path to a custom jfc configuration file on the file system.
+- `profile_without_env_data` (default value). A profile with certain sensitive events disabled, see
+  [Warning](#Warning) section for details.
+- `profile`. Uses the `profile.jfc` jfc configuration that ships with JFR.
+- A path to a custom jfc configuration file on the file system, i.e `/tmp/myconfig.jfc`.
