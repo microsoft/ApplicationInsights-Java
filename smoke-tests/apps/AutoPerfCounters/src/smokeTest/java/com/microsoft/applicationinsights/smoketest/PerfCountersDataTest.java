@@ -21,109 +21,117 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
-import com.microsoft.applicationinsights.smoketest.schemav2.DataPointType;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent("fastmetrics")
-@SuppressWarnings("deprecation")
-public class PerfCountersDataTest extends AiWarSmokeTest {
+@UseAgent
+abstract class PerfCountersDataTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
+
   @Test
-  @TargetUri(value = "index.jsp", delay = 5000)
-  public void testPerformanceCounterData() throws Exception {
+  @TargetUri(value = "index.jsp")
+  void testPerformanceCounterData() throws Exception {
     System.out.println("Waiting for performance data...");
     long start = System.currentTimeMillis();
 
-    // need to accommodate for START_COLLECTING_DELAY_IN_MILLIS = 60 seconds
-    int timeout = 70;
+    int timeout = 10;
 
     Envelope availableMem =
-        mockedIngestion.waitForItem(
+        testing.mockedIngestion.waitForItem(
             getPerfMetricPredicate("\\Memory\\Available Bytes"), timeout, TimeUnit.SECONDS);
     Envelope totalCpu =
-        mockedIngestion.waitForItem(
+        testing.mockedIngestion.waitForItem(
             getPerfMetricPredicate("\\Processor(_Total)\\% Processor Time"),
             timeout,
             TimeUnit.SECONDS);
 
     Envelope processIo =
-        mockedIngestion.waitForItem(
+        testing.mockedIngestion.waitForItem(
             getPerfMetricPredicate("\\Process(??APP_WIN32_PROC??)\\IO Data Bytes/sec"),
             timeout,
             TimeUnit.SECONDS);
     Envelope processMemUsed =
-        mockedIngestion.waitForItem(
+        testing.mockedIngestion.waitForItem(
             getPerfMetricPredicate("\\Process(??APP_WIN32_PROC??)\\Private Bytes"),
             timeout,
             TimeUnit.SECONDS);
     Envelope processCpu =
-        mockedIngestion.waitForItem(
+        testing.mockedIngestion.waitForItem(
             getPerfMetricPredicate("\\Process(??APP_WIN32_PROC??)\\% Processor Time"),
             timeout,
             TimeUnit.SECONDS);
     Envelope processCpuNormalized =
-        mockedIngestion.waitForItem(
+        testing.mockedIngestion.waitForItem(
             getPerfMetricPredicate("\\Process(??APP_WIN32_PROC??)\\% Processor Time Normalized"),
             timeout,
             TimeUnit.SECONDS);
     System.out.println("PerformanceCounterData are good: " + (System.currentTimeMillis() - start));
 
-    MetricData metricMem = getBaseData(availableMem);
+    MetricData metricMem = SmokeTestExtension.getBaseData(availableMem);
     assertPerfMetric(metricMem);
-    assertEquals("\\Memory\\Available Bytes", metricMem.getMetrics().get(0).getName());
+    assertThat(metricMem.getMetrics().get(0).getName()).isEqualTo("\\Memory\\Available Bytes");
 
-    MetricData pdCpu = getBaseData(totalCpu);
+    MetricData pdCpu = SmokeTestExtension.getBaseData(totalCpu);
     assertPerfMetric(pdCpu);
-    assertEquals("\\Processor(_Total)\\% Processor Time", pdCpu.getMetrics().get(0).getName());
+    assertThat(pdCpu.getMetrics().get(0).getName())
+        .isEqualTo("\\Processor(_Total)\\% Processor Time");
 
-    assertPerfMetric(getBaseData(processIo));
-    assertPerfMetric(getBaseData(processMemUsed));
-    assertPerfMetric(getBaseData(processCpu));
-    assertPerfMetric(getBaseData(processCpuNormalized));
+    assertPerfMetric(SmokeTestExtension.getBaseData(processIo));
+    assertPerfMetric(SmokeTestExtension.getBaseData(processMemUsed));
+    assertPerfMetric(SmokeTestExtension.getBaseData(processCpu));
+    assertPerfMetric(SmokeTestExtension.getBaseData(processCpuNormalized));
 
     start = System.currentTimeMillis();
     System.out.println("Waiting for metric data...");
     Envelope deadlocks =
-        mockedIngestion.waitForItem(
+        testing.mockedIngestion.waitForItem(
             getPerfMetricPredicate("Suspected Deadlocked Threads"), timeout, TimeUnit.SECONDS);
     Envelope heapUsed =
-        mockedIngestion.waitForItem(
+        testing.mockedIngestion.waitForItem(
             getPerfMetricPredicate("Heap Memory Used (MB)"), timeout, TimeUnit.SECONDS);
     Envelope gcTotalCount =
-        mockedIngestion.waitForItem(
+        testing.mockedIngestion.waitForItem(
             getPerfMetricPredicate("GC Total Count"), timeout, TimeUnit.SECONDS);
     Envelope gcTotalTime =
-        mockedIngestion.waitForItem(
+        testing.mockedIngestion.waitForItem(
             getPerfMetricPredicate("GC Total Time"), timeout, TimeUnit.SECONDS);
     System.out.println("MetricData are good: " + (System.currentTimeMillis() - start));
 
-    MetricData mdDeadlocks = getBaseData(deadlocks);
+    MetricData mdDeadlocks = SmokeTestExtension.getBaseData(deadlocks);
     assertPerfMetric(mdDeadlocks);
-    assertEquals(0.0, mdDeadlocks.getMetrics().get(0).getValue(), Math.ulp(0.0));
+    assertThat(mdDeadlocks.getMetrics().get(0).getValue()).isEqualTo(0);
 
-    MetricData mdHeapUsed = getBaseData(heapUsed);
+    MetricData mdHeapUsed = SmokeTestExtension.getBaseData(heapUsed);
     assertPerfMetric(mdHeapUsed);
-    assertTrue(mdHeapUsed.getMetrics().get(0).getValue() > 0.0);
+    assertThat(mdHeapUsed.getMetrics().get(0).getValue()).isGreaterThan(0);
 
-    MetricData mdGcTotalCount = getBaseData(gcTotalCount);
+    MetricData mdGcTotalCount = SmokeTestExtension.getBaseData(gcTotalCount);
     assertPerfMetric(mdGcTotalCount);
 
-    MetricData mdGcTotalTime = getBaseData(gcTotalTime);
+    MetricData mdGcTotalTime = SmokeTestExtension.getBaseData(gcTotalTime);
     assertPerfMetric(mdGcTotalTime);
   }
 
   private void assertPerfMetric(MetricData perfMetric) {
     List<DataPoint> metrics = perfMetric.getMetrics();
-    assertEquals(1, metrics.size());
+    assertThat(metrics).hasSize(1);
   }
 
   private static Predicate<Envelope> getPerfMetricPredicate(String name) {
@@ -134,9 +142,30 @@ public class PerfCountersDataTest extends AiWarSmokeTest {
         if (!input.getData().getBaseType().equals("MetricData")) {
           return false;
         }
-        MetricData md = getBaseData(input);
+        MetricData md = SmokeTestExtension.getBaseData(input);
         return name.equals(md.getMetrics().get(0).getName());
       }
     };
   }
+
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends PerfCountersDataTest {}
+
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends PerfCountersDataTest {}
+
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends PerfCountersDataTest {}
+
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends PerfCountersDataTest {}
+
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends PerfCountersDataTest {}
+
+  @Environment(WILDFLY_13_JAVA_8)
+  static class Wildfly13Java8Test extends PerfCountersDataTest {}
+
+  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
+  static class Wildfly13Java8OpenJ9Test extends PerfCountersDataTest {}
 }

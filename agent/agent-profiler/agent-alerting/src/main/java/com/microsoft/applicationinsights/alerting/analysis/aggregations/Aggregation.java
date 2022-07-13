@@ -31,16 +31,15 @@ public abstract class Aggregation {
   @Nullable protected DoubleConsumer consumer = null;
 
   /** Add new data to the aggregation. */
-  public OptionalDouble update(TelemetryDataPoint telemetryDataPoint) {
-    OptionalDouble value = processUpdate(telemetryDataPoint);
+  public void update(TelemetryDataPoint telemetryDataPoint) {
+    processUpdate(telemetryDataPoint);
+    OptionalDouble value = compute();
     if (value.isPresent() && consumer != null) {
       consumer.accept(value.getAsDouble());
     }
-
-    return value;
   }
 
-  protected abstract OptionalDouble processUpdate(TelemetryDataPoint telemetryDataPoint);
+  protected abstract void processUpdate(TelemetryDataPoint telemetryDataPoint);
 
   /** Add a consumer that is notified when new aggregated data is available. */
   public void setConsumer(DoubleConsumer consumer) {

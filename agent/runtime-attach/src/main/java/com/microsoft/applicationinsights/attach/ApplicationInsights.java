@@ -21,8 +21,8 @@
 
 package com.microsoft.applicationinsights.attach;
 
-import io.opentelemetry.contrib.attach.RuntimeAttach;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -62,7 +62,9 @@ public final class ApplicationInsights {
       System.setProperty(RUNTIME_ATTACHED_JSON_PROPERTY, jsonConfig.get());
     }
 
-    RuntimeAttach.attachJavaagentToCurrentJVM();
+    File agentFile = AppInsightAgentFileProvider.getAgentFile();
+
+    RuntimeAttach.attachJavaagentToCurrentJvm(agentFile);
   }
 
   private static Optional<String> findJsonConfig() {

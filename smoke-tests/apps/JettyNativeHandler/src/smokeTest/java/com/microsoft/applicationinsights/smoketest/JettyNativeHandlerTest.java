@@ -21,26 +21,39 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-public class JettyNativeHandlerTest extends AiJarSmokeTest {
+abstract class JettyNativeHandlerTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/path")
-  public void doSimpleTest() throws Exception {
-    Telemetry telemetry = getTelemetry(0);
+  void doSimpleTest() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
 
-    assertEquals("HTTP GET", telemetry.rd.getName());
-    assertTrue(telemetry.rd.getUrl().matches("http://localhost:[0-9]+/path"));
-    assertEquals("200", telemetry.rd.getResponseCode());
-    assertTrue(telemetry.rd.getSuccess());
-    assertNull(telemetry.rd.getSource());
-    assertTrue(telemetry.rd.getProperties().isEmpty());
-    assertTrue(telemetry.rd.getMeasurements().isEmpty());
+    assertThat(telemetry.rd.getName()).isEqualTo("HTTP GET");
+    assertThat(telemetry.rd.getUrl()).matches("http://localhost:[0-9]+/path");
+    assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
+    assertThat(telemetry.rd.getSuccess()).isTrue();
+    assertThat(telemetry.rd.getSource()).isNull();
+    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getMeasurements()).isEmpty();
   }
+
+  @Environment(JAVA_8)
+  static class Java8Test extends JettyNativeHandlerTest {}
+
+  @Environment(JAVA_11)
+  static class Java11Test extends JettyNativeHandlerTest {}
+
+  @Environment(JAVA_17)
+  static class Java17Test extends JettyNativeHandlerTest {}
 }

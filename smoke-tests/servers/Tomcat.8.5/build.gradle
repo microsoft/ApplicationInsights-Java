@@ -1,3 +1,0 @@
-ext {
-  appServerShortName = "tomcat85"
-}

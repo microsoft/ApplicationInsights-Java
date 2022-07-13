@@ -56,26 +56,26 @@ class LazyConfigurationAccessorTest {
   @Test
   // "LazySetOptIn is FALSE, ConnectionString is valid and EnableAgent is TRUE"
   void enableLazySetWithLazySetOptInOffEnableAgentOn() {
-    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
+    assertThat(LazyConfigurationAccessor.isAgentEnabled("true", false)).isTrue();
   }
 
   @Test
   // "LazySetOptIn is FALSE, ConnectionString is valid and EnableAgent is FALSE"
   void disableLazySetWithLazySetOptInOffEnableAgentOff() {
-    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "false")).isFalse();
+    assertThat(LazyConfigurationAccessor.isAgentEnabled("false", false)).isFalse();
   }
 
   @Test
   // "LazySetOptIn is FALSE, ConnectionString is valid and EnableAgent is NULL"
   void disableLazySetWithLazySetOptInOffEnableAgentNull() {
-    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, null)).isFalse();
+    assertThat(LazyConfigurationAccessor.isAgentEnabled(null, false)).isFalse();
   }
 
   @Test
   // "LazySetOptIn is FALSE, ConnectionString is NULL, InstrumentationKey is NULL, and EnableAgent
   // is TRUE"
   void disableLazySetWithLazySetOptInOffConnectionStringNullInstrumentationKeyNull() {
-    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
+    assertThat(LazyConfigurationAccessor.isAgentEnabled("true", false)).isTrue();
 
     // given
     TelemetryClient telemetryClient = mock(TelemetryClient.class);
@@ -95,7 +95,7 @@ class LazyConfigurationAccessorTest {
   // "LazySetOptIn is FALSE, ConnectionString is valid, InstrumentationKey is NULL, and EnableAgent
   // is TRUE"
   void disableLazySetWithLazySetOptInOffConnectionStringNotNullInstrumentationKeyNull() {
-    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
+    assertThat(LazyConfigurationAccessor.isAgentEnabled("true", false)).isTrue();
 
     // given
     TelemetryClient telemetryClient = mock(TelemetryClient.class);
@@ -122,7 +122,7 @@ class LazyConfigurationAccessorTest {
   // "LazySetOptIn is FALSE, ConnectionString is NULL, InstrumentationKey is valid, and EnableAgent
   // is TRUE")
   void enableLazySetWithLazySetOptInOffConnectionStringNullInstrumentationKeyNotNull() {
-    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
+    assertThat(LazyConfigurationAccessor.isAgentEnabled("true", false)).isTrue();
 
     // given
     TelemetryClient telemetryClient = mock(TelemetryClient.class);
@@ -142,26 +142,26 @@ class LazyConfigurationAccessorTest {
   @Test
   // "LazySetOptIn is TRUE, ConnectionString is valid and EnableAgent is TRUE"
   void enableLazySetWithLazySetOptInOnEnableAgentOn() {
-    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(true, "true")).isTrue();
+    assertThat(LazyConfigurationAccessor.isAgentEnabled("true", true)).isTrue();
   }
 
   @Test
   // "LazySetOptIn is TRUE, ConnectionString is valid and EnableAgent is FALSE"
   void disableLazySetWithLazySetOptInOnEnableAgentOff() {
-    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(true, "false")).isFalse();
+    assertThat(LazyConfigurationAccessor.isAgentEnabled("false", true)).isFalse();
   }
 
   @Test
   // "LazySetOptIn is TRUE, ConnectionString is valid and EnableAgent is NULL"
   void enableLazySetWithLazySetOptInOnEnableAgentNull() {
-    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(true, null)).isTrue();
+    assertThat(LazyConfigurationAccessor.isAgentEnabled(null, true)).isTrue();
   }
 
   @Test
   // "LazySetOptIn is TRUE, ConnectionString is NULL, InstrumentationKey is NULL, and EnableAgent is
   // TRUE"
   void disableLazySetWithLazySetOptInOnConnectionStringNullAndInstrumentationKeyNull() {
-    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(true, "true")).isTrue();
+    assertThat(LazyConfigurationAccessor.isAgentEnabled("true", true)).isTrue();
 
     // given
     TelemetryClient telemetryClient = mock(TelemetryClient.class);
@@ -181,7 +181,7 @@ class LazyConfigurationAccessorTest {
   // "LazySetOptIn is TRUE, ConnectionString is valid, InstrumentationKey is NULL, and EnableAgent
   // is TRUE"
   void enableLazySetWithLazySetOptInOnConnectionStringNotNullInstrumentationKeyNull() {
-    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
+    assertThat(LazyConfigurationAccessor.isAgentEnabled("true", false)).isTrue();
 
     // given
     TelemetryClient telemetryClient = mock(TelemetryClient.class);
@@ -202,7 +202,7 @@ class LazyConfigurationAccessorTest {
   // "LazySetOptIn is TRUE, ConnectionString is NULL, InstrumentationKey is valid, and EnableAgent
   // is TRUE"
   void enableLazySetWithLazySetOptInOnConnectionStringNullInstrumentationKeyNotNull() {
-    assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
+    assertThat(LazyConfigurationAccessor.isAgentEnabled("true", false)).isTrue();
 
     // given
     TelemetryClient telemetryClient = mock(TelemetryClient.class);

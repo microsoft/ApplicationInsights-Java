@@ -21,27 +21,28 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent("controller_spans_enabled")
+@Environment(JAVA_8)
+@UseAgent("controller_spans_enabled_applicationinsights.json")
 @WithDependencyContainers({
   @DependencyContainer(
       value = "confluentinc/cp-zookeeper",
-      portMapping = "2181",
+      exposedPort = 2181,
       environmentVariables = {"ZOOKEEPER_CLIENT_PORT=2181"},
       hostnameEnvironmentVariable = "ZOOKEEPER"),
   @DependencyContainer(
       value = "confluentinc/cp-kafka",
-      portMapping = "9092",
+      exposedPort = 9092,
       environmentVariables = {
         "KAFKA_ZOOKEEPER_CONNECT=${ZOOKEEPER}:2181",
         "KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://${CONTAINERNAME}:9092",
@@ -49,18 +50,20 @@ import org.junit.Test;
       },
       hostnameEnvironmentVariable = "KAFKA")
 })
-public class KafkaControllerSpansEnabledTest extends AiJarSmokeTest {
+class KafkaControllerSpansEnabledTest {
+
+  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
   @Test
   @TargetUri("/sendMessage")
-  public void doMostBasicTest() throws Exception {
-    List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
+  void doMostBasicTest() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 2);
 
     Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /sendMessage");
     String operationId = rdEnvelope1.getTags().get("ai.operation.id");
     List<Envelope> rddList =
-        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 3, operationId);
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
+        testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 3, operationId);
+    assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "mytopic process");
     Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "HelloController.sendMessage");
@@ -77,42 +80,42 @@ public class KafkaControllerSpansEnabledTest extends AiJarSmokeTest {
     RemoteDependencyData rdd3 =
         (RemoteDependencyData) ((Data<?>) rddEnvelope3.getData()).getBaseData();
 
-    assertEquals("GET /sendMessage", rd1.getName());
-    assertTrue(rd1.getProperties().isEmpty());
-    assertTrue(rd1.getSuccess());
+    assertThat(rd1.getName()).isEqualTo("GET /sendMessage");
+    assertThat(rd1.getProperties()).isEmpty();
+    assertThat(rd1.getSuccess()).isTrue();
 
-    assertEquals("HelloController.sendMessage", rdd1.getName());
-    assertNull(rdd1.getData());
-    assertEquals("InProc", rdd1.getType());
-    assertNull(rdd1.getTarget());
-    assertTrue(rdd1.getProperties().isEmpty());
-    assertTrue(rdd1.getSuccess());
+    assertThat(rdd1.getName()).isEqualTo("HelloController.sendMessage");
+    assertThat(rdd1.getData()).isNull();
+    assertThat(rdd1.getType()).isEqualTo("InProc");
+    assertThat(rdd1.getTarget()).isNull();
+    assertThat(rdd1.getProperties()).isEmpty();
+    assertThat(rdd1.getSuccess()).isTrue();
 
-    assertEquals("mytopic send", rdd2.getName());
-    assertNull(rdd2.getData());
-    assertEquals("Queue Message | kafka", rdd2.getType());
-    assertEquals("mytopic", rdd2.getTarget());
-    assertTrue(rdd2.getProperties().isEmpty());
-    assertTrue(rdd2.getSuccess());
+    assertThat(rdd2.getName()).isEqualTo("mytopic send");
+    assertThat(rdd2.getData()).isNull();
+    assertThat(rdd2.getType()).isEqualTo("Queue Message | kafka");
+    assertThat(rdd2.getTarget()).isEqualTo("mytopic");
+    assertThat(rdd2.getProperties()).isEmpty();
+    assertThat(rdd2.getSuccess()).isTrue();
 
-    assertEquals("mytopic process", rd2.getName());
-    assertEquals("mytopic", rd2.getSource());
-    assertTrue(rd2.getProperties().isEmpty());
-    assertTrue(rd2.getSuccess());
-    assertTrue(rd2.getMeasurements().containsKey("timeSinceEnqueued"));
+    assertThat(rd2.getName()).isEqualTo("mytopic process");
+    assertThat(rd2.getSource()).isEqualTo("mytopic");
+    assertThat(rd2.getProperties()).isEmpty();
+    assertThat(rd2.getSuccess()).isTrue();
+    assertThat(rd2.getMeasurements()).containsKey("timeSinceEnqueued");
 
-    assertEquals("GET /", rdd3.getName());
-    assertEquals("https://www.bing.com", rdd3.getData());
-    assertEquals("Http", rdd3.getType());
-    assertEquals("www.bing.com", rdd3.getTarget());
-    assertTrue(rdd3.getProperties().isEmpty());
-    assertTrue(rdd3.getSuccess());
+    assertThat(rdd3.getName()).isEqualTo("GET /");
+    assertThat(rdd3.getData()).isEqualTo("https://www.bing.com");
+    assertThat(rdd3.getType()).isEqualTo("Http");
+    assertThat(rdd3.getTarget()).isEqualTo("www.bing.com");
+    assertThat(rdd3.getProperties()).isEmpty();
+    assertThat(rdd3.getSuccess()).isTrue();
 
-    assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
-    assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /sendMessage");
-    assertParentChild(
+    SmokeTestExtension.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
+    SmokeTestExtension.assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /sendMessage");
+    SmokeTestExtension.assertParentChild(
         rdd2.getId(), rddEnvelope2, rdEnvelope2, "GET /sendMessage", "mytopic process", false);
-    assertParentChild(
+    SmokeTestExtension.assertParentChild(
         rd2.getId(), rdEnvelope2, rddEnvelope3, "mytopic process", "mytopic process", false);
   }
 

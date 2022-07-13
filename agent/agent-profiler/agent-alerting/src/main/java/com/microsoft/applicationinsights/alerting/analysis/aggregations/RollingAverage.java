@@ -42,9 +42,8 @@ public class RollingAverage extends Aggregation {
   }
 
   @Override
-  public OptionalDouble processUpdate(TelemetryDataPoint telemetryDataPoint) {
+  public void processUpdate(TelemetryDataPoint telemetryDataPoint) {
     windowedAggregation.update(telemetryDataPoint);
-    return compute();
   }
 
   @Override

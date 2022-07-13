@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.smoketest.schemav2;
 
-import com.microsoft.applicationinsights.smoketest.telemetry.Duration;
-
 /** Data contract class PageViewData. */
 public class PageViewData extends EventData {
   /** Backing field for property Url. */

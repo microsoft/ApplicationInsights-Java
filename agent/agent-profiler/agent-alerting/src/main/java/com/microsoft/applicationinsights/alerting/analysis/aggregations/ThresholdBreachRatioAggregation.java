@@ -36,14 +36,9 @@ public class ThresholdBreachRatioAggregation extends Aggregation {
     this.thresholdMs = thresholdMs;
   }
 
-  public ThresholdBreachRatioAggregation(
-      long threshold, long minimumSamples, long windowLengthInSec) {
-    this(threshold, minimumSamples, windowLengthInSec, TimeSource.DEFAULT);
-  }
-
   @Override
-  public OptionalDouble processUpdate(TelemetryDataPoint telemetryDataPoint) {
-    return this.breachRatio.update(telemetryDataPoint.getValue() >= thresholdMs);
+  public void processUpdate(TelemetryDataPoint telemetryDataPoint) {
+    this.breachRatio.update(telemetryDataPoint.getValue() >= thresholdMs);
   }
 
   @Override

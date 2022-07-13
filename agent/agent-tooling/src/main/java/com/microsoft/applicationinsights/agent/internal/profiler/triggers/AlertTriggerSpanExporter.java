@@ -21,12 +21,12 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler.triggers;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.microsoft.applicationinsights.agent.internal.profiler.AlertingServiceFactory;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -60,7 +60,7 @@ public class AlertTriggerSpanExporter implements SpanExporter {
   }
 
   public void processSpan(SpanData span) {
-    if (span.getKind() == SpanKind.SERVER) {
+    if (SpanDataMapper.isRequest(span)) {
       double durationInMillis =
           (span.getEndEpochNanos() - span.getStartEpochNanos()) / 1_000_000.0d;
       AlertingSubsystem alertingSubsystem = alertingSubsystemSupplier.get();
