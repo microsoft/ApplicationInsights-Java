@@ -76,7 +76,7 @@ Configuration of the profiler triggering settings, such as thresholds and profil
 performed within the ApplicationInsights UI under the Performance, Profiler, Triggers UI as
 described in [Installation](#Installation).
 
-Additionally, a number of parameters can be configured within environment variables and the
+Additionally, a number of parameters can be configured using environment variables and the
 `applicationinsights.json` configuration file.
 
 ### Environment variables
