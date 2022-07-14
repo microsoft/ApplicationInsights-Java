@@ -52,7 +52,7 @@ import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithS
 import com.microsoft.applicationinsights.agent.internal.processors.LogExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
 import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
-import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanExporter;
+import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerRequestExporter;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
@@ -406,7 +406,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     if (configuration.preview.profiler.enabled
         && configuration.preview.profiler.enableResponseTriggering) {
-      spanExporter = new AlertTriggerSpanExporter(spanExporter);
+      spanExporter = new AlertTriggerRequestExporter(spanExporter);
     }
 
     return spanExporter;

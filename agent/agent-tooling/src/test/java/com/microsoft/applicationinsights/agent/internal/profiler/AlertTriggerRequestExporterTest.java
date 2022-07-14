@@ -22,8 +22,8 @@
 package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanExporter;
-import com.microsoft.applicationinsights.agent.internal.profiler.triggers.SpanAlertPipelineBuilder;
+import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerRequestExporter;
+import com.microsoft.applicationinsights.agent.internal.profiler.triggers.RequestAlertPipelineBuilder;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
@@ -46,11 +46,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class AlertTriggerSpanExporterTest {
+public class AlertTriggerRequestExporterTest {
 
   interface Handle {
     void accept(
-        AlertTriggerSpanExporter spanExporter, AtomicBoolean alertCalled, TestTimeSource timeSource)
+        AlertTriggerRequestExporter spanExporter, AtomicBoolean alertCalled, TestTimeSource timeSource)
         throws InterruptedException;
   }
 
@@ -158,10 +158,10 @@ public class AlertTriggerSpanExporterTest {
     alertingSubsystem.setPipeline(
         AlertMetricType.REQUEST,
         new AlertPipelineMultiplexer(
-            Arrays.asList(SpanAlertPipelineBuilder.build(triggerConfig, alertAction, timeSource))));
+            Arrays.asList(RequestAlertPipelineBuilder.build(triggerConfig, alertAction, timeSource))));
 
-    AlertTriggerSpanExporter spanExporter =
-        new AlertTriggerSpanExporter(delegateSpanExporter, () -> alertingSubsystem);
+    AlertTriggerRequestExporter spanExporter =
+        new AlertTriggerRequestExporter(delegateSpanExporter, () -> alertingSubsystem);
 
     handle.accept(spanExporter, called, timeSource);
   }

@@ -35,9 +35,9 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 /** Constructs an AlertPipeline for processing span telemetry data. */
-public class SpanAlertPipelineBuilder {
+public class RequestAlertPipelineBuilder {
 
-  private SpanAlertPipelineBuilder() {}
+  private RequestAlertPipelineBuilder() {}
 
   /** Form a single trigger context from configuration. */
   @Nullable
@@ -46,7 +46,7 @@ public class SpanAlertPipelineBuilder {
       Consumer<AlertBreach> alertAction,
       TimeSource timeSource) {
 
-    AlertRequestFilter filter = AlertSpanFilterBuilder.build(configuration.filter);
+    AlertRequestFilter filter = AlertRequestFilterBuilder.build(configuration.filter);
 
     Aggregation aggregation = getAggregation(configuration, timeSource);
 

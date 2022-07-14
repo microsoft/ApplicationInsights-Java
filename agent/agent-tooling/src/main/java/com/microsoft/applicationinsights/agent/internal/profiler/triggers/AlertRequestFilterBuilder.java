@@ -25,9 +25,9 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.alerting.analysis.filter.AlertRequestFilter;
 import javax.annotation.Nullable;
 
-public class AlertSpanFilterBuilder {
+public class AlertRequestFilterBuilder {
 
-  private AlertSpanFilterBuilder() {}
+  private AlertRequestFilterBuilder() {}
 
   @Nullable
   public static AlertRequestFilter build(Configuration.RequestFilter filter) {

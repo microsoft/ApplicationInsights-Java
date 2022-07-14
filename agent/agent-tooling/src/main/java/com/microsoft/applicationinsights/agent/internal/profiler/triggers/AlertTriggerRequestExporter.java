@@ -37,7 +37,7 @@ import java.util.function.Supplier;
  * Intercepts spans, filters out those that have had alerts configured, and feeds them to an
  * appropriate AlertPipeline.
  */
-public class AlertTriggerSpanExporter implements SpanExporter {
+public class AlertTriggerRequestExporter implements SpanExporter {
   // Next SpanExporter in App insights pipeline
   private final SpanExporter delegate;
 
@@ -76,11 +76,11 @@ public class AlertTriggerSpanExporter implements SpanExporter {
     }
   }
 
-  public AlertTriggerSpanExporter(SpanExporter delegate) {
+  public AlertTriggerRequestExporter(SpanExporter delegate) {
     this(delegate, AlertingServiceFactory::getAlertingSubsystem);
   }
 
-  public AlertTriggerSpanExporter(
+  public AlertTriggerRequestExporter(
       SpanExporter delegate, Supplier<AlertingSubsystem> alertingSubsystemSupplier) {
     this.delegate = delegate;
     this.alertingSubsystemSupplier = alertingSubsystemSupplier;

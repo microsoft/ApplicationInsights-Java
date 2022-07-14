@@ -28,7 +28,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsDat
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
-import com.microsoft.applicationinsights.agent.internal.profiler.triggers.SpanAlertPipelineBuilder;
+import com.microsoft.applicationinsights.agent.internal.profiler.triggers.RequestAlertPipelineBuilder;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
@@ -58,7 +58,7 @@ public class AlertingServiceFactory {
     if (configuration.preview.profiler.enableResponseTriggering) {
       List<AlertPipeline> spanPipelines =
           Arrays.stream(configuration.preview.profiler.responseTriggerEndpoints)
-              .map(it -> SpanAlertPipelineBuilder.build(it, alertAction, TimeSource.DEFAULT))
+              .map(it -> RequestAlertPipelineBuilder.build(it, alertAction, TimeSource.DEFAULT))
               .collect(Collectors.toList());
 
       alertingSubsystem.setPipeline(
