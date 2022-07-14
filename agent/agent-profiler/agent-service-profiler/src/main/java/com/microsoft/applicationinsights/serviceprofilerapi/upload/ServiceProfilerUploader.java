@@ -66,7 +66,7 @@ public class ServiceProfilerUploader {
 
   // For debug purposes, can use settings to tell the profiler to retain the profile after
   // it has been uploaded
-  private static final String RETAIN_JFR_FILE_PROPERTY_NAME = "com.microsoft.retainJfrFile";
+  private static final String RETAIN_JFR_FILE_PROPERTY_NAME = "applicationinsights.debug.retainJfrFile";
   private static final boolean retainJfrFile =
       Boolean.parseBoolean(System.getProperty(RETAIN_JFR_FILE_PROPERTY_NAME, "false"));
 
