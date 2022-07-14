@@ -27,6 +27,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.GcReportin
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
+import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.profiler.config.AlertConfigParser;
 import com.microsoft.gcmonitor.GcCollectionEvent;
@@ -54,7 +55,8 @@ class GcEventMonitorTest {
       throws ExecutionException, InterruptedException, TimeoutException {
 
     CompletableFuture<AlertBreach> alertFuture = new CompletableFuture<>();
-    AlertingSubsystem alertingSubsystem = getAlertingSubsystem(alertFuture);
+    TestTimeSource timeSource = new TestTimeSource();
+    AlertingSubsystem alertingSubsystem = getAlertingSubsystem(alertFuture, timeSource);
 
     GcMonitorFactory factory =
         new GcMonitorFactory() {
@@ -87,8 +89,9 @@ class GcEventMonitorTest {
   }
 
   private static AlertingSubsystem getAlertingSubsystem(
-      CompletableFuture<AlertBreach> alertFuture) {
-    AlertingSubsystem alertingSubsystem = AlertingSubsystem.create(alertFuture::complete);
+      CompletableFuture<AlertBreach> alertFuture, TimeSource timeSource) {
+    AlertingSubsystem alertingSubsystem =
+        AlertingSubsystem.create(alertFuture::complete, timeSource);
 
     AlertingConfiguration config =
         AlertConfigParser.parse(

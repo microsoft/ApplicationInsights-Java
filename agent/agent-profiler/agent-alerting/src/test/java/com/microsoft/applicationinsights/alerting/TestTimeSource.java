@@ -19,35 +19,20 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.alerting.analysis.aggregations;
+package com.microsoft.applicationinsights.alerting;
 
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
-import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
-import java.util.OptionalDouble;
+import java.time.Instant;
 
-public class ThresholdBreachRatioAggregation extends Aggregation {
-
-  private final BreachedRatio breachRatio;
-  private final double thresholdMs;
-
-  public ThresholdBreachRatioAggregation(
-      long thresholdMs,
-      long minimumSamples,
-      long windowLengthInSec,
-      TimeSource timeSource,
-      boolean trackCurrentBucket) {
-    this.breachRatio =
-        new BreachedRatio(windowLengthInSec, minimumSamples, timeSource, trackCurrentBucket);
-    this.thresholdMs = thresholdMs;
-  }
+public class TestTimeSource extends TimeSource {
+  Instant now = Instant.ofEpochMilli(0);
 
   @Override
-  public void processUpdate(TelemetryDataPoint telemetryDataPoint) {
-    this.breachRatio.update(telemetryDataPoint.getValue() >= thresholdMs);
+  public Instant getNow() {
+    return now;
   }
 
-  @Override
-  public OptionalDouble compute() {
-    return this.breachRatio.calculateRatio();
+  public void increment(int milliseconds) {
+    this.now = now.plusMillis(milliseconds);
   }
 }

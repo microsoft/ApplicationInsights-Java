@@ -53,7 +53,7 @@ public class AlertingServiceFactory {
       TelemetryObservers telemetryObservers,
       TelemetryClient telemetryClient,
       ExecutorService executorService) {
-    alertingSubsystem = AlertingSubsystem.create(alertAction);
+    alertingSubsystem = AlertingSubsystem.create(alertAction, TimeSource.DEFAULT);
 
     if (configuration.preview.profiler.enableResponseTriggering) {
       List<AlertPipeline> spanPipelines =

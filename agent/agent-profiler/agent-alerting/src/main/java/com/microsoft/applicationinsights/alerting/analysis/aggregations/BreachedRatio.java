@@ -31,9 +31,14 @@ public class BreachedRatio {
 
   private final WindowedAggregation<BreachedCountBucket, Boolean> windowedAggregation;
 
-  public BreachedRatio(long windowLengthInSec, long minimumSamples, TimeSource timeSource) {
+  public BreachedRatio(
+      long windowLengthInSec,
+      long minimumSamples,
+      TimeSource timeSource,
+      boolean trackCurrentBucket) {
     this.windowedAggregation =
-        new WindowedAggregation<>(windowLengthInSec, timeSource, BreachedCountBucket::new);
+        new WindowedAggregation<>(
+            windowLengthInSec, timeSource, BreachedCountBucket::new, trackCurrentBucket);
     this.minimumSamples = minimumSamples;
   }
 

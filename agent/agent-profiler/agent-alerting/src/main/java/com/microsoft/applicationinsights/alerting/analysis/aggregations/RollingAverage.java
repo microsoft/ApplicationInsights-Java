@@ -23,19 +23,22 @@ package com.microsoft.applicationinsights.alerting.analysis.aggregations;
 
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
+import java.util.List;
 import java.util.OptionalDouble;
 
 /** Applies a time window to data and calculates a mean of the data during that window. */
 public class RollingAverage extends Aggregation {
   private final WindowedAggregation<RollingAverageSample, TelemetryDataPoint> windowedAggregation;
 
-  public RollingAverage() {
-    windowedAggregation = new WindowedAggregation<>(RollingAverageSample::new);
+  public RollingAverage(TimeSource timeSource, boolean trackCurrentBucket) {
+    windowedAggregation =
+        new WindowedAggregation<>(timeSource, RollingAverageSample::new, trackCurrentBucket);
   }
 
-  public RollingAverage(long windowLengthInSec, TimeSource timeSource) {
+  public RollingAverage(long windowLengthInSec, TimeSource timeSource, boolean trackCurrentBucket) {
     windowedAggregation =
-        new WindowedAggregation<>(windowLengthInSec, timeSource, RollingAverageSample::new);
+        new WindowedAggregation<>(
+            windowLengthInSec, timeSource, RollingAverageSample::new, trackCurrentBucket);
   }
 
   private static class RollingAverageSample
@@ -57,13 +60,14 @@ public class RollingAverage extends Aggregation {
 
   @Override
   public OptionalDouble compute() {
-    long count = windowedAggregation.getData().stream().mapToLong(it -> it.sampleCount).sum();
+    List<RollingAverageSample> data = windowedAggregation.getData();
+    long count = data.stream().mapToLong(it -> it.sampleCount).sum();
 
     if (count == 0) {
       return OptionalDouble.empty();
     }
 
-    double totalTime = windowedAggregation.getData().stream().mapToDouble(it -> it.totalTime).sum();
+    double totalTime = data.stream().mapToDouble(it -> it.totalTime).sum();
 
     return OptionalDouble.of(totalTime / (double) count);
   }

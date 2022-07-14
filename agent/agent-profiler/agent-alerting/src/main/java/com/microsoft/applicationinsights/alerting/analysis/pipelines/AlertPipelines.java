@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.alerting.analysis.pipelines;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
+import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.aggregations.RollingAverage;
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
 import com.microsoft.applicationinsights.alerting.analysis.filter.AlertSpanFilter;
@@ -58,13 +59,13 @@ public class AlertPipelines {
     }
   }
 
-  public void updateAlertConfig(AlertConfiguration newAlertConfig) {
+  public void updateAlertConfig(AlertConfiguration newAlertConfig, TimeSource timeSource) {
     AlertPipeline pipeline = alertPipelines.get(newAlertConfig.getType());
     if (pipeline == null) {
       pipeline =
           SingleAlertPipeline.create(
               new AlertSpanFilter.AcceptAll(),
-              new RollingAverage(),
+              new RollingAverage(120, timeSource, true),
               newAlertConfig,
               this::dispatchAlert);
       alertPipelines.put(newAlertConfig.getType(), pipeline);

@@ -38,8 +38,9 @@ import org.junit.jupiter.api.Test;
 
 class AlertingSubsystemTest {
 
-  private static AlertingSubsystem getAlertMonitor(Consumer<AlertBreach> consumer) {
-    AlertingSubsystem monitor = AlertingSubsystem.create(consumer);
+  private static AlertingSubsystem getAlertMonitor(
+      Consumer<AlertBreach> consumer, TestTimeSource timeSource) {
+    AlertingSubsystem monitor = AlertingSubsystem.create(consumer, timeSource);
 
     monitor.updateConfiguration(
         new AlertingConfiguration(
@@ -56,11 +57,14 @@ class AlertingSubsystemTest {
 
     AtomicReference<AlertBreach> called = new AtomicReference<>();
     Consumer<AlertBreach> consumer = called::set;
+    TestTimeSource timeSource = new TestTimeSource();
 
-    AlertingSubsystem service = getAlertMonitor(consumer);
+    AlertingSubsystem service = getAlertMonitor(consumer, timeSource);
 
-    service.track(AlertMetricType.CPU, 90.0);
-    service.track(AlertMetricType.CPU, 90.0);
+    for (int i = 0; i < 10; i++) {
+      service.track(AlertMetricType.CPU, 90.0);
+    }
+    timeSource.increment(50000);
     service.track(AlertMetricType.CPU, 90.0);
 
     assertThat(called.get().getType()).isEqualTo(AlertMetricType.CPU);
@@ -71,8 +75,9 @@ class AlertingSubsystemTest {
   void manualAlertWorks() {
     AtomicReference<AlertBreach> called = new AtomicReference<>();
     Consumer<AlertBreach> consumer = called::set;
+    TestTimeSource timeSource = new TestTimeSource();
 
-    AlertingSubsystem service = AlertingSubsystem.create(consumer);
+    AlertingSubsystem service = AlertingSubsystem.create(consumer, timeSource);
 
     service.updateConfiguration(
         new AlertingConfiguration(
@@ -93,8 +98,9 @@ class AlertingSubsystemTest {
   void manualAlertDoesNotTriggerAfterExpired() {
     AtomicReference<AlertBreach> called = new AtomicReference<>();
     Consumer<AlertBreach> consumer = called::set;
+    TestTimeSource timeSource = new TestTimeSource();
 
-    AlertingSubsystem service = AlertingSubsystem.create(consumer);
+    AlertingSubsystem service = AlertingSubsystem.create(consumer, timeSource);
 
     service.updateConfiguration(
         new AlertingConfiguration(

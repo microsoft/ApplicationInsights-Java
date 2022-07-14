@@ -26,6 +26,7 @@ import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertT
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.SpanAlertPipelineBuilder;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
+import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipelineMultiplexer;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import io.opentelemetry.api.trace.SpanKind;
@@ -57,7 +58,10 @@ public class AlertTriggerSpanExporterTest {
   public void matchingFilterCausesAlert() throws InterruptedException {
     run(
         (spanExporter, alertCalled, timeSource) -> {
-          spanExporter.export(buildSampleSpan("fooBar", 20000000000L));
+          for (int i = 0; i < 10; i++) {
+            spanExporter.export(buildSampleSpan("fooBar", 20000000000L));
+            timeSource.increment(10000);
+          }
 
           spanExporter.flush();
 
@@ -121,7 +125,10 @@ public class AlertTriggerSpanExporterTest {
   public void nonMatchingFilterDoesNotCauseAlert() throws InterruptedException {
     run(
         (spanExporter, alertCalled, timeSource) -> {
-          spanExporter.export(buildSampleSpan("does-not-match", 20000000000L));
+          for (int i = 0; i < 10; i++) {
+            spanExporter.export(buildSampleSpan("does-not-match", 20000000000L));
+            timeSource.increment(10000);
+          }
 
           spanExporter.flush();
 
@@ -143,7 +150,7 @@ public class AlertTriggerSpanExporterTest {
     triggerConfig.filter.value = "foo.*";
     triggerConfig.threshold.value = 0.75f;
 
-    AlertingSubsystem alertingSubsystem = AlertingSubsystem.create(alertAction);
+    AlertingSubsystem alertingSubsystem = AlertingSubsystem.create(alertAction, TimeSource.DEFAULT);
 
     TestTimeSource timeSource = new TestTimeSource();
     timeSource.setNow(Instant.EPOCH);

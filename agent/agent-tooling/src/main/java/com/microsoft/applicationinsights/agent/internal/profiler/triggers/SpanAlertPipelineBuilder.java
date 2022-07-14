@@ -70,7 +70,8 @@ public class SpanAlertPipelineBuilder {
           configuration.aggregation.configuration.thresholdMs,
           configuration.aggregation.configuration.minimumSamples,
           configuration.aggregation.windowSize / 1000,
-          timeSource);
+          timeSource,
+          false);
     }
     return null;
   }

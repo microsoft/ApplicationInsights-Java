@@ -63,13 +63,18 @@ public class AlertingSubsystem {
   private AlertingConfiguration alertConfig;
 
   protected AlertingSubsystem(Consumer<AlertBreach> alertHandler) {
-    this.alertHandler = alertHandler;
-    alertPipelines = new AlertPipelines(alertHandler);
-    timeSource = TimeSource.DEFAULT;
+    this(alertHandler, TimeSource.DEFAULT);
   }
 
-  public static AlertingSubsystem create(Consumer<AlertBreach> alertHandler) {
-    AlertingSubsystem alertingSubsystem = new AlertingSubsystem(alertHandler);
+  protected AlertingSubsystem(Consumer<AlertBreach> alertHandler, TimeSource timeSource) {
+    this.alertHandler = alertHandler;
+    alertPipelines = new AlertPipelines(alertHandler);
+    this.timeSource = timeSource;
+  }
+
+  public static AlertingSubsystem create(
+      Consumer<AlertBreach> alertHandler, TimeSource timeSource) {
+    AlertingSubsystem alertingSubsystem = new AlertingSubsystem(alertHandler, timeSource);
     // init with disabled config
     alertingSubsystem.initialize(
         new AlertingConfiguration(
@@ -135,7 +140,7 @@ public class AlertingSubsystem {
   private void updatePipelineConfig(
       AlertConfiguration newAlertConfig, @Nullable AlertConfiguration oldAlertConfig) {
     if (oldAlertConfig == null || !oldAlertConfig.equals(newAlertConfig)) {
-      alertPipelines.updateAlertConfig(newAlertConfig);
+      alertPipelines.updateAlertConfig(newAlertConfig, timeSource);
     }
   }
 

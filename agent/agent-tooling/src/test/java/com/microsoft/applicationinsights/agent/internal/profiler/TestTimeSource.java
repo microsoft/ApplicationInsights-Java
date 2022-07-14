@@ -35,4 +35,8 @@ public class TestTimeSource extends TimeSource {
   public void setNow(Instant now) {
     this.now = now;
   }
+
+  public void increment(int milliseconds) {
+    now = now.plusMillis(milliseconds);
+  }
 }
