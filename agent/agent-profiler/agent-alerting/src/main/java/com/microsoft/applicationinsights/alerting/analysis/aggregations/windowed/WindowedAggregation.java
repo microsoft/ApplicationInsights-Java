@@ -36,8 +36,8 @@ public class WindowedAggregation<T extends BucketData<U>, U> {
   private final TimeSource timeSource;
 
   private final Object bucketLock = new Object();
-  private final List<WindowedAggregationBucket<T, U>> buckets = Collections.synchronizedList(
-      new ArrayList<>());
+  private final List<WindowedAggregationBucket<T, U>> buckets =
+      Collections.synchronizedList(new ArrayList<>());
   private WindowedAggregationBucket<T, U> currentBucket;
   private final Supplier<T> bucketFactory;
 
@@ -72,8 +72,9 @@ public class WindowedAggregation<T extends BucketData<U>, U> {
       Instant now = timeSource.getNow();
 
       if (currentBucket == null) {
-        currentBucket = new WindowedAggregationBucket<>(now.plusSeconds(BUCKET_DURATION_SECONDS),
-            bucketFactory.get());
+        currentBucket =
+            new WindowedAggregationBucket<>(
+                now.plusSeconds(BUCKET_DURATION_SECONDS), bucketFactory.get());
         if (trackCurrentBucket) {
           buckets.add(currentBucket);
         }
@@ -88,8 +89,9 @@ public class WindowedAggregation<T extends BucketData<U>, U> {
           buckets.add(currentBucket);
         }
 
-        currentBucket = new WindowedAggregationBucket<>(now.plusSeconds(BUCKET_DURATION_SECONDS),
-            bucketFactory.get());
+        currentBucket =
+            new WindowedAggregationBucket<>(
+                now.plusSeconds(BUCKET_DURATION_SECONDS), bucketFactory.get());
 
         if (trackCurrentBucket) {
           buckets.add(currentBucket);

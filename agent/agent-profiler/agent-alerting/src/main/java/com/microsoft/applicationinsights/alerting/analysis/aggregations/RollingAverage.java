@@ -38,8 +38,7 @@ public class RollingAverage extends Aggregation {
             windowLengthInSec, timeSource, RollingAverageSample::new, trackCurrentBucket);
   }
 
-  private static class RollingAverageSample
-      implements BucketData<TelemetryDataPoint> {
+  private static class RollingAverageSample implements BucketData<TelemetryDataPoint> {
     int sampleCount = 0;
     double totalTime = 0;
 
