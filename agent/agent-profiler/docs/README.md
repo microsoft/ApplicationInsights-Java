@@ -82,7 +82,7 @@ Additionally, a number of parameters can be configured using environment variabl
 ### Environment variables
 
 - APPLICATIONINSIGHTS_PROFILER_ENABLED: boolean (default false)
-  - Enables/Disables the profiling feature.
+  - Enables/disables the profiling feature.
 
 ### Configuration file
 
