@@ -52,6 +52,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,9 +68,9 @@ public class QuickPulseTestBase extends TestBase {
   public void setupTest(TestInfo testInfo) {
     this.testContextManager =
         new TestContextManager(testInfo.getTestMethod().get(), TestMode.PLAYBACK);
-    String playbackRecordName = "quickPulsePlayback";
-    if ("testPostRequest".equals(testInfo.getTestMethod().get().getName())) {
-      playbackRecordName = "testPostRequest";
+    String playbackRecordName = "quickPulsePingPlayback";
+    if (testInfo.getTestMethod().get().getName().toLowerCase(Locale.ROOT).contains("post")) {
+      playbackRecordName = "quickPulsePingAndPostPlayback";
     }
     interceptorManager =
         new InterceptorManager(
