@@ -68,7 +68,7 @@ trigger a profile when required. Once a profile has been triggered and completed
 viewable from the
 Application Insights instance within the Performance -> Profiler section. From that screen the
 profile can be downloaded, once download the JFR recording file can be opened and analyzed within a
-tool of the users choosing.
+tool of your choosing.
 
 ## Configuration
 
