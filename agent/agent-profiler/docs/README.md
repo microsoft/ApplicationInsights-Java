@@ -9,7 +9,7 @@ The Application Insights Java Profiler provides a system for:
 # Overview
 
 The Application Insights Java profiler uses the JFR profiler provided by the JVM to record profiling
-data. So that users may download the JFR recordings at a later time and analyse them to identify
+data. So that users may download the JFR recordings at a later time and analyze them to identify
 the cause of performance issues. This data is gathered on demand when trigger conditions are met.
 Currently, the available triggers are thresholds over CPU usage and Memory consumption. When a
 threshold is breached, a profile of the configured type and duration is gathered and uploaded. This
