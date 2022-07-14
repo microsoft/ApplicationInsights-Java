@@ -63,7 +63,7 @@ flags is found inside `Edit->Advanced` of this user interface.
     4. Note, currently the Java profiler does not
    support the "Sampling" trigger, configuring this will have no effect.
 
-Once this has been completed, the agent will monitor the resource usage of your processes and
+Once this has been completed, the agent will monitor the resource usage of your process and
 trigger a profile when required. Once a profile has been triggered and completed, it will be
 viewable from the
 Application Insights instance within the Performance -> Profiler section. From that screen the
