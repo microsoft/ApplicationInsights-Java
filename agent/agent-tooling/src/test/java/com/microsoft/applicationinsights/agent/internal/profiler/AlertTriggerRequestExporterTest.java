@@ -50,7 +50,9 @@ public class AlertTriggerRequestExporterTest {
 
   interface Handle {
     void accept(
-        AlertTriggerRequestExporter spanExporter, AtomicBoolean alertCalled, TestTimeSource timeSource)
+        AlertTriggerRequestExporter spanExporter,
+        AtomicBoolean alertCalled,
+        TestTimeSource timeSource)
         throws InterruptedException;
   }
 
@@ -158,7 +160,8 @@ public class AlertTriggerRequestExporterTest {
     alertingSubsystem.setPipeline(
         AlertMetricType.REQUEST,
         new AlertPipelineMultiplexer(
-            Arrays.asList(RequestAlertPipelineBuilder.build(triggerConfig, alertAction, timeSource))));
+            Arrays.asList(
+                RequestAlertPipelineBuilder.build(triggerConfig, alertAction, timeSource))));
 
     AlertTriggerRequestExporter spanExporter =
         new AlertTriggerRequestExporter(delegateSpanExporter, () -> alertingSubsystem);
