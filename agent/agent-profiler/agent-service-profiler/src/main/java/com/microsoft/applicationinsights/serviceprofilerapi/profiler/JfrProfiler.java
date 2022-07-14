@@ -166,7 +166,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
         case CPU:
           recordingConfiguration = cpuRecordingConfiguration;
           break;
-        case SPAN:
+        case REQUEST:
           recordingConfiguration = spanRecordingConfiguration;
           break;
         case MEMORY:

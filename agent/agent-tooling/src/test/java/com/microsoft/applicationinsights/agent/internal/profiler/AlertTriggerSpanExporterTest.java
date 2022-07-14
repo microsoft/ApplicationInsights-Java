@@ -149,7 +149,7 @@ public class AlertTriggerSpanExporterTest {
     timeSource.setNow(Instant.EPOCH);
 
     alertingSubsystem.setPipeline(
-        AlertMetricType.SPAN,
+        AlertMetricType.REQUEST,
         new AlertPipelineMultiplexer(
             Arrays.asList(SpanAlertPipelineBuilder.build(triggerConfig, alertAction, timeSource))));
 

@@ -109,7 +109,7 @@ public class AlternativeJfrConfigurations {
     switch (type) {
       case MEMORY:
         return getMemory(profile);
-      case SPAN:
+      case REQUEST:
         return getSpan(profile);
       default:
         return getCpu(profile);
@@ -129,6 +129,6 @@ public class AlternativeJfrConfigurations {
 
   public static RecordingConfiguration getSpanProfileConfig(
       ServiceProfilerServiceConfig configuration) {
-    return getRecordingConfiguration(configuration.cpuTriggeredSettings(), AlertMetricType.SPAN);
+    return getRecordingConfiguration(configuration.cpuTriggeredSettings(), AlertMetricType.REQUEST);
   }
 }

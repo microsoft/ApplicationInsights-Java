@@ -61,7 +61,7 @@ public class AlertingServiceFactory {
               .collect(Collectors.toList());
 
       alertingSubsystem.setPipeline(
-          AlertMetricType.SPAN, new AlertPipelineMultiplexer(spanPipelines));
+          AlertMetricType.REQUEST, new AlertPipelineMultiplexer(spanPipelines));
     }
 
     addObserver(alertingSubsystem, telemetryObservers);

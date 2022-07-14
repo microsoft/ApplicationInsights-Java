@@ -53,7 +53,7 @@ public class SpanAlertPipelineBuilder {
     // TODO make threshold and throttling responsive to type argument
     AlertingConfiguration.AlertConfiguration config =
         new AlertingConfiguration.AlertConfiguration(
-            AlertMetricType.SPAN,
+            AlertMetricType.REQUEST,
             true,
             configuration.threshold.value,
             configuration.profileDuration,

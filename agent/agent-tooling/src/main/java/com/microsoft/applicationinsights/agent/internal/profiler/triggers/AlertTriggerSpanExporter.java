@@ -68,7 +68,7 @@ public class AlertTriggerSpanExporter implements SpanExporter {
       if (alertingSubsystem != null) {
         alertingSubsystem.trackTelemetryDataPoint(
             TelemetryDataPoint.create(
-                AlertMetricType.SPAN,
+                AlertMetricType.REQUEST,
                 TimeSource.DEFAULT.getNow(),
                 span.getName(),
                 durationInMillis));

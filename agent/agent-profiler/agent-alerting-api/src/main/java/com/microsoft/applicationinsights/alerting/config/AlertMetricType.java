@@ -26,5 +26,5 @@ public enum AlertMetricType {
   MEMORY,
   PERIODIC,
   MANUAL,
-  SPAN
+  REQUEST
 }
