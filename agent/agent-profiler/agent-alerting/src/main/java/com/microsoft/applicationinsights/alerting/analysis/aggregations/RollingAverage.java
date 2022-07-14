@@ -22,6 +22,8 @@
 package com.microsoft.applicationinsights.alerting.analysis.aggregations;
 
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
+import com.microsoft.applicationinsights.alerting.analysis.aggregations.windowed.BucketData;
+import com.microsoft.applicationinsights.alerting.analysis.aggregations.windowed.WindowedAggregation;
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
 import java.util.List;
 import java.util.OptionalDouble;
@@ -30,11 +32,6 @@ import java.util.OptionalDouble;
 public class RollingAverage extends Aggregation {
   private final WindowedAggregation<RollingAverageSample, TelemetryDataPoint> windowedAggregation;
 
-  public RollingAverage(TimeSource timeSource, boolean trackCurrentBucket) {
-    windowedAggregation =
-        new WindowedAggregation<>(timeSource, RollingAverageSample::new, trackCurrentBucket);
-  }
-
   public RollingAverage(long windowLengthInSec, TimeSource timeSource, boolean trackCurrentBucket) {
     windowedAggregation =
         new WindowedAggregation<>(
@@ -42,7 +39,7 @@ public class RollingAverage extends Aggregation {
   }
 
   private static class RollingAverageSample
-      implements WindowedAggregation.BucketData<TelemetryDataPoint> {
+      implements BucketData<TelemetryDataPoint> {
     int sampleCount = 0;
     double totalTime = 0;
 

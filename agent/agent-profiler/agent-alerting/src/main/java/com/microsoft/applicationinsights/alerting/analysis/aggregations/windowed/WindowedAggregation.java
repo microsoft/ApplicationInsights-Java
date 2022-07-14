@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.alerting.analysis.aggregations;
+package com.microsoft.applicationinsights.alerting.analysis.aggregations.windowed;
 
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import java.time.Instant;
@@ -30,27 +30,20 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /** Applies a time window to data held in 1 second buckets. I.e holds the last n seconds of data. */
-public class WindowedAggregation<T extends WindowedAggregation.BucketData<U>, U> {
-  private static final int DEFAULT_WINDOW_IN_SEC =
-      Integer.parseInt(
-          System.getProperty("applicationinsights.preview.profiler.rolling-window-in-sec", "120"));
+public class WindowedAggregation<T extends BucketData<U>, U> {
   public static final int BUCKET_DURATION_SECONDS = 2;
   private final long windowLengthInSec;
   private final TimeSource timeSource;
 
   private final Object bucketLock = new Object();
-  private final List<Bucket> buckets = Collections.synchronizedList(new ArrayList<>());
-  private Bucket currentBucket;
+  private final List<WindowedAggregationBucket<T, U>> buckets = Collections.synchronizedList(
+      new ArrayList<>());
+  private WindowedAggregationBucket<T, U> currentBucket;
   private final Supplier<T> bucketFactory;
 
   // Determines if the current bucket that is in the process of being calculated is included
   // in the returned data
   private final boolean trackCurrentBucket;
-
-  public WindowedAggregation(
-      TimeSource timeSource, Supplier<T> bucketFactory, boolean trackCurrentBucket) {
-    this(DEFAULT_WINDOW_IN_SEC, timeSource, bucketFactory, trackCurrentBucket);
-  }
 
   public WindowedAggregation(
       long windowLengthInSec,
@@ -63,24 +56,6 @@ public class WindowedAggregation<T extends WindowedAggregation.BucketData<U>, U>
     this.trackCurrentBucket = trackCurrentBucket;
   }
 
-  public interface BucketData<U> {
-    void update(U sample);
-  }
-
-  private class Bucket {
-    final Instant bucketEnd;
-    private final T data;
-
-    private Bucket(Instant bucketEnd, T data) {
-      this.bucketEnd = bucketEnd;
-      this.data = data;
-    }
-
-    public void update(U newSample) {
-      data.update(newSample);
-    }
-  }
-
   public void update(U breached) {
     getBucket().update(breached);
   }
@@ -89,15 +64,16 @@ public class WindowedAggregation<T extends WindowedAggregation.BucketData<U>, U>
     Instant now = timeSource.getNow();
     Instant cutoff = now.minusSeconds(windowLengthInSec);
     gcBuckets(cutoff);
-    return buckets.stream().map(it -> it.data).collect(Collectors.toList());
+    return buckets.stream().map(WindowedAggregationBucket::getData).collect(Collectors.toList());
   }
 
-  private Bucket getBucket() {
+  private WindowedAggregationBucket<T, U> getBucket() {
     synchronized (bucketLock) {
       Instant now = timeSource.getNow();
 
       if (currentBucket == null) {
-        currentBucket = new Bucket(now.plusSeconds(BUCKET_DURATION_SECONDS), bucketFactory.get());
+        currentBucket = new WindowedAggregationBucket<>(now.plusSeconds(BUCKET_DURATION_SECONDS),
+            bucketFactory.get());
         if (trackCurrentBucket) {
           buckets.add(currentBucket);
         }
@@ -112,7 +88,8 @@ public class WindowedAggregation<T extends WindowedAggregation.BucketData<U>, U>
           buckets.add(currentBucket);
         }
 
-        currentBucket = new Bucket(now.plusSeconds(BUCKET_DURATION_SECONDS), bucketFactory.get());
+        currentBucket = new WindowedAggregationBucket<>(now.plusSeconds(BUCKET_DURATION_SECONDS),
+            bucketFactory.get());
 
         if (trackCurrentBucket) {
           buckets.add(currentBucket);

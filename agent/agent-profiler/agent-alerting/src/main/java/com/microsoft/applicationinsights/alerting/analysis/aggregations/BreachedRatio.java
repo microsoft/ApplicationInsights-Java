@@ -22,6 +22,8 @@
 package com.microsoft.applicationinsights.alerting.analysis.aggregations;
 
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
+import com.microsoft.applicationinsights.alerting.analysis.aggregations.windowed.BucketData;
+import com.microsoft.applicationinsights.alerting.analysis.aggregations.windowed.WindowedAggregation;
 import java.util.List;
 import java.util.OptionalDouble;
 
@@ -42,7 +44,7 @@ public class BreachedRatio {
     this.minimumSamples = minimumSamples;
   }
 
-  private static class BreachedCountBucket implements WindowedAggregation.BucketData<Boolean> {
+  private static class BreachedCountBucket implements BucketData<Boolean> {
     int totalCount = 0;
     int breachedCount = 0;
 
