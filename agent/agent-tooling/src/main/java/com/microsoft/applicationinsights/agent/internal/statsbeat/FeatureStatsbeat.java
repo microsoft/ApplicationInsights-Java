@@ -63,6 +63,11 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     instrumentationList.add(instrumentation);
   }
 
+  // this is used by ByteCodeUtil
+  public void track2xBridgeUsage() {
+    featureList.add(Feature.SDK_2X_BRIDGE_VIA_3X_AGENT);
+  }
+
   @Override
   protected void send(TelemetryClient telemetryClient) {
     long encodedLong;

@@ -27,6 +27,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricData
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.SpanAlertPipelineBuilder;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
@@ -70,13 +71,22 @@ public class AlertingServiceFactory {
         alertingSubsystem,
         telemetryClient,
         executorService,
-        createGcEventMonitorConfiguration(configuration.preview.gcEvents));
+        formGcEventMonitorConfiguration(configuration.preview));
     return alertingSubsystem;
   }
 
-  private static GcEventMonitor.GcEventMonitorConfiguration createGcEventMonitorConfiguration(
-      Configuration.GcEventConfiguration gcEvents) {
-    return new GcEventMonitor.GcEventMonitorConfiguration(gcEvents.reportingLevel);
+  private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(
+      Configuration.PreviewConfiguration configuration) {
+    if (configuration.gcEvents.reportingLevel != null) {
+      return new GcEventMonitor.GcEventMonitorConfiguration(configuration.gcEvents.reportingLevel);
+    }
+
+    // The memory monitoring requires observing gc events
+    if (configuration.profiler.enabled) {
+      return new GcEventMonitor.GcEventMonitorConfiguration(GcReportingLevel.TENURED_ONLY);
+    }
+
+    return new GcEventMonitor.GcEventMonitorConfiguration(GcReportingLevel.NONE);
   }
 
   private static void monitorGcActivity(

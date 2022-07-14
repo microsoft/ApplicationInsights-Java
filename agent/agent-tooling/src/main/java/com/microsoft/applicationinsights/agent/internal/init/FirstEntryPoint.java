@@ -245,11 +245,11 @@ public class FirstEntryPoint implements LoggingCustomizer {
 
   @Nullable
   private static String getCodelessSdkNamePrefix() {
-    if (!DiagnosticsHelper.isRpIntegration()) {
-      return null;
-    }
     if (isRuntimeAttached()) {
       return "ra_";
+    }
+    if (!DiagnosticsHelper.isRpIntegration()) {
+      return null;
     }
     StringBuilder sdkNamePrefix = new StringBuilder(4);
     sdkNamePrefix.append(DiagnosticsHelper.rpIntegrationChar());

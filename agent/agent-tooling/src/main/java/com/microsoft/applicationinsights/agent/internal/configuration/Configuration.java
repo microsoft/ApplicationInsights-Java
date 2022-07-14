@@ -1306,8 +1306,8 @@ public class Configuration {
     public int periodicRecordingDurationSeconds = 120;
     public int periodicRecordingIntervalSeconds = 60 * 60;
     public boolean enabled = false;
-    public String memoryTriggeredSettings = "profile";
-    public String cpuTriggeredSettings = "profile";
+    public String memoryTriggeredSettings = "PROFILE_WITHOUT_ENV_DATA";
+    public String cpuTriggeredSettings = "PROFILE_WITHOUT_ENV_DATA";
     @Nullable public String serviceProfilerFrontEndPoint = null;
     public boolean enableDiagnostics = false;
     public boolean enableResponseTriggering = false;
@@ -1317,7 +1317,7 @@ public class Configuration {
   }
 
   public static class GcEventConfiguration {
-    public GcReportingLevel reportingLevel = GcReportingLevel.TENURED_ONLY;
+    public GcReportingLevel reportingLevel;
   }
 
   public static class AadAuthentication {

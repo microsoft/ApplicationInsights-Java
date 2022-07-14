@@ -131,6 +131,10 @@ public class StatsbeatModule {
     return networkStatsbeat;
   }
 
+  public FeatureStatsbeat getFeatureStatsbeat() {
+    return featureStatsbeat;
+  }
+
   public FeatureStatsbeat getInstrumentationStatsbeat() {
     return instrumentationStatsbeat;
   }

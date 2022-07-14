@@ -171,6 +171,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     TelemetryClient.setActive(telemetryClient);
 
     BytecodeUtilImpl.samplingPercentage = config.sampling.percentage;
+    BytecodeUtilImpl.featureStatsbeat = statsbeatModule.getFeatureStatsbeat();
 
     AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient.getConnectionString());
     AiAppId.setSupplier(appIdSupplier);
