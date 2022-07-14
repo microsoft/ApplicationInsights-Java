@@ -21,11 +21,3 @@ jobs:
     uses: ./.github/workflows/reusable-smoke-test.yml
     with:
       no-build-cache: true
-
-  open-issue-on-failure:
-    needs:
-      - assemble
-      - test
-      - smoke-test
-    if: failure()
-    uses: ./.github/workflows/reusable-open-issue-on-failure.yml

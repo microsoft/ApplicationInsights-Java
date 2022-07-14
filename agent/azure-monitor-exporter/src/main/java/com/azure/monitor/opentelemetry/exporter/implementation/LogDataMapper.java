@@ -168,6 +168,7 @@ public class LogDataMapper {
   private static final String LOG4J1_2_MDC_PREFIX = "log4j.mdc.";
   private static final String LOG4J2_CONTEXT_DATA_PREFIX = "log4j.context_data.";
   private static final String LOGBACK_MDC_PREFIX = "logback.mdc.";
+  private static final String JBOSS_LOGGING_MDC_PREFIX = "jboss-logmanager.mdc.";
 
   static void setExtraAttributes(AbstractTelemetryBuilder telemetryBuilder, Attributes attributes) {
     attributes.forEach(
@@ -184,6 +185,11 @@ public class LogDataMapper {
           if (stringKey.startsWith(LOGBACK_MDC_PREFIX)) {
             telemetryBuilder.addProperty(
                 stringKey.substring(LOGBACK_MDC_PREFIX.length()), String.valueOf(value));
+            return;
+          }
+          if (stringKey.startsWith(JBOSS_LOGGING_MDC_PREFIX)) {
+            telemetryBuilder.addProperty(
+                stringKey.substring(JBOSS_LOGGING_MDC_PREFIX.length()), String.valueOf(value));
             return;
           }
           if (stringKey.startsWith(LOG4J1_2_MDC_PREFIX)) {

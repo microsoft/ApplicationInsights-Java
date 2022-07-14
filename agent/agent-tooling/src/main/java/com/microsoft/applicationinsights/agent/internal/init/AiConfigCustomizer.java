@@ -74,11 +74,15 @@ public class AiConfigCustomizer implements ConfigCustomizer {
         "otel.instrumentation.http.capture-headers.client.response",
         config.preview.captureHttpClientHeaders.responseHeaders);
 
-    // enable logback MDC
+    // enable capturing all mdc properties
     properties.put(
         "otel.instrumentation.logback-appender.experimental.capture-mdc-attributes", "*");
+    properties.put("otel.instrumentation.log4j-appender.experimental.capture-mdc-attributes", "*");
     properties.put(
         "otel.instrumentation.log4j-appender.experimental.capture-context-data-attributes", "*");
+    properties.put(
+        "otel.instrumentation.jboss-logmanager.experimental.capture-mdc-attributes", "*");
+
     properties.put(
         "otel.instrumentation.log4j-appender.experimental.capture-map-message-attributes", "true");
 
@@ -87,9 +91,6 @@ public class AiConfigCustomizer implements ConfigCustomizer {
     properties.put("otel.instrumentation.jboss-logmanager.experimental-log-attributes", "true");
     properties.put("otel.instrumentation.log4j-appender.experimental-log-attributes", "true");
     properties.put("otel.instrumentation.logback-appender.experimental-log-attributes", "true");
-
-    // enable log4j 1.x MDC
-    properties.put("otel.instrumentation.log4j-appender.experimental.capture-mdc-attributes", "*");
 
     // custom instrumentation
     if (!config.preview.customInstrumentation.isEmpty()) {
@@ -206,6 +207,7 @@ public class AiConfigCustomizer implements ConfigCustomizer {
 
     properties.put("otel.instrumentation.servlet.enabled", "true");
     properties.put("otel.instrumentation.spring-core.enabled", "true");
+    properties.put("otel.instrumentation.spring-jms.enabled", "true");
     properties.put("otel.instrumentation.spring-web.enabled", "true");
     properties.put("otel.instrumentation.spring-webmvc.enabled", "true");
     properties.put("otel.instrumentation.spring-webflux.enabled", "true");

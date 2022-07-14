@@ -26,6 +26,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionF
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
 import com.microsoft.applicationinsights.agent.internal.profiler.GcEventMonitor;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilerServiceInitializer;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -55,12 +56,21 @@ class ProfilingInitializer {
         config.role.name,
         telemetryClient,
         formApplicationInsightsUserAgent(),
-        formGcEventMonitorConfiguration(config.preview.gcEvents));
+        formGcEventMonitorConfiguration(config.preview));
   }
 
   private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(
-      Configuration.GcEventConfiguration gcEvents) {
-    return new GcEventMonitor.GcEventMonitorConfiguration(gcEvents.reportingLevel);
+      Configuration.PreviewConfiguration configuration) {
+    if (configuration.gcEvents.reportingLevel != null) {
+      return new GcEventMonitor.GcEventMonitorConfiguration(configuration.gcEvents.reportingLevel);
+    }
+
+    // The memory monitoring requires observing gc events
+    if (configuration.profiler.enabled) {
+      return new GcEventMonitor.GcEventMonitorConfiguration(GcReportingLevel.TENURED_ONLY);
+    }
+
+    return new GcEventMonitor.GcEventMonitorConfiguration(GcReportingLevel.NONE);
   }
 
   private static String formApplicationInsightsUserAgent() {
