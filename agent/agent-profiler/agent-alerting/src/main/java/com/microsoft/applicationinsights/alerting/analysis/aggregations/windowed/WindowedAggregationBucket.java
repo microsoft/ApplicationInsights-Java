@@ -23,8 +23,12 @@ package com.microsoft.applicationinsights.alerting.analysis.aggregations.windowe
 
 import java.time.Instant;
 
+/** Wraps data held within the WindowedAggregation */
 class WindowedAggregationBucket<T extends BucketData<U>, U> {
-  final Instant bucketEnd;
+  /** Time after which this bucket will be considered complete */
+  private final Instant bucketEnd;
+
+  /** Mutable bucket for accumulating data within the bucket */
   private final T data;
 
   WindowedAggregationBucket(Instant bucketEnd, T data) {
@@ -38,5 +42,9 @@ class WindowedAggregationBucket<T extends BucketData<U>, U> {
 
   public T getData() {
     return data;
+  }
+
+  public Instant getBucketEnd() {
+    return bucketEnd;
   }
 }

@@ -29,7 +29,10 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-/** Applies a time window to data held in 1 second buckets. I.e holds the last n seconds of data. */
+/**
+ * Holds a series of buckets of fixed duration. Each bucket aggregates data gathered within that
+ * time period.
+ */
 public class WindowedAggregation<T extends BucketData<U>, U> {
   public static final int BUCKET_DURATION_SECONDS = 2;
   private final long windowLengthInSec;
@@ -54,6 +57,14 @@ public class WindowedAggregation<T extends BucketData<U>, U> {
     this.timeSource = timeSource;
     this.bucketFactory = bucketFactory;
     this.trackCurrentBucket = trackCurrentBucket;
+
+    Instant now = timeSource.getNow();
+    currentBucket =
+        new WindowedAggregationBucket<>(
+            now.plusSeconds(BUCKET_DURATION_SECONDS), bucketFactory.get());
+    if (trackCurrentBucket) {
+      buckets.add(currentBucket);
+    }
   }
 
   public void update(U breached) {
@@ -71,21 +82,16 @@ public class WindowedAggregation<T extends BucketData<U>, U> {
     synchronized (bucketLock) {
       Instant now = timeSource.getNow();
 
-      if (currentBucket == null) {
-        currentBucket =
-            new WindowedAggregationBucket<>(
-                now.plusSeconds(BUCKET_DURATION_SECONDS), bucketFactory.get());
-        if (trackCurrentBucket) {
-          buckets.add(currentBucket);
-        }
-      }
+      if (currentBucket.getBucketEnd().isBefore(now)) {
+        // Gone past end of current bucket, close it off and create a new bucket
 
-      if (currentBucket.bucketEnd.isBefore(now)) {
-        // Gone past end of current bucket, add it to the array
         Instant cutoff = now.minusSeconds(windowLengthInSec);
+
+        // Remove old buckets
         gcBuckets(cutoff);
 
         if (!trackCurrentBucket) {
+          // If we are lazily adding to the data set, add the completed bucket
           buckets.add(currentBucket);
         }
 
@@ -94,6 +100,7 @@ public class WindowedAggregation<T extends BucketData<U>, U> {
                 now.plusSeconds(BUCKET_DURATION_SECONDS), bucketFactory.get());
 
         if (trackCurrentBucket) {
+          // If we are eagerly adding to the data set, add it now
           buckets.add(currentBucket);
         }
       }
@@ -104,7 +111,8 @@ public class WindowedAggregation<T extends BucketData<U>, U> {
 
   private void gcBuckets(Instant cutoff) {
     synchronized (bucketLock) {
-      while (buckets.size() > 0 && buckets.get(0).bucketEnd.isBefore(cutoff)) {
+      // Remove buckets that ended before the cutoff
+      while (buckets.size() > 0 && buckets.get(0).getBucketEnd().isBefore(cutoff)) {
         buckets.remove(0);
       }
     }
