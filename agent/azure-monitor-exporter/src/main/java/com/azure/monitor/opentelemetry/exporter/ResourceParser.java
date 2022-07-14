@@ -23,6 +23,7 @@ package com.azure.monitor.opentelemetry.exporter;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Map;
@@ -42,6 +43,8 @@ final class ResourceParser {
         roleName = serviceName;
       } else if (serviceNamespace != null) {
         roleName = "[" + serviceNamespace + "]";
+      } else {
+        roleName = Strings.trimAndEmptyToNull(System.getenv("WEBSITE_SITE_NAME"));
       }
       if (roleName != null) {
         builder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), roleName);
@@ -51,6 +54,9 @@ final class ResourceParser {
     if (existingTags == null
         || !existingTags.containsKey(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString())) {
       String roleInstance = resource.getAttribute(ResourceAttributes.SERVICE_INSTANCE_ID);
+      if (roleInstance == null) {
+        roleInstance = Strings.trimAndEmptyToNull(System.getenv("WEBSITE_INSTANCE_ID"));
+      }
       if (roleInstance == null) {
         roleInstance = System.getenv("HOSTNAME"); // default hostname
       }
