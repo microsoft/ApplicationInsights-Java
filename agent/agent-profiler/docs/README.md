@@ -92,29 +92,26 @@ Additionally, a number of parameters can be configured using environment variabl
     "profiler": {
       "enabled": true,
       "configPollPeriodSeconds": 50,
-      "cpuTriggeredSettings": "profile_without_env_data",
-      "memoryTriggeredSettings": "profile_without_env_data"
+      "cpuTriggeredSettings": "PROFILE_WITHOUT_ENV_DATA",
+      "memoryTriggeredSettings": "PROFILE_WITHOUT_ENV_DATA"
     }
   }
 }
 
 ```
 
-`configPollPeriodSeconds` - The profiler periodically polls for configuration changes made within
-the UI. This can control the frequency of that poll.
-
 `memoryTriggeredSettings` - This configuration will be used in the event of a memory profile is
 requested. This can be one of:
 
-- `profile_without_env_data` (default value). A profile with certain sensitive events disabled, see
+- `PROFILE_WITHOUT_ENV_DATA` (default value). A profile with certain sensitive events disabled, see
   [Warning](#Warning) section for details.
-- `profile`. Uses the `profile.jfc` configuration that ships with JFR.
+- `PROFILE`. Uses the `profile.jfc` configuration that ships with JFR.
 - A path to a custom jfc configuration file on the file system, i.e `/tmp/myconfig.jfc`.
 
 `cpuTriggeredSettings` - This configuration will be used in the event of a cpu profile is requested.
 This can be one of:
 
-- `profile_without_env_data` (default value). A profile with certain sensitive events disabled, see
+- `PROFILE_WITHOUT_ENV_DATA` (default value). A profile with certain sensitive events disabled, see
   [Warning](#Warning) section for details.
-- `profile`. Uses the `profile.jfc` jfc configuration that ships with JFR.
+- `PROFILE`. Uses the `profile.jfc` jfc configuration that ships with JFR.
 - A path to a custom jfc configuration file on the file system, i.e `/tmp/myconfig.jfc`.
