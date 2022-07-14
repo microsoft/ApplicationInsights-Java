@@ -32,7 +32,7 @@ public class AlertRequestFilterBuilder {
   @Nullable
   public static AlertRequestFilter build(Configuration.RequestFilter filter) {
     if (filter.type == Configuration.RequestFilterType.REGEX) {
-      return new AlertRequestFilter.RegexSpanNameFilter(filter.value);
+      return new AlertRequestFilter.RegexRequestNameFilter(filter.value);
     }
 
     throw new IllegalStateException("Unexpected filter type: " + filter.type);
