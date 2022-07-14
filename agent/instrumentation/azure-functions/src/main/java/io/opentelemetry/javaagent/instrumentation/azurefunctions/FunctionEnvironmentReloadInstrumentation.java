@@ -36,7 +36,8 @@ class FunctionEnvironmentReloadInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
-    return named("com.microsoft.azure.functions.worker.handler.InvocationRequestHandler");
+    return named(
+        "com.microsoft.azure.functions.worker.handler.FunctionEnvironmentReloadRequestHandler");
   }
 
   @Override
