@@ -33,8 +33,11 @@ import com.azure.core.http.HttpPipelineNextPolicy;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.http.policy.BearerTokenAuthenticationPolicy;
 import com.azure.core.http.policy.HttpPipelinePolicy;
+import com.azure.core.test.InterceptorManager;
 import com.azure.core.test.TestBase;
+import com.azure.core.test.TestContextManager;
 import com.azure.core.test.TestMode;
+import com.azure.core.test.utils.TestResourceNamer;
 import com.azure.core.util.FluxUtil;
 import com.azure.identity.ClientSecretCredentialBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
@@ -47,14 +50,37 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Pattern;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
 import reactor.core.publisher.Mono;
 
 public class QuickPulseTestBase extends TestBase {
   private static final String APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE =
       "https://monitor.azure.com//.default";
+
+  @Override
+  @BeforeEach
+  public void setupTest(TestInfo testInfo) {
+    this.testContextManager =
+        new TestContextManager(testInfo.getTestMethod().get(), TestMode.PLAYBACK);
+    String playbackRecordName = "quickPulsePlayback";
+    if ("testPostRequest".equals(testInfo.getTestMethod().get().getName())) {
+      playbackRecordName = "testPostRequest";
+    }
+    interceptorManager =
+        new InterceptorManager(
+            testContextManager.getTestName(),
+            new HashMap<>(),
+            testContextManager.doNotRecordTest(),
+            playbackRecordName);
+    testResourceNamer =
+        new TestResourceNamer(testContextManager, interceptorManager.getRecordedData());
+    beforeTest();
+  }
 
   HttpPipeline getHttpPipelineWithAuthentication() {
     if (getTestMode() == TestMode.RECORD || getTestMode() == TestMode.LIVE) {

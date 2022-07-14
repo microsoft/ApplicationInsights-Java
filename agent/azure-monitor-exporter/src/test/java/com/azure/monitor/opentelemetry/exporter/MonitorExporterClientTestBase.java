@@ -61,7 +61,7 @@ public class MonitorExporterClientTestBase extends TestBase {
             testContextManager.getTestName(),
             new HashMap<>(),
             testContextManager.doNotRecordTest(),
-            "playbackRecord");
+            "regularTelemetryPlayback");
     testResourceNamer =
         new TestResourceNamer(testContextManager, interceptorManager.getRecordedData());
     beforeTest();
