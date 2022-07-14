@@ -67,7 +67,7 @@ Once this has been completed, the agent will monitor the resource usage of your 
 trigger a profile when required. Once a profile has been triggered and completed, it will be
 viewable from the
 Application Insights instance within the Performance -> Profiler section. From that screen the
-profile can be downloaded, once download the JFR recording file can be opened and analysed within a
+profile can be downloaded, once download the JFR recording file can be opened and analyzed within a
 tool of the users choosing.
 
 ## Configuration
