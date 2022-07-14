@@ -54,10 +54,8 @@ public class BreachedRatio {
   private final Object bucketLock = new Object();
   private final List<Bucket> buckets = Collections.synchronizedList(new ArrayList<>());
 
-  public OptionalDouble update(boolean breached) {
+  public void update(boolean breached) {
     getBucket().increment(breached);
-
-    return calculateRatio();
   }
 
   public OptionalDouble calculateRatio() {
