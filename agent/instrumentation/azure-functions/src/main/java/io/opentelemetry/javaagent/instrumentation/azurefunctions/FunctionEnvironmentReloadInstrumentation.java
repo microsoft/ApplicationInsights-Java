@@ -1,0 +1,35 @@
+package io.opentelemetry.javaagent.instrumentation.azurefunctions;
+
+import static net.bytebuddy.matcher.ElementMatchers.isMethod;
+import static net.bytebuddy.matcher.ElementMatchers.named;
+
+import com.microsoft.applicationinsights.agent.bootstrap.AzureFunctions;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
+import net.bytebuddy.asm.Advice;
+import net.bytebuddy.description.type.TypeDescription;
+import net.bytebuddy.matcher.ElementMatcher;
+
+@SuppressWarnings("unused")
+class FunctionEnvironmentReloadInstrumentation implements TypeInstrumentation {
+
+  @Override
+  public ElementMatcher<TypeDescription> typeMatcher() {
+    return named("com.microsoft.azure.functions.worker.handler.InvocationRequestHandler");
+  }
+
+  @Override
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
+        isMethod().and(named("execute")),
+        FunctionEnvironmentReloadInstrumentation.class.getName() + "$ExecuteAdvice");
+  }
+
+  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  public static class ExecuteAdvice {
+    @Advice.OnMethodExit(suppress = Throwable.class)
+    public static void methodExit() {
+      AzureFunctions.configureOnce();
+    }
+  }
+}

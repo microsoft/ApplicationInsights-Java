@@ -23,27 +23,30 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import ch.qos.logback.classic.LoggerContext;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
-import com.microsoft.applicationinsights.agent.bootstrap.AiLazyConfiguration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import io.opentelemetry.javaagent.bootstrap.ClassFileTransformerHolder;
+import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;
+import java.lang.instrument.ClassFileTransformer;
+import java.lang.instrument.Instrumentation;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
+public class AzureFunctionsInitializer implements Runnable {
 
-  private static final Logger logger = LoggerFactory.getLogger(LazyConfigurationAccessor.class);
+  private static final Logger logger = LoggerFactory.getLogger(AzureFunctionsInitializer.class);
 
   private final TelemetryClient telemetryClient;
   private final AgentLogExporter agentLogExporter;
   private final AppIdSupplier appIdSupplier;
 
-  public LazyConfigurationAccessor(
+  public AzureFunctionsInitializer(
       TelemetryClient telemetryClient,
       AgentLogExporter agentLogExporter,
       AppIdSupplier appIdSupplier) {
@@ -53,17 +56,9 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
   }
 
   @Override
-  public void lazyLoad() {
-    String instrumentationKey = telemetryClient.getInstrumentationKey();
-    String roleName = telemetryClient.getRoleName();
-    if (instrumentationKey != null
-        && !instrumentationKey.isEmpty()
-        && roleName != null
-        && !roleName.isEmpty()) {
-      return;
-    }
-
+  public void run() {
     if (!isAgentEnabled()) {
+      disableBytecodeInstrumentation();
       return;
     }
 
@@ -77,6 +72,18 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
             System.getenv("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL")));
   }
 
+  private static void disableBytecodeInstrumentation() {
+    Instrumentation instrumentation = InstrumentationHolder.getInstrumentation();
+    ClassFileTransformer transformer = ClassFileTransformerHolder.getClassFileTransformer();
+    if (instrumentation == null || transformer == null) {
+      return;
+    }
+    if (instrumentation.removeTransformer(transformer)) {
+      ClassFileTransformerHolder.setClassFileTransformer(null);
+    }
+  }
+
+  // visible for testing
   void setConnectionString(@Nullable String connectionString, @Nullable String instrumentationKey) {
     if (connectionString != null && !connectionString.isEmpty()) {
       setValue(connectionString);

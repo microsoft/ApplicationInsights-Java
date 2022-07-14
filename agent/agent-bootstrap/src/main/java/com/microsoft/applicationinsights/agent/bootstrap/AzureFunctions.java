@@ -21,23 +21,31 @@
 
 package com.microsoft.applicationinsights.agent.bootstrap;
 
-public class AiLazyConfiguration {
+import java.util.function.Supplier;
+import javax.annotation.Nullable;
 
-  private static volatile Accessor accessor;
+public class AzureFunctions {
 
-  public static void setAccessor(Accessor accessor) {
-    AiLazyConfiguration.accessor = accessor;
+  private static volatile Supplier<Boolean> hasConnectionString;
+  @Nullable private static volatile Runnable configure;
+
+  public static void setup(Supplier<Boolean> hasConnectionString, Runnable initializer) {
+    AzureFunctions.hasConnectionString = hasConnectionString;
+    AzureFunctions.configure = initializer;
   }
 
-  public static void lazyLoad() {
-    if (accessor != null) {
-      accessor.lazyLoad();
+  public static boolean hasConnectionString() {
+    return hasConnectionString.get();
+  }
+
+  public static void configureOnce() {
+    if (configure != null) {
+      if (!hasConnectionString.get()) {
+        configure.run();
+      }
+      configure = null;
     }
   }
 
-  public interface Accessor {
-    void lazyLoad();
-  }
-
-  private AiLazyConfiguration() {}
+  private AzureFunctions() {}
 }
