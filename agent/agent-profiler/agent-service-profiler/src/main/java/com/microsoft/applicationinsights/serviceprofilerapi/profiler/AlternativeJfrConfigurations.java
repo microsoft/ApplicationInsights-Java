@@ -100,7 +100,7 @@ public class AlternativeJfrConfigurations {
     return getRecordingConfiguration(profile, REDUCED_MEMORY_PROFILE, DIAGNOSTIC_MEMORY_PROFILE);
   }
 
-  public static RecordingConfiguration getSpan(ProfileTypes profile) {
+  public static RecordingConfiguration getRequestConfiguration(ProfileTypes profile) {
     // Reusing the cpu profile as the most likely profile type required for a span trigger
     return getRecordingConfiguration(profile, REDUCED_CPU_PROFILE, DIAGNOSTIC_CPU_PROFILE);
   }
@@ -110,7 +110,7 @@ public class AlternativeJfrConfigurations {
       case MEMORY:
         return getMemory(profile);
       case REQUEST:
-        return getSpan(profile);
+        return getRequestConfiguration(profile);
       default:
         return getCpu(profile);
     }

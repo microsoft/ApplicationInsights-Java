@@ -145,8 +145,8 @@ public class AlertTriggerSpanExporterTest {
           called.set(true);
         };
 
-    Configuration.SpanTrigger triggerConfig = new Configuration.SpanTrigger();
-    triggerConfig.filter.type = Configuration.SpanFilterType.REGEX;
+    Configuration.RequestTrigger triggerConfig = new Configuration.RequestTrigger();
+    triggerConfig.filter.type = Configuration.RequestFilterType.REGEX;
     triggerConfig.filter.value = "foo.*";
     triggerConfig.threshold.value = 0.75f;
 

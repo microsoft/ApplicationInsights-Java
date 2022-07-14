@@ -26,10 +26,10 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 /** Filters span data based on its name. */
-public abstract class AlertSpanFilter implements Predicate<String> {
+public abstract class AlertRequestFilter implements Predicate<String> {
 
   /** Filter that applies a regex to the span name. */
-  public static class RegexSpanNameFilter extends AlertSpanFilter {
+  public static class RegexSpanNameFilter extends AlertRequestFilter {
 
     private final Pattern pattern;
 
@@ -46,7 +46,7 @@ public abstract class AlertSpanFilter implements Predicate<String> {
     }
   }
 
-  public static class AcceptAll extends AlertSpanFilter {
+  public static class AcceptAll extends AlertRequestFilter {
     @Override
     public boolean test(String s) {
       return true;

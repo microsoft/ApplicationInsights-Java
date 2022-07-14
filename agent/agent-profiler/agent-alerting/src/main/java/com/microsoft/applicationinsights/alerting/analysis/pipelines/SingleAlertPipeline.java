@@ -25,7 +25,7 @@ import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.analysis.AlertPipelineTrigger;
 import com.microsoft.applicationinsights.alerting.analysis.aggregations.Aggregation;
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
-import com.microsoft.applicationinsights.alerting.analysis.filter.AlertSpanFilter;
+import com.microsoft.applicationinsights.alerting.analysis.filter.AlertRequestFilter;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 import java.lang.management.ManagementFactory;
 import java.time.format.DateTimeFormatter;
@@ -44,13 +44,13 @@ public class SingleAlertPipeline implements AlertPipeline, AlertPipelineMXBean {
 
   private final Aggregation aggregation;
   private final Consumer<AlertBreach> alertObserver;
-  private final AlertSpanFilter filter;
+  private final AlertRequestFilter filter;
 
   private AlertConfiguration alertConfiguration;
   private AlertPipelineTrigger alertTrigger;
 
   public SingleAlertPipeline(
-      AlertSpanFilter filter,
+      AlertRequestFilter filter,
       Aggregation aggregation,
       Consumer<AlertBreach> alertObserver,
       AlertConfiguration alertConfiguration) {
@@ -61,7 +61,7 @@ public class SingleAlertPipeline implements AlertPipeline, AlertPipelineMXBean {
   }
 
   public static SingleAlertPipeline create(
-      AlertSpanFilter filter,
+      AlertRequestFilter filter,
       Aggregation aggregation,
       AlertConfiguration alertConfiguration,
       Consumer<AlertBreach> alertObserver) {

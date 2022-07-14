@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.profiler.triggers;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.alerting.analysis.filter.AlertSpanFilter;
+import com.microsoft.applicationinsights.alerting.analysis.filter.AlertRequestFilter;
 import javax.annotation.Nullable;
 
 public class AlertSpanFilterBuilder {
@@ -30,9 +30,9 @@ public class AlertSpanFilterBuilder {
   private AlertSpanFilterBuilder() {}
 
   @Nullable
-  public static AlertSpanFilter build(Configuration.SpanFilter filter) {
-    if (filter.type == Configuration.SpanFilterType.REGEX) {
-      return new AlertSpanFilter.RegexSpanNameFilter(filter.value);
+  public static AlertRequestFilter build(Configuration.RequestFilter filter) {
+    if (filter.type == Configuration.RequestFilterType.REGEX) {
+      return new AlertRequestFilter.RegexSpanNameFilter(filter.value);
     }
 
     throw new IllegalStateException("Unexpected filter type: " + filter.type);

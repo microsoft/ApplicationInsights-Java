@@ -1230,16 +1230,16 @@ public class Configuration {
     }
   }
 
-  public enum SpanFilterType {
+  public enum RequestFilterType {
     REGEX
   }
 
-  public static class SpanFilter {
-    public SpanFilterType type;
+  public static class RequestFilter {
+    public RequestFilterType type;
     public String value;
   }
 
-  public static class SpanAggregationConfig {
+  public static class RequestAggregationConfig {
 
     // Threshold in ms over which a span will consider to be a breach
     // Used by the breach ratio aggregation
@@ -1250,54 +1250,54 @@ public class Configuration {
     public int minimumSamples = 0;
   }
 
-  public enum SpanAggregationType {
+  public enum RequestAggregationType {
     BREACH_RATIO
   }
 
-  public static class SpanAggregation {
-    public SpanAggregationType type = SpanAggregationType.BREACH_RATIO;
+  public static class RequestAggregation {
+    public RequestAggregationType type = RequestAggregationType.BREACH_RATIO;
     public long windowSize = 60000; // in ms
     public String evaluationFrequency = "every_sample";
-    public SpanAggregationConfig configuration = new SpanAggregationConfig();
+    public RequestAggregationConfig configuration = new RequestAggregationConfig();
   }
 
-  public enum SpanTriggerThresholdType {
+  public enum RequestTriggerThresholdType {
     GREATER_THAN
   }
 
-  public static class SpanTriggerThreshold {
-    public SpanTriggerThresholdType type = SpanTriggerThresholdType.GREATER_THAN;
+  public static class RequestTriggerThreshold {
+    public RequestTriggerThresholdType type = RequestTriggerThresholdType.GREATER_THAN;
 
     // Threshold value applied to the output of the aggregation
     // i.e :
     //  - For the BreachRatio aggregation, 0.75 means this will trigger if 75% of sample breach the
     // threshold.
-    //  - For a rolling average aggregation 0.75 will mean this will trigger if the average span
+    //  - For a rolling average aggregation 0.75 will mean this will trigger if the average request
     // processing time
     //      breaches 0.75ms
     public float value = 0.75f;
   }
 
-  public enum SpanTriggerThrottlingType {
+  public enum RequestTriggerThrottlingType {
     COOLDOWN
   }
 
-  public static class SpanTriggerThrottling {
-    public SpanTriggerThrottlingType type = SpanTriggerThrottlingType.COOLDOWN;
+  public static class RequestTriggerThrottling {
+    public RequestTriggerThrottlingType type = RequestTriggerThrottlingType.COOLDOWN;
     public long value = 60000; // in ms
   }
 
-  public enum SpanTriggerType {
+  public enum RequestTriggerType {
     LATENCY
   }
 
-  public static class SpanTrigger {
+  public static class RequestTrigger {
     public String name;
-    public SpanTriggerType type = SpanTriggerType.LATENCY;
-    public SpanFilter filter = new SpanFilter();
-    public SpanAggregation aggregation = new SpanAggregation();
-    public SpanTriggerThreshold threshold = new SpanTriggerThreshold();
-    public SpanTriggerThrottling throttling = new SpanTriggerThrottling();
+    public RequestTriggerType type = RequestTriggerType.LATENCY;
+    public RequestFilter filter = new RequestFilter();
+    public RequestAggregation aggregation = new RequestAggregation();
+    public RequestTriggerThreshold threshold = new RequestTriggerThreshold();
+    public RequestTriggerThrottling throttling = new RequestTriggerThrottling();
     public long profileDuration = 30; // in s
   }
 
@@ -1311,7 +1311,7 @@ public class Configuration {
     @Nullable public String serviceProfilerFrontEndPoint = null;
     public boolean enableDiagnostics = false;
     public boolean enableResponseTriggering = false;
-    public SpanTrigger[] responseTriggerEndpoints = {};
+    public RequestTrigger[] responseTriggerEndpoints = {};
 
     public int maximumProcessingQueueLength = 100;
   }

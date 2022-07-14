@@ -266,9 +266,6 @@ public class ServiceProfilerUploader {
     metadata.put(BlobMetadataConstants.PROGRAMMING_LANGUAGE_META_NAME, "Java");
     metadata.put(
         BlobMetadataConstants.OS_PLATFORM_META_NAME, OsPlatformProvider.getOsPlatformDescription());
-    metadata.put(BlobMetadataConstants.TRACE_FILE_FORMAT_META_NAME, "jfr");
-    metadata.put(
-        BlobMetadataConstants.OS_PLATFORM_META_NAME, OsPlatformProvider.getOsPlatformDescription());
     metadata.put(BlobMetadataConstants.TRACE_FILE_FORMAT_META_NAME, uploadContext.getFileFormat());
 
     if (roleName != null && !roleName.isEmpty()) {
@@ -305,7 +302,7 @@ public class ServiceProfilerUploader {
   private static void deletePathRecursive(@Nullable File fileToDelete) throws IOException {
     if (fileToDelete != null && fileToDelete.exists()) {
       if (retainJfrFile) {
-        LOGGER.info("JFR file retained at: " + fileToDelete.getAbsolutePath());
+        LOGGER.info("JFR file retained at: {}", fileToDelete.getAbsolutePath());
       } else {
         deletePathRecursive(fileToDelete.toPath());
       }

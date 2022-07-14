@@ -25,7 +25,7 @@ import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.aggregations.RollingAverage;
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
-import com.microsoft.applicationinsights.alerting.analysis.filter.AlertSpanFilter;
+import com.microsoft.applicationinsights.alerting.analysis.filter.AlertRequestFilter;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 import java.util.HashMap;
@@ -64,7 +64,7 @@ public class AlertPipelines {
     if (pipeline == null) {
       pipeline =
           SingleAlertPipeline.create(
-              new AlertSpanFilter.AcceptAll(),
+              new AlertRequestFilter.AcceptAll(),
               new RollingAverage(120, timeSource, true),
               newAlertConfig,
               this::dispatchAlert);

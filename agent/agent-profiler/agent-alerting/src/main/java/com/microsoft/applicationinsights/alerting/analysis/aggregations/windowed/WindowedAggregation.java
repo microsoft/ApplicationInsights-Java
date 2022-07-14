@@ -74,7 +74,7 @@ public class WindowedAggregation<T extends BucketData<U>, U> {
   public List<T> getData() {
     Instant now = timeSource.getNow();
     Instant cutoff = now.minusSeconds(windowLengthInSec);
-    gcBuckets(cutoff);
+    removeBucketsBeforeCutoff(cutoff);
     return buckets.stream().map(WindowedAggregationBucket::getData).collect(Collectors.toList());
   }
 
@@ -88,7 +88,7 @@ public class WindowedAggregation<T extends BucketData<U>, U> {
         Instant cutoff = now.minusSeconds(windowLengthInSec);
 
         // Remove old buckets
-        gcBuckets(cutoff);
+        removeBucketsBeforeCutoff(cutoff);
 
         if (!trackCurrentBucket) {
           // If we are lazily adding to the data set, add the completed bucket
@@ -109,7 +109,7 @@ public class WindowedAggregation<T extends BucketData<U>, U> {
     }
   }
 
-  private void gcBuckets(Instant cutoff) {
+  private void removeBucketsBeforeCutoff(Instant cutoff) {
     synchronized (bucketLock) {
       // Remove buckets that ended before the cutoff
       while (buckets.size() > 0 && buckets.get(0).getBucketEnd().isBefore(cutoff)) {

@@ -26,7 +26,7 @@ import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.aggregations.Aggregation;
 import com.microsoft.applicationinsights.alerting.analysis.aggregations.ThresholdBreachRatioAggregation;
-import com.microsoft.applicationinsights.alerting.analysis.filter.AlertSpanFilter;
+import com.microsoft.applicationinsights.alerting.analysis.filter.AlertRequestFilter;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipeline;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.SingleAlertPipeline;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
@@ -42,11 +42,11 @@ public class SpanAlertPipelineBuilder {
   /** Form a single trigger context from configuration. */
   @Nullable
   public static AlertPipeline build(
-      Configuration.SpanTrigger configuration,
+      Configuration.RequestTrigger configuration,
       Consumer<AlertBreach> alertAction,
       TimeSource timeSource) {
 
-    AlertSpanFilter filter = AlertSpanFilterBuilder.build(configuration.filter);
+    AlertRequestFilter filter = AlertSpanFilterBuilder.build(configuration.filter);
 
     Aggregation aggregation = getAggregation(configuration, timeSource);
 
@@ -64,8 +64,8 @@ public class SpanAlertPipelineBuilder {
 
   @Nullable
   private static Aggregation getAggregation(
-      Configuration.SpanTrigger configuration, TimeSource timeSource) {
-    if (configuration.aggregation.type == Configuration.SpanAggregationType.BREACH_RATIO) {
+      Configuration.RequestTrigger configuration, TimeSource timeSource) {
+    if (configuration.aggregation.type == Configuration.RequestAggregationType.BREACH_RATIO) {
       return new ThresholdBreachRatioAggregation(
           configuration.aggregation.configuration.thresholdMs,
           configuration.aggregation.configuration.minimumSamples,
