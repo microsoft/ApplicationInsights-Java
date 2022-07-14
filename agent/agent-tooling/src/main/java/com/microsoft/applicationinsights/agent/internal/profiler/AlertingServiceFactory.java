@@ -44,7 +44,6 @@ import java.util.stream.Collectors;
 
 /** Creates AlertMonitor and wires it up to observe telemetry. */
 public class AlertingServiceFactory {
-
   private static AlertingSubsystem alertingSubsystem;
 
   public static AlertingSubsystem create(
@@ -71,11 +70,11 @@ public class AlertingServiceFactory {
         alertingSubsystem,
         telemetryClient,
         executorService,
-        formGcEventMonitorConfiguration(configuration.preview.gcEvents));
+        createGcEventMonitorConfiguration(configuration.preview.gcEvents));
     return alertingSubsystem;
   }
 
-  private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(
+  private static GcEventMonitor.GcEventMonitorConfiguration createGcEventMonitorConfiguration(
       Configuration.GcEventConfiguration gcEvents) {
     return new GcEventMonitor.GcEventMonitorConfiguration(gcEvents.reportingLevel);
   }

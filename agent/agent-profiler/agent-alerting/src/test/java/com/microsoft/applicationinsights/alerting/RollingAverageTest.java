@@ -23,12 +23,12 @@ package com.microsoft.applicationinsights.alerting;
 
 import static com.microsoft.applicationinsights.alerting.config.AlertMetricType.CPU;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.aggregations.RollingAverage;
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
 import java.time.Instant;
-import java.util.OptionalDouble;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleConsumer;
@@ -87,9 +87,9 @@ class RollingAverageTest {
     rollingAverage.update(createDataPoint(0.1));
 
     rollingAverage.update(createDataPoint(0.1));
-    assertThat(rollingAverage.compute()).isEqualTo(OptionalDouble.of(0.1d));
+    assertThat(rollingAverage.compute().getAsDouble()).isEqualTo(0.1d, within(0.0001d));
 
-    assertThat(called.get()).isEqualTo(0.1d);
+    assertThat(called.get()).isEqualTo(0.1d, within(0.0001d));
   }
 
   private static TelemetryDataPoint createDataPoint(double v) {

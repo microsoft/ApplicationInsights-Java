@@ -27,18 +27,27 @@ import java.util.OptionalDouble;
 
 /** Applies a time window to data and calculates a mean of the data during that window. */
 public class RollingAverage extends Aggregation {
-  private final WindowedAggregation windowedAggregation;
+  private final WindowedAggregation<RollingAverageSample, TelemetryDataPoint> windowedAggregation;
 
   public RollingAverage() {
-    windowedAggregation = new WindowedAggregation();
-  }
-
-  public RollingAverage(long windowLengthInSec) {
-    this(windowLengthInSec, TimeSource.DEFAULT);
+    windowedAggregation = new WindowedAggregation<>(RollingAverageSample::new);
   }
 
   public RollingAverage(long windowLengthInSec, TimeSource timeSource) {
-    windowedAggregation = new WindowedAggregation(windowLengthInSec, timeSource);
+    windowedAggregation =
+        new WindowedAggregation<>(windowLengthInSec, timeSource, RollingAverageSample::new);
+  }
+
+  private static class RollingAverageSample
+      implements WindowedAggregation.BucketData<TelemetryDataPoint> {
+    int sampleCount = 0;
+    double totalTime = 0;
+
+    @Override
+    public void update(TelemetryDataPoint data) {
+      totalTime += data.getValue();
+      sampleCount++;
+    }
   }
 
   @Override
@@ -48,8 +57,14 @@ public class RollingAverage extends Aggregation {
 
   @Override
   public OptionalDouble compute() {
-    return windowedAggregation.getTelemetryDataPoints().stream()
-        .mapToDouble(TelemetryDataPoint::getValue)
-        .average();
+    long count = windowedAggregation.getData().stream().mapToLong(it -> it.sampleCount).sum();
+
+    if (count == 0) {
+      return OptionalDouble.empty();
+    }
+
+    double totalTime = windowedAggregation.getData().stream().mapToDouble(it -> it.totalTime).sum();
+
+    return OptionalDouble.of(totalTime / (double) count);
   }
 }

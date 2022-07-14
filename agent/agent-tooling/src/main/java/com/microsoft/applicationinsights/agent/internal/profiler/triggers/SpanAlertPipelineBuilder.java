@@ -48,10 +48,6 @@ public class SpanAlertPipelineBuilder {
 
     AlertSpanFilter filter = AlertSpanFilterBuilder.build(configuration.filter);
 
-    if (filter == null) {
-      return null;
-    }
-
     Aggregation aggregation = getAggregation(configuration, timeSource);
 
     // TODO make threshold and throttling responsive to type argument

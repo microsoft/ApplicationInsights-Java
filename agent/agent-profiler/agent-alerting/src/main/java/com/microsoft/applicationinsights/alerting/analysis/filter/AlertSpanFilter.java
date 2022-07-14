@@ -29,11 +29,11 @@ import javax.annotation.Nullable;
 public abstract class AlertSpanFilter implements Predicate<String> {
 
   /** Filter that applies a regex to the span name. */
-  public static class RegexSpanFilter extends AlertSpanFilter {
+  public static class RegexSpanNameFilter extends AlertSpanFilter {
 
     private final Pattern pattern;
 
-    public RegexSpanFilter(String value) {
+    public RegexSpanNameFilter(String value) {
       pattern = Pattern.compile(value);
     }
 

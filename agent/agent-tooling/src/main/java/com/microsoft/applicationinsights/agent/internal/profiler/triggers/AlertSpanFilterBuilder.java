@@ -32,8 +32,9 @@ public class AlertSpanFilterBuilder {
   @Nullable
   public static AlertSpanFilter build(Configuration.SpanFilter filter) {
     if (filter.type == Configuration.SpanFilterType.REGEX) {
-      return new AlertSpanFilter.RegexSpanFilter(filter.value);
+      return new AlertSpanFilter.RegexSpanNameFilter(filter.value);
     }
-    return null;
+
+    throw new IllegalStateException("Unexpected filter type: " + filter.type);
   }
 }

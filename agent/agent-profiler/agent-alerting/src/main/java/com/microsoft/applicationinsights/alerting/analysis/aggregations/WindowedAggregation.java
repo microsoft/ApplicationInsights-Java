@@ -22,61 +22,85 @@
 package com.microsoft.applicationinsights.alerting.analysis.aggregations;
 
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
-import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
-/** Applies a time window to data. I.e holds the last n seconds of data. */
-public class WindowedAggregation {
-
+/** Applies a time window to data held in 1 second buckets. I.e holds the last n seconds of data. */
+public class WindowedAggregation<T extends WindowedAggregation.BucketData<U>, U> {
+  private static final int DEFAULT_WINDOW_IN_SEC =
+      Integer.parseInt(
+          System.getProperty("applicationinsights.preview.profiler.rolling-window-in-sec", "120"));
   private final long windowLengthInSec;
   private final TimeSource timeSource;
-  private final List<TelemetryDataPoint> telemetryDataPoints =
-      Collections.synchronizedList(new ArrayList<>());
-  private static final int DEFAULT_ROLLING_AVERAGE_WINDOW_IN_SEC =
-      Integer.parseInt(
-          System.getProperty(
-              "applicationinsights.preview.profiler.rolling-average-window-in-sec", "120"));
 
-  public WindowedAggregation() {
-    windowLengthInSec = DEFAULT_ROLLING_AVERAGE_WINDOW_IN_SEC;
-    timeSource = TimeSource.DEFAULT;
+  private final Object bucketLock = new Object();
+  private final List<Bucket> buckets = Collections.synchronizedList(new ArrayList<>());
+  private final Supplier<T> bucketFactory;
+
+  public WindowedAggregation(Supplier<T> bucketFactory) {
+    this(DEFAULT_WINDOW_IN_SEC, TimeSource.DEFAULT, bucketFactory);
   }
 
-  public WindowedAggregation(long windowLengthInSec) {
-    this(windowLengthInSec, TimeSource.DEFAULT);
-  }
-
-  public WindowedAggregation(long windowLengthInSec, TimeSource timeSource) {
+  public WindowedAggregation(
+      long windowLengthInSec, TimeSource timeSource, Supplier<T> bucketFactory) {
     this.windowLengthInSec = windowLengthInSec;
     this.timeSource = timeSource;
+    this.bucketFactory = bucketFactory;
   }
 
-  public List<TelemetryDataPoint> getTelemetryDataPoints() {
-    return telemetryDataPoints;
+  public interface BucketData<U> {
+    void update(U sample);
   }
 
-  public long getWindowLengthInSec() {
-    return windowLengthInSec;
+  private class Bucket {
+    final Instant bucketStart;
+    private final T data;
+
+    private Bucket(Instant bucketStart, T data) {
+      this.bucketStart = bucketStart;
+      this.data = data;
+    }
+
+    public void update(U newSample) {
+      data.update(newSample);
+    }
   }
 
-  public void update(TelemetryDataPoint telemetryDataPoint) {
-    Instant now = timeSource.getNow();
-    telemetryDataPoints.add(telemetryDataPoint);
-
-    removeOldValues(now);
+  public void update(U breached) {
+    getBucket().update(breached);
   }
 
-  private void removeOldValues(Instant now) {
-    Instant cutOff = now.minusSeconds(windowLengthInSec);
+  public List<T> getData() {
+    return buckets.stream().map(it -> it.data).collect(Collectors.toList());
+  }
 
-    // Ensure that we keep at least 2 values in our buffer so that we are not reacting to a single
-    // value
-    while (telemetryDataPoints.size() > 2
-        && telemetryDataPoints.get(0).getTime().isBefore(cutOff)) {
-      telemetryDataPoints.remove(0);
+  private Bucket getBucket() {
+    synchronized (bucketLock) {
+      Instant now = timeSource.getNow();
+      Instant cutoff = now.minusSeconds(windowLengthInSec);
+      gcBuckets(cutoff);
+
+      if (buckets.isEmpty()) {
+        buckets.add(new Bucket(now, bucketFactory.get()));
+      }
+
+      Bucket last = buckets.get(buckets.size() - 1);
+      if (last.bucketStart.isBefore(now.minusSeconds(1))) {
+        last = new Bucket(now, bucketFactory.get());
+        buckets.add(last);
+      }
+
+      return last;
+    }
+  }
+
+  private void gcBuckets(Instant cutoff) {
+    while (buckets.size() > 0 && buckets.get(0).bucketStart.isBefore(cutoff)) {
+      buckets.remove(0);
     }
   }
 }

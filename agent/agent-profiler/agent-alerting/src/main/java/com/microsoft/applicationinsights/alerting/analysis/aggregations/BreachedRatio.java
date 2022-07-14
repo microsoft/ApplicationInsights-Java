@@ -22,28 +22,27 @@
 package com.microsoft.applicationinsights.alerting.analysis.aggregations;
 
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.OptionalDouble;
 
 public class BreachedRatio {
 
-  private final long windowLengthInSec;
-  private final TimeSource timeSource;
   private final long minimumSamples;
 
-  private static class Bucket {
-    final Instant bucketStart;
+  private final WindowedAggregation<BreachedCountBucket, Boolean> windowedAggregation;
+
+  public BreachedRatio(long windowLengthInSec, long minimumSamples, TimeSource timeSource) {
+    this.windowedAggregation =
+        new WindowedAggregation<>(windowLengthInSec, timeSource, BreachedCountBucket::new);
+    this.minimumSamples = minimumSamples;
+  }
+
+  private static class BreachedCountBucket implements WindowedAggregation.BucketData<Boolean> {
     int totalCount = 0;
     int breachedCount = 0;
 
-    private Bucket(Instant bucketStart) {
-      this.bucketStart = bucketStart;
-    }
-
-    public void increment(boolean breached) {
+    @Override
+    public void update(Boolean breached) {
       if (breached) {
         breachedCount++;
       }
@@ -51,19 +50,12 @@ public class BreachedRatio {
     }
   }
 
-  private final Object bucketLock = new Object();
-  private final List<Bucket> buckets = Collections.synchronizedList(new ArrayList<>());
-
-  public OptionalDouble update(boolean breached) {
-    getBucket().increment(breached);
-
-    return calculateRatio();
+  public void update(boolean breached) {
+    windowedAggregation.update(breached);
   }
 
   public OptionalDouble calculateRatio() {
-    Instant now = timeSource.getNow();
-    Instant cutoff = now.minusSeconds(windowLengthInSec);
-    gcBuckets(cutoff);
+    List<BreachedCountBucket> buckets = windowedAggregation.getData();
 
     if (buckets.isEmpty()) {
       return OptionalDouble.empty();
@@ -81,37 +73,5 @@ public class BreachedRatio {
       return OptionalDouble.empty();
     }
     return OptionalDouble.of((double) breached / (double) total);
-  }
-
-  private Bucket getBucket() {
-    synchronized (bucketLock) {
-      Instant now = timeSource.getNow();
-      Instant cutoff = now.minusSeconds(windowLengthInSec);
-      gcBuckets(cutoff);
-
-      if (buckets.isEmpty()) {
-        buckets.add(new Bucket(now));
-      }
-
-      Bucket last = buckets.get(buckets.size() - 1);
-      if (last.bucketStart.isBefore(now.minusSeconds(1))) {
-        last = new Bucket(now);
-        buckets.add(last);
-      }
-
-      return last;
-    }
-  }
-
-  private void gcBuckets(Instant cutoff) {
-    while (buckets.size() > 0 && buckets.get(0).bucketStart.isBefore(cutoff)) {
-      buckets.remove(0);
-    }
-  }
-
-  public BreachedRatio(long windowLengthInSec, long minimumSamples, TimeSource timeSource) {
-    this.windowLengthInSec = windowLengthInSec;
-    this.timeSource = timeSource;
-    this.minimumSamples = minimumSamples;
   }
 }
