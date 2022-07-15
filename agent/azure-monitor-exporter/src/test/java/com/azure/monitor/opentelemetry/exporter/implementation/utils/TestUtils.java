@@ -21,10 +21,24 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
+import com.azure.core.http.policy.HttpPipelinePolicy;
+import com.azure.monitor.opentelemetry.exporter.AzureMonitorExporterBuilder;
+import com.azure.monitor.opentelemetry.exporter.AzureMonitorMetricExporter;
+import com.azure.monitor.opentelemetry.exporter.AzureMonitorTraceExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorBase;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -65,6 +79,70 @@ public final class TestUtils {
     telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
 
     return telemetry;
+  }
+
+  public static TelemetryItem createAzureMonitorMetricTelemetry(
+      String name, int value, String instrumentationKey, OffsetDateTime time) {
+    TelemetryItem telemetry = new TelemetryItem();
+    telemetry.setVersion(1);
+    telemetry.setName("Metric");
+    telemetry.setInstrumentationKey(instrumentationKey);
+    Map<String, String> tags = new HashMap<>();
+    tags.put("ai.internal.sdkVersion", "java11.0.10:otel1.15.0:ext1.0.0-beta.4");
+    tags.put("ai.cloud.role", "unknown_service:java");
+    telemetry.setTags(tags);
+
+    MetricsData data = new MetricsData();
+    data.setVersion(2);
+    List<MetricDataPoint> dataPoints = new ArrayList<>();
+    MetricDataPoint dataPoint = new MetricDataPoint();
+    dataPoint.setName(name);
+    dataPoint.setValue(value);
+    dataPoints.add(dataPoint);
+    Map<String, String> properties = new HashMap<>();
+    properties.put("color", "red");
+    properties.put("name", "apple");
+    data.setMetrics(dataPoints);
+    data.setProperties(properties);
+    MonitorBase monitorBase = new MonitorBase();
+    monitorBase.setBaseType("MetricData");
+    monitorBase.setBaseData(data);
+    telemetry.setData(monitorBase);
+    telemetry.setTime(time);
+
+    return telemetry;
+  }
+
+  public static Tracer configureAzureMonitorTraceExporter(HttpPipelinePolicy validator) {
+    AzureMonitorTraceExporter exporter =
+        new AzureMonitorExporterBuilder()
+            .connectionString(System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"))
+            .addHttpPipelinePolicy(validator)
+            .buildTraceExporter();
+
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder().addSpanProcessor(SimpleSpanProcessor.create(exporter)).build();
+
+    OpenTelemetrySdk openTelemetrySdk =
+        OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).buildAndRegisterGlobal();
+    return openTelemetrySdk.getTracer("Sample");
+  }
+
+  public static Meter configureAzureMonitorMetricExporter(HttpPipelinePolicy policy) {
+    AzureMonitorMetricExporter exporter =
+        new AzureMonitorExporterBuilder()
+            .connectionString(System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"))
+            .addHttpPipelinePolicy(policy)
+            .buildMetricExporter();
+
+    PeriodicMetricReader metricReader =
+        PeriodicMetricReader.builder(exporter).setInterval(Duration.ofMillis(10)).build();
+    SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder().registerMetricReader(metricReader).build();
+    OpenTelemetry openTelemetry =
+        OpenTelemetrySdk.builder().setMeterProvider(meterProvider).build();
+
+    return openTelemetry.getMeter("Sample");
   }
 
   private TestUtils() {}
