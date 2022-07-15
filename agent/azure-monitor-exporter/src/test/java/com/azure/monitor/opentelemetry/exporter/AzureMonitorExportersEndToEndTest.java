@@ -62,7 +62,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 @ExtendWith(SystemStubsExtension.class)
-public class AzureMonitorExportersTest extends MonitorExporterClientTestBase {
+public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTestBase {
 
   @SystemStub EnvironmentVariables envVars = new EnvironmentVariables();
 
