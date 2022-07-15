@@ -50,9 +50,7 @@ public class AlertTriggerSpanExporterTest {
 
   interface Handle {
     void accept(
-        AlertTriggerSpanExporter spanExporter,
-        AtomicBoolean alertCalled,
-        TestTimeSource timeSource)
+        AlertTriggerSpanExporter spanExporter, AtomicBoolean alertCalled, TestTimeSource timeSource)
         throws InterruptedException;
   }
 
