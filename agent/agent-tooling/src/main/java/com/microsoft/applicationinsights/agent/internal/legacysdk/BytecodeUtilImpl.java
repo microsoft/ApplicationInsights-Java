@@ -257,7 +257,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       Map<String, String> properties,
       Map<String, String> tags,
       @Nullable String instrumentationKey) {
-    if (Strings.isNullOrEmpty(message)) {
+    if (message == null) {
       return;
     }
     MessageTelemetryBuilder telemetryBuilder =

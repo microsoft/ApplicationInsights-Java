@@ -83,11 +83,7 @@ public class LogDataMapper {
     setExtraAttributes(telemetryBuilder, attributes);
 
     telemetryBuilder.setSeverityLevel(toSeverityLevel(log.getSeverity()));
-    String body = log.getBody().asString();
-    if (body.isEmpty()) {
-      body = "n/a"; // breeze doesn't accept empty log messages
-    }
-    telemetryBuilder.setMessage(body);
+    telemetryBuilder.setMessage(log.getBody().asString());
 
     // set message-specific properties
     setLoggerProperties(
