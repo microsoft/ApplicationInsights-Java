@@ -1231,7 +1231,8 @@ public class Configuration {
   }
 
   public enum RequestFilterType {
-    REGEX
+    @JsonProperty("name-regex")
+    NAME_REGEX
   }
 
   public static class RequestFilter {
@@ -1251,6 +1252,7 @@ public class Configuration {
   }
 
   public enum RequestAggregationType {
+    @JsonProperty("breach-ratio")
     BREACH_RATIO
   }
 
@@ -1262,6 +1264,7 @@ public class Configuration {
   }
 
   public enum RequestTriggerThresholdType {
+    @JsonProperty("greater-than")
     GREATER_THAN
   }
 
@@ -1310,8 +1313,8 @@ public class Configuration {
     public String cpuTriggeredSettings = "PROFILE_WITHOUT_ENV_DATA";
     @Nullable public String serviceProfilerFrontEndPoint = null;
     public boolean enableDiagnostics = false;
-    public boolean enableResponseTriggering = false;
-    public RequestTrigger[] responseTriggerEndpoints = {};
+    public boolean enableRequestTriggering = false;
+    public RequestTrigger[] requestTriggerEndpoints = {};
 
     public int maximumProcessingQueueLength = 100;
   }

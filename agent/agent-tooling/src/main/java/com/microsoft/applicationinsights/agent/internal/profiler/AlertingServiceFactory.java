@@ -55,9 +55,9 @@ public class AlertingServiceFactory {
       ExecutorService executorService) {
     alertingSubsystem = AlertingSubsystem.create(alertAction, TimeSource.DEFAULT);
 
-    if (configuration.preview.profiler.enableResponseTriggering) {
+    if (configuration.preview.profiler.enableRequestTriggering) {
       List<AlertPipeline> spanPipelines =
-          Arrays.stream(configuration.preview.profiler.responseTriggerEndpoints)
+          Arrays.stream(configuration.preview.profiler.requestTriggerEndpoints)
               .map(it -> RequestAlertPipelineBuilder.build(it, alertAction, TimeSource.DEFAULT))
               .collect(Collectors.toList());
 

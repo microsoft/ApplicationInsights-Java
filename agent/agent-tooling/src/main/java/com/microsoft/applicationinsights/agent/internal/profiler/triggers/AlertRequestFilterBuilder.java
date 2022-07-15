@@ -31,7 +31,7 @@ public class AlertRequestFilterBuilder {
 
   @Nullable
   public static AlertRequestFilter build(Configuration.RequestFilter filter) {
-    if (filter.type == Configuration.RequestFilterType.REGEX) {
+    if (filter.type == Configuration.RequestFilterType.NAME_REGEX) {
       return new AlertRequestFilter.RegexRequestNameFilter(filter.value);
     }
 

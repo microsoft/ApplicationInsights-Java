@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerRequestExporter;
+import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanExporter;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.RequestAlertPipelineBuilder;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
@@ -46,11 +46,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class AlertTriggerRequestExporterTest {
+public class AlertTriggerSpanExporterTest {
 
   interface Handle {
     void accept(
-        AlertTriggerRequestExporter spanExporter,
+        AlertTriggerSpanExporter spanExporter,
         AtomicBoolean alertCalled,
         TestTimeSource timeSource)
         throws InterruptedException;
@@ -148,7 +148,7 @@ public class AlertTriggerRequestExporterTest {
         };
 
     Configuration.RequestTrigger triggerConfig = new Configuration.RequestTrigger();
-    triggerConfig.filter.type = Configuration.RequestFilterType.REGEX;
+    triggerConfig.filter.type = Configuration.RequestFilterType.NAME_REGEX;
     triggerConfig.filter.value = "foo.*";
     triggerConfig.threshold.value = 0.75f;
 
@@ -163,8 +163,8 @@ public class AlertTriggerRequestExporterTest {
             Arrays.asList(
                 RequestAlertPipelineBuilder.build(triggerConfig, alertAction, timeSource))));
 
-    AlertTriggerRequestExporter spanExporter =
-        new AlertTriggerRequestExporter(delegateSpanExporter, () -> alertingSubsystem);
+    AlertTriggerSpanExporter spanExporter =
+        new AlertTriggerSpanExporter(delegateSpanExporter, () -> alertingSubsystem);
 
     handle.accept(spanExporter, called, timeSource);
   }
