@@ -28,11 +28,15 @@ import com.azure.core.http.HttpPipelineCallContext;
 import com.azure.core.http.HttpPipelineNextPolicy;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.http.policy.HttpPipelinePolicy;
+import com.azure.core.test.TestBase;
+import com.azure.core.test.TestMode;
 import com.azure.core.util.Context;
 import com.azure.core.util.FluxUtil;
 import com.azure.data.appconfiguration.ConfigurationClient;
 import com.azure.data.appconfiguration.ConfigurationClientBuilder;
 import com.azure.data.appconfiguration.models.ConfigurationSetting;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.TestUtils;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
@@ -40,11 +44,27 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import reactor.core.publisher.Mono;
 
-public class AppConfigurationExporterIntegrationTest extends AzureMonitorTraceExporterTestBase {
+public class AppConfigurationExporterIntegrationTest extends TestBase {
+
+  @Override
+  @BeforeEach
+  public void setupTest(TestInfo testInfo) {
+    Assumptions.assumeFalse(getTestMode() == TestMode.PLAYBACK, "Skipping playback tests");
+  }
+
+  @Override
+  @AfterEach
+  public void teardownTest(TestInfo testInfo) {
+    GlobalOpenTelemetry.resetForTest();
+  }
 
   @Test
   public void setConfigurationTest() throws InterruptedException {
@@ -52,7 +72,7 @@ public class AppConfigurationExporterIntegrationTest extends AzureMonitorTraceEx
     CountDownLatch exporterCountDown = new CountDownLatch(1);
 
     Tracer tracer =
-        configureAzureMonitorExporter(new ValidationPolicy(exporterCountDown, "AppConfig.setKey"));
+        TestUtils.configureAzureMonitorTraceExporter(new ValidationPolicy(exporterCountDown, "AppConfig.setKey"));
     ConfigurationClient client = getConfigurationClient(appConfigCountDown);
 
     Span span = tracer.spanBuilder("set-config-exporter-testing").startSpan();
@@ -77,7 +97,7 @@ public class AppConfigurationExporterIntegrationTest extends AzureMonitorTraceEx
     CountDownLatch exporterCountDown = new CountDownLatch(1);
 
     Tracer tracer =
-        configureAzureMonitorExporter(
+        TestUtils.configureAzureMonitorTraceExporter(
             new ValidationPolicy(exporterCountDown, "disable-config-exporter-testing"));
     ConfigurationClient client = getConfigurationClient(appConfigCountDown);
 
