@@ -22,37 +22,33 @@
 package com.azure.monitor.opentelemetry.exporter;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.azure.core.http.HttpPipelineCallContext;
 import com.azure.core.http.HttpPipelineNextPolicy;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.core.util.FluxUtil;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDependencyData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.MockLogData;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TestUtils;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
-import io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
@@ -72,63 +68,43 @@ public class AzureMonitorExportersTest extends MonitorExporterClientTestBase {
 
   private static final String TRACE_CONNECTION_STRING =
       "InstrumentationKey=00000000-0000-0000-0000-000000000000";
-  private static final String METRIC_CONNECTION_STRING =
-      "InstrumentationKey=00000000-0000-0000-0000-000000000001";
   private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
 
-  private InMemoryMetricExporter inMemoryMetricExporter;
-
   @BeforeEach
-  public void setup() throws InterruptedException {
+  public void setup() {
     envVars.set(
         "APPLICATIONINSIGHTS_CONNECTION_STRING", "InstrumentationKey=" + INSTRUMENTATION_KEY);
-    inMemoryMetricExporter = InMemoryMetricExporter.create();
-    PeriodicMetricReader metricReader =
-        PeriodicMetricReader.builder(inMemoryMetricExporter)
-            .setInterval(Duration.ofMillis(10))
-            .build();
-    SdkMeterProvider meterProvider =
-        SdkMeterProvider.builder().registerMetricReader(metricReader).build();
-
-    OpenTelemetry openTelemetry =
-        OpenTelemetrySdk.builder().setMeterProvider(meterProvider).build();
-
-    Meter meter =
-        openTelemetry
-            .meterBuilder("AzureMonitorMetricExporterTest")
-            .setInstrumentationVersion("1.0.0")
-            .build();
-    DoubleHistogram doubleHistogram =
-        meter
-            .histogramBuilder("testDoubleHistogram")
-            .setDescription("http.client.duration")
-            .setUnit("ms")
-            .build();
-
-    doubleHistogram.record(25.45);
-    Thread.sleep(1000);
   }
 
   @Test
   public void testBuildMetricExporter() throws Exception {
-    CountDownLatch exporterCountDown = new CountDownLatch(1);
-    CustomValidationPolicy customValidationPolicy = new CustomValidationPolicy(exporterCountDown);
-    Meter meter = TestUtils.configureAzureMonitorMetricExporter(customValidationPolicy);
-    LongCounter counter = meter.counterBuilder("testBuildMetricExporter").build();
-    counter.add(
-        1L,
-        Attributes.of(
-            AttributeKey.stringKey("name"), "apple", AttributeKey.stringKey("color"), "red"));
-    exporterCountDown.await(60, TimeUnit.SECONDS);
+    validateMetricExporterEndToEnd("testBuildMetricExporter");
+  }
 
+  @Test
+  public void testBuildTraceExporter() throws Exception {
+    validateTraceExporterEndToEnd("testBuildTraceExporter");
+  }
+
+  // OpenTelemetry doesn't have a Log API
+  @Test
+  public void testBuildLogExporter() throws Exception {
+    validateLogExporterEndToEnd();
+  }
+
+  @Test
+  public void testBuildTraceMetricLogExportersConsecutively() throws Exception {
+    validateTraceExporterEndToEnd("testBuildTraceMetricLogExportersConsecutively");
+    validateMetricExporterEndToEnd("testBuildTraceMetricLogExportersConsecutively");
+    validateLogExporterEndToEnd();
+  }
+
+  private static void validateMetricExporterEndToEnd(String testName) throws Exception {
+    CustomValidationPolicy customValidationPolicy = generateMetrics(testName);
     TelemetryItem actualTelemetryItem = customValidationPolicy.getActualTelemetryItem();
     TelemetryItem expectedTelemetryItem =
         TestUtils.createAzureMonitorMetricTelemetry(
-            "testBuildMetricExporter", 1, INSTRUMENTATION_KEY, actualTelemetryItem.getTime());
-    System.out.println(
-        "###### expectedTelemetryItem: \n" + convertTelemetryItemToJson(expectedTelemetryItem));
-    System.out.println(
-        "###### actualTelemetryitem: \n" + convertTelemetryItemToJson(actualTelemetryItem));
+            testName, 1, INSTRUMENTATION_KEY, actualTelemetryItem.getTime());
     assertThat(actualTelemetryItem.getName()).isEqualTo(expectedTelemetryItem.getName());
     assertThat(actualTelemetryItem.getInstrumentationKey())
         .isEqualTo(expectedTelemetryItem.getInstrumentationKey());
@@ -143,9 +119,31 @@ public class AzureMonitorExportersTest extends MonitorExporterClientTestBase {
         .isEqualTo(expectedMetricsData.getAdditionalProperties());
   }
 
-  // OpenTelemetry doesn't have a Log API
-  @Test
-  public void testBuildLogExporter() {
+  private static void validateTraceExporterEndToEnd(String testName) throws Exception {
+    CustomValidationPolicy customValidationPolicy = generateTraces(testName);
+    TelemetryItem actualTelemetryItem = customValidationPolicy.getActualTelemetryItem();
+    TelemetryItem expectedTelemetryItem =
+        TestUtils.createAzureMonitorRemoteDependencyTelemetry(
+            testName,
+            INSTRUMENTATION_KEY,
+            actualTelemetryItem.getTime(),
+            actualTelemetryItem.getTags().get(ContextTagKeys.AI_OPERATION_ID.toString()));
+    assertThat(actualTelemetryItem.getName()).isEqualTo(expectedTelemetryItem.getName());
+    assertThat(actualTelemetryItem.getInstrumentationKey())
+        .isEqualTo(expectedTelemetryItem.getInstrumentationKey());
+    assertThat(actualTelemetryItem.getTags()).isEqualTo(expectedTelemetryItem.getTags());
+    assertThat(actualTelemetryItem.getData().getBaseType())
+        .isEqualTo(expectedTelemetryItem.getData().getBaseType());
+    RemoteDependencyData expectedData =
+        (RemoteDependencyData) expectedTelemetryItem.getData().getBaseData();
+    RemoteDependencyData actualData =
+        (RemoteDependencyData) actualTelemetryItem.getData().getBaseData();
+    assertThat(actualData.getName()).isEqualTo(expectedData.getName());
+    assertThat(actualData.getAdditionalProperties())
+        .isEqualTo(expectedData.getAdditionalProperties());
+  }
+
+  private void validateLogExporterEndToEnd() throws Exception {
     AzureMonitorLogExporter azureMonitorLogExporter =
         getClientBuilder().connectionString(TRACE_CONNECTION_STRING).buildLogExporter();
     CompletableResultCode export =
@@ -155,32 +153,34 @@ public class AzureMonitorExportersTest extends MonitorExporterClientTestBase {
     Assertions.assertTrue(export.isSuccess());
   }
 
-  @Test
-  public void testBuildTraceMetricLogExportersConsecutively() {
-    AzureMonitorTraceExporter azureMonitorTraceExporter =
-        getClientBuilder().connectionString(TRACE_CONNECTION_STRING).buildTraceExporter();
-    CompletableResultCode export =
-        azureMonitorTraceExporter.export(
-            Collections.singleton(new AzureMonitorTraceExporterTest.RequestSpanData()));
-    export.join(30, TimeUnit.SECONDS);
-    Assertions.assertTrue(export.isDone());
-    Assertions.assertTrue(export.isSuccess());
+  private static CustomValidationPolicy generateTraces(String testName) throws Exception {
+    CountDownLatch traceExporterCountDown = new CountDownLatch(1);
+    CustomValidationPolicy customValidationPolicy =
+        new CustomValidationPolicy(traceExporterCountDown);
+    Tracer tracer = TestUtils.configureAzureMonitorTraceExporter(customValidationPolicy);
+    Span span = tracer.spanBuilder(testName).startSpan();
+    try (Scope scope = span.makeCurrent()) {
+      span.setAttribute("name", "apple");
+      span.setAttribute("color", "red");
+    } finally {
+      span.end();
+    }
+    assertTrue(traceExporterCountDown.await(60, TimeUnit.SECONDS));
+    return customValidationPolicy;
+  }
 
-    AzureMonitorMetricExporter azureMonitorMetricExporter =
-        getClientBuilder().connectionString(METRIC_CONNECTION_STRING).buildMetricExporter();
-    List<MetricData> metricDataList = inMemoryMetricExporter.getFinishedMetricItems();
-    Assertions.assertTrue(metricDataList.size() > 0);
-    export = azureMonitorMetricExporter.export(metricDataList);
-    export.join(30, TimeUnit.SECONDS);
-    Assertions.assertTrue(export.isDone());
-    Assertions.assertTrue(export.isSuccess());
-
-    AzureMonitorLogExporter azureMonitorLogExporter =
-        getClientBuilder().connectionString(TRACE_CONNECTION_STRING).buildLogExporter();
-    export = azureMonitorLogExporter.export(Collections.singleton(new MockLogData()));
-    export.join(30, TimeUnit.SECONDS);
-    Assertions.assertTrue(export.isDone());
-    Assertions.assertTrue(export.isSuccess());
+  private static CustomValidationPolicy generateMetrics(String methodName) throws Exception {
+    CountDownLatch metricExporterCountDown = new CountDownLatch(1);
+    CustomValidationPolicy customValidationPolicy =
+        new CustomValidationPolicy(metricExporterCountDown);
+    Meter meter = TestUtils.configureAzureMonitorMetricExporter(customValidationPolicy);
+    LongCounter counter = meter.counterBuilder(methodName).build();
+    counter.add(
+        1L,
+        Attributes.of(
+            AttributeKey.stringKey("name"), "apple", AttributeKey.stringKey("color"), "red"));
+    metricExporterCountDown.await(60, TimeUnit.SECONDS);
+    return customValidationPolicy;
   }
 
   private static class CustomValidationPolicy implements HttpPipelinePolicy {
@@ -239,12 +239,5 @@ public class AzureMonitorExportersTest extends MonitorExporterClientTestBase {
     mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     mapper.registerModules(ObjectMapper.findModules(TelemetryItem.class.getClassLoader()));
     return mapper;
-  }
-
-  private static String convertTelemetryItemToJson(TelemetryItem telemetryItem) throws Exception {
-    ObjectMapper mapper = createObjectMapper();
-    StringWriter stringWriter = new StringWriter();
-    mapper.writeValue(mapper.createGenerator(stringWriter), telemetryItem);
-    return stringWriter.toString();
   }
 }

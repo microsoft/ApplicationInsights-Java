@@ -28,6 +28,7 @@ import com.azure.monitor.opentelemetry.exporter.AzureMonitorTraceExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorBase;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDependencyData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.Meter;
@@ -113,6 +114,35 @@ public final class TestUtils {
     return telemetry;
   }
 
+  public static TelemetryItem createAzureMonitorRemoteDependencyTelemetry(
+      String name, String instrumentationKey, OffsetDateTime time, String operationId) {
+    TelemetryItem telemetry = new TelemetryItem();
+    telemetry.setVersion(1);
+    telemetry.setName("RemoteDependency");
+    telemetry.setInstrumentationKey(instrumentationKey);
+    Map<String, String> tags = new HashMap<>();
+    tags.put("ai.internal.sdkVersion", "java11.0.10:otel1.15.0:ext1.0.0-beta.4");
+    tags.put("ai.operation.id", operationId);
+    tags.put("ai.cloud.role", "unknown_service:java");
+    telemetry.setTags(tags);
+
+    RemoteDependencyData data = new RemoteDependencyData();
+    data.setVersion(2);
+    Map<String, String> properties = new HashMap<>();
+    properties.put("color", "red");
+    properties.put("name", "apple");
+    data.setProperties(properties);
+    data.setName(name);
+    data.setSuccess(true);
+    MonitorBase monitorBase = new MonitorBase();
+    monitorBase.setBaseType("RemoteDependencyData");
+    monitorBase.setBaseData(data);
+    telemetry.setData(monitorBase);
+    telemetry.setTime(time);
+
+    return telemetry;
+  }
+
   public static Tracer configureAzureMonitorTraceExporter(HttpPipelinePolicy validator) {
     AzureMonitorTraceExporter exporter =
         new AzureMonitorExporterBuilder()
@@ -124,7 +154,7 @@ public final class TestUtils {
         SdkTracerProvider.builder().addSpanProcessor(SimpleSpanProcessor.create(exporter)).build();
 
     OpenTelemetrySdk openTelemetrySdk =
-        OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).buildAndRegisterGlobal();
+        OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).build();
     return openTelemetrySdk.getTracer("Sample");
   }
 

@@ -72,7 +72,8 @@ public class AppConfigurationExporterIntegrationTest extends TestBase {
     CountDownLatch exporterCountDown = new CountDownLatch(1);
 
     Tracer tracer =
-        TestUtils.configureAzureMonitorTraceExporter(new ValidationPolicy(exporterCountDown, "AppConfig.setKey"));
+        TestUtils.configureAzureMonitorTraceExporter(
+            new ValidationPolicy(exporterCountDown, "AppConfig.setKey"));
     ConfigurationClient client = getConfigurationClient(appConfigCountDown);
 
     Span span = tracer.spanBuilder("set-config-exporter-testing").startSpan();
