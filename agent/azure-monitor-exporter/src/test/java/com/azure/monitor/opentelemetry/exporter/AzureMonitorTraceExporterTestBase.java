@@ -60,7 +60,6 @@ public class AzureMonitorTraceExporterTestBase extends TestBase {
 
     OpenTelemetrySdk openTelemetrySdk =
         OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).buildAndRegisterGlobal();
-
     return openTelemetrySdk.getTracer("Sample");
   }
 }

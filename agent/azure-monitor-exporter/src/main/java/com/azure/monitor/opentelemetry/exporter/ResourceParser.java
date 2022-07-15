@@ -30,12 +30,20 @@ import java.util.Map;
 
 final class ResourceParser {
 
+  private static final String DEFAULT_SERVICE_NAME = "unknown_service:java";
+
   static void updateRoleNameAndInstance(AbstractTelemetryBuilder builder, Resource resource) {
     Map<String, String> existingTags = builder.build().getTags();
     if (existingTags == null
         || !existingTags.containsKey(ContextTagKeys.AI_CLOUD_ROLE.toString())) {
       String serviceName = resource.getAttribute(ResourceAttributes.SERVICE_NAME);
       String serviceNamespace = resource.getAttribute(ResourceAttributes.SERVICE_NAMESPACE);
+      if (serviceName == null || DEFAULT_SERVICE_NAME.equals(serviceName)) {
+        String websiteSiteName = Strings.trimAndEmptyToNull(System.getenv("WEBSITE_SITE_NAME"));
+        if (websiteSiteName != null) {
+          serviceName = websiteSiteName;
+        }
+      }
       String roleName = null;
       if (serviceName != null && serviceNamespace != null) {
         roleName = "[" + serviceNamespace + "]/" + serviceName;
@@ -43,8 +51,6 @@ final class ResourceParser {
         roleName = serviceName;
       } else if (serviceNamespace != null) {
         roleName = "[" + serviceNamespace + "]";
-      } else {
-        roleName = Strings.trimAndEmptyToNull(System.getenv("WEBSITE_SITE_NAME"));
       }
       if (roleName != null) {
         builder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), roleName);
