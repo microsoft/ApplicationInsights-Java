@@ -104,7 +104,11 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
     TelemetryItem actualTelemetryItem = customValidationPolicy.getActualTelemetryItem();
     TelemetryItem expectedTelemetryItem =
         TestUtils.createAzureMonitorMetricTelemetry(
-            testName, 1, INSTRUMENTATION_KEY, actualTelemetryItem.getTime());
+            testName,
+            1,
+            INSTRUMENTATION_KEY,
+            actualTelemetryItem.getTime(),
+            actualTelemetryItem.getTags().get("ai.internal.sdkVersion"));
     assertThat(actualTelemetryItem.getName()).isEqualTo(expectedTelemetryItem.getName());
     assertThat(actualTelemetryItem.getInstrumentationKey())
         .isEqualTo(expectedTelemetryItem.getInstrumentationKey());

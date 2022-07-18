@@ -83,13 +83,13 @@ public final class TestUtils {
   }
 
   public static TelemetryItem createAzureMonitorMetricTelemetry(
-      String name, int value, String instrumentationKey, OffsetDateTime time) {
+      String name, int value, String instrumentationKey, OffsetDateTime time, String sdkVersion) {
     TelemetryItem telemetry = new TelemetryItem();
     telemetry.setVersion(1);
     telemetry.setName("Metric");
     telemetry.setInstrumentationKey(instrumentationKey);
     Map<String, String> tags = new HashMap<>();
-    tags.put("ai.internal.sdkVersion", "java11.0.10:otel1.15.0:ext1.0.0-beta.4");
+    tags.put("ai.internal.sdkVersion", sdkVersion);
     tags.put("ai.cloud.role", "unknown_service:java");
     telemetry.setTags(tags);
 
