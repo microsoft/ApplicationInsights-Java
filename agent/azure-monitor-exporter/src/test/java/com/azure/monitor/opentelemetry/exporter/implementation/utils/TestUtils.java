@@ -115,13 +115,17 @@ public final class TestUtils {
   }
 
   public static TelemetryItem createAzureMonitorRemoteDependencyTelemetry(
-      String name, String instrumentationKey, OffsetDateTime time, String operationId) {
+      String name,
+      String instrumentationKey,
+      OffsetDateTime time,
+      String operationId,
+      String sdkVersion) {
     TelemetryItem telemetry = new TelemetryItem();
     telemetry.setVersion(1);
     telemetry.setName("RemoteDependency");
     telemetry.setInstrumentationKey(instrumentationKey);
     Map<String, String> tags = new HashMap<>();
-    tags.put("ai.internal.sdkVersion", "java11.0.10:otel1.15.0:ext1.0.0-beta.4");
+    tags.put("ai.internal.sdkVersion", sdkVersion);
     tags.put("ai.operation.id", operationId);
     tags.put("ai.cloud.role", "unknown_service:java");
     telemetry.setTags(tags);

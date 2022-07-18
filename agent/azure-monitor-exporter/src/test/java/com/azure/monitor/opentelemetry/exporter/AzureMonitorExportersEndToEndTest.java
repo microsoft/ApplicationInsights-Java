@@ -131,7 +131,8 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
             testName,
             INSTRUMENTATION_KEY,
             actualTelemetryItem.getTime(),
-            actualTelemetryItem.getTags().get(ContextTagKeys.AI_OPERATION_ID.toString()));
+            actualTelemetryItem.getTags().get(ContextTagKeys.AI_OPERATION_ID.toString()),
+            actualTelemetryItem.getTags().get("ai.internal.sdkVersion"));
     assertThat(actualTelemetryItem.getName()).isEqualTo(expectedTelemetryItem.getName());
     assertThat(actualTelemetryItem.getInstrumentationKey())
         .isEqualTo(expectedTelemetryItem.getInstrumentationKey());
