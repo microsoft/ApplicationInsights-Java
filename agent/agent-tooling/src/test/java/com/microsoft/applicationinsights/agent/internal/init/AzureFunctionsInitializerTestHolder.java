@@ -88,7 +88,7 @@ class AzureFunctionsInitializerTestHolder {
     lazyConfigurationAccessor.setConnectionString(null, null);
 
     // then
-    verify(telemetryClient, never()).setConnectionString(any());
+    verify(telemetryClient, never()).updateConnectionString(any());
   }
 
   @Test
@@ -109,13 +109,14 @@ class AzureFunctionsInitializerTestHolder {
 
     // then
     verify(telemetryClient)
-        .setConnectionString(argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
+        .updateConnectionString(
+            argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
 
     // when
     lazyConfigurationAccessor.setWebsiteSiteName(WEBSITE_SITE_NAME);
 
     // then
-    verify(telemetryClient).setRoleName(WEBSITE_SITE_NAME);
+    verify(telemetryClient).updateRoleName(WEBSITE_SITE_NAME);
   }
 
   @Test
@@ -136,7 +137,8 @@ class AzureFunctionsInitializerTestHolder {
 
     // then
     verify(telemetryClient)
-        .setConnectionString(argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
+        .updateConnectionString(
+            argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
   }
 
   @Test
@@ -174,7 +176,7 @@ class AzureFunctionsInitializerTestHolder {
     lazyConfigurationAccessor.setConnectionString(null, null);
 
     // then
-    verify(telemetryClient, never()).setConnectionString(any());
+    verify(telemetryClient, never()).updateConnectionString(any());
   }
 
   @Test
@@ -195,7 +197,8 @@ class AzureFunctionsInitializerTestHolder {
 
     // then
     verify(telemetryClient)
-        .setConnectionString(argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
+        .updateConnectionString(
+            argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
   }
 
   @Test
@@ -216,6 +219,7 @@ class AzureFunctionsInitializerTestHolder {
 
     // then
     verify(telemetryClient)
-        .setConnectionString(argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
+        .updateConnectionString(
+            argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
   }
 }

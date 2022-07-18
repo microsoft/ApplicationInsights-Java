@@ -539,9 +539,13 @@ public class Configuration {
       if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
         return StatusFile.getLogDir() + "/" + DEFAULT_NAME;
       }
-      if (DiagnosticsHelper.useFunctionsRpIntegrationLogging()
-          && !DiagnosticsHelper.isOsWindows()) {
-        return "/var/log/applicationinsights/" + DEFAULT_NAME;
+      if (DiagnosticsHelper.useFunctionsRpIntegrationLogging()) {
+        if (DiagnosticsHelper.isOsWindows()) {
+          // TODO (trask) is there a preference where this should go?
+          return DEFAULT_NAME;
+        } else {
+          return "/var/log/applicationinsights/" + DEFAULT_NAME;
+        }
       }
       // azure spring cloud
       return DEFAULT_NAME;

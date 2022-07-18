@@ -397,7 +397,8 @@ public class TelemetryClient {
     return roleName;
   }
 
-  public void setRoleName(String roleName) {
+  // used during Azure Functions placeholder specialization
+  public void updateRoleName(String roleName) {
     this.roleName = roleName;
     globalTags.put(ContextTagKeys.AI_CLOUD_ROLE.toString(), roleName);
   }
@@ -407,16 +408,13 @@ public class TelemetryClient {
     return roleInstance;
   }
 
-  public void setRoleInstance(String roleInstance) {
-    this.roleInstance = roleInstance;
-    globalTags.put(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), roleInstance);
-  }
-
-  public void setConnectionString(ConnectionString connectionString) {
+  // used during Azure Functions placeholder specialization
+  public void updateConnectionString(ConnectionString connectionString) {
     this.connectionString = connectionString;
   }
 
-  public void setStatsbeatConnectionString(StatsbeatConnectionString statsbeatConnectionString) {
+  // used during Azure Functions placeholder specialization
+  public void updateStatsbeatConnectionString(StatsbeatConnectionString statsbeatConnectionString) {
     this.statsbeatConnectionString = statsbeatConnectionString;
   }
 
@@ -512,10 +510,12 @@ public class TelemetryClient {
         @Nullable String connectionString,
         @Nullable String statsbeatInstrumentationKey,
         @Nullable String statsbeatEndpoint) {
-      this.connectionString = ConnectionString.parse(connectionString);
-      this.statsbeatConnectionString =
-          StatsbeatConnectionString.create(
-              this.connectionString, statsbeatInstrumentationKey, statsbeatEndpoint);
+      if (connectionString != null) {
+        this.connectionString = ConnectionString.parse(connectionString);
+        this.statsbeatConnectionString =
+            StatsbeatConnectionString.create(
+                this.connectionString, statsbeatInstrumentationKey, statsbeatEndpoint);
+      }
       return this;
     }
 

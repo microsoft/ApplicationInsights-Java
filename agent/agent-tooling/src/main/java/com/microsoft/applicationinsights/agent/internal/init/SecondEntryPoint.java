@@ -113,6 +113,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     Configuration config = FirstEntryPoint.getConfiguration();
     if (Strings.isNullOrEmpty(config.connectionString)) {
+      // TODO we can update this check after the new functions model is deployed.
       if (!"java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
         throw new FriendlyException(
             "No connection string provided", "Please provide connection string.");
@@ -180,6 +181,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     }
 
     // this is for Azure Function Linux consumption plan support.
+    // TODO we can update this check after the new functions model is deployed.
     if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
       AzureFunctions.setup(
           () -> telemetryClient.getConnectionString() != null,

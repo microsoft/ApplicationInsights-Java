@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import ch.qos.logback.classic.LoggerContext;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
@@ -99,8 +100,11 @@ public class AzureFunctionsInitializer implements Runnable {
   }
 
   private void setValue(String value) {
-    // passing nulls because lazy configuration doesn't support manual statsbeat overrides
-    telemetryClient.setConnectionString(ConnectionString.parse(value));
+    ConnectionString connectionString = ConnectionString.parse(value);
+    telemetryClient.updateConnectionString(connectionString);
+    telemetryClient.updateStatsbeatConnectionString(
+        StatsbeatConnectionString.create(connectionString, null, null));
+
     // now that we know the user has opted in to tracing, we need to init the propagator and sampler
     DelegatingPropagator.getInstance().setUpStandardDelegate(Collections.emptyList(), false);
     // TODO handle APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE
@@ -113,7 +117,7 @@ public class AzureFunctionsInitializer implements Runnable {
 
   void setWebsiteSiteName(@Nullable String websiteSiteName) {
     if (websiteSiteName != null && !websiteSiteName.isEmpty()) {
-      telemetryClient.setRoleName(websiteSiteName);
+      telemetryClient.updateRoleName(websiteSiteName);
       logger.debug(
           "Set WEBSITE_SITE_NAME: {} lazily for the Azure Function Consumption Plan.",
           websiteSiteName);
