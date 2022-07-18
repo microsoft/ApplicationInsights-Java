@@ -67,9 +67,9 @@ public class RequestAlertPipelineBuilder {
       Configuration.RequestTrigger configuration, TimeSource timeSource) {
     if (configuration.aggregation.type == Configuration.RequestAggregationType.BREACH_RATIO) {
       return new ThresholdBreachRatioAggregation(
-          configuration.aggregation.configuration.thresholdMs,
+          configuration.aggregation.configuration.thresholdMillis,
           configuration.aggregation.configuration.minimumSamples,
-          configuration.aggregation.windowSize / 1000,
+          configuration.aggregation.windowSizeMillis / 1000,
           timeSource,
           false);
     }

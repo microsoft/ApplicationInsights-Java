@@ -81,7 +81,9 @@ public class AlternativeJfrConfigurations {
 
       try {
         // Try parsing the triggeredSettings as a pre-configured type
-        ProfileTypes profile = ProfileTypes.valueOf(triggeredSettings);
+        // Convert from kebab case to enum type
+        String enumType = triggeredSettings.toUpperCase().replaceAll("-", "_");
+        ProfileTypes profile = ProfileTypes.valueOf(enumType);
 
         return AlternativeJfrConfigurations.get(profile, type);
       } catch (IllegalArgumentException e) {

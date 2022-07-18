@@ -1244,7 +1244,7 @@ public class Configuration {
 
     // Threshold in ms over which a span will consider to be a breach
     // Used by the breach ratio aggregation
-    public int thresholdMs = 5000;
+    public int thresholdMillis = 5000;
 
     // Minimum number of samples that must have been collected in order for the aggregation to
     // produce data. Avoids volatile aggregation output on small sample sizes.
@@ -1258,8 +1258,7 @@ public class Configuration {
 
   public static class RequestAggregation {
     public RequestAggregationType type = RequestAggregationType.BREACH_RATIO;
-    public long windowSize = 60000; // in ms
-    public String evaluationFrequency = "every_sample";
+    public long windowSizeMillis = 60000; // in ms
     public RequestAggregationConfig configuration = new RequestAggregationConfig();
   }
 
@@ -1309,14 +1308,12 @@ public class Configuration {
     public int periodicRecordingDurationSeconds = 120;
     public int periodicRecordingIntervalSeconds = 60 * 60;
     public boolean enabled = false;
-    public String memoryTriggeredSettings = "PROFILE_WITHOUT_ENV_DATA";
-    public String cpuTriggeredSettings = "PROFILE_WITHOUT_ENV_DATA";
+    public String memoryTriggeredSettings = "profile-without-env-data";
+    public String cpuTriggeredSettings = "profile-without-env-data";
     @Nullable public String serviceProfilerFrontEndPoint = null;
     public boolean enableDiagnostics = false;
     public boolean enableRequestTriggering = false;
     public RequestTrigger[] requestTriggerEndpoints = {};
-
-    public int maximumProcessingQueueLength = 100;
   }
 
   public static class GcEventConfiguration {

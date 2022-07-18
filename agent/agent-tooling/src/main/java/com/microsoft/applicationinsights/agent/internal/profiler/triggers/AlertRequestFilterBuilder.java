@@ -23,13 +23,11 @@ package com.microsoft.applicationinsights.agent.internal.profiler.triggers;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.alerting.analysis.filter.AlertRequestFilter;
-import javax.annotation.Nullable;
 
 public class AlertRequestFilterBuilder {
 
   private AlertRequestFilterBuilder() {}
 
-  @Nullable
   public static AlertRequestFilter build(Configuration.RequestFilter filter) {
     if (filter.type == Configuration.RequestFilterType.NAME_REGEX) {
       return new AlertRequestFilter.RegexRequestNameFilter(filter.value);

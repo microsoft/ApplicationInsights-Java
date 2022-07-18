@@ -28,22 +28,22 @@ import java.util.OptionalDouble;
 public class ThresholdBreachRatioAggregation extends Aggregation {
 
   private final BreachedRatio breachRatio;
-  private final double thresholdMs;
+  private final double thresholdMillis;
 
   public ThresholdBreachRatioAggregation(
-      long thresholdMs,
+      long thresholdMillis,
       long minimumSamples,
       long windowLengthInSec,
       TimeSource timeSource,
       boolean trackCurrentBucket) {
     this.breachRatio =
         new BreachedRatio(windowLengthInSec, minimumSamples, timeSource, trackCurrentBucket);
-    this.thresholdMs = thresholdMs;
+    this.thresholdMillis = thresholdMillis;
   }
 
   @Override
   public void processUpdate(TelemetryDataPoint telemetryDataPoint) {
-    this.breachRatio.update(telemetryDataPoint.getValue() >= thresholdMs);
+    this.breachRatio.update(telemetryDataPoint.getValue() >= thresholdMillis);
   }
 
   @Override
