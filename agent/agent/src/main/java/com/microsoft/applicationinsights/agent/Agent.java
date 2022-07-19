@@ -49,13 +49,13 @@ public class Agent {
 
       OpenTelemetryAgent.premain(agentArgs, inst);
     } finally {
-      if (!agentIsAttached()) {
+      if (!agentIsInstalled()) {
         alreadyLoaded.set(false);
       }
     }
   }
 
-  private static boolean agentIsAttached() {
+  private static boolean agentIsInstalled() {
     try {
       Class.forName("io.opentelemetry.javaagent.OpenTelemetryAgent", false, null);
       return true;
