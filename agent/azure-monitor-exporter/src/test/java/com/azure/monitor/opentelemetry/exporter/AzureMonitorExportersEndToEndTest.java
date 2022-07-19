@@ -103,14 +103,13 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
   }
 
   private static void validateMetricExporterEndToEnd(String testName) throws Exception {
-    CustomValidationPolicy customValidationPolicy = generateMetrics(testName);
-    List<TelemetryItem> actualTelemetryItems = customValidationPolicy.getActualTelemetryItems();
+    List<TelemetryItem> actualTelemetryItems = generateMetrics(testName);
     assertThat(actualTelemetryItems.size()).isGreaterThan(0);
     TelemetryItem actualTelemetryItem = actualTelemetryItems.get(0);
     assertThat(actualTelemetryItem.getName()).isEqualTo("Metric");
     assertThat(actualTelemetryItem.getInstrumentationKey()).isEqualTo(INSTRUMENTATION_KEY);
     assertThat(actualTelemetryItem.getTags())
-        .hasEntrySatisfying("ai.cloud.role", v -> assertThat(v).isEqualTo("unknown_service:java"));
+        .containsEntry("ai.cloud.role", "unknown_service:java");
     assertThat(actualTelemetryItem.getTags())
         .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).contains("otel"));
     assertThat(actualTelemetryItem.getData().getBaseType()).isEqualTo("MetricData");
@@ -122,14 +121,13 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
   }
 
   private static void validateTraceExporterEndToEnd(String testName) throws Exception {
-    CustomValidationPolicy customValidationPolicy = generateTraces(testName);
-    List<TelemetryItem> actualTelemetryItems = customValidationPolicy.getActualTelemetryItems();
+    List<TelemetryItem> actualTelemetryItems = generateTraces(testName);
     assertThat(actualTelemetryItems.size()).isGreaterThan(0);
     TelemetryItem actualTelemetryItem = actualTelemetryItems.get(0);
     assertThat(actualTelemetryItem.getName()).isEqualTo("RemoteDependency");
     assertThat(actualTelemetryItem.getInstrumentationKey()).isEqualTo(INSTRUMENTATION_KEY);
     assertThat(actualTelemetryItem.getTags())
-        .hasEntrySatisfying("ai.cloud.role", v -> assertThat(v).isEqualTo("unknown_service:java"));
+        .containsEntry("ai.cloud.role", "unknown_service:java");
     assertThat(actualTelemetryItem.getTags())
         .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).contains("otel"));
     assertThat(actualTelemetryItem.getData().getBaseType()).isEqualTo("RemoteDependencyData");
@@ -150,7 +148,7 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
     Assertions.assertTrue(export.isSuccess());
   }
 
-  private static CustomValidationPolicy generateTraces(String testName) throws Exception {
+  private static List<TelemetryItem> generateTraces(String testName) throws Exception {
     CountDownLatch traceExporterCountDown = new CountDownLatch(1);
     CustomValidationPolicy customValidationPolicy =
         new CustomValidationPolicy(traceExporterCountDown);
@@ -163,10 +161,10 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
       span.end();
     }
     assertTrue(traceExporterCountDown.await(60, TimeUnit.SECONDS));
-    return customValidationPolicy;
+    return customValidationPolicy.actualTelemetryItems;
   }
 
-  private static CustomValidationPolicy generateMetrics(String testName) throws Exception {
+  private static List<TelemetryItem> generateMetrics(String testName) throws Exception {
     CountDownLatch metricExporterCountDown = new CountDownLatch(1);
     CustomValidationPolicy customValidationPolicy =
         new CustomValidationPolicy(metricExporterCountDown);
@@ -177,7 +175,7 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
         Attributes.of(
             AttributeKey.stringKey("name"), "apple", AttributeKey.stringKey("color"), "red"));
     metricExporterCountDown.await(60, TimeUnit.SECONDS);
-    return customValidationPolicy;
+    return customValidationPolicy.actualTelemetryItems;
   }
 
   private static class CustomValidationPolicy implements HttpPipelinePolicy {
@@ -187,10 +185,6 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
 
     CustomValidationPolicy(CountDownLatch countDown) {
       this.countDown = countDown;
-    }
-
-    public List<TelemetryItem> getActualTelemetryItems() {
-      return actualTelemetryItems;
     }
 
     @Override
@@ -229,7 +223,7 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
         }
         return new String(baos.toByteArray(), StandardCharsets.UTF_8);
       } catch (Exception e) {
-        return null;
+        throw new RuntimeException(e);
       }
     }
 
