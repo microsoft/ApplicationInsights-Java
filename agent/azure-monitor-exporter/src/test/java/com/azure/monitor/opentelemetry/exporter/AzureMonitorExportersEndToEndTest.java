@@ -35,8 +35,9 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDepe
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.MockLogData;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TestUtils;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
@@ -48,7 +49,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -197,7 +198,7 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
   private static class CustomValidationPolicy implements HttpPipelinePolicy {
 
     private final CountDownLatch countDown;
-    private List<TelemetryItem> actualTelemetryItems;
+    private final List<TelemetryItem> actualTelemetryItems = new ArrayList<>();
 
     CustomValidationPolicy(CountDownLatch countDown) {
       this.countDown = countDown;
@@ -218,13 +219,15 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
                   });
       asyncBytes.subscribe(
           value -> {
-            try {
-              ObjectMapper objectMapper = createObjectMapper();
-              TelemetryItem[] telemetryItems = objectMapper.readValue(value, TelemetryItem[].class);
-              actualTelemetryItems = Arrays.asList(telemetryItems);
+            ObjectMapper objectMapper = createObjectMapper();
+            try (MappingIterator<TelemetryItem> i =
+                objectMapper.readerFor(TelemetryItem.class).readValues(value)) {
+              while (i.hasNext()) {
+                actualTelemetryItems.add(i.next());
+              }
               countDown.countDown();
             } catch (Exception e) {
-              // e.printStackTrace();
+              System.out.println(e);
             }
           });
       return next.process();
@@ -244,12 +247,13 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
         return null;
       }
     }
-  }
 
-  private static ObjectMapper createObjectMapper() {
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-    mapper.registerModules(ObjectMapper.findModules(TelemetryItem[].class.getClassLoader()));
-    return mapper;
+    private static ObjectMapper createObjectMapper() {
+      ObjectMapper objectMapper = new ObjectMapper();
+      // handle JSR-310 (java 8) dates with Jackson by configuring ObjectMapper to use this
+      // dependency and not (de)serialize Instant as timestamps that it does by default
+      objectMapper.findAndRegisterModules().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+      return objectMapper;
+    }
   }
 }
