@@ -91,9 +91,8 @@ Additionally, a number of parameters can be configured using environment variabl
   "preview": {
     "profiler": {
       "enabled": true,
-      "configPollPeriodSeconds": 50,
-      "cpuTriggeredSettings": "PROFILE_WITHOUT_ENV_DATA",
-      "memoryTriggeredSettings": "PROFILE_WITHOUT_ENV_DATA"
+      "cpuTriggeredSettings": "profile-without-env-data",
+      "memoryTriggeredSettings": "profile-without-env-data"
     }
   }
 }
