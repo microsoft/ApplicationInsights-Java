@@ -246,7 +246,7 @@ public class TelemetryClient {
             aadAuthentication,
             new NetworkStatsbeatHttpPipelinePolicy(statsbeatModule.getNetworkStatsbeat()));
     TelemetryPipeline telemetryPipeline =
-        new TelemetryPipeline(httpPipeline, connectionString.getIngestionEndpoint());
+        new TelemetryPipeline(httpPipeline, () -> connectionString.getIngestionEndpoint());
 
     TelemetryPipelineListener telemetryPipelineListener;
     if (tempDir == null) {
@@ -285,7 +285,7 @@ public class TelemetryClient {
         if (statsbeatBatchItemProcessor == null) {
           HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(null);
           TelemetryPipeline telemetryPipeline =
-              new TelemetryPipeline(httpPipeline, statsbeatConnectionString.getEndpoint());
+              new TelemetryPipeline(httpPipeline, () -> statsbeatConnectionString.getEndpoint());
 
           TelemetryPipelineListener telemetryPipelineListener;
           if (tempDir == null) {

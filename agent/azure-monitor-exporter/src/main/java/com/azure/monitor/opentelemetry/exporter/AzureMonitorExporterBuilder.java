@@ -315,7 +315,7 @@ public final class AzureMonitorExporterBuilder {
       httpPipeline = createHttpPipeline();
     }
 
-    TelemetryPipeline pipeline = new TelemetryPipeline(httpPipeline, endpoint);
+    TelemetryPipeline pipeline = new TelemetryPipeline(httpPipeline, () -> endpoint);
 
     File tempDir =
         TempDirs.getApplicationInsightsTempDir(
