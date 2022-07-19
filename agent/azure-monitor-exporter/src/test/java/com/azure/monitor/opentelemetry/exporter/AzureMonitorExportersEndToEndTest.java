@@ -212,7 +212,7 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
               }
               countDown.countDown();
             } catch (Exception e) {
-              System.out.println(e);
+              // e.printStackTrace();
             }
           });
       return next.process();
