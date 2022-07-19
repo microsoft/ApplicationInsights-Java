@@ -40,7 +40,7 @@ public class AzureFunctions {
 
   public static void configureOnce() {
     if (configure != null) {
-      if (!hasConnectionString.get()) {
+      if (!hasConnectionString()) {
         configure.run();
       }
       configure = null;
