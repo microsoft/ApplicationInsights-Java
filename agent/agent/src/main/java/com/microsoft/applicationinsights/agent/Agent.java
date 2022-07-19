@@ -49,15 +49,6 @@ public class Agent {
     OpenTelemetryAgent.premain(agentArgs, inst);
   }
 
-  private static boolean agentIsInstalled() {
-    try {
-      Class.forName("io.opentelemetry.javaagent.OpenTelemetryAgent", false, null);
-      return true;
-    } catch (ClassNotFoundException e) {
-      return false;
-    }
-  }
-
   // this is provided only for dynamic attach in the first line of main
   // there are many problematic edge cases around dynamic attach any later than that
   public static void agentmain(String agentArgs, Instrumentation inst) {
