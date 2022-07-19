@@ -1281,11 +1281,12 @@ public class Configuration {
   }
 
   public enum RequestTriggerThrottlingType {
-    COOLDOWN
+    @JsonProperty("fixed-duration-cooldown")
+    FIXED_DURATION_COOLDOWN
   }
 
   public static class RequestTriggerThrottling {
-    public RequestTriggerThrottlingType type = RequestTriggerThrottlingType.COOLDOWN;
+    public RequestTriggerThrottlingType type = RequestTriggerThrottlingType.FIXED_DURATION_COOLDOWN;
     public long value = 60000; // in ms
   }
 
