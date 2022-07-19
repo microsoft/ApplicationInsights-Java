@@ -92,7 +92,7 @@ class ProfilerFrontendClientV2Test {
             new URL("http://a-host"), "a-instrumentation-key", httpPipeline);
 
     UUID id = UUID.randomUUID();
-    BlobAccessPass pass = profilerFrontendClientV2.getUploadAccess(id).block();
+    BlobAccessPass pass = profilerFrontendClientV2.getUploadAccess(id, "jfr").block();
 
     HttpRequest request = requestHolder.get();
     String url = request.getUrl().toString();
@@ -140,7 +140,7 @@ class ProfilerFrontendClientV2Test {
 
     UUID id = UUID.randomUUID();
     ArtifactAcceptedResponse artifactAcceptedResponse =
-        profilerFrontendClientV2.reportUploadFinish(id, "an-etag").block();
+        profilerFrontendClientV2.reportUploadFinish(id, "jfr", "an-etag").block();
 
     HttpRequest request = requestHolder.get();
     String url = request.getUrl().toString();

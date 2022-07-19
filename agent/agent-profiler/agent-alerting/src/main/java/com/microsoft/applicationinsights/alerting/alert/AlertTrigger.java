@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.alerting.alert;
 
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 import java.time.Instant;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 /**
@@ -51,7 +52,9 @@ public class AlertTrigger implements Consumer<Double> {
       Instant coolDownCutOff = Instant.now().minusSeconds(alertConfig.getCooldown());
       if (lastAlertTime == null || lastAlertTime.isBefore(coolDownCutOff)) {
         lastAlertTime = Instant.now();
-        action.accept(new AlertBreach(alertConfig.getType(), telemetry, alertConfig));
+        UUID profileId = UUID.randomUUID();
+        action.accept(
+            new AlertBreach(alertConfig.getType(), telemetry, alertConfig, profileId.toString()));
       }
     }
   }

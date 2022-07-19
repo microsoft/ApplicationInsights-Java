@@ -19,31 +19,37 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.alerting.analysis;
+package com.microsoft.applicationinsights.alerting.analysis.filter;
 
-// This class name must end in MXBean (case sensitive)
-@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
-public interface AlertPipelineMXBean {
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 
-  // Attributes
-  long getCoolDown();
+/** Filters span data based on its name. */
+public abstract class AlertRequestFilter implements Predicate<String> {
 
-  long getRollingAverageWindow();
+  /** Filter that applies a regex to the span name. */
+  public static class RegexRequestNameFilter extends AlertRequestFilter {
 
-  long getProfilerDuration();
+    private final Pattern pattern;
 
-  float getThreshold();
+    public RegexRequestNameFilter(String value) {
+      pattern = Pattern.compile(value);
+    }
 
-  double getCurrentAverage();
+    @Override
+    public boolean test(@Nullable String spanName) {
+      if (spanName == null) {
+        return false;
+      }
+      return pattern.matcher(spanName).matches();
+    }
+  }
 
-  boolean getEnabled();
-
-  boolean isOffCooldown();
-
-  String getLastAlertTime();
-
-  // Operations
-  // - no operations currently implemented
-  // Notifications
-  // - no notifications currently implemented
+  public static class AcceptAll extends AlertRequestFilter {
+    @Override
+    public boolean test(String s) {
+      return true;
+    }
+  }
 }

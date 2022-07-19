@@ -24,12 +24,18 @@ package com.microsoft.applicationinsights.profiler.uploader;
 /** Represents the metadata produced as a result of having uploaded a profile. */
 public class UploadResult {
   private final ServiceProfilerIndex serviceProfilerIndex;
+  private final long timestamp;
 
-  public UploadResult(ServiceProfilerIndex serviceProfilerIndex) {
+  public UploadResult(ServiceProfilerIndex serviceProfilerIndex, long timestamp) {
     this.serviceProfilerIndex = serviceProfilerIndex;
+    this.timestamp = timestamp;
   }
 
   public ServiceProfilerIndex getServiceProfilerIndex() {
     return serviceProfilerIndex;
+  }
+
+  public long getTimestamp() {
+    return timestamp;
   }
 }

@@ -35,14 +35,24 @@ public class UploadContext {
   private final File traceFile;
   private final UUID profileId;
   private final String machineName;
+  private final String fileFormat;
+  private final String extension;
 
   public UploadContext(
-      String machineName, UUID dataCube, long sessionId, File traceFile, UUID profileId) {
+      String machineName,
+      UUID dataCube,
+      long sessionId,
+      File traceFile,
+      UUID profileId,
+      String fileFormat,
+      String extension) {
     this.machineName = machineName;
     this.dataCube = dataCube;
     this.sessionId = sessionId;
     this.traceFile = traceFile;
     this.profileId = profileId;
+    this.fileFormat = fileFormat;
+    this.extension = extension;
   }
 
   public String getMachineName() {
@@ -63,5 +73,13 @@ public class UploadContext {
 
   public UUID getProfileId() {
     return profileId;
+  }
+
+  public String getFileFormat() {
+    return fileFormat;
+  }
+
+  public String getExtension() {
+    return extension;
   }
 }

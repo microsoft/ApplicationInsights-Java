@@ -18,7 +18,7 @@ UI.
 
 ## Warning
 
-The JFR profiler by default executes the "PROFILE_WITHOUT_ENV_DATA" profile. This configuration is
+The JFR profiler by default executes the "profile-without-env-data" profile. This configuration is
 similar to the "profile" configuration that ships with the JVM, however has had some events disabled
 that have the potential to contain sensitive deployment information such as environment variables,
 arguments provided to the JVM and processes running on the system. The flags that have been disabled
@@ -103,15 +103,15 @@ Additionally, a number of parameters can be configured using environment variabl
 `memoryTriggeredSettings` - This configuration will be used in the event of a memory profile is
 requested. This can be one of:
 
-- `PROFILE_WITHOUT_ENV_DATA` (default value). A profile with certain sensitive events disabled, see
+- `profile-without-env-data` (default value). A profile with certain sensitive events disabled, see
   [Warning](#Warning) section for details.
-- `PROFILE`. Uses the `profile.jfc` configuration that ships with JFR.
+- `profile`. Uses the `profile.jfc` configuration that ships with JFR.
 - A path to a custom jfc configuration file on the file system, i.e `/tmp/myconfig.jfc`.
 
 `cpuTriggeredSettings` - This configuration will be used in the event of a cpu profile is requested.
 This can be one of:
 
-- `PROFILE_WITHOUT_ENV_DATA` (default value). A profile with certain sensitive events disabled, see
+- `profile-without-env-data` (default value). A profile with certain sensitive events disabled, see
   [Warning](#Warning) section for details.
-- `PROFILE`. Uses the `profile.jfc` jfc configuration that ships with JFR.
+- `profile`. Uses the `profile.jfc` jfc configuration that ships with JFR.
 - A path to a custom jfc configuration file on the file system, i.e `/tmp/myconfig.jfc`.

@@ -23,5 +23,10 @@ package com.microsoft.applicationinsights.serviceprofilerapi.profiler;
 
 public enum ProfileTypes {
   PROFILE,
-  PROFILE_WITHOUT_ENV_DATA;
+
+  // Same as profile with some potentially sensitive data removed, such as environment variables
+  PROFILE_WITHOUT_ENV_DATA,
+
+  // Enables the events needed to perform a performance diagnosis
+  DIAGNOSTIC_PROFILE
 }

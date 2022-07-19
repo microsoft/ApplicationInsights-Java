@@ -27,6 +27,8 @@ import com.microsoft.applicationinsights.profiler.uploader.UploadCompleteHandler
 import com.microsoft.applicationinsights.profiler.uploader.UploadResult;
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
 import java.io.File;
+import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,19 +39,18 @@ public class JfrUploadService implements ProfileHandler {
 
   private final ServiceProfilerUploader jfrUploader;
   private final Supplier<String> appIdSupplier;
-  private final UploadCompleteHandler uploadCompleteHandler;
 
-  public JfrUploadService(
-      ServiceProfilerUploader jfrUploader,
-      Supplier<String> appIdSupplier,
-      UploadCompleteHandler uploadCompleteHandler) {
+  public JfrUploadService(ServiceProfilerUploader jfrUploader, Supplier<String> appIdSupplier) {
     this.jfrUploader = jfrUploader;
     this.appIdSupplier = appIdSupplier;
-    this.uploadCompleteHandler = uploadCompleteHandler;
   }
 
   @Override
-  public void receive(AlertBreach alertBreach, long timestamp, File file) {
+  public void receive(
+      AlertBreach alertBreach,
+      long timestamp,
+      File file,
+      UploadCompleteHandler uploadCompleteHandler) {
     String appId = appIdSupplier.get();
     if (appId == null || appId.isEmpty()) {
       LOGGER.error("Not uploading file due to lack of app id");
@@ -58,16 +59,22 @@ public class JfrUploadService implements ProfileHandler {
 
     jfrUploader
         .uploadJfrFile(
+            UUID.fromString(alertBreach.getProfileId()),
             alertBreach.getTriggerName(),
             timestamp,
             file,
             alertBreach.getCpuMetric(),
             alertBreach.getMemoryUsage())
-        .subscribe(this::onUploadComplete, e -> LOGGER.error("Failed to upload file", e));
+        .subscribe(
+            onUploadComplete(uploadCompleteHandler), e -> LOGGER.error("Failed to upload file", e));
   }
 
-  private void onUploadComplete(UploadResult result) {
-    uploadCompleteHandler.notify(result);
-    LOGGER.info("Uploading of profile complete");
+  // Notify listener that full profile and upload cycle has completed and log success
+  private static Consumer<? super UploadResult> onUploadComplete(
+      UploadCompleteHandler uploadCompleteHandler) {
+    return result -> {
+      uploadCompleteHandler.notify(result);
+      LOGGER.info("Uploading of profile complete");
+    };
   }
 }

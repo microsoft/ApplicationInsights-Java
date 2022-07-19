@@ -19,9 +19,13 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.alerting.analysis;
+package com.microsoft.applicationinsights.alerting.analysis.pipelines;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
+import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
+import com.microsoft.applicationinsights.alerting.analysis.aggregations.RollingAverage;
+import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
+import com.microsoft.applicationinsights.alerting.analysis.filter.AlertRequestFilter;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 import java.util.HashMap;
@@ -49,16 +53,21 @@ public class AlertPipelines {
   public OptionalDouble getAverage(AlertMetricType type) {
     AlertPipeline pipeline = alertPipelines.get(type);
     if (pipeline != null) {
-      return pipeline.calculateAverage();
+      return pipeline.getValue();
     } else {
       return OptionalDouble.empty();
     }
   }
 
-  public void updateAlertConfig(AlertConfiguration newAlertConfig) {
+  public void updateAlertConfig(AlertConfiguration newAlertConfig, TimeSource timeSource) {
     AlertPipeline pipeline = alertPipelines.get(newAlertConfig.getType());
     if (pipeline == null) {
-      pipeline = AlertPipeline.create(new RollingAverage(), newAlertConfig, this::dispatchAlert);
+      pipeline =
+          SingleAlertPipeline.create(
+              new AlertRequestFilter.AcceptAll(),
+              new RollingAverage(120, timeSource, true),
+              newAlertConfig,
+              this::dispatchAlert);
       alertPipelines.put(newAlertConfig.getType(), pipeline);
     } else {
       pipeline.updateConfig(newAlertConfig);
@@ -71,6 +80,10 @@ public class AlertPipelines {
   /** Ensure that alerts contain the required metrics and notify upstream handler. */
   private void dispatchAlert(AlertBreach alert) {
     alertHandler.accept(addMetricData(alert));
+  }
+
+  public void setAlertPipeline(AlertMetricType type, AlertPipeline alertPipeline) {
+    alertPipelines.put(type, alertPipeline);
   }
 
   // Ensure that cpu and memory values are set on the breach

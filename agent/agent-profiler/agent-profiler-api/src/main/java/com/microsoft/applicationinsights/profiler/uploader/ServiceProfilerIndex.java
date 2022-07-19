@@ -75,6 +75,34 @@ public class ServiceProfilerIndex {
     metrics.put(SERVICE_PROFILER_AVERAGE_MEMORY_USAGE_METRIC_NAME, memoryUsage);
   }
 
+  public String getTriggeredBy() {
+    return sampleEvent.get(SERVICE_PROFILER_SOURCE_PROPERTY_NAME);
+  }
+
+  public String getFileId() {
+    return sampleEvent.get(SERVICE_PROFILER_FILEID_PROPERTY_NAME);
+  }
+
+  public String getStampId() {
+    return sampleEvent.get(SERVICE_PROFILER_STAMPID_PROPERTY_NAME);
+  }
+
+  public String getDataCubeId() {
+    return sampleEvent.get(SERVICE_PROFILER_DATACUBE_PROPERTY_NAME);
+  }
+
+  public String getArtifactId() {
+    return sampleEvent.get(SERVICE_PROFILER_ARTIFACT_ID_NAME);
+  }
+
+  public double getCpuUsage() {
+    return metrics.get(SERVICE_PROFILER_AVERAGECPUUSAGE_METRIC_NAME);
+  }
+
+  public double getMemoryUsage() {
+    return metrics.get(SERVICE_PROFILER_AVERAGE_MEMORY_USAGE_METRIC_NAME);
+  }
+
   public Map<String, String> getProperties() {
     return sampleEvent;
   }
