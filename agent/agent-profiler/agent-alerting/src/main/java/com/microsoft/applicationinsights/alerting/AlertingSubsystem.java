@@ -22,9 +22,10 @@
 package com.microsoft.applicationinsights.alerting;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-import com.microsoft.applicationinsights.alerting.analysis.AlertPipelines;
-import com.microsoft.applicationinsights.alerting.analysis.TelemetryDataPoint;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
+import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
+import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipeline;
+import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipelines;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
@@ -35,8 +36,7 @@ import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.UUID;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -53,12 +53,6 @@ public class AlertingSubsystem {
   // Downstream observer of alerts produced by the alerting system
   private final Consumer<AlertBreach> alertHandler;
 
-  // Execution context of the alerting subsytem
-  private final ExecutorService executorService;
-
-  // queue of telemetry data to be processed
-  private final LinkedBlockingQueue<TelemetryDataPoint> workQueue = new LinkedBlockingQueue<>();
-
   // List of manual triggers that have already been processed
   private final Set<String> manualTriggersExecuted = new HashSet<>();
 
@@ -68,19 +62,19 @@ public class AlertingSubsystem {
   // Current configuration of the alerting subsystem
   private AlertingConfiguration alertConfig;
 
-  // monitor to guard the notification that the work list has been processed
-  private final Object monitor = new Object();
+  protected AlertingSubsystem(Consumer<AlertBreach> alertHandler) {
+    this(alertHandler, TimeSource.DEFAULT);
+  }
 
-  protected AlertingSubsystem(Consumer<AlertBreach> alertHandler, ExecutorService executorService) {
+  protected AlertingSubsystem(Consumer<AlertBreach> alertHandler, TimeSource timeSource) {
     this.alertHandler = alertHandler;
     alertPipelines = new AlertPipelines(alertHandler);
-    this.executorService = executorService;
-    timeSource = TimeSource.DEFAULT;
+    this.timeSource = timeSource;
   }
 
   public static AlertingSubsystem create(
-      Consumer<AlertBreach> alertHandler, ExecutorService executorService) {
-    AlertingSubsystem alertingSubsystem = new AlertingSubsystem(alertHandler, executorService);
+      Consumer<AlertBreach> alertHandler, TimeSource timeSource) {
+    AlertingSubsystem alertingSubsystem = new AlertingSubsystem(alertHandler, timeSource);
     // init with disabled config
     alertingSubsystem.initialize(
         new AlertingConfiguration(
@@ -105,53 +99,22 @@ public class AlertingSubsystem {
 
   /** Create alerting pipelines with default configuration. */
   public void initialize(AlertingConfiguration alertConfig) {
-
     updateConfiguration(alertConfig);
-
-    executorService.execute(
-        () -> {
-          while (true) {
-            try {
-              process(workQueue.take());
-            } catch (InterruptedException e) {
-              Thread.currentThread().interrupt();
-              return;
-            } catch (RuntimeException e) {
-              LOGGER.error("Exception while evaluating alert", e);
-            } catch (Error e) {
-              LOGGER.error("Exception while evaluating alert", e);
-              throw e;
-            }
-
-            synchronized (monitor) {
-              monitor.notifyAll();
-            }
-          }
-        });
   }
 
   /** Add telemetry to alert processing pipeline. */
-  public void track(AlertMetricType type, double value) {
-    workQueue.add(new TelemetryDataPoint(type, timeSource.getNow(), value));
-  }
-
-  /** Block until work queue is empty. */
-  public void awaitQueueFlush() {
-    while (workQueue.size() > 0) {
-      synchronized (monitor) {
-        try {
-          if (workQueue.size() > 0) {
-            monitor.wait();
-          }
-        } catch (InterruptedException e) {
-          return;
-        }
-      }
+  public void track(@Nullable AlertMetricType type, @Nullable Number value) {
+    if (type != null && value != null) {
+      trackTelemetryDataPoint(
+          TelemetryDataPoint.create(type, timeSource.getNow(), type.name(), value.doubleValue()));
     }
   }
 
   /** Deliver data to pipelines. */
-  public void process(TelemetryDataPoint telemetryDataPoint) {
+  public void trackTelemetryDataPoint(@Nullable TelemetryDataPoint telemetryDataPoint) {
+    if (telemetryDataPoint == null) {
+      return;
+    }
     LOGGER.trace(
         "Tracking " + telemetryDataPoint.getType().name() + " " + telemetryDataPoint.getValue());
     alertPipelines.process(telemetryDataPoint);
@@ -177,7 +140,7 @@ public class AlertingSubsystem {
   private void updatePipelineConfig(
       AlertConfiguration newAlertConfig, @Nullable AlertConfiguration oldAlertConfig) {
     if (oldAlertConfig == null || !oldAlertConfig.equals(newAlertConfig)) {
-      alertPipelines.updateAlertConfig(newAlertConfig);
+      alertPipelines.updateAlertConfig(newAlertConfig, timeSource);
     }
   }
 
@@ -203,8 +166,13 @@ public class AlertingSubsystem {
                   .setProfileDuration(config.getImmediateProfilingDuration())
                   .setThreshold(0.0f)
                   .setCooldown(0)
-                  .createAlertConfiguration());
+                  .createAlertConfiguration(),
+              UUID.randomUUID().toString());
       alertHandler.accept(alertBreach);
     }
+  }
+
+  public void setPipeline(AlertMetricType type, AlertPipeline alertPipeline) {
+    alertPipelines.setAlertPipeline(type, alertPipeline);
   }
 }

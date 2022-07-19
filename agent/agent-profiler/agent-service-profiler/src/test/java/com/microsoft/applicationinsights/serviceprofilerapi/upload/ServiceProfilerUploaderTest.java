@@ -49,6 +49,7 @@ class ServiceProfilerUploaderTest {
 
     File tmpFile = createFakeJfrFile();
     UUID appId = UUID.randomUUID();
+    UUID profileId = UUID.randomUUID();
 
     ServiceProfilerUploader serviceProfilerUploader =
         new ServiceProfilerUploader(
@@ -65,7 +66,7 @@ class ServiceProfilerUploaderTest {
         };
 
     serviceProfilerUploader
-        .uploadJfrFile("a-trigger", 321, tmpFile, 0.0, 0.0)
+        .uploadJfrFile(profileId, "a-trigger", 321, tmpFile, 0.0, 0.0)
         .subscribe(
             result -> {
               assertThat(
@@ -117,7 +118,13 @@ class ServiceProfilerUploaderTest {
             .createBlockBlobOptions(
                 tmpFile,
                 new UploadContext(
-                    "a-machine-name", UUID.randomUUID(), 1, tmpFile, UUID.randomUUID()));
+                    "a-machine-name",
+                    UUID.randomUUID(),
+                    1,
+                    tmpFile,
+                    UUID.randomUUID(),
+                    "jfr",
+                    "jfr"));
 
     // Role name is set correctly
     assertThat(blobOptions.getMetadata().get(BlobMetadataConstants.ROLE_NAME_META_NAME))
@@ -129,7 +136,13 @@ class ServiceProfilerUploaderTest {
             .createBlockBlobOptions(
                 tmpFile,
                 new UploadContext(
-                    "a-machine-name", UUID.randomUUID(), 1, tmpFile, UUID.randomUUID()));
+                    "a-machine-name",
+                    UUID.randomUUID(),
+                    1,
+                    tmpFile,
+                    UUID.randomUUID(),
+                    "jfr",
+                    "jfr"));
 
     // Null role name tag is not added
     assertThat(blobOptions.getMetadata().get(BlobMetadataConstants.ROLE_NAME_META_NAME)).isNull();
@@ -141,6 +154,7 @@ class ServiceProfilerUploaderTest {
     ServiceProfilerClientV2 serviceProfilerClient = stubServiceProfilerClient();
 
     UUID appId = UUID.randomUUID();
+    UUID profileId = UUID.randomUUID();
 
     ServiceProfilerUploader serviceProfilerUploader =
         new ServiceProfilerUploader(
@@ -152,7 +166,7 @@ class ServiceProfilerUploaderTest {
 
     AtomicBoolean threw = new AtomicBoolean(false);
     serviceProfilerUploader
-        .uploadJfrFile("a-trigger", 321, new File("not-a-file"), 0.0, 0.0)
+        .uploadJfrFile(profileId, "a-trigger", 321, new File("not-a-file"), 0.0, 0.0)
         .subscribe(result -> {}, e -> threw.set(true));
 
     assertThat(threw.get()).isTrue();
@@ -171,19 +185,20 @@ class ServiceProfilerUploaderTest {
     return new ServiceProfilerClientV2() {
 
       @Override
-      public Mono<BlobAccessPass> getUploadAccess(UUID profileId) {
+      public Mono<BlobAccessPass> getUploadAccess(UUID profileId, String extension) {
         return Mono.just(
             new BlobAccessPass("https://localhost:99999/a-blob-uri", null, "a-sas-token"));
       }
 
       @Override
-      public Mono<ArtifactAcceptedResponse> reportUploadFinish(UUID profileId, String etag) {
+      public Mono<ArtifactAcceptedResponse> reportUploadFinish(
+          UUID profileId, String extension, String etag) {
         return Mono.just(null);
       }
 
       @Override
       public Mono<String> getSettings(Date oldTimeStamp) {
-        return null;
+        return Mono.just(null);
       }
     };
   }

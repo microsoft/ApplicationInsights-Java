@@ -297,7 +297,7 @@
   </event>
 
   <event name="jdk.MetaspaceSummary">
-    <setting name="enabled">true</setting>
+    <setting name="enabled">false</setting>
   </event>
 
   <event name="jdk.MetaspaceGCThreshold">
@@ -315,7 +315,7 @@
   </event>
 
   <event name="jdk.MetaspaceChunkFreeListSummary">
-    <setting name="enabled">true</setting>
+    <setting name="enabled">false</setting>
   </event>
 
   <event name="jdk.GarbageCollection">
@@ -349,7 +349,7 @@
   </event>
 
   <event name="jdk.GCPhasePauseLevel1">
-    <setting name="enabled">true</setting>
+    <setting name="enabled">false</setting>
     <setting name="threshold">0 ms</setting>
   </event>
 
@@ -374,7 +374,7 @@
   </event>
 
   <event name="jdk.GCReferenceStatistics">
-    <setting name="enabled">true</setting>
+    <setting name="enabled">false</setting>
   </event>
 
   <event name="jdk.PromotionFailed">
@@ -402,7 +402,7 @@
   </event>
 
   <event name="jdk.GCPhaseParallel">
-    <setting name="enabled">true</setting>
+    <setting name="enabled">false</setting>
     <setting name="threshold">0 ms</setting>
   </event>
 
@@ -432,7 +432,7 @@
   </event>
 
   <event name="jdk.TenuringDistribution">
-    <setting name="enabled">true</setting>
+    <setting name="enabled">false</setting>
   </event>
 
   <event name="jdk.G1HeapRegionInformation">
@@ -688,4 +688,7 @@
     <setting name="threshold">10 ms</setting>
   </event>
 
+  <event name="com.jclarity.jpdm.events.jfr.DiagnosticEvent">
+    <setting name="enabled">true</setting>
+  </event>
 </configuration>

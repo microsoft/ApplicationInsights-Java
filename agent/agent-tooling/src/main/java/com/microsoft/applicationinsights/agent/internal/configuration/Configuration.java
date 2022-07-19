@@ -1230,13 +1230,91 @@ public class Configuration {
     }
   }
 
+  public enum RequestFilterType {
+    @JsonProperty("name-regex")
+    NAME_REGEX
+  }
+
+  public static class RequestFilter {
+    public RequestFilterType type;
+    public String value;
+  }
+
+  public static class RequestAggregationConfig {
+
+    // Threshold in ms over which a span will consider to be a breach
+    // Used by the breach ratio aggregation
+    public int thresholdMillis = 5000;
+
+    // Minimum number of samples that must have been collected in order for the aggregation to
+    // produce data. Avoids volatile aggregation output on small sample sizes.
+    public int minimumSamples = 0;
+  }
+
+  public enum RequestAggregationType {
+    @JsonProperty("breach-ratio")
+    BREACH_RATIO
+  }
+
+  public static class RequestAggregation {
+    public RequestAggregationType type = RequestAggregationType.BREACH_RATIO;
+    public long windowSizeMillis = 60000; // in ms
+    public RequestAggregationConfig configuration = new RequestAggregationConfig();
+  }
+
+  public enum RequestTriggerThresholdType {
+    @JsonProperty("greater-than")
+    GREATER_THAN
+  }
+
+  public static class RequestTriggerThreshold {
+    public RequestTriggerThresholdType type = RequestTriggerThresholdType.GREATER_THAN;
+
+    // Threshold value applied to the output of the aggregation
+    // i.e :
+    //  - For the BreachRatio aggregation, 0.75 means this will trigger if 75% of sample breach the
+    // threshold.
+    //  - For a rolling average aggregation 0.75 will mean this will trigger if the average request
+    // processing time
+    //      breaches 0.75ms
+    public float value = 0.75f;
+  }
+
+  public enum RequestTriggerThrottlingType {
+    @JsonProperty("fixed-duration-cooldown")
+    FIXED_DURATION_COOLDOWN
+  }
+
+  public static class RequestTriggerThrottling {
+    public RequestTriggerThrottlingType type = RequestTriggerThrottlingType.FIXED_DURATION_COOLDOWN;
+    public long value = 60000; // in ms
+  }
+
+  public enum RequestTriggerType {
+    LATENCY
+  }
+
+  public static class RequestTrigger {
+    public String name;
+    public RequestTriggerType type = RequestTriggerType.LATENCY;
+    public RequestFilter filter = new RequestFilter();
+    public RequestAggregation aggregation = new RequestAggregation();
+    public RequestTriggerThreshold threshold = new RequestTriggerThreshold();
+    public RequestTriggerThrottling throttling = new RequestTriggerThrottling();
+    public long profileDuration = 30; // in s
+  }
+
   public static class ProfilerConfiguration {
     public int configPollPeriodSeconds = 60;
     public int periodicRecordingDurationSeconds = 120;
     public int periodicRecordingIntervalSeconds = 60 * 60;
     public boolean enabled = false;
-    public String memoryTriggeredSettings = "PROFILE_WITHOUT_ENV_DATA";
-    public String cpuTriggeredSettings = "PROFILE_WITHOUT_ENV_DATA";
+    public String memoryTriggeredSettings = "profile-without-env-data";
+    public String cpuTriggeredSettings = "profile-without-env-data";
+    @Nullable public String serviceProfilerFrontEndPoint = null;
+    public boolean enableDiagnostics = false;
+    public boolean enableRequestTriggering = false;
+    public RequestTrigger[] requestTriggerEndpoints = {};
   }
 
   public static class GcEventConfiguration {

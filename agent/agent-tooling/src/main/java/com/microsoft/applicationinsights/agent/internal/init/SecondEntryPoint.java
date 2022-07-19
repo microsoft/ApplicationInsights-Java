@@ -52,6 +52,7 @@ import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithS
 import com.microsoft.applicationinsights.agent.internal.processors.LogExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
 import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
+import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanExporter;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
@@ -176,7 +177,11 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     AiAppId.setSupplier(appIdSupplier);
 
     if (config.preview.profiler.enabled) {
-      ProfilingInitializer.initialize(tempDir, appIdSupplier, config, telemetryClient);
+      try {
+        ProfilingInitializer.initialize(tempDir, appIdSupplier, config, telemetryClient);
+      } catch (RuntimeException e) {
+        startupLogger.warn("Failed to initialize profiler", e);
+      }
     }
 
     // this is for Azure Function Linux consumption plan support.
@@ -397,6 +402,11 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       // this is temporary until semantic attributes stabilize and we make breaking change
       // then can use java.util.functions.Predicate<Attributes>
       spanExporter = new BackCompatHttpUrlProcessor(spanExporter);
+    }
+
+    if (configuration.preview.profiler.enabled
+        && configuration.preview.profiler.enableRequestTriggering) {
+      spanExporter = new AlertTriggerSpanExporter(spanExporter);
     }
 
     return spanExporter;

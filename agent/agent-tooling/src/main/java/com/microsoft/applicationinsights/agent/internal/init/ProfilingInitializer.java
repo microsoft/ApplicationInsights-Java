@@ -26,12 +26,11 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionF
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
-import com.microsoft.applicationinsights.agent.internal.profiler.GcEventMonitor;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilerServiceInitializer;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 class ProfilingInitializer {
@@ -56,21 +55,7 @@ class ProfilingInitializer {
         config.role.name,
         telemetryClient,
         formApplicationInsightsUserAgent(),
-        formGcEventMonitorConfiguration(config.preview));
-  }
-
-  private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(
-      Configuration.PreviewConfiguration configuration) {
-    if (configuration.gcEvents.reportingLevel != null) {
-      return new GcEventMonitor.GcEventMonitorConfiguration(configuration.gcEvents.reportingLevel);
-    }
-
-    // The memory monitoring requires observing gc events
-    if (configuration.profiler.enabled) {
-      return new GcEventMonitor.GcEventMonitorConfiguration(GcReportingLevel.TENURED_ONLY);
-    }
-
-    return new GcEventMonitor.GcEventMonitorConfiguration(GcReportingLevel.NONE);
+        config);
   }
 
   private static String formApplicationInsightsUserAgent() {
@@ -93,6 +78,19 @@ class ProfilingInitializer {
       Configuration.ProfilerConfiguration configuration, File tempDir) {
     URL serviceProfilerFrontEndPoint =
         TelemetryClient.getActive().getConnectionString().getProfilerEndpoint();
+
+    // If the user has overridden their service profiler endpoint use that url
+    if (configuration.serviceProfilerFrontEndPoint != null) {
+      try {
+        serviceProfilerFrontEndPoint = new URL(configuration.serviceProfilerFrontEndPoint);
+      } catch (MalformedURLException e) {
+        throw new FriendlyException(
+            "Failed to parse url: " + configuration.serviceProfilerFrontEndPoint,
+            "Ensure that the service profiler endpoint is a valid url",
+            e);
+      }
+    }
+
     return new ServiceProfilerServiceConfig(
         configuration.configPollPeriodSeconds,
         configuration.periodicRecordingDurationSeconds,
@@ -100,7 +98,8 @@ class ProfilingInitializer {
         serviceProfilerFrontEndPoint,
         configuration.memoryTriggeredSettings,
         configuration.cpuTriggeredSettings,
-        TempDirs.getSubDir(tempDir, "profiles"));
+        TempDirs.getSubDir(tempDir, "profiles"),
+        configuration.enableDiagnostics);
   }
 
   private ProfilingInitializer() {}
