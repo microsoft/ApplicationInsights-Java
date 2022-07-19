@@ -37,13 +37,13 @@ final class ResourceParser {
     if (existingTags == null
         || !existingTags.containsKey(ContextTagKeys.AI_CLOUD_ROLE.toString())) {
       String serviceName = resource.getAttribute(ResourceAttributes.SERVICE_NAME);
-      String serviceNamespace = resource.getAttribute(ResourceAttributes.SERVICE_NAMESPACE);
       if (serviceName == null || DEFAULT_SERVICE_NAME.equals(serviceName)) {
         String websiteSiteName = Strings.trimAndEmptyToNull(System.getenv("WEBSITE_SITE_NAME"));
         if (websiteSiteName != null) {
           serviceName = websiteSiteName;
         }
       }
+      String serviceNamespace = resource.getAttribute(ResourceAttributes.SERVICE_NAMESPACE);
       String roleName = null;
       if (serviceName != null && serviceNamespace != null) {
         roleName = "[" + serviceNamespace + "]/" + serviceName;
