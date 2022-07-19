@@ -38,7 +38,7 @@ public class Agent {
   private static final AtomicBoolean alreadyLoaded = new AtomicBoolean(false);
 
   public static void premain(String agentArgs, Instrumentation inst) {
-    if (alreadyLoaded.compareAndSet(true, true)) {
+    if (alreadyLoaded.getAndSet(true)) {
       return;
     }
 
