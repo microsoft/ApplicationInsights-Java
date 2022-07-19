@@ -15,7 +15,9 @@ dependencies {
   implementation(project(":agent:agent-profiler:agent-alerting"))
   implementation(project(":agent:agent-gc-monitor:gc-monitor-api"))
   implementation(project(":agent:agent-gc-monitor:gc-monitor-core"))
-  implementation(project(":agent:azure-monitor-exporter"))
+  implementation(project(":agent:azure-monitor-exporter")) {
+    exclude("org.ow2.asm", "asm")
+  }
 
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
@@ -46,6 +48,7 @@ dependencies {
     //  via `IntelliJCredential` or `DefaultAzureCredential`"
     // NOTE this exclusion saves 6.5 mb !!!!
     exclude("org.linguafranca.pwdb", "KeePassJava2")
+    exclude("org.ow2.asm", "asm")
   }
 
   //  compileOnly("io.opentelemetry:opentelemetry-sdk-extension-tracing-incubator")
