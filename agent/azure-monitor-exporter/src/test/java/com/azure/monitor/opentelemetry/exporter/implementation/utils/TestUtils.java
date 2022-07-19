@@ -28,7 +28,6 @@ import com.azure.monitor.opentelemetry.exporter.AzureMonitorTraceExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorBase;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDependencyData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.Meter;
@@ -39,7 +38,6 @@ import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.time.Duration;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -78,71 +76,6 @@ public final class TestUtils {
     monitorBase.setBaseData(data);
     telemetry.setData(monitorBase);
     telemetry.setTime(FormattedTime.offSetDateTimeFromNow());
-
-    return telemetry;
-  }
-
-  public static TelemetryItem createAzureMonitorMetricTelemetry(
-      String name, int value, String instrumentationKey, OffsetDateTime time, String sdkVersion) {
-    TelemetryItem telemetry = new TelemetryItem();
-    telemetry.setVersion(1);
-    telemetry.setName("Metric");
-    telemetry.setInstrumentationKey(instrumentationKey);
-    Map<String, String> tags = new HashMap<>();
-    tags.put("ai.internal.sdkVersion", sdkVersion);
-    tags.put("ai.cloud.role", "unknown_service:java");
-    telemetry.setTags(tags);
-
-    MetricsData data = new MetricsData();
-    data.setVersion(2);
-    List<MetricDataPoint> dataPoints = new ArrayList<>();
-    MetricDataPoint dataPoint = new MetricDataPoint();
-    dataPoint.setName(name);
-    dataPoint.setValue(value);
-    dataPoints.add(dataPoint);
-    Map<String, String> properties = new HashMap<>();
-    properties.put("color", "red");
-    properties.put("name", "apple");
-    data.setMetrics(dataPoints);
-    data.setProperties(properties);
-    MonitorBase monitorBase = new MonitorBase();
-    monitorBase.setBaseType("MetricData");
-    monitorBase.setBaseData(data);
-    telemetry.setData(monitorBase);
-    telemetry.setTime(time);
-
-    return telemetry;
-  }
-
-  public static TelemetryItem createAzureMonitorRemoteDependencyTelemetry(
-      String name,
-      String instrumentationKey,
-      OffsetDateTime time,
-      String operationId,
-      String sdkVersion) {
-    TelemetryItem telemetry = new TelemetryItem();
-    telemetry.setVersion(1);
-    telemetry.setName("RemoteDependency");
-    telemetry.setInstrumentationKey(instrumentationKey);
-    Map<String, String> tags = new HashMap<>();
-    tags.put("ai.internal.sdkVersion", sdkVersion);
-    tags.put("ai.operation.id", operationId);
-    tags.put("ai.cloud.role", "unknown_service:java");
-    telemetry.setTags(tags);
-
-    RemoteDependencyData data = new RemoteDependencyData();
-    data.setVersion(2);
-    Map<String, String> properties = new HashMap<>();
-    properties.put("color", "red");
-    properties.put("name", "apple");
-    data.setProperties(properties);
-    data.setName(name);
-    data.setSuccess(true);
-    MonitorBase monitorBase = new MonitorBase();
-    monitorBase.setBaseType("RemoteDependencyData");
-    monitorBase.setBaseData(data);
-    telemetry.setData(monitorBase);
-    telemetry.setTime(time);
 
     return telemetry;
   }

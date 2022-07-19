@@ -22,6 +22,7 @@
 package com.azure.monitor.opentelemetry.exporter;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.MapEntry.entry;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.azure.core.http.HttpPipelineCallContext;
@@ -29,7 +30,6 @@ import com.azure.core.http.HttpPipelineNextPolicy;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.core.util.FluxUtil;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDependencyData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
@@ -107,25 +107,18 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
     List<TelemetryItem> actualTelemetryItems = customValidationPolicy.getActualTelemetryItems();
     assertThat(actualTelemetryItems.size()).isGreaterThan(0);
     TelemetryItem actualTelemetryItem = actualTelemetryItems.get(0);
-    TelemetryItem expectedTelemetryItem =
-        TestUtils.createAzureMonitorMetricTelemetry(
-            testName,
-            1,
-            INSTRUMENTATION_KEY,
-            actualTelemetryItem.getTime(),
-            actualTelemetryItem.getTags().get("ai.internal.sdkVersion"));
-    assertThat(actualTelemetryItem.getName()).isEqualTo(expectedTelemetryItem.getName());
-    assertThat(actualTelemetryItem.getInstrumentationKey())
-        .isEqualTo(expectedTelemetryItem.getInstrumentationKey());
-    assertThat(actualTelemetryItem.getTags()).isEqualTo(expectedTelemetryItem.getTags());
-    assertThat(actualTelemetryItem.getData().getBaseType())
-        .isEqualTo(expectedTelemetryItem.getData().getBaseType());
-    MetricsData expectedMetricsData = (MetricsData) expectedTelemetryItem.getData().getBaseData();
+    assertThat(actualTelemetryItem.getName()).isEqualTo("Metric");
+    assertThat(actualTelemetryItem.getInstrumentationKey()).isEqualTo(INSTRUMENTATION_KEY);
+    assertThat(actualTelemetryItem.getTags())
+        .hasEntrySatisfying("ai.cloud.role", v -> assertThat(v).isEqualTo("unknown_service:java"));
+    assertThat(actualTelemetryItem.getTags())
+        .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).contains("otel"));
+    assertThat(actualTelemetryItem.getData().getBaseType()).isEqualTo("MetricData");
     MetricsData actualMetricsData = (MetricsData) actualTelemetryItem.getData().getBaseData();
-    assertThat(actualMetricsData.getMetrics().get(0).getValue())
-        .isEqualTo(expectedMetricsData.getMetrics().get(0).getValue());
-    assertThat(actualMetricsData.getAdditionalProperties())
-        .isEqualTo(expectedMetricsData.getAdditionalProperties());
+    assertThat(actualMetricsData.getMetrics().get(0).getValue()).isEqualTo(1);
+    assertThat(actualMetricsData.getMetrics().get(0).getName()).isEqualTo(testName);
+    assertThat(actualMetricsData.getProperties())
+        .containsExactly(entry("color", "red"), entry("name", "apple"));
   }
 
   private static void validateTraceExporterEndToEnd(String testName) throws Exception {
@@ -133,26 +126,18 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
     List<TelemetryItem> actualTelemetryItems = customValidationPolicy.getActualTelemetryItems();
     assertThat(actualTelemetryItems.size()).isGreaterThan(0);
     TelemetryItem actualTelemetryItem = actualTelemetryItems.get(0);
-    TelemetryItem expectedTelemetryItem =
-        TestUtils.createAzureMonitorRemoteDependencyTelemetry(
-            testName,
-            INSTRUMENTATION_KEY,
-            actualTelemetryItem.getTime(),
-            actualTelemetryItem.getTags().get(ContextTagKeys.AI_OPERATION_ID.toString()),
-            actualTelemetryItem.getTags().get("ai.internal.sdkVersion"));
-    assertThat(actualTelemetryItem.getName()).isEqualTo(expectedTelemetryItem.getName());
-    assertThat(actualTelemetryItem.getInstrumentationKey())
-        .isEqualTo(expectedTelemetryItem.getInstrumentationKey());
-    assertThat(actualTelemetryItem.getTags()).isEqualTo(expectedTelemetryItem.getTags());
-    assertThat(actualTelemetryItem.getData().getBaseType())
-        .isEqualTo(expectedTelemetryItem.getData().getBaseType());
-    RemoteDependencyData expectedData =
-        (RemoteDependencyData) expectedTelemetryItem.getData().getBaseData();
+    assertThat(actualTelemetryItem.getName()).isEqualTo("RemoteDependency");
+    assertThat(actualTelemetryItem.getInstrumentationKey()).isEqualTo(INSTRUMENTATION_KEY);
+    assertThat(actualTelemetryItem.getTags())
+        .hasEntrySatisfying("ai.cloud.role", v -> assertThat(v).isEqualTo("unknown_service:java"));
+    assertThat(actualTelemetryItem.getTags())
+        .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).contains("otel"));
+    assertThat(actualTelemetryItem.getData().getBaseType()).isEqualTo("RemoteDependencyData");
     RemoteDependencyData actualData =
         (RemoteDependencyData) actualTelemetryItem.getData().getBaseData();
-    assertThat(actualData.getName()).isEqualTo(expectedData.getName());
-    assertThat(actualData.getAdditionalProperties())
-        .isEqualTo(expectedData.getAdditionalProperties());
+    assertThat(actualData.getName()).isEqualTo(testName);
+    assertThat(actualData.getProperties())
+        .containsExactly(entry("color", "red"), entry("name", "apple"));
   }
 
   private void validateLogExporterEndToEnd() throws Exception {
@@ -181,12 +166,12 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
     return customValidationPolicy;
   }
 
-  private static CustomValidationPolicy generateMetrics(String methodName) throws Exception {
+  private static CustomValidationPolicy generateMetrics(String testName) throws Exception {
     CountDownLatch metricExporterCountDown = new CountDownLatch(1);
     CustomValidationPolicy customValidationPolicy =
         new CustomValidationPolicy(metricExporterCountDown);
     Meter meter = TestUtils.configureAzureMonitorMetricExporter(customValidationPolicy);
-    LongCounter counter = meter.counterBuilder(methodName).build();
+    LongCounter counter = meter.counterBuilder(testName).build();
     counter.add(
         1L,
         Attributes.of(
