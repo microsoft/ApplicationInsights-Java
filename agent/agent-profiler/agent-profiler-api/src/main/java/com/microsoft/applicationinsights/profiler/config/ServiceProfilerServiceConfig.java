@@ -53,6 +53,8 @@ public class ServiceProfilerServiceConfig {
   // Location to which jfr files will be temporarily held
   private final File tempDirectory;
 
+  private final boolean enableDiagnostics;
+
   public ServiceProfilerServiceConfig(
       int configPollPeriod,
       int periodicRecordingDuration,
@@ -60,7 +62,8 @@ public class ServiceProfilerServiceConfig {
       URL serviceProfilerFrontEndPoint,
       String memoryTriggeredSettings,
       String cpuTriggeredSettings,
-      File tempDirectory) {
+      File tempDirectory,
+      boolean enableDiagnostics) {
     this.configPollPeriod = configPollPeriod;
     this.periodicRecordingDuration = periodicRecordingDuration;
     this.periodicRecordingInterval = periodicRecordingInterval;
@@ -68,6 +71,7 @@ public class ServiceProfilerServiceConfig {
     this.memoryTriggeredSettings = memoryTriggeredSettings;
     this.cpuTriggeredSettings = cpuTriggeredSettings;
     this.tempDirectory = tempDirectory;
+    this.enableDiagnostics = enableDiagnostics;
   }
 
   public int getConfigPollPeriod() {
@@ -100,5 +104,9 @@ public class ServiceProfilerServiceConfig {
 
   public File tempDirectory() {
     return tempDirectory;
+  }
+
+  public boolean enableDiagnostics() {
+    return enableDiagnostics;
   }
 }

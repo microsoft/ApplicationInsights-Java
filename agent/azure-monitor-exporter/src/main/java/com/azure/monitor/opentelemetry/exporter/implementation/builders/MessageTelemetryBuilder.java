@@ -45,6 +45,10 @@ public final class MessageTelemetryBuilder extends AbstractTelemetryBuilder {
   }
 
   public void setMessage(String message) {
+    if (message.trim().isEmpty()) {
+      // breeze doesn't accept message that is empty after trimming
+      message = "n/a";
+    }
     data.setMessage(truncateTelemetry(message, MAX_MESSAGE_LENGTH, "Message.message"));
   }
 

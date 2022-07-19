@@ -3,9 +3,6 @@
 # This file is expected to be part of source control.
 com.azure:azure-sdk-bom:1.2.2=runtimeClasspath
 com.google.guava:guava-bom:31.1-jre=runtimeClasspath
-io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.15.0-alpha=runtimeClasspath
-io.opentelemetry:opentelemetry-bom-alpha:1.15.0-alpha=runtimeClasspath
-io.opentelemetry:opentelemetry-bom:1.15.0=runtimeClasspath
 org.junit:junit-bom:5.8.2=runtimeClasspath
 org.slf4j:slf4j-api:1.7.36=runtimeClasspath
 empty=

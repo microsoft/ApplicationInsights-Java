@@ -47,10 +47,6 @@ abstract class TraceLogBackTest {
 
   @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
-  protected boolean isWildfly() {
-    return false;
-  }
-
   @Test
   @TargetUri("/traceLogBack")
   void testTraceLogBack() throws Exception {
@@ -76,13 +72,8 @@ abstract class TraceLogBackTest {
     assertThat(md1.getProperties()).containsEntry("SourceType", "Logger");
     assertThat(md1.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(md1.getProperties()).containsKey("ThreadName");
-    if (isWildfly()) {
-      // TODO add MDC instrumentation for jboss logging
-      assertThat(md1.getProperties()).hasSize(3);
-    } else {
-      assertThat(md1.getProperties()).containsEntry("MDC key", "MDC value");
-      assertThat(md1.getProperties()).hasSize(4);
-    }
+    assertThat(md1.getProperties()).containsEntry("MDC key", "MDC value");
+    assertThat(md1.getProperties()).hasSize(4);
 
     assertThat(md2.getMessage()).isEqualTo("This is logback error.");
     assertThat(md2.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
@@ -119,13 +110,8 @@ abstract class TraceLogBackTest {
     assertThat(ed.getProperties()).containsEntry("SourceType", "Logger");
     assertThat(ed.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(ed.getProperties()).containsKey("ThreadName");
-    if (isWildfly()) {
-      // TODO add MDC instrumentation for jboss logging
-      assertThat(ed.getProperties()).hasSize(4);
-    } else {
-      assertThat(ed.getProperties()).containsEntry("MDC key", "MDC value");
-      assertThat(ed.getProperties()).hasSize(5);
-    }
+    assertThat(ed.getProperties()).containsEntry("MDC key", "MDC value");
+    assertThat(ed.getProperties()).hasSize(5);
 
     SmokeTestExtension.assertParentChild(
         rd, rdEnvelope, edEnvelope, "GET /TraceLogBackUsingAgent/traceLogBackWithException");
@@ -150,16 +136,8 @@ abstract class TraceLogBackTest {
   static class Tomcat8Java18Test extends TraceLogBackTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends TraceLogBackTest {
-    protected boolean isWildfly() {
-      return true;
-    }
-  }
+  static class Wildfly13Java8Test extends TraceLogBackTest {}
 
   @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends TraceLogBackTest {
-    protected boolean isWildfly() {
-      return true;
-    }
-  }
+  static class Wildfly13Java8OpenJ9Test extends TraceLogBackTest {}
 }

@@ -15,11 +15,3 @@ jobs:
 
   smoke-test:
     uses: ./.github/workflows/reusable-smoke-test.yml
-
-  open-issue-on-failure:
-    needs:
-      - assemble
-      - test
-      - smoke-test
-    if: failure()
-    uses: ./.github/workflows/reusable-open-issue-on-failure.yml

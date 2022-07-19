@@ -53,6 +53,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -62,6 +63,13 @@ public class ServiceProfilerUploader {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServiceProfilerUploader.class);
   private static final Random RANDOM = new Random();
   private static final long UPLOAD_BLOCK_LENGTH = 8 * 1024 * 1024;
+
+  // For debug purposes, can use settings to tell the profiler to retain the profile after
+  // it has been uploaded
+  private static final String RETAIN_JFR_FILE_PROPERTY_NAME =
+      "applicationinsights.debug.retainJfrFile";
+  private static final boolean retainJfrFile =
+      Boolean.parseBoolean(System.getProperty(RETAIN_JFR_FILE_PROPERTY_NAME, "false"));
 
   private final ServiceProfilerClientV2 serviceProfilerClient;
   private final String machineName;
@@ -84,16 +92,36 @@ public class ServiceProfilerUploader {
 
   /** Upload a given JFR file and return associated metadata of the uploaded profile. */
   public Mono<UploadResult> uploadJfrFile(
-      String triggerName, long timestamp, File file, double cpuUsage, double memoryUsage) {
+      UUID profileId,
+      String triggerName,
+      long timestamp,
+      File file,
+      double cpuUsage,
+      double memoryUsage) {
+
+    return uploadFile(
+        triggerName, timestamp, profileId, file, cpuUsage, memoryUsage, "Profile", "jfr", "jfr");
+  }
+
+  public Mono<UploadResult> uploadFile(
+      String triggerName,
+      long timestamp,
+      UUID profileId,
+      File file,
+      double cpuUsage,
+      double memoryUsage,
+      String artifactKind,
+      String extension,
+      String fileFormat) {
     String appId = appIdSupplier.get();
     if (appId == null || appId.isEmpty()) {
       LOGGER.error("Failed to upload due to lack of appId");
       return Mono.error(new UploadFailedException("Failed to upload due to lack of appId"));
     }
-    UUID profileId = UUID.randomUUID();
 
     UploadContext uploadContext =
-        new UploadContext(machineName, UUID.fromString(appId), timestamp, file, profileId);
+        new UploadContext(
+            machineName, UUID.fromString(appId), timestamp, file, profileId, fileFormat, extension);
 
     // upload trace to service profiler
     return uploadTrace(uploadContext)
@@ -112,11 +140,12 @@ public class ServiceProfilerUploader {
                       uploadContext.getMachineName(),
                       OsPlatformProvider.getOsPlatformDescription(),
                       processId,
-                      "Profile",
+                      artifactKind,
                       profileId.toString(),
-                      "jfr",
+                      extension,
                       cpuUsage,
-                      memoryUsage));
+                      memoryUsage),
+                  timestamp);
             });
   }
 
@@ -139,7 +168,7 @@ public class ServiceProfilerUploader {
 
       File finalZippedTraceFile1 = zippedTraceFile;
       return serviceProfilerClient
-          .getUploadAccess(uploadContext.getProfileId())
+          .getUploadAccess(uploadContext.getProfileId(), uploadContext.getExtension())
           .flatMap(
               uploadPass -> {
                 if (uploadPass == null) {
@@ -163,7 +192,7 @@ public class ServiceProfilerUploader {
   protected Mono<UploadFinishArgs> performUpload(
       UploadContext uploadContext, BlobAccessPass uploadPass, File file) {
     return uploadToSasLink(uploadPass, uploadContext, file)
-        .flatMap(response -> reportUploadComplete(uploadContext.getProfileId(), response));
+        .flatMap(response -> reportUploadComplete(uploadContext, response));
   }
 
   /** Upload the given file to a blob storage defined by a sas link. */
@@ -171,7 +200,6 @@ public class ServiceProfilerUploader {
       BlobAccessPass uploadPass, UploadContext uploadContext, File file) {
     try {
       URL sasUrl = new URL(uploadPass.getUriWithSasToken());
-      LOGGER.debug("SAS token: {}", uploadPass.getUriWithSasToken());
 
       BlobUploadFromFileOptions options = createBlockBlobOptions(file, uploadContext);
       BlobContainerAsyncClient blobContainerClient =
@@ -196,13 +224,16 @@ public class ServiceProfilerUploader {
 
   /** Report the success of an upload or throw an exception. */
   protected Mono<UploadFinishArgs> reportUploadComplete(
-      UUID profileId, Response<BlockBlobItem> response) {
+      UploadContext uploadContext, Response<BlockBlobItem> response) {
     int statusCode = response.getStatusCode();
     // Success 2xx
     if (statusCode >= 200 && statusCode < 300) {
 
       return serviceProfilerClient
-          .reportUploadFinish(profileId, response.getValue().getETag())
+          .reportUploadFinish(
+              uploadContext.getProfileId(),
+              uploadContext.getExtension(),
+              response.getValue().getETag())
           .flatMap(
               uploadResponse -> {
                 LOGGER.debug("Completed upload request: {}", statusCode);
@@ -235,7 +266,7 @@ public class ServiceProfilerUploader {
     metadata.put(BlobMetadataConstants.PROGRAMMING_LANGUAGE_META_NAME, "Java");
     metadata.put(
         BlobMetadataConstants.OS_PLATFORM_META_NAME, OsPlatformProvider.getOsPlatformDescription());
-    metadata.put(BlobMetadataConstants.TRACE_FILE_FORMAT_META_NAME, "jfr");
+    metadata.put(BlobMetadataConstants.TRACE_FILE_FORMAT_META_NAME, uploadContext.getFileFormat());
 
     if (roleName != null && !roleName.isEmpty()) {
       metadata.put(BlobMetadataConstants.ROLE_NAME_META_NAME, roleName);
@@ -256,7 +287,10 @@ public class ServiceProfilerUploader {
     LOGGER.debug("Trace file: {}", traceFile.toString());
 
     File targetFile = Files.createTempFile(traceFile.getName(), ".gz").toFile();
-    targetFile.deleteOnExit();
+    if (!retainJfrFile) {
+      targetFile.deleteOnExit();
+    }
+
     try (OutputStream target = new GZIPOutputStream(Files.newOutputStream(targetFile.toPath()))) {
       Files.copy(traceFile.toPath(), target);
     }
@@ -265,9 +299,13 @@ public class ServiceProfilerUploader {
   }
 
   // Deleting file recursively.
-  private static void deletePathRecursive(File fileToDelete) throws IOException {
-    if (fileToDelete.exists()) {
-      deletePathRecursive(fileToDelete.toPath());
+  private static void deletePathRecursive(@Nullable File fileToDelete) throws IOException {
+    if (fileToDelete != null && fileToDelete.exists()) {
+      if (retainJfrFile) {
+        LOGGER.info("JFR file retained at: {}", fileToDelete.getAbsolutePath());
+      } else {
+        deletePathRecursive(fileToDelete.toPath());
+      }
     }
   }
 

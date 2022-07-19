@@ -33,7 +33,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDom
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
-import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
@@ -41,6 +41,7 @@ import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
+import com.microsoft.applicationinsights.profiler.uploader.UploadCompleteHandler;
 import com.microsoft.applicationinsights.serviceprofilerapi.JfrProfilerService;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
@@ -50,12 +51,13 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.Uplo
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler;
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
 import com.microsoft.jfr.Recording;
+import com.microsoft.jfr.RecordingConfiguration;
+import com.microsoft.jfr.RecordingOptions;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -150,23 +152,29 @@ class ProfilerServiceTest {
             ThreadPoolUtils.createDaemonThreadFactory(
                 ProfilerServiceFactory.class, "ServiceProfilerAlertingService"));
 
+    // Callback invoked when a profile has been uploaded.
+    // Sends index metadata about the uploaded profile
+    UploadCompleteHandler uploadCompleteHandler =
+        ProfilerServiceInitializer.sendServiceProfilerIndex(client);
+
+    Configuration config = new Configuration();
+
     AtomicReference<ProfilerService> service = new AtomicReference<>();
     AlertingSubsystem alertService =
         AlertingServiceFactory.create(
-            alert -> awaitReferenceSet(service).getProfiler().accept(alert),
+            config,
+            alert -> awaitReferenceSet(service).getProfiler().accept(alert, uploadCompleteHandler),
             TelemetryObservers.INSTANCE,
             client,
-            alertServiceExecutorService,
-            new GcEventMonitor.GcEventMonitorConfiguration(GcReportingLevel.ALL));
+            alertServiceExecutorService);
 
     service.set(
         new JfrProfilerService(
                 () -> appId,
                 new ServiceProfilerServiceConfig(
-                    1, 2, 3, new URL("http://localhost"), null, null, new File(".")),
+                    1, 2, 3, new URL("http://localhost"), null, null, new File("."), true),
                 jfrProfiler,
                 ProfilerServiceInitializer.updateAlertingConfig(alertService),
-                ProfilerServiceInitializer.sendServiceProfilerIndex(client),
                 clientV2,
                 serviceProfilerUploader,
                 serviceProfilerExecutorService)
@@ -217,18 +225,23 @@ class ProfilerServiceTest {
   private JfrProfiler getJfrDaemon(AtomicBoolean profileInvoked) throws MalformedURLException {
     return new JfrProfiler(
         new ServiceProfilerServiceConfig(
-            1, 2, 3, new URL("http://localhost"), null, null, new File("."))) {
+            1, 2, 3, new URL("http://localhost"), null, null, new File("."), true)) {
       @Override
-      protected void profileAndUpload(AlertBreach alertBreach, Duration duration) {
+      protected void profileAndUpload(
+          AlertBreach alertBreach, Duration duration, UploadCompleteHandler uploadCompleteHandler) {
         profileInvoked.set(true);
-        Recording recording = Mockito.mock(Recording.class);
-        uploadNewRecording(alertBreach, Instant.now()).accept(recording);
+        super.profileAndUpload(alertBreach, Duration.ofSeconds(1), uploadCompleteHandler);
       }
 
       @Override
-      protected File createJfrFile(
-          Recording recording, Instant recordingStart, Instant recordingEnd) throws IOException {
+      protected File createJfrFile(Duration duration) throws IOException {
         return File.createTempFile("jfrFile", jfrExtension);
+      }
+
+      @Override
+      protected Recording createRecording(
+          RecordingOptions recordingOptions, RecordingConfiguration recordingConfiguration) {
+        return Mockito.mock(Recording.class);
       }
     };
   }
@@ -248,13 +261,14 @@ class ProfilerServiceTest {
   private static ServiceProfilerClientV2 stubClient(boolean triggerNow) {
     return new ServiceProfilerClientV2() {
       @Override
-      public Mono<BlobAccessPass> getUploadAccess(UUID profileId) {
+      public Mono<BlobAccessPass> getUploadAccess(UUID profileId, String extension) {
         return Mono.just(
             new BlobAccessPass("https://localhost:99999/a-blob-uri", null, "a-sas-token"));
       }
 
       @Override
-      public Mono<ArtifactAcceptedResponse> reportUploadFinish(UUID profileId, String etag) {
+      public Mono<ArtifactAcceptedResponse> reportUploadFinish(
+          UUID profileId, String extension, String etag) {
         return Mono.just(null);
       }
 

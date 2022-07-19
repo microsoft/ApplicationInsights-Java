@@ -4,11 +4,6 @@
 
 See documentation at https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-in-process-agent.
 
-## Log4j 2 questions?
-
-See [response to CVE-2021-44228 Apache Log4j 2](
-https://github.com/microsoft/ApplicationInsights-Java/discussions/2008).
-
 ## If you need to build locally
 
 Download the main repo and submodule:
