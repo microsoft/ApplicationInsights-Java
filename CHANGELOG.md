@@ -7,7 +7,7 @@
 * Add support for Spring JMS instrumentation [#2385](https://github.com/microsoft/ApplicationInsights-Java/pull/2385).
 * Capture MDC attributes for jboss-logging [#2386](https://github.com/microsoft/ApplicationInsights-Java/pull/2386).
 * Fix missing message data [#2399](https://github.com/microsoft/ApplicationInsights-Java/pull/2399).
-* Improve Azure Function cold start time [#2397](https://github.com/microsoft/ApplicationInsights-Java/pull/2397).
+* Fix Azure Function consumption lazy loading introduced in v3.3.0 [#2397](https://github.com/microsoft/ApplicationInsights-Java/pull/2397).
 * Support Java 18 [#2391](https://github.com/microsoft/ApplicationInsights-Java/pull/2391).
 
 # Version 3.3.0 GA
