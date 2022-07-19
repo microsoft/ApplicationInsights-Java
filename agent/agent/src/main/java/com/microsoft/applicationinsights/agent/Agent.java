@@ -42,17 +42,11 @@ public class Agent {
       return;
     }
 
-    try {
-      if (Boolean.getBoolean("applicationinsights.debug.startupProfiling")) {
-        StartupProfiler.start();
-      }
-
-      OpenTelemetryAgent.premain(agentArgs, inst);
-    } finally {
-      if (!agentIsInstalled()) {
-        alreadyLoaded.set(false);
-      }
+    if (Boolean.getBoolean("applicationinsights.debug.startupProfiling")) {
+      StartupProfiler.start();
     }
+
+    OpenTelemetryAgent.premain(agentArgs, inst);
   }
 
   private static boolean agentIsInstalled() {
