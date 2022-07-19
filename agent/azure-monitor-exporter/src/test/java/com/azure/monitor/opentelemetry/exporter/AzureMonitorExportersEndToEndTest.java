@@ -48,7 +48,9 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
@@ -101,7 +103,9 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
 
   private static void validateMetricExporterEndToEnd(String testName) throws Exception {
     CustomValidationPolicy customValidationPolicy = generateMetrics(testName);
-    TelemetryItem actualTelemetryItem = customValidationPolicy.getActualTelemetryItem();
+    List<TelemetryItem> actualTelemetryItems = customValidationPolicy.getActualTelemetryItems();
+    assertThat(actualTelemetryItems.size()).isGreaterThan(0);
+    TelemetryItem actualTelemetryItem = actualTelemetryItems.get(0);
     TelemetryItem expectedTelemetryItem =
         TestUtils.createAzureMonitorMetricTelemetry(
             testName,
@@ -125,7 +129,9 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
 
   private static void validateTraceExporterEndToEnd(String testName) throws Exception {
     CustomValidationPolicy customValidationPolicy = generateTraces(testName);
-    TelemetryItem actualTelemetryItem = customValidationPolicy.getActualTelemetryItem();
+    List<TelemetryItem> actualTelemetryItems = customValidationPolicy.getActualTelemetryItems();
+    assertThat(actualTelemetryItems.size()).isGreaterThan(0);
+    TelemetryItem actualTelemetryItem = actualTelemetryItems.get(0);
     TelemetryItem expectedTelemetryItem =
         TestUtils.createAzureMonitorRemoteDependencyTelemetry(
             testName,
@@ -191,14 +197,14 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
   private static class CustomValidationPolicy implements HttpPipelinePolicy {
 
     private final CountDownLatch countDown;
-    private TelemetryItem actualTelemetryItem;
+    private List<TelemetryItem> actualTelemetryItems;
 
     CustomValidationPolicy(CountDownLatch countDown) {
       this.countDown = countDown;
     }
 
-    public TelemetryItem getActualTelemetryItem() {
-      return actualTelemetryItem;
+    public List<TelemetryItem> getActualTelemetryItems() {
+      return actualTelemetryItems;
     }
 
     @Override
@@ -214,7 +220,8 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
           value -> {
             try {
               ObjectMapper objectMapper = createObjectMapper();
-              actualTelemetryItem = objectMapper.readValue(value, TelemetryItem.class);
+              TelemetryItem[] telemetryItems = objectMapper.readValue(value, TelemetryItem[].class);
+              actualTelemetryItems = Arrays.asList(telemetryItems);
               countDown.countDown();
             } catch (Exception e) {
               // e.printStackTrace();
@@ -242,7 +249,7 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
   private static ObjectMapper createObjectMapper() {
     ObjectMapper mapper = new ObjectMapper();
     mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-    mapper.registerModules(ObjectMapper.findModules(TelemetryItem.class.getClassLoader()));
+    mapper.registerModules(ObjectMapper.findModules(TelemetryItem[].class.getClassLoader()));
     return mapper;
   }
 }
