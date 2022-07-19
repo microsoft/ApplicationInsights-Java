@@ -23,6 +23,8 @@ package com.azure.monitor.opentelemetry.exporter;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.azure.core.test.TestBase;
+import com.azure.core.test.TestMode;
 import com.azure.core.util.FluxUtil;
 import com.azure.messaging.eventhubs.EventData;
 import com.azure.messaging.eventhubs.EventHubClientBuilder;
@@ -32,19 +34,25 @@ import com.azure.messaging.eventhubs.EventProcessorClientBuilder;
 import com.azure.messaging.eventhubs.LoadBalancingStrategy;
 import com.azure.messaging.eventhubs.checkpointstore.blob.BlobCheckpointStore;
 import com.azure.messaging.eventhubs.models.CreateBatchOptions;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.TestUtils;
 import com.azure.storage.blob.BlobContainerAsyncClient;
 import com.azure.storage.blob.BlobContainerClientBuilder;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import reactor.core.publisher.Mono;
 
-public class EventHubsExporterIntegrationTest extends AzureMonitorTraceExporterTestBase {
+public class EventHubsExporterIntegrationTest extends TestBase {
 
   private static final String CONNECTION_STRING =
       System.getenv("AZURE_EVENTHUBS_CONNECTION_STRING");
@@ -52,12 +60,24 @@ public class EventHubsExporterIntegrationTest extends AzureMonitorTraceExporterT
       System.getenv("STORAGE_CONNECTION_STRING");
   private static final String CONTAINER_NAME = System.getenv("STORAGE_CONTAINER_NAME");
 
+  @Override
+  @BeforeEach
+  public void setupTest(TestInfo testInfo) {
+    Assumptions.assumeFalse(getTestMode() == TestMode.PLAYBACK, "Skipping playback tests");
+  }
+
+  @Override
+  @AfterEach
+  public void teardownTest(TestInfo testInfo) {
+    GlobalOpenTelemetry.resetForTest();
+  }
+
   @Test
   public void producerTest() throws InterruptedException {
     CountDownLatch exporterCountDown = new CountDownLatch(2);
     String spanName = "event-hubs-producer-testing";
     Tracer tracer =
-        configureAzureMonitorExporter(
+        TestUtils.configureAzureMonitorTraceExporter(
             (context, next) -> {
               Mono<String> asyncString =
                   FluxUtil.collectBytesInByteBufferStream(context.getHttpRequest().getBody())
@@ -102,7 +122,7 @@ public class EventHubsExporterIntegrationTest extends AzureMonitorTraceExporterT
         new EventHubClientBuilder().connectionString(CONNECTION_STRING).buildAsyncProducerClient();
 
     Tracer tracer =
-        configureAzureMonitorExporter(
+        TestUtils.configureAzureMonitorTraceExporter(
             (context, next) -> {
               Mono<String> asyncString =
                   FluxUtil.collectBytesInByteBufferStream(context.getHttpRequest().getBody())
