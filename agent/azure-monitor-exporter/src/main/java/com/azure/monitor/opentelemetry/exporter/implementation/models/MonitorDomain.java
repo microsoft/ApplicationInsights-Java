@@ -26,11 +26,21 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.HashMap;
 import java.util.Map;
 
 /** The abstract common base of all domains. */
 @Fluent
+@JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
+@JsonSubTypes({
+  @JsonSubTypes.Type(MessageData.class),
+  @JsonSubTypes.Type(MetricsData.class),
+  @JsonSubTypes.Type(RemoteDependencyData.class),
+  @JsonSubTypes.Type(RequestData.class),
+  @JsonSubTypes.Type(TelemetryExceptionData.class)
+})
 public class MonitorDomain {
   /*
    * Schema version

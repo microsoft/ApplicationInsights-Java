@@ -127,6 +127,19 @@ class ResourceParserTest {
         .isEqualTo("myroleinstance");
   }
 
+  @Test
+  void testWebsiteSiteNameAndWebsiteInstanceId() {
+    envVars.set("WEBSITE_SITE_NAME", "test_website_site_name");
+    envVars.set("WEBSITE_INSTANCE_ID", "test_website_instance_id");
+    Resource resource = createTestResource(null, null, null);
+    ResourceParser.updateRoleNameAndInstance(builder, resource);
+    Map<String, String> tags = builder.build().getTags();
+    assertThat(tags.get(ContextTagKeys.AI_CLOUD_ROLE.toString()))
+        .isEqualTo("test_website_site_name");
+    assertThat(tags.get(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString()))
+        .isEqualTo("test_website_instance_id");
+  }
+
   private static Resource createTestResource(
       @Nullable String serviceName,
       @Nullable String serviceNameSpace,
