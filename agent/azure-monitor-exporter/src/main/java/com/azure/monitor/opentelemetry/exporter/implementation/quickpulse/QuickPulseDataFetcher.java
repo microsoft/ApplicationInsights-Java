@@ -161,11 +161,13 @@ class QuickPulseDataFetcher {
     List<QuickPulseMetrics> metricsList = new ArrayList<>();
     metricsList.add(
         new QuickPulseMetrics("\\ApplicationInsights\\Requests/Sec", counters.requests, 1));
-    metricsList.add(
-        new QuickPulseMetrics(
-            "\\ApplicationInsights\\Request Duration",
-            (long) counters.requestsDuration,
-            (int) counters.requests));
+    if (counters.requests != 0) {
+      metricsList.add(
+          new QuickPulseMetrics(
+              "\\ApplicationInsights\\Request Duration",
+              counters.requestsDuration / counters.requests,
+              counters.requests));
+    }
     metricsList.add(
         new QuickPulseMetrics(
             "\\ApplicationInsights\\Requests Failed/Sec", counters.unsuccessfulRequests, 1));
@@ -176,11 +178,13 @@ class QuickPulseDataFetcher {
             1));
     metricsList.add(
         new QuickPulseMetrics("\\ApplicationInsights\\Dependency Calls/Sec", counters.rdds, 1));
-    metricsList.add(
-        new QuickPulseMetrics(
-            "\\ApplicationInsights\\Dependency Call Duration",
-            (long) counters.rddsDuration,
-            (int) counters.rdds));
+    if (counters.rdds != 0) {
+      metricsList.add(
+          new QuickPulseMetrics(
+              "\\ApplicationInsights\\Dependency Call Duration",
+              counters.rddsDuration / counters.rdds,
+              counters.rdds));
+    }
     metricsList.add(
         new QuickPulseMetrics(
             "\\ApplicationInsights\\Dependency Calls Failed/Sec", counters.unsuccessfulRdds, 1));
@@ -194,8 +198,7 @@ class QuickPulseDataFetcher {
     metricsList.add(
         new QuickPulseMetrics("\\Memory\\Committed Bytes", counters.memoryCommitted, 1));
     metricsList.add(
-        new QuickPulseMetrics(
-            "\\Processor(_Total)\\% Processor Time", (long) counters.cpuUsage, 1));
+        new QuickPulseMetrics("\\Processor(_Total)\\% Processor Time", counters.cpuUsage, 1));
 
     return metricsList;
   }
