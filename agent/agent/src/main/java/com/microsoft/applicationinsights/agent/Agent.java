@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent;
 
 import io.opentelemetry.javaagent.OpenTelemetryAgent;
 import java.lang.instrument.Instrumentation;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 // IMPORTANT!! If this class is renamed, be sure to add the previous name to
 // DuplicateAgentClassFileTransformer
@@ -34,10 +35,10 @@ public class Agent {
   // this is to prevent the agent from loading and instrumenting everything twice
   // (leading to unpredictable results) when -javaagent:applicationinsights-agent.jar
   // appears multiple times on the command line
-  private static volatile boolean alreadyLoaded;
+  private static final AtomicBoolean alreadyLoaded = new AtomicBoolean(false);
 
   public static void premain(String agentArgs, Instrumentation inst) {
-    if (alreadyLoaded) {
+    if (alreadyLoaded.getAndSet(true)) {
       return;
     }
 
@@ -46,7 +47,6 @@ public class Agent {
     }
 
     OpenTelemetryAgent.premain(agentArgs, inst);
-    alreadyLoaded = true;
   }
 
   // this is provided only for dynamic attach in the first line of main
