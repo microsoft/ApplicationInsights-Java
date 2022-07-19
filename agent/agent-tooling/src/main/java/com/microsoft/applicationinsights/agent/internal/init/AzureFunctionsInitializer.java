@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import ch.qos.logback.classic.LoggerContext;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
@@ -40,6 +41,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AzureFunctionsInitializer implements Runnable {
+
+  private static final Logger startupLogger =
+      LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
 
   private static final Logger logger = LoggerFactory.getLogger(AzureFunctionsInitializer.class);
 
@@ -63,14 +67,30 @@ public class AzureFunctionsInitializer implements Runnable {
       return;
     }
 
-    setConnectionString(
-        System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"),
-        System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY"));
-    setWebsiteSiteName(System.getenv("WEBSITE_SITE_NAME"));
-    setSelfDiagnosticsLevel(System.getenv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL"));
+    String selfDiagnosticsLevel = System.getenv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL");
+    String connectionString = System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING");
+    String instrumentationKey = System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY");
+    String websiteSiteName = System.getenv("WEBSITE_SITE_NAME");
+    String instrumentationLoggingLevel =
+        System.getenv("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL");
+
+    logger.debug("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL: {}", selfDiagnosticsLevel);
+    logger.debug("APPLICATIONINSIGHTS_CONNECTION_STRING: {}", connectionString);
+    if (Strings.isNullOrEmpty(connectionString)) {
+      logger.debug("APPINSIGHTS_INSTRUMENTATIONKEY: {}", instrumentationKey);
+    }
+    logger.debug("WEBSITE_SITE_NAME: {}", websiteSiteName);
+    logger.debug(
+        "APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL: {}", instrumentationLoggingLevel);
+
+    setConnectionString(connectionString, instrumentationKey);
+    setWebsiteSiteName(websiteSiteName);
+    setSelfDiagnosticsLevel(selfDiagnosticsLevel);
     agentLogExporter.setThreshold(
-        Configuration.LoggingInstrumentation.getSeverity(
-            System.getenv("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL")));
+        Configuration.LoggingInstrumentation.getSeverity(instrumentationLoggingLevel));
+
+    startupLogger.info(
+        "ApplicationInsights Java Agent specialization complete for Azure Functions placeholder");
   }
 
   private static void disableBytecodeInstrumentation() {
@@ -109,7 +129,6 @@ public class AzureFunctionsInitializer implements Runnable {
     DelegatingPropagator.getInstance().setUpStandardDelegate(Collections.emptyList(), false);
     // TODO handle APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE
     DelegatingSampler.getInstance().setAlwaysOnDelegate();
-    logger.debug("Set connection string {} lazily for the Azure Function Consumption Plan.", value);
 
     // start app id retrieval after the connection string becomes available.
     appIdSupplier.startAppIdRetrieval();
@@ -118,9 +137,6 @@ public class AzureFunctionsInitializer implements Runnable {
   void setWebsiteSiteName(@Nullable String websiteSiteName) {
     if (websiteSiteName != null && !websiteSiteName.isEmpty()) {
       telemetryClient.updateRoleName(websiteSiteName);
-      logger.debug(
-          "Set WEBSITE_SITE_NAME: {} lazily for the Azure Function Consumption Plan.",
-          websiteSiteName);
     }
   }
 
@@ -128,8 +144,6 @@ public class AzureFunctionsInitializer implements Runnable {
     if (loggingLevel == null || !loggingLevel.isEmpty()) {
       return;
     }
-
-    logger.debug("setting APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL to {}", loggingLevel);
 
     LoggingLevelConfigurator configurator;
     try {
@@ -146,7 +160,6 @@ public class AzureFunctionsInitializer implements Runnable {
     // also need to update any previously created loggers
     List<ch.qos.logback.classic.Logger> loggerList = loggerContext.getLoggerList();
     loggerList.forEach(configurator::updateLoggerLevel);
-    logger.debug("self-diagnostics logging level has been updated.");
   }
 
   // since the agent is already running at this point, this really just determines whether the
@@ -154,7 +167,7 @@ public class AzureFunctionsInitializer implements Runnable {
   // agent is not enabled)
   static boolean isAgentEnabled() {
     String enableAgent = System.getenv("APPLICATIONINSIGHTS_ENABLE_AGENT");
-    boolean enableAgentDefault = Boolean.parseBoolean(System.getProperty("LazySetOptIn"));
+    boolean enableAgentDefault = Boolean.getBoolean("LazySetOptIn");
     logger.debug("APPLICATIONINSIGHTS_ENABLE_AGENT: {}", enableAgent);
     logger.debug("LazySetOptIn: {}", enableAgentDefault);
     return isAgentEnabled(enableAgent, enableAgentDefault);
