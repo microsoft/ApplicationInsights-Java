@@ -30,7 +30,13 @@ public final class MessageIdConstants {
   public static final int DISK_PERSISTENCE_READ_ERROR = 2102;
   public static final int DISK_PERSISTENCE_WRITE_ERROR = 2103;
   public static final int DISK_PERSISTENCE_PURGE_ERROR = 2104;
-
+  public static final int NETWORK_FAILURE_ERROR = 2105;
+  public static final int TELEMETRY_INTERNAL_SEND_ERROR = 2106;
+  public static final int HEARTBEAT_SEND_ERROR = 2107;
+  public static final int TELEMETRY_TRUNCATION_ERROR = 2108;
+  public static final int CPU_PERFORMANCE_COUNTER_ERROR = 2109;
+  public static final int SAMPLING_ERROR = 2110;
+  public static final int HOSTNAME_ERROR = 2111;
 
   private MessageIdConstants() {}
 }

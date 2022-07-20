@@ -112,14 +112,18 @@ class QuickPulseDataFetcher {
       request.setBody(buildPostEntity(counters));
 
       if (!sendQueue.offer(request)) {
-        MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.QUICK_PULSE_SEND_ERROR));
+        MDC.put(
+            MessageIdConstants.MDC_MESSAGE_ID,
+            String.valueOf(MessageIdConstants.QUICK_PULSE_SEND_ERROR));
         logger.trace("Quick Pulse send queue is full");
       }
     } catch (ThreadDeath td) {
       throw td;
     } catch (Throwable e) {
       try {
-        MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.QUICK_PULSE_SEND_ERROR));
+        MDC.put(
+            MessageIdConstants.MDC_MESSAGE_ID,
+            String.valueOf(MessageIdConstants.QUICK_PULSE_SEND_ERROR));
         logger.error("Quick Pulse failed to prepare data for send", e);
       } catch (ThreadDeath td) {
         throw td;

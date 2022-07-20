@@ -25,6 +25,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineRequest;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineResponse;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.MessageIdConstants;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineListener {
 
@@ -56,8 +58,12 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
   @Override
   public void onResponse(TelemetryPipelineRequest request, TelemetryPipelineResponse response) {
     int responseCode = response.getStatusCode();
+    MDC.put(
+        MessageIdConstants.MDC_MESSAGE_ID,
+        String.valueOf(MessageIdConstants.NETWORK_FAILURE_ERROR));
     switch (responseCode) {
       case 200: // SUCCESS
+        MDC.clear();
         operationLogger.recordSuccess();
         break;
       case 206: // PARTIAL CONTENT, Breeze-specific: PARTIAL SUCCESS
@@ -74,6 +80,8 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
         if (!suppressWarningsOnRetryableFailures) {
           operationLogger.recordFailure(
               getErrorMessageFromCredentialRelatedResponse(responseCode, response.getBody()));
+        } else {
+          MDC.clear();
         }
         break;
       case 408: // REQUEST TIMEOUT
@@ -81,10 +89,15 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
       case 500: // INTERNAL SERVER ERROR
       case 503: // SERVICE UNAVAILABLE
         if (!suppressWarningsOnRetryableFailures) {
+          MDC.put(
+              MessageIdConstants.MDC_MESSAGE_ID,
+              String.valueOf(MessageIdConstants.NETWORK_FAILURE_ERROR));
           operationLogger.recordFailure(
               "Received response code "
                   + responseCode
                   + " (telemetry will be stored to disk and retried later)");
+        } else {
+          MDC.clear();
         }
         break;
       case 402: // Breeze-specific: New Daily Quota Exceeded
