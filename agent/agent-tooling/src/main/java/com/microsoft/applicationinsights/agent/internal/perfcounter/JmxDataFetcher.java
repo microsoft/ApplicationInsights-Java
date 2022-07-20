@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageId;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageIdConstants;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -73,7 +73,7 @@ public class JmxDataFetcher {
       } catch (Exception e) {
         MDC.put(
             DiagnosticsHelper.MDC_MESSAGE_ID,
-            MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.getStringValue());
+            String.valueOf(MessageIdConstants.JMX_METRIC_PERFORMANCE_COUNTER_ERROR));
         logger.warn(
             "Failed to fetch JMX object '{}' with attribute '{}': ",
             objectName,

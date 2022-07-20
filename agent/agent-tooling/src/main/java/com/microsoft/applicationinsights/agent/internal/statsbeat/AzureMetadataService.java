@@ -28,7 +28,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolU
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageId;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageIdConstants;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import java.io.IOException;
 import java.util.concurrent.Executors;
@@ -135,7 +135,7 @@ class AzureMetadataService implements Runnable {
     } catch (IOException e) {
       MDC.put(
           DiagnosticsHelper.MDC_MESSAGE_ID,
-          MessageId.FAIL_TO_SEND_STATSBEAT_ERROR.getStringValue());
+          String.valueOf(MessageIdConstants.FAIL_TO_SEND_STATSBEAT_ERROR));
       logger.debug(
           "Shutting down AzureMetadataService scheduler:"
               + " error parsing response from Azure Metadata Service: {}",

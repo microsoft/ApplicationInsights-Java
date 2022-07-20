@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageId;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageIdConstants;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
@@ -164,7 +164,8 @@ public class FirstEntryPoint implements LoggingCustomizer {
     } catch (Throwable t) {
       if (startupLogger != null) {
         MDC.put(
-            DiagnosticsHelper.MDC_MESSAGE_ID, MessageId.STATUS_FILE_RELATED_ERROR.getStringValue());
+            DiagnosticsHelper.MDC_MESSAGE_ID,
+            String.valueOf(MessageIdConstants.STATUS_FILE_RELATED_ERROR));
         startupLogger.error("Error writing status.json", t);
       } else {
         t.printStackTrace();
@@ -195,7 +196,8 @@ public class FirstEntryPoint implements LoggingCustomizer {
 
     if (startupLogger != null) {
       MDC.put(
-          DiagnosticsHelper.MDC_MESSAGE_ID, MessageId.STATUS_FILE_RELATED_ERROR.getStringValue());
+          DiagnosticsHelper.MDC_MESSAGE_ID,
+          String.valueOf(MessageIdConstants.STATUS_FILE_RELATED_ERROR));
       if (isFriendlyException) {
         startupLogger.error(message);
       } else {
@@ -214,7 +216,8 @@ public class FirstEntryPoint implements LoggingCustomizer {
         startupLogger = configureLogging(selfDiagnostics, agentPath);
 
         MDC.put(
-            DiagnosticsHelper.MDC_MESSAGE_ID, MessageId.STATUS_FILE_RELATED_ERROR.getStringValue());
+            DiagnosticsHelper.MDC_MESSAGE_ID,
+            String.valueOf(MessageIdConstants.STATUS_FILE_RELATED_ERROR));
         if (isFriendlyException) {
           startupLogger.error(message);
         } else {

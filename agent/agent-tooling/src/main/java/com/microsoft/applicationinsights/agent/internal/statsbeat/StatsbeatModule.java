@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageId;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageIdConstants;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.concurrent.Executors;
@@ -170,7 +170,7 @@ public class StatsbeatModule {
       } catch (RuntimeException e) {
         MDC.put(
             DiagnosticsHelper.MDC_MESSAGE_ID,
-            MessageId.FAIL_TO_SEND_STATSBEAT_ERROR.getStringValue());
+            String.valueOf(MessageIdConstants.FAIL_TO_SEND_STATSBEAT_ERROR));
         logger.error("Error occurred while sending statsbeat", e);
       }
     }

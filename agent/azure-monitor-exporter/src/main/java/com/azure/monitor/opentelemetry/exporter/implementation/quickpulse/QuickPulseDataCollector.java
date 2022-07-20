@@ -48,7 +48,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.MessageIdConstants;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 final class QuickPulseDataCollector {
 
@@ -79,6 +81,7 @@ final class QuickPulseDataCollector {
       throw td;
     } catch (Throwable t) {
       try {
+        MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.QUICK_PULSE_SEND_ERROR));
         LoggerFactory.getLogger(QuickPulseDataCollector.class)
             .error(
                 "Could not initialize {}",

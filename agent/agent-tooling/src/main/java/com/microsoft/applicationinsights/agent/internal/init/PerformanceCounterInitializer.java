@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageId;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageIdConstants;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.DeadLockDetectorPerformanceCounter;
@@ -106,7 +106,7 @@ public class PerformanceCounterInitializer {
         if (Strings.isNullOrEmpty(jmxElement.objectName)) {
           MDC.put(
               DiagnosticsHelper.MDC_MESSAGE_ID,
-              MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.getStringValue());
+              String.valueOf(MessageIdConstants.JMX_METRIC_PERFORMANCE_COUNTER_ERROR));
           logger.error("JMX object name is empty, will be ignored");
           continue;
         }
@@ -114,7 +114,7 @@ public class PerformanceCounterInitializer {
         if (Strings.isNullOrEmpty(jmxElement.attribute)) {
           MDC.put(
               DiagnosticsHelper.MDC_MESSAGE_ID,
-              MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.getStringValue());
+              String.valueOf(MessageIdConstants.JMX_METRIC_PERFORMANCE_COUNTER_ERROR));
           logger.error("JMX attribute is empty for '{}'", jmxElement.objectName);
           continue;
         }
@@ -122,7 +122,7 @@ public class PerformanceCounterInitializer {
         if (Strings.isNullOrEmpty(jmxElement.name)) {
           MDC.put(
               DiagnosticsHelper.MDC_MESSAGE_ID,
-              MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.getStringValue());
+              String.valueOf(MessageIdConstants.JMX_METRIC_PERFORMANCE_COUNTER_ERROR));
           logger.error("JMX name is empty for '{}', will be ignored '{}'", jmxElement.objectName);
           continue;
         }
@@ -138,7 +138,7 @@ public class PerformanceCounterInitializer {
         } catch (RuntimeException e) {
           MDC.put(
               DiagnosticsHelper.MDC_MESSAGE_ID,
-              MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.getStringValue());
+              String.valueOf(MessageIdConstants.JMX_METRIC_PERFORMANCE_COUNTER_ERROR));
           logger.error(
               "Failed to register JMX performance counter: '{}' : '{}'",
               entry.getKey(),
@@ -148,7 +148,7 @@ public class PerformanceCounterInitializer {
     } catch (RuntimeException e) {
       MDC.put(
           DiagnosticsHelper.MDC_MESSAGE_ID,
-          MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.getStringValue());
+          String.valueOf(MessageIdConstants.JMX_METRIC_PERFORMANCE_COUNTER_ERROR));
       logger.error("Failed to register JMX performance counters: '{}'", e.toString());
     }
   }

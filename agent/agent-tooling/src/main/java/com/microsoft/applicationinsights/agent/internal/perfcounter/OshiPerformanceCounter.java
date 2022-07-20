@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageId;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageIdConstants;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -71,7 +71,9 @@ public class OshiPerformanceCounter implements PerformanceCounter {
         // e.g. icm 253155448: NoClassDefFoundError
         // e.g. icm 276640835: ExceptionInInitializerError
         hasError.set(true);
-        MDC.put(DiagnosticsHelper.MDC_MESSAGE_ID, MessageId.OSHI_RELATED_ERROR.getStringValue());
+        MDC.put(
+            DiagnosticsHelper.MDC_MESSAGE_ID,
+            String.valueOf(MessageIdConstants.OSHI_RELATED_ERROR));
         logger.debug("Fail to initialize OSProcess and CentralProcessor", ex);
         return;
       }
