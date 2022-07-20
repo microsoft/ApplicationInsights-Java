@@ -234,6 +234,7 @@ public class AiConfigCustomizer implements ConfigCustomizer {
     }
     if (config.instrumentation.jms.enabled) {
       properties.put("otel.instrumentation.jms.enabled", "true");
+      properties.put("otel.instrumentation.spring-jms.enabled", "true");
     }
     if (config.instrumentation.kafka.enabled) {
       properties.put("otel.instrumentation.kafka.enabled", "true");
