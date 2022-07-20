@@ -145,7 +145,7 @@ public class TelemetryItemExporter {
     try {
       byteBuffers = encode(telemetryItems);
       encodeBatchOperationLogger.recordSuccess();
-      throw new Throwable("### Fake throwable from azure monitor exporter");
+      throw new IllegalStateException("### Fake throwable from azure monitor exporter");
     } catch (Throwable t) {
       System.out.println("### " + t.getMessage());
       MDC.put(
