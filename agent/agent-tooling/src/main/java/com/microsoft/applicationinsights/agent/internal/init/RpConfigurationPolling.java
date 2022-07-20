@@ -28,7 +28,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.configuration.Sta
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageId;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageIdConstants;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
@@ -136,7 +136,8 @@ public class RpConfigurationPolling implements Runnable {
       }
     } catch (IOException e) {
       MDC.put(
-          DiagnosticsHelper.MDC_MESSAGE_ID, MessageId.CONFIGURATION_RELATED_ERROR.getStringValue());
+          DiagnosticsHelper.MDC_MESSAGE_ID,
+          String.valueOf(MessageIdConstants.CONFIGURATION_RELATED_ERROR));
       logger.error("Error occurred when polling json config file: {}", e.getMessage(), e);
     }
   }

@@ -24,7 +24,10 @@ package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.MessageIdConstants;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
+import com.nimbusds.oauth2.sdk.Message;
+import org.slf4j.MDC;
 import java.io.File;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -81,6 +84,7 @@ class LocalFilePurger implements Runnable {
     for (File file : FileUtil.listTrnFiles(folder)) {
       if (LocalFileCache.isExpired(file, expiredIntervalSeconds)) {
         if (!FileUtil.deleteFileWithRetries(file)) {
+          MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.DISK_PERSISTENCE_PURGE_ERROR));
           operationLogger.recordFailure("Unable to delete file: " + file.getAbsolutePath());
         } else {
           operationLogger.recordSuccess();

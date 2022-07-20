@@ -25,7 +25,7 @@ import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageId;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageIdConstants;
 import io.opentelemetry.instrumentation.api.internal.GuardedBy;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
@@ -118,7 +118,7 @@ class AvailableJmxMetricLogger {
         // and available jmx metrics are already only logged at debug
         MDC.put(
             DiagnosticsHelper.MDC_MESSAGE_ID,
-            MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.getStringValue());
+            String.valueOf(MessageIdConstants.JMX_METRIC_PERFORMANCE_COUNTER_ERROR));
         logger.trace(e.getMessage(), e);
         attributes = singleton("(error getting attributes)");
       }
@@ -145,7 +145,7 @@ class AvailableJmxMetricLogger {
         // and available jmx metrics are already only logged at debug
         MDC.put(
             DiagnosticsHelper.MDC_MESSAGE_ID,
-            MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.getStringValue());
+            String.valueOf(MessageIdConstants.JMX_METRIC_PERFORMANCE_COUNTER_ERROR));
         logger.trace(e.getMessage(), e);
         attributes.add(attribute.getName() + " (exception)");
       }

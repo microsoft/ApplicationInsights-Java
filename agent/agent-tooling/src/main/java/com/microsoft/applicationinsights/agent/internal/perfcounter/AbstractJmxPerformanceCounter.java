@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageId;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageIdConstants;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.Collection;
 import java.util.Map;
@@ -75,7 +75,7 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
           } catch (RuntimeException e) {
             MDC.put(
                 DiagnosticsHelper.MDC_MESSAGE_ID,
-                MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.getStringValue());
+                String.valueOf(MessageIdConstants.JMX_METRIC_PERFORMANCE_COUNTER_ERROR));
             logger.error("Error while sending JMX data: '{}'", e.toString());
             logger.trace("Error while sending JMX data", e);
           }
@@ -85,7 +85,7 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
       if (!alreadyLogged) {
         MDC.put(
             DiagnosticsHelper.MDC_MESSAGE_ID,
-            MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.getStringValue());
+            String.valueOf(MessageIdConstants.JMX_METRIC_PERFORMANCE_COUNTER_ERROR));
         logger.error("Error while fetching JMX data: '{}'", e.toString());
         logger.trace("Error while fetching JMX data", e);
         alreadyLogged = true;

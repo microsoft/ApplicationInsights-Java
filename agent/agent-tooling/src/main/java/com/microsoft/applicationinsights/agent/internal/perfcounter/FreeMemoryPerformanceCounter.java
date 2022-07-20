@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageId;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageIdConstants;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.lang.management.ManagementFactory;
 import javax.management.ObjectName;
@@ -47,7 +47,7 @@ public class FreeMemoryPerformanceCounter implements PerformanceCounter {
     } catch (Exception e) {
       MDC.put(
           DiagnosticsHelper.MDC_MESSAGE_ID,
-          MessageId.FREE_PHYSICAL_MEMORY_SIZE_ERROR.getStringValue());
+          String.valueOf(MessageIdConstants.FREE_PHYSICAL_MEMORY_SIZE_ERROR));
       logger.error("Error getting FreePhysicalMemorySize");
       logger.trace("Error getting FreePhysicalMemorySize", e);
       return;

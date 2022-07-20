@@ -19,34 +19,18 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.bootstrap.diagnostics;
+package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
-// JAVA reserves message id for App Service Diagnostics Logs from 2000 - 2999
-public enum MessageId {
-  ETW_INITIALIZATION_SUCCESS(2000),
-  NO_SUCH_FILE_ERROR(2001),
-  INVALID_CERTIFICATION_PATH_ERROR(2002),
-  FREE_PHYSICAL_MEMORY_SIZE_ERROR(2003),
-  OUT_OF_MEMORY_ERROR(2004),
-  JMX_METRIC_PERFORMANCE_COUNTER_ERROR(2005),
-  FAIL_TO_SEND_STATSBEAT_ERROR(2006),
-  COULD_NOT_CREATE_DIRECTORY_ERROR(2007),
-  ACCESS_DENIED_ERROR(2008),
-  CONFIGURATION_RELATED_ERROR(2009),
-  OSHI_RELATED_ERROR(2010),
-  STATUS_FILE_RELATED_ERROR(2011);
+// Reserve 2100 - 2200 from Azure Monitor Exporter messageId
+public final class MessageIdConstants {
 
-  private final int value;
+  public static final String MDC_MESSAGE_ID = "messageId";
+  public static final int QUICK_PULSE_PING_ERROR = 2100;
+  public static final int QUICK_PULSE_SEND_ERROR = 2101;
+  public static final int DISK_PERSISTENCE_READ_ERROR = 2102;
+  public static final int DISK_PERSISTENCE_WRITE_ERROR = 2103;
+  public static final int DISK_PERSISTENCE_PURGE_ERROR = 2104;
 
-  MessageId(int value) {
-    this.value = value;
-  }
 
-  public int getValue() {
-    return this.value;
-  }
-
-  public String getStringValue() {
-    return String.valueOf(value);
-  }
+  private MessageIdConstants() {}
 }
