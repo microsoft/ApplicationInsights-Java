@@ -1,9 +1,6 @@
 plugins {
   id("ai.java-conventions")
   id("ai.javaagent-instrumentation")
-
-  id("io.opentelemetry.instrumentation.muzzle-generation") version "1.15.0-alpha"
-  id("io.opentelemetry.instrumentation.muzzle-check") version "1.15.0-alpha"
 }
 
 muzzle {

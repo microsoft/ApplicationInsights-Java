@@ -39,6 +39,8 @@ dependencies {
   implementation("org.apache.httpcomponents:httpclient:4.5.13")
   implementation("org.gradle:test-retry-gradle-plugin:1.2.1")
 
+  implementation("io.opentelemetry.instrumentation:gradle-plugins:1.15.0-alpha")
+
   // When updating, also update dependencyManagement/dependencyManagement.gradle.kts
   // we need to use byte buddy variant that does not shade asm
   implementation("net.bytebuddy:byte-buddy-gradle-plugin:1.12.10") {
