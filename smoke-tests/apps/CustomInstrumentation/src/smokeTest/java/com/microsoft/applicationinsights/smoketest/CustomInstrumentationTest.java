@@ -1,8 +1,13 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_18;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_18_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
@@ -68,9 +73,24 @@ public abstract class CustomInstrumentationTest {
   @Environment(JAVA_8)
   static class Java8Test extends CustomInstrumentationTest {}
 
+  @Environment(JAVA_8_OPENJ9)
+  static class Java8OpenJ9Test extends CustomInstrumentationTest {}
+
   @Environment(JAVA_11)
   static class Java11Test extends CustomInstrumentationTest {}
 
+  @Environment(JAVA_11_OPENJ9)
+  static class Java11OpenJ9Test extends CustomInstrumentationTest {}
+
   @Environment(JAVA_17)
   static class Java17Test extends CustomInstrumentationTest {}
+
+  @Environment(JAVA_18)
+  static class Java18Test extends CustomInstrumentationTest {}
+
+  @Environment(JAVA_17_OPENJ9)
+  static class Java17OpenJ9Test extends CustomInstrumentationTest {}
+
+  @Environment(JAVA_18_OPENJ9)
+  static class Java18OpenJ9Test extends CustomInstrumentationTest {}
 }
