@@ -79,9 +79,11 @@ public class AppIdSupplier implements AiAppId.Supplier {
     try {
       newTask = new GetAppIdTask(getAppIdUrl(connectionString));
     } catch (MalformedURLException e) {
-      DiagnosticsHelper.logMessageId(
-          logger, Level.WARN, e.getMessage(), e, MessageIdConstants.APP_ID_ERROR);
+      MDC.put(DiagnosticsHelper.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.APP_ID_ERROR));
+      logger.warn(e.getMessage(), e);
       return;
+    } finally {
+      MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
     }
     synchronized (taskLock) {
       appId = null;
