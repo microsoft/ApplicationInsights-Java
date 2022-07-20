@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageIdConstants;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
@@ -162,6 +163,9 @@ public class FirstEntryPoint implements LoggingCustomizer {
       StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success, startupLogger != null);
     } catch (Throwable t) {
       if (startupLogger != null) {
+        MDC.put(
+            DiagnosticsHelper.MDC_MESSAGE_ID,
+            String.valueOf(MessageIdConstants.STATUS_FILE_RELATED_ERROR));
         startupLogger.error("Error writing status.json", t);
       } else {
         t.printStackTrace();
@@ -191,6 +195,9 @@ public class FirstEntryPoint implements LoggingCustomizer {
       File javaagentFile) {
 
     if (startupLogger != null) {
+      MDC.put(
+          DiagnosticsHelper.MDC_MESSAGE_ID,
+          String.valueOf(MessageIdConstants.STATUS_FILE_RELATED_ERROR));
       if (isFriendlyException) {
         startupLogger.error(message);
       } else {
@@ -207,6 +214,10 @@ public class FirstEntryPoint implements LoggingCustomizer {
                 ConfigurationBuilder.APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH,
                 selfDiagnostics.file.path);
         startupLogger = configureLogging(selfDiagnostics, agentPath);
+
+        MDC.put(
+            DiagnosticsHelper.MDC_MESSAGE_ID,
+            String.valueOf(MessageIdConstants.STATUS_FILE_RELATED_ERROR));
         if (isFriendlyException) {
           startupLogger.error(message);
         } else {

@@ -18,19 +18,19 @@ jobs:
   test:
     uses: ./.github/workflows/reusable-test.yml
 
-  smoke-test:
-    uses: ./.github/workflows/reusable-smoke-test.yml
+#  smoke-test:
+#    uses: ./.github/workflows/reusable-smoke-test.yml
 
   required-status-check:
     needs:
       - assemble
       - test
-      - smoke-test
+#      - smoke-test
     runs-on: ubuntu-latest
     if: always()
     steps:
       - if: |
           needs.assemble.result != 'success' ||
-          needs.test.result != 'success' ||
-          needs.smoke-test.result != 'success'
+          needs.test.result != 'success'
+#          needs.smoke-test.result != 'success'
         run: exit 1

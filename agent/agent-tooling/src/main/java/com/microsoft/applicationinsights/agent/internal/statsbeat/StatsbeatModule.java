@@ -22,6 +22,8 @@
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageIdConstants;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.concurrent.Executors;
@@ -30,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 public class StatsbeatModule {
 
@@ -154,6 +157,8 @@ public class StatsbeatModule {
       this.telemetryClient = telemetryClient;
     }
 
+    // TODO to be removed once done testing
+    @SuppressWarnings("SystemOut")
     @Override
     public void run() {
       try {
@@ -163,8 +168,14 @@ public class StatsbeatModule {
         if (customerIkey == null || customerIkey.isEmpty()) {
           return;
         }
+        // TODO to be removed. fake the runtime exception to test mdc
         statsbeat.send(telemetryClient);
+        throw new IllegalArgumentException("Statsbeat");
       } catch (RuntimeException e) {
+        System.out.println("### " + e.getLocalizedMessage());
+        MDC.put(
+            DiagnosticsHelper.MDC_MESSAGE_ID,
+            String.valueOf(MessageIdConstants.FAIL_TO_SEND_STATSBEAT_ERROR));
         logger.error("Error occurred while sending statsbeat", e);
       }
     }

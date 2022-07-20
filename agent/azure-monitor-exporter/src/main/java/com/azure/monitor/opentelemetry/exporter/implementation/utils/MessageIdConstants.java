@@ -21,35 +21,24 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+// Reserve messageId 2100 - 2200 for Azure Monitor Exporter
+public final class MessageIdConstants {
 
-public class HostName {
+  public static final String MDC_MESSAGE_ID = "messageId";
 
-  private static final Logger logger = LoggerFactory.getLogger(HostName.class);
+  public static final int QUICK_PULSE_PING_ERROR = 2100;
+  public static final int QUICK_PULSE_SEND_ERROR = 2101;
+  public static final int DISK_PERSISTENCE_READ_ERROR = 2102;
+  public static final int DISK_PERSISTENCE_WRITE_ERROR = 2103;
+  public static final int DISK_PERSISTENCE_PURGE_ERROR = 2104;
+  public static final int NETWORK_FAILURE_ERROR = 2105;
+  public static final int TELEMETRY_INTERNAL_SEND_ERROR = 2106;
+  public static final int HEARTBEAT_SEND_ERROR = 2107;
+  public static final int TELEMETRY_TRUNCATION_ERROR = 2108;
+  public static final int CPU_PERFORMANCE_COUNTER_ERROR = 2109;
+  public static final int SAMPLING_ERROR = 2110;
+  public static final int HOSTNAME_ERROR = 2111;
+  public static final int APP_ID_ERROR = 2112;
 
-  /**
-   * Returns the hostname using {@link InetAddress#getHostName()} on {@link
-   * InetAddress#getLocalHost()}. If an error is encountered, the error is logged and it returns
-   * null.
-   *
-   * @return the local hostname, or null
-   */
-  @Nullable
-  public static String get() {
-    try {
-      InetAddress addr = InetAddress.getLocalHost();
-      return addr.getHostName();
-    } catch (UnknownHostException ex) {
-      MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.HOSTNAME_ERROR));
-      logger.warn("Error resolving hostname", ex);
-      return null;
-    }
-  }
-
-  private HostName() {}
+  private MessageIdConstants() {}
 }

@@ -27,6 +27,7 @@ import ch.qos.logback.classic.spi.ThrowableProxyUtil;
 import ch.qos.logback.core.AppenderBase;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.ApplicationMetadataFactory;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageIdConstants;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.IpaError;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.IpaInfo;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.IpaVerbose;
@@ -47,7 +48,7 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
     proto.setAppName(metadata.getSiteName().getValue());
     proto.setExtensionVersion(metadata.getSdkVersion().getValue());
     proto.setSubscriptionId(metadata.getSubscriptionId().getValue());
-
+    proto.setInstrumentationKey(metadata.getInstrumentationKey().getValue());
     etwProvider = new EtwProvider(metadata.getSdkVersion().getValue());
   }
 
@@ -55,6 +56,7 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
   public void start() {
     IpaVerbose event = new IpaVerbose(proto);
     event.setMessageFormat("EtwProvider initialized successfully.");
+    event.setMessageId(String.valueOf(MessageIdConstants.ETW_INITIALIZATION_SUCCESS));
     try {
       this.etwProvider.writeEvent(event);
     } catch (LinkageError | ApplicationInsightsEtwException e) {
@@ -73,6 +75,7 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
     super.start();
   }
 
+  @SuppressWarnings("SystemOut")
   @Override
   protected void append(ILoggingEvent logEvent) {
     String logger = logEvent.getLoggerName();
@@ -110,6 +113,13 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
       String operation = mdcPropertyMap.get(DiagnosticsHelper.MDC_PROP_OPERATION);
       if (operation != null && !operation.isEmpty()) {
         event.setOperation(operation);
+      }
+
+      String messageId = mdcPropertyMap.get(DiagnosticsHelper.MDC_MESSAGE_ID);
+      if (messageId != null && !messageId.isEmpty()) {
+        // TODO to be deleted
+        System.out.println("### messageId: " + messageId);
+        event.setMessageId(messageId);
       }
     }
     event.setLogger(logger);

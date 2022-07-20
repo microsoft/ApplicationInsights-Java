@@ -19,37 +19,19 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter.implementation.utils;
+package com.microsoft.applicationinsights.agent.bootstrap.diagnostics;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+// JAVA reserves message id for App Service Diagnostics Logs from 2000 - 2999
+// Reserve messageId 2000 - 2099 for java agent
+public final class MessageIdConstants {
 
-public class HostName {
+  public static final int ETW_INITIALIZATION_SUCCESS = 2000;
+  public static final int FREE_PHYSICAL_MEMORY_SIZE_ERROR = 2001;
+  public static final int JMX_METRIC_PERFORMANCE_COUNTER_ERROR = 2002;
+  public static final int FAIL_TO_SEND_STATSBEAT_ERROR = 2003;
+  public static final int CONFIGURATION_RELATED_ERROR = 2004;
+  public static final int OSHI_RELATED_ERROR = 2005;
+  public static final int STATUS_FILE_RELATED_ERROR = 2006;
 
-  private static final Logger logger = LoggerFactory.getLogger(HostName.class);
-
-  /**
-   * Returns the hostname using {@link InetAddress#getHostName()} on {@link
-   * InetAddress#getLocalHost()}. If an error is encountered, the error is logged and it returns
-   * null.
-   *
-   * @return the local hostname, or null
-   */
-  @Nullable
-  public static String get() {
-    try {
-      InetAddress addr = InetAddress.getLocalHost();
-      return addr.getHostName();
-    } catch (UnknownHostException ex) {
-      MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.HOSTNAME_ERROR));
-      logger.warn("Error resolving hostname", ex);
-      return null;
-    }
-  }
-
-  private HostName() {}
+  private MessageIdConstants() {}
 }

@@ -26,6 +26,7 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
   private String appName;
   private String instrumentationKey;
   private String subscriptionId;
+  private String messageId;
 
   // not copied from prototype
   private String logger;
@@ -40,12 +41,14 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
     appName = event.appName;
     instrumentationKey = event.instrumentationKey;
     subscriptionId = event.subscriptionId;
+    messageId = event.messageId;
   }
 
   public void setLogger(String logger) {
     this.logger = logger;
   }
 
+  // used by native method
   public String getExtensionVersion() {
     return extensionVersion == null ? "" : extensionVersion;
   }
@@ -54,6 +57,7 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
     this.extensionVersion = extensionVersion;
   }
 
+  // used by native method
   public String getAppName() {
     return appName == null ? "" : appName;
   }
@@ -62,12 +66,31 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
     this.appName = appName;
   }
 
+  // used by native method
   public String getSubscriptionId() {
     return subscriptionId == null ? "" : subscriptionId;
   }
 
   public void setSubscriptionId(String subscriptionId) {
     this.subscriptionId = subscriptionId;
+  }
+
+  // used by native method
+  public String getInstrumentationKey() {
+    return instrumentationKey == null ? "" : instrumentationKey;
+  }
+
+  public void setInstrumentationKey(String instrumentationKey) {
+    this.instrumentationKey = instrumentationKey;
+  }
+
+  // used by native method
+  public String getMessageId() {
+    return messageId == null ? "" : messageId;
+  }
+
+  public void setMessageId(String messageId) {
+    this.messageId = messageId;
   }
 
   public void setMessageFormat(String messageFormat) {
@@ -78,6 +101,7 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
     this.messageArgs = messageArgs;
   }
 
+  // used by native method
   public String getFormattedMessage() {
     // operation
     // logger
@@ -103,6 +127,11 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
     } else {
       return messageFormat;
     }
+  }
+
+  // used by native method
+  public String getOperation() {
+    return operation == null ? "" : operation;
   }
 
   public void setOperation(String operation) {
