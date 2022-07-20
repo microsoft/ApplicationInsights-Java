@@ -122,6 +122,7 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
     for (Object object : argumentArray) {
       if (object instanceof MessageId) {
         MessageId messageId = (MessageId) object;
+        // TODO to be deleted
         System.out.println("### messageId: " + messageId.getValue());
         event.setMessageId(String.valueOf(messageId.getValue()));
       }

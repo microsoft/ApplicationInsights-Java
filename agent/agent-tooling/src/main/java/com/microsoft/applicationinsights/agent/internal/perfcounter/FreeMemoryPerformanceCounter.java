@@ -44,7 +44,7 @@ public class FreeMemoryPerformanceCounter implements PerformanceCounter {
       freePhysicalMemorySize = getFreePhysicalMemorySize();
     } catch (Exception e) {
       logger.error(
-          "Error getting FreePhysicalMemorySize", MessageId.FREE_PHYSICAL_MEMORY_SIZE_ERROR);
+          "Error getting FreePhysicalMemorySize [{}]", MessageId.FREE_PHYSICAL_MEMORY_SIZE_ERROR);
       logger.trace("Error getting FreePhysicalMemorySize", e);
       return;
     }

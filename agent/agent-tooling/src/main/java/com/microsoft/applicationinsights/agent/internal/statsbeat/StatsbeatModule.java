@@ -167,7 +167,9 @@ public class StatsbeatModule {
         statsbeat.send(telemetryClient);
       } catch (RuntimeException e) {
         logger.error(
-            "Error occurred while sending statsbeat", e, MessageId.FAIL_TO_SEND_STATSBEAT_ERROR);
+            "Error occurred while sending statsbeat '{}' [{}]",
+            e,
+            MessageId.FAIL_TO_SEND_STATSBEAT_ERROR);
       }
     }
   }

@@ -133,11 +133,11 @@ public class RpConfigurationPolling implements Runnable {
         rpConfiguration = newRpConfiguration;
       }
     } catch (IOException e) {
-      logger.error(
-          "Error occurred when polling json config file: {}",
-          e.getMessage(),
-          e,
-          MessageId.CONFIGURATION_RELATED_ERROR);
+      Object[] argumentArray = new Object[3];
+      argumentArray[0] = e.getMessage();
+      argumentArray[1] = e;
+      argumentArray[2] = MessageId.CONFIGURATION_RELATED_ERROR;
+      logger.error("Error occurred when polling json config file: {}", argumentArray);
     }
   }
 }

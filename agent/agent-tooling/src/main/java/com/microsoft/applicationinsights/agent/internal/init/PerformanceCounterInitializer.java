@@ -103,14 +103,14 @@ public class PerformanceCounterInitializer {
 
         if (Strings.isNullOrEmpty(jmxElement.objectName)) {
           logger.error(
-              "JMX object name is empty, will be ignored",
+              "JMX object name is empty, will be ignored [{}]",
               MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR);
           continue;
         }
 
         if (Strings.isNullOrEmpty(jmxElement.attribute)) {
           logger.error(
-              "JMX attribute is empty for '{}', will be ignored",
+              "JMX attribute is empty for '{}', will be ignored [{}]",
               jmxElement.objectName,
               MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR);
           continue;
@@ -118,7 +118,7 @@ public class PerformanceCounterInitializer {
 
         if (Strings.isNullOrEmpty(jmxElement.name)) {
           logger.error(
-              "JMX name is empty for '{}', will be ignored",
+              "JMX name is empty for '{}', will be ignored '{}' [{}]",
               jmxElement.objectName,
               MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR);
           continue;
@@ -133,16 +133,16 @@ public class PerformanceCounterInitializer {
           PerformanceCounterContainer.INSTANCE.register(
               new JmxMetricPerformanceCounter(entry.getKey(), entry.getValue()));
         } catch (RuntimeException e) {
-          logger.error(
-              "Failed to register JMX performance counter '{}': '{}'",
-              entry.getKey(),
-              e.toString(),
-              MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR);
+          Object[] argumentArray = new Object[3];
+          argumentArray[0] = entry.getKey();
+          argumentArray[1] = e.toString();
+          argumentArray[2] = MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR;
+          logger.error("Failed to register JMX performance counter: '{}'", argumentArray);
         }
       }
     } catch (RuntimeException e) {
       logger.error(
-          "Failed to register JMX performance counters: '{}'",
+          "Failed to register JMX performance counters: '{}' [{}]",
           e.toString(),
           MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR);
     }
