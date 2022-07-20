@@ -22,8 +22,9 @@
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics;
 
 // JAVA reserves message id for App Service Diagnostics Logs from 2000 - 2999
-// Reserve 2000 - 2099 for java agent
+// Reserve messageId 2000 - 2099 for java agent
 public final class MessageIdConstants {
+
   public static final int ETW_INITIALIZATION_SUCCESS = 2000;
   public static final int FREE_PHYSICAL_MEMORY_SIZE_ERROR = 2001;
   public static final int JMX_METRIC_PERFORMANCE_COUNTER_ERROR = 2002;

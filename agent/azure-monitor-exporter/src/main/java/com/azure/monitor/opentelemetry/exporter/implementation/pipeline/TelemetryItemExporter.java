@@ -137,20 +137,24 @@ public class TelemetryItemExporter {
     return listener.shutdown();
   }
 
+  // TODO to be removed. fake the runtime exception to test mdc
+  @SuppressWarnings("SystemOut")
   CompletableResultCode internalSendByInstrumentationKey(
       List<TelemetryItem> telemetryItems, String instrumentationKey) {
     List<ByteBuffer> byteBuffers;
     try {
       byteBuffers = encode(telemetryItems);
       encodeBatchOperationLogger.recordSuccess();
+      throw new Throwable("### Fake throwable from azure monitor exporter");
     } catch (Throwable t) {
+      System.out.println("### " + t.getMessage());
       MDC.put(
           MessageIdConstants.MDC_MESSAGE_ID,
           String.valueOf(MessageIdConstants.TELEMETRY_INTERNAL_SEND_ERROR));
       encodeBatchOperationLogger.recordFailure(t.getMessage(), t);
       return CompletableResultCode.ofFailure();
     }
-    return telemetryPipeline.send(byteBuffers, instrumentationKey, listener);
+    // return telemetryPipeline.send(byteBuffers, instrumentationKey, listener);
   }
 
   List<ByteBuffer> encode(List<TelemetryItem> telemetryItems) throws IOException {

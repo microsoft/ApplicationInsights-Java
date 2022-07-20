@@ -21,10 +21,11 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
-// Reserve messageId 2100 - 2200 from Azure Monitor Exporter messageId
+// Reserve messageId 2100 - 2200 for Azure Monitor Exporter
 public final class MessageIdConstants {
 
   public static final String MDC_MESSAGE_ID = "messageId";
+
   public static final int QUICK_PULSE_PING_ERROR = 2100;
   public static final int QUICK_PULSE_SEND_ERROR = 2101;
   public static final int DISK_PERSISTENCE_READ_ERROR = 2102;
