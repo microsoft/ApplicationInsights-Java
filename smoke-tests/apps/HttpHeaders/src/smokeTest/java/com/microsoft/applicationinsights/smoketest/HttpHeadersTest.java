@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.smoketest;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_18;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
@@ -80,6 +81,9 @@ abstract class HttpHeadersTest {
 
   @Environment(TOMCAT_8_JAVA_17)
   static class Tomcat8Java17Test extends HttpHeadersTest {}
+
+  @Environment(TOMCAT_8_JAVA_18)
+  static class Tomcat8Java18Test extends HttpHeadersTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
   static class Wildfly13Java8Test extends HttpHeadersTest {}
