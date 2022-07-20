@@ -45,4 +45,8 @@ public enum MessageId {
   public int getValue() {
     return this.value;
   }
+
+  public String getStringValue() {
+    return String.valueOf(value);
+  }
 }
