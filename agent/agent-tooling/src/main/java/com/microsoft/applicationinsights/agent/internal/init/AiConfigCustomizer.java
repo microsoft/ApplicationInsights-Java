@@ -26,18 +26,18 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagatorProvider;
-import io.opentelemetry.javaagent.extension.config.ConfigCustomizer;
+import io.opentelemetry.javaagent.extension.config.ConfigPropertySource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-@AutoService(ConfigCustomizer.class)
-public class AiConfigCustomizer implements ConfigCustomizer {
+@AutoService(ConfigPropertySource.class)
+public class AiConfigCustomizer implements ConfigPropertySource {
 
   @Override
-  public Map<String, String> defaultProperties() {
+  public Map<String, String> getProperties() {
     Configuration config = FirstEntryPoint.getConfiguration();
 
     Map<String, String> properties = new HashMap<>();
