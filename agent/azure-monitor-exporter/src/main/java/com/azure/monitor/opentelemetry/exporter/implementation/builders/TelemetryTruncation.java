@@ -52,6 +52,7 @@ final class TelemetryTruncation {
           attributeName,
           maxLength,
           trimTo80(value));
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     }
     logger.debug(
         "truncated {} attribute value to {} characters: {}", attributeName, maxLength, value);
@@ -73,6 +74,7 @@ final class TelemetryTruncation {
           propertyKey,
           maxLength,
           trimTo80(value));
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     }
     logger.debug("truncated {} property value to {} characters: {}", propertyKey, maxLength, value);
     return value.substring(0, maxLength);

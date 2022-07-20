@@ -50,6 +50,8 @@ public class HostName {
           String.valueOf(AzureMonitorMessageIdConstants.HOSTNAME_ERROR));
       logger.warn("Error resolving hostname", ex);
       return null;
+    } finally {
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     }
   }
 

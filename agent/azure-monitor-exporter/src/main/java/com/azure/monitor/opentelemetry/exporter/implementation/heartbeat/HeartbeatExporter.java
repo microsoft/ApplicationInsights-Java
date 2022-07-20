@@ -131,6 +131,7 @@ public class HeartbeatExporter {
           AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
           String.valueOf(AzureMonitorMessageIdConstants.HEARTBEAT_SEND_ERROR));
       logger.warn("Error occured while sending heartbeat");
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     }
   }
 

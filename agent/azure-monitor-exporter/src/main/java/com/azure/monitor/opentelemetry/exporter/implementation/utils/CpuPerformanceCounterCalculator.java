@@ -66,6 +66,8 @@ public final class CpuPerformanceCounterCalculator {
       logger.error("Error in getProcessCPUUsage");
       logger.trace("Error in getProcessCPUUsage", e);
       return null;
+    } finally {
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     }
   }
 

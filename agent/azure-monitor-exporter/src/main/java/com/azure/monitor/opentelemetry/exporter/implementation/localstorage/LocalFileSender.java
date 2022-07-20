@@ -99,6 +99,7 @@ class LocalFileSender implements Runnable {
           String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
       logger.error(
           "Unexpected error occurred while sending telemetries from the local storage.", ex);
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     }
   }
 }

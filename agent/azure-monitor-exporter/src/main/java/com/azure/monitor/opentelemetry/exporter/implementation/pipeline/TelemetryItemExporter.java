@@ -116,6 +116,7 @@ public class TelemetryItemExporter {
           String.valueOf(AzureMonitorMessageIdConstants.TELEMETRY_INTERNAL_SEND_ERROR));
       operationLogger.recordFailure(
           "Hit max " + MAX_CONCURRENT_EXPORTS + " active concurrent requests");
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
       return CompletableResultCode.ofAll(results);
     }
 
@@ -148,6 +149,7 @@ public class TelemetryItemExporter {
           AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
           String.valueOf(AzureMonitorMessageIdConstants.TELEMETRY_INTERNAL_SEND_ERROR));
       encodeBatchOperationLogger.recordFailure(t.getMessage(), t);
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
       return CompletableResultCode.ofFailure();
     }
     return telemetryPipeline.send(byteBuffers, instrumentationKey, listener);

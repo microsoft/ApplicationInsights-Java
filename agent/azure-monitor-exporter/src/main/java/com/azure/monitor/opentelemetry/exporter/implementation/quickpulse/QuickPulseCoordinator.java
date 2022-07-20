@@ -106,6 +106,7 @@ final class QuickPulseCoordinator implements Runnable {
         AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
         String.valueOf(AzureMonitorMessageIdConstants.QUICK_PULSE_SEND_ERROR));
     logger.error("Critical error while sending QP data: unknown status, aborting");
+    MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     collector.disable();
     stopped = true;
     return 0;
@@ -133,6 +134,7 @@ final class QuickPulseCoordinator implements Runnable {
         AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
         String.valueOf(AzureMonitorMessageIdConstants.QUICK_PULSE_PING_ERROR));
     logger.error("Critical error while ping QP: unknown status, aborting");
+    MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     collector.disable();
     stopped = true;
     return 0;

@@ -63,7 +63,7 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
         String.valueOf(AzureMonitorMessageIdConstants.NETWORK_FAILURE_ERROR));
     switch (responseCode) {
       case 200: // SUCCESS
-        MDC.clear();
+        MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
         operationLogger.recordSuccess();
         break;
       case 206: // PARTIAL CONTENT, Breeze-specific: PARTIAL SUCCESS
@@ -81,7 +81,6 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
           operationLogger.recordFailure(
               getErrorMessageFromCredentialRelatedResponse(responseCode, response.getBody()));
         } else {
-          MDC.clear();
         }
         break;
       case 408: // REQUEST TIMEOUT
@@ -89,15 +88,10 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
       case 500: // INTERNAL SERVER ERROR
       case 503: // SERVICE UNAVAILABLE
         if (!suppressWarningsOnRetryableFailures) {
-          MDC.put(
-              AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
-              String.valueOf(AzureMonitorMessageIdConstants.NETWORK_FAILURE_ERROR));
           operationLogger.recordFailure(
               "Received response code "
                   + responseCode
                   + " (telemetry will be stored to disk and retried later)");
-        } else {
-          MDC.clear();
         }
         break;
       case 402: // Breeze-specific: New Daily Quota Exceeded
@@ -111,6 +105,7 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
       default:
         operationLogger.recordFailure("received response code: " + responseCode);
     }
+    MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
   }
 
   @Override

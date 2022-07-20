@@ -78,6 +78,7 @@ public class JmxDataFetcher {
             "Failed to fetch JMX object '{}' with attribute '{}': ",
             objectName,
             attribute.attribute);
+        MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
         throw e;
       }
     }

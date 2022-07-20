@@ -227,6 +227,7 @@ public class StatusFile {
                         DiagnosticsHelper.MDC_MESSAGE_ID,
                         String.valueOf(MessageIdConstants.STATUS_FILE_RELATED_ERROR));
                     logger.error("Error writing {}", file.getAbsolutePath(), e);
+                    MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
                   } else {
                     e.printStackTrace();
                   }
@@ -246,6 +247,7 @@ public class StatusFile {
                   logger.error(
                       "Parent directories for status file could not be created: {}",
                       file.getAbsolutePath());
+                  MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
                 } else {
                   System.err.println(
                       "Parent directories for status file could not be created: "

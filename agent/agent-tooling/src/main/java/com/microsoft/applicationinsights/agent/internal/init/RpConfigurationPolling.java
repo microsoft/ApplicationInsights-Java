@@ -139,6 +139,7 @@ public class RpConfigurationPolling implements Runnable {
           DiagnosticsHelper.MDC_MESSAGE_ID,
           String.valueOf(MessageIdConstants.CONFIGURATION_RELATED_ERROR));
       logger.error("Error occurred when polling json config file: {}", e.getMessage(), e);
+      MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
     }
   }
 }

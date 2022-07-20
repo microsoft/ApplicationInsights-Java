@@ -172,6 +172,7 @@ public class StatsbeatModule {
             DiagnosticsHelper.MDC_MESSAGE_ID,
             String.valueOf(MessageIdConstants.FAIL_TO_SEND_STATSBEAT_ERROR));
         logger.error("Error occurred while sending statsbeat", e);
+        MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
       }
     }
   }

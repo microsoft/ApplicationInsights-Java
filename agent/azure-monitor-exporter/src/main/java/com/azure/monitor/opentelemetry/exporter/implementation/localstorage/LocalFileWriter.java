@@ -74,6 +74,7 @@ final class LocalFileWriter {
           "Local persistent storage capacity has been reached. It's currently at ("
               + (size / 1024)
               + "KB). Telemetry will be lost.");
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
       stats.incrementWriteFailureCount();
       return;
     }
@@ -87,6 +88,7 @@ final class LocalFileWriter {
           String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
       operationLogger.recordFailure(
           "Error creating file in directory: " + telemetryFolder.getAbsolutePath(), e);
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
       stats.incrementWriteFailureCount();
       return;
     }
@@ -98,6 +100,7 @@ final class LocalFileWriter {
           AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
           String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
       operationLogger.recordFailure("Error writing file: " + tempFile.getAbsolutePath(), e);
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
       stats.incrementWriteFailureCount();
       return;
     }
@@ -112,6 +115,7 @@ final class LocalFileWriter {
           AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
           String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
       operationLogger.recordFailure("Error renaming file: " + tempFile.getAbsolutePath(), e);
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
       stats.incrementWriteFailureCount();
       return;
     }

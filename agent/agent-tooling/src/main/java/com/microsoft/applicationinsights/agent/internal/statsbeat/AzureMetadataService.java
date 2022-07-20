@@ -141,6 +141,7 @@ class AzureMetadataService implements Runnable {
               + " error parsing response from Azure Metadata Service: {}",
           json,
           e);
+      MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
       scheduledExecutor.shutdown();
       return;
     }

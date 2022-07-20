@@ -78,6 +78,7 @@ public class NetworkFriendlyExceptions {
               AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
               String.valueOf(AzureMonitorMessageIdConstants.NETWORK_FAILURE_ERROR));
           logger.error(detector.message(url));
+          MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
         }
         return true;
       }

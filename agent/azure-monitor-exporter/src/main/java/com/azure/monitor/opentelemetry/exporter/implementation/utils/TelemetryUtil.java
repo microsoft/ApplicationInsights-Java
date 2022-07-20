@@ -172,6 +172,7 @@ public class TelemetryUtil {
             AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
             String.valueOf(AzureMonitorMessageIdConstants.SAMPLING_ERROR));
         logger.warn("did not find sampling percentage in trace state: {}", traceState);
+        MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
       }
       return defaultValue;
     }
@@ -192,6 +193,8 @@ public class TelemetryUtil {
               logger.warn("error parsing sampling percentage trace state: {}", str, e);
             }
             return OptionalFloat.empty();
+          } finally {
+            MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
           }
         });
   }

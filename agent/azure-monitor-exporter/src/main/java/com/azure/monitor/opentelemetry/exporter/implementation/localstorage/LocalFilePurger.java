@@ -87,6 +87,7 @@ class LocalFilePurger implements Runnable {
               AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
               String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_PURGE_ERROR));
           operationLogger.recordFailure("Unable to delete file: " + file.getAbsolutePath());
+          MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
         } else {
           operationLogger.recordSuccess();
         }

@@ -120,6 +120,7 @@ class AvailableJmxMetricLogger {
             DiagnosticsHelper.MDC_MESSAGE_ID,
             String.valueOf(MessageIdConstants.JMX_METRIC_PERFORMANCE_COUNTER_ERROR));
         logger.trace(e.getMessage(), e);
+        MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
         attributes = singleton("(error getting attributes)");
       }
       attributeMap.put(name, attributes);
@@ -147,6 +148,7 @@ class AvailableJmxMetricLogger {
             DiagnosticsHelper.MDC_MESSAGE_ID,
             String.valueOf(MessageIdConstants.JMX_METRIC_PERFORMANCE_COUNTER_ERROR));
         logger.trace(e.getMessage(), e);
+        MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
         attributes.add(attribute.getName() + " (exception)");
       }
     }

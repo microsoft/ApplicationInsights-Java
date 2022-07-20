@@ -113,8 +113,9 @@ public class AppIdSupplier implements AiAppId.Supplier {
     // this case, just
     // return and let the next request resolve the ikey.
     if (appId == null) {
-      MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.APP_ID_ERROR));
+      MDC.put(DiagnosticsHelper.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.APP_ID_ERROR));
       logger.debug("appId has not been retrieved yet (e.g. task may be pending or failed)");
+      MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
       return "";
     }
     return appId;
@@ -144,13 +145,15 @@ public class AppIdSupplier implements AiAppId.Supplier {
       try {
         response = LazyHttpClient.getInstance().send(request).block();
       } catch (RuntimeException ex) {
-        MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.APP_ID_ERROR));
+        MDC.put(DiagnosticsHelper.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.APP_ID_ERROR));
         if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
             ex, url.toString(), friendlyExceptionThrown, logger)) {
           warningLogger.recordWarning("exception sending request to " + url, ex);
         }
         backOff();
         return;
+      } finally {
+        MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
       }
 
       if (response == null) {
@@ -161,17 +164,19 @@ public class AppIdSupplier implements AiAppId.Supplier {
       String body = response.getBodyAsString().block();
       int statusCode = response.getStatusCode();
       if (statusCode != 200) {
-        MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.APP_ID_ERROR));
+        MDC.put(DiagnosticsHelper.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.APP_ID_ERROR));
         warningLogger.recordWarning(
             "received " + statusCode + " from " + url + "\nfull response:\n" + body, null);
+        MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
         backOff();
         return;
       }
 
       // check for case when breeze returns invalid value
       if (body == null || body.isEmpty()) {
-        MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.APP_ID_ERROR));
+        MDC.put(DiagnosticsHelper.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.APP_ID_ERROR));
         warningLogger.recordWarning("received empty body from " + url, null);
+        MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
         backOff();
         return;
       }

@@ -75,6 +75,7 @@ public class OshiPerformanceCounter implements PerformanceCounter {
             DiagnosticsHelper.MDC_MESSAGE_ID,
             String.valueOf(MessageIdConstants.OSHI_RELATED_ERROR));
         logger.debug("Fail to initialize OSProcess and CentralProcessor", ex);
+        MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
         return;
       }
     }

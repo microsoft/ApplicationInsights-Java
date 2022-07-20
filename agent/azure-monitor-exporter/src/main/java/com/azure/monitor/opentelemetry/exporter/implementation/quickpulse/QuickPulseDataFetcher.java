@@ -130,6 +130,8 @@ class QuickPulseDataFetcher {
       } catch (Throwable t2) {
         // chomp
       }
+    } finally {
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     }
   }
 

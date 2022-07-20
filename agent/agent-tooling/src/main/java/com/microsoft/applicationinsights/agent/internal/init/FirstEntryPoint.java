@@ -206,6 +206,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
       } else {
         startupLogger.error(message, t);
       }
+      MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
     } else {
       try {
         // IF the startupLogger failed to be initialized due to configuration syntax error, try
@@ -226,6 +227,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
         } else {
           startupLogger.error(message, t);
         }
+        MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
       } catch (Throwable ignored) {
         // this is a last resort in cases where the JVM doesn't have write permission to the
         // directory where the agent lives

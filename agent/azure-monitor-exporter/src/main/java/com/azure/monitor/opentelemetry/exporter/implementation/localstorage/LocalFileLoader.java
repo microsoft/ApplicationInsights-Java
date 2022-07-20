@@ -99,6 +99,7 @@ class LocalFileLoader {
           AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
           String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
       operationLogger.recordFailure("Error renaming file: " + fileToBeLoaded.getAbsolutePath(), e);
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
       stats.incrementReadFailureCount();
       return null;
     }
@@ -109,6 +110,7 @@ class LocalFileLoader {
             AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
             String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
         operationLogger.recordFailure("Unable to delete file: " + tempFile.getAbsolutePath());
+        MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
       }
       return null;
     }
@@ -127,6 +129,7 @@ class LocalFileLoader {
               AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
               String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
           operationLogger.recordFailure("Unable to delete file: " + tempFile.getAbsolutePath());
+          MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
         }
         return null;
       }
@@ -137,6 +140,7 @@ class LocalFileLoader {
           AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
           String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
       operationLogger.recordFailure("Error reading file: " + tempFile.getAbsolutePath(), e);
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
       stats.incrementReadFailureCount();
       return null;
     }
@@ -176,6 +180,7 @@ class LocalFileLoader {
           AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
           String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
       updateOperationLogger.recordFailure("File no longer exists: " + file.getAbsolutePath());
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
       return;
     }
     if (successOrNonRetryableError) {
@@ -185,6 +190,7 @@ class LocalFileLoader {
             AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
             String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
         updateOperationLogger.recordFailure("Unable to delete file: " + file.getAbsolutePath());
+        MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
       } else {
         updateOperationLogger.recordSuccess();
       }
@@ -198,6 +204,7 @@ class LocalFileLoader {
             AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
             String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
         updateOperationLogger.recordFailure("Error renaming file: " + file.getAbsolutePath(), e);
+        MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
         return;
       }
       updateOperationLogger.recordSuccess();
