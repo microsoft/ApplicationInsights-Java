@@ -198,7 +198,9 @@ public class AiConfigCustomizer implements ConfigCustomizer {
     properties.put("otel.instrumentation.netty-4.1.enabled", "true");
 
     properties.put("otel.instrumentation.okhttp.enabled", "true");
-    properties.put("otel.instrumentation.opentelemetry-annotations.enabled", "true");
+    properties.put("otel.instrumentation.opentelemetry-extension-annotations.enabled", "true");
+    properties.put(
+        "otel.instrumentation.opentelemetry-instrumentation-annotations.enabled", "true");
     properties.put("otel.instrumentation.opentelemetry-api.enabled", "true");
     properties.put("otel.instrumentation.opentelemetry-instrumentation-api.enabled", "true");
     properties.put("otel.instrumentation.reactor.enabled", "true");
