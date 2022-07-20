@@ -80,11 +80,11 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
     return jsonMap;
   }
 
-  private String getOperationName(ILoggingEvent event) {
+  private static String getOperationName(ILoggingEvent event) {
     return event.getMDCPropertyMap().get(DiagnosticsHelper.MDC_PROP_OPERATION);
   }
 
-  private String getMessageId(ILoggingEvent event) {
+  private static String getMessageId(ILoggingEvent event) {
     return event.getMDCPropertyMap().get(DiagnosticsHelper.MDC_MESSAGE_ID);
   }
 }
