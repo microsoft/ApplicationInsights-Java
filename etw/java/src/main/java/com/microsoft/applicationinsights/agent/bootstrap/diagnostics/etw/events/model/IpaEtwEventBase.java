@@ -48,20 +48,45 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
     this.logger = logger;
   }
 
+  // used by native method
+  public String getExtensionVersion() {
+    return extensionVersion == null ? "" : extensionVersion;
+  }
+
   public void setExtensionVersion(String extensionVersion) {
     this.extensionVersion = extensionVersion;
+  }
+
+  // used by native method
+  public String getAppName() {
+    return appName == null ? "" : appName;
   }
 
   public void setAppName(String appName) {
     this.appName = appName;
   }
 
+  // used by native method
+  public String getSubscriptionId() {
+    return subscriptionId == null ? "" : subscriptionId;
+  }
+
   public void setSubscriptionId(String subscriptionId) {
     this.subscriptionId = subscriptionId;
   }
 
+  // used by native method
+  public String getInstrumentationKey() {
+    return instrumentationKey == null ? "" : instrumentationKey;
+  }
+
   public void setInstrumentationKey(String instrumentationKey) {
     this.instrumentationKey = instrumentationKey;
+  }
+
+  // used by native method
+  public String getMessageId() {
+    return messageId == null ? "" : messageId;
   }
 
   public void setMessageId(String messageId) {
@@ -76,6 +101,7 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
     this.messageArgs = messageArgs;
   }
 
+  // used by native method
   public String getFormattedMessage() {
     // operation
     // logger
@@ -101,6 +127,11 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
     } else {
       return messageFormat;
     }
+  }
+
+  // used by native method
+  public String getOperation() {
+    return operation == null ? "" : operation;
   }
 
   public void setOperation(String operation) {
