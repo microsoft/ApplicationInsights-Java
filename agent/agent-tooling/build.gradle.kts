@@ -75,7 +75,7 @@ dependencies {
   compileOnly(project(":agent:agent-bootstrap"))
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
-  compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support")
+  compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-support")
 
   compileOnly("com.google.auto.value:auto-value-annotations")
   annotationProcessor("com.google.auto.value:auto-value")
@@ -83,7 +83,7 @@ dependencies {
   testImplementation(project(":agent:agent-bootstrap"))
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
-  testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support")
+  testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-support")
 
   testImplementation("org.junit.jupiter:junit-jupiter")
   testImplementation("com.azure:azure-core-test")

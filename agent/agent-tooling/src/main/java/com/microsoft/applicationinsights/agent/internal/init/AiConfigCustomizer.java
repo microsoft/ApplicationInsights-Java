@@ -26,18 +26,18 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagatorProvider;
-import io.opentelemetry.javaagent.extension.config.ConfigCustomizer;
+import io.opentelemetry.javaagent.extension.config.ConfigPropertySource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-@AutoService(ConfigCustomizer.class)
-public class AiConfigCustomizer implements ConfigCustomizer {
+@AutoService(ConfigPropertySource.class)
+public class AiConfigCustomizer implements ConfigPropertySource {
 
   @Override
-  public Map<String, String> defaultProperties() {
+  public Map<String, String> getProperties() {
     Configuration config = FirstEntryPoint.getConfiguration();
 
     Map<String, String> properties = new HashMap<>();
@@ -198,7 +198,9 @@ public class AiConfigCustomizer implements ConfigCustomizer {
     properties.put("otel.instrumentation.netty-4.1.enabled", "true");
 
     properties.put("otel.instrumentation.okhttp.enabled", "true");
-    properties.put("otel.instrumentation.opentelemetry-annotations.enabled", "true");
+    properties.put("otel.instrumentation.opentelemetry-extension-annotations.enabled", "true");
+    properties.put(
+        "otel.instrumentation.opentelemetry-instrumentation-annotations.enabled", "true");
     properties.put("otel.instrumentation.opentelemetry-api.enabled", "true");
     properties.put("otel.instrumentation.opentelemetry-instrumentation-api.enabled", "true");
     properties.put("otel.instrumentation.reactor.enabled", "true");
@@ -207,7 +209,6 @@ public class AiConfigCustomizer implements ConfigCustomizer {
 
     properties.put("otel.instrumentation.servlet.enabled", "true");
     properties.put("otel.instrumentation.spring-core.enabled", "true");
-    properties.put("otel.instrumentation.spring-jms.enabled", "true");
     properties.put("otel.instrumentation.spring-web.enabled", "true");
     properties.put("otel.instrumentation.spring-webmvc.enabled", "true");
     properties.put("otel.instrumentation.spring-webflux.enabled", "true");
@@ -232,6 +233,7 @@ public class AiConfigCustomizer implements ConfigCustomizer {
     }
     if (config.instrumentation.jms.enabled) {
       properties.put("otel.instrumentation.jms.enabled", "true");
+      properties.put("otel.instrumentation.spring-jms.enabled", "true");
     }
     if (config.instrumentation.kafka.enabled) {
       properties.put("otel.instrumentation.kafka.enabled", "true");

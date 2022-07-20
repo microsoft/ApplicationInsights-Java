@@ -3,6 +3,9 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
   id("ai.java-conventions")
   id("ai.shadow-conventions")
+
+  id("io.opentelemetry.instrumentation.muzzle-generation")
+  id("io.opentelemetry.instrumentation.muzzle-check")
 }
 
 val otelInstrumentationAlphaVersion: String by project
