@@ -8,6 +8,7 @@
 * Fix missing message data [#2399](https://github.com/microsoft/ApplicationInsights-Java/pull/2399).
 * Fix Azure Function consumption lazy loading introduced in v3.3.0 [#2397](https://github.com/microsoft/ApplicationInsights-Java/pull/2397).
 * Support Java 18 [#2391](https://github.com/microsoft/ApplicationInsights-Java/pull/2391).
+* Update to OpenTelemetry 1.16.0 [#2408](https://github.com/microsoft/ApplicationInsights-Java/pull/2408).
 
 # Version 3.3.0 GA
 * Update OpenTelemetry to 1.15 [#2332](https://github.com/microsoft/ApplicationInsights-Java/pull/2332).
