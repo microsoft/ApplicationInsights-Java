@@ -72,7 +72,7 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
             send(telemetryClient, displayAndValues.getKey(), value);
           } catch (RuntimeException e) {
             logger.error(
-                "Error while sending JMX data: '{}'",
+                "Error while sending JMX data: '{}' [{}]",
                 e.toString(),
                 MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR);
             logger.trace("Error while sending JMX data", e);
@@ -82,7 +82,7 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
     } catch (Exception e) {
       if (!alreadyLogged) {
         logger.error(
-            "Error while fetching JMX data: '{}'",
+            "Error while fetching JMX data: '{}' [{}]",
             e.toString(),
             MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR);
         logger.trace("Error while fetching JMX data", e);

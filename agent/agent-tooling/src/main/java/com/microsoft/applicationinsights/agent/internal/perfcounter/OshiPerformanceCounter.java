@@ -70,7 +70,9 @@ public class OshiPerformanceCounter implements PerformanceCounter {
         // e.g. icm 276640835: ExceptionInInitializerError
         hasError.set(true);
         logger.debug(
-            "Fail to initialize OSProcess and CentralProcessor", ex, MessageId.OSHI_RELATED_ERROR);
+            "Fail to initialize OSProcess and CentralProcessor: {} [{}]",
+            ex,
+            MessageId.OSHI_RELATED_ERROR);
         return;
       }
     }

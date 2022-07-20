@@ -131,12 +131,14 @@ class AzureMetadataService implements Runnable {
     try {
       metadataInstanceResponse = mapper.readValue(json, MetadataInstanceResponse.class);
     } catch (IOException e) {
+      Object[] argumentArray = new Object[3];
+      argumentArray[0] = json;
+      argumentArray[1] = e;
+      argumentArray[2] = MessageId.FAIL_TO_SEND_STATSBEAT_ERROR;
       logger.debug(
           "Shutting down AzureMetadataService scheduler:"
-              + " error parsing response from Azure Metadata Service: {}",
-          json,
-          e,
-          MessageId.FAIL_TO_SEND_STATSBEAT_ERROR);
+              + " error parsing response from Azure Metadata Service: {} - '{}' [{}]",
+          argumentArray);
       scheduledExecutor.shutdown();
       return;
     }

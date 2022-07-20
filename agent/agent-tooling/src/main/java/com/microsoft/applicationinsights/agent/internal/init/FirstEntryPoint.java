@@ -163,7 +163,8 @@ public class FirstEntryPoint implements LoggingCustomizer {
       StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success, startupLogger != null);
     } catch (Throwable t) {
       if (startupLogger != null) {
-        startupLogger.error("Error writing status.json", t, MessageId.STATUS_FILE_RELATED_ERROR);
+        startupLogger.error(
+            "Error writing status.json: {} [{}]", t, MessageId.STATUS_FILE_RELATED_ERROR);
       } else {
         t.printStackTrace();
       }
@@ -193,9 +194,9 @@ public class FirstEntryPoint implements LoggingCustomizer {
 
     if (startupLogger != null) {
       if (isFriendlyException) {
-        startupLogger.error(message, MessageId.STATUS_FILE_RELATED_ERROR);
+        startupLogger.error(message + " [{}]", MessageId.STATUS_FILE_RELATED_ERROR);
       } else {
-        startupLogger.error(message, t, MessageId.STATUS_FILE_RELATED_ERROR);
+        startupLogger.error(message + ": '{}' [{}]", t, MessageId.STATUS_FILE_RELATED_ERROR);
       }
     } else {
       try {
@@ -209,9 +210,9 @@ public class FirstEntryPoint implements LoggingCustomizer {
                 selfDiagnostics.file.path);
         startupLogger = configureLogging(selfDiagnostics, agentPath);
         if (isFriendlyException) {
-          startupLogger.error(message, MessageId.STATUS_FILE_RELATED_ERROR);
+          startupLogger.error(message + " [{}]", MessageId.STATUS_FILE_RELATED_ERROR);
         } else {
-          startupLogger.error(message, t, MessageId.STATUS_FILE_RELATED_ERROR);
+          startupLogger.error(message + " {} [{}]", t, MessageId.STATUS_FILE_RELATED_ERROR);
         }
       } catch (Throwable ignored) {
         // this is a last resort in cases where the JVM doesn't have write permission to the

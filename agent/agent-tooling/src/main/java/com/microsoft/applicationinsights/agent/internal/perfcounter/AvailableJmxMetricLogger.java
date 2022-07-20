@@ -114,7 +114,7 @@ class AvailableJmxMetricLogger {
         // log exception at trace level since this is expected in several cases, e.g.
         // "java.lang.UnsupportedOperationException: CollectionUsage threshold is not supported"
         // and available jmx metrics are already only logged at debug
-        logger.trace(e.getMessage(), e, MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR);
+        logger.trace(e.getMessage() + "{} [{}]", e, MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR);
         attributes = singleton("(error getting attributes)");
       }
       attributeMap.put(name, attributes);

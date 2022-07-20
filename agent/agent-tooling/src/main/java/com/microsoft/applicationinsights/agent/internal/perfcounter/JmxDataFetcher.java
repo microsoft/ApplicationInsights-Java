@@ -69,11 +69,11 @@ public class JmxDataFetcher {
         List<Object> resultForAttribute = fetch(server, objects, attribute.attribute);
         result.put(attribute.metricName, resultForAttribute);
       } catch (Exception e) {
-        logger.warn(
-            "Failed to fetch JMX object '{}' with attribute '{}': ",
-            objectName,
-            attribute.attribute,
-            MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR);
+        Object[] argumentArray = new Object[3];
+        argumentArray[0] = objectName;
+        argumentArray[1] = attribute.attribute;
+        argumentArray[2] = MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR;
+        logger.warn("Failed to fetch JMX object '{}' with attribute '{}' [{}]: ", argumentArray);
         throw e;
       }
     }
