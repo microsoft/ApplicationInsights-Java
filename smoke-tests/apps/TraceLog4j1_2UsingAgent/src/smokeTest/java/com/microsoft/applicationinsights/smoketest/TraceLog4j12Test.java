@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.smoketest;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_18;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
@@ -39,6 +40,8 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import java.util.Comparator;
 import java.util.List;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -47,9 +50,21 @@ abstract class TraceLog4j12Test {
 
   @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
+  private static final Logger logger = LogManager.getLogger(TraceLog4j12Test.class);
+
+  // See https://github.com/microsoft/ApplicationInsights-Java/pull/2391#issuecomment-1189301659
+  boolean disableBecauseJavaVersionGreaterThan17() {
+    return false;
+  }
+
   @Test
   @TargetUri("/traceLog4j12")
   void testTraceLog4j12() throws Exception {
+    if (disableBecauseJavaVersionGreaterThan17()) {
+      logDisableMessage();
+      return;
+    }
+
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
@@ -99,9 +114,18 @@ abstract class TraceLog4j12Test {
         rd, rdEnvelope, mdEnvelope3, "GET /TraceLog4j1_2UsingAgent/traceLog4j12");
   }
 
+  private void logDisableMessage() {
+    logger.warn("Test disabled because Java version greater than 17.");
+  }
+
   @Test
   @TargetUri("/traceLog4j1_2WithException")
-  void testTraceLog4j1_2WithExeption() throws Exception {
+  void testTraceLog4j1_2WithException() throws Exception {
+    if (disableBecauseJavaVersionGreaterThan17()) {
+      logDisableMessage();
+      return;
+    }
+
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
@@ -145,6 +169,14 @@ abstract class TraceLog4j12Test {
 
   @Environment(TOMCAT_8_JAVA_17)
   static class Tomcat8Java17Test extends TraceLog4j12Test {}
+
+  @Environment(TOMCAT_8_JAVA_18)
+  static class Tomcat8Java18Test extends TraceLog4j12Test {
+    @Override
+    boolean disableBecauseJavaVersionGreaterThan17() {
+      return true;
+    }
+  }
 
   @Environment(WILDFLY_13_JAVA_8)
   static class Wildfly13Java8Test extends TraceLog4j12Test {}

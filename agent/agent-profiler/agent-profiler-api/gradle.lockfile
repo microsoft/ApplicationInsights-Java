@@ -1,21 +1,21 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-com.azure:azure-core:1.28.0=runtimeClasspath
-com.azure:azure-sdk-bom:1.2.2=runtimeClasspath
-com.fasterxml.jackson.core:jackson-annotations:2.13.2.2=runtimeClasspath
-com.fasterxml.jackson.core:jackson-core:2.13.2.2=runtimeClasspath
+com.azure:azure-core:1.29.1=runtimeClasspath
+com.azure:azure-sdk-bom:1.2.3=runtimeClasspath
+com.fasterxml.jackson.core:jackson-annotations:2.13.2=runtimeClasspath
+com.fasterxml.jackson.core:jackson-core:2.13.2=runtimeClasspath
 com.fasterxml.jackson.core:jackson-databind:2.13.2.2=runtimeClasspath
-com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.2.2=runtimeClasspath
-com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.2.2=runtimeClasspath
-com.fasterxml.jackson:jackson-bom:2.13.2.2=runtimeClasspath
+com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.2=runtimeClasspath
+com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.2=runtimeClasspath
+com.fasterxml.jackson:jackson-bom:2.13.2=runtimeClasspath
 com.fasterxml.woodstox:woodstox-core:6.2.7=runtimeClasspath
 com.google.guava:guava-bom:31.1-jre=runtimeClasspath
 com.squareup.moshi:moshi:1.11.0=runtimeClasspath
 com.squareup.okio:okio:1.17.5=runtimeClasspath
-io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.15.0-alpha=runtimeClasspath
-io.opentelemetry:opentelemetry-bom-alpha:1.15.0-alpha=runtimeClasspath
-io.opentelemetry:opentelemetry-bom:1.15.0=runtimeClasspath
+io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.16.0-alpha=runtimeClasspath
+io.opentelemetry:opentelemetry-bom-alpha:1.16.0-alpha=runtimeClasspath
+io.opentelemetry:opentelemetry-bom:1.16.0=runtimeClasspath
 io.projectreactor:reactor-core:3.4.17=runtimeClasspath
 org.codehaus.woodstox:stax2-api:4.2.1=runtimeClasspath
 org.junit:junit-bom:5.8.2=runtimeClasspath

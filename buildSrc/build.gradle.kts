@@ -34,10 +34,12 @@ dependencies {
   implementation("com.diffplug.spotless:spotless-plugin-gradle:5.14.0")
   implementation("com.google.guava:guava:30.1-jre")
   implementation("gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0")
-  implementation("org.ow2.asm:asm:9.1")
-  implementation("org.ow2.asm:asm-tree:9.1")
+  implementation("org.ow2.asm:asm:9.3")
+  implementation("org.ow2.asm:asm-tree:9.3")
   implementation("org.apache.httpcomponents:httpclient:4.5.13")
   implementation("org.gradle:test-retry-gradle-plugin:1.2.1")
+
+  implementation("io.opentelemetry.instrumentation:gradle-plugins:1.16.0-alpha")
 
   // When updating, also update dependencyManagement/dependencyManagement.gradle.kts
   // we need to use byte buddy variant that does not shade asm

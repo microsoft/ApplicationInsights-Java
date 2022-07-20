@@ -16,7 +16,9 @@ dependencies {
   implementation(project(":agent:agent-gc-monitor:gc-monitor-api"))
   implementation(project(":agent:agent-gc-monitor:gc-monitor-core"))
   implementation(project(":agent:agent-profiler:agent-diagnostics-api"))
-  implementation(project(":agent:azure-monitor-exporter"))
+  implementation(project(":agent:azure-monitor-exporter")) {
+    exclude("org.ow2.asm", "asm")
+  }
 
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
@@ -47,6 +49,7 @@ dependencies {
     //  via `IntelliJCredential` or `DefaultAzureCredential`"
     // NOTE this exclusion saves 6.5 mb !!!!
     exclude("org.linguafranca.pwdb", "KeePassJava2")
+    exclude("org.ow2.asm", "asm")
   }
 
   //  compileOnly("io.opentelemetry:opentelemetry-sdk-extension-tracing-incubator")
@@ -72,7 +75,7 @@ dependencies {
   compileOnly(project(":agent:agent-bootstrap"))
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
-  compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support")
+  compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-support")
 
   compileOnly("com.google.auto.value:auto-value-annotations")
   annotationProcessor("com.google.auto.value:auto-value")
@@ -80,7 +83,7 @@ dependencies {
   testImplementation(project(":agent:agent-bootstrap"))
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
-  testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support")
+  testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-support")
 
   testImplementation("org.junit.jupiter:junit-jupiter")
   testImplementation("com.azure:azure-core-test")

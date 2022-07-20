@@ -37,6 +37,9 @@ public enum WarEnvironmentValue {
   TOMCAT_8_JAVA_17(
       "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.72-jdk17-20211216.1584506476",
       "/server/webapps"),
+  TOMCAT_8_JAVA_18(
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.72-jdk18-20211216.1584506476",
+      "/server/webapps"),
 
   WILDFLY_13_JAVA_8(
       "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-wildfly:13.0.0.Final-jdk8-20211216.1584506476",
@@ -50,7 +53,9 @@ public enum WarEnvironmentValue {
   JAVA_11("azul/zulu-openjdk:11", ""),
   JAVA_11_OPENJ9("ibm-semeru-runtimes:open-11-jdk", ""),
   JAVA_17("azul/zulu-openjdk:17", ""),
-  JAVA_17_OPENJ9("ibm-semeru-runtimes:open-17-jdk", "");
+  JAVA_17_OPENJ9("ibm-semeru-runtimes:open-17-jdk", ""),
+  JAVA_18("azul/zulu-openjdk:18", ""),
+  JAVA_18_OPENJ9("ibm-semeru-runtimes:open-18-jdk", "");
 
   private final String imageName;
   private final String imageAppDir;

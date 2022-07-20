@@ -35,11 +35,11 @@ dependencies {
 
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
-  compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support")
+  compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-support")
 
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
-  testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-annotation-support")
+  testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-support")
 
   testImplementation("org.junit.jupiter:junit-jupiter")
   testImplementation("com.azure:azure-core-test")
