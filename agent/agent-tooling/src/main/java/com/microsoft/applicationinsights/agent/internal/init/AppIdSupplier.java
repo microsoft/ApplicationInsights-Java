@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import ch.qos.logback.classic.Level;
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
