@@ -27,6 +27,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.configuration.Con
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageId;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
@@ -43,6 +44,7 @@ import java.nio.file.attribute.FileTime;
 import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 public class RpConfigurationPolling implements Runnable {
 
@@ -133,11 +135,9 @@ public class RpConfigurationPolling implements Runnable {
         rpConfiguration = newRpConfiguration;
       }
     } catch (IOException e) {
-      Object[] argumentArray = new Object[3];
-      argumentArray[0] = e.getMessage();
-      argumentArray[1] = e;
-      argumentArray[2] = MessageId.CONFIGURATION_RELATED_ERROR;
-      logger.error("Error occurred when polling json config file: {}", argumentArray);
+      MDC.put(
+          DiagnosticsHelper.MDC_MESSAGE_ID, MessageId.CONFIGURATION_RELATED_ERROR.getStringValue());
+      logger.error("Error occurred when polling json config file: {}", e.getMessage(), e);
     }
   }
 }

@@ -21,12 +21,14 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageId;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.lang.management.ManagementFactory;
 import javax.management.ObjectName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 /** The class supplies the memory usage in Mega Bytes of the Java process the SDK is in. */
 public class FreeMemoryPerformanceCounter implements PerformanceCounter {
@@ -43,8 +45,10 @@ public class FreeMemoryPerformanceCounter implements PerformanceCounter {
     try {
       freePhysicalMemorySize = getFreePhysicalMemorySize();
     } catch (Exception e) {
-      logger.error(
-          "Error getting FreePhysicalMemorySize [{}]", MessageId.FREE_PHYSICAL_MEMORY_SIZE_ERROR);
+      MDC.put(
+          DiagnosticsHelper.MDC_MESSAGE_ID,
+          MessageId.FREE_PHYSICAL_MEMORY_SIZE_ERROR.getStringValue());
+      logger.error("Error getting FreePhysicalMemorySize");
       logger.trace("Error getting FreePhysicalMemorySize", e);
       return;
     }

@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageId;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ import javax.management.ReflectionException;
 import javax.management.openmbean.CompositeData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 /** A utility class that knows how to fetch JMX data. */
 public class JmxDataFetcher {
@@ -69,11 +71,13 @@ public class JmxDataFetcher {
         List<Object> resultForAttribute = fetch(server, objects, attribute.attribute);
         result.put(attribute.metricName, resultForAttribute);
       } catch (Exception e) {
-        Object[] argumentArray = new Object[3];
-        argumentArray[0] = objectName;
-        argumentArray[1] = attribute.attribute;
-        argumentArray[2] = MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR;
-        logger.warn("Failed to fetch JMX object '{}' with attribute '{}' [{}]: ", argumentArray);
+        MDC.put(
+            DiagnosticsHelper.MDC_MESSAGE_ID,
+            MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.getStringValue());
+        logger.warn(
+            "Failed to fetch JMX object '{}' with attribute '{}': ",
+            objectName,
+            attribute.attribute);
         throw e;
       }
     }

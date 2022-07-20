@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.perfcounter;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageId;
 import io.opentelemetry.instrumentation.api.internal.GuardedBy;
 import java.lang.management.ManagementFactory;
@@ -45,6 +46,7 @@ import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.OpenType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 // TODO (trask) add tests
 class AvailableJmxMetricLogger {
@@ -114,7 +116,10 @@ class AvailableJmxMetricLogger {
         // log exception at trace level since this is expected in several cases, e.g.
         // "java.lang.UnsupportedOperationException: CollectionUsage threshold is not supported"
         // and available jmx metrics are already only logged at debug
-        logger.trace(e.getMessage() + "{} [{}]", e, MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR);
+        MDC.put(
+            DiagnosticsHelper.MDC_MESSAGE_ID,
+            MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.getStringValue());
+        logger.trace(e.getMessage(), e);
         attributes = singleton("(error getting attributes)");
       }
       attributeMap.put(name, attributes);
@@ -138,7 +143,10 @@ class AvailableJmxMetricLogger {
         // log exception at trace level since this is expected in several cases, e.g.
         // "java.lang.UnsupportedOperationException: CollectionUsage threshold is not supported"
         // and available jmx metrics are already only logged at debug
-        logger.trace(e.getMessage(), e, MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR);
+        MDC.put(
+            DiagnosticsHelper.MDC_MESSAGE_ID,
+            MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.getStringValue());
+        logger.trace(e.getMessage(), e);
         attributes.add(attribute.getName() + " (exception)");
       }
     }

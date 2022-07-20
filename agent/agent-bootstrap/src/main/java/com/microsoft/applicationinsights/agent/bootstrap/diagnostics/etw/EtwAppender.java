@@ -115,19 +115,17 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
       if (operation != null && !operation.isEmpty()) {
         event.setOperation(operation);
       }
+
+      String messageId = mdcPropertyMap.get(DiagnosticsHelper.MDC_MESSAGE_ID);
+      if (messageId != null && !messageId.isEmpty()) {
+        // TODO to be deleted
+        System.out.println("### messageId: " + messageId);
+        event.setMessageId(messageId);
+      }
     }
     event.setLogger(logger);
     event.setMessageFormat(logEvent.getMessage());
-    Object[] argumentArray = logEvent.getArgumentArray();
-    for (Object object : argumentArray) {
-      if (object instanceof MessageId) {
-        MessageId messageId = (MessageId) object;
-        // TODO to be deleted
-        System.out.println("### messageId: " + messageId.getValue());
-        event.setMessageId(String.valueOf(messageId.getValue()));
-      }
-    }
-    event.setMessageArgs(argumentArray);
+    event.setMessageArgs(logEvent.getArgumentArray());
     try {
       etwProvider.writeEvent(event);
     } catch (ApplicationInsightsEtwException e) {

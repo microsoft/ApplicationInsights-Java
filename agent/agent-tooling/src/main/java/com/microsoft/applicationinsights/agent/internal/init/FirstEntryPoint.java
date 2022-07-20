@@ -163,8 +163,9 @@ public class FirstEntryPoint implements LoggingCustomizer {
       StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success, startupLogger != null);
     } catch (Throwable t) {
       if (startupLogger != null) {
-        startupLogger.error(
-            "Error writing status.json: {} [{}]", t, MessageId.STATUS_FILE_RELATED_ERROR);
+        MDC.put(
+            DiagnosticsHelper.MDC_MESSAGE_ID, MessageId.STATUS_FILE_RELATED_ERROR.getStringValue());
+        startupLogger.error("Error writing status.json", t);
       } else {
         t.printStackTrace();
       }
@@ -193,10 +194,12 @@ public class FirstEntryPoint implements LoggingCustomizer {
       File javaagentFile) {
 
     if (startupLogger != null) {
+      MDC.put(
+          DiagnosticsHelper.MDC_MESSAGE_ID, MessageId.STATUS_FILE_RELATED_ERROR.getStringValue());
       if (isFriendlyException) {
-        startupLogger.error(message + " [{}]", MessageId.STATUS_FILE_RELATED_ERROR);
+        startupLogger.error(message);
       } else {
-        startupLogger.error(message + ": '{}' [{}]", t, MessageId.STATUS_FILE_RELATED_ERROR);
+        startupLogger.error(message, t);
       }
     } else {
       try {
@@ -209,10 +212,13 @@ public class FirstEntryPoint implements LoggingCustomizer {
                 ConfigurationBuilder.APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH,
                 selfDiagnostics.file.path);
         startupLogger = configureLogging(selfDiagnostics, agentPath);
+
+        MDC.put(
+            DiagnosticsHelper.MDC_MESSAGE_ID, MessageId.STATUS_FILE_RELATED_ERROR.getStringValue());
         if (isFriendlyException) {
-          startupLogger.error(message + " [{}]", MessageId.STATUS_FILE_RELATED_ERROR);
+          startupLogger.error(message);
         } else {
-          startupLogger.error(message + " {} [{}]", t, MessageId.STATUS_FILE_RELATED_ERROR);
+          startupLogger.error(message, t);
         }
       } catch (Throwable ignored) {
         // this is a last resort in cases where the JVM doesn't have write permission to the
