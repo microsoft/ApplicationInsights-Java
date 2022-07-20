@@ -1,7 +1,7 @@
 # CHANGELOG
 
 # Version 3.3.1 GA
-* Suppress nested dependencies (regression in 3.3.0) [#2357](https://github.com/microsoft/ApplicationInsights-Java/pull/2357).
+* Suppress nested client dependencies (regression in 3.3.0) [#2357](https://github.com/microsoft/ApplicationInsights-Java/pull/2357).
 * Add support for custom instrumentation [#2380](https://github.com/microsoft/ApplicationInsights-Java/pull/2380).
 * Additional support for Spring JMS instrumentation [#2385](https://github.com/microsoft/ApplicationInsights-Java/pull/2385).
 * Capture MDC attributes for jboss-logging [#2386](https://github.com/microsoft/ApplicationInsights-Java/pull/2386).
