@@ -22,19 +22,15 @@
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics;
 
 // JAVA reserves message id for App Service Diagnostics Logs from 2000 - 2999
+// Reserve 2000 - 2099 for java agent
 public final class MessageIdConstants {
   public static final int ETW_INITIALIZATION_SUCCESS = 2000;
-  public static final int NO_SUCH_FILE_ERROR = 2001;
-  public static final int INVALID_CERTIFICATION_PATH_ERROR = 2002;
-  public static final int FREE_PHYSICAL_MEMORY_SIZE_ERROR = 2003;
-  public static final int OUT_OF_MEMORY_ERROR = 2004;
-  public static final int JMX_METRIC_PERFORMANCE_COUNTER_ERROR = 2005;
-  public static final int FAIL_TO_SEND_STATSBEAT_ERROR = 2006;
-  public static final int COULD_NOT_CREATE_DIRECTORY_ERROR = 2007;
-  public static final int ACCESS_DENIED_ERROR = 2008;
-  public static final int CONFIGURATION_RELATED_ERROR = 2009;
-  public static final int OSHI_RELATED_ERROR = 2010;
-  public static final int STATUS_FILE_RELATED_ERROR = 2011;
+  public static final int FREE_PHYSICAL_MEMORY_SIZE_ERROR = 2001;
+  public static final int JMX_METRIC_PERFORMANCE_COUNTER_ERROR = 2002;
+  public static final int FAIL_TO_SEND_STATSBEAT_ERROR = 2003;
+  public static final int CONFIGURATION_RELATED_ERROR = 2004;
+  public static final int OSHI_RELATED_ERROR = 2005;
+  public static final int STATUS_FILE_RELATED_ERROR = 2006;
 
   private MessageIdConstants() {}
 }

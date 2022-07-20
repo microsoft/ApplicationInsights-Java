@@ -21,7 +21,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
-// Reserve 2100 - 2200 from Azure Monitor Exporter messageId
+// Reserve messageId 2100 - 2200 from Azure Monitor Exporter messageId
 public final class MessageIdConstants {
 
   public static final String MDC_MESSAGE_ID = "messageId";
