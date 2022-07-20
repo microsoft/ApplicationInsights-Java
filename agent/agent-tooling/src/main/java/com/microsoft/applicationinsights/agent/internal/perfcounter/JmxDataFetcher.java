@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageId;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -71,7 +72,8 @@ public class JmxDataFetcher {
         logger.warn(
             "Failed to fetch JMX object '{}' with attribute '{}': ",
             objectName,
-            attribute.attribute);
+            attribute.attribute,
+            MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR);
         throw e;
       }
     }

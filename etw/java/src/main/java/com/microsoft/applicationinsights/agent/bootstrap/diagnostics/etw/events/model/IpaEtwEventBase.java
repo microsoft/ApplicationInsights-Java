@@ -26,6 +26,7 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
   private String appName;
   private String instrumentationKey;
   private String subscriptionId;
+  private String messageId;
 
   // not copied from prototype
   private String logger;
@@ -40,34 +41,31 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
     appName = event.appName;
     instrumentationKey = event.instrumentationKey;
     subscriptionId = event.subscriptionId;
+    messageId = event.messageId;
   }
 
   public void setLogger(String logger) {
     this.logger = logger;
   }
 
-  public String getExtensionVersion() {
-    return extensionVersion == null ? "" : extensionVersion;
-  }
-
   public void setExtensionVersion(String extensionVersion) {
     this.extensionVersion = extensionVersion;
-  }
-
-  public String getAppName() {
-    return appName == null ? "" : appName;
   }
 
   public void setAppName(String appName) {
     this.appName = appName;
   }
 
-  public String getSubscriptionId() {
-    return subscriptionId == null ? "" : subscriptionId;
-  }
-
   public void setSubscriptionId(String subscriptionId) {
     this.subscriptionId = subscriptionId;
+  }
+
+  public void setInstrumentationKey(String instrumentationKey) {
+    this.instrumentationKey = instrumentationKey;
+  }
+
+  public void setMessageId(String messageId) {
+    this.messageId = messageId;
   }
 
   public void setMessageFormat(String messageFormat) {

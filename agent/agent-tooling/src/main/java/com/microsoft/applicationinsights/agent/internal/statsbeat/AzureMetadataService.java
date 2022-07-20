@@ -27,6 +27,7 @@ import com.azure.core.http.HttpResponse;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageId;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import java.io.IOException;
 import java.util.concurrent.Executors;
@@ -134,7 +135,8 @@ class AzureMetadataService implements Runnable {
           "Shutting down AzureMetadataService scheduler:"
               + " error parsing response from Azure Metadata Service: {}",
           json,
-          e);
+          e,
+          MessageId.FAIL_TO_SEND_STATSBEAT_ERROR);
       scheduledExecutor.shutdown();
       return;
     }

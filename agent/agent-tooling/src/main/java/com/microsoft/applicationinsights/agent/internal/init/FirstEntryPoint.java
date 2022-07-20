@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageId;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
@@ -162,7 +163,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
       StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success, startupLogger != null);
     } catch (Throwable t) {
       if (startupLogger != null) {
-        startupLogger.error("Error writing status.json", t);
+        startupLogger.error("Error writing status.json", t, MessageId.STATUS_FILE_RELATED_ERROR);
       } else {
         t.printStackTrace();
       }
@@ -192,9 +193,9 @@ public class FirstEntryPoint implements LoggingCustomizer {
 
     if (startupLogger != null) {
       if (isFriendlyException) {
-        startupLogger.error(message);
+        startupLogger.error(message, MessageId.STATUS_FILE_RELATED_ERROR);
       } else {
-        startupLogger.error(message, t);
+        startupLogger.error(message, t, MessageId.STATUS_FILE_RELATED_ERROR);
       }
     } else {
       try {
@@ -208,9 +209,9 @@ public class FirstEntryPoint implements LoggingCustomizer {
                 selfDiagnostics.file.path);
         startupLogger = configureLogging(selfDiagnostics, agentPath);
         if (isFriendlyException) {
-          startupLogger.error(message);
+          startupLogger.error(message, MessageId.STATUS_FILE_RELATED_ERROR);
         } else {
-          startupLogger.error(message, t);
+          startupLogger.error(message, t, MessageId.STATUS_FILE_RELATED_ERROR);
         }
       } catch (Throwable ignored) {
         // this is a last resort in cases where the JVM doesn't have write permission to the
