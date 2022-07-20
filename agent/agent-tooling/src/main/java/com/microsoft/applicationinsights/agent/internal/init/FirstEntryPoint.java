@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import ch.qos.logback.classic.Level;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageIdConstants;
@@ -127,7 +128,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
       LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
           .info("Application Insights Codeless Agent {} Attach Successful", agentVersion);
     } finally {
-      MDC.clear();
+      MDC.remove(DiagnosticsHelper.MDC_PROP_OPERATION);
     }
 
     updateStatusFile(true);
@@ -163,10 +164,12 @@ public class FirstEntryPoint implements LoggingCustomizer {
       StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success, startupLogger != null);
     } catch (Throwable t) {
       if (startupLogger != null) {
-        MDC.put(
-            DiagnosticsHelper.MDC_MESSAGE_ID,
-            String.valueOf(MessageIdConstants.STATUS_FILE_RELATED_ERROR));
-        startupLogger.error("Error writing status.json", t);
+        DiagnosticsHelper.logMessageId(
+            startupLogger,
+            Level.ERROR,
+            "Error writing status.json",
+            t,
+            MessageIdConstants.STATUS_FILE_RELATED_ERROR);
       } else {
         t.printStackTrace();
       }

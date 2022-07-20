@@ -26,7 +26,7 @@ import static java.util.Collections.singletonList;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.DiagnosticTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.MessageIdConstants;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMessageIdConstants;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.concurrent.Executors;
@@ -95,8 +95,8 @@ class LocalFileSender implements Runnable {
       }
     } catch (RuntimeException ex) {
       MDC.put(
-          MessageIdConstants.MDC_MESSAGE_ID,
-          String.valueOf(MessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
+          AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
+          String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
       logger.error(
           "Unexpected error occurred while sending telemetries from the local storage.", ex);
     }

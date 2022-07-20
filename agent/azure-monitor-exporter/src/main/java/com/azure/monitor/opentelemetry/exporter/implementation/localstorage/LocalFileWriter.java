@@ -24,7 +24,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.MessageIdConstants;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMessageIdConstants;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -68,8 +68,8 @@ final class LocalFileWriter {
     long size = getTotalSizeOfPersistedFiles(telemetryFolder);
     if (size >= diskPersistenceMaxSizeBytes) {
       MDC.put(
-          MessageIdConstants.MDC_MESSAGE_ID,
-          String.valueOf(MessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
+          AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
+          String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
       operationLogger.recordFailure(
           "Local persistent storage capacity has been reached. It's currently at ("
               + (size / 1024)
@@ -83,8 +83,8 @@ final class LocalFileWriter {
       tempFile = createTempFile(telemetryFolder);
     } catch (IOException e) {
       MDC.put(
-          MessageIdConstants.MDC_MESSAGE_ID,
-          String.valueOf(MessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
+          AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
+          String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
       operationLogger.recordFailure(
           "Error creating file in directory: " + telemetryFolder.getAbsolutePath(), e);
       stats.incrementWriteFailureCount();
@@ -95,8 +95,8 @@ final class LocalFileWriter {
       write(tempFile, buffers, instrumentationKey);
     } catch (IOException e) {
       MDC.put(
-          MessageIdConstants.MDC_MESSAGE_ID,
-          String.valueOf(MessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
+          AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
+          String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
       operationLogger.recordFailure("Error writing file: " + tempFile.getAbsolutePath(), e);
       stats.incrementWriteFailureCount();
       return;
@@ -109,8 +109,8 @@ final class LocalFileWriter {
       FileUtil.moveFile(tempFile, permanentFile);
     } catch (IOException e) {
       MDC.put(
-          MessageIdConstants.MDC_MESSAGE_ID,
-          String.valueOf(MessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
+          AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
+          String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
       operationLogger.recordFailure("Error renaming file: " + tempFile.getAbsolutePath(), e);
       stats.incrementWriteFailureCount();
       return;

@@ -23,7 +23,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.pipeline;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.MessageIdConstants;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMessageIdConstants;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SerializedString;
@@ -112,8 +112,8 @@ public class TelemetryItemExporter {
       // this is just a failsafe to limit concurrent exports, it's not ideal because it blocks
       // waiting for the most recent export instead of waiting for the first export to return
       MDC.put(
-          MessageIdConstants.MDC_MESSAGE_ID,
-          String.valueOf(MessageIdConstants.TELEMETRY_INTERNAL_SEND_ERROR));
+          AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
+          String.valueOf(AzureMonitorMessageIdConstants.TELEMETRY_INTERNAL_SEND_ERROR));
       operationLogger.recordFailure(
           "Hit max " + MAX_CONCURRENT_EXPORTS + " active concurrent requests");
       return CompletableResultCode.ofAll(results);
@@ -137,24 +137,20 @@ public class TelemetryItemExporter {
     return listener.shutdown();
   }
 
-  // TODO to be removed. fake the runtime exception to test mdc
-  @SuppressWarnings("SystemOut")
   CompletableResultCode internalSendByInstrumentationKey(
       List<TelemetryItem> telemetryItems, String instrumentationKey) {
     List<ByteBuffer> byteBuffers;
     try {
       byteBuffers = encode(telemetryItems);
       encodeBatchOperationLogger.recordSuccess();
-      throw new Throwable("### Fake throwable from azure monitor exporter");
     } catch (Throwable t) {
-      System.out.println("### " + t.getMessage());
       MDC.put(
-          MessageIdConstants.MDC_MESSAGE_ID,
-          String.valueOf(MessageIdConstants.TELEMETRY_INTERNAL_SEND_ERROR));
+          AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
+          String.valueOf(AzureMonitorMessageIdConstants.TELEMETRY_INTERNAL_SEND_ERROR));
       encodeBatchOperationLogger.recordFailure(t.getMessage(), t);
       return CompletableResultCode.ofFailure();
     }
-    // return telemetryPipeline.send(byteBuffers, instrumentationKey, listener);
+    return telemetryPipeline.send(byteBuffers, instrumentationKey, listener);
   }
 
   List<ByteBuffer> encode(List<TelemetryItem> telemetryItems) throws IOException {

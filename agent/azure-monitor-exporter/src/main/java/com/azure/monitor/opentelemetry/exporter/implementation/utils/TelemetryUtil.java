@@ -169,7 +169,8 @@ public class TelemetryUtil {
       if (warnOnMissing && !alreadyLoggedSamplingPercentageMissing.getAndSet(true)) {
         // sampler should have set the trace state
         MDC.put(
-            MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.SAMPLING_ERROR));
+            AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
+            String.valueOf(AzureMonitorMessageIdConstants.SAMPLING_ERROR));
         logger.warn("did not find sampling percentage in trace state: {}", traceState);
       }
       return defaultValue;
@@ -186,8 +187,8 @@ public class TelemetryUtil {
           } catch (NumberFormatException e) {
             if (!alreadyLoggedSamplingPercentageParseError.getAndSet(true)) {
               MDC.put(
-                  MessageIdConstants.MDC_MESSAGE_ID,
-                  String.valueOf(MessageIdConstants.SAMPLING_ERROR));
+                  AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
+                  String.valueOf(AzureMonitorMessageIdConstants.SAMPLING_ERROR));
               logger.warn("error parsing sampling percentage trace state: {}", str, e);
             }
             return OptionalFloat.empty();

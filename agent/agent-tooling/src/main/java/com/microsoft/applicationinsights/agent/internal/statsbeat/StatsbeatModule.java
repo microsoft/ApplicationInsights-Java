@@ -157,8 +157,6 @@ public class StatsbeatModule {
       this.telemetryClient = telemetryClient;
     }
 
-    // TODO to be removed once done testing
-    @SuppressWarnings("SystemOut")
     @Override
     public void run() {
       try {
@@ -168,11 +166,8 @@ public class StatsbeatModule {
         if (customerIkey == null || customerIkey.isEmpty()) {
           return;
         }
-        // TODO to be removed. fake the runtime exception to test mdc
         statsbeat.send(telemetryClient);
-        throw new RuntimeException("Statsbeat");
       } catch (RuntimeException e) {
-        System.out.println("### " + e.getLocalizedMessage());
         MDC.put(
             DiagnosticsHelper.MDC_MESSAGE_ID,
             String.valueOf(MessageIdConstants.FAIL_TO_SEND_STATSBEAT_ERROR));

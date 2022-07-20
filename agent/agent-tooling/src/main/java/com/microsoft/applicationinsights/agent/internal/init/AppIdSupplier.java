@@ -23,15 +23,17 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import ch.qos.logback.classic.Level;
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.NetworkFriendlyExceptions;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.WarningLogger;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.MessageIdConstants;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.bootstrap.AiAppId;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageIdConstants;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.net.MalformedURLException;
@@ -77,8 +79,8 @@ public class AppIdSupplier implements AiAppId.Supplier {
     try {
       newTask = new GetAppIdTask(getAppIdUrl(connectionString));
     } catch (MalformedURLException e) {
-      MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.APP_ID_ERROR));
-      logger.warn(e.getMessage(), e);
+      DiagnosticsHelper.logMessageId(
+          logger, Level.WARN, e.getMessage(), e, MessageIdConstants.APP_ID_ERROR);
       return;
     }
     synchronized (taskLock) {

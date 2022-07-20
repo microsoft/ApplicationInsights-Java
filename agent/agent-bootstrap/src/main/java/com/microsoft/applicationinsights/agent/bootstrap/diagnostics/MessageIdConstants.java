@@ -32,6 +32,7 @@ public final class MessageIdConstants {
   public static final int CONFIGURATION_RELATED_ERROR = 2004;
   public static final int OSHI_RELATED_ERROR = 2005;
   public static final int STATUS_FILE_RELATED_ERROR = 2006;
+  public static final int APP_ID_ERROR = 2007;
 
   private MessageIdConstants() {}
 }

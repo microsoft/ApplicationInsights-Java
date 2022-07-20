@@ -61,8 +61,8 @@ public final class CpuPerformanceCounterCalculator {
       return null;
     } catch (Exception e) {
       MDC.put(
-          MessageIdConstants.MDC_MESSAGE_ID,
-          String.valueOf(MessageIdConstants.CPU_PERFORMANCE_COUNTER_ERROR));
+          AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
+          String.valueOf(AzureMonitorMessageIdConstants.CPU_PERFORMANCE_COUNTER_ERROR));
       logger.error("Error in getProcessCPUUsage");
       logger.trace("Error in getProcessCPUUsage", e);
       return null;

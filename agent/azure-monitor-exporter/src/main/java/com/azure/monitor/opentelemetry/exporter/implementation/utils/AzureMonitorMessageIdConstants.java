@@ -22,7 +22,7 @@
 package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
 // Reserve messageId 2100 - 2200 for Azure Monitor Exporter
-public final class MessageIdConstants {
+public final class AzureMonitorMessageIdConstants {
 
   public static final String MDC_MESSAGE_ID = "messageId";
 
@@ -38,7 +38,6 @@ public final class MessageIdConstants {
   public static final int CPU_PERFORMANCE_COUNTER_ERROR = 2109;
   public static final int SAMPLING_ERROR = 2110;
   public static final int HOSTNAME_ERROR = 2111;
-  public static final int APP_ID_ERROR = 2112;
 
-  private MessageIdConstants() {}
+  private AzureMonitorMessageIdConstants() {}
 }

@@ -25,7 +25,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineRequest;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineResponse;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.MessageIdConstants;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMessageIdConstants;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -59,8 +59,8 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
   public void onResponse(TelemetryPipelineRequest request, TelemetryPipelineResponse response) {
     int responseCode = response.getStatusCode();
     MDC.put(
-        MessageIdConstants.MDC_MESSAGE_ID,
-        String.valueOf(MessageIdConstants.NETWORK_FAILURE_ERROR));
+        AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
+        String.valueOf(AzureMonitorMessageIdConstants.NETWORK_FAILURE_ERROR));
     switch (responseCode) {
       case 200: // SUCCESS
         MDC.clear();
@@ -90,8 +90,8 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
       case 503: // SERVICE UNAVAILABLE
         if (!suppressWarningsOnRetryableFailures) {
           MDC.put(
-              MessageIdConstants.MDC_MESSAGE_ID,
-              String.valueOf(MessageIdConstants.NETWORK_FAILURE_ERROR));
+              AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
+              String.valueOf(AzureMonitorMessageIdConstants.NETWORK_FAILURE_ERROR));
           operationLogger.recordFailure(
               "Received response code "
                   + responseCode

@@ -21,8 +21,11 @@
 
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics;
 
+import ch.qos.logback.classic.Level;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 public class DiagnosticsHelper {
   private DiagnosticsHelper() {}
@@ -44,7 +47,7 @@ public class DiagnosticsHelper {
   private static final ApplicationMetadataFactory METADATA_FACTORY =
       new ApplicationMetadataFactory();
 
-  public static final String MDC_MESSAGE_ID = "messageId";
+  private static final String MDC_MESSAGE_ID = "messageId";
   public static final String MDC_PROP_OPERATION = "microsoft.ai.operationName";
 
   static {
@@ -97,5 +100,16 @@ public class DiagnosticsHelper {
 
   public static boolean isOsWindows() {
     return isWindows;
+  }
+
+  public static void logMessageId(
+      Logger logger, Level logLevel, String message, Throwable e, int messageId) {
+    MDC.put(MDC_MESSAGE_ID, String.valueOf(messageId));
+    if (logLevel == Level.WARN) {
+      logger.warn(message, e);
+    } else if (logLevel == Level.ERROR) {
+      logger.error(message, e);
+    }
+    MDC.remove(MDC_MESSAGE_ID);
   }
 }

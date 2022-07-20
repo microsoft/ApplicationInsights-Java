@@ -22,7 +22,7 @@
 package com.azure.monitor.opentelemetry.exporter.implementation.logging;
 
 import com.azure.core.util.CoreUtils;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.MessageIdConstants;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMessageIdConstants;
 import io.netty.handler.ssl.SslHandshakeTimeoutException;
 import java.io.File;
 import java.io.IOException;
@@ -75,8 +75,8 @@ public class NetworkFriendlyExceptions {
       if (detector.detect(error)) {
         if (!alreadySeen.getAndSet(true)) {
           MDC.put(
-              MessageIdConstants.MDC_MESSAGE_ID,
-              String.valueOf(MessageIdConstants.NETWORK_FAILURE_ERROR));
+              AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
+              String.valueOf(AzureMonitorMessageIdConstants.NETWORK_FAILURE_ERROR));
           logger.error(detector.message(url));
         }
         return true;

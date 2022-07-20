@@ -45,7 +45,9 @@ public class HostName {
       InetAddress addr = InetAddress.getLocalHost();
       return addr.getHostName();
     } catch (UnknownHostException ex) {
-      MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.HOSTNAME_ERROR));
+      MDC.put(
+          AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
+          String.valueOf(AzureMonitorMessageIdConstants.HOSTNAME_ERROR));
       logger.warn("Error resolving hostname", ex);
       return null;
     }

@@ -25,7 +25,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.Abstract
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.MessageIdConstants;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMessageIdConstants;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -128,8 +128,8 @@ public class HeartbeatExporter {
       logger.trace("No of heartbeats sent, {}", ++heartbeatsSent);
     } catch (RuntimeException e) {
       MDC.put(
-          MessageIdConstants.MDC_MESSAGE_ID,
-          String.valueOf(MessageIdConstants.HEARTBEAT_SEND_ERROR));
+          AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
+          String.valueOf(AzureMonitorMessageIdConstants.HEARTBEAT_SEND_ERROR));
       logger.warn("Error occured while sending heartbeat");
     }
   }
