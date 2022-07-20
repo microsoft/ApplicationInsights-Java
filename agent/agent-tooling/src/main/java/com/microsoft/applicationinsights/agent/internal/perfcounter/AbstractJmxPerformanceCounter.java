@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageId;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.Collection;
 import java.util.Map;
@@ -70,14 +71,20 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
           try {
             send(telemetryClient, displayAndValues.getKey(), value);
           } catch (RuntimeException e) {
-            logger.error("Error while sending JMX data: '{}'", e.toString());
+            logger.error(
+                "Error while sending JMX data: '{}'",
+                e.toString(),
+                MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR);
             logger.trace("Error while sending JMX data", e);
           }
         }
       }
     } catch (Exception e) {
       if (!alreadyLogged) {
-        logger.error("Error while fetching JMX data: '{}'", e.toString());
+        logger.error(
+            "Error while fetching JMX data: '{}'",
+            e.toString(),
+            MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR);
         logger.trace("Error while fetching JMX data", e);
         alreadyLogged = true;
       }

@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageId;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.DeadLockDetectorPerformanceCounter;
@@ -101,17 +102,25 @@ public class PerformanceCounterInitializer {
             data.computeIfAbsent(jmxElement.objectName, k -> new ArrayList<>());
 
         if (Strings.isNullOrEmpty(jmxElement.objectName)) {
-          logger.error("JMX object name is empty, will be ignored");
+          logger.error(
+              "JMX object name is empty, will be ignored",
+              MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR);
           continue;
         }
 
         if (Strings.isNullOrEmpty(jmxElement.attribute)) {
-          logger.error("JMX attribute is empty for '{}', will be ignored", jmxElement.objectName);
+          logger.error(
+              "JMX attribute is empty for '{}', will be ignored",
+              jmxElement.objectName,
+              MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR);
           continue;
         }
 
         if (Strings.isNullOrEmpty(jmxElement.name)) {
-          logger.error("JMX name is empty for '{}', will be ignored", jmxElement.objectName);
+          logger.error(
+              "JMX name is empty for '{}', will be ignored",
+              jmxElement.objectName,
+              MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR);
           continue;
         }
 
@@ -127,11 +136,15 @@ public class PerformanceCounterInitializer {
           logger.error(
               "Failed to register JMX performance counter '{}': '{}'",
               entry.getKey(),
-              e.toString());
+              e.toString(),
+              MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR);
         }
       }
     } catch (RuntimeException e) {
-      logger.error("Failed to register JMX performance counters: '{}'", e.toString());
+      logger.error(
+          "Failed to register JMX performance counters: '{}'",
+          e.toString(),
+          MessageId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR);
     }
   }
 

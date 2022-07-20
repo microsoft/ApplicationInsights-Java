@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageId;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.concurrent.Executors;
@@ -165,7 +166,8 @@ public class StatsbeatModule {
         }
         statsbeat.send(telemetryClient);
       } catch (RuntimeException e) {
-        logger.error("Error occurred while sending statsbeat", e);
+        logger.error(
+            "Error occurred while sending statsbeat", e, MessageId.FAIL_TO_SEND_STATSBEAT_ERROR);
       }
     }
   }

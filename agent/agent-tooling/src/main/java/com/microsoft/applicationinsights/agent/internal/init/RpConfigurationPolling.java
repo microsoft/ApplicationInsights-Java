@@ -27,6 +27,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.configuration.Con
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageId;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
@@ -132,7 +133,11 @@ public class RpConfigurationPolling implements Runnable {
         rpConfiguration = newRpConfiguration;
       }
     } catch (IOException e) {
-      logger.error("Error occurred when polling json config file: {}", e.getMessage(), e);
+      logger.error(
+          "Error occurred when polling json config file: {}",
+          e.getMessage(),
+          e,
+          MessageId.CONFIGURATION_RELATED_ERROR);
     }
   }
 }
