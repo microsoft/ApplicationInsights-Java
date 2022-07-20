@@ -25,13 +25,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.MessageIdConstants;
-import org.slf4j.MDC;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.List;
+import org.slf4j.MDC;
 
 /** This class manages writing a list of {@link ByteBuffer} to the file system. */
 final class LocalFileWriter {
@@ -67,7 +67,9 @@ final class LocalFileWriter {
   void writeToDisk(String instrumentationKey, List<ByteBuffer> buffers) {
     long size = getTotalSizeOfPersistedFiles(telemetryFolder);
     if (size >= diskPersistenceMaxSizeBytes) {
-      MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
+      MDC.put(
+          MessageIdConstants.MDC_MESSAGE_ID,
+          String.valueOf(MessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
       operationLogger.recordFailure(
           "Local persistent storage capacity has been reached. It's currently at ("
               + (size / 1024)
@@ -80,7 +82,9 @@ final class LocalFileWriter {
     try {
       tempFile = createTempFile(telemetryFolder);
     } catch (IOException e) {
-      MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
+      MDC.put(
+          MessageIdConstants.MDC_MESSAGE_ID,
+          String.valueOf(MessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
       operationLogger.recordFailure(
           "Error creating file in directory: " + telemetryFolder.getAbsolutePath(), e);
       stats.incrementWriteFailureCount();
@@ -90,7 +94,9 @@ final class LocalFileWriter {
     try {
       write(tempFile, buffers, instrumentationKey);
     } catch (IOException e) {
-      MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
+      MDC.put(
+          MessageIdConstants.MDC_MESSAGE_ID,
+          String.valueOf(MessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
       operationLogger.recordFailure("Error writing file: " + tempFile.getAbsolutePath(), e);
       stats.incrementWriteFailureCount();
       return;
@@ -102,7 +108,9 @@ final class LocalFileWriter {
           new File(telemetryFolder, FileUtil.getBaseName(tempFile) + PERMANENT_FILE_EXTENSION);
       FileUtil.moveFile(tempFile, permanentFile);
     } catch (IOException e) {
-      MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
+      MDC.put(
+          MessageIdConstants.MDC_MESSAGE_ID,
+          String.valueOf(MessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
       operationLogger.recordFailure("Error renaming file: " + tempFile.getAbsolutePath(), e);
       stats.incrementWriteFailureCount();
       return;

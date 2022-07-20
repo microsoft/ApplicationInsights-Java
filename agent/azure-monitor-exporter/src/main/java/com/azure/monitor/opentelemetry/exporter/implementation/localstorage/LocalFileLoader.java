@@ -25,7 +25,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.MessageIdConstants;
-import org.slf4j.MDC;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,6 +32,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
+import org.slf4j.MDC;
 
 /** This class manages loading a list of {@link ByteBuffer} from the disk. */
 class LocalFileLoader {
@@ -95,7 +95,9 @@ class LocalFileLoader {
               telemetryFolder, FileUtil.getBaseName(fileToBeLoaded) + TEMPORARY_FILE_EXTENSION);
       FileUtil.moveFile(fileToBeLoaded, tempFile);
     } catch (IOException e) {
-      MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
+      MDC.put(
+          MessageIdConstants.MDC_MESSAGE_ID,
+          String.valueOf(MessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
       operationLogger.recordFailure("Error renaming file: " + fileToBeLoaded.getAbsolutePath(), e);
       stats.incrementReadFailureCount();
       return null;
@@ -103,7 +105,9 @@ class LocalFileLoader {
 
     if (tempFile.length() <= 36) {
       if (!FileUtil.deleteFileWithRetries(tempFile)) {
-        MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
+        MDC.put(
+            MessageIdConstants.MDC_MESSAGE_ID,
+            String.valueOf(MessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
         operationLogger.recordFailure("Unable to delete file: " + tempFile.getAbsolutePath());
       }
       return null;
@@ -119,7 +123,9 @@ class LocalFileLoader {
       if (!isInstrumentationKeyValid(instrumentationKey)) {
         fileInputStream.close(); // need to close FileInputStream before delete
         if (!FileUtil.deleteFileWithRetries(tempFile)) {
-          MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
+          MDC.put(
+              MessageIdConstants.MDC_MESSAGE_ID,
+              String.valueOf(MessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
           operationLogger.recordFailure("Unable to delete file: " + tempFile.getAbsolutePath());
         }
         return null;
@@ -127,7 +133,9 @@ class LocalFileLoader {
 
       readFully(fileInputStream, telemetryBytes, rawByteLength);
     } catch (IOException e) {
-      MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
+      MDC.put(
+          MessageIdConstants.MDC_MESSAGE_ID,
+          String.valueOf(MessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
       operationLogger.recordFailure("Error reading file: " + tempFile.getAbsolutePath(), e);
       stats.incrementReadFailureCount();
       return null;
@@ -164,14 +172,18 @@ class LocalFileLoader {
   void updateProcessedFileStatus(boolean successOrNonRetryableError, File file) {
     if (!file.exists()) {
       // not sure why this would happen
-      MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
+      MDC.put(
+          MessageIdConstants.MDC_MESSAGE_ID,
+          String.valueOf(MessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
       updateOperationLogger.recordFailure("File no longer exists: " + file.getAbsolutePath());
       return;
     }
     if (successOrNonRetryableError) {
       // delete a file on the queue permanently when http response returns success.
       if (!FileUtil.deleteFileWithRetries(file)) {
-        MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
+        MDC.put(
+            MessageIdConstants.MDC_MESSAGE_ID,
+            String.valueOf(MessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
         updateOperationLogger.recordFailure("Unable to delete file: " + file.getAbsolutePath());
       } else {
         updateOperationLogger.recordSuccess();
@@ -182,7 +194,9 @@ class LocalFileLoader {
       try {
         FileUtil.moveFile(file, sourceFile);
       } catch (IOException e) {
-        MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
+        MDC.put(
+            MessageIdConstants.MDC_MESSAGE_ID,
+            String.valueOf(MessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
         updateOperationLogger.recordFailure("Error renaming file: " + file.getAbsolutePath(), e);
         return;
       }

@@ -94,7 +94,9 @@ class LocalFileSender implements Runnable {
         resultCode.join(30, TimeUnit.SECONDS); // wait max 30 seconds for request to be completed.
       }
     } catch (RuntimeException ex) {
-      MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
+      MDC.put(
+          MessageIdConstants.MDC_MESSAGE_ID,
+          String.valueOf(MessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
       logger.error(
           "Unexpected error occurred while sending telemetries from the local storage.", ex);
     }
