@@ -170,7 +170,7 @@ public class StatsbeatModule {
         }
         // TODO to be removed. fake the runtime exception to test mdc
         statsbeat.send(telemetryClient);
-        throw new RuntimeException("Statsbeat");
+        throw new IllegalArgumentException("Statsbeat");
       } catch (RuntimeException e) {
         System.out.println("### " + e.getLocalizedMessage());
         MDC.put(
