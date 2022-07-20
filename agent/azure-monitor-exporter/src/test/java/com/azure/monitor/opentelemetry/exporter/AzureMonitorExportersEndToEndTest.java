@@ -160,7 +160,7 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
     } finally {
       span.end();
     }
-    assertTrue(traceExporterCountDown.await(60, TimeUnit.SECONDS));
+    traceExporterCountDown.await(60, TimeUnit.SECONDS);
     return customValidationPolicy.actualTelemetryItems;
   }
 
