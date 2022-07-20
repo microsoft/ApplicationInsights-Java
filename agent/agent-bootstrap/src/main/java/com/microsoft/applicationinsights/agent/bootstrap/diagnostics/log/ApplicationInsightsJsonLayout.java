@@ -67,6 +67,7 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
   private Map<String, Object> getPropertiesMap(ILoggingEvent event) {
     Map<String, Object> jsonMap = new LinkedHashMap<>();
     add(OPERATION_NAME_PROP_NAME, true, getOperationName(event), jsonMap);
+    add(DiagnosticsHelper.MDC_MESSAGE_ID, true, getMessageId(event), jsonMap);
     for (DiagnosticsValueFinder finder : valueFinders) {
       String value = finder.getValue();
       add(
@@ -79,7 +80,11 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
     return jsonMap;
   }
 
-  public String getOperationName(ILoggingEvent event) {
+  private String getOperationName(ILoggingEvent event) {
     return event.getMDCPropertyMap().get(DiagnosticsHelper.MDC_PROP_OPERATION);
+  }
+
+  private String getMessageId(ILoggingEvent event) {
+    return event.getMDCPropertyMap().get(DiagnosticsHelper.MDC_MESSAGE_ID);
   }
 }
