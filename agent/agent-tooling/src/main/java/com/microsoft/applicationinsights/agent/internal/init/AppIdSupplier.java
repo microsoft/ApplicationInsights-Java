@@ -29,6 +29,7 @@ import com.azure.core.http.HttpResponse;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.NetworkFriendlyExceptions;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.WarningLogger;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.MessageIdConstants;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.bootstrap.AiAppId;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
@@ -41,6 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 // note: app id is used by distributed trace headers and (soon) jfr profiling
 public class AppIdSupplier implements AiAppId.Supplier {
@@ -75,6 +77,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
     try {
       newTask = new GetAppIdTask(getAppIdUrl(connectionString));
     } catch (MalformedURLException e) {
+      MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.APP_ID_ERROR));
       logger.warn(e.getMessage(), e);
       return;
     }
@@ -108,6 +111,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
     // this case, just
     // return and let the next request resolve the ikey.
     if (appId == null) {
+      MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.APP_ID_ERROR));
       logger.debug("appId has not been retrieved yet (e.g. task may be pending or failed)");
       return "";
     }
@@ -138,6 +142,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
       try {
         response = LazyHttpClient.getInstance().send(request).block();
       } catch (RuntimeException ex) {
+        MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.APP_ID_ERROR));
         if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
             ex, url.toString(), friendlyExceptionThrown, logger)) {
           warningLogger.recordWarning("exception sending request to " + url, ex);
@@ -154,6 +159,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
       String body = response.getBodyAsString().block();
       int statusCode = response.getStatusCode();
       if (statusCode != 200) {
+        MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.APP_ID_ERROR));
         warningLogger.recordWarning(
             "received " + statusCode + " from " + url + "\nfull response:\n" + body, null);
         backOff();
@@ -162,6 +168,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
 
       // check for case when breeze returns invalid value
       if (body == null || body.isEmpty()) {
+        MDC.put(MessageIdConstants.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.APP_ID_ERROR));
         warningLogger.recordWarning("received empty body from " + url, null);
         backOff();
         return;

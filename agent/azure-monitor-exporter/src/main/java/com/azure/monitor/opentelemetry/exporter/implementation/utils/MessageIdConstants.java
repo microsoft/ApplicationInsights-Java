@@ -37,6 +37,7 @@ public final class MessageIdConstants {
   public static final int CPU_PERFORMANCE_COUNTER_ERROR = 2109;
   public static final int SAMPLING_ERROR = 2110;
   public static final int HOSTNAME_ERROR = 2111;
+  public static final int APP_ID_ERROR = 2112;
 
   private MessageIdConstants() {}
 }
