@@ -141,10 +141,10 @@ public class TelemetryItemExporter {
   @SuppressWarnings("SystemOut")
   CompletableResultCode internalSendByInstrumentationKey(
       List<TelemetryItem> telemetryItems, String instrumentationKey) {
-    List<ByteBuffer> byteBuffers;
+    //    List<ByteBuffer> byteBuffers;
     try {
-      byteBuffers = encode(telemetryItems);
-      encodeBatchOperationLogger.recordSuccess();
+      //      byteBuffers = encode(telemetryItems);
+      //      encodeBatchOperationLogger.recordSuccess();
       throw new IllegalStateException("### Fake throwable from azure monitor exporter");
     } catch (Throwable t) {
       System.out.println("### " + t.getMessage());
@@ -152,6 +152,7 @@ public class TelemetryItemExporter {
           MessageIdConstants.MDC_MESSAGE_ID,
           String.valueOf(MessageIdConstants.TELEMETRY_INTERNAL_SEND_ERROR));
       encodeBatchOperationLogger.recordFailure(t.getMessage(), t);
+      assert (telemetryPipeline != null);
       return CompletableResultCode.ofFailure();
     }
     // return telemetryPipeline.send(byteBuffers, instrumentationKey, listener);
