@@ -41,6 +41,7 @@ public class AfterAgentListener implements AgentListener {
     // triggers loading of java.util.logging (starting with Java 8u231)
     // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized.
 
+    // TODO we can update this check after the new functions model is deployed.
     if (!"java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
       // Delay registering and starting AppId retrieval until the connection string becomes
       // available for Linux Consumption Plan.

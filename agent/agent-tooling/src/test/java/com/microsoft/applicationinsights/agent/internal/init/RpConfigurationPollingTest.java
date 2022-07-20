@@ -82,7 +82,7 @@ class RpConfigurationPollingTest {
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
     ConnectionString connectionString =
         ConnectionString.parse("InstrumentationKey=00000000-0000-0000-0000-000000000000");
-    telemetryClient.setConnectionString(connectionString);
+    telemetryClient.updateConnectionString(connectionString);
     AppIdSupplier appIdSupplier = new AppIdSupplier(connectionString);
 
     BytecodeUtilImpl.samplingPercentage = 100;
@@ -118,7 +118,7 @@ class RpConfigurationPollingTest {
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
     ConnectionString connectionString =
         ConnectionString.parse("InstrumentationKey=00000000-0000-0000-0000-000000000000");
-    telemetryClient.setConnectionString(connectionString);
+    telemetryClient.updateConnectionString(connectionString);
     AppIdSupplier appIdSupplier = new AppIdSupplier(connectionString);
 
     BytecodeUtilImpl.samplingPercentage = 100;

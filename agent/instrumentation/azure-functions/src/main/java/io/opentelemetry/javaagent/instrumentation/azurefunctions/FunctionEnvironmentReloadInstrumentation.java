@@ -21,22 +21,37 @@
 
 package io.opentelemetry.javaagent.instrumentation.azurefunctions;
 
-import static java.util.Arrays.asList;
+import static net.bytebuddy.matcher.ElementMatchers.isMethod;
+import static net.bytebuddy.matcher.ElementMatchers.named;
 
-import com.google.auto.service.AutoService;
-import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
+import com.microsoft.applicationinsights.agent.bootstrap.AzureFunctions;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
-import java.util.List;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
+import net.bytebuddy.asm.Advice;
+import net.bytebuddy.description.type.TypeDescription;
+import net.bytebuddy.matcher.ElementMatcher;
 
-@AutoService(InstrumentationModule.class)
-public class AzureFunctionsInstrumentationModule extends InstrumentationModule {
+@SuppressWarnings("unused")
+class FunctionEnvironmentReloadInstrumentation implements TypeInstrumentation {
 
-  public AzureFunctionsInstrumentationModule() {
-    super("ai-azure-functions");
+  @Override
+  public ElementMatcher<TypeDescription> typeMatcher() {
+    return named(
+        "com.microsoft.azure.functions.worker.handler.FunctionEnvironmentReloadRequestHandler");
   }
 
   @Override
-  public List<TypeInstrumentation> typeInstrumentations() {
-    return asList(new InvocationInstrumentation(), new FunctionEnvironmentReloadInstrumentation());
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
+        isMethod().and(named("execute")),
+        FunctionEnvironmentReloadInstrumentation.class.getName() + "$ExecuteAdvice");
+  }
+
+  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  public static class ExecuteAdvice {
+    @Advice.OnMethodExit(suppress = Throwable.class)
+    public static void methodExit() {
+      AzureFunctions.configureOnce();
+    }
   }
 }

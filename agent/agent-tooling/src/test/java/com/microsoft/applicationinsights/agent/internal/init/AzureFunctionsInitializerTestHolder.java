@@ -32,7 +32,7 @@ import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporte
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import org.junit.jupiter.api.Test;
 
-class LazyConfigurationAccessorTest {
+class AzureFunctionsInitializerTestHolder {
 
   /*
    * Lazily Set Connection String For Linux Consumption Plan:
@@ -56,166 +56,170 @@ class LazyConfigurationAccessorTest {
   @Test
   // "LazySetOptIn is FALSE, ConnectionString is valid and EnableAgent is TRUE"
   void enableLazySetWithLazySetOptInOffEnableAgentOn() {
-    assertThat(LazyConfigurationAccessor.isAgentEnabled("true", false)).isTrue();
+    assertThat(AzureFunctionsInitializer.isAgentEnabled("true", false)).isTrue();
   }
 
   @Test
   // "LazySetOptIn is FALSE, ConnectionString is valid and EnableAgent is FALSE"
   void disableLazySetWithLazySetOptInOffEnableAgentOff() {
-    assertThat(LazyConfigurationAccessor.isAgentEnabled("false", false)).isFalse();
+    assertThat(AzureFunctionsInitializer.isAgentEnabled("false", false)).isFalse();
   }
 
   @Test
   // "LazySetOptIn is FALSE, ConnectionString is valid and EnableAgent is NULL"
   void disableLazySetWithLazySetOptInOffEnableAgentNull() {
-    assertThat(LazyConfigurationAccessor.isAgentEnabled(null, false)).isFalse();
+    assertThat(AzureFunctionsInitializer.isAgentEnabled(null, false)).isFalse();
   }
 
   @Test
   // "LazySetOptIn is FALSE, ConnectionString is NULL, InstrumentationKey is NULL, and EnableAgent
   // is TRUE"
   void disableLazySetWithLazySetOptInOffConnectionStringNullInstrumentationKeyNull() {
-    assertThat(LazyConfigurationAccessor.isAgentEnabled("true", false)).isTrue();
+    assertThat(AzureFunctionsInitializer.isAgentEnabled("true", false)).isTrue();
 
     // given
     TelemetryClient telemetryClient = mock(TelemetryClient.class);
     AgentLogExporter agentLogExporter = mock(AgentLogExporter.class);
     AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
-    LazyConfigurationAccessor lazyConfigurationAccessor =
-        new LazyConfigurationAccessor(telemetryClient, agentLogExporter, appIdSupplier);
+    AzureFunctionsInitializer lazyConfigurationAccessor =
+        new AzureFunctionsInitializer(telemetryClient, agentLogExporter, appIdSupplier);
 
     // when
     lazyConfigurationAccessor.setConnectionString(null, null);
 
     // then
-    verify(telemetryClient, never()).setConnectionString(any());
+    verify(telemetryClient, never()).updateConnectionString(any());
   }
 
   @Test
   // "LazySetOptIn is FALSE, ConnectionString is valid, InstrumentationKey is NULL, and EnableAgent
   // is TRUE"
   void disableLazySetWithLazySetOptInOffConnectionStringNotNullInstrumentationKeyNull() {
-    assertThat(LazyConfigurationAccessor.isAgentEnabled("true", false)).isTrue();
+    assertThat(AzureFunctionsInitializer.isAgentEnabled("true", false)).isTrue();
 
     // given
     TelemetryClient telemetryClient = mock(TelemetryClient.class);
     AgentLogExporter agentLogExporter = mock(AgentLogExporter.class);
     AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
-    LazyConfigurationAccessor lazyConfigurationAccessor =
-        new LazyConfigurationAccessor(telemetryClient, agentLogExporter, appIdSupplier);
+    AzureFunctionsInitializer lazyConfigurationAccessor =
+        new AzureFunctionsInitializer(telemetryClient, agentLogExporter, appIdSupplier);
 
     // when
     lazyConfigurationAccessor.setConnectionString(CONNECTION_STRING, null);
 
     // then
     verify(telemetryClient)
-        .setConnectionString(argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
+        .updateConnectionString(
+            argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
 
     // when
     lazyConfigurationAccessor.setWebsiteSiteName(WEBSITE_SITE_NAME);
 
     // then
-    verify(telemetryClient).setRoleName(WEBSITE_SITE_NAME);
+    verify(telemetryClient).updateRoleName(WEBSITE_SITE_NAME);
   }
 
   @Test
   // "LazySetOptIn is FALSE, ConnectionString is NULL, InstrumentationKey is valid, and EnableAgent
   // is TRUE")
   void enableLazySetWithLazySetOptInOffConnectionStringNullInstrumentationKeyNotNull() {
-    assertThat(LazyConfigurationAccessor.isAgentEnabled("true", false)).isTrue();
+    assertThat(AzureFunctionsInitializer.isAgentEnabled("true", false)).isTrue();
 
     // given
     TelemetryClient telemetryClient = mock(TelemetryClient.class);
     AgentLogExporter agentLogExporter = mock(AgentLogExporter.class);
     AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
-    LazyConfigurationAccessor lazyConfigurationAccessor =
-        new LazyConfigurationAccessor(telemetryClient, agentLogExporter, appIdSupplier);
+    AzureFunctionsInitializer lazyConfigurationAccessor =
+        new AzureFunctionsInitializer(telemetryClient, agentLogExporter, appIdSupplier);
 
     // when
     lazyConfigurationAccessor.setConnectionString(null, INSTRUMENTATION_KEY);
 
     // then
     verify(telemetryClient)
-        .setConnectionString(argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
+        .updateConnectionString(
+            argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
   }
 
   @Test
   // "LazySetOptIn is TRUE, ConnectionString is valid and EnableAgent is TRUE"
   void enableLazySetWithLazySetOptInOnEnableAgentOn() {
-    assertThat(LazyConfigurationAccessor.isAgentEnabled("true", true)).isTrue();
+    assertThat(AzureFunctionsInitializer.isAgentEnabled("true", true)).isTrue();
   }
 
   @Test
   // "LazySetOptIn is TRUE, ConnectionString is valid and EnableAgent is FALSE"
   void disableLazySetWithLazySetOptInOnEnableAgentOff() {
-    assertThat(LazyConfigurationAccessor.isAgentEnabled("false", true)).isFalse();
+    assertThat(AzureFunctionsInitializer.isAgentEnabled("false", true)).isFalse();
   }
 
   @Test
   // "LazySetOptIn is TRUE, ConnectionString is valid and EnableAgent is NULL"
   void enableLazySetWithLazySetOptInOnEnableAgentNull() {
-    assertThat(LazyConfigurationAccessor.isAgentEnabled(null, true)).isTrue();
+    assertThat(AzureFunctionsInitializer.isAgentEnabled(null, true)).isTrue();
   }
 
   @Test
   // "LazySetOptIn is TRUE, ConnectionString is NULL, InstrumentationKey is NULL, and EnableAgent is
   // TRUE"
   void disableLazySetWithLazySetOptInOnConnectionStringNullAndInstrumentationKeyNull() {
-    assertThat(LazyConfigurationAccessor.isAgentEnabled("true", true)).isTrue();
+    assertThat(AzureFunctionsInitializer.isAgentEnabled("true", true)).isTrue();
 
     // given
     TelemetryClient telemetryClient = mock(TelemetryClient.class);
     AgentLogExporter agentLogExporter = mock(AgentLogExporter.class);
     AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
-    LazyConfigurationAccessor lazyConfigurationAccessor =
-        new LazyConfigurationAccessor(telemetryClient, agentLogExporter, appIdSupplier);
+    AzureFunctionsInitializer lazyConfigurationAccessor =
+        new AzureFunctionsInitializer(telemetryClient, agentLogExporter, appIdSupplier);
 
     // when
     lazyConfigurationAccessor.setConnectionString(null, null);
 
     // then
-    verify(telemetryClient, never()).setConnectionString(any());
+    verify(telemetryClient, never()).updateConnectionString(any());
   }
 
   @Test
   // "LazySetOptIn is TRUE, ConnectionString is valid, InstrumentationKey is NULL, and EnableAgent
   // is TRUE"
   void enableLazySetWithLazySetOptInOnConnectionStringNotNullInstrumentationKeyNull() {
-    assertThat(LazyConfigurationAccessor.isAgentEnabled("true", false)).isTrue();
+    assertThat(AzureFunctionsInitializer.isAgentEnabled("true", false)).isTrue();
 
     // given
     TelemetryClient telemetryClient = mock(TelemetryClient.class);
     AgentLogExporter agentLogExporter = mock(AgentLogExporter.class);
     AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
-    LazyConfigurationAccessor lazyConfigurationAccessor =
-        new LazyConfigurationAccessor(telemetryClient, agentLogExporter, appIdSupplier);
+    AzureFunctionsInitializer lazyConfigurationAccessor =
+        new AzureFunctionsInitializer(telemetryClient, agentLogExporter, appIdSupplier);
 
     // when
     lazyConfigurationAccessor.setConnectionString(CONNECTION_STRING, null);
 
     // then
     verify(telemetryClient)
-        .setConnectionString(argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
+        .updateConnectionString(
+            argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
   }
 
   @Test
   // "LazySetOptIn is TRUE, ConnectionString is NULL, InstrumentationKey is valid, and EnableAgent
   // is TRUE"
   void enableLazySetWithLazySetOptInOnConnectionStringNullInstrumentationKeyNotNull() {
-    assertThat(LazyConfigurationAccessor.isAgentEnabled("true", false)).isTrue();
+    assertThat(AzureFunctionsInitializer.isAgentEnabled("true", false)).isTrue();
 
     // given
     TelemetryClient telemetryClient = mock(TelemetryClient.class);
     AgentLogExporter agentLogExporter = mock(AgentLogExporter.class);
     AppIdSupplier appIdSupplier = mock(AppIdSupplier.class);
-    LazyConfigurationAccessor lazyConfigurationAccessor =
-        new LazyConfigurationAccessor(telemetryClient, agentLogExporter, appIdSupplier);
+    AzureFunctionsInitializer lazyConfigurationAccessor =
+        new AzureFunctionsInitializer(telemetryClient, agentLogExporter, appIdSupplier);
 
     // when
     lazyConfigurationAccessor.setConnectionString(null, INSTRUMENTATION_KEY);
 
     // then
     verify(telemetryClient)
-        .setConnectionString(argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
+        .updateConnectionString(
+            argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
   }
 }

@@ -23,12 +23,18 @@ package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log;
 
 import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.IThrowableProxy;
+import ch.qos.logback.classic.spi.ThrowableProxy;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.ApplicationMetadataFactory;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 public class ApplicationInsightsCsvLayout extends PatternLayout {
 
   private static final String PREFIX = "LanguageWorkerConsoleLogMS_APPLICATION_INSIGHTS_LOGS";
+
+  private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
   private static final ApplicationMetadataFactory applicationMetadataFactory =
       DiagnosticsHelper.getMetadataFactory();
@@ -40,28 +46,43 @@ public class ApplicationInsightsCsvLayout extends PatternLayout {
 
   @Override
   public String doLayout(ILoggingEvent event) {
-    StringBuilder stringBuilder = new StringBuilder();
-    stringBuilder.append(PREFIX);
-    stringBuilder.append(" ");
-    stringBuilder.append(event.getTimeStamp());
-    stringBuilder.append(",");
-    stringBuilder.append(event.getLevel().toString());
-    stringBuilder.append(",");
-    stringBuilder.append(event.getLoggerName());
-    stringBuilder.append(",");
-    stringBuilder.append("\"");
-    stringBuilder.append(event.getFormattedMessage());
-    stringBuilder.append("\"");
-    stringBuilder.append(",");
-    stringBuilder.append(applicationMetadataFactory.getSiteName().getValue());
-    stringBuilder.append(",");
-    stringBuilder.append(applicationMetadataFactory.getInstrumentationKey().getValue());
-    stringBuilder.append(",");
-    stringBuilder.append(qualifiedSdkVersion);
-    stringBuilder.append(",");
-    stringBuilder.append("java");
-    stringBuilder.append(System.getProperty("line.separator"));
+    String message = event.getFormattedMessage();
+    IThrowableProxy throwableProxy = event.getThrowableProxy();
+    Throwable throwable = null;
+    if (throwableProxy instanceof ThrowableProxy) {
+      // there is only one other subclass of ch.qos.logback.classic.spi.IThrowableProxy
+      // and it is only used for logging exceptions over the wire
+      throwable = ((ThrowableProxy) throwableProxy).getThrowable();
+    }
+    if (throwable != null) {
+      message += " ";
+      StringWriter sw = new StringWriter();
+      throwable.printStackTrace(new PrintWriter(sw, true));
+      message += sw;
+    }
+    return PREFIX
+        + " "
+        + event.getTimeStamp()
+        + ","
+        + event.getLevel().toString()
+        + ","
+        + event.getLoggerName()
+        + ","
+        + "\""
+        + formatForCsv(message)
+        + "\""
+        + ","
+        + applicationMetadataFactory.getSiteName().getValue()
+        + ","
+        + applicationMetadataFactory.getInstrumentationKey().getValue()
+        + ","
+        + qualifiedSdkVersion
+        + ","
+        + "java"
+        + System.getProperty("line.separator");
+  }
 
-    return stringBuilder.toString();
+  private static String formatForCsv(String str) {
+    return str.replace(LINE_SEPARATOR, " ").replace('\"', '\'');
   }
 }

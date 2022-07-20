@@ -23,27 +23,35 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import ch.qos.logback.classic.LoggerContext;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
-import com.microsoft.applicationinsights.agent.bootstrap.AiLazyConfiguration;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import io.opentelemetry.javaagent.bootstrap.ClassFileTransformerHolder;
+import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;
+import java.lang.instrument.ClassFileTransformer;
+import java.lang.instrument.Instrumentation;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
+public class AzureFunctionsInitializer implements Runnable {
 
-  private static final Logger logger = LoggerFactory.getLogger(LazyConfigurationAccessor.class);
+  private static final Logger startupLogger =
+      LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
+
+  private static final Logger logger = LoggerFactory.getLogger(AzureFunctionsInitializer.class);
 
   private final TelemetryClient telemetryClient;
   private final AgentLogExporter agentLogExporter;
   private final AppIdSupplier appIdSupplier;
 
-  public LazyConfigurationAccessor(
+  public AzureFunctionsInitializer(
       TelemetryClient telemetryClient,
       AgentLogExporter agentLogExporter,
       AppIdSupplier appIdSupplier) {
@@ -53,30 +61,50 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
   }
 
   @Override
-  public void lazyLoad() {
-    String instrumentationKey = telemetryClient.getInstrumentationKey();
-    String roleName = telemetryClient.getRoleName();
-    if (instrumentationKey != null
-        && !instrumentationKey.isEmpty()
-        && roleName != null
-        && !roleName.isEmpty()) {
-      return;
-    }
-
+  public void run() {
     if (!isAgentEnabled()) {
+      disableBytecodeInstrumentation();
       return;
     }
 
-    setConnectionString(
-        System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"),
-        System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY"));
-    setWebsiteSiteName(System.getenv("WEBSITE_SITE_NAME"));
-    setSelfDiagnosticsLevel(System.getenv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL"));
+    String selfDiagnosticsLevel = System.getenv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL");
+    String connectionString = System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING");
+    String instrumentationKey = System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY");
+    String websiteSiteName = System.getenv("WEBSITE_SITE_NAME");
+    String instrumentationLoggingLevel =
+        System.getenv("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL");
+
+    logger.debug("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL: {}", selfDiagnosticsLevel);
+    logger.debug("APPLICATIONINSIGHTS_CONNECTION_STRING: {}", connectionString);
+    if (Strings.isNullOrEmpty(connectionString)) {
+      logger.debug("APPINSIGHTS_INSTRUMENTATIONKEY: {}", instrumentationKey);
+    }
+    logger.debug("WEBSITE_SITE_NAME: {}", websiteSiteName);
+    logger.debug(
+        "APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL: {}", instrumentationLoggingLevel);
+
+    setConnectionString(connectionString, instrumentationKey);
+    setWebsiteSiteName(websiteSiteName);
+    setSelfDiagnosticsLevel(selfDiagnosticsLevel);
     agentLogExporter.setThreshold(
-        Configuration.LoggingInstrumentation.getSeverity(
-            System.getenv("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL")));
+        Configuration.LoggingInstrumentation.getSeverity(instrumentationLoggingLevel));
+
+    startupLogger.info(
+        "ApplicationInsights Java Agent specialization complete for Azure Functions placeholder");
   }
 
+  private static void disableBytecodeInstrumentation() {
+    Instrumentation instrumentation = InstrumentationHolder.getInstrumentation();
+    ClassFileTransformer transformer = ClassFileTransformerHolder.getClassFileTransformer();
+    if (instrumentation == null || transformer == null) {
+      return;
+    }
+    if (instrumentation.removeTransformer(transformer)) {
+      ClassFileTransformerHolder.setClassFileTransformer(null);
+    }
+  }
+
+  // visible for testing
   void setConnectionString(@Nullable String connectionString, @Nullable String instrumentationKey) {
     if (connectionString != null && !connectionString.isEmpty()) {
       setValue(connectionString);
@@ -92,13 +120,15 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
   }
 
   private void setValue(String value) {
-    // passing nulls because lazy configuration doesn't support manual statsbeat overrides
-    telemetryClient.setConnectionString(ConnectionString.parse(value));
+    ConnectionString connectionString = ConnectionString.parse(value);
+    telemetryClient.updateConnectionString(connectionString);
+    telemetryClient.updateStatsbeatConnectionString(
+        StatsbeatConnectionString.create(connectionString, null, null));
+
     // now that we know the user has opted in to tracing, we need to init the propagator and sampler
     DelegatingPropagator.getInstance().setUpStandardDelegate(Collections.emptyList(), false);
     // TODO handle APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE
     DelegatingSampler.getInstance().setAlwaysOnDelegate();
-    logger.debug("Set connection string {} lazily for the Azure Function Consumption Plan.", value);
 
     // start app id retrieval after the connection string becomes available.
     appIdSupplier.startAppIdRetrieval();
@@ -106,10 +136,7 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
 
   void setWebsiteSiteName(@Nullable String websiteSiteName) {
     if (websiteSiteName != null && !websiteSiteName.isEmpty()) {
-      telemetryClient.setRoleName(websiteSiteName);
-      logger.debug(
-          "Set WEBSITE_SITE_NAME: {} lazily for the Azure Function Consumption Plan.",
-          websiteSiteName);
+      telemetryClient.updateRoleName(websiteSiteName);
     }
   }
 
@@ -117,8 +144,6 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
     if (loggingLevel == null || !loggingLevel.isEmpty()) {
       return;
     }
-
-    logger.debug("setting APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL to {}", loggingLevel);
 
     LoggingLevelConfigurator configurator;
     try {
@@ -135,7 +160,6 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
     // also need to update any previously created loggers
     List<ch.qos.logback.classic.Logger> loggerList = loggerContext.getLoggerList();
     loggerList.forEach(configurator::updateLoggerLevel);
-    logger.debug("self-diagnostics logging level has been updated.");
   }
 
   // since the agent is already running at this point, this really just determines whether the
@@ -143,7 +167,7 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
   // agent is not enabled)
   static boolean isAgentEnabled() {
     String enableAgent = System.getenv("APPLICATIONINSIGHTS_ENABLE_AGENT");
-    boolean enableAgentDefault = Boolean.parseBoolean(System.getProperty("LazySetOptIn"));
+    boolean enableAgentDefault = Boolean.getBoolean("LazySetOptIn");
     logger.debug("APPLICATIONINSIGHTS_ENABLE_AGENT: {}", enableAgent);
     logger.debug("LazySetOptIn: {}", enableAgentDefault);
     return isAgentEnabled(enableAgent, enableAgentDefault);
