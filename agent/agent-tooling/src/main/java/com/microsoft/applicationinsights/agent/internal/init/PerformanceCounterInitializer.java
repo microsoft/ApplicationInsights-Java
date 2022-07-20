@@ -123,7 +123,7 @@ public class PerformanceCounterInitializer {
           MDC.put(
               DiagnosticsHelper.MDC_MESSAGE_ID,
               String.valueOf(MessageIdConstants.JMX_METRIC_PERFORMANCE_COUNTER_ERROR));
-          logger.error("JMX name is empty for '{}', will be ignored '{}'", jmxElement.objectName);
+          logger.error("JMX name is empty for '{}', will be ignored", jmxElement.objectName);
           continue;
         }
 
