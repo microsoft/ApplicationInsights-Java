@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
@@ -179,7 +180,12 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
       try {
         activeRecordingFile = createJfrFile(duration);
 
-        RecordingOptions recordingOptions = recordingOptionsBuilder.build();
+        // As a fallback in case recording closing logic does not succeed, set the recording
+        // duration to the expected duration plus 60 seconds
+        Duration requestedDuration = duration.plus(60, ChronoUnit.SECONDS);
+
+        RecordingOptions recordingOptions =
+            recordingOptionsBuilder.duration(requestedDuration.toMillis() + " ms").build();
 
         this.activeRecording = createRecording(recordingOptions, recordingConfiguration);
 
@@ -273,15 +279,12 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
         LOGGER.error("Failed to close recording", e);
       } catch (JfrStreamingException e) {
         LOGGER.error("Internal JFR Error", e);
-      } finally {
-        try {
-          recording.stop();
-          recording.close();
-        } catch (IOException e) {
-          LOGGER.error("Failed to close recording", e);
-        } catch (JfrStreamingException e) {
-          LOGGER.error("Internal JFR Error", e);
-        }
+      }
+    } finally {
+      try {
+        recording.close();
+      } catch (IOException e) {
+        LOGGER.error("Failed to close recording", e);
       }
     }
   }
