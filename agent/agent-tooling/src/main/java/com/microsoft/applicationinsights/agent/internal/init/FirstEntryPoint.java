@@ -164,15 +164,13 @@ public class FirstEntryPoint implements LoggingCustomizer {
       StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success, startupLogger != null);
     } catch (Throwable t) {
       if (startupLogger != null) {
-        DiagnosticsHelper.logMessageId(
-            startupLogger,
-            Level.ERROR,
-            "Error writing status.json",
-            t,
-            MessageIdConstants.STATUS_FILE_RELATED_ERROR);
+        MDC.put(DiagnosticsHelper.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.STATUS_FILE_RELATED_ERROR));
+        startupLogger.error("Error writing status.json", t);
       } else {
         t.printStackTrace();
       }
+    } finally {
+      MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
     }
   }
 
