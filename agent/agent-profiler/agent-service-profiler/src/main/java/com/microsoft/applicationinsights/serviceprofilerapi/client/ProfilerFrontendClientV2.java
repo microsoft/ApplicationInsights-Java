@@ -78,9 +78,8 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
 
   /** Obtain permission to upload a profile to service profiler. */
   @Override
-  public Mono<BlobAccessPass> getUploadAccess(UUID profileId) {
-    URL requestUrl = uploadRequestUri(profileId);
-    LOGGER.debug("Etl upload access request: {}", requestUrl);
+  public Mono<BlobAccessPass> getUploadAccess(UUID profileId, String extension) {
+    URL requestUrl = uploadRequestUri(profileId, extension);
 
     return executePostWithRedirect(requestUrl)
         .map(
@@ -114,9 +113,10 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
 
   /** Report to Service Profiler that the profile upload has been completed. */
   @Override
-  public Mono<ArtifactAcceptedResponse> reportUploadFinish(UUID profileId, String etag) {
+  public Mono<ArtifactAcceptedResponse> reportUploadFinish(
+      UUID profileId, String extension, String etag) {
 
-    URL requestUrl = uploadFinishedRequestUrl(profileId, etag);
+    URL requestUrl = uploadFinishedRequestUrl(profileId, extension, etag);
 
     return executePostWithRedirect(requestUrl)
         .flatMap(
@@ -205,11 +205,11 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
   }
 
   // api/apps/{ikey}/artifactkinds/{artifactKind}/artifacts/{artifactId}?action=gettoken&extension={ext}&api-version=2020-10-14-preview
-  private URL uploadRequestUri(UUID profileId) {
+  private URL uploadRequestUri(UUID profileId, String extension) {
 
     StringBuilder path = new StringBuilder();
     appendBasePath(path, profileId);
-    appendBaseQueryString(path);
+    appendBaseQueryString(path, extension);
 
     path.append("&action=gettoken");
 
@@ -221,11 +221,11 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
   }
 
   // api/apps/{ikey}/artifactkinds/{artifactKind}/artifacts/{artifactId}?action=commit&extension={ext}&etag={ETag}&api-version=2020-10-14-preview
-  private URL uploadFinishedRequestUrl(UUID profileId, String etag) {
+  private URL uploadFinishedRequestUrl(UUID profileId, String extension, String etag) {
 
     StringBuilder path = new StringBuilder();
     appendBasePath(path, profileId);
-    appendBaseQueryString(path);
+    appendBaseQueryString(path, extension);
 
     path.append("&action=commit&etag=\"").append(etag).append("\"");
 
@@ -243,12 +243,12 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
         .append(profileId);
   }
 
-  private void appendBaseQueryString(StringBuilder path) {
+  private void appendBaseQueryString(StringBuilder path, String extension) {
     path.append("?")
         .append(INSTRUMENTATION_KEY_PARAMETER)
         .append("=")
         .append(instrumentationKey)
-        .append("&extension=jfr&api-version=")
+        .append("&extension=" + extension + "&api-version=")
         .append(API_FEATURE_VERSION);
   }
 }

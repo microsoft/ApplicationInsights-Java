@@ -15,6 +15,7 @@ dependencies {
   implementation(project(":agent:agent-profiler:agent-alerting"))
   implementation(project(":agent:agent-gc-monitor:gc-monitor-api"))
   implementation(project(":agent:agent-gc-monitor:gc-monitor-core"))
+  implementation(project(":agent:agent-profiler:agent-diagnostics-api"))
   implementation(project(":agent:azure-monitor-exporter")) {
     exclude("org.ow2.asm", "asm")
   }

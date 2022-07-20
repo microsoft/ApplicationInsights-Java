@@ -26,7 +26,6 @@ import com.microsoft.applicationinsights.profiler.Profiler;
 import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
 import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
-import com.microsoft.applicationinsights.profiler.uploader.UploadCompleteHandler;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerConfigMonitorService;
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrUploadService;
@@ -67,7 +66,6 @@ public class JfrProfilerService implements ProfilerService {
   @SuppressWarnings("unused")
   private final Profiler profiler;
 
-  private final UploadCompleteHandler uploadCompleteObserver;
   private final ScheduledExecutorService serviceProfilerExecutorService;
   private final ProfilerConfigurationHandler profilerConfigurationHandler;
 
@@ -80,7 +78,6 @@ public class JfrProfilerService implements ProfilerService {
       ServiceProfilerServiceConfig config,
       Profiler profiler,
       ProfilerConfigurationHandler profilerConfigurationHandler,
-      UploadCompleteHandler uploadCompleteObserver,
       ServiceProfilerClientV2 serviceProfilerClient,
       ServiceProfilerUploader serviceProfilerUploader,
       ScheduledExecutorService serviceProfilerExecutorService) {
@@ -90,7 +87,6 @@ public class JfrProfilerService implements ProfilerService {
     this.serviceProfilerClient = serviceProfilerClient;
     this.serviceProfilerUploader = serviceProfilerUploader;
     this.serviceProfilerExecutorService = serviceProfilerExecutorService;
-    this.uploadCompleteObserver = uploadCompleteObserver;
     this.profilerConfigurationHandler = profilerConfigurationHandler;
   }
 
@@ -105,8 +101,7 @@ public class JfrProfilerService implements ProfilerService {
 
     initialised = true;
 
-    profileHandler =
-        new JfrUploadService(serviceProfilerUploader, appIdSupplier, uploadCompleteObserver);
+    profileHandler = new JfrUploadService(serviceProfilerUploader, appIdSupplier);
 
     serviceProfilerExecutorService.submit(
         () -> {

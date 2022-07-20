@@ -63,6 +63,11 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     instrumentationList.add(instrumentation);
   }
 
+  // this is used by ByteCodeUtil
+  public void track2xBridgeUsage() {
+    featureList.add(Feature.SDK_2X_BRIDGE_VIA_3X_AGENT);
+  }
+
   @Override
   protected void send(TelemetryClient telemetryClient) {
     long encodedLong;
@@ -171,6 +176,9 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     }
     if (!config.preview.processors.isEmpty()) {
       featureList.add(Feature.TELEMETRY_PROCESSOR_ENABLED);
+    }
+    if (config.preview.profiler.enabled) {
+      featureList.add(Feature.PROFILER_ENABLED);
     }
 
     // customDimensions

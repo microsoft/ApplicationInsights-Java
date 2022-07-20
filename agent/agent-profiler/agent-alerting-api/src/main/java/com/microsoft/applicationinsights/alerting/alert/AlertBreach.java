@@ -39,15 +39,22 @@ public class AlertBreach {
   // MEMORY usage at the time of the breach
   private final double memoryUsage;
 
+  // Unique ID for profile/breach
+  private final String profileId;
+
   public AlertBreach(
-      AlertMetricType type, double alertValue, AlertConfiguration alertConfiguration) {
-    this(type, alertValue, alertConfiguration, 0, 0);
+      AlertMetricType type,
+      double alertValue,
+      AlertConfiguration alertConfiguration,
+      String profileId) {
+    this(type, alertValue, alertConfiguration, profileId, 0, 0);
   }
 
   public AlertBreach(
       AlertMetricType type,
       double alertValue,
       AlertConfiguration alertConfiguration,
+      String profileId,
       double cpuUsage,
       double memoryUsage) {
     this.type = type;
@@ -55,6 +62,7 @@ public class AlertBreach {
     this.alertConfiguration = alertConfiguration;
     this.cpuUsage = cpuUsage;
     this.memoryUsage = memoryUsage;
+    this.profileId = profileId;
   }
 
   public AlertConfiguration getAlertConfiguration() {
@@ -70,11 +78,11 @@ public class AlertBreach {
   }
 
   public AlertBreach withCpuMetric(double cpuUsage) {
-    return new AlertBreach(type, alertValue, alertConfiguration, cpuUsage, memoryUsage);
+    return new AlertBreach(type, alertValue, alertConfiguration, profileId, cpuUsage, memoryUsage);
   }
 
   public AlertBreach withMemoryMetric(double memoryUsage) {
-    return new AlertBreach(type, alertValue, alertConfiguration, cpuUsage, memoryUsage);
+    return new AlertBreach(type, alertValue, alertConfiguration, profileId, cpuUsage, memoryUsage);
   }
 
   public String getTriggerName() {
@@ -87,5 +95,9 @@ public class AlertBreach {
 
   public double getMemoryUsage() {
     return memoryUsage;
+  }
+
+  public String getProfileId() {
+    return profileId;
   }
 }

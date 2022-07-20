@@ -100,6 +100,7 @@ public class AzureMonitorExportersTest extends MonitorExporterClientTestBase {
     Assertions.assertTrue(export.isSuccess());
   }
 
+  @Test
   public void testBuildLogExporter() {
     AzureMonitorLogExporter azureMonitorLogExporter =
         getClientBuilder().connectionString(TRACE_CONNECTION_STRING).buildLogExporter();

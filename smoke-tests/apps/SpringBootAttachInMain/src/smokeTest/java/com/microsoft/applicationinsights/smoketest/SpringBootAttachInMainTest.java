@@ -31,6 +31,8 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JA
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -50,6 +52,10 @@ abstract class SpringBootAttachInMainTest {
     assertThat(telemetry.rd.getSource()).isNull();
     assertThat(telemetry.rd.getProperties()).isEmpty();
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
+
+    assertThat(telemetry.rdEnvelope.getTags())
+        .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("ra_java:3."));
+
   }
 
   @Environment(JAVA_8)

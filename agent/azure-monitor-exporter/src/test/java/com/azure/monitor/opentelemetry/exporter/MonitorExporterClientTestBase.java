@@ -24,8 +24,11 @@ package com.azure.monitor.opentelemetry.exporter;
 import com.azure.core.http.HttpClient;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpPipelineBuilder;
+import com.azure.core.test.InterceptorManager;
 import com.azure.core.test.TestBase;
+import com.azure.core.test.TestContextManager;
 import com.azure.core.test.TestMode;
+import com.azure.core.test.utils.TestResourceNamer;
 import com.azure.core.util.Configuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorBase;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
@@ -42,9 +45,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
 
 /** Base test class for Monitor Exporter client tests */
 public class MonitorExporterClientTestBase extends TestBase {
+
+  @Override
+  @BeforeEach
+  public void setupTest(TestInfo testInfo) {
+    this.testContextManager =
+        new TestContextManager(testInfo.getTestMethod().get(), TestMode.PLAYBACK);
+    interceptorManager =
+        new InterceptorManager(
+            testContextManager.getTestName(),
+            new HashMap<>(),
+            testContextManager.doNotRecordTest(),
+            "regularTelemetryPlayback");
+    testResourceNamer =
+        new TestResourceNamer(testContextManager, interceptorManager.getRecordedData());
+    beforeTest();
+  }
 
   AzureMonitorExporterBuilder getClientBuilder() {
     HttpClient httpClient;
