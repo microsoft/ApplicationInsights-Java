@@ -23,7 +23,6 @@ package com.azure.monitor.opentelemetry.exporter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.azure.core.http.HttpPipelineCallContext;
 import com.azure.core.http.HttpPipelineNextPolicy;
