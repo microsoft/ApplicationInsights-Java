@@ -80,7 +80,6 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
         if (!suppressWarningsOnRetryableFailures) {
           operationLogger.recordFailure(
               getErrorMessageFromCredentialRelatedResponse(responseCode, response.getBody()));
-        } else {
         }
         break;
       case 408: // REQUEST TIMEOUT
