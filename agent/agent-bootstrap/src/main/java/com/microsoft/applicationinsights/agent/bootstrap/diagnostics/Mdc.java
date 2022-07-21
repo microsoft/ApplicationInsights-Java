@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics;
 
+import org.slf4j.MDC;
+
 // JAVA reserves message id for App Service Diagnostics Logs from 2000 - 2999
 // Reserve messageId 2000 - 2099 for java agent
 public enum Mdc {
@@ -41,15 +43,11 @@ public enum Mdc {
     this.value = value;
   }
 
-  public String getKey() {
-    return key;
-  }
-
   public String getValue() {
     return value;
   }
 
   public MdcScope makeActive() {
-    return new MdcScope(org.slf4j.MDC.putCloseable(key, value));
+    return new MdcScope(MDC.putCloseable(key, value));
   }
 }

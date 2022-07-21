@@ -21,11 +21,13 @@
 
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics;
 
+import org.slf4j.MDC;
+
 public class MdcScope implements AutoCloseable {
 
   private final org.slf4j.MDC.MDCCloseable delegate;
 
-  MdcScope(org.slf4j.MDC.MDCCloseable delegate) {
+  MdcScope(MDC.MDCCloseable delegate) {
     this.delegate = delegate;
   }
 
