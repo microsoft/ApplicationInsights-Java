@@ -23,6 +23,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -41,6 +42,8 @@ public final class CpuPerformanceCounterCalculator {
 
   private ObjectName osBean;
 
+  private static final AtomicInteger maxExceptionThrown = new AtomicInteger();
+
   // this is not normalized by number of cores, so can be 800% with 8 cores
   @Nullable
   public Double getCpuPercentage() {
@@ -57,6 +60,9 @@ public final class CpuPerformanceCounterCalculator {
       }
       prevUpTime = upTime;
       prevProcessCpuTime = processCpuTime;
+      if (maxExceptionThrown.getAndIncrement() < 5) {
+        throw new IllegalArgumentException("testing cpu perf counter exception");
+      }
       return null;
     } catch (Exception e) {
       try (AzureMonitorMdcScope ignored =
