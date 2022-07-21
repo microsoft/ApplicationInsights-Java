@@ -21,13 +21,13 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.builders;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMessageIdConstants;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdc;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdcScope;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 final class TelemetryTruncation {
 
@@ -43,16 +43,14 @@ final class TelemetryTruncation {
     if (alreadyLoggedAttributeNames.add(attributeName)) {
       // this can be expected, so don't want to flood the logs with a lot of these
       // (and don't want to log the full value, e.g. sql text > 8192 characters)
-      MDC.put(
-          AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
-          String.valueOf(AzureMonitorMessageIdConstants.TELEMETRY_TRUNCATION_ERROR));
-      logger.warn(
-          "truncated {} attribute value to {} characters (this message will only be logged once"
-              + " per attribute name): {}",
-          attributeName,
-          maxLength,
-          trimTo80(value));
-      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
+      try (AzureMonitorMdcScope ignored = AzureMonitorMdc.TELEMETRY_TRUNCATION_ERROR.makeActive()) {
+        logger.warn(
+            "truncated {} attribute value to {} characters (this message will only be logged once"
+                + " per attribute name): {}",
+            attributeName,
+            maxLength,
+            trimTo80(value));
+      }
     }
     logger.debug(
         "truncated {} attribute value to {} characters: {}", attributeName, maxLength, value);
@@ -65,16 +63,14 @@ final class TelemetryTruncation {
     }
     if (alreadyLoggedPropertyKeys.size() < 10 && alreadyLoggedPropertyKeys.add(propertyKey)) {
       // this can be expected, so don't want to flood the logs with a lot of these
-      MDC.put(
-          AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
-          String.valueOf(AzureMonitorMessageIdConstants.TELEMETRY_TRUNCATION_ERROR));
-      logger.warn(
-          "truncated {} property value to {} characters (this message will only be logged once"
-              + " per property key, and only for at most 10 different property keys): {}",
-          propertyKey,
-          maxLength,
-          trimTo80(value));
-      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
+      try (AzureMonitorMdcScope ignored = AzureMonitorMdc.TELEMETRY_TRUNCATION_ERROR.makeActive()) {
+        logger.warn(
+            "truncated {} property value to {} characters (this message will only be logged once"
+                + " per property key, and only for at most 10 different property keys): {}",
+            propertyKey,
+            maxLength,
+            trimTo80(value));
+      }
     }
     logger.debug("truncated {} property value to {} characters: {}", propertyKey, maxLength, value);
     return value.substring(0, maxLength);

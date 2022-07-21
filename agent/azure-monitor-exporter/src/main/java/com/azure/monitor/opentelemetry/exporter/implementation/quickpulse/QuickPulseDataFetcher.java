@@ -25,7 +25,8 @@ import com.azure.core.http.HttpRequest;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model.QuickPulseEnvelope;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model.QuickPulseMetrics;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.util.CustomCharacterEscapes;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMessageIdConstants;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdc;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdcScope;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,7 +39,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 class QuickPulseDataFetcher {
 
@@ -112,26 +112,22 @@ class QuickPulseDataFetcher {
       request.setBody(buildPostEntity(counters));
 
       if (!sendQueue.offer(request)) {
-        MDC.put(
-            AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
-            String.valueOf(AzureMonitorMessageIdConstants.QUICK_PULSE_SEND_ERROR));
-        logger.trace("Quick Pulse send queue is full");
+        try (AzureMonitorMdcScope ignored = AzureMonitorMdc.QUICK_PULSE_SEND_ERROR.makeActive()) {
+          logger.trace("Quick Pulse send queue is full");
+        }
       }
     } catch (ThreadDeath td) {
       throw td;
     } catch (Throwable e) {
       try {
-        MDC.put(
-            AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
-            String.valueOf(AzureMonitorMessageIdConstants.QUICK_PULSE_SEND_ERROR));
-        logger.error("Quick Pulse failed to prepare data for send", e);
+        try (AzureMonitorMdcScope ignored = AzureMonitorMdc.QUICK_PULSE_SEND_ERROR.makeActive()) {
+          logger.error("Quick Pulse failed to prepare data for send", e);
+        }
       } catch (ThreadDeath td) {
         throw td;
       } catch (Throwable t2) {
         // chomp
       }
-    } finally {
-      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     }
   }
 

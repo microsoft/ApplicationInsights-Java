@@ -31,7 +31,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 // naming convention:
 // * MonitorDomain data
@@ -168,11 +167,9 @@ public class TelemetryUtil {
     if (samplingPercentageStr == null) {
       if (warnOnMissing && !alreadyLoggedSamplingPercentageMissing.getAndSet(true)) {
         // sampler should have set the trace state
-        MDC.put(
-            AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
-            String.valueOf(AzureMonitorMessageIdConstants.SAMPLING_ERROR));
-        logger.warn("did not find sampling percentage in trace state: {}", traceState);
-        MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
+        try (AzureMonitorMdcScope ignored = AzureMonitorMdc.SAMPLING_ERROR.makeActive()) {
+          logger.warn("did not find sampling percentage in trace state: {}", traceState);
+        }
       }
       return defaultValue;
     }
@@ -187,14 +184,11 @@ public class TelemetryUtil {
             return OptionalFloat.of(Float.parseFloat(str));
           } catch (NumberFormatException e) {
             if (!alreadyLoggedSamplingPercentageParseError.getAndSet(true)) {
-              MDC.put(
-                  AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
-                  String.valueOf(AzureMonitorMessageIdConstants.SAMPLING_ERROR));
-              logger.warn("error parsing sampling percentage trace state: {}", str, e);
+              try (AzureMonitorMdcScope ignored = AzureMonitorMdc.SAMPLING_ERROR.makeActive()) {
+                logger.warn("error parsing sampling percentage trace state: {}", str, e);
+              }
             }
             return OptionalFloat.empty();
-          } finally {
-            MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
           }
         });
   }

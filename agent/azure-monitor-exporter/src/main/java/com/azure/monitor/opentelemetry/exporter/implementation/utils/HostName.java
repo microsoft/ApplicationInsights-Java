@@ -26,7 +26,6 @@ import java.net.UnknownHostException;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 public class HostName {
 
@@ -45,13 +44,10 @@ public class HostName {
       InetAddress addr = InetAddress.getLocalHost();
       return addr.getHostName();
     } catch (UnknownHostException ex) {
-      MDC.put(
-          AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
-          String.valueOf(AzureMonitorMessageIdConstants.HOSTNAME_ERROR));
-      logger.warn("Error resolving hostname", ex);
+      try (AzureMonitorMdcScope ignored = AzureMonitorMdc.HOSTNAME_ERROR.makeActive()) {
+        logger.warn("Error resolving hostname", ex);
+      }
       return null;
-    } finally {
-      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     }
   }
 

@@ -33,7 +33,8 @@ import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model.
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model.QuickPulseDocument;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model.QuickPulseExceptionDocument;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model.QuickPulseRequestDocument;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMessageIdConstants;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdc;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdcScope;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.CpuPerformanceCounterCalculator;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -50,7 +51,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 final class QuickPulseDataCollector {
 
@@ -81,20 +81,17 @@ final class QuickPulseDataCollector {
       throw td;
     } catch (Throwable t) {
       try {
-        MDC.put(
-            AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
-            String.valueOf(AzureMonitorMessageIdConstants.QUICK_PULSE_SEND_ERROR));
-        LoggerFactory.getLogger(QuickPulseDataCollector.class)
-            .error(
-                "Could not initialize {}",
-                CpuPerformanceCounterCalculator.class.getSimpleName(),
-                t);
+        try (AzureMonitorMdcScope ignored = AzureMonitorMdc.QUICK_PULSE_SEND_ERROR.makeActive()) {
+          LoggerFactory.getLogger(QuickPulseDataCollector.class)
+              .error(
+                  "Could not initialize {}",
+                  CpuPerformanceCounterCalculator.class.getSimpleName(),
+                  t);
+        }
       } catch (ThreadDeath td) {
         throw td;
       } catch (Throwable t2) {
         // chomp
-      } finally {
-        MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
       }
       return null;
     }

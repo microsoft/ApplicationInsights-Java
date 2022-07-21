@@ -27,7 +27,7 @@ import ch.qos.logback.classic.spi.ThrowableProxyUtil;
 import ch.qos.logback.core.AppenderBase;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.ApplicationMetadataFactory;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageIdConstants;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Mdc;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.IpaError;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.IpaInfo;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.IpaVerbose;
@@ -56,7 +56,7 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
   public void start() {
     IpaVerbose event = new IpaVerbose(proto);
     event.setMessageFormat("EtwProvider initialized successfully.");
-    event.setMessageId(String.valueOf(MessageIdConstants.ETW_INITIALIZATION_SUCCESS));
+    event.setMessageId(Mdc.INITIALIZATION_SUCCESS.getValue());
     try {
       this.etwProvider.writeEvent(event);
     } catch (LinkageError | ApplicationInsightsEtwException e) {

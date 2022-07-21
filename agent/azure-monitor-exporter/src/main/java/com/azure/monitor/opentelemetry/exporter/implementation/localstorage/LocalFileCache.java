@@ -21,7 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMessageIdConstants;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdc;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdcScope;
 import java.io.File;
 import java.util.Comparator;
 import java.util.Date;
@@ -32,7 +33,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 class LocalFileCache {
 
@@ -80,24 +80,21 @@ class LocalFileCache {
     String name = file.getName();
     int index = name.indexOf('-');
     if (index == -1) {
-      MDC.put(
-          AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
-          String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
-      logger.debug("unexpected .trn file name: {}", name);
-      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
+      try (AzureMonitorMdcScope ignored =
+          AzureMonitorMdc.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
+        logger.debug("unexpected .trn file name: {}", name);
+      }
       return true;
     }
     long timestamp;
     try {
       timestamp = Long.parseLong(name.substring(0, index));
     } catch (NumberFormatException e) {
-      MDC.put(
-          AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
-          String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
-      logger.debug("unexpected .trn file name: {}", name);
+      try (AzureMonitorMdcScope ignored =
+          AzureMonitorMdc.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
+        logger.debug("unexpected .trn file name: {}", name);
+      }
       return true;
-    } finally {
-      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     }
     Date expirationDate = new Date(System.currentTimeMillis() - 1000 * expiredIntervalSeconds);
     Date fileDate = new Date(timestamp);

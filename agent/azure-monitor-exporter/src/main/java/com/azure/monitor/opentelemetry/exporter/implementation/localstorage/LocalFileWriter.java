@@ -24,14 +24,14 @@ package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMessageIdConstants;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdc;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdcScope;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.List;
-import org.slf4j.MDC;
 
 /** This class manages writing a list of {@link ByteBuffer} to the file system. */
 final class LocalFileWriter {
@@ -67,14 +67,13 @@ final class LocalFileWriter {
   void writeToDisk(String instrumentationKey, List<ByteBuffer> buffers) {
     long size = getTotalSizeOfPersistedFiles(telemetryFolder);
     if (size >= diskPersistenceMaxSizeBytes) {
-      MDC.put(
-          AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
-          String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
-      operationLogger.recordFailure(
-          "Local persistent storage capacity has been reached. It's currently at ("
-              + (size / 1024)
-              + "KB). Telemetry will be lost.");
-      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
+      try (AzureMonitorMdcScope ignored =
+          AzureMonitorMdc.DISK_PERSISTENCE_WRITE_ERROR.makeActive()) {
+        operationLogger.recordFailure(
+            "Local persistent storage capacity has been reached. It's currently at ("
+                + (size / 1024)
+                + "KB). Telemetry will be lost.");
+      }
       stats.incrementWriteFailureCount();
       return;
     }
@@ -83,28 +82,24 @@ final class LocalFileWriter {
     try {
       tempFile = createTempFile(telemetryFolder);
     } catch (IOException e) {
-      MDC.put(
-          AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
-          String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
-      operationLogger.recordFailure(
-          "Error creating file in directory: " + telemetryFolder.getAbsolutePath(), e);
+      try (AzureMonitorMdcScope ignored =
+          AzureMonitorMdc.DISK_PERSISTENCE_WRITE_ERROR.makeActive()) {
+        operationLogger.recordFailure(
+            "Error creating file in directory: " + telemetryFolder.getAbsolutePath(), e);
+      }
       stats.incrementWriteFailureCount();
       return;
-    } finally {
-      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     }
 
     try {
       write(tempFile, buffers, instrumentationKey);
     } catch (IOException e) {
-      MDC.put(
-          AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
-          String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
-      operationLogger.recordFailure("Error writing file: " + tempFile.getAbsolutePath(), e);
+      try (AzureMonitorMdcScope ignored =
+          AzureMonitorMdc.DISK_PERSISTENCE_WRITE_ERROR.makeActive()) {
+        operationLogger.recordFailure("Error writing file: " + tempFile.getAbsolutePath(), e);
+      }
       stats.incrementWriteFailureCount();
       return;
-    } finally {
-      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     }
 
     File permanentFile;
@@ -113,14 +108,12 @@ final class LocalFileWriter {
           new File(telemetryFolder, FileUtil.getBaseName(tempFile) + PERMANENT_FILE_EXTENSION);
       FileUtil.moveFile(tempFile, permanentFile);
     } catch (IOException e) {
-      MDC.put(
-          AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
-          String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
-      operationLogger.recordFailure("Error renaming file: " + tempFile.getAbsolutePath(), e);
+      try (AzureMonitorMdcScope ignored =
+          AzureMonitorMdc.DISK_PERSISTENCE_WRITE_ERROR.makeActive()) {
+        operationLogger.recordFailure("Error renaming file: " + tempFile.getAbsolutePath(), e);
+      }
       stats.incrementWriteFailureCount();
       return;
-    } finally {
-      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     }
 
     localFileCache.addPersistedFile(permanentFile);

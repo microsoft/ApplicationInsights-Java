@@ -28,7 +28,6 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 public final class CpuPerformanceCounterCalculator {
 
@@ -60,14 +59,12 @@ public final class CpuPerformanceCounterCalculator {
       prevProcessCpuTime = processCpuTime;
       return null;
     } catch (Exception e) {
-      MDC.put(
-          AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
-          String.valueOf(AzureMonitorMessageIdConstants.CPU_PERFORMANCE_COUNTER_ERROR));
-      logger.error("Error in getProcessCPUUsage");
+      try (AzureMonitorMdcScope ignored =
+          AzureMonitorMdc.CPU_PERFORMANCE_COUNTER_ERROR.makeActive()) {
+        logger.error("Error in getProcessCPUUsage");
+      }
       logger.trace("Error in getProcessCPUUsage", e);
       return null;
-    } finally {
-      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     }
   }
 

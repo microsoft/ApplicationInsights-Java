@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.agent.bootstrap.diagnostics;
 // JAVA reserves message id for App Service Diagnostics Logs from 2000 - 2999
 // Reserve messageId 2000 - 2099 for java agent
 public enum Mdc {
-  ETW_INITIALIZATION_SUCCESS("messageId", "2000"),
+  INITIALIZATION_SUCCESS("messageId", "2000"),
   FREE_PHYSICAL_MEMORY_SIZE_ERROR("messageId", "2001"),
   JMX_METRIC_PERFORMANCE_COUNTER_ERROR("messageId", "2002"),
   FAIL_TO_SEND_STATSBEAT_ERROR("messageId", "2003"),
@@ -39,6 +39,14 @@ public enum Mdc {
   Mdc(String key, String value) {
     this.key = key;
     this.value = value;
+  }
+
+  public String getKey() {
+    return key;
+  }
+
+  public String getValue() {
+    return value;
   }
 
   public MdcScope makeActive() {

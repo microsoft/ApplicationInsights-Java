@@ -19,20 +19,20 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.bootstrap.diagnostics;
+package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
-// JAVA reserves message id for App Service Diagnostics Logs from 2000 - 2999
-// Reserve messageId 2000 - 2099 for java agent
-public final class MessageIdConstants {
+import org.slf4j.MDC;
 
-  public static final int ETW_INITIALIZATION_SUCCESS = 2000;
-  public static final int FREE_PHYSICAL_MEMORY_SIZE_ERROR = 2001;
-  public static final int JMX_METRIC_PERFORMANCE_COUNTER_ERROR = 2002;
-  public static final int FAIL_TO_SEND_STATSBEAT_ERROR = 2003;
-  public static final int CONFIGURATION_RELATED_ERROR = 2004;
-  public static final int OSHI_RELATED_ERROR = 2005;
-  public static final int STATUS_FILE_RELATED_ERROR = 2006;
-  public static final int APP_ID_ERROR = 2007;
+public class AzureMonitorMdcScope implements AutoCloseable {
 
-  private MessageIdConstants() {}
+  private final MDC.MDCCloseable delegate;
+
+  AzureMonitorMdcScope(MDC.MDCCloseable delegate) {
+    this.delegate = delegate;
+  }
+
+  @Override
+  public void close() {
+    delegate.close();
+  }
 }

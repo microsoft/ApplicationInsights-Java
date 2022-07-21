@@ -21,23 +21,33 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
+import org.slf4j.MDC;
+
+// JAVA reserves message id for App Service Diagnostics Logs from 2000 - 2999
 // Reserve messageId 2100 - 2200 for Azure Monitor Exporter
-public final class AzureMonitorMessageIdConstants {
+public enum AzureMonitorMdc {
+  QUICK_PULSE_PING_ERROR("messageId", "2100"),
+  QUICK_PULSE_SEND_ERROR("messageId", "2101"),
+  DISK_PERSISTENCE_READ_ERROR("messageId", "2102"),
+  DISK_PERSISTENCE_WRITE_ERROR("messageId", "2103"),
+  DISK_PERSISTENCE_PURGE_ERROR("messageId", "2104"),
+  NETWORK_FAILURE_ERROR("messageId", "2105"),
+  TELEMETRY_INTERNAL_SEND_ERROR("messageId", "2106"),
+  HEARTBEAT_SEND_ERROR("messageId", "2107"),
+  TELEMETRY_TRUNCATION_ERROR("messageId", "2108"),
+  CPU_PERFORMANCE_COUNTER_ERROR("messageId", "2109"),
+  SAMPLING_ERROR("messageId", "2110"),
+  HOSTNAME_ERROR("messageId", "2111");
 
-  public static final String MDC_MESSAGE_ID = "messageId";
+  private final String key;
+  private final String value;
 
-  public static final int QUICK_PULSE_PING_ERROR = 2100;
-  public static final int QUICK_PULSE_SEND_ERROR = 2101;
-  public static final int DISK_PERSISTENCE_READ_ERROR = 2102;
-  public static final int DISK_PERSISTENCE_WRITE_ERROR = 2103;
-  public static final int DISK_PERSISTENCE_PURGE_ERROR = 2104;
-  public static final int NETWORK_FAILURE_ERROR = 2105;
-  public static final int TELEMETRY_INTERNAL_SEND_ERROR = 2106;
-  public static final int HEARTBEAT_SEND_ERROR = 2107;
-  public static final int TELEMETRY_TRUNCATION_ERROR = 2108;
-  public static final int CPU_PERFORMANCE_COUNTER_ERROR = 2109;
-  public static final int SAMPLING_ERROR = 2110;
-  public static final int HOSTNAME_ERROR = 2111;
+  AzureMonitorMdc(String key, String value) {
+    this.key = key;
+    this.value = value;
+  }
 
-  private AzureMonitorMessageIdConstants() {}
+  public AzureMonitorMdcScope makeActive() {
+    return new AzureMonitorMdcScope(MDC.putCloseable(key, value));
+  }
 }

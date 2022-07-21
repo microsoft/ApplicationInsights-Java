@@ -25,7 +25,8 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineRequest;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineResponse;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMessageIdConstants;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdc;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdcScope;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,7 +36,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineListener {
 
@@ -58,53 +58,50 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
   @Override
   public void onResponse(TelemetryPipelineRequest request, TelemetryPipelineResponse response) {
     int responseCode = response.getStatusCode();
-    MDC.put(
-        AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
-        String.valueOf(AzureMonitorMessageIdConstants.NETWORK_FAILURE_ERROR));
-    switch (responseCode) {
-      case 200: // SUCCESS
-        MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
-        operationLogger.recordSuccess();
-        break;
-      case 206: // PARTIAL CONTENT, Breeze-specific: PARTIAL SUCCESS
-      case 400: // breeze returns if json content is bad (e.g. missing required field)
-        operationLogger.recordFailure(
-            getErrorMessageFromPartialSuccessResponse(response.getBody(), responseCode));
-        break;
-      case 307:
-      case 308:
-        operationLogger.recordFailure("Too many redirects");
-        break;
-      case 401: // breeze returns if aad enabled and no authentication token provided
-      case 403: // breeze returns if aad enabled or disabled (both cases) and
-        if (!suppressWarningsOnRetryableFailures) {
+    try (AzureMonitorMdcScope ignored = AzureMonitorMdc.NETWORK_FAILURE_ERROR.makeActive()) {
+      switch (responseCode) {
+        case 200: // SUCCESS
+          operationLogger.recordSuccess();
+          break;
+        case 206: // PARTIAL CONTENT, Breeze-specific: PARTIAL SUCCESS
+        case 400: // breeze returns if json content is bad (e.g. missing required field)
           operationLogger.recordFailure(
-              getErrorMessageFromCredentialRelatedResponse(responseCode, response.getBody()));
-        }
-        break;
-      case 408: // REQUEST TIMEOUT
-      case 429: // TOO MANY REQUESTS
-      case 500: // INTERNAL SERVER ERROR
-      case 503: // SERVICE UNAVAILABLE
-        if (!suppressWarningsOnRetryableFailures) {
+              getErrorMessageFromPartialSuccessResponse(response.getBody(), responseCode));
+          break;
+        case 307:
+        case 308:
+          operationLogger.recordFailure("Too many redirects");
+          break;
+        case 401: // breeze returns if aad enabled and no authentication token provided
+        case 403: // breeze returns if aad enabled or disabled (both cases) and
+          if (!suppressWarningsOnRetryableFailures) {
+            operationLogger.recordFailure(
+                getErrorMessageFromCredentialRelatedResponse(responseCode, response.getBody()));
+          }
+          break;
+        case 408: // REQUEST TIMEOUT
+        case 429: // TOO MANY REQUESTS
+        case 500: // INTERNAL SERVER ERROR
+        case 503: // SERVICE UNAVAILABLE
+          if (!suppressWarningsOnRetryableFailures) {
+            operationLogger.recordFailure(
+                "Received response code "
+                    + responseCode
+                    + " (telemetry will be stored to disk and retried later)");
+          }
+          break;
+        case 402: // Breeze-specific: New Daily Quota Exceeded
           operationLogger.recordFailure(
-              "Received response code "
-                  + responseCode
-                  + " (telemetry will be stored to disk and retried later)");
-        }
-        break;
-      case 402: // Breeze-specific: New Daily Quota Exceeded
-        operationLogger.recordFailure(
-            "Received response code 402 (daily quota exceeded and throttled over extended time)");
-        break;
-      case 439: // Breeze-specific: Deprecated Daily Quota Exceeded
-        operationLogger.recordFailure(
-            "Received response code 439 (daily quota exceeded and throttled over extended time)");
-        break;
-      default:
-        operationLogger.recordFailure("received response code: " + responseCode);
+              "Received response code 402 (daily quota exceeded and throttled over extended time)");
+          break;
+        case 439: // Breeze-specific: Deprecated Daily Quota Exceeded
+          operationLogger.recordFailure(
+              "Received response code 439 (daily quota exceeded and throttled over extended time)");
+          break;
+        default:
+          operationLogger.recordFailure("received response code: " + responseCode);
+      }
     }
-    MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
   }
 
   @Override
