@@ -75,7 +75,6 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
     super.start();
   }
 
-  @SuppressWarnings("SystemOut")
   @Override
   protected void append(ILoggingEvent logEvent) {
     String logger = logEvent.getLoggerName();
@@ -117,8 +116,6 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
 
       String messageId = mdcPropertyMap.get(DiagnosticsHelper.MDC_MESSAGE_ID);
       if (messageId != null && !messageId.isEmpty()) {
-        // TODO to be deleted
-        System.out.println("### messageId: " + messageId);
         event.setMessageId(messageId);
       }
     }
