@@ -51,6 +51,8 @@ public final class CpuPerformanceCounterCalculator {
       if (prevUpTime > 0L && upTime > prevUpTime) {
         long elapsedCpu = processCpuTime - prevProcessCpuTime;
         long elapsedTime = upTime - prevUpTime;
+        prevUpTime = upTime;
+        prevProcessCpuTime = processCpuTime;
         // if this looks weird, here's another way to write it:
         // (elapsedCpu / 1000000.0) / elapsedTime / 100.0
         return elapsedCpu / (elapsedTime * 10_000.0);
