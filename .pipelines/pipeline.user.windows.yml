@@ -26,19 +26,19 @@ restore:
       name: 'Download Dependencies and Java Toolchain (Java 11)'
       command: '.scripts/gradle.cmd'
       arguments: 'test clean'
-test:
-  commands:
-    - !!testcommand
-      name: 'Run tests'
-      command: '.scripts/gradle.cmd'
-      arguments: 'test'
-      fail_on_stderr: false
-      testresults:
-        - title: ':Unit Test Results'
-          type: 'junit'
-          include:
-            - '**/build/test-results/test/**/*'
-      logs:
-        - to: 'Test Logs'
-          include:
-            - '**/build/reports/tests/**/*'
+#test:
+#  commands:
+#    - !!testcommand
+#      name: 'Run tests'
+#      command: '.scripts/gradle.cmd'
+#      arguments: 'test'
+#      fail_on_stderr: false
+#      testresults:
+#        - title: ':Unit Test Results'
+#          type: 'junit'
+#          include:
+#            - '**/build/test-results/test/**/*'
+#      logs:
+#        - to: 'Test Logs'
+#          include:
+#            - '**/build/reports/tests/**/*'
