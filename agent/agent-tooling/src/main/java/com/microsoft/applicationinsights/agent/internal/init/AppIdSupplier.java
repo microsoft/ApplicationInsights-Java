@@ -31,8 +31,8 @@ import com.azure.monitor.opentelemetry.exporter.implementation.logging.NetworkFr
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.WarningLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.bootstrap.AiAppId;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageIdConstants;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Mdc;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MdcScope;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.net.MalformedURLException;
@@ -43,7 +43,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 // note: app id is used by distributed trace headers and (soon) jfr profiling
 public class AppIdSupplier implements AiAppId.Supplier {
@@ -78,11 +77,10 @@ public class AppIdSupplier implements AiAppId.Supplier {
     try {
       newTask = new GetAppIdTask(getAppIdUrl(connectionString));
     } catch (MalformedURLException e) {
-      MDC.put(DiagnosticsHelper.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.APP_ID_ERROR));
-      logger.warn(e.getMessage(), e);
+      try (MdcScope ignored = Mdc.APP_ID_ERROR.makeActive()) {
+        logger.warn(e.getMessage(), e);
+      }
       return;
-    } finally {
-      MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
     }
     synchronized (taskLock) {
       appId = null;
@@ -114,9 +112,9 @@ public class AppIdSupplier implements AiAppId.Supplier {
     // this case, just
     // return and let the next request resolve the ikey.
     if (appId == null) {
-      MDC.put(DiagnosticsHelper.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.APP_ID_ERROR));
-      logger.debug("appId has not been retrieved yet (e.g. task may be pending or failed)");
-      MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
+      try (MdcScope ignored = Mdc.APP_ID_ERROR.makeActive()) {
+        logger.debug("appId has not been retrieved yet (e.g. task may be pending or failed)");
+      }
       return "";
     }
     return appId;
@@ -146,15 +144,14 @@ public class AppIdSupplier implements AiAppId.Supplier {
       try {
         response = LazyHttpClient.getInstance().send(request).block();
       } catch (RuntimeException ex) {
-        MDC.put(DiagnosticsHelper.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.APP_ID_ERROR));
         if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
             ex, url.toString(), friendlyExceptionThrown, logger)) {
-          warningLogger.recordWarning("exception sending request to " + url, ex);
+          try (MdcScope ignored = Mdc.APP_ID_ERROR.makeActive()) {
+            warningLogger.recordWarning("exception sending request to " + url, ex);
+          }
         }
         backOff();
         return;
-      } finally {
-        MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
       }
 
       if (response == null) {
@@ -165,19 +162,19 @@ public class AppIdSupplier implements AiAppId.Supplier {
       String body = response.getBodyAsString().block();
       int statusCode = response.getStatusCode();
       if (statusCode != 200) {
-        MDC.put(DiagnosticsHelper.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.APP_ID_ERROR));
-        warningLogger.recordWarning(
-            "received " + statusCode + " from " + url + "\nfull response:\n" + body, null);
-        MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
+        try (MdcScope ignored = Mdc.APP_ID_ERROR.makeActive()) {
+          warningLogger.recordWarning(
+              "received " + statusCode + " from " + url + "\nfull response:\n" + body, null);
+        }
         backOff();
         return;
       }
 
       // check for case when breeze returns invalid value
       if (body == null || body.isEmpty()) {
-        MDC.put(DiagnosticsHelper.MDC_MESSAGE_ID, String.valueOf(MessageIdConstants.APP_ID_ERROR));
-        warningLogger.recordWarning("received empty body from " + url, null);
-        MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
+        try (MdcScope ignored = Mdc.APP_ID_ERROR.makeActive()) {
+          warningLogger.recordWarning("received empty body from " + url, null);
+        }
         backOff();
         return;
       }
