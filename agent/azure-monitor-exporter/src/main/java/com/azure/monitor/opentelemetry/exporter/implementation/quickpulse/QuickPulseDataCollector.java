@@ -352,7 +352,7 @@ final class QuickPulseDataCollector {
   class FinalCounters {
 
     final int exceptions;
-    final long requests;
+    final int requests;
     final double requestsDuration;
     final int unsuccessfulRequests;
     final long rdds;
@@ -370,7 +370,7 @@ final class QuickPulseDataCollector {
 
       CountAndDuration countAndDuration =
           Counters.decodeCountAndDuration(currentCounters.requestsAndDurations.get());
-      requests = countAndDuration.count;
+      requests = (int) countAndDuration.count;
       this.requestsDuration = countAndDuration.duration;
       this.unsuccessfulRequests = currentCounters.unsuccessfulRequests.get();
 

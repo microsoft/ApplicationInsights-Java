@@ -183,7 +183,7 @@ class QuickPulseDataFetcher {
           new QuickPulseMetrics(
               "\\ApplicationInsights\\Dependency Call Duration",
               counters.rddsDuration / counters.rdds,
-              counters.rdds));
+              (int) counters.rdds));
     }
     metricsList.add(
         new QuickPulseMetrics(
