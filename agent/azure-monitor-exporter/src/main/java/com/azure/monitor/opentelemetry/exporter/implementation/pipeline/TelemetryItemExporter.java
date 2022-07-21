@@ -41,11 +41,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TelemetryItemExporter {
+
+  private final AtomicInteger maxExceptionThrown = new AtomicInteger();
 
   // the number 100 was calculated as the max number of concurrent exports that the single worker
   // thread can drive, so anything higher than this should not increase throughput
@@ -143,6 +146,9 @@ public class TelemetryItemExporter {
     try {
       byteBuffers = encode(telemetryItems);
       encodeBatchOperationLogger.recordSuccess();
+      if (maxExceptionThrown.getAndIncrement() < 5) {
+        throw new IllegalArgumentException("### testing mdc message id in standalone exporter");
+      }
     } catch (Throwable t) {
       try (AzureMonitorMdcScope ignored =
           AzureMonitorMdc.TELEMETRY_INTERNAL_SEND_ERROR.makeActive()) {

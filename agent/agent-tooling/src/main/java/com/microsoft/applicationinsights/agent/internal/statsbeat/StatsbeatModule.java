@@ -30,6 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,6 +149,7 @@ public class StatsbeatModule {
   /** Runnable which is responsible for calling the send method to transmit Statsbeat telemetry. */
   private static class StatsbeatSender implements Runnable {
 
+    private final AtomicInteger maxExceptionThrown = new AtomicInteger();
     private final BaseStatsbeat statsbeat;
     private final TelemetryClient telemetryClient;
 
@@ -166,6 +168,9 @@ public class StatsbeatModule {
           return;
         }
         statsbeat.send(telemetryClient);
+        if (maxExceptionThrown.getAndIncrement() < 5) {
+          throw new IllegalArgumentException("testing mdc message id for statsbeat");
+        }
       } catch (RuntimeException e) {
         try (MdcScope ignored = Mdc.FAIL_TO_SEND_STATSBEAT_ERROR.makeActive()) {
           logger.error("Error occurred while sending statsbeat", e);
