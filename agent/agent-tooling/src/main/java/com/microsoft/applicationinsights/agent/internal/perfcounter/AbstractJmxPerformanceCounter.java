@@ -77,7 +77,6 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
                 DiagnosticsHelper.MDC_MESSAGE_ID,
                 String.valueOf(MessageIdConstants.JMX_METRIC_PERFORMANCE_COUNTER_ERROR));
             logger.error("Error while sending JMX data: '{}'", e.toString());
-            MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
             logger.trace("Error while sending JMX data", e);
           }
         }
@@ -88,10 +87,11 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
             DiagnosticsHelper.MDC_MESSAGE_ID,
             String.valueOf(MessageIdConstants.JMX_METRIC_PERFORMANCE_COUNTER_ERROR));
         logger.error("Error while fetching JMX data: '{}'", e.toString());
-        MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
         logger.trace("Error while fetching JMX data", e);
         alreadyLogged = true;
       }
+    } finally {
+      MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
     }
   }
 

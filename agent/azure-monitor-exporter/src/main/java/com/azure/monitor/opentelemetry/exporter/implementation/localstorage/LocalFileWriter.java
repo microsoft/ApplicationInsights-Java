@@ -88,9 +88,10 @@ final class LocalFileWriter {
           String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
       operationLogger.recordFailure(
           "Error creating file in directory: " + telemetryFolder.getAbsolutePath(), e);
-      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
       stats.incrementWriteFailureCount();
       return;
+    } finally {
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     }
 
     try {
@@ -100,9 +101,10 @@ final class LocalFileWriter {
           AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
           String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
       operationLogger.recordFailure("Error writing file: " + tempFile.getAbsolutePath(), e);
-      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
       stats.incrementWriteFailureCount();
       return;
+    } finally {
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     }
 
     File permanentFile;
@@ -115,9 +117,10 @@ final class LocalFileWriter {
           AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
           String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_WRITE_ERROR));
       operationLogger.recordFailure("Error renaming file: " + tempFile.getAbsolutePath(), e);
-      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
       stats.incrementWriteFailureCount();
       return;
+    } finally {
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     }
 
     localFileCache.addPersistedFile(permanentFile);

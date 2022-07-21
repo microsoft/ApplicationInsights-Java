@@ -99,9 +99,10 @@ class LocalFileLoader {
           AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
           String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
       operationLogger.recordFailure("Error renaming file: " + fileToBeLoaded.getAbsolutePath(), e);
-      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
       stats.incrementReadFailureCount();
       return null;
+    } finally {
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     }
 
     if (tempFile.length() <= 36) {
@@ -140,9 +141,10 @@ class LocalFileLoader {
           AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
           String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
       operationLogger.recordFailure("Error reading file: " + tempFile.getAbsolutePath(), e);
-      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
       stats.incrementReadFailureCount();
       return null;
+    } finally {
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     }
 
     operationLogger.recordSuccess();
@@ -204,8 +206,9 @@ class LocalFileLoader {
             AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
             String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
         updateOperationLogger.recordFailure("Error renaming file: " + file.getAbsolutePath(), e);
-        MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
         return;
+      } finally {
+        MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
       }
       updateOperationLogger.recordSuccess();
 

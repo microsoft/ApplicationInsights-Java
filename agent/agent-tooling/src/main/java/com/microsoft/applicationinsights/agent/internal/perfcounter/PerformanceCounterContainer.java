@@ -157,11 +157,12 @@ public enum PerformanceCounterContainer {
                       "Exception while reporting performance counter: '{}'",
                       performanceCounter.getClass().getName(),
                       t);
-                  MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
                 } catch (ThreadDeath td) {
                   throw td;
                 } catch (Throwable t2) {
                   // chomp
+                } finally {
+                  MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
                 }
               }
             }

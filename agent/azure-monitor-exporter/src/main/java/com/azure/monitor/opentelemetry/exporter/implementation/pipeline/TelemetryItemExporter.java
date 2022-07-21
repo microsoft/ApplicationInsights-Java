@@ -149,8 +149,9 @@ public class TelemetryItemExporter {
           AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
           String.valueOf(AzureMonitorMessageIdConstants.TELEMETRY_INTERNAL_SEND_ERROR));
       encodeBatchOperationLogger.recordFailure(t.getMessage(), t);
-      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
       return CompletableResultCode.ofFailure();
+    } finally {
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     }
     return telemetryPipeline.send(byteBuffers, instrumentationKey, listener);
   }

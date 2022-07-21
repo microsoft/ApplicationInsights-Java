@@ -95,8 +95,9 @@ class LocalFileCache {
           AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
           String.valueOf(AzureMonitorMessageIdConstants.DISK_PERSISTENCE_READ_ERROR));
       logger.debug("unexpected .trn file name: {}", name);
-      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
       return true;
+    } finally {
+      MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
     }
     Date expirationDate = new Date(System.currentTimeMillis() - 1000 * expiredIntervalSeconds);
     Date fileDate = new Date(timestamp);

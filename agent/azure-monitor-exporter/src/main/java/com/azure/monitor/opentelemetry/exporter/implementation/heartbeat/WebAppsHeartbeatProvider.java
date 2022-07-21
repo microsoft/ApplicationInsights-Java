@@ -141,8 +141,9 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
                   AzureMonitorMessageIdConstants.MDC_MESSAGE_ID,
                   String.valueOf(AzureMonitorMessageIdConstants.HEARTBEAT_SEND_ERROR));
               logger.warn("Failed to obtain heartbeat property", e);
-              MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
             }
+          } finally {
+            MDC.remove(AzureMonitorMessageIdConstants.MDC_MESSAGE_ID);
           }
         }
         return hasSetValues;

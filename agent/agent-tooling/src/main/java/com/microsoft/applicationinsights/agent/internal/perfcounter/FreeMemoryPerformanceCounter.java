@@ -49,9 +49,10 @@ public class FreeMemoryPerformanceCounter implements PerformanceCounter {
           DiagnosticsHelper.MDC_MESSAGE_ID,
           String.valueOf(MessageIdConstants.FREE_PHYSICAL_MEMORY_SIZE_ERROR));
       logger.error("Error getting FreePhysicalMemorySize");
-      MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
       logger.trace("Error getting FreePhysicalMemorySize", e);
       return;
+    } finally {
+      MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
     }
 
     logger.trace("Performance Counter: {}: {}", MetricNames.TOTAL_MEMORY, freePhysicalMemorySize);
