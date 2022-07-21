@@ -25,7 +25,7 @@ import org.slf4j.MDC;
 
 public class MdcScope implements AutoCloseable {
 
-  private final org.slf4j.MDC.MDCCloseable delegate;
+  private final MDC.MDCCloseable delegate;
 
   MdcScope(MDC.MDCCloseable delegate) {
     this.delegate = delegate;
