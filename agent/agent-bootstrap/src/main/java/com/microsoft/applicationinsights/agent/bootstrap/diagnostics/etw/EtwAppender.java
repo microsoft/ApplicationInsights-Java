@@ -109,6 +109,8 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
     }
 
     Map<String, String> mdcPropertyMap = logEvent.getMDCPropertyMap();
+    System.out.println("##### print out mdcPropertyMap:\n");
+    mdcPropertyMap.forEach((k, v) -> System.out.println("[" + k + ":" + v + "]"));
     if (!mdcPropertyMap.isEmpty()) {
       String operation = mdcPropertyMap.get(DiagnosticsHelper.MDC_PROP_OPERATION);
       if (operation != null && !operation.isEmpty()) {
@@ -116,9 +118,9 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
       }
 
       String messageId = mdcPropertyMap.get(DiagnosticsHelper.MDC_MESSAGE_ID);
+      // TODO to be deleted
+      System.out.println("###### messageId: " + messageId);
       if (messageId != null && !messageId.isEmpty()) {
-        // TODO to be deleted
-        System.out.println("### messageId: " + messageId);
         event.setMessageId(messageId);
       }
     }
