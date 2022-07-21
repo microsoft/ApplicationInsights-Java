@@ -172,11 +172,12 @@ public class StatsbeatModule {
         statsbeat.send(telemetryClient);
         throw new IllegalArgumentException("#### Statsbeat");
       } catch (RuntimeException e) {
-        System.out.println("### " + e.getLocalizedMessage());
+        logger.error("############ " + e.getLocalizedMessage());
         MDC.put(
             DiagnosticsHelper.MDC_MESSAGE_ID,
             String.valueOf(MessageIdConstants.FAIL_TO_SEND_STATSBEAT_ERROR));
         logger.error("Error occurred while sending statsbeat", e);
+        logger.debug(MDC.get(DiagnosticsHelper.MDC_MESSAGE_ID));
       }
     }
   }

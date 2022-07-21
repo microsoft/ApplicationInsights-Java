@@ -35,11 +35,14 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model.IpaEtwEventBase;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import java.util.Map;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class EtwAppender extends AppenderBase<ILoggingEvent> {
   private final EtwProvider etwProvider;
   private final IpaEtwEventBase proto;
+
+  private static final Logger etwLogger = LoggerFactory.getLogger(EtwAppender.class);
 
   public EtwAppender() {
     ApplicationMetadataFactory metadata = DiagnosticsHelper.getMetadataFactory();
@@ -109,8 +112,8 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
     }
 
     Map<String, String> mdcPropertyMap = logEvent.getMDCPropertyMap();
-    System.out.println("##### print out mdcPropertyMap:\n");
-    mdcPropertyMap.forEach((k, v) -> System.out.println("[" + k + ":" + v + "]"));
+    etwLogger.debug("##### print out mdcPropertyMap:\n");
+    mdcPropertyMap.forEach((k, v) -> etwLogger.debug("[" + k + ":" + v + "]"));
     if (!mdcPropertyMap.isEmpty()) {
       String operation = mdcPropertyMap.get(DiagnosticsHelper.MDC_PROP_OPERATION);
       if (operation != null && !operation.isEmpty()) {
@@ -119,7 +122,7 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
 
       String messageId = mdcPropertyMap.get(DiagnosticsHelper.MDC_MESSAGE_ID);
       // TODO to be deleted
-      System.out.println("###### messageId: " + messageId);
+      etwLogger.debug("###### messageId: " + messageId);
       if (messageId != null && !messageId.isEmpty()) {
         event.setMessageId(messageId);
       }

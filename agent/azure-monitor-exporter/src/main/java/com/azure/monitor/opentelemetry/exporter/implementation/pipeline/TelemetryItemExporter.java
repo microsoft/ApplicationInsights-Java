@@ -145,12 +145,13 @@ public class TelemetryItemExporter {
     try {
       //      byteBuffers = encode(telemetryItems);
       //      encodeBatchOperationLogger.recordSuccess();
-      throw new IllegalStateException("### Fake throwable from azure monitor exporter");
+      throw new IllegalArgumentException("### Fake throwable from azure monitor exporter");
     } catch (Throwable t) {
-      System.out.println("### " + t.getMessage());
+      logger.error("############ exception message: " + t.getMessage());
       MDC.put(
           MessageIdConstants.MDC_MESSAGE_ID,
           String.valueOf(MessageIdConstants.TELEMETRY_INTERNAL_SEND_ERROR));
+      logger.debug("############ mdc.messageId: " + MDC.get(MessageIdConstants.MDC_MESSAGE_ID));
       encodeBatchOperationLogger.recordFailure(t.getMessage(), t);
       assert (telemetryPipeline != null);
       return CompletableResultCode.ofFailure();
