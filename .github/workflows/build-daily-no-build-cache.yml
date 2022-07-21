@@ -12,12 +12,12 @@ jobs:
     with:
       no-build-cache: true
 
-  test:
-    uses: ./.github/workflows/reusable-test.yml
-    with:
-      no-build-cache: true
-
-  smoke-test:
-    uses: ./.github/workflows/reusable-smoke-test.yml
-    with:
-      no-build-cache: true
+#  test:
+#    uses: ./.github/workflows/reusable-test.yml
+#    with:
+#      no-build-cache: true
+#
+#  smoke-test:
+#    uses: ./.github/workflows/reusable-smoke-test.yml
+#    with:
+#      no-build-cache: true
