@@ -108,7 +108,7 @@ public final class ApplicationInsights {
       props.load(jarAsInputStream);
       return props.getProperty("version");
     } catch (IOException e) {
-      throw new IllegalStateException("Unable to fight Application Insights version", e);
+      throw new IllegalStateException("Unable to find Application Insights version", e);
     }
   }
 }
