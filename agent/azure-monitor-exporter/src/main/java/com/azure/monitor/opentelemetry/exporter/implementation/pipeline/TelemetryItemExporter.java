@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +51,8 @@ public class TelemetryItemExporter {
   // the number 100 was calculated as the max number of concurrent exports that the single worker
   // thread can drive, so anything higher than this should not increase throughput
   private static final int MAX_CONCURRENT_EXPORTS = 100;
+
+  private final AtomicBoolean doneThrown = new AtomicBoolean();
 
   private static final Logger logger = LoggerFactory.getLogger(TelemetryItemExporter.class);
 
@@ -141,11 +144,13 @@ public class TelemetryItemExporter {
   @SuppressWarnings("SystemOut")
   CompletableResultCode internalSendByInstrumentationKey(
       List<TelemetryItem> telemetryItems, String instrumentationKey) {
-    //    List<ByteBuffer> byteBuffers;
+    List<ByteBuffer> byteBuffers;
     try {
-      //      byteBuffers = encode(telemetryItems);
-      //      encodeBatchOperationLogger.recordSuccess();
-      throw new IllegalArgumentException("### Fake throwable from azure monitor exporter");
+      byteBuffers = encode(telemetryItems);
+      encodeBatchOperationLogger.recordSuccess();
+      if (!doneThrown.getAndSet(true)) {
+        throw new IllegalArgumentException("### Fake throwable from azure monitor exporter");
+      }
     } catch (Throwable t) {
       logger.error("############ exception message: " + t.getMessage());
       MDC.put(
@@ -156,7 +161,7 @@ public class TelemetryItemExporter {
       assert (telemetryPipeline != null);
       return CompletableResultCode.ofFailure();
     }
-    // return telemetryPipeline.send(byteBuffers, instrumentationKey, listener);
+    return telemetryPipeline.send(byteBuffers, instrumentationKey, listener);
   }
 
   List<ByteBuffer> encode(List<TelemetryItem> telemetryItems) throws IOException {
