@@ -27,8 +27,8 @@ import com.azure.monitor.opentelemetry.exporter.implementation.configuration.Con
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageIdConstants;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Mdc;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MdcScope;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
@@ -44,7 +44,6 @@ import java.nio.file.attribute.FileTime;
 import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 public class RpConfigurationPolling implements Runnable {
 
@@ -135,11 +134,9 @@ public class RpConfigurationPolling implements Runnable {
         rpConfiguration = newRpConfiguration;
       }
     } catch (IOException e) {
-      MDC.put(
-          DiagnosticsHelper.MDC_MESSAGE_ID,
-          String.valueOf(MessageIdConstants.CONFIGURATION_RELATED_ERROR));
-      logger.error("Error occurred when polling json config file: {}", e.getMessage(), e);
-      MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
+      try (MdcScope ignored = Mdc.CONFIGURATION_RELATED_ERROR.makeActive()) {
+        logger.error("Error occurred when polling json config file: {}", e.getMessage(), e);
+      }
     }
   }
 }

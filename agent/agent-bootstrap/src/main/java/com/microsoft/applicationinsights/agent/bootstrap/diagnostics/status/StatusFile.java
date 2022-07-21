@@ -25,6 +25,8 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Application
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsValueFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MachineNameFinder;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Mdc;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MdcScope;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageIdConstants;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
 import com.squareup.moshi.Moshi;
@@ -223,11 +225,9 @@ public class StatusFile {
                   b.flush();
                 } catch (Exception e) {
                   if (logger != null) {
-                    MDC.put(
-                        DiagnosticsHelper.MDC_MESSAGE_ID,
-                        String.valueOf(MessageIdConstants.STATUS_FILE_RELATED_ERROR));
-                    logger.error("Error writing {}", file.getAbsolutePath(), e);
-                    MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
+                    try (MdcScope ignored = Mdc.STATUS_FILE_RELATED_ERROR.makeActive()) {
+                      logger.error("Error writing {}", file.getAbsolutePath(), e);
+                    }
                   } else {
                     e.printStackTrace();
                   }

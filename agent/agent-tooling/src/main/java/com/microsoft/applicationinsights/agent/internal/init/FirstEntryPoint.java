@@ -23,7 +23,8 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageIdConstants;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Mdc;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MdcScope;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
@@ -163,15 +164,12 @@ public class FirstEntryPoint implements LoggingCustomizer {
       StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success, startupLogger != null);
     } catch (Throwable t) {
       if (startupLogger != null) {
-        MDC.put(
-            DiagnosticsHelper.MDC_MESSAGE_ID,
-            String.valueOf(MessageIdConstants.STATUS_FILE_RELATED_ERROR));
-        startupLogger.error("Error writing status.json", t);
+        try (MdcScope ignored = Mdc.STATUS_FILE_RELATED_ERROR.makeActive()) {
+          startupLogger.error("Error writing status.json", t);
+        }
       } else {
         t.printStackTrace();
       }
-    } finally {
-      MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
     }
   }
 
@@ -197,15 +195,13 @@ public class FirstEntryPoint implements LoggingCustomizer {
       File javaagentFile) {
 
     if (startupLogger != null) {
-      MDC.put(
-          DiagnosticsHelper.MDC_MESSAGE_ID,
-          String.valueOf(MessageIdConstants.STATUS_FILE_RELATED_ERROR));
-      if (isFriendlyException) {
-        startupLogger.error(message);
-      } else {
-        startupLogger.error(message, t);
+      try (MdcScope ignored = Mdc.STATUS_FILE_RELATED_ERROR.makeActive()) {
+        if (isFriendlyException) {
+          startupLogger.error(message);
+        } else {
+          startupLogger.error(message, t);
+        }
       }
-      MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
     } else {
       try {
         // IF the startupLogger failed to be initialized due to configuration syntax error, try
@@ -218,15 +214,13 @@ public class FirstEntryPoint implements LoggingCustomizer {
                 selfDiagnostics.file.path);
         startupLogger = configureLogging(selfDiagnostics, agentPath);
 
-        MDC.put(
-            DiagnosticsHelper.MDC_MESSAGE_ID,
-            String.valueOf(MessageIdConstants.STATUS_FILE_RELATED_ERROR));
-        if (isFriendlyException) {
-          startupLogger.error(message);
-        } else {
-          startupLogger.error(message, t);
+        try (MdcScope ignored = Mdc.STATUS_FILE_RELATED_ERROR.makeActive()) {
+          if (isFriendlyException) {
+            startupLogger.error(message);
+          } else {
+            startupLogger.error(message, t);
+          }
         }
-        MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
       } catch (Throwable ignored) {
         // this is a last resort in cases where the JVM doesn't have write permission to the
         // directory where the agent lives

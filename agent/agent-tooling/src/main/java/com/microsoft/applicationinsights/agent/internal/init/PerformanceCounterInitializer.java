@@ -22,8 +22,8 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MessageIdConstants;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Mdc;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MdcScope;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.DeadLockDetectorPerformanceCounter;
@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 public class PerformanceCounterInitializer {
 
@@ -104,29 +103,23 @@ public class PerformanceCounterInitializer {
             data.computeIfAbsent(jmxElement.objectName, k -> new ArrayList<>());
 
         if (Strings.isNullOrEmpty(jmxElement.objectName)) {
-          MDC.put(
-              DiagnosticsHelper.MDC_MESSAGE_ID,
-              String.valueOf(MessageIdConstants.JMX_METRIC_PERFORMANCE_COUNTER_ERROR));
-          logger.error("JMX object name is empty, will be ignored");
-          MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
+          try (MdcScope ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
+            logger.error("JMX object name is empty, will be ignored");
+          }
           continue;
         }
 
         if (Strings.isNullOrEmpty(jmxElement.attribute)) {
-          MDC.put(
-              DiagnosticsHelper.MDC_MESSAGE_ID,
-              String.valueOf(MessageIdConstants.JMX_METRIC_PERFORMANCE_COUNTER_ERROR));
-          logger.error("JMX attribute is empty for '{}'", jmxElement.objectName);
-          MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
+          try (MdcScope ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
+            logger.error("JMX attribute is empty for '{}'", jmxElement.objectName);
+          }
           continue;
         }
 
         if (Strings.isNullOrEmpty(jmxElement.name)) {
-          MDC.put(
-              DiagnosticsHelper.MDC_MESSAGE_ID,
-              String.valueOf(MessageIdConstants.JMX_METRIC_PERFORMANCE_COUNTER_ERROR));
-          logger.error("JMX name is empty for '{}', will be ignored", jmxElement.objectName);
-          MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
+          try (MdcScope ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
+            logger.error("JMX name is empty for '{}', will be ignored", jmxElement.objectName);
+          }
           continue;
         }
 
@@ -139,22 +132,18 @@ public class PerformanceCounterInitializer {
           PerformanceCounterContainer.INSTANCE.register(
               new JmxMetricPerformanceCounter(entry.getKey(), entry.getValue()));
         } catch (RuntimeException e) {
-          MDC.put(
-              DiagnosticsHelper.MDC_MESSAGE_ID,
-              String.valueOf(MessageIdConstants.JMX_METRIC_PERFORMANCE_COUNTER_ERROR));
-          logger.error(
-              "Failed to register JMX performance counter: '{}' : '{}'",
-              entry.getKey(),
-              e.toString());
-          MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
+          try (MdcScope ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
+            logger.error(
+                "Failed to register JMX performance counter: '{}' : '{}'",
+                entry.getKey(),
+                e.toString());
+          }
         }
       }
     } catch (RuntimeException e) {
-      MDC.put(
-          DiagnosticsHelper.MDC_MESSAGE_ID,
-          String.valueOf(MessageIdConstants.JMX_METRIC_PERFORMANCE_COUNTER_ERROR));
-      logger.error("Failed to register JMX performance counters: '{}'", e.toString());
-      MDC.remove(DiagnosticsHelper.MDC_MESSAGE_ID);
+      try (MdcScope ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
+        logger.error("Failed to register JMX performance counters: '{}'", e.toString());
+      }
     }
   }
 
