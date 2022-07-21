@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +53,7 @@ public class TelemetryItemExporter {
   // thread can drive, so anything higher than this should not increase throughput
   private static final int MAX_CONCURRENT_EXPORTS = 100;
 
-  private final AtomicBoolean doneThrown = new AtomicBoolean();
+  private final AtomicInteger maxThrown = new AtomicInteger();
 
   private static final Logger logger = LoggerFactory.getLogger(TelemetryItemExporter.class);
 
@@ -148,13 +149,13 @@ public class TelemetryItemExporter {
     try {
       byteBuffers = encode(telemetryItems);
       encodeBatchOperationLogger.recordSuccess();
-      if (!doneThrown.getAndSet(true)) {
+      if (maxThrown.getAndIncrement() < 5) {
         throw new IllegalArgumentException("### Fake throwable from azure monitor exporter");
       }
     } catch (Throwable t) {
       logger.error("############ exception message: " + t.getMessage());
       MDC.put(
-          MessageIdConstants.MDC_MESSAGE_ID,
+          MessageIdConstants.MDC_MESSAGE_ID + "-" + 2106,
           String.valueOf(MessageIdConstants.TELEMETRY_INTERNAL_SEND_ERROR));
       logger.debug("############ mdc.messageId: " + MDC.get(MessageIdConstants.MDC_MESSAGE_ID));
       encodeBatchOperationLogger.recordFailure(t.getMessage(), t);

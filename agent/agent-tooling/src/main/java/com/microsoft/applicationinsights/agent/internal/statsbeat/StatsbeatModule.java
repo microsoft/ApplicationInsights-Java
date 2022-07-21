@@ -174,7 +174,7 @@ public class StatsbeatModule {
       } catch (RuntimeException e) {
         logger.error("############ " + e.getLocalizedMessage());
         MDC.put(
-            DiagnosticsHelper.MDC_MESSAGE_ID,
+            DiagnosticsHelper.MDC_MESSAGE_ID + "-" + 2003,
             String.valueOf(MessageIdConstants.FAIL_TO_SEND_STATSBEAT_ERROR));
         logger.error("Error occurred while sending statsbeat", e);
         logger.debug(MDC.get(DiagnosticsHelper.MDC_MESSAGE_ID));
