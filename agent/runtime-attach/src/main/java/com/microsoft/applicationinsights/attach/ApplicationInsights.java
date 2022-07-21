@@ -77,7 +77,7 @@ public final class ApplicationInsights {
       return Optional.empty();
     }
     try (InputStreamReader inputStreamReader =
-        new InputStreamReader(configContentAsInputStream, StandardCharsets.UTF_8);
+            new InputStreamReader(configContentAsInputStream, StandardCharsets.UTF_8);
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
       String json = bufferedReader.lines().collect(Collectors.joining(""));
       return Optional.of(json);
