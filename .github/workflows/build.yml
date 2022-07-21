@@ -30,7 +30,7 @@ jobs:
     if: always()
     steps:
       - if: |
-          needs.assemble.result != 'success' ||
+          needs.assemble.result != 'success'
 #          needs.test.result != 'success' ||
 #          needs.smoke-test.result != 'success'
         run: exit 1
