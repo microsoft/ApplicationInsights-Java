@@ -32,9 +32,9 @@ public class QuickPulseMetrics {
   private final double value;
 
   @JsonProperty(value = "Weight")
-  private final long weight;
+  private final int weight;
 
-  public QuickPulseMetrics(String name, double value, long weight) {
+  public QuickPulseMetrics(String name, double value, int weight) {
     this.name = name;
     this.value = value;
     this.weight = weight;
@@ -48,7 +48,7 @@ public class QuickPulseMetrics {
     return value;
   }
 
-  public long getWeight() {
+  public int getWeight() {
     return weight;
   }
 }
