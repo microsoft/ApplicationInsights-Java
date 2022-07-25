@@ -34,7 +34,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model.
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model.QuickPulseExceptionDocument;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model.QuickPulseRequestDocument;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdc;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdcScope;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.CpuPerformanceCounterCalculator;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -51,6 +50,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 final class QuickPulseDataCollector {
 
@@ -81,7 +81,7 @@ final class QuickPulseDataCollector {
       throw td;
     } catch (Throwable t) {
       try {
-        try (AzureMonitorMdcScope ignored = AzureMonitorMdc.QUICK_PULSE_SEND_ERROR.makeActive()) {
+        try (MDC.MDCCloseable ignored = AzureMonitorMdc.QUICK_PULSE_SEND_ERROR.closeable()) {
           LoggerFactory.getLogger(QuickPulseDataCollector.class)
               .error(
                   "Could not initialize {}",

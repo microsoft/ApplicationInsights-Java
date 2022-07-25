@@ -26,7 +26,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineRequest;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineResponse;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdc;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdcScope;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,6 +35,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineListener {
 
@@ -58,7 +58,7 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
   @Override
   public void onResponse(TelemetryPipelineRequest request, TelemetryPipelineResponse response) {
     int responseCode = response.getStatusCode();
-    try (AzureMonitorMdcScope ignored = AzureMonitorMdc.NETWORK_FAILURE_ERROR.makeActive()) {
+    try (MDC.MDCCloseable ignored = AzureMonitorMdc.NETWORK_FAILURE_ERROR.closeable()) {
       switch (responseCode) {
         case 200: // SUCCESS
           operationLogger.recordSuccess();

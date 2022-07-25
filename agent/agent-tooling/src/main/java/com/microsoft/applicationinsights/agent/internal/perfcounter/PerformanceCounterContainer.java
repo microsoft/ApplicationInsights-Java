@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Mdc;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MdcScope;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -32,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 /**
  * The class serves as the container of all {@link PerformanceCounter}
@@ -148,7 +148,8 @@ public enum PerformanceCounterContainer {
               } catch (ThreadDeath td) {
                 throw td;
               } catch (Throwable t) {
-                try (MdcScope ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
+                try (MDC.MDCCloseable ignored =
+                    Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.closeable()) {
                   logger.error(
                       "Exception while reporting performance counter: '{}'",
                       performanceCounter.getClass().getName(),

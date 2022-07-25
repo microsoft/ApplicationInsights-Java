@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Mdc;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MdcScope;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
@@ -164,7 +163,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
       StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success, startupLogger != null);
     } catch (Throwable t) {
       if (startupLogger != null) {
-        try (MdcScope ignored = Mdc.STATUS_FILE_RELATED_ERROR.makeActive()) {
+        try (MDC.MDCCloseable ignored = Mdc.STATUS_FILE_RELATED_ERROR.closeable()) {
           startupLogger.error("Error writing status.json", t);
         }
       } else {
@@ -195,7 +194,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
       File javaagentFile) {
 
     if (startupLogger != null) {
-      try (MdcScope ignored = Mdc.STATUS_FILE_RELATED_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = Mdc.STATUS_FILE_RELATED_ERROR.closeable()) {
         if (isFriendlyException) {
           startupLogger.error(message);
         } else {
@@ -214,7 +213,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
                 selfDiagnostics.file.path);
         startupLogger = configureLogging(selfDiagnostics, agentPath);
 
-        try (MdcScope ignored = Mdc.STATUS_FILE_RELATED_ERROR.makeActive()) {
+        try (MDC.MDCCloseable ignored = Mdc.STATUS_FILE_RELATED_ERROR.closeable()) {
           if (isFriendlyException) {
             startupLogger.error(message);
           } else {

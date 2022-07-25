@@ -26,7 +26,6 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Diagnostics
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsValueFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MachineNameFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Mdc;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MdcScope;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
 import com.squareup.moshi.Moshi;
 import java.io.File;
@@ -49,6 +48,7 @@ import okio.BufferedSink;
 import okio.Okio;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 public class StatusFile {
 
@@ -223,7 +223,7 @@ public class StatusFile {
                   b.flush();
                 } catch (Exception e) {
                   if (logger != null) {
-                    try (MdcScope ignored = Mdc.STATUS_FILE_RELATED_ERROR.makeActive()) {
+                    try (MDC.MDCCloseable ignored = Mdc.STATUS_FILE_RELATED_ERROR.closeable()) {
                       logger.error("Error writing {}", file.getAbsolutePath(), e);
                     }
                   } else {
@@ -239,7 +239,7 @@ public class StatusFile {
                 }
               } else {
                 if (logger != null) {
-                  try (MdcScope ignored = Mdc.STATUS_FILE_RELATED_ERROR.makeActive()) {
+                  try (MDC.MDCCloseable ignored = Mdc.STATUS_FILE_RELATED_ERROR.closeable()) {
                     logger.error(
                         "Parent directories for status file could not be created: {}",
                         file.getAbsolutePath());

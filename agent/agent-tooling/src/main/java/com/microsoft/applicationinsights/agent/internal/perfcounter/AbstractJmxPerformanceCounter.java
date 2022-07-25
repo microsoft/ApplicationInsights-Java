@@ -22,12 +22,12 @@
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Mdc;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MdcScope;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.Collection;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 /**
  * The class is a base class for JMX performance counters. It knows how to fetch the needed
@@ -72,7 +72,7 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
           try {
             send(telemetryClient, displayAndValues.getKey(), value);
           } catch (RuntimeException e) {
-            try (MdcScope ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
+            try (MDC.MDCCloseable ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.closeable()) {
               logger.error("Error while sending JMX data: '{}'", e.toString());
             }
             logger.trace("Error while sending JMX data", e);
@@ -81,7 +81,7 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
       }
     } catch (Exception e) {
       if (!alreadyLogged) {
-        try (MdcScope ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
+        try (MDC.MDCCloseable ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.closeable()) {
           logger.error("Error while fetching JMX data: '{}'", e.toString());
         }
         logger.trace("Error while fetching JMX data", e);

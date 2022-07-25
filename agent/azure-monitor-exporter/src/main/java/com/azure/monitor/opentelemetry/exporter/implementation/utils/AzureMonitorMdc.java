@@ -47,7 +47,7 @@ public enum AzureMonitorMdc {
     this.value = value;
   }
 
-  public AzureMonitorMdcScope makeActive() {
-    return new AzureMonitorMdcScope(MDC.putCloseable(key, value));
+  public MDC.MDCCloseable closeable() {
+    return MDC.putCloseable(key, value);
   }
 }

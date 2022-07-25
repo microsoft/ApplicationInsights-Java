@@ -26,7 +26,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model.
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model.QuickPulseMetrics;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.util.CustomCharacterEscapes;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdc;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdcScope;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,6 +38,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 class QuickPulseDataFetcher {
 
@@ -112,7 +112,7 @@ class QuickPulseDataFetcher {
       request.setBody(buildPostEntity(counters));
 
       if (!sendQueue.offer(request)) {
-        try (AzureMonitorMdcScope ignored = AzureMonitorMdc.QUICK_PULSE_SEND_ERROR.makeActive()) {
+        try (MDC.MDCCloseable ignored = AzureMonitorMdc.QUICK_PULSE_SEND_ERROR.closeable()) {
           logger.trace("Quick Pulse send queue is full");
         }
       }
@@ -120,7 +120,7 @@ class QuickPulseDataFetcher {
       throw td;
     } catch (Throwable e) {
       try {
-        try (AzureMonitorMdcScope ignored = AzureMonitorMdc.QUICK_PULSE_SEND_ERROR.makeActive()) {
+        try (MDC.MDCCloseable ignored = AzureMonitorMdc.QUICK_PULSE_SEND_ERROR.closeable()) {
           logger.error("Quick Pulse failed to prepare data for send", e);
         }
       } catch (ThreadDeath td) {

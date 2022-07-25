@@ -24,7 +24,6 @@ package com.azure.monitor.opentelemetry.exporter.implementation.pipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdc;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdcScope;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SerializedString;
@@ -45,6 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 public class TelemetryItemExporter {
 
@@ -114,8 +114,7 @@ public class TelemetryItemExporter {
     if (activeExportResults.size() >= MAX_CONCURRENT_EXPORTS) {
       // this is just a failsafe to limit concurrent exports, it's not ideal because it blocks
       // waiting for the most recent export instead of waiting for the first export to return
-      try (AzureMonitorMdcScope ignored =
-          AzureMonitorMdc.TELEMETRY_INTERNAL_SEND_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = AzureMonitorMdc.TELEMETRY_INTERNAL_SEND_ERROR.closeable()) {
         operationLogger.recordFailure(
             "Hit max " + MAX_CONCURRENT_EXPORTS + " active concurrent requests");
       }
@@ -150,8 +149,7 @@ public class TelemetryItemExporter {
         throw new IllegalArgumentException("### testing mdc message id in standalone exporter");
       }
     } catch (Throwable t) {
-      try (AzureMonitorMdcScope ignored =
-          AzureMonitorMdc.TELEMETRY_INTERNAL_SEND_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = AzureMonitorMdc.TELEMETRY_INTERNAL_SEND_ERROR.closeable()) {
         encodeBatchOperationLogger.recordFailure(t.getMessage(), t);
       }
       return CompletableResultCode.ofFailure();

@@ -32,7 +32,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.logging.WarningLo
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.bootstrap.AiAppId;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Mdc;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MdcScope;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.net.MalformedURLException;
@@ -43,6 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 // note: app id is used by distributed trace headers and (soon) jfr profiling
 public class AppIdSupplier implements AiAppId.Supplier {
@@ -77,7 +77,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
     try {
       newTask = new GetAppIdTask(getAppIdUrl(connectionString));
     } catch (MalformedURLException e) {
-      try (MdcScope ignored = Mdc.APP_ID_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = Mdc.APP_ID_ERROR.closeable()) {
         logger.warn(e.getMessage(), e);
       }
       return;
@@ -112,7 +112,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
     // this case, just
     // return and let the next request resolve the ikey.
     if (appId == null) {
-      try (MdcScope ignored = Mdc.APP_ID_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = Mdc.APP_ID_ERROR.closeable()) {
         logger.debug("appId has not been retrieved yet (e.g. task may be pending or failed)");
       }
       return "";
@@ -146,7 +146,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
       } catch (RuntimeException ex) {
         if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
             ex, url.toString(), friendlyExceptionThrown, logger)) {
-          try (MdcScope ignored = Mdc.APP_ID_ERROR.makeActive()) {
+          try (MDC.MDCCloseable ignored = Mdc.APP_ID_ERROR.closeable()) {
             warningLogger.recordWarning("exception sending request to " + url, ex);
           }
         }
@@ -162,7 +162,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
       String body = response.getBodyAsString().block();
       int statusCode = response.getStatusCode();
       if (statusCode != 200) {
-        try (MdcScope ignored = Mdc.APP_ID_ERROR.makeActive()) {
+        try (MDC.MDCCloseable ignored = Mdc.APP_ID_ERROR.closeable()) {
           warningLogger.recordWarning(
               "received " + statusCode + " from " + url + "\nfull response:\n" + body, null);
         }
@@ -172,7 +172,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
 
       // check for case when breeze returns invalid value
       if (body == null || body.isEmpty()) {
-        try (MdcScope ignored = Mdc.APP_ID_ERROR.makeActive()) {
+        try (MDC.MDCCloseable ignored = Mdc.APP_ID_ERROR.closeable()) {
           warningLogger.recordWarning("received empty body from " + url, null);
         }
         backOff();

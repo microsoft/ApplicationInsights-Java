@@ -47,7 +47,7 @@ public enum Mdc {
     return value;
   }
 
-  public MdcScope makeActive() {
-    return new MdcScope(MDC.putCloseable(key, value));
+  public MDC.MDCCloseable closeable() {
+    return MDC.putCloseable(key, value);
   }
 }

@@ -25,7 +25,6 @@ import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Mdc;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MdcScope;
 import io.opentelemetry.instrumentation.api.internal.GuardedBy;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
@@ -46,6 +45,7 @@ import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.OpenType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 // TODO (trask) add tests
 class AvailableJmxMetricLogger {
@@ -115,7 +115,7 @@ class AvailableJmxMetricLogger {
         // log exception at trace level since this is expected in several cases, e.g.
         // "java.lang.UnsupportedOperationException: CollectionUsage threshold is not supported"
         // and available jmx metrics are already only logged at debug
-        try (MdcScope ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
+        try (MDC.MDCCloseable ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.closeable()) {
           logger.trace(e.getMessage(), e);
         }
         attributes = singleton("(error getting attributes)");
@@ -141,7 +141,7 @@ class AvailableJmxMetricLogger {
         // log exception at trace level since this is expected in several cases, e.g.
         // "java.lang.UnsupportedOperationException: CollectionUsage threshold is not supported"
         // and available jmx metrics are already only logged at debug
-        try (MdcScope ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
+        try (MDC.MDCCloseable ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.closeable()) {
           logger.trace(e.getMessage(), e);
         }
         attributes.add(attribute.getName() + " (exception)");

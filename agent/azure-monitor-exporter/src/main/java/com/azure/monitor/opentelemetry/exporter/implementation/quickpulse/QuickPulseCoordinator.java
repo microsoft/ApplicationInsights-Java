@@ -22,11 +22,11 @@
 package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdc;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdcScope;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 final class QuickPulseCoordinator implements Runnable {
 
@@ -102,7 +102,7 @@ final class QuickPulseCoordinator implements Runnable {
         return waitBetweenPostsInMillis;
     }
 
-    try (AzureMonitorMdcScope ignored = AzureMonitorMdc.QUICK_PULSE_SEND_ERROR.makeActive()) {
+    try (MDC.MDCCloseable ignored = AzureMonitorMdc.QUICK_PULSE_SEND_ERROR.closeable()) {
       logger.error("Critical error while sending QP data: unknown status, aborting");
     }
     collector.disable();
@@ -128,7 +128,7 @@ final class QuickPulseCoordinator implements Runnable {
             : waitBetweenPingsInMillis;
     }
 
-    try (AzureMonitorMdcScope ignored = AzureMonitorMdc.QUICK_PULSE_PING_ERROR.makeActive()) {
+    try (MDC.MDCCloseable ignored = AzureMonitorMdc.QUICK_PULSE_PING_ERROR.closeable()) {
       logger.error("Critical error while ping QP: unknown status, aborting");
     }
     collector.disable();
