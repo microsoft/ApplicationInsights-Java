@@ -112,7 +112,7 @@ class QuickPulseDataFetcher {
       request.setBody(buildPostEntity(counters));
 
       if (!sendQueue.offer(request)) {
-        try (MDC.MDCCloseable ignored = AzureMonitorMdc.QUICK_PULSE_SEND_ERROR.closeable()) {
+        try (MDC.MDCCloseable ignored = AzureMonitorMdc.QUICK_PULSE_SEND_ERROR.makeActive()) {
           logger.trace("Quick Pulse send queue is full");
         }
       }
@@ -120,7 +120,7 @@ class QuickPulseDataFetcher {
       throw td;
     } catch (Throwable e) {
       try {
-        try (MDC.MDCCloseable ignored = AzureMonitorMdc.QUICK_PULSE_SEND_ERROR.closeable()) {
+        try (MDC.MDCCloseable ignored = AzureMonitorMdc.QUICK_PULSE_SEND_ERROR.makeActive()) {
           logger.error("Quick Pulse failed to prepare data for send", e);
         }
       } catch (ThreadDeath td) {

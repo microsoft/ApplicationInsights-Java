@@ -94,7 +94,7 @@ class LocalFileSender implements Runnable {
         resultCode.join(30, TimeUnit.SECONDS); // wait max 30 seconds for request to be completed.
       }
     } catch (RuntimeException ex) {
-      try (MDC.MDCCloseable ignored = AzureMonitorMdc.DISK_PERSISTENCE_READ_ERROR.closeable()) {
+      try (MDC.MDCCloseable ignored = AzureMonitorMdc.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
         logger.error(
             "Unexpected error occurred while sending telemetries from the local storage.", ex);
       }

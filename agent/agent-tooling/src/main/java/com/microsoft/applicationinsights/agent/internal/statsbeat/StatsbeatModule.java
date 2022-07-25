@@ -172,7 +172,7 @@ public class StatsbeatModule {
           throw new IllegalArgumentException("testing mdc message id for statsbeat");
         }
       } catch (RuntimeException e) {
-        try (MDC.MDCCloseable ignored = Mdc.FAIL_TO_SEND_STATSBEAT_ERROR.closeable()) {
+        try (MDC.MDCCloseable ignored = Mdc.FAIL_TO_SEND_STATSBEAT_ERROR.makeActive()) {
           logger.error("Error occurred while sending statsbeat", e);
         }
       }

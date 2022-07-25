@@ -67,7 +67,7 @@ final class LocalFileWriter {
   void writeToDisk(String instrumentationKey, List<ByteBuffer> buffers) {
     long size = getTotalSizeOfPersistedFiles(telemetryFolder);
     if (size >= diskPersistenceMaxSizeBytes) {
-      try (MDC.MDCCloseable ignored = AzureMonitorMdc.DISK_PERSISTENCE_WRITE_ERROR.closeable()) {
+      try (MDC.MDCCloseable ignored = AzureMonitorMdc.DISK_PERSISTENCE_WRITE_ERROR.makeActive()) {
         operationLogger.recordFailure(
             "Local persistent storage capacity has been reached. It's currently at ("
                 + (size / 1024)
@@ -81,7 +81,7 @@ final class LocalFileWriter {
     try {
       tempFile = createTempFile(telemetryFolder);
     } catch (IOException e) {
-      try (MDC.MDCCloseable ignored = AzureMonitorMdc.DISK_PERSISTENCE_WRITE_ERROR.closeable()) {
+      try (MDC.MDCCloseable ignored = AzureMonitorMdc.DISK_PERSISTENCE_WRITE_ERROR.makeActive()) {
         operationLogger.recordFailure(
             "Error creating file in directory: " + telemetryFolder.getAbsolutePath(), e);
       }
@@ -92,7 +92,7 @@ final class LocalFileWriter {
     try {
       write(tempFile, buffers, instrumentationKey);
     } catch (IOException e) {
-      try (MDC.MDCCloseable ignored = AzureMonitorMdc.DISK_PERSISTENCE_WRITE_ERROR.closeable()) {
+      try (MDC.MDCCloseable ignored = AzureMonitorMdc.DISK_PERSISTENCE_WRITE_ERROR.makeActive()) {
         operationLogger.recordFailure("Error writing file: " + tempFile.getAbsolutePath(), e);
       }
       stats.incrementWriteFailureCount();
@@ -105,7 +105,7 @@ final class LocalFileWriter {
           new File(telemetryFolder, FileUtil.getBaseName(tempFile) + PERMANENT_FILE_EXTENSION);
       FileUtil.moveFile(tempFile, permanentFile);
     } catch (IOException e) {
-      try (MDC.MDCCloseable ignored = AzureMonitorMdc.DISK_PERSISTENCE_WRITE_ERROR.closeable()) {
+      try (MDC.MDCCloseable ignored = AzureMonitorMdc.DISK_PERSISTENCE_WRITE_ERROR.makeActive()) {
         operationLogger.recordFailure("Error renaming file: " + tempFile.getAbsolutePath(), e);
       }
       stats.incrementWriteFailureCount();

@@ -77,7 +77,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
     try {
       newTask = new GetAppIdTask(getAppIdUrl(connectionString));
     } catch (MalformedURLException e) {
-      try (MDC.MDCCloseable ignored = Mdc.APP_ID_ERROR.closeable()) {
+      try (MDC.MDCCloseable ignored = Mdc.APP_ID_ERROR.makeActive()) {
         logger.warn(e.getMessage(), e);
       }
       return;
@@ -112,7 +112,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
     // this case, just
     // return and let the next request resolve the ikey.
     if (appId == null) {
-      try (MDC.MDCCloseable ignored = Mdc.APP_ID_ERROR.closeable()) {
+      try (MDC.MDCCloseable ignored = Mdc.APP_ID_ERROR.makeActive()) {
         logger.debug("appId has not been retrieved yet (e.g. task may be pending or failed)");
       }
       return "";
@@ -146,7 +146,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
       } catch (RuntimeException ex) {
         if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
             ex, url.toString(), friendlyExceptionThrown, logger)) {
-          try (MDC.MDCCloseable ignored = Mdc.APP_ID_ERROR.closeable()) {
+          try (MDC.MDCCloseable ignored = Mdc.APP_ID_ERROR.makeActive()) {
             warningLogger.recordWarning("exception sending request to " + url, ex);
           }
         }
@@ -162,7 +162,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
       String body = response.getBodyAsString().block();
       int statusCode = response.getStatusCode();
       if (statusCode != 200) {
-        try (MDC.MDCCloseable ignored = Mdc.APP_ID_ERROR.closeable()) {
+        try (MDC.MDCCloseable ignored = Mdc.APP_ID_ERROR.makeActive()) {
           warningLogger.recordWarning(
               "received " + statusCode + " from " + url + "\nfull response:\n" + body, null);
         }
@@ -172,7 +172,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
 
       // check for case when breeze returns invalid value
       if (body == null || body.isEmpty()) {
-        try (MDC.MDCCloseable ignored = Mdc.APP_ID_ERROR.closeable()) {
+        try (MDC.MDCCloseable ignored = Mdc.APP_ID_ERROR.makeActive()) {
           warningLogger.recordWarning("received empty body from " + url, null);
         }
         backOff();

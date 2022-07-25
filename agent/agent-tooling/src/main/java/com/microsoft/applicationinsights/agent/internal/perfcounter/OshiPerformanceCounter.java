@@ -70,7 +70,7 @@ public class OshiPerformanceCounter implements PerformanceCounter {
         // e.g. icm 253155448: NoClassDefFoundError
         // e.g. icm 276640835: ExceptionInInitializerError
         hasError.set(true);
-        try (MDC.MDCCloseable ignored = Mdc.OSHI_RELATED_ERROR.closeable()) {
+        try (MDC.MDCCloseable ignored = Mdc.OSHI_RELATED_ERROR.makeActive()) {
           logger.debug("Fail to initialize OSProcess and CentralProcessor", ex);
         }
         return;

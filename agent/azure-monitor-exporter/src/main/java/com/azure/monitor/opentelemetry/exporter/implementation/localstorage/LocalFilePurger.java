@@ -84,7 +84,7 @@ class LocalFilePurger implements Runnable {
       if (LocalFileCache.isExpired(file, expiredIntervalSeconds)) {
         if (!FileUtil.deleteFileWithRetries(file)) {
           try (MDC.MDCCloseable ignored =
-              AzureMonitorMdc.DISK_PERSISTENCE_PURGE_ERROR.closeable()) {
+              AzureMonitorMdc.DISK_PERSISTENCE_PURGE_ERROR.makeActive()) {
             operationLogger.recordFailure("Unable to delete file: " + file.getAbsolutePath());
           }
         } else {

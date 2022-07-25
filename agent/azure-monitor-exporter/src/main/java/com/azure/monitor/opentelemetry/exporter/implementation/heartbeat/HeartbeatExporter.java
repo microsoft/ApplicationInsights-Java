@@ -127,7 +127,7 @@ public class HeartbeatExporter {
       telemetryItemsConsumer.accept(Collections.singletonList(gatherData()));
       logger.trace("No of heartbeats sent, {}", ++heartbeatsSent);
     } catch (RuntimeException e) {
-      try (MDC.MDCCloseable ignored = AzureMonitorMdc.HEARTBEAT_SEND_ERROR.closeable()) {
+      try (MDC.MDCCloseable ignored = AzureMonitorMdc.HEARTBEAT_SEND_ERROR.makeActive()) {
         logger.warn("Error occured while sending heartbeat");
       }
     }

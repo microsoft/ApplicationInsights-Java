@@ -134,7 +134,7 @@ public class RpConfigurationPolling implements Runnable {
         rpConfiguration = newRpConfiguration;
       }
     } catch (IOException e) {
-      try (MDC.MDCCloseable ignored = Mdc.CONFIGURATION_RELATED_ERROR.closeable()) {
+      try (MDC.MDCCloseable ignored = Mdc.CONFIGURATION_RELATED_ERROR.makeActive()) {
         logger.error("Error occurred when polling json config file: {}", e.getMessage(), e);
       }
     }

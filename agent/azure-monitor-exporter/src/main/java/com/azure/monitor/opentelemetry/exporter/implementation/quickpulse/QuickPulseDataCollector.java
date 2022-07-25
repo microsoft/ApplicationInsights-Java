@@ -81,7 +81,7 @@ final class QuickPulseDataCollector {
       throw td;
     } catch (Throwable t) {
       try {
-        try (MDC.MDCCloseable ignored = AzureMonitorMdc.QUICK_PULSE_SEND_ERROR.closeable()) {
+        try (MDC.MDCCloseable ignored = AzureMonitorMdc.QUICK_PULSE_SEND_ERROR.makeActive()) {
           LoggerFactory.getLogger(QuickPulseDataCollector.class)
               .error(
                   "Could not initialize {}",

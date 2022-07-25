@@ -44,7 +44,7 @@ public class FreeMemoryPerformanceCounter implements PerformanceCounter {
     try {
       freePhysicalMemorySize = getFreePhysicalMemorySize();
     } catch (Exception e) {
-      try (MDC.MDCCloseable ignored = Mdc.FREE_PHYSICAL_MEMORY_SIZE_ERROR.closeable()) {
+      try (MDC.MDCCloseable ignored = Mdc.FREE_PHYSICAL_MEMORY_SIZE_ERROR.makeActive()) {
         logger.error("Error getting FreePhysicalMemorySize");
       }
       logger.trace("Error getting FreePhysicalMemorySize", e);

@@ -74,7 +74,7 @@ public class NetworkFriendlyExceptions {
     for (FriendlyExceptionDetector detector : detectors) {
       if (detector.detect(error)) {
         if (!alreadySeen.getAndSet(true)) {
-          try (MDC.MDCCloseable ignored = AzureMonitorMdc.NETWORK_FAILURE_ERROR.closeable()) {
+          try (MDC.MDCCloseable ignored = AzureMonitorMdc.NETWORK_FAILURE_ERROR.makeActive()) {
             logger.error(detector.message(url));
           }
         }

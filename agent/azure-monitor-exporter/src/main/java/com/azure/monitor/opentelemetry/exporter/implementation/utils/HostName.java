@@ -45,7 +45,7 @@ public class HostName {
       InetAddress addr = InetAddress.getLocalHost();
       return addr.getHostName();
     } catch (UnknownHostException ex) {
-      try (MDC.MDCCloseable ignored = AzureMonitorMdc.HOSTNAME_ERROR.closeable()) {
+      try (MDC.MDCCloseable ignored = AzureMonitorMdc.HOSTNAME_ERROR.makeActive()) {
         logger.warn("Error resolving hostname", ex);
       }
       return null;

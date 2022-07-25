@@ -58,7 +58,7 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
   @Override
   public void onResponse(TelemetryPipelineRequest request, TelemetryPipelineResponse response) {
     int responseCode = response.getStatusCode();
-    try (MDC.MDCCloseable ignored = AzureMonitorMdc.NETWORK_FAILURE_ERROR.closeable()) {
+    try (MDC.MDCCloseable ignored = AzureMonitorMdc.NETWORK_FAILURE_ERROR.makeActive()) {
       switch (responseCode) {
         case 200: // SUCCESS
           operationLogger.recordSuccess();

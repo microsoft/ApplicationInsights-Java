@@ -70,7 +70,7 @@ public class JmxDataFetcher {
         List<Object> resultForAttribute = fetch(server, objects, attribute.attribute);
         result.put(attribute.metricName, resultForAttribute);
       } catch (Exception e) {
-        try (MDC.MDCCloseable ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.closeable()) {
+        try (MDC.MDCCloseable ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
           logger.warn(
               "Failed to fetch JMX object '{}' with attribute '{}': ",
               objectName,

@@ -102,7 +102,7 @@ final class QuickPulseCoordinator implements Runnable {
         return waitBetweenPostsInMillis;
     }
 
-    try (MDC.MDCCloseable ignored = AzureMonitorMdc.QUICK_PULSE_SEND_ERROR.closeable()) {
+    try (MDC.MDCCloseable ignored = AzureMonitorMdc.QUICK_PULSE_SEND_ERROR.makeActive()) {
       logger.error("Critical error while sending QP data: unknown status, aborting");
     }
     collector.disable();
@@ -128,7 +128,7 @@ final class QuickPulseCoordinator implements Runnable {
             : waitBetweenPingsInMillis;
     }
 
-    try (MDC.MDCCloseable ignored = AzureMonitorMdc.QUICK_PULSE_PING_ERROR.closeable()) {
+    try (MDC.MDCCloseable ignored = AzureMonitorMdc.QUICK_PULSE_PING_ERROR.makeActive()) {
       logger.error("Critical error while ping QP: unknown status, aborting");
     }
     collector.disable();

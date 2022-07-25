@@ -149,7 +149,7 @@ public enum PerformanceCounterContainer {
                 throw td;
               } catch (Throwable t) {
                 try (MDC.MDCCloseable ignored =
-                    Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.closeable()) {
+                    Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
                   logger.error(
                       "Exception while reporting performance counter: '{}'",
                       performanceCounter.getClass().getName(),

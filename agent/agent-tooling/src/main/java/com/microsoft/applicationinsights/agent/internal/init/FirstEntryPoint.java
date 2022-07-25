@@ -163,7 +163,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
       StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success, startupLogger != null);
     } catch (Throwable t) {
       if (startupLogger != null) {
-        try (MDC.MDCCloseable ignored = Mdc.STATUS_FILE_RELATED_ERROR.closeable()) {
+        try (MDC.MDCCloseable ignored = Mdc.STATUS_FILE_RELATED_ERROR.makeActive()) {
           startupLogger.error("Error writing status.json", t);
         }
       } else {
@@ -194,7 +194,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
       File javaagentFile) {
 
     if (startupLogger != null) {
-      try (MDC.MDCCloseable ignored = Mdc.STATUS_FILE_RELATED_ERROR.closeable()) {
+      try (MDC.MDCCloseable ignored = Mdc.STATUS_FILE_RELATED_ERROR.makeActive()) {
         if (isFriendlyException) {
           startupLogger.error(message);
         } else {
@@ -213,7 +213,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
                 selfDiagnostics.file.path);
         startupLogger = configureLogging(selfDiagnostics, agentPath);
 
-        try (MDC.MDCCloseable ignored = Mdc.STATUS_FILE_RELATED_ERROR.closeable()) {
+        try (MDC.MDCCloseable ignored = Mdc.STATUS_FILE_RELATED_ERROR.makeActive()) {
           if (isFriendlyException) {
             startupLogger.error(message);
           } else {

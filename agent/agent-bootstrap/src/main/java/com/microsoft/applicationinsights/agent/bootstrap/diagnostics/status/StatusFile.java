@@ -223,7 +223,7 @@ public class StatusFile {
                   b.flush();
                 } catch (Exception e) {
                   if (logger != null) {
-                    try (MDC.MDCCloseable ignored = Mdc.STATUS_FILE_RELATED_ERROR.closeable()) {
+                    try (MDC.MDCCloseable ignored = Mdc.STATUS_FILE_RELATED_ERROR.makeActive()) {
                       logger.error("Error writing {}", file.getAbsolutePath(), e);
                     }
                   } else {
@@ -239,7 +239,7 @@ public class StatusFile {
                 }
               } else {
                 if (logger != null) {
-                  try (MDC.MDCCloseable ignored = Mdc.STATUS_FILE_RELATED_ERROR.closeable()) {
+                  try (MDC.MDCCloseable ignored = Mdc.STATUS_FILE_RELATED_ERROR.makeActive()) {
                     logger.error(
                         "Parent directories for status file could not be created: {}",
                         file.getAbsolutePath());

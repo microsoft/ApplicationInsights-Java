@@ -115,7 +115,7 @@ class AvailableJmxMetricLogger {
         // log exception at trace level since this is expected in several cases, e.g.
         // "java.lang.UnsupportedOperationException: CollectionUsage threshold is not supported"
         // and available jmx metrics are already only logged at debug
-        try (MDC.MDCCloseable ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.closeable()) {
+        try (MDC.MDCCloseable ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
           logger.trace(e.getMessage(), e);
         }
         attributes = singleton("(error getting attributes)");
@@ -141,7 +141,7 @@ class AvailableJmxMetricLogger {
         // log exception at trace level since this is expected in several cases, e.g.
         // "java.lang.UnsupportedOperationException: CollectionUsage threshold is not supported"
         // and available jmx metrics are already only logged at debug
-        try (MDC.MDCCloseable ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.closeable()) {
+        try (MDC.MDCCloseable ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
           logger.trace(e.getMessage(), e);
         }
         attributes.add(attribute.getName() + " (exception)");

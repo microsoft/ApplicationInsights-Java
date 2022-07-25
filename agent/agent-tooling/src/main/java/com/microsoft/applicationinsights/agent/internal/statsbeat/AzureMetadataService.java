@@ -132,7 +132,7 @@ class AzureMetadataService implements Runnable {
     try {
       metadataInstanceResponse = mapper.readValue(json, MetadataInstanceResponse.class);
     } catch (IOException e) {
-      try (MDC.MDCCloseable ignored = Mdc.FAIL_TO_SEND_STATSBEAT_ERROR.closeable()) {
+      try (MDC.MDCCloseable ignored = Mdc.FAIL_TO_SEND_STATSBEAT_ERROR.makeActive()) {
         logger.debug(
             "Shutting down AzureMetadataService scheduler:"
                 + " error parsing response from Azure Metadata Service: {}",

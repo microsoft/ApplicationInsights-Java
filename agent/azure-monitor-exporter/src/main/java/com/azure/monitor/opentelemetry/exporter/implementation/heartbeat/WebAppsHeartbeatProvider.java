@@ -137,7 +137,7 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
             }
           } catch (RuntimeException e) {
             if (logger.isWarnEnabled()) {
-              try (MDC.MDCCloseable ignored = AzureMonitorMdc.HEARTBEAT_SEND_ERROR.closeable()) {
+              try (MDC.MDCCloseable ignored = AzureMonitorMdc.HEARTBEAT_SEND_ERROR.makeActive()) {
                 logger.warn("Failed to obtain heartbeat property", e);
               }
             }
