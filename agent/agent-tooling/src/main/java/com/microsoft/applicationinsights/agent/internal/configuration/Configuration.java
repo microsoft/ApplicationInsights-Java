@@ -532,6 +532,7 @@ public class Configuration {
         if (isRuntimeAttached()) { // With runtime attachment, the agent jar is located in a temp
           // folder that is dropped when the JVM shuts down
           String userDir = System.getProperty("user.dir");
+          System.out.println("#### runtime attach userDir: " + userDir);
           return userDir + File.separator + DEFAULT_NAME;
         }
         return DEFAULT_NAME; // this will be relative to the directory where agent jar is located
