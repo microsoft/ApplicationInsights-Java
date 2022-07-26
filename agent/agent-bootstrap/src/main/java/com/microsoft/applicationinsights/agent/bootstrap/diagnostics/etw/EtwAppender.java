@@ -118,7 +118,7 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
       }
 
       String messageId = mdcPropertyMap.get(DiagnosticsHelper.MDC_MESSAGE_ID);
-      etwLogger.debug("#### [messageId: " + messageId + "]");
+      etwLogger.debug("#### [msgId: " + messageId + "]");
       etwLogger.debug("#### logger name: " + logger);
       etwLogger.debug("#### logger message: " + logEvent.getMessage());
       if (messageId != null && !messageId.isEmpty()) {

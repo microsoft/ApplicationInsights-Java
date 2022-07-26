@@ -24,20 +24,20 @@ package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 import org.slf4j.MDC;
 
 // JAVA reserves message id for App Service Diagnostics Logs from 2000 - 2999
-// Reserve messageId 2100 - 2200 for Azure Monitor Exporter
+// Reserve msgId 2100 - 2200 for Azure Monitor Exporter
 public enum AzureMonitorMdc {
-  QUICK_PULSE_PING_ERROR("messageId", "2100"),
-  QUICK_PULSE_SEND_ERROR("messageId", "2101"),
-  DISK_PERSISTENCE_READ_ERROR("messageId", "2102"),
-  DISK_PERSISTENCE_WRITE_ERROR("messageId", "2103"),
-  DISK_PERSISTENCE_PURGE_ERROR("messageId", "2104"),
-  NETWORK_FAILURE_ERROR("messageId", "2105"),
-  TELEMETRY_INTERNAL_SEND_ERROR("messageId", "2106"),
-  HEARTBEAT_SEND_ERROR("messageId", "2107"),
-  TELEMETRY_TRUNCATION_ERROR("messageId", "2108"),
-  CPU_PERFORMANCE_COUNTER_ERROR("messageId", "2109"),
-  SAMPLING_ERROR("messageId", "2110"),
-  HOSTNAME_ERROR("messageId", "2111");
+  QUICK_PULSE_PING_ERROR("msgId", "2100"),
+  QUICK_PULSE_SEND_ERROR("msgId", "2101"),
+  DISK_PERSISTENCE_READ_ERROR("msgId", "2102"),
+  DISK_PERSISTENCE_WRITE_ERROR("msgId", "2103"),
+  DISK_PERSISTENCE_PURGE_ERROR("msgId", "2104"),
+  NETWORK_FAILURE_ERROR("msgId", "2105"),
+  TELEMETRY_INTERNAL_SEND_ERROR("msgId", "2106"),
+  HEARTBEAT_SEND_ERROR("msgId", "2107"),
+  TELEMETRY_TRUNCATION_ERROR("msgId", "2108"),
+  CPU_PERFORMANCE_COUNTER_ERROR("msgId", "2109"),
+  SAMPLING_ERROR("msgId", "2110"),
+  HOSTNAME_ERROR("msgId", "2111");
 
   private final String key;
   private final String value;

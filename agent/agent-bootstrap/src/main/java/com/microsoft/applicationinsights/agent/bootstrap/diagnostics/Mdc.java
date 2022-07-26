@@ -24,16 +24,16 @@ package com.microsoft.applicationinsights.agent.bootstrap.diagnostics;
 import org.slf4j.MDC;
 
 // JAVA reserves message id for App Service Diagnostics Logs from 2000 - 2999
-// Reserve messageId 2000 - 2099 for java agent
+// Reserve msgId 2000 - 2099 for java agent
 public enum Mdc {
-  INITIALIZATION_SUCCESS("messageId", "2000"),
-  FREE_PHYSICAL_MEMORY_SIZE_ERROR("messageId", "2001"),
-  JMX_METRIC_PERFORMANCE_COUNTER_ERROR("messageId", "2002"),
-  FAIL_TO_SEND_STATSBEAT_ERROR("messageId", "2003"),
-  CONFIGURATION_RELATED_ERROR("messageId", "2004"),
-  OSHI_RELATED_ERROR("messageId", "2005"),
-  STATUS_FILE_RELATED_ERROR("messageId", "2006"),
-  APP_ID_ERROR("messageId", "2007");
+  INITIALIZATION_SUCCESS("msgId", "2000"),
+  FREE_PHYSICAL_MEMORY_SIZE_ERROR("msgId", "2001"),
+  JMX_METRIC_PERFORMANCE_COUNTER_ERROR("msgId", "2002"),
+  FAIL_TO_SEND_STATSBEAT_ERROR("msgId", "2003"),
+  CONFIGURATION_RELATED_ERROR("msgId", "2004"),
+  OSHI_RELATED_ERROR("msgId", "2005"),
+  STATUS_FILE_RELATED_ERROR("msgId", "2006"),
+  APP_ID_ERROR("msgId", "2007");
 
   private final String key;
   private final String value;
