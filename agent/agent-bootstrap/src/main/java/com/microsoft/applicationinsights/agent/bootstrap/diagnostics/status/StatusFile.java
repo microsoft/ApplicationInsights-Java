@@ -132,18 +132,21 @@ public class StatusFile {
 
   // visible for testing
   static String initLogDir() {
+    // TODO document here which app svcs platforms / containers provide site.log system property?
+    String siteLogDir = System.getProperty(SITE_LOGDIR_PROPERTY);
+    startupLogger.debug("#### siteLogDir:" + siteLogDir);
+
     // App Service Linux uses the same folder as the
     // APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY
     if (!DiagnosticsHelper.isOsWindows() && DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
       String diagnosticsOutputDirectory =
           System.getenv(DiagnosticsHelper.APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY);
+      startupLogger.debug("#### diagnosticsOutputDirectory: " + diagnosticsOutputDirectory);
       if (diagnosticsOutputDirectory != null && !diagnosticsOutputDirectory.isEmpty()) {
         return diagnosticsOutputDirectory;
       }
     }
 
-    // TODO document here which app svcs platforms / containers provide site.log system property?
-    String siteLogDir = System.getProperty(SITE_LOGDIR_PROPERTY);
     if (siteLogDir != null && !siteLogDir.isEmpty()) {
       return siteLogDir + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
     }
