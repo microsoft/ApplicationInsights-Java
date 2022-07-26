@@ -45,6 +45,7 @@ import ch.qos.logback.core.rolling.helper.Compressor;
 import ch.qos.logback.core.rolling.helper.FileFilterUtil;
 import ch.qos.logback.core.rolling.helper.IntegerTokenConverter;
 import ch.qos.logback.core.rolling.helper.RenameUtil;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
 import java.util.Date;
 
@@ -148,6 +149,10 @@ public class FixedWindowRollingPolicy extends RollingPolicyBase {
   }
 
   @Override
+  @SuppressFBWarnings(
+      value = "SECPTI", // Potential Path Traversal
+      justification =
+          "The constructed file path cannot be controlled by an end user of the instrumented application")
   public void rollover() throws RolloverFailure {
 
     // Inside this method it is guaranteed that the hereto active log file is

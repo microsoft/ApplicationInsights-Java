@@ -21,7 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
-import java.util.Random;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.concurrent.ThreadLocalRandom;
 import javax.annotation.Nullable;
 
 /**
@@ -30,19 +31,20 @@ import javax.annotation.Nullable;
  */
 public class SamplingScoreGeneratorV2 {
 
-  private static final Random random = new Random();
-
   /**
    * This method takes the telemetry and returns the hash of the operation id if it is present
    * already or uses the random number generator to generate the sampling score.
    *
    * @return [0.0, 1.0)
    */
+  @SuppressFBWarnings(
+      value = "SECPR", // Predictable pseudorandom number generator
+      justification = "Predictable random is ok for sampling score")
   public static double getSamplingScore(@Nullable String operationId) {
     if (operationId != null && !operationId.isEmpty()) {
       return 100 * ((double) getSamplingHashCode(operationId) / Integer.MAX_VALUE);
     } else {
-      return 100 * random.nextDouble();
+      return 100 * ThreadLocalRandom.current().nextDouble();
     }
   }
 

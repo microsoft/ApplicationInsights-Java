@@ -90,7 +90,7 @@ public class JmxMemoryManagement implements MemoryManagement {
     try {
       return JMX.newMXBeanProxy(
           connection, new ObjectName(RUNTIME_MXBEAN_NAME), RuntimeMXBean.class);
-    } catch (MalformedObjectNameException | NullPointerException e) {
+    } catch (MalformedObjectNameException e) {
       throw new UnableToMonitorMemoryException(e);
     }
   }

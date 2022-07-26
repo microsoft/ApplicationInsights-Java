@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.configuration;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,6 +38,10 @@ public class RpConfigurationBuilder {
       "APPLICATIONINSIGHTS_RP_CONFIGURATION_FILE";
 
   @Nullable
+  @SuppressFBWarnings(
+      value = "SECPTI", // Potential Path Traversal
+      justification =
+          "The constructed file path cannot be controlled by an end user of the instrumented application")
   public static RpConfiguration create(Path agentJarPath) throws IOException {
     Path configPath;
     String configPathString =

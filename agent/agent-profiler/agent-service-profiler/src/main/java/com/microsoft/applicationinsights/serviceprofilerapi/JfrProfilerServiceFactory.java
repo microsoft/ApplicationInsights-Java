@@ -31,7 +31,6 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFront
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler;
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Supplier;
@@ -42,8 +41,6 @@ import java.util.function.Supplier;
  */
 @AutoService(ProfilerServiceFactory.class)
 public class JfrProfilerServiceFactory implements ProfilerServiceFactory {
-  // Singleton instance that holds the one and only service of the ServiceProfiler subsystem
-  private static JfrProfilerService instance;
 
   @Override
   public synchronized Future<ProfilerService> initialize(
@@ -57,30 +54,24 @@ public class JfrProfilerServiceFactory implements ProfilerServiceFactory {
       ScheduledExecutorService serviceProfilerExecutorService,
       String userAgent,
       String roleName) {
-    if (instance == null) {
-      ServiceProfilerClientV2 serviceProfilerClient =
-          new ProfilerFrontendClientV2(
-              config.getServiceProfilerFrontEndPoint(),
-              instrumentationKey,
-              httpPipeline,
-              userAgent);
+    ServiceProfilerClientV2 serviceProfilerClient =
+        new ProfilerFrontendClientV2(
+            config.getServiceProfilerFrontEndPoint(), instrumentationKey, httpPipeline, userAgent);
 
-      ServiceProfilerUploader uploader =
-          new ServiceProfilerUploader(
-              serviceProfilerClient, machineName, processId, appIdSupplier, roleName);
+    ServiceProfilerUploader uploader =
+        new ServiceProfilerUploader(
+            serviceProfilerClient, machineName, processId, appIdSupplier, roleName);
 
-      instance =
-          new JfrProfilerService(
-              appIdSupplier,
-              config,
-              new JfrProfiler(config),
-              profilerConfigurationHandler,
-              serviceProfilerClient,
-              uploader,
-              serviceProfilerExecutorService);
+    JfrProfilerService instance =
+        new JfrProfilerService(
+            appIdSupplier,
+            config,
+            new JfrProfiler(config),
+            profilerConfigurationHandler,
+            serviceProfilerClient,
+            uploader,
+            serviceProfilerExecutorService);
 
-      return instance.initialize();
-    }
-    return CompletableFuture.completedFuture(instance);
+    return instance.initialize();
   }
 }

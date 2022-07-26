@@ -27,6 +27,7 @@ import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.ApplicationMetadataFactory;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -45,6 +46,9 @@ public class ApplicationInsightsCsvLayout extends PatternLayout {
   }
 
   @Override
+  @SuppressFBWarnings(
+      value = "ERRMSG", // Information exposure through an error message
+      justification = "Error message is not exposed to an end user of the instrumented application")
   public String doLayout(ILoggingEvent event) {
     String message = event.getFormattedMessage();
     IThrowableProxy throwableProxy = event.getThrowableProxy();

@@ -296,22 +296,12 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
     }
     recordingFile.createNewFile();
 
-    BufferedInputStream stream = null;
-    FileOutputStream fos = null;
-    try {
-      stream = new BufferedInputStream(recording.getStream(null, null));
-      fos = new FileOutputStream(recordingFile);
+    try (BufferedInputStream stream = new BufferedInputStream(recording.getStream(null, null));
+        FileOutputStream fos = new FileOutputStream(recordingFile)) {
       int read;
       byte[] buffer = new byte[10 * 1024];
       while ((read = stream.read(buffer)) != -1) {
         fos.write(buffer, 0, read);
-      }
-    } finally {
-      if (stream != null) {
-        stream.close();
-      }
-      if (fos != null) {
-        fos.close();
       }
     }
   }
