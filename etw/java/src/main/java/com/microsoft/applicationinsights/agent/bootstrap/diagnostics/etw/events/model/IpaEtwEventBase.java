@@ -24,9 +24,9 @@ package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events
 public abstract class IpaEtwEventBase implements IpaEtwEvent {
   private String extensionVersion;
   private String appName;
-  private String instrumentationKey;
+  private String ikey;
   private String subscriptionId;
-  private String messageId;
+  private String msgId;
 
   // not copied from prototype
   private String logger;
@@ -39,9 +39,9 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
   protected IpaEtwEventBase(IpaEtwEventBase event) {
     extensionVersion = event.extensionVersion;
     appName = event.appName;
-    instrumentationKey = event.instrumentationKey;
+    ikey = event.ikey;
     subscriptionId = event.subscriptionId;
-    messageId = event.messageId;
+    msgId = event.msgId;
   }
 
   public void setLogger(String logger) {
@@ -76,21 +76,21 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
   }
 
   // used by native method
-  public String getInstrumentationKey() {
-    return instrumentationKey == null ? "" : instrumentationKey;
+  public String getIkey() {
+    return ikey == null ? "" : ikey;
   }
 
-  public void setInstrumentationKey(String instrumentationKey) {
-    this.instrumentationKey = instrumentationKey;
+  public void setIkey(String ikey) {
+    this.ikey = ikey;
   }
 
   // used by native method
-  public String getMessageId() {
-    return messageId == null ? "" : messageId;
+  public String getMsgId() {
+    return msgId == null ? "" : msgId;
   }
 
-  public void setMessageId(String messageId) {
-    this.messageId = messageId;
+  public void setMsgId(String msgId) {
+    this.msgId = msgId;
   }
 
   public void setMessageFormat(String messageFormat) {

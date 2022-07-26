@@ -123,7 +123,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
         System.getProperty("java.home"));
 
     MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
-    try {
+    try (MDC.MDCCloseable ignored = Mdc.INITIALIZATION_SUCCESS.makeActive()) {
       LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
           .info("Application Insights Codeless Agent {} Attach Successful", agentVersion);
     } finally {

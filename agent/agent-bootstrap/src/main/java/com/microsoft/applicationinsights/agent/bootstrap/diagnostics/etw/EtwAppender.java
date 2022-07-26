@@ -51,7 +51,7 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
     proto.setAppName(metadata.getSiteName().getValue());
     proto.setExtensionVersion(metadata.getSdkVersion().getValue());
     proto.setSubscriptionId(metadata.getSubscriptionId().getValue());
-    proto.setInstrumentationKey(metadata.getInstrumentationKey().getValue());
+    proto.setIkey(metadata.getInstrumentationKey().getValue());
     etwProvider = new EtwProvider(metadata.getSdkVersion().getValue());
   }
 
@@ -59,7 +59,7 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
   public void start() {
     IpaVerbose event = new IpaVerbose(proto);
     event.setMessageFormat("EtwProvider initialized successfully.");
-    event.setMessageId(Mdc.INITIALIZATION_SUCCESS.getValue());
+    event.setMsgId(Mdc.INITIALIZATION_SUCCESS.getValue());
     try {
       this.etwProvider.writeEvent(event);
     } catch (LinkageError | ApplicationInsightsEtwException e) {
@@ -122,7 +122,7 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
       etwLogger.debug("#### logger name: " + logger);
       etwLogger.debug("#### logger message: " + logEvent.getMessage());
       if (messageId != null && !messageId.isEmpty()) {
-        event.setMessageId(messageId);
+        event.setMsgId(messageId);
       }
     }
     event.setLogger(logger);
