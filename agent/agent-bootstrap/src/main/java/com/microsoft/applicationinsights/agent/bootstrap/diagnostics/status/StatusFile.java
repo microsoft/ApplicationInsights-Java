@@ -117,6 +117,7 @@ public class StatusFile {
     VALUE_FINDERS.add(mf.getExtensionVersion());
 
     logDir = initLogDir();
+    LoggerFactory.getLogger(StatusFile.class).debug("#### status file logDir: " + logDir);
     directory = logDir + STATUS_FILE_DIRECTORY;
     File dir = new File(logDir);
     writable = dir.canWrite();
@@ -131,6 +132,16 @@ public class StatusFile {
 
   // visible for testing
   static String initLogDir() {
+    // App Service Linux uses the same folder as the
+    // APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY
+    if (!DiagnosticsHelper.isOsWindows() && DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
+      String diagnosticsOutputDirectory =
+          System.getenv(DiagnosticsHelper.APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY);
+      if (diagnosticsOutputDirectory != null && !diagnosticsOutputDirectory.isEmpty()) {
+        return diagnosticsOutputDirectory;
+      }
+    }
+
     // TODO document here which app svcs platforms / containers provide site.log system property?
     String siteLogDir = System.getProperty(SITE_LOGDIR_PROPERTY);
     if (siteLogDir != null && !siteLogDir.isEmpty()) {
