@@ -21,35 +21,11 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
-/** Created by yonisha on 2/16/2015. */
-public class ThreadContext {
+public final class ThreadContext {
 
-  // No object creation allowed for this class.
-  private ThreadContext() {}
-
-  private static final InheritableThreadLocal<RequestTelemetryContext> threadLocal =
-      new InheritableThreadLocal<>();
-
-  /**
-   * Set the context in ThreadLocal
-   *
-   * @param telemetryContext
-   */
-  public static void setRequestTelemetryContext(RequestTelemetryContext telemetryContext) {
-    threadLocal.set(telemetryContext);
-  }
-
-  /**
-   * Get the context from ThreadLocal
-   *
-   * @return
-   */
   public static RequestTelemetryContext getRequestTelemetryContext() {
-    return threadLocal.get();
+    return null;
   }
 
-  /** Remove the context from ThreadLocal */
-  public static void remove() {
-    threadLocal.remove();
-  }
+  private ThreadContext() {}
 }
