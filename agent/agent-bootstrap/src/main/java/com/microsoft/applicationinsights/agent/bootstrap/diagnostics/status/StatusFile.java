@@ -64,13 +64,13 @@ public class StatusFile {
   static final String FILE_EXTENSION = ".json";
 
   // visible for testing
-  static final String SITE_LOGDIR_PROPERTY = "site.logdir";
+  //  static final String SITE_LOGDIR_PROPERTY = "site.logdir";
 
   // visible for testing
   static final String HOME_ENV_VAR = "HOME";
 
   // visible for testing
-  static final String DEFAULT_HOME_DIR = ".";
+  static final String DEFAULT_HOME_DIR = "/home";
 
   // visible for testing
   static final String DEFAULT_LOGDIR = "/LogFiles";
@@ -133,21 +133,13 @@ public class StatusFile {
 
   // visible for testing
   static String initLogDir() {
-    // TODO document here which app svcs platforms / containers provide site.log system property?
-    String siteLogDir = System.getProperty(SITE_LOGDIR_PROPERTY);
-    statusFileLogger.debug("#### siteLogDir:" + siteLogDir);
-    if (siteLogDir != null && !siteLogDir.isEmpty()) {
-      return siteLogDir + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
+    if (DiagnosticsHelper.isOsWindows()) {
+      return DEFAULT_HOME_DIR + DEFAULT_LOGDIR + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
     }
-    String homeDir = System.getenv(HOME_ENV_VAR);
-    if (homeDir != null && !homeDir.isEmpty()) {
-      return homeDir + DEFAULT_LOGDIR + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
-    }
-    return DEFAULT_HOME_DIR + DEFAULT_LOGDIR + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
+    return DiagnosticsHelper.LINUX_DEFAULT;
   }
 
   public static String getLogDir() {
-    statusFileLogger.debug("#### default logDir: " + logDir);
     return logDir;
   }
 

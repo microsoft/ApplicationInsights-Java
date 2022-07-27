@@ -39,6 +39,7 @@ public class DiagnosticsHelper {
 
   private static final boolean isWindows;
 
+  public static final String LINUX_DEFAULT = "/var/log/applicationinsights";
   public static final String DIAGNOSTICS_LOGGER_NAME = "applicationinsights.extension.diagnostics";
 
   private static final ApplicationMetadataFactory METADATA_FACTORY =

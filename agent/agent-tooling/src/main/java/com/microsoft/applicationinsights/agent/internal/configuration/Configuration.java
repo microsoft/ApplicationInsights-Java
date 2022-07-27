@@ -533,7 +533,6 @@ public class Configuration {
         if (isRuntimeAttached()) { // With runtime attachment, the agent jar is located in a temp
           // folder that is dropped when the JVM shuts down
           String userDir = System.getProperty("user.dir");
-          System.out.println("#### runtime attach userDir: " + userDir);
           return userDir + File.separator + DEFAULT_NAME;
         }
         return DEFAULT_NAME; // this will be relative to the directory where agent jar is located
@@ -543,7 +542,7 @@ public class Configuration {
       }
       if (DiagnosticsHelper.useFunctionsRpIntegrationLogging()
           && !DiagnosticsHelper.isOsWindows()) {
-        return "/var/log/applicationinsights/" + DEFAULT_NAME;
+        return DiagnosticsHelper.LINUX_DEFAULT + "/" + DEFAULT_NAME;
       }
       // azure spring cloud
       return DEFAULT_NAME;

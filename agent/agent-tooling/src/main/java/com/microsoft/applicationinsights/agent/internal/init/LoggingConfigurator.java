@@ -94,12 +94,10 @@ public class LoggingConfigurator {
     rootLogger.addAppender(configureFileAppender());
     rootLogger.addAppender(configureConsoleAppender());
 
-    // App Services linux environments set this environment variable to control where the internal
-    // diagnostic log is written, so that App Services can consume that file and send those logging
-    // events to an internal kusto store for internal alerting and diagnostics
-    String diagnosticsOutputDirectory =
-        System.getenv(DiagnosticsHelper.APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY);
-    if (diagnosticsOutputDirectory != null && !diagnosticsOutputDirectory.isEmpty()) {
+    // App Services linux is default to "/var/log/applicationinsights".
+    // they ignore the value set in env var APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY)
+    String diagnosticsOutputDirectory = "var/log/applicationinsights";
+    if (!DiagnosticsHelper.isOsWindows()) {
       Appender<ILoggingEvent> diagnosticAppender =
           configureDiagnosticAppender(diagnosticsOutputDirectory);
 
@@ -122,6 +120,7 @@ public class LoggingConfigurator {
     // diagnostic logging without building the etw dll locally
     if (DiagnosticsHelper.isOsWindows()
         && !Boolean.getBoolean("applicationinsights.testing.etw.disabled")) {
+      LoggerFactory.getLogger(LoggingConfigurator.class).debug("#### add etw appender");
       rootLogger.addAppender(configureEtwAppender());
     }
 
