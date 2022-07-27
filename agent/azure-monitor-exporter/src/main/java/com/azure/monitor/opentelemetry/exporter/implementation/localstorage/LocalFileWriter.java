@@ -24,7 +24,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdc;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -72,7 +72,7 @@ final class LocalFileWriter {
   void writeToDisk(String instrumentationKey, List<ByteBuffer> buffers) {
     long size = getTotalSizeOfPersistedFiles(telemetryFolder);
     if (size >= diskPersistenceMaxSizeBytes) {
-      try (MDC.MDCCloseable ignored = AzureMonitorMdc.DISK_PERSISTENCE_WRITE_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = AzureMonitorMsgId.DISK_PERSISTENCE_WRITE_ERROR.makeActive()) {
         operationLogger.recordFailure(
             "Local persistent storage capacity has been reached. It's currently at ("
                 + (size / 1024)
@@ -86,7 +86,7 @@ final class LocalFileWriter {
     try {
       tempFile = createTempFile(telemetryFolder);
     } catch (IOException e) {
-      try (MDC.MDCCloseable ignored = AzureMonitorMdc.DISK_PERSISTENCE_WRITE_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = AzureMonitorMsgId.DISK_PERSISTENCE_WRITE_ERROR.makeActive()) {
         operationLogger.recordFailure(
             "Error creating file in directory: " + telemetryFolder.getAbsolutePath(), e);
       }
@@ -97,7 +97,7 @@ final class LocalFileWriter {
     try {
       write(tempFile, buffers, instrumentationKey);
     } catch (IOException e) {
-      try (MDC.MDCCloseable ignored = AzureMonitorMdc.DISK_PERSISTENCE_WRITE_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = AzureMonitorMsgId.DISK_PERSISTENCE_WRITE_ERROR.makeActive()) {
         operationLogger.recordFailure("Error writing file: " + tempFile.getAbsolutePath(), e);
       }
       stats.incrementWriteFailureCount();
@@ -110,7 +110,7 @@ final class LocalFileWriter {
           new File(telemetryFolder, FileUtil.getBaseName(tempFile) + PERMANENT_FILE_EXTENSION);
       FileUtil.moveFile(tempFile, permanentFile);
     } catch (IOException e) {
-      try (MDC.MDCCloseable ignored = AzureMonitorMdc.DISK_PERSISTENCE_WRITE_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = AzureMonitorMsgId.DISK_PERSISTENCE_WRITE_ERROR.makeActive()) {
         operationLogger.recordFailure("Error renaming file: " + tempFile.getAbsolutePath(), e);
       }
       stats.incrementWriteFailureCount();

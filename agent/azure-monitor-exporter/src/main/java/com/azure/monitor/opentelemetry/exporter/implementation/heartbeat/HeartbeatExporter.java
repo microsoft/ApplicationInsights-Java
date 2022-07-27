@@ -25,7 +25,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.Abstract
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdc;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -127,7 +127,7 @@ public class HeartbeatExporter {
       telemetryItemsConsumer.accept(Collections.singletonList(gatherData()));
       logger.trace("No of heartbeats sent, {}", ++heartbeatsSent);
     } catch (RuntimeException e) {
-      try (MDC.MDCCloseable ignored = AzureMonitorMdc.HEARTBEAT_SEND_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = AzureMonitorMsgId.HEARTBEAT_SEND_ERROR.makeActive()) {
         logger.warn("Error occured while sending heartbeat");
       }
     }

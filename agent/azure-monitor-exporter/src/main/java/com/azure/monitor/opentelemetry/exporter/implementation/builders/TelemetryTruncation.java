@@ -21,7 +21,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.builders;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdc;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
@@ -43,7 +43,7 @@ final class TelemetryTruncation {
     if (alreadyLoggedAttributeNames.add(attributeName)) {
       // this can be expected, so don't want to flood the logs with a lot of these
       // (and don't want to log the full value, e.g. sql text > 8192 characters)
-      try (MDC.MDCCloseable ignored = AzureMonitorMdc.TELEMETRY_TRUNCATION_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = AzureMonitorMsgId.TELEMETRY_TRUNCATION_ERROR.makeActive()) {
         logger.warn(
             "truncated {} attribute value to {} characters (this message will only be logged once"
                 + " per attribute name): {}",
@@ -63,7 +63,7 @@ final class TelemetryTruncation {
     }
     if (alreadyLoggedPropertyKeys.size() < 10 && alreadyLoggedPropertyKeys.add(propertyKey)) {
       // this can be expected, so don't want to flood the logs with a lot of these
-      try (MDC.MDCCloseable ignored = AzureMonitorMdc.TELEMETRY_TRUNCATION_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = AzureMonitorMsgId.TELEMETRY_TRUNCATION_ERROR.makeActive()) {
         logger.warn(
             "truncated {} property value to {} characters (this message will only be logged once"
                 + " per property key, and only for at most 10 different property keys): {}",

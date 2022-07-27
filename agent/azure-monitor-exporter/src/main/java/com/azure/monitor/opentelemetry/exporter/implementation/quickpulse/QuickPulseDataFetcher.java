@@ -25,7 +25,7 @@ import com.azure.core.http.HttpRequest;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model.QuickPulseEnvelope;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model.QuickPulseMetrics;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.util.CustomCharacterEscapes;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdc;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -112,7 +112,7 @@ class QuickPulseDataFetcher {
       request.setBody(buildPostEntity(counters));
 
       if (!sendQueue.offer(request)) {
-        try (MDC.MDCCloseable ignored = AzureMonitorMdc.QUICK_PULSE_SEND_ERROR.makeActive()) {
+        try (MDC.MDCCloseable ignored = AzureMonitorMsgId.QUICK_PULSE_SEND_ERROR.makeActive()) {
           logger.trace("Quick Pulse send queue is full");
         }
       }
@@ -120,7 +120,7 @@ class QuickPulseDataFetcher {
       throw td;
     } catch (Throwable e) {
       try {
-        try (MDC.MDCCloseable ignored = AzureMonitorMdc.QUICK_PULSE_SEND_ERROR.makeActive()) {
+        try (MDC.MDCCloseable ignored = AzureMonitorMsgId.QUICK_PULSE_SEND_ERROR.makeActive()) {
           logger.error("Quick Pulse failed to prepare data for send", e);
         }
       } catch (ThreadDeath td) {

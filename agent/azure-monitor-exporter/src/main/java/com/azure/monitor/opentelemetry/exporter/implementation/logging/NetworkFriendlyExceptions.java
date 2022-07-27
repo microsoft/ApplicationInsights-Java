@@ -22,7 +22,7 @@
 package com.azure.monitor.opentelemetry.exporter.implementation.logging;
 
 import com.azure.core.util.CoreUtils;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdc;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
 import io.netty.handler.ssl.SslHandshakeTimeoutException;
 import java.io.File;
 import java.io.IOException;
@@ -74,7 +74,7 @@ public class NetworkFriendlyExceptions {
     for (FriendlyExceptionDetector detector : detectors) {
       if (detector.detect(error)) {
         if (!alreadySeen.getAndSet(true)) {
-          try (MDC.MDCCloseable ignored = AzureMonitorMdc.NETWORK_FAILURE_ERROR.makeActive()) {
+          try (MDC.MDCCloseable ignored = AzureMonitorMsgId.NETWORK_FAILURE_ERROR.makeActive()) {
             logger.error(detector.message(url));
           }
         }

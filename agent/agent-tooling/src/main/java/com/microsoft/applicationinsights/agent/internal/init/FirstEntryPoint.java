@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Mdc;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
@@ -123,7 +123,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
         System.getProperty("java.home"));
 
     MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
-    try (MDC.MDCCloseable ignored = Mdc.INITIALIZATION_SUCCESS.makeActive()) {
+    try (MDC.MDCCloseable ignored = MsgId.INITIALIZATION_SUCCESS.makeActive()) {
       LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
           .info("Application Insights Codeless Agent {} Attach Successful", agentVersion);
     } finally {
@@ -164,7 +164,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
       StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success, startupLogger != null);
     } catch (Throwable t) {
       if (startupLogger != null) {
-        try (MDC.MDCCloseable ignored = Mdc.STATUS_FILE_RELATED_ERROR.makeActive()) {
+        try (MDC.MDCCloseable ignored = MsgId.STATUS_FILE_RELATED_ERROR.makeActive()) {
           startupLogger.error("Error writing status.json", t);
         }
       } else {
@@ -195,7 +195,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
       File javaagentFile) {
 
     if (startupLogger != null) {
-      try (MDC.MDCCloseable ignored = Mdc.STATUS_FILE_RELATED_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = MsgId.STATUS_FILE_RELATED_ERROR.makeActive()) {
         if (isFriendlyException) {
           startupLogger.error(message);
         } else {
@@ -214,7 +214,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
                 selfDiagnostics.file.path);
         startupLogger = configureLogging(selfDiagnostics, agentPath);
 
-        try (MDC.MDCCloseable ignored = Mdc.STATUS_FILE_RELATED_ERROR.makeActive()) {
+        try (MDC.MDCCloseable ignored = MsgId.STATUS_FILE_RELATED_ERROR.makeActive()) {
           if (isFriendlyException) {
             startupLogger.error(message);
           } else {

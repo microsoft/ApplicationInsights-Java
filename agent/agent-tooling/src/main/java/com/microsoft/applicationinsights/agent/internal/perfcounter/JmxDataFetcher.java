@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Mdc;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -70,7 +70,7 @@ public class JmxDataFetcher {
         List<Object> resultForAttribute = fetch(server, objects, attribute.attribute);
         result.put(attribute.metricName, resultForAttribute);
       } catch (Exception e) {
-        try (MDC.MDCCloseable ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
+        try (MDC.MDCCloseable ignored = MsgId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
           logger.warn(
               "Failed to fetch JMX object '{}' with attribute '{}': ",
               objectName,

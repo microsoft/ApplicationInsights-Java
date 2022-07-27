@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Mdc;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.lang.management.ManagementFactory;
 import javax.management.ObjectName;
@@ -44,7 +44,7 @@ public class FreeMemoryPerformanceCounter implements PerformanceCounter {
     try {
       freePhysicalMemorySize = getFreePhysicalMemorySize();
     } catch (Exception e) {
-      try (MDC.MDCCloseable ignored = Mdc.FREE_PHYSICAL_MEMORY_SIZE_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = MsgId.FREE_PHYSICAL_MEMORY_SIZE_ERROR.makeActive()) {
         logger.error("Error getting FreePhysicalMemorySize");
       }
       logger.trace("Error getting FreePhysicalMemorySize", e);

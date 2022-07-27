@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Mdc;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.DeadLockDetectorPerformanceCounter;
@@ -103,21 +103,21 @@ public class PerformanceCounterInitializer {
             data.computeIfAbsent(jmxElement.objectName, k -> new ArrayList<>());
 
         if (Strings.isNullOrEmpty(jmxElement.objectName)) {
-          try (MDC.MDCCloseable ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
+          try (MDC.MDCCloseable ignored = MsgId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
             logger.error("JMX object name is empty, will be ignored");
           }
           continue;
         }
 
         if (Strings.isNullOrEmpty(jmxElement.attribute)) {
-          try (MDC.MDCCloseable ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
+          try (MDC.MDCCloseable ignored = MsgId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
             logger.error("JMX attribute is empty for '{}'", jmxElement.objectName);
           }
           continue;
         }
 
         if (Strings.isNullOrEmpty(jmxElement.name)) {
-          try (MDC.MDCCloseable ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
+          try (MDC.MDCCloseable ignored = MsgId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
             logger.error("JMX name is empty for '{}', will be ignored", jmxElement.objectName);
           }
           continue;
@@ -132,7 +132,7 @@ public class PerformanceCounterInitializer {
           PerformanceCounterContainer.INSTANCE.register(
               new JmxMetricPerformanceCounter(entry.getKey(), entry.getValue()));
         } catch (RuntimeException e) {
-          try (MDC.MDCCloseable ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
+          try (MDC.MDCCloseable ignored = MsgId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
             logger.error(
                 "Failed to register JMX performance counter: '{}' : '{}'",
                 entry.getKey(),
@@ -141,7 +141,7 @@ public class PerformanceCounterInitializer {
         }
       }
     } catch (RuntimeException e) {
-      try (MDC.MDCCloseable ignored = Mdc.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = MsgId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
         logger.error("Failed to register JMX performance counters: '{}'", e.toString());
       }
     }

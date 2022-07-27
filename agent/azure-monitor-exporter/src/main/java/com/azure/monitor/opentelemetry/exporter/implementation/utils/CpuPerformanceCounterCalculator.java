@@ -68,7 +68,8 @@ public final class CpuPerformanceCounterCalculator {
       }
       return null;
     } catch (Exception e) {
-      try (MDC.MDCCloseable ignored = AzureMonitorMdc.CPU_PERFORMANCE_COUNTER_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored =
+          AzureMonitorMsgId.CPU_PERFORMANCE_COUNTER_ERROR.makeActive()) {
         logger.error("Error in getProcessCPUUsage");
       }
       logger.trace("Error in getProcessCPUUsage", e);

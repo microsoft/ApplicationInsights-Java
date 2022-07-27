@@ -21,7 +21,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.heartbeat;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdc;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.VersionGenerator;
 import java.util.HashSet;
 import java.util.Set;
@@ -105,7 +105,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
             }
           } catch (RuntimeException e) {
             if (logger.isWarnEnabled()) {
-              try (MDC.MDCCloseable ignored = AzureMonitorMdc.HEARTBEAT_SEND_ERROR.makeActive()) {
+              try (MDC.MDCCloseable ignored = AzureMonitorMsgId.HEARTBEAT_SEND_ERROR.makeActive()) {
                 logger.warn("Failed to obtain heartbeat property", e);
               }
             }

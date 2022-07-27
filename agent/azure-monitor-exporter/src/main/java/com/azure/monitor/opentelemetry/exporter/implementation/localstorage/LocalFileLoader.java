@@ -24,7 +24,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdc;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.EOFException;
 import java.io.File;
@@ -100,7 +100,7 @@ class LocalFileLoader {
               telemetryFolder, FileUtil.getBaseName(fileToBeLoaded) + TEMPORARY_FILE_EXTENSION);
       FileUtil.moveFile(fileToBeLoaded, tempFile);
     } catch (IOException e) {
-      try (MDC.MDCCloseable ignored = AzureMonitorMdc.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
         operationLogger.recordFailure(
             "Error renaming file: " + fileToBeLoaded.getAbsolutePath(), e);
       }
@@ -110,7 +110,8 @@ class LocalFileLoader {
 
     if (tempFile.length() <= 36) {
       if (!FileUtil.deleteFileWithRetries(tempFile)) {
-        try (MDC.MDCCloseable ignored = AzureMonitorMdc.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
+        try (MDC.MDCCloseable ignored =
+            AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
           operationLogger.recordFailure("Unable to delete file: " + tempFile.getAbsolutePath());
         }
       }
@@ -128,7 +129,7 @@ class LocalFileLoader {
         fileInputStream.close(); // need to close FileInputStream before delete
         if (!FileUtil.deleteFileWithRetries(tempFile)) {
           try (MDC.MDCCloseable ignored =
-              AzureMonitorMdc.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
+              AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
             operationLogger.recordFailure("Unable to delete file: " + tempFile.getAbsolutePath());
           }
         }
@@ -137,7 +138,7 @@ class LocalFileLoader {
 
       readFully(fileInputStream, telemetryBytes, rawByteLength);
     } catch (IOException e) {
-      try (MDC.MDCCloseable ignored = AzureMonitorMdc.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
         operationLogger.recordFailure("Error reading file: " + tempFile.getAbsolutePath(), e);
       }
       stats.incrementReadFailureCount();
@@ -179,7 +180,7 @@ class LocalFileLoader {
   void updateProcessedFileStatus(boolean successOrNonRetryableError, File file) {
     if (!file.exists()) {
       // not sure why this would happen
-      try (MDC.MDCCloseable ignored = AzureMonitorMdc.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
         updateOperationLogger.recordFailure("File no longer exists: " + file.getAbsolutePath());
       }
       return;
@@ -187,7 +188,8 @@ class LocalFileLoader {
     if (successOrNonRetryableError) {
       // delete a file on the queue permanently when http response returns success.
       if (!FileUtil.deleteFileWithRetries(file)) {
-        try (MDC.MDCCloseable ignored = AzureMonitorMdc.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
+        try (MDC.MDCCloseable ignored =
+            AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
           updateOperationLogger.recordFailure("Unable to delete file: " + file.getAbsolutePath());
         }
       } else {
@@ -199,7 +201,8 @@ class LocalFileLoader {
       try {
         FileUtil.moveFile(file, sourceFile);
       } catch (IOException e) {
-        try (MDC.MDCCloseable ignored = AzureMonitorMdc.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
+        try (MDC.MDCCloseable ignored =
+            AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
           updateOperationLogger.recordFailure("Error renaming file: " + file.getAbsolutePath(), e);
         }
         return;

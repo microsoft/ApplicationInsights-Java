@@ -27,7 +27,7 @@ import com.azure.core.http.HttpResponse;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Mdc;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import java.io.IOException;
 import java.util.concurrent.Executors;
@@ -132,7 +132,7 @@ class AzureMetadataService implements Runnable {
     try {
       metadataInstanceResponse = mapper.readValue(json, MetadataInstanceResponse.class);
     } catch (IOException e) {
-      try (MDC.MDCCloseable ignored = Mdc.FAIL_TO_SEND_STATSBEAT_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = MsgId.FAIL_TO_SEND_STATSBEAT_ERROR.makeActive()) {
         logger.debug(
             "Shutting down AzureMetadataService scheduler:"
                 + " error parsing response from Azure Metadata Service: {}",

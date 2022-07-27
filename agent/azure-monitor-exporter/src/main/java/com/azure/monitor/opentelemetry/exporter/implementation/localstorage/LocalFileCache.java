@@ -21,7 +21,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdc;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
 import java.io.File;
 import java.util.Comparator;
 import java.util.Date;
@@ -80,7 +80,7 @@ class LocalFileCache {
     String name = file.getName();
     int index = name.indexOf('-');
     if (index == -1) {
-      try (MDC.MDCCloseable ignored = AzureMonitorMdc.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
         logger.debug("unexpected .trn file name: {}", name);
       }
       return true;
@@ -89,7 +89,7 @@ class LocalFileCache {
     try {
       timestamp = Long.parseLong(name.substring(0, index));
     } catch (NumberFormatException e) {
-      try (MDC.MDCCloseable ignored = AzureMonitorMdc.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
         logger.debug("unexpected .trn file name: {}", name);
       }
       return true;
