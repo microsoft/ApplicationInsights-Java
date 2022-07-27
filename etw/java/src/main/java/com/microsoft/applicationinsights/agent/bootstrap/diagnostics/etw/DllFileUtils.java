@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -41,6 +42,10 @@ class DllFileUtils {
   public static final String AI_BASE_FOLDER = "AISDK";
   public static final String AI_NATIVE_FOLDER = "native";
 
+  @SuppressFBWarnings(
+      value = "SECPTI", // Potential Path Traversal
+      justification =
+          "The constructed file path cannot be controlled by an end user of the instrumented application")
   public static File buildDllLocalPath(@Nullable String versionDirectory) {
     File dllPath = getTempDir();
 
@@ -113,6 +118,10 @@ class DllFileUtils {
   }
 
   /** From com.microsoft.applicationinsights.agent.internal.telemetry.util.LocalFileSystemUtils */
+  @SuppressFBWarnings(
+      value = "SECPTI", // Potential Path Traversal
+      justification =
+          "The constructed file path cannot be controlled by an end user of the instrumented application")
   private static File getTempDir(String initialValue, String userName) {
     String tempDirectory = initialValue;
 

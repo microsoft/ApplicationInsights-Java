@@ -38,6 +38,7 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.Time
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.OsPlatformProvider;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadContext;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadFinishArgs;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -48,8 +49,8 @@ import java.nio.file.Path;
 import java.util.Base64;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
@@ -61,7 +62,7 @@ import reactor.core.publisher.Mono;
 /** Uploads profiles to the service profiler endpoint. */
 public class ServiceProfilerUploader {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServiceProfilerUploader.class);
-  private static final Random RANDOM = new Random();
+
   private static final long UPLOAD_BLOCK_LENGTH = 8 * 1024 * 1024;
 
   // For debug purposes, can use settings to tell the profiler to retain the profile after
@@ -149,9 +150,12 @@ public class ServiceProfilerUploader {
             });
   }
 
-  public static String createId(int length) {
+  @SuppressFBWarnings(
+      value = "SECPR", // Predictable pseudorandom number generator
+      justification = "Predictable random is ok for file id")
+  private static String createId(int length) {
     byte[] bytes = new byte[length];
-    RANDOM.nextBytes(bytes);
+    ThreadLocalRandom.current().nextBytes(bytes);
     return Base64.getEncoder().encodeToString(bytes);
   }
 
@@ -282,6 +286,10 @@ public class ServiceProfilerUploader {
   }
 
   /** Zip up profile. */
+  @SuppressFBWarnings(
+      value = "SECPTI", // Potential Path Traversal
+      justification =
+          "The constructed file path cannot be controlled by an end user of the instrumented application")
   private static File createZippedTraceFile(UploadContext uploadContext) throws IOException {
     File traceFile = uploadContext.getTraceFile();
     LOGGER.debug("Trace file: {}", traceFile.toString());

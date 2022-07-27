@@ -25,6 +25,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolU
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -128,6 +129,23 @@ class AggregatingLogger {
     @Override
     public int compareTo(MutableLong other) {
       return Long.compare(value, other.value);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (!(obj instanceof MutableLong)) {
+        return false;
+      }
+      MutableLong that = (MutableLong) obj;
+      return value == that.value;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(value);
     }
   }
 

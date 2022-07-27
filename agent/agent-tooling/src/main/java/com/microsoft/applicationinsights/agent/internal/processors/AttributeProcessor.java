@@ -173,7 +173,7 @@ public class AttributeProcessor extends AgentProcessor {
     }
 
     AttributesBuilder builderCopy = existingAttributes.toBuilder();
-    builderCopy.put(actionObj.key, DigestUtils.sha1Hex(existingValue));
+    builderCopy.put(actionObj.key, DigestUtils.sha256Hex(existingValue));
     return builderCopy.build();
   }
 

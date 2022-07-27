@@ -27,6 +27,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Diagnostics
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MachineNameFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
 import com.squareup.moshi.Moshi;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -195,6 +196,10 @@ public class StatusFile {
     WRITER_THREAD.submit(
         new Runnable() {
           @Override
+          @SuppressFBWarnings(
+              value = "SECPTI", // Potential Path Traversal
+              justification =
+                  "The constructed file path cannot be controlled by an end user of the instrumented application")
           public void run() {
             Map<String, Object> map = getJsonMap();
 
