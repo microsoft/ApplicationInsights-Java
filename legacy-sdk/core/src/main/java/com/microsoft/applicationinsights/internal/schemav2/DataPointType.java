@@ -22,11 +22,12 @@
  * Generated from DataPointType.bond (https://github.com/Microsoft/bond)
  */
 package com.microsoft.applicationinsights.internal.schemav2;
+
 /** Enum DataPointType. */
+@SuppressWarnings("MemberName")
 public enum DataPointType {
   Measurement(0),
-  Aggregation(1),
-  ;
+  Aggregation(1);
 
   private final int id;
 

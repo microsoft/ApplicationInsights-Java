@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.telemetry;
 
 /** Enum SeverityLevel. */
+@SuppressWarnings("MemberName")
 public enum SeverityLevel {
   Verbose(0),
   Information(1),

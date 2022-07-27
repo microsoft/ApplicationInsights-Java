@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import javax.annotation.Nullable;
 
 /** This ensures the values for certain tags do not exceed their limits. */
 class ContextTagsMap implements ConcurrentMap<String, String> {
@@ -39,10 +40,6 @@ class ContextTagsMap implements ConcurrentMap<String, String> {
 
   private final ConcurrentMap<String, String> tags = new ConcurrentHashMap<>();
 
-  private static String sanitizeKey(String key) {
-    return key;
-  }
-
   private static String truncate(String value, int maxLength) {
     if (value != null && value.length() > maxLength) {
       value = value.substring(0, maxLength);
@@ -50,7 +47,7 @@ class ContextTagsMap implements ConcurrentMap<String, String> {
     return value;
   }
 
-  private String sanitizeValue(String key, String value) {
+  private static String sanitizeValue(String key, String value) {
     if (value != null) {
       value = value.trim();
     }
@@ -61,13 +58,9 @@ class ContextTagsMap implements ConcurrentMap<String, String> {
   }
 
   @Override
+  @Nullable
   public String putIfAbsent(String key, String value) {
     return tags.putIfAbsent(key, sanitizeValue(key, value));
-  }
-
-  @Override
-  public boolean remove(Object key, Object value) {
-    return tags.remove(key, value);
   }
 
   @Override
@@ -76,6 +69,7 @@ class ContextTagsMap implements ConcurrentMap<String, String> {
   }
 
   @Override
+  @Nullable
   public String replace(String key, String value) {
     return tags.replace(key, sanitizeValue(key, value));
   }
@@ -101,18 +95,26 @@ class ContextTagsMap implements ConcurrentMap<String, String> {
   }
 
   @Override
+  @Nullable
   public String get(Object key) {
     return tags.get(key);
   }
 
   @Override
+  @Nullable
   public String put(String key, String value) {
     return tags.put(key, sanitizeValue(key, value));
   }
 
   @Override
+  @Nullable
   public String remove(Object key) {
     return tags.remove(key);
+  }
+
+  @Override
+  public boolean remove(Object key, Object value) {
+    return tags.remove(key, value);
   }
 
   @Override

@@ -41,8 +41,8 @@ import java.util.concurrent.ConcurrentMap;
  */
 public final class TelemetryContext {
 
-  private ConcurrentMap<String, String> properties;
-  private ContextTagsMap tags;
+  private final ConcurrentMap<String, String> properties;
+  private final ContextTagsMap tags;
 
   private String instrumentationKey;
   private ComponentContext component;

@@ -21,8 +21,11 @@
 
 package com.microsoft.applicationinsights.web.internal;
 
+import javax.annotation.Nullable;
+
 public final class ThreadContext {
 
+  @Nullable
   public static RequestTelemetryContext getRequestTelemetryContext() {
     return null;
   }

@@ -26,7 +26,7 @@ public class Tracestate {
   private final LinkedHashMap<String, String> internalList =
       new LinkedHashMap<>(MAX_KEY_VALUE_PAIRS);
 
-  private String internalString;
+  private final String internalString;
 
   public Tracestate(String input) {
     if (input == null) {

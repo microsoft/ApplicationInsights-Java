@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.telemetry;
 
 import com.microsoft.applicationinsights.internal.schemav2.MessageData;
+import javax.annotation.Nullable;
 
 /** Telemetry type used for log messages. */
 public final class TraceTelemetry extends BaseSampleSourceTelemetry<MessageData> {
@@ -49,7 +50,7 @@ public final class TraceTelemetry extends BaseSampleSourceTelemetry<MessageData>
    * @param message The message. Max length 10000.
    * @param severityLevel The severity level.
    */
-  public TraceTelemetry(String message, SeverityLevel severityLevel) {
+  public TraceTelemetry(String message, @Nullable SeverityLevel severityLevel) {
     super();
 
     data = new MessageData();
@@ -90,6 +91,7 @@ public final class TraceTelemetry extends BaseSampleSourceTelemetry<MessageData>
                 severityLevel.getValue()]);
   }
 
+  @Nullable
   public SeverityLevel getSeverityLevel() {
     return data.getSeverityLevel() == null
         ? null

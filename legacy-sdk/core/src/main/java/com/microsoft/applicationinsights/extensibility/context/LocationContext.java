@@ -21,15 +21,16 @@
 
 package com.microsoft.applicationinsights.extensibility.context;
 
-import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.MapUtil;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class LocationContext {
-  private static final String PATTERN =
-      "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
+
+  private static final Pattern PATTERN =
+      Pattern.compile("^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
 
   private final ConcurrentMap<String, String> tags;
 
@@ -42,14 +43,13 @@ public final class LocationContext {
   }
 
   public void setIp(String value) {
-    if (!Strings.isNullOrEmpty(value) && isIPV4(value)) {
+    if (!LocalStringsUtils.isNullOrEmpty(value) && isIPV4(value)) {
       MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getLocationIP(), value);
     }
   }
 
-  private boolean isIPV4(String ip) {
-    Pattern pattern = Pattern.compile(PATTERN);
-    Matcher matcher = pattern.matcher(ip);
+  private static boolean isIPV4(String ip) {
+    Matcher matcher = PATTERN.matcher(ip);
     return matcher.matches();
   }
 }

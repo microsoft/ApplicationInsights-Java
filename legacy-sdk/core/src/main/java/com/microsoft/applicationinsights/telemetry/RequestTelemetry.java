@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 import java.util.concurrent.ConcurrentMap;
+import javax.annotation.Nullable;
 
 /**
  * Encapsulates information about a web request handled by the application.
@@ -237,6 +238,7 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
    * @return The url
    * @throws MalformedURLException if the url is malformed
    */
+  @Nullable
   public URL getUrl() throws MalformedURLException {
     if (LocalStringsUtils.isNullOrEmpty(data.getUrl())) {
       return null;
@@ -254,10 +256,6 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
     data.setUrl(url.toString());
   }
 
-  public String getUrlString() {
-    return getData().getUrl();
-  }
-
   /**
    * Sets request url.
    *
@@ -267,6 +265,10 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
   public void setUrl(String url) throws MalformedURLException {
     URL u = new URL(url); // to validate and normalize
     data.setUrl(u.toString());
+  }
+
+  public String getUrlString() {
+    return getData().getUrl();
   }
 
   @Override

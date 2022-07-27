@@ -35,8 +35,9 @@ import java.util.concurrent.ConcurrentMap;
  */
 public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewData> {
 
+  private final PageViewData data;
+
   private Double samplingPercentage;
-  private PageViewData data;
 
   /**
    * Initializes a new instance of the class with the specified 'pageName'

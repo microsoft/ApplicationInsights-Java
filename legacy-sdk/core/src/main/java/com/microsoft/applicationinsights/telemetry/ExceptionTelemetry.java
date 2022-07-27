@@ -27,6 +27,7 @@ import com.microsoft.applicationinsights.internal.schemav2.StackFrame;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
+import javax.annotation.Nullable;
 
 /** Telemetry type used to track exceptions sent to Azure Application Insights. */
 public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<ExceptionData> {
@@ -60,6 +61,7 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     this(exception, Integer.MAX_VALUE);
   }
 
+  @Nullable
   public Exception getException() {
     return throwable instanceof Exception ? (Exception) throwable : null;
   }
@@ -95,6 +97,7 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
                 severityLevel.getValue()]);
   }
 
+  @Nullable
   public SeverityLevel getSeverityLevel() {
     return data.getSeverityLevel() == null
         ? null
@@ -129,7 +132,7 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
 
   private static void convertExceptionTree(
       Throwable exception,
-      ExceptionDetails parentExceptionDetails,
+      @Nullable ExceptionDetails parentExceptionDetails,
       List<ExceptionDetails> exceptions,
       int stackSize) {
     if (exception == null) {

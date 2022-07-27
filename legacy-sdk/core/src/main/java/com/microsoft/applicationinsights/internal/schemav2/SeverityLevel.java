@@ -22,14 +22,15 @@
  * Generated from SeverityLevel.bond (https://github.com/Microsoft/bond)
  */
 package com.microsoft.applicationinsights.internal.schemav2;
+
 /** Enum SeverityLevel. */
+@SuppressWarnings("MemberName")
 public enum SeverityLevel {
   Verbose(0),
   Information(1),
   Warning(2),
   Error(3),
-  Critical(4),
-  ;
+  Critical(4);
 
   private final int id;
 

@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.google.common.base.Preconditions;
-
 /**
  * This class lets its users to define an interval of time which can be defined in terms of days,
  * hours, minutes, seconds and milliseconds.
@@ -30,9 +28,6 @@ import com.google.common.base.Preconditions;
  * <p>It has various constructors to let the user easily define an interval of time.
  */
 public final class Duration {
-  private static final String DAYS_FORMAT = "%02d.";
-  private static final String HH_MM_SS_FORMAT = "%02d:%02d:%02d";
-  private static final String MILLISECONDS_FORMAT = ".%03d0000";
 
   private static final long SECONDS_IN_ONE_MINUTE = 60;
   private static final long SECONDS_IN_ONE_HOUR = 3600;
@@ -151,11 +146,11 @@ public final class Duration {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     if (days != 0) {
-      sb.append(String.format(DAYS_FORMAT, days));
+      sb.append(String.format("%02d.", days));
     }
-    sb.append(String.format(HH_MM_SS_FORMAT, hours, minutes, seconds));
+    sb.append(String.format("%02d:%02d:%02d", hours, minutes, seconds));
     if (milliseconds > 0) {
-      sb.append(String.format(MILLISECONDS_FORMAT, milliseconds));
+      sb.append(String.format(".%03d0000", milliseconds));
     }
 
     return sb.toString();
@@ -182,7 +177,7 @@ public final class Duration {
   @Override
   public int hashCode() {
     int hash = 7;
-    hash = 89 * hash + (int) ((days ^ (days >>> 32)));
+    hash = 89 * hash + (int) (days ^ (days >>> 32));
     hash = 89 * hash + hours;
     hash = 89 * hash + minutes;
     hash = 89 * hash + seconds;

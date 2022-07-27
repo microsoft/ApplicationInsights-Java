@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.internal.util;
 
 import java.net.URI;
+import javax.annotation.Nullable;
 
 /**
  * Created by gupele on 1/7/2015.
@@ -33,6 +34,7 @@ public final class Sanitizer {
 
   public static final int MAX_URL_LENGTH = 2048;
 
+  @Nullable
   public static URI sanitizeUri(String urlAsString) {
     if (urlAsString != null && !urlAsString.isEmpty()) {
 
@@ -54,6 +56,7 @@ public final class Sanitizer {
     return null;
   }
 
+  @Nullable
   public static URI safeStringToUri(String url) {
     if (url == null || url.isEmpty()) {
       return null;
@@ -63,8 +66,11 @@ public final class Sanitizer {
     try {
       result = new URI(url);
     } catch (Exception e) {
+      // ignore
     }
 
     return result;
   }
+
+  private Sanitizer() {}
 }

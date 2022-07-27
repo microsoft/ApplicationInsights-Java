@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.web.internal;
 
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Tracestate;
+import javax.annotation.Nullable;
 
 public final class RequestTelemetryContext {
 
@@ -34,6 +35,7 @@ public final class RequestTelemetryContext {
     return requestTelemetry;
   }
 
+  @Nullable
   public Tracestate getTracestate() {
     return null;
   }
