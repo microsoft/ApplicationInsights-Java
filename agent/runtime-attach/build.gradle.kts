@@ -10,8 +10,7 @@ val otelVersion: String by project
 val agent: Configuration by configurations.creating
 
 dependencies {
-  implementation("net.bytebuddy:byte-buddy-agent") // To replace with  implementation("io.opentelemetry.contrib:opentelemetry-runtime-attach:$otelContribAlphaVersion")
-  // after next OTel java contrib release
+  implementation("io.opentelemetry.contrib:opentelemetry-runtime-attach-core:$otelContribAlphaVersion")
   agent(project(":agent:agent", configuration = "shadow"))
 }
 

@@ -25,6 +25,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMdc;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -72,6 +73,10 @@ class LocalFileLoader {
 
   // Load ByteBuffer from persisted files on disk in FIFO order.
   @Nullable
+  @SuppressFBWarnings(
+      value = "SECPTI", // Potential Path Traversal
+      justification =
+          "The constructed file path cannot be controlled by an end user of the instrumented application")
   PersistedFile loadTelemetriesFromDisk() {
     File fileToBeLoaded = localFileCache.poll();
     if (fileToBeLoaded == null) {
@@ -167,6 +172,10 @@ class LocalFileLoader {
 
   // either delete it permanently on success or add it back to cache to be processed again later on
   // failure
+  @SuppressFBWarnings(
+      value = "SECPTI", // Potential Path Traversal
+      justification =
+          "The constructed file path cannot be controlled by an end user of the instrumented application")
   void updateProcessedFileStatus(boolean successOrNonRetryableError, File file) {
     if (!file.exists()) {
       // not sure why this would happen

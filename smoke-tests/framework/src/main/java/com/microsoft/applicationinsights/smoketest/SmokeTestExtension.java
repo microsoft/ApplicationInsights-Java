@@ -45,8 +45,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
@@ -231,7 +231,7 @@ public class SmokeTestExtension
     for (DependencyContainer dc : dependencyImages) {
       String imageName = dc.imageName().isEmpty() ? dc.value() : dc.imageName();
       System.out.println("Starting container: " + imageName);
-      String containerName = "dependency" + new Random().nextInt(Integer.MAX_VALUE);
+      String containerName = "dependency" + ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE);
       String[] envVars = substitue(dc.environmentVariables(), containerName);
       Map<String, String> envVarMap = new HashMap<>();
       for (String envVar : envVars) {

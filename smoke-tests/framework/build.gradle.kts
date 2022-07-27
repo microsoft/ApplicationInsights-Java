@@ -2,6 +2,12 @@ plugins {
   id("ai.java-conventions")
 }
 
+tasks {
+  named("spotbugsMain") {
+    enabled = false
+  }
+}
+
 dependencies {
   implementation("com.google.guava:guava")
   implementation("org.junit.jupiter:junit-jupiter")

@@ -592,8 +592,7 @@ public class ConfigurationBuilder {
 
   private static String getWebsiteSiteNameEnvVar() {
     String value = getEnvVar(WEBSITE_SITE_NAME);
-    // TODO what is the best way to identify running as Azure Functions worker?
-    // TODO is this the correct way to match role name from Azure Functions IIS host?
+    // TODO we can update this check after the new functions model is deployed.
     if (value != null && "java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
       // special case for Azure Functions
       return value.toLowerCase(Locale.ENGLISH);

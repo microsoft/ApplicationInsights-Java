@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.serviceprofilerapi.profiler;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import com.microsoft.jfr.RecordingConfiguration;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -62,6 +63,10 @@ public class AlternativeJfrConfigurations {
   }
 
   /** Search for JFC file including the local file system. */
+  @SuppressFBWarnings(
+      value = "SECPTI", // Potential Path Traversal
+      justification =
+          "The constructed file path cannot be controlled by an end user of the instrumented application")
   private static RecordingConfiguration getRecordingConfiguration(
       @Nullable String triggeredSettings, AlertMetricType type) {
     if (triggeredSettings != null) {

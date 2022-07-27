@@ -107,8 +107,8 @@ public class RpConfigurationPolling implements Runnable {
               "Connection string from the JSON config file is overriding the previously configured connection string.");
           ConnectionString connectionString =
               ConnectionString.parse(newRpConfiguration.connectionString);
-          telemetryClient.setConnectionString(connectionString);
-          telemetryClient.setStatsbeatConnectionString(
+          telemetryClient.updateConnectionString(connectionString);
+          telemetryClient.updateStatsbeatConnectionString(
               StatsbeatConnectionString.create(
                   connectionString,
                   configuration.internal.statsbeat.instrumentationKey,

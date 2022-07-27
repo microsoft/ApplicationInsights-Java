@@ -21,13 +21,14 @@
 
 package com.microsoft.applicationinsights.attach;
 
+import io.opentelemetry.contrib.attach.CoreRuntimeAttach;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -62,18 +63,10 @@ public final class ApplicationInsights {
       System.setProperty(RUNTIME_ATTACHED_JSON_PROPERTY, jsonConfig.get());
     }
 
-    File agentFile = AppInsightAgentFileProvider.getAgentFile();
+    String appInsightResourceName = findAppInsightResourceName();
+    CoreRuntimeAttach runtimeAttach = new CoreRuntimeAttach(appInsightResourceName);
 
-    try {
-      RuntimeAttach.attachJavaagentToCurrentJvm(agentFile);
-    } catch (IllegalStateException e) {
-      if (e.getMessage() != null
-          && e.getMessage()
-              .contains("No compatible attachment provider is available")) { // Byte Buddy exception
-        throw new IllegalStateException("Runtime attachment was not done. You may use a JRE.", e);
-      }
-      throw e;
-    }
+    runtimeAttach.attachJavaagentToCurrentJVM();
   }
 
   private static Optional<String> findJsonConfig() {
@@ -100,6 +93,22 @@ public final class ApplicationInsights {
       return true;
     } catch (ClassNotFoundException e) {
       return false;
+    }
+  }
+
+  private static String findAppInsightResourceName() {
+    String appInsightVersion = findAppInsightVersion();
+    return "/applicationinsights-agent-" + appInsightVersion + ".jar";
+  }
+
+  private static String findAppInsightVersion() {
+    try (InputStream jarAsInputStream =
+        ApplicationInsights.class.getResourceAsStream("/ai.sdk-version.properties")) {
+      Properties props = new Properties();
+      props.load(jarAsInputStream);
+      return props.getProperty("version");
+    } catch (IOException e) {
+      throw new IllegalStateException("Unable to find Application Insights version", e);
     }
   }
 }

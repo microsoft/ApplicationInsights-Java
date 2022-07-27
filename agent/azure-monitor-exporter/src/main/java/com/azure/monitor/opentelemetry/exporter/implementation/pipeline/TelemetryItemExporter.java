@@ -102,10 +102,8 @@ public class TelemetryItemExporter {
       instrumentationKeyMap.get(instrumentationKey).add(telemetryItem);
     }
     List<CompletableResultCode> resultCodeList = new ArrayList<>();
-    for (String instrumentationKey : instrumentationKeyMap.keySet()) {
-      resultCodeList.add(
-          internalSendByInstrumentationKey(
-              instrumentationKeyMap.get(instrumentationKey), instrumentationKey));
+    for (Map.Entry<String, List<TelemetryItem>> entry : instrumentationKeyMap.entrySet()) {
+      resultCodeList.add(internalSendByInstrumentationKey(entry.getValue(), entry.getKey()));
     }
     return maybeAddToActiveExportResults(resultCodeList);
   }

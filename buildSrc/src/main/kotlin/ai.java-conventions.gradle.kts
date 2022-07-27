@@ -10,6 +10,7 @@ plugins {
 
   id("ai.errorprone-conventions")
   id("ai.spotless-conventions")
+  id("ai.spotbugs-conventions")
 }
 
 repositories {
@@ -59,6 +60,7 @@ dependencies {
   dependencyManagement(platform(project(":dependencyManagement")))
 
   compileOnly("com.google.code.findbugs:jsr305")
+  compileOnly("com.github.spotbugs:spotbugs-annotations")
 
   testImplementation("org.junit.jupiter:junit-jupiter-api")
   testImplementation("org.junit.jupiter:junit-jupiter-params")

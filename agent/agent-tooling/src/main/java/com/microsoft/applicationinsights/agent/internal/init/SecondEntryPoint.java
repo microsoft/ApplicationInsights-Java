@@ -35,7 +35,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.bootstrap.AiAppId;
-import com.microsoft.applicationinsights.agent.bootstrap.AiLazyConfiguration;
+import com.microsoft.applicationinsights.agent.bootstrap.AzureFunctions;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
@@ -114,6 +114,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     Configuration config = FirstEntryPoint.getConfiguration();
     if (Strings.isNullOrEmpty(config.connectionString)) {
+      // TODO we can update this check after the new functions model is deployed.
       if (!"java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
         throw new FriendlyException(
             "No connection string provided", "Please provide connection string.");
@@ -185,9 +186,11 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     }
 
     // this is for Azure Function Linux consumption plan support.
+    // TODO we can update this check after the new functions model is deployed.
     if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
-      AiLazyConfiguration.setAccessor(
-          new LazyConfigurationAccessor(
+      AzureFunctions.setup(
+          () -> telemetryClient.getConnectionString() != null,
+          new AzureFunctionsInitializer(
               telemetryClient, SecondEntryPoint.agentLogExporter, appIdSupplier));
     }
 

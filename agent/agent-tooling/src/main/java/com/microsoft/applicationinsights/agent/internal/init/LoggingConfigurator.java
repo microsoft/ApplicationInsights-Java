@@ -129,16 +129,16 @@ public class LoggingConfigurator {
 
   private void configureFunctions() {
     Logger rootLogger = loggerContext.getLogger(ROOT_LOGGER_NAME);
-    rootLogger.addAppender(configureConsoleAppender());
+    rootLogger.addAppender(configureFileAppender());
     Logger diagnosticLogger = loggerContext.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME);
     diagnosticLogger.setLevel(Level.INFO);
     diagnosticLogger.setAdditive(false);
-    Appender<ILoggingEvent> appender = configureConsoleAppender();
-    diagnosticLogger.addAppender(appender);
+    Appender<ILoggingEvent> diagnosticAppender = configureConsoleAppender();
+    diagnosticLogger.addAppender(diagnosticAppender);
 
     // errors reported by other loggers should also go to diagnostic log
     // (level filter for these is applied in ApplicationInsightsDiagnosticsLogFilter)
-    rootLogger.addAppender(appender);
+    rootLogger.addAppender(diagnosticAppender);
 
     loggingLevelConfigurator.initLoggerLevels(loggerContext);
   }

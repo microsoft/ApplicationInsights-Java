@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.legacyheaders;
 
 import com.microsoft.applicationinsights.agent.bootstrap.AiAppId;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHeaderSpanProcessor.LegacyIds;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -126,6 +127,9 @@ public class AiLegacyPropagator implements TextMapPropagator {
   private static final long INVALID_ID = 0;
 
   // copied from io.opentelemetry.sdk.trace.RandomIdGenerator
+  @SuppressFBWarnings(
+      value = "SECPR", // Predictable pseudorandom number generator
+      justification = "Predictable random is ok for span id")
   public static String generateSpanId() {
     long id;
     ThreadLocalRandom random = ThreadLocalRandom.current();
@@ -136,6 +140,9 @@ public class AiLegacyPropagator implements TextMapPropagator {
   }
 
   // copied from io.opentelemetry.sdk.trace.RandomIdGenerator
+  @SuppressFBWarnings(
+      value = "SECPR", // Predictable pseudorandom number generator
+      justification = "Predictable random is ok for trace id")
   private static String generateTraceId() {
     long idHi;
     long idLo;

@@ -540,11 +540,7 @@ public class Configuration {
       if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
         return StatusFile.getLogDir() + "/" + DEFAULT_NAME;
       }
-      if (DiagnosticsHelper.useFunctionsRpIntegrationLogging()
-          && !DiagnosticsHelper.isOsWindows()) {
-        return DiagnosticsHelper.LINUX_DEFAULT + "/" + DEFAULT_NAME;
-      }
-      // azure spring cloud
+      // azure functions and azure spring cloud
       return DEFAULT_NAME;
     }
   }
