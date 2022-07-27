@@ -71,7 +71,7 @@ abstract class CoreAndFilterTests {
         telemetry.rd,
         telemetry.rdEnvelope,
         telemetry.rddEnvelope1,
-        "GET /CoreAndFilter/trackDependency");
+        "GET /CoreAndFilter3x/trackDependency");
   }
 
   @Test
@@ -102,9 +102,9 @@ abstract class CoreAndFilterTests {
     assertThat(ed2.getName()).isEqualTo("EventDataTest");
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter/trackEvent");
+        rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter3x/trackEvent");
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter/trackEvent");
+        rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter3x/trackEvent");
   }
 
   @Test
@@ -155,11 +155,11 @@ abstract class CoreAndFilterTests {
             });
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter/trackException");
+        rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter3x/trackException");
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter/trackException");
+        rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter3x/trackException");
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, edEnvelope3, "GET /CoreAndFilter/trackException");
+        rd, rdEnvelope, edEnvelope3, "GET /CoreAndFilter3x/trackException");
   }
 
   @Test
@@ -235,7 +235,7 @@ abstract class CoreAndFilterTests {
     assertThat(dp.getStdDev()).isNull();
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope, "GET /CoreAndFilter/trackMetric");
+        rd, rdEnvelope, mdEnvelope, "GET /CoreAndFilter3x/trackMetric");
   }
 
   @Test
@@ -274,11 +274,11 @@ abstract class CoreAndFilterTests {
             });
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope1, "GET /CoreAndFilter/trackTrace");
+        rd, rdEnvelope, mdEnvelope1, "GET /CoreAndFilter3x/trackTrace");
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope2, "GET /CoreAndFilter/trackTrace");
+        rd, rdEnvelope, mdEnvelope2, "GET /CoreAndFilter3x/trackTrace");
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope3, "GET /CoreAndFilter/trackTrace");
+        rd, rdEnvelope, mdEnvelope3, "GET /CoreAndFilter3x/trackTrace");
   }
 
   @Test
@@ -367,7 +367,7 @@ abstract class CoreAndFilterTests {
         .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("java:3."));
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, pvdEnvelope1, "GET /CoreAndFilter/trackPageView");
+        rd, rdEnvelope, pvdEnvelope1, "GET /CoreAndFilter3x/trackPageView");
 
     assertThat(pvdEnvelope2.getTags()).containsEntry("ai.operation.id", "operation-id-goes-here");
     assertThat(pvdEnvelope2.getTags())
@@ -402,7 +402,7 @@ abstract class CoreAndFilterTests {
     assertThat(pv.getDuration()).isEqualTo(new Duration(0));
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, pvdEnvelope, "GET /CoreAndFilter/doPageView.jsp");
+        rd, rdEnvelope, pvdEnvelope, "GET /CoreAndFilter3x/doPageView.jsp");
   }
 
   @Test
@@ -417,19 +417,19 @@ abstract class CoreAndFilterTests {
     assertThat(rd.getSuccess()).isFalse();
     assertThat(rd.getResponseCode()).isEqualTo("404");
 
-    assertThat(rdEnvelope.getTags()).containsEntry("ai.operation.name", "GET /CoreAndFilter/*");
+    assertThat(rdEnvelope.getTags()).containsEntry("ai.operation.name", "GET /CoreAndFilter3x/*");
   }
 
   @Test
   @TargetUri("/requestSlow?sleeptime=20")
   void testRequestSlowWithResponseTime() throws Exception {
-    validateSlowTest(20, "GET /CoreAndFilter/requestSlow");
+    validateSlowTest(20, "GET /CoreAndFilter3x/requestSlow");
   }
 
   @Test
   @TargetUri("/slowLoop?responseTime=20")
   void testSlowRequestUsingCpuBoundLoop() throws Exception {
-    validateSlowTest(20, "GET /CoreAndFilter/slowLoop");
+    validateSlowTest(20, "GET /CoreAndFilter3x/slowLoop");
   }
 
   @Test

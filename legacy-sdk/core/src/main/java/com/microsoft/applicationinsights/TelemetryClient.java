@@ -32,6 +32,7 @@ import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import java.util.Date;
 import java.util.Map;
@@ -39,10 +40,17 @@ import javax.annotation.Nullable;
 
 public class TelemetryClient {
 
+  private final TelemetryConfiguration configuration = new TelemetryConfiguration();
+  private final TelemetryContext context = new TelemetryContext();
+
   public TelemetryClient() {}
 
+  public TelemetryContext getContext() {
+    return context;
+  }
+
   public boolean isDisabled() {
-    return false;
+    return configuration.isTrackingDisabled();
   }
 
   public void trackEvent(
