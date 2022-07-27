@@ -159,6 +159,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
 
   @SuppressWarnings("SystemOut")
   private static void updateStatusFile(boolean success) {
+    startupLogger.debug("#### updateStatusFile::success");
     try {
       StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success, startupLogger != null);
     } catch (Throwable t) {

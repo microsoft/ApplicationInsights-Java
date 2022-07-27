@@ -101,6 +101,8 @@ public class StatusFile {
 
   @Nullable public static Logger startupLogger;
 
+  private static final Logger statusFileLogger = LoggerFactory.getLogger(StatusFile.class);
+
   private static final ThreadPoolExecutor WRITER_THREAD =
       new ThreadPoolExecutor(
           1, 1, 750L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), StatusFile::newThread);
@@ -129,24 +131,11 @@ public class StatusFile {
     return thread;
   }
 
-  @SuppressWarnings("SystemOut")
   // visible for testing
   static String initLogDir() {
     // TODO document here which app svcs platforms / containers provide site.log system property?
     String siteLogDir = System.getProperty(SITE_LOGDIR_PROPERTY);
-    System.out.println("#### siteLogDir:" + siteLogDir);
-
-    // App Service Linux uses the same folder as the
-    // APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY
-    if (!DiagnosticsHelper.isOsWindows()) {
-      String diagnosticsOutputDirectory =
-          System.getenv(DiagnosticsHelper.APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY);
-      if (diagnosticsOutputDirectory != null && !diagnosticsOutputDirectory.isEmpty()) {
-        System.out.println("#### diagnosticsOutputDirectory: " + diagnosticsOutputDirectory);
-        return diagnosticsOutputDirectory;
-      }
-    }
-
+    statusFileLogger.debug("#### siteLogDir:" + siteLogDir);
     if (siteLogDir != null && !siteLogDir.isEmpty()) {
       return siteLogDir + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
     }
@@ -157,9 +146,8 @@ public class StatusFile {
     return DEFAULT_HOME_DIR + DEFAULT_LOGDIR + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
   }
 
-  @SuppressWarnings("SystemOut")
   public static String getLogDir() {
-    System.out.println("#### default logDir: " + logDir);
+    statusFileLogger.debug("#### default logDir: " + logDir);
     return logDir;
   }
 
@@ -167,9 +155,11 @@ public class StatusFile {
 
   private static boolean shouldWrite() {
     if (!DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
+      statusFileLogger.debug("#### it's ot appsvc rp integration shouldWrite false");
       return false;
     }
     if (writable) {
+      statusFileLogger.debug("#### shouldWrite: true");
       return true;
     }
 
@@ -183,6 +173,7 @@ public class StatusFile {
   }
 
   public static <T> void putValueAndWrite(String key, T value) {
+    statusFileLogger.debug("#### key: {}, value: {}", key, value);
     putValueAndWrite(key, value, true);
   }
 
@@ -196,6 +187,7 @@ public class StatusFile {
 
   public static <T> void putValue(String key, T value) {
     if (!shouldWrite()) {
+      statusFileLogger.debug("#### readonly skip putValue");
       return;
     }
     CONSTANT_VALUES.put(key, value);
@@ -208,6 +200,7 @@ public class StatusFile {
   @SuppressWarnings("SystemOut")
   private static void write(boolean loggingInitialized) {
     if (!shouldWrite()) {
+      statusFileLogger.debug("#### read-only");
       return;
     }
     WRITER_THREAD.submit(
@@ -217,6 +210,7 @@ public class StatusFile {
             Map<String, Object> map = getJsonMap();
 
             String fileName = constructFileName(map);
+            statusFileLogger.debug("#### status filename: " + fileName);
 
             // the executor should prevent more than one thread from executing this block.
             // this is just a safeguard
