@@ -18,9 +18,7 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/*
- * Generated from PageViewData.bond (https://github.com/Microsoft/bond)
- */
+
 package com.microsoft.applicationinsights.internal.schemav2;
 
 import com.microsoft.applicationinsights.telemetry.Duration;
