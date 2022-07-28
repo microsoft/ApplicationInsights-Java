@@ -52,7 +52,6 @@ public final class TelemetryContext {
   private LocationContext location;
   private CloudContext cloud;
 
-  /** Default Ctor */
   public TelemetryContext() {
     this(new ConcurrentHashMap<>(), new ContextTagsMap());
   }
@@ -68,11 +67,7 @@ public final class TelemetryContext {
     this.tags = tags;
   }
 
-  /**
-   * Gets the object describing the component (application) tracked by this instance.
-   *
-   * @return The component.
-   */
+  /** Gets the object describing the component (application) tracked by this instance. */
   public ComponentContext getComponent() {
     if (component == null) {
       component = new ComponentContext(tags);
@@ -80,11 +75,7 @@ public final class TelemetryContext {
     return component;
   }
 
-  /**
-   * Gets the object describing the device tracked by this instance.
-   *
-   * @return The device.
-   */
+  /** Gets the object describing the device tracked by this instance. */
   public DeviceContext getDevice() {
     if (device == null) {
       device = new DeviceContext(tags);
@@ -92,11 +83,7 @@ public final class TelemetryContext {
     return device;
   }
 
-  /**
-   * Gets the object describing a user session tracked by this instance.
-   *
-   * @return The user's session.
-   */
+  /** Gets the object describing a user session tracked by this instance. */
   public SessionContext getSession() {
     if (session == null) {
       session = new SessionContext(tags);
@@ -104,11 +91,7 @@ public final class TelemetryContext {
     return session;
   }
 
-  /**
-   * Gets the object describing a user tracked by this instance.
-   *
-   * @return The user.
-   */
+  /** Gets the object describing a user tracked by this instance. */
   public UserContext getUser() {
     if (user == null) {
       user = new UserContext(tags);
@@ -119,8 +102,6 @@ public final class TelemetryContext {
   /**
    * Gets the current operation (typically an HTTP request). Used to correlate events - for example,
    * exceptions generated while processing a request.
-   *
-   * @return The operation.
    */
   public OperationContext getOperation() {
     if (operation == null) {
@@ -129,11 +110,7 @@ public final class TelemetryContext {
     return operation;
   }
 
-  /**
-   * Gets the object describing a location tracked by this instance.
-   *
-   * @return The location.
-   */
+  /** Gets the object describing a location tracked by this instance. */
   public LocationContext getLocation() {
     if (location == null) {
       location = new LocationContext(tags);
@@ -141,11 +118,7 @@ public final class TelemetryContext {
     return location;
   }
 
-  /**
-   * Gets the object describing the role and instnace in the cloud.
-   *
-   * @return the cloud context
-   */
+  /** Gets the object describing the role and instance in the cloud. */
   public CloudContext getCloud() {
     if (cloud == null) {
       cloud = new CloudContext(tags);
@@ -183,20 +156,12 @@ public final class TelemetryContext {
     this.instrumentationKey = instrumentationKey;
   }
 
-  /**
-   * Gets a dictionary of application-defined property values.
-   *
-   * @return The application-defined property values.
-   */
+  /** Gets a dictionary of application-defined property values. */
   public ConcurrentMap<String, String> getProperties() {
     return properties;
   }
 
-  /**
-   * Gets a dictionary of context tags.
-   *
-   * @return The tags.
-   */
+  /** Gets a dictionary of context tags. */
   public ConcurrentMap<String, String> getTags() {
     return tags;
   }

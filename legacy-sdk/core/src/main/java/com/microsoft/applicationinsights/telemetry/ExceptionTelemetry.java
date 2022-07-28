@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentMap;
 import javax.annotation.Nullable;
 
 /** Telemetry type used to track exceptions sent to Azure Application Insights. */
-public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
+public final class ExceptionTelemetry extends BaseTelemetry {
 
   private final ExceptionData data;
   private Throwable throwable;
@@ -41,7 +41,7 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
   }
 
   /**
-   * Initializes a new instance.
+   * Creates a new instance.
    *
    * @param stackSize The max stack size to report.
    * @param exception The exception to track.
@@ -52,7 +52,7 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
   }
 
   /**
-   * Initializes a new instance.
+   * Creates a new instance.
    *
    * @param exception The exception to track.
    */
@@ -81,8 +81,6 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
   /**
    * Gets a map of application-defined exception metrics. The metrics appear along with the
    * exception in Analytics, but under Custom Metrics in Metrics Explorer.
-   *
-   * @return The map of metrics
    */
   public ConcurrentMap<String, Double> getMetrics() {
     return data.getMeasurements();
@@ -101,11 +99,6 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
     return data.getSeverityLevel() == null
         ? null
         : SeverityLevel.values()[data.getSeverityLevel().getValue()];
-  }
-
-  @Override
-  protected ExceptionData getData() {
-    return data;
   }
 
   public List<ExceptionDetails> getExceptions() {
@@ -198,5 +191,10 @@ public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
 
   public String getProblemId() {
     return getData().getProblemId();
+  }
+
+  @Override
+  protected ExceptionData getData() {
+    return data;
   }
 }

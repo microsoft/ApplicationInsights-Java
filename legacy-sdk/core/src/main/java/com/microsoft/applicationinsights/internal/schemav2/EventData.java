@@ -24,53 +24,41 @@ package com.microsoft.applicationinsights.internal.schemav2;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-/** Data contract class EventData. */
-public class EventData extends Domain {
+public class EventData {
 
-  /** Backing field for property Name. */
   private String name;
 
-  /** Backing field for property Properties. */
   private ConcurrentMap<String, String> properties;
-
-  /** Backing field for property Measurements. */
   private ConcurrentMap<String, Double> measurements;
 
-  /** Initializes a new instance of the EventData class. */
   public EventData() {}
 
-  /** Gets the Name property. */
   public String getName() {
     return this.name;
   }
 
-  /** Sets the Name property. */
   public void setName(String value) {
     this.name = value;
   }
 
-  /** Gets the Properties property. */
   public ConcurrentMap<String, String> getProperties() {
     if (this.properties == null) {
-      this.properties = new ConcurrentHashMap<String, String>();
+      this.properties = new ConcurrentHashMap<>();
     }
     return this.properties;
   }
 
-  /** Sets the Properties property. */
   public void setProperties(ConcurrentMap<String, String> value) {
     this.properties = value;
   }
 
-  /** Gets the Measurements property. */
   public ConcurrentMap<String, Double> getMeasurements() {
     if (this.measurements == null) {
-      this.measurements = new ConcurrentHashMap<String, Double>();
+      this.measurements = new ConcurrentHashMap<>();
     }
     return this.measurements;
   }
 
-  /** Sets the Measurements property. */
   public void setMeasurements(ConcurrentMap<String, Double> value) {
     this.measurements = value;
   }

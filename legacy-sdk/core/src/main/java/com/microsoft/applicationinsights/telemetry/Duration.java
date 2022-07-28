@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
+import java.util.Objects;
+
 /**
  * This class lets its users to define an interval of time which can be defined in terms of days,
  * hours, minutes, seconds and milliseconds.
@@ -84,56 +86,32 @@ public final class Duration {
     days = durationInSeconds / SECONDS_IN_ONE_DAY;
   }
 
-  /**
-   * Gets the days part of the duration.
-   *
-   * @return The days part of the duration.
-   */
+  /** Gets the days part of the duration. */
   public long getDays() {
     return days;
   }
 
-  /**
-   * Gets the hours part of the duration.
-   *
-   * @return The hours part of the duration.
-   */
+  /** Gets the hours part of the duration. */
   public int getHours() {
     return hours;
   }
 
-  /**
-   * Gets the minutes part of the duration.
-   *
-   * @return The minutes part of the duration.
-   */
+  /** Gets the minutes part of the duration. */
   public int getMinutes() {
     return minutes;
   }
 
-  /**
-   * Gets the seconds part of the duration.
-   *
-   * @return The seconds part of the duration.
-   */
+  /** Gets the seconds part of the duration. */
   public int getSeconds() {
     return seconds;
   }
 
-  /**
-   * Gets the milliseconds part of the duration.
-   *
-   * @return The milliseconds part of the duration.
-   */
+  /** Gets the milliseconds part of the duration. */
   public int getMilliseconds() {
     return milliseconds;
   }
 
-  /**
-   * Gets the total milliseconds of the duration.
-   *
-   * @return The total milliseconds of the duration.
-   */
+  /** Gets the total milliseconds of the duration. */
   public long getTotalMilliseconds() {
     return (days * SECONDS_IN_ONE_DAY * 1000L)
         + (hours * SECONDS_IN_ONE_HOUR * 1000L)
@@ -152,36 +130,27 @@ public final class Duration {
     if (milliseconds > 0) {
       sb.append(String.format(".%03d0000", milliseconds));
     }
-
     return sb.toString();
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (this == other) {
+  public boolean equals(Object obj) {
+    if (this == obj) {
       return true;
     }
-
-    if (!(other instanceof Duration)) {
+    if (obj == null || getClass() != obj.getClass()) {
       return false;
     }
-
-    Duration that = (Duration) other;
-    return this.days == that.getDays()
-        && this.hours == that.getHours()
-        && this.minutes == that.getMinutes()
-        && this.seconds == that.getSeconds()
-        && this.milliseconds == that.getMilliseconds();
+    Duration that = (Duration) obj;
+    return days == that.days
+        && hours == that.hours
+        && minutes == that.minutes
+        && seconds == that.seconds
+        && milliseconds == that.milliseconds;
   }
 
   @Override
   public int hashCode() {
-    int hash = 7;
-    hash = 89 * hash + (int) (days ^ (days >>> 32));
-    hash = 89 * hash + hours;
-    hash = 89 * hash + minutes;
-    hash = 89 * hash + seconds;
-    hash = 89 * hash + milliseconds;
-    return hash;
+    return Objects.hash(days, hours, minutes, seconds, milliseconds);
   }
 }

@@ -36,12 +36,12 @@ import javax.annotation.Nullable;
  * Insights by passing an instance of this class to the 'trackRequest' method of the {@link
  * com.microsoft.applicationinsights.TelemetryClient}
  */
-public final class RequestTelemetry extends BaseTelemetry<RequestData> {
+public final class RequestTelemetry extends BaseTelemetry {
 
   private final RequestData data;
 
   /**
-   * Initializes a new instance of the HttpRequestTelemetry class with the given name, time stamp,
+   * Creates a new instance of the HttpRequestTelemetry class with the given name, time stamp,
    * duration, HTTP response code and success property values.
    *
    * @param name A user-friendly name for the request.
@@ -67,7 +67,7 @@ public final class RequestTelemetry extends BaseTelemetry<RequestData> {
   }
 
   /**
-   * Initializes a new instance of the HttpRequestTelemetry class with the given name, time stamp,
+   * Creates a new instance of the HttpRequestTelemetry class with the given name, time stamp,
    * duration, HTTP response code and success property values.
    *
    * @param name A user-friendly name for the request.
@@ -93,20 +93,12 @@ public final class RequestTelemetry extends BaseTelemetry<RequestData> {
     setSuccess(true);
   }
 
-  /**
-   * Gets a map of application-defined request metrics.
-   *
-   * @return The map of metrics
-   */
+  /** Gets a map of application-defined request metrics. */
   public ConcurrentMap<String, Double> getMetrics() {
     return data.getMeasurements();
   }
 
-  /**
-   * Sets the StartTime. Uses the default behavior and sets the property on the 'data' start time
-   *
-   * @param timestamp he timestamp as Date.
-   */
+  /** Sets the StartTime. */
   @Override
   public void setTimestamp(Date timestamp) {
     if (timestamp == null) {
@@ -115,20 +107,12 @@ public final class RequestTelemetry extends BaseTelemetry<RequestData> {
     super.setTimestamp(timestamp);
   }
 
-  /**
-   * Gets or human-readable name of the requested page.
-   *
-   * @return A human-readable name
-   */
+  /** Gets or human-readable name of the requested page. */
   public String getName() {
     return data.getName();
   }
 
-  /**
-   * Sets or human-readable name of the requested page.
-   *
-   * @param name A human-readable name
-   */
+  /** Sets or human-readable name of the requested page. */
   public void setName(String name) {
     if (name == null || name.isEmpty()) {
       throw new IllegalArgumentException("The event name cannot be null or empty");
@@ -136,38 +120,22 @@ public final class RequestTelemetry extends BaseTelemetry<RequestData> {
     data.setName(name);
   }
 
-  /**
-   * Gets the unique identifier of the request.
-   *
-   * @return Unique identifier
-   */
+  /** Gets the unique identifier of the request. */
   public String getId() {
     return data.getId();
   }
 
-  /**
-   * Sets the unique identifier of the request.
-   *
-   * @param id Unique identifier
-   */
+  /** Sets the unique identifier of the request. */
   public void setId(String id) {
     data.setId(id);
   }
 
-  /**
-   * Gets response code returned by the application after handling the request.
-   *
-   * @return Application's response code
-   */
+  /** Gets response code returned by the application after handling the request. */
   public String getResponseCode() {
     return data.getResponseCode();
   }
 
-  /**
-   * Sets response code returned by the application after handling the request.
-   *
-   * @param responseCode Application's response code
-   */
+  /** Sets response code returned by the application after handling the request. */
   public void setResponseCode(String responseCode) {
     data.setResponseCode(responseCode);
   }
@@ -181,80 +149,48 @@ public final class RequestTelemetry extends BaseTelemetry<RequestData> {
 
   /**
    * Sets the source for the request telemetry object. This often is an ID identifying the caller.
-   *
-   * @param value The value of the Source property.
    */
   public void setSource(String value) {
     data.setSource(value);
   }
 
-  /**
-   * Gets a value indicating whether application handled the request successfully.
-   *
-   * @return Success indication
-   */
+  /** Gets a value indicating whether application handled the request successfully. */
   public boolean isSuccess() {
     return data.getSuccess();
   }
 
-  /**
-   * Sets a value indicating whether application handled the request successfully.
-   *
-   * @param success Success indication
-   */
+  /** Sets a value indicating whether application handled the request successfully. */
   public void setSuccess(boolean success) {
     data.setSuccess(success);
   }
 
-  /**
-   * Gets the amount of time it took the application to handle the request.
-   *
-   * @return Amount of time in milliseconds
-   */
+  /** Gets the amount of time it took the application to handle the request. */
   public Duration getDuration() {
     return data.getDuration();
   }
 
-  /**
-   * Sets the amount of time it took the application to handle the request.
-   *
-   * @param duration Amount of time in captured in a {@link
-   *     com.microsoft.applicationinsights.telemetry.Duration}.
-   */
+  /** Sets the amount of time it took the application to handle the request. */
   public void setDuration(Duration duration) {
     data.setDuration(duration);
   }
 
-  /**
-   * Gets request url (optional).
-   *
-   * @return The url
-   * @throws MalformedURLException if the url is malformed
-   */
+  /** Gets request url. */
   @Nullable
   public URL getUrl() throws MalformedURLException {
-    if (LocalStringsUtils.isNullOrEmpty(data.getUrl())) {
+    String url = data.getUrl();
+    if (LocalStringsUtils.isNullOrEmpty(url)) {
       return null;
     }
 
-    return new URL(data.getUrl());
+    return new URL(url);
   }
 
-  /**
-   * Sets request url
-   *
-   * @param url The URL
-   */
+  /** Sets request url. */
   public void setUrl(URL url) {
     data.setUrl(url.toString());
   }
 
-  /**
-   * Sets request url.
-   *
-   * @param url The url to store
-   * @throws MalformedURLException If the url is malformed
-   */
+  /** Sets request url. */
   public void setUrl(String url) throws MalformedURLException {
     URL u = new URL(url); // to validate and normalize
     data.setUrl(u.toString());

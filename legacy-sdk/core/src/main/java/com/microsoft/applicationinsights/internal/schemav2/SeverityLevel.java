@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.schemav2;
 
-/** Enum SeverityLevel. */
 @SuppressWarnings("MemberName")
 public enum SeverityLevel {
   Verbose(0),

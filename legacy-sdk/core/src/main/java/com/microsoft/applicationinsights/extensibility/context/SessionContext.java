@@ -28,38 +28,18 @@ public final class SessionContext {
 
   private final ConcurrentMap<String, String> tags;
 
-  /**
-   * Constructs a SessionContext objects with the given tags.
-   *
-   * @param tags The tags
-   */
   public SessionContext(ConcurrentMap<String, String> tags) {
     this.tags = tags;
   }
 
-  /**
-   * Sets the session ID.
-   *
-   * @param id the session ID.
-   */
   public void setId(String id) {
     MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getSessionId(), id);
   }
 
-  /**
-   * Sets whether it is the first session.
-   *
-   * @param isFirst a value indicating whether it is the first session.
-   */
   public void setIsFirst(Boolean isFirst) {
     MapUtil.setBoolValueOrRemove(tags, ContextTagKeys.getKeys().getSessionIsFirst(), isFirst);
   }
 
-  /**
-   * Sets a value indicating whether it is a new session.
-   *
-   * @param isNewSession A value indicating whether it is a new session.
-   */
   public void setIsNewSession(Boolean isNewSession) {
     MapUtil.setBoolValueOrRemove(tags, ContextTagKeys.getKeys().getSessionIsNew(), isNewSession);
   }

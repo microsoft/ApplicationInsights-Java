@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.schemav2;
 
-/** Enum DependencyKind. */
 @SuppressWarnings("MemberName")
 public enum DependencyKind {
   SQL(0),

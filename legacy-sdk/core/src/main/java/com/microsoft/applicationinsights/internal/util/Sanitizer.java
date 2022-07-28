@@ -24,12 +24,6 @@ package com.microsoft.applicationinsights.internal.util;
 import java.net.URI;
 import javax.annotation.Nullable;
 
-/**
- * Created by gupele on 1/7/2015.
- *
- * <p>Most of the methods of this class are now obsolete except URL methods which will be moved
- * soon.
- */
 public final class Sanitizer {
 
   @Nullable

@@ -27,53 +27,15 @@ import java.util.Map;
 /** The base telemetry type interface for application insights. */
 public interface Telemetry {
 
-  /**
-   * Gets the time when telemetry was recorded
-   *
-   * @return Recorded time.
-   */
+  /** Gets the time when telemetry was recorded */
   Date getTimestamp();
 
-  /**
-   * Sequence field used to track absolute order of uploaded events. It is a two-part value that
-   * includes a stable identifier for the current boot session and an incrementing identifier for
-   * each event added to the upload queue
-   *
-   * <p>The Sequence helps track how many events were fired and how many events were uploaded and
-   * enables identification of data lost during upload and de-duplication of events on the ingress
-   * server.
-   *
-   * <p>Gets the current sequence.
-   *
-   * @return The current sequence.
-   */
-  String getSequence();
-
-  /**
-   * Sets the sequence.
-   *
-   * @param sequence The sequence.
-   */
-  void setSequence(String sequence);
-
-  /**
-   * Sets the time when telemetry was recorded
-   *
-   * @param date Recorded time.
-   */
+  /** Sets the time when telemetry was recorded */
   void setTimestamp(Date date);
 
-  /**
-   * Gets the context associated with this telemetry instance.
-   *
-   * @return Context associated with this instance.
-   */
+  /** Gets the context associated with this telemetry instance. */
   TelemetryContext getContext();
 
-  /**
-   * Gets the map of application-defined property names and values.
-   *
-   * @return Map of properties.
-   */
+  /** Gets the map of application-defined property names and values. */
   Map<String, String> getProperties();
 }

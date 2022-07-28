@@ -28,53 +28,27 @@ public final class OperationContext {
 
   private final Map<String, String> tags;
 
-  /**
-   * Constructs new OperationContext object with the given tags.
-   *
-   * @param tags The OperationContext tags.
-   */
   public OperationContext(Map<String, String> tags) {
     this.tags = tags;
   }
 
-  /**
-   * Gets the operation id.
-   *
-   * @return Operation id.
-   */
   public String getId() {
     // note: this method is instrumented by the Javaagent
     return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getOperationId());
   }
 
-  /**
-   * Sets the operation id.
-   *
-   * @param id The operation id.
-   */
   public void setId(String id) {
     MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getOperationId(), id);
   }
 
-  /** Set the Operation Parent id */
   public void setParentId(String parentId) {
     MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getOperationParentId(), parentId);
   }
 
-  /**
-   * Sets the operation name.
-   *
-   * @param name Operation name.
-   */
   public void setName(String name) {
     MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getOperationName(), name);
   }
 
-  /**
-   * Sets the synthetic source.
-   *
-   * @param syntheticSource The synthetic source.
-   */
   public void setSyntheticSource(String syntheticSource) {
     MapUtil.setStringValueOrRemove(
         tags, ContextTagKeys.getKeys().getSyntheticSource(), syntheticSource);

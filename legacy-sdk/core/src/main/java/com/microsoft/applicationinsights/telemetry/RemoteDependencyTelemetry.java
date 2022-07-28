@@ -28,12 +28,12 @@ import java.util.Map;
  * Telemetry sent to Azure Application Insights about dependencies - that is, calls from your
  * application to external services such as databases or REST APIs.
  */
-public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDependencyData> {
+public final class RemoteDependencyTelemetry extends BaseTelemetry {
 
   private final RemoteDependencyData data;
 
   /**
-   * Initializes an instnace with the given parameters.
+   * Creates a new instance with the given parameters.
    *
    * @param dependencyName The dependency name.
    * @param commandName The command name or call details.
@@ -48,17 +48,12 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
     this.data.setSuccess(success);
   }
 
-  /**
-   * Initializes an instance with a 'name'
-   *
-   * @param name The dependency name.
-   */
+  /** Creates a new instance with the given {@code name}. */
   public RemoteDependencyTelemetry(String name) {
     this();
     setName(name);
   }
 
-  /** Default Ctor */
   public RemoteDependencyTelemetry() {
     data = new RemoteDependencyData();
     initialize(this.data.getProperties());
@@ -69,29 +64,17 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
     return this.data.getId();
   }
 
-  /**
-   * Sets the dependency Id.
-   *
-   * @param value The value for the Id.
-   */
+  /** Sets the dependency Id. */
   public void setId(String value) {
     this.data.setId(value);
   }
 
-  /**
-   * Gets tne dependency name.
-   *
-   * @return The dependency name.
-   */
+  /** Gets the dependency name. */
   public String getName() {
     return data.getName();
   }
 
-  /**
-   * Sets the dependency name.
-   *
-   * @param name The dependency name.
-   */
+  /** Sets the dependency name. */
   public void setName(String name) {
     if (name == null || name.isEmpty()) {
       throw new IllegalArgumentException("The event name cannot be null or empty");
@@ -99,38 +82,22 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
     data.setName(name);
   }
 
-  /**
-   * Gets the command name.
-   *
-   * @return The command name.
-   */
+  /** Gets the command name. */
   public String getCommandName() {
     return this.data.getData();
   }
 
-  /**
-   * Sets the command name.
-   *
-   * @param commandName The command name.
-   */
+  /** Sets the command name. */
   public void setCommandName(String commandName) {
     this.data.setData(commandName);
   }
 
-  /**
-   * Gets the Type property.
-   *
-   * @return type property.
-   */
+  /** Gets the type property. */
   public String getType() {
     return data.getType();
   }
 
-  /**
-   * Sets the type property.
-   *
-   * @param value Type property.
-   */
+  /** Sets the type property. */
   public void setType(String value) {
     data.setType(value);
   }
@@ -140,11 +107,7 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
     return data.getTarget();
   }
 
-  /**
-   * Sets the target of this dependency.
-   *
-   * @param value The value for the Target property.
-   */
+  /** Sets the target of this dependency. */
   public void setTarget(String value) {
     data.setTarget(value);
   }
@@ -153,45 +116,24 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
     data.setResultCode(value);
   }
 
-  /**
-   * Gets the Success property.
-   *
-   * @return True if success.
-   */
+  /** Gets the Success property. */
   public boolean getSuccess() {
     return data.getSuccess();
   }
 
-  /**
-   * Sets the Success property.
-   *
-   * @param value True if success.
-   */
+  /** Sets the Success property. */
   public void setSuccess(boolean value) {
     data.setSuccess(value);
   }
 
-  /**
-   * Gets the duration.
-   *
-   * @return The duration.
-   */
+  /** Gets the duration. */
   public Duration getDuration() {
     return this.data.getDuration();
   }
 
-  /**
-   * Sets the duration.
-   *
-   * @param duration The duration.
-   */
+  /** Sets the duration. */
   public void setDuration(Duration duration) {
     this.data.setDuration(duration);
-  }
-
-  @Override
-  protected RemoteDependencyData getData() {
-    return data;
   }
 
   public String getResultCode() {
@@ -200,5 +142,10 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
 
   public Map<String, Double> getMetrics() {
     return getData().getMeasurements();
+  }
+
+  @Override
+  protected RemoteDependencyData getData() {
+    return data;
   }
 }

@@ -25,118 +25,86 @@ import com.microsoft.applicationinsights.telemetry.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-/** Data contract class AvailabilityData. */
-public class AvailabilityData extends Domain {
+public class AvailabilityData {
 
-  /** Backing field for property Id. */
   private String id;
-
-  /** Backing field for property Name. */
   private String name;
-
-  /** Backing field for property Duration. */
   private Duration duration = new Duration(0);
-
-  /** Backing field for property Success. */
   private boolean success;
-
-  /** Backing field for property RunLocation. */
   private String runLocation;
-
-  /** Backing field for property Message. */
   private String message;
 
-  /** Backing field for property Properties. */
   private ConcurrentMap<String, String> properties;
-
-  /** Backing field for property Measurements. */
   private ConcurrentMap<String, Double> measurements;
 
-  /** Initializes a new instance of the AvailabilityData class. */
   public AvailabilityData() {}
 
-  /** Gets the Id property. */
   public String getId() {
     return this.id;
   }
 
-  /** Sets the Id property. */
   public void setId(String value) {
     this.id = value;
   }
 
-  /** Gets the Name property. */
   public String getName() {
     return this.name;
   }
 
-  /** Sets the Name property. */
   public void setName(String value) {
     this.name = value;
   }
 
-  /** Gets the Duration property. */
   public Duration getDuration() {
     return this.duration;
   }
 
-  /** Sets the Duration property. */
   public void setDuration(Duration value) {
     this.duration = value;
   }
 
-  /** Gets the Success property. */
   public boolean getSuccess() {
     return this.success;
   }
 
-  /** Sets the Success property. */
   public void setSuccess(boolean value) {
     this.success = value;
   }
 
-  /** Gets the RunLocation property. */
   public String getRunLocation() {
     return this.runLocation;
   }
 
-  /** Sets the RunLocation property. */
   public void setRunLocation(String value) {
     this.runLocation = value;
   }
 
-  /** Gets the Message property. */
   public String getMessage() {
     return this.message;
   }
 
-  /** Sets the Message property. */
   public void setMessage(String value) {
     this.message = value;
   }
 
-  /** Gets the Properties property. */
   public ConcurrentMap<String, String> getProperties() {
     if (this.properties == null) {
-      this.properties = new ConcurrentHashMap<String, String>();
+      this.properties = new ConcurrentHashMap<>();
     }
     return this.properties;
   }
 
-  /** Sets the Properties property. */
   public void setProperties(ConcurrentMap<String, String> value) {
     this.properties = value;
   }
 
-  /** Gets the Measurements property. */
   public ConcurrentMap<String, Double> getMeasurements() {
     if (this.measurements == null) {
-      this.measurements = new ConcurrentHashMap<String, Double>();
+      this.measurements = new ConcurrentHashMap<>();
     }
     return this.measurements;
   }
 
-  /** Sets the Measurements property. */
   public void setMeasurements(ConcurrentMap<String, Double> value) {
     this.measurements = value;
   }

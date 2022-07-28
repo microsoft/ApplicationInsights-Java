@@ -26,82 +26,62 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-/** Data contract class ExceptionData. */
-public class ExceptionData extends Domain {
+public class ExceptionData {
 
-  /** Backing field for property Exceptions. */
   private List<ExceptionDetails> exceptions;
-
-  /** Backing field for property SeverityLevel. */
   private SeverityLevel severityLevel;
-
-  /** Backing field for property ProblemId. */
   private String problemId;
 
-  /** Backing field for property Properties. */
   private ConcurrentMap<String, String> properties;
-
-  /** Backing field for property Measurements. */
   private ConcurrentMap<String, Double> measurements;
 
-  /** Initializes a new instance of the ExceptionData class. */
   public ExceptionData() {}
 
-  /** Gets the Exceptions property. */
   public List<ExceptionDetails> getExceptions() {
     if (this.exceptions == null) {
-      this.exceptions = new ArrayList<ExceptionDetails>();
+      this.exceptions = new ArrayList<>();
     }
     return this.exceptions;
   }
 
-  /** Sets the Exceptions property. */
   public void setExceptions(List<ExceptionDetails> value) {
     this.exceptions = value;
   }
 
-  /** Gets the SeverityLevel property. */
   public SeverityLevel getSeverityLevel() {
     return this.severityLevel;
   }
 
-  /** Sets the SeverityLevel property. */
   public void setSeverityLevel(SeverityLevel value) {
     this.severityLevel = value;
   }
 
-  /** Gets the ProblemId property. */
   public String getProblemId() {
     return this.problemId;
   }
 
-  /** Sets the ProblemId property. */
   public void setProblemId(String value) {
     this.problemId = value;
   }
 
-  /** Gets the Properties property. */
   public ConcurrentMap<String, String> getProperties() {
     if (this.properties == null) {
-      this.properties = new ConcurrentHashMap<String, String>();
+      this.properties = new ConcurrentHashMap<>();
     }
     return this.properties;
   }
 
-  /** Sets the Properties property. */
   public void setProperties(ConcurrentMap<String, String> value) {
     this.properties = value;
   }
 
-  /** Gets the Measurements property. */
   public ConcurrentMap<String, Double> getMeasurements() {
     if (this.measurements == null) {
-      this.measurements = new ConcurrentHashMap<String, Double>();
+      this.measurements = new ConcurrentHashMap<>();
     }
     return this.measurements;
   }
 
-  /** Sets the Measurements property. */
   public void setMeasurements(ConcurrentMap<String, Double> value) {
     this.measurements = value;
   }

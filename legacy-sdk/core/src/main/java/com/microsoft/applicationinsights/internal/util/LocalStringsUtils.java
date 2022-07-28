@@ -22,11 +22,14 @@
 package com.microsoft.applicationinsights.internal.util;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class LocalStringsUtils {
+
+  private static final SimpleDateFormat simpleDateFormat =
+      new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
 
   public static boolean isNullOrEmpty(String value) {
     return value == null || value.isEmpty();
@@ -41,8 +44,10 @@ public class LocalStringsUtils {
     return String.valueOf(rand);
   }
 
-  public static DateFormat getDateFormatter() {
-    return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
+  public static String formatDate(Date value) {
+    synchronized (simpleDateFormat) {
+      return simpleDateFormat.format(value);
+    }
   }
 
   private LocalStringsUtils() {}

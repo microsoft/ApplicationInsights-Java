@@ -33,49 +33,32 @@ import java.util.concurrent.ConcurrentMap;
  * passing an instance of this class to the 'trackPageView' method of the {@link
  * com.microsoft.applicationinsights.TelemetryClient}
  */
-public final class PageViewTelemetry extends BaseTelemetry<PageViewData> {
+public final class PageViewTelemetry extends BaseTelemetry {
 
   private final PageViewData data;
 
-  /**
-   * Initializes a new instance of the class with the specified 'pageName'
-   *
-   * @param pageName The name of page to track.
-   */
+  /** Initializes a new instance of the class with the specified {@code pageName}. */
   public PageViewTelemetry(String pageName) {
     this();
     setName(pageName);
   }
 
-  /** Default Ctor */
   public PageViewTelemetry() {
     data = new PageViewData();
     initialize(data.getProperties());
   }
 
-  /**
-   * Sets the name of the page view.
-   *
-   * @param name The page view name.
-   */
+  /** Sets the name of the page view. */
   public void setName(String name) {
     data.setName(name);
   }
 
-  /**
-   * Gets the name of the page view.
-   *
-   * @return The page view name.
-   */
+  /** Gets the name of the page view. */
   public String getName() {
     return data.getName();
   }
 
-  /**
-   * Gets the page view Uri.
-   *
-   * @return The page view Uri.
-   */
+  /** Gets the page view Uri. */
   public URI getUri() {
     URI result = Sanitizer.safeStringToUri(data.getUrl());
     if (result == null) {
@@ -88,48 +71,32 @@ public final class PageViewTelemetry extends BaseTelemetry<PageViewData> {
     return getData().getUrl();
   }
 
-  /**
-   * Sets the page view Uri.
-   *
-   * @param url The page view Uri.
-   */
+  /** Sets the page view Uri. */
   public void setUrl(URI url) {
     data.setUrl(url == null ? null : url.toString());
   }
 
-  /**
-   * Gets the page view duration.
-   *
-   * @return The page view duration.
-   */
+  /** Gets the page view duration. */
   public long getDuration() {
     return data.getDuration().getTotalMilliseconds();
   }
 
-  /**
-   * Sets the page view duration.
-   *
-   * @param duration The page view duration.
-   */
+  /** Sets the page view duration. */
   public void setDuration(long duration) {
     data.setDuration(new Duration(duration));
   }
 
-  /**
-   * Gets a dictionary of custom defined metrics.
-   *
-   * @return Custom defined metrics.
-   */
+  /** Gets a dictionary of custom defined metrics. */
   public ConcurrentMap<String, Double> getMetrics() {
     return data.getMeasurements();
+  }
+
+  public Duration getDurationObject() {
+    return getData().getDuration();
   }
 
   @Override
   protected PageViewData getData() {
     return data;
-  }
-
-  public Duration getDurationObject() {
-    return getData().getDuration();
   }
 }

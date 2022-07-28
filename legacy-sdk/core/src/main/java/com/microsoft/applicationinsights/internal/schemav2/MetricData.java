@@ -26,40 +26,31 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-/** Data contract class MetricData. */
-public class MetricData extends Domain {
+public class MetricData {
 
-  /** Backing field for property Metrics. */
   private List<DataPoint> metrics;
-
-  /** Backing field for property Properties. */
   private ConcurrentMap<String, String> properties;
 
-  /** Initializes a new instance of the MetricData class. */
   public MetricData() {}
 
-  /** Gets the Metrics property. */
   public List<DataPoint> getMetrics() {
     if (this.metrics == null) {
-      this.metrics = new ArrayList<DataPoint>();
+      this.metrics = new ArrayList<>();
     }
     return this.metrics;
   }
 
-  /** Sets the Metrics property. */
   public void setMetrics(List<DataPoint> value) {
     this.metrics = value;
   }
 
-  /** Gets the Properties property. */
   public ConcurrentMap<String, String> getProperties() {
     if (this.properties == null) {
-      this.properties = new ConcurrentHashMap<String, String>();
+      this.properties = new ConcurrentHashMap<>();
     }
     return this.properties;
   }
 
-  /** Sets the Properties property. */
   public void setProperties(ConcurrentMap<String, String> value) {
     this.properties = value;
   }

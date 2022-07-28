@@ -25,11 +25,10 @@ import com.microsoft.applicationinsights.internal.schemav2.MessageData;
 import javax.annotation.Nullable;
 
 /** Telemetry type used for log messages. */
-public final class TraceTelemetry extends BaseTelemetry<MessageData> {
+public final class TraceTelemetry extends BaseTelemetry {
 
   private final MessageData data;
 
-  /** Default Ctor */
   public TraceTelemetry() {
     this("");
   }
@@ -39,7 +38,7 @@ public final class TraceTelemetry extends BaseTelemetry<MessageData> {
   }
 
   /**
-   * Initializes a new instance of the class with the specified parameter 'message'.
+   * Creates a new instance.
    *
    * @param message The message. Max length 10000.
    * @param severityLevel The severity level.
@@ -56,8 +55,6 @@ public final class TraceTelemetry extends BaseTelemetry<MessageData> {
 
   /**
    * Gets the message text. For example, the text that would normally be written to a log file line.
-   *
-   * @return The message.
    */
   public String getMessage() {
     return data.getMessage();
@@ -65,16 +62,9 @@ public final class TraceTelemetry extends BaseTelemetry<MessageData> {
 
   /**
    * Sets the message text. For example, the text that would normally be written to a log file line.
-   *
-   * @param message The message.
    */
   public void setMessage(String message) {
     data.setMessage(message);
-  }
-
-  @Override
-  protected MessageData getData() {
-    return data;
   }
 
   public void setSeverityLevel(SeverityLevel severityLevel) {
@@ -90,5 +80,10 @@ public final class TraceTelemetry extends BaseTelemetry<MessageData> {
     return data.getSeverityLevel() == null
         ? null
         : SeverityLevel.values()[data.getSeverityLevel().getValue()];
+  }
+
+  @Override
+  protected MessageData getData() {
+    return data;
   }
 }

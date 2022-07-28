@@ -25,12 +25,12 @@ import com.microsoft.applicationinsights.internal.schemav2.EventData;
 import java.util.concurrent.ConcurrentMap;
 
 /** Telemetry type used to track custom events in Azure Application Insights. */
-public final class EventTelemetry extends BaseTelemetry<EventData> {
+public final class EventTelemetry extends BaseTelemetry {
 
   private final EventData data;
 
   /**
-   * Initializes a new instance.
+   * Creates a new instance.
    *
    * @param name The event's name. Max length 150.
    */
@@ -39,7 +39,7 @@ public final class EventTelemetry extends BaseTelemetry<EventData> {
     this.setName(name);
   }
 
-  /** Default initialization for a new instance. */
+  /** Creates a new instance. */
   public EventTelemetry() {
     data = new EventData();
     initialize(data.getProperties());
@@ -48,27 +48,17 @@ public final class EventTelemetry extends BaseTelemetry<EventData> {
   /**
    * Gets a map of application-defined event metrics. These metrics appear along with the event in
    * Search and Analytics, but appear under 'Custom Metrics' in Metrics Explorer.
-   *
-   * @return The map of metrics
    */
   public ConcurrentMap<String, Double> getMetrics() {
     return data.getMeasurements();
   }
 
-  /**
-   * Gets the name of the event.
-   *
-   * @return The name
-   */
+  /** Gets the name of the event. */
   public String getName() {
     return data.getName();
   }
 
-  /**
-   * Sets the name of the event.
-   *
-   * @param name Name of the event. Max length 150.
-   */
+  /** Sets the name of the event. Max length 150. */
   public void setName(String name) {
     if (name == null || name.isEmpty()) {
       throw new IllegalArgumentException("The event name cannot be null or empty");
@@ -76,11 +66,6 @@ public final class EventTelemetry extends BaseTelemetry<EventData> {
     data.setName(name);
   }
 
-  /**
-   * Fetches the data structure the instance works with
-   *
-   * @return The inner data structure.
-   */
   @Override
   protected EventData getData() {
     return data;

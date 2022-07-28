@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
-import java.text.ParseException;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -63,15 +62,6 @@ public class MapUtil {
     return map.containsKey(key) ? Boolean.valueOf(map.get(key)) : null;
   }
 
-  @Nullable
-  public static Date getDateValueOrNull(Map<String, String> map, String key) {
-    try {
-      return map.containsKey(key) ? LocalStringsUtils.getDateFormatter().parse(map.get(key)) : null;
-    } catch (ParseException pe) {
-      return null;
-    }
-  }
-
   public static void setStringValueOrRemove(Map<String, String> map, String key, String value) {
     if (LocalStringsUtils.isNullOrEmpty(value)) {
       map.remove(key);
@@ -92,7 +82,7 @@ public class MapUtil {
     if (value == null) {
       map.remove(key);
     } else {
-      map.put(key, LocalStringsUtils.getDateFormatter().format(value));
+      map.put(key, LocalStringsUtils.formatDate(value));
     }
   }
 

@@ -33,13 +33,13 @@ import com.microsoft.applicationinsights.internal.schemav2.MetricData;
  * statistic fields. In an Aggregation metric, the value, i.e. {@link #getValue()}, represents the
  * sum of sampled data points.
  */
-public final class MetricTelemetry extends BaseTelemetry<MetricData> {
+public final class MetricTelemetry extends BaseTelemetry {
 
   private final MetricData data;
   private final DataPoint metric;
 
   /**
-   * Initializes the instance with a name and value
+   * Creates a new instance.
    *
    * @param name The name of the metric. Length 1-150 characters.
    * @param value The value of the metric.
@@ -51,7 +51,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     metric.setValue(value);
   }
 
-  /** Default constructor */
+  /** Creates a new instance. */
   public MetricTelemetry() {
     data = new MetricData();
     metric = new DataPoint();
@@ -68,11 +68,7 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     data.getProperties().put("CustomPerfCounter", "true");
   }
 
-  /**
-   * Gets the name of the metric.
-   *
-   * @return The name of the metric.
-   */
+  /** Gets the name of the metric. */
   public String getName() {
     return metric.getName();
   }
@@ -91,29 +87,19 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
   }
 
   /**
-   * Gets The value of the metric. Represents the sum of data points if this metric is an
-   * Aggregation
-   *
-   * @return The value of the metric.
+   * Gets the value of the metric. Represents the sum of data points if this metric is an
+   * Aggregation.
    */
   public double getValue() {
     return metric.getValue();
   }
 
-  /**
-   * Sets The value of the metric.
-   *
-   * @param value The value of the metric.
-   */
+  /** Sets The value of the metric. */
   public void setValue(double value) {
     metric.setValue(value);
   }
 
-  /**
-   * Gets the number of samples for this metric.
-   *
-   * @return Number of samples.
-   */
+  /** Gets the number of samples for this metric. */
   public Integer getCount() {
     return metric.getCount();
   }
@@ -128,66 +114,37 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     updateKind();
   }
 
-  /**
-   * Gets the min value of this metric across samples.
-   *
-   * @return The min value.
-   */
+  /** Gets the min value of this metric across samples. */
   public Double getMin() {
     return metric.getMin();
   }
 
-  /**
-   * Sets the min value of this metric across samples.
-   *
-   * @param value The min value.
-   */
+  /** Sets the min value of this metric across samples. */
   public void setMin(Double value) {
     metric.setMin(value);
     updateKind();
   }
 
-  /**
-   * Gets the max value of this metric across samples.
-   *
-   * @return The max value.
-   */
+  /** Gets the max value of this metric across samples. */
   public Double getMax() {
     return metric.getMax();
   }
 
-  /**
-   * Sets the max value of this metric across samples.
-   *
-   * @param value The max value.
-   */
+  /** Sets the max value of this metric across samples. */
   public void setMax(Double value) {
     metric.setMax(value);
     updateKind();
   }
 
-  /**
-   * Gets the standard deviation of this metric across samples.
-   *
-   * @return The max value.
-   */
+  /** Gets the standard deviation of this metric across samples. */
   public Double getStandardDeviation() {
     return metric.getStdDev();
   }
 
-  /**
-   * Sets the standard deviation of this metric across samples.
-   *
-   * @param value The max value.
-   */
+  /** Sets the standard deviation of this metric across samples. */
   public void setStandardDeviation(Double value) {
     metric.setStdDev(value);
     updateKind();
-  }
-
-  @Override
-  protected MetricData getData() {
-    return data;
   }
 
   private void updateKind() {
@@ -203,5 +160,10 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
 
   public DataPointType getKind() {
     return metric.getKind();
+  }
+
+  @Override
+  protected MetricData getData() {
+    return data;
   }
 }
