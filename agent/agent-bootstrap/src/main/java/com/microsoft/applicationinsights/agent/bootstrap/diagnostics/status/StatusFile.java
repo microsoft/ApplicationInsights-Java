@@ -130,7 +130,9 @@ public class StatusFile {
       AccessController.checkPermission(new FilePermission(dir.getPath(), "read,write"));
       tmp = true;
     } catch (AccessControlException | NullPointerException e) {
-      startupLogger.error("Read only file system", e);
+      if (startupLogger != null) {
+        startupLogger.error("Read only file system", e);
+      }
     }
     writable = tmp;
   }
