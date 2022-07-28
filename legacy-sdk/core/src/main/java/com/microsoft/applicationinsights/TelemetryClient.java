@@ -314,7 +314,6 @@ public class TelemetryClient {
    * @param name The name of the page.
    */
   public void trackPageView(String name) {
-    // Avoid creation of data if not needed
     if (isDisabled()) {
       return;
     }
@@ -336,15 +335,20 @@ public class TelemetryClient {
     track(telemetry);
   }
 
-  public void track(Telemetry telemetry) {
-    // Javaagent provides implementation
-  }
-
   /**
    * Flushes possible pending Telemetries. Not required for a continuously-running server
    * application.
    */
   public void flush() {
+    // Javaagent provides implementation
+  }
+
+  /**
+   * This method is part of the Application Insights infrastructure. Do not call it directly.
+   *
+   * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} instance.
+   */
+  public void track(Telemetry telemetry) {
     // Javaagent provides implementation
   }
 }
