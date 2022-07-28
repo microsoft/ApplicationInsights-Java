@@ -26,7 +26,7 @@ import static org.objectweb.asm.Opcodes.ACC_PROTECTED;
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 import static org.objectweb.asm.Opcodes.ACONST_NULL;
 import static org.objectweb.asm.Opcodes.ARETURN;
-import static org.objectweb.asm.Opcodes.ASM7;
+import static org.objectweb.asm.Opcodes.ASM9;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.reflect.Modifier;
@@ -80,7 +80,7 @@ public class RequestTelemetryClassFileTransformer implements ClassFileTransforme
     private boolean foundGetSourceMethod;
 
     private RequestTelemetryClassVisitor(ClassWriter cw) {
-      super(ASM7, cw);
+      super(ASM9, cw);
       this.cw = cw;
     }
 

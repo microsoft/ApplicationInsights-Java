@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import static org.objectweb.asm.Opcodes.ARETURN;
-import static org.objectweb.asm.Opcodes.ASM7;
+import static org.objectweb.asm.Opcodes.ASM9;
 import static org.objectweb.asm.Opcodes.ATHROW;
 import static org.objectweb.asm.Opcodes.DRETURN;
 import static org.objectweb.asm.Opcodes.FRETURN;
@@ -71,7 +71,7 @@ public class JarVerifierClassFileTransformer implements ClassFileTransformer {
     private final ClassWriter cw;
 
     private JarFileClassVisitor(ClassWriter cw) {
-      super(ASM7, cw);
+      super(ASM9, cw);
       this.cw = cw;
     }
 
@@ -90,7 +90,7 @@ public class JarVerifierClassFileTransformer implements ClassFileTransformer {
   private static class JarFileMethodVisitor extends MethodVisitor {
 
     private JarFileMethodVisitor(MethodVisitor mv) {
-      super(ASM7, mv);
+      super(ASM9, mv);
     }
 
     @Override

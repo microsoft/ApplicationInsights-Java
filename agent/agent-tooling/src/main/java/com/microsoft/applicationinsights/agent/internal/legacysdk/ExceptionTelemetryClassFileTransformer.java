@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.legacysdk;
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 import static org.objectweb.asm.Opcodes.ALOAD;
 import static org.objectweb.asm.Opcodes.ARETURN;
-import static org.objectweb.asm.Opcodes.ASM7;
+import static org.objectweb.asm.Opcodes.ASM9;
 import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 
 import java.lang.instrument.ClassFileTransformer;
@@ -81,7 +81,7 @@ public class ExceptionTelemetryClassFileTransformer implements ClassFileTransfor
     private boolean foundGetThrowableMethod;
 
     private ExceptionTelemetryClassVisitor(ClassWriter cw) {
-      super(ASM7, cw);
+      super(ASM9, cw);
       this.cw = cw;
     }
 

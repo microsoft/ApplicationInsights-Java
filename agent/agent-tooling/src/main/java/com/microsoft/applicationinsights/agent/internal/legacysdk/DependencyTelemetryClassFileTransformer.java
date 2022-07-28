@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.legacysdk;
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 import static org.objectweb.asm.Opcodes.ACONST_NULL;
 import static org.objectweb.asm.Opcodes.ARETURN;
-import static org.objectweb.asm.Opcodes.ASM7;
+import static org.objectweb.asm.Opcodes.ASM9;
 import static org.objectweb.asm.Opcodes.INVOKESTATIC;
 
 import java.lang.instrument.ClassFileTransformer;
@@ -85,7 +85,7 @@ public class DependencyTelemetryClassFileTransformer implements ClassFileTransfo
     private boolean foundGetTypeMethod;
 
     private DependencyTelemetryClassVisitor(ClassWriter cw) {
-      super(ASM7, cw);
+      super(ASM9, cw);
       this.cw = cw;
     }
 

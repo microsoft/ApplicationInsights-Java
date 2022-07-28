@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.legacysdk;
 
-import static org.objectweb.asm.Opcodes.ASM7;
+import static org.objectweb.asm.Opcodes.ASM9;
 import static org.objectweb.asm.Opcodes.RETURN;
 
 import java.lang.instrument.ClassFileTransformer;
@@ -77,7 +77,7 @@ public class ApplicationInsightsAppenderClassFileTransformer implements ClassFil
     private final ClassWriter cw;
 
     private ApplicationInsightsAppenderClassVisitor(ClassWriter cw) {
-      super(ASM7, cw);
+      super(ASM9, cw);
       this.cw = cw;
     }
 
