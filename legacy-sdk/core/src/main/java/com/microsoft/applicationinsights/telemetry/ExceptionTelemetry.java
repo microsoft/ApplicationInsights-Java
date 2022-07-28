@@ -73,7 +73,7 @@ public final class ExceptionTelemetry extends BaseTelemetry {
     setException(throwable, Integer.MAX_VALUE);
   }
 
-  public void setException(Throwable throwable, int stackSize) {
+  private void setException(Throwable throwable, int stackSize) {
     this.throwable = throwable;
     updateException(throwable, stackSize);
   }
@@ -101,7 +101,7 @@ public final class ExceptionTelemetry extends BaseTelemetry {
         : SeverityLevel.values()[data.getSeverityLevel().getValue()];
   }
 
-  public List<ExceptionDetails> getExceptions() {
+  private List<ExceptionDetails> getExceptions() {
     return data.getExceptions();
   }
 
