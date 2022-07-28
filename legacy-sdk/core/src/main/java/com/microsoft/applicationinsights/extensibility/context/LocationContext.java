@@ -38,10 +38,6 @@ public final class LocationContext {
     this.tags = tags;
   }
 
-  String getIp() {
-    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getLocationIP());
-  }
-
   public void setIp(String value) {
     if (!LocalStringsUtils.isNullOrEmpty(value) && isIpV4(value)) {
       MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getLocationIP(), value);

@@ -28,12 +28,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class LocalStringsUtils {
 
-  /**
-   * Determine whether a string is null or empty.
-   *
-   * @param value The string value
-   * @return True if the string is either null or empty.
-   */
   public static boolean isNullOrEmpty(String value) {
     return value == null || value.isEmpty();
   }

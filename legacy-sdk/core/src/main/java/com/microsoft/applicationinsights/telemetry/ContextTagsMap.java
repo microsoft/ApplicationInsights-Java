@@ -53,9 +53,6 @@ class ContextTagsMap implements ConcurrentMap<String, String> {
     tagSizeLimits.put(ContextTagKeys.getKeys().getUserAuthUserId(), 1024);
     tagSizeLimits.put(ContextTagKeys.getKeys().getCloudRole(), 256);
     tagSizeLimits.put(ContextTagKeys.getKeys().getCloudRoleInstance(), 256);
-    tagSizeLimits.put(ContextTagKeys.getKeys().getInternalSdkVersion(), 64);
-    tagSizeLimits.put(ContextTagKeys.getKeys().getInternalAgentVersion(), 64);
-    tagSizeLimits.put(ContextTagKeys.getKeys().getInternalNodeName(), 256);
     tagSizeLimits.put(ContextTagKeys.getKeys().getOperationCorrelationVector(), 64);
   }
 

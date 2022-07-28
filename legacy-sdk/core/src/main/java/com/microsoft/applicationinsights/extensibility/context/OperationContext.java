@@ -25,6 +25,7 @@ import com.microsoft.applicationinsights.internal.util.MapUtil;
 import java.util.Map;
 
 public final class OperationContext {
+
   private final Map<String, String> tags;
 
   /**
@@ -42,6 +43,7 @@ public final class OperationContext {
    * @return Operation id.
    */
   public String getId() {
+    // note: this method is instrumented by the Javaagent
     return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getOperationId());
   }
 
@@ -59,20 +61,6 @@ public final class OperationContext {
     MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getOperationParentId(), parentId);
   }
 
-  /** Get the operation parent id */
-  public String getParentId() {
-    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getOperationParentId());
-  }
-
-  /**
-   * Gets the operation name.
-   *
-   * @return Operation name.
-   */
-  public String getName() {
-    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getOperationName());
-  }
-
   /**
    * Sets the operation name.
    *
@@ -80,15 +68,6 @@ public final class OperationContext {
    */
   public void setName(String name) {
     MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getOperationName(), name);
-  }
-
-  /**
-   * Gets the synthetic source.
-   *
-   * @return The synthetic source.
-   */
-  public String getSyntheticSource() {
-    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getSyntheticSource());
   }
 
   /**

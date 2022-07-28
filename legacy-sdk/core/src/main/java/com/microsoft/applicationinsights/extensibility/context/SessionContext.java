@@ -25,6 +25,7 @@ import com.microsoft.applicationinsights.internal.util.MapUtil;
 import java.util.concurrent.ConcurrentMap;
 
 public final class SessionContext {
+
   private final ConcurrentMap<String, String> tags;
 
   /**
@@ -37,15 +38,6 @@ public final class SessionContext {
   }
 
   /**
-   * Gets the session ID
-   *
-   * @return Session ID
-   */
-  public String getId() {
-    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getSessionId());
-  }
-
-  /**
    * Sets the session ID.
    *
    * @param id the session ID.
@@ -55,30 +47,12 @@ public final class SessionContext {
   }
 
   /**
-   * Gets a value indicating whether it is the first session.
-   *
-   * @return True if first session, false otherwise.
-   */
-  public Boolean getIsFirst() {
-    return MapUtil.getBoolValueOrNull(tags, ContextTagKeys.getKeys().getSessionIsFirst());
-  }
-
-  /**
    * Sets whether it is the first session.
    *
    * @param isFirst a value indicating whether it is the first session.
    */
   public void setIsFirst(Boolean isFirst) {
     MapUtil.setBoolValueOrRemove(tags, ContextTagKeys.getKeys().getSessionIsFirst(), isFirst);
-  }
-
-  /**
-   * Gets a value indicating whether it is a new session.
-   *
-   * @return True if new session, false otherwise.
-   */
-  public Boolean getIsNewSession() {
-    return MapUtil.getBoolValueOrNull(tags, ContextTagKeys.getKeys().getSessionIsNew());
   }
 
   /**

@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.telemetry;
 import com.microsoft.applicationinsights.extensibility.context.CloudContext;
 import com.microsoft.applicationinsights.extensibility.context.ComponentContext;
 import com.microsoft.applicationinsights.extensibility.context.DeviceContext;
-import com.microsoft.applicationinsights.extensibility.context.InternalContext;
 import com.microsoft.applicationinsights.extensibility.context.LocationContext;
 import com.microsoft.applicationinsights.extensibility.context.OperationContext;
 import com.microsoft.applicationinsights.extensibility.context.SessionContext;
@@ -51,7 +50,6 @@ public final class TelemetryContext {
   private UserContext user;
   private OperationContext operation;
   private LocationContext location;
-  private InternalContext internal;
   private CloudContext cloud;
 
   /** Default Ctor */
@@ -201,12 +199,5 @@ public final class TelemetryContext {
    */
   public ConcurrentMap<String, String> getTags() {
     return tags;
-  }
-
-  public InternalContext getInternal() {
-    if (internal == null) {
-      internal = new InternalContext(tags);
-    }
-    return internal;
   }
 }

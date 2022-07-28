@@ -25,14 +25,11 @@ import com.microsoft.applicationinsights.internal.util.MapUtil;
 import java.util.concurrent.ConcurrentMap;
 
 public final class ComponentContext {
+
   private final ConcurrentMap<String, String> tags;
 
   public ComponentContext(ConcurrentMap<String, String> tags) {
     this.tags = tags;
-  }
-
-  String getVersion() {
-    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getApplicationVersion());
   }
 
   public void setVersion(String version) {
