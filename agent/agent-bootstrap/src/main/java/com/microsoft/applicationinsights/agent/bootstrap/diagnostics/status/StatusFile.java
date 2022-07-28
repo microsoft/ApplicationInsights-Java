@@ -76,13 +76,7 @@ public class StatusFile {
   static final String DEFAULT_APPLICATIONINSIGHTS_LOGDIR = "/ApplicationInsights";
 
   // visible for testing
-  static final String STATUS_FILE_DIRECTORY = "/status";
-
-  // visible for testing
   static String logDir;
-
-  // visible for testing
-  static String directory;
 
   //  private static final AtomicBoolean alreadyLogged = new AtomicBoolean();
 
@@ -114,7 +108,6 @@ public class StatusFile {
     VALUE_FINDERS.add(mf.getExtensionVersion());
 
     logDir = initLogDir();
-    directory = logDir + STATUS_FILE_DIRECTORY;
   }
 
   private static Thread newThread(Runnable r) {
@@ -138,23 +131,7 @@ public class StatusFile {
 
   private StatusFile() {}
 
-  //  private static boolean shouldWrite() {
-  //    if (!DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
-  //      return false;
-  //    }
-  //
-  //    // read-only app services, want to log warning once in this case
-  //    if (startupLogger != null && !alreadyLogged.getAndSet(true)) {
-  //      startupLogger.info(
-  //          "Detected running on a read-only file system. Status json file won't be created. If
-  // this is unexpected, please check that process has write access to the directory: {}",
-  //          directory);
-  //    }
-  //    return true;
-  //  }
-
   public static <T> void putValueAndWrite(String key, T value) {
-    statusFileLogger.debug("#### key: {}, value: {}", key, value);
     putValueAndWrite(key, value, true);
   }
 
@@ -189,7 +166,7 @@ public class StatusFile {
             // the executor should prevent more than one thread from executing this block.
             // this is just a safeguard
             synchronized (lock) {
-              File file = new File(directory, fileName);
+              File file = new File(logDir, fileName);
               boolean dirsWereCreated = file.getParentFile().mkdirs();
 
               Logger logger = loggingInitialized ? LoggerFactory.getLogger(StatusFile.class) : null;

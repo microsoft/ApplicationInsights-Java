@@ -96,7 +96,7 @@ public class LoggingConfigurator {
 
     // App Services linux is default to "/var/log/applicationinsights".
     // they ignore the value set in env var APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY)
-    String diagnosticsOutputDirectory = "var/log/applicationinsights";
+    String diagnosticsOutputDirectory = "/var/log/applicationinsights";
     if (!DiagnosticsHelper.isOsWindows()) {
       Appender<ILoggingEvent> diagnosticAppender =
           configureDiagnosticAppender(diagnosticsOutputDirectory);
