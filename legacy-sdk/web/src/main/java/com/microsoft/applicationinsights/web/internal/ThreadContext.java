@@ -27,6 +27,7 @@ public final class ThreadContext {
 
   @Nullable
   public static RequestTelemetryContext getRequestTelemetryContext() {
+    // Javaagent provides implementation
     return null;
   }
 

@@ -37,10 +37,12 @@ public final class RequestTelemetryContext {
 
   @Nullable
   public Tracestate getTracestate() {
+    // Javaagent provides implementation
     return null;
   }
 
   public int getTraceflag() {
+    // Javaagent provides implementation
     return 0;
   }
 }

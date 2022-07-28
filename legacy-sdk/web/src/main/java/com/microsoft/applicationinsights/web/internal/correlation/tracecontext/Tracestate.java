@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Tracestate {
+public final class Tracestate {
 
   private static final String KEY_WITHOUT_VENDOR_FORMAT = "[a-z][_0-9a-z\\-\\*\\/]{0,255}";
   private static final String KEY_WITH_VENDOR_FORMAT =
