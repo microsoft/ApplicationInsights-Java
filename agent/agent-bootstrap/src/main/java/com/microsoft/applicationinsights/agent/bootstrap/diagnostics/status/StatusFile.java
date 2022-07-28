@@ -124,12 +124,14 @@ public class StatusFile {
     logDir = initLogDir();
     directory = logDir + STATUS_FILE_DIRECTORY;
     File dir = new File(logDir);
+    boolean tmp = false;
     try {
       AccessController.checkPermission(new FilePermission(dir.getPath(), "read,write"));
-      writable = true;
+      tmp = true;
     } catch (Exception e) {
       startupLogger.error("Read only file system", e);
     }
+    writable = tmp;
   }
 
   private static Thread newThread(Runnable r) {
