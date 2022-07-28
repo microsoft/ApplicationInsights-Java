@@ -34,32 +34,32 @@ public class EventData {
   public EventData() {}
 
   public String getName() {
-    return this.name;
+    return name;
   }
 
-  public void setName(String value) {
-    this.name = value;
+  public void setName(String name) {
+    this.name = name;
   }
 
   public ConcurrentMap<String, String> getProperties() {
-    if (this.properties == null) {
-      this.properties = new ConcurrentHashMap<>();
+    if (properties == null) {
+      properties = new ConcurrentHashMap<>();
     }
-    return this.properties;
+    return properties;
   }
 
-  public void setProperties(ConcurrentMap<String, String> value) {
-    this.properties = value;
+  public void setProperties(ConcurrentMap<String, String> properties) {
+    this.properties = properties;
   }
 
   public ConcurrentMap<String, Double> getMeasurements() {
-    if (this.measurements == null) {
-      this.measurements = new ConcurrentHashMap<>();
+    if (measurements == null) {
+      measurements = new ConcurrentHashMap<>();
     }
-    return this.measurements;
+    return measurements;
   }
 
-  public void setMeasurements(ConcurrentMap<String, Double> value) {
-    this.measurements = value;
+  public void setMeasurements(ConcurrentMap<String, Double> measurements) {
+    this.measurements = measurements;
   }
 }

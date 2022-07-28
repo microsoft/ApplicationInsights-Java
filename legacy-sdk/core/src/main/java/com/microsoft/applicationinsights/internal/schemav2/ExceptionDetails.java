@@ -38,61 +38,61 @@ public class ExceptionDetails {
   public ExceptionDetails() {}
 
   public int getId() {
-    return this.id;
+    return id;
   }
 
-  public void setId(int value) {
-    this.id = value;
+  public void setId(int id) {
+    this.id = id;
   }
 
   public int getOuterId() {
-    return this.outerId;
+    return outerId;
   }
 
-  public void setOuterId(int value) {
-    this.outerId = value;
+  public void setOuterId(int outerId) {
+    this.outerId = outerId;
   }
 
   public String getTypeName() {
-    return this.typeName;
+    return typeName;
   }
 
-  public void setTypeName(String value) {
-    this.typeName = value;
+  public void setTypeName(String typeName) {
+    this.typeName = typeName;
   }
 
   public String getMessage() {
-    return this.message;
+    return message;
   }
 
-  public void setMessage(String value) {
-    this.message = value;
+  public void setMessage(String message) {
+    this.message = message;
   }
 
   public boolean getHasFullStack() {
-    return this.hasFullStack;
+    return hasFullStack;
   }
 
-  public void setHasFullStack(boolean value) {
-    this.hasFullStack = value;
+  public void setHasFullStack(boolean hasFullStack) {
+    this.hasFullStack = hasFullStack;
   }
 
   public String getStack() {
-    return this.stack;
+    return stack;
   }
 
-  public void setStack(String value) {
-    this.stack = value;
+  public void setStack(String stack) {
+    this.stack = stack;
   }
 
   public List<StackFrame> getParsedStack() {
-    if (this.parsedStack == null) {
-      this.parsedStack = new ArrayList<>();
+    if (parsedStack == null) {
+      parsedStack = new ArrayList<>();
     }
-    return this.parsedStack;
+    return parsedStack;
   }
 
-  public void setParsedStack(List<StackFrame> value) {
-    this.parsedStack = value;
+  public void setParsedStack(List<StackFrame> parsedStack) {
+    this.parsedStack = parsedStack;
   }
 }

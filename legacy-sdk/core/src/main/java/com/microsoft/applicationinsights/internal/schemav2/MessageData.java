@@ -34,29 +34,29 @@ public class MessageData {
   public MessageData() {}
 
   public String getMessage() {
-    return this.message;
+    return message;
   }
 
-  public void setMessage(String value) {
-    this.message = value;
+  public void setMessage(String message) {
+    this.message = message;
   }
 
   public SeverityLevel getSeverityLevel() {
-    return this.severityLevel;
+    return severityLevel;
   }
 
-  public void setSeverityLevel(SeverityLevel value) {
-    this.severityLevel = value;
+  public void setSeverityLevel(SeverityLevel severityLevel) {
+    this.severityLevel = severityLevel;
   }
 
   public ConcurrentMap<String, String> getProperties() {
-    if (this.properties == null) {
-      this.properties = new ConcurrentHashMap<>();
+    if (properties == null) {
+      properties = new ConcurrentHashMap<>();
     }
-    return this.properties;
+    return properties;
   }
 
-  public void setProperties(ConcurrentMap<String, String> value) {
-    this.properties = value;
+  public void setProperties(ConcurrentMap<String, String> properties) {
+    this.properties = properties;
   }
 }

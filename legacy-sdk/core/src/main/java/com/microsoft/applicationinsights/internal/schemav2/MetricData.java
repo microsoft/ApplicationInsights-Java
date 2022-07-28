@@ -34,24 +34,24 @@ public class MetricData {
   public MetricData() {}
 
   public List<DataPoint> getMetrics() {
-    if (this.metrics == null) {
-      this.metrics = new ArrayList<>();
+    if (metrics == null) {
+      metrics = new ArrayList<>();
     }
-    return this.metrics;
+    return metrics;
   }
 
-  public void setMetrics(List<DataPoint> value) {
-    this.metrics = value;
+  public void setMetrics(List<DataPoint> metrics) {
+    this.metrics = metrics;
   }
 
   public ConcurrentMap<String, String> getProperties() {
-    if (this.properties == null) {
-      this.properties = new ConcurrentHashMap<>();
+    if (properties == null) {
+      properties = new ConcurrentHashMap<>();
     }
-    return this.properties;
+    return properties;
   }
 
-  public void setProperties(ConcurrentMap<String, String> value) {
-    this.properties = value;
+  public void setProperties(ConcurrentMap<String, String> properties) {
+    this.properties = properties;
   }
 }

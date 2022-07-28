@@ -21,71 +21,77 @@
 
 package com.microsoft.applicationinsights.internal.schemav2;
 
+import javax.annotation.Nullable;
+
 public class DataPoint {
 
   private String name;
   private DataPointType kind = DataPointType.Measurement;
   private double value;
-  private Integer count;
-  private Double min;
-  private Double max;
-  private Double stdDev;
+  @Nullable private Integer count;
+  @Nullable private Double min;
+  @Nullable private Double max;
+  @Nullable private Double stdDev;
 
   public DataPoint() {}
 
   public String getName() {
-    return this.name;
+    return name;
   }
 
-  public void setName(String value) {
-    this.name = value;
+  public void setName(String name) {
+    this.name = name;
   }
 
   public DataPointType getKind() {
-    return this.kind;
+    return kind;
   }
 
-  public void setKind(DataPointType value) {
-    this.kind = value;
+  public void setKind(DataPointType kind) {
+    this.kind = kind;
   }
 
   public double getValue() {
-    return this.value;
+    return value;
   }
 
   public void setValue(double value) {
     this.value = value;
   }
 
+  @Nullable
   public Integer getCount() {
-    return this.count;
+    return count;
   }
 
-  public void setCount(Integer value) {
-    this.count = value;
+  public void setCount(@Nullable Integer count) {
+    this.count = count;
   }
 
+  @Nullable
   public Double getMin() {
-    return this.min;
+    return min;
   }
 
-  public void setMin(Double value) {
-    this.min = value;
+  public void setMin(@Nullable Double min) {
+    this.min = min;
   }
 
+  @Nullable
   public Double getMax() {
-    return this.max;
+    return max;
   }
 
-  public void setMax(Double value) {
-    this.max = value;
+  public void setMax(@Nullable Double max) {
+    this.max = max;
   }
 
+  @Nullable
   public Double getStdDev() {
-    return this.stdDev;
+    return stdDev;
   }
 
-  public void setStdDev(Double value) {
-    this.stdDev = value;
+  public void setStdDev(@Nullable Double stdDev) {
+    this.stdDev = stdDev;
   }
 }

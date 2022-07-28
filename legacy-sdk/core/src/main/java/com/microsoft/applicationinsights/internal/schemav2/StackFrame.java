@@ -32,42 +32,42 @@ public class StackFrame {
   public StackFrame() {}
 
   public int getLevel() {
-    return this.level;
+    return level;
   }
 
-  public void setLevel(int value) {
-    this.level = value;
+  public void setLevel(int level) {
+    this.level = level;
   }
 
   public String getMethod() {
-    return this.method;
+    return method;
   }
 
-  public void setMethod(String value) {
-    this.method = value;
+  public void setMethod(String method) {
+    this.method = method;
   }
 
   public String getAssembly() {
-    return this.assembly;
+    return assembly;
   }
 
-  public void setAssembly(String value) {
-    this.assembly = value;
+  public void setAssembly(String assembly) {
+    this.assembly = assembly;
   }
 
   public String getFileName() {
-    return this.fileName;
+    return fileName;
   }
 
-  public void setFileName(String value) {
-    this.fileName = value;
+  public void setFileName(String fileName) {
+    this.fileName = fileName;
   }
 
   public int getLine() {
-    return this.line;
+    return line;
   }
 
-  public void setLine(int value) {
-    this.line = value;
+  public void setLine(int line) {
+    this.line = line;
   }
 }

@@ -28,6 +28,10 @@ public final class DeviceContext {
 
   private final ConcurrentMap<String, String> tags;
 
+  public DeviceContext(ConcurrentMap<String, String> tags) {
+    this.tags = tags;
+  }
+
   public void setType(String type) {
     MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getDeviceType(), type);
   }
@@ -68,9 +72,5 @@ public final class DeviceContext {
 
   public void setLanguage(String language) {
     MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getDeviceLanguage(), language);
-  }
-
-  public DeviceContext(ConcurrentMap<String, String> tags) {
-    this.tags = tags;
   }
 }

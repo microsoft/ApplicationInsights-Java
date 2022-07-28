@@ -34,42 +34,42 @@ public class PageViewPerfData extends PageViewData {
   public PageViewPerfData() {}
 
   public Duration getPerfTotal() {
-    return this.perfTotal;
+    return perfTotal;
   }
 
-  public void setPerfTotal(Duration value) {
-    this.perfTotal = value;
+  public void setPerfTotal(Duration perfTotal) {
+    this.perfTotal = perfTotal;
   }
 
   public Duration getNetworkConnect() {
-    return this.networkConnect;
+    return networkConnect;
   }
 
-  public void setNetworkConnect(Duration value) {
-    this.networkConnect = value;
+  public void setNetworkConnect(Duration networkConnect) {
+    this.networkConnect = networkConnect;
   }
 
   public Duration getSentRequest() {
-    return this.sentRequest;
+    return sentRequest;
   }
 
-  public void setSentRequest(Duration value) {
-    this.sentRequest = value;
+  public void setSentRequest(Duration sentRequest) {
+    this.sentRequest = sentRequest;
   }
 
   public Duration getReceivedResponse() {
-    return this.receivedResponse;
+    return receivedResponse;
   }
 
-  public void setReceivedResponse(Duration value) {
-    this.receivedResponse = value;
+  public void setReceivedResponse(Duration receivedResponse) {
+    this.receivedResponse = receivedResponse;
   }
 
   public Duration getDomProcessing() {
-    return this.domProcessing;
+    return domProcessing;
   }
 
-  public void setDomProcessing(Duration value) {
-    this.domProcessing = value;
+  public void setDomProcessing(Duration domProcessing) {
+    this.domProcessing = domProcessing;
   }
 }

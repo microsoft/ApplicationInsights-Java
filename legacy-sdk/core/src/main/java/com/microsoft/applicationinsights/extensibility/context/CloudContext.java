@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.extensibility.context;
 import com.microsoft.applicationinsights.internal.util.MapUtil;
 import java.util.concurrent.ConcurrentMap;
 
-public class CloudContext {
+public final class CloudContext {
 
   private final ConcurrentMap<String, String> tags;
 

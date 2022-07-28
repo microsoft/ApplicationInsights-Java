@@ -40,72 +40,72 @@ public class AvailabilityData {
   public AvailabilityData() {}
 
   public String getId() {
-    return this.id;
+    return id;
   }
 
-  public void setId(String value) {
-    this.id = value;
+  public void setId(String id) {
+    this.id = id;
   }
 
   public String getName() {
-    return this.name;
+    return name;
   }
 
-  public void setName(String value) {
-    this.name = value;
+  public void setName(String name) {
+    this.name = name;
   }
 
   public Duration getDuration() {
-    return this.duration;
+    return duration;
   }
 
-  public void setDuration(Duration value) {
-    this.duration = value;
+  public void setDuration(Duration duration) {
+    this.duration = duration;
   }
 
   public boolean getSuccess() {
-    return this.success;
+    return success;
   }
 
-  public void setSuccess(boolean value) {
-    this.success = value;
+  public void setSuccess(boolean success) {
+    this.success = success;
   }
 
   public String getRunLocation() {
-    return this.runLocation;
+    return runLocation;
   }
 
-  public void setRunLocation(String value) {
-    this.runLocation = value;
+  public void setRunLocation(String runLocation) {
+    this.runLocation = runLocation;
   }
 
   public String getMessage() {
-    return this.message;
+    return message;
   }
 
-  public void setMessage(String value) {
-    this.message = value;
+  public void setMessage(String message) {
+    this.message = message;
   }
 
   public ConcurrentMap<String, String> getProperties() {
-    if (this.properties == null) {
-      this.properties = new ConcurrentHashMap<>();
+    if (properties == null) {
+      properties = new ConcurrentHashMap<>();
     }
-    return this.properties;
+    return properties;
   }
 
-  public void setProperties(ConcurrentMap<String, String> value) {
-    this.properties = value;
+  public void setProperties(ConcurrentMap<String, String> properties) {
+    this.properties = properties;
   }
 
   public ConcurrentMap<String, Double> getMeasurements() {
-    if (this.measurements == null) {
-      this.measurements = new ConcurrentHashMap<>();
+    if (measurements == null) {
+      measurements = new ConcurrentHashMap<>();
     }
-    return this.measurements;
+    return measurements;
   }
 
-  public void setMeasurements(ConcurrentMap<String, Double> value) {
-    this.measurements = value;
+  public void setMeasurements(ConcurrentMap<String, Double> measurements) {
+    this.measurements = measurements;
   }
 }

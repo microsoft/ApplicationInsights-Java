@@ -31,18 +31,18 @@ public class PageViewData extends EventData {
   public PageViewData() {}
 
   public String getUrl() {
-    return this.url;
+    return url;
   }
 
-  public void setUrl(String value) {
-    this.url = value;
+  public void setUrl(String url) {
+    this.url = url;
   }
 
   public Duration getDuration() {
-    return this.duration;
+    return duration;
   }
 
-  public void setDuration(Duration value) {
-    this.duration = value;
+  public void setDuration(Duration duration) {
+    this.duration = duration;
   }
 }

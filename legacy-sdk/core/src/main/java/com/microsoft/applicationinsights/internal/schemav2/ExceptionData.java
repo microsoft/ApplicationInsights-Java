@@ -38,51 +38,51 @@ public class ExceptionData {
   public ExceptionData() {}
 
   public List<ExceptionDetails> getExceptions() {
-    if (this.exceptions == null) {
-      this.exceptions = new ArrayList<>();
+    if (exceptions == null) {
+      exceptions = new ArrayList<>();
     }
-    return this.exceptions;
+    return exceptions;
   }
 
-  public void setExceptions(List<ExceptionDetails> value) {
-    this.exceptions = value;
+  public void setExceptions(List<ExceptionDetails> exceptions) {
+    this.exceptions = exceptions;
   }
 
   public SeverityLevel getSeverityLevel() {
-    return this.severityLevel;
+    return severityLevel;
   }
 
-  public void setSeverityLevel(SeverityLevel value) {
-    this.severityLevel = value;
+  public void setSeverityLevel(SeverityLevel severityLevel) {
+    this.severityLevel = severityLevel;
   }
 
   public String getProblemId() {
-    return this.problemId;
+    return problemId;
   }
 
-  public void setProblemId(String value) {
-    this.problemId = value;
+  public void setProblemId(String problemId) {
+    this.problemId = problemId;
   }
 
   public ConcurrentMap<String, String> getProperties() {
-    if (this.properties == null) {
-      this.properties = new ConcurrentHashMap<>();
+    if (properties == null) {
+      properties = new ConcurrentHashMap<>();
     }
-    return this.properties;
+    return properties;
   }
 
-  public void setProperties(ConcurrentMap<String, String> value) {
-    this.properties = value;
+  public void setProperties(ConcurrentMap<String, String> properties) {
+    this.properties = properties;
   }
 
   public ConcurrentMap<String, Double> getMeasurements() {
-    if (this.measurements == null) {
-      this.measurements = new ConcurrentHashMap<>();
+    if (measurements == null) {
+      measurements = new ConcurrentHashMap<>();
     }
-    return this.measurements;
+    return measurements;
   }
 
-  public void setMeasurements(ConcurrentMap<String, Double> value) {
-    this.measurements = value;
+  public void setMeasurements(ConcurrentMap<String, Double> measurements) {
+    this.measurements = measurements;
   }
 }
