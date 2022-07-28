@@ -36,7 +36,7 @@ public final class EventTelemetry extends BaseTelemetry {
    */
   public EventTelemetry(String name) {
     this();
-    this.setName(name);
+    setName(name);
   }
 
   /** Creates a new instance. */

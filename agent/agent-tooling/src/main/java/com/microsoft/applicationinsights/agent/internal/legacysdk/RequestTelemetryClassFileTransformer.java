@@ -40,8 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // this is used to supplement old versions of RequestTelemetry with getters from the latest version
-// of
-// RequestTelemetry
+// of RequestTelemetry
 public class RequestTelemetryClassFileTransformer implements ClassFileTransformer {
 
   private static final Logger logger =
