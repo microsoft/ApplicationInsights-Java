@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.telemetry;
 import com.microsoft.applicationinsights.internal.schemav2.PageViewData;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import java.net.URI;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map;
 
 /**
  * Telemetry type used to track page views.
@@ -87,7 +87,7 @@ public final class PageViewTelemetry extends BaseTelemetry {
   }
 
   /** Gets a dictionary of custom defined metrics. */
-  public ConcurrentMap<String, Double> getMetrics() {
+  public Map<String, Double> getMetrics() {
     return data.getMeasurements();
   }
 

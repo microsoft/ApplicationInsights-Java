@@ -41,7 +41,7 @@ import javax.annotation.Nullable;
 public class TelemetryClient {
 
   private final TelemetryConfiguration configuration = new TelemetryConfiguration();
-  private final TelemetryContext context = new TelemetryContext();
+  private final TelemetryContext context = TelemetryContext.concurrentInstance();
 
   public TelemetryClient() {}
 
@@ -71,7 +71,7 @@ public class TelemetryClient {
     MapUtil.copy(properties, et.getContext().getProperties());
     MapUtil.copy(metrics, et.getMetrics());
 
-    this.track(et);
+    track(et);
   }
 
   /**
@@ -119,7 +119,7 @@ public class TelemetryClient {
 
     MapUtil.copy(properties, et.getContext().getProperties());
 
-    this.track(et);
+    track(et);
   }
 
   /**
@@ -148,7 +148,7 @@ public class TelemetryClient {
    * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} instance.
    */
   public void trackTrace(TraceTelemetry telemetry) {
-    this.track(telemetry);
+    track(telemetry);
   }
 
   /**
@@ -183,7 +183,7 @@ public class TelemetryClient {
     mt.setMax(max);
     mt.setStandardDeviation(stdDev);
     MapUtil.copy(properties, mt.getProperties());
-    this.track(mt);
+    track(mt);
   }
 
   /**

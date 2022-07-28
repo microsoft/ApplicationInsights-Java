@@ -26,7 +26,7 @@ import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map;
 import javax.annotation.Nullable;
 
 /**
@@ -53,8 +53,8 @@ public final class RequestTelemetry extends BaseTelemetry {
    */
   public RequestTelemetry(
       String name, Date timestamp, Duration duration, String responseCode, boolean success) {
-    this.data = new RequestData();
-    initialize(this.data.getProperties());
+    data = new RequestData();
+    initialize(data.getProperties());
 
     setId(LocalStringsUtils.generateRandomIntegerId());
 
@@ -83,8 +83,8 @@ public final class RequestTelemetry extends BaseTelemetry {
 
   /** Initializes a new instance of the HttpRequestTelemetry class. */
   public RequestTelemetry() {
-    this.data = new RequestData();
-    initialize(this.data.getProperties());
+    data = new RequestData();
+    initialize(data.getProperties());
     setId(LocalStringsUtils.generateRandomIntegerId());
 
     // Setting mandatory fields.
@@ -94,7 +94,7 @@ public final class RequestTelemetry extends BaseTelemetry {
   }
 
   /** Gets a map of application-defined request metrics. */
-  public ConcurrentMap<String, Double> getMetrics() {
+  public Map<String, Double> getMetrics() {
     return data.getMeasurements();
   }
 

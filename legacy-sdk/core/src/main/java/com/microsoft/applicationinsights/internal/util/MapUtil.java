@@ -23,8 +23,6 @@ package com.microsoft.applicationinsights.internal.util;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import javax.annotation.Nullable;
 
 public class MapUtil {
 
@@ -42,24 +40,14 @@ public class MapUtil {
       if (LocalStringsUtils.isNullOrEmpty(key)) {
         continue;
       }
-
-      if (!target.containsKey(key)) {
-        if (target instanceof ConcurrentHashMap && entry.getValue() == null) {
-          continue;
-        } else {
-          target.put(key, entry.getValue());
-        }
+      if (!target.containsKey(key) && entry.getValue() != null) {
+        target.put(key, entry.getValue());
       }
     }
   }
 
   public static <K, V> V getValueOrNull(Map<K, V> map, K key) {
-    return map.containsKey(key) ? map.get(key) : null;
-  }
-
-  @Nullable
-  public static Boolean getBoolValueOrNull(Map<String, String> map, String key) {
-    return map.containsKey(key) ? Boolean.valueOf(map.get(key)) : null;
+    return map.get(key);
   }
 
   public static void setStringValueOrRemove(Map<String, String> map, String key, String value) {

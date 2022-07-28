@@ -26,7 +26,7 @@ import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.internal.schemav2.StackFrame;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map;
 import javax.annotation.Nullable;
 
 /** Telemetry type used to track exceptions sent to Azure Application Insights. */
@@ -82,7 +82,7 @@ public final class ExceptionTelemetry extends BaseTelemetry {
    * Gets a map of application-defined exception metrics. The metrics appear along with the
    * exception in Analytics, but under Custom Metrics in Metrics Explorer.
    */
-  public ConcurrentMap<String, Double> getMetrics() {
+  public Map<String, Double> getMetrics() {
     return data.getMeasurements();
   }
 

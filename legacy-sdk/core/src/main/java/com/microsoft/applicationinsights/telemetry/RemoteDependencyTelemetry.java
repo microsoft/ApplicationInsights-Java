@@ -43,9 +43,9 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry {
   public RemoteDependencyTelemetry(
       String dependencyName, String commandName, Duration duration, boolean success) {
     this(dependencyName);
-    this.data.setData(commandName);
-    this.data.setDuration(duration);
-    this.data.setSuccess(success);
+    data.setData(commandName);
+    data.setDuration(duration);
+    data.setSuccess(success);
   }
 
   /** Creates a new instance with the given {@code name}. */
@@ -56,17 +56,17 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry {
 
   public RemoteDependencyTelemetry() {
     data = new RemoteDependencyData();
-    initialize(this.data.getProperties());
+    initialize(data.getProperties());
   }
 
   /** Gets the dependency id. */
   public String getId() {
-    return this.data.getId();
+    return data.getId();
   }
 
   /** Sets the dependency id. */
   public void setId(String value) {
-    this.data.setId(value);
+    data.setId(value);
   }
 
   /** Gets the dependency name. */
@@ -84,12 +84,12 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry {
 
   /** Gets the command name. */
   public String getCommandName() {
-    return this.data.getData();
+    return data.getData();
   }
 
   /** Sets the command name. */
   public void setCommandName(String commandName) {
-    this.data.setData(commandName);
+    data.setData(commandName);
   }
 
   /** Gets the type property. */
@@ -128,12 +128,12 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry {
 
   /** Gets the duration. */
   public Duration getDuration() {
-    return this.data.getDuration();
+    return data.getDuration();
   }
 
   /** Sets the duration. */
   public void setDuration(Duration duration) {
-    this.data.setDuration(duration);
+    data.setDuration(duration);
   }
 
   public String getResultCode() {

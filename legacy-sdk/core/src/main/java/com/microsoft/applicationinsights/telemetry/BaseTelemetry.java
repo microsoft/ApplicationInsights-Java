@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.telemetry;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
 
 /** Superclass for all telemetry data classes. */
 public abstract class BaseTelemetry implements Telemetry {
@@ -34,7 +33,7 @@ public abstract class BaseTelemetry implements Telemetry {
   protected BaseTelemetry() {}
 
   /** Initializes the instance with the context properties */
-  protected void initialize(ConcurrentMap<String, String> properties) {
+  protected void initialize(Map<String, String> properties) {
     context = new TelemetryContext(properties, new ContextTagsMap());
   }
 
@@ -46,8 +45,8 @@ public abstract class BaseTelemetry implements Telemetry {
 
   /** Sets date and time when event was recorded. */
   @Override
-  public void setTimestamp(Date date) {
-    timestamp = date;
+  public void setTimestamp(Date timestamp) {
+    this.timestamp = timestamp;
   }
 
   /** Gets the context associated with the current telemetry item. */
