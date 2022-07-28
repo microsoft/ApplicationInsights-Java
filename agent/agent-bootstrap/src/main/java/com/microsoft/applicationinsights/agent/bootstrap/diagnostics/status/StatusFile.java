@@ -43,7 +43,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import okio.BufferedSink;
 import okio.Okio;
@@ -85,7 +84,7 @@ public class StatusFile {
   // visible for testing
   static String directory;
 
-  private static final AtomicBoolean alreadyLogged = new AtomicBoolean();
+  //  private static final AtomicBoolean alreadyLogged = new AtomicBoolean();
 
   private static final Object lock = new Object();
 
