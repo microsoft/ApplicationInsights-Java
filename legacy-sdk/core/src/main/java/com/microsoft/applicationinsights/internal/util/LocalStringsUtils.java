@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.internal.util;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class LocalStringsUtils {
@@ -37,25 +36,6 @@ public class LocalStringsUtils {
    */
   public static boolean isNullOrEmpty(String value) {
     return value == null || value.isEmpty();
-  }
-
-  public static String populateRequiredStringWithNullValue(
-      String value, String parameterName, String telemetryType) {
-    if (isNullOrEmpty(value)) {
-      return parameterName + " is a required field for " + telemetryType;
-    }
-
-    return value;
-  }
-
-  public static String generateRandomId(boolean removeDashes) {
-    String uuid = UUID.randomUUID().toString();
-
-    if (removeDashes) {
-      uuid = uuid.replace("-", "");
-    }
-
-    return uuid;
   }
 
   public static String generateRandomIntegerId() {
