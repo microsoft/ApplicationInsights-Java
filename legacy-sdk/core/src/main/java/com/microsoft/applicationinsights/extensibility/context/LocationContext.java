@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.extensibility.context;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.MapUtil;
 import java.util.concurrent.ConcurrentMap;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class LocationContext {
@@ -45,7 +44,6 @@ public final class LocationContext {
   }
 
   private static boolean isIpV4(String ip) {
-    Matcher matcher = PATTERN.matcher(ip);
-    return matcher.matches();
+    return PATTERN.matcher(ip).matches();
   }
 }
