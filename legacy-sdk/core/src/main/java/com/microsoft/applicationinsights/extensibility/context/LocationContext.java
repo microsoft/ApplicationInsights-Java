@@ -43,12 +43,12 @@ public final class LocationContext {
   }
 
   public void setIp(String value) {
-    if (!LocalStringsUtils.isNullOrEmpty(value) && isIPV4(value)) {
+    if (!LocalStringsUtils.isNullOrEmpty(value) && isIpV4(value)) {
       MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getLocationIP(), value);
     }
   }
 
-  private static boolean isIPV4(String ip) {
+  private static boolean isIpV4(String ip) {
     Matcher matcher = PATTERN.matcher(ip);
     return matcher.matches();
   }

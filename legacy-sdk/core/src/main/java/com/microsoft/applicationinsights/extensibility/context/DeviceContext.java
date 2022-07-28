@@ -25,6 +25,7 @@ import com.microsoft.applicationinsights.internal.util.MapUtil;
 import java.util.concurrent.ConcurrentMap;
 
 public final class DeviceContext {
+
   private final ConcurrentMap<String, String> tags;
 
   String getType() {
@@ -107,31 +108,6 @@ public final class DeviceContext {
 
   public void setLanguage(String language) {
     MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getDeviceLanguage(), language);
-  }
-
-  /** @deprecated use {@link CloudContext#getRole()} */
-  @Deprecated
-  String getRoleName() {
-    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getDeviceRoleName());
-  }
-
-  /** @deprecated use {@link CloudContext#setRole(String)} */
-  @Deprecated
-  public void setRoleName(String roleName) {
-    MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getDeviceRoleName(), roleName);
-  }
-
-  /** @deprecated use {@link CloudContext#getRoleInstance()} */
-  @Deprecated
-  String getRoleInstance() {
-    return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getDeviceRoleInstance());
-  }
-
-  /** @deprecated use {@link CloudContext#setRoleInstance(String)} */
-  @Deprecated
-  public void setRoleInstance(String roleInstance) {
-    MapUtil.setStringValueOrRemove(
-        tags, ContextTagKeys.getKeys().getDeviceRoleInstance(), roleInstance);
   }
 
   public DeviceContext(ConcurrentMap<String, String> tags) {

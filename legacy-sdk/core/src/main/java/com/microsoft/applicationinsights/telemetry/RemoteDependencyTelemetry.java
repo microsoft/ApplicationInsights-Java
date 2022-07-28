@@ -60,7 +60,6 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDepende
 
   /** Default Ctor */
   public RemoteDependencyTelemetry() {
-    super();
     data = new RemoteDependencyData();
     initialize(this.data.getProperties());
   }
