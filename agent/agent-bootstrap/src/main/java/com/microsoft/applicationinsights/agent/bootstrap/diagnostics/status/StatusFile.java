@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.nio.file.StandardOpenOption;
+import java.security.AccessControlException;
 import java.security.AccessController;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -128,7 +129,7 @@ public class StatusFile {
     try {
       AccessController.checkPermission(new FilePermission(dir.getPath(), "read,write"));
       tmp = true;
-    } catch (Exception e) {
+    } catch (AccessControlException | NullPointerException e) {
       startupLogger.error("Read only file system", e);
     }
     writable = tmp;
