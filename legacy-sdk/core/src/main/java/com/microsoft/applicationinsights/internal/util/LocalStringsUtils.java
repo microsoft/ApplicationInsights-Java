@@ -21,12 +21,12 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class LocalStringsUtils {
-  private LocalStringsUtils() {} // no instances please
 
   /**
    * Determine whether a string is null or empty.
@@ -38,6 +38,9 @@ public class LocalStringsUtils {
     return value == null || value.isEmpty();
   }
 
+  @SuppressFBWarnings(
+      value = "SECPR", // Predictable pseudorandom number generator
+      justification = "Predictable random is ok for telemetry id")
   public static String generateRandomIntegerId() {
     // avoid using Math.abs(rand.nextLong()) because Math.abs(Long.MIN_VALUE) is negative
     long rand = ThreadLocalRandom.current().nextLong(Long.MAX_VALUE);
@@ -47,4 +50,6 @@ public class LocalStringsUtils {
   public static DateFormat getDateFormatter() {
     return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
   }
+
+  private LocalStringsUtils() {}
 }

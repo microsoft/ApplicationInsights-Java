@@ -6,3 +6,7 @@ plugins {
 }
 
 base.archivesName.set("applicationinsights-core")
+
+dependencies {
+  compileOnly("com.github.spotbugs:spotbugs-annotations")
+}
