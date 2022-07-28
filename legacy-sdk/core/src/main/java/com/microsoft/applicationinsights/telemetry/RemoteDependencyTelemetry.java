@@ -59,12 +59,12 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry {
     initialize(this.data.getProperties());
   }
 
-  /** Gets the dependency Id. */
+  /** Gets the dependency id. */
   public String getId() {
     return this.data.getId();
   }
 
-  /** Sets the dependency Id. */
+  /** Sets the dependency id. */
   public void setId(String value) {
     this.data.setId(value);
   }

@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.telemetry;
 import java.util.Objects;
 
 /**
- * This class lets its users to define an interval of time which can be defined in terms of days,
+ * This class lets its users define an interval of time which can be defined in terms of days,
  * hours, minutes, seconds and milliseconds.
  *
  * <p>It has various constructors to let the user easily define an interval of time.

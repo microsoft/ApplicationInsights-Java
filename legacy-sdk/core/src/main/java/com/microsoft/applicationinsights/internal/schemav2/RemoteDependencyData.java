@@ -107,7 +107,7 @@ public class RemoteDependencyData {
 
   public ConcurrentMap<String, String> getProperties() {
     if (this.properties == null) {
-      this.properties = new ConcurrentHashMap<String, String>();
+      this.properties = new ConcurrentHashMap<>();
     }
     return this.properties;
   }
@@ -118,7 +118,7 @@ public class RemoteDependencyData {
 
   public ConcurrentMap<String, Double> getMeasurements() {
     if (this.measurements == null) {
-      this.measurements = new ConcurrentHashMap<String, Double>();
+      this.measurements = new ConcurrentHashMap<>();
     }
     return this.measurements;
   }
