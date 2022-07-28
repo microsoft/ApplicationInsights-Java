@@ -21,8 +21,12 @@
 
 package com.microsoft.applicationinsights.internal.quickpulse;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Date;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -36,12 +40,13 @@ final class QuickPulseNetworkHelper {
     private static final String HEADER_TRANSMISSION_TIME = "x-ms-qps-transmission-time";
     private final static String QPS_STATUS_HEADER = "x-ms-qps-subscribed";
     private final static String QPS_SERVICE_POLLING_INTERVAL_HINT  = "x-ms-qps-service-polling-interval-hint";
-    private final static String QPS_SERVICE_ENDPOINT_REDIRECT   = "x-ms-qps-service-endpoint-redirect";
+    private final static String QPS_SERVICE_ENDPOINT_REDIRECT   = "x-ms-qps-service-endpoint-redirect-v2";
     private static final String QPS_INSTANCE_NAME_HEADER = "x-ms-qps-instance-name";
     private static final String QPS_STREAM_ID_HEADER = "x-ms-qps-stream-id";
     private static final String QPS_MACHINE_NAME_HEADER = "x-ms-qps-machine-name";
     private static final String QPS_ROLE_NAME_HEADER = "x-ms-qps-role-name";
     private static final String QPS_INVARIANT_VERSION_HEADER = "x-ms-qps-invariant-version";
+    private static final String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc";
 
     public HttpPost buildPingRequest(Date currentDate, String address, String quickPulseId, String machineName, String roleName, String instanceName) {
 
@@ -65,6 +70,17 @@ final class QuickPulseNetworkHelper {
     public boolean isSuccess(HttpResponse response) {
         final int responseCode = response.getStatusLine().getStatusCode();
         return responseCode == 200;
+    }
+
+    @VisibleForTesting
+    public static String getQuickPulseEndpoint(TelemetryConfiguration configuration) throws URISyntaxException {
+        String qpEndpointUrl = null;
+        if (configuration != null) {
+            qpEndpointUrl = new URI(configuration.getEndpointProvider().getLiveEndpointURL().toString()).getHost();
+        } else {
+            return new URI(QP_BASE_URI).getHost();
+        }
+        return qpEndpointUrl;
     }
 
     public QuickPulseHeaderInfo getQuickPulseHeaderInfo(HttpResponse response) {

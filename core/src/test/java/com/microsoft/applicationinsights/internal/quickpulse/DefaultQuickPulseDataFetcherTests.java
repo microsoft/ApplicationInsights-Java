@@ -35,9 +35,10 @@ public class DefaultQuickPulseDataFetcherTests {
         final TelemetryConfiguration config = new TelemetryConfiguration();
         config.setConnectionString("InstrumentationKey=testing-123");
         DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher = new DefaultQuickPulseDataFetcher(null, config, null, null,null,null);
-        final String quickPulseEndpoint = defaultQuickPulseDataFetcher.getQuickPulseEndpoint();
-        final String endpointUrl = defaultQuickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);
+        String endpointUrl = null;
         try {
+            final String quickPulseEndpoint = QuickPulseNetworkHelper.getQuickPulseEndpoint(null);
+            endpointUrl = defaultQuickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);
             URI uri = new URI(endpointUrl);
             assertNotNull(uri);
             assertEquals("https://rt.services.visualstudio.com/QuickPulseService.svc/post?ikey=testing-123", endpointUrl);
@@ -50,9 +51,11 @@ public class DefaultQuickPulseDataFetcherTests {
     public void endpointIsFormattedCorrectlyWhenConfigIsNull() {
         DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher = new DefaultQuickPulseDataFetcher(null, (TelemetryConfiguration)null,
                 null,null, null,null);
-        final String quickPulseEndpoint = defaultQuickPulseDataFetcher.getQuickPulseEndpoint();
-        final String endpointUrl = defaultQuickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);
+        String endpointUrl = null;
         try {
+            final String quickPulseEndpoint = QuickPulseNetworkHelper.getQuickPulseEndpoint(null);
+            endpointUrl = defaultQuickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);
+
             URI uri = new URI(endpointUrl);
             assertNotNull(uri);
             assertEquals("https://rt.services.visualstudio.com/QuickPulseService.svc/post?ikey=null", endpointUrl);

@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.quickpulse;
 
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -41,7 +42,6 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultQuickPulseDataFetcher.class);
 
-    private static final String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc";
     private final ArrayBlockingQueue<HttpPost> sendQueue;
     private final TelemetryConfiguration config;
     private final String ikey;
@@ -81,7 +81,11 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         sb.append("\"StreamId\": \"").append(quickPulseId).append("\",");
         postPrefix = sb.toString();
         if (logger.isTraceEnabled()) {
-            logger.trace("{} using endpoint {}", DefaultQuickPulseDataFetcher.class.getSimpleName(), getQuickPulseEndpoint());
+            try {
+                logger.trace("{} using endpoint {}", DefaultQuickPulseDataFetcher.class.getSimpleName(), QuickPulseNetworkHelper.getQuickPulseEndpoint(config));
+            } catch (URISyntaxException use) {
+                logger.error("{} using invalid endpoint: {}", DefaultQuickPulsePingSender.class.getSimpleName(), use.getMessage());
+            }
         }
     }
 
@@ -99,7 +103,7 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
             QuickPulseDataCollector.FinalCounters counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
 
             final Date currentDate = new Date();
-            final String endpointPrefix = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
+            final String endpointPrefix = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? QuickPulseNetworkHelper.getQuickPulseEndpoint(config) : redirectedEndpoint;
             final HttpPost request = networkHelper.buildRequest(currentDate, this.getEndpointUrl(endpointPrefix));
 
             final ByteArrayEntity postEntity = buildPostEntity(counters);
@@ -124,12 +128,7 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
 
     @VisibleForTesting
     String getEndpointUrl(String endpointPrefix) {
-        return endpointPrefix + "/post?ikey=" + getInstrumentationKey();
-    }
-
-    @VisibleForTesting
-    String getQuickPulseEndpoint() {
-         return config == null ? QP_BASE_URI : config.getEndpointProvider().getLiveEndpointURL().toString();
+        return endpointPrefix + "/QuickPulseService.svc/post?ikey=" + getInstrumentationKey();
     }
 
     private String getInstrumentationKey() {

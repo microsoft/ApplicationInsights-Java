@@ -32,11 +32,13 @@ public class DefaultQuickPulsePingSenderTests {
     @Test
     public void endpointIsFormattedCorrectlyWhenUsingConnectionString() {
         final TelemetryConfiguration config = new TelemetryConfiguration();
+        String quickPulseEndpoint = null;
         config.setConnectionString("InstrumentationKey=testing-123");
+        String endpointUrl = null;
         DefaultQuickPulsePingSender defaultQuickPulsePingSender = new DefaultQuickPulsePingSender(null, config, null,null, null,null);
-        final String quickPulseEndpoint = defaultQuickPulsePingSender.getQuickPulseEndpoint();
-        final String endpointUrl = defaultQuickPulsePingSender.getQuickPulsePingUri(quickPulseEndpoint);
         try {
+            quickPulseEndpoint = QuickPulseNetworkHelper.getQuickPulseEndpoint(config);
+            endpointUrl = defaultQuickPulsePingSender.getQuickPulsePingUri(quickPulseEndpoint);
             URI uri = new URI(endpointUrl);
             assertNotNull(uri);
             assertThat(endpointUrl, endsWith("/ping?ikey=testing-123"));
@@ -51,10 +53,12 @@ public class DefaultQuickPulsePingSenderTests {
     public void endpointIsFormattedCorrectlyWhenUsingInstrumentationKey() {
         final TelemetryConfiguration config = new TelemetryConfiguration();
         config.setInstrumentationKey("A-test-instrumentation-key");
+        String endpointUrl = null;
         DefaultQuickPulsePingSender defaultQuickPulsePingSender = new DefaultQuickPulsePingSender(null, config, null, null,null,null);
-        final String quickPulseEndpoint = defaultQuickPulsePingSender.getQuickPulseEndpoint();
-        final String endpointUrl = defaultQuickPulsePingSender.getQuickPulsePingUri(quickPulseEndpoint);
         try {
+            final String quickPulseEndpoint = QuickPulseNetworkHelper.getQuickPulseEndpoint(null);
+            endpointUrl = defaultQuickPulsePingSender.getQuickPulsePingUri(quickPulseEndpoint);
+
             URI uri = new URI(endpointUrl);
             assertNotNull(uri);
             assertThat(endpointUrl, endsWith("/ping?ikey=A-test-instrumentation-key")); // from resources/ApplicationInsights.xml

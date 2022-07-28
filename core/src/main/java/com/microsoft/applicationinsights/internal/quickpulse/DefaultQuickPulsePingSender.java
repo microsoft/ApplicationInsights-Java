@@ -22,16 +22,15 @@
 package com.microsoft.applicationinsights.internal.quickpulse;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
-
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.channel.common.ApacheSender;
 import org.slf4j.Logger;
@@ -43,8 +42,6 @@ import org.slf4j.LoggerFactory;
 final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultQuickPulsePingSender.class);
-
-    private static final String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc";
 
     private final TelemetryConfiguration configuration;
     private final ApacheSender apacheSender;
@@ -81,7 +78,11 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
                 "\"Timestamp\": \"\\/Date(";
 
         if (logger.isTraceEnabled()) {
-            logger.trace("{} using endpoint {}", DefaultQuickPulsePingSender.class.getSimpleName(), getQuickPulseEndpoint());
+            try {
+                logger.trace("{} using endpoint {}", DefaultQuickPulsePingSender.class.getSimpleName(), QuickPulseNetworkHelper.getQuickPulseEndpoint(configuration));
+            } catch (URISyntaxException use) {
+                logger.error("{} using invalid endpoint: {}", DefaultQuickPulsePingSender.class.getSimpleName(), use.getMessage());
+            }
         }
     }
 
@@ -95,16 +96,18 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
 
     @Override
     public QuickPulseHeaderInfo ping(String redirectedEndpoint) {
-        final Date currentDate = new Date();
-        final String endpointPrefix = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
-        final HttpPost request = networkHelper.buildPingRequest(currentDate, getQuickPulsePingUri(endpointPrefix), quickPulseId, machineName, roleName, instanceName);
 
-        final ByteArrayEntity pingEntity = buildPingEntity(currentDate.getTime());
-        request.setEntity(pingEntity);
-
-        final long sendTime = System.nanoTime();
         HttpResponse response = null;
+        final long sendTime = System.nanoTime();
+        final Date currentDate = new Date();
+
         try {
+            final String endpointPrefix = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? QuickPulseNetworkHelper.getQuickPulseEndpoint(configuration) : redirectedEndpoint;
+            final HttpPost request = networkHelper.buildPingRequest(currentDate, getQuickPulsePingUri(endpointPrefix), quickPulseId, machineName, roleName, instanceName);
+            final ByteArrayEntity pingEntity = buildPingEntity(currentDate.getTime());
+            request.setEntity(pingEntity);
+
+
             response = apacheSender.sendRequest(request);
             if (networkHelper.isSuccess(response)) {
                 final QuickPulseHeaderInfo quickPulseHeaderInfo = networkHelper.getQuickPulseHeaderInfo(response);
@@ -122,6 +125,8 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
             if(!friendlyExceptionThrown.getAndSet(true)) {
                 logger.error(e.getMessage());
             }
+        } catch (URISyntaxException use) {
+            logger.error(use.getMessage());
         } catch (IOException e) {
             // chomp
         } finally {
@@ -134,20 +139,12 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
 
     @VisibleForTesting
     String getQuickPulsePingUri(String endpointPrefix) {
-        return endpointPrefix + "/ping?ikey=" + getInstrumentationKey();
+        return endpointPrefix + "/QuickPulseService.svc/ping?ikey=" + getInstrumentationKey();
     }
 
     private String getInstrumentationKey() {
         TelemetryConfiguration config = this.configuration == null ? TelemetryConfiguration.getActive() : configuration;
         return config.getInstrumentationKey();
-    }
-    @VisibleForTesting
-    String getQuickPulseEndpoint() {
-        if (configuration != null) {
-            return configuration.getEndpointProvider().getLiveEndpointURL().toString();
-        } else {
-            return QP_BASE_URI;
-        }
     }
 
     private ByteArrayEntity buildPingEntity(long timeInMillis) {
