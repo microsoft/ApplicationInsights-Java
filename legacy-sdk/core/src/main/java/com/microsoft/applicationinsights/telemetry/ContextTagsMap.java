@@ -33,28 +33,7 @@ import javax.annotation.Nullable;
 /** This ensures the values for certain tags do not exceed their limits. */
 class ContextTagsMap implements ConcurrentMap<String, String> {
 
-  private static final Map<String, Integer> tagSizeLimits = new HashMap<>();
-
-  static {
-    tagSizeLimits.put(ContextTagKeys.getKeys().getApplicationVersion(), 1024);
-    tagSizeLimits.put(ContextTagKeys.getKeys().getDeviceId(), 1024);
-    tagSizeLimits.put(ContextTagKeys.getKeys().getDeviceModel(), 256);
-    tagSizeLimits.put(ContextTagKeys.getKeys().getDeviceOEMName(), 256);
-    tagSizeLimits.put(ContextTagKeys.getKeys().getDeviceOSVersion(), 256);
-    tagSizeLimits.put(ContextTagKeys.getKeys().getDeviceType(), 64);
-    tagSizeLimits.put(ContextTagKeys.getKeys().getLocationIP(), 45);
-    tagSizeLimits.put(ContextTagKeys.getKeys().getOperationId(), 128);
-    tagSizeLimits.put(ContextTagKeys.getKeys().getOperationName(), 1024);
-    tagSizeLimits.put(ContextTagKeys.getKeys().getOperationParentId(), 128);
-    tagSizeLimits.put(ContextTagKeys.getKeys().getSyntheticSource(), 1024);
-    tagSizeLimits.put(ContextTagKeys.getKeys().getSessionId(), 64);
-    tagSizeLimits.put(ContextTagKeys.getKeys().getUserId(), 128);
-    tagSizeLimits.put(ContextTagKeys.getKeys().getUserAccountId(), 1024);
-    tagSizeLimits.put(ContextTagKeys.getKeys().getUserAuthUserId(), 1024);
-    tagSizeLimits.put(ContextTagKeys.getKeys().getCloudRole(), 256);
-    tagSizeLimits.put(ContextTagKeys.getKeys().getCloudRoleInstance(), 256);
-    tagSizeLimits.put(ContextTagKeys.getKeys().getOperationCorrelationVector(), 64);
-  }
+  private static final Map<String, Integer> tagSizeLimits = tagSizeLimits();
 
   private final ConcurrentMap<String, String> tags = new ConcurrentHashMap<>();
 
@@ -172,5 +151,28 @@ class ContextTagsMap implements ConcurrentMap<String, String> {
   @Override
   public int hashCode() {
     return tags.hashCode();
+  }
+
+  private static Map<String, Integer> tagSizeLimits() {
+    Map<String, Integer> limits = new HashMap<>();
+    limits.put(ContextTagKeys.getKeys().getApplicationVersion(), 1024);
+    limits.put(ContextTagKeys.getKeys().getDeviceId(), 1024);
+    limits.put(ContextTagKeys.getKeys().getDeviceModel(), 256);
+    limits.put(ContextTagKeys.getKeys().getDeviceOEMName(), 256);
+    limits.put(ContextTagKeys.getKeys().getDeviceOSVersion(), 256);
+    limits.put(ContextTagKeys.getKeys().getDeviceType(), 64);
+    limits.put(ContextTagKeys.getKeys().getLocationIP(), 45);
+    limits.put(ContextTagKeys.getKeys().getOperationId(), 128);
+    limits.put(ContextTagKeys.getKeys().getOperationName(), 1024);
+    limits.put(ContextTagKeys.getKeys().getOperationParentId(), 128);
+    limits.put(ContextTagKeys.getKeys().getSyntheticSource(), 1024);
+    limits.put(ContextTagKeys.getKeys().getSessionId(), 64);
+    limits.put(ContextTagKeys.getKeys().getUserId(), 128);
+    limits.put(ContextTagKeys.getKeys().getUserAccountId(), 1024);
+    limits.put(ContextTagKeys.getKeys().getUserAuthUserId(), 1024);
+    limits.put(ContextTagKeys.getKeys().getCloudRole(), 256);
+    limits.put(ContextTagKeys.getKeys().getCloudRoleInstance(), 256);
+    limits.put(ContextTagKeys.getKeys().getOperationCorrelationVector(), 64);
+    return limits;
   }
 }

@@ -57,6 +57,7 @@ public class TelemetryClient {
       String name,
       @Nullable Map<String, String> properties,
       @Nullable Map<String, Double> metrics) {
+
     if (isDisabled()) {
       return;
     }
@@ -105,6 +106,7 @@ public class TelemetryClient {
       String message,
       @Nullable SeverityLevel severityLevel,
       @Nullable Map<String, String> properties) {
+
     if (isDisabled()) {
       return;
     }
@@ -170,6 +172,7 @@ public class TelemetryClient {
       @Nullable Double max,
       @Nullable Double stdDev,
       @Nullable Map<String, String> properties) {
+
     if (isDisabled()) {
       return;
     }
@@ -218,6 +221,7 @@ public class TelemetryClient {
       Exception exception,
       @Nullable Map<String, String> properties,
       @Nullable Map<String, Double> metrics) {
+
     if (isDisabled()) {
       return;
     }
@@ -262,6 +266,7 @@ public class TelemetryClient {
    */
   public void trackHttpRequest(
       String name, Date timestamp, long duration, String responseCode, boolean success) {
+
     if (isDisabled()) {
       return;
     }
@@ -282,6 +287,7 @@ public class TelemetryClient {
 
   public void trackDependency(
       String dependencyName, String commandName, Duration duration, boolean success) {
+
     RemoteDependencyTelemetry remoteDependencyTelemetry =
         new RemoteDependencyTelemetry(dependencyName, commandName, duration, success);
 
@@ -296,6 +302,7 @@ public class TelemetryClient {
    * @param telemetry telemetry
    */
   public void trackDependency(RemoteDependencyTelemetry telemetry) {
+
     if (isDisabled()) {
       return;
     }
@@ -314,6 +321,7 @@ public class TelemetryClient {
    * @param name The name of the page.
    */
   public void trackPageView(String name) {
+
     if (isDisabled()) {
       return;
     }
