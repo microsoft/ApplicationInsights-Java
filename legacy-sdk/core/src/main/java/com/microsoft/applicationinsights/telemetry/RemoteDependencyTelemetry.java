@@ -28,16 +28,9 @@ import java.util.Map;
  * Telemetry sent to Azure Application Insights about dependencies - that is, calls from your
  * application to external services such as databases or REST APIs.
  */
-public final class RemoteDependencyTelemetry
-    extends BaseSampleSourceTelemetry<RemoteDependencyData> {
-  private Double samplingPercentage;
+public final class RemoteDependencyTelemetry extends BaseTelemetry<RemoteDependencyData> {
+
   private final RemoteDependencyData data;
-
-  /** Envelope Name for this telemetry. */
-  public static final String ENVELOPE_NAME = "RemoteDependency";
-
-  /** Base Type for this telemetry. */
-  public static final String BASE_TYPE = "RemoteDependencyData";
 
   /**
    * Initializes an instnace with the given parameters.
@@ -195,16 +188,6 @@ public final class RemoteDependencyTelemetry
    */
   public void setDuration(Duration duration) {
     this.data.setDuration(duration);
-  }
-
-  @Override
-  public Double getSamplingPercentage() {
-    return samplingPercentage;
-  }
-
-  @Override
-  public void setSamplingPercentage(Double samplingPercentage) {
-    this.samplingPercentage = samplingPercentage;
   }
 
   @Override

@@ -32,30 +32,6 @@ import javax.annotation.Nullable;
  */
 public final class Sanitizer {
 
-  public static final int MAX_URL_LENGTH = 2048;
-
-  @Nullable
-  public static URI sanitizeUri(String urlAsString) {
-    if (urlAsString != null && !urlAsString.isEmpty()) {
-
-      if (urlAsString.length() > MAX_URL_LENGTH) {
-        urlAsString = urlAsString.substring(0, MAX_URL_LENGTH);
-      }
-
-      // In case that the truncated string is invalid
-      // URI we will not do nothing and let the Endpoint to drop the property
-      URI temp = null;
-      try {
-        temp = new URI(urlAsString);
-        return temp;
-      } catch (Exception e) {
-        // Swallow the exception
-      }
-    }
-
-    return null;
-  }
-
   @Nullable
   public static URI safeStringToUri(String url) {
     if (url == null || url.isEmpty()) {

@@ -33,11 +33,9 @@ import java.util.concurrent.ConcurrentMap;
  * passing an instance of this class to the 'trackPageView' method of the {@link
  * com.microsoft.applicationinsights.TelemetryClient}
  */
-public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewData> {
+public final class PageViewTelemetry extends BaseTelemetry<PageViewData> {
 
   private final PageViewData data;
-
-  private Double samplingPercentage;
 
   /**
    * Initializes a new instance of the class with the specified 'pageName'
@@ -124,16 +122,6 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
    */
   public ConcurrentMap<String, Double> getMetrics() {
     return data.getMeasurements();
-  }
-
-  @Override
-  public Double getSamplingPercentage() {
-    return samplingPercentage;
-  }
-
-  @Override
-  public void setSamplingPercentage(Double samplingPercentage) {
-    this.samplingPercentage = samplingPercentage;
   }
 
   @Override

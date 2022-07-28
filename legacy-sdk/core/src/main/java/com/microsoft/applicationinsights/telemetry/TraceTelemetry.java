@@ -25,15 +25,9 @@ import com.microsoft.applicationinsights.internal.schemav2.MessageData;
 import javax.annotation.Nullable;
 
 /** Telemetry type used for log messages. */
-public final class TraceTelemetry extends BaseSampleSourceTelemetry<MessageData> {
-  private Double samplingPercentage;
+public final class TraceTelemetry extends BaseTelemetry<MessageData> {
+
   private final MessageData data;
-
-  /** Envelope Name for this telemetry. */
-  public static final String ENVELOPE_NAME = "Message";
-
-  /** Base Type for this telemetry. */
-  public static final String BASE_TYPE = "MessageData";
 
   /** Default Ctor */
   public TraceTelemetry() {
@@ -96,15 +90,5 @@ public final class TraceTelemetry extends BaseSampleSourceTelemetry<MessageData>
     return data.getSeverityLevel() == null
         ? null
         : SeverityLevel.values()[data.getSeverityLevel().getValue()];
-  }
-
-  @Override
-  public Double getSamplingPercentage() {
-    return samplingPercentage;
-  }
-
-  @Override
-  public void setSamplingPercentage(Double samplingPercentage) {
-    this.samplingPercentage = samplingPercentage;
   }
 }

@@ -30,9 +30,8 @@ import java.util.concurrent.ConcurrentMap;
 import javax.annotation.Nullable;
 
 /** Telemetry type used to track exceptions sent to Azure Application Insights. */
-public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<ExceptionData> {
+public final class ExceptionTelemetry extends BaseTelemetry<ExceptionData> {
 
-  private Double samplingPercentage;
   private final ExceptionData data;
   private Throwable throwable;
 
@@ -102,16 +101,6 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     return data.getSeverityLevel() == null
         ? null
         : SeverityLevel.values()[data.getSeverityLevel().getValue()];
-  }
-
-  @Override
-  public Double getSamplingPercentage() {
-    return samplingPercentage;
-  }
-
-  @Override
-  public void setSamplingPercentage(Double samplingPercentage) {
-    this.samplingPercentage = samplingPercentage;
   }
 
   @Override

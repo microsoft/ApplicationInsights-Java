@@ -36,16 +36,9 @@ import javax.annotation.Nullable;
  * Insights by passing an instance of this class to the 'trackRequest' method of the {@link
  * com.microsoft.applicationinsights.TelemetryClient}
  */
-public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestData> {
+public final class RequestTelemetry extends BaseTelemetry<RequestData> {
 
-  private Double samplingPercentage;
   private final RequestData data;
-
-  /** Envelope Name for this telemetry. */
-  public static final String ENVELOPE_NAME = "Request";
-
-  /** Base Type for this telemetry. */
-  public static final String BASE_TYPE = "RequestData";
 
   /**
    * Initializes a new instance of the HttpRequestTelemetry class with the given name, time stamp,
@@ -269,16 +262,6 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
 
   public String getUrlString() {
     return getData().getUrl();
-  }
-
-  @Override
-  public Double getSamplingPercentage() {
-    return samplingPercentage;
-  }
-
-  @Override
-  public void setSamplingPercentage(Double samplingPercentage) {
-    this.samplingPercentage = samplingPercentage;
   }
 
   @Override

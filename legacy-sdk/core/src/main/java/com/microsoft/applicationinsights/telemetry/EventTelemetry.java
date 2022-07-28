@@ -25,9 +25,8 @@ import com.microsoft.applicationinsights.internal.schemav2.EventData;
 import java.util.concurrent.ConcurrentMap;
 
 /** Telemetry type used to track custom events in Azure Application Insights. */
-public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
+public final class EventTelemetry extends BaseTelemetry<EventData> {
 
-  private Double samplingPercentage;
   private final EventData data;
 
   /**
@@ -85,15 +84,5 @@ public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
   @Override
   protected EventData getData() {
     return data;
-  }
-
-  @Override
-  public Double getSamplingPercentage() {
-    return samplingPercentage;
-  }
-
-  @Override
-  public void setSamplingPercentage(Double samplingPercentage) {
-    this.samplingPercentage = samplingPercentage;
   }
 }
