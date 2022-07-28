@@ -30,13 +30,10 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
-import java.io.FilePermission;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.nio.file.StandardOpenOption;
-import java.security.AccessControlException;
-import java.security.AccessController;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -125,16 +122,12 @@ public class StatusFile {
     logDir = initLogDir();
     directory = logDir + STATUS_FILE_DIRECTORY;
     File dir = new File(logDir);
-    boolean tmp = false;
-    try {
-      AccessController.checkPermission(new FilePermission(dir.getPath(), "read,write"));
-      tmp = true;
-    } catch (AccessControlException | NullPointerException e) {
-      if (startupLogger != null) {
-        startupLogger.error("Read only file system", e);
-      }
+    boolean tmp = true;
+    if (!dir.exists() && !dir.mkdirs()) {
+      statusFileLogger.warn("can't create status folder");
+      tmp = false;
     }
-    writable = tmp;
+    writable = tmp && dir.canWrite();
   }
 
   private static Thread newThread(Runnable r) {
