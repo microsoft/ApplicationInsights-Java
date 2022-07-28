@@ -65,9 +65,6 @@ public class StatusFile {
   static final String FILE_EXTENSION = ".json";
 
   // visible for testing
-  //  static final String SITE_LOGDIR_PROPERTY = "site.logdir";
-
-  // visible for testing
   static final String HOME_ENV_VAR = "HOME";
 
   // visible for testing
@@ -87,8 +84,6 @@ public class StatusFile {
 
   // visible for testing
   static String directory;
-
-  private static final boolean writable;
 
   private static final AtomicBoolean alreadyLogged = new AtomicBoolean();
 
@@ -121,13 +116,6 @@ public class StatusFile {
 
     logDir = initLogDir();
     directory = logDir + STATUS_FILE_DIRECTORY;
-    File dir = new File(logDir);
-    boolean tmp = true;
-    if (!dir.exists() && !dir.mkdirs()) {
-      statusFileLogger.warn("can't create status folder");
-      tmp = false;
-    }
-    writable = tmp && dir.canWrite();
   }
 
   private static Thread newThread(Runnable r) {
@@ -153,12 +141,7 @@ public class StatusFile {
 
   private static boolean shouldWrite() {
     if (!DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
-      statusFileLogger.debug("#### it's ot appsvc rp integration shouldWrite false");
       return false;
-    }
-    if (writable) {
-      statusFileLogger.debug("#### shouldWrite: true");
-      return true;
     }
 
     // read-only app services, want to log warning once in this case
@@ -167,7 +150,7 @@ public class StatusFile {
           "Detected running on a read-only file system. Status json file won't be created. If this is unexpected, please check that process has write access to the directory: {}",
           directory);
     }
-    return false;
+    return true;
   }
 
   public static <T> void putValueAndWrite(String key, T value) {
@@ -176,18 +159,11 @@ public class StatusFile {
   }
 
   public static <T> void putValueAndWrite(String key, T value, boolean loggingInitialized) {
-    if (!shouldWrite()) {
-      return;
-    }
     CONSTANT_VALUES.put(key, value);
     write(loggingInitialized);
   }
 
   public static <T> void putValue(String key, T value) {
-    if (!shouldWrite()) {
-      statusFileLogger.debug("#### readonly skip putValue");
-      return;
-    }
     CONSTANT_VALUES.put(key, value);
   }
 
@@ -197,10 +173,6 @@ public class StatusFile {
 
   @SuppressWarnings("SystemOut")
   private static void write(boolean loggingInitialized) {
-    if (!shouldWrite()) {
-      statusFileLogger.debug("#### read-only");
-      return;
-    }
     WRITER_THREAD.submit(
         new Runnable() {
           @Override
