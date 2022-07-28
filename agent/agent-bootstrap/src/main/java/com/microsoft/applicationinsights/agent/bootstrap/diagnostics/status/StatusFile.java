@@ -30,10 +30,12 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
+import java.io.FilePermission;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.nio.file.StandardOpenOption;
+import java.security.AccessController;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -122,7 +124,12 @@ public class StatusFile {
     logDir = initLogDir();
     directory = logDir + STATUS_FILE_DIRECTORY;
     File dir = new File(logDir);
-    writable = dir.canWrite();
+    try {
+      AccessController.checkPermission(new FilePermission(dir.getPath(), "read,write"));
+      writable = true;
+    } catch (Exception e) {
+      startupLogger.error("Read only file system", e);
+    }
   }
 
   private static Thread newThread(Runnable r) {
