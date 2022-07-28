@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.telemetry;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 
 /** Superclass for all telemetry data classes. */
 public abstract class BaseTelemetry implements Telemetry {
@@ -33,7 +34,7 @@ public abstract class BaseTelemetry implements Telemetry {
   protected BaseTelemetry() {}
 
   /** Initializes the instance with the context properties */
-  protected void initialize(Map<String, String> properties) {
+  protected void initialize(ConcurrentMap<String, String> properties) {
     context = new TelemetryContext(properties, new ContextTagsMap());
   }
 

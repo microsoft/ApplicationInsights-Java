@@ -26,7 +26,7 @@ import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
-import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 import javax.annotation.Nullable;
 
 /**
@@ -94,7 +94,7 @@ public final class RequestTelemetry extends BaseTelemetry {
   }
 
   /** Gets a map of application-defined request metrics. */
-  public Map<String, Double> getMetrics() {
+  public ConcurrentMap<String, Double> getMetrics() {
     return data.getMeasurements();
   }
 

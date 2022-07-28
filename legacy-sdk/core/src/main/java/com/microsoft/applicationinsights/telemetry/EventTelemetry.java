@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.telemetry;
 
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
-import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 
 /** Telemetry type used to track custom events in Azure Application Insights. */
 public final class EventTelemetry extends BaseTelemetry {
@@ -49,7 +49,7 @@ public final class EventTelemetry extends BaseTelemetry {
    * Gets a map of application-defined event metrics. These metrics appear along with the event in
    * Search and Analytics, but appear under 'Custom Metrics' in Metrics Explorer.
    */
-  public Map<String, Double> getMetrics() {
+  public ConcurrentMap<String, Double> getMetrics() {
     return data.getMeasurements();
   }
 

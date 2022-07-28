@@ -28,8 +28,8 @@ import com.microsoft.applicationinsights.extensibility.context.LocationContext;
 import com.microsoft.applicationinsights.extensibility.context.OperationContext;
 import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Represents a context for sending telemetry to the Application Insights service. The context holds
@@ -40,7 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class TelemetryContext {
 
-  private final Map<String, String> properties;
+  private final ConcurrentMap<String, String> properties;
   private final ContextTagsMap tags;
 
   private String instrumentationKey;
@@ -52,11 +52,11 @@ public final class TelemetryContext {
   private LocationContext location;
   private CloudContext cloud;
 
-  public static TelemetryContext concurrentInstance() {
-    return new TelemetryContext(new ConcurrentHashMap<>(), new ContextTagsMap());
+  public TelemetryContext() {
+    this(new ConcurrentHashMap<>(), new ContextTagsMap());
   }
 
-  TelemetryContext(Map<String, String> properties, ContextTagsMap tags) {
+  TelemetryContext(ConcurrentMap<String, String> properties, ContextTagsMap tags) {
     if (properties == null) {
       throw new IllegalArgumentException("properties cannot be null");
     }
@@ -157,12 +157,12 @@ public final class TelemetryContext {
   }
 
   /** Gets a dictionary of application-defined property values. */
-  public Map<String, String> getProperties() {
+  public ConcurrentMap<String, String> getProperties() {
     return properties;
   }
 
   /** Gets a dictionary of context tags. */
-  public Map<String, String> getTags() {
+  public ConcurrentMap<String, String> getTags() {
     return tags;
   }
 }
