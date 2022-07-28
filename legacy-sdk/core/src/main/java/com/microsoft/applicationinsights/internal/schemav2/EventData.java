@@ -26,19 +26,17 @@ import java.util.concurrent.ConcurrentMap;
 
 public class EventData {
 
-  private String name;
+  private final String name;
 
   private ConcurrentMap<String, String> properties;
   private ConcurrentMap<String, Double> measurements;
 
-  public EventData() {}
+  public EventData(String name) {
+    this.name = name;
+  }
 
   public String getName() {
     return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
   }
 
   public ConcurrentMap<String, String> getProperties() {

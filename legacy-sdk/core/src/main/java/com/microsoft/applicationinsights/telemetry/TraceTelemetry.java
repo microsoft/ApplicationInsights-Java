@@ -29,10 +29,6 @@ public final class TraceTelemetry extends BaseTelemetry {
 
   private final MessageData data;
 
-  public TraceTelemetry() {
-    this("");
-  }
-
   public TraceTelemetry(String message) {
     this(message, null);
   }
@@ -44,8 +40,6 @@ public final class TraceTelemetry extends BaseTelemetry {
    * @param severityLevel The severity level.
    */
   public TraceTelemetry(String message, @Nullable SeverityLevel severityLevel) {
-    super();
-
     data = new MessageData();
     initialize(data.getProperties());
 

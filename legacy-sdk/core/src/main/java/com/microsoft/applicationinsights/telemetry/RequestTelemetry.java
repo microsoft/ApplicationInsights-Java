@@ -196,10 +196,6 @@ public final class RequestTelemetry extends BaseTelemetry {
     data.setUrl(u.toString());
   }
 
-  public String getUrlString() {
-    return getData().getUrl();
-  }
-
   @Override
   protected RequestData getData() {
     return data;

@@ -21,32 +21,17 @@
 
 package com.microsoft.applicationinsights.internal.schemav2;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class ExceptionData {
 
-  private List<ExceptionDetails> exceptions;
   private SeverityLevel severityLevel;
-  private String problemId;
 
   private ConcurrentMap<String, String> properties;
   private ConcurrentMap<String, Double> measurements;
 
   public ExceptionData() {}
-
-  public List<ExceptionDetails> getExceptions() {
-    if (exceptions == null) {
-      exceptions = new ArrayList<>();
-    }
-    return exceptions;
-  }
-
-  public void setExceptions(List<ExceptionDetails> exceptions) {
-    this.exceptions = exceptions;
-  }
 
   public SeverityLevel getSeverityLevel() {
     return severityLevel;
@@ -54,14 +39,6 @@ public class ExceptionData {
 
   public void setSeverityLevel(SeverityLevel severityLevel) {
     this.severityLevel = severityLevel;
-  }
-
-  public String getProblemId() {
-    return problemId;
-  }
-
-  public void setProblemId(String problemId) {
-    this.problemId = problemId;
   }
 
   public ConcurrentMap<String, String> getProperties() {

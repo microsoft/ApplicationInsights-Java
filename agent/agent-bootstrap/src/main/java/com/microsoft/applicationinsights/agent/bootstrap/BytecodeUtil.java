@@ -190,13 +190,15 @@ public class BytecodeUtil {
 
   public static void trackException(
       Date timestamp,
-      Exception exception,
+      Throwable throwable,
+      int severityLevel,
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> metrics,
       String instrumentationKey) {
     if (delegate != null) {
-      delegate.trackException(timestamp, exception, properties, tags, metrics, instrumentationKey);
+      delegate.trackException(
+          timestamp, throwable, severityLevel, properties, tags, metrics, instrumentationKey);
     }
   }
 
@@ -341,11 +343,10 @@ public class BytecodeUtil {
         Map<String, Double> metrics,
         @Nullable String instrumentationKey);
 
-    // TODO also handle cases where ExceptionTelemetry parsedStack is used directly instead of
-    // indirectly through Exception
     void trackException(
         @Nullable Date timestamp,
-        Exception exception,
+        Throwable throwable,
+        int severityLevel,
         Map<String, String> properties,
         Map<String, String> tags,
         Map<String, Double> metrics,

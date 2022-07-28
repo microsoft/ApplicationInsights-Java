@@ -22,10 +22,6 @@
 package com.microsoft.applicationinsights.telemetry;
 
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
-import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
-import com.microsoft.applicationinsights.internal.schemav2.StackFrame;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import javax.annotation.Nullable;
 
@@ -33,49 +29,21 @@ import javax.annotation.Nullable;
 public final class ExceptionTelemetry extends BaseTelemetry {
 
   private final ExceptionData data;
-  private Throwable throwable;
+  private final Throwable throwable;
 
-  public ExceptionTelemetry() {
+  /**
+   * Creates a new instance.
+   *
+   * @param throwable The exception to track.
+   */
+  public ExceptionTelemetry(Throwable throwable) {
     data = new ExceptionData();
     initialize(data.getProperties());
-  }
-
-  /**
-   * Creates a new instance.
-   *
-   * @param stackSize The max stack size to report.
-   * @param exception The exception to track.
-   */
-  public ExceptionTelemetry(Throwable exception, int stackSize) {
-    this();
-    setException(exception, stackSize);
-  }
-
-  /**
-   * Creates a new instance.
-   *
-   * @param exception The exception to track.
-   */
-  public ExceptionTelemetry(Throwable exception) {
-    this(exception, Integer.MAX_VALUE);
-  }
-
-  @Nullable
-  public Exception getException() {
-    return throwable instanceof Exception ? (Exception) throwable : null;
+    this.throwable = throwable;
   }
 
   public Throwable getThrowable() {
     return throwable;
-  }
-
-  public void setException(Throwable throwable) {
-    setException(throwable, Integer.MAX_VALUE);
-  }
-
-  private void setException(Throwable throwable, int stackSize) {
-    this.throwable = throwable;
-    updateException(throwable, stackSize);
   }
 
   /**
@@ -99,98 +67,6 @@ public final class ExceptionTelemetry extends BaseTelemetry {
     return data.getSeverityLevel() == null
         ? null
         : SeverityLevel.values()[data.getSeverityLevel().getValue()];
-  }
-
-  private List<ExceptionDetails> getExceptions() {
-    return data.getExceptions();
-  }
-
-  private void updateException(Throwable throwable, int stackSize) {
-    ArrayList<ExceptionDetails> exceptions = new ArrayList<>();
-    convertExceptionTree(throwable, null, exceptions, stackSize);
-
-    data.setExceptions(exceptions);
-  }
-
-  private static void convertExceptionTree(
-      Throwable exception,
-      @Nullable ExceptionDetails parentExceptionDetails,
-      List<ExceptionDetails> exceptions,
-      int stackSize) {
-    if (exception == null) {
-      exception = new Exception("");
-    }
-
-    if (stackSize == 0) {
-      return;
-    }
-
-    ExceptionDetails exceptionDetails = createWithStackInfo(exception, parentExceptionDetails);
-    exceptions.add(exceptionDetails);
-
-    if (exception.getCause() != null) {
-      convertExceptionTree(exception.getCause(), exceptionDetails, exceptions, stackSize - 1);
-    }
-  }
-
-  private static ExceptionDetails createWithStackInfo(
-      Throwable exception, ExceptionDetails parentExceptionDetails) {
-    if (exception == null) {
-      throw new IllegalArgumentException("exception cannot be null");
-    }
-
-    ExceptionDetails exceptionDetails = new ExceptionDetails();
-    exceptionDetails.setId(exception.hashCode());
-    exceptionDetails.setTypeName(exception.getClass().getName());
-
-    String exceptionMessage = exception.getMessage();
-    if (exceptionMessage == null || exceptionMessage.isEmpty()) {
-      exceptionMessage = exception.getClass().getName();
-    }
-    exceptionDetails.setMessage(exceptionMessage);
-
-    if (parentExceptionDetails != null) {
-      exceptionDetails.setOuterId(parentExceptionDetails.getId());
-    }
-
-    StackTraceElement[] trace = exception.getStackTrace();
-
-    if (trace != null && trace.length > 0) {
-      List<StackFrame> stack = exceptionDetails.getParsedStack();
-
-      // We need to present the stack trace in reverse order.
-
-      for (int idx = 0; idx < trace.length; idx++) {
-        StackTraceElement elem = trace[idx];
-
-        if (elem.isNativeMethod()) {
-          continue;
-        }
-
-        String className = elem.getClassName();
-
-        StackFrame frame = new StackFrame();
-        frame.setLevel(idx);
-        frame.setFileName(elem.getFileName());
-        frame.setLine(elem.getLineNumber());
-
-        if (className != null && !className.isEmpty()) {
-          frame.setMethod(elem.getClassName() + "." + elem.getMethodName());
-        } else {
-          frame.setMethod(elem.getMethodName());
-        }
-
-        stack.add(frame);
-      }
-
-      exceptionDetails.setHasFullStack(true); // TODO: sanitize and trim exception stack trace.
-    }
-
-    return exceptionDetails;
-  }
-
-  public String getProblemId() {
-    return getData().getProblemId();
   }
 
   @Override

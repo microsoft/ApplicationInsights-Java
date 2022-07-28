@@ -59,15 +59,6 @@ public final class MetricTelemetry extends BaseTelemetry {
     data.getMetrics().add(metric);
   }
 
-  /**
-   * Indicate that this metric is a custom performance counter and should be sent to the performance
-   * counters table. This sets 'CustomPerfCounter'='true' key/value pair in this metric's
-   * properties.
-   */
-  public void markAsCustomPerfCounter() {
-    data.getProperties().put("CustomPerfCounter", "true");
-  }
-
   /** Gets the name of the metric. */
   public String getName() {
     return metric.getName();

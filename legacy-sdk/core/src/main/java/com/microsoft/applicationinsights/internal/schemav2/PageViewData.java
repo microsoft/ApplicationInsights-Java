@@ -21,28 +21,30 @@
 
 package com.microsoft.applicationinsights.internal.schemav2;
 
-import com.microsoft.applicationinsights.telemetry.Duration;
+import java.net.URI;
 
 public class PageViewData extends EventData {
 
-  private String url;
-  private Duration duration = new Duration(0);
+  private URI uri;
+  private long duration = 0;
 
-  public PageViewData() {}
-
-  public String getUrl() {
-    return url;
+  public PageViewData(String pageName) {
+    super(pageName);
   }
 
-  public void setUrl(String url) {
-    this.url = url;
+  public URI getUri() {
+    return uri;
   }
 
-  public Duration getDuration() {
+  public void setUri(URI uri) {
+    this.uri = uri;
+  }
+
+  public long getDuration() {
     return duration;
   }
 
-  public void setDuration(Duration duration) {
+  public void setDuration(long duration) {
     this.duration = duration;
   }
 }

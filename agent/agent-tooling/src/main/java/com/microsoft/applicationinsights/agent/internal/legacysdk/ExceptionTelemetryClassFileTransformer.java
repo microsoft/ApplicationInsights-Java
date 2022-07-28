@@ -21,33 +21,32 @@
 
 package com.microsoft.applicationinsights.agent.internal.legacysdk;
 
-import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
-import static org.objectweb.asm.Opcodes.ACC_PROTECTED;
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
-import static org.objectweb.asm.Opcodes.ACONST_NULL;
+import static org.objectweb.asm.Opcodes.ALOAD;
 import static org.objectweb.asm.Opcodes.ARETURN;
 import static org.objectweb.asm.Opcodes.ASM7;
+import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 
 import java.lang.instrument.ClassFileTransformer;
-import java.lang.reflect.Modifier;
 import java.security.ProtectionDomain;
 import javax.annotation.Nullable;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// this is used to supplement old versions of RequestTelemetry with getters from the latest version
-// of RequestTelemetry
-public class RequestTelemetryClassFileTransformer implements ClassFileTransformer {
+// this is used to supplement old versions of ExceptionTelemetry with getters from the latest
+// version of ExceptionTelemetry
+public class ExceptionTelemetryClassFileTransformer implements ClassFileTransformer {
 
   private static final Logger logger =
-      LoggerFactory.getLogger(RequestTelemetryClassFileTransformer.class);
+      LoggerFactory.getLogger(ExceptionTelemetryClassFileTransformer.class);
 
   private final String unshadedClassName =
-      UnshadedSdkPackageName.get() + "/telemetry/RequestTelemetry";
+      UnshadedSdkPackageName.get() + "/telemetry/ExceptionTelemetry";
 
   @Override
   @Nullable
@@ -63,7 +62,7 @@ public class RequestTelemetryClassFileTransformer implements ClassFileTransforme
     }
     try {
       ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-      RequestTelemetryClassVisitor cv = new RequestTelemetryClassVisitor(cw);
+      ExceptionTelemetryClassVisitor cv = new ExceptionTelemetryClassVisitor(cw);
       ClassReader cr = new ClassReader(classfileBuffer);
       cr.accept(cv, 0);
       return cw.toByteArray();
@@ -73,13 +72,15 @@ public class RequestTelemetryClassFileTransformer implements ClassFileTransforme
     }
   }
 
-  private static class RequestTelemetryClassVisitor extends ClassVisitor {
+  private static class ExceptionTelemetryClassVisitor extends ClassVisitor {
+
+    private final String unshadedPrefix = UnshadedSdkPackageName.get();
 
     private final ClassWriter cw;
 
-    private boolean foundGetSourceMethod;
+    private boolean foundGetThrowableMethod;
 
-    private RequestTelemetryClassVisitor(ClassWriter cw) {
+    private ExceptionTelemetryClassVisitor(ClassWriter cw) {
       super(ASM7, cw);
       this.cw = cw;
     }
@@ -91,33 +92,35 @@ public class RequestTelemetryClassFileTransformer implements ClassFileTransforme
         String descriptor,
         @Nullable String signature,
         @Nullable String[] exceptions) {
-      if (name.equals("getSource") && descriptor.equals("()Ljava/lang/String;")) {
-        foundGetSourceMethod = true;
-      }
-      if (name.equals("getMetrics")
-          && descriptor.equals("()Ljava/util/concurrent/ConcurrentMap;")
-          && !Modifier.isPublic(access)) {
-        // getMetrics() was package-private prior to 2.2.0
-        // remove private and protected flags, add public flag
-        int updatedAccess = (access & ~ACC_PRIVATE & ~ACC_PROTECTED) | ACC_PUBLIC;
-        return super.visitMethod(updatedAccess, name, descriptor, signature, exceptions);
+      if (name.equals("getThrowable") && descriptor.equals("()Ljava/lang/Throwable;")) {
+        foundGetThrowableMethod = true;
       }
       return super.visitMethod(access, name, descriptor, signature, exceptions);
     }
 
     @Override
     public void visitEnd() {
-      if (!foundGetSourceMethod) {
-        writeGetSourceMethod();
+      if (!foundGetThrowableMethod) {
+        writeGetThrowableMethod();
       }
     }
 
-    private void writeGetSourceMethod() {
+    private void writeGetThrowableMethod() {
       MethodVisitor mv =
-          cw.visitMethod(ACC_PUBLIC, "getSource", "()Ljava/lang/String;", null, null);
+          cw.visitMethod(ACC_PUBLIC, "getThrowable", "()Ljava/lang/Throwable;", null, null);
       mv.visitCode();
-      mv.visitInsn(ACONST_NULL);
+      Label label0 = new Label();
+      mv.visitLabel(label0);
+      mv.visitVarInsn(ALOAD, 0);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/ExceptionTelemetry",
+          "getException",
+          "()Ljava/lang/Exception;",
+          false);
       mv.visitInsn(ARETURN);
+      Label label1 = new Label();
+      mv.visitLabel(label1);
       mv.visitMaxs(1, 1);
       mv.visitEnd();
     }
@@ -130,7 +133,7 @@ public class RequestTelemetryClassFileTransformer implements ClassFileTransforme
   //   implementation("org.ow2.asm:asm-util:9.3")
   //
   public static void main(String[] args) {
-    // ASMifier.main(new String[]{Rdt.class.getName()});
+    // ASMifier.main(new String[] {Rdt.class.getName()});
   }
 
   // DO NOT REMOVE
@@ -138,8 +141,12 @@ public class RequestTelemetryClassFileTransformer implements ClassFileTransforme
   @SuppressWarnings("unused")
   public static class Rdt {
 
-    public String getSource() {
+    public Exception getException() {
       return null;
+    }
+
+    public Throwable getThrowable() {
+      return getException();
     }
   }
 }

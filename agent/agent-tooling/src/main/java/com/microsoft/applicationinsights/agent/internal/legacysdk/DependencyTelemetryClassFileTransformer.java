@@ -181,8 +181,8 @@ public class DependencyTelemetryClassFileTransformer implements ClassFileTransfo
   // DO NOT REMOVE
   // this is used during development for generating above bytecode
   //
-  // to run this, add this dependency to agent-tooling.gradle:
-  //   compile group: 'org.ow2.legacysdk', name: 'legacysdk-util', version: '9.1'
+  // to run this, add this dependency to agent-tooling's build.gradle.kts file:
+  //   implementation("org.ow2.asm:asm-util:9.3")
   //
   public static void main(String[] args) {
     // ASMifier.main(new String[]{Rdt.class.getName()});

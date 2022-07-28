@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.telemetry;
 
 import com.microsoft.applicationinsights.internal.schemav2.PageViewData;
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import java.net.URI;
 import java.util.concurrent.ConcurrentMap;
 
@@ -39,18 +38,8 @@ public final class PageViewTelemetry extends BaseTelemetry {
 
   /** Initializes a new instance of the class with the specified {@code pageName}. */
   public PageViewTelemetry(String pageName) {
-    this();
-    setName(pageName);
-  }
-
-  public PageViewTelemetry() {
-    data = new PageViewData();
+    data = new PageViewData(pageName);
     initialize(data.getProperties());
-  }
-
-  /** Sets the name of the page view. */
-  public void setName(String name) {
-    data.setName(name);
   }
 
   /** Gets the name of the page view. */
@@ -60,39 +49,27 @@ public final class PageViewTelemetry extends BaseTelemetry {
 
   /** Gets the page view Uri. */
   public URI getUri() {
-    URI result = Sanitizer.safeStringToUri(data.getUrl());
-    if (result == null) {
-      data.setUrl(null);
-    }
-    return result;
-  }
-
-  public String getUrlString() {
-    return getData().getUrl();
+    return data.getUri();
   }
 
   /** Sets the page view Uri. */
-  public void setUrl(URI url) {
-    data.setUrl(url == null ? null : url.toString());
+  public void setUrl(URI uri) {
+    data.setUri(uri);
   }
 
   /** Gets the page view duration. */
   public long getDuration() {
-    return data.getDuration().getTotalMilliseconds();
+    return data.getDuration();
   }
 
   /** Sets the page view duration. */
   public void setDuration(long duration) {
-    data.setDuration(new Duration(duration));
+    data.setDuration(duration);
   }
 
   /** Gets a dictionary of custom defined metrics. */
   public ConcurrentMap<String, Double> getMetrics() {
     return data.getMeasurements();
-  }
-
-  public Duration getDurationObject() {
-    return getData().getDuration();
   }
 
   @Override
