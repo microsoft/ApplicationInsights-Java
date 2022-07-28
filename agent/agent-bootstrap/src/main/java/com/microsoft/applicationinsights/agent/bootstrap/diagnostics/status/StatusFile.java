@@ -139,19 +139,20 @@ public class StatusFile {
 
   private StatusFile() {}
 
-//  private static boolean shouldWrite() {
-//    if (!DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
-//      return false;
-//    }
-//
-//    // read-only app services, want to log warning once in this case
-//    if (startupLogger != null && !alreadyLogged.getAndSet(true)) {
-//      startupLogger.info(
-//          "Detected running on a read-only file system. Status json file won't be created. If this is unexpected, please check that process has write access to the directory: {}",
-//          directory);
-//    }
-//    return true;
-//  }
+  //  private static boolean shouldWrite() {
+  //    if (!DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
+  //      return false;
+  //    }
+  //
+  //    // read-only app services, want to log warning once in this case
+  //    if (startupLogger != null && !alreadyLogged.getAndSet(true)) {
+  //      startupLogger.info(
+  //          "Detected running on a read-only file system. Status json file won't be created. If
+  // this is unexpected, please check that process has write access to the directory: {}",
+  //          directory);
+  //    }
+  //    return true;
+  //  }
 
   public static <T> void putValueAndWrite(String key, T value) {
     statusFileLogger.debug("#### key: {}, value: {}", key, value);
