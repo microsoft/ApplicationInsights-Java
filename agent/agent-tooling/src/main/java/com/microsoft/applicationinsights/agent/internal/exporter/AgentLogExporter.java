@@ -83,6 +83,9 @@ public class AgentLogExporter implements LogExporter {
       return CompletableResultCode.ofFailure();
     }
     for (LogData log : logs) {
+      if (!log.getSpanContext().getTraceFlags().isSampled()) {
+        continue;
+      }
       logger.debug("exporting log: {}", log);
       try {
         int severity = log.getSeverity().getSeverityNumber();
