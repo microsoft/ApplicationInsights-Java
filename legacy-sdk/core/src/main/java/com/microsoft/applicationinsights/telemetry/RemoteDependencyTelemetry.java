@@ -137,11 +137,12 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry {
   }
 
   public String getResultCode() {
-    return getData().getResultCode();
+    return data.getResultCode();
   }
 
+  /** Gets a map of application-defined request metrics. */
   public Map<String, Double> getMetrics() {
-    return getData().getMeasurements();
+    return data.getMeasurements();
   }
 
   @Override
