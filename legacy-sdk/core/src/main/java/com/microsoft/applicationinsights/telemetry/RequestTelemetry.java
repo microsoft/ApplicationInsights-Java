@@ -93,11 +93,6 @@ public final class RequestTelemetry extends BaseTelemetry {
     setSuccess(true);
   }
 
-  /** Gets a map of application-defined request metrics. */
-  public ConcurrentMap<String, Double> getMetrics() {
-    return data.getMeasurements();
-  }
-
   /** Sets the StartTime. */
   @Override
   public void setTimestamp(Date timestamp) {
@@ -194,6 +189,11 @@ public final class RequestTelemetry extends BaseTelemetry {
   public void setUrl(String url) throws MalformedURLException {
     URL u = new URL(url); // to validate and normalize
     data.setUrl(u.toString());
+  }
+
+  /** Gets a map of application-defined request metrics. */
+  public ConcurrentMap<String, Double> getMetrics() {
+    return data.getMeasurements();
   }
 
   @Override

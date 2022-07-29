@@ -68,14 +68,6 @@ public final class ExceptionTelemetry extends BaseTelemetry {
     this.throwable = throwable;
   }
 
-  /**
-   * Gets a map of application-defined exception metrics. The metrics appear along with the
-   * exception in Analytics, but under Custom Metrics in Metrics Explorer.
-   */
-  public ConcurrentMap<String, Double> getMetrics() {
-    return data.getMeasurements();
-  }
-
   public void setSeverityLevel(SeverityLevel severityLevel) {
     data.setSeverityLevel(
         severityLevel == null
@@ -89,6 +81,11 @@ public final class ExceptionTelemetry extends BaseTelemetry {
     return data.getSeverityLevel() == null
         ? null
         : SeverityLevel.values()[data.getSeverityLevel().getValue()];
+  }
+
+  /** Gets a dictionary of custom defined metrics. */
+  public ConcurrentMap<String, Double> getMetrics() {
+    return data.getMeasurements();
   }
 
   @Override

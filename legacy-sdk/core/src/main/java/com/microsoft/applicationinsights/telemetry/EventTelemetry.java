@@ -45,14 +45,6 @@ public final class EventTelemetry extends BaseTelemetry {
     initialize(data.getProperties());
   }
 
-  /**
-   * Gets a map of application-defined event metrics. These metrics appear along with the event in
-   * Search and Analytics, but appear under 'Custom Metrics' in Metrics Explorer.
-   */
-  public ConcurrentMap<String, Double> getMetrics() {
-    return data.getMeasurements();
-  }
-
   /** Gets the name of the event. */
   public String getName() {
     return data.getName();
@@ -64,6 +56,11 @@ public final class EventTelemetry extends BaseTelemetry {
       throw new IllegalArgumentException("The event name cannot be null or empty");
     }
     data.setName(name);
+  }
+
+  /** Gets a dictionary of custom defined metrics. */
+  public ConcurrentMap<String, Double> getMetrics() {
+    return data.getMeasurements();
   }
 
   @Override
