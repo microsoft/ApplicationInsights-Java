@@ -50,8 +50,13 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry {
 
   /** Creates a new instance with the given {@code name}. */
   public RemoteDependencyTelemetry(String name) {
-    data = new RemoteDependencyData(name);
-    initialize(data.getProperties());
+    this();
+    setName(name);
+  }
+
+  public RemoteDependencyTelemetry() {
+    data = new RemoteDependencyData();
+    initialize(this.data.getProperties());
   }
 
   /** Gets the dependency id. */
@@ -67,6 +72,14 @@ public final class RemoteDependencyTelemetry extends BaseTelemetry {
   /** Gets the dependency name. */
   public String getName() {
     return data.getName();
+  }
+
+  /** Sets the dependency name. */
+  public void setName(String name) {
+    if (name == null || name.isEmpty()) {
+      throw new IllegalArgumentException("The event name cannot be null or empty");
+    }
+    data.setName(name);
   }
 
   /** Gets the command name. */

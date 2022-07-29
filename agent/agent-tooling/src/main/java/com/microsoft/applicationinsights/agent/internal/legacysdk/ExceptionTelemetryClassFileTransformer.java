@@ -114,7 +114,7 @@ public class ExceptionTelemetryClassFileTransformer implements ClassFileTransfor
       mv.visitVarInsn(ALOAD, 0);
       mv.visitMethodInsn(
           INVOKEVIRTUAL,
-          unshadedPrefix + "/ExceptionTelemetry",
+          unshadedPrefix + "/telemetry/ExceptionTelemetry",
           "getException",
           "()Ljava/lang/Exception;",
           false);

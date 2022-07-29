@@ -29,7 +29,23 @@ import javax.annotation.Nullable;
 public final class ExceptionTelemetry extends BaseTelemetry {
 
   private final ExceptionData data;
-  private final Throwable throwable;
+  private Throwable throwable;
+
+  public ExceptionTelemetry() {
+    data = new ExceptionData();
+    initialize(data.getProperties());
+  }
+
+  /**
+   * Creates a new instance.
+   *
+   * @param stackSize The max stack size to report.
+   * @param throwable The exception to track.
+   */
+  public ExceptionTelemetry(Throwable throwable, int stackSize) {
+    this();
+    this.throwable = throwable;
+  }
 
   /**
    * Creates a new instance.
@@ -37,13 +53,19 @@ public final class ExceptionTelemetry extends BaseTelemetry {
    * @param throwable The exception to track.
    */
   public ExceptionTelemetry(Throwable throwable) {
-    data = new ExceptionData();
-    initialize(data.getProperties());
-    this.throwable = throwable;
+    this(throwable, Integer.MAX_VALUE);
   }
 
   public Throwable getThrowable() {
     return throwable;
+  }
+
+  public void setException(Throwable throwable) {
+    setException(throwable, Integer.MAX_VALUE);
+  }
+
+  public void setException(Throwable throwable, int stackSize) {
+    this.throwable = throwable;
   }
 
   /**

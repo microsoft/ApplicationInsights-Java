@@ -28,9 +28,7 @@ public class PageViewData extends EventData {
   private URI uri;
   private long duration = 0;
 
-  public PageViewData(String pageName) {
-    super(pageName);
-  }
+  public PageViewData() {}
 
   public URI getUri() {
     return uri;

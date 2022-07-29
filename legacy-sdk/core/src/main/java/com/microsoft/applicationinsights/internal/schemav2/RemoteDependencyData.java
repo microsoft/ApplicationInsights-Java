@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentMap;
 
 public class RemoteDependencyData {
 
-  private final String name;
+  private String name;
   private String id;
   private String resultCode;
   private Duration duration = new Duration(0);
@@ -39,12 +39,14 @@ public class RemoteDependencyData {
   private ConcurrentMap<String, String> properties;
   private ConcurrentMap<String, Double> measurements;
 
-  public RemoteDependencyData(String name) {
-    this.name = name;
-  }
+  public RemoteDependencyData() {}
 
   public String getName() {
     return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 
   public String getId() {

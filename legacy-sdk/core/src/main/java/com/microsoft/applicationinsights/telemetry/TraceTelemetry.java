@@ -29,6 +29,10 @@ public final class TraceTelemetry extends BaseTelemetry {
 
   private final MessageData data;
 
+  public TraceTelemetry() {
+    this("");
+  }
+
   public TraceTelemetry(String message) {
     this(message, null);
   }

@@ -38,8 +38,18 @@ public final class PageViewTelemetry extends BaseTelemetry {
 
   /** Initializes a new instance of the class with the specified {@code pageName}. */
   public PageViewTelemetry(String pageName) {
-    data = new PageViewData(pageName);
+    this();
+    setName(pageName);
+  }
+
+  public PageViewTelemetry() {
+    data = new PageViewData();
     initialize(data.getProperties());
+  }
+
+  /** Sets the name of the page view. */
+  public void setName(String name) {
+    data.setName(name);
   }
 
   /** Gets the name of the page view. */

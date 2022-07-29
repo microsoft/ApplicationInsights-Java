@@ -35,7 +35,13 @@ public final class EventTelemetry extends BaseTelemetry {
    * @param name The event's name. Max length 150.
    */
   public EventTelemetry(String name) {
-    data = new EventData(name);
+    this();
+    setName(name);
+  }
+
+  /** Creates a new instance. */
+  public EventTelemetry() {
+    data = new EventData();
     initialize(data.getProperties());
   }
 
@@ -50,6 +56,14 @@ public final class EventTelemetry extends BaseTelemetry {
   /** Gets the name of the event. */
   public String getName() {
     return data.getName();
+  }
+
+  /** Sets the name of the event. Max length 150. */
+  public void setName(String name) {
+    if (name == null || name.isEmpty()) {
+      throw new IllegalArgumentException("The event name cannot be null or empty");
+    }
+    data.setName(name);
   }
 
   @Override

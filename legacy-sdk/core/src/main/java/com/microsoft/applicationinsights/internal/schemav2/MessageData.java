@@ -37,8 +37,8 @@ public class MessageData {
     return message;
   }
 
-  public void setMessage(String message) {
-    this.message = message;
+  public void setMessage(String value) {
+    this.message = value;
   }
 
   public SeverityLevel getSeverityLevel() {
