@@ -58,11 +58,11 @@ import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.TestWatcher;
 import org.testcontainers.Testcontainers;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.MountableFile;
 
 @SuppressWarnings({"SystemOut", "InterruptedExceptionSwallowed"})
 public class SmokeTestExtension
@@ -303,9 +303,10 @@ public class SmokeTestExtension
             .withEnv("APPLICATIONINSIGHTS_ROLE_INSTANCE", "testroleinstance")
             .withNetwork(network)
             .withExposedPorts(8080)
-            .withCopyFileToContainer(
-                MountableFile.forHostPath(appFile.toPath()),
-                currentImageAppDir + "/" + appFile.getName());
+            .withFileSystemBind(
+                appFile.getAbsolutePath(),
+                currentImageAppDir + "/" + appFile.getName(),
+                BindMode.READ_ONLY);
 
     List<String> javaToolOptions = new ArrayList<>();
     javaToolOptions.add("-Dapplicationinsights.testing.batch-schedule-delay-millis=500");
@@ -319,8 +320,10 @@ public class SmokeTestExtension
 
     if (useAgent) {
       container =
-          container.withCopyFileToContainer(
-              MountableFile.forHostPath(javaagentFile.toPath()), "/applicationinsights-agent.jar");
+          container.withFileSystemBind(
+              javaagentFile.getAbsolutePath(),
+              "/applicationinsights-agent.jar",
+              BindMode.READ_ONLY);
       URL resource = SmokeTestExtension.class.getClassLoader().getResource(agentConfigurationPath);
       if (resource != null) {
         File json = File.createTempFile("applicationinsights", ".json");
@@ -329,8 +332,8 @@ public class SmokeTestExtension
           Files.copy(in, jsonPath, StandardCopyOption.REPLACE_EXISTING);
         }
         container =
-            container.withCopyFileToContainer(
-                MountableFile.forHostPath(jsonPath), "/applicationinsights.json");
+            container.withFileSystemBind(
+                json.getAbsolutePath(), "/applicationinsights.json", BindMode.READ_ONLY);
       }
     }
 
