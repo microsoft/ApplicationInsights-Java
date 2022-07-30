@@ -1,0 +1,44 @@
+environment:
+  host:
+    os: 'windows'
+    flavor: 'server'
+    version: '2019'
+  runtime:
+    provider: 'appcontainer'
+    image: 'cdpxwin1809.azurecr.io/global/vse2019:latest'
+    source_mode: 'link'
+
+signing_options:
+  profile: 'none'
+  codesign_validation_glob_pattern: '-:regex|\.(ps1|cmd|psm1)$;-|.gdn\\**'
+static_analysis_options:
+  policheck_options:
+    disable_tool_scan: false
+    fail_on_error: true
+  binskim_options:
+    files_to_scan:
+      - from: 'src\Dependencies\'
+        exclude:
+          - '/source/agent/agent/build/resources/main/inst/com/sun/jna/win32-aarch64/jnidispatch.dll'
+restore:
+  commands:
+    - !!defaultcommand
+      name: 'Download Dependencies and Java Toolchain (Java 11)'
+      command: '.scripts/gradle.cmd'
+      arguments: 'test clean'
+test:
+  commands:
+    - !!testcommand
+      name: 'Run tests'
+      command: '.scripts/gradle.cmd'
+      arguments: 'test'
+      fail_on_stderr: false
+      testresults:
+        - title: ':Unit Test Results'
+          type: 'junit'
+          include:
+            - '**/build/test-results/test/**/*'
+      logs:
+        - to: 'Test Logs'
+          include:
+            - '**/build/reports/tests/**/*'

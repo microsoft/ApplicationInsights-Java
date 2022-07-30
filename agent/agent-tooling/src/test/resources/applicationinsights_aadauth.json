@@ -1,0 +1,13 @@
+{
+  "connectionString": "InstrumentationKey=00000000-0000-0000-0000-000000000000",
+  "preview": {
+    "authentication": {
+      "enabled": true,
+      "type": "SAMI",
+      "clientId": "123xyz",
+      "tenantId": "tenant123",
+      "clientSecret": "clientsecret123",
+      "authorityHost": "https://test.com/microsoft/"
+    }
+  }
+}

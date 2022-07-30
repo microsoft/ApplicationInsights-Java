@@ -1,0 +1,7 @@
+{
+  "instrumentation": {
+    "redis": {
+      "enabled": false
+    }
+  }
+}

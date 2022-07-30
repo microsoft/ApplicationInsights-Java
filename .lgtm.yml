@@ -1,6 +1,4 @@
 extraction:
-    java:
-        before_index:
-            - ./otel/gradlew --project-dir ./otel publishToMavenLocal
-        index:
-            java_version: 7
+  java:
+    index:
+      java_version: 11

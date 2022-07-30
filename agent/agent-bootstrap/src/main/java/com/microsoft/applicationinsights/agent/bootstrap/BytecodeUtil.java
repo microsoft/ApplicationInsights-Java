@@ -18,157 +18,341 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.agent.bootstrap;
+
+import static java.util.concurrent.TimeUnit.DAYS;
+import static java.util.concurrent.TimeUnit.HOURS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import io.opentelemetry.instrumentation.api.aisdk.MicrometerUtil;
-import io.opentelemetry.instrumentation.api.aisdk.MicrometerUtil.MicrometerUtilDelegate;
-
-import static java.util.concurrent.TimeUnit.DAYS;
-import static java.util.concurrent.TimeUnit.HOURS;
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import javax.annotation.Nullable;
 
 // supporting all properties of event, metric, remote dependency and page view telemetry
+@SuppressWarnings("TooManyParameters")
 public class BytecodeUtil {
 
-    private static BytecodeUtilDelegate delegate;
+  private static BytecodeUtilDelegate delegate;
 
-    public static void setDelegate(final BytecodeUtilDelegate delegate) {
-        if (BytecodeUtil.delegate == null) {
-            BytecodeUtil.delegate = delegate;
-            MicrometerUtil.setDelegate(new MicrometerUtilDelegate() {
-                @Override
-                public void trackMetric(String name, double value, Integer count, Double min, Double max, Map<String, String> properties) {
-                    delegate.trackMetric(name, value, count, min, max, null, properties, Collections.emptyMap());
-                }
-            });
-        }
-    }
-
-    public static void trackEvent(String name, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics) {
-        if (delegate != null) {
-            delegate.trackEvent(name, properties, tags, metrics);
-        }
-    }
-
-    public static void trackMetric(String name, double value, Integer count, Double min, Double max, Double stdDev,
-                                   Map<String, String> properties, Map<String, String> tags) {
-        if (delegate != null) {
-            delegate.trackMetric(name, value, count, min, max, stdDev, properties, tags);
-        }
-    }
-
-    public static void trackDependency(String name, String id, String resultCode, Long totalMillis, boolean success,
-                                       String commandName, String type, String target, Map<String, String> properties,
-                                       Map<String, String> tags, Map<String, Double> metrics) {
-        if (delegate != null) {
-            delegate.trackDependency(name, id, resultCode, totalMillis, success, commandName, type, target, properties,
-                    tags, metrics);
-        }
-    }
-
-    public static void trackPageView(String name, URI uri, long totalMillis, Map<String, String> properties, Map<String, String> tags,
-                                     Map<String, Double> metrics) {
-        if (delegate != null) {
-            delegate.trackPageView(name, uri, totalMillis, properties, tags, metrics);
-        }
-    }
-
-    public static void trackTrace(String message, int severityLevel, Map<String, String> properties, Map<String, String> tags) {
-        if (delegate != null) {
-            delegate.trackTrace(message, severityLevel, properties, tags);
-        }
-    }
-
-    public static void trackRequest(String id, String name, URL url, Date timestamp, Long duration, String responseCode, boolean success,
-                                    String source, Map<String, String> properties, Map<String, String> tags) {
-        if (delegate != null) {
-            delegate.trackRequest(id, name, url, timestamp, duration, responseCode, success, source, properties, tags);
-        }
-    }
-
-    public static void trackException(Exception exception, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics) {
-        if (delegate != null) {
-            delegate.trackException(exception, properties, tags, metrics);
-        }
-    }
-
-    public static void flush() {
-        if (delegate != null) {
-            delegate.flush();
-        }
-    }
-
-    public static void logErrorOnce(Throwable t) {
-        if (delegate != null) {
-            delegate.logErrorOnce(t);
-        }
-    }
-
-    public static long getTotalMilliseconds(long days, int hours, int minutes, int seconds, int milliseconds) {
-        return DAYS.toMillis(days)
-                + HOURS.toMillis(hours)
-                + MINUTES.toMillis(minutes)
-                + SECONDS.toMillis(seconds)
-                + milliseconds;
-    }
-
-    // basically the same as SDK MapUtil.copy()
-    public static void copy(Map<String, String> source, Map<String, String> target) {
-        if (target == null) {
-            throw new IllegalArgumentException("target must not be null");
-        }
-
-        if (source == null || source.isEmpty()) {
-            return;
-        }
-
-        for (Map.Entry<String, String> entry : source.entrySet()) {
-            String key = entry.getKey();
-            if (key == null || key.isEmpty()) {
-                continue;
+  public static void setDelegate(BytecodeUtilDelegate delegate) {
+    if (BytecodeUtil.delegate == null) {
+      BytecodeUtil.delegate = delegate;
+      MicrometerUtil.setDelegate(
+          new MicrometerUtil.MicrometerUtilDelegate() {
+            @Override
+            public void trackMetric(
+                String name,
+                double value,
+                Integer count,
+                Double min,
+                Double max,
+                Map<String, String> properties) {
+              delegate.trackMetric(
+                  null,
+                  name,
+                  value,
+                  count,
+                  min,
+                  max,
+                  null,
+                  properties,
+                  Collections.emptyMap(),
+                  null);
             }
+          });
+    }
+  }
 
-            if (!target.containsKey(key)) {
-                if (target instanceof ConcurrentHashMap && entry.getValue() == null) {
-                    continue;
-                } else {
-                    target.put(key, entry.getValue());
-                }
-            }
+  public static void trackEvent(
+      Date timestamp,
+      String name,
+      Map<String, String> properties,
+      Map<String, String> tags,
+      Map<String, Double> metrics,
+      String instrumentationKey) {
+    if (delegate != null) {
+      delegate.trackEvent(timestamp, name, properties, tags, metrics, instrumentationKey);
+    }
+  }
+
+  public static void trackMetric(
+      Date timestamp,
+      String name,
+      double value,
+      Integer count,
+      Double min,
+      Double max,
+      Double stdDev,
+      Map<String, String> properties,
+      Map<String, String> tags,
+      String instrumentationKey) {
+    if (delegate != null) {
+      delegate.trackMetric(
+          timestamp, name, value, count, min, max, stdDev, properties, tags, instrumentationKey);
+    }
+  }
+
+  public static void trackDependency(
+      Date timestamp,
+      String name,
+      String id,
+      String resultCode,
+      Long totalMillis,
+      boolean success,
+      String commandName,
+      String type,
+      String target,
+      Map<String, String> properties,
+      Map<String, String> tags,
+      Map<String, Double> metrics,
+      String instrumentationKey) {
+    if (delegate != null) {
+      delegate.trackDependency(
+          timestamp,
+          name,
+          id,
+          resultCode,
+          totalMillis,
+          success,
+          commandName,
+          type,
+          target,
+          properties,
+          tags,
+          metrics,
+          instrumentationKey);
+    }
+  }
+
+  public static void trackPageView(
+      Date timestamp,
+      String name,
+      URI uri,
+      long totalMillis,
+      Map<String, String> properties,
+      Map<String, String> tags,
+      Map<String, Double> metrics,
+      String instrumentationKey) {
+    if (delegate != null) {
+      delegate.trackPageView(
+          timestamp, name, uri, totalMillis, properties, tags, metrics, instrumentationKey);
+    }
+  }
+
+  public static void trackTrace(
+      Date timestamp,
+      String message,
+      int severityLevel,
+      Map<String, String> properties,
+      Map<String, String> tags,
+      String instrumentationKey) {
+    if (delegate != null) {
+      delegate.trackTrace(timestamp, message, severityLevel, properties, tags, instrumentationKey);
+    }
+  }
+
+  public static void trackRequest(
+      String id,
+      String name,
+      URL url,
+      Date timestamp,
+      Long duration,
+      String responseCode,
+      boolean success,
+      String source,
+      Map<String, String> properties,
+      Map<String, String> tags,
+      Map<String, Double> metrics,
+      String instrumentationKey) {
+    if (delegate != null) {
+      delegate.trackRequest(
+          id,
+          name,
+          url,
+          timestamp,
+          duration,
+          responseCode,
+          success,
+          source,
+          properties,
+          tags,
+          metrics,
+          instrumentationKey);
+    }
+  }
+
+  public static void trackException(
+      Date timestamp,
+      Exception exception,
+      Map<String, String> properties,
+      Map<String, String> tags,
+      Map<String, Double> metrics,
+      String instrumentationKey) {
+    if (delegate != null) {
+      delegate.trackException(timestamp, exception, properties, tags, metrics, instrumentationKey);
+    }
+  }
+
+  public static void flush() {
+    if (delegate != null) {
+      delegate.flush();
+    }
+  }
+
+  public static void logErrorOnce(Throwable t) {
+    if (delegate != null) {
+      delegate.logErrorOnce(t);
+    }
+  }
+
+  public static long getTotalMilliseconds(
+      long days, int hours, int minutes, int seconds, int milliseconds) {
+    return DAYS.toMillis(days)
+        + HOURS.toMillis(hours)
+        + MINUTES.toMillis(minutes)
+        + SECONDS.toMillis(seconds)
+        + milliseconds;
+  }
+
+  // originally from SDK MapUtil.copy()
+  public static void copy(
+      @Nullable Map<String, String> source,
+      Map<String, String> target,
+      @Nullable String excludePrefix) {
+    if (source == null) {
+      return;
+    }
+    for (Map.Entry<String, String> entry : source.entrySet()) {
+      String key = entry.getKey();
+      if (key == null || key.isEmpty()) {
+        continue;
+      }
+      if (excludePrefix != null && key.startsWith(excludePrefix)) {
+        continue;
+      }
+      if (!target.containsKey(key)) {
+        String value = entry.getValue();
+        if (value != null) {
+          target.put(key, value);
         }
+      }
     }
+  }
 
-    public interface BytecodeUtilDelegate {
+  // this exists only to support -Dapplicationinsights.debug.signedJarAccess=true
+  private static final ThreadLocal<Long> startNanosHolder = new ThreadLocal<>();
 
-        void trackEvent(String name, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics);
+  public static void onEnter() {
+    startNanosHolder.set(System.nanoTime());
+  }
 
-        void trackMetric(String name, double value, Integer count, Double min, Double max,
-                         Double stdDev, Map<String, String> properties, Map<String, String> tags);
-
-        void trackDependency(String name, String id, String resultCode, Long totalMillis,
-                             boolean success, String commandName, String type, String target,
-                             Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics);
-
-        void trackPageView(String name, URI uri, long totalMillis, Map<String, String> properties, Map<String, String> tags,
-                           Map<String, Double> metrics);
-
-        void trackTrace(String message, int severityLevel, Map<String, String> properties, Map<String, String> tags);
-
-        void trackRequest(String id, String name, URL url, Date timestamp, Long duration, String responseCode, boolean success,
-                          String source, Map<String, String> properties, Map<String, String> tags);
-
-        void trackException(Exception exception, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics);
-
-        void flush();
-
-        void logErrorOnce(Throwable t);
+  @SuppressWarnings("SystemOut")
+  public static void onExit() {
+    Long startNanos = startNanosHolder.get();
+    if (startNanos == null) {
+      System.out.println("Signed jar access (no timing available)");
+      Thread.dumpStack();
+    } else {
+      long durationNanos = System.nanoTime() - startNanos;
+      if (durationNanos > MILLISECONDS.toNanos(1)) {
+        System.out.println(
+            "Signed jar access (" + NANOSECONDS.toMillis(durationNanos) + " milliseconds)");
+        Thread.dumpStack();
+      }
     }
+    startNanosHolder.remove();
+  }
+
+  private BytecodeUtil() {}
+
+  public interface BytecodeUtilDelegate {
+
+    void trackEvent(
+        @Nullable Date timestamp,
+        String name,
+        Map<String, String> properties,
+        Map<String, String> tags,
+        Map<String, Double> metrics,
+        @Nullable String instrumentationKey);
+
+    void trackMetric(
+        @Nullable Date timestamp,
+        String name,
+        double value,
+        Integer count,
+        Double min,
+        Double max,
+        @Nullable Double stdDev,
+        Map<String, String> properties,
+        Map<String, String> tags,
+        @Nullable String instrumentationKey);
+
+    void trackDependency(
+        @Nullable Date timestamp,
+        String name,
+        String id,
+        String resultCode,
+        Long totalMillis,
+        boolean success,
+        String commandName,
+        String type,
+        String target,
+        Map<String, String> properties,
+        Map<String, String> tags,
+        Map<String, Double> metrics,
+        @Nullable String instrumentationKey);
+
+    void trackPageView(
+        @Nullable Date timestamp,
+        String name,
+        URI uri,
+        long totalMillis,
+        Map<String, String> properties,
+        Map<String, String> tags,
+        Map<String, Double> metrics,
+        @Nullable String instrumentationKey);
+
+    void trackTrace(
+        @Nullable Date timestamp,
+        String message,
+        int severityLevel,
+        Map<String, String> properties,
+        Map<String, String> tags,
+        @Nullable String instrumentationKey);
+
+    void trackRequest(
+        String id,
+        String name,
+        URL url,
+        @Nullable Date timestamp,
+        Long duration,
+        String responseCode,
+        boolean success,
+        String source,
+        Map<String, String> properties,
+        Map<String, String> tags,
+        Map<String, Double> metrics,
+        @Nullable String instrumentationKey);
+
+    // TODO also handle cases where ExceptionTelemetry parsedStack is used directly instead of
+    // indirectly through Exception
+    void trackException(
+        @Nullable Date timestamp,
+        Exception exception,
+        Map<String, String> properties,
+        Map<String, String> tags,
+        Map<String, Double> metrics,
+        @Nullable String instrumentationKey);
+
+    void flush();
+
+    void logErrorOnce(Throwable t);
+  }
 }

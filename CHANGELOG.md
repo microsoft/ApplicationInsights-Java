@@ -1,5 +1,277 @@
 # CHANGELOG
 
+# Version 3.3.1 GA
+* Suppress nested client dependencies (regression in 3.3.0) [#2357](https://github.com/microsoft/ApplicationInsights-Java/pull/2357).
+* Add support for custom instrumentation [#2380](https://github.com/microsoft/ApplicationInsights-Java/pull/2380).
+* Additional support for Spring JMS instrumentation [#2385](https://github.com/microsoft/ApplicationInsights-Java/pull/2385).
+* Capture MDC attributes for jboss-logging [#2386](https://github.com/microsoft/ApplicationInsights-Java/pull/2386).
+* Fix missing message data [#2399](https://github.com/microsoft/ApplicationInsights-Java/pull/2399).
+* Fix Azure Function consumption lazy loading introduced in v3.3.0 [#2397](https://github.com/microsoft/ApplicationInsights-Java/pull/2397).
+* Support Java 18 [#2391](https://github.com/microsoft/ApplicationInsights-Java/pull/2391).
+* Update to OpenTelemetry 1.16.0 [#2408](https://github.com/microsoft/ApplicationInsights-Java/pull/2408).
+* Fix CPU metrics [#2413](https://github.com/microsoft/ApplicationInsights-Java/pull/2413).
+
+# Version 3.3.0 GA
+* Update OpenTelemetry to 1.15 [#2332](https://github.com/microsoft/ApplicationInsights-Java/pull/2332).
+* Add configuration for disk persistence capacity [#2329](https://github.com/microsoft/ApplicationInsights-Java/pull/2329).
+* Add support for runtime attach [#2325](https://github.com/microsoft/ApplicationInsights-Java/pull/2325).
+* Continue to add support for OpenTelemetry metrics API.
+
+# Version 3.3.0-BETA.2
+* Update OpenTelemetry to 1.14.
+* Reduce jar file size [#2295](https://github.com/microsoft/ApplicationInsights-Java/pull/2295).
+* Stop capturing exception records on dependencies [#2307](https://github.com/microsoft/ApplicationInsights-Java/pull/2307).
+* Add support for sampling overrides on http request headers [#2308](https://github.com/microsoft/ApplicationInsights-Java/pull/2308).
+* Enable quartz instrumentation by default [#2313](https://github.com/microsoft/ApplicationInsights-Java/pull/2313).
+* Add warning message on internal attribute usage [#2314](https://github.com/microsoft/ApplicationInsights-Java/pull/2314).
+* Lots of refactorings and improvements.
+* Continue to add support for OpenTelemetry metrics API.
+
+# Version 3.3.0-BETA
+* Update OpenTelemetry to 1.13 [#2257](https://github.com/microsoft/ApplicationInsights-Java/pull/2257).
+* Deprecate logs' LoggingLevel custom property [#2254](https://github.com/microsoft/ApplicationInsights-Java/pull/2254).
+* Add support for OpenTelemetry metrics API.
+* Lots of refactorings and improvements.
+
+# Version 3.2.11 GA
+* Turn off Statsbeat when unable to reach ingestion service. [#2221](https://github.com/microsoft/ApplicationInsights-Java/pull/2221).
+
+# Version 3.2.10 GA
+* Fix Statsbeat warning [#2208](https://github.com/microsoft/ApplicationInsights-Java/pull/2208).
+
+# Version 3.2.9 GA
+* Increase export throughput [#2204](https://github.com/microsoft/ApplicationInsights-Java/pull/2204).
+* Fix parsing exception with colons [#2196](https://github.com/microsoft/ApplicationInsights-Java/issues/2196).
+* Remove reverse name lookup everywhere [#2205](https://github.com/microsoft/ApplicationInsights-Java/pull/2205).
+
+# Version 3.2.8 GA
+* Fix spring actuator endpoint behavior [#2146](https://github.com/microsoft/ApplicationInsights-Java/pull/2146).
+* Better JMX debug logging [#2157](https://github.com/microsoft/ApplicationInsights-Java/pull/2157).
+* Add BatchSpanProcessor configuration option [#2165](https://github.com/microsoft/ApplicationInsights-Java/pull/2165).
+
+# Version 3.2.7 GA
+* Improve startup performance by optimizing weak cache [#2136](https://github.com/microsoft/ApplicationInsights-Java/pull/2136).
+* Fix reverse DNS name lookup [#5393](https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/5393).
+* Oshi optimization for better performance [#2126](https://github.com/microsoft/ApplicationInsights-Java/pull/2126).
+* Fix a NullPointerException in startup profiler [#2124](https://github.com/microsoft/ApplicationInsights-Java/pull/2124).
+* Drop metrics with NaN values [#2119](https://github.com/microsoft/ApplicationInsights-Java/pull/2119).
+
+# Version 3.2.6 GA
+* Support Statsbeat in EU regions [#2082](https://github.com/microsoft/ApplicationInsights-Java/pull/2082).
+* Update Oshi default logging level [#2086](https://github.com/microsoft/ApplicationInsights-Java/pull/2086).
+* Add debug profiler for startup perf [#2085](https://github.com/microsoft/ApplicationInsights-Java/pull/2085).
+* Avoid local DNS resolution when using http proxy configuration [#2095](https://github.com/microsoft/ApplicationInsights-Java/pull/2095).
+
+# Version 3.2.5 GA
+
+* Log warning on 206 (partial success) response from Breeze [#2065](https://github.com/microsoft/ApplicationInsights-Java/pull/2065).
+* Fix ingestion error on missing exception message [#2064](https://github.com/microsoft/ApplicationInsights-Java/pull/2064).
+* Add separate queue for metrics to avoid dropping telemetry [#2062](https://github.com/microsoft/ApplicationInsights-Java/pull/2062).
+* Make vertx preview instrumentation opt-in [#2058](https://github.com/microsoft/ApplicationInsights-Java/pull/2058).
+* Add Friendly exception handling for cipher suite issue [#2053](https://github.com/microsoft/ApplicationInsights-Java/pull/2053).
+* Fix URI parse error [#2067](https://github.com/microsoft/ApplicationInsights-Java/pull/2067).
+
+
+# Version 3.2.5-BETA
+* Add vertx instrumentation [#1990](https://github.com/microsoft/ApplicationInsights-Java/pull/1990).
+* Clean up Oshi logging [#2047](https://github.com/microsoft/ApplicationInsights-Java/pull/2047).
+* Support proxy username and password [#2044](https://github.com/microsoft/ApplicationInsights-Java/pull/2044).
+* Add configuration for export queue capacity [#2039](https://github.com/microsoft/ApplicationInsights-Java/pull/2039).
+* Add configuration for capturing HTTP server 4xx as error [#2037](https://github.com/microsoft/ApplicationInsights-Java/pull/2037).
+* Add configuration for capturing HTTP headers [#2036](https://github.com/microsoft/ApplicationInsights-Java/pull/2036).
+* Update OpenTelemetry to the latest [#2030](https://github.com/microsoft/ApplicationInsights-Java/pull/2030).
+* Fix device instrumentation [#2027](https://github.com/microsoft/ApplicationInsights-Java/pull/2027).
+* Add telemetry processors masking feature [#1977](https://github.com/microsoft/ApplicationInsights-Java/pull/1977).
+
+# Version 3.2.4 GA
+* Add play framework preview instrumentation [#1958](https://github.com/microsoft/ApplicationInsights-Java/pull/1958).
+* Add span kind to sampling overrides [#1960](https://github.com/microsoft/ApplicationInsights-Java/pull/1960).
+* Fix status exception in a readonly file system [#1967](https://github.com/microsoft/ApplicationInsights-Java/pull/1967).
+* Reduce noisy truncation logging [#1968](https://github.com/microsoft/ApplicationInsights-Java/pull/1968).
+* Fix jackson initialization [#1984](https://github.com/microsoft/ApplicationInsights-Java/pull/1984).
+* Add url, name and fix operation name to request document in live metrics sample telemetry [#1993](https://github.com/microsoft/ApplicationInsights-Java/pull/1993).
+* Fix duration in live metrics sample telemetry feature [#1996](https://github.com/microsoft/ApplicationInsights-Java/pull/1996).
+
+# Version 3.2.3 GA
+* Fix instrumentation key is null when sending persisted files from disk [#1948](https://github.com/microsoft/ApplicationInsights-Java/issues/1948).
+* Fix consumer span exporter mapping [#1952](https://github.com/microsoft/ApplicationInsights-Java/pull/1952).
+* Handle weird folder name like 'test%20-test' [#1946](https://github.com/microsoft/ApplicationInsights-Java/pull/1946).
+* Support read-only file system [#1945](https://github.com/microsoft/ApplicationInsights-Java/pull/1945).
+* Reduce netty pool size [#1944](https://github.com/microsoft/ApplicationInsights-Java/pull/1944).
+* Do not apply sampling to metrics [#1902](https://github.com/microsoft/ApplicationInsights-Java/issues/1902).
+* Support for multiple instrumentation key [#1938](https://github.com/microsoft/ApplicationInsights-Java/pull/1938).
+
+# Version 3.2.2 GA
+* Bridge session id from 2.x SDK [#1930](https://github.com/microsoft/ApplicationInsights-Java/pull/1930)
+* Fix NullPointerException when sending raw bytes from persisted files on disk [#1931](https://github.com/microsoft/ApplicationInsights-Java/pull/1931).
+* Add non-essential Statsbeat [#1925](https://github.com/microsoft/ApplicationInsights-Java/pull/1925)
+* Update OpenTelemetry to 1.7 [#1920](https://github.com/microsoft/ApplicationInsights-Java/pull/1920)
+
+# Version 3.2.1 GA
+* Add Akka preview instrumentation [#1911](https://github.com/microsoft/ApplicationInsights-Java/pull/1911).
+* Add internal-reflection instrumentation [#1912](https://github.com/microsoft/ApplicationInsights-Java/pull/1912).
+* Reduce spammy logging [#1915](https://github.com/microsoft/ApplicationInsights-Java/pull/1915).
+
+# Version 3.2.0 GA
+* Add Quartz and Apache Camel instrumentations to preview [#1899](https://github.com/microsoft/ApplicationInsights-Java/pull/1899).
+
+# Version 3.2.0-BETA.4
+* Database dependency names are now more concise, e.g. `SELECT mydatabase.mytable` instead of `SELECT x, y, z, ... from ... where ...........` (the full sanitized query is still captured in the dependency data field)
+* Database dependency target field slightly updated to enable better U/X integration
+* HTTP dependency names are now more descriptive, e.g. `GET /the/path` instead of `HTTP GET`
+* Update default configuration:
+    - 'azuresdk' configuration moved out of preview configuration and is now enabled by default.
+    - 'openTelemetryApiSupport' moved out of preview configuration and is now enabled by default.
+    - 'httpMethodInOperationName' moved out of preview configuration and is now enabled by default.
+* Fix quick pulse memory leak.
+
+
+# Version 3.2.0-BETA.3
+* Log all available jmx metrics at debug level.
+* Misc logging improvements [#1828](https://github.com/microsoft/ApplicationInsights-Java/pull/1828).
+* Add grizzly instrumentation as preview.
+* Fix live metrics sampled counts.
+* Fix stack traces not being captured for deadlocks [#1263](https://github.com/microsoft/ApplicationInsights-Java/issues/1263).
+* Support Sample Telemetry feature for live metrics [#1852](https://github.com/microsoft/ApplicationInsights-Java/pull/1852).
+* Add inherited attributes preview [#1743](https://github.com/microsoft/ApplicationInsights-Java/issues/1743).
+* Fix Application Map to App service/function view support [#1868](https://github.com/microsoft/ApplicationInsights-Java/pull/1868).
+* Fix service bus mapping [#1848](https://github.com/microsoft/ApplicationInsights-Java/pull/1848).
+
+# Version 3.2.0-BETA.2
+* Lots of internal clean up.
+* Reduce binary size from 3.2.0-BETA
+* Add Spring Integration instrumentation (preview).
+* Add thread name to log capture [#1699](https://github.com/microsoft/ApplicationInsights-Java/issues/1699).
+* Support W3C baggage propagation.
+* Disable legacy Request-Id propagation by default.
+* Handle partial content success due to Stamp specific redirects [#1674](https://github.com/microsoft/ApplicationInsights-Java/issues/1674).
+* Log controlled warning when telemetry truncated [#1021](https://github.com/microsoft/ApplicationInsights-Java/issues/1021).
+* Support system properties for connection string, role name and role instance [#1684](https://github.com/microsoft/ApplicationInsights-Java/issues/1684).
+* Small fixes to 2.x interop.
+* Updated to support OpenTelemetry API 1.4.1 (preview)
+* Moves 3 instrumentations out of preview, and enables them by default
+    - Java 11 HTTP client
+    - JAX-WS
+    - RabbitMQ
+* Pulls in new instrumentations (enabled by default)
+    - AsyncHttpClient
+    - Google HTTP client
+    - JAX-RS client
+    - Jetty client
+    - Spring RabbitMQ
+    - Servlet 5.0 [#1800](https://github.com/microsoft/ApplicationInsights-Java/issues/1800)
+
+# Version 3.2.0-BETA
+* Support Azure Active Directory Authentication.
+* Support Stamp Specific redirects.
+* Use v2.1/track endpoint to send telemetry instead of v2/track.
+
+# Version 3.1.1
+* Fix 2.x interop of timestamps [#1726](https://github.com/microsoft/ApplicationInsights-Java/pull/1726).
+* Add metric filtering to telemetry processor [#1728](https://github.com/microsoft/ApplicationInsights-Java/pull/1728).
+* Add log processor to telemetry processor [#1713](https://github.com/microsoft/ApplicationInsights-Java/pull/1713).
+* Fix app id retrieval 404 for Linux Consumption Plan [#1730](https://github.com/microsoft/ApplicationInsights-Java/pull/1730).
+* Fix invalid instrumentation keys for Linux Consumption Plan [#1737](https://github.com/microsoft/ApplicationInsights-Java/pull/1737).
+
+# Version 3.1.1-BETA.4
+* Reduce agent jar file size back to normal [#1716](https://github.com/microsoft/ApplicationInsights-Java/pull/1716).
+
+# Version 3.1.1-BETA.3
+* Fix memory leak caused by not removing Netty listeners [upstream #2705](https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/2705)
+* Improve Azure Service Bus support [#1710](https://github.com/microsoft/ApplicationInsights-Java/pull/1710).
+* Updated to support OpenTelemetry API 1.2.0
+
+# Version 3.1.1-BETA.2
+* Support explicit operation id and parent id from 2.x SDK [#1708](https://github.com/microsoft/ApplicationInsights-Java/pull/1708).
+* Fix exceptions with deep stack trace exceeding 64 KB rejected by Application Insights backend [#1702](https://github.com/microsoft/ApplicationInsights-Java/pull/1702).
+* Use shorter telemetry names for all telemetry types to reduce payload [#1700](https://github.com/microsoft/ApplicationInsights-Java/pull/1700).
+* Improve Azure SDK support [#1698](https://github.com/microsoft/ApplicationInsights-Java/pull/1698).
+
+# Version 3.1.1-BETA
+* Fix NullPointerExceptions for App Services [#1681](https://github.com/microsoft/ApplicationInsights-Java/pull/1681#issuecomment-840169103).
+* Add Application Insights stats.
+
+# Version 3.1.0
+* Capture http method in the operation name [#1679](https://github.com/microsoft/ApplicationInsights-Java/pull/1679)
+
+# Version 3.0.4-BETA.2
+* Enable users to override iKey, cloud role name and cloud role instance per telemetry [#1630](https://github.com/microsoft/ApplicationInsights-Java/pull/1630).
+* Fix duplicate headers [#1640](https://github.com/microsoft/ApplicationInsights-Java/pull/1640).
+* Add preview instrumentations for javaHttpClient, rabbitmq, and jaxws [#1650](https://github.com/microsoft/ApplicationInsights-Java/pull/1650).
+* Add a new env var called APPLICATIONINSIGHTS_RP_CONFIGURATION_FILE.
+* Add cloud role name and instance to applicationinsights-rp.json configuration.
+* Improve agent start up time.
+
+# Version 3.0.4-BETA
+* Enable Azure Functions to update the instrumentation logging level at runtime.
+* Enable Azure Functions to update the self-diagnostics logging level at runtime.
+* Fix grails failure [#1653](https://github.com/microsoft/ApplicationInsights-Java/issues/1653).
+* Remove class loader optimization opt out system property for Azure Functions [#1627](https://github.com/microsoft/ApplicationInsights-Java/issues/1627).
+
+# Version 3.0.3 GA
+* Suppress redis.encode.start/end custom events
+  [#1586](https://github.com/microsoft/ApplicationInsights-Java/issues/1586)
+* Add Azure SDK instrumentation preview
+  [#1585](https://github.com/microsoft/ApplicationInsights-Java/issues/1585)
+* Fix WebFlux HTTP client hanging on nested calls
+  [#1563](https://github.com/microsoft/ApplicationInsights-Java/issues/1563)
+* Fix instrumentation of reactor netty `HttpClient.from()`
+  [#1578](https://github.com/microsoft/ApplicationInsights-Java/issues/1578)
+
+
+# Version 3.0.3-BETA.3
+* Change default preview config setting
+  [#1580](https://github.com/microsoft/ApplicationInsights-Java/issues/1580)
+* Fix sampling rate recorded for dependencies
+  [#1582](https://github.com/microsoft/ApplicationInsights-Java/issues/1582)
+
+# Version 3.0.3-BETA.2
+* Added env var `APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT` to enable preview OpenTelemetry API support
+  [#1548](https://github.com/microsoft/ApplicationInsights-Java/issues/1548)
+* Added env var `APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH` (and use that to log json config parsing errors)
+  [#1550](https://github.com/microsoft/ApplicationInsights-Java/issues/1550)
+* RP integration improvements
+  [#1551](https://github.com/microsoft/ApplicationInsights-Java/issues/1551),
+  [#1558](https://github.com/microsoft/ApplicationInsights-Java/issues/1558),
+  [#1559](https://github.com/microsoft/ApplicationInsights-Java/issues/1559)
+* Add env var `APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED` to disable live metrics
+  [#1552](https://github.com/microsoft/ApplicationInsights-Java/issues/1552)
+* Remove unwanted custom dimension that showed up in 3.0.3-BETA
+  [#1565](https://github.com/microsoft/ApplicationInsights-Java/issues/1565)
+* Add sampling overrides that can be used to implement telemetry filtering
+  [#1564](https://github.com/microsoft/ApplicationInsights-Java/issues/1564)
+* Switch native performance counter collection to use [OSHI](https://github.com/oshi/oshi)
+  [#1482](https://github.com/microsoft/ApplicationInsights-Java/issues/1482)
+
+# Version 3.0.3-BETA
+* Extra attributes in `applicationinsights.json` (e.g. typos) are logged as warnings at startup
+  [#1459](https://github.com/microsoft/ApplicationInsights-Java/issues/1459)
+* Better 2.x SDK interop
+  [#1454](https://github.com/microsoft/ApplicationInsights-Java/issues/1454)
+* Fix for ClassNotFoundException when deploying some JBoss ear files
+  [#1465](https://github.com/microsoft/ApplicationInsights-Java/issues/1465)
+* Fix configuration for disabling spring boot actuator metrics
+  [#1478](https://github.com/microsoft/ApplicationInsights-Java/issues/1478)
+* Add env vars for disabling instrumentation
+  [#1495](https://github.com/microsoft/ApplicationInsights-Java/issues/1495)
+* Removed the undocumented micrometer reportingIntervalSeconds,
+  and instead, added preview configuration `metricIntervalSeconds` that controls all metrics:
+  [#1507](https://github.com/microsoft/ApplicationInsights-Java/pull/1507)
+* Changed undocumented reload of connection string and sampling percentage to be preview and opt-in
+  [#1507](https://github.com/microsoft/ApplicationInsights-Java/pull/1507)
+* Additional reactor-netty and kotlin coroutine instrumentation
+  [#1511](https://github.com/microsoft/ApplicationInsights-Java/pull/1511)
+* Improved error messages for network connectivity issues
+  [#1483](https://github.com/microsoft/ApplicationInsights-Java/pull/1483)
+* Support for roles in Live metrics
+  [#1510](https://github.com/microsoft/ApplicationInsights-Java/pull/1510)
+* Fixed role name on Azure Functions
+  [#1526](https://github.com/microsoft/ApplicationInsights-Java/pull/1526)
+* Populate client IP
+  [#1538](https://github.com/microsoft/ApplicationInsights-Java/pull/1538)
+* Support for role name in Azure Functions consumption plan
+  [#1537](https://github.com/microsoft/ApplicationInsights-Java/pull/1537)
+
 # Version 3.0.2 GA
 * Fix App Services logback parser exceptions.
 * Log instead of throwing exception on unbridged API [#1442](https://github.com/microsoft/ApplicationInsights-Java/issues/1442)
@@ -27,16 +299,16 @@
 * Map service.version to application_Version(Resolves [#1392](https://github.com/microsoft/ApplicationInsights-Java/issues/1392))
 * This release also brings more interoperability with the 2.x SDK:
     - ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getProperties().put("key1", "val1")
-	- ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setName("new name")
-	- ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getUser().setId("uname")
+    - ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setName("new name")
+    - ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getUser().setId("uname")
 
 * Add thread details span processor
 * Add agent version number to startup message
 
 # Version 3.0.0 GA
 * Config changes
-	- Change json config file name from ApplicationInsights.json to applicationinsights.json
-	- Redesign json config structure ([Java Standalone Config](https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config))
+    - Change json config file name from ApplicationInsights.json to applicationinsights.json
+    - Redesign json config structure ([Java Standalone Config](https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config))
 * Send JMX metrics to CustomMetrics instead of PerformanceCounter ([Default Mettrics Captured by Java 3.0 Agent](https://github.com/microsoft/ApplicationInsights-Java/wiki/Default-Metrics-Captured-by-Java-3.0-Agent))
 * Telemetry processor for requests, dependencies, and traces
 * Attach custom dimensions to all telemetries
@@ -79,7 +351,7 @@
   ([#1254](https://github.com/microsoft/ApplicationInsights-Java/pull/1254))
 * Fix backoff condition so that retries will continue indefinitely
   ([#1253](https://github.com/microsoft/ApplicationInsights-Java/pull/1253))
-  
+
 # Version 3.0.0 Preview.5
 * Fix memory leak
 * Fix shutdown issue due to non-daemon thread
@@ -158,12 +430,12 @@ The classes and configuration elements which supported this solution have been r
 # Version 2.5.0-BETA.3
 - Fixed `HttpURLConnection` instrumentation was not capturing outgoing url
   ([#1025](https://github.com/microsoft/ApplicationInsights-Java/issues/1025))
-- Added agent logging capture threshold, configurable via `<Logging threshold="warn" />` 
+- Added agent logging capture threshold, configurable via `<Logging threshold="warn" />`
   in the `AI-Agent.xml`, with default threshold `warn`
   ([#1026](https://github.com/microsoft/ApplicationInsights-Java/issues/1026))
 - Fixed request telemetry displaying `200` response code for some failed requests
   ([#810](https://github.com/microsoft/ApplicationInsights-Java/issues/810))
-- Fixed GC performance counters not working 
+- Fixed GC performance counters not working
   ([#929](https://github.com/microsoft/ApplicationInsights-Java/issues/929))
 
 # Version 2.5.0-BETA.2

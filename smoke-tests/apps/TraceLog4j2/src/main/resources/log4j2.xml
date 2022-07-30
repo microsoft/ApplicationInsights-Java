@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Configuration packages="com.microsoft.applicationinsights.log4j.v2">
+  <Appenders>
+    <ApplicationInsightsAppender name="aiAppender"
+      instrumentationKey="00000000-0000-0000-0000-0FEEDDADBEEF">
+    </ApplicationInsightsAppender>
+  </Appenders>
+  <Loggers>
+    <Logger name="smoketestapp" level="trace"/>
+    <Root>
+      <AppenderRef ref="aiAppender"/>
+    </Root>
+  </Loggers>
+</Configuration>

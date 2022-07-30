@@ -1,0 +1,23 @@
+version:
+  major: 0
+  minor: 0
+  name: 'ApplicationInsights-Java'
+  system: 'custom'
+build:
+  commands:
+    - !!buildcommand
+      name: 'Upload Build Scripts'
+      command: '.scripts/copy-source.cmd' # this file is empty
+      artifacts:
+        - from: '.scripts/'
+          to: 'Scripts'
+          include:
+            - '**/*'
+    - !!buildcommand
+      name: 'Assemble'
+      command: '.scripts/gradle.cmd'
+      arguments: ':agent:agent:assemble --offline'
+      artifacts:
+        - to: 'Artifacts'
+          include:
+            - 'agent/agent/build/libs/*.jar'

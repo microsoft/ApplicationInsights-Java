@@ -1,0 +1,7 @@
+{
+  "customDimensions": {
+    "test": "value",
+    "home": "${HOME}",
+    "service.version": "123"
+  }
+}

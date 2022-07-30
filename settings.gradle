@@ -1,88 +1,123 @@
-/*
- * ApplicationInsights-Java
- * Copyright (c) Microsoft Corporation
- * All rights reserved.
- *
- * MIT License
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this
- * software and associated documentation files (the ""Software""), to deal in the Software
- * without restriction, including without limitation the rights to use, copy, modify, merge,
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
- * persons to whom the Software is furnished to do so, subject to the following conditions:
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
- * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- */
+import org.apache.tools.ant.taskdefs.condition.Os
 
-include 'instrumentation:azure-functions'
+pluginManagement {
+  plugins {
+    // TODO (trask) use this instead of current manual ai.sdk-version.properties rolling
+    id("com.github.ben-manes.versions") version "0.39.0"
+    // TODO (trask) use this to generate license report
+    id("com.github.jk1.dependency-license-report") version "1.16"
+    id("me.champeau.jmh") version "0.6.5"
+    id("org.jetbrains.kotlin.jvm") version "1.5.10"
+  }
+}
 
-include 'etw:native'
-include 'etw:java'
-include 'etw:etw-testapp'
+plugins {
+  id("com.gradle.enterprise") version "3.10.3"
+}
 
-include 'core'
+dependencyResolutionManagement {
+  repositories {
+    mavenCentral()
+    mavenLocal()
+  }
+}
+
+def isCI = System.getenv("CI") != null
+gradleEnterprise {
+  buildScan {
+    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree = 'yes'
+
+    if (isCI) {
+      publishAlways()
+      tag 'CI'
+    }
+  }
+}
+
+rootProject.name = 'applicationinsights-java'
+
+def buildNative = System.getenv("CI") != null && Os.isFamily(Os.FAMILY_WINDOWS)
+if (buildNative) {
+  include ':etw:native'
+} else {
+  logger.info "Skipping build of :etw:native. EtwAppender/EtwProvider will not work because library is missing"
+}
+include ':etw:java'
+// TODO (trask) ETW: is this really needed? if so, need to restore devtest configuration
+//include ':etw:etw-testapp'
+
+include ':agent:agent-gc-monitor:gc-monitor-api'
+include ':agent:agent-gc-monitor:gc-monitor-core'
+include ':agent:agent-gc-monitor:gc-monitor-tests'
+
+include ':agent:agent-profiler:agent-profiler-api'
+include ':agent:agent-profiler:agent-alerting-api'
+include ':agent:agent-profiler:agent-diagnostics-api'
+include ':agent:agent-profiler:agent-alerting'
+include ':agent:agent-profiler:agent-service-profiler'
 
 include ':agent:agent-bootstrap'
-include ':agent:exporter'
 include ':agent:agent-tooling'
-include ':agent:instrumentation'
+include ':agent:azure-monitor-exporter'
+include ':agent:agent-for-testing'
+include ':agent:instrumentation:applicationinsights-web-2.3'
+include ':agent:instrumentation:azure-functions'
+include ':agent:instrumentation:micrometer-1.0'
+include ':agent:instrumentation:netty-4.0'
+include ':agent:instrumentation:netty-4.1'
+include ':agent:instrumentation:servlet'
 include ':agent:agent'
+include ':agent:runtime-attach'
 
-// Projects for smokeTests
-include ':test:smoke'
-include ':test:smoke:appServers'
-include ':test:smoke:appServers:Tomcat.8.5'
-include ':test:smoke:appServers:Wildfly.11'
-include ':test:smoke:appServers:Jetty.9'
-include ':test:smoke:appServers:JavaSE'
-include ':test:smoke:testApps'
+// misc
+include(":dependencyManagement")
 
-include ':test:smoke:framework:testCore'
-include ':test:smoke:framework:utils'
-include ':test:smoke:framework:testCases'
-include ':test:fakeIngestion:servlet'
-include ':test:fakeIngestion:standalone'
+include ':smoke-tests:framework'
 
-include ':test:smoke:testApps:CachingCalculator'
-include ':test:smoke:testApps:Cassandra'
-include ':test:smoke:testApps:CoreAndFilter'
-include ':test:smoke:testApps:CustomDimensions'
-include ':test:smoke:testApps:AutoPerfCounters'
-include ':test:smoke:testApps:LegacySdkWebInterop'
-include ':test:smoke:testApps:TraceLog4j1_2'
-include ':test:smoke:testApps:TraceLog4j1_2UsingAgent'
-include ':test:smoke:testApps:TraceLogBack'
-include ':test:smoke:testApps:TraceLogBackUsingAgent'
-include ':test:smoke:testApps:TraceLog4j2'
-include ':test:smoke:testApps:TraceLog4j2UsingAgent'
-include ':test:smoke:testApps:TraceJavaUtilLoggingUsingAgent'
-include ':test:smoke:testApps:HeartBeat'
-include ':test:smoke:testApps:SpringBootTest'
-include ':test:smoke:testApps:Sampling'
-include ':test:smoke:testApps:gRPC'
-include ':test:smoke:testApps:Jdbc'
-include ':test:smoke:testApps:Lettuce'
-include ':test:smoke:testApps:MongoDB'
-include ':test:smoke:testApps:HttpClients'
-//include ':test:smoke:testApps:CustomInstrumentation'
-include ':test:smoke:testApps:WebAuto'
-include ':test:smoke:testApps:SpringBoot1_3Auto'
-include ':test:smoke:testApps:SpringBootAuto'
-include ':test:smoke:testApps:SpringScheduling'
-include ':test:smoke:testApps:WebFlux'
-include ':test:smoke:testApps:JMS'
-include ':test:smoke:testApps:Kafka'
-include ':test:smoke:testApps:SpringCloudStream'
-include ':test:smoke:testApps:Micrometer'
-include ':test:smoke:testApps:ActuatorMetrics'
-include ':test:smoke:testApps:SystemExit'
-include ':test:smoke:testApps:VerifyShading'
-include ':test:smoke:testApps:JettyNativeHandler'
-include ':test:smoke:testApps:DataScrubbing'
-include ':test:smoke:testApps:OpenTelemetryApiSupport'
-
+include ':smoke-tests:apps:ActuatorMetrics'
+include ':smoke-tests:apps:AutoPerfCounters'
+include ':smoke-tests:apps:AzureSdk'
+include ':smoke-tests:apps:Cassandra'
+include ':smoke-tests:apps:CoreAndFilter'
+include ':smoke-tests:apps:CustomDimensions'
+include ':smoke-tests:apps:CustomInstrumentation'
+include ':smoke-tests:apps:gRPC'
+include ':smoke-tests:apps:HeartBeat'
+include ':smoke-tests:apps:HttpClients'
+include ':smoke-tests:apps:HttpHeaders'
+include ':smoke-tests:apps:HttpServer4xx'
+include ':smoke-tests:apps:InheritedAttributes'
+include ':smoke-tests:apps:Jdbc'
+include ':smoke-tests:apps:Jedis'
+include ':smoke-tests:apps:JettyNativeHandler'
+include ':smoke-tests:apps:JMS'
+include ':smoke-tests:apps:Kafka'
+include ':smoke-tests:apps:LegacySdkWebInterop'
+include ':smoke-tests:apps:Lettuce'
+include ':smoke-tests:apps:Micrometer'
+include ':smoke-tests:apps:MongoDB'
+include ':smoke-tests:apps:NonDaemonThreads'
+include ':smoke-tests:apps:OpenTelemetryApiSupport'
+include ':smoke-tests:apps:OpenTelemetryMetric'
+include ':smoke-tests:apps:Sampling'
+include ':smoke-tests:apps:SpringBoot1_3Auto'
+include ':smoke-tests:apps:SpringBootAttachInMain'
+include ':smoke-tests:apps:SpringBootAuto'
+include ':smoke-tests:apps:SpringBootTest'
+include ':smoke-tests:apps:SpringCloudStream'
+include ':smoke-tests:apps:SpringScheduling'
+include ':smoke-tests:apps:Statsbeat'
+include ':smoke-tests:apps:SystemExit'
+include ':smoke-tests:apps:TelemetryFiltering'
+include ':smoke-tests:apps:TelemetryProcessors'
+include ':smoke-tests:apps:TraceJavaUtilLoggingUsingAgent'
+include ':smoke-tests:apps:TraceLog4j1_2'
+include ':smoke-tests:apps:TraceLog4j1_2UsingAgent'
+include ':smoke-tests:apps:TraceLog4j2'
+include ':smoke-tests:apps:TraceLog4j2UsingAgent'
+include ':smoke-tests:apps:TraceLogBack'
+include ':smoke-tests:apps:TraceLogBackUsingAgent'
+include ':smoke-tests:apps:VerifyShading'
+include ':smoke-tests:apps:WebAuto'
+include ':smoke-tests:apps:WebFlux'

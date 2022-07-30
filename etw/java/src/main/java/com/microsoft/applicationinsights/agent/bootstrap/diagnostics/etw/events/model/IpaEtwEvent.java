@@ -18,8 +18,9 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model;
 
 public interface IpaEtwEvent {
-    IpaEtwEventId id();
+  IpaEtwEventId id();
 }

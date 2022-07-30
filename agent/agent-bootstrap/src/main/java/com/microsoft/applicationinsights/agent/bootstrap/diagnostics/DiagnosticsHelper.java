@@ -1,93 +1,100 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class DiagnosticsHelper {
-    private DiagnosticsHelper() { }
+  private DiagnosticsHelper() {}
 
-    /**
-     * Values: true|false
-     * Default: true
-     */
-    public static final String IPA_LOG_FILE_ENABLED_ENV_VAR = "APPLICATIONINSIGHTS_EXTENSION_LOG_FILE_ENABLED";
+  // Default is "" (meaning diagnostics file output is disabled)
+  public static final String APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY =
+      "APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY";
 
-    /**
-     * Default: "" (meaning diagnostics file output is disabled)
-     */
-    public static final String INTERNAL_LOG_OUTPUT_DIR_ENV_VAR = "APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY";
+  // visible for testing
+  static volatile boolean useAppSvcRpIntegrationLogging;
+  private static volatile boolean useFunctionsRpIntegrationLogging;
 
-    /**
-     * Windows only. Cannot be enabled on non-windows OS.
-     * Values: true|false
-     * Default: true
-     */
-	public static final String IPA_ETW_PROVIDER_ENABLED_ENV_VAR = "APPLICATIONINSIGHTS_EXTENSION_ETW_PROVIDER_ENABLED";
+  private static volatile char rpIntegrationChar;
 
-    // visible for testing
-    static volatile boolean appServiceCodeless;
+  private static final boolean isWindows;
 
-    private static volatile boolean aksCodeless;
+  public static final String DIAGNOSTICS_LOGGER_NAME = "applicationinsights.extension.diagnostics";
 
-    private static volatile boolean functionsCodeless;
+  private static final ApplicationMetadataFactory METADATA_FACTORY =
+      new ApplicationMetadataFactory();
 
-    private static final boolean isWindows;
+  public static final String MDC_PROP_OPERATION = "microsoft.ai.operationName";
 
-    public static final String DIAGNOSTICS_LOGGER_NAME = "applicationinsights.extension.diagnostics";
+  static {
+    String osName = System.getProperty("os.name");
+    isWindows = osName != null && osName.startsWith("Windows");
+  }
 
-    private static final ApplicationMetadataFactory METADATA_FACTORY = new ApplicationMetadataFactory();
-
-    public static final String MDC_PROP_OPERATION = "microsoft.ai.operationName";
-
-    static {
-        final String osName = System.getProperty("os.name");
-        isWindows = osName != null && osName.startsWith("Windows");
+  public static void setAgentJarFile(Path agentPath) {
+    if (Files.exists(agentPath.resolveSibling("appsvc.codeless"))) {
+      // TODO we can remove this check after the new functions model is deployed.
+      if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+        rpIntegrationChar = 'f';
+      } else {
+        rpIntegrationChar = 'a';
+      }
+      useAppSvcRpIntegrationLogging = true;
+    } else if (Files.exists(agentPath.resolveSibling("aks.codeless"))) {
+      rpIntegrationChar = 'k';
+    } else if (Files.exists(agentPath.resolveSibling("functions.codeless"))) {
+      rpIntegrationChar = 'f';
+      useFunctionsRpIntegrationLogging = true;
+    } else if (Files.exists(agentPath.resolveSibling("springcloud.codeless"))) {
+      rpIntegrationChar = 's';
     }
+  }
 
-    public static void setAgentJarFile(Path agentPath) {
-        if (Files.exists(agentPath.resolveSibling("appsvc.codeless"))) {
-            appServiceCodeless = true;
-        } else if (Files.exists(agentPath.resolveSibling("aks.codeless"))) {
-            aksCodeless = true;
-        } else if (Files.exists(agentPath.resolveSibling("functions.codeless"))) {
-            functionsCodeless = true;
-        }
-    }
+  /** Is resource provider (Azure Spring Cloud, AppService, Azure Functions, AKS, VM...). */
+  public static boolean isRpIntegration() {
+    return rpIntegrationChar != 0;
+  }
 
-    public static boolean isAppServiceCodeless() {
-        return appServiceCodeless;
-    }
+  // returns 0 if not rp integration
+  public static char rpIntegrationChar() {
+    return rpIntegrationChar;
+  }
 
-    public static boolean isAksCodeless() {
-        return aksCodeless;
-    }
+  // this also applies to Azure Functions running on App Services
+  public static boolean useAppSvcRpIntegrationLogging() {
+    return useAppSvcRpIntegrationLogging;
+  }
 
-    public static boolean isFunctionsCodeless() {
-        return functionsCodeless;
-    }
+  // this also applies to Azure Functions running on App Services
+  public static boolean useFunctionsRpIntegrationLogging() {
+    return useFunctionsRpIntegrationLogging;
+  }
 
-    public static boolean isAnyCodelessAttach() {
-        return appServiceCodeless || aksCodeless || functionsCodeless;
-    }
+  public static ApplicationMetadataFactory getMetadataFactory() {
+    return METADATA_FACTORY;
+  }
 
-    public static ApplicationMetadataFactory getMetadataFactory() {
-        return METADATA_FACTORY;
-    }
-
-	public static String getCodelessResourceType() {
-        if (appServiceCodeless) {
-            return "appsvc";
-        } else if (aksCodeless) {
-            return "aks";
-        } else if (functionsCodeless) {
-            return "functions";
-        }
-        return null;
-	}
-
-	public static boolean isOsWindows() {
-        return isWindows;
-    }
-
+  public static boolean isOsWindows() {
+    return isWindows;
+  }
 }

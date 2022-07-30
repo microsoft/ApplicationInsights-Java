@@ -1,6 +1,7 @@
 {
   "connectionString": "InstrumentationKey=00000000-0000-0000-0000-000000000000",
-  "role": {..
+  "role": {
+    ..
     "name": "Something Good",
     "instance": "xyz123"
   },

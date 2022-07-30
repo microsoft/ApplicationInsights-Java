@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ApplicationInsights xmlns="http://schemas.microsoft.com/ApplicationInsights/2013/Settings"
+  schemaVersion="2014-05-30">
+
+
+  <!-- The key from the portal: -->
+
+  <!-- cannot use ConnectionString here since testing CoreAndFilter against very old SDK
+       prior to 2.5.1 when when ConnectionString support was introduced -->
+  <InstrumentationKey>BAD1BAD1-BAD1-BAD1-BAD1-BAD1BAD1BAD1</InstrumentationKey>
+
+  <SDKLogger type="CONSOLE">
+    <enabled>true</enabled>
+    <UniquePrefix>JavaSDKLog</UniquePrefix>
+  </SDKLogger>
+
+  <QuickPulse enabled="false"/>
+
+  <!-- HTTP request component (not required for bare API) -->
+
+  <TelemetryModules>
+    <Add
+      type="com.microsoft.applicationinsights.web.extensibility.modules.WebRequestTrackingTelemetryModule"/>
+    <Add
+      type="com.microsoft.applicationinsights.web.extensibility.modules.WebSessionTrackingTelemetryModule"/>
+    <Add
+      type="com.microsoft.applicationinsights.web.extensibility.modules.WebUserTrackingTelemetryModule"/>
+  </TelemetryModules>
+
+  <!-- Events correlation (not required for bare API) -->
+  <!-- These initializers add context data to each event -->
+
+  <TelemetryInitializers>
+    <Add
+      type="com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationIdTelemetryInitializer"/>
+    <Add
+      type="com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationNameTelemetryInitializer"/>
+    <Add
+      type="com.microsoft.applicationinsights.web.extensibility.initializers.WebSessionTelemetryInitializer"/>
+    <Add
+      type="com.microsoft.applicationinsights.web.extensibility.initializers.WebUserTelemetryInitializer"/>
+    <Add
+      type="com.microsoft.applicationinsights.web.extensibility.initializers.WebUserAgentTelemetryInitializer"/>
+  </TelemetryInitializers>
+
+  <Channel>
+    <EndpointAddress>http://non-existent-host/v2.1/track</EndpointAddress>
+    <DeveloperMode>true</DeveloperMode>
+    <FlushIntervalInSeconds>1</FlushIntervalInSeconds>
+  </Channel>
+
+  <PerformanceCounters>
+    <UseBuiltIn>False</UseBuiltIn>
+  </PerformanceCounters>
+</ApplicationInsights>

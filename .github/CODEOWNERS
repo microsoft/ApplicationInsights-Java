@@ -8,4 +8,6 @@
 #  https://help.github.com/en/articles/about-code-owners
 #
 
-* @heyams @kryalama @trask @xiao-lix
+* @heyams @jeanbisutti @trask
+/agent/agent-profiler @heyams @jeanbisutti @trask @johnoliver 
+/agent/agent-gc-monitor @heyams @jeanbisutti @trask @johnoliver 

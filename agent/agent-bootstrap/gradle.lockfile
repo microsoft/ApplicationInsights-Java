@@ -1,0 +1,17 @@
+# This is a Gradle generated file for dependency locking.
+# Manual edits can break the build and are not advised.
+# This file is expected to be part of source control.
+ch.qos.logback.contrib:logback-json-classic:0.1.5=runtimeClasspath
+ch.qos.logback.contrib:logback-json-core:0.1.5=runtimeClasspath
+ch.qos.logback:logback-classic:1.2.11=runtimeClasspath
+ch.qos.logback:logback-core:1.2.11=runtimeClasspath
+com.azure:azure-sdk-bom:1.2.4=runtimeClasspath
+com.google.guava:guava-bom:31.1-jre=runtimeClasspath
+com.squareup.moshi:moshi:1.11.0=runtimeClasspath
+com.squareup.okio:okio:1.17.5=runtimeClasspath
+io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.16.0-alpha=runtimeClasspath
+io.opentelemetry:opentelemetry-bom-alpha:1.16.0-alpha=runtimeClasspath
+io.opentelemetry:opentelemetry-bom:1.16.0=runtimeClasspath
+org.junit:junit-bom:5.8.2=runtimeClasspath
+org.slf4j:slf4j-api:1.7.36=runtimeClasspath
+empty=

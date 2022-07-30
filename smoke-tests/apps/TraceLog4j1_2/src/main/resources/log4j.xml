@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+  <appender name="aiAppender"
+    class="com.microsoft.applicationinsights.log4j.v1_2.ApplicationInsightsAppender">
+    <param name="instrumentationKey" value="00000000-0000-0000-0000-0FEEDDADBEEF"/>
+    <layout class="org.apache.log4j.PatternLayout">
+      <param name="ConversionPattern" value="%-5p %c - %m%n"/>
+    </layout>
+  </appender>
+
+  <logger name="smoketestapp">
+    <level value="trace"/>
+  </logger>
+
+  <root>
+    <appender-ref ref="aiAppender"/>
+  </root>
+</log4j:configuration>

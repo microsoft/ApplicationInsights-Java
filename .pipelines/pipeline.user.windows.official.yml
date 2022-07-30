@@ -1,0 +1,26 @@
+version:
+  major: 0
+  minor: 0
+  name: 'ApplicationInsights-Java'
+  system: 'custom'
+build:
+  commands:
+    - !!buildcommand
+      name: 'Upload Build Scripts'
+      command: '.scripts/copy-source.cmd' # this file is empty
+      artifacts:
+        - from: '.scripts/'
+          to: 'Scripts'
+          include:
+            - '**/*'
+    - !!defaultcommand
+      name: 'Assemble'
+      command: '.scripts/gradle.cmd'
+      arguments: 'publishToMavenLocal -DisRelease=true -Pai.etw.native.build=release --offline'
+    - !!buildcommand
+      name: 'Copy files from maven local repository'
+      command: '.scripts/copy-from-maven-local.cmd'
+      artifacts:
+        - to: 'Artifacts'
+          include:
+            - 'published/**/*'

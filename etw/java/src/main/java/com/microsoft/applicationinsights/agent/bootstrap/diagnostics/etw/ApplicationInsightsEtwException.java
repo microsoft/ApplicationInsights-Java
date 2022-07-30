@@ -18,20 +18,21 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw;
 
 public class ApplicationInsightsEtwException extends Exception {
-    private static final long serialVersionUID = 6108441736100165651L;
+  private static final long serialVersionUID = 6108441736100165651L;
 
-    public ApplicationInsightsEtwException() {
-        super();
-    }
+  public ApplicationInsightsEtwException() {
+    super();
+  }
 
-    public ApplicationInsightsEtwException(String message) {
-        super(message);
-    }
+  public ApplicationInsightsEtwException(String message) {
+    super(message);
+  }
 
-    public ApplicationInsightsEtwException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  public ApplicationInsightsEtwException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

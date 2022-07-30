@@ -16,17 +16,17 @@ import org.springframework.scheduling.TaskScheduler;
 @EnableAutoConfiguration(exclude = {ErrorMvcAutoConfiguration.class})
 public class EtwTestApp extends SpringBootServletInitializer {
 
-    public EtwTestApp() {
-        super();
-        setRegisterErrorPageFilter(false);
-    }
+  public EtwTestApp() {
+    super();
+    setRegisterErrorPageFilter(false);
+  }
 
-    public static void main(String[] args) {
-        SpringApplication.run(EtwTestApp.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(EtwTestApp.class, args);
+  }
 
-    @Bean
-    public TaskScheduler taskScheduler() {
-        return new TaskSchedulerBuilder(1, "ewt-testapp-worker", null).build();
-    }
+  @Bean
+  public TaskScheduler taskScheduler() {
+    return new TaskSchedulerBuilder(1, "ewt-testapp-worker", null).build();
+  }
 }
