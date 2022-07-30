@@ -99,12 +99,25 @@ public class SmokeTestExtension
 
   @Nullable private Network network;
 
+  private final boolean skipHealthCheck;
+  private final boolean readOnly;
+
+  public SmokeTestExtension() {
+    this(false, false);
+  }
+
+  public SmokeTestExtension(boolean skipHealthCheck, boolean readOnly) {
+    this.skipHealthCheck = skipHealthCheck;
+    this.readOnly = readOnly;
+  }
+
   @Override
-  public void beforeAll(ExtensionContext context) {
+  public void beforeAll(ExtensionContext context) throws Exception {
     try {
       beforeAllInternal(context);
     } catch (Exception e) {
       testFailed(context, e);
+      throw e;
     }
   }
 
@@ -160,7 +173,7 @@ public class SmokeTestExtension
     System.out.println("Configuring test...");
     TargetUri targetUri = context.getRequiredTestMethod().getAnnotation(TargetUri.class);
     if (targetUri == null) {
-      System.out.println("targetUri==null: automated testapp request disabled");
+      System.out.println("@TargetUri is missing, not making any server request");
       return;
     }
 
@@ -195,14 +208,16 @@ public class SmokeTestExtension
   }
 
   private void clearOutAnyInitLogs() throws Exception {
-    String contextRootUrl = getBaseUrl() + "/";
-    HttpHelper.getResponseCodeEnsuringSampled(contextRootUrl);
-    waitForHealthCheckTelemetryIfNeeded(contextRootUrl);
-    System.out.println("Clearing any RequestData from health check.");
-    mockedIngestion.resetData();
+    if (!skipHealthCheck) {
+      String contextRootUrl = getBaseUrl() + "/";
+      HttpHelper.getResponseCodeEnsuringSampled(contextRootUrl);
+      waitForHealthCheckTelemetry(contextRootUrl);
+      System.out.println("Clearing any RequestData from health check.");
+      mockedIngestion.resetData();
+    }
   }
 
-  private void waitForHealthCheckTelemetryIfNeeded(String contextRootUrl)
+  private void waitForHealthCheckTelemetry(String contextRootUrl)
       throws InterruptedException, ExecutionException, TimeoutException {
     Stopwatch receivedTelemetryTimer = Stopwatch.createStarted();
     try {
@@ -339,6 +354,11 @@ public class SmokeTestExtension
 
     if (appFile.getName().endsWith(".jar")) {
       container = container.withCommand("java -jar " + appFile.getName());
+    }
+
+    if (readOnly) {
+      container.withCreateContainerCmdModifier(
+          createContainerCmd -> createContainerCmd.getHostConfig().withReadonlyRootfs(true));
     }
 
     Stopwatch stopwatch = Stopwatch.createStarted();
