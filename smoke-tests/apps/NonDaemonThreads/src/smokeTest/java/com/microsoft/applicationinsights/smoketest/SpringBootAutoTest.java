@@ -27,6 +27,7 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JA
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_18;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_18_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_19;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -95,12 +96,15 @@ abstract class SpringBootAutoTest {
   @Environment(JAVA_17)
   static class Java17Test extends SpringBootAutoTest {}
 
-  @Environment(JAVA_18)
-  static class Java18Test extends SpringBootAutoTest {}
-
   @Environment(JAVA_17_OPENJ9)
   static class Java17OpenJ9Test extends SpringBootAutoTest {}
 
+  @Environment(JAVA_18)
+  static class Java18Test extends SpringBootAutoTest {}
+
   @Environment(JAVA_18_OPENJ9)
   static class Java18OpenJ9Test extends SpringBootAutoTest {}
+
+  @Environment(JAVA_19)
+  static class Java19Test extends SpringBootAutoTest {}
 }
