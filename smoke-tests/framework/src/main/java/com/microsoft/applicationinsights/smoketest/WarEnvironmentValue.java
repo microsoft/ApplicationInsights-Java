@@ -40,6 +40,9 @@ public enum WarEnvironmentValue {
   TOMCAT_8_JAVA_18(
       "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.72-jdk18-20220731.2770161172",
       "/server/webapps"),
+  TOMCAT_8_JAVA_19(
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.72-jdk19-20220731.2770161172",
+      "/server/webapps"),
 
   WILDFLY_13_JAVA_8(
       "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-wildfly:13.0.0.Final-jdk8-20220731.2770161172",
