@@ -3,6 +3,8 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
   `java-library`
+
+  id("ai.spotless-conventions")
 }
 
 val aiSmokeTest = extensions.create<AiSmokeTestExtension>("aiSmokeTest")
