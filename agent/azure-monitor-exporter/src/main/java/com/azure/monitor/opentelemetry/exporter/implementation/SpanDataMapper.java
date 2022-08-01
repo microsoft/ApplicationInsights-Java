@@ -32,7 +32,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageT
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDependencyTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
@@ -169,7 +168,6 @@ public final class SpanDataMapper {
     consumer.accept(telemetryItem);
     exportEvents(
         span,
-        telemetryItem.getData().getBaseData() instanceof RequestData,
         telemetryItem.getTags().get(ContextTagKeys.AI_OPERATION_NAME.toString()),
         samplingPercentage,
         consumer);
@@ -788,7 +786,6 @@ public final class SpanDataMapper {
 
   private void exportEvents(
       SpanData span,
-      boolean captureExceptionEvents,
       @Nullable String operationName,
       float samplingPercentage,
       Consumer<TelemetryItem> consumer) {
@@ -800,7 +797,10 @@ public final class SpanDataMapper {
 
       if (event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE) != null
           || event.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE) != null) {
-        if (captureExceptionEvents) {
+        SpanContext parentSpanContext = span.getParentSpanContext();
+        // Application Insights expects exception records to be "top-level" exceptions
+        // not just any exception that bubbles up
+        if (!parentSpanContext.isValid() || parentSpanContext.isRemote()) {
           // TODO (trask) map OpenTelemetry exception to Application Insights exception better
           String stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
           if (stacktrace != null) {
