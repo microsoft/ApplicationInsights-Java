@@ -1,0 +1,42 @@
+name: Reusable - Assemble
+
+on:
+  workflow_call:
+    inputs:
+      no-build-cache:
+        type: boolean
+        required: false
+
+jobs:
+  license-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK for running Gradle
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 11
+
+      - name: Generate license report
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: generateLicenseReport ${{ inputs.no-build-cache && '--no-build-cache' || '' }}
+
+      - name: Check licenses
+        run: |
+          # add any untracked folders that may have been added by generateLicenseReport
+          git add licenses
+          # there's always going to one line difference due to the timestamp included in the report
+          if [[ $(git diff --cached --shortstat licenses) == " 1 file changed, 1 insertion(+), 1 deletion(-)" ]]
+          then
+            echo "Licenses are up-to-date."
+          else
+            echo "Licenses are not up-to-date, please run './gradlew generateLicenseReport' locally and commit."
+            echo
+            echo $(git diff --cached --stat licenses)
+            echo
+            echo $(git diff --cached licenses)
+            exit 1
+          fi
