@@ -50,16 +50,15 @@ abstract class SamplingTest {
     // super super low chance that number of sampled requests is less than 25
     long start = System.nanoTime();
     while (testing.mockedIngestion.getCountForType("RequestData") < 25
-        && NANOSECONDS.toSeconds(System.nanoTime() - start) < 10) {
-    }
+        && NANOSECONDS.toSeconds(System.nanoTime() - start) < 10) {}
     // wait ten more seconds before checking that we didn't receive too many
     Thread.sleep(SECONDS.toMillis(10));
 
     List<Envelope> requestEnvelopes =
         testing.mockedIngestion.getItemsEnvelopeDataType("RequestData");
     List<Envelope> eventEnvelopes = testing.mockedIngestion.getItemsEnvelopeDataType("EventData");
-    List<Envelope> messageEnvelopes = testing.mockedIngestion.getItemsEnvelopeDataType(
-        "MessageData");
+    List<Envelope> messageEnvelopes =
+        testing.mockedIngestion.getItemsEnvelopeDataType("MessageData");
     // super super low chance that number of sampled requests/dependencies/events
     // is less than 25 or greater than 75
     assertThat(requestEnvelopes.size()).isGreaterThanOrEqualTo(25);
