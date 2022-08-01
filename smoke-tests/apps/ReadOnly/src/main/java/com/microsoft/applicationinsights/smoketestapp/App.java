@@ -21,26 +21,16 @@
 
 package com.microsoft.applicationinsights.smoketestapp;
 
-import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import java.io.IOException;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import org.springframework.stereotype.Component;
+import java.util.logging.Logger;
 
-@Component
-public class TracingFilter implements Filter {
-  @Override
-  public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-      throws IOException, ServletException {
+// Spring boot doesn't support read-only containers
+// (https://github.com/spring-projects/spring-boot/issues/8578)
+public class App {
 
-    ThreadContext.getRequestTelemetryContext()
-        .getHttpRequestTelemetry()
-        .getProperties()
-        .put("tenant", "z");
+  private static final Logger logger = Logger.getLogger("smoketestapp");
 
-    chain.doFilter(request, response);
+  public static void main(String[] args) throws IOException {
+    logger.info("hello");
   }
 }

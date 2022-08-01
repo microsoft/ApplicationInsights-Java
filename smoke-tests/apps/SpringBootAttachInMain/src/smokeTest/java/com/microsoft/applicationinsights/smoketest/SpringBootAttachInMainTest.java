@@ -54,7 +54,6 @@ abstract class SpringBootAttachInMainTest {
 
     assertThat(telemetry.rdEnvelope.getTags())
         .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("ra_java:3."));
-
   }
 
   @Environment(JAVA_8)
