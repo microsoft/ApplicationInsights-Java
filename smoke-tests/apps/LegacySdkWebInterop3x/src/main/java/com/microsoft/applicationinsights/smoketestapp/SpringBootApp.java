@@ -19,30 +19,16 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.internal;
+package com.microsoft.applicationinsights.smoketestapp;
 
-import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
-import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Tracestate;
-import javax.annotation.Nullable;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
-public final class RequestTelemetryContext {
-
-  private final RequestTelemetry requestTelemetry = new RequestTelemetry();
-
-  public RequestTelemetryContext(long ticks) {}
-
-  public RequestTelemetry getHttpRequestTelemetry() {
-    return requestTelemetry;
-  }
-
-  @Nullable
-  public Tracestate getTracestate() {
-    // Javaagent provides implementation
-    return null;
-  }
-
-  public int getTraceflag() {
-    // Javaagent provides implementation
-    return 0;
+@SpringBootApplication
+public class SpringBootApp extends SpringBootServletInitializer {
+  @Override
+  protected SpringApplicationBuilder configure(SpringApplicationBuilder applicationBuilder) {
+    return applicationBuilder.sources(SpringBootApp.class);
   }
 }

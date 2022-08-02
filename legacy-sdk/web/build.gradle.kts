@@ -6,6 +6,6 @@ plugins {
 base.archivesName.set("applicationinsights-web")
 
 dependencies {
-  implementation(project(":legacy-sdk:core"))
+  api(project(":legacy-sdk:core"))
   compileOnly("javax.servlet:javax.servlet-api:3.0.1")
 }

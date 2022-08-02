@@ -19,30 +19,34 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.web.internal;
+package com.microsoft.applicationinsights.smoketestapp;
 
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
-import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Tracestate;
-import javax.annotation.Nullable;
+import com.microsoft.applicationinsights.web.internal.ThreadContext;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-public final class RequestTelemetryContext {
+@RestController
+public class TestController {
 
-  private final RequestTelemetry requestTelemetry = new RequestTelemetry();
-
-  public RequestTelemetryContext(long ticks) {}
-
-  public RequestTelemetry getHttpRequestTelemetry() {
-    return requestTelemetry;
+  @GetMapping("/")
+  public String root() {
+    return "OK";
   }
 
-  @Nullable
-  public Tracestate getTracestate() {
-    // Javaagent provides implementation
-    return null;
-  }
-
-  public int getTraceflag() {
-    // Javaagent provides implementation
-    return 0;
+  @GetMapping("/test")
+  public String test() {
+    RequestTelemetry requestTelemetry =
+        ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
+    requestTelemetry.getProperties().put("myattr1", "myvalue1");
+    requestTelemetry.getProperties().put("myattr2", "myvalue2");
+    requestTelemetry.getContext().getUser().setId("myuser");
+    requestTelemetry.getContext().getSession().setId("mysessionid");
+    requestTelemetry.getContext().getDevice().setOperatingSystem("mydeviceos");
+    requestTelemetry.getContext().getDevice().setOperatingSystemVersion("mydeviceosversion");
+    requestTelemetry.setName("myspanname");
+    requestTelemetry.setSource("mysource");
+    requestTelemetry.setSuccess(false);
+    return "OK!";
   }
 }
