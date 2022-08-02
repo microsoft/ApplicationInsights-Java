@@ -136,6 +136,8 @@ void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noe
                     TraceLoggingValue(extensionVersion, ETW_FIELD_EXTENSION_VERSION),
                     TraceLoggingValue(subscriptionId, ETW_FIELD_SUBSCRIPTION_ID),
                     TraceLoggingValue(appName, ETW_FIELD_APPNAME));
+                    TraceLoggingValue(msgId, ETW_FIELD_MSG_ID));
+                    TraceLoggingValue(iKey, ETW_FIELD_INSTRUMENTATION_KEY));
                 DBG("\nwrote DEBUG");
                 break;
             case EVENTID_INFO:
@@ -144,6 +146,8 @@ void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noe
                     TraceLoggingValue(extensionVersion, ETW_FIELD_EXTENSION_VERSION),
                     TraceLoggingValue(subscriptionId, ETW_FIELD_SUBSCRIPTION_ID),
                     TraceLoggingValue(appName, ETW_FIELD_APPNAME));
+                    TraceLoggingValue(msgId, ETW_FIELD_MSG_ID));
+                    TraceLoggingValue(iKey, ETW_FIELD_INSTRUMENTATION_KEY));
                 DBG("\nwrote INFO");
                 break;
             case EVENTID_WARN:
@@ -152,6 +156,8 @@ void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noe
                     TraceLoggingValue(extensionVersion, ETW_FIELD_EXTENSION_VERSION),
                     TraceLoggingValue(subscriptionId, ETW_FIELD_SUBSCRIPTION_ID),
                     TraceLoggingValue(appName, ETW_FIELD_APPNAME));
+                    TraceLoggingValue(msgId, ETW_FIELD_MSG_ID));
+                    TraceLoggingValue(iKey, ETW_FIELD_INSTRUMENTATION_KEY));
                 DBG("\nwrote WARN");
                 break;
             case EVENTID_ERROR:
@@ -160,6 +166,8 @@ void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noe
                     TraceLoggingValue(extensionVersion, ETW_FIELD_EXTENSION_VERSION),
                     TraceLoggingValue(subscriptionId, ETW_FIELD_SUBSCRIPTION_ID),
                     TraceLoggingValue(appName, ETW_FIELD_APPNAME));
+                    TraceLoggingValue(msgId, ETW_FIELD_MSG_ID));
+                    TraceLoggingValue(iKey, ETW_FIELD_INSTRUMENTATION_KEY));
                 DBG("\nwrote ERROR");
                 break;
             case EVENTID_CRITICAL:
@@ -168,10 +176,12 @@ void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noe
                     TraceLoggingValue(extensionVersion, ETW_FIELD_EXTENSION_VERSION),
                     TraceLoggingValue(subscriptionId, ETW_FIELD_SUBSCRIPTION_ID),
                     TraceLoggingValue(appName, ETW_FIELD_APPNAME));
+                    TraceLoggingValue(msgId, ETW_FIELD_MSG_ID));
+                    TraceLoggingValue(iKey, ETW_FIELD_INSTRUMENTATION_KEY));
                 DBG("\nwrote CRITICAL");
                 break;
             }
-        DBG(" event:\n\tmsg=%s,\n\tExtVer=%s,\n\tSubscriptionId=%s,\n\tAppName=%s,\n", message, extensionVersion, subscriptionId, appName);
+        DBG(" event:\n\tmsg=%s,\n\tExtVer=%s,\n\tSubscriptionId=%s,\n\tAppName=%s,\n\tmsgId=%s,\n\tiKey=%s,\n", message, extensionVersion, subscriptionId, appName, msgId, iKey);
     }
     catch (aijnierr_t jnierr)
     {
@@ -188,6 +198,8 @@ void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noe
     delete[] extensionVersion;
     delete[] subscriptionId;
     delete[] appName;
+    delete[] msgId;
+    delete[] iKey;
 }
 
 char * stringGetter2cstr(JNIEnv * env, jobject &jobj_target, const char * method_name, char * rval, aijnierr_t field_id) throw(aijnierr_t) {
