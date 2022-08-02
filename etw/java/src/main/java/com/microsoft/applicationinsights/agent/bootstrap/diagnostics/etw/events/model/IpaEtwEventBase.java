@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events
 public abstract class IpaEtwEventBase implements IpaEtwEvent {
   private String extensionVersion;
   private String appName;
-  private String ikey;
+  private String instrumentationKey;
   private String subscriptionId;
   private String msgId;
 
@@ -39,7 +39,7 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
   protected IpaEtwEventBase(IpaEtwEventBase event) {
     extensionVersion = event.extensionVersion;
     appName = event.appName;
-    ikey = event.ikey;
+    instrumentationKey = event.instrumentationKey;
     subscriptionId = event.subscriptionId;
     msgId = event.msgId;
   }
@@ -76,12 +76,12 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
   }
 
   // used by native method
-  public String getIkey() {
-    return ikey == null ? "" : ikey;
+  public String getInstrumentationKey() {
+    return instrumentationKey == null ? "" : instrumentationKey;
   }
 
-  public void setIkey(String ikey) {
-    this.ikey = ikey;
+  public void setInstrumentationKey(String instrumentationKey) {
+    this.instrumentationKey = instrumentationKey;
   }
 
   // used by native method

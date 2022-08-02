@@ -102,10 +102,12 @@ int getEventId(JNIEnv * env, jobject &jobj_event) throw(aijnierr_t) {
     }
 }
 
-#define ETW_FIELD_MESSAGE           "msg"
-#define ETW_FIELD_EXTENSION_VERSION "ExtVer"
-#define ETW_FIELD_SUBSCRIPTION_ID   "SubscriptionId"
-#define ETW_FIELD_APPNAME           "AppName"
+#define ETW_FIELD_MESSAGE             "msg"
+#define ETW_FIELD_EXTENSION_VERSION   "ExtVer"
+#define ETW_FIELD_SUBSCRIPTION_ID     "SubscriptionId"
+#define ETW_FIELD_APPNAME             "AppName"
+#define ETW_FIELD_INSTRUMENTATION_KEY "iKey"
+#define ETW_FIELD_MSG_ID              "msgId"
 
 
 void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noexcept {
@@ -113,6 +115,8 @@ void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noe
     char * extensionVersion = NULL;
     char * subscriptionId = NULL;
     char * appName = NULL;
+    char * msgId = NULL;
+    char * iKey = NULL;
     TraceLoggingRegister(provider_EtwHandle);
     try
     {
@@ -121,6 +125,8 @@ void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noe
         message = stringGetter2cstr(env, jobj_event, "getFormattedMessage", message, JSTRID_MESSAGE);
         subscriptionId = stringGetter2cstr(env, jobj_event, "getSubscriptionId", subscriptionId, JSTRID_SUBSCRIPTION_ID);
         appName = stringGetter2cstr(env, jobj_event, "getAppName", appName, JSTRID_APP_NAME);
+        msgId = stringGetter2cstr(env, jobj_event, "getMsgId", msgId, JSTRID_MSG_ID);
+        iKey = stringGetter2cstr(env, jobj_event, "getInstrumentationKey", iKey, JSTRID_INSTRUMENTATION_KEY);
 
         // write event
         switch(event_id) {
@@ -248,6 +254,10 @@ std::string jstrid2name(int jnierr) noexcept {
             return ETW_FIELD_MESSAGE;
         case JSTRID_SUBSCRIPTION_ID:
             return ETW_FIELD_SUBSCRIPTION_ID;
+        case JSTRID_INSTRUMENTATION_KEY:
+            return ETW_FIELD_INSTRUMENTATION_KEY;
+        case JSTRID_MSG_ID:
+            return ETW_FIELD_MSG_ID;
         default:
             return "unknown";
     }

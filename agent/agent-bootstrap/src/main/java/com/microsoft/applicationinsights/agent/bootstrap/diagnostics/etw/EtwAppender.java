@@ -51,7 +51,7 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
     proto.setAppName(metadata.getSiteName().getValue());
     proto.setExtensionVersion(metadata.getSdkVersion().getValue());
     proto.setSubscriptionId(metadata.getSubscriptionId().getValue());
-    proto.setIkey(metadata.getInstrumentationKey().getValue());
+    proto.setInstrumentationKey(metadata.getInstrumentationKey().getValue());
     etwProvider = new EtwProvider(metadata.getSdkVersion().getValue());
   }
 

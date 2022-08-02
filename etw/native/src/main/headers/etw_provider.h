@@ -53,6 +53,8 @@ typedef int aijnierr_t;
 #define JSTRID_EXTENSION_VERSION    0x0400
 #define JSTRID_SUBSCRIPTION_ID      0x0500
 #define JSTRID_APP_NAME             0x0600
+#define JSTRID_MSG_ID               0x0700
+#define JSTRID_INSTRUMENTATION_KEY  0x0800
 
 #define STR_MAX_BUFF_SIZE   1024000
 
