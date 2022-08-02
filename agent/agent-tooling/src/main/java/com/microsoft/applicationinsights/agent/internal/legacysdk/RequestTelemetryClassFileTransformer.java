@@ -26,7 +26,7 @@ import static org.objectweb.asm.Opcodes.ACC_PROTECTED;
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 import static org.objectweb.asm.Opcodes.ACONST_NULL;
 import static org.objectweb.asm.Opcodes.ARETURN;
-import static org.objectweb.asm.Opcodes.ASM7;
+import static org.objectweb.asm.Opcodes.ASM9;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.reflect.Modifier;
@@ -40,8 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // this is used to supplement old versions of RequestTelemetry with getters from the latest version
-// of
-// RequestTelemetry
+// of RequestTelemetry
 public class RequestTelemetryClassFileTransformer implements ClassFileTransformer {
 
   private static final Logger logger =
@@ -81,7 +80,7 @@ public class RequestTelemetryClassFileTransformer implements ClassFileTransforme
     private boolean foundGetSourceMethod;
 
     private RequestTelemetryClassVisitor(ClassWriter cw) {
-      super(ASM7, cw);
+      super(ASM9, cw);
       this.cw = cw;
     }
 
@@ -127,8 +126,8 @@ public class RequestTelemetryClassFileTransformer implements ClassFileTransforme
   // DO NOT REMOVE
   // this is used during development for generating above bytecode
   //
-  // to run this, add this dependency to agent-tooling.gradle:
-  //   compile group: 'org.ow2.legacysdk', name: 'legacysdk-util', version: '9.1'
+  // to run this, add this dependency to agent-tooling's build.gradle.kts file:
+  //   implementation("org.ow2.asm:asm-util:9.3")
   //
   public static void main(String[] args) {
     // ASMifier.main(new String[]{Rdt.class.getName()});

@@ -29,6 +29,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickP
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
@@ -83,6 +84,10 @@ public class AgentLogExporter implements LogExporter {
       return CompletableResultCode.ofFailure();
     }
     for (LogData log : logs) {
+      SpanContext spanContext = log.getSpanContext();
+      if (spanContext.isValid() && !spanContext.getTraceFlags().isSampled()) {
+        continue;
+      }
       logger.debug("exporting log: {}", log);
       try {
         int severity = log.getSeverity().getSeverityNumber();

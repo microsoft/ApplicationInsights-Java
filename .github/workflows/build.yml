@@ -12,6 +12,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  license-check:
+    uses: ./.github/workflows/reusable-license-check.yml
+
   assemble:
     uses: ./.github/workflows/reusable-assemble.yml
 

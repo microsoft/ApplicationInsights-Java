@@ -36,7 +36,6 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.instrumentation.api.util.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import java.util.function.BiConsumer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
@@ -112,24 +111,6 @@ public class RequestTelemetryContextInstrumentation implements TypeInstrumentati
           tracestate = new Tracestate(builder.toString());
         }
       }
-    }
-  }
-
-  public static class TracestateBuilder implements BiConsumer<String, String> {
-
-    private final StringBuilder stringBuilder = new StringBuilder();
-
-    @Override
-    public void accept(String key, String value) {
-      if (stringBuilder.length() != 0) {
-        stringBuilder.append(',');
-      }
-      stringBuilder.append(key).append('=').append(value);
-    }
-
-    @Override
-    public String toString() {
-      return stringBuilder.toString();
     }
   }
 

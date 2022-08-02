@@ -25,6 +25,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.internal.legacysdk.ApplicationInsightsAppenderClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.legacysdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.legacysdk.DependencyTelemetryClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.legacysdk.ExceptionTelemetryClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.legacysdk.HeartBeatModuleClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.legacysdk.PerformanceCounterModuleClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.legacysdk.QuickPulseClassFileTransformer;
@@ -44,6 +45,7 @@ class LegacyInstrumentation {
     instrumentation.addTransformer(new TelemetryClientClassFileTransformer());
     instrumentation.addTransformer(new DependencyTelemetryClassFileTransformer());
     instrumentation.addTransformer(new RequestTelemetryClassFileTransformer());
+    instrumentation.addTransformer(new ExceptionTelemetryClassFileTransformer());
     instrumentation.addTransformer(new PerformanceCounterModuleClassFileTransformer());
     instrumentation.addTransformer(new QuickPulseClassFileTransformer());
     instrumentation.addTransformer(new HeartBeatModuleClassFileTransformer());

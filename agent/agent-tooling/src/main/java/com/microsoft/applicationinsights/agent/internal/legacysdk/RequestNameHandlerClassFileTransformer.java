@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.legacysdk;
 
-import static org.objectweb.asm.Opcodes.ASM7;
+import static org.objectweb.asm.Opcodes.ASM9;
 import static org.objectweb.asm.Opcodes.ICONST_1;
 import static org.objectweb.asm.Opcodes.IRETURN;
 
@@ -72,7 +72,7 @@ public class RequestNameHandlerClassFileTransformer implements ClassFileTransfor
     private final ClassWriter cw;
 
     private RequestNameHandlerClassVisitor(ClassWriter cw) {
-      super(ASM7, cw);
+      super(ASM9, cw);
       this.cw = cw;
     }
 

@@ -27,4 +27,12 @@ azcopy copy "$JarPath/runtime-attach/$SDKVersionNumber/applicationinsights-runti
 azcopy copy "$JarPath/runtime-attach/$SDKVersionNumber/applicationinsights-runtime-attach-$SDKVersionNumber-javadoc.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
 azcopy copy "$JarPath/runtime-attach/$SDKVersionNumber/applicationinsights-runtime-attach-$SDKVersionNumber-sources.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
 azcopy copy "$JarPath/runtime-attach/$SDKVersionNumber/applicationinsights-runtime-attach-$SDKVersionNumber.pom" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$JarPath/core/$SDKVersionNumber/applicationinsights-core-$SDKVersionNumber.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$JarPath/core/$SDKVersionNumber/applicationinsights-core-$SDKVersionNumber-javadoc.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$JarPath/core/$SDKVersionNumber/applicationinsights-core-$SDKVersionNumber-sources.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$JarPath/core/$SDKVersionNumber/applicationinsights-core-$SDKVersionNumber.pom" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$JarPath/web/$SDKVersionNumber/applicationinsights-web-$SDKVersionNumber.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$JarPath/web/$SDKVersionNumber/applicationinsights-web-$SDKVersionNumber-javadoc.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$JarPath/web/$SDKVersionNumber/applicationinsights-web-$SDKVersionNumber-sources.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$JarPath/web/$SDKVersionNumber/applicationinsights-web-$SDKVersionNumber.pom" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
 Remove-Item Env:AZCOPY_SPA_CLIENT_SECRET
