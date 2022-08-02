@@ -1,6 +1,10 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.github.jk1.license.filter.LicenseBundleNormalizer
+import com.github.jk1.license.render.InventoryMarkdownReportRenderer
 
 plugins {
+  id("com.github.jk1.dependency-license-report")
+
   id("ai.java-conventions")
   id("ai.shadow-conventions")
   id("ai.publish-conventions")
@@ -27,6 +31,10 @@ val upstreamAgent: Configuration by configurations.creating {
 val otelInstrumentationVersion: String by project
 val otelInstrumentationAlphaVersion: String by project
 
+val licenseReportDependencies by configurations.creating {
+  extendsFrom(bootstrapLibs)
+}
+
 dependencies {
 
   // required to access OpenTelemetryAgent
@@ -37,6 +45,8 @@ dependencies {
   javaagentLibs(project(":agent:agent-tooling"))
 
   upstreamAgent("io.opentelemetry.javaagent:opentelemetry-javaagent:$otelInstrumentationVersion")
+
+  licenseReportDependencies(project(":agent:agent-tooling"))
 }
 
 val javaagentDependencies = dependencies
@@ -52,6 +62,12 @@ project(":agent:instrumentation").subprojects {
 }
 
 tasks {
+  processResources {
+    from(rootProject.file("licenses")) {
+      into("META-INF/licenses")
+    }
+  }
+
   // building the final javaagent jar is done in 3 steps:
 
   // 1. all distro-specific javaagent libs are relocated (by the ai.shadow-conventions plugin)
@@ -136,6 +152,14 @@ tasks {
     dependsOn(shadowJar)
   }
 
+  val cleanLicenses by registering(Delete::class) {
+    delete(rootProject.file("licenses"))
+  }
+
+  named("generateLicenseReport").configure {
+    dependsOn(cleanLicenses)
+  }
+
   // Because we reconfigure publishing to only include the shadow jar, the Gradle metadata is not correct.
   // Since we are fully bundled and have no dependencies, Gradle metadata wouldn't provide any advantage over
   // the POM anyways so in practice we shouldn't be losing anything.
@@ -156,6 +180,27 @@ with(components["java"] as AdhocComponentWithVariants) {
   }
 }
 
+licenseReport {
+  outputDir = rootProject.file("licenses").absolutePath
+
+  renderers = arrayOf(InventoryMarkdownReportRenderer("more-licenses.md"))
+
+  configurations = arrayOf(licenseReportDependencies.name)
+
+  excludeBoms = true
+
+  excludeGroups = arrayOf(
+    "applicationinsights-java.*"
+  )
+
+  excludes = arrayOf(
+    "io.opentelemetry:opentelemetry-bom-alpha",
+    "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha"
+  )
+
+  filters = arrayOf(LicenseBundleNormalizer("$projectDir/license-normalizer-bundle.json", true))
+}
+
 fun CopySpec.isolateClasses(jars: Iterable<File>) {
   jars.forEach {
     from(zipTree(it)) {
@@ -165,6 +210,4 @@ fun CopySpec.isolateClasses(jars: Iterable<File>) {
       rename("""^LICENSE$""", "LICENSE.renamed")
     }
   }
-  from("${rootProject.projectDir}/NOTICE")
-  from("${rootProject.projectDir}/LICENSE")
 }
