@@ -35,7 +35,7 @@ final class QuickPulseNetworkHelper {
   private static final String QPS_STATUS_HEADER = "x-ms-qps-subscribed";
   private static final String QPS_SERVICE_POLLING_INTERVAL_HINT =
       "x-ms-qps-service-polling-interval-hint";
-  private static final String QPS_SERVICE_ENDPOINT_REDIRECT = "x-ms-qps-service-endpoint-redirect";
+  private static final String QPS_SERVICE_ENDPOINT_REDIRECT = "x-ms-qps-service-endpoint-redirect-v2";
   private static final String QPS_INSTANCE_NAME_HEADER = "x-ms-qps-instance-name";
   private static final String QPS_STREAM_ID_HEADER = "x-ms-qps-stream-id";
   private static final String QPS_MACHINE_NAME_HEADER = "x-ms-qps-machine-name";
