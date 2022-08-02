@@ -343,19 +343,24 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
   @Override
   public void trackException(
       @Nullable Date timestamp,
-      @Nullable Exception exception,
+      @Nullable Throwable throwable,
+      int severityLevel,
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> measurements,
       @Nullable String instrumentationKey) {
-    if (exception == null) {
+    if (throwable == null) {
       return;
     }
     ExceptionTelemetryBuilder telemetryBuilder =
         TelemetryClient.getActive().newExceptionTelemetryBuilder();
 
-    telemetryBuilder.setExceptions(TelemetryUtil.getExceptions(exception));
-    telemetryBuilder.setSeverityLevel(SeverityLevel.ERROR);
+    telemetryBuilder.setExceptions(TelemetryUtil.getExceptions(throwable));
+    if (severityLevel != -1) {
+      telemetryBuilder.setSeverityLevel(getSeverityLevel(severityLevel));
+    } else {
+      telemetryBuilder.setSeverityLevel(SeverityLevel.ERROR);
+    }
     for (Map.Entry<String, Double> entry : measurements.entrySet()) {
       telemetryBuilder.addMeasurement(entry.getKey(), entry.getValue());
     }
