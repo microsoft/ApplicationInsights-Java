@@ -194,13 +194,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
       File javaagentFile) {
 
     if (startupLogger != null) {
-      try (MDC.MDCCloseable ignored = MsgId.STARTUP_FAILURE_ERROR.makeActive()) {
-        if (isFriendlyException) {
-          startupLogger.error(message);
-        } else {
-          startupLogger.error(message, t);
-        }
-      }
+      logError(isFriendlyException, message, t);
     } else {
       try {
         // IF the startupLogger failed to be initialized due to configuration syntax error, try
@@ -213,13 +207,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
                 selfDiagnostics.file.path);
         startupLogger = configureLogging(selfDiagnostics, agentPath);
 
-        try (MDC.MDCCloseable ignored = MsgId.STARTUP_FAILURE_ERROR.makeActive()) {
-          if (isFriendlyException) {
-            startupLogger.error(message);
-          } else {
-            startupLogger.error(message, t);
-          }
-        }
+        logError(isFriendlyException, message, t);
       } catch (Throwable ignored) {
         // this is a last resort in cases where the JVM doesn't have write permission to the
         // directory where the agent lives
@@ -242,6 +230,16 @@ public class FirstEntryPoint implements LoggingCustomizer {
         } catch (Throwable ignored2) {
           // ignored
         }
+      }
+    }
+  }
+
+  private static void logError(boolean isFriendlyException, String message, Throwable t) {
+    try (MDC.MDCCloseable ignored = MsgId.STARTUP_FAILURE_ERROR.makeActive()) {
+      if (isFriendlyException) {
+        startupLogger.error(message);
+      } else {
+        startupLogger.error(message, t);
       }
     }
   }
