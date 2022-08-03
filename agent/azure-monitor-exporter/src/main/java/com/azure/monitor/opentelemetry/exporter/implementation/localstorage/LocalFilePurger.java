@@ -30,7 +30,6 @@ import java.io.File;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import org.slf4j.MDC;
 
 /**
  * Purge files that are older than 48 hours in both 'telemetry' and 'statsbeat' folders. Purge is
@@ -83,10 +82,9 @@ class LocalFilePurger implements Runnable {
     for (File file : FileUtil.listTrnFiles(folder)) {
       if (LocalFileCache.isExpired(file, expiredIntervalSeconds)) {
         if (!FileUtil.deleteFileWithRetries(file)) {
-          try (MDC.MDCCloseable ignored =
-              AzureMonitorMsgId.DISK_PERSISTENCE_PURGE_ERROR.makeActive()) {
-            operationLogger.recordFailure("Unable to delete file: " + file.getAbsolutePath());
-          }
+          operationLogger.recordFailure(
+              "Unable to delete file: " + file.getAbsolutePath(),
+              AzureMonitorMsgId.DISK_PERSISTENCE_PURGE_ERROR);
         } else {
           operationLogger.recordSuccess();
         }
