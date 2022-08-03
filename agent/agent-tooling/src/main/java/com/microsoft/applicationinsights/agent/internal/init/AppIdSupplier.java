@@ -29,9 +29,9 @@ import com.azure.core.http.HttpResponse;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.NetworkFriendlyExceptions;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.WarningLogger;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.bootstrap.AiAppId;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.net.MalformedURLException;
@@ -77,7 +77,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
     try {
       newTask = new GetAppIdTask(getAppIdUrl(connectionString));
     } catch (MalformedURLException e) {
-      try (MDC.MDCCloseable ignored = MsgId.APP_ID_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = AzureMonitorMsgId.APP_ID_ERROR.makeActive()) {
         logger.warn(e.getMessage(), e);
       }
       return;
@@ -144,9 +144,8 @@ public class AppIdSupplier implements AiAppId.Supplier {
       } catch (RuntimeException ex) {
         if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
             ex, url.toString(), friendlyExceptionThrown, logger)) {
-          try (MDC.MDCCloseable ignored = MsgId.APP_ID_ERROR.makeActive()) {
-            warningLogger.recordWarning("exception sending request to " + url, ex);
-          }
+          warningLogger.recordWarning(
+              "exception sending request to " + url, ex, AzureMonitorMsgId.APP_ID_ERROR);
         }
         backOff();
         return;
@@ -160,19 +159,18 @@ public class AppIdSupplier implements AiAppId.Supplier {
       String body = response.getBodyAsString().block();
       int statusCode = response.getStatusCode();
       if (statusCode != 200) {
-        try (MDC.MDCCloseable ignored = MsgId.APP_ID_ERROR.makeActive()) {
-          warningLogger.recordWarning(
-              "received " + statusCode + " from " + url + "\nfull response:\n" + body, null);
-        }
+        warningLogger.recordWarning(
+            "received " + statusCode + " from " + url + "\nfull response:\n" + body,
+            null,
+            AzureMonitorMsgId.APP_ID_ERROR);
         backOff();
         return;
       }
 
       // check for case when breeze returns invalid value
       if (body == null || body.isEmpty()) {
-        try (MDC.MDCCloseable ignored = MsgId.APP_ID_ERROR.makeActive()) {
-          warningLogger.recordWarning("received empty body from " + url, null);
-        }
+        warningLogger.recordWarning(
+            "received empty body from " + url, null, AzureMonitorMsgId.APP_ID_ERROR);
         backOff();
         return;
       }

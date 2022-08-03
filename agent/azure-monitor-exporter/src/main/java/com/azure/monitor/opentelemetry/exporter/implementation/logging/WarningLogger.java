@@ -21,7 +21,9 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.logging;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
 import javax.annotation.Nullable;
+import org.slf4j.MDC;
 
 // aggregated warnings for a given 5-min window
 public class WarningLogger {
@@ -38,12 +40,10 @@ public class WarningLogger {
   }
 
   // warningMessage should have low cardinality
-  public void recordWarning(String warningMessage) {
-    aggregatingLogger.recordWarning(warningMessage);
-  }
-
-  // warningMessage should have low cardinality
-  public void recordWarning(String warningMessage, @Nullable Throwable exception) {
-    aggregatingLogger.recordWarning(warningMessage, exception);
+  public void recordWarning(
+      String warningMessage, @Nullable Throwable exception, AzureMonitorMsgId msgId) {
+    try (MDC.MDCCloseable ignored = msgId.makeActive()) {
+      aggregatingLogger.recordWarning(warningMessage, exception);
+    }
   }
 }
