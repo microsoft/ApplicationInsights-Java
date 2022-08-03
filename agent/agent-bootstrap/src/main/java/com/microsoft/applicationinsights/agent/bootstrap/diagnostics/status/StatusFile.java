@@ -223,16 +223,16 @@ public class StatusFile {
 
     File file;
     if (DiagnosticsHelper.isOsWindows()) {
-      file = new File(DEFAULT_HOME_DIR);
+      file = new File("/home");
     } else {
-      file = new File(LINUX_DEFAULT);
+      file = new File("/var/log");
     }
 
     // TODO to be removed after done testing
     LoggerFactory.getLogger(StatusFile.class)
         .debug(
             "#### file.canWrite: {} is writable on {} - '{}'",
-            file.getAbsolutePath(),
+            file.getPath(),
             DiagnosticsHelper.isOsWindows() ? "Windows" : "Linux",
             file.canWrite());
     return file.canWrite();

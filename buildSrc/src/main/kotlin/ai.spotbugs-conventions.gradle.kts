@@ -15,7 +15,8 @@ spotbugs {
     "MutableStaticFields",
     "Naming",
     "RuntimeExceptionCapture",
-    "UnreadFields"
+    "UnreadFields",
+    "DumbMethodInvocations"
   )
 }
 
