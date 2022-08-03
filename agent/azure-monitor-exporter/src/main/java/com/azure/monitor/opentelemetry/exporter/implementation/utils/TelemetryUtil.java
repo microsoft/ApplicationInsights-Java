@@ -31,7 +31,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 // naming convention:
 // * MonitorDomain data
@@ -168,9 +167,7 @@ public class TelemetryUtil {
     if (samplingPercentageStr == null) {
       if (warnOnMissing && !alreadyLoggedSamplingPercentageMissing.getAndSet(true)) {
         // sampler should have set the trace state
-        try (MDC.MDCCloseable ignored = AzureMonitorMsgId.SAMPLING_ERROR.makeActive()) {
-          logger.warn("did not find sampling percentage in trace state: {}", traceState);
-        }
+        logger.warn("did not find sampling percentage in trace state: {}", traceState);
       }
       return defaultValue;
     }
@@ -185,9 +182,7 @@ public class TelemetryUtil {
             return OptionalFloat.of(Float.parseFloat(str));
           } catch (NumberFormatException e) {
             if (!alreadyLoggedSamplingPercentageParseError.getAndSet(true)) {
-              try (MDC.MDCCloseable ignored = AzureMonitorMsgId.SAMPLING_ERROR.makeActive()) {
-                logger.warn("error parsing sampling percentage trace state: {}", str, e);
-              }
+              logger.warn("error parsing sampling percentage trace state: {}", str, e);
             }
             return OptionalFloat.empty();
           }
