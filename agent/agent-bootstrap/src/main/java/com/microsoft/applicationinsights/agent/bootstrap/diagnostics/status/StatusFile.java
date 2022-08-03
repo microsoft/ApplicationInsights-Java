@@ -145,28 +145,6 @@ public class StatusFile {
     write(false);
   }
 
-  private static boolean writable() {
-    if (!DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
-      return false;
-    }
-
-    File file;
-    if (DiagnosticsHelper.isOsWindows()) {
-      file = new File(DEFAULT_HOME_DIR);
-    } else {
-      file = new File(LINUX_DEFAULT);
-    }
-
-    // TODO to be removed after done testing
-    LoggerFactory.getLogger(StatusFile.class)
-        .debug(
-            "#### file.canWrite: {} is writable on {} - '{}'",
-            file.getAbsolutePath(),
-            DiagnosticsHelper.isOsWindows() ? "Windows" : "Linux",
-            file.canWrite());
-    return file.canWrite();
-  }
-
   @SuppressWarnings("SystemOut")
   private static void write(boolean loggingInitialized) {
     if (!writable()) {
@@ -236,6 +214,28 @@ public class StatusFile {
           }
         },
         "StatusFileJsonWrite");
+  }
+
+  private static boolean writable() {
+    if (!DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
+      return false;
+    }
+
+    File file;
+    if (DiagnosticsHelper.isOsWindows()) {
+      file = new File(DEFAULT_HOME_DIR);
+    } else {
+      file = new File(LINUX_DEFAULT);
+    }
+
+    // TODO to be removed after done testing
+    LoggerFactory.getLogger(StatusFile.class)
+        .debug(
+            "#### file.canWrite: {} is writable on {} - '{}'",
+            file.getAbsolutePath(),
+            DiagnosticsHelper.isOsWindows() ? "Windows" : "Linux",
+            file.canWrite());
+    return file.canWrite();
   }
 
   private static BufferedSink getBuffer(File file) throws IOException {
