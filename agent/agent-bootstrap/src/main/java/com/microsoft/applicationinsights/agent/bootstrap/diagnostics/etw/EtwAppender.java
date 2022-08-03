@@ -35,12 +35,10 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model.IpaEtwEventBase;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import java.util.Map;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class EtwAppender extends AppenderBase<ILoggingEvent> {
 
-  private static final Logger etwLogger = LoggerFactory.getLogger(EtwAppender.class);
   private final EtwProvider etwProvider;
   private final IpaEtwEventBase proto;
 
@@ -118,9 +116,6 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
       }
 
       String messageId = mdcPropertyMap.get(DiagnosticsHelper.MDC_MESSAGE_ID);
-      etwLogger.debug("#### [msgId: " + messageId + "]");
-      etwLogger.debug("#### logger name: " + logger);
-      etwLogger.debug("#### logger message: " + logEvent.getMessage());
       if (messageId != null && !messageId.isEmpty()) {
         event.setMsgId(messageId);
       }

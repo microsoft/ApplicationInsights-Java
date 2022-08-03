@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.LoggerFactory;
 
 public class ApplicationInsightsJsonLayout extends JsonLayout {
 
@@ -86,13 +85,6 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
   }
 
   private static String getMessageId(ILoggingEvent event) {
-    String messageId = event.getMDCPropertyMap().get(DiagnosticsHelper.MDC_MESSAGE_ID);
-    LoggerFactory.getLogger(ApplicationInsightsJsonLayout.class)
-        .debug(
-            "#### messageId: {}" + "\n logger name:{}\n logger message: {}",
-            messageId,
-            event.getLoggerName(),
-            event.getFormattedMessage());
     return event.getMDCPropertyMap().get(DiagnosticsHelper.MDC_MESSAGE_ID);
   }
 }
