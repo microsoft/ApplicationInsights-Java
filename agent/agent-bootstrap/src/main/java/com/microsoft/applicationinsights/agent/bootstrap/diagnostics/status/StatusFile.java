@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status;
 
+import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper.LINUX_DEFAULT;
+
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.ApplicationMetadataFactory;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsValueFinder;
@@ -111,7 +113,7 @@ public class StatusFile {
 
   // visible for testing
   static String initLogDir() {
-    return DiagnosticsHelper.isOsWindows() ? DEFAULT_HOME_DIR : DiagnosticsHelper.LINUX_DEFAULT;
+    return DiagnosticsHelper.isOsWindows() ? DEFAULT_HOME_DIR : LINUX_DEFAULT;
   }
 
   public static String getLogDir() {
@@ -125,11 +127,17 @@ public class StatusFile {
   }
 
   public static <T> void putValueAndWrite(String key, T value, boolean loggingInitialized) {
+    if (!writable()) {
+      return;
+    }
     CONSTANT_VALUES.put(key, value);
     write(loggingInitialized);
   }
 
   public static <T> void putValue(String key, T value) {
+    if (!writable()) {
+      return;
+    }
     CONSTANT_VALUES.put(key, value);
   }
 
@@ -137,8 +145,33 @@ public class StatusFile {
     write(false);
   }
 
+  private static boolean writable() {
+    if (!DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
+      return false;
+    }
+
+    File file;
+    if (DiagnosticsHelper.isOsWindows()) {
+      file = new File(DEFAULT_HOME_DIR);
+    } else {
+      file = new File(LINUX_DEFAULT);
+    }
+
+    // TODO to be removed after done testing
+    LoggerFactory.getLogger(StatusFile.class)
+        .debug(
+            "#### file.canWrite: {} is writable on {} - '{}'",
+            file.getAbsolutePath(),
+            DiagnosticsHelper.isOsWindows() ? "Windows" : "Linux",
+            file.canWrite());
+    return file.canWrite();
+  }
+
   @SuppressWarnings("SystemOut")
   private static void write(boolean loggingInitialized) {
+    if (!writable()) {
+      return;
+    }
     WRITER_THREAD.submit(
         new Runnable() {
           @Override
