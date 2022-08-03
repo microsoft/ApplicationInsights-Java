@@ -112,9 +112,7 @@ class QuickPulseDataFetcher {
       request.setBody(buildPostEntity(counters));
 
       if (!sendQueue.offer(request)) {
-        try (MDC.MDCCloseable ignored = AzureMonitorMsgId.QUICK_PULSE_SEND_ERROR.makeActive()) {
-          logger.trace("Quick Pulse send queue is full");
-        }
+        logger.trace("Quick Pulse send queue is full");
       }
     } catch (ThreadDeath td) {
       throw td;
