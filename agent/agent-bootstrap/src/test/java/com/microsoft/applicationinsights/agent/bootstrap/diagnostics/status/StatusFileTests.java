@@ -146,7 +146,7 @@ class StatusFileTests {
     assertThat(tempFolder.isDirectory()).isTrue();
     assertThat(tempFolder.list()).isEmpty();
 
-    StatusFile.directory = tempFolder.getAbsolutePath();
+    StatusFile.logDir = tempFolder.getAbsolutePath();
     StatusFile.write();
     pauseForFileWrite();
 
@@ -175,12 +175,12 @@ class StatusFileTests {
   void doesNotWriteIfNotAppService() throws Exception {
     DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(false); // just to be sure
 
-    StatusFile.directory = tempFolder.getAbsolutePath();
+    StatusFile.logDir = tempFolder.getAbsolutePath();
     assertThat(tempFolder.isDirectory()).isTrue();
     assertThat(tempFolder.list()).isEmpty();
     StatusFile.write();
     pauseForFileWrite();
-    assertThat(tempFolder.list()).isEmpty();
+    assertThat(tempFolder.list()).isEmpty();git 
     StatusFile.putValueAndWrite("shouldNot", "write");
     pauseForFileWrite();
     assertThat(tempFolder.list()).isEmpty();
@@ -192,7 +192,7 @@ class StatusFileTests {
     try {
       DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(true);
 
-      StatusFile.directory = tempFolder.getAbsolutePath();
+      StatusFile.logDir = tempFolder.getAbsolutePath();
       assertThat(tempFolder.isDirectory()).isTrue();
       assertThat(tempFolder.list()).isEmpty();
       StatusFile.write();
