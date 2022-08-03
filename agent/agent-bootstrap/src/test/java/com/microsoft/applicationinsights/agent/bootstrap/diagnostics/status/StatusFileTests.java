@@ -180,7 +180,7 @@ class StatusFileTests {
     assertThat(tempFolder.list()).isEmpty();
     StatusFile.write();
     pauseForFileWrite();
-    assertThat(tempFolder.list()).isEmpty();git 
+    assertThat(tempFolder.list()).isEmpty();
     StatusFile.putValueAndWrite("shouldNot", "write");
     pauseForFileWrite();
     assertThat(tempFolder.list()).isEmpty();
