@@ -71,7 +71,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
         exportingSpanLogger.recordSuccess();
       } catch (Throwable t) {
         exportingSpanLogger.recordFailure(
-            t.getMessage(), t, AzureMonitorMsgId.EXPORTER_DATA_MAPPER_ERROR);
+            t.getMessage(), t, AzureMonitorMsgId.EXPORTER_MAPPING_ERROR);
         return CompletableResultCode.ofFailure();
       }
     }

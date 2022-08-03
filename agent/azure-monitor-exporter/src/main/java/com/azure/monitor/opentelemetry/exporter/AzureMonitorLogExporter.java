@@ -72,7 +72,7 @@ public class AzureMonitorLogExporter implements LogExporter {
         exportingLogLogger.recordSuccess();
       } catch (Throwable t) {
         exportingLogLogger.recordFailure(
-            t.getMessage(), t, AzureMonitorMsgId.EXPORTER_DATA_MAPPER_ERROR);
+            t.getMessage(), t, AzureMonitorMsgId.EXPORTER_MAPPING_ERROR);
         return CompletableResultCode.ofFailure();
       }
     }

@@ -67,13 +67,7 @@ public class StatusFile {
   static final String HOME_ENV_VAR = "HOME";
 
   // visible for testing
-  static final String DEFAULT_HOME_DIR = "/home";
-
-  // visible for testing
-  static final String DEFAULT_LOGDIR = "/LogFiles";
-
-  // visible for testing
-  static final String DEFAULT_APPLICATIONINSIGHTS_LOGDIR = "/ApplicationInsights";
+  static final String DEFAULT_HOME_DIR = "/home/LogFiles/ApplicationInsights";
 
   // visible for testing
   static String logDir;
@@ -119,10 +113,7 @@ public class StatusFile {
 
   // visible for testing
   static String initLogDir() {
-    if (DiagnosticsHelper.isOsWindows()) {
-      return DEFAULT_HOME_DIR + DEFAULT_LOGDIR + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
-    }
-    return DiagnosticsHelper.LINUX_DEFAULT;
+    return DiagnosticsHelper.isOsWindows() ? DEFAULT_HOME_DIR : DiagnosticsHelper.LINUX_DEFAULT;
   }
 
   public static String getLogDir() {
@@ -161,7 +152,6 @@ public class StatusFile {
             Map<String, Object> map = getJsonMap();
 
             String fileName = constructFileName(map);
-            statusFileLogger.debug("#### status filename: " + fileName);
 
             // the executor should prevent more than one thread from executing this block.
             // this is just a safeguard

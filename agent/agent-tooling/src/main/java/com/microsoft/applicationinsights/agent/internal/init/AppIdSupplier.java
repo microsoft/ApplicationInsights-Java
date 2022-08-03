@@ -112,9 +112,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
     // this case, just
     // return and let the next request resolve the ikey.
     if (appId == null) {
-      try (MDC.MDCCloseable ignored = MsgId.APP_ID_ERROR.makeActive()) {
-        logger.debug("appId has not been retrieved yet (e.g. task may be pending or failed)");
-      }
+      logger.debug("appId has not been retrieved yet (e.g. task may be pending or failed)");
       return "";
     }
     return appId;

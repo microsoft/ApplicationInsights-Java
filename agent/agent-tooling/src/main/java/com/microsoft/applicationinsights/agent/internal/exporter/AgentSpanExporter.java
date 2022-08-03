@@ -80,7 +80,7 @@ public final class AgentSpanExporter implements SpanExporter {
         exportingSpanLogger.recordSuccess();
       } catch (Throwable t) {
         exportingSpanLogger.recordFailure(
-            t.getMessage(), t, AzureMonitorMsgId.EXPORTER_DATA_MAPPER_ERROR);
+            t.getMessage(), t, AzureMonitorMsgId.EXPORTER_MAPPING_ERROR);
       }
     }
     // always returning success, because all error handling is performed internally
