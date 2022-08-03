@@ -159,7 +159,6 @@ public class FirstEntryPoint implements LoggingCustomizer {
 
   @SuppressWarnings("SystemOut")
   private static void updateStatusFile(boolean success) {
-    startupLogger.debug("#### updateStatusFile::success");
     try {
       StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success, startupLogger != null);
     } catch (Throwable t) {
@@ -195,7 +194,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
       File javaagentFile) {
 
     if (startupLogger != null) {
-      try (MDC.MDCCloseable ignored = MsgId.STATUS_FILE_RELATED_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = MsgId.STARTUP_FAILURE_ERROR.makeActive()) {
         if (isFriendlyException) {
           startupLogger.error(message);
         } else {
@@ -214,7 +213,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
                 selfDiagnostics.file.path);
         startupLogger = configureLogging(selfDiagnostics, agentPath);
 
-        try (MDC.MDCCloseable ignored = MsgId.STATUS_FILE_RELATED_ERROR.makeActive()) {
+        try (MDC.MDCCloseable ignored = MsgId.STARTUP_FAILURE_ERROR.makeActive()) {
           if (isFriendlyException) {
             startupLogger.error(message);
           } else {

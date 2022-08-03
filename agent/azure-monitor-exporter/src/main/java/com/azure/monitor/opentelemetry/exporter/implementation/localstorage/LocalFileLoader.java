@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
-import org.slf4j.MDC;
 
 /** This class manages loading a list of {@link ByteBuffer} from the disk. */
 class LocalFileLoader {
@@ -100,20 +99,18 @@ class LocalFileLoader {
               telemetryFolder, FileUtil.getBaseName(fileToBeLoaded) + TEMPORARY_FILE_EXTENSION);
       FileUtil.moveFile(fileToBeLoaded, tempFile);
     } catch (IOException e) {
-      try (MDC.MDCCloseable ignored = AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
-        operationLogger.recordFailure(
-            "Error renaming file: " + fileToBeLoaded.getAbsolutePath(), e);
-      }
+      operationLogger.recordFailure(
+          "Error renaming file: " + fileToBeLoaded.getAbsolutePath(),
+          AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR);
       stats.incrementReadFailureCount();
       return null;
     }
 
     if (tempFile.length() <= 36) {
       if (!FileUtil.deleteFileWithRetries(tempFile)) {
-        try (MDC.MDCCloseable ignored =
-            AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
-          operationLogger.recordFailure("Unable to delete file: " + tempFile.getAbsolutePath());
-        }
+        operationLogger.recordFailure(
+            "Unable to delete file: " + tempFile.getAbsolutePath(),
+            AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR);
       }
       return null;
     }
@@ -128,19 +125,19 @@ class LocalFileLoader {
       if (!isInstrumentationKeyValid(instrumentationKey)) {
         fileInputStream.close(); // need to close FileInputStream before delete
         if (!FileUtil.deleteFileWithRetries(tempFile)) {
-          try (MDC.MDCCloseable ignored =
-              AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
-            operationLogger.recordFailure("Unable to delete file: " + tempFile.getAbsolutePath());
-          }
+          operationLogger.recordFailure(
+              "Unable to delete file: " + tempFile.getAbsolutePath(),
+              AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR);
         }
         return null;
       }
 
       readFully(fileInputStream, telemetryBytes, rawByteLength);
     } catch (IOException e) {
-      try (MDC.MDCCloseable ignored = AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
-        operationLogger.recordFailure("Error reading file: " + tempFile.getAbsolutePath(), e);
-      }
+      operationLogger.recordFailure(
+          "Error reading file: " + tempFile.getAbsolutePath(),
+          e,
+          AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR);
       stats.incrementReadFailureCount();
       return null;
     }
@@ -180,18 +177,17 @@ class LocalFileLoader {
   void updateProcessedFileStatus(boolean successOrNonRetryableError, File file) {
     if (!file.exists()) {
       // not sure why this would happen
-      try (MDC.MDCCloseable ignored = AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
-        updateOperationLogger.recordFailure("File no longer exists: " + file.getAbsolutePath());
-      }
+      updateOperationLogger.recordFailure(
+          "File no longer exists: " + file.getAbsolutePath(),
+          AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR);
       return;
     }
     if (successOrNonRetryableError) {
       // delete a file on the queue permanently when http response returns success.
       if (!FileUtil.deleteFileWithRetries(file)) {
-        try (MDC.MDCCloseable ignored =
-            AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
-          updateOperationLogger.recordFailure("Unable to delete file: " + file.getAbsolutePath());
-        }
+        updateOperationLogger.recordFailure(
+            "Unable to delete file: " + file.getAbsolutePath(),
+            AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR);
       } else {
         updateOperationLogger.recordSuccess();
       }
@@ -201,10 +197,10 @@ class LocalFileLoader {
       try {
         FileUtil.moveFile(file, sourceFile);
       } catch (IOException e) {
-        try (MDC.MDCCloseable ignored =
-            AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR.makeActive()) {
-          updateOperationLogger.recordFailure("Error renaming file: " + file.getAbsolutePath(), e);
-        }
+        updateOperationLogger.recordFailure(
+            "Error renaming file: " + file.getAbsolutePath(),
+            e,
+            AzureMonitorMsgId.DISK_PERSISTENCE_READ_ERROR);
         return;
       }
       updateOperationLogger.recordSuccess();

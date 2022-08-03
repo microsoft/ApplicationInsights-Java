@@ -28,6 +28,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.logging.NetworkFr
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model.QuickPulseEnvelope;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.util.CustomCharacterEscapes;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -143,7 +144,10 @@ class QuickPulsePingSender {
     } catch (Throwable t) {
       if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
           t, getQuickPulseEndpoint(), friendlyExceptionThrown, logger)) {
-        operationLogger.recordFailure(t.getMessage() + " (" + endpointPrefix + ")", t);
+        operationLogger.recordFailure(
+            t.getMessage() + " (" + endpointPrefix + ")",
+            t,
+            AzureMonitorMsgId.QUICK_PULSE_PING_ERROR);
       }
     } finally {
       if (response != null) {

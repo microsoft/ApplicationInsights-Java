@@ -26,6 +26,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -69,7 +70,8 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
         mapper.map(span, telemetryItems::add);
         exportingSpanLogger.recordSuccess();
       } catch (Throwable t) {
-        exportingSpanLogger.recordFailure(t.getMessage(), t);
+        exportingSpanLogger.recordFailure(
+            t.getMessage(), t, AzureMonitorMsgId.EXPORTER_DATA_MAPPER_ERROR);
         return CompletableResultCode.ofFailure();
       }
     }

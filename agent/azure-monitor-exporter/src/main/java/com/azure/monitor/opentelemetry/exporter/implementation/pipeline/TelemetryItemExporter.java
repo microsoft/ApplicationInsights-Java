@@ -43,7 +43,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.GZIPOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 public class TelemetryItemExporter {
 
@@ -109,11 +108,9 @@ public class TelemetryItemExporter {
     if (activeExportResults.size() >= MAX_CONCURRENT_EXPORTS) {
       // this is just a failsafe to limit concurrent exports, it's not ideal because it blocks
       // waiting for the most recent export instead of waiting for the first export to return
-      try (MDC.MDCCloseable ignored =
-          AzureMonitorMsgId.TELEMETRY_INTERNAL_SEND_ERROR.makeActive()) {
-        operationLogger.recordFailure(
-            "Hit max " + MAX_CONCURRENT_EXPORTS + " active concurrent requests");
-      }
+      operationLogger.recordFailure(
+          "Hit max " + MAX_CONCURRENT_EXPORTS + " active concurrent requests",
+          AzureMonitorMsgId.TELEMETRY_INTERNAL_SEND_ERROR);
       return CompletableResultCode.ofAll(results);
     }
 
@@ -142,10 +139,8 @@ public class TelemetryItemExporter {
       byteBuffers = encode(telemetryItems);
       encodeBatchOperationLogger.recordSuccess();
     } catch (Throwable t) {
-      try (MDC.MDCCloseable ignored =
-          AzureMonitorMsgId.TELEMETRY_INTERNAL_SEND_ERROR.makeActive()) {
-        encodeBatchOperationLogger.recordFailure(t.getMessage(), t);
-      }
+      encodeBatchOperationLogger.recordFailure(
+          t.getMessage(), t, AzureMonitorMsgId.TELEMETRY_INTERNAL_SEND_ERROR);
       return CompletableResultCode.ofFailure();
     }
     return telemetryPipeline.send(byteBuffers, instrumentationKey, listener);

@@ -26,6 +26,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
@@ -98,7 +99,8 @@ public class AgentLogExporter implements LogExporter {
         mapper.map(log, telemetryItemConsumer);
         exportingLogLogger.recordSuccess();
       } catch (Throwable t) {
-        exportingLogLogger.recordFailure(t.getMessage(), t);
+        exportingLogLogger.recordFailure(
+            t.getMessage(), t, AzureMonitorMsgId.EXPORTER_DATA_MAPPER_ERROR);
       }
     }
     // always returning success, because all error handling is performed internally

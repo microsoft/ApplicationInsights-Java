@@ -527,7 +527,6 @@ public class Configuration {
     public int maxSizeMb = 5;
     public int maxHistory = 1;
 
-    @SuppressWarnings("SystemOut")
     private static String getDefaultPath() {
       if (!DiagnosticsHelper.isRpIntegration()) {
         if (isRuntimeAttached()) { // With runtime attachment, the agent jar is located in a temp
