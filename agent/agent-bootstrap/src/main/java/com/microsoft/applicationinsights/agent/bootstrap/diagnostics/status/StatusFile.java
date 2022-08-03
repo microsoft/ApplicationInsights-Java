@@ -84,8 +84,6 @@ public class StatusFile {
 
   @Nullable public static Logger startupLogger;
 
-  private static final Logger statusFileLogger = LoggerFactory.getLogger(StatusFile.class);
-
   private static final ThreadPoolExecutor WRITER_THREAD =
       new ThreadPoolExecutor(
           1, 1, 750L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), StatusFile::newThread);
