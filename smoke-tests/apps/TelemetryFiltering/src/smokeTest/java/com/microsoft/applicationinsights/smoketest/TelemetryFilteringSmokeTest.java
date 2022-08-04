@@ -75,6 +75,8 @@ abstract class TelemetryFilteringSmokeTest {
 
     Envelope rdEnvelope = rdList.get(0);
 
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
     assertThat(rdEnvelope.getIKey()).isEqualTo("00000000-0000-0000-0000-0FEEDDADBEEF");
@@ -95,6 +97,9 @@ abstract class TelemetryFilteringSmokeTest {
     assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope rddEnvelope = rddList.get(0);
+
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(rddEnvelope.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     RemoteDependencyData rdd =

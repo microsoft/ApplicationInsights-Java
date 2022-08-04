@@ -54,25 +54,28 @@ public abstract class CustomInstrumentationTest {
     Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /test");
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "TestController.run");
 
+    String operationId = rdEnvelope2.getTags().get("ai.operation.id");
+    List<Envelope> mdList = testing.mockedIngestion.waitForMessageItemsInRequest(1, operationId);
+
+    Envelope mdEnvelope = mdList.get(0);
+
+    assertThat(rdEnvelope1.getSampleRate()).isNull();
+    assertThat(rdEnvelope2.getSampleRate()).isNull();
+    assertThat(mdEnvelope.getSampleRate()).isNull();
+
     RequestData rd1 = (RequestData) ((Data<?>) rdEnvelope1.getData()).getBaseData();
+    RequestData rd2 = (RequestData) ((Data<?>) rdEnvelope2.getData()).getBaseData();
+    MessageData md = (MessageData) ((Data<?>) mdEnvelope.getData()).getBaseData();
 
     assertThat(rd1.getName()).isEqualTo("GET /test");
     assertThat(rd1.getResponseCode()).isEqualTo("200");
     assertThat(rd1.getProperties()).isEmpty();
     assertThat(rd1.getSuccess()).isTrue();
 
-    RequestData rd2 = (RequestData) ((Data<?>) rdEnvelope2.getData()).getBaseData();
-
     assertThat(rd2.getName()).isEqualTo("TestController.run");
     assertThat(rd2.getResponseCode()).isEqualTo("0");
     assertThat(rd2.getProperties()).isEmpty();
     assertThat(rd2.getSuccess()).isTrue();
-
-    String operationId = rdEnvelope2.getTags().get("ai.operation.id");
-    List<Envelope> mdList = testing.mockedIngestion.waitForMessageItemsInRequest(1, operationId);
-
-    Envelope mdEnvelope = mdList.get(0);
-    MessageData md = (MessageData) ((Data<?>) mdEnvelope.getData()).getBaseData();
 
     assertThat(md.getMessage()).isEqualTo("hello");
     assertThat(md.getSeverityLevel()).isEqualTo(SeverityLevel.INFORMATION);

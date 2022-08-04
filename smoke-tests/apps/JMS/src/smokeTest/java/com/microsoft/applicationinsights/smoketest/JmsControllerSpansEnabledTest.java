@@ -54,6 +54,12 @@ class JmsControllerSpansEnabledTest {
     Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "message send");
     Envelope rddEnvelope3 = getDependencyEnvelope(rddList, "GET /");
 
+    assertThat(rdEnvelope1.getSampleRate()).isNull();
+    assertThat(rdEnvelope2.getSampleRate()).isNull();
+    assertThat(rddEnvelope1.getSampleRate()).isNull();
+    assertThat(rddEnvelope2.getSampleRate()).isNull();
+    assertThat(rddEnvelope3.getSampleRate()).isNull();
+
     RequestData rd1 = (RequestData) ((Data<?>) rdEnvelope1.getData()).getBaseData();
     RequestData rd2 = (RequestData) ((Data<?>) rdEnvelope2.getData()).getBaseData();
 

@@ -72,6 +72,10 @@ class KafkaDisabledTest {
     // verify the downstream http dependency that is no longer part of the same trace
     List<Envelope> rddList = testing.mockedIngestion.waitForItems("RemoteDependencyData", 1);
     Envelope rddEnvelope = rddList.get(0);
+
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(rddEnvelope.getSampleRate()).isNull();
+
     RemoteDependencyData rdd =
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 

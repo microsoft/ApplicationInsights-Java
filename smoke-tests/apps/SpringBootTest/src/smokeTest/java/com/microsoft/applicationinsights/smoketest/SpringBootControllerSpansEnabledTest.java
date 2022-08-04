@@ -47,6 +47,9 @@ class SpringBootControllerSpansEnabledTest {
   void trackEvent() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     Envelope rdEnvelope = rdList.get(0);
+
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
 
     testing.mockedIngestion.waitForItemsInOperation("EventData", 2, operationId);
@@ -98,6 +101,10 @@ class SpringBootControllerSpansEnabledTest {
     Envelope rddEnvelope1 = rddList.get(0);
     Envelope edEnvelope1 = edList.get(0);
 
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(rddEnvelope1.getSampleRate()).isNull();
+    assertThat(edEnvelope1.getSampleRate()).isNull();
+
     RequestData rd = testing.getTelemetryDataForType(0, "RequestData");
     RemoteDependencyData rdd1 =
         (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
@@ -134,6 +141,11 @@ class SpringBootControllerSpansEnabledTest {
     Envelope rddEnvelope1 = rddList.get(0);
     Envelope rddEnvelope2 = rddList.get(1);
     Envelope rddEnvelope3 = rddList.get(2);
+
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(rddEnvelope1.getSampleRate()).isNull();
+    assertThat(rddEnvelope2.getSampleRate()).isNull();
+    assertThat(rddEnvelope3.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     RemoteDependencyData rdd1 =

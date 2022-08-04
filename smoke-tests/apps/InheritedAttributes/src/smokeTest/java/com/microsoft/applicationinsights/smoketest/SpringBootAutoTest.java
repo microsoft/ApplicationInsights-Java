@@ -56,6 +56,10 @@ abstract class SpringBootAutoTest {
     List<Envelope> mdList = testing.mockedIngestion.waitForMessageItemsInRequest(1, operationId);
 
     Envelope mdEnvelope = mdList.get(0);
+
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(mdEnvelope.getSampleRate()).isNull();
+
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     MessageData md = (MessageData) ((Data<?>) mdEnvelope.getData()).getBaseData();
 

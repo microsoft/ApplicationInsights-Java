@@ -98,6 +98,9 @@ abstract class SpringBootTest {
 
     Envelope edEnvelope1 = edList.get(0);
 
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(edEnvelope1.getSampleRate()).isNull();
+
     RequestData rd = testing.getTelemetryDataForType(0, "RequestData");
 
     assertThat(rd.getName()).isEqualTo("GET /SpringBootTest/throwsException");
@@ -121,6 +124,9 @@ abstract class SpringBootTest {
     assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope rddEnvelope1 = rddList.get(0);
+
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(rddEnvelope1.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     RemoteDependencyData rdd1 =

@@ -61,6 +61,10 @@ abstract class GrpcTest {
 
     Envelope rddEnvelope = getDependencyEnvelope(rddList, "example.Greeter/SayHello");
 
+    assertThat(rdEnvelope1.getSampleRate()).isNull();
+    assertThat(rdEnvelope2.getSampleRate()).isNull();
+    assertThat(rddEnvelope.getSampleRate()).isNull();
+
     RequestData rd1 = (RequestData) ((Data<?>) rdEnvelope1.getData()).getBaseData();
     RemoteDependencyData rdd =
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
@@ -95,6 +99,10 @@ abstract class GrpcTest {
     assertThat(testing.mockedIngestion.getCountForType("MessageData", operationId)).isZero();
 
     Envelope rddEnvelope = getDependencyEnvelope(rddList, "example.Greeter/Conversation");
+
+    assertThat(rdEnvelope1.getSampleRate()).isNull();
+    assertThat(rdEnvelope2.getSampleRate()).isNull();
+    assertThat(rddEnvelope.getSampleRate()).isNull();
 
     RequestData rd1 = (RequestData) ((Data<?>) rdEnvelope1.getData()).getBaseData();
     RemoteDependencyData rdd =

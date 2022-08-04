@@ -60,6 +60,10 @@ abstract class TraceJavaUtilLoggingTest {
     Envelope mdEnvelope1 = mdList.get(0);
     Envelope mdEnvelope2 = mdList.get(1);
 
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(mdEnvelope1.getSampleRate()).isNull();
+    assertThat(mdEnvelope2.getSampleRate()).isNull();
+
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
     List<MessageData> logs = testing.mockedIngestion.getMessageDataInRequest();
@@ -94,12 +98,16 @@ abstract class TraceJavaUtilLoggingTest {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
+
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     List<Envelope> edList =
         testing.mockedIngestion.waitForItemsInOperation("ExceptionData", 1, operationId);
     assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope edEnvelope = edList.get(0);
+
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(edEnvelope.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
