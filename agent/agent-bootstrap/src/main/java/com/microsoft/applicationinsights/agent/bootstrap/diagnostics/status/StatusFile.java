@@ -69,10 +69,12 @@ public class StatusFile {
   static final String HOME_ENV_VAR = "HOME";
 
   // visible for testing
-  static final String DEFAULT_HOME_DIR = "/home/LogFiles/ApplicationInsights";
+  static final String WINDOWS_DEFAULT_HOME_DIR = "/home/LogFiles/ApplicationInsights";
 
   // visible for testing
   static String logDir;
+
+  private final static String directory;
 
   //  private static final AtomicBoolean alreadyLogged = new AtomicBoolean();
 
@@ -102,6 +104,7 @@ public class StatusFile {
     VALUE_FINDERS.add(mf.getExtensionVersion());
 
     logDir = initLogDir();
+    directory = DiagnosticsHelper.isOsWindows() ? logDir + "/Status" : logDir;
   }
 
   private static Thread newThread(Runnable r) {
@@ -113,7 +116,7 @@ public class StatusFile {
 
   // visible for testing
   static String initLogDir() {
-    return DiagnosticsHelper.isOsWindows() ? DEFAULT_HOME_DIR : LINUX_DEFAULT;
+    return DiagnosticsHelper.isOsWindows() ? WINDOWS_DEFAULT_HOME_DIR : LINUX_DEFAULT;
   }
 
   public static String getLogDir() {
@@ -165,7 +168,7 @@ public class StatusFile {
             // the executor should prevent more than one thread from executing this block.
             // this is just a safeguard
             synchronized (lock) {
-              File file = new File(logDir, fileName);
+              File file = new File(directory, fileName);
               boolean dirsWereCreated = file.getParentFile().mkdirs();
 
               Logger logger = loggingInitialized ? LoggerFactory.getLogger(StatusFile.class) : null;
@@ -220,15 +223,7 @@ public class StatusFile {
     if (!DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
       return false;
     }
-
-    File file;
-    if (DiagnosticsHelper.isOsWindows()) {
-      file = new File("/home");
-    } else {
-      file = new File("/var/log");
-    }
-
-    return file.canWrite();
+    return new File(logDir).canWrite();
   }
 
   private static BufferedSink getBuffer(File file) throws IOException {

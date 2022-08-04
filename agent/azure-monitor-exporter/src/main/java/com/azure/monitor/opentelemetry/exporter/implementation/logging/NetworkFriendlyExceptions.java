@@ -21,7 +21,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.logging;
 
-import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.NETWORK_FAILURE_ERROR;
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.INGESTION_ERROR;
 
 import com.azure.core.util.CoreUtils;
 import io.netty.handler.ssl.SslHandshakeTimeoutException;
@@ -75,7 +75,7 @@ public class NetworkFriendlyExceptions {
     for (FriendlyExceptionDetector detector : detectors) {
       if (detector.detect(error)) {
         if (!alreadySeen.getAndSet(true)) {
-          try (MDC.MDCCloseable ignored = NETWORK_FAILURE_ERROR.makeActive()) {
+          try (MDC.MDCCloseable ignored = INGESTION_ERROR.makeActive()) {
             logger.error(detector.message(url));
           }
         }

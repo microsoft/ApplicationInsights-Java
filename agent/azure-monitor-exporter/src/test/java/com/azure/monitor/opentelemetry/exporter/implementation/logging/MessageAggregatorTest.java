@@ -21,7 +21,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.logging;
 
-import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.NETWORK_FAILURE_ERROR;
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.INGESTION_ERROR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import nl.altindag.log.LogCaptor;
@@ -42,10 +42,10 @@ class MessageAggregatorTest {
     LogCaptor logCaptor = LogCaptor.forClass(MessageAggregatorTest.class);
     networkExceptionStats.recordSuccess();
     Exception ex = new IllegalArgumentException();
-    networkExceptionStats.recordFailure("Test Message", ex, NETWORK_FAILURE_ERROR);
-    networkExceptionStats.recordFailure("Test Message2", ex, NETWORK_FAILURE_ERROR);
-    networkExceptionStats.recordFailure("Test Message2", ex, NETWORK_FAILURE_ERROR);
-    networkExceptionStats.recordFailure("Test Message3", ex, NETWORK_FAILURE_ERROR);
+    networkExceptionStats.recordFailure("Test Message", ex, INGESTION_ERROR);
+    networkExceptionStats.recordFailure("Test Message2", ex, INGESTION_ERROR);
+    networkExceptionStats.recordFailure("Test Message2", ex, INGESTION_ERROR);
+    networkExceptionStats.recordFailure("Test Message3", ex, INGESTION_ERROR);
     // wait for more than 1 second
     Thread.sleep(3000);
 
