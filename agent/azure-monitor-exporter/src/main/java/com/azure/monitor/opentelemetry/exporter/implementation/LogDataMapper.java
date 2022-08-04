@@ -155,7 +155,7 @@ public class LogDataMapper {
     // standalone logs (not part of an existing trace) will not have sampling percentage encoded in
     // their trace state
     float samplingPercentage =
-        TelemetryUtil.getSamplingPercentage(log.getSpanContext().getTraceState(), 10, false);
+        TelemetryUtil.getSamplingPercentage(log.getSpanContext().getTraceState(), 100, false);
     if (samplingPercentage != 100) {
       telemetryBuilder.setSampleRate(samplingPercentage);
     }
