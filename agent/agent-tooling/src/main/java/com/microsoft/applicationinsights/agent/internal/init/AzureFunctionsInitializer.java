@@ -25,6 +25,7 @@ import ch.qos.logback.classic.LoggerContext;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
@@ -41,9 +42,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AzureFunctionsInitializer implements Runnable {
-
-  private static final Logger startupLogger =
-      LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
 
   private static final Logger logger = LoggerFactory.getLogger(AzureFunctionsInitializer.class);
 
@@ -89,7 +87,7 @@ public class AzureFunctionsInitializer implements Runnable {
     agentLogExporter.setThreshold(
         Configuration.LoggingInstrumentation.getSeverity(instrumentationLoggingLevel));
 
-    startupLogger.info(
+    LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME).info(
         "ApplicationInsights Java Agent specialization complete for Azure Functions placeholder");
   }
 
