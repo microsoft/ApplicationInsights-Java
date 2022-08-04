@@ -228,13 +228,6 @@ public class StatusFile {
       file = new File("/var/log");
     }
 
-    // TODO to be removed after done testing
-    LoggerFactory.getLogger(StatusFile.class)
-        .debug(
-            "#### file.canWrite: {} is writable on {} - '{}'",
-            file.getPath(),
-            DiagnosticsHelper.isOsWindows() ? "Windows" : "Linux",
-            file.canWrite());
     return file.canWrite();
   }
 
