@@ -58,6 +58,10 @@ abstract class SpringBootAutoTest {
     Envelope rddEnvelope = rddList.get(0);
     Envelope mdEnvelope = mdList.get(0);
 
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(rddEnvelope.getSampleRate()).isNull();
+    assertThat(mdEnvelope.getSampleRate()).isNull();
+
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     RemoteDependencyData rdd =
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
