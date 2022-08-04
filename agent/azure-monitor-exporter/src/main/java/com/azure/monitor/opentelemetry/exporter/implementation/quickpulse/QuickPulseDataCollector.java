@@ -21,8 +21,6 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse;
 
-import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.QUICK_PULSE_SEND_ERROR;
-
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDependencyData;
@@ -50,8 +48,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 final class QuickPulseDataCollector {
 
@@ -76,26 +72,7 @@ final class QuickPulseDataCollector {
 
   @Nullable
   private static CpuPerformanceCounterCalculator getCpuPerformanceCounterCalculator() {
-    try {
-      return new CpuPerformanceCounterCalculator();
-    } catch (ThreadDeath td) {
-      throw td;
-    } catch (Throwable t) {
-      try {
-        try (MDC.MDCCloseable ignored = QUICK_PULSE_SEND_ERROR.makeActive()) {
-          LoggerFactory.getLogger(QuickPulseDataCollector.class)
-              .error(
-                  "Could not initialize {}",
-                  CpuPerformanceCounterCalculator.class.getSimpleName(),
-                  t);
-        }
-      } catch (ThreadDeath td) {
-        throw td;
-      } catch (Throwable t2) {
-        // chomp
-      }
-      return null;
-    }
+    return new CpuPerformanceCounterCalculator();
   }
 
   synchronized void disable() {

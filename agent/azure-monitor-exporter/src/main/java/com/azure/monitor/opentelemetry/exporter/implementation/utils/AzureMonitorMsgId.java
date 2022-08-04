@@ -38,7 +38,8 @@ public enum AzureMonitorMsgId {
   HOSTNAME_ERROR("2109"),
   EXPORTER_MAPPING_ERROR("2110"),
   BATCH_ITEM_PROCESSOR_ERROR("2111"),
-  APP_ID_ERROR("2112");
+  APP_ID_ERROR("2112"),
+  FRIENDLY_NETWORK_ERROR("2113");
 
   private final String value;
 

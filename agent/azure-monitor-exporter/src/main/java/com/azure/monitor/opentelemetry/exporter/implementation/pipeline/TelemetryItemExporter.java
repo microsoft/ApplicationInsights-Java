@@ -140,7 +140,7 @@ public class TelemetryItemExporter {
       byteBuffers = encode(telemetryItems);
       encodeBatchOperationLogger.recordSuccess();
     } catch (Throwable t) {
-      encodeBatchOperationLogger.recordFailure(t.getMessage(), t, TELEMETRY_ITEM_EXPORTER_ERROR);
+      encodeBatchOperationLogger.recordFailure(t.getMessage(), t);
       return CompletableResultCode.ofFailure();
     }
     return telemetryPipeline.send(byteBuffers, instrumentationKey, listener);

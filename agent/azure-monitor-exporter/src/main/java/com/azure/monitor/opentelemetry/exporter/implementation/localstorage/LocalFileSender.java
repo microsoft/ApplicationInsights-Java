@@ -31,12 +31,8 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class LocalFileSender implements Runnable {
-
-  private static final Logger logger = LoggerFactory.getLogger(LocalFileSender.class);
 
   private final LocalFileLoader localFileLoader;
   private final TelemetryPipeline telemetryPipeline;

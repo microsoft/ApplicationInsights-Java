@@ -62,13 +62,17 @@ public class OperationLogger {
     }
   }
 
+  public void recordFailure(String failureMessage, @Nullable Throwable exception) {
+    if (aggregatingLogger != null) {
+      aggregatingLogger.recordWarning(failureMessage, exception);
+    }
+  }
+
   // failureMessage should have low cardinality
   public void recordFailure(
       String failureMessage, @Nullable Throwable exception, AzureMonitorMsgId msgId) {
-    if (aggregatingLogger != null) {
-      try (MDC.MDCCloseable ignored = msgId.makeActive()) {
-        aggregatingLogger.recordWarning(failureMessage, exception);
-      }
+    try (MDC.MDCCloseable ignored = msgId.makeActive()) {
+      recordFailure(failureMessage, exception);
     }
   }
 }

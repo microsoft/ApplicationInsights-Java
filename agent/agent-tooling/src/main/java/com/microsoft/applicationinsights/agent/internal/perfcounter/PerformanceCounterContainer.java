@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId.CUSTOM_JMX_METRIC_ERROR;
-
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.List;
@@ -32,7 +30,6 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 /**
  * The class serves as the container of all {@link PerformanceCounter}
@@ -149,16 +146,10 @@ public enum PerformanceCounterContainer {
               } catch (ThreadDeath td) {
                 throw td;
               } catch (Throwable t) {
-                try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
-                  logger.error(
-                      "Exception while reporting performance counter: '{}'",
-                      performanceCounter.getClass().getName(),
-                      t);
-                } catch (ThreadDeath td) {
-                  throw td;
-                } catch (Throwable t2) {
-                  // chomp
-                }
+                logger.error(
+                    "Exception while reporting performance counter: '{}'",
+                    performanceCounter.getClass().getName(),
+                    t);
               }
             }
           }
