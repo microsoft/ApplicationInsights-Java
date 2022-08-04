@@ -87,8 +87,9 @@ public class AzureFunctionsInitializer implements Runnable {
     agentLogExporter.setThreshold(
         Configuration.LoggingInstrumentation.getSeverity(instrumentationLoggingLevel));
 
-    LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME).info(
-        "ApplicationInsights Java Agent specialization complete for Azure Functions placeholder");
+    LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
+        .info(
+            "ApplicationInsights Java Agent specialization complete for Azure Functions placeholder");
   }
 
   private static void disableBytecodeInstrumentation() {
