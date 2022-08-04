@@ -103,7 +103,7 @@ class QuickPulseDataFetcherTests {
   void endpointChangesWithRedirectHeaderAndGetNewPingInterval() {
     Map<String, String> headers = new HashMap<>();
     headers.put("x-ms-qps-service-polling-interval-hint", "1000");
-    headers.put("x-ms-qps-service-endpoint-redirect", "https://new.endpoint.com");
+    headers.put("x-ms-qps-service-endpoint-redirect-v2", "https://new.endpoint.com");
     headers.put("x-ms-qps-subscribed", "true");
     HttpHeaders httpHeaders = new HttpHeaders(headers);
     ConnectionString connectionString = ConnectionString.parse("InstrumentationKey=testing-123");
