@@ -74,7 +74,7 @@ public class StatusFile {
   // visible for testing
   static String logDir;
 
-  private final static String directory;
+  private static final String directory;
 
   //  private static final AtomicBoolean alreadyLogged = new AtomicBoolean();
 

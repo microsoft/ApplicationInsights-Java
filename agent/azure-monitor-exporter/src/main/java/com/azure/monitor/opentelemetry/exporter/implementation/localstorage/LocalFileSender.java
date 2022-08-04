@@ -21,7 +21,6 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
-import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.DISK_PERSISTENCE_LOADER_ERROR;
 import static java.util.Collections.singletonList;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.DiagnosticTelemetryPipelineListener;
@@ -34,7 +33,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 class LocalFileSender implements Runnable {
 
@@ -80,24 +78,17 @@ class LocalFileSender implements Runnable {
     // send out the telemetry to the original destination)
 
     // TODO (heya) load all persisted files on disk in one or more batch per batch capacity?
-    try {
-      LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
-      if (persistedFile != null) {
-        CompletableResultCode resultCode =
-            telemetryPipeline.send(
-                singletonList(persistedFile.rawBytes),
-                persistedFile.instrumentationKey,
-                TelemetryPipelineListener.composite(
-                    diagnosticListener,
-                    new LocalFileSenderTelemetryPipelineListener(
-                        localFileLoader, persistedFile.file)));
-        resultCode.join(30, TimeUnit.SECONDS); // wait max 30 seconds for request to be completed.
-      }
-    } catch (RuntimeException ex) {
-      try (MDC.MDCCloseable ignored = DISK_PERSISTENCE_LOADER_ERROR.makeActive()) {
-        logger.error(
-            "Unexpected error occurred while sending telemetries from the local storage.", ex);
-      }
+    LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
+    if (persistedFile != null) {
+      CompletableResultCode resultCode =
+          telemetryPipeline.send(
+              singletonList(persistedFile.rawBytes),
+              persistedFile.instrumentationKey,
+              TelemetryPipelineListener.composite(
+                  diagnosticListener,
+                  new LocalFileSenderTelemetryPipelineListener(
+                      localFileLoader, persistedFile.file)));
+      resultCode.join(30, TimeUnit.SECONDS); // wait max 30 seconds for request to be completed.
     }
   }
 }
