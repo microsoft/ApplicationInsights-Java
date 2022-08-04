@@ -219,6 +219,10 @@ public class StatusFile {
         "StatusFileJsonWrite");
   }
 
+  @SuppressFBWarnings(
+      value = "SECPTI", // java/io/File.<init>(Ljava/lang/String;
+      justification =
+          "The constructed file path cannot be controlled by an end user of the instrumented application)")
   private static boolean writable() {
     if (!DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
       return false;
