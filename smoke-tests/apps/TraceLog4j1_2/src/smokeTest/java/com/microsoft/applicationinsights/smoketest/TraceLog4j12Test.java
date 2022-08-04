@@ -76,6 +76,11 @@ abstract class TraceLog4j12Test {
     Envelope mdEnvelope2 = mdList.get(1);
     Envelope mdEnvelope3 = mdList.get(2);
 
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(mdEnvelope1.getSampleRate()).isNull();
+    assertThat(mdEnvelope2.getSampleRate()).isNull();
+    assertThat(mdEnvelope3.getSampleRate()).isNull();
+
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
     List<MessageData> logs = testing.mockedIngestion.getMessageDataInRequest();
@@ -136,6 +141,9 @@ abstract class TraceLog4j12Test {
     assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope edEnvelope = edList.get(0);
+
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(edEnvelope.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();

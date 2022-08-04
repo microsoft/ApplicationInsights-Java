@@ -75,6 +75,10 @@ abstract class SpringCloudStreamTest {
     Envelope rdEnvelope2 = rdList.get(1);
     Envelope rddEnvelope1 = rddList.get(0);
 
+    assertThat(rdEnvelope1.getSampleRate()).isNull();
+    assertThat(rdEnvelope2.getSampleRate()).isNull();
+    assertThat(rddEnvelope1.getSampleRate()).isNull();
+
     RequestData rd1 = (RequestData) ((Data<?>) rdEnvelope1.getData()).getBaseData();
     RequestData rd2 = (RequestData) ((Data<?>) rdEnvelope2.getData()).getBaseData();
     RemoteDependencyData rdd1 =
