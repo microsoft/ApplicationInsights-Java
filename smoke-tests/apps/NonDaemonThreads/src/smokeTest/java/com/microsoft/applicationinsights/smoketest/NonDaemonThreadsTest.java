@@ -42,8 +42,9 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+// IMPORTANT this is also currently the only smoke test for logs that occur outside a request
 @UseAgent
-abstract class SpringBootAutoTest {
+abstract class NonDaemonThreadsTest {
 
   @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
@@ -86,29 +87,29 @@ abstract class SpringBootAutoTest {
   }
 
   @Environment(JAVA_8)
-  static class Java8Test extends SpringBootAutoTest {}
+  static class Java8Test extends NonDaemonThreadsTest {}
 
   @Environment(JAVA_8_OPENJ9)
-  static class Java8OpenJ9Test extends SpringBootAutoTest {}
+  static class Java8OpenJ9Test extends NonDaemonThreadsTest {}
 
   @Environment(JAVA_11)
-  static class Java11Test extends SpringBootAutoTest {}
+  static class Java11Test extends NonDaemonThreadsTest {}
 
   @Environment(JAVA_11_OPENJ9)
-  static class Java11OpenJ9Test extends SpringBootAutoTest {}
+  static class Java11OpenJ9Test extends NonDaemonThreadsTest {}
 
   @Environment(JAVA_17)
-  static class Java17Test extends SpringBootAutoTest {}
+  static class Java17Test extends NonDaemonThreadsTest {}
 
   @Environment(JAVA_17_OPENJ9)
-  static class Java17OpenJ9Test extends SpringBootAutoTest {}
+  static class Java17OpenJ9Test extends NonDaemonThreadsTest {}
 
   @Environment(JAVA_18)
-  static class Java18Test extends SpringBootAutoTest {}
+  static class Java18Test extends NonDaemonThreadsTest {}
 
   @Environment(JAVA_18_OPENJ9)
-  static class Java18OpenJ9Test extends SpringBootAutoTest {}
+  static class Java18OpenJ9Test extends NonDaemonThreadsTest {}
 
   @Environment(JAVA_19)
-  static class Java19Test extends SpringBootAutoTest {}
+  static class Java19Test extends NonDaemonThreadsTest {}
 }
