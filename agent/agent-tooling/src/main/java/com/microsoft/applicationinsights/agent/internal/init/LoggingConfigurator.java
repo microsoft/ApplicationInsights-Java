@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper.LINUX_DEFAULT;
 import static org.slf4j.Logger.ROOT_LOGGER_NAME;
 
 import ch.qos.logback.classic.Level;
@@ -95,10 +96,8 @@ public class LoggingConfigurator {
     rootLogger.addAppender(configureConsoleAppender());
 
     // App Services linux is default to "/var/log/applicationinsights".
-    String diagnosticsOutputDirectory = "/var/log/applicationinsights";
     if (!DiagnosticsHelper.isOsWindows()) {
-      Appender<ILoggingEvent> diagnosticAppender =
-          configureDiagnosticAppender(diagnosticsOutputDirectory);
+      Appender<ILoggingEvent> diagnosticAppender = configureDiagnosticAppender(LINUX_DEFAULT);
 
       // applicationinsights.extension.diagnostics logging should go to extension diagnostic log,
       // but should not go to normal user-facing log

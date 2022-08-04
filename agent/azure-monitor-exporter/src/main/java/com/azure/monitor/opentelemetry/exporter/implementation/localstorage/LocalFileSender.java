@@ -31,6 +31,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.LoggerFactory;
 
 class LocalFileSender implements Runnable {
 
@@ -74,17 +75,22 @@ class LocalFileSender implements Runnable {
     // send out the telemetry to the original destination)
 
     // TODO (heya) load all persisted files on disk in one or more batch per batch capacity?
-    LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
-    if (persistedFile != null) {
-      CompletableResultCode resultCode =
-          telemetryPipeline.send(
-              singletonList(persistedFile.rawBytes),
-              persistedFile.instrumentationKey,
-              TelemetryPipelineListener.composite(
-                  diagnosticListener,
-                  new LocalFileSenderTelemetryPipelineListener(
-                      localFileLoader, persistedFile.file)));
-      resultCode.join(30, TimeUnit.SECONDS); // wait max 30 seconds for request to be completed.
+    try {
+      LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
+      if (persistedFile != null) {
+        CompletableResultCode resultCode =
+            telemetryPipeline.send(
+                singletonList(persistedFile.rawBytes),
+                persistedFile.instrumentationKey,
+                TelemetryPipelineListener.composite(
+                    diagnosticListener,
+                    new LocalFileSenderTelemetryPipelineListener(
+                        localFileLoader, persistedFile.file)));
+        resultCode.join(30, TimeUnit.SECONDS); // wait max 30 seconds for request to be completed.
+      }
+    } catch (RuntimeException ex) {
+      LoggerFactory.getLogger(LocalFileSender.class)
+          .error("Unexpected error occurred while sending telemetries from the local storage.", ex);
     }
   }
 }

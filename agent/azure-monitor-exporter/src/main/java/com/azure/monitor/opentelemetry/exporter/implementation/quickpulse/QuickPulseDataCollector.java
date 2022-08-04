@@ -70,7 +70,6 @@ final class QuickPulseDataCollector {
         useNormalizedValueForNonNormalizedCpuPercentage;
   }
 
-  @Nullable
   private static CpuPerformanceCounterCalculator getCpuPerformanceCounterCalculator() {
     return new CpuPerformanceCounterCalculator();
   }

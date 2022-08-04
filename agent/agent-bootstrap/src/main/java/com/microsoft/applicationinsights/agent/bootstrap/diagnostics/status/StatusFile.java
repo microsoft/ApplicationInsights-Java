@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status;
 
 import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper.LINUX_DEFAULT;
-import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId.STATUS_FILE_RELATED_ERROR;
+import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId.STATUS_FILE_ERROR;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.ApplicationMetadataFactory;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
@@ -76,8 +76,6 @@ public class StatusFile {
 
   private static final String directory;
 
-  //  private static final AtomicBoolean alreadyLogged = new AtomicBoolean();
-
   private static final Object lock = new Object();
 
   // guarded by lock
@@ -85,8 +83,6 @@ public class StatusFile {
 
   // guarded by lock
   private static BufferedSink buffer;
-
-  @Nullable public static Logger startupLogger;
 
   private static final ThreadPoolExecutor WRITER_THREAD =
       new ThreadPoolExecutor(
@@ -186,7 +182,7 @@ public class StatusFile {
                   b.flush();
                 } catch (Exception e) {
                   if (logger != null) {
-                    try (MDC.MDCCloseable ignored = STATUS_FILE_RELATED_ERROR.makeActive()) {
+                    try (MDC.MDCCloseable ignored = STATUS_FILE_ERROR.makeActive()) {
                       logger.error("Error writing {}", file.getAbsolutePath(), e);
                     }
                   } else {
@@ -202,7 +198,7 @@ public class StatusFile {
                 }
               } else {
                 if (logger != null) {
-                  try (MDC.MDCCloseable ignored = STATUS_FILE_RELATED_ERROR.makeActive()) {
+                  try (MDC.MDCCloseable ignored = STATUS_FILE_ERROR.makeActive()) {
                     logger.error(
                         "Parent directories for status file could not be created: {}",
                         file.getAbsolutePath());
@@ -220,7 +216,7 @@ public class StatusFile {
   }
 
   @SuppressFBWarnings(
-      value = "SECPTI", // java/io/File.<init>(Ljava/lang/String;
+      value = "SECPTI",
       justification =
           "The constructed file path cannot be controlled by an end user of the instrumented application)")
   private static boolean writable() {
