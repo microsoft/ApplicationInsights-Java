@@ -22,12 +22,12 @@
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status;
 
 import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper.LINUX_DEFAULT;
+import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId.STATUS_FILE_RELATED_ERROR;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.ApplicationMetadataFactory;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsValueFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MachineNameFinder;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -183,7 +183,7 @@ public class StatusFile {
                   b.flush();
                 } catch (Exception e) {
                   if (logger != null) {
-                    try (MDC.MDCCloseable ignored = MsgId.STATUS_FILE_RELATED_ERROR.makeActive()) {
+                    try (MDC.MDCCloseable ignored = STATUS_FILE_RELATED_ERROR.makeActive()) {
                       logger.error("Error writing {}", file.getAbsolutePath(), e);
                     }
                   } else {
@@ -199,7 +199,7 @@ public class StatusFile {
                 }
               } else {
                 if (logger != null) {
-                  try (MDC.MDCCloseable ignored = MsgId.STATUS_FILE_RELATED_ERROR.makeActive()) {
+                  try (MDC.MDCCloseable ignored = STATUS_FILE_RELATED_ERROR.makeActive()) {
                     logger.error(
                         "Parent directories for status file could not be created: {}",
                         file.getAbsolutePath());

@@ -21,6 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.CPU_PERFORMANCE_COUNTER_ERROR;
+
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import javax.annotation.Nullable;
@@ -62,8 +64,7 @@ public final class CpuPerformanceCounterCalculator {
       prevProcessCpuTime = processCpuTime;
       return null;
     } catch (Exception e) {
-      try (MDC.MDCCloseable ignored =
-          AzureMonitorMsgId.CPU_PERFORMANCE_COUNTER_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = CPU_PERFORMANCE_COUNTER_ERROR.makeActive()) {
         logger.error("Error in getProcessCPUUsage");
       }
       logger.trace("Error in getProcessCPUUsage", e);

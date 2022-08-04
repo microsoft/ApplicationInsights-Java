@@ -21,11 +21,12 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.logging;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.NETWORK_FAILURE_ERROR;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineRequest;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineResponse;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -65,19 +66,18 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
       case 400: // breeze returns if json content is bad (e.g. missing required field)
         operationLogger.recordFailure(
             getErrorMessageFromPartialSuccessResponse(response.getBody(), responseCode),
-            AzureMonitorMsgId.NETWORK_FAILURE_ERROR);
+            NETWORK_FAILURE_ERROR);
         break;
       case 307:
       case 308:
-        operationLogger.recordFailure(
-            "Too many redirects", AzureMonitorMsgId.NETWORK_FAILURE_ERROR);
+        operationLogger.recordFailure("Too many redirects", NETWORK_FAILURE_ERROR);
         break;
       case 401: // breeze returns if aad enabled and no authentication token provided
       case 403: // breeze returns if aad enabled or disabled (both cases) and
         if (!suppressWarningsOnRetryableFailures) {
           operationLogger.recordFailure(
               getErrorMessageFromCredentialRelatedResponse(responseCode, response.getBody()),
-              AzureMonitorMsgId.NETWORK_FAILURE_ERROR);
+              NETWORK_FAILURE_ERROR);
         }
         break;
       case 408: // REQUEST TIMEOUT
@@ -89,22 +89,22 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
               "Received response code "
                   + responseCode
                   + " (telemetry will be stored to disk and retried later)",
-              AzureMonitorMsgId.NETWORK_FAILURE_ERROR);
+              NETWORK_FAILURE_ERROR);
         }
         break;
       case 402: // Breeze-specific: New Daily Quota Exceeded
         operationLogger.recordFailure(
             "Received response code 402 (daily quota exceeded and throttled over extended time)",
-            AzureMonitorMsgId.NETWORK_FAILURE_ERROR);
+            NETWORK_FAILURE_ERROR);
         break;
       case 439: // Breeze-specific: Deprecated Daily Quota Exceeded
         operationLogger.recordFailure(
             "Received response code 439 (daily quota exceeded and throttled over extended time)",
-            AzureMonitorMsgId.NETWORK_FAILURE_ERROR);
+            NETWORK_FAILURE_ERROR);
         break;
       default:
         operationLogger.recordFailure(
-            "received response code: " + responseCode, AzureMonitorMsgId.NETWORK_FAILURE_ERROR);
+            "received response code: " + responseCode, NETWORK_FAILURE_ERROR);
     }
   }
 
@@ -112,7 +112,7 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
   public void onException(TelemetryPipelineRequest request, String reason, Throwable throwable) {
     if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
         throwable, request.getUrl().toString(), friendlyExceptionThrown, logger)) {
-      operationLogger.recordFailure(reason, throwable, AzureMonitorMsgId.NETWORK_FAILURE_ERROR);
+      operationLogger.recordFailure(reason, throwable, NETWORK_FAILURE_ERROR);
     }
   }
 

@@ -21,10 +21,10 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.DISK_PERSISTENCE_WRITER_ERROR;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -75,7 +75,7 @@ final class LocalFileWriter {
           "Local persistent storage capacity has been reached. It's currently at ("
               + (size / 1024)
               + "KB). Telemetry will be lost.",
-          AzureMonitorMsgId.DISK_PERSISTENCE_WRITER_ERROR);
+          DISK_PERSISTENCE_WRITER_ERROR);
       stats.incrementWriteFailureCount();
       return;
     }
@@ -87,7 +87,7 @@ final class LocalFileWriter {
       operationLogger.recordFailure(
           "Error creating file in directory: " + telemetryFolder.getAbsolutePath(),
           e,
-          AzureMonitorMsgId.DISK_PERSISTENCE_WRITER_ERROR);
+          DISK_PERSISTENCE_WRITER_ERROR);
       stats.incrementWriteFailureCount();
       return;
     }
@@ -96,9 +96,7 @@ final class LocalFileWriter {
       write(tempFile, buffers, instrumentationKey);
     } catch (IOException e) {
       operationLogger.recordFailure(
-          "Error writing file: " + tempFile.getAbsolutePath(),
-          e,
-          AzureMonitorMsgId.DISK_PERSISTENCE_WRITER_ERROR);
+          "Error writing file: " + tempFile.getAbsolutePath(), e, DISK_PERSISTENCE_WRITER_ERROR);
       stats.incrementWriteFailureCount();
       return;
     }
@@ -110,9 +108,7 @@ final class LocalFileWriter {
       FileUtil.moveFile(tempFile, permanentFile);
     } catch (IOException e) {
       operationLogger.recordFailure(
-          "Error renaming file: " + tempFile.getAbsolutePath(),
-          e,
-          AzureMonitorMsgId.DISK_PERSISTENCE_WRITER_ERROR);
+          "Error renaming file: " + tempFile.getAbsolutePath(), e, DISK_PERSISTENCE_WRITER_ERROR);
       stats.incrementWriteFailureCount();
       return;
     }

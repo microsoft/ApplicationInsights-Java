@@ -21,7 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId;
+import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId.CUSTOM_JMX_METRIC_ERROR;
+
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.Collection;
 import java.util.Map;
@@ -72,8 +73,7 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
           try {
             send(telemetryClient, displayAndValues.getKey(), value);
           } catch (RuntimeException e) {
-            try (MDC.MDCCloseable ignored =
-                MsgId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
+            try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
               logger.error("Error while sending JMX data: '{}'", e.toString());
             }
             logger.trace("Error while sending JMX data", e);
@@ -82,7 +82,7 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
       }
     } catch (Exception e) {
       if (!alreadyLogged) {
-        try (MDC.MDCCloseable ignored = MsgId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
+        try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
           logger.error("Error while fetching JMX data: '{}'", e.toString());
         }
         logger.trace("Error while fetching JMX data", e);

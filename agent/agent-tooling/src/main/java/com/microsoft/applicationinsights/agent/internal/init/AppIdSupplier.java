@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.APP_ID_ERROR;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.azure.core.http.HttpMethod;
@@ -29,7 +30,6 @@ import com.azure.core.http.HttpResponse;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.NetworkFriendlyExceptions;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.WarningLogger;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.bootstrap.AiAppId;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
@@ -77,7 +77,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
     try {
       newTask = new GetAppIdTask(getAppIdUrl(connectionString));
     } catch (MalformedURLException e) {
-      try (MDC.MDCCloseable ignored = AzureMonitorMsgId.APP_ID_ERROR.makeActive()) {
+      try (MDC.MDCCloseable ignored = APP_ID_ERROR.makeActive()) {
         logger.warn(e.getMessage(), e);
       }
       return;
@@ -144,8 +144,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
       } catch (RuntimeException ex) {
         if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
             ex, url.toString(), friendlyExceptionThrown, logger)) {
-          warningLogger.recordWarning(
-              "exception sending request to " + url, ex, AzureMonitorMsgId.APP_ID_ERROR);
+          warningLogger.recordWarning("exception sending request to " + url, ex, APP_ID_ERROR);
         }
         backOff();
         return;
@@ -162,15 +161,14 @@ public class AppIdSupplier implements AiAppId.Supplier {
         warningLogger.recordWarning(
             "received " + statusCode + " from " + url + "\nfull response:\n" + body,
             null,
-            AzureMonitorMsgId.APP_ID_ERROR);
+            APP_ID_ERROR);
         backOff();
         return;
       }
 
       // check for case when breeze returns invalid value
       if (body == null || body.isEmpty()) {
-        warningLogger.recordWarning(
-            "received empty body from " + url, null, AzureMonitorMsgId.APP_ID_ERROR);
+        warningLogger.recordWarning("received empty body from " + url, null, APP_ID_ERROR);
         backOff();
         return;
       }

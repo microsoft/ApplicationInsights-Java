@@ -21,12 +21,13 @@
 
 package com.azure.monitor.opentelemetry.exporter;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.EXPORTER_MAPPING_ERROR;
+
 import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -78,8 +79,7 @@ public class AzureMonitorMetricExporter implements MetricExporter {
         mapper.map(metricData, telemetryItems::add);
         exportingMetricLogger.recordSuccess();
       } catch (Throwable t) {
-        exportingMetricLogger.recordFailure(
-            t.getMessage(), t, AzureMonitorMsgId.EXPORTER_MAPPING_ERROR);
+        exportingMetricLogger.recordFailure(t.getMessage(), t, EXPORTER_MAPPING_ERROR);
         return CompletableResultCode.ofFailure();
       }
     }

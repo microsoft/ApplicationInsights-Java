@@ -21,10 +21,11 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.EXPORTER_MAPPING_ERROR;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter;
@@ -84,8 +85,7 @@ public class AgentMetricExporter implements MetricExporter {
         mapper.map(metricData, telemetryItemConsumer);
         exportingMetricLogger.recordSuccess();
       } catch (Throwable t) {
-        exportingMetricLogger.recordFailure(
-            t.getMessage(), t, AzureMonitorMsgId.EXPORTER_MAPPING_ERROR);
+        exportingMetricLogger.recordFailure(t.getMessage(), t, EXPORTER_MAPPING_ERROR);
       }
     }
     // always returning success, because all error handling is performed internally

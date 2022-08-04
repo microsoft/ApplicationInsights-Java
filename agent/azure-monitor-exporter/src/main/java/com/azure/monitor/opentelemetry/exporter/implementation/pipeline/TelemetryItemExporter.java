@@ -21,9 +21,10 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.pipeline;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.TELEMETRY_INTERNAL_SEND_ERROR;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SerializedString;
@@ -110,7 +111,7 @@ public class TelemetryItemExporter {
       // waiting for the most recent export instead of waiting for the first export to return
       operationLogger.recordFailure(
           "Hit max " + MAX_CONCURRENT_EXPORTS + " active concurrent requests",
-          AzureMonitorMsgId.TELEMETRY_INTERNAL_SEND_ERROR);
+          TELEMETRY_INTERNAL_SEND_ERROR);
       return CompletableResultCode.ofAll(results);
     }
 
@@ -139,8 +140,7 @@ public class TelemetryItemExporter {
       byteBuffers = encode(telemetryItems);
       encodeBatchOperationLogger.recordSuccess();
     } catch (Throwable t) {
-      encodeBatchOperationLogger.recordFailure(
-          t.getMessage(), t, AzureMonitorMsgId.TELEMETRY_INTERNAL_SEND_ERROR);
+      encodeBatchOperationLogger.recordFailure(t.getMessage(), t, TELEMETRY_INTERNAL_SEND_ERROR);
       return CompletableResultCode.ofFailure();
     }
     return telemetryPipeline.send(byteBuffers, instrumentationKey, listener);

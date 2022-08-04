@@ -21,8 +21,9 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
+import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId.CUSTOM_JMX_METRIC_ERROR;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -148,8 +149,7 @@ public enum PerformanceCounterContainer {
               } catch (ThreadDeath td) {
                 throw td;
               } catch (Throwable t) {
-                try (MDC.MDCCloseable ignored =
-                    MsgId.JMX_METRIC_PERFORMANCE_COUNTER_ERROR.makeActive()) {
+                try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
                   logger.error(
                       "Exception while reporting performance counter: '{}'",
                       performanceCounter.getClass().getName(),
