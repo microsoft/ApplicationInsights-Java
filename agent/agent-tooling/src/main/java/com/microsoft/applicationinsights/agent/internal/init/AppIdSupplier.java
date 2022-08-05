@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.APP_ID_ERROR;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.azure.core.http.HttpMethod;
@@ -41,6 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 // note: app id is used by distributed trace headers and (soon) jfr profiling
 public class AppIdSupplier implements AiAppId.Supplier {
@@ -75,7 +77,9 @@ public class AppIdSupplier implements AiAppId.Supplier {
     try {
       newTask = new GetAppIdTask(getAppIdUrl(connectionString));
     } catch (MalformedURLException e) {
-      logger.warn(e.getMessage(), e);
+      try (MDC.MDCCloseable ignored = APP_ID_ERROR.makeActive()) {
+        logger.warn(e.getMessage(), e);
+      }
       return;
     }
     synchronized (taskLock) {
@@ -140,7 +144,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
       } catch (RuntimeException ex) {
         if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
             ex, url.toString(), friendlyExceptionThrown, logger)) {
-          warningLogger.recordWarning("exception sending request to " + url, ex);
+          warningLogger.recordWarning("exception sending request to " + url, ex, APP_ID_ERROR);
         }
         backOff();
         return;
@@ -155,14 +159,16 @@ public class AppIdSupplier implements AiAppId.Supplier {
       int statusCode = response.getStatusCode();
       if (statusCode != 200) {
         warningLogger.recordWarning(
-            "received " + statusCode + " from " + url + "\nfull response:\n" + body, null);
+            "received " + statusCode + " from " + url + "\nfull response:\n" + body,
+            null,
+            APP_ID_ERROR);
         backOff();
         return;
       }
 
       // check for case when breeze returns invalid value
       if (body == null || body.isEmpty()) {
-        warningLogger.recordWarning("received empty body from " + url, null);
+        warningLogger.recordWarning("received empty body from " + url, null, APP_ID_ERROR);
         backOff();
         return;
       }

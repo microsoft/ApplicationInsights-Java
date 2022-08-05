@@ -36,11 +36,10 @@ import org.slf4j.LoggerFactory;
 
 class LocalFileSender implements Runnable {
 
-  private static final Logger logger = LoggerFactory.getLogger(LocalFileSender.class);
-
   private final LocalFileLoader localFileLoader;
   private final TelemetryPipeline telemetryPipeline;
 
+  private static final Logger logger = LoggerFactory.getLogger(LocalFileSender.class);
   private final ScheduledExecutorService scheduledExecutor =
       Executors.newSingleThreadScheduledExecutor(
           ThreadPoolUtils.createDaemonThreadFactory(LocalFileLoader.class));

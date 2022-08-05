@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
+import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId.FAIL_TO_SEND_STATSBEAT_ERROR;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -30,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 public class StatsbeatModule {
 
@@ -165,7 +168,9 @@ public class StatsbeatModule {
         }
         statsbeat.send(telemetryClient);
       } catch (RuntimeException e) {
-        logger.error("Error occurred while sending statsbeat", e);
+        try (MDC.MDCCloseable ignored = FAIL_TO_SEND_STATSBEAT_ERROR.makeActive()) {
+          logger.error("Error occurred while sending statsbeat", e);
+        }
       }
     }
   }

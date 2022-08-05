@@ -21,6 +21,9 @@
 
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status;
 
+import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper.LINUX_DEFAULT;
+import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId.STATUS_FILE_ERROR;
+
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.ApplicationMetadataFactory;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsValueFinder;
@@ -42,12 +45,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import okio.BufferedSink;
 import okio.Okio;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 public class StatusFile {
 
@@ -69,26 +72,20 @@ public class StatusFile {
   static final String HOME_ENV_VAR = "HOME";
 
   // visible for testing
-  static final String DEFAULT_HOME_DIR = ".";
-
-  // visible for testing
   static final String DEFAULT_LOGDIR = "/LogFiles";
 
   // visible for testing
   static final String DEFAULT_APPLICATIONINSIGHTS_LOGDIR = "/ApplicationInsights";
 
   // visible for testing
-  static final String STATUS_FILE_DIRECTORY = "/status";
+  static final String WINDOWS_DEFAULT_HOME_DIR =
+      "/home" + DEFAULT_LOGDIR + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
 
   // visible for testing
   static String logDir;
 
   // visible for testing
   static String directory;
-
-  private static final boolean writable;
-
-  private static final AtomicBoolean alreadyLogged = new AtomicBoolean();
 
   private static final Object lock = new Object();
 
@@ -97,8 +94,6 @@ public class StatusFile {
 
   // guarded by lock
   private static BufferedSink buffer;
-
-  @Nullable public static Logger startupLogger;
 
   private static final ThreadPoolExecutor WRITER_THREAD =
       new ThreadPoolExecutor(
@@ -116,9 +111,7 @@ public class StatusFile {
     VALUE_FINDERS.add(mf.getExtensionVersion());
 
     logDir = initLogDir();
-    directory = logDir + STATUS_FILE_DIRECTORY;
-    File dir = new File(logDir);
-    writable = dir.canWrite();
+    directory = DiagnosticsHelper.isOsWindows() ? logDir + "/Status" : logDir;
   }
 
   private static Thread newThread(Runnable r) {
@@ -139,7 +132,7 @@ public class StatusFile {
     if (homeDir != null && !homeDir.isEmpty()) {
       return homeDir + DEFAULT_LOGDIR + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
     }
-    return DEFAULT_HOME_DIR + DEFAULT_LOGDIR + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
+    return DiagnosticsHelper.isOsWindows() ? WINDOWS_DEFAULT_HOME_DIR : LINUX_DEFAULT;
   }
 
   public static String getLogDir() {
@@ -148,29 +141,12 @@ public class StatusFile {
 
   private StatusFile() {}
 
-  private static boolean shouldWrite() {
-    if (!DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
-      return false;
-    }
-    if (writable) {
-      return true;
-    }
-
-    // read-only app services, want to log warning once in this case
-    if (startupLogger != null && !alreadyLogged.getAndSet(true)) {
-      startupLogger.info(
-          "Detected running on a read-only file system. Status json file won't be created. If this is unexpected, please check that process has write access to the directory: {}",
-          directory);
-    }
-    return false;
-  }
-
   public static <T> void putValueAndWrite(String key, T value) {
     putValueAndWrite(key, value, true);
   }
 
   public static <T> void putValueAndWrite(String key, T value, boolean loggingInitialized) {
-    if (!shouldWrite()) {
+    if (!writable()) {
       return;
     }
     CONSTANT_VALUES.put(key, value);
@@ -178,7 +154,7 @@ public class StatusFile {
   }
 
   public static <T> void putValue(String key, T value) {
-    if (!shouldWrite()) {
+    if (!writable()) {
       return;
     }
     CONSTANT_VALUES.put(key, value);
@@ -190,7 +166,7 @@ public class StatusFile {
 
   @SuppressWarnings("SystemOut")
   private static void write(boolean loggingInitialized) {
-    if (!shouldWrite()) {
+    if (!writable()) {
       return;
     }
     WRITER_THREAD.submit(
@@ -226,7 +202,9 @@ public class StatusFile {
                   b.flush();
                 } catch (Exception e) {
                   if (logger != null) {
-                    logger.error("Error writing {}", file.getAbsolutePath(), e);
+                    try (MDC.MDCCloseable ignored = STATUS_FILE_ERROR.makeActive()) {
+                      logger.error("Error writing {}", file.getAbsolutePath(), e);
+                    }
                   } else {
                     e.printStackTrace();
                   }
@@ -240,9 +218,11 @@ public class StatusFile {
                 }
               } else {
                 if (logger != null) {
-                  logger.error(
-                      "Parent directories for status file could not be created: {}",
-                      file.getAbsolutePath());
+                  try (MDC.MDCCloseable ignored = STATUS_FILE_ERROR.makeActive()) {
+                    logger.error(
+                        "Parent directories for status file could not be created: {}",
+                        file.getAbsolutePath());
+                  }
                 } else {
                   System.err.println(
                       "Parent directories for status file could not be created: "
@@ -253,6 +233,17 @@ public class StatusFile {
           }
         },
         "StatusFileJsonWrite");
+  }
+
+  @SuppressFBWarnings(
+      value = "SECPTI",
+      justification =
+          "The constructed file path cannot be controlled by an end user of the instrumented application)")
+  private static boolean writable() {
+    if (!DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
+      return false;
+    }
+    return new File(logDir).canWrite();
   }
 
   private static BufferedSink getBuffer(File file) throws IOException {

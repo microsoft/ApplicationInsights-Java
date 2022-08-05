@@ -21,6 +21,9 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId.INITIALIZATION_SUCCESS;
+import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId.STARTUP_FAILURE_ERROR;
+
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
@@ -100,7 +103,6 @@ public class FirstEntryPoint implements LoggingCustomizer {
         PropertyHelper.setSdkNamePrefix(codelessSdkNamePrefix);
       }
       startupLogger = configureLogging(configuration.selfDiagnostics, agentPath);
-      StatusFile.startupLogger = startupLogger;
       ConfigurationBuilder.logConfigurationWarnMessages();
 
       LegacyInstrumentation.registerTransformers();
@@ -122,11 +124,11 @@ public class FirstEntryPoint implements LoggingCustomizer {
         System.getProperty("java.home"));
 
     MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
-    try {
+    try (MDC.MDCCloseable ignored = INITIALIZATION_SUCCESS.makeActive()) {
       LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
           .info("Application Insights Codeless Agent {} Attach Successful", agentVersion);
     } finally {
-      MDC.clear();
+      MDC.remove(DiagnosticsHelper.MDC_PROP_OPERATION);
     }
 
     updateStatusFile(true);
@@ -156,17 +158,8 @@ public class FirstEntryPoint implements LoggingCustomizer {
     updateStatusFile(false);
   }
 
-  @SuppressWarnings("SystemOut")
   private static void updateStatusFile(boolean success) {
-    try {
-      StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success, startupLogger != null);
-    } catch (Throwable t) {
-      if (startupLogger != null) {
-        startupLogger.error("Error writing status.json", t);
-      } else {
-        t.printStackTrace();
-      }
-    }
+    StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success, startupLogger != null);
   }
 
   // visible for testing
@@ -191,11 +184,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
       File javaagentFile) {
 
     if (startupLogger != null) {
-      if (isFriendlyException) {
-        startupLogger.error(message);
-      } else {
-        startupLogger.error(message, t);
-      }
+      logStartupFailure(isFriendlyException, message, t);
     } else {
       try {
         // IF the startupLogger failed to be initialized due to configuration syntax error, try
@@ -207,11 +196,8 @@ public class FirstEntryPoint implements LoggingCustomizer {
                 ConfigurationBuilder.APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH,
                 selfDiagnostics.file.path);
         startupLogger = configureLogging(selfDiagnostics, agentPath);
-        if (isFriendlyException) {
-          startupLogger.error(message);
-        } else {
-          startupLogger.error(message, t);
-        }
+
+        logStartupFailure(isFriendlyException, message, t);
       } catch (Throwable ignored) {
         // this is a last resort in cases where the JVM doesn't have write permission to the
         // directory where the agent lives
@@ -234,6 +220,16 @@ public class FirstEntryPoint implements LoggingCustomizer {
         } catch (Throwable ignored2) {
           // ignored
         }
+      }
+    }
+  }
+
+  private static void logStartupFailure(boolean isFriendlyException, String message, Throwable t) {
+    try (MDC.MDCCloseable ignored = STARTUP_FAILURE_ERROR.makeActive()) {
+      if (isFriendlyException) {
+        startupLogger.error(message);
+      } else {
+        startupLogger.error(message, t);
       }
     }
   }

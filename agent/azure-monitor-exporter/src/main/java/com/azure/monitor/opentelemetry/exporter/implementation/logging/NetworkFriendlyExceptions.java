@@ -21,6 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.logging;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.FRIENDLY_NETWORK_ERROR;
+
 import com.azure.core.util.CoreUtils;
 import io.netty.handler.ssl.SslHandshakeTimeoutException;
 import java.io.File;
@@ -37,6 +39,7 @@ import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLSocketFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 public class NetworkFriendlyExceptions {
 
@@ -72,7 +75,9 @@ public class NetworkFriendlyExceptions {
     for (FriendlyExceptionDetector detector : detectors) {
       if (detector.detect(error)) {
         if (!alreadySeen.getAndSet(true)) {
-          logger.error(detector.message(url));
+          try (MDC.MDCCloseable ignored = FRIENDLY_NETWORK_ERROR.makeActive()) {
+            logger.error(detector.message(url));
+          }
         }
         return true;
       }

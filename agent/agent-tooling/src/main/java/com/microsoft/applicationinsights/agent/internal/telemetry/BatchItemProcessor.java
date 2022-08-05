@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.BATCH_ITEM_PROCESSOR_ERROR;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
@@ -168,7 +170,8 @@ public final class BatchItemProcessor {
                 + queueName
                 + "ExportQueueCapacity\": "
                 + (queueCapacity * 2)
-                + " } }");
+                + " } }",
+            BATCH_ITEM_PROCESSOR_ERROR);
       } else {
         queuingItemLogger.recordSuccess();
         if (queue.size() >= itemsNeeded.get()) {
@@ -306,7 +309,8 @@ public final class BatchItemProcessor {
             addAsyncExport.recordFailure(
                 "Max number of concurrent exports "
                     + maxPendingExports
-                    + " has been hit, may see some export throttling due to this");
+                    + " has been hit, may see some export throttling due to this",
+                BATCH_ITEM_PROCESSOR_ERROR);
           }
           result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
         }

@@ -21,6 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.pipeline;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.TELEMETRY_ITEM_EXPORTER_ERROR;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -108,7 +110,8 @@ public class TelemetryItemExporter {
       // this is just a failsafe to limit concurrent exports, it's not ideal because it blocks
       // waiting for the most recent export instead of waiting for the first export to return
       operationLogger.recordFailure(
-          "Hit max " + MAX_CONCURRENT_EXPORTS + " active concurrent requests");
+          "Hit max " + MAX_CONCURRENT_EXPORTS + " active concurrent requests",
+          TELEMETRY_ITEM_EXPORTER_ERROR);
       return CompletableResultCode.ofAll(results);
     }
 

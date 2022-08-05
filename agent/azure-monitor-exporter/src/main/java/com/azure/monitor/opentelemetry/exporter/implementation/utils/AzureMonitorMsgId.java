@@ -19,31 +19,35 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter.implementation.logging;
+package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
-import javax.annotation.Nullable;
 import org.slf4j.MDC;
 
-// aggregated warnings for a given 5-min window
-public class WarningLogger {
+// JAVA reserves message id for App Service Diagnostics Logs from 2000 - 2999
+// Reserve msgId 2100 - 2200 for Azure Monitor Exporter
+public enum AzureMonitorMsgId {
+  QUICK_PULSE_PING_ERROR("2100"),
+  QUICK_PULSE_SEND_ERROR("2101"),
+  DISK_PERSISTENCE_LOADER_ERROR("2102"),
+  DISK_PERSISTENCE_WRITER_ERROR("2103"),
+  DISK_PERSISTENCE_PURGE_ERROR("2104"),
+  INGESTION_ERROR("2105"),
+  TELEMETRY_ITEM_EXPORTER_ERROR("2106"),
+  TELEMETRY_TRUNCATION_ERROR("2107"),
+  CPU_METRIC_ERROR("2108"),
+  HOSTNAME_ERROR("2109"),
+  EXPORTER_MAPPING_ERROR("2110"),
+  BATCH_ITEM_PROCESSOR_ERROR("2111"),
+  APP_ID_ERROR("2112"),
+  FRIENDLY_NETWORK_ERROR("2113");
 
-  private final AggregatingLogger aggregatingLogger;
+  private final String value;
 
-  public WarningLogger(Class<?> source, String operation) {
-    this(source, operation, 300);
+  AzureMonitorMsgId(String value) {
+    this.value = value;
   }
 
-  // visible for testing
-  WarningLogger(Class<?> source, String operation, int intervalSeconds) {
-    aggregatingLogger = new AggregatingLogger(source, operation, false, intervalSeconds);
-  }
-
-  // warningMessage should have low cardinality
-  public void recordWarning(
-      String warningMessage, @Nullable Throwable exception, AzureMonitorMsgId msgId) {
-    try (MDC.MDCCloseable ignored = msgId.makeActive()) {
-      aggregatingLogger.recordWarning(warningMessage, exception);
-    }
+  public MDC.MDCCloseable makeActive() {
+    return MDC.putCloseable("msgId", value);
   }
 }

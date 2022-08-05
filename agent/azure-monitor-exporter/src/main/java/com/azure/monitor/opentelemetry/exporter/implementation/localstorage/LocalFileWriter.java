@@ -21,6 +21,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.DISK_PERSISTENCE_WRITER_ERROR;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
@@ -73,7 +74,8 @@ final class LocalFileWriter {
       operationLogger.recordFailure(
           "Local persistent storage capacity has been reached. It's currently at ("
               + (size / 1024)
-              + "KB). Telemetry will be lost.");
+              + "KB). Telemetry will be lost.",
+          DISK_PERSISTENCE_WRITER_ERROR);
       stats.incrementWriteFailureCount();
       return;
     }
@@ -83,7 +85,9 @@ final class LocalFileWriter {
       tempFile = createTempFile(telemetryFolder);
     } catch (IOException e) {
       operationLogger.recordFailure(
-          "Error creating file in directory: " + telemetryFolder.getAbsolutePath(), e);
+          "Error creating file in directory: " + telemetryFolder.getAbsolutePath(),
+          e,
+          DISK_PERSISTENCE_WRITER_ERROR);
       stats.incrementWriteFailureCount();
       return;
     }
@@ -91,7 +95,8 @@ final class LocalFileWriter {
     try {
       write(tempFile, buffers, instrumentationKey);
     } catch (IOException e) {
-      operationLogger.recordFailure("Error writing file: " + tempFile.getAbsolutePath(), e);
+      operationLogger.recordFailure(
+          "Error writing file: " + tempFile.getAbsolutePath(), e, DISK_PERSISTENCE_WRITER_ERROR);
       stats.incrementWriteFailureCount();
       return;
     }
@@ -102,7 +107,8 @@ final class LocalFileWriter {
           new File(telemetryFolder, FileUtil.getBaseName(tempFile) + PERMANENT_FILE_EXTENSION);
       FileUtil.moveFile(tempFile, permanentFile);
     } catch (IOException e) {
-      operationLogger.recordFailure("Error renaming file: " + tempFile.getAbsolutePath(), e);
+      operationLogger.recordFailure(
+          "Error renaming file: " + tempFile.getAbsolutePath(), e, DISK_PERSISTENCE_WRITER_ERROR);
       stats.incrementWriteFailureCount();
       return;
     }

@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.EXPORTER_MAPPING_ERROR;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
@@ -78,7 +80,7 @@ public final class AgentSpanExporter implements SpanExporter {
         mapper.map(span, telemetryItemConsumer);
         exportingSpanLogger.recordSuccess();
       } catch (Throwable t) {
-        exportingSpanLogger.recordFailure(t.getMessage(), t);
+        exportingSpanLogger.recordFailure(t.getMessage(), t, EXPORTER_MAPPING_ERROR);
       }
     }
     // always returning success, because all error handling is performed internally

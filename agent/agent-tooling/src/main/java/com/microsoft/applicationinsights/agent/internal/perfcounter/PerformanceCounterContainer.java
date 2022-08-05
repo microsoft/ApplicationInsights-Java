@@ -146,16 +146,10 @@ public enum PerformanceCounterContainer {
               } catch (ThreadDeath td) {
                 throw td;
               } catch (Throwable t) {
-                try {
-                  logger.error(
-                      "Exception while reporting performance counter: '{}'",
-                      performanceCounter.getClass().getName(),
-                      t);
-                } catch (ThreadDeath td) {
-                  throw td;
-                } catch (Throwable t2) {
-                  // chomp
-                }
+                logger.error(
+                    "Exception while reporting performance counter: '{}'",
+                    performanceCounter.getClass().getName(),
+                    t);
               }
             }
           }

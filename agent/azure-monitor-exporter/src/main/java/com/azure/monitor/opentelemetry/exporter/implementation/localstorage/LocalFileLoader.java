@@ -21,6 +21,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.DISK_PERSISTENCE_LOADER_ERROR;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
@@ -98,14 +99,17 @@ class LocalFileLoader {
               telemetryFolder, FileUtil.getBaseName(fileToBeLoaded) + TEMPORARY_FILE_EXTENSION);
       FileUtil.moveFile(fileToBeLoaded, tempFile);
     } catch (IOException e) {
-      operationLogger.recordFailure("Error renaming file: " + fileToBeLoaded.getAbsolutePath(), e);
+      operationLogger.recordFailure(
+          "Error renaming file: " + fileToBeLoaded.getAbsolutePath(),
+          DISK_PERSISTENCE_LOADER_ERROR);
       stats.incrementReadFailureCount();
       return null;
     }
 
     if (tempFile.length() <= 36) {
       if (!FileUtil.deleteFileWithRetries(tempFile)) {
-        operationLogger.recordFailure("Unable to delete file: " + tempFile.getAbsolutePath());
+        operationLogger.recordFailure(
+            "Unable to delete file: " + tempFile.getAbsolutePath(), DISK_PERSISTENCE_LOADER_ERROR);
       }
       return null;
     }
@@ -120,14 +124,17 @@ class LocalFileLoader {
       if (!isInstrumentationKeyValid(instrumentationKey)) {
         fileInputStream.close(); // need to close FileInputStream before delete
         if (!FileUtil.deleteFileWithRetries(tempFile)) {
-          operationLogger.recordFailure("Unable to delete file: " + tempFile.getAbsolutePath());
+          operationLogger.recordFailure(
+              "Unable to delete file: " + tempFile.getAbsolutePath(),
+              DISK_PERSISTENCE_LOADER_ERROR);
         }
         return null;
       }
 
       readFully(fileInputStream, telemetryBytes, rawByteLength);
     } catch (IOException e) {
-      operationLogger.recordFailure("Error reading file: " + tempFile.getAbsolutePath(), e);
+      operationLogger.recordFailure(
+          "Error reading file: " + tempFile.getAbsolutePath(), e, DISK_PERSISTENCE_LOADER_ERROR);
       stats.incrementReadFailureCount();
       return null;
     }
@@ -167,13 +174,15 @@ class LocalFileLoader {
   void updateProcessedFileStatus(boolean successOrNonRetryableError, File file) {
     if (!file.exists()) {
       // not sure why this would happen
-      updateOperationLogger.recordFailure("File no longer exists: " + file.getAbsolutePath());
+      updateOperationLogger.recordFailure(
+          "File no longer exists: " + file.getAbsolutePath(), DISK_PERSISTENCE_LOADER_ERROR);
       return;
     }
     if (successOrNonRetryableError) {
       // delete a file on the queue permanently when http response returns success.
       if (!FileUtil.deleteFileWithRetries(file)) {
-        updateOperationLogger.recordFailure("Unable to delete file: " + file.getAbsolutePath());
+        updateOperationLogger.recordFailure(
+            "Unable to delete file: " + file.getAbsolutePath(), DISK_PERSISTENCE_LOADER_ERROR);
       } else {
         updateOperationLogger.recordSuccess();
       }
@@ -183,7 +192,8 @@ class LocalFileLoader {
       try {
         FileUtil.moveFile(file, sourceFile);
       } catch (IOException e) {
-        updateOperationLogger.recordFailure("Error renaming file: " + file.getAbsolutePath(), e);
+        updateOperationLogger.recordFailure(
+            "Error renaming file: " + file.getAbsolutePath(), e, DISK_PERSISTENCE_LOADER_ERROR);
         return;
       }
       updateOperationLogger.recordSuccess();

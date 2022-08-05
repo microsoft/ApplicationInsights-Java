@@ -48,7 +48,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import org.slf4j.LoggerFactory;
 
 final class QuickPulseDataCollector {
 
@@ -71,26 +70,8 @@ final class QuickPulseDataCollector {
         useNormalizedValueForNonNormalizedCpuPercentage;
   }
 
-  @Nullable
   private static CpuPerformanceCounterCalculator getCpuPerformanceCounterCalculator() {
-    try {
-      return new CpuPerformanceCounterCalculator();
-    } catch (ThreadDeath td) {
-      throw td;
-    } catch (Throwable t) {
-      try {
-        LoggerFactory.getLogger(QuickPulseDataCollector.class)
-            .error(
-                "Could not initialize {}",
-                CpuPerformanceCounterCalculator.class.getSimpleName(),
-                t);
-      } catch (ThreadDeath td) {
-        throw td;
-      } catch (Throwable t2) {
-        // chomp
-      }
-      return null;
-    }
+    return new CpuPerformanceCounterCalculator();
   }
 
   synchronized void disable() {

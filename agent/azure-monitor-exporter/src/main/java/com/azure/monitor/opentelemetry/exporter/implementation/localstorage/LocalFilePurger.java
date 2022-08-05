@@ -21,6 +21,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.DISK_PERSISTENCE_PURGE_ERROR;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
@@ -81,7 +82,8 @@ class LocalFilePurger implements Runnable {
     for (File file : FileUtil.listTrnFiles(folder)) {
       if (LocalFileCache.isExpired(file, expiredIntervalSeconds)) {
         if (!FileUtil.deleteFileWithRetries(file)) {
-          operationLogger.recordFailure("Unable to delete file: " + file.getAbsolutePath());
+          operationLogger.recordFailure(
+              "Unable to delete file: " + file.getAbsolutePath(), DISK_PERSISTENCE_PURGE_ERROR);
         } else {
           operationLogger.recordSuccess();
         }

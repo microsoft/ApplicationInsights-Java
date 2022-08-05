@@ -21,7 +21,9 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.logging;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
 import javax.annotation.Nullable;
+import org.slf4j.MDC;
 
 // operation failure stats for a given 5-min window
 // each instance represents a logical grouping of errors that a user cares about and can understand,
@@ -52,9 +54,11 @@ public class OperationLogger {
   }
 
   // failureMessage should have low cardinality
-  public void recordFailure(String failureMessage) {
+  public void recordFailure(String failureMessage, AzureMonitorMsgId msgId) {
     if (aggregatingLogger != null) {
-      aggregatingLogger.recordWarning(failureMessage);
+      try (MDC.MDCCloseable ignored = msgId.makeActive()) {
+        aggregatingLogger.recordWarning(failureMessage);
+      }
     }
   }
 
@@ -62,6 +66,14 @@ public class OperationLogger {
   public void recordFailure(String failureMessage, @Nullable Throwable exception) {
     if (aggregatingLogger != null) {
       aggregatingLogger.recordWarning(failureMessage, exception);
+    }
+  }
+
+  // failureMessage should have low cardinality
+  public void recordFailure(
+      String failureMessage, @Nullable Throwable exception, AzureMonitorMsgId msgId) {
+    try (MDC.MDCCloseable ignored = msgId.makeActive()) {
+      recordFailure(failureMessage, exception);
     }
   }
 }

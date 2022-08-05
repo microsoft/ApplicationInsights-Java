@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw;
 
+import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId.INITIALIZATION_SUCCESS;
+
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.ThrowableProxyUtil;
@@ -37,6 +39,7 @@ import java.util.Map;
 import org.slf4j.LoggerFactory;
 
 public class EtwAppender extends AppenderBase<ILoggingEvent> {
+
   private final EtwProvider etwProvider;
   private final IpaEtwEventBase proto;
 
@@ -47,7 +50,7 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
     proto.setAppName(metadata.getSiteName().getValue());
     proto.setExtensionVersion(metadata.getSdkVersion().getValue());
     proto.setSubscriptionId(metadata.getSubscriptionId().getValue());
-
+    proto.setInstrumentationKey(metadata.getInstrumentationKey().getValue());
     etwProvider = new EtwProvider(metadata.getSdkVersion().getValue());
   }
 
@@ -55,6 +58,7 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
   public void start() {
     IpaVerbose event = new IpaVerbose(proto);
     event.setMessageFormat("EtwProvider initialized successfully.");
+    event.setMsgId(INITIALIZATION_SUCCESS.getValue());
     try {
       this.etwProvider.writeEvent(event);
     } catch (LinkageError | ApplicationInsightsEtwException e) {
@@ -110,6 +114,11 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
       String operation = mdcPropertyMap.get(DiagnosticsHelper.MDC_PROP_OPERATION);
       if (operation != null && !operation.isEmpty()) {
         event.setOperation(operation);
+      }
+
+      String messageId = mdcPropertyMap.get(DiagnosticsHelper.MDC_MESSAGE_ID);
+      if (messageId != null && !messageId.isEmpty()) {
+        event.setMsgId(messageId);
       }
     }
     event.setLogger(logger);

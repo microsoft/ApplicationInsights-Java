@@ -21,6 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.QUICK_PULSE_PING_ERROR;
+
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
@@ -143,7 +145,8 @@ class QuickPulsePingSender {
     } catch (Throwable t) {
       if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
           t, getQuickPulseEndpoint(), friendlyExceptionThrown, logger)) {
-        operationLogger.recordFailure(t.getMessage() + " (" + endpointPrefix + ")", t);
+        operationLogger.recordFailure(
+            t.getMessage() + " (" + endpointPrefix + ")", t, QUICK_PULSE_PING_ERROR);
       }
     } finally {
       if (response != null) {

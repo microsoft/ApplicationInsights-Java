@@ -19,31 +19,31 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter.implementation.logging;
+package com.microsoft.applicationinsights.agent.bootstrap.diagnostics;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
-import javax.annotation.Nullable;
 import org.slf4j.MDC;
 
-// aggregated warnings for a given 5-min window
-public class WarningLogger {
+// JAVA reserves message id for App Service Diagnostics Logs from 2000 - 2999
+// Reserve msgId 2000 - 2099 for java agent
+public enum MsgId {
+  INITIALIZATION_SUCCESS("2000"),
+  FREE_MEMORY_METRIC_ERROR("2001"),
+  CUSTOM_JMX_METRIC_ERROR("2002"),
+  FAIL_TO_SEND_STATSBEAT_ERROR("2003"),
+  STATUS_FILE_ERROR("2004"),
+  STARTUP_FAILURE_ERROR("2005");
 
-  private final AggregatingLogger aggregatingLogger;
+  private final String value;
 
-  public WarningLogger(Class<?> source, String operation) {
-    this(source, operation, 300);
+  MsgId(String value) {
+    this.value = value;
   }
 
-  // visible for testing
-  WarningLogger(Class<?> source, String operation, int intervalSeconds) {
-    aggregatingLogger = new AggregatingLogger(source, operation, false, intervalSeconds);
+  public String getValue() {
+    return value;
   }
 
-  // warningMessage should have low cardinality
-  public void recordWarning(
-      String warningMessage, @Nullable Throwable exception, AzureMonitorMsgId msgId) {
-    try (MDC.MDCCloseable ignored = msgId.makeActive()) {
-      aggregatingLogger.recordWarning(warningMessage, exception);
-    }
+  public MDC.MDCCloseable makeActive() {
+    return MDC.putCloseable(DiagnosticsHelper.MDC_MESSAGE_ID, value);
   }
 }

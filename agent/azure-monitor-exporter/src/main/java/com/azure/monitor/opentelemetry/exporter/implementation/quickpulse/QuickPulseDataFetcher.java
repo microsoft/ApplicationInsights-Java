@@ -21,6 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.QUICK_PULSE_SEND_ERROR;
+
 import com.azure.core.http.HttpRequest;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model.QuickPulseEnvelope;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model.QuickPulseMetrics;
@@ -37,6 +39,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 class QuickPulseDataFetcher {
 
@@ -116,7 +119,9 @@ class QuickPulseDataFetcher {
       throw td;
     } catch (Throwable e) {
       try {
-        logger.error("Quick Pulse failed to prepare data for send", e);
+        try (MDC.MDCCloseable ignored = QUICK_PULSE_SEND_ERROR.makeActive()) {
+          logger.error("Quick Pulse failed to prepare data for send", e);
+        }
       } catch (ThreadDeath td) {
         throw td;
       } catch (Throwable t2) {
