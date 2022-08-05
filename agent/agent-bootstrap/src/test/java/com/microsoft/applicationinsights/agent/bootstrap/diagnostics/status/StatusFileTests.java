@@ -177,7 +177,7 @@ class StatusFileTests {
   void doesNotWriteIfNotAppService() throws Exception {
     DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(false); // just to be sure
 
-    directory = tempFolder.getAbsolutePath() + "/Status";
+    directory = tempFolder.getAbsolutePath();
     assertThat(tempFolder.isDirectory()).isTrue();
     assertThat(tempFolder.list()).isEmpty();
     StatusFile.write();
