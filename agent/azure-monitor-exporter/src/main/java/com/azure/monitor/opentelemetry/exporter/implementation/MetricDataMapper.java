@@ -50,13 +50,13 @@ import org.slf4j.LoggerFactory;
 public class MetricDataMapper {
 
   private static final List<String> OTEL_PRE_AGGREGATED_METRIC_NAMES = new ArrayList<>();
-  private static final List<String> OTHER_EXCLUDED_METRIC_NAMES = new ArrayList<>();
+  private static final List<String> EXCLUDED_METRIC_NAMES = new ArrayList<>();
 
   private static final Logger logger = LoggerFactory.getLogger(MetricDataMapper.class);
   private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
 
   static {
-    OTHER_EXCLUDED_METRIC_NAMES.add("http.server.active_requests"); // Servlet
+    EXCLUDED_METRIC_NAMES.add("http.server.active_requests"); // Servlet
 
     OTEL_PRE_AGGREGATED_METRIC_NAMES.add("http.server.duration"); // Servlet
     OTEL_PRE_AGGREGATED_METRIC_NAMES.add("http.client.duration"); // HttpClient
@@ -69,7 +69,7 @@ public class MetricDataMapper {
   }
 
   public void map(MetricData metricData, Consumer<TelemetryItem> consumer) {
-    if (OTHER_EXCLUDED_METRIC_NAMES.contains(metricData.getName())) {
+    if (EXCLUDED_METRIC_NAMES.contains(metricData.getName())) {
       return;
     }
 
