@@ -31,6 +31,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class LocalFileSender implements Runnable {
@@ -38,6 +39,7 @@ class LocalFileSender implements Runnable {
   private final LocalFileLoader localFileLoader;
   private final TelemetryPipeline telemetryPipeline;
 
+  private static final Logger logger = LoggerFactory.getLogger(LocalFileSender.class);
   private final ScheduledExecutorService scheduledExecutor =
       Executors.newSingleThreadScheduledExecutor(
           ThreadPoolUtils.createDaemonThreadFactory(LocalFileLoader.class));
@@ -89,8 +91,8 @@ class LocalFileSender implements Runnable {
         resultCode.join(30, TimeUnit.SECONDS); // wait max 30 seconds for request to be completed.
       }
     } catch (RuntimeException ex) {
-      LoggerFactory.getLogger(LocalFileSender.class)
-          .error("Unexpected error occurred while sending telemetries from the local storage.", ex);
+      logger.error(
+          "Unexpected error occurred while sending telemetries from the local storage.", ex);
     }
   }
 }
