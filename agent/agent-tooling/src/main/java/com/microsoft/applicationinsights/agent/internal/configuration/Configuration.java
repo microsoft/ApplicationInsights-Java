@@ -1283,7 +1283,7 @@ public class Configuration {
 
   public static class RequestTriggerThrottling {
     public RequestTriggerThrottlingType type = RequestTriggerThrottlingType.FIXED_DURATION_COOLDOWN;
-    public long value = 60000; // in ms
+    public long value = 60; // in seconds
   }
 
   public enum RequestTriggerType {
