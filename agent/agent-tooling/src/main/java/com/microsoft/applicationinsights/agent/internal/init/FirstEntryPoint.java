@@ -103,7 +103,6 @@ public class FirstEntryPoint implements LoggingCustomizer {
         PropertyHelper.setSdkNamePrefix(codelessSdkNamePrefix);
       }
       startupLogger = configureLogging(configuration.selfDiagnostics, agentPath);
-      StatusFile.startupLogger = startupLogger;
       ConfigurationBuilder.logConfigurationWarnMessages();
 
       LegacyInstrumentation.registerTransformers();
