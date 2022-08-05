@@ -124,15 +124,18 @@ public class StatusFile {
   // visible for testing
   static String initLogDir() {
     // TODO document here which app svcs platforms / containers provide site.log system property?
-    String siteLogDir = System.getProperty(SITE_LOGDIR_PROPERTY);
-    if (siteLogDir != null && !siteLogDir.isEmpty()) {
-      return siteLogDir + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
+    if (DiagnosticsHelper.isOsWindows()) {
+      String siteLogDir = System.getProperty(SITE_LOGDIR_PROPERTY);
+      if (siteLogDir != null && !siteLogDir.isEmpty()) {
+        return siteLogDir + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
+      }
+      String homeDir = System.getenv(HOME_ENV_VAR);
+      if (homeDir != null && !homeDir.isEmpty()) {
+        return homeDir + DEFAULT_LOGDIR + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
+      }
+      return WINDOWS_DEFAULT_HOME_DIR;
     }
-    String homeDir = System.getenv(HOME_ENV_VAR);
-    if (homeDir != null && !homeDir.isEmpty()) {
-      return homeDir + DEFAULT_LOGDIR + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
-    }
-    return DiagnosticsHelper.isOsWindows() ? WINDOWS_DEFAULT_HOME_DIR : LINUX_DEFAULT;
+    return LINUX_DEFAULT;
   }
 
   public static String getLogDir() {
