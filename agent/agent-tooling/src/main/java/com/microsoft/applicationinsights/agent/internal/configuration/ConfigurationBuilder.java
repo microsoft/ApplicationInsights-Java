@@ -97,7 +97,7 @@ public class ConfigurationBuilder {
 
   private static final String
       APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_SPRING_INTEGRATION_ENABLED =
-          "APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_SPRING_INTEGRATION_ENABLED";
+      "APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_SPRING_INTEGRATION_ENABLED";
 
   private static final String APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED =
       "APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED";
@@ -773,9 +773,7 @@ public class ConfigurationBuilder {
     if (message != null && !message.isEmpty()) {
       return message;
     }
-    return "Application Insights Java agent's configuration "
-        + location
-        + " has a malformed JSON\n";
+    return "The configuration " + location + " contains malformed JSON\n";
   }
 
   public static Configuration loadJsonConfigFile(Path configPath) throws IOException {

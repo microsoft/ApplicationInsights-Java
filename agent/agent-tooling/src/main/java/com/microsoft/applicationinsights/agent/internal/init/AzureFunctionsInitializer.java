@@ -62,9 +62,21 @@ public class AzureFunctionsInitializer implements Runnable {
   public void run() {
     if (!isAgentEnabled()) {
       disableBytecodeInstrumentation();
+      LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
+          .info("Application Insights Java Agent disabled");
       return;
     }
+    try {
+      initialize();
+      LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
+          .info("Application Insights Java Agent specialized successfully");
+    } catch (Throwable t) {
+      LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
+          .error("Application Insights Java Agent specialization failed: " + t.getMessage(), t);
+    }
+  }
 
+  private void initialize() {
     String selfDiagnosticsLevel = System.getenv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL");
     String connectionString = System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING");
     String instrumentationKey = System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY");
@@ -86,10 +98,6 @@ public class AzureFunctionsInitializer implements Runnable {
     setSelfDiagnosticsLevel(selfDiagnosticsLevel);
     agentLogExporter.setThreshold(
         Configuration.LoggingInstrumentation.getSeverity(instrumentationLoggingLevel));
-
-    LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
-        .info(
-            "ApplicationInsights Java Agent specialization complete for Azure Functions placeholder");
   }
 
   private static void disableBytecodeInstrumentation() {

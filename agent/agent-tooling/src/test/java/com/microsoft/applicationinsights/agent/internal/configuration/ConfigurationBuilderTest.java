@@ -123,10 +123,10 @@ class ConfigurationBuilderTest {
         ConfigurationBuilder.getJsonEncodingExceptionMessage("", "file path/to/file");
     assertThat(pathNull)
         .isEqualTo(
-            "Application Insights Java agent's configuration file path/to/file has a malformed JSON\n");
+            "The configuration file path/to/file contains malformed JSON\n");
     assertThat(pathEmpty)
         .isEqualTo(
-            "Application Insights Java agent's configuration file path/to/file has a malformed JSON\n");
+            "The configuration file path/to/file contains malformed JSON\n");
   }
 
   @Test
