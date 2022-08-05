@@ -21,12 +21,12 @@
 
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status;
 
+import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile.directory;
 import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile.initLogDir;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.AgentExtensionVersionFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsTestHelper;
 import com.squareup.moshi.JsonAdapter;
@@ -56,16 +56,10 @@ class StatusFileTests {
 
   @SystemStub EnvironmentVariables envVars = new EnvironmentVariables();
 
-  private static final String TEST_IKEY = "fake-ikey-123";
-  private static final String FAKE_VERSION = "0.0.1-test";
-
   @BeforeEach
   void setup() {
     // TODO these tests currently only pass on windows
     assumeTrue(DiagnosticsHelper.isOsWindows());
-    envVars.set("APPINSIGHTS_INSTRUMENTATIONKEY", TEST_IKEY);
-    envVars.set(
-        AgentExtensionVersionFinder.AGENT_EXTENSION_VERSION_ENVIRONMENT_VARIABLE, FAKE_VERSION);
   }
 
   @AfterEach
@@ -77,7 +71,7 @@ class StatusFileTests {
   void defaultDirectoryIsCorrect() {
     // TODO this test doesn't pass inside of windows + bash because bash sets HOME env
     assumeTrue(System.getenv(StatusFile.HOME_ENV_VAR) == null);
-    assertThat(initLogDir()).isEqualTo("./LogFiles/ApplicationInsights");
+    assertThat(initLogDir()).isEqualTo("/home/LogFiles/ApplicationInsights");
   }
 
   @Test
@@ -115,17 +109,15 @@ class StatusFileTests {
 
   void assertMapHasExpectedInformation(
       Map<String, Object> inputMap, @Nullable String key, @Nullable String value) {
-    int size = 5;
+    int size = 3;
     if (key != null && value != null) {
-      size = 6;
+      size = 4;
       assertThat(inputMap).containsEntry(key, value);
     }
     assertThat(inputMap).hasSize(size);
     assertThat(inputMap).containsKey("MachineName");
-    assertThat(inputMap).containsEntry("Ikey", TEST_IKEY);
     assertThat(inputMap).containsKey("PID");
     assertThat(inputMap).containsEntry("AppType", "java");
-    assertThat(inputMap).containsEntry("ExtensionVersion", FAKE_VERSION);
   }
 
   @Test
@@ -134,6 +126,16 @@ class StatusFileTests {
     envVars.set("APPLICATIONINSIGHTS_CONNECTION_STRING", "InstrumentationKey=" + ikey);
     Map<String, Object> jsonMap = StatusFile.getJsonMap();
     assertThat(jsonMap).containsEntry("Ikey", ikey);
+    envVars.set("APPLICATIONINSIGHTS_CONNECTION_STRING", null);
+  }
+
+  @Test
+  void instrumentationKeyTest() {
+    String ikey = "fake-ikey";
+    envVars.set("APPINSIGHTS_INSTRUMENTATIONKEY", ikey);
+    Map<String, Object> jsonMap = StatusFile.getJsonMap();
+    assertThat(jsonMap).containsEntry("Ikey", ikey);
+    envVars.set("APPINSIGHTS_INSTRUMENTATIONKEY", null);
   }
 
   @Test
@@ -146,7 +148,7 @@ class StatusFileTests {
     assertThat(tempFolder.isDirectory()).isTrue();
     assertThat(tempFolder.list()).isEmpty();
 
-    StatusFile.logDir = tempFolder.getAbsolutePath();
+    directory = tempFolder.getAbsolutePath();
     StatusFile.write();
     pauseForFileWrite();
 
@@ -175,7 +177,7 @@ class StatusFileTests {
   void doesNotWriteIfNotAppService() throws Exception {
     DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(false); // just to be sure
 
-    StatusFile.logDir = tempFolder.getAbsolutePath();
+    directory = tempFolder.getAbsolutePath() + "/Status";
     assertThat(tempFolder.isDirectory()).isTrue();
     assertThat(tempFolder.list()).isEmpty();
     StatusFile.write();
@@ -192,7 +194,7 @@ class StatusFileTests {
     try {
       DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(true);
 
-      StatusFile.logDir = tempFolder.getAbsolutePath();
+      directory = tempFolder.getAbsolutePath();
       assertThat(tempFolder.isDirectory()).isTrue();
       assertThat(tempFolder.list()).isEmpty();
       StatusFile.write();

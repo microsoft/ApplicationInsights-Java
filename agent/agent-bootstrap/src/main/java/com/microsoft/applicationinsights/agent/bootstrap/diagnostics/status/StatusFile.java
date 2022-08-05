@@ -66,15 +66,26 @@ public class StatusFile {
   static final String FILE_EXTENSION = ".json";
 
   // visible for testing
+  static final String SITE_LOGDIR_PROPERTY = "site.logdir";
+
+  // visible for testing
   static final String HOME_ENV_VAR = "HOME";
 
   // visible for testing
-  static final String WINDOWS_DEFAULT_HOME_DIR = "/home/LogFiles/ApplicationInsights";
+  static final String DEFAULT_LOGDIR = "/LogFiles";
+
+  // visible for testing
+  static final String DEFAULT_APPLICATIONINSIGHTS_LOGDIR = "/ApplicationInsights";
+
+  // visible for testing
+  static final String WINDOWS_DEFAULT_HOME_DIR =
+      "/home" + DEFAULT_LOGDIR + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
 
   // visible for testing
   static String logDir;
 
-  private static final String directory;
+  // visible for testing
+  static String directory;
 
   private static final Object lock = new Object();
 
@@ -112,6 +123,15 @@ public class StatusFile {
 
   // visible for testing
   static String initLogDir() {
+    // TODO document here which app svcs platforms / containers provide site.log system property?
+    String siteLogDir = System.getProperty(SITE_LOGDIR_PROPERTY);
+    if (siteLogDir != null && !siteLogDir.isEmpty()) {
+      return siteLogDir + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
+    }
+    String homeDir = System.getenv(HOME_ENV_VAR);
+    if (homeDir != null && !homeDir.isEmpty()) {
+      return homeDir + DEFAULT_LOGDIR + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
+    }
     return DiagnosticsHelper.isOsWindows() ? WINDOWS_DEFAULT_HOME_DIR : LINUX_DEFAULT;
   }
 
