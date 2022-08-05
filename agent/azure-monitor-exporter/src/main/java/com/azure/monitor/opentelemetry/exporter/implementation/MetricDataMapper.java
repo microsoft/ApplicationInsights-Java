@@ -49,17 +49,19 @@ import org.slf4j.LoggerFactory;
 
 public class MetricDataMapper {
 
-  private static final List<String> EXCLUDED_METRIC_NAMES = new ArrayList<>();
+  private static final List<String> OTEL_PRE_AGGREGATED_METRIC_NAMES = new ArrayList<>();
+  private static final List<String> OTHER_EXCLUDED_METRIC_NAMES = new ArrayList<>();
 
   private static final Logger logger = LoggerFactory.getLogger(MetricDataMapper.class);
   private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
 
   static {
-    EXCLUDED_METRIC_NAMES.add("http.server.active_requests"); // Servlet
-    EXCLUDED_METRIC_NAMES.add("http.server.duration"); // Servlet
-    EXCLUDED_METRIC_NAMES.add("http.client.duration"); // HttpClient
-    EXCLUDED_METRIC_NAMES.add("rpc.client.duration"); // gRPC
-    EXCLUDED_METRIC_NAMES.add("rpc.server.duration"); // gRPC
+    OTHER_EXCLUDED_METRIC_NAMES.add("http.server.active_requests"); // Servlet
+
+    OTEL_PRE_AGGREGATED_METRIC_NAMES.add("http.server.duration"); // Servlet
+    OTEL_PRE_AGGREGATED_METRIC_NAMES.add("http.client.duration"); // HttpClient
+    OTEL_PRE_AGGREGATED_METRIC_NAMES.add("rpc.client.duration"); // gRPC
+    OTEL_PRE_AGGREGATED_METRIC_NAMES.add("rpc.server.duration"); // gRPC
   }
 
   public MetricDataMapper(BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer) {
@@ -67,26 +69,37 @@ public class MetricDataMapper {
   }
 
   public void map(MetricData metricData, Consumer<TelemetryItem> consumer) {
-    if (EXCLUDED_METRIC_NAMES.contains(metricData.getName())) {
+    if (OTHER_EXCLUDED_METRIC_NAMES.contains(metricData.getName())) {
       return;
     }
 
     MetricDataType type = metricData.getType();
-    if (type == DOUBLE_SUM
+    List<TelemetryItem> telemetryItemList = new ArrayList<>();
+    if (OTEL_PRE_AGGREGATED_METRIC_NAMES.contains(metricData.getName())) {
+      telemetryItemList = convertOtelStandardMetricToAzureMonitorStandardMetric(metricData);
+    } else if (type == DOUBLE_SUM
         || type == DOUBLE_GAUGE
         || type == LONG_SUM
         || type == LONG_GAUGE
         || type == HISTOGRAM) {
-      List<TelemetryItem> telemetryItemList = convertOtelMetricToAzureMonitorMetric(metricData);
-      for (TelemetryItem telemetryItem : telemetryItemList) {
-        consumer.accept(telemetryItem);
-      }
+      telemetryItemList = convertOtelCustomMetricToAzureMonitorCustomMetric(metricData);
     } else {
       logger.warn("metric data type {} is not supported yet.", metricData.getType());
     }
+
+    for (TelemetryItem telemetryItem : telemetryItemList) {
+      consumer.accept(telemetryItem);
+    }
   }
 
-  private List<TelemetryItem> convertOtelMetricToAzureMonitorMetric(MetricData metricData) {
+  private List<TelemetryItem> convertOtelStandardMetricToAzureMonitorStandardMetric(
+      MetricData metricData) {
+    // TODO
+    return null;
+  }
+
+  private List<TelemetryItem> convertOtelCustomMetricToAzureMonitorCustomMetric(
+      MetricData metricData) {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
 
     for (PointData pointData : metricData.getData().getPoints()) {
