@@ -79,7 +79,6 @@ public class AppIdSupplier implements AiAppId.Supplier {
       if (task != null) {
         // in case prior task is still running (can be called multiple times from JsonConfigPolling)
         task.cancelled = true;
-        task = null;
       }
       return;
     }
