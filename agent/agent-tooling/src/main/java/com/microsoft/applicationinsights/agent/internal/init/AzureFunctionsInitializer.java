@@ -94,8 +94,10 @@ public class AzureFunctionsInitializer implements Runnable {
     setConnectionString(connectionString, instrumentationKey);
     setWebsiteSiteName(websiteSiteName);
     setSelfDiagnosticsLevel(selfDiagnosticsLevel);
-    agentLogExporter.setThreshold(
-        Configuration.LoggingInstrumentation.getSeverity(instrumentationLoggingLevel));
+    if (instrumentationLoggingLevel != null) {
+      agentLogExporter.setThreshold(
+          Configuration.LoggingInstrumentation.getSeverity(instrumentationLoggingLevel));
+    }
   }
 
   private static void disableBytecodeInstrumentation() {
