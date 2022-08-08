@@ -76,6 +76,11 @@ public class AppIdSupplier implements AiAppId.Supplier {
     ConnectionString connectionString = telemetryClient.getConnectionString();
     if (connectionString == null) {
       appId = null;
+      if (task != null) {
+        // in case prior task is still running (can be called multiple times from JsonConfigPolling)
+        task.cancelled = true;
+        task = null;
+      }
       return;
     }
 
