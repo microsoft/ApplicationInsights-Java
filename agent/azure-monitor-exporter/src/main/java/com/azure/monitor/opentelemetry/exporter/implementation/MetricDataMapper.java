@@ -49,6 +49,10 @@ import org.slf4j.LoggerFactory;
 
 public class MetricDataMapper {
 
+  private static final String MS_METRIC_ID = "_MS.metricId";
+  private static final String MS_IS_AUTOCOLLECTED = "_MS.IsAutocollected";
+  private static final String TRUE = "True";
+  private static final String MS_PROCESSED_BY_METRIC_EXTRACTORS = "_MS.ProcessedByMetricExtractors";
   private static final List<String> OTEL_PRE_AGGREGATED_METRIC_NAMES = new ArrayList<>();
   private static final List<String> EXCLUDED_METRIC_NAMES = new ArrayList<>();
 
@@ -74,32 +78,24 @@ public class MetricDataMapper {
     }
 
     MetricDataType type = metricData.getType();
-    List<TelemetryItem> telemetryItemList = new ArrayList<>();
-    if (OTEL_PRE_AGGREGATED_METRIC_NAMES.contains(metricData.getName())) {
-      telemetryItemList = convertOtelStandardMetricToAzureMonitorStandardMetric(metricData);
-    } else if (type == DOUBLE_SUM
+    if (type == DOUBLE_SUM
         || type == DOUBLE_GAUGE
         || type == LONG_SUM
         || type == LONG_GAUGE
         || type == HISTOGRAM) {
-      telemetryItemList = convertOtelCustomMetricToAzureMonitorCustomMetric(metricData);
+      boolean isPreAggregated = OTEL_PRE_AGGREGATED_METRIC_NAMES.contains(metricData.getName());
+      List<TelemetryItem> telemetryItemList =
+          convertOtelMetricToAzureMonitorMetric(metricData, isPreAggregated);
+      for (TelemetryItem telemetryItem : telemetryItemList) {
+        consumer.accept(telemetryItem);
+      }
     } else {
       logger.warn("metric data type {} is not supported yet.", metricData.getType());
     }
-
-    for (TelemetryItem telemetryItem : telemetryItemList) {
-      consumer.accept(telemetryItem);
-    }
   }
 
-  private List<TelemetryItem> convertOtelStandardMetricToAzureMonitorStandardMetric(
-      MetricData metricData) {
-    // TODO
-    return null;
-  }
-
-  private List<TelemetryItem> convertOtelCustomMetricToAzureMonitorCustomMetric(
-      MetricData metricData) {
+  private List<TelemetryItem> convertOtelMetricToAzureMonitorMetric(
+      MetricData metricData, boolean isPreAggregated) {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
 
     for (PointData pointData : metricData.getData().getPoints()) {
@@ -107,7 +103,7 @@ public class MetricDataMapper {
       telemetryInitializer.accept(builder, metricData.getResource());
 
       builder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(pointData.getEpochNanos()));
-      updateMetricPointBuilder(builder, metricData, pointData);
+      updateMetricPointBuilder(builder, metricData, pointData, isPreAggregated);
 
       telemetryItems.add(builder.build());
     }
@@ -116,7 +112,10 @@ public class MetricDataMapper {
 
   // visible for testing
   public static void updateMetricPointBuilder(
-      MetricTelemetryBuilder metricTelemetryBuilder, MetricData metricData, PointData pointData) {
+      MetricTelemetryBuilder metricTelemetryBuilder,
+      MetricData metricData,
+      PointData pointData,
+      boolean isPreAggregated) {
     checkArgument(metricData != null, "MetricData cannot be null.");
 
     MetricPointBuilder pointBuilder = new MetricPointBuilder();
@@ -151,12 +150,18 @@ public class MetricDataMapper {
     }
 
     pointBuilder.setName(metricData.getName());
-
     metricTelemetryBuilder.setMetricPoint(pointBuilder);
 
     pointData
         .getAttributes()
         .forEach(
             (key, value) -> metricTelemetryBuilder.addProperty(key.getKey(), value.toString()));
+
+    if (isPreAggregated) {
+      metricTelemetryBuilder.addProperty(MS_METRIC_ID, "requests/duration");
+      metricTelemetryBuilder.addProperty(MS_IS_AUTOCOLLECTED, TRUE);
+      // this flag will inform the ingestion service to stop post-aggregation
+      metricTelemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, TRUE);
+    }
   }
 }
