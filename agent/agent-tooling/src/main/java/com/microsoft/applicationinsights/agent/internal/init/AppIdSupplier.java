@@ -60,7 +60,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
   private GetAppIdTask task;
   private final Object taskLock = new Object();
 
-  private final ConnectionString connectionString;
+  private final TelemetryClient telemetryClient;
 
   @Nullable private volatile String appId;
 
@@ -68,11 +68,17 @@ public class AppIdSupplier implements AiAppId.Supplier {
   //  warningLogger?
   private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
-  public AppIdSupplier(ConnectionString connectionString) {
-    this.connectionString = connectionString;
+  public AppIdSupplier(TelemetryClient telemetryClient) {
+    this.telemetryClient = telemetryClient;
   }
 
-  public void startAppIdRetrieval() {
+  public void updateAppId() {
+    ConnectionString connectionString = telemetryClient.getConnectionString();
+    if (connectionString == null) {
+      appId = null;
+      return;
+    }
+
     GetAppIdTask newTask;
     try {
       newTask = new GetAppIdTask(getAppIdUrl(connectionString));
@@ -102,15 +108,8 @@ public class AppIdSupplier implements AiAppId.Supplier {
 
   @Override
   public String get() {
-    String instrumentationKey = TelemetryClient.getActive().getInstrumentationKey();
-    if (instrumentationKey == null) {
-      // this is possible in Azure Function consumption plan prior to "specialization"
-      return "";
-    }
-
     // it's possible the appId returned is null (e.g. async task is still pending or has failed). In
-    // this case, just
-    // return and let the next request resolve the ikey.
+    // this case, just return and let the next request resolve the ikey.
     if (appId == null) {
       logger.debug("appId has not been retrieved yet (e.g. task may be pending or failed)");
       return "";

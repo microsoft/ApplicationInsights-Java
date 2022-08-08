@@ -22,8 +22,6 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import ch.qos.logback.classic.LoggerContext;
-import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
-import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -127,18 +125,13 @@ public class AzureFunctionsInitializer implements Runnable {
   }
 
   private void setValue(String value) {
-    ConnectionString connectionString = ConnectionString.parse(value);
-    telemetryClient.updateConnectionString(connectionString);
-    telemetryClient.updateStatsbeatConnectionString(
-        StatsbeatConnectionString.create(connectionString, null, null));
+    telemetryClient.updateConnectionStrings(value, null, null);
+    appIdSupplier.updateAppId();
 
     // now that we know the user has opted in to tracing, we need to init the propagator and sampler
     DelegatingPropagator.getInstance().setUpStandardDelegate(Collections.emptyList(), false);
     // TODO handle APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE
     DelegatingSampler.getInstance().setAlwaysOnDelegate();
-
-    // start app id retrieval after the connection string becomes available.
-    appIdSupplier.startAppIdRetrieval();
   }
 
   void setWebsiteSiteName(@Nullable String websiteSiteName) {
