@@ -121,12 +121,9 @@ class ConfigurationBuilderTest {
         ConfigurationBuilder.getJsonEncodingExceptionMessage(null, "file path/to/file");
     String pathEmpty =
         ConfigurationBuilder.getJsonEncodingExceptionMessage("", "file path/to/file");
-    assertThat(pathNull)
-        .isEqualTo(
-            "The configuration file path/to/file contains malformed JSON\n");
+    assertThat(pathNull).isEqualTo("The configuration file path/to/file contains malformed JSON\n");
     assertThat(pathEmpty)
-        .isEqualTo(
-            "The configuration file path/to/file contains malformed JSON\n");
+        .isEqualTo("The configuration file path/to/file contains malformed JSON\n");
   }
 
   @Test
