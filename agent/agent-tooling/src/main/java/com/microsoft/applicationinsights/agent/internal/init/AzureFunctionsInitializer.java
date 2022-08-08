@@ -59,9 +59,14 @@ public class AzureFunctionsInitializer implements Runnable {
   @Override
   public void run() {
     if (!isAgentEnabled()) {
-      disableBytecodeInstrumentation();
-      LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
-          .info("Application Insights Java Agent disabled");
+      try {
+        disableBytecodeInstrumentation();
+        LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
+            .info("Application Insights Java Agent disabled");
+      } catch (Throwable t) {
+        LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
+            .error("Application Insights Java Agent disablement failed: " + t.getMessage(), t);
+      }
       return;
     }
     try {
