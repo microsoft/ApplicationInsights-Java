@@ -79,20 +79,29 @@ class Instrumentations {
     INSTRUMENTATION_MAP.put("io.opentelemetry.netty-4.0", 43);
     INSTRUMENTATION_MAP.put("io.opentelemetry.netty-4.1", 44);
     INSTRUMENTATION_MAP.put("io.opentelemetry.okhttp-3.0", 45);
-    INSTRUMENTATION_MAP.put("io.opentelemetry.opentelemetry-annotations-1.0", 46);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.opentelemetry-extension-annotations-1.0", 46);
     INSTRUMENTATION_MAP.put("io.opentelemetry.akka-http-10.0", 47);
     INSTRUMENTATION_MAP.put("io.opentelemetry.spring-webmvc-3.1", 48);
     INSTRUMENTATION_MAP.put("io.opentelemetry.spring-webflux-5.0", 49);
     INSTRUMENTATION_MAP.put("io.opentelemetry.reactor-netty-1.0", 50);
     INSTRUMENTATION_MAP.put("io.opentelemetry.servlet-2.2", 51);
     INSTRUMENTATION_MAP.put("io.opentelemetry.servlet-3.0", 52);
-    INSTRUMENTATION_MAP.put("io.opentelemetry.servlet-common", 53);
     INSTRUMENTATION_MAP.put("io.opentelemetry.spring-scheduling-3.1", 54);
     INSTRUMENTATION_MAP.put("io.opentelemetry.play-2.4", 55);
     INSTRUMENTATION_MAP.put("io.opentelemetry.play-2.6", 56);
     INSTRUMENTATION_MAP.put("io.opentelemetry.vertx-http-client-3.0", 57);
     INSTRUMENTATION_MAP.put("io.opentelemetry.vertx-http-client-4.0", 58);
     INSTRUMENTATION_MAP.put("io.opentelemetry.spring-jms-2.0", 59);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.tomcat-10.0", 60);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.jetty-11.0", 61);
+    // TODO (trask) the liberty names should be getting a version soon
+    // see https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/6449
+    INSTRUMENTATION_MAP.put("io.opentelemetry.liberty", 62);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.liberty-dispatcher", 63);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.methods", 64); // used by "custom instrumentation"
+    INSTRUMENTATION_MAP.put("io.opentelemetry.okhttp-2.2", 65);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.opentelemetry-instrumentation-annotations-1.16", 66);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.undertow-1.4", 67);
   }
 
   // encode BitSet to a long
