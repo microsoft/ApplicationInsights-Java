@@ -122,7 +122,7 @@ public class MetricDataMapper {
     switch (type) {
       case LONG_SUM:
       case LONG_GAUGE:
-        pointDataValue = (double)((LongPointData) pointData).getValue();
+        pointDataValue = (double) ((LongPointData) pointData).getValue();
         break;
       case DOUBLE_SUM:
       case DOUBLE_GAUGE:
