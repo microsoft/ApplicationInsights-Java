@@ -71,6 +71,7 @@ public class TestController {
     expectedEntries.add("META-INF/maven/.*");
     expectedEntries.add("META-INF/licenses/");
     expectedEntries.add("META-INF/licenses/.*");
+    expectedEntries.add("META-INF/LICENSE");
     expectedEntries.add("META-INF/MANIFEST\\.MF");
     expectedEntries.add("applicationinsights\\.appsvc\\.logback\\.xml");
     expectedEntries.add("applicationinsights\\.console\\.logback\\.xml");
