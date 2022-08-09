@@ -24,7 +24,6 @@ package com.azure.monitor.opentelemetry.exporter;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 
-import com.azure.core.util.logging.ClientLogger;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -53,6 +52,7 @@ public class PreAggregatedMetricsTest {
     meterProvider = SdkMeterProvider.builder().registerMetricReader(metricReader).build();
   }
 
+  @SuppressWarnings("SystemOut")
   @Test
   void collectHttpClientRMetric() {
     OperationListener listener = HttpClientMetrics.get().create(meterProvider.get("test"));
@@ -91,10 +91,9 @@ public class PreAggregatedMetricsTest {
     Context context1 = listener.onStart(parent, requestAttributes, nanos(100));
     listener.onEnd(context1, responseAttributes, nanos(250));
 
-    ClientLogger LOGGER = new ClientLogger(PreAggregatedMetricsTest.class);
     Collection<MetricData> metricDataCollection = metricReader.collectAllMetrics();
     for (MetricData metricData : metricDataCollection) {
-      LOGGER.verbose("metric: {}", metricData);
+      System.out.println("metric: " + metricData);
     }
 
     assertThat(metricDataCollection)

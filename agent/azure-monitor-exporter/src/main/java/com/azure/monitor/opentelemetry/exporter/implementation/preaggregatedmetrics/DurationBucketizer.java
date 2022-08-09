@@ -24,7 +24,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmet
 import java.util.HashMap;
 import java.util.Map;
 
-public class DurationBucketizer {
+public final class DurationBucketizer {
 
   private static final Map<String, Double> performanceBuckets = new HashMap<>();
 
@@ -50,4 +50,6 @@ public class DurationBucketizer {
     }
     return ">=5min";
   }
+
+  private DurationBucketizer() {}
 }

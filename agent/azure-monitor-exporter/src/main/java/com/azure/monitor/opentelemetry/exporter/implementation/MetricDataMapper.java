@@ -134,7 +134,7 @@ public class MetricDataMapper {
           pointBuilder.setCount((int) histogramCount);
         }
         HistogramPointData histogramPointData = (HistogramPointData) pointData;
-        pointDataValue = histogramPointData.getSum(); // TODO need to be updated
+        pointDataValue = histogramPointData.getSum();
         pointBuilder.setMin(histogramPointData.getMin());
         pointBuilder.setMax(histogramPointData.getMax());
         break;
@@ -154,6 +154,7 @@ public class MetricDataMapper {
             (key, value) -> metricTelemetryBuilder.addProperty(key.getKey(), value.toString()));
 
     if (isPreAggregated) {
+      // TODO update value
       updatePreAggMetricsCustomDimensions(
           metricTelemetryBuilder,
           pointDataValue,
