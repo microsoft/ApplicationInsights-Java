@@ -210,4 +210,7 @@ fun CopySpec.isolateClasses(jars: Iterable<File>) {
       rename("""^LICENSE$""", "LICENSE.renamed")
     }
   }
+  from("${rootProject.projectDir}/LICENSE") {
+    into("META-INF")
+  }
 }
