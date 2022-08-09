@@ -21,6 +21,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.updatePreAggMetricsCustomDimensions;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_GAUGE;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_SUM;
@@ -33,6 +34,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricPo
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
@@ -49,10 +51,6 @@ import org.slf4j.LoggerFactory;
 
 public class MetricDataMapper {
 
-  private static final String MS_METRIC_ID = "_MS.metricId";
-  private static final String MS_IS_AUTOCOLLECTED = "_MS.IsAutocollected";
-  private static final String TRUE = "True";
-  private static final String MS_PROCESSED_BY_METRIC_EXTRACTORS = "_MS.ProcessedByMetricExtractors";
   private static final List<String> OTEL_PRE_AGGREGATED_METRIC_NAMES = new ArrayList<>();
   private static final List<String> EXCLUDED_METRIC_NAMES = new ArrayList<>();
 
@@ -120,18 +118,15 @@ public class MetricDataMapper {
 
     MetricPointBuilder pointBuilder = new MetricPointBuilder();
     MetricDataType type = metricData.getType();
+    double pointDataValue;
     switch (type) {
       case LONG_SUM:
-        pointBuilder.setValue((double) ((LongPointData) pointData).getValue());
-        break;
       case LONG_GAUGE:
-        pointBuilder.setValue((double) ((LongPointData) pointData).getValue());
+        pointDataValue = (double)((LongPointData) pointData).getValue();
         break;
       case DOUBLE_SUM:
-        pointBuilder.setValue(((DoublePointData) pointData).getValue());
-        break;
       case DOUBLE_GAUGE:
-        pointBuilder.setValue(((DoublePointData) pointData).getValue());
+        pointDataValue = ((DoublePointData) pointData).getValue();
         break;
       case HISTOGRAM:
         long histogramCount = ((HistogramPointData) pointData).getCount();
@@ -139,7 +134,7 @@ public class MetricDataMapper {
           pointBuilder.setCount((int) histogramCount);
         }
         HistogramPointData histogramPointData = (HistogramPointData) pointData;
-        pointBuilder.setValue(histogramPointData.getSum());
+        pointDataValue = histogramPointData.getSum(); // TODO need to be updated
         pointBuilder.setMin(histogramPointData.getMin());
         pointBuilder.setMax(histogramPointData.getMax());
         break;
@@ -149,6 +144,7 @@ public class MetricDataMapper {
         throw new IllegalArgumentException("metric data type '" + type + "' is not supported yet");
     }
 
+    pointBuilder.setValue(pointDataValue);
     pointBuilder.setName(metricData.getName());
     metricTelemetryBuilder.setMetricPoint(pointBuilder);
 
@@ -158,10 +154,10 @@ public class MetricDataMapper {
             (key, value) -> metricTelemetryBuilder.addProperty(key.getKey(), value.toString()));
 
     if (isPreAggregated) {
-      metricTelemetryBuilder.addProperty(MS_METRIC_ID, "requests/duration");
-      metricTelemetryBuilder.addProperty(MS_IS_AUTOCOLLECTED, TRUE);
-      // this flag will inform the ingestion service to stop post-aggregation
-      metricTelemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, TRUE);
+      updatePreAggMetricsCustomDimensions(
+          metricTelemetryBuilder,
+          pointDataValue,
+          pointData.getAttributes().get(AttributeKey.stringKey("http.status_code")));
     }
   }
 }
