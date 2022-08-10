@@ -43,6 +43,9 @@ public class AzureFunctionsInitializer implements Runnable {
 
   private static final Logger logger = LoggerFactory.getLogger(AzureFunctionsInitializer.class);
 
+  private static final Logger diagnosticLogger =
+      LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME);
+
   private final TelemetryClient telemetryClient;
   private final AgentLogExporter agentLogExporter;
   private final AppIdSupplier appIdSupplier;
@@ -61,21 +64,19 @@ public class AzureFunctionsInitializer implements Runnable {
     if (!isAgentEnabled()) {
       try {
         disableBytecodeInstrumentation();
-        LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
-            .info("Application Insights Java Agent disabled");
+        diagnosticLogger.info("Application Insights Java Agent disabled");
       } catch (Throwable t) {
-        LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
-            .error("Application Insights Java Agent disablement failed: " + t.getMessage(), t);
+        diagnosticLogger.error(
+            "Application Insights Java Agent disablement failed: " + t.getMessage(), t);
       }
       return;
     }
     try {
       initialize();
-      LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
-          .info("Application Insights Java Agent specialized successfully");
+      diagnosticLogger.info("Application Insights Java Agent specialized successfully");
     } catch (Throwable t) {
-      LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
-          .error("Application Insights Java Agent specialization failed: " + t.getMessage(), t);
+      diagnosticLogger.error(
+          "Application Insights Java Agent specialization failed: " + t.getMessage(), t);
     }
   }
 
