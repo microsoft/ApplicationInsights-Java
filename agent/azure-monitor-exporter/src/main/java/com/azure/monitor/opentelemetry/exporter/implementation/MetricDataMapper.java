@@ -156,13 +156,12 @@ public class MetricDataMapper {
 
     if (isPreAggregated) {
       // TODO update value if applicable
+      Long statusCode = pointData.getAttributes().get(AttributeKey.longKey("http.status_code"));
       updatePreAggMetricsCustomDimensions(
           metricTelemetryBuilder,
           pointDataValue,
-          pointData
-              .getAttributes()
-              .get(AttributeKey.stringKey(SemanticAttributes.HTTP_STATUS_CODE.toString())),
-          getSuccess(pointData, captureHttpServer4xxAsError));
+          statusCode,
+          getSuccess(statusCode, captureHttpServer4xxAsError));
     } else {
       pointData
           .getAttributes()
@@ -171,12 +170,7 @@ public class MetricDataMapper {
     }
   }
 
-  private static boolean getSuccess(PointData pointData, boolean captureHttpServer4xxAsError) {
-    Long statusCode =
-        Long.valueOf(
-            pointData
-                .getAttributes()
-                .get(AttributeKey.stringKey(SemanticAttributes.HTTP_STATUS_CODE.toString())));
+  private static boolean getSuccess(Long statusCode, boolean captureHttpServer4xxAsError) {
     if (captureHttpServer4xxAsError) {
       return statusCode == null || statusCode < 400;
     }

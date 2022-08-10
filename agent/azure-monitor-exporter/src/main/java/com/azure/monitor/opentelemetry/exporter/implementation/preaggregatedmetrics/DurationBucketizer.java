@@ -21,12 +21,13 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public final class DurationBucketizer {
 
-  private static final Map<String, Double> performanceBuckets = new HashMap<>();
+  // sorted HashMap
+  private static final Map<String, Double> performanceBuckets = new LinkedHashMap<>();
 
   static {
     performanceBuckets.put("<250ms", 250.0);

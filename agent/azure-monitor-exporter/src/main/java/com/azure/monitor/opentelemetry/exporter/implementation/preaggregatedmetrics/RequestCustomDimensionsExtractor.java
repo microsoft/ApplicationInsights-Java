@@ -45,7 +45,7 @@ public final class RequestCustomDimensionsExtractor {
   public static void updatePreAggMetricsCustomDimensions(
       AbstractTelemetryBuilder metricTelemetryBuilder,
       double value,
-      String resultCode,
+      long statusCode,
       boolean success) {
     metricTelemetryBuilder.addProperty(MS_METRIC_ID, REQUEST_METRIC_ID);
     metricTelemetryBuilder.addProperty(MS_IS_AUTOCOLLECTED, TRUE);
@@ -54,17 +54,25 @@ public final class RequestCustomDimensionsExtractor {
 
     // TODO figure out the correct duration/value
     metricTelemetryBuilder.addProperty(PERFORMANCE_BUCKET, getPerformanceBucket(value));
-    metricTelemetryBuilder.addProperty(REQUEST_RESULT_CODE, resultCode);
+    metricTelemetryBuilder.addProperty(REQUEST_RESULT_CODE, String.valueOf(statusCode));
     metricTelemetryBuilder.addProperty(OPERATION_SYNTHETIC, FALSE);
-    metricTelemetryBuilder.addProperty(
-        CLOUD_ROLE_NAME,
-        metricTelemetryBuilder.build().getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString()));
-    metricTelemetryBuilder.addProperty(
-        CLOUD_ROLE_INSTANCE,
-        metricTelemetryBuilder
-            .build()
-            .getTags()
-            .get(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString()));
+
+    if (metricTelemetryBuilder.build().getTags() != null) {
+      String cloudName =
+          metricTelemetryBuilder.build().getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString());
+      if (cloudName != null && !cloudName.isEmpty()) {
+        metricTelemetryBuilder.addProperty(CLOUD_ROLE_NAME, cloudName);
+      }
+
+      String cloudRoleInstance =
+          metricTelemetryBuilder
+              .build()
+              .getTags()
+              .get(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString());
+      if (cloudRoleInstance != null && !cloudRoleInstance.isEmpty()) {
+        metricTelemetryBuilder.addProperty(CLOUD_ROLE_INSTANCE, cloudRoleInstance);
+      }
+    }
     metricTelemetryBuilder.addProperty(REQUEST_SUCCESS, success ? TRUE : FALSE);
   }
 
