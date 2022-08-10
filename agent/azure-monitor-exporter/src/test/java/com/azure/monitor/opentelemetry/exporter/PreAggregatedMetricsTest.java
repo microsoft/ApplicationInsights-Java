@@ -21,9 +21,26 @@
 
 package com.azure.monitor.opentelemetry.exporter;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.CLOUD_ROLE_INSTANCE;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.CLOUD_ROLE_NAME;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.FALSE;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.MS_IS_AUTOCOLLECTED;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.MS_METRIC_ID;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.MS_PROCESSED_BY_METRIC_EXTRACTORS;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.OPERATION_SYNTHETIC;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.PERFORMANCE_BUCKET;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.REQUEST_METRIC_ID;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.REQUEST_RESULT_CODE;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.REQUEST_SUCCESS;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.TRUE;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -37,6 +54,8 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,7 +73,7 @@ public class PreAggregatedMetricsTest {
 
   @SuppressWarnings("SystemOut")
   @Test
-  void collectHttpClientRMetric() {
+  void testHttpClientRequestDuration() {
     OperationListener listener = HttpClientMetrics.get().create(meterProvider.get("test"));
 
     Attributes requestAttributes =
@@ -96,6 +115,8 @@ public class PreAggregatedMetricsTest {
       System.out.println("metric: " + metricData);
     }
 
+    assertThat(metricDataCollection.size()).isEqualTo(1);
+
     assertThat(metricDataCollection)
         .satisfiesExactly(
             metric ->
@@ -119,6 +140,28 @@ public class PreAggregatedMetricsTest {
                                                 exemplar
                                                     .hasTraceId("ff01020304050600ff0a0b0c0d0e0f00")
                                                     .hasSpanId("090a0b0c0d0e0f00")))));
+
+    MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
+    MetricData metricData = metricDataCollection.iterator().next();
+    MetricDataMapper.updateMetricPointBuilder(
+        builder, metricData, metricData.getData().getPoints().iterator().next(), true, true);
+    TelemetryItem telemetryItem = builder.build();
+    MetricsData metricsData = (MetricsData) telemetryItem.getData().getBaseData();
+    Map<String, String> expectedMap = new HashMap<>();
+    expectedMap.put(MS_METRIC_ID, REQUEST_METRIC_ID);
+    expectedMap.put(MS_IS_AUTOCOLLECTED, TRUE);
+    expectedMap.put(MS_PROCESSED_BY_METRIC_EXTRACTORS, TRUE);
+    expectedMap.put(PERFORMANCE_BUCKET, "<250ms");
+    expectedMap.put(REQUEST_RESULT_CODE, "200");
+    expectedMap.put(OPERATION_SYNTHETIC, FALSE);
+    expectedMap.put(
+        CLOUD_ROLE_NAME, telemetryItem.getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString()));
+    expectedMap.put(
+        CLOUD_ROLE_INSTANCE,
+        telemetryItem.getTags().get(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString()));
+    expectedMap.put(REQUEST_SUCCESS, TRUE);
+
+    assertThat(metricsData.getProperties()).containsExactlyInAnyOrderEntriesOf(expectedMap);
   }
 
   private static long nanos(int millis) {

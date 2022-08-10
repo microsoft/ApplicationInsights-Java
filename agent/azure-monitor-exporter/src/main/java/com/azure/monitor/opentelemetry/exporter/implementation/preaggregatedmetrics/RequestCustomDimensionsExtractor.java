@@ -29,21 +29,24 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTag
 public final class RequestCustomDimensionsExtractor {
 
   // visible for testing
-  static final String REQUEST_METRIC_ID = "requests/duration";
-  static final String MS_METRIC_ID = "_MS.metricId";
-  static final String MS_IS_AUTOCOLLECTED = "_MS.IsAutocollected";
-  static final String TRUE = "True";
-  static final String FALSE = "False";
-  static final String MS_PROCESSED_BY_METRIC_EXTRACTORS = "_MS.ProcessedByMetricExtractors";
-  static final String PERFORMANCE_BUCKET = "request/performanceBucket";
-  static final String REQUEST_RESULT_CODE = "request/resultCode";
-  static final String OPERATION_SYNTHETIC = "operation/synthetic";
-  static final String CLOUD_ROLE_NAME = "cloud/roleName";
-  static final String CLOUD_ROLE_INSTANCE = "cloud/roleInstance";
-  static final String REQUEST_SUCCESS = "request/success";
+  public static final String MS_METRIC_ID = "_MS.metricId";
+  public static final String REQUEST_METRIC_ID = "requests/duration";
+  public static final String MS_IS_AUTOCOLLECTED = "_MS.IsAutocollected";
+  public static final String TRUE = "True";
+  public static final String FALSE = "False";
+  public static final String MS_PROCESSED_BY_METRIC_EXTRACTORS = "_MS.ProcessedByMetricExtractors";
+  public static final String PERFORMANCE_BUCKET = "request/performanceBucket";
+  public static final String REQUEST_RESULT_CODE = "request/resultCode";
+  public static final String OPERATION_SYNTHETIC = "operation/synthetic";
+  public static final String CLOUD_ROLE_NAME = "cloud/roleName";
+  public static final String CLOUD_ROLE_INSTANCE = "cloud/roleInstance";
+  public static final String REQUEST_SUCCESS = "request/success";
 
   public static void updatePreAggMetricsCustomDimensions(
-      AbstractTelemetryBuilder metricTelemetryBuilder, double value, String resultCode) {
+      AbstractTelemetryBuilder metricTelemetryBuilder,
+      double value,
+      String resultCode,
+      boolean success) {
     metricTelemetryBuilder.addProperty(MS_METRIC_ID, REQUEST_METRIC_ID);
     metricTelemetryBuilder.addProperty(MS_IS_AUTOCOLLECTED, TRUE);
     // this flag will inform the ingestion service to stop post-aggregation
@@ -62,7 +65,7 @@ public final class RequestCustomDimensionsExtractor {
             .build()
             .getTags()
             .get(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString()));
-    metricTelemetryBuilder.addProperty(REQUEST_SUCCESS, TRUE);
+    metricTelemetryBuilder.addProperty(REQUEST_SUCCESS, success ? TRUE : FALSE);
   }
 
   private RequestCustomDimensionsExtractor() {}

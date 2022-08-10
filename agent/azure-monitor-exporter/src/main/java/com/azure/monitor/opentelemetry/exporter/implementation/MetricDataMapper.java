@@ -56,6 +56,7 @@ public class MetricDataMapper {
 
   private static final Logger logger = LoggerFactory.getLogger(MetricDataMapper.class);
   private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
+  private final boolean captureHttpServer4xxAsError;
 
   static {
     EXCLUDED_METRIC_NAMES.add("http.server.active_requests"); // Servlet
@@ -66,8 +67,11 @@ public class MetricDataMapper {
     OTEL_PRE_AGGREGATED_METRIC_NAMES.add("rpc.server.duration"); // gRPC
   }
 
-  public MetricDataMapper(BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer) {
+  public MetricDataMapper(
+      BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer,
+      boolean captureHttpServer4xxAsError) {
     this.telemetryInitializer = telemetryInitializer;
+    this.captureHttpServer4xxAsError = captureHttpServer4xxAsError;
   }
 
   public void map(MetricData metricData, Consumer<TelemetryItem> consumer) {
@@ -101,7 +105,8 @@ public class MetricDataMapper {
       telemetryInitializer.accept(builder, metricData.getResource());
 
       builder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(pointData.getEpochNanos()));
-      updateMetricPointBuilder(builder, metricData, pointData, isPreAggregated);
+      updateMetricPointBuilder(
+          builder, metricData, pointData, captureHttpServer4xxAsError, isPreAggregated);
 
       telemetryItems.add(builder.build());
     }
@@ -113,6 +118,7 @@ public class MetricDataMapper {
       MetricTelemetryBuilder metricTelemetryBuilder,
       MetricData metricData,
       PointData pointData,
+      boolean captureHttpServer4xxAsError,
       boolean isPreAggregated) {
     checkArgument(metricData != null, "MetricData cannot be null.");
 
@@ -148,17 +154,33 @@ public class MetricDataMapper {
     pointBuilder.setName(metricData.getName());
     metricTelemetryBuilder.setMetricPoint(pointBuilder);
 
-    pointData
-        .getAttributes()
-        .forEach(
-            (key, value) -> metricTelemetryBuilder.addProperty(key.getKey(), value.toString()));
-
     if (isPreAggregated) {
-      // TODO update value
+      // TODO update value if applicable
       updatePreAggMetricsCustomDimensions(
           metricTelemetryBuilder,
           pointDataValue,
-          pointData.getAttributes().get(AttributeKey.stringKey("http.status_code")));
+          pointData
+              .getAttributes()
+              .get(AttributeKey.stringKey(SemanticAttributes.HTTP_STATUS_CODE.toString())),
+          getSuccess(pointData, captureHttpServer4xxAsError));
+    } else {
+      pointData
+          .getAttributes()
+          .forEach(
+              (key, value) -> metricTelemetryBuilder.addProperty(key.getKey(), value.toString()));
     }
+  }
+
+  private static boolean getSuccess(PointData pointData, boolean captureHttpServer4xxAsError) {
+    Long statusCode =
+        Long.valueOf(
+            pointData
+                .getAttributes()
+                .get(AttributeKey.stringKey(SemanticAttributes.HTTP_STATUS_CODE.toString())));
+    if (captureHttpServer4xxAsError) {
+      return statusCode == null || statusCode < 400;
+    }
+
+    return statusCode == 200;
   }
 }

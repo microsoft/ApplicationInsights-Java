@@ -514,7 +514,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       TelemetryClient telemetryClient,
       Configuration configuration) {
 
-    MetricDataMapper mapper = new MetricDataMapper(telemetryClient::populateDefaults);
+    MetricDataMapper mapper =
+        new MetricDataMapper(
+            telemetryClient::populateDefaults, configuration.preview.captureHttpServer4xxAsError);
     metricReader =
         PeriodicMetricReader.builder(
                 new AgentMetricExporter(
