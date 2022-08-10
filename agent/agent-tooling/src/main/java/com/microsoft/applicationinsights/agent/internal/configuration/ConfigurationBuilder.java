@@ -773,9 +773,7 @@ public class ConfigurationBuilder {
     if (message != null && !message.isEmpty()) {
       return message;
     }
-    return "Application Insights Java agent's configuration "
-        + location
-        + " has a malformed JSON\n";
+    return "The configuration " + location + " contains malformed JSON\n";
   }
 
   public static Configuration loadJsonConfigFile(Path configPath) throws IOException {

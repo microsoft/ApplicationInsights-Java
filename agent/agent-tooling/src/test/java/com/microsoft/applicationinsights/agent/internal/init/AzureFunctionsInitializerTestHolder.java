@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -88,7 +87,7 @@ class AzureFunctionsInitializerTestHolder {
     lazyConfigurationAccessor.setConnectionString(null, null);
 
     // then
-    verify(telemetryClient, never()).updateConnectionString(any());
+    verify(telemetryClient, never()).updateConnectionStrings(any(), any(), any());
   }
 
   @Test
@@ -108,9 +107,7 @@ class AzureFunctionsInitializerTestHolder {
     lazyConfigurationAccessor.setConnectionString(CONNECTION_STRING, null);
 
     // then
-    verify(telemetryClient)
-        .updateConnectionString(
-            argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
+    verify(telemetryClient).updateConnectionStrings(CONNECTION_STRING, null, null);
 
     // when
     lazyConfigurationAccessor.setWebsiteSiteName(WEBSITE_SITE_NAME);
@@ -136,9 +133,7 @@ class AzureFunctionsInitializerTestHolder {
     lazyConfigurationAccessor.setConnectionString(null, INSTRUMENTATION_KEY);
 
     // then
-    verify(telemetryClient)
-        .updateConnectionString(
-            argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
+    verify(telemetryClient).updateConnectionStrings(CONNECTION_STRING, null, null);
   }
 
   @Test
@@ -176,7 +171,7 @@ class AzureFunctionsInitializerTestHolder {
     lazyConfigurationAccessor.setConnectionString(null, null);
 
     // then
-    verify(telemetryClient, never()).updateConnectionString(any());
+    verify(telemetryClient, never()).updateConnectionStrings(any(), any(), any());
   }
 
   @Test
@@ -196,9 +191,7 @@ class AzureFunctionsInitializerTestHolder {
     lazyConfigurationAccessor.setConnectionString(CONNECTION_STRING, null);
 
     // then
-    verify(telemetryClient)
-        .updateConnectionString(
-            argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
+    verify(telemetryClient).updateConnectionStrings(CONNECTION_STRING, null, null);
   }
 
   @Test
@@ -218,8 +211,6 @@ class AzureFunctionsInitializerTestHolder {
     lazyConfigurationAccessor.setConnectionString(null, INSTRUMENTATION_KEY);
 
     // then
-    verify(telemetryClient)
-        .updateConnectionString(
-            argThat(cs -> cs.getInstrumentationKey().equals(INSTRUMENTATION_KEY)));
+    verify(telemetryClient).updateConnectionStrings(CONNECTION_STRING, null, null);
   }
 }

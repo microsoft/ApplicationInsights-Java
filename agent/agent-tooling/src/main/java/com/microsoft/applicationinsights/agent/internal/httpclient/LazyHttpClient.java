@@ -61,6 +61,7 @@ public class LazyHttpClient implements HttpClient {
   private static final HttpClient INSTANCE = new LazyHttpClient();
 
   public static final CountDownLatch safeToInitLatch = new CountDownLatch(1);
+
   public static volatile String proxyHost;
   public static volatile Integer proxyPortNumber;
   public static volatile String proxyUsername;

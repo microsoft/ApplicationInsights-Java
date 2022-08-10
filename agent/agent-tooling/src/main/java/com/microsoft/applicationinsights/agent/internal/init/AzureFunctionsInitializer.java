@@ -22,9 +22,8 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import ch.qos.logback.classic.LoggerContext;
-import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
-import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
@@ -42,10 +41,10 @@ import org.slf4j.LoggerFactory;
 
 public class AzureFunctionsInitializer implements Runnable {
 
-  private static final Logger startupLogger =
-      LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
-
   private static final Logger logger = LoggerFactory.getLogger(AzureFunctionsInitializer.class);
+
+  private static final Logger diagnosticLogger =
+      LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME);
 
   private final TelemetryClient telemetryClient;
   private final AgentLogExporter agentLogExporter;
@@ -63,10 +62,25 @@ public class AzureFunctionsInitializer implements Runnable {
   @Override
   public void run() {
     if (!isAgentEnabled()) {
-      disableBytecodeInstrumentation();
+      try {
+        disableBytecodeInstrumentation();
+        diagnosticLogger.info("Application Insights Java Agent disabled");
+      } catch (Throwable t) {
+        diagnosticLogger.error(
+            "Application Insights Java Agent disablement failed: " + t.getMessage(), t);
+      }
       return;
     }
+    try {
+      initialize();
+      diagnosticLogger.info("Application Insights Java Agent specialized successfully");
+    } catch (Throwable t) {
+      diagnosticLogger.error(
+          "Application Insights Java Agent specialization failed: " + t.getMessage(), t);
+    }
+  }
 
+  private void initialize() {
     String selfDiagnosticsLevel = System.getenv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL");
     String connectionString = System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING");
     String instrumentationKey = System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY");
@@ -86,11 +100,10 @@ public class AzureFunctionsInitializer implements Runnable {
     setConnectionString(connectionString, instrumentationKey);
     setWebsiteSiteName(websiteSiteName);
     setSelfDiagnosticsLevel(selfDiagnosticsLevel);
-    agentLogExporter.setThreshold(
-        Configuration.LoggingInstrumentation.getSeverity(instrumentationLoggingLevel));
-
-    startupLogger.info(
-        "ApplicationInsights Java Agent specialization complete for Azure Functions placeholder");
+    if (instrumentationLoggingLevel != null) {
+      agentLogExporter.setThreshold(
+          Configuration.LoggingInstrumentation.getSeverity(instrumentationLoggingLevel));
+    }
   }
 
   private static void disableBytecodeInstrumentation() {
@@ -120,18 +133,13 @@ public class AzureFunctionsInitializer implements Runnable {
   }
 
   private void setValue(String value) {
-    ConnectionString connectionString = ConnectionString.parse(value);
-    telemetryClient.updateConnectionString(connectionString);
-    telemetryClient.updateStatsbeatConnectionString(
-        StatsbeatConnectionString.create(connectionString, null, null));
+    telemetryClient.updateConnectionStrings(value, null, null);
+    appIdSupplier.updateAppId();
 
     // now that we know the user has opted in to tracing, we need to init the propagator and sampler
     DelegatingPropagator.getInstance().setUpStandardDelegate(Collections.emptyList(), false);
     // TODO handle APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE
     DelegatingSampler.getInstance().setAlwaysOnDelegate();
-
-    // start app id retrieval after the connection string becomes available.
-    appIdSupplier.startAppIdRetrieval();
   }
 
   void setWebsiteSiteName(@Nullable String websiteSiteName) {

@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
@@ -80,10 +79,9 @@ class RpConfigurationPollingTest {
     rpConfiguration.lastModifiedTime = 0;
 
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
-    ConnectionString connectionString =
-        ConnectionString.parse("InstrumentationKey=00000000-0000-0000-0000-000000000000");
-    telemetryClient.updateConnectionString(connectionString);
-    AppIdSupplier appIdSupplier = new AppIdSupplier(connectionString);
+    telemetryClient.updateConnectionStrings(
+        "InstrumentationKey=00000000-0000-0000-0000-000000000000", null, null);
+    AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient);
 
     BytecodeUtilImpl.samplingPercentage = 100;
 
@@ -116,10 +114,9 @@ class RpConfigurationPollingTest {
     rpConfiguration.lastModifiedTime = 0;
 
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
-    ConnectionString connectionString =
-        ConnectionString.parse("InstrumentationKey=00000000-0000-0000-0000-000000000000");
-    telemetryClient.updateConnectionString(connectionString);
-    AppIdSupplier appIdSupplier = new AppIdSupplier(connectionString);
+    telemetryClient.updateConnectionStrings(
+        "InstrumentationKey=00000000-0000-0000-0000-000000000000", null, null);
+    AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient);
 
     BytecodeUtilImpl.samplingPercentage = 100;
 
