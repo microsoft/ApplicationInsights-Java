@@ -32,7 +32,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTi
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
@@ -126,17 +126,13 @@ public class LogDataMapper {
   }
 
   private static void setOperationTags(AbstractTelemetryBuilder telemetryBuilder, LogData log) {
-    telemetryBuilder.addTag(
-        ContextTagKeys.AI_OPERATION_ID.toString(), log.getSpanContext().getTraceId());
-    setOperationParentId(telemetryBuilder, log.getSpanContext().getSpanId());
-    setOperationName(telemetryBuilder, log.getAttributes());
-  }
-
-  private static void setOperationParentId(
-      AbstractTelemetryBuilder telemetryBuilder, String parentSpanId) {
-    if (SpanId.isValid(parentSpanId)) {
-      telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), parentSpanId);
+    SpanContext spanContext = log.getSpanContext();
+    if (spanContext.isValid()) {
+      telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_ID.toString(), spanContext.getTraceId());
+      telemetryBuilder.addTag(
+          ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), spanContext.getSpanId());
     }
+    setOperationName(telemetryBuilder, log.getAttributes());
   }
 
   private static void setOperationName(
