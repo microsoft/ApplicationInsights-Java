@@ -45,7 +45,7 @@ public class AfterAgentListener implements AgentListener {
     if (!"java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
       // Delay registering and starting AppId retrieval until the connection string becomes
       // available for Linux Consumption Plan.
-      appIdSupplier.startAppIdRetrieval();
+      appIdSupplier.updateAppId();
     }
 
     LazyHttpClient.safeToInitLatch.countDown();
