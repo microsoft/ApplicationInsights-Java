@@ -175,6 +175,6 @@ public class MetricDataMapper {
       return statusCode == null || statusCode < 400;
     }
 
-    return statusCode == 200;
+    return true;
   }
 }
