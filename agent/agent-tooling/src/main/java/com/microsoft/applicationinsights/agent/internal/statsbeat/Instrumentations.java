@@ -41,6 +41,7 @@ class Instrumentations {
     INSTRUMENTATION_MAP.put("io.opentelemetry.apache-httpclient-2.0", 1);
     INSTRUMENTATION_MAP.put("io.opentelemetry.apache-httpclient-4.0", 2);
     INSTRUMENTATION_MAP.put("io.opentelemetry.apache-httpclient-5.0", 3);
+    // TODO (trask) start capturing this
     INSTRUMENTATION_MAP.put("io.opentelemetry.applicationinsights-web-2.3", 4);
     INSTRUMENTATION_MAP.put("io.opentelemetry.tomcat-7.0", 5);
     INSTRUMENTATION_MAP.put("Azure-OpenTelemetry", 6); // bridged by azure-core-1.14 module
@@ -52,7 +53,9 @@ class Instrumentations {
     INSTRUMENTATION_MAP.put("io.opentelemetry.grpc-1.6", 12);
     INSTRUMENTATION_MAP.put("io.opentelemetry.http-url-connection", 13);
     INSTRUMENTATION_MAP.put("io.opentelemetry.servlet-5.0", 14);
-    INSTRUMENTATION_MAP.put("io.opentelemetry.jaxrs-1.0", 16);
+    // index 15 retired in 3.3.0 GA (was java-util-logging)
+    INSTRUMENTATION_MAP.put("io.opentelemetry.jaxrs-1.0", 16); // no usage yet
+    // index 17 retired in 3.3.0 GA (was jaxrs-2.0-common)
     INSTRUMENTATION_MAP.put("io.opentelemetry.async-http-client-1.9", 18);
     INSTRUMENTATION_MAP.put("io.opentelemetry.async-http-client-2.0", 19);
     INSTRUMENTATION_MAP.put("io.opentelemetry.google-http-client-1.19", 20);
@@ -68,11 +71,17 @@ class Instrumentations {
     INSTRUMENTATION_MAP.put("io.opentelemetry.lettuce-5.0", 30);
     INSTRUMENTATION_MAP.put("io.opentelemetry.lettuce-5.1", 31);
     INSTRUMENTATION_MAP.put("io.opentelemetry.spring-rabbit-1.0", 32);
+    // index 33 retired in 3.3.0 GA (was jaxrs-2.0-client)
+    // index 34 retired in 3.3.0 GA (was log4j-1.2)
+    // index 35 retired in 3.3.0 GA (was log4j-2.0)
+    // index 36 retired in 3.3.0 GA (was jaxrs-client-2.0-resteasy-3.0)
+    // index 37 retired in 3.3.0 GA (was logback-1.0)
+    // TODO (trask) start capturing this
     INSTRUMENTATION_MAP.put("io.opentelemetry.micrometer-1.0", 38);
     INSTRUMENTATION_MAP.put("io.opentelemetry.mongo-3.1", 39); // mongo 4.0 is covered in 3.1
     INSTRUMENTATION_MAP.put("io.opentelemetry.grizzly-2.0", 40);
     INSTRUMENTATION_MAP.put("io.opentelemetry.quartz-2.0", 41);
-    INSTRUMENTATION_MAP.put("io.opentelemetry.apache-camel-2.20", 42);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.apache-camel-2.20", 42); // no usage yet
     INSTRUMENTATION_MAP.put("io.opentelemetry.netty-4.0", 43);
     INSTRUMENTATION_MAP.put("io.opentelemetry.netty-4.1", 44);
     INSTRUMENTATION_MAP.put("io.opentelemetry.okhttp-3.0", 45);
@@ -83,22 +92,51 @@ class Instrumentations {
     INSTRUMENTATION_MAP.put("io.opentelemetry.reactor-netty-1.0", 50);
     INSTRUMENTATION_MAP.put("io.opentelemetry.servlet-2.2", 51);
     INSTRUMENTATION_MAP.put("io.opentelemetry.servlet-3.0", 52);
+    // index 53 is open (was servlet-common but that instrumentation doesn't emit telemetry)
     INSTRUMENTATION_MAP.put("io.opentelemetry.spring-scheduling-3.1", 54);
-    INSTRUMENTATION_MAP.put("io.opentelemetry.play-2.4", 55);
-    INSTRUMENTATION_MAP.put("io.opentelemetry.play-2.6", 56);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.play-mvc-2.4", 55);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.play-mvc-2.6", 56);
     INSTRUMENTATION_MAP.put("io.opentelemetry.vertx-http-client-3.0", 57);
-    INSTRUMENTATION_MAP.put("io.opentelemetry.vertx-http-client-4.0", 58);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.vertx-http-client-4.0", 58); // no usage yet
     INSTRUMENTATION_MAP.put("io.opentelemetry.spring-jms-2.0", 59);
     INSTRUMENTATION_MAP.put("io.opentelemetry.tomcat-10.0", 60);
     INSTRUMENTATION_MAP.put("io.opentelemetry.jetty-11.0", 61);
-    // TODO (trask) the liberty names should be getting a version soon
-    // see https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/6449
     INSTRUMENTATION_MAP.put("io.opentelemetry.liberty", 62);
     INSTRUMENTATION_MAP.put("io.opentelemetry.liberty-dispatcher", 63);
     INSTRUMENTATION_MAP.put("io.opentelemetry.methods", 64); // used by "custom instrumentation"
     INSTRUMENTATION_MAP.put("io.opentelemetry.okhttp-2.2", 65);
     INSTRUMENTATION_MAP.put("io.opentelemetry.opentelemetry-instrumentation-annotations-1.16", 66);
     INSTRUMENTATION_MAP.put("io.opentelemetry.undertow-1.4", 67);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.play-ws-1.0", 68);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.play-ws-2.0", 69);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.play-ws-2.1", 70);
+    INSTRUMENTATION_MAP.put("io.opentelemetry.vertx-kafka-client-3.5", 71);
+
+    // kusto query to find/verify unused
+    /*
+       let index = 15;
+       laWorkspaceAppMetrics()
+       | where Name == "Feature"
+       | extend Type = tostring(Properties.type)
+       | where Type == 1
+       | extend Language = tostring(Properties.language)
+       | where Language == "java"
+       | extend Feature = tolong(Properties.feature)
+       | where isnotnull(Feature)
+       | extend Version = tostring(Properties.version)
+       | where Version startswith "3.2.3"
+            or Version startswith "3.2.4"
+            or Version startswith "3.2.5"
+            or Version startswith "3.2.6"
+            or Version startswith "3.2.7"
+            or Version startswith "3.2.8"
+            or Version startswith "3.2.9"
+            or Version startswith "3.2.10"
+            or Version startswith "3.2.11"
+            or Version startswith "3.3."
+       | where binary_and(Feature, tolong(pow(2, index))) != 0
+       | take 1
+    */
   }
 
   // encode BitSet to a long
