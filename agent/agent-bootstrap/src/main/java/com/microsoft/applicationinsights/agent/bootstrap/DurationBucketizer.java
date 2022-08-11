@@ -45,7 +45,7 @@ public final class DurationBucketizer {
     performanceBuckets.put(">=5min", Long.MAX_VALUE);
   }
 
-  public static String getPerformanceBucket(double durationInMillis) {
+  public static String getPerformanceBucket(long durationInMillis) {
     for (Map.Entry<String, Long> entry : performanceBuckets.entrySet()) {
       if (durationInMillis < entry.getValue()) {
         return entry.getKey();
