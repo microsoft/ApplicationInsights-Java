@@ -123,14 +123,14 @@ public final class HttpServerMetrics implements OperationListener {
     Attributes durationAndSizeAttributes =
         TemporaryMetricsView.applyServerDurationAndSizeView(state.startAttributes(), endAttributes);
 
-    long duration = endNanos - state.startTimeNanos();
+    double duration = (endNanos - state.startTimeNanos()) / NANOS_PER_MS;
     logger.log(FINE, "################# HttpServerMetrics::duration: " + duration);
     durationAndSizeAttributes =
         durationAndSizeAttributes.toBuilder()
             .put(AI_PERFORMANCE_BUCKET, DurationBucketizer.getPerformanceBucket(duration))
             .build();
 
-    this.duration.record(duration / NANOS_PER_MS, durationAndSizeAttributes, context);
+    this.duration.record(duration, durationAndSizeAttributes, context);
     Long requestLength =
         getAttribute(
             SemanticAttributes.HTTP_REQUEST_CONTENT_LENGTH, endAttributes, state.startAttributes());

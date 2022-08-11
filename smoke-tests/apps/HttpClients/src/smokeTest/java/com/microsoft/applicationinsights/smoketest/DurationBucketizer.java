@@ -19,11 +19,12 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.bootstrap;
+package com.microsoft.applicationinsights.smoketest;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+// copied from link{com.microsoft.applicationinsights.agent.bootstrap.DurationBucketizer}
 public final class DurationBucketizer {
 
   public static final String AI_PERFORMANCE_BUCKET = "ai.performance.bucket";
