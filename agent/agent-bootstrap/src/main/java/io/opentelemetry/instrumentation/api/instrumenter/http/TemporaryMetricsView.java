@@ -44,7 +44,6 @@ final class TemporaryMetricsView {
     // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/semantic_conventions/http-metrics.md#attributes
     Set<AttributeKey> view = new HashSet<>();
     view.add(SemanticAttributes.HTTP_METHOD);
-    //    view.add(AttributeKey.stringKey(AI_PERFORMANCE_BUCKET));
     view.add(SemanticAttributes.HTTP_STATUS_CODE); // Optional
     view.add(SemanticAttributes.HTTP_FLAVOR); // Optional
     return view;
