@@ -111,32 +111,6 @@ class Instrumentations {
     INSTRUMENTATION_MAP.put("io.opentelemetry.play-ws-2.0", 69);
     INSTRUMENTATION_MAP.put("io.opentelemetry.play-ws-2.1", 70);
     INSTRUMENTATION_MAP.put("io.opentelemetry.vertx-kafka-client-3.5", 71);
-
-    // kusto query to find/verify unused
-    /*
-       let index = 15;
-       laWorkspaceAppMetrics()
-       | where Name == "Feature"
-       | extend Type = tostring(Properties.type)
-       | where Type == 1
-       | extend Language = tostring(Properties.language)
-       | where Language == "java"
-       | extend Feature = tolong(Properties.feature)
-       | where isnotnull(Feature)
-       | extend Version = tostring(Properties.version)
-       | where Version startswith "3.2.3"
-            or Version startswith "3.2.4"
-            or Version startswith "3.2.5"
-            or Version startswith "3.2.6"
-            or Version startswith "3.2.7"
-            or Version startswith "3.2.8"
-            or Version startswith "3.2.9"
-            or Version startswith "3.2.10"
-            or Version startswith "3.2.11"
-            or Version startswith "3.3."
-       | where binary_and(Feature, tolong(pow(2, index))) != 0
-       | take 1
-    */
   }
 
   // encode BitSet to a long
