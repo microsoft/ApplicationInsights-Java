@@ -8,6 +8,7 @@ package io.opentelemetry.instrumentation.api.instrumenter.http;
 import static java.util.logging.Level.FINE;
 
 import com.google.auto.value.AutoValue;
+import com.microsoft.applicationinsights.agent.bootstrap.DurationBucketizer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
@@ -109,7 +110,7 @@ public final class HttpServerMetrics implements OperationListener {
 
     durationAndSizeAttributes =
         durationAndSizeAttributes.toBuilder()
-            .put("AI perf bucket", getAiPerfBucket(duration))
+            .put("ai.performance.bucket", DurationBucketizer.getPerformanceBucket(duration))
             .build();
 
     this.duration.record(duration / NANOS_PER_MS, durationAndSizeAttributes, context);

@@ -21,8 +21,6 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics;
 
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DurationBucketizer.getPerformanceBucket;
-
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 
@@ -44,7 +42,7 @@ public final class RequestCustomDimensionsExtractor {
 
   public static void updatePreAggMetricsCustomDimensions(
       AbstractTelemetryBuilder metricTelemetryBuilder,
-      double value,
+      String perfBucket,
       long statusCode,
       boolean success) {
     metricTelemetryBuilder.addProperty(MS_METRIC_ID, REQUEST_METRIC_ID);
@@ -53,7 +51,7 @@ public final class RequestCustomDimensionsExtractor {
     metricTelemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, TRUE);
 
     // TODO figure out the correct duration/value
-    metricTelemetryBuilder.addProperty(PERFORMANCE_BUCKET, getPerformanceBucket(value));
+    metricTelemetryBuilder.addProperty(PERFORMANCE_BUCKET, perfBucket);
     metricTelemetryBuilder.addProperty(REQUEST_RESULT_CODE, String.valueOf(statusCode));
     metricTelemetryBuilder.addProperty(OPERATION_SYNTHETIC, FALSE);
 

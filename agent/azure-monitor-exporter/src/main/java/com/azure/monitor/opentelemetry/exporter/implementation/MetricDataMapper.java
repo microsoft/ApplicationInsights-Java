@@ -159,7 +159,7 @@ public class MetricDataMapper {
       Long statusCode = pointData.getAttributes().get(AttributeKey.longKey("http.status_code"));
       updatePreAggMetricsCustomDimensions(
           metricTelemetryBuilder,
-          pointDataValue,
+          pointData.getAttributes().get(AttributeKey.stringKey("ai.performance.bucket")),
           statusCode,
           getSuccess(statusCode, captureHttpServer4xxAsError));
     } else {
