@@ -112,9 +112,6 @@ public final class HttpClientMetrics implements OperationListener {
         applyClientDurationAndSizeView(state.startAttributes(), endAttributes);
 
     double duration = (endNanos - state.startTimeNanos()) / NANOS_PER_MS;
-    System.out.println("################# HttpClientMetrics::duration: " + duration);
-    System.out.println(
-        "################# perfBucket: " + DurationBucketizer.getPerformanceBucket(duration));
     durationAndSizeAttributes =
         durationAndSizeAttributes.toBuilder()
             .put(AI_PERFORMANCE_BUCKET, DurationBucketizer.getPerformanceBucket(duration))
