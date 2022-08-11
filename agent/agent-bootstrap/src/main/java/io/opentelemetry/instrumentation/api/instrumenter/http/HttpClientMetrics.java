@@ -1,27 +1,7 @@
-/*
- * ApplicationInsights-Java
- * Copyright (c) Microsoft Corporation
- * All rights reserved.
- *
- * MIT License
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this
- * software and associated documentation files (the ""Software""), to deal in the Software
- * without restriction, including without limitation the rights to use, copy, modify, merge,
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
- * persons to whom the Software is furnished to do so, subject to the following conditions:
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
- * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- */
-
 package io.opentelemetry.instrumentation.api.instrumenter.http;
 
 import static com.microsoft.applicationinsights.agent.bootstrap.DurationBucketizer.AI_PERFORMANCE_BUCKET;
+import static io.opentelemetry.instrumentation.api.instrumenter.http.TemporaryMetricsView.applyClientDurationAndSizeView;
 import static java.util.logging.Level.FINE;
 
 import com.google.auto.value.AutoValue;
@@ -30,7 +10,6 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongHistogram;
-import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
@@ -43,56 +22,48 @@ import javax.annotation.Nullable;
 
 /**
  * {@link OperationListener} which keeps track of <a
- * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/semantic_conventions/http-metrics.md#http-server">HTTP
- * server metrics</a>.
+ * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/semantic_conventions/http-metrics.md#http-client">HTTP
+ * client metrics</a>.
  */
-public final class HttpServerMetrics implements OperationListener {
+public final class HttpClientMetrics implements OperationListener {
 
   private static final double NANOS_PER_MS = TimeUnit.MILLISECONDS.toNanos(1);
 
-  private static final ContextKey<State> HTTP_SERVER_REQUEST_METRICS_STATE =
-      ContextKey.named("http-server-request-metrics-state");
+  private static final ContextKey<State> HTTP_CLIENT_REQUEST_METRICS_STATE =
+      ContextKey.named("http-client-request-metrics-state");
 
-  private static final Logger logger = Logger.getLogger(HttpServerMetrics.class.getName());
+  private static final Logger logger = Logger.getLogger(HttpClientMetrics.class.getName());
 
   /**
    * Returns a {@link OperationMetrics} which can be used to enable recording of {@link
-   * HttpServerMetrics} on an {@link
+   * HttpClientMetrics} on an {@link
    * io.opentelemetry.instrumentation.api.instrumenter.InstrumenterBuilder}.
    */
   public static OperationMetrics get() {
-    return HttpServerMetrics::new;
+    return HttpClientMetrics::new;
   }
 
-  private final LongUpDownCounter activeRequests;
   private final DoubleHistogram duration;
   private final LongHistogram requestSize;
   private final LongHistogram responseSize;
 
-  private HttpServerMetrics(Meter meter) {
-    activeRequests =
-        meter
-            .upDownCounterBuilder("http.server.active_requests")
-            .setUnit("requests")
-            .setDescription("The number of concurrent HTTP requests that are currently in-flight")
-            .build();
-
+  private HttpClientMetrics(Meter meter) {
     duration =
         meter
-            .histogramBuilder("http.server.duration")
+            .histogramBuilder("http.client.duration")
             .setUnit("ms")
-            .setDescription("The duration of the inbound HTTP request")
+            .setDescription("The duration of the outbound HTTP request")
             .build();
     requestSize =
         meter
-            .histogramBuilder("http.server.request.size")
+            .histogramBuilder("http.client.request.size")
             .setUnit("By")
             .setDescription("The size of HTTP request messages")
             .ofLongs()
             .build();
     responseSize =
         meter
-            .histogramBuilder("http.server.response.size")
+            .histogramBuilder("http.client.response.size")
             .setUnit("By")
             .setDescription("The size of HTTP response messages")
             .ofLongs()
@@ -101,16 +72,14 @@ public final class HttpServerMetrics implements OperationListener {
 
   @Override
   public Context onStart(Context context, Attributes startAttributes, long startNanos) {
-    activeRequests.add(1, TemporaryMetricsView.applyActiveRequestsView(startAttributes), context);
-
     return context.with(
-        HTTP_SERVER_REQUEST_METRICS_STATE,
-        new AutoValue_HttpServerMetrics_State(startAttributes, startNanos));
+        HTTP_CLIENT_REQUEST_METRICS_STATE,
+        new AutoValue_HttpClientMetrics_State(startAttributes, startNanos));
   }
 
   @Override
   public void onEnd(Context context, Attributes endAttributes, long endNanos) {
-    State state = context.get(HTTP_SERVER_REQUEST_METRICS_STATE);
+    State state = context.get(HTTP_CLIENT_REQUEST_METRICS_STATE);
     if (state == null) {
       logger.log(
           FINE,
@@ -118,13 +87,11 @@ public final class HttpServerMetrics implements OperationListener {
           context);
       return;
     }
-    activeRequests.add(
-        -1, TemporaryMetricsView.applyActiveRequestsView(state.startAttributes()), context);
     Attributes durationAndSizeAttributes =
-        TemporaryMetricsView.applyServerDurationAndSizeView(state.startAttributes(), endAttributes);
+        applyClientDurationAndSizeView(state.startAttributes(), endAttributes);
 
     long duration = endNanos - state.startTimeNanos();
-    logger.log(FINE, "################# HttpServerMetrics::duration: " + duration);
+    logger.log(FINE, "################# HttpClientMetrics::duration: " + duration);
     durationAndSizeAttributes =
         durationAndSizeAttributes.toBuilder()
             .put(AI_PERFORMANCE_BUCKET, DurationBucketizer.getPerformanceBucket(duration))

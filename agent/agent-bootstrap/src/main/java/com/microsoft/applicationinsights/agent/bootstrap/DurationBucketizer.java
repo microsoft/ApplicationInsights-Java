@@ -26,6 +26,8 @@ import java.util.Map;
 
 public final class DurationBucketizer {
 
+  public static final String AI_PERFORMANCE_BUCKET = "ai.performance.bucket";
+
   // sorted HashMap
   private static final Map<String, Long> performanceBuckets = new LinkedHashMap<>();
 

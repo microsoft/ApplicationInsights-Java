@@ -29,6 +29,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
+import static com.microsoft.applicationinsights.agent.bootstrap.DurationBucketizer.AI_PERFORMANCE_BUCKET;
+
 // this is temporary, see
 // https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/3962#issuecomment-906606325
 @SuppressWarnings("rawtypes")
@@ -44,6 +46,7 @@ final class TemporaryMetricsView {
     // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/semantic_conventions/http-metrics.md#attributes
     Set<AttributeKey> view = new HashSet<>();
     view.add(SemanticAttributes.HTTP_METHOD);
+//    view.add(AttributeKey.stringKey(AI_PERFORMANCE_BUCKET));
     view.add(SemanticAttributes.HTTP_STATUS_CODE); // Optional
     view.add(SemanticAttributes.HTTP_FLAVOR); // Optional
     return view;
