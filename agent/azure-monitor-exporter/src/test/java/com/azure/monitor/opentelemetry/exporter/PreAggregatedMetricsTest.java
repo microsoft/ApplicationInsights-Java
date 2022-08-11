@@ -26,7 +26,6 @@ import static com.azure.monitor.opentelemetry.exporter.implementation.preaggrega
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.MS_METRIC_ID;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.MS_PROCESSED_BY_METRIC_EXTRACTORS;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.OPERATION_SYNTHETIC;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.PERFORMANCE_BUCKET;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.REQUEST_METRIC_ID;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.REQUEST_RESULT_CODE;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.REQUEST_SUCCESS;
@@ -158,7 +157,8 @@ public class PreAggregatedMetricsTest {
     expectedMap.put(MS_METRIC_ID, REQUEST_METRIC_ID);
     expectedMap.put(MS_IS_AUTOCOLLECTED, TRUE);
     expectedMap.put(MS_PROCESSED_BY_METRIC_EXTRACTORS, TRUE);
-    expectedMap.put(PERFORMANCE_BUCKET, "<250ms");
+    // TODO performance market is updated in HttpClientMetrics
+    //    expectedMap.put(PERFORMANCE_BUCKET, "<250ms");
     expectedMap.put(REQUEST_RESULT_CODE, "200");
     expectedMap.put(OPERATION_SYNTHETIC, FALSE);
     expectedMap.put(REQUEST_SUCCESS, TRUE);
