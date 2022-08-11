@@ -206,7 +206,7 @@ abstract class HttpClientSmokeTest {
     assertThat(properties.get("operation/synthetic")).isEqualTo("False");
     assertThat(properties.get("_MS.metricId")).isEqualTo("requests/duration");
     assertThat(properties.get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
-    assertThat(properties.get("cloud/roleInstance")).isEqualTo("testoleinstance");
+    assertThat(properties.get("cloud/roleInstance")).isEqualTo("testroleinstance");
     assertThat(properties.get("cloud/roleName")).isEqualTo("testrolename");
     assertThat(properties.get("_MS.IsAutocollected")).isEqualTo("True");
   }
