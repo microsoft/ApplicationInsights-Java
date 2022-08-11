@@ -114,7 +114,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
   @Override
   public void onStartupSuccess() {
     startupLogger.info(
-        "ApplicationInsights Java Agent {} started successfully (PID {})",
+        "Application Insights Java Agent {} started successfully (PID {})",
         agentVersion,
         new PidFinder().getValue());
     startupLogger.info(
@@ -126,7 +126,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
     MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
     try (MDC.MDCCloseable ignored = INITIALIZATION_SUCCESS.makeActive()) {
       LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
-          .info("Application Insights Codeless Agent {} Attach Successful", agentVersion);
+          .info("Application Insights Java Agent {} started successfully", agentVersion);
     } finally {
       MDC.remove(DiagnosticsHelper.MDC_PROP_OPERATION);
     }
@@ -138,9 +138,9 @@ public class FirstEntryPoint implements LoggingCustomizer {
   public void onStartupFailure(Throwable throwable) {
     FriendlyException friendlyException = getFriendlyException(throwable);
     String banner =
-        "ApplicationInsights Java Agent "
+        "Application Insights Java Agent "
             + agentVersion
-            + " failed to start (PID "
+            + " startup failed (PID "
             + new PidFinder().getValue()
             + ")";
 

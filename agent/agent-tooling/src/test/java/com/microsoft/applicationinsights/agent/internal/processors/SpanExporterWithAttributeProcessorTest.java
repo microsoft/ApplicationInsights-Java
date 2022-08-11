@@ -1373,7 +1373,7 @@ class SpanExporterWithAttributeProcessorTest {
     SpanData resultSpan = result.get(0);
 
     assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("httpProtocol")))
-        .isEqualTo("http");
+        .isEqualTo("io/opentelemetry/instrumentation/api/instrumenter/http");
     assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("httpDomain")))
         .isEqualTo("example.com");
     assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("httpPath")))
@@ -1420,7 +1420,7 @@ class SpanExporterWithAttributeProcessorTest {
     SpanData resultSpan = result.get(0);
 
     assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("httpProtocol")))
-        .isEqualTo("http");
+        .isEqualTo("io/opentelemetry/instrumentation/api/instrumenter/http");
     assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("httpDomain")))
         .isEqualTo("example.com");
     assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("httpPath")))

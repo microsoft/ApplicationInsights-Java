@@ -44,6 +44,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -409,13 +410,21 @@ public class TelemetryClient {
   }
 
   // used during Azure Functions placeholder specialization
-  public void updateConnectionString(ConnectionString connectionString) {
-    this.connectionString = connectionString;
-  }
+  // and also used by Azure Spring Apps dynamic configuration
+  public void updateConnectionStrings(
+      @Nullable String connectionString,
+      @Nullable String statsbeatInstrumentationKey,
+      @Nullable String statsbeatEndpoint) {
 
-  // used during Azure Functions placeholder specialization
-  public void updateStatsbeatConnectionString(StatsbeatConnectionString statsbeatConnectionString) {
-    this.statsbeatConnectionString = statsbeatConnectionString;
+    if (Strings.isNullOrEmpty(connectionString)) {
+      this.connectionString = null;
+      this.statsbeatConnectionString = null;
+    } else {
+      this.connectionString = ConnectionString.parse(connectionString);
+      this.statsbeatConnectionString =
+          StatsbeatConnectionString.create(
+              this.connectionString, statsbeatInstrumentationKey, statsbeatEndpoint);
+    }
   }
 
   @Nullable
@@ -510,7 +519,11 @@ public class TelemetryClient {
         @Nullable String connectionString,
         @Nullable String statsbeatInstrumentationKey,
         @Nullable String statsbeatEndpoint) {
-      if (connectionString != null) {
+
+      if (Strings.isNullOrEmpty(connectionString)) {
+        this.connectionString = null;
+        this.statsbeatConnectionString = null;
+      } else {
         this.connectionString = ConnectionString.parse(connectionString);
         this.statsbeatConnectionString =
             StatsbeatConnectionString.create(
