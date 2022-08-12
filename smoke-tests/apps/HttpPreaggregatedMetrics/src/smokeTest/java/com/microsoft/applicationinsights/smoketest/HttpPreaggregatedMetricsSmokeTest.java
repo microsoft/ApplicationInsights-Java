@@ -59,36 +59,61 @@ abstract class HttpPreaggregatedMetricsSmokeTest {
   }
 
   private static void verify(String successUrlWithQueryString) throws Exception {
-    Telemetry telemetry = testing.getTelemetry(1);
+    List<Envelope> clientMetrics =
+        testing.mockedIngestion.waitForItems(
+            SmokeTestExtension.getMetricPredicate("http.client.duration"), 3, 40, TimeUnit.SECONDS);
+    List<Envelope> serverMetrics =
+        testing.mockedIngestion.waitForItems(
+            SmokeTestExtension.getMetricPredicate("http.server.duration"), 2, 40, TimeUnit.SECONDS);
 
-    assertThat(telemetry.rd.getProperties()).isEmpty();
-    assertThat(telemetry.rd.getSuccess()).isTrue();
-    assertThat(telemetry.rdEnvelope.getSampleRate()).isNull();
-
-    assertThat(telemetry.rdd1.getName()).isEqualTo("GET /200");
-    assertThat(telemetry.rdd1.getData()).isEqualTo(successUrlWithQueryString);
-    assertThat(telemetry.rdd1.getType()).isEqualTo("Http");
-    assertThat(telemetry.rdd1.getTarget()).isEqualTo("mock.codes");
-    assertThat(telemetry.rdd1.getResultCode()).isEqualTo("200");
-    assertThat(telemetry.rdd1.getProperties()).isEmpty();
-    assertThat(telemetry.rdd1.getSuccess()).isTrue();
-    assertThat(telemetry.rddEnvelope1.getSampleRate()).isNull();
-
-    SmokeTestExtension.assertParentChild(
-        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /HttpPreaggregatedMetrics/*");
-
-    verifyPreAggregatedMetrics("http.client.duration");
+    verifyHttpClientPreAggregatedMetrics(clientMetrics);
+    verifyHttpServerPreAggregatedMetrics(serverMetrics);
   }
 
-  private static void verifyPreAggregatedMetrics(String name) throws Exception {
-    List<Envelope> metrics =
-        testing.mockedIngestion.waitForItems(
-            SmokeTestExtension.getMetricPredicate(name), 1, 20, TimeUnit.SECONDS);
+  private static void verifyHttpClientPreAggregatedMetrics(List<Envelope> metrics)
+      throws Exception {
+    assertThat(metrics.size()).isEqualTo(3);
+    // sort metrics based on result code
+    metrics.sort(
+        Comparator.comparing(
+            obj -> {
+              MetricData metricData = (MetricData) ((Data<?>) obj.getData()).getBaseData();
+              return metricData.getProperties().get("request/resultCode");
+            }));
 
+    // 1st pre-aggregated metric
     Envelope envelope1 = metrics.get(0);
     validateTags(envelope1);
     MetricData md1 = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
     validateMetricData(md1, "200");
+
+    // 2nd pre-aggregated metric
+    Envelope envelope2 = metrics.get(1);
+    validateTags(envelope2);
+    MetricData md2 = (MetricData) ((Data<?>) envelope2.getData()).getBaseData();
+    validateMetricData(md2, "404");
+
+    // 3rd pre-aggregated metric
+    Envelope envelope3 = metrics.get(2);
+    validateTags(envelope3);
+    MetricData md3 = (MetricData) ((Data<?>) envelope3.getData()).getBaseData();
+    validateMetricData(md3, "500");
+  }
+
+  private static void verifyHttpServerPreAggregatedMetrics(List<Envelope> metrics)
+      throws Exception {
+    assertThat(metrics.size()).isEqualTo(2);
+    // 1st pre-aggregated metric
+    Envelope envelope1 = metrics.get(0);
+    validateTags(envelope1);
+    MetricData md1 = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
+    validateMetricData(md1, "200");
+
+    // 2nd pre-aggregated metric
+    Envelope envelope2 = metrics.get(1);
+    validateTags(envelope2);
+    MetricData md2 = (MetricData) ((Data<?>) envelope2.getData()).getBaseData();
+    validateMetricData(md2, "200");
   }
 
   private static void validateTags(Envelope envelope) {

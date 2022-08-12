@@ -30,8 +30,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.httpclient.Cookie;
-import org.apache.commons.httpclient.cookie.CookieSpecBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
@@ -63,7 +61,17 @@ public class HttpPreaggregatedMetricsTestServlet extends HttpServlet {
   // "/httpUrlConnection"
   private void doGetInternal(HttpServletRequest req) throws Exception {
     String pathInfo = req.getPathInfo();
-    ExecuteGetUrl executeGetUrl = this::httpUrlConnection;
+    final ExecuteGetUrl executeGetUrl;
+    switch (pathInfo) {
+      case "/":
+        executeGetUrl = null;
+        break;
+      case "/httpUrlConnection":
+        executeGetUrl = this::httpUrlConnection;
+        break;
+      default:
+        throw new ServletException("Unexpected url: " + pathInfo);
+    }
 
     if (executeGetUrl != null) {
       executeGetUrl.execute("https://mock.codes/200?q=spaces%20test");
