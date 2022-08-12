@@ -30,16 +30,12 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 
 @WebServlet("/*")
 public class HttpPreaggregatedMetricsTestServlet extends HttpServlet {
 
-  private final CloseableHttpClient httpClient =
-      HttpClientBuilder.create().disableAutomaticRetries().build();
   private final CloseableHttpAsyncClient httpAsyncClient = HttpAsyncClients.createDefault();
 
   public HttpPreaggregatedMetricsTestServlet() {
