@@ -21,12 +21,12 @@
 
 package io.opentelemetry.instrumentation.api.instrumenter.rpc;
 
-import static com.microsoft.applicationinsights.agent.bootstrap.DurationBucketizer.AI_PERFORMANCE_BUCKET;
+import static io.opentelemetry.instrumentation.api.instrumenter.utils.DurationBucketizer.AI_PERFORMANCE_BUCKET;
 import static io.opentelemetry.instrumentation.api.instrumenter.rpc.MetricsView.applyServerView;
 import static java.util.logging.Level.FINE;
 
 import com.google.auto.value.AutoValue;
-import com.microsoft.applicationinsights.agent.bootstrap.DurationBucketizer;
+import io.opentelemetry.instrumentation.api.instrumenter.utils.DurationBucketizer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.Meter;

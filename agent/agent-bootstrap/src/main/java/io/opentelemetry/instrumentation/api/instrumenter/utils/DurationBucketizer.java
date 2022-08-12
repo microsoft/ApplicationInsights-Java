@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.bootstrap;
+package io.opentelemetry.instrumentation.api.instrumenter.utils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

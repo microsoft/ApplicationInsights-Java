@@ -119,7 +119,7 @@ tasks {
 
     exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/rpc/RpcClientMetrics.class")
     exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/rpc/RpcServerMetrics.class")
-    exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/rpc/MetricView.class")
+    exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/rpc/MetricsView.class")
 
     dependsOn(isolateJavaagentLibs)
     from(isolateJavaagentLibs.get().outputs)
