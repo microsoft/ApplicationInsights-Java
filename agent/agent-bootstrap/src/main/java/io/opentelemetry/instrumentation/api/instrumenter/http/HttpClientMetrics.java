@@ -112,12 +112,13 @@ public final class HttpClientMetrics implements OperationListener {
         applyClientDurationAndSizeView(state.startAttributes(), endAttributes);
 
     double duration = (endNanos - state.startTimeNanos()) / NANOS_PER_MS;
-    durationAndSizeAttributes =
+    Attributes durationAttributes =
         durationAndSizeAttributes.toBuilder()
             .put(AI_PERFORMANCE_BUCKET, DurationBucketizer.getPerformanceBucket(duration))
             .build();
+    ;
+    this.duration.record(duration, durationAttributes, context);
 
-    this.duration.record(duration, durationAndSizeAttributes, context);
     Long requestLength =
         getAttribute(
             SemanticAttributes.HTTP_REQUEST_CONTENT_LENGTH, endAttributes, state.startAttributes());
