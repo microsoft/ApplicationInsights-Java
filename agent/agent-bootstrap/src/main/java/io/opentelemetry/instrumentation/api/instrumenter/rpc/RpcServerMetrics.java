@@ -90,10 +90,6 @@ public final class RpcServerMetrics implements OperationListener {
     }
 
     double duration = (endNanos - state.startTimeNanos()) / NANOS_PER_MS;
-    System.out.println("##################### server.duration: " + duration);
-    System.out.println(
-        "##################### server.perfBucket: "
-            + DurationBucketizer.getPerformanceBucket(duration));
     endAttributes =
         endAttributes.toBuilder()
             .put(AI_PERFORMANCE_BUCKET, DurationBucketizer.getPerformanceBucket(duration))
