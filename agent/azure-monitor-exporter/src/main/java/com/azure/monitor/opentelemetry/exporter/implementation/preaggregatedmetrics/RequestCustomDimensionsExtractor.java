@@ -43,16 +43,18 @@ public final class RequestCustomDimensionsExtractor {
   public static void updatePreAggMetricsCustomDimensions(
       AbstractTelemetryBuilder metricTelemetryBuilder,
       String perfBucket,
-      long statusCode,
+      Long statusCode,
       boolean success) {
     metricTelemetryBuilder.addProperty(MS_METRIC_ID, REQUEST_METRIC_ID);
     metricTelemetryBuilder.addProperty(MS_IS_AUTOCOLLECTED, TRUE);
     // this flag will inform the ingestion service to stop post-aggregation
     metricTelemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, TRUE);
 
-    // TODO figure out the correct duration/value
     metricTelemetryBuilder.addProperty(PERFORMANCE_BUCKET, perfBucket);
-    metricTelemetryBuilder.addProperty(REQUEST_RESULT_CODE, String.valueOf(statusCode));
+    // TODO how to assign "request/result_code" to RPC duration metrics?
+    if (statusCode != null) {
+      metricTelemetryBuilder.addProperty(REQUEST_RESULT_CODE, String.valueOf(statusCode));
+    }
     metricTelemetryBuilder.addProperty(OPERATION_SYNTHETIC, FALSE);
 
     if (metricTelemetryBuilder.build().getTags() != null) {
