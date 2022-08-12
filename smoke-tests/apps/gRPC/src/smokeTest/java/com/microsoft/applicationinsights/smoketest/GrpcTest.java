@@ -33,10 +33,14 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JA
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
+import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -49,6 +53,12 @@ abstract class GrpcTest {
   @TargetUri("/simple")
   void doSimpleTest() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 2);
+    List<Envelope> rpcClientDurationMetrics =
+        testing.mockedIngestion.waitForItems(
+            SmokeTestExtension.getMetricPredicate("rpc.client.duration"), 2, 40, TimeUnit.SECONDS);
+    List<Envelope> rpcServerMetrics =
+        testing.mockedIngestion.waitForItems(
+            SmokeTestExtension.getMetricPredicate("rpc.server.duration"), 2, 40, TimeUnit.SECONDS);
 
     Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /simple");
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "example.Greeter/SayHello");
@@ -82,6 +92,9 @@ abstract class GrpcTest {
     SmokeTestExtension.assertParentChild(rd1, rdEnvelope1, rddEnvelope, "GET /simple");
     SmokeTestExtension.assertParentChild(
         rdd.getId(), rddEnvelope, rdEnvelope2, "GET /simple", "example.Greeter/SayHello", false);
+
+    verifyRpcClientDurationPreAggregatedMetrics(rpcClientDurationMetrics);
+    verifyRpcServerDurationPreAggregatedMetrics(rpcServerMetrics);
   }
 
   @Test
@@ -147,6 +160,71 @@ abstract class GrpcTest {
       }
     }
     throw new IllegalStateException("Could not find dependency with name: " + name);
+  }
+
+  private static void verifyRpcClientDurationPreAggregatedMetrics(List<Envelope> metrics)
+      throws Exception {
+    assertThat(metrics.size()).isEqualTo(2);
+
+    // 1st pre-aggregated metric
+    Envelope envelope1 = metrics.get(0);
+    validateTags(envelope1);
+    MetricData md1 = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
+    validateMetricData(md1);
+
+    // 2nd pre-aggregated metric
+    Envelope envelope2 = metrics.get(1);
+    validateTags(envelope2);
+    MetricData md2 = (MetricData) ((Data<?>) envelope2.getData()).getBaseData();
+    validateMetricData(md2);
+  }
+
+  private static void verifyRpcServerDurationPreAggregatedMetrics(List<Envelope> metrics)
+      throws Exception {
+    assertThat(metrics.size()).isEqualTo(2);
+    // 1st pre-aggregated metric
+    Envelope envelope1 = metrics.get(0);
+    validateTags(envelope1);
+    MetricData md1 = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
+    validateMetricData(md1);
+
+    // 2nd pre-aggregated metric
+    Envelope envelope2 = metrics.get(1);
+    validateTags(envelope2);
+    MetricData md2 = (MetricData) ((Data<?>) envelope2.getData()).getBaseData();
+    validateMetricData(md2);
+  }
+
+  private static void validateTags(Envelope envelope) {
+    Map<String, String> tags = envelope.getTags();
+    assertThat(tags.get("ai.internal.sdkVersion")).isNotNull();
+    assertThat(tags).containsEntry("ai.cloud.roleInstance", "testroleinstance");
+    assertThat(tags).containsEntry("ai.cloud.role", "testrolename");
+  }
+
+  private static void validateMetricData(MetricData metricData) {
+    List<DataPoint> dataPoints = metricData.getMetrics();
+    assertThat(dataPoints).hasSize(1);
+    DataPoint dataPoint = dataPoints.get(0);
+    assertThat(dataPoint.getCount()).isEqualTo(1);
+    assertThat(dataPoint.getValue()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
+    assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
+    assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
+    Map<String, String> properties = metricData.getProperties();
+    assertThat(properties.get("request/resultCode")).isNull();
+    double value = metricData.getMetrics().get(0).getValue();
+    assertThat(properties.get("request/performanceBucket")).isEqualTo(getPerformanceBucket(value));
+    assertThat(properties.get("request/success")).isEqualTo("True");
+    assertThat(properties.get("operation/synthetic")).isEqualTo("False");
+    assertThat(properties.get("_MS.metricId")).isEqualTo("requests/duration");
+    assertThat(properties.get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
+    assertThat(properties.get("cloud/roleInstance")).isEqualTo("testroleinstance");
+    assertThat(properties.get("cloud/roleName")).isEqualTo("testrolename");
+    assertThat(properties.get("_MS.IsAutocollected")).isEqualTo("True");
+  }
+
+  private static String getPerformanceBucket(double duration) {
+    return DurationBucketizer.getPerformanceBucket(duration);
   }
 
   @Environment(JAVA_8)
