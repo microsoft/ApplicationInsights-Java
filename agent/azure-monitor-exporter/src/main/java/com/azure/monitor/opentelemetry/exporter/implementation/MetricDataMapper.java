@@ -155,7 +155,6 @@ public class MetricDataMapper {
     metricTelemetryBuilder.setMetricPoint(pointBuilder);
 
     if (isPreAggregated) {
-      // TODO update value if applicable
       Long statusCode = pointData.getAttributes().get(AttributeKey.longKey("http.status_code"));
       updatePreAggMetricsCustomDimensions(
           metricTelemetryBuilder,
