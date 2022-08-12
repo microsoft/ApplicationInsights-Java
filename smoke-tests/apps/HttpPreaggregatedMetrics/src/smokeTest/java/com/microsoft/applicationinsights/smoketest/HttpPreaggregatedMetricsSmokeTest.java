@@ -59,11 +59,10 @@ abstract class HttpPreaggregatedMetricsSmokeTest {
   }
 
   private static void verify(String successUrlWithQueryString) throws Exception {
-    Telemetry telemetry = testing.getTelemetry(3);
+    Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties()).isEmpty();
     assertThat(telemetry.rd.getSuccess()).isTrue();
-    // TODO (trask) add this check in all smoke tests?
     assertThat(telemetry.rdEnvelope.getSampleRate()).isNull();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("GET /200");
@@ -75,30 +74,8 @@ abstract class HttpPreaggregatedMetricsSmokeTest {
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
     assertThat(telemetry.rddEnvelope1.getSampleRate()).isNull();
 
-    assertThat(telemetry.rdd2.getName()).isEqualTo("GET /404");
-    assertThat(telemetry.rdd2.getData()).isEqualTo("https://mock.codes/404");
-    assertThat(telemetry.rdd2.getType()).isEqualTo("Http");
-    assertThat(telemetry.rdd2.getTarget()).isEqualTo("mock.codes");
-    assertThat(telemetry.rdd2.getResultCode()).isEqualTo("404");
-    assertThat(telemetry.rdd2.getProperties()).isEmpty();
-    assertThat(telemetry.rdd2.getSuccess()).isFalse();
-    assertThat(telemetry.rddEnvelope2.getSampleRate()).isNull();
-
-    assertThat(telemetry.rdd3.getName()).isEqualTo("GET /500");
-    assertThat(telemetry.rdd3.getData()).isEqualTo("https://mock.codes/500");
-    assertThat(telemetry.rdd3.getType()).isEqualTo("Http");
-    assertThat(telemetry.rdd3.getTarget()).isEqualTo("mock.codes");
-    assertThat(telemetry.rdd3.getResultCode()).isEqualTo("500");
-    assertThat(telemetry.rdd3.getProperties()).isEmpty();
-    assertThat(telemetry.rdd3.getSuccess()).isFalse();
-    assertThat(telemetry.rddEnvelope3.getSampleRate()).isNull();
-
     SmokeTestExtension.assertParentChild(
-        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /HttpClients/*");
-    SmokeTestExtension.assertParentChild(
-        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope2, "GET /HttpClients/*");
-    SmokeTestExtension.assertParentChild(
-        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope3, "GET /HttpClients/*");
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /HttpPreaggregatedMetrics/*");
 
     verifyPreAggregatedMetrics("http.client.duration");
   }
@@ -106,33 +83,12 @@ abstract class HttpPreaggregatedMetricsSmokeTest {
   private static void verifyPreAggregatedMetrics(String name) throws Exception {
     List<Envelope> metrics =
         testing.mockedIngestion.waitForItems(
-            SmokeTestExtension.getMetricPredicate(name), 3, 40, TimeUnit.SECONDS);
+            SmokeTestExtension.getMetricPredicate(name), 1, 20, TimeUnit.SECONDS);
 
-    // sort metrics based on result code
-    metrics.sort(
-        Comparator.comparing(
-            obj -> {
-              MetricData metricData = (MetricData) ((Data<?>) obj.getData()).getBaseData();
-              return metricData.getProperties().get("request/resultCode");
-            }));
-
-    // 1st pre-aggregated metric
     Envelope envelope1 = metrics.get(0);
     validateTags(envelope1);
     MetricData md1 = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
     validateMetricData(md1, "200");
-
-    // 2nd pre-aggregated metric
-    Envelope envelope2 = metrics.get(1);
-    validateTags(envelope2);
-    MetricData md2 = (MetricData) ((Data<?>) envelope2.getData()).getBaseData();
-    validateMetricData(md2, "404");
-
-    // 3rd pre-aggregated metric
-    Envelope envelope3 = metrics.get(2);
-    validateTags(envelope3);
-    MetricData md3 = (MetricData) ((Data<?>) envelope3.getData()).getBaseData();
-    validateMetricData(md3, "500");
   }
 
   private static void validateTags(Envelope envelope) {

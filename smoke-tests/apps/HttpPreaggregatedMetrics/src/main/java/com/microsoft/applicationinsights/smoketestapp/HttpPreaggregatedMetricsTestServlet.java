@@ -97,9 +97,4 @@ public class HttpPreaggregatedMetricsTestServlet extends HttpServlet {
   interface ExecuteGetUrl {
     void execute(String url) throws Exception;
   }
-
-  public static class PermitAllCookiesSpec extends CookieSpecBase {
-    @Override
-    public void validate(String host, int port, String path, boolean secure, Cookie cookie) {}
-  }
 }
