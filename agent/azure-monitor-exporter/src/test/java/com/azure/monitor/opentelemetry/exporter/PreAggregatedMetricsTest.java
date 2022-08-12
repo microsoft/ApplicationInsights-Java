@@ -45,6 +45,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationListener;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientMetrics;
+import io.opentelemetry.instrumentation.api.instrumenter.rpc.RpcClientMetrics;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
@@ -69,7 +70,7 @@ public class PreAggregatedMetricsTest {
 
   @SuppressWarnings("SystemOut")
   @Test
-  void testHttpClientRequestDuration() {
+  void generateHttpClientMetrics() {
     OperationListener listener = HttpClientMetrics.get().create(meterProvider.get("test"));
 
     Attributes requestAttributes =
@@ -146,6 +147,78 @@ public class PreAggregatedMetricsTest {
 
     assertThat(metricsData.getProperties())
         .containsExactlyInAnyOrderEntriesOf(generateExpectedProperties());
+  }
+
+  @SuppressWarnings("SystemOut")
+  @Test
+  void generateRpcClientMetrics() {
+    OperationListener listener = RpcClientMetrics.get().create(meterProvider.get("test"));
+
+    Attributes requestAttributes =
+        Attributes.builder()
+            .put(SemanticAttributes.RPC_SYSTEM, "grpc")
+            .put(SemanticAttributes.RPC_SERVICE, "myservice.EchoService")
+            .put(SemanticAttributes.RPC_METHOD, "exampleMethod")
+            .build();
+
+    Attributes responseAttributes1 =
+        Attributes.builder()
+            .put(SemanticAttributes.NET_PEER_NAME, "example.com")
+            .put(SemanticAttributes.NET_PEER_IP, "127.0.0.1")
+            .put(SemanticAttributes.NET_PEER_PORT, 8080)
+            .put(SemanticAttributes.NET_TRANSPORT, "ip_tcp")
+            .build();
+
+    Context parent =
+        Context.root()
+            .with(
+                Span.wrap(
+                    SpanContext.create(
+                        "ff01020304050600ff0a0b0c0d0e0f00",
+                        "090a0b0c0d0e0f00",
+                        TraceFlags.getSampled(),
+                        TraceState.getDefault())));
+
+    Context context1 = listener.onStart(parent, requestAttributes, nanos(100));
+
+    assertThat(metricReader.collectAllMetrics()).isEmpty();
+
+    listener.onEnd(context1, responseAttributes1, nanos(250));
+
+    Collection<MetricData> metricDataCollection = metricReader.collectAllMetrics();
+    for (MetricData metricData : metricDataCollection) {
+      System.out.println("metric: " + metricData);
+    }
+
+    assertThat(metricDataCollection.size()).isEqualTo(1);
+
+    assertThat(metricDataCollection)
+        .satisfiesExactlyInAnyOrder(
+            metric ->
+                assertThat(metric)
+                    .hasName("rpc.client.duration")
+                    .hasUnit("ms")
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasSum(150 /* millis */)
+                                        .hasAttributesSatisfying(
+                                            equalTo(SemanticAttributes.RPC_SYSTEM, "grpc"),
+                                            equalTo(
+                                                SemanticAttributes.RPC_SERVICE,
+                                                "myservice.EchoService"),
+                                            equalTo(SemanticAttributes.RPC_METHOD, "exampleMethod"),
+                                            equalTo(
+                                                SemanticAttributes.NET_PEER_NAME, "example.com"),
+                                            equalTo(SemanticAttributes.NET_PEER_PORT, 8080),
+                                            equalTo(SemanticAttributes.NET_TRANSPORT, "ip_tcp"))
+                                        .hasExemplarsSatisfying(
+                                            exemplar ->
+                                                exemplar
+                                                    .hasTraceId("ff01020304050600ff0a0b0c0d0e0f00")
+                                                    .hasSpanId("090a0b0c0d0e0f00")))));
   }
 
   private static long nanos(int millis) {
