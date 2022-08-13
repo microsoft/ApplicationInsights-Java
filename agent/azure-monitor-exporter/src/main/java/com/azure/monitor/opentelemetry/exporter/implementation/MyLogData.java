@@ -19,31 +19,35 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter.implementation.logging;
+package com.azure.monitor.opentelemetry.exporter.implementation;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
-import javax.annotation.Nullable;
-import org.slf4j.MDC;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.logs.data.Body;
+import io.opentelemetry.sdk.logs.data.LogData;
 
-// aggregated warnings for a given 5-min window
-public class WarningLogger {
+// TODO (trask) delete after updating to 1.17.0
+public class MyLogData extends DelegatingLogData {
 
-  private final AggregatingLogger aggregatingLogger;
+  private final Attributes attributes;
+  private final Body body;
 
-  public WarningLogger(Class<?> source, String operation) {
-    this(source, operation, 300);
+  public MyLogData(LogData delegate, Attributes attributes) {
+    this(delegate, attributes, delegate.getBody());
   }
 
-  // visible for testing
-  WarningLogger(Class<?> source, String operation, int intervalSeconds) {
-    aggregatingLogger = new AggregatingLogger(source, operation, false, intervalSeconds);
+  public MyLogData(LogData delegate, Attributes attributes, Body body) {
+    super(delegate);
+    this.attributes = attributes;
+    this.body = body;
   }
 
-  // warningMessage should have low cardinality
-  public void recordWarning(
-      String warningMessage, @Nullable Throwable exception, AzureMonitorMsgId msgId) {
-    try (MDC.MDCCloseable ignored = msgId.makeActive()) {
-      aggregatingLogger.recordWarning(warningMessage, exception);
-    }
+  @Override
+  public Body getBody() {
+    return body;
+  }
+
+  @Override
+  public Attributes getAttributes() {
+    return attributes;
   }
 }

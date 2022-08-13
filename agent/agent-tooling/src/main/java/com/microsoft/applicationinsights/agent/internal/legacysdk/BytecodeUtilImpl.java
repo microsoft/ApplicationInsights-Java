@@ -24,7 +24,9 @@ package com.microsoft.applicationinsights.agent.internal.legacysdk;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.AiOperationNameSpanProcessor;
+import com.azure.monitor.opentelemetry.exporter.implementation.OperationNames;
+import com.azure.monitor.opentelemetry.exporter.implementation.SamplingScoreGeneratorV2;
+import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.EventTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
@@ -39,16 +41,12 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLe
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyPropagator;
-import com.microsoft.applicationinsights.agent.internal.sampling.SamplingScoreGeneratorV2;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.FeatureStatsbeat;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.instrumentation.api.instrumenter.LocalRootSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import java.net.URI;
 import java.net.URL;
@@ -417,78 +415,37 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
   private static void track(
       AbstractTelemetryBuilder telemetryBuilder, Map<String, String> tags, boolean applySampling) {
 
-    String operationId = tags.get(ContextTagKeys.AI_OPERATION_ID.toString());
+    String existingOperationId = tags.get(ContextTagKeys.AI_OPERATION_ID.toString());
 
-    SpanContext context = Span.current().getSpanContext();
-    if (context.isValid()) {
-      String operationParentId = tags.get(ContextTagKeys.AI_OPERATION_PARENT_ID.toString());
-      String operationName = tags.get(ContextTagKeys.AI_OPERATION_NAME.toString());
+    Span span = Span.current();
+    SpanContext spanContext = span.getSpanContext();
 
-      trackInsideValidSpanContext(
-          telemetryBuilder, operationId, operationParentId, operationName, context, applySampling);
-    } else {
-      trackAsStandalone(telemetryBuilder, operationId, applySampling);
-    }
+    boolean isPartOfTheCurrentTrace =
+        spanContext.isValid()
+            && (existingOperationId == null
+                || existingOperationId.equals(spanContext.getTraceId()));
 
-    if (featureStatsbeat != null) {
-      featureStatsbeat.track2xBridgeUsage();
-    }
-  }
-
-  private static void trackInsideValidSpanContext(
-      AbstractTelemetryBuilder telemetryBuilder,
-      @Nullable String operationId,
-      @Nullable String operationParentId,
-      @Nullable String operationName,
-      SpanContext spanContext,
-      boolean applySampling) {
-
-    if (operationId != null && !operationId.equals(spanContext.getTraceId())) {
-      trackAsStandalone(telemetryBuilder, operationId, applySampling);
+    if (isPartOfTheCurrentTrace && applySampling && !spanContext.isSampled()) {
+      // no need to do anything more, sampled out
       return;
     }
 
-    if (!spanContext.isSampled()) {
-      // sampled out
-      return;
+    if (isPartOfTheCurrentTrace) {
+      setOperationTagsFromTheCurrentSpan(
+          telemetryBuilder, tags, existingOperationId, spanContext, span);
     }
 
-    telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_ID.toString(), spanContext.getTraceId());
-
-    if (operationParentId == null) {
-      telemetryBuilder.addTag(
-          ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), spanContext.getSpanId());
-    }
-
-    if (operationName == null) {
-      Span localRootSpan = LocalRootSpan.fromContextOrNull(Context.current());
-      if (localRootSpan instanceof ReadableSpan) {
-        telemetryBuilder.addTag(
-            ContextTagKeys.AI_OPERATION_NAME.toString(),
-            AiOperationNameSpanProcessor.getOperationName((ReadableSpan) localRootSpan));
+    if (isPartOfTheCurrentTrace && applySampling && span instanceof ReadableSpan) {
+      Long itemCount = ((ReadableSpan) span).getAttribute(SpanDataMapper.AI_ITEM_COUNT_KEY);
+      if (itemCount != null && itemCount != 1) {
+        telemetryBuilder.setSampleRate(100.0f / itemCount);
       }
     }
 
-    if (applySampling) {
-      float samplingPercentage =
-          TelemetryUtil.getSamplingPercentage(
-              spanContext.getTraceState(), BytecodeUtilImpl.samplingPercentage, false);
-
-      if (samplingPercentage != 100) {
-        telemetryBuilder.setSampleRate(samplingPercentage);
-      }
-    }
-    // this is not null because sdk instrumentation is not added until TelemetryClient.setActive()
-    // is called
-    TelemetryClient.getActive().trackAsync(telemetryBuilder.build());
-  }
-
-  private static void trackAsStandalone(
-      AbstractTelemetryBuilder telemetryBuilder, String operationId, boolean applySampling) {
-    if (applySampling) {
-      // sampling is done using the configured sampling percentage
+    if (!isPartOfTheCurrentTrace && applySampling) {
+      // standalone sampling is done using the configured sampling percentage
       float samplingPercentage = BytecodeUtilImpl.samplingPercentage;
-      if (!sample(operationId, samplingPercentage)) {
+      if (!sample(existingOperationId, samplingPercentage)) {
         logger.debug("Item {} sampled out", telemetryBuilder.getClass().getSimpleName());
         // sampled out
         return;
@@ -503,6 +460,33 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     // this is not null because sdk instrumentation is not added until TelemetryClient.setActive()
     // is called
     TelemetryClient.getActive().trackAsync(telemetryBuilder.build());
+
+    if (featureStatsbeat != null) {
+      featureStatsbeat.track2xBridgeUsage();
+    }
+  }
+
+  private static void setOperationTagsFromTheCurrentSpan(
+      AbstractTelemetryBuilder telemetryBuilder,
+      Map<String, String> tags,
+      String existingOperationId,
+      SpanContext spanContext,
+      Span span) {
+
+    if (existingOperationId == null) {
+      telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_ID.toString(), spanContext.getTraceId());
+    }
+    String existingOperationParentId = tags.get(ContextTagKeys.AI_OPERATION_PARENT_ID.toString());
+    if (existingOperationParentId == null) {
+      telemetryBuilder.addTag(
+          ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), spanContext.getSpanId());
+    }
+    String existingOperationName = tags.get(ContextTagKeys.AI_OPERATION_NAME.toString());
+    if (existingOperationName == null && span instanceof ReadableSpan) {
+      telemetryBuilder.addTag(
+          ContextTagKeys.AI_OPERATION_NAME.toString(),
+          OperationNames.getOperationName((ReadableSpan) span));
+    }
   }
 
   private static boolean sample(String operationId, double samplingPercentage) {

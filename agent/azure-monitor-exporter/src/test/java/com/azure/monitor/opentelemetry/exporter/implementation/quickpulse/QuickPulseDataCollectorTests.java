@@ -21,11 +21,11 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse;
 
-import static com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulseTestBase.createExceptionTelemetry;
 import static com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulseTestBase.createRemoteDependencyTelemetry;
 import static com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulseTestBase.createRequestTelemetry;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import java.time.Duration;
@@ -154,13 +154,13 @@ class QuickPulseDataCollectorTests {
     collector.setQuickPulseStatus(QuickPulseStatus.QP_IS_ON);
     collector.enable(FAKE_CONNECTION_STRING::getInstrumentationKey);
 
-    TelemetryItem telemetry = createExceptionTelemetry(new Exception());
+    TelemetryItem telemetry = ExceptionTelemetryBuilder.create().build();
     telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
     collector.add(telemetry);
     QuickPulseDataCollector.FinalCounters counters = collector.peek();
     assertThat(counters.exceptions).isEqualTo(1);
 
-    telemetry = createExceptionTelemetry(new Exception());
+    telemetry = ExceptionTelemetryBuilder.create().build();
     telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
     collector.add(telemetry);
     counters = collector.getAndRestart();

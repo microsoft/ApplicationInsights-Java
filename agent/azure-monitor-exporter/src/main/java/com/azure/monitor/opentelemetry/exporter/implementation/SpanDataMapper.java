@@ -35,7 +35,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTag
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Trie;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.UrlParser;
 import io.opentelemetry.api.common.AttributeKey;
@@ -44,7 +43,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
@@ -78,6 +76,9 @@ public final class SpanDataMapper {
 
   public static final AttributeKey<String> AI_OPERATION_NAME_KEY =
       AttributeKey.stringKey("applicationinsights.internal.operation_name");
+  public static final AttributeKey<Long> AI_ITEM_COUNT_KEY =
+      AttributeKey.longKey("applicationinsights.internal.item_count");
+
   public static final AttributeKey<String> AI_LEGACY_PARENT_ID_KEY =
       AttributeKey.stringKey("applicationinsights.internal.legacy_parent_id");
   public static final AttributeKey<String> AI_LEGACY_ROOT_ID_KEY =
@@ -158,26 +159,26 @@ public final class SpanDataMapper {
   }
 
   public TelemetryItem map(SpanData span) {
-    float samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
-    return map(span, samplingPercentage);
+    long itemCount = getItemCount(span);
+    return map(span, itemCount);
   }
 
   public void map(SpanData span, Consumer<TelemetryItem> consumer) {
-    float samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
-    TelemetryItem telemetryItem = map(span, samplingPercentage);
+    long itemCount = getItemCount(span);
+    TelemetryItem telemetryItem = map(span, itemCount);
     consumer.accept(telemetryItem);
     exportEvents(
         span,
         telemetryItem.getTags().get(ContextTagKeys.AI_OPERATION_NAME.toString()),
-        samplingPercentage,
+        itemCount,
         consumer);
   }
 
-  public TelemetryItem map(SpanData span, float samplingPercentage) {
+  public TelemetryItem map(SpanData span, long itemCount) {
     if (isRequest(span)) {
-      return exportRequest(span, samplingPercentage);
+      return exportRequest(span, itemCount);
     } else {
-      return exportRemoteDependency(span, span.getKind() == SpanKind.INTERNAL, samplingPercentage);
+      return exportRemoteDependency(span, span.getKind() == SpanKind.INTERNAL, itemCount);
     }
   }
 
@@ -202,15 +203,14 @@ public final class SpanDataMapper {
     }
   }
 
-  private TelemetryItem exportRemoteDependency(
-      SpanData span, boolean inProc, float samplingPercentage) {
+  private TelemetryItem exportRemoteDependency(SpanData span, boolean inProc, long itemCount) {
     RemoteDependencyTelemetryBuilder telemetryBuilder = RemoteDependencyTelemetryBuilder.create();
     telemetryInitializer.accept(telemetryBuilder, span.getResource());
 
     // set standard properties
     setOperationTags(telemetryBuilder, span);
     setTime(telemetryBuilder, span.getStartEpochNanos());
-    setSampleRate(telemetryBuilder, samplingPercentage);
+    setItemCount(telemetryBuilder, itemCount);
 
     // update tags
     setExtraAttributes(telemetryBuilder, span.getAttributes());
@@ -570,7 +570,7 @@ public final class SpanDataMapper {
     }
   }
 
-  private TelemetryItem exportRequest(SpanData span, float samplingPercentage) {
+  private TelemetryItem exportRequest(SpanData span, long itemCount) {
     RequestTelemetryBuilder telemetryBuilder = RequestTelemetryBuilder.create();
     telemetryInitializer.accept(telemetryBuilder, span.getResource());
 
@@ -580,7 +580,7 @@ public final class SpanDataMapper {
     // set standard properties
     telemetryBuilder.setId(span.getSpanId());
     setTime(telemetryBuilder, startEpochNanos);
-    setSampleRate(telemetryBuilder, samplingPercentage);
+    setItemCount(telemetryBuilder, itemCount);
 
     // update tags
     setExtraAttributes(telemetryBuilder, attributes);
@@ -787,7 +787,7 @@ public final class SpanDataMapper {
   private void exportEvents(
       SpanData span,
       @Nullable String operationName,
-      float samplingPercentage,
+      long itemCount,
       Consumer<TelemetryItem> consumer) {
     for (EventData event : span.getEvents()) {
       String instrumentationScopeName = span.getInstrumentationScopeInfo().getName();
@@ -805,7 +805,7 @@ public final class SpanDataMapper {
           String stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
           if (stacktrace != null) {
             consumer.accept(
-                createExceptionTelemetryItem(stacktrace, span, operationName, samplingPercentage));
+                createExceptionTelemetryItem(stacktrace, span, operationName, itemCount));
           }
         }
         return;
@@ -823,7 +823,7 @@ public final class SpanDataMapper {
         setOperationName(telemetryBuilder, span.getAttributes());
       }
       setTime(telemetryBuilder, event.getEpochNanos());
-      setSampleRate(telemetryBuilder, samplingPercentage);
+      setItemCount(telemetryBuilder, itemCount);
 
       // update tags
       setExtraAttributes(telemetryBuilder, event.getAttributes());
@@ -836,7 +836,7 @@ public final class SpanDataMapper {
   }
 
   private TelemetryItem createExceptionTelemetryItem(
-      String errorStack, SpanData span, @Nullable String operationName, float samplingPercentage) {
+      String errorStack, SpanData span, @Nullable String operationName, long itemCount) {
 
     ExceptionTelemetryBuilder telemetryBuilder = ExceptionTelemetryBuilder.create();
     telemetryInitializer.accept(telemetryBuilder, span.getResource());
@@ -850,7 +850,7 @@ public final class SpanDataMapper {
       setOperationName(telemetryBuilder, span.getAttributes());
     }
     setTime(telemetryBuilder, span.getEndEpochNanos());
-    setSampleRate(telemetryBuilder, samplingPercentage);
+    setItemCount(telemetryBuilder, itemCount);
     setExtraAttributes(telemetryBuilder, span.getAttributes());
 
     // set exception-specific properties
@@ -863,15 +863,15 @@ public final class SpanDataMapper {
     telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(epochNanos));
   }
 
-  private static void setSampleRate(
-      AbstractTelemetryBuilder telemetryBuilder, float samplingPercentage) {
-    if (samplingPercentage != 100) {
-      telemetryBuilder.setSampleRate(samplingPercentage);
+  private static void setItemCount(AbstractTelemetryBuilder telemetryBuilder, long itemCount) {
+    if (itemCount != 1) {
+      telemetryBuilder.setSampleRate(100.0f / itemCount);
     }
   }
 
-  private static float getSamplingPercentage(TraceState traceState) {
-    return TelemetryUtil.getSamplingPercentage(traceState, 100, true);
+  private static long getItemCount(SpanData span) {
+    Long itemCount = span.getAttributes().get(AI_ITEM_COUNT_KEY);
+    return itemCount == null ? 1 : itemCount;
   }
 
   private static void addLinks(AbstractTelemetryBuilder telemetryBuilder, List<LinkData> links) {
