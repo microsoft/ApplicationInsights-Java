@@ -465,7 +465,7 @@ public class SmokeTestExtension
 
   public static void assertParentChild(
       RequestData rd, Envelope parentEnvelope, Envelope childEnvelope, String operationName) {
-    SmokeTestExtension.assertParentChild(
+    assertParentChild(
         rd.getId(), parentEnvelope, childEnvelope, operationName, operationName, true);
   }
 
@@ -474,7 +474,7 @@ public class SmokeTestExtension
       Envelope parentEnvelope,
       Envelope childEnvelope,
       String operationName) {
-    SmokeTestExtension.assertParentChild(
+    assertParentChild(
         rdd.getId(), parentEnvelope, childEnvelope, operationName, operationName, false);
   }
 
