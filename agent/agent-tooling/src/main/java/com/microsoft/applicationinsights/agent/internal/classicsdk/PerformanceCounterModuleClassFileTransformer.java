@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.legacysdk;
+package com.microsoft.applicationinsights.agent.internal.classicsdk;
 
 import static org.objectweb.asm.Opcodes.ASM9;
 import static org.objectweb.asm.Opcodes.RETURN;
@@ -34,13 +34,13 @@ import org.objectweb.asm.MethodVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class QuickPulseClassFileTransformer implements ClassFileTransformer {
+public class PerformanceCounterModuleClassFileTransformer implements ClassFileTransformer {
 
   private static final Logger logger =
-      LoggerFactory.getLogger(QuickPulseClassFileTransformer.class);
+      LoggerFactory.getLogger(PerformanceCounterModuleClassFileTransformer.class);
 
   private final String unshadedClassName =
-      UnshadedSdkPackageName.get() + "/internal/quickpulse/QuickPulse";
+      UnshadedSdkPackageName.get() + "/internal/perfcounter/AbstractPerformanceCounterModule";
 
   @Override
   @Nullable
@@ -56,7 +56,7 @@ public class QuickPulseClassFileTransformer implements ClassFileTransformer {
     }
     try {
       ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-      ClassVisitor cv = new QuickPulseClassVisitor(cw);
+      ClassVisitor cv = new PerformanceCounterModuleClassVisitor(cw);
       ClassReader cr = new ClassReader(classfileBuffer);
       cr.accept(cv, 0);
       return cw.toByteArray();
@@ -66,13 +66,13 @@ public class QuickPulseClassFileTransformer implements ClassFileTransformer {
     }
   }
 
-  private static class QuickPulseClassVisitor extends ClassVisitor {
+  private static class PerformanceCounterModuleClassVisitor extends ClassVisitor {
 
     private final String unshadedPrefix = UnshadedSdkPackageName.get();
 
     private final ClassWriter cw;
 
-    private QuickPulseClassVisitor(ClassWriter cw) {
+    private PerformanceCounterModuleClassVisitor(ClassWriter cw) {
       super(ASM9, cw);
       this.cw = cw;
     }
@@ -87,8 +87,7 @@ public class QuickPulseClassFileTransformer implements ClassFileTransformer {
         @Nullable String[] exceptions) {
       MethodVisitor mv = cw.visitMethod(access, name, descriptor, signature, exceptions);
       if (name.equals("initialize")
-          && (descriptor.equals("()V")
-              || descriptor.equals("(L" + unshadedPrefix + "/TelemetryConfiguration;)V"))) {
+          && descriptor.equals("(L" + unshadedPrefix + "/TelemetryConfiguration;)V")) {
         // no-op the initialize() method
         mv.visitCode();
         mv.visitInsn(RETURN);

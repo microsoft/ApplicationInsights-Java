@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.legacysdk;
+package com.microsoft.applicationinsights.agent.internal.classicsdk;
 
 import static org.objectweb.asm.Opcodes.ASM9;
 import static org.objectweb.asm.Opcodes.RETURN;
@@ -34,13 +34,17 @@ import org.objectweb.asm.MethodVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PerformanceCounterModuleClassFileTransformer implements ClassFileTransformer {
+public class ApplicationInsightsAppenderClassFileTransformer implements ClassFileTransformer {
 
   private static final Logger logger =
-      LoggerFactory.getLogger(PerformanceCounterModuleClassFileTransformer.class);
+      LoggerFactory.getLogger(ApplicationInsightsAppenderClassFileTransformer.class);
 
-  private final String unshadedClassName =
-      UnshadedSdkPackageName.get() + "/internal/perfcounter/AbstractPerformanceCounterModule";
+  private static final String UNSHADED_CLASS_NAME_LOGBACK =
+      UnshadedSdkPackageName.get() + "/logback/ApplicationInsightsAppender";
+  private static final String UNSHADED_CLASS_NAME_LOG_4_JV_2 =
+      UnshadedSdkPackageName.get() + "/log4j/v2/ApplicationInsightsAppender";
+  private static final String UNSHADED_CLASS_NAME_LOG_4_JV_1_2 =
+      UnshadedSdkPackageName.get() + "/log4j/v1_2/ApplicationInsightsAppender";
 
   @Override
   @Nullable
@@ -50,13 +54,15 @@ public class PerformanceCounterModuleClassFileTransformer implements ClassFileTr
       @Nullable Class<?> classBeingRedefined,
       @Nullable ProtectionDomain protectionDomain,
       byte[] classfileBuffer) {
-
-    if (!unshadedClassName.equals(className)) {
+    if (!UNSHADED_CLASS_NAME_LOGBACK.equals(className)
+        && !UNSHADED_CLASS_NAME_LOG_4_JV_2.equals(className)
+        && !UNSHADED_CLASS_NAME_LOG_4_JV_1_2.equals(className)) {
       return null;
     }
+
     try {
       ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-      ClassVisitor cv = new PerformanceCounterModuleClassVisitor(cw);
+      ClassVisitor cv = new ApplicationInsightsAppenderClassVisitor(cw);
       ClassReader cr = new ClassReader(classfileBuffer);
       cr.accept(cv, 0);
       return cw.toByteArray();
@@ -66,13 +72,11 @@ public class PerformanceCounterModuleClassFileTransformer implements ClassFileTr
     }
   }
 
-  private static class PerformanceCounterModuleClassVisitor extends ClassVisitor {
-
-    private final String unshadedPrefix = UnshadedSdkPackageName.get();
+  private static class ApplicationInsightsAppenderClassVisitor extends ClassVisitor {
 
     private final ClassWriter cw;
 
-    private PerformanceCounterModuleClassVisitor(ClassWriter cw) {
+    private ApplicationInsightsAppenderClassVisitor(ClassWriter cw) {
       super(ASM9, cw);
       this.cw = cw;
     }
@@ -86,9 +90,11 @@ public class PerformanceCounterModuleClassFileTransformer implements ClassFileTr
         @Nullable String signature,
         @Nullable String[] exceptions) {
       MethodVisitor mv = cw.visitMethod(access, name, descriptor, signature, exceptions);
-      if (name.equals("initialize")
-          && descriptor.equals("(L" + unshadedPrefix + "/TelemetryConfiguration;)V")) {
-        // no-op the initialize() method
+      if (name.equals("append")
+          && (descriptor.equals("(Lch/qos/logback/classic/spi/ILoggingEvent;)V")
+              || descriptor.equals("(Lorg/apache/log4j/spi/LoggingEvent;)V")
+              || descriptor.equals("(Lorg/apache/logging/log4j/core/LogEvent;)V"))) {
+        // no-op the append() method
         mv.visitCode();
         mv.visitInsn(RETURN);
         mv.visitMaxs(0, 1);

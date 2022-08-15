@@ -19,10 +19,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.legacysdk;
+package com.microsoft.applicationinsights.agent.internal.classicsdk;
 
 import static org.objectweb.asm.Opcodes.ASM9;
-import static org.objectweb.asm.Opcodes.RETURN;
+import static org.objectweb.asm.Opcodes.ICONST_1;
+import static org.objectweb.asm.Opcodes.IRETURN;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
@@ -34,17 +35,13 @@ import org.objectweb.asm.MethodVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ApplicationInsightsAppenderClassFileTransformer implements ClassFileTransformer {
+public class RequestNameHandlerClassFileTransformer implements ClassFileTransformer {
 
   private static final Logger logger =
-      LoggerFactory.getLogger(ApplicationInsightsAppenderClassFileTransformer.class);
+      LoggerFactory.getLogger(RequestNameHandlerClassFileTransformer.class);
 
-  private static final String UNSHADED_CLASS_NAME_LOGBACK =
-      UnshadedSdkPackageName.get() + "/logback/ApplicationInsightsAppender";
-  private static final String UNSHADED_CLASS_NAME_LOG_4_JV_2 =
-      UnshadedSdkPackageName.get() + "/log4j/v2/ApplicationInsightsAppender";
-  private static final String UNSHADED_CLASS_NAME_LOG_4_JV_1_2 =
-      UnshadedSdkPackageName.get() + "/log4j/v1_2/ApplicationInsightsAppender";
+  private final String unshadedClassName =
+      UnshadedSdkPackageName.get() + "/web/spring/RequestNameHandlerInterceptorAdapter";
 
   @Override
   @Nullable
@@ -54,15 +51,13 @@ public class ApplicationInsightsAppenderClassFileTransformer implements ClassFil
       @Nullable Class<?> classBeingRedefined,
       @Nullable ProtectionDomain protectionDomain,
       byte[] classfileBuffer) {
-    if (!UNSHADED_CLASS_NAME_LOGBACK.equals(className)
-        && !UNSHADED_CLASS_NAME_LOG_4_JV_2.equals(className)
-        && !UNSHADED_CLASS_NAME_LOG_4_JV_1_2.equals(className)) {
+    if (!unshadedClassName.equals(className)) {
       return null;
     }
 
     try {
       ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-      ClassVisitor cv = new ApplicationInsightsAppenderClassVisitor(cw);
+      ClassVisitor cv = new RequestNameHandlerClassVisitor(cw);
       ClassReader cr = new ClassReader(classfileBuffer);
       cr.accept(cv, 0);
       return cw.toByteArray();
@@ -72,11 +67,11 @@ public class ApplicationInsightsAppenderClassFileTransformer implements ClassFil
     }
   }
 
-  private static class ApplicationInsightsAppenderClassVisitor extends ClassVisitor {
+  private static class RequestNameHandlerClassVisitor extends ClassVisitor {
 
     private final ClassWriter cw;
 
-    private ApplicationInsightsAppenderClassVisitor(ClassWriter cw) {
+    private RequestNameHandlerClassVisitor(ClassWriter cw) {
       super(ASM9, cw);
       this.cw = cw;
     }
@@ -90,14 +85,14 @@ public class ApplicationInsightsAppenderClassFileTransformer implements ClassFil
         @Nullable String signature,
         @Nullable String[] exceptions) {
       MethodVisitor mv = cw.visitMethod(access, name, descriptor, signature, exceptions);
-      if (name.equals("append")
-          && (descriptor.equals("(Lch/qos/logback/classic/spi/ILoggingEvent;)V")
-              || descriptor.equals("(Lorg/apache/log4j/spi/LoggingEvent;)V")
-              || descriptor.equals("(Lorg/apache/logging/log4j/core/LogEvent;)V"))) {
-        // no-op the append() method
+      if (name.equals("preHandle")
+          && descriptor.equals(
+              "(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;Ljava/lang/Object;)Z")) {
+        // no-op the preHandle() method
         mv.visitCode();
-        mv.visitInsn(RETURN);
-        mv.visitMaxs(0, 1);
+        mv.visitInsn(ICONST_1);
+        mv.visitInsn(IRETURN);
+        mv.visitMaxs(1, 4);
         mv.visitEnd();
         return null;
       } else {

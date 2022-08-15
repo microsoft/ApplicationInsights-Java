@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.legacysdk;
+package com.microsoft.applicationinsights.agent.internal.classicsdk;
 
 public class UnshadedSdkPackageName {
 

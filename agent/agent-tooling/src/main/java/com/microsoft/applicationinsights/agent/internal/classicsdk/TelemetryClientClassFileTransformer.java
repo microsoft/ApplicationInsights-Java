@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.legacysdk;
+package com.microsoft.applicationinsights.agent.internal.classicsdk;
 
 import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
 import static org.objectweb.asm.Opcodes.ACC_STATIC;
@@ -1469,7 +1469,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             "com/microsoft/applicationinsights/telemetry", "\" + unshadedPrefix + \"/telemetry");
     content =
         content.replace(
-            "\"com/microsoft/applicationinsights/agent/internal/legacysdk"
+            "\"com/microsoft/applicationinsights/agent/internal/classicsdk"
                 + "/TelemetryClientClassFileTransformer$TC",
             "unshadedPrefix + \"/TelemetryClient");
     content =

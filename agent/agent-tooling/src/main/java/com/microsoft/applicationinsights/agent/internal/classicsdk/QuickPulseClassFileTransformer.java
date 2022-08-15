@@ -19,11 +19,10 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.legacysdk;
+package com.microsoft.applicationinsights.agent.internal.classicsdk;
 
 import static org.objectweb.asm.Opcodes.ASM9;
-import static org.objectweb.asm.Opcodes.ICONST_1;
-import static org.objectweb.asm.Opcodes.IRETURN;
+import static org.objectweb.asm.Opcodes.RETURN;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
@@ -35,13 +34,13 @@ import org.objectweb.asm.MethodVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RequestNameHandlerClassFileTransformer implements ClassFileTransformer {
+public class QuickPulseClassFileTransformer implements ClassFileTransformer {
 
   private static final Logger logger =
-      LoggerFactory.getLogger(RequestNameHandlerClassFileTransformer.class);
+      LoggerFactory.getLogger(QuickPulseClassFileTransformer.class);
 
   private final String unshadedClassName =
-      UnshadedSdkPackageName.get() + "/web/spring/RequestNameHandlerInterceptorAdapter";
+      UnshadedSdkPackageName.get() + "/internal/quickpulse/QuickPulse";
 
   @Override
   @Nullable
@@ -51,13 +50,13 @@ public class RequestNameHandlerClassFileTransformer implements ClassFileTransfor
       @Nullable Class<?> classBeingRedefined,
       @Nullable ProtectionDomain protectionDomain,
       byte[] classfileBuffer) {
+
     if (!unshadedClassName.equals(className)) {
       return null;
     }
-
     try {
       ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-      ClassVisitor cv = new RequestNameHandlerClassVisitor(cw);
+      ClassVisitor cv = new QuickPulseClassVisitor(cw);
       ClassReader cr = new ClassReader(classfileBuffer);
       cr.accept(cv, 0);
       return cw.toByteArray();
@@ -67,11 +66,13 @@ public class RequestNameHandlerClassFileTransformer implements ClassFileTransfor
     }
   }
 
-  private static class RequestNameHandlerClassVisitor extends ClassVisitor {
+  private static class QuickPulseClassVisitor extends ClassVisitor {
+
+    private final String unshadedPrefix = UnshadedSdkPackageName.get();
 
     private final ClassWriter cw;
 
-    private RequestNameHandlerClassVisitor(ClassWriter cw) {
+    private QuickPulseClassVisitor(ClassWriter cw) {
       super(ASM9, cw);
       this.cw = cw;
     }
@@ -85,14 +86,13 @@ public class RequestNameHandlerClassFileTransformer implements ClassFileTransfor
         @Nullable String signature,
         @Nullable String[] exceptions) {
       MethodVisitor mv = cw.visitMethod(access, name, descriptor, signature, exceptions);
-      if (name.equals("preHandle")
-          && descriptor.equals(
-              "(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;Ljava/lang/Object;)Z")) {
-        // no-op the preHandle() method
+      if (name.equals("initialize")
+          && (descriptor.equals("()V")
+              || descriptor.equals("(L" + unshadedPrefix + "/TelemetryConfiguration;)V"))) {
+        // no-op the initialize() method
         mv.visitCode();
-        mv.visitInsn(ICONST_1);
-        mv.visitInsn(IRETURN);
-        mv.visitMaxs(1, 4);
+        mv.visitInsn(RETURN);
+        mv.visitMaxs(0, 1);
         mv.visitEnd();
         return null;
       } else {
