@@ -156,7 +156,7 @@ public class MetricDataMapper {
     metricTelemetryBuilder.setMetricPoint(pointBuilder);
 
     if (isPreAggregated) {
-      Long statusCode = pointData.getAttributes().get(AttributeKey.longKey("http.status_code"));
+      Long statusCode = pointData.getAttributes().get(SemanticAttributes.HTTP_STATUS_CODE);
       String performanceBucket =
           pointData.getAttributes().get(AttributeKey.stringKey("ai.performance.bucket"));
       boolean success = getSuccess(statusCode, captureHttpServer4xxAsError);

@@ -21,16 +21,19 @@
 
 package com.azure.monitor.opentelemetry.exporter;
 
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCIES_DURATION;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_RESULT_CODE;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_SUCCESS;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_TYPE;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.FALSE;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.MS_IS_AUTOCOLLECTED;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.MS_METRIC_ID;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.MS_PROCESSED_BY_METRIC_EXTRACTORS;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.OPERATION_SYNTHETIC;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.TRUE;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCIES_DURATION;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_RESULT_CODE;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_SUCCESS;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_TYPE;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestExtractor.REQUESTS_DURATION;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestExtractor.REQUEST_RESULT_CODE;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestExtractor.REQUEST_SUCCESS;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 
@@ -46,6 +49,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationListener;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientMetrics;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpServerMetrics;
 import io.opentelemetry.instrumentation.api.instrumenter.rpc.RpcClientMetrics;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -147,7 +151,7 @@ public class PreAggregatedMetricsTest {
     MetricsData metricsData = (MetricsData) telemetryItem.getData().getBaseData();
 
     assertThat(metricsData.getProperties())
-        .containsExactlyInAnyOrderEntriesOf(generateExpectedProperties("http"));
+        .containsExactlyInAnyOrderEntriesOf(generateExpectedDependencyCustomDimensions("http"));
   }
 
   @SuppressWarnings("SystemOut")
@@ -229,14 +233,93 @@ public class PreAggregatedMetricsTest {
     MetricsData metricsData = (MetricsData) telemetryItem.getData().getBaseData();
 
     assertThat(metricsData.getProperties())
-        .containsExactlyInAnyOrderEntriesOf(generateExpectedProperties("grpc"));
+        .containsExactlyInAnyOrderEntriesOf(generateExpectedDependencyCustomDimensions("grpc"));
+  }
+
+  @SuppressWarnings("SystemOut")
+  @Test
+  void generateHttpServerMetrics() {
+    OperationListener listener = HttpServerMetrics.get().create(meterProvider.get("test"));
+
+    Attributes requestAttributes =
+        Attributes.builder()
+            .put("http.method", "GET")
+            .put("http.host", "host")
+            .put("http.target", "/")
+            .put("http.scheme", "https")
+            .put("net.host.name", "localhost")
+            .put("net.host.port", 1234)
+            .put("http.request_content_length", 100)
+            .build();
+
+    Attributes responseAttributes =
+        Attributes.builder()
+            .put("http.flavor", "2.0")
+            .put("http.server_name", "server")
+            .put("http.status_code", 200)
+            .put("http.response_content_length", 200)
+            .build();
+
+    SpanContext spanContext1 =
+        SpanContext.create(
+            "ff01020304050600ff0a0b0c0d0e0f00",
+            "090a0b0c0d0e0f00",
+            TraceFlags.getSampled(),
+            TraceState.getDefault());
+    Context parent1 = Context.root().with(Span.wrap(spanContext1));
+    Context context1 = listener.onStart(parent1, requestAttributes, nanos(100));
+    listener.onEnd(context1, responseAttributes, nanos(250));
+
+    Collection<MetricData> metricDataCollection = metricReader.collectAllMetrics();
+    MetricData target = null;
+    for (MetricData metricData : metricDataCollection) {
+      if ("http.server.duration".equals(metricData.getName())) {
+        target = metricData;
+        System.out.println("metric: " + metricData);
+      }
+    }
+
+    assertThat(target)
+        .satisfies(
+            metric ->
+                assertThat(metric)
+                    .hasName("http.server.duration")
+                    .hasUnit("ms")
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasSum(150 /* millis */)
+                                        .hasAttributesSatisfying(
+                                            equalTo(SemanticAttributes.HTTP_SCHEME, "https"),
+                                            equalTo(SemanticAttributes.HTTP_HOST, "host"),
+                                            equalTo(SemanticAttributes.HTTP_METHOD, "GET"),
+                                            equalTo(SemanticAttributes.HTTP_STATUS_CODE, 200),
+                                            equalTo(SemanticAttributes.HTTP_FLAVOR, "2.0"))
+                                        .hasExemplarsSatisfying(
+                                            exemplar ->
+                                                exemplar
+                                                    .hasTraceId(spanContext1.getTraceId())
+                                                    .hasSpanId(spanContext1.getSpanId())))));
+
+    listener.onEnd(context1, responseAttributes, nanos(250));
+    MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
+    MetricData metricData = target;
+    MetricDataMapper.updateMetricPointBuilder(
+        builder, metricData, metricData.getData().getPoints().iterator().next(), true, true);
+    TelemetryItem telemetryItem = builder.build();
+    MetricsData metricsData = (MetricsData) telemetryItem.getData().getBaseData();
+
+    assertThat(metricsData.getProperties())
+        .containsExactlyInAnyOrderEntriesOf(generateExpectedRequestCustomDimensions("http"));
   }
 
   private static long nanos(int millis) {
     return TimeUnit.MILLISECONDS.toNanos(millis);
   }
 
-  private static Map<String, String> generateExpectedProperties(String type) {
+  private static Map<String, String> generateExpectedDependencyCustomDimensions(String type) {
     Map<String, String> expectedMap = new HashMap<>();
     expectedMap.put(MS_METRIC_ID, DEPENDENCIES_DURATION);
     expectedMap.put(MS_IS_AUTOCOLLECTED, TRUE);
@@ -250,6 +333,28 @@ public class PreAggregatedMetricsTest {
       expectedMap.put(DEPENDENCY_RESULT_CODE, "200");
     } else {
       expectedMap.put(DEPENDENCY_TYPE, "grpc");
+    }
+    // TODO test cloud_role_name and cloud_role_instance
+    //    expectedMap.put(
+    //        CLOUD_ROLE_NAME,
+    // telemetryItem.getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString()));
+    //    expectedMap.put(
+    //        CLOUD_ROLE_INSTANCE,
+    //        telemetryItem.getTags().get(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString()));
+    return expectedMap;
+  }
+
+  private static Map<String, String> generateExpectedRequestCustomDimensions(String type) {
+    Map<String, String> expectedMap = new HashMap<>();
+    expectedMap.put(MS_METRIC_ID, REQUESTS_DURATION);
+    expectedMap.put(MS_IS_AUTOCOLLECTED, TRUE);
+    expectedMap.put(MS_PROCESSED_BY_METRIC_EXTRACTORS, TRUE);
+    // TODO performance market is updated in HttpClientMetrics
+    //    expectedMap.put(PERFORMANCE_BUCKET, "<250ms");
+    expectedMap.put(OPERATION_SYNTHETIC, FALSE);
+    expectedMap.put(REQUEST_SUCCESS, TRUE);
+    if ("http".equals(type)) {
+      expectedMap.put(REQUEST_RESULT_CODE, "200");
     }
     // TODO test cloud_role_name and cloud_role_instance
     //    expectedMap.put(
