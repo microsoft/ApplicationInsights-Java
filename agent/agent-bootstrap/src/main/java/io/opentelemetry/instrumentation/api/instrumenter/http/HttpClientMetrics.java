@@ -115,6 +115,7 @@ public final class HttpClientMetrics implements OperationListener {
     Attributes durationAttributes =
         durationAndSizeAttributes.toBuilder()
             .put(AI_PERFORMANCE_BUCKET, DurationBucketizer.getPerformanceBucket(duration))
+            .put("target", getTargetForHttpClientSpan(durationAndSizeAttributes))
             .build();
     ;
     this.duration.record(duration, durationAttributes, context);
@@ -132,6 +133,115 @@ public final class HttpClientMetrics implements OperationListener {
             state.startAttributes());
     if (responseLength != null) {
       responseSize.record(responseLength, durationAndSizeAttributes);
+    }
+  }
+
+  private static String getTargetForHttpClientSpan(Attributes attributes) {
+    // from the spec, at least one of the following sets of attributes is required:
+    // * http.url
+    // * http.scheme, http.host, http.target
+    // * http.scheme, net.peer.name, net.peer.port, http.target
+    // * http.scheme, net.peer.ip, net.peer.port, http.target
+    String target = getTargetFromPeerService(attributes);
+    if (target != null) {
+      return target;
+    }
+    // note http.host includes the port (at least when non-default)
+    target = attributes.get(SemanticAttributes.HTTP_HOST);
+    if (target != null) {
+      String scheme = attributes.get(SemanticAttributes.HTTP_SCHEME);
+      if ("http".equals(scheme)) {
+        if (target.endsWith(":80")) {
+          target = target.substring(0, target.length() - 3);
+        }
+      } else if ("https".equals(scheme)) {
+        if (target.endsWith(":443")) {
+          target = target.substring(0, target.length() - 4);
+        }
+      }
+      return target;
+    }
+    String url = attributes.get(SemanticAttributes.HTTP_URL);
+    if (url != null) {
+      target = getTargetFromUrl(url);
+      if (target != null) {
+        return target;
+      }
+    }
+    String scheme = attributes.get(SemanticAttributes.HTTP_SCHEME);
+    int defaultPort;
+    if ("http".equals(scheme)) {
+      defaultPort = 80;
+    } else if ("https".equals(scheme)) {
+      defaultPort = 443;
+    } else {
+      defaultPort = 0;
+    }
+    target = getTargetFromNetAttributes(attributes, defaultPort);
+    if (target != null) {
+      return target;
+    }
+    // this should not happen, just a failsafe
+    return "Http";
+  }
+
+  @Nullable
+  private static String getTargetFromPeerService(Attributes attributes) {
+    // do not append port to peer.service
+    return attributes.get(SemanticAttributes.PEER_SERVICE);
+  }
+
+  @Nullable
+  private static String getTargetFromNetAttributes(Attributes attributes, int defaultPort) {
+    String target = getHostFromNetAttributes(attributes);
+    if (target == null) {
+      return null;
+    }
+    // append net.peer.port to target
+    Long port = attributes.get(SemanticAttributes.NET_PEER_PORT);
+    if (port != null && port != defaultPort) {
+      return target + ":" + port;
+    }
+    return target;
+  }
+
+  @Nullable
+  private static String getHostFromNetAttributes(Attributes attributes) {
+    String host = attributes.get(SemanticAttributes.NET_PEER_NAME);
+    if (host != null) {
+      return host;
+    }
+    return attributes.get(SemanticAttributes.NET_PEER_IP);
+  }
+
+  @Nullable
+  private static String getTargetFromUrl(String url) {
+    int schemeEndIndex = url.indexOf(':');
+    if (schemeEndIndex == -1) {
+      // not a valid url
+      return null;
+    }
+
+    int len = url.length();
+    if (schemeEndIndex + 2 < len
+        && url.charAt(schemeEndIndex + 1) == '/'
+        && url.charAt(schemeEndIndex + 2) == '/') {
+      // has authority component
+      // look for
+      //   '/' - start of path
+      //   '?' or end of string - empty path
+      int index;
+      for (index = schemeEndIndex + 3; index < len; index++) {
+        char c = url.charAt(index);
+        if (c == '/' || c == '?' || c == '#') {
+          break;
+        }
+      }
+      String target = url.substring(schemeEndIndex + 3, index);
+      return target.isEmpty() ? null : target;
+    } else {
+      // has no authority
+      return null;
     }
   }
 
