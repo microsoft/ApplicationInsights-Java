@@ -61,7 +61,7 @@ abstract class MicrometerTest {
 
     List<Envelope> metricItems =
         testing.mockedIngestion.waitForItems(
-            MicrometerTest::isMicrometerMetric, 1, 10, TimeUnit.SECONDS);
+            MicrometerTest::isMicrometerMetricWithValueOne, 1, 10, TimeUnit.SECONDS);
 
     MetricData data = (MetricData) ((Data<?>) metricItems.get(0).getData()).getBaseData();
     List<DataPoint> points = data.getMetrics();
@@ -79,13 +79,13 @@ abstract class MicrometerTest {
     assertThat(data.getProperties()).containsEntry("tag1", "value1");
   }
 
-  static boolean isMicrometerMetric(Envelope input) {
+  static boolean isMicrometerMetricWithValueOne(Envelope input) {
     if (!input.getData().getBaseType().equals("MetricData")) {
       return false;
     }
     MetricData data = (MetricData) ((Data<?>) input.getData()).getBaseData();
     for (DataPoint point : data.getMetrics()) {
-      if (point.getName().contains("test_counter")) {
+      if (point.getName().contains("test_counter") && point.getValue() == 1) {
         return true;
       }
     }
