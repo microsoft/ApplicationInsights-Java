@@ -84,6 +84,11 @@ abstract class NonDaemonThreadsTest {
     assertThat(md.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(md.getProperties()).containsKey("ThreadName");
     assertThat(md.getProperties()).hasSize(3);
+
+    assertThat(rddEnvelope.getTags()).doesNotContainKey("ai.operation.parentId");
+
+    assertThat(mdEnvelope.getTags()).doesNotContainKey("ai.operation.id");
+    assertThat(mdEnvelope.getTags()).doesNotContainKey("ai.operation.parentId");
   }
 
   @Environment(JAVA_8)
