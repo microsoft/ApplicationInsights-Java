@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-  implementation(project(":legacy-sdk:web"))
+  implementation(project(":classic-sdk:web"))
   implementation("org.springframework.boot:spring-boot-starter-web:2.1.7.RELEASE") {
     exclude("org.springframework.boot", "spring-boot-starter-tomcat")
   }

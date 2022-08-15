@@ -3,5 +3,5 @@ plugins {
 }
 
 dependencies {
-  implementation(project(":legacy-sdk:core"))
+  implementation(project(":classic-sdk:core"))
 }
