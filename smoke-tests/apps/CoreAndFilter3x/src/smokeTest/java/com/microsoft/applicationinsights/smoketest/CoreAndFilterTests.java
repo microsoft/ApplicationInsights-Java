@@ -245,6 +245,7 @@ abstract class CoreAndFilterTests {
     final double expectedValue = 111222333.0;
     assertThat(dp.getValue()).isEqualTo(expectedValue);
     assertThat(dp.getName()).isEqualTo("TimeToRespond");
+    assertThat(dp.getMetricNamespace()).isNull();
 
     assertThat(dp.getCount()).isNull();
     assertThat(dp.getMin()).isNull();
@@ -253,6 +254,39 @@ abstract class CoreAndFilterTests {
 
     SmokeTestExtension.assertParentChild(
         rd, rdEnvelope, mdEnvelope, "GET /CoreAndFilter3x/trackMetric");
+  }
+
+  @Test
+  @TargetUri("/trackMetricWithNamespace")
+  void trackMetricWithNamespace() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
+    List<Envelope> mdList = testing.mockedIngestion.waitForItems("MetricData", 1);
+
+    Envelope rdEnvelope = rdList.get(0);
+    Envelope mdEnvelope = mdList.get(0);
+
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(mdEnvelope.getSampleRate()).isNull();
+
+    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+    MetricData md = (MetricData) ((Data<?>) mdEnvelope.getData()).getBaseData();
+
+    List<DataPoint> metrics = md.getMetrics();
+    assertThat(metrics).hasSize(1);
+    DataPoint dp = metrics.get(0);
+
+    final double expectedValue = 111222333.0;
+    assertThat(dp.getValue()).isEqualTo(expectedValue);
+    assertThat(dp.getName()).isEqualTo("TimeToRespond");
+    assertThat(dp.getMetricNamespace()).isEqualTo("test");
+
+    assertThat(dp.getCount()).isNull();
+    assertThat(dp.getMin()).isNull();
+    assertThat(dp.getMax()).isNull();
+    assertThat(dp.getStdDev()).isNull();
+
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, mdEnvelope, "GET /CoreAndFilter3x/trackMetricWithNamespace");
   }
 
   @Test

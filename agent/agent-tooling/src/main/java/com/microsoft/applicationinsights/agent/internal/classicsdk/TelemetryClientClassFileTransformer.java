@@ -615,10 +615,19 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       Label label3 = new Label();
       mv.visitLabel(label3);
       mv.visitMethodInsn(
-          INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getValue", "()D", false);
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/MetricTelemetry",
+          "getMetricNamespace",
+          "()Ljava/lang/String;",
+          false);
       mv.visitVarInsn(ALOAD, 0);
       Label label4 = new Label();
       mv.visitLabel(label4);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getValue", "()D", false);
+      mv.visitVarInsn(ALOAD, 0);
+      Label label5 = new Label();
+      mv.visitLabel(label5);
       mv.visitMethodInsn(
           INVOKEVIRTUAL,
           unshadedPrefix + "/telemetry/MetricTelemetry",
@@ -626,21 +635,12 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "()Ljava/lang/Integer;",
           false);
       mv.visitVarInsn(ALOAD, 0);
-      Label label5 = new Label();
-      mv.visitLabel(label5);
-      mv.visitMethodInsn(
-          INVOKEVIRTUAL,
-          unshadedPrefix + "/telemetry/MetricTelemetry",
-          "getMin",
-          "()Ljava/lang/Double;",
-          false);
-      mv.visitVarInsn(ALOAD, 0);
       Label label6 = new Label();
       mv.visitLabel(label6);
       mv.visitMethodInsn(
           INVOKEVIRTUAL,
           unshadedPrefix + "/telemetry/MetricTelemetry",
-          "getMax",
+          "getMin",
           "()Ljava/lang/Double;",
           false);
       mv.visitVarInsn(ALOAD, 0);
@@ -649,7 +649,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       mv.visitMethodInsn(
           INVOKEVIRTUAL,
           unshadedPrefix + "/telemetry/MetricTelemetry",
-          "getStandardDeviation",
+          "getMax",
           "()Ljava/lang/Double;",
           false);
       mv.visitVarInsn(ALOAD, 0);
@@ -658,8 +658,8 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       mv.visitMethodInsn(
           INVOKEVIRTUAL,
           unshadedPrefix + "/telemetry/MetricTelemetry",
-          "getProperties",
-          "()Ljava/util/Map;",
+          "getStandardDeviation",
+          "()Ljava/lang/Double;",
           false);
       mv.visitVarInsn(ALOAD, 0);
       Label label9 = new Label();
@@ -667,14 +667,8 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       mv.visitMethodInsn(
           INVOKEVIRTUAL,
           unshadedPrefix + "/telemetry/MetricTelemetry",
-          "getContext",
-          "()L" + unshadedPrefix + "/telemetry/TelemetryContext;",
-          false);
-      mv.visitMethodInsn(
-          INVOKEVIRTUAL,
-          unshadedPrefix + "/telemetry/TelemetryContext",
-          "getTags",
-          "()Ljava/util/concurrent/ConcurrentMap;",
+          "getProperties",
+          "()Ljava/util/Map;",
           false);
       mv.visitVarInsn(ALOAD, 0);
       Label label10 = new Label();
@@ -688,23 +682,38 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       mv.visitMethodInsn(
           INVOKEVIRTUAL,
           unshadedPrefix + "/telemetry/TelemetryContext",
+          "getTags",
+          "()Ljava/util/concurrent/ConcurrentMap;",
+          false);
+      mv.visitVarInsn(ALOAD, 0);
+      Label label11 = new Label();
+      mv.visitLabel(label11);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/MetricTelemetry",
+          "getContext",
+          "()L" + unshadedPrefix + "/telemetry/TelemetryContext;",
+          false);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/TelemetryContext",
           "getInstrumentationKey",
           "()Ljava/lang/String;",
           false);
-      Label label11 = new Label();
-      mv.visitLabel(label11);
+      Label label12 = new Label();
+      mv.visitLabel(label12);
       mv.visitMethodInsn(
           INVOKESTATIC,
           BYTECODE_UTIL_INTERNAL_NAME,
           "trackMetric",
-          "(Ljava/util/Date;Ljava/lang/String;DLjava/lang/Integer;Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/Double;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V",
+          "(Ljava/util/Date;Ljava/lang/String;Ljava/lang/String;DLjava/lang/Integer;Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/Double;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V",
           false);
-      Label label12 = new Label();
-      mv.visitLabel(label12);
-      mv.visitInsn(RETURN);
       Label label13 = new Label();
       mv.visitLabel(label13);
-      mv.visitMaxs(11, 1);
+      mv.visitInsn(RETURN);
+      Label label14 = new Label();
+      mv.visitLabel(label14);
+      mv.visitMaxs(12, 1);
       mv.visitEnd();
     }
 
@@ -1484,8 +1493,6 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
     System.out.println(content);
   }
 
-  // DO NOT REMOVE
-  // this is used during development for generating above bytecode
   @SuppressWarnings("UnnecessarilyFullyQualified")
   public static class TC {
 
@@ -1587,6 +1594,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackMetric(
           t.getTimestamp(),
           t.getName(),
+          t.getMetricNamespace(),
           t.getValue(),
           t.getCount(),
           t.getMin(),

@@ -110,6 +110,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
   public void trackMetric(
       @Nullable Date timestamp,
       String name,
+      @Nullable String namespace,
       double value,
       @Nullable Integer count,
       @Nullable Double min,
@@ -127,6 +128,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
     MetricPointBuilder point = new MetricPointBuilder();
     point.setName(name);
+    point.setNamespace(namespace);
     point.setValue(value);
     point.setCount(count);
     point.setMin(min);

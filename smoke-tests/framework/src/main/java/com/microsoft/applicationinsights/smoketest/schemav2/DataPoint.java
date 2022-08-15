@@ -26,6 +26,9 @@ public class DataPoint {
   /** Backing field for property Name. */
   private String name;
 
+  /** Backing field for property Namespace. */
+  private String ns;
+
   /** Backing field for property Value. */
   private double value;
 
@@ -52,6 +55,16 @@ public class DataPoint {
   /** Sets the Name property. */
   public void setName(String value) {
     this.name = value;
+  }
+
+  /** Gets the Namespace property. */
+  public String getMetricNamespace() {
+    return this.ns;
+  }
+
+  /** Sets the MetricNamespace property. */
+  public void setMetricNamespace(String value) {
+    this.ns = value;
   }
 
   /** Gets the Value property. */

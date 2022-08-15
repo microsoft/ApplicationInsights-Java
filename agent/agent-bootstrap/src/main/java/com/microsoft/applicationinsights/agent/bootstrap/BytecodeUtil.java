@@ -57,6 +57,7 @@ public class BytecodeUtil {
               delegate.trackMetric(
                   null,
                   name,
+                  null,
                   value,
                   count,
                   min,
@@ -85,6 +86,7 @@ public class BytecodeUtil {
   public static void trackMetric(
       Date timestamp,
       String name,
+      String namespace,
       double value,
       Integer count,
       Double min,
@@ -95,7 +97,17 @@ public class BytecodeUtil {
       String instrumentationKey) {
     if (delegate != null) {
       delegate.trackMetric(
-          timestamp, name, value, count, min, max, stdDev, properties, tags, instrumentationKey);
+          timestamp,
+          name,
+          namespace,
+          value,
+          count,
+          min,
+          max,
+          stdDev,
+          properties,
+          tags,
+          instrumentationKey);
     }
   }
 
@@ -287,6 +299,7 @@ public class BytecodeUtil {
     void trackMetric(
         @Nullable Date timestamp,
         String name,
+        @Nullable String namespace,
         double value,
         Integer count,
         Double min,

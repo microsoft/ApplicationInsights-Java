@@ -26,6 +26,7 @@ import javax.annotation.Nullable;
 public class DataPoint {
 
   private String name;
+  private String metricNamespace;
   private DataPointType kind = DataPointType.Measurement;
   private double value;
   @Nullable private Integer count;
@@ -41,6 +42,14 @@ public class DataPoint {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public String getMetricNamespace() {
+    return metricNamespace;
+  }
+
+  public void setMetricNamespace(String metricNamespace) {
+    this.metricNamespace = metricNamespace;
   }
 
   public DataPointType getKind() {
