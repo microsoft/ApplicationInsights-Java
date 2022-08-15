@@ -21,7 +21,6 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation;
 
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.updatePreAggMetricsCustomDimensions;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_GAUGE;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_SUM;
@@ -33,6 +32,8 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.Abstract
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricPointBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor;
+import com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestExtractor;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
@@ -156,11 +157,29 @@ public class MetricDataMapper {
 
     if (isPreAggregated) {
       Long statusCode = pointData.getAttributes().get(AttributeKey.longKey("http.status_code"));
-      updatePreAggMetricsCustomDimensions(
-          metricTelemetryBuilder,
-          pointData.getAttributes().get(AttributeKey.stringKey("ai.performance.bucket")),
-          statusCode,
-          getSuccess(statusCode, captureHttpServer4xxAsError));
+      String performanceBucket =
+          pointData.getAttributes().get(AttributeKey.stringKey("ai.performance.bucket"));
+      boolean success = getSuccess(statusCode, captureHttpServer4xxAsError);
+      if (metricData.getName().contains(".server.")) {
+        RequestExtractor requestExtractor =
+            new RequestExtractor(metricTelemetryBuilder, performanceBucket, statusCode, success);
+        requestExtractor.extract();
+      } else if (metricData.getName().contains(".client.")) {
+        String dependencyType =
+            metricData.getName().startsWith("http")
+                ? "http"
+                : (String) pointData.getAttributes().get(SemanticAttributes.RPC_SYSTEM);
+        String target = pointData.getAttributes().get(AttributeKey.stringKey("target"));
+        DependencyExtractor dependencyExtractor =
+            new DependencyExtractor(
+                metricTelemetryBuilder,
+                performanceBucket,
+                statusCode,
+                success,
+                dependencyType,
+                target);
+        dependencyExtractor.extract();
+      }
     } else {
       pointData
           .getAttributes()

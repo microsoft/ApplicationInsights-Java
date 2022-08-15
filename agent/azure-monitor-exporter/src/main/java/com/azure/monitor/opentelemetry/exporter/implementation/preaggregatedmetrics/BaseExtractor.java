@@ -24,57 +24,47 @@ package com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmet
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 
-public final class RequestCustomDimensionsExtractor {
+public abstract class BaseExtractor {
 
   // visible for testing
   public static final String MS_METRIC_ID = "_MS.metricId";
-  public static final String REQUEST_METRIC_ID = "requests/duration";
   public static final String MS_IS_AUTOCOLLECTED = "_MS.IsAutocollected";
+  public static final String MS_PROCESSED_BY_METRIC_EXTRACTORS = "_MS.ProcessedByMetricExtractors";
   public static final String TRUE = "True";
   public static final String FALSE = "False";
-  public static final String MS_PROCESSED_BY_METRIC_EXTRACTORS = "_MS.ProcessedByMetricExtractors";
-  public static final String PERFORMANCE_BUCKET = "request/performanceBucket";
-  public static final String REQUEST_RESULT_CODE = "request/resultCode";
   public static final String OPERATION_SYNTHETIC = "operation/synthetic";
   public static final String CLOUD_ROLE_NAME = "cloud/roleName";
   public static final String CLOUD_ROLE_INSTANCE = "cloud/roleInstance";
-  public static final String REQUEST_SUCCESS = "request/success";
 
-  public static void updatePreAggMetricsCustomDimensions(
-      AbstractTelemetryBuilder metricTelemetryBuilder,
-      String perfBucket,
-      Long statusCode,
-      boolean success) {
-    metricTelemetryBuilder.addProperty(MS_METRIC_ID, REQUEST_METRIC_ID);
-    metricTelemetryBuilder.addProperty(MS_IS_AUTOCOLLECTED, TRUE);
+  protected final AbstractTelemetryBuilder telemetryBuilder;
+
+  public BaseExtractor(AbstractTelemetryBuilder telemetryBuilder) {
+    this.telemetryBuilder = telemetryBuilder;
+    extractCommon();
+  }
+
+  private void extractCommon() {
+    telemetryBuilder.addProperty(MS_IS_AUTOCOLLECTED, TRUE);
     // this flag will inform the ingestion service to stop post-aggregation
-    metricTelemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, TRUE);
+    telemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, TRUE);
 
-    metricTelemetryBuilder.addProperty(PERFORMANCE_BUCKET, perfBucket);
-    // TODO how to assign "request/result_code" to RPC duration metrics?
-    if (statusCode != null) {
-      metricTelemetryBuilder.addProperty(REQUEST_RESULT_CODE, String.valueOf(statusCode));
-    }
-    metricTelemetryBuilder.addProperty(OPERATION_SYNTHETIC, FALSE);
-
-    if (metricTelemetryBuilder.build().getTags() != null) {
+    if (telemetryBuilder.build().getTags() != null) {
       String cloudName =
-          metricTelemetryBuilder.build().getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString());
+          telemetryBuilder.build().getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString());
       if (cloudName != null && !cloudName.isEmpty()) {
-        metricTelemetryBuilder.addProperty(CLOUD_ROLE_NAME, cloudName);
+        telemetryBuilder.addProperty(CLOUD_ROLE_NAME, cloudName);
       }
 
       String cloudRoleInstance =
-          metricTelemetryBuilder
-              .build()
-              .getTags()
-              .get(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString());
+          telemetryBuilder.build().getTags().get(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString());
       if (cloudRoleInstance != null && !cloudRoleInstance.isEmpty()) {
-        metricTelemetryBuilder.addProperty(CLOUD_ROLE_INSTANCE, cloudRoleInstance);
+        telemetryBuilder.addProperty(CLOUD_ROLE_INSTANCE, cloudRoleInstance);
       }
     }
-    metricTelemetryBuilder.addProperty(REQUEST_SUCCESS, success ? TRUE : FALSE);
+
+    // This is not supported yet. Default to false.
+    telemetryBuilder.addProperty(OPERATION_SYNTHETIC, FALSE);
   }
 
-  private RequestCustomDimensionsExtractor() {}
+  public abstract void extract();
 }

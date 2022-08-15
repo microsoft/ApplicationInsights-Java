@@ -21,15 +21,16 @@
 
 package com.azure.monitor.opentelemetry.exporter;
 
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.FALSE;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.MS_IS_AUTOCOLLECTED;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.MS_METRIC_ID;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.MS_PROCESSED_BY_METRIC_EXTRACTORS;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.OPERATION_SYNTHETIC;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.REQUEST_METRIC_ID;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.REQUEST_RESULT_CODE;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.REQUEST_SUCCESS;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestCustomDimensionsExtractor.TRUE;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCIES_DURATION;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_RESULT_CODE;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_SUCCESS;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_TYPE;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.FALSE;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.MS_IS_AUTOCOLLECTED;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.MS_METRIC_ID;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.MS_PROCESSED_BY_METRIC_EXTRACTORS;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.OPERATION_SYNTHETIC;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.TRUE;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 
@@ -146,7 +147,7 @@ public class PreAggregatedMetricsTest {
     MetricsData metricsData = (MetricsData) telemetryItem.getData().getBaseData();
 
     assertThat(metricsData.getProperties())
-        .containsExactlyInAnyOrderEntriesOf(generateExpectedProperties());
+        .containsExactlyInAnyOrderEntriesOf(generateExpectedProperties("http"));
   }
 
   @SuppressWarnings("SystemOut")
@@ -219,22 +220,37 @@ public class PreAggregatedMetricsTest {
                                                 exemplar
                                                     .hasTraceId("ff01020304050600ff0a0b0c0d0e0f00")
                                                     .hasSpanId("090a0b0c0d0e0f00")))));
+
+    MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
+    MetricData metricData = metricDataCollection.iterator().next();
+    MetricDataMapper.updateMetricPointBuilder(
+        builder, metricData, metricData.getData().getPoints().iterator().next(), true, true);
+    TelemetryItem telemetryItem = builder.build();
+    MetricsData metricsData = (MetricsData) telemetryItem.getData().getBaseData();
+
+    assertThat(metricsData.getProperties())
+        .containsExactlyInAnyOrderEntriesOf(generateExpectedProperties("grpc"));
   }
 
   private static long nanos(int millis) {
     return TimeUnit.MILLISECONDS.toNanos(millis);
   }
 
-  private static Map<String, String> generateExpectedProperties() {
+  private static Map<String, String> generateExpectedProperties(String type) {
     Map<String, String> expectedMap = new HashMap<>();
-    expectedMap.put(MS_METRIC_ID, REQUEST_METRIC_ID);
+    expectedMap.put(MS_METRIC_ID, DEPENDENCIES_DURATION);
     expectedMap.put(MS_IS_AUTOCOLLECTED, TRUE);
     expectedMap.put(MS_PROCESSED_BY_METRIC_EXTRACTORS, TRUE);
     // TODO performance market is updated in HttpClientMetrics
     //    expectedMap.put(PERFORMANCE_BUCKET, "<250ms");
-    expectedMap.put(REQUEST_RESULT_CODE, "200");
     expectedMap.put(OPERATION_SYNTHETIC, FALSE);
-    expectedMap.put(REQUEST_SUCCESS, TRUE);
+    expectedMap.put(DEPENDENCY_SUCCESS, TRUE);
+    if ("http".equals(type)) {
+      expectedMap.put(DEPENDENCY_TYPE, "http");
+      expectedMap.put(DEPENDENCY_RESULT_CODE, "200");
+    } else {
+      expectedMap.put(DEPENDENCY_TYPE, "grpc");
+    }
     // TODO test cloud_role_name and cloud_role_instance
     //    expectedMap.put(
     //        CLOUD_ROLE_NAME,
