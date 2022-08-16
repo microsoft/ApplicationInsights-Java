@@ -39,7 +39,6 @@ public class DependencyExtractor extends BaseExtractor {
   private final String type;
   private final String target;
 
-  @SuppressWarnings("SystemOut")
   public DependencyExtractor(
       AbstractTelemetryBuilder telemetryBuilder,
       String performanceBucket,
@@ -55,7 +54,6 @@ public class DependencyExtractor extends BaseExtractor {
     this.target = target;
   }
 
-  @SuppressWarnings("SystemOut")
   @Override
   public void extract() {
     telemetryBuilder.addProperty(MS_METRIC_ID, DEPENDENCIES_DURATION);
