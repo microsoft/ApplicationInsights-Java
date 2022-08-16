@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -113,9 +114,10 @@ class Instrumentations {
     INSTRUMENTATION_MAP.put("io.opentelemetry.vertx-kafka-client-3.5", 71);
   }
 
+  @SuppressWarnings("SystemOut")
   // encode BitSet to a long
-  static long encode(Set<String> instrumentations) {
-    BitSet bitSet = new BitSet(64);
+  static long[] encode(Set<String> instrumentations) {
+    BitSet bitSet = new BitSet(64 * 2);
     for (String instrumentation : instrumentations) {
       Integer index = INSTRUMENTATION_MAP.get(instrumentation);
       if (index != null) {
@@ -125,12 +127,12 @@ class Instrumentations {
       }
     }
 
-    long[] longArray = bitSet.toLongArray();
-    if (longArray.length > 0) {
-      return longArray[0];
-    }
+    System.out.println(Arrays.toString(bitSet.toLongArray()));
+    long[] array = bitSet.toLongArray();
+    System.out.println(array[0]);
+    System.out.println(array[1]);
 
-    return 0L;
+    return bitSet.toLongArray();
   }
 
   private Instrumentations() {}
