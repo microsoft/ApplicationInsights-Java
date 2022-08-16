@@ -22,35 +22,34 @@
 package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanExporter;
+import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.RequestAlertPipelineBuilder;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipelineMultiplexer;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.sdk.testing.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
-public class AlertTriggerSpanExporterTest {
+public class AlertTriggerSpanProcessorTest {
 
   interface Handle {
     void accept(
-        AlertTriggerSpanExporter spanExporter, AtomicBoolean alertCalled, TestTimeSource timeSource)
+        AlertTriggerSpanProcessor spanExporter,
+        AtomicBoolean alertCalled,
+        TestTimeSource timeSource)
         throws InterruptedException;
   }
 
@@ -59,11 +58,9 @@ public class AlertTriggerSpanExporterTest {
     run(
         (spanExporter, alertCalled, timeSource) -> {
           for (int i = 0; i < 10; i++) {
-            spanExporter.export(buildSampleSpan("fooBar", 20000000000L));
+            spanExporter.onEnd(buildSampleSpan("fooBar", 20000));
             timeSource.increment(10000);
           }
-
-          spanExporter.flush();
 
           Assertions.assertTrue(alertCalled.get());
         });
@@ -75,10 +72,8 @@ public class AlertTriggerSpanExporterTest {
         (spanExporter, alertCalled, timeSource) -> {
           for (int i = 0; i < 100000; i += 10) {
             timeSource.setNow(Instant.EPOCH.plus(i, ChronoUnit.MILLIS));
-            spanExporter.export(buildSampleSpan("fooBar", 2000000000L));
+            spanExporter.onEnd(buildSampleSpan("fooBar", 2000));
           }
-
-          spanExporter.flush();
 
           Assertions.assertFalse(alertCalled.get());
         });
@@ -90,35 +85,36 @@ public class AlertTriggerSpanExporterTest {
         (spanExporter, alertCalled, timeSource) -> {
           for (int i = 0; i < 100000; i += 10) {
             timeSource.setNow(Instant.EPOCH.plus(i, ChronoUnit.MILLIS));
-            spanExporter.export(buildSampleSpan("fooBar", 2000000000L));
+            spanExporter.onEnd(buildSampleSpan("fooBar", 2000));
           }
-
-          spanExporter.flush();
 
           Assertions.assertFalse(alertCalled.get());
 
           for (int i = 100000; i < 200000; i += 10) {
             timeSource.setNow(Instant.EPOCH.plus(i, ChronoUnit.MILLIS));
-            spanExporter.export(buildSampleSpan("fooBar", 200000000000L));
+            spanExporter.onEnd(buildSampleSpan("fooBar", 200000));
           }
 
-          spanExporter.flush();
+          Thread.sleep(100);
 
           Assertions.assertTrue(alertCalled.get());
         });
   }
 
   @NotNull
-  private static List<SpanData> buildSampleSpan(String fooBar, long epochNanos) {
-    return Collections.singletonList(
-        TestSpanData.builder()
-            .setName(fooBar)
-            .setStartEpochNanos(0L)
-            .setEndEpochNanos(epochNanos)
-            .setHasEnded(true)
-            .setKind(SpanKind.SERVER)
-            .setStatus(StatusData.ok())
-            .build());
+  private static ReadableSpan buildSampleSpan(String fooBar, int durationMillis) {
+    Instant end = Instant.now();
+    Instant start = end.minusMillis(durationMillis);
+    Span span =
+        SdkTracerProvider.builder()
+            .build()
+            .get("test")
+            .spanBuilder(fooBar)
+            .setStartTimestamp(start)
+            .setSpanKind(SpanKind.SERVER)
+            .startSpan();
+    span.setStatus(StatusCode.OK).end(end);
+    return (ReadableSpan) span;
   }
 
   @Test
@@ -126,19 +122,15 @@ public class AlertTriggerSpanExporterTest {
     run(
         (spanExporter, alertCalled, timeSource) -> {
           for (int i = 0; i < 10; i++) {
-            spanExporter.export(buildSampleSpan("does-not-match", 20000000000L));
+            spanExporter.onEnd(buildSampleSpan("does-not-match", 20000));
             timeSource.increment(10000);
           }
-
-          spanExporter.flush();
 
           Assertions.assertFalse(alertCalled.get());
         });
   }
 
   private static void run(Handle handle) throws InterruptedException {
-    SpanExporter delegateSpanExporter = Mockito.mock(SpanExporter.class);
-
     AtomicBoolean called = new AtomicBoolean(false);
     Consumer<AlertBreach> alertAction =
         alertBreach -> {
@@ -158,11 +150,10 @@ public class AlertTriggerSpanExporterTest {
     alertingSubsystem.setPipeline(
         AlertMetricType.REQUEST,
         new AlertPipelineMultiplexer(
-            Arrays.asList(
+            Collections.singletonList(
                 RequestAlertPipelineBuilder.build(triggerConfig, alertAction, timeSource))));
 
-    AlertTriggerSpanExporter spanExporter =
-        new AlertTriggerSpanExporter(delegateSpanExporter, () -> alertingSubsystem);
+    AlertTriggerSpanProcessor spanExporter = new AlertTriggerSpanProcessor(() -> alertingSubsystem);
 
     handle.accept(spanExporter, called, timeSource);
   }

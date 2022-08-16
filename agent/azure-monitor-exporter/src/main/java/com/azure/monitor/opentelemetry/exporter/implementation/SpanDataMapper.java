@@ -45,7 +45,9 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -57,6 +59,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -182,18 +185,37 @@ public final class SpanDataMapper {
   }
 
   public static boolean isRequest(SpanData span) {
-    SpanKind kind = span.getKind();
-    String instrumentationName = span.getInstrumentationScopeInfo().getName();
+    return isRequest(
+        span.getKind(),
+        span.getParentSpanContext(),
+        span.getInstrumentationScopeInfo(),
+        span.getAttributes()::get);
+  }
+
+  public static boolean isRequest(ReadableSpan span) {
+    return isRequest(
+        span.getKind(),
+        span.getParentSpanContext(),
+        span.getInstrumentationScopeInfo(),
+        span::getAttribute);
+  }
+
+  private static boolean isRequest(
+      SpanKind kind,
+      SpanContext parentSpanContext,
+      InstrumentationScopeInfo scopeInfo,
+      Function<AttributeKey<String>, String> attrFn) {
+    String instrumentationName = scopeInfo.getName();
     if (kind == SpanKind.INTERNAL) {
       // TODO (trask) AI mapping: need semantic convention for determining whether to map INTERNAL
       // to request or dependency (or need clarification to use SERVER for this)
       return (instrumentationName.startsWith("io.opentelemetry.spring-scheduling-")
               || instrumentationName.equals("io.opentelemetry.methods"))
-          && !span.getParentSpanContext().isValid();
+          && !parentSpanContext.isValid();
     } else if (kind == SpanKind.CLIENT || kind == SpanKind.PRODUCER) {
       return false;
     } else if (kind == SpanKind.CONSUMER
-        && "receive".equals(span.getAttributes().get(SemanticAttributes.MESSAGING_OPERATION))) {
+        && "receive".equals(attrFn.apply(SemanticAttributes.MESSAGING_OPERATION))) {
       return false;
     } else if (kind == SpanKind.SERVER || kind == SpanKind.CONSUMER) {
       return true;

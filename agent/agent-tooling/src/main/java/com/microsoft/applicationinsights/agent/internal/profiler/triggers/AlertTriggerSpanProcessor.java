@@ -27,42 +27,49 @@ import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
-import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.util.Collection;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.trace.ReadWriteSpan;
+import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import java.util.function.Supplier;
 
 /**
  * Intercepts spans, filters out those that have had alerts configured, and feeds them to an
  * appropriate AlertPipeline.
  */
-public class AlertTriggerSpanExporter implements SpanExporter {
-  // Next SpanExporter in App insights pipeline
-  private final SpanExporter delegate;
+public class AlertTriggerSpanProcessor implements SpanProcessor {
 
   private final Supplier<AlertingSubsystem> alertingSubsystemSupplier;
 
-  @Override
-  public CompletableResultCode export(Collection<SpanData> spans) {
-    spans.forEach(this::processSpan);
-    return delegate.export(spans);
+  public AlertTriggerSpanProcessor() {
+    this(AlertingServiceFactory::getAlertingSubsystem);
+  }
+
+  public AlertTriggerSpanProcessor(Supplier<AlertingSubsystem> alertingSubsystemSupplier) {
+    this.alertingSubsystemSupplier = alertingSubsystemSupplier;
   }
 
   @Override
-  public CompletableResultCode flush() {
-    return delegate.flush();
+  public boolean isStartRequired() {
+    return false;
   }
 
   @Override
-  public CompletableResultCode shutdown() {
-    return delegate.shutdown();
+  public void onStart(Context parentContext, ReadWriteSpan span) {}
+
+  @Override
+  public boolean isEndRequired() {
+    return true;
   }
 
-  public void processSpan(SpanData span) {
+  @Override
+  public void onEnd(ReadableSpan span) {
+    processSpan(span);
+  }
+
+  public void processSpan(ReadableSpan span) {
     if (SpanDataMapper.isRequest(span)) {
-      double durationInMillis =
-          (span.getEndEpochNanos() - span.getStartEpochNanos()) / 1_000_000.0d;
+      double durationInMillis = span.getLatencyNanos() / 1_000_000.0d;
       AlertingSubsystem alertingSubsystem = alertingSubsystemSupplier.get();
 
       if (alertingSubsystem != null) {
@@ -74,15 +81,5 @@ public class AlertTriggerSpanExporter implements SpanExporter {
                 durationInMillis));
       }
     }
-  }
-
-  public AlertTriggerSpanExporter(SpanExporter delegate) {
-    this(delegate, AlertingServiceFactory::getAlertingSubsystem);
-  }
-
-  public AlertTriggerSpanExporter(
-      SpanExporter delegate, Supplier<AlertingSubsystem> alertingSubsystemSupplier) {
-    this.delegate = delegate;
-    this.alertingSubsystemSupplier = alertingSubsystemSupplier;
   }
 }
