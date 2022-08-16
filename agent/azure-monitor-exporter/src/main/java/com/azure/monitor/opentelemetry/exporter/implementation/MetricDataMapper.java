@@ -170,6 +170,8 @@ public class MetricDataMapper {
                 ? "http"
                 : (String) pointData.getAttributes().get(SemanticAttributes.RPC_SYSTEM);
         String target = pointData.getAttributes().get(AttributeKey.stringKey("target"));
+        // TODO debug target - to be removed
+        logger.debug("############### target: " + target);
         DependencyExtractor dependencyExtractor =
             new DependencyExtractor(
                 metricTelemetryBuilder,
