@@ -62,12 +62,8 @@ public class InstrumentationsTest {
     // StatsbeatTestUtils.INSTRUMENTATION_MAP_DECODING.)
   }
 
-  @SuppressWarnings("SystemOut")
   @Test
   public void testEncodeAndDecodeInstrumentations() {
-    System.out.println("Expected:");
-    System.out.println(EXPECTED_INSTRUMENTATIONS[0]);
-    System.out.println(EXPECTED_INSTRUMENTATIONS[1]);
     long[] longVal = Instrumentations.encode(instrumentations);
     assertThat(longVal).isEqualTo(EXPECTED_INSTRUMENTATIONS);
     Set<String> result = StatsbeatTestUtils.decodeInstrumentations(longVal);

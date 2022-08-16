@@ -151,7 +151,6 @@ public final class StatsbeatTestUtils {
     return decode(false, num, FEATURE_MAP_DECODING);
   }
 
-  @SuppressWarnings("SystemOut")
   private static <E> Set<E> decode(
       boolean greaterThan64Bits, long num, Map<Integer, E> decodedMap) {
     Set<E> result = new HashSet<>();

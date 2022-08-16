@@ -114,7 +114,6 @@ class Instrumentations {
     INSTRUMENTATION_MAP.put("io.opentelemetry.vertx-kafka-client-3.5", 71);
   }
 
-  @SuppressWarnings("SystemOut")
   // encode BitSet to a long
   static long[] encode(Set<String> instrumentations) {
     BitSet bitSet = new BitSet(64 * 2);
@@ -126,12 +125,6 @@ class Instrumentations {
         logger.debug("{} is not part of INSTRUMENTATION_MAP.", instrumentation);
       }
     }
-
-    System.out.println(Arrays.toString(bitSet.toLongArray()));
-    long[] array = bitSet.toLongArray();
-    System.out.println(array[0]);
-    System.out.println(array[1]);
-
     return bitSet.toLongArray();
   }
 
