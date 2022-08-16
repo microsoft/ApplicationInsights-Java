@@ -34,8 +34,10 @@ import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationListener;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationMetrics;
 import io.opentelemetry.instrumentation.api.instrumenter.utils.DurationBucketizer;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * {@link OperationListener} which keeps track of <a
@@ -90,13 +92,56 @@ public final class RpcClientMetrics implements OperationListener {
     }
 
     double duration = (endNanos - state.startTimeNanos()) / NANOS_PER_MS;
+    String target = getTargetFromPeerAttributes(endAttributes, 0);
+    if (target == null) {
+      target = endAttributes.get(SemanticAttributes.RPC_SYSTEM);
+    }
     endAttributes =
         endAttributes.toBuilder()
             .put(AI_PERFORMANCE_BUCKET, DurationBucketizer.getPerformanceBucket(duration))
+            .put("target", target)
             .build();
 
     clientDurationHistogram.record(
         duration, applyClientView(state.startAttributes(), endAttributes), context);
+  }
+
+  @Nullable
+  private static String getTargetFromPeerAttributes(Attributes attributes, int defaultPort) {
+    String target = getTargetFromPeerService(attributes);
+    if (target != null) {
+      return target;
+    }
+    return getTargetFromNetAttributes(attributes, defaultPort);
+  }
+
+  @Nullable
+  private static String getTargetFromPeerService(Attributes attributes) {
+    // do not append port to peer.service
+    return attributes.get(SemanticAttributes.PEER_SERVICE);
+  }
+
+  @Nullable
+  private static String getTargetFromNetAttributes(Attributes attributes, int defaultPort) {
+    String target = getHostFromNetAttributes(attributes);
+    if (target == null) {
+      return null;
+    }
+    // append net.peer.port to target
+    Long port = attributes.get(SemanticAttributes.NET_PEER_PORT);
+    if (port != null && port != defaultPort) {
+      return target + ":" + port;
+    }
+    return target;
+  }
+
+  @Nullable
+  private static String getHostFromNetAttributes(Attributes attributes) {
+    String host = attributes.get(SemanticAttributes.NET_PEER_NAME);
+    if (host != null) {
+      return host;
+    }
+    return attributes.get(SemanticAttributes.NET_PEER_IP);
   }
 
   @AutoValue
