@@ -72,29 +72,29 @@ public class BytecodeUtil {
   }
 
   public static void trackEvent(
-      Date timestamp,
+      @Nullable Date timestamp,
       String name,
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> metrics,
-      String instrumentationKey) {
+      @Nullable String instrumentationKey) {
     if (delegate != null) {
       delegate.trackEvent(timestamp, name, properties, tags, metrics, instrumentationKey);
     }
   }
 
   public static void trackMetric(
-      Date timestamp,
+      @Nullable Date timestamp,
       String name,
-      String namespace,
+      @Nullable String namespace,
       double value,
       Integer count,
       Double min,
       Double max,
-      Double stdDev,
+      @Nullable Double stdDev,
       Map<String, String> properties,
       Map<String, String> tags,
-      String instrumentationKey) {
+      @Nullable String instrumentationKey) {
     if (delegate != null) {
       delegate.trackMetric(
           timestamp,
@@ -112,11 +112,11 @@ public class BytecodeUtil {
   }
 
   public static void trackDependency(
-      Date timestamp,
+      @Nullable Date timestamp,
       String name,
       String id,
       String resultCode,
-      Long totalMillis,
+      Long duration,
       boolean success,
       String commandName,
       String type,
@@ -124,14 +124,14 @@ public class BytecodeUtil {
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> metrics,
-      String instrumentationKey) {
+      @Nullable String instrumentationKey) {
     if (delegate != null) {
       delegate.trackDependency(
           timestamp,
           name,
           id,
           resultCode,
-          totalMillis,
+          duration,
           success,
           commandName,
           type,
@@ -144,14 +144,14 @@ public class BytecodeUtil {
   }
 
   public static void trackPageView(
-      Date timestamp,
+      @Nullable Date timestamp,
       String name,
       URI uri,
       long totalMillis,
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> metrics,
-      String instrumentationKey) {
+      @Nullable String instrumentationKey) {
     if (delegate != null) {
       delegate.trackPageView(
           timestamp, name, uri, totalMillis, properties, tags, metrics, instrumentationKey);
@@ -159,12 +159,12 @@ public class BytecodeUtil {
   }
 
   public static void trackTrace(
-      Date timestamp,
+      @Nullable Date timestamp,
       String message,
       int severityLevel,
       Map<String, String> properties,
       Map<String, String> tags,
-      String instrumentationKey) {
+      @Nullable String instrumentationKey) {
     if (delegate != null) {
       delegate.trackTrace(timestamp, message, severityLevel, properties, tags, instrumentationKey);
     }
@@ -174,7 +174,7 @@ public class BytecodeUtil {
       String id,
       String name,
       URL url,
-      Date timestamp,
+      @Nullable Date timestamp,
       Long duration,
       String responseCode,
       boolean success,
@@ -182,7 +182,7 @@ public class BytecodeUtil {
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> metrics,
-      String instrumentationKey) {
+      @Nullable String instrumentationKey) {
     if (delegate != null) {
       delegate.trackRequest(
           id,
@@ -201,16 +201,44 @@ public class BytecodeUtil {
   }
 
   public static void trackException(
-      Date timestamp,
+      @Nullable Date timestamp,
       Throwable throwable,
       int severityLevel,
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> metrics,
-      String instrumentationKey) {
+      @Nullable String instrumentationKey) {
     if (delegate != null) {
       delegate.trackException(
           timestamp, throwable, severityLevel, properties, tags, metrics, instrumentationKey);
+    }
+  }
+
+  public static void trackAvailability(
+      @Nullable Date timestamp,
+      String id,
+      String name,
+      @Nullable Long duration,
+      boolean success,
+      String runLocation,
+      String message,
+      Map<String, String> properties,
+      Map<String, String> tags,
+      Map<String, Double> metrics,
+      @Nullable String instrumentationKey) {
+    if (delegate != null) {
+      delegate.trackAvailability(
+          timestamp,
+          id,
+          name,
+          duration,
+          success,
+          runLocation,
+          message,
+          properties,
+          tags,
+          metrics,
+          instrumentationKey);
     }
   }
 
@@ -313,7 +341,7 @@ public class BytecodeUtil {
         @Nullable Date timestamp,
         String name,
         String id,
-        String resultCode,
+        String duration,
         Long totalMillis,
         boolean success,
         String commandName,
@@ -360,6 +388,19 @@ public class BytecodeUtil {
         @Nullable Date timestamp,
         Throwable throwable,
         int severityLevel,
+        Map<String, String> properties,
+        Map<String, String> tags,
+        Map<String, Double> metrics,
+        @Nullable String instrumentationKey);
+
+    void trackAvailability(
+        @Nullable Date timestamp,
+        String id,
+        String name,
+        @Nullable Long duration,
+        boolean success,
+        String runLocation,
+        String message,
         Map<String, String> properties,
         Map<String, String> tags,
         Map<String, Double> metrics,

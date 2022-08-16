@@ -32,6 +32,7 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WI
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.microsoft.applicationinsights.smoketest.schemav2.AvailabilityData;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
 import com.microsoft.applicationinsights.smoketest.schemav2.Duration;
@@ -467,6 +468,35 @@ abstract class CoreAndFilterTests {
 
     SmokeTestExtension.assertParentChild(
         rd, rdEnvelope, pvdEnvelope, "GET /CoreAndFilter3x/doPageView.jsp");
+  }
+
+  @Test
+  @TargetUri("/trackAvailability")
+  void trackAvailability() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
+
+    Envelope rdEnvelope = rdList.get(0);
+    String operationId = rdEnvelope.getTags().get("ai.operation.id");
+    List<Envelope> adList =
+        testing.mockedIngestion.waitForItemsInOperation("AvailabilityData", 1, operationId);
+
+    Envelope adEnvelope = adList.get(0);
+
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(adEnvelope.getSampleRate()).isNull();
+
+    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+
+    AvailabilityData pv = (AvailabilityData) ((Data<?>) adEnvelope.getData()).getBaseData();
+    assertThat(pv.getId()).isEqualTo("an-id");
+    assertThat(pv.getName()).isEqualTo("a-name");
+    assertThat(pv.getDuration()).isEqualTo(new Duration(1234));
+    assertThat(pv.getSuccess()).isTrue();
+    assertThat(pv.getRunLocation()).isEqualTo("a-run-location");
+    assertThat(pv.getMessage()).isEqualTo("a-message");
+
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, adEnvelope, "GET /CoreAndFilter3x/trackAvailability");
   }
 
   @Test

@@ -26,6 +26,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.AiOperationNameSpanProcessor;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.AvailabilityTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.EventTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageTelemetryBuilder;
@@ -159,7 +160,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       String name,
       @Nullable String id,
       String resultCode,
-      @Nullable Long totalMillis,
+      @Nullable Long duration,
       boolean success,
       String commandName,
       String type,
@@ -182,8 +183,8 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setId(id);
     }
     telemetryBuilder.setResultCode(resultCode);
-    if (totalMillis != null) {
-      telemetryBuilder.setDuration(FormattedDuration.fromNanos(MILLISECONDS.toNanos(totalMillis)));
+    if (duration != null) {
+      telemetryBuilder.setDuration(FormattedDuration.fromNanos(MILLISECONDS.toNanos(duration)));
     }
     telemetryBuilder.setSuccess(success);
     telemetryBuilder.setData(commandName);
@@ -381,6 +382,58 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     track(telemetryBuilder, tags, true);
+  }
+
+  @Override
+  public void trackAvailability(
+      @Nullable Date timestamp,
+      String id,
+      String name,
+      @Nullable Long duration,
+      boolean success,
+      String runLocation,
+      String message,
+      Map<String, String> properties,
+      Map<String, String> tags,
+      Map<String, Double> measurements,
+      @Nullable String instrumentationKey) {
+
+    if (Strings.isNullOrEmpty(name)) {
+      return;
+    }
+    AvailabilityTelemetryBuilder telemetryBuilder =
+        TelemetryClient.getActive().newAvailabilityTelemetryBuilder();
+
+    telemetryBuilder.setName(name);
+    if (id == null) {
+      telemetryBuilder.setId(AiLegacyPropagator.generateSpanId());
+    } else {
+      telemetryBuilder.setId(id);
+    }
+    if (duration != null) {
+      telemetryBuilder.setDuration(FormattedDuration.fromNanos(MILLISECONDS.toNanos(duration)));
+    }
+    telemetryBuilder.setSuccess(success);
+    telemetryBuilder.setRunLocation(runLocation);
+    telemetryBuilder.setMessage(message);
+    for (Map.Entry<String, Double> entry : measurements.entrySet()) {
+      telemetryBuilder.addMeasurement(entry.getKey(), entry.getValue());
+    }
+    for (Map.Entry<String, String> entry : properties.entrySet()) {
+      telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
+    }
+
+    if (timestamp != null) {
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochMillis(timestamp.getTime()));
+    } else {
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
+    }
+    selectivelySetTags(telemetryBuilder, tags);
+    if (instrumentationKey != null) {
+      telemetryBuilder.setInstrumentationKey(instrumentationKey);
+    }
+
+    track(telemetryBuilder, tags, false);
   }
 
   @Nullable

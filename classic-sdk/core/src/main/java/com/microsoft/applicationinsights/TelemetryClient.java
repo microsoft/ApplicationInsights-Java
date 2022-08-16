@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights;
 
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.MapUtil;
+import com.microsoft.applicationinsights.telemetry.AvailabilityTelemetry;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
@@ -58,20 +59,16 @@ public class TelemetryClient {
       @Nullable Map<String, String> properties,
       @Nullable Map<String, Double> metrics) {
 
-    if (isDisabled()) {
-      return;
-    }
-
     if (name == null || name.isEmpty()) {
       name = "";
     }
 
-    EventTelemetry et = new EventTelemetry(name);
+    EventTelemetry telemetry = new EventTelemetry(name);
 
-    MapUtil.copy(properties, et.getContext().getProperties());
-    MapUtil.copy(metrics, et.getMetrics());
+    MapUtil.copy(properties, telemetry.getContext().getProperties());
+    MapUtil.copy(metrics, telemetry.getMetrics());
 
-    track(et);
+    trackEvent(telemetry);
   }
 
   /**
@@ -107,19 +104,15 @@ public class TelemetryClient {
       @Nullable SeverityLevel severityLevel,
       @Nullable Map<String, String> properties) {
 
-    if (isDisabled()) {
-      return;
-    }
-
     if (LocalStringsUtils.isNullOrEmpty(message)) {
       message = "";
     }
 
-    TraceTelemetry et = new TraceTelemetry(message, severityLevel);
+    TraceTelemetry telemetry = new TraceTelemetry(message, severityLevel);
 
-    MapUtil.copy(properties, et.getContext().getProperties());
+    MapUtil.copy(properties, telemetry.getContext().getProperties());
 
-    track(et);
+    trackTrace(telemetry);
   }
 
   /**
@@ -173,17 +166,13 @@ public class TelemetryClient {
       @Nullable Double stdDev,
       @Nullable Map<String, String> properties) {
 
-    if (isDisabled()) {
-      return;
-    }
-
-    MetricTelemetry mt = new MetricTelemetry(name, value);
-    mt.setCount(sampleCount);
-    mt.setMin(min);
-    mt.setMax(max);
-    mt.setStandardDeviation(stdDev);
-    MapUtil.copy(properties, mt.getProperties());
-    track(mt);
+    MetricTelemetry telemetry = new MetricTelemetry(name, value);
+    telemetry.setCount(sampleCount);
+    telemetry.setMin(min);
+    telemetry.setMax(max);
+    telemetry.setStandardDeviation(stdDev);
+    MapUtil.copy(properties, telemetry.getProperties());
+    trackMetric(telemetry);
   }
 
   /**
@@ -222,16 +211,12 @@ public class TelemetryClient {
       @Nullable Map<String, String> properties,
       @Nullable Map<String, Double> metrics) {
 
-    if (isDisabled()) {
-      return;
-    }
+    ExceptionTelemetry telemetry = new ExceptionTelemetry(exception);
 
-    ExceptionTelemetry et = new ExceptionTelemetry(exception);
+    MapUtil.copy(properties, telemetry.getContext().getProperties());
+    MapUtil.copy(metrics, telemetry.getMetrics());
 
-    MapUtil.copy(properties, et.getContext().getProperties());
-    MapUtil.copy(metrics, et.getMetrics());
-
-    this.track(et);
+    trackException(telemetry);
   }
 
   /**
@@ -267,11 +252,7 @@ public class TelemetryClient {
   public void trackHttpRequest(
       String name, Date timestamp, long duration, String responseCode, boolean success) {
 
-    if (isDisabled()) {
-      return;
-    }
-
-    track(new RequestTelemetry(name, timestamp, duration, responseCode, success));
+    trackRequest(new RequestTelemetry(name, timestamp, duration, responseCode, success));
   }
 
   /**
@@ -288,10 +269,7 @@ public class TelemetryClient {
   public void trackDependency(
       String dependencyName, String commandName, Duration duration, boolean success) {
 
-    RemoteDependencyTelemetry remoteDependencyTelemetry =
-        new RemoteDependencyTelemetry(dependencyName, commandName, duration, success);
-
-    trackDependency(remoteDependencyTelemetry);
+    trackDependency(new RemoteDependencyTelemetry(dependencyName, commandName, duration, success));
   }
 
   /**
@@ -302,10 +280,6 @@ public class TelemetryClient {
    * @param telemetry telemetry
    */
   public void trackDependency(RemoteDependencyTelemetry telemetry) {
-
-    if (isDisabled()) {
-      return;
-    }
 
     if (telemetry == null) {
       telemetry = new RemoteDependencyTelemetry("");
@@ -322,16 +296,11 @@ public class TelemetryClient {
    */
   public void trackPageView(String name) {
 
-    if (isDisabled()) {
-      return;
-    }
-
     if (name == null) {
       name = "";
     }
 
-    Telemetry telemetry = new PageViewTelemetry(name);
-    track(telemetry);
+    trackPageView(new PageViewTelemetry(name));
   }
 
   /**
@@ -340,6 +309,10 @@ public class TelemetryClient {
    * @param telemetry The telemetry to send
    */
   public void trackPageView(PageViewTelemetry telemetry) {
+    track(telemetry);
+  }
+
+  public void trackAvailability(AvailabilityTelemetry telemetry) {
     track(telemetry);
   }
 

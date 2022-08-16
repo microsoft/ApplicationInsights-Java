@@ -29,6 +29,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
+import com.microsoft.applicationinsights.smoketest.schemav2.AvailabilityData;
 import com.microsoft.applicationinsights.smoketest.schemav2.Base;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
@@ -68,7 +69,8 @@ class JsonHelper {
             MessageData.class,
             MetricData.class,
             RemoteDependencyData.class,
-            PageViewData.class
+            PageViewData.class,
+            AvailabilityData.class
           };
 
       for (Class<? extends Domain> clazz : classes) {

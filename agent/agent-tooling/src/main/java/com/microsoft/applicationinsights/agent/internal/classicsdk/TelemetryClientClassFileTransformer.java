@@ -151,6 +151,10 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       } else if (name.equals("trackMetric") && descriptor.equals("(Ljava/lang/String;D)V")) {
         overwriteTrackMetricMethod(mv);
         return null;
+      } else if (name.equals("trackAvailability")
+          && descriptor.equals("(L" + unshadedPrefix + "/telemetry/AvailabilityTelemetry;)V")) {
+        overwriteTrackAvailabilityMethod(mv);
+        return null;
       } else if (name.equals("isDisabled") && descriptor.equals("()Z")) {
         foundIsDisabledMethod = true;
         overwriteIsDisabledMethod(mv);
@@ -1395,6 +1399,146 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       mv.visitEnd();
     }
 
+    // this cannot be included in the general track() method because the AvailabilityTelemetry class
+    // doesn't exist in 2.x SDK
+    private void overwriteTrackAvailabilityMethod(MethodVisitor mv) {
+      mv.visitCode();
+      Label label0 = new Label();
+      mv.visitLabel(label0);
+      mv.visitVarInsn(ALOAD, 0);
+      Label label1 = new Label();
+      mv.visitLabel(label1);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/AvailabilityTelemetry",
+          "getTimestamp",
+          "()Ljava/util/Date;",
+          false);
+      mv.visitVarInsn(ALOAD, 0);
+      Label label2 = new Label();
+      mv.visitLabel(label2);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/AvailabilityTelemetry",
+          "getId",
+          "()Ljava/lang/String;",
+          false);
+      mv.visitVarInsn(ALOAD, 0);
+      Label label3 = new Label();
+      mv.visitLabel(label3);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/AvailabilityTelemetry",
+          "getName",
+          "()Ljava/lang/String;",
+          false);
+      mv.visitVarInsn(ALOAD, 0);
+      Label label4 = new Label();
+      mv.visitLabel(label4);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/AvailabilityTelemetry",
+          "getDuration",
+          "()L" + unshadedPrefix + "/telemetry/Duration;",
+          false);
+      mv.visitMethodInsn(
+          INVOKESTATIC,
+          unshadedPrefix + "/TelemetryClient",
+          "agent$toMillis",
+          "(L" + unshadedPrefix + "/telemetry/Duration;)Ljava/lang/Long;",
+          false);
+      mv.visitVarInsn(ALOAD, 0);
+      Label label5 = new Label();
+      mv.visitLabel(label5);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/AvailabilityTelemetry",
+          "getSuccess",
+          "()Z",
+          false);
+      mv.visitVarInsn(ALOAD, 0);
+      Label label6 = new Label();
+      mv.visitLabel(label6);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/AvailabilityTelemetry",
+          "getRunLocation",
+          "()Ljava/lang/String;",
+          false);
+      mv.visitVarInsn(ALOAD, 0);
+      Label label7 = new Label();
+      mv.visitLabel(label7);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/AvailabilityTelemetry",
+          "getMessage",
+          "()Ljava/lang/String;",
+          false);
+      mv.visitVarInsn(ALOAD, 0);
+      Label label8 = new Label();
+      mv.visitLabel(label8);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/AvailabilityTelemetry",
+          "getProperties",
+          "()Ljava/util/Map;",
+          false);
+      mv.visitVarInsn(ALOAD, 0);
+      Label label9 = new Label();
+      mv.visitLabel(label9);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/AvailabilityTelemetry",
+          "getContext",
+          "()L" + unshadedPrefix + "/telemetry/TelemetryContext;",
+          false);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/TelemetryContext",
+          "getTags",
+          "()Ljava/util/concurrent/ConcurrentMap;",
+          false);
+      mv.visitVarInsn(ALOAD, 0);
+      Label label10 = new Label();
+      mv.visitLabel(label10);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/AvailabilityTelemetry",
+          "getMetrics",
+          "()Ljava/util/concurrent/ConcurrentMap;",
+          false);
+      mv.visitVarInsn(ALOAD, 0);
+      Label label11 = new Label();
+      mv.visitLabel(label11);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/AvailabilityTelemetry",
+          "getContext",
+          "()L" + unshadedPrefix + "/telemetry/TelemetryContext;",
+          false);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/TelemetryContext",
+          "getInstrumentationKey",
+          "()Ljava/lang/String;",
+          false);
+      Label label12 = new Label();
+      mv.visitLabel(label12);
+      mv.visitMethodInsn(
+          INVOKESTATIC,
+          BYTECODE_UTIL_INTERNAL_NAME,
+          "trackAvailability",
+          "(Ljava/util/Date;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;ZLjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V",
+          false);
+      Label label13 = new Label();
+      mv.visitLabel(label13);
+      mv.visitInsn(RETURN);
+      Label label14 = new Label();
+      mv.visitLabel(label14);
+      mv.visitMaxs(11, 1);
+      mv.visitEnd();
+    }
+
     private void writeAgentToMillisMethod() {
       MethodVisitor mv =
           cw.visitMethod(
@@ -1458,7 +1602,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
   //
   // to run this, uncomment the code below, and add these dependencies to agent-tooling's
   // gradle.build.kts file:
-  //   implementation("com.microsoft.azure:applicationinsights-core:2.6.3")
+  //   implementation(project(":classic-sdk:core"))
   //   implementation("org.ow2.asm:asm-util:9.3")
   //
   /*
@@ -1594,7 +1738,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackMetric(
           t.getTimestamp(),
           t.getName(),
-          t.getMetricNamespace(),
+          t.toString(),
           t.getValue(),
           t.getCount(),
           t.getMin(),
@@ -1678,6 +1822,22 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           t.getTimestamp(),
           t.getThrowable(),
           severityLevel,
+          t.getProperties(),
+          t.getContext().getTags(),
+          t.getMetrics(),
+          t.getContext().getInstrumentationKey());
+    }
+
+    private static void agent$trackAvailabilityTelemetry(
+        com.microsoft.applicationinsights.telemetry.AvailabilityTelemetry t) {
+      com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackAvailability(
+          t.getTimestamp(),
+          t.getId(),
+          t.getName(),
+          agent$toMillis(t.getDuration()),
+          t.getSuccess(),
+          t.getRunLocation(),
+          t.getMessage(),
           t.getProperties(),
           t.getContext().getTags(),
           t.getMetrics(),
