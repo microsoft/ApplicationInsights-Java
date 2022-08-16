@@ -78,26 +78,26 @@ abstract class HttpPreaggregatedMetricsSmokeTest {
         Comparator.comparing(
             obj -> {
               MetricData metricData = (MetricData) ((Data<?>) obj.getData()).getBaseData();
-              return metricData.getProperties().get("request/resultCode");
+              return metricData.getProperties().get("dependency/resultCode");
             }));
 
     // 1st pre-aggregated metric
     Envelope envelope1 = metrics.get(0);
     validateTags(envelope1);
     MetricData md1 = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
-    validateMetricData(md1, "200");
+    validateMetricData("client", md1, "200");
 
     // 2nd pre-aggregated metric
     Envelope envelope2 = metrics.get(1);
     validateTags(envelope2);
     MetricData md2 = (MetricData) ((Data<?>) envelope2.getData()).getBaseData();
-    validateMetricData(md2, "404");
+    validateMetricData("client", md2, "404");
 
     // 3rd pre-aggregated metric
     Envelope envelope3 = metrics.get(2);
     validateTags(envelope3);
     MetricData md3 = (MetricData) ((Data<?>) envelope3.getData()).getBaseData();
-    validateMetricData(md3, "500");
+    validateMetricData("client", md3, "500");
   }
 
   private static void verifyHttpServerPreAggregatedMetrics(List<Envelope> metrics)
@@ -107,13 +107,13 @@ abstract class HttpPreaggregatedMetricsSmokeTest {
     Envelope envelope1 = metrics.get(0);
     validateTags(envelope1);
     MetricData md1 = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
-    validateMetricData(md1, "200");
+    validateMetricData("server", md1, "200");
 
     // 2nd pre-aggregated metric
     Envelope envelope2 = metrics.get(1);
     validateTags(envelope2);
     MetricData md2 = (MetricData) ((Data<?>) envelope2.getData()).getBaseData();
-    validateMetricData(md2, "200");
+    validateMetricData("server", md2, "200");
   }
 
   private static void validateTags(Envelope envelope) {
@@ -123,7 +123,7 @@ abstract class HttpPreaggregatedMetricsSmokeTest {
     assertThat(tags).containsEntry("ai.cloud.role", "testrolename");
   }
 
-  private static void validateMetricData(MetricData metricData, String resultCode) {
+  private static void validateMetricData(String type, MetricData metricData, String resultCode) {
     List<DataPoint> dataPoints = metricData.getMetrics();
     assertThat(dataPoints).hasSize(1);
     DataPoint dataPoint = dataPoints.get(0);
@@ -132,14 +132,18 @@ abstract class HttpPreaggregatedMetricsSmokeTest {
     assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
     assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
     Map<String, String> properties = metricData.getProperties();
-    assertThat(properties.get("request/resultCode")).isEqualTo(resultCode);
-
     double value = metricData.getMetrics().get(0).getValue();
-    assertThat(properties.get("request/performanceBucket")).isEqualTo(getPerformanceBucket(value));
-    if ("200".equals(resultCode)) {
-      assertThat(properties.get("request/success")).isEqualTo("True");
+    String expectedResultCode = "200".equals(resultCode) ? "True" : "False";
+    if ("client".equals(type)) {
+      assertThat(properties.get("dependency/resultCode")).isEqualTo(resultCode);
+      assertThat(properties.get("dependency/performanceBucket"))
+          .isEqualTo(getPerformanceBucket(value));
+      assertThat(properties.get("dependency/success")).isEqualTo(expectedResultCode);
     } else {
-      assertThat(properties.get("request/success")).isEqualTo("False");
+      assertThat(properties.get("request/resultCode")).isEqualTo(resultCode);
+      assertThat(properties.get("request/performanceBucket"))
+          .isEqualTo(getPerformanceBucket(value));
+      assertThat(properties.get("request/success")).isEqualTo(expectedResultCode);
     }
     assertThat(properties.get("operation/synthetic")).isEqualTo("False");
     assertThat(properties.get("_MS.metricId")).isEqualTo("requests/duration");
