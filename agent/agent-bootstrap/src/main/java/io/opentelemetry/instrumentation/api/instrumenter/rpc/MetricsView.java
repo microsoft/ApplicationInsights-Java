@@ -49,6 +49,7 @@ final class MetricsView {
     view.add(SemanticAttributes.RPC_SERVICE);
     view.add(SemanticAttributes.RPC_METHOD);
     view.add(AttributeKey.stringKey(DurationBucketizer.AI_PERFORMANCE_BUCKET));
+    view.add(AttributeKey.stringKey("target"));
     return view;
   }
 

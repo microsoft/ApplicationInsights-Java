@@ -170,13 +170,13 @@ abstract class GrpcTest {
     Envelope envelope1 = metrics.get(0);
     validateTags(envelope1);
     MetricData md1 = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
-    validateMetricData(md1);
+    validateMetricData("client", md1);
 
     // 2nd pre-aggregated metric
     Envelope envelope2 = metrics.get(1);
     validateTags(envelope2);
     MetricData md2 = (MetricData) ((Data<?>) envelope2.getData()).getBaseData();
-    validateMetricData(md2);
+    validateMetricData("client", md2);
   }
 
   private static void verifyRpcServerDurationPreAggregatedMetrics(List<Envelope> metrics)
@@ -186,13 +186,13 @@ abstract class GrpcTest {
     Envelope envelope1 = metrics.get(0);
     validateTags(envelope1);
     MetricData md1 = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
-    validateMetricData(md1);
+    validateMetricData("server", md1);
 
     // 2nd pre-aggregated metric
     Envelope envelope2 = metrics.get(1);
     validateTags(envelope2);
     MetricData md2 = (MetricData) ((Data<?>) envelope2.getData()).getBaseData();
-    validateMetricData(md2);
+    validateMetricData("server", md2);
   }
 
   private static void validateTags(Envelope envelope) {
@@ -202,7 +202,7 @@ abstract class GrpcTest {
     assertThat(tags).containsEntry("ai.cloud.role", "testrolename");
   }
 
-  private static void validateMetricData(MetricData metricData) {
+  private static void validateMetricData(String type, MetricData metricData) {
     List<DataPoint> dataPoints = metricData.getMetrics();
     assertThat(dataPoints).hasSize(1);
     DataPoint dataPoint = dataPoints.get(0);
@@ -211,12 +211,20 @@ abstract class GrpcTest {
     assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
     assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
     Map<String, String> properties = metricData.getProperties();
-    assertThat(properties.get("request/resultCode")).isNull();
-    double value = metricData.getMetrics().get(0).getValue();
-    assertThat(properties.get("request/performanceBucket")).isEqualTo(getPerformanceBucket(value));
-    assertThat(properties.get("request/success")).isEqualTo("True");
+    String performanceBucket = getPerformanceBucket(metricData.getMetrics().get(0).getValue());
+    if ("client".equals(type)) {
+      assertThat(properties.get("dependency/resultCode")).isNull();
+      assertThat(properties.get("dependency/performanceBucket")).isEqualTo(performanceBucket);
+      assertThat(properties.get("_MS.metricId")).isEqualTo("dependencies/duration");
+      assertThat(properties.get("dependency/target")).isNotNull();
+      assertThat(properties.get("dependency/type")).isEqualTo("grpc");
+    } else {
+      assertThat(properties.get("_MS.metricId")).isEqualTo("requests/duration");
+      assertThat(properties.get("request/resultCode")).isNull();
+      assertThat(properties.get("request/performanceBucket")).isEqualTo(performanceBucket);
+      assertThat(properties.get("request/success")).isEqualTo("True");
+    }
     assertThat(properties.get("operation/synthetic")).isEqualTo("False");
-    assertThat(properties.get("_MS.metricId")).isEqualTo("requests/duration");
     assertThat(properties.get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
     assertThat(properties.get("cloud/roleInstance")).isEqualTo("testroleinstance");
     assertThat(properties.get("cloud/roleName")).isEqualTo("testrolename");
