@@ -141,6 +141,7 @@ public class AlternativeJfrConfigurations {
 
   public static RecordingConfiguration getManualProfileConfig(
       ServiceProfilerServiceConfig configuration) {
-    return getRecordingConfiguration(configuration.getManualTriggeredSettings(), AlertMetricType.MANUAL);
+    return getRecordingConfiguration(
+        configuration.getManualTriggeredSettings(), AlertMetricType.MANUAL);
   }
 }

@@ -101,7 +101,8 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
         AlternativeJfrConfigurations.getMemoryProfileConfig(configuration);
     cpuRecordingConfiguration = AlternativeJfrConfigurations.getCpuProfileConfig(configuration);
     spanRecordingConfiguration = AlternativeJfrConfigurations.getSpanProfileConfig(configuration);
-    manualRecordingConfiguration = AlternativeJfrConfigurations.getManualProfileConfig(configuration);
+    manualRecordingConfiguration =
+        AlternativeJfrConfigurations.getManualProfileConfig(configuration);
     temporaryDirectory = configuration.tempDirectory();
   }
 
