@@ -51,15 +51,15 @@ public class InstrumentationsTest {
                 + Math.pow(2, 13)
                 + Math.pow(2, 21)
                 + Math.pow(2, 42)
-                + Math.pow(2, 47)); // Exponents are keys from
-    // StatsbeatTestUtils.INSTRUMENTATION_MAP_DECODING.)
+                + Math.pow(2, 47));
+    // Exponents are keys from StatsbeatTestUtils.INSTRUMENTATION_MAP_DECODING.
     EXPECTED_INSTRUMENTATIONS[1] =
         (long)
             (Math.pow(2, 64 - 64)
                 + Math.pow(2, 65 - 64)
                 + Math.pow(2, 69 - 64)
-                + Math.pow(2, 71 - 64)); // Exponents are keys from
-    // StatsbeatTestUtils.INSTRUMENTATION_MAP_DECODING.)
+                + Math.pow(2, 71 - 64));
+    // Exponents are keys from StatsbeatTestUtils.INSTRUMENTATION_MAP_DECODING - 64.
   }
 
   @Test
