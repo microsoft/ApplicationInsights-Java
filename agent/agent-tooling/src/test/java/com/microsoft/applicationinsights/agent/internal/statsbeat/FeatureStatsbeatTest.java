@@ -104,10 +104,15 @@ public class FeatureStatsbeatTest {
     instrumentationStatsbeat.addInstrumentation("io.opentelemetry.jdbc");
     instrumentationStatsbeat.addInstrumentation("io.opentelemetry.tomcat-7.0");
     instrumentationStatsbeat.addInstrumentation("io.opentelemetry.http-url-connection");
-    assertThat(instrumentationStatsbeat.getInstrumentation())
-        .isEqualTo(
-            (long) (Math.pow(2, 5) + Math.pow(2, 13) + Math.pow(2, 21))); // Exponents are keys from
-    // StatsbeatTestUtils.INSTRUMENTATION_MAP_DECODING
+    long[] expectedLongArray = new long[1];
+    expectedLongArray[0] =
+        (long)
+            (Math.pow(2, 5)
+                + Math.pow(2, 13)
+                + Math.pow(
+                    2,
+                    21)); // Exponents are keys from StatsbeatTestUtils.INSTRUMENTATION_MAP_DECODING
+    assertThat(instrumentationStatsbeat.getInstrumentation()).isEqualTo(expectedLongArray);
   }
 
   private static void testFeatureTrackingEnablement(
