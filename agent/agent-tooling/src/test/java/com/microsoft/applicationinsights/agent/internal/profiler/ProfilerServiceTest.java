@@ -172,7 +172,7 @@ class ProfilerServiceTest {
         new JfrProfilerService(
                 () -> appId,
                 new ServiceProfilerServiceConfig(
-                    1, 2, 3, new URL("http://localhost"), null, null, new File("."), true),
+                    1, 2, 3, new URL("http://localhost"), null, null, null, new File("."), true),
                 jfrProfiler,
                 ProfilerServiceInitializer.updateAlertingConfig(alertService),
                 clientV2,
@@ -225,7 +225,7 @@ class ProfilerServiceTest {
   private JfrProfiler getJfrDaemon(AtomicBoolean profileInvoked) throws MalformedURLException {
     return new JfrProfiler(
         new ServiceProfilerServiceConfig(
-            1, 2, 3, new URL("http://localhost"), null, null, new File("."), true)) {
+            1, 2, 3, new URL("http://localhost"), null, null, null, new File("."), true)) {
       @Override
       protected void profileAndUpload(
           AlertBreach alertBreach, Duration duration, UploadCompleteHandler uploadCompleteHandler) {

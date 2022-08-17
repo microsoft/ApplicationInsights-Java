@@ -84,6 +84,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
   private final RecordingConfiguration memoryRecordingConfiguration;
   private final RecordingConfiguration cpuRecordingConfiguration;
   private final RecordingConfiguration spanRecordingConfiguration;
+  private final RecordingConfiguration manualRecordingConfiguration;
 
   private final File temporaryDirectory;
 
@@ -100,6 +101,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
         AlternativeJfrConfigurations.getMemoryProfileConfig(configuration);
     cpuRecordingConfiguration = AlternativeJfrConfigurations.getCpuProfileConfig(configuration);
     spanRecordingConfiguration = AlternativeJfrConfigurations.getSpanProfileConfig(configuration);
+    manualRecordingConfiguration = AlternativeJfrConfigurations.getManualProfileConfig(configuration);
     temporaryDirectory = configuration.tempDirectory();
   }
 
@@ -169,6 +171,9 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
           break;
         case MEMORY:
           recordingConfiguration = memoryRecordingConfiguration;
+          break;
+        case MANUAL:
+          recordingConfiguration = manualRecordingConfiguration;
           break;
         default:
           recordingConfiguration = cpuRecordingConfiguration;
