@@ -22,17 +22,17 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
-import com.microsoft.applicationinsights.agent.internal.legacysdk.ApplicationInsightsAppenderClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.legacysdk.BytecodeUtilImpl;
-import com.microsoft.applicationinsights.agent.internal.legacysdk.DependencyTelemetryClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.legacysdk.ExceptionTelemetryClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.legacysdk.HeartBeatModuleClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.legacysdk.PerformanceCounterModuleClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.legacysdk.QuickPulseClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.legacysdk.RequestNameHandlerClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.legacysdk.RequestTelemetryClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.legacysdk.TelemetryClientClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.legacysdk.WebRequestTrackingFilterClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.classicsdk.ApplicationInsightsAppenderClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.classicsdk.BytecodeUtilImpl;
+import com.microsoft.applicationinsights.agent.internal.classicsdk.DependencyTelemetryClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.classicsdk.ExceptionTelemetryClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.classicsdk.HeartBeatModuleClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.classicsdk.PerformanceCounterModuleClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.classicsdk.QuickPulseClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.classicsdk.RequestNameHandlerClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.classicsdk.RequestTelemetryClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.classicsdk.TelemetryClientClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.classicsdk.WebRequestTrackingFilterClassFileTransformer;
 import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;
 import java.lang.instrument.Instrumentation;
 

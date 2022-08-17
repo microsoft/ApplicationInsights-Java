@@ -138,4 +138,10 @@ public class AlternativeJfrConfigurations {
       ServiceProfilerServiceConfig configuration) {
     return getRecordingConfiguration(configuration.cpuTriggeredSettings(), AlertMetricType.REQUEST);
   }
+
+  public static RecordingConfiguration getManualProfileConfig(
+      ServiceProfilerServiceConfig configuration) {
+    return getRecordingConfiguration(
+        configuration.getManualTriggeredSettings(), AlertMetricType.MANUAL);
+  }
 }
