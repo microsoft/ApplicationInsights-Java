@@ -24,9 +24,9 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
+import com.microsoft.applicationinsights.agent.internal.classicsdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
-import com.microsoft.applicationinsights.agent.internal.legacysdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
