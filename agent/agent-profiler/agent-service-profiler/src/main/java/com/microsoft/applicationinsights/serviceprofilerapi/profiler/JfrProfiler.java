@@ -164,9 +164,6 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
 
       RecordingConfiguration recordingConfiguration;
       switch (alertType) {
-        case CPU:
-          recordingConfiguration = cpuRecordingConfiguration;
-          break;
         case REQUEST:
           recordingConfiguration = spanRecordingConfiguration;
           break;
@@ -174,7 +171,8 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
           recordingConfiguration = memoryRecordingConfiguration;
           break;
         default:
-          recordingConfiguration = RecordingConfiguration.PROFILE_CONFIGURATION;
+          recordingConfiguration = cpuRecordingConfiguration;
+          break;
       }
 
       try {
