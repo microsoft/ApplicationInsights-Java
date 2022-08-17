@@ -28,7 +28,6 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverrideAttribute;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.ArrayList;
@@ -49,10 +48,10 @@ class SamplingOverrides {
   }
 
   @Nullable
-  Sampler getOverride(SpanKind spanKind, Attributes attributes) {
+  Sampler getOverride(Attributes attributes) {
     LazyHttpUrl lazyHttpUrl = new LazyHttpUrl(attributes);
     for (MatcherGroup matcherGroups : matcherGroups) {
-      if (matcherGroups.matches(spanKind, attributes, lazyHttpUrl)) {
+      if (matcherGroups.matches(attributes, lazyHttpUrl)) {
         return matcherGroups.getSampler();
       }
     }
@@ -60,12 +59,10 @@ class SamplingOverrides {
   }
 
   private static class MatcherGroup {
-    @Nullable private final SpanKind spanKind;
     private final List<TempPredicate> predicates;
     private final Sampler sampler;
 
     private MatcherGroup(SamplingOverride override) {
-      spanKind = override.spanKind != null ? override.spanKind.otelSpanKind : null;
       predicates = new ArrayList<>();
       for (SamplingOverrideAttribute attribute : override.attributes) {
         predicates.add(toPredicate(attribute));
@@ -77,10 +74,7 @@ class SamplingOverrides {
       return sampler;
     }
 
-    private boolean matches(SpanKind spanKind, Attributes attributes, LazyHttpUrl lazyHttpUrl) {
-      if (this.spanKind != null && !this.spanKind.equals(spanKind)) {
-        return false;
-      }
+    private boolean matches(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
       for (TempPredicate predicate : predicates) {
         if (!predicate.test(attributes, lazyHttpUrl)) {
           return false;

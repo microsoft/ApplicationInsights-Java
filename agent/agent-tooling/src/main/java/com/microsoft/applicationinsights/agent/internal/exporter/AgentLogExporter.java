@@ -87,6 +87,7 @@ public class AgentLogExporter implements LogExporter {
     }
     for (LogData log : logs) {
       SpanContext spanContext = log.getSpanContext();
+      // TODO apply sampling overrides here !!!
       if (spanContext.isValid() && !spanContext.getTraceFlags().isSampled()) {
         continue;
       }

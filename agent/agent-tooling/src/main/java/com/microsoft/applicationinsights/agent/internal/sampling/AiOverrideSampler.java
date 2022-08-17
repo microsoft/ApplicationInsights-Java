@@ -31,11 +31,14 @@ import java.util.List;
 
 class AiOverrideSampler implements Sampler {
 
-  private final SamplingOverrides samplingOverrides;
+  private final SamplingOverrides requestOverrides;
+  private final SamplingOverrides dependencyOverrides;
   private final Sampler delegate;
 
-  AiOverrideSampler(SamplingOverrides samplingOverrides, Sampler delegate) {
-    this.samplingOverrides = samplingOverrides;
+  AiOverrideSampler(
+      SamplingOverrides requestOverrides, SamplingOverrides dependencyOverrides, Sampler delegate) {
+    this.requestOverrides = requestOverrides;
+    this.dependencyOverrides = dependencyOverrides;
     this.delegate = delegate;
   }
 
@@ -48,7 +51,7 @@ class AiOverrideSampler implements Sampler {
       Attributes attributes,
       List<LinkData> parentLinks) {
 
-    Sampler override = samplingOverrides.getOverride(spanKind, attributes);
+    Sampler override = samplingOverrides.getOverride(attributes);
     if (override != null) {
       return override.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
     }

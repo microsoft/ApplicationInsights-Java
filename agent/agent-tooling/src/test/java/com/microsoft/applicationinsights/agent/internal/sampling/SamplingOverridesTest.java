@@ -24,13 +24,11 @@ package com.microsoft.applicationinsights.agent.internal.sampling;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverrideAttribute;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,38 +45,7 @@ class SamplingOverridesTest {
     Attributes attributes = Attributes.empty();
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
-
-    // expect
-    assertThat(sampler).isNull();
-  }
-
-  @Test
-  void shouldFilterBySpanKind() {
-    // given
-    List<SamplingOverride> overrides =
-        singletonList(newOverride(Configuration.SpanKind.SERVER, 25));
-    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
-    Attributes attributes = Attributes.empty();
-
-    // when
-    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
-
-    // expect
-    assertThat(sampler).isNotNull();
-    assertThat(sampler.getDescription()).isEqualTo("AzureMonitorSampler{25.000%}");
-  }
-
-  @Test
-  void shouldNotFilterBySpanKind() {
-    // given
-    List<SamplingOverride> overrides =
-        singletonList(newOverride(Configuration.SpanKind.SERVER, 25));
-    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
-    Attributes attributes = Attributes.empty();
-
-    // when
-    Sampler sampler = samplingOverrides.getOverride(SpanKind.CLIENT, attributes);
+    Sampler sampler = samplingOverrides.getOverride(attributes);
 
     // expect
     assertThat(sampler).isNull();
@@ -88,62 +55,28 @@ class SamplingOverridesTest {
   void shouldFilterStrictMatch() {
     // given
     List<SamplingOverride> overrides =
-        singletonList(
-            newOverride(Configuration.SpanKind.SERVER, 25, newStrictAttribute("one", "1")));
+        singletonList(newOverride(25, newStrictAttribute("one", "1")));
     SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "1");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+    Sampler sampler = samplingOverrides.getOverride(attributes);
 
     // expect
     assertThat(sampler).isNotNull();
     assertThat(sampler.getDescription()).isEqualTo("AzureMonitorSampler{25.000%}");
-  }
-
-  @Test
-  void shouldFilterStrictMatchWithNullSpanKind() {
-    // given
-    List<SamplingOverride> overrides =
-        singletonList(newOverride(null, 25, newStrictAttribute("one", "1")));
-    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
-    Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "1");
-
-    // when
-    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
-
-    // expect
-    assertThat(sampler).isNotNull();
-    assertThat(sampler.getDescription()).isEqualTo("AzureMonitorSampler{25.000%}");
-  }
-
-  @Test
-  void shouldNotFilterStrictMatchWithWrongSpanKind() {
-    // given
-    List<SamplingOverride> overrides =
-        singletonList(
-            newOverride(Configuration.SpanKind.SERVER, 25, newStrictAttribute("one", "1")));
-    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
-    Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "1");
-
-    // when
-    Sampler sampler = samplingOverrides.getOverride(SpanKind.CLIENT, attributes);
-
-    // expect
-    assertThat(sampler).isNull();
   }
 
   @Test
   void shouldNotFilterStrictMatch() {
     // given
     List<SamplingOverride> overrides =
-        singletonList(
-            newOverride(Configuration.SpanKind.SERVER, 25, newStrictAttribute("one", "1")));
+        singletonList(newOverride(25, newStrictAttribute("one", "1")));
     SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "2");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+    Sampler sampler = samplingOverrides.getOverride(attributes);
 
     // expect
     assertThat(sampler).isNull();
@@ -153,13 +86,12 @@ class SamplingOverridesTest {
   void shouldNotFilterMissingStrictMatch() {
     // given
     List<SamplingOverride> overrides =
-        singletonList(
-            newOverride(Configuration.SpanKind.SERVER, 25, newStrictAttribute("one", "1")));
+        singletonList(newOverride(25, newStrictAttribute("one", "1")));
     SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("two"), "1");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+    Sampler sampler = samplingOverrides.getOverride(attributes);
 
     // expect
     assertThat(sampler).isNull();
@@ -169,13 +101,12 @@ class SamplingOverridesTest {
   void shouldFilterRegexpMatch() {
     // given
     List<SamplingOverride> overrides =
-        singletonList(
-            newOverride(Configuration.SpanKind.SERVER, 25, newRegexpAttribute("one", "1.*")));
+        singletonList(newOverride(25, newRegexpAttribute("one", "1.*")));
     SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "11");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+    Sampler sampler = samplingOverrides.getOverride(attributes);
 
     // expect
     assertThat(sampler).isNotNull();
@@ -186,13 +117,12 @@ class SamplingOverridesTest {
   void shouldNotFilterRegexpMatch() {
     // given
     List<SamplingOverride> overrides =
-        singletonList(
-            newOverride(Configuration.SpanKind.SERVER, 25, newRegexpAttribute("one", "1.*")));
+        singletonList(newOverride(25, newRegexpAttribute("one", "1.*")));
     SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "22");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+    Sampler sampler = samplingOverrides.getOverride(attributes);
 
     // expect
     assertThat(sampler).isNull();
@@ -202,13 +132,12 @@ class SamplingOverridesTest {
   void shouldNotFilterMissingRegexpMatch() {
     // given
     List<SamplingOverride> overrides =
-        singletonList(
-            newOverride(Configuration.SpanKind.SERVER, 25, newRegexpAttribute("one", "1.*")));
+        singletonList(newOverride(25, newRegexpAttribute("one", "1.*")));
     SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("two"), "11");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+    Sampler sampler = samplingOverrides.getOverride(attributes);
 
     // expect
     assertThat(sampler).isNull();
@@ -217,13 +146,12 @@ class SamplingOverridesTest {
   @Test
   void shouldFilterKeyOnlyMatch() {
     // given
-    List<SamplingOverride> overrides =
-        singletonList(newOverride(Configuration.SpanKind.SERVER, 25, newKeyOnlyAttribute("one")));
+    List<SamplingOverride> overrides = singletonList(newOverride(25, newKeyOnlyAttribute("one")));
     SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "11");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+    Sampler sampler = samplingOverrides.getOverride(attributes);
 
     // expect
     assertThat(sampler).isNotNull();
@@ -233,13 +161,12 @@ class SamplingOverridesTest {
   @Test
   void shouldNotFilterKeyOnlyMatch() {
     // given
-    List<SamplingOverride> overrides =
-        singletonList(newOverride(Configuration.SpanKind.SERVER, 25, newKeyOnlyAttribute("one")));
+    List<SamplingOverride> overrides = singletonList(newOverride(25, newKeyOnlyAttribute("one")));
     SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("two"), "22");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+    Sampler sampler = samplingOverrides.getOverride(attributes);
 
     // expect
     assertThat(sampler).isNull();
@@ -250,17 +177,13 @@ class SamplingOverridesTest {
     // given
     List<SamplingOverride> overrides =
         singletonList(
-            newOverride(
-                Configuration.SpanKind.SERVER,
-                25,
-                newStrictAttribute("one", "1"),
-                newRegexpAttribute("two", "2.*")));
+            newOverride(25, newStrictAttribute("one", "1"), newRegexpAttribute("two", "2.*")));
     SamplingOverrides samplerOverride = new SamplingOverrides(overrides);
     Attributes attributes =
         Attributes.of(AttributeKey.stringKey("one"), "1", AttributeKey.stringKey("two"), "22");
 
     // when
-    Sampler sampler = samplerOverride.getOverride(SpanKind.SERVER, attributes);
+    Sampler sampler = samplerOverride.getOverride(attributes);
 
     // expect
     assertThat(sampler).isNotNull();
@@ -272,17 +195,13 @@ class SamplingOverridesTest {
     // given
     List<SamplingOverride> overrides =
         singletonList(
-            newOverride(
-                Configuration.SpanKind.SERVER,
-                25,
-                newStrictAttribute("one", "1"),
-                newRegexpAttribute("two", "2.*")));
+            newOverride(25, newStrictAttribute("one", "1"), newRegexpAttribute("two", "2.*")));
     SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes =
         Attributes.of(AttributeKey.stringKey("one"), "2", AttributeKey.stringKey("two"), "22");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+    Sampler sampler = samplingOverrides.getOverride(attributes);
 
     // expect
     assertThat(sampler).isNull();
@@ -293,14 +212,14 @@ class SamplingOverridesTest {
     // given
     List<SamplingOverride> overrides =
         Arrays.asList(
-            newOverride(Configuration.SpanKind.SERVER, 25, newStrictAttribute("one", "1")),
-            newOverride(Configuration.SpanKind.SERVER, 0, newRegexpAttribute("two", "2.*")));
+            newOverride(25, newStrictAttribute("one", "1")),
+            newOverride(0, newRegexpAttribute("two", "2.*")));
     SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes =
         Attributes.of(AttributeKey.stringKey("one"), "1", AttributeKey.stringKey("two"), "22");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+    Sampler sampler = samplingOverrides.getOverride(attributes);
 
     // expect
     assertThat(sampler).isNotNull();
@@ -312,14 +231,14 @@ class SamplingOverridesTest {
     // given
     List<SamplingOverride> overrides =
         Arrays.asList(
-            newOverride(Configuration.SpanKind.SERVER, 50, newStrictAttribute("one", "1")),
-            newOverride(Configuration.SpanKind.SERVER, 25, newRegexpAttribute("two", "2.*")));
+            newOverride(50, newStrictAttribute("one", "1")),
+            newOverride(25, newRegexpAttribute("two", "2.*")));
     SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes =
         Attributes.of(AttributeKey.stringKey("one"), "2", AttributeKey.stringKey("two"), "22");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+    Sampler sampler = samplingOverrides.getOverride(attributes);
 
     // expect
     assertThat(sampler).isNotNull();
@@ -331,23 +250,22 @@ class SamplingOverridesTest {
     // given
     List<SamplingOverride> overrides =
         Arrays.asList(
-            newOverride(Configuration.SpanKind.SERVER, 50, newStrictAttribute("one", "1")),
-            newOverride(Configuration.SpanKind.SERVER, 25, newRegexpAttribute("two", "2.*")));
+            newOverride(50, newStrictAttribute("one", "1")),
+            newOverride(25, newRegexpAttribute("two", "2.*")));
     SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes =
         Attributes.of(AttributeKey.stringKey("one"), "2", AttributeKey.stringKey("two"), "33");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+    Sampler sampler = samplingOverrides.getOverride(attributes);
 
     // expect
     assertThat(sampler).isNull();
   }
 
   private static SamplingOverride newOverride(
-      Configuration.SpanKind spanKind, float percentage, SamplingOverrideAttribute... attribute) {
+      float percentage, SamplingOverrideAttribute... attribute) {
     SamplingOverride override = new SamplingOverride();
-    override.spanKind = spanKind;
     override.attributes = Arrays.asList(attribute);
     override.percentage = percentage;
     return override;

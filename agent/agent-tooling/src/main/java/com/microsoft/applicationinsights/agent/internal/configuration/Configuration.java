@@ -74,7 +74,7 @@ public class Configuration {
     preview.validate();
   }
 
-  // TODO (trask) investigate options for mapping lowercase values to otel enum directly
+  @Deprecated
   public enum SpanKind {
     @JsonProperty("server")
     SERVER(io.opentelemetry.api.trace.SpanKind.SERVER),
@@ -179,6 +179,11 @@ public class Configuration {
     public boolean parentBased;
 
     public List<SamplingOverride> overrides = new ArrayList<>();
+
+    public List<SamplingOverride> requestOverrides = new ArrayList<>();
+    public List<SamplingOverride> dependencyOverrides = new ArrayList<>();
+    public List<SamplingOverride> logOverrides = new ArrayList<>();
+    // FUTURE: public List<SamplingOverride> customEventsOverrides = new ArrayList<>();
   }
 
   public static class JmxMetric {
@@ -569,8 +574,9 @@ public class Configuration {
   }
 
   public static class SamplingOverride {
-    // TODO (trask) consider making this required when moving out of preview
-    @Nullable public SpanKind spanKind;
+    // this is just here to detect if using this old undocumented setting in order to give a helpful
+    // error message
+    @Deprecated @Nullable public SpanKind spanKind;
     // not using include/exclude, because you can still get exclude with this by adding a second
     // (exclude) override above it
     // (since only the first matching override is used)
@@ -579,11 +585,11 @@ public class Configuration {
     public String id; // optional, used for debugging purposes only
 
     public void validate() {
-      if (spanKind == null && attributes.isEmpty()) {
+      if (attributes.isEmpty()) {
         // TODO add doc and go link, similar to telemetry processors
         throw new FriendlyException(
-            "A sampling override configuration is missing \"spanKind\" and has no attributes.",
-            "Please provide at least one of \"spanKind\" or \"attributes\" for the sampling override configuration.");
+            "A sampling override configuration has no attributes.",
+            "Please provide at least one attribute in the sampling override configuration.");
       }
       if (percentage == null) {
         // TODO add doc and go link, similar to telemetry processors
