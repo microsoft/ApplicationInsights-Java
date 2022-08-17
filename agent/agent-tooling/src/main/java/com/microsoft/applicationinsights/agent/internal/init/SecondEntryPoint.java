@@ -449,6 +449,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     agentLogExporter =
         new AgentLogExporter(
             configuration.instrumentation.logging.getSeverity(),
+            configuration.preview.sampling.logOverrides,
             mapper,
             quickPulse,
             telemetryClient.getGeneralBatchItemProcessor());

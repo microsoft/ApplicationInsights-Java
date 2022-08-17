@@ -69,7 +69,7 @@ public class AzureMonitorLogExporter implements LogExporter {
     for (LogData log : logs) {
       LOGGER.verbose("exporting log: {}", log);
       try {
-        mapper.map(log, telemetryItems::add);
+        mapper.map(log, null, telemetryItems::add);
         exportingLogLogger.recordSuccess();
       } catch (Throwable t) {
         exportingLogLogger.recordFailure(t.getMessage(), t, EXPORTER_MAPPING_ERROR);

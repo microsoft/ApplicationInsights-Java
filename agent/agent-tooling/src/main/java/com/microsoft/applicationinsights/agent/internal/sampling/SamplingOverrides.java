@@ -36,11 +36,11 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 // TODO find a better name for this class (and MatcherGroup too)
-class SamplingOverrides {
+public class SamplingOverrides {
 
   private final List<MatcherGroup> matcherGroups;
 
-  SamplingOverrides(List<SamplingOverride> overrides) {
+  public SamplingOverrides(List<SamplingOverride> overrides) {
     matcherGroups = new ArrayList<>();
     for (SamplingOverride override : overrides) {
       matcherGroups.add(new MatcherGroup(override));
@@ -48,7 +48,7 @@ class SamplingOverrides {
   }
 
   @Nullable
-  Sampler getOverride(Attributes attributes) {
+  public Sampler getOverride(Attributes attributes) {
     LazyHttpUrl lazyHttpUrl = new LazyHttpUrl(attributes);
     for (MatcherGroup matcherGroups : matcherGroups) {
       if (matcherGroups.matches(attributes, lazyHttpUrl)) {
@@ -58,9 +58,20 @@ class SamplingOverrides {
     return null;
   }
 
+  @Nullable
+  public Float getOverridePercentage(Attributes attributes) {
+    for (MatcherGroup matcherGroups : matcherGroups) {
+      if (matcherGroups.matches(attributes, null)) {
+        return matcherGroups.getPercentage();
+      }
+    }
+    return null;
+  }
+
   private static class MatcherGroup {
     private final List<TempPredicate> predicates;
     private final Sampler sampler;
+    private final float percentage;
 
     private MatcherGroup(SamplingOverride override) {
       predicates = new ArrayList<>();
@@ -68,13 +79,18 @@ class SamplingOverrides {
         predicates.add(toPredicate(attribute));
       }
       sampler = new AzureMonitorSampler(override.percentage, false);
+      percentage = override.percentage;
     }
 
     Sampler getSampler() {
       return sampler;
     }
 
-    private boolean matches(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
+    float getPercentage() {
+      return percentage;
+    }
+
+    private boolean matches(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
       for (TempPredicate predicate : predicates) {
         if (!predicate.test(attributes, lazyHttpUrl)) {
           return false;
@@ -155,9 +171,11 @@ class SamplingOverrides {
     }
 
     @Override
-    public boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
+    public boolean test(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
       String val = attributes.get(key);
-      if (val == null && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())) {
+      if (val == null
+          && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())
+          && lazyHttpUrl != null) {
         val = lazyHttpUrl.get();
       }
       return val != null && value.matcher(val).matches();
@@ -174,7 +192,7 @@ class SamplingOverrides {
     }
 
     @Override
-    public boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
+    public boolean test(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
       List<String> val = attributes.get(key);
       if (val == null) {
         return false;
@@ -196,9 +214,11 @@ class SamplingOverrides {
     }
 
     @Override
-    public boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
+    public boolean test(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
       String val = attributes.get(key);
-      if (val == null && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())) {
+      if (val == null
+          && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())
+          && lazyHttpUrl != null) {
         val = lazyHttpUrl.get();
       }
       return val != null;
@@ -227,6 +247,6 @@ class SamplingOverrides {
   // this is temporary until semantic attributes stabilize and we make breaking change
   // then can use java.util.functions.Predicate<Attributes>
   private interface TempPredicate {
-    boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl);
+    boolean test(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl);
   }
 }

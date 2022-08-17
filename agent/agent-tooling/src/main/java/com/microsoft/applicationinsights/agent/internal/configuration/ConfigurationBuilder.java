@@ -181,6 +181,18 @@ public class ConfigurationBuilder {
               + " and it is now enabled by default,"
               + " so no need to enable it under preview configuration");
     }
+    if (!config.preview.sampling.overrides.isEmpty()) {
+      configurationLogger.warn(
+          "\"preview\": { \"sampling\": { \"overrides\": ... } } has been deprecated,"
+              + " please transition to"
+              + " \"preview\": { \"sampling\": { \"requestOverrides\": ... } },"
+              + " \"preview\": { \"sampling\": { \"dependencyOverrides\": ... } }, and/or"
+              + " \"preview\": { \"sampling\": { \"logOverrides\": ... } }");
+      config.preview.sampling.requestOverrides.addAll(config.preview.sampling.overrides);
+      config.preview.sampling.dependencyOverrides.addAll(config.preview.sampling.overrides);
+      config.preview.sampling.logOverrides.addAll(config.preview.sampling.overrides);
+    }
+
     logWarningIfUsingInternalAttributes(config);
 
     overlayFromEnv(config, agentJarPath.getParent());

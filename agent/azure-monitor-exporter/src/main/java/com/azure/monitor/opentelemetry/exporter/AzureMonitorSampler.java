@@ -109,7 +109,7 @@ public class AzureMonitorSampler implements Sampler {
     return null;
   }
 
-  private static boolean shouldRecordAndSample(String traceId, float percentage) {
+  public static boolean shouldRecordAndSample(String traceId, float percentage) {
     if (percentage == 100) {
       // optimization, no need to calculate score
       return true;

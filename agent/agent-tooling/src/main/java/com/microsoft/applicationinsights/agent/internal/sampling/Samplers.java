@@ -30,12 +30,16 @@ public class Samplers {
   public static Sampler getSampler(float samplingPercentage, Configuration config) {
     Sampler sampler = new AzureMonitorSampler(samplingPercentage);
 
-    if (!config.preview.sampling.overrides.isEmpty()) {
+    Configuration.SamplingPreview sampling = config.preview.sampling;
+    if (!sampling.requestOverrides.isEmpty() || !sampling.dependencyOverrides.isEmpty()) {
       sampler =
-          new AiOverrideSampler(new SamplingOverrides(config.preview.sampling.overrides), sampler);
+          new AiOverrideSampler(
+              new SamplingOverrides(sampling.requestOverrides),
+              new SamplingOverrides(sampling.dependencyOverrides),
+              sampler);
     }
 
-    if (!config.preview.sampling.parentBased) {
+    if (!sampling.parentBased) {
       return sampler;
     }
 

@@ -55,23 +55,23 @@ public class LogDataMapper {
     this.telemetryInitializer = telemetryInitializer;
   }
 
-  public void map(LogData log, Consumer<TelemetryItem> consumer) {
+  public void map(LogData log, @Nullable Long itemCount, Consumer<TelemetryItem> consumer) {
     String stack = log.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
     if (stack == null) {
-      consumer.accept(createMessageTelemetryItem(log));
+      consumer.accept(createMessageTelemetryItem(log, itemCount));
     } else {
-      consumer.accept(createExceptionTelemetryItem(log, stack));
+      consumer.accept(createExceptionTelemetryItem(log, itemCount, stack));
     }
   }
 
-  private TelemetryItem createMessageTelemetryItem(LogData log) {
+  private TelemetryItem createMessageTelemetryItem(LogData log, @Nullable Long itemCount) {
     MessageTelemetryBuilder telemetryBuilder = MessageTelemetryBuilder.create();
     telemetryInitializer.accept(telemetryBuilder, log.getResource());
 
     // set standard properties
     setOperationTags(telemetryBuilder, log);
     setTime(telemetryBuilder, log.getEpochNanos());
-    setItemCount(telemetryBuilder, log);
+    setItemCount(telemetryBuilder, log, itemCount);
 
     // update tags
     Attributes attributes = log.getAttributes();
@@ -90,14 +90,15 @@ public class LogDataMapper {
     return telemetryBuilder.build();
   }
 
-  private TelemetryItem createExceptionTelemetryItem(LogData log, String stack) {
+  private TelemetryItem createExceptionTelemetryItem(
+      LogData log, @Nullable Long itemCount, String stack) {
     ExceptionTelemetryBuilder telemetryBuilder = ExceptionTelemetryBuilder.create();
     telemetryInitializer.accept(telemetryBuilder, log.getResource());
 
     // set standard properties
     setOperationTags(telemetryBuilder, log);
     setTime(telemetryBuilder, log.getEpochNanos());
-    setItemCount(telemetryBuilder, log);
+    setItemCount(telemetryBuilder, log, itemCount);
 
     // update tags
     Attributes attributes = log.getAttributes();
@@ -142,8 +143,11 @@ public class LogDataMapper {
     telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(epochNanos));
   }
 
-  private static void setItemCount(AbstractTelemetryBuilder telemetryBuilder, LogData log) {
-    Long itemCount = log.getAttributes().get(AiSemanticAttributes.ITEM_COUNT);
+  private static void setItemCount(
+      AbstractTelemetryBuilder telemetryBuilder, LogData log, @Nullable Long itemCount) {
+    if (itemCount == null) {
+      itemCount = log.getAttributes().get(AiSemanticAttributes.ITEM_COUNT);
+    }
     if (itemCount != null && itemCount != 1) {
       telemetryBuilder.setSampleRate(100.0f / itemCount);
     }

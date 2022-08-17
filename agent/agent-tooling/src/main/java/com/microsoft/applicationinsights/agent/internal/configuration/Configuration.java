@@ -178,7 +178,7 @@ public class Configuration {
     // IMPORTANT if changing this default, we need to keep it at least on Azure Functions
     public boolean parentBased;
 
-    public List<SamplingOverride> overrides = new ArrayList<>();
+    @Deprecated public List<SamplingOverride> overrides = new ArrayList<>();
 
     public List<SamplingOverride> requestOverrides = new ArrayList<>();
     public List<SamplingOverride> dependencyOverrides = new ArrayList<>();

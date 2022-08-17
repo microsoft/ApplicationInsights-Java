@@ -196,15 +196,15 @@ public final class SpanDataMapper {
         span::getAttribute);
   }
 
-  private static boolean isRequest(
+  public static boolean isRequest(
       SpanKind kind,
       SpanContext parentSpanContext,
-      InstrumentationScopeInfo scopeInfo,
+      @Nullable InstrumentationScopeInfo scopeInfo,
       Function<AttributeKey<String>, String> attrFn) {
-    String instrumentationName = scopeInfo.getName();
     if (kind == SpanKind.INTERNAL) {
       // TODO (trask) AI mapping: need semantic convention for determining whether to map INTERNAL
       // to request or dependency (or need clarification to use SERVER for this)
+      String instrumentationName = scopeInfo == null ? "" : scopeInfo.getName();
       return (instrumentationName.startsWith("io.opentelemetry.spring-scheduling-")
               || instrumentationName.equals("io.opentelemetry.methods"))
           && !parentSpanContext.isValid();
