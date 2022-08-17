@@ -144,18 +144,9 @@ public class FeatureStatsbeatTest {
     instrumentationStatsbeat.addInstrumentation("io.opentelemetry.tomcat-7.0");
     instrumentationStatsbeat.addInstrumentation("io.opentelemetry.http-url-connection");
     long[] expectedLongArray = new long[2];
-    expectedLongArray[0] =
-        (long)
-            (Math.pow(2, 5)
-                + Math.pow(2, 13)
-                + Math.pow(
-                    2,
-                    21));
+    expectedLongArray[0] = (long) (Math.pow(2, 5) + Math.pow(2, 13) + Math.pow(2, 21));
     expectedLongArray[1] =
-        (long)
-            (Math.pow(2, 67 - 64)
-                + Math.pow(2, 69 - 64)
-                + Math.pow(2, 71 - 64));
+        (long) (Math.pow(2, 67 - 64) + Math.pow(2, 69 - 64) + Math.pow(2, 71 - 64));
     assertThat(instrumentationStatsbeat.getInstrumentation()).isEqualTo(expectedLongArray);
   }
 
