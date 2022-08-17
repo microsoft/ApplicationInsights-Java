@@ -53,7 +53,7 @@ import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithS
 import com.microsoft.applicationinsights.agent.internal.processors.LogExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
 import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
-import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanExporter;
+import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
@@ -317,6 +317,11 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
           new InheritedRoleNameSpanProcessor(configuration.preview.roleNameOverrides));
     }
 
+    if (configuration.preview.profiler.enabled
+        && configuration.preview.profiler.enableRequestTriggering) {
+      tracerProvider.addSpanProcessor(new AlertTriggerSpanProcessor());
+    }
+
     String tracesExporter = config.getString("otel.traces.exporter");
     if ("none".equals(tracesExporter)) { // "none" is the default set in AiConfigPropertySource
       SpanExporter spanExporter =
@@ -396,11 +401,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       // this is temporary until semantic attributes stabilize and we make breaking change
       // then can use java.util.functions.Predicate<Attributes>
       spanExporter = new BackCompatHttpUrlProcessor(spanExporter);
-    }
-
-    if (configuration.preview.profiler.enabled
-        && configuration.preview.profiler.enableRequestTriggering) {
-      spanExporter = new AlertTriggerSpanExporter(spanExporter);
     }
 
     return spanExporter;
