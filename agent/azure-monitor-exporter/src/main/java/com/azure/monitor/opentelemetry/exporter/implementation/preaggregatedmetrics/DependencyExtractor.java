@@ -22,6 +22,7 @@
 package com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 
 public class DependencyExtractor extends BaseExtractor {
 
@@ -38,7 +39,7 @@ public class DependencyExtractor extends BaseExtractor {
   private final String target;
 
   public DependencyExtractor(
-      AbstractTelemetryBuilder telemetryBuilder,
+      MetricTelemetryBuilder telemetryBuilder,
       Long statusCode,
       boolean success,
       String type,

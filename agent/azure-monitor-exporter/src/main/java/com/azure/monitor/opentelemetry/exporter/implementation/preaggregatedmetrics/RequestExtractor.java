@@ -22,6 +22,7 @@
 package com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 
 public final class RequestExtractor extends BaseExtractor {
 
@@ -33,7 +34,7 @@ public final class RequestExtractor extends BaseExtractor {
   private final boolean success;
 
   public RequestExtractor(
-      AbstractTelemetryBuilder telemetryBuilder,
+      MetricTelemetryBuilder telemetryBuilder,
       Long statusCode,
       boolean success,
       boolean isSynthetic) {
