@@ -21,7 +21,6 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 
 public final class RequestExtractor extends BaseExtractor {
