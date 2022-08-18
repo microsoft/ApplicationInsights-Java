@@ -38,12 +38,12 @@ public abstract class BaseExtractor {
 
   protected final AbstractTelemetryBuilder telemetryBuilder;
 
-  public BaseExtractor(AbstractTelemetryBuilder telemetryBuilder) {
+  public BaseExtractor(AbstractTelemetryBuilder telemetryBuilder, boolean isSynthetic) {
     this.telemetryBuilder = telemetryBuilder;
-    extractCommon();
+    extractCommon(isSynthetic);
   }
 
-  private void extractCommon() {
+  private void extractCommon(boolean isSynthetic) {
     telemetryBuilder.addProperty(MS_IS_AUTOCOLLECTED, TRUE);
     // this flag will inform the ingestion service to stop post-aggregation
     telemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, TRUE);
@@ -62,8 +62,7 @@ public abstract class BaseExtractor {
       }
     }
 
-    // This is not supported yet. Default to false.
-    telemetryBuilder.addProperty(OPERATION_SYNTHETIC, FALSE);
+    telemetryBuilder.addProperty(OPERATION_SYNTHETIC, isSynthetic ? TRUE : FALSE);
   }
 
   public abstract void extract();

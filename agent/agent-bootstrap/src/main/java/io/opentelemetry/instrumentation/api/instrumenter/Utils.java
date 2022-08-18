@@ -19,40 +19,39 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package io.opentelemetry.instrumentation.api.instrumenter.utils;
+package io.opentelemetry.instrumentation.api.instrumenter;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import javax.annotation.Nullable;
 
-public final class DurationBucketizer {
+public final class Utils {
 
-  public static final String AI_PERFORMANCE_BUCKET = "ai.performance.bucket";
+  public static final String IS_SYNTHETIC = "isSynthetic";
+  public static final String TARGET = "target";
 
-  // sorted HashMap
-  private static final Map<String, Double> performanceBuckets = new LinkedHashMap<>();
-
-  static {
-    performanceBuckets.put("<250ms", 250d);
-    performanceBuckets.put("250ms-500ms", 500d);
-    performanceBuckets.put("500ms-1sec", 1000d);
-    performanceBuckets.put("1sec-3sec", 3000d);
-    performanceBuckets.put("3sec-7sec", 7000d);
-    performanceBuckets.put("7sec-15sec", 15000d);
-    performanceBuckets.put("15sec-30sec", 30000d);
-    performanceBuckets.put("30sec-1min", 60000d);
-    performanceBuckets.put("1min-2min", 120000d);
-    performanceBuckets.put("2min-5min", 300000d);
-    performanceBuckets.put(">=5min", Double.MAX_VALUE);
+  @SuppressWarnings("SystemOut")
+  public static boolean isUserAgentBot(Attributes endAttributes, Attributes startAttributes) {
+    String aiUserAgent =
+        getAttribute(AttributeKey.stringKey("ai.user.userAgent"), endAttributes, startAttributes);
+    // TODO to be removed debug log
+    System.out.println("############## HttpServerMetrics::aiUserAgent: " + aiUserAgent);
+    if (aiUserAgent != null && aiUserAgent.indexOf("AlwaysOn") >= 0) {
+      return true;
+    }
+    return false;
   }
 
-  public static String getPerformanceBucket(double durationInMillis) {
-    for (Map.Entry<String, Double> entry : performanceBuckets.entrySet()) {
-      if (durationInMillis < entry.getValue()) {
-        return entry.getKey();
+  @Nullable
+  private static <T> T getAttribute(AttributeKey<T> key, Attributes... attributesList) {
+    for (Attributes attributes : attributesList) {
+      T value = attributes.get(key);
+      if (value != null) {
+        return value;
       }
     }
-    return ">=5min";
+    return null;
   }
 
-  private DurationBucketizer() {}
+  private Utils() {}
 }

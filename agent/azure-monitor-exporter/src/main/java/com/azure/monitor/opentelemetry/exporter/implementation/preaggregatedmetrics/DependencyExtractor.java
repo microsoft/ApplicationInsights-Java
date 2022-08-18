@@ -28,12 +28,10 @@ public class DependencyExtractor extends BaseExtractor {
   // visible for testing
   public static final String DEPENDENCIES_DURATION = "dependencies/duration";
   public static final String DEPENDENCY_TYPE = "dependency/type";
-  public static final String DEPENDENCY_PERFORMANCE_BUCKET = "dependency/performanceBucket";
   public static final String DEPENDENCY_SUCCESS = "dependency/success";
   public static final String DEPENDENCY_TARGET = "dependency/target";
   public static final String DEPENDENCY_RESULT_CODE = "dependency/resultCode";
 
-  private final String performanceBucket;
   private final Long statusCode;
   private final boolean success;
   private final String type;
@@ -41,13 +39,12 @@ public class DependencyExtractor extends BaseExtractor {
 
   public DependencyExtractor(
       AbstractTelemetryBuilder telemetryBuilder,
-      String performanceBucket,
       Long statusCode,
       boolean success,
       String type,
-      String target) {
-    super(telemetryBuilder);
-    this.performanceBucket = performanceBucket;
+      String target,
+      boolean isSynthetic) {
+    super(telemetryBuilder, isSynthetic);
     this.statusCode = statusCode;
     this.success = success;
     this.type = type;
@@ -57,7 +54,6 @@ public class DependencyExtractor extends BaseExtractor {
   @Override
   public void extract() {
     telemetryBuilder.addProperty(MS_METRIC_ID, DEPENDENCIES_DURATION);
-    telemetryBuilder.addProperty(DEPENDENCY_PERFORMANCE_BUCKET, performanceBucket);
     // TODO OTEL will provide rpc.grpc.status_code & rpc.success, http.success
     if (statusCode != null) {
       telemetryBuilder.addProperty(DEPENDENCY_RESULT_CODE, String.valueOf(statusCode));

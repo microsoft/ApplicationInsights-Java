@@ -21,8 +21,10 @@
 
 package io.opentelemetry.instrumentation.api.instrumenter.rpc;
 
+import static io.opentelemetry.instrumentation.api.instrumenter.Utils.IS_SYNTHETIC;
+import static io.opentelemetry.instrumentation.api.instrumenter.Utils.TARGET;
+import static io.opentelemetry.instrumentation.api.instrumenter.Utils.isUserAgentBot;
 import static io.opentelemetry.instrumentation.api.instrumenter.rpc.MetricsView.applyClientView;
-import static io.opentelemetry.instrumentation.api.instrumenter.utils.DurationBucketizer.AI_PERFORMANCE_BUCKET;
 import static java.util.logging.Level.FINE;
 
 import com.google.auto.value.AutoValue;
@@ -33,7 +35,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationListener;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationMetrics;
-import io.opentelemetry.instrumentation.api.instrumenter.utils.DurationBucketizer;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -98,8 +99,8 @@ public final class RpcClientMetrics implements OperationListener {
     }
     endAttributes =
         endAttributes.toBuilder()
-            .put(AI_PERFORMANCE_BUCKET, DurationBucketizer.getPerformanceBucket(duration))
-            .put("target", target)
+            .put(IS_SYNTHETIC, isUserAgentBot(endAttributes, state.startAttributes()))
+            .put(TARGET, target)
             .build();
 
     clientDurationHistogram.record(

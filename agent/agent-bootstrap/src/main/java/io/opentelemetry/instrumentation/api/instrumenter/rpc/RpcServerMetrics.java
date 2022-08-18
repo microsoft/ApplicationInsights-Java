@@ -21,8 +21,9 @@
 
 package io.opentelemetry.instrumentation.api.instrumenter.rpc;
 
+import static io.opentelemetry.instrumentation.api.instrumenter.Utils.IS_SYNTHETIC;
+import static io.opentelemetry.instrumentation.api.instrumenter.Utils.isUserAgentBot;
 import static io.opentelemetry.instrumentation.api.instrumenter.rpc.MetricsView.applyServerView;
-import static io.opentelemetry.instrumentation.api.instrumenter.utils.DurationBucketizer.AI_PERFORMANCE_BUCKET;
 import static java.util.logging.Level.FINE;
 
 import com.google.auto.value.AutoValue;
@@ -33,7 +34,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationListener;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationMetrics;
-import io.opentelemetry.instrumentation.api.instrumenter.utils.DurationBucketizer;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -89,14 +89,15 @@ public final class RpcServerMetrics implements OperationListener {
       return;
     }
 
-    double duration = (endNanos - state.startTimeNanos()) / NANOS_PER_MS;
     endAttributes =
         endAttributes.toBuilder()
-            .put(AI_PERFORMANCE_BUCKET, DurationBucketizer.getPerformanceBucket(duration))
+            .put(IS_SYNTHETIC, isUserAgentBot(endAttributes, state.startAttributes()))
             .build();
 
     serverDurationHistogram.record(
-        duration, applyServerView(state.startAttributes(), endAttributes), context);
+        (endNanos - state.startTimeNanos()) / NANOS_PER_MS,
+        applyServerView(state.startAttributes(), endAttributes),
+        context);
   }
 
   @AutoValue

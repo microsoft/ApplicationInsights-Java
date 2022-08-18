@@ -21,7 +21,8 @@
 
 package io.opentelemetry.instrumentation.api.instrumenter.http;
 
-import static io.opentelemetry.instrumentation.api.instrumenter.utils.DurationBucketizer.AI_PERFORMANCE_BUCKET;
+import static io.opentelemetry.instrumentation.api.instrumenter.Utils.IS_SYNTHETIC;
+import static io.opentelemetry.instrumentation.api.instrumenter.Utils.isUserAgentBot;
 import static java.util.logging.Level.FINE;
 
 import com.google.auto.value.AutoValue;
@@ -35,7 +36,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationListener;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationMetrics;
-import io.opentelemetry.instrumentation.api.instrumenter.utils.DurationBucketizer;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -123,13 +123,15 @@ public final class HttpServerMetrics implements OperationListener {
     Attributes durationAndSizeAttributes =
         TemporaryMetricsView.applyServerDurationAndSizeView(state.startAttributes(), endAttributes);
 
-    double duration = (endNanos - state.startTimeNanos()) / NANOS_PER_MS;
     Attributes durationAttributes =
         durationAndSizeAttributes.toBuilder()
-            .put(AI_PERFORMANCE_BUCKET, DurationBucketizer.getPerformanceBucket(duration))
+            .put(
+                IS_SYNTHETIC,
+                String.valueOf(isUserAgentBot(endAttributes, state.startAttributes())))
             .build();
     ;
-    this.duration.record(duration, durationAttributes, context);
+    this.duration.record(
+        (endNanos - state.startTimeNanos()) / NANOS_PER_MS, durationAttributes, context);
 
     Long requestLength =
         getAttribute(

@@ -157,12 +157,16 @@ public class MetricDataMapper {
 
     if (isPreAggregated) {
       Long statusCode = pointData.getAttributes().get(SemanticAttributes.HTTP_STATUS_CODE);
-      String performanceBucket =
-          pointData.getAttributes().get(AttributeKey.stringKey("ai.performance.bucket"));
       boolean success = getSuccess(statusCode, captureHttpServer4xxAsError);
+      String isSyntheticString =
+          pointData.getAttributes().get(AttributeKey.stringKey("isSynthetic"));
+      boolean isSynthetic = false;
+      if (isSyntheticString != null) {
+        isSynthetic = Boolean.valueOf(isSyntheticString);
+      }
       if (metricData.getName().contains(".server.")) {
         RequestExtractor requestExtractor =
-            new RequestExtractor(metricTelemetryBuilder, performanceBucket, statusCode, success);
+            new RequestExtractor(metricTelemetryBuilder, statusCode, success, isSynthetic);
         requestExtractor.extract();
       } else if (metricData.getName().contains(".client.")) {
         String dependencyType =
@@ -170,14 +174,10 @@ public class MetricDataMapper {
                 ? "http"
                 : pointData.getAttributes().get(SemanticAttributes.RPC_SYSTEM);
         String target = pointData.getAttributes().get(AttributeKey.stringKey("target"));
+
         DependencyExtractor dependencyExtractor =
             new DependencyExtractor(
-                metricTelemetryBuilder,
-                performanceBucket,
-                statusCode,
-                success,
-                dependencyType,
-                target);
+                metricTelemetryBuilder, statusCode, success, dependencyType, target, isSynthetic);
         dependencyExtractor.extract();
       }
     } else {

@@ -21,10 +21,12 @@
 
 package io.opentelemetry.instrumentation.api.instrumenter.rpc;
 
+import static io.opentelemetry.instrumentation.api.instrumenter.Utils.IS_SYNTHETIC;
+import static io.opentelemetry.instrumentation.api.instrumenter.Utils.TARGET;
+
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.instrumentation.api.instrumenter.utils.DurationBucketizer;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.HashSet;
 import java.util.Set;
@@ -48,8 +50,8 @@ final class MetricsView {
     view.add(SemanticAttributes.RPC_SYSTEM);
     view.add(SemanticAttributes.RPC_SERVICE);
     view.add(SemanticAttributes.RPC_METHOD);
-    view.add(AttributeKey.stringKey(DurationBucketizer.AI_PERFORMANCE_BUCKET));
-    view.add(AttributeKey.stringKey("target"));
+    view.add(AttributeKey.stringKey(TARGET));
+    view.add(AttributeKey.stringKey(IS_SYNTHETIC));
     return view;
   }
 

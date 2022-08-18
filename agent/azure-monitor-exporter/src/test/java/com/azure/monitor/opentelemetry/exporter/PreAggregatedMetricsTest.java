@@ -349,8 +349,6 @@ public class PreAggregatedMetricsTest {
     expectedMap.put(MS_METRIC_ID, REQUESTS_DURATION);
     expectedMap.put(MS_IS_AUTOCOLLECTED, TRUE);
     expectedMap.put(MS_PROCESSED_BY_METRIC_EXTRACTORS, TRUE);
-    // TODO performance market is updated in HttpClientMetrics
-    //    expectedMap.put(PERFORMANCE_BUCKET, "<250ms");
     expectedMap.put(OPERATION_SYNTHETIC, FALSE);
     expectedMap.put(REQUEST_SUCCESS, TRUE);
     if ("http".equals(type)) {

@@ -26,21 +26,18 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.Abstract
 public final class RequestExtractor extends BaseExtractor {
 
   public static final String REQUESTS_DURATION = "requests/duration";
-  public static final String REQUEST_PERFORMANCE_BUCKET = "request/performanceBucket";
   public static final String REQUEST_RESULT_CODE = "request/resultCode";
   public static final String REQUEST_SUCCESS = "request/success";
 
-  private final String performanceBucket;
   private final Long statusCode;
   private final boolean success;
 
   public RequestExtractor(
       AbstractTelemetryBuilder telemetryBuilder,
-      String performanceBucket,
       Long statusCode,
-      boolean success) {
-    super(telemetryBuilder);
-    this.performanceBucket = performanceBucket;
+      boolean success,
+      boolean isSynthetic) {
+    super(telemetryBuilder, isSynthetic);
     this.statusCode = statusCode;
     this.success = success;
   }
@@ -48,8 +45,6 @@ public final class RequestExtractor extends BaseExtractor {
   @Override
   public void extract() {
     telemetryBuilder.addProperty(MS_METRIC_ID, REQUESTS_DURATION);
-    telemetryBuilder.addProperty(REQUEST_PERFORMANCE_BUCKET, performanceBucket);
-    telemetryBuilder.addProperty(OPERATION_SYNTHETIC, FALSE);
     if (statusCode != null) {
       telemetryBuilder.addProperty(REQUEST_RESULT_CODE, String.valueOf(statusCode));
     }

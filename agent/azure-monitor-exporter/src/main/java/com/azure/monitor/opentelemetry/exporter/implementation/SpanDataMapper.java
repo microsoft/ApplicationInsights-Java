@@ -59,7 +59,6 @@ import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import org.slf4j.LoggerFactory;
 
 // TODO (trask) move this class into internal package
 public final class SpanDataMapper {
@@ -921,8 +920,6 @@ public final class SpanDataMapper {
           }
           if (stringKey.equals(SemanticAttributes.HTTP_USER_AGENT.getKey())
               && value instanceof String) {
-            LoggerFactory.getLogger(SpanDataMapper.class)
-                .debug("##################### ai.user.userAgent: {}", value);
             telemetryBuilder.addTag("ai.user.userAgent", (String) value);
             return;
           }

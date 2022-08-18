@@ -162,8 +162,7 @@ abstract class GrpcTest {
     throw new IllegalStateException("Could not find dependency with name: " + name);
   }
 
-  private static void verifyRpcClientDurationPreAggregatedMetrics(List<Envelope> metrics)
-      throws Exception {
+  private static void verifyRpcClientDurationPreAggregatedMetrics(List<Envelope> metrics) {
     assertThat(metrics.size()).isEqualTo(2);
 
     // 1st pre-aggregated metric
@@ -179,8 +178,7 @@ abstract class GrpcTest {
     validateMetricData("client", md2);
   }
 
-  private static void verifyRpcServerDurationPreAggregatedMetrics(List<Envelope> metrics)
-      throws Exception {
+  private static void verifyRpcServerDurationPreAggregatedMetrics(List<Envelope> metrics) {
     assertThat(metrics.size()).isEqualTo(2);
     // 1st pre-aggregated metric
     Envelope envelope1 = metrics.get(0);
@@ -211,17 +209,14 @@ abstract class GrpcTest {
     assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
     assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
     Map<String, String> properties = metricData.getProperties();
-    String performanceBucket = getPerformanceBucket(metricData.getMetrics().get(0).getValue());
     if ("client".equals(type)) {
       assertThat(properties.get("dependency/resultCode")).isNull();
-      assertThat(properties.get("dependency/performanceBucket")).isEqualTo(performanceBucket);
       assertThat(properties.get("_MS.metricId")).isEqualTo("dependencies/duration");
       assertThat(properties.get("dependency/target")).isNotNull();
       assertThat(properties.get("dependency/type")).isEqualTo("grpc");
     } else {
       assertThat(properties.get("_MS.metricId")).isEqualTo("requests/duration");
       assertThat(properties.get("request/resultCode")).isNull();
-      assertThat(properties.get("request/performanceBucket")).isEqualTo(performanceBucket);
       assertThat(properties.get("request/success")).isEqualTo("True");
     }
     assertThat(properties.get("operation/synthetic")).isEqualTo("False");
@@ -229,10 +224,6 @@ abstract class GrpcTest {
     assertThat(properties.get("cloud/roleInstance")).isEqualTo("testroleinstance");
     assertThat(properties.get("cloud/roleName")).isEqualTo("testrolename");
     assertThat(properties.get("_MS.IsAutocollected")).isEqualTo("True");
-  }
-
-  private static String getPerformanceBucket(double duration) {
-    return DurationBucketizer.getPerformanceBucket(duration);
   }
 
   @Environment(JAVA_8)

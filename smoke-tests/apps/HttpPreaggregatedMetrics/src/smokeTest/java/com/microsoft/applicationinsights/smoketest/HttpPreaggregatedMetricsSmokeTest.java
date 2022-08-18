@@ -132,21 +132,16 @@ abstract class HttpPreaggregatedMetricsSmokeTest {
     assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
     assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
     Map<String, String> properties = metricData.getProperties();
-    double value = metricData.getMetrics().get(0).getValue();
     String expectedResultCode = "200".equals(resultCode) ? "True" : "False";
     if ("client".equals(type)) {
       assertThat(properties.get("_MS.metricId")).isEqualTo("dependencies/duration");
       assertThat(properties.get("dependency/resultCode")).isEqualTo(resultCode);
-      assertThat(properties.get("dependency/performanceBucket"))
-          .isEqualTo(getPerformanceBucket(value));
       assertThat(properties.get("dependency/success")).isEqualTo(expectedResultCode);
       assertThat(properties.get("dependency/target")).isNotNull();
       assertThat(properties.get("dependency/type")).isNotNull();
     } else {
       assertThat(properties.get("_MS.metricId")).isEqualTo("requests/duration");
       assertThat(properties.get("request/resultCode")).isEqualTo(resultCode);
-      assertThat(properties.get("request/performanceBucket"))
-          .isEqualTo(getPerformanceBucket(value));
       assertThat(properties.get("request/success")).isEqualTo(expectedResultCode);
     }
     assertThat(properties.get("operation/synthetic")).isEqualTo("False");
@@ -154,10 +149,6 @@ abstract class HttpPreaggregatedMetricsSmokeTest {
     assertThat(properties.get("cloud/roleInstance")).isEqualTo("testroleinstance");
     assertThat(properties.get("cloud/roleName")).isEqualTo("testrolename");
     assertThat(properties.get("_MS.IsAutocollected")).isEqualTo("True");
-  }
-
-  private static String getPerformanceBucket(double duration) {
-    return DurationBucketizer.getPerformanceBucket(duration);
   }
 
   @Environment(TOMCAT_8_JAVA_8)
