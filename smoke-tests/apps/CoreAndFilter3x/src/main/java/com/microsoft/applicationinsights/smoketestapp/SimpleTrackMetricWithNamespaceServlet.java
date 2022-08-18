@@ -19,12 +19,33 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights;
+package com.microsoft.applicationinsights.smoketestapp;
 
-// this class currently only exists so that 2.x bytecode instrumentation doesn't need to be changed
-final class TelemetryConfiguration {
+import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+import java.io.IOException;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-  boolean isTrackingDisabled() {
-    return false;
+@WebServlet(
+    description = "Performs given calculation",
+    urlPatterns = {"/trackMetricWithNamespace"})
+public class SimpleTrackMetricWithNamespaceServlet extends HttpServlet {
+
+  private final TelemetryClient client = new TelemetryClient();
+
+  protected void doGet(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+    ServletFuncs.geRrenderHtml(request, response);
+
+    MetricTelemetry metricTelemetry = new MetricTelemetry();
+    metricTelemetry.setName("TimeToRespond");
+    metricTelemetry.setMetricNamespace("test");
+    metricTelemetry.setValue(111222333);
+
+    client.trackMetric(metricTelemetry);
   }
 }

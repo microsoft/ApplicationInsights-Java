@@ -240,6 +240,7 @@ abstract class CoreAndFilterTests {
     final double expectedValue = 111222333.0;
     assertThat(dp.getValue()).isEqualTo(expectedValue);
     assertThat(dp.getName()).isEqualTo("TimeToRespond");
+    assertThat(dp.getMetricNamespace()).isNull();
 
     assertThat(dp.getCount()).isNull();
     assertThat(dp.getMin()).isNull();

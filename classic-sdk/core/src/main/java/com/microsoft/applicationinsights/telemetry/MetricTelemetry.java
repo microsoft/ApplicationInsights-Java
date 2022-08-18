@@ -77,6 +77,20 @@ public final class MetricTelemetry extends BaseTelemetry {
     metric.setName(name);
   }
 
+  /** Gets the namespace of the metric. */
+  public String getMetricNamespace() {
+    return metric.getMetricNamespace();
+  }
+
+  /**
+   * Sets the metric namespace for the metric. This is optional.
+   *
+   * @param metricNamespace The metric namespace for the metric.
+   */
+  public void setMetricNamespace(String metricNamespace) {
+    metric.setMetricNamespace(metricNamespace);
+  }
+
   /**
    * Gets the value of the metric. Represents the sum of data points if this metric is an
    * Aggregation.
