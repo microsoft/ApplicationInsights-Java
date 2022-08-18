@@ -1342,7 +1342,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       mv.visitCode();
       Label label0 = new Label();
       mv.visitLabel(label0);
-      mv.visitVarInsn(ALOAD, 0);
+      mv.visitVarInsn(ALOAD, 1);
       Label label1 = new Label();
       mv.visitLabel(label1);
       mv.visitMethodInsn(
@@ -1351,7 +1351,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "getTimestamp",
           "()Ljava/util/Date;",
           false);
-      mv.visitVarInsn(ALOAD, 0);
+      mv.visitVarInsn(ALOAD, 1);
       Label label2 = new Label();
       mv.visitLabel(label2);
       mv.visitMethodInsn(
@@ -1360,7 +1360,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "getId",
           "()Ljava/lang/String;",
           false);
-      mv.visitVarInsn(ALOAD, 0);
+      mv.visitVarInsn(ALOAD, 1);
       Label label3 = new Label();
       mv.visitLabel(label3);
       mv.visitMethodInsn(
@@ -1369,7 +1369,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "getName",
           "()Ljava/lang/String;",
           false);
-      mv.visitVarInsn(ALOAD, 0);
+      mv.visitVarInsn(ALOAD, 1);
       Label label4 = new Label();
       mv.visitLabel(label4);
       mv.visitMethodInsn(
@@ -1384,7 +1384,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "agent$toMillis",
           "(L" + unshadedPrefix + "/telemetry/Duration;)Ljava/lang/Long;",
           false);
-      mv.visitVarInsn(ALOAD, 0);
+      mv.visitVarInsn(ALOAD, 1);
       Label label5 = new Label();
       mv.visitLabel(label5);
       mv.visitMethodInsn(
@@ -1393,7 +1393,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "getSuccess",
           "()Z",
           false);
-      mv.visitVarInsn(ALOAD, 0);
+      mv.visitVarInsn(ALOAD, 1);
       Label label6 = new Label();
       mv.visitLabel(label6);
       mv.visitMethodInsn(
@@ -1402,7 +1402,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "getRunLocation",
           "()Ljava/lang/String;",
           false);
-      mv.visitVarInsn(ALOAD, 0);
+      mv.visitVarInsn(ALOAD, 1);
       Label label7 = new Label();
       mv.visitLabel(label7);
       mv.visitMethodInsn(
@@ -1411,7 +1411,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "getMessage",
           "()Ljava/lang/String;",
           false);
-      mv.visitVarInsn(ALOAD, 0);
+      mv.visitVarInsn(ALOAD, 1);
       Label label8 = new Label();
       mv.visitLabel(label8);
       mv.visitMethodInsn(
@@ -1420,7 +1420,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "getProperties",
           "()Ljava/util/Map;",
           false);
-      mv.visitVarInsn(ALOAD, 0);
+      mv.visitVarInsn(ALOAD, 1);
       Label label9 = new Label();
       mv.visitLabel(label9);
       mv.visitMethodInsn(
@@ -1435,7 +1435,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "getTags",
           "()Ljava/util/concurrent/ConcurrentMap;",
           false);
-      mv.visitVarInsn(ALOAD, 0);
+      mv.visitVarInsn(ALOAD, 1);
       Label label10 = new Label();
       mv.visitLabel(label10);
       mv.visitMethodInsn(
@@ -1444,7 +1444,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "getMetrics",
           "()Ljava/util/concurrent/ConcurrentMap;",
           false);
-      mv.visitVarInsn(ALOAD, 0);
+      mv.visitVarInsn(ALOAD, 1);
       Label label11 = new Label();
       mv.visitLabel(label11);
       mv.visitMethodInsn(
@@ -1472,7 +1472,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       mv.visitInsn(RETURN);
       Label label14 = new Label();
       mv.visitLabel(label14);
-      mv.visitMaxs(11, 1);
+      mv.visitMaxs(11, 2);
       mv.visitEnd();
     }
 
