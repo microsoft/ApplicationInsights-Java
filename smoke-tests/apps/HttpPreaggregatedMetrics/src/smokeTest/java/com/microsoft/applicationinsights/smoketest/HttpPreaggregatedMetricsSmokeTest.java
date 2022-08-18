@@ -59,7 +59,7 @@ abstract class HttpPreaggregatedMetricsSmokeTest {
   }
 
   private static void verify(String successUrlWithQueryString) throws Exception {
-    verifyHttpclientRequest(successUrlWithQueryString);
+    verifyHttpclientRequestsAndDependencies(successUrlWithQueryString);
 
     List<Envelope> clientMetrics =
         testing.mockedIngestion.waitForItems(
@@ -72,7 +72,7 @@ abstract class HttpPreaggregatedMetricsSmokeTest {
     verifyHttpServerPreAggregatedMetrics(serverMetrics);
   }
 
-  private static void verifyHttpclientRequest(String successUrlWithQueryString) throws Exception {
+  private static void verifyHttpclientRequestsAndDependencies(String successUrlWithQueryString) throws Exception {
     Telemetry telemetry = testing.getTelemetry(3);
 
     assertThat(telemetry.rd.getProperties()).isEmpty();
