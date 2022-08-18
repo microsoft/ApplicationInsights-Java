@@ -585,12 +585,6 @@ public class Configuration {
     public String id; // optional, used for debugging purposes only
 
     public void validate() {
-      if (attributes.isEmpty()) {
-        // TODO add doc and go link, similar to telemetry processors
-        throw new FriendlyException(
-            "A sampling override configuration has no attributes.",
-            "Please provide at least one attribute in the sampling override configuration.");
-      }
       if (percentage == null) {
         // TODO add doc and go link, similar to telemetry processors
         throw new FriendlyException(

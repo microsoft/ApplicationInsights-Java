@@ -42,8 +42,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent("applicationinsights.json")
-abstract class SamplingOverrideTest {
+@UseAgent("applicationinsights-backcompat.json")
+abstract class SamplingOverrideBackCompatTest {
 
   @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
@@ -58,14 +58,12 @@ abstract class SamplingOverrideTest {
     Thread.sleep(SECONDS.toMillis(10));
     int requestCount = testing.mockedIngestion.getCountForType("RequestData");
     int dependencyCount = testing.mockedIngestion.getCountForType("RemoteDependencyData");
-    int logCount = testing.mockedIngestion.getCountForType("MessageData");
     // super super low chance that number of sampled requests/dependencies
     // is less than 25 or greater than 75
     assertThat(requestCount).isGreaterThanOrEqualTo(25);
     assertThat(dependencyCount).isGreaterThanOrEqualTo(25);
     assertThat(requestCount).isLessThanOrEqualTo(75);
     assertThat(dependencyCount).isLessThanOrEqualTo(75);
-    assertThat(logCount).isEqualTo(100);
   }
 
   @Test
@@ -123,29 +121,29 @@ abstract class SamplingOverrideTest {
   }
 
   @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends SamplingOverrideTest {}
+  static class Tomcat8Java8Test extends SamplingOverrideBackCompatTest {}
 
   @Environment(TOMCAT_8_JAVA_8_OPENJ9)
-  static class Tomcat8Java8OpenJ9Test extends SamplingOverrideTest {}
+  static class Tomcat8Java8OpenJ9Test extends SamplingOverrideBackCompatTest {}
 
   @Environment(TOMCAT_8_JAVA_11)
-  static class Tomcat8Java11Test extends SamplingOverrideTest {}
+  static class Tomcat8Java11Test extends SamplingOverrideBackCompatTest {}
 
   @Environment(TOMCAT_8_JAVA_11_OPENJ9)
-  static class Tomcat8Java11OpenJ9Test extends SamplingOverrideTest {}
+  static class Tomcat8Java11OpenJ9Test extends SamplingOverrideBackCompatTest {}
 
   @Environment(TOMCAT_8_JAVA_17)
-  static class Tomcat8Java17Test extends SamplingOverrideTest {}
+  static class Tomcat8Java17Test extends SamplingOverrideBackCompatTest {}
 
   @Environment(TOMCAT_8_JAVA_18)
-  static class Tomcat8Java18Test extends SamplingOverrideTest {}
+  static class Tomcat8Java18Test extends SamplingOverrideBackCompatTest {}
 
   @Environment(TOMCAT_8_JAVA_19)
-  static class Tomcat8Java19Test extends SamplingOverrideTest {}
+  static class Tomcat8Java19Test extends SamplingOverrideBackCompatTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends SamplingOverrideTest {}
+  static class Wildfly13Java8Test extends SamplingOverrideBackCompatTest {}
 
   @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends SamplingOverrideTest {}
+  static class Wildfly13Java8OpenJ9Test extends SamplingOverrideBackCompatTest {}
 }

@@ -4,8 +4,9 @@
   },
   "preview": {
     "sampling": {
-      "requestOverrides": [
+      "overrides": [
         {
+          "spanKind": "server",
           "attributes": [
             {
               "key": "http.url",
@@ -15,10 +16,9 @@
           ],
           "percentage": 50,
           "id": "filter out health check"
-        }
-      ],
-      "dependencyOverrides": [
+        },
         {
+          "spanKind": "client",
           "attributes": [
             {
               "key": "db.statement",
@@ -28,11 +28,6 @@
           ],
           "percentage": 0,
           "id": "filter out noisy jdbc"
-        }
-      ],
-      "logOverrides": [
-        {
-          "percentage": 100
         }
       ]
     },

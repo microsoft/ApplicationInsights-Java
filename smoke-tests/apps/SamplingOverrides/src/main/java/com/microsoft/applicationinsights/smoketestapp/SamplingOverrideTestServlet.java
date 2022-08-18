@@ -26,6 +26,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.Callable;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -34,7 +35,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.hsqldb.jdbc.JDBCDriver;
 
 @WebServlet("/*")
-public class TelemetryFilteringTestServlet extends HttpServlet {
+public class SamplingOverrideTestServlet extends HttpServlet {
+
+  private static final Logger logger = Logger.getLogger("smoketestapp");
 
   public void init() throws ServletException {
     try {
@@ -66,6 +69,7 @@ public class TelemetryFilteringTestServlet extends HttpServlet {
       Connection connection = getHsqldbConnection();
       executeStatement(connection);
       connection.close();
+      logger.info("always capture me");
       return 200;
     } else if (pathInfo.equals("/login")) {
       Connection connection = getHsqldbConnection();
