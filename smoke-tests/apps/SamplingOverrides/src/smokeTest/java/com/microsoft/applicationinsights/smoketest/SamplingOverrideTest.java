@@ -42,8 +42,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent("telemetryfiltering_applicationinsights.json")
-abstract class TelemetryFilteringSmokeTest {
+@UseAgent("applicationinsights.json")
+abstract class SamplingOverrideTest {
 
   @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
@@ -121,29 +121,29 @@ abstract class TelemetryFilteringSmokeTest {
   }
 
   @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends TelemetryFilteringSmokeTest {}
+  static class Tomcat8Java8Test extends SamplingOverrideTest {}
 
   @Environment(TOMCAT_8_JAVA_8_OPENJ9)
-  static class Tomcat8Java8OpenJ9Test extends TelemetryFilteringSmokeTest {}
+  static class Tomcat8Java8OpenJ9Test extends SamplingOverrideTest {}
 
   @Environment(TOMCAT_8_JAVA_11)
-  static class Tomcat8Java11Test extends TelemetryFilteringSmokeTest {}
+  static class Tomcat8Java11Test extends SamplingOverrideTest {}
 
   @Environment(TOMCAT_8_JAVA_11_OPENJ9)
-  static class Tomcat8Java11OpenJ9Test extends TelemetryFilteringSmokeTest {}
+  static class Tomcat8Java11OpenJ9Test extends SamplingOverrideTest {}
 
   @Environment(TOMCAT_8_JAVA_17)
-  static class Tomcat8Java17Test extends TelemetryFilteringSmokeTest {}
+  static class Tomcat8Java17Test extends SamplingOverrideTest {}
 
   @Environment(TOMCAT_8_JAVA_18)
-  static class Tomcat8Java18Test extends TelemetryFilteringSmokeTest {}
+  static class Tomcat8Java18Test extends SamplingOverrideTest {}
 
   @Environment(TOMCAT_8_JAVA_19)
-  static class Tomcat8Java19Test extends TelemetryFilteringSmokeTest {}
+  static class Tomcat8Java19Test extends SamplingOverrideTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends TelemetryFilteringSmokeTest {}
+  static class Wildfly13Java8Test extends SamplingOverrideTest {}
 
   @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends TelemetryFilteringSmokeTest {}
+  static class Wildfly13Java8OpenJ9Test extends SamplingOverrideTest {}
 }

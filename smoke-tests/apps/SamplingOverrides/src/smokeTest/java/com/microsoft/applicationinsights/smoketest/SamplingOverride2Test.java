@@ -34,8 +34,8 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WI
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent("telemetryfiltering2_applicationinsights.json")
-abstract class TelemetryFiltering2SmokeTest {
+@UseAgent("applicationinsights2.json")
+abstract class SamplingOverride2Test {
 
   @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
 
@@ -47,29 +47,29 @@ abstract class TelemetryFiltering2SmokeTest {
   }
 
   @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends TelemetryFiltering2SmokeTest {}
+  static class Tomcat8Java8Test extends SamplingOverride2Test {}
 
   @Environment(TOMCAT_8_JAVA_8_OPENJ9)
-  static class Tomcat8Java8OpenJ9Test extends TelemetryFiltering2SmokeTest {}
+  static class Tomcat8Java8OpenJ9Test extends SamplingOverride2Test {}
 
   @Environment(TOMCAT_8_JAVA_11)
-  static class Tomcat8Java11Test extends TelemetryFiltering2SmokeTest {}
+  static class Tomcat8Java11Test extends SamplingOverride2Test {}
 
   @Environment(TOMCAT_8_JAVA_11_OPENJ9)
-  static class Tomcat8Java11OpenJ9Test extends TelemetryFiltering2SmokeTest {}
+  static class Tomcat8Java11OpenJ9Test extends SamplingOverride2Test {}
 
   @Environment(TOMCAT_8_JAVA_17)
-  static class Tomcat8Java17Test extends TelemetryFiltering2SmokeTest {}
+  static class Tomcat8Java17Test extends SamplingOverride2Test {}
 
   @Environment(TOMCAT_8_JAVA_18)
-  static class Tomcat8Java18Test extends TelemetryFiltering2SmokeTest {}
+  static class Tomcat8Java18Test extends SamplingOverride2Test {}
 
   @Environment(TOMCAT_8_JAVA_19)
-  static class Tomcat8Java19Test extends TelemetryFiltering2SmokeTest {}
+  static class Tomcat8Java19Test extends SamplingOverride2Test {}
 
   @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends TelemetryFiltering2SmokeTest {}
+  static class Wildfly13Java8Test extends SamplingOverride2Test {}
 
   @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends TelemetryFiltering2SmokeTest {}
+  static class Wildfly13Java8OpenJ9Test extends SamplingOverride2Test {}
 }
