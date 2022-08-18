@@ -23,31 +23,30 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagatorProvider;
-import io.opentelemetry.javaagent.extension.config.ConfigPropertySource;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
 
-@AutoService(ConfigPropertySource.class)
-public class AiConfigCustomizer implements ConfigPropertySource {
+public class AiConfigCustomizer implements Function<ConfigProperties, Map<String, String>> {
 
   @Override
-  public Map<String, String> getProperties() {
-    Configuration config = FirstEntryPoint.getConfiguration();
+  public Map<String, String> apply(ConfigProperties config) {
+
+    Configuration configuration = FirstEntryPoint.getConfiguration();
 
     Map<String, String> properties = new HashMap<>();
     properties.put(
         "otel.micrometer.step.millis",
-        Long.toString(SECONDS.toMillis(config.preview.metricIntervalSeconds)));
+        Long.toString(SECONDS.toMillis(configuration.preview.metricIntervalSeconds)));
 
-    enableInstrumentations(config, properties);
+    enableInstrumentations(configuration, properties);
 
-    if (!config.preview.captureControllerSpans) {
+    if (!configuration.preview.captureControllerSpans) {
       properties.put(
           "otel.instrumentation.common.experimental.controller-telemetry.enabled", "false");
     }
@@ -60,19 +59,19 @@ public class AiConfigCustomizer implements ConfigPropertySource {
     setHttpHeaderConfiguration(
         properties,
         "otel.instrumentation.http.capture-headers.server.request",
-        config.preview.captureHttpServerHeaders.requestHeaders);
+        configuration.preview.captureHttpServerHeaders.requestHeaders);
     setHttpHeaderConfiguration(
         properties,
         "otel.instrumentation.http.capture-headers.server.response",
-        config.preview.captureHttpServerHeaders.responseHeaders);
+        configuration.preview.captureHttpServerHeaders.responseHeaders);
     setHttpHeaderConfiguration(
         properties,
         "otel.instrumentation.http.capture-headers.client.request",
-        config.preview.captureHttpClientHeaders.requestHeaders);
+        configuration.preview.captureHttpClientHeaders.requestHeaders);
     setHttpHeaderConfiguration(
         properties,
         "otel.instrumentation.http.capture-headers.client.response",
-        config.preview.captureHttpClientHeaders.responseHeaders);
+        configuration.preview.captureHttpClientHeaders.responseHeaders);
 
     // enable capturing all mdc properties
     properties.put(
@@ -93,10 +92,10 @@ public class AiConfigCustomizer implements ConfigPropertySource {
     properties.put("otel.instrumentation.logback-appender.experimental-log-attributes", "true");
 
     // custom instrumentation
-    if (!config.preview.customInstrumentation.isEmpty()) {
+    if (!configuration.preview.customInstrumentation.isEmpty()) {
       StringBuilder sb = new StringBuilder();
       for (Configuration.CustomInstrumentation customInstrumentation :
-          config.preview.customInstrumentation) {
+          configuration.preview.customInstrumentation) {
         if (sb.length() > 0) {
           sb.append(';');
         }
@@ -112,44 +111,37 @@ public class AiConfigCustomizer implements ConfigPropertySource {
 
     properties.put("otel.traces.sampler", DelegatingSamplerProvider.NAME);
 
-    String tracesExporter = getProperty("otel.traces.exporter");
+    String tracesExporter = config.getString("otel.traces.exporter");
     if (tracesExporter == null) {
-      // currently Application Insights Exporter has to be configured manually because it relies on
-      // using a BatchSpanProcessor with queue size 1 due to live metrics (this will change in the
-      // future)
+      // this overrides the default "otlp" so the exporter can be configured later
       properties.put("otel.traces.exporter", "none");
 
       // TODO (trask) this can go away once new indexer is rolled out to gov clouds
       List<String> httpClientResponseHeaders = new ArrayList<>();
       httpClientResponseHeaders.add("request-context");
-      httpClientResponseHeaders.addAll(config.preview.captureHttpClientHeaders.responseHeaders);
+      httpClientResponseHeaders.addAll(
+          configuration.preview.captureHttpClientHeaders.responseHeaders);
       setHttpHeaderConfiguration(
           properties,
           "otel.instrumentation.http.capture-headers.client.response",
           httpClientResponseHeaders);
-    } else {
-      properties.put("otel.traces.exporter", tracesExporter);
     }
 
-    String metricsExporter = getProperty("otel.metrics.exporter");
+    String metricsExporter = config.getString("otel.metrics.exporter");
     if (metricsExporter == null) {
-      // the metrics exporter is configured later in this case
+      // this overrides the default "otlp" so the exporter can be configured later
       properties.put("otel.metrics.exporter", "none");
-    } else {
-      properties.put("otel.metrics.exporter", metricsExporter);
     }
 
-    String logsExporter = getProperty("otel.logs.exporter");
+    String logsExporter = config.getString("otel.logs.exporter");
     if (logsExporter == null) {
-      // the logs exporter is configured later in this case
+      // this overrides the default "otlp" so the exporter can be configured later
       properties.put("otel.logs.exporter", "none");
-    } else {
-      properties.put("otel.logs.exporter", logsExporter);
     }
 
-    if (config.role.name != null) {
+    if (configuration.role.name != null) {
       // in case using another exporter
-      properties.put("otel.service.name", config.role.name);
+      properties.put("otel.service.name", configuration.role.name);
     }
 
     return properties;
@@ -288,15 +280,6 @@ public class AiConfigCustomizer implements ConfigPropertySource {
     if (!headers.isEmpty()) {
       properties.put(propertyName, join(headers, ','));
     }
-  }
-
-  private static String getProperty(String propertyName) {
-    String value = System.getProperty(propertyName);
-    if (value != null) {
-      return value;
-    }
-    String envVarName = propertyName.replace('.', '_').toUpperCase(Locale.ROOT);
-    return System.getenv(envVarName);
   }
 
   private static <T> String join(List<T> values, char separator) {

@@ -22,13 +22,11 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.processors.MyLogData;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogProcessor;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,12 +40,10 @@ public class InheritedAttributesLogProcessor implements LogProcessor {
       AttributeKey.stringKey("ai.preview.service_name");
 
   private final List<AttributeKey<?>> inheritedAttributes;
-  private final LogProcessor delegate;
 
   public InheritedAttributesLogProcessor(
-      List<Configuration.InheritedAttribute> inheritedAttributes, LogProcessor delegate) {
+      List<Configuration.InheritedAttribute> inheritedAttributes) {
     this.inheritedAttributes = buildInheritedAttributesList(inheritedAttributes);
-    this.delegate = delegate;
   }
 
   private static List<AttributeKey<?>> buildInheritedAttributesList(
@@ -63,43 +59,31 @@ public class InheritedAttributesLogProcessor implements LogProcessor {
 
   @Override
   @SuppressWarnings("unchecked")
-  public void emit(LogData log) {
+  public void onEmit(ReadWriteLogRecord logRecord) {
     Span currentSpan = Span.current();
     if (!(currentSpan instanceof ReadableSpan)) {
-      delegate.emit(log);
       return;
     }
 
     ReadableSpan readableSpan = (ReadableSpan) currentSpan;
-    AttributesBuilder builder = log.getAttributes().toBuilder();
     for (AttributeKey<?> inheritedAttributeKey : inheritedAttributes) {
       Object value = readableSpan.getAttribute(inheritedAttributeKey);
       if (value != null) {
-        if (builder == null) {
-          builder = log.getAttributes().toBuilder();
-        }
-        builder.put((AttributeKey<Object>) inheritedAttributeKey, value);
+        logRecord.setAttribute((AttributeKey<Object>) inheritedAttributeKey, value);
       }
     }
-    if (builder != null) {
-      log = new MyLogData(log, builder.build());
-    }
-
-    delegate.emit(log);
   }
 
   @Override
   public CompletableResultCode shutdown() {
-    return delegate.shutdown();
+    return CompletableResultCode.ofSuccess();
   }
 
   @Override
   public CompletableResultCode forceFlush() {
-    return delegate.forceFlush();
+    return CompletableResultCode.ofSuccess();
   }
 
   @Override
-  public void close() {
-    delegate.close();
-  }
+  public void close() {}
 }
