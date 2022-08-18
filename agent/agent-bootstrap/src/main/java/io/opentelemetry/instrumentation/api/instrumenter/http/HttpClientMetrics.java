@@ -112,6 +112,7 @@ public final class HttpClientMetrics implements OperationListener {
     Attributes durationAndSizeAttributes =
         applyClientDurationAndSizeView(state.startAttributes(), endAttributes);
 
+    // START APPLICATION INSIGHTS CODE
     Attributes durationAttributes =
         durationAndSizeAttributes.toBuilder()
             .put(
@@ -119,7 +120,8 @@ public final class HttpClientMetrics implements OperationListener {
                 String.valueOf(isUserAgentBot(endAttributes, state.startAttributes())))
             .put(TARGET, getTargetForHttpClientSpan(durationAndSizeAttributes))
             .build();
-    ;
+    // END APPLICATION INSIGHTS CODE
+
     this.duration.record(
         (endNanos - state.startTimeNanos()) / NANOS_PER_MS, durationAttributes, context);
 

@@ -192,7 +192,6 @@ public class MetricDataMapper {
     if (captureHttpServer4xxAsError) {
       return statusCode == null || statusCode < 400;
     }
-
-    return true;
+    return statusCode == null || statusCode < 500;
   }
 }

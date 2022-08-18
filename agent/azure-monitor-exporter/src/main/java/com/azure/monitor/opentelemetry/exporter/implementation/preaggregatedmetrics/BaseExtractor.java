@@ -22,7 +22,9 @@
 package com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
+import java.util.Map;
 
 public abstract class BaseExtractor {
 
@@ -38,7 +40,7 @@ public abstract class BaseExtractor {
 
   protected final AbstractTelemetryBuilder telemetryBuilder;
 
-  public BaseExtractor(AbstractTelemetryBuilder telemetryBuilder, boolean isSynthetic) {
+  public BaseExtractor(MetricTelemetryBuilder telemetryBuilder, boolean isSynthetic) {
     this.telemetryBuilder = telemetryBuilder;
     extractCommon(isSynthetic);
   }
@@ -48,15 +50,14 @@ public abstract class BaseExtractor {
     // this flag will inform the ingestion service to stop post-aggregation
     telemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, TRUE);
 
-    if (telemetryBuilder.build().getTags() != null) {
-      String cloudName =
-          telemetryBuilder.build().getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString());
+    Map<String, String> tags = telemetryBuilder.build().getTags();
+    if (tags != null) {
+      String cloudName = tags.get(ContextTagKeys.AI_CLOUD_ROLE.toString());
       if (cloudName != null && !cloudName.isEmpty()) {
         telemetryBuilder.addProperty(CLOUD_ROLE_NAME, cloudName);
       }
 
-      String cloudRoleInstance =
-          telemetryBuilder.build().getTags().get(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString());
+      String cloudRoleInstance = tags.get(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString());
       if (cloudRoleInstance != null && !cloudRoleInstance.isEmpty()) {
         telemetryBuilder.addProperty(CLOUD_ROLE_INSTANCE, cloudRoleInstance);
       }

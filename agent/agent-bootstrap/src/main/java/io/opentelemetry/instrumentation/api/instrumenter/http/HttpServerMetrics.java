@@ -123,13 +123,15 @@ public final class HttpServerMetrics implements OperationListener {
     Attributes durationAndSizeAttributes =
         TemporaryMetricsView.applyServerDurationAndSizeView(state.startAttributes(), endAttributes);
 
+    // START APPLICATION INSIGHTS CODE
     Attributes durationAttributes =
         durationAndSizeAttributes.toBuilder()
             .put(
                 IS_SYNTHETIC,
                 String.valueOf(isUserAgentBot(endAttributes, state.startAttributes())))
             .build();
-    ;
+    // END APPLICATION INSIGHTS CODE
+
     this.duration.record(
         (endNanos - state.startTimeNanos()) / NANOS_PER_MS, durationAttributes, context);
 

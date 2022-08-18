@@ -92,7 +92,7 @@ public final class RpcClientMetrics implements OperationListener {
       return;
     }
 
-    double duration = (endNanos - state.startTimeNanos()) / NANOS_PER_MS;
+    // START APPLICATION INSIGHTS CODE
     String target = getTargetFromPeerAttributes(endAttributes, 0);
     if (target == null) {
       target = endAttributes.get(SemanticAttributes.RPC_SYSTEM);
@@ -102,9 +102,12 @@ public final class RpcClientMetrics implements OperationListener {
             .put(IS_SYNTHETIC, isUserAgentBot(endAttributes, state.startAttributes()))
             .put(TARGET, target)
             .build();
+    // END APPLICATION INSIGHTS CODE
 
     clientDurationHistogram.record(
-        duration, applyClientView(state.startAttributes(), endAttributes), context);
+        (endNanos - state.startTimeNanos()) / NANOS_PER_MS,
+        applyClientView(state.startAttributes(), endAttributes),
+        context);
   }
 
   @Nullable

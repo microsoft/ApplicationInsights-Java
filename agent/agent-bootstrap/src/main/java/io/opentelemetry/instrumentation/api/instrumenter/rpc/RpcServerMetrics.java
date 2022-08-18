@@ -89,10 +89,12 @@ public final class RpcServerMetrics implements OperationListener {
       return;
     }
 
+    // START APPLICATION INSIGHTS CODE
     endAttributes =
         endAttributes.toBuilder()
             .put(IS_SYNTHETIC, isUserAgentBot(endAttributes, state.startAttributes()))
             .build();
+    // END APPLICATION INSIGHTS CODE
 
     serverDurationHistogram.record(
         (endNanos - state.startTimeNanos()) / NANOS_PER_MS,
