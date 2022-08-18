@@ -41,17 +41,12 @@ import javax.annotation.Nullable;
 
 public class TelemetryClient {
 
-  private final TelemetryConfiguration configuration = new TelemetryConfiguration();
   private final TelemetryContext context = new TelemetryContext();
 
   public TelemetryClient() {}
 
   public TelemetryContext getContext() {
     return context;
-  }
-
-  public boolean isDisabled() {
-    return configuration.isTrackingDisabled();
   }
 
   public void trackEvent(
