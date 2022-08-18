@@ -31,7 +31,6 @@ public abstract class BaseExtractor {
   // visible for testing
   public static final String MS_METRIC_ID = "_MS.metricId";
   public static final String MS_IS_AUTOCOLLECTED = "_MS.IsAutocollected";
-  public static final String MS_PROCESSED_BY_METRIC_EXTRACTORS = "_MS.ProcessedByMetricExtractors";
   public static final String TRUE = "True";
   public static final String FALSE = "False";
   public static final String OPERATION_SYNTHETIC = "operation/synthetic";
@@ -47,9 +46,6 @@ public abstract class BaseExtractor {
 
   private void extractCommon(boolean isSynthetic) {
     telemetryBuilder.addProperty(MS_IS_AUTOCOLLECTED, TRUE);
-    // this flag will inform the ingestion service to stop post-aggregation
-    telemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, TRUE);
-
     Map<String, String> tags = telemetryBuilder.build().getTags();
     if (tags != null) {
       String cloudName = tags.get(ContextTagKeys.AI_CLOUD_ROLE.toString());

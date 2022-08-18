@@ -63,6 +63,9 @@ import javax.annotation.Nullable;
 // TODO (trask) move this class into internal package
 public final class SpanDataMapper {
 
+  // visible for testing
+  public static final String MS_PROCESSED_BY_METRIC_EXTRACTORS = "_MS.ProcessedByMetricExtractors";
+
   private static final ClientLogger LOGGER = new ClientLogger(SpanDataMapper.class);
 
   private static final Set<String> SQL_DB_SYSTEMS;
@@ -379,6 +382,11 @@ public final class SpanDataMapper {
 
     String url = attributes.get(SemanticAttributes.HTTP_URL);
     telemetryBuilder.setData(url);
+
+    // TODO is it safe to assume that all http instrumentations support duration?
+    // http.client.request.size and http.client.response.size will not get post-aggregated
+    // http.server.request.size and http.server.response.size will not get post aggregated
+    telemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, "True");
   }
 
   @Nullable
@@ -491,6 +499,8 @@ public final class SpanDataMapper {
       target = rpcSystem;
     }
     telemetryBuilder.setTarget(target);
+    // RPC client/server metrics only has duration
+    telemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, "True");
   }
 
   private static void applyDatabaseClientSpan(

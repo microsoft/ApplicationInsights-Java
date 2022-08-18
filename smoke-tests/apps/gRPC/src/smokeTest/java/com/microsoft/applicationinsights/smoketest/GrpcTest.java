@@ -220,7 +220,6 @@ abstract class GrpcTest {
       assertThat(properties.get("request/success")).isEqualTo("True");
     }
     assertThat(properties.get("operation/synthetic")).isEqualTo("False");
-    assertThat(properties.get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
     assertThat(properties.get("cloud/roleInstance")).isEqualTo("testroleinstance");
     assertThat(properties.get("cloud/roleName")).isEqualTo("testrolename");
     assertThat(properties.get("_MS.IsAutocollected")).isEqualTo("True");
