@@ -667,6 +667,8 @@ public final class SpanDataMapper {
       telemetryBuilder.addTag(ContextTagKeys.AI_DEVICE_OS_VERSION.toString(), deviceOsVersion);
     }
 
+    addFlagForPreAggMetrics(telemetryBuilder, span);
+
     // TODO(trask)? for batch consumer, enqueuedTime should be the average of this attribute
     //  across all links
     Long enqueuedTime = attributes.get(AZURE_SDK_ENQUEUED_TIME);
@@ -682,6 +684,16 @@ public final class SpanDataMapper {
     }
 
     return telemetryBuilder.build();
+  }
+
+  private static void addFlagForPreAggMetrics(
+      RequestTelemetryBuilder telemetryBuilder, SpanData span) {
+    Attributes attributes = span.getAttributes();
+    String httpMethod = attributes.get(SemanticAttributes.HTTP_METHOD);
+    String rpcSystem = attributes.get(SemanticAttributes.RPC_SYSTEM);
+    if (httpMethod != null || rpcSystem != null) {
+      telemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, "True");
+    }
   }
 
   private boolean getSuccess(SpanData span) {

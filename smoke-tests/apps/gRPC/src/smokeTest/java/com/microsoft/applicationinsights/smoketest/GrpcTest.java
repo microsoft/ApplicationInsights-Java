@@ -81,7 +81,7 @@ abstract class GrpcTest {
 
     assertThat(rdd.getTarget()).isEqualTo("localhost:10203");
 
-    assertThat(rd1.getProperties()).isEmpty();
+    assertThat(rd1.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
     assertThat(rd1.getSuccess()).isTrue();
 
     assertThat(rdd.getProperties()).isEmpty();
@@ -123,10 +123,10 @@ abstract class GrpcTest {
 
     assertThat(rdd.getTarget()).isEqualTo("localhost:10203");
 
-    assertThat(rd1.getProperties()).isEmpty();
+    assertThat(rd1.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
     assertThat(rd1.getSuccess()).isTrue();
 
-    assertThat(rdd.getProperties()).isEmpty();
+    assertThat(rdd.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
     assertThat(rdd.getSuccess()).isTrue();
 
     // TODO (trask): verify rd2

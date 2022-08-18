@@ -72,7 +72,8 @@ abstract class HttpPreaggregatedMetricsSmokeTest {
     verifyHttpServerPreAggregatedMetrics(serverMetrics);
   }
 
-  private static void verifyHttpclientRequestsAndDependencies(String successUrlWithQueryString) throws Exception {
+  private static void verifyHttpclientRequestsAndDependencies(String successUrlWithQueryString)
+      throws Exception {
     Telemetry telemetry = testing.getTelemetry(3);
 
     assertThat(telemetry.rd.getProperties()).isEmpty();

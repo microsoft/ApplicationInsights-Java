@@ -24,7 +24,6 @@ package com.azure.monitor.opentelemetry.exporter;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.FALSE;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.MS_IS_AUTOCOLLECTED;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.MS_METRIC_ID;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.MS_PROCESSED_BY_METRIC_EXTRACTORS;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.OPERATION_SYNTHETIC;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.TRUE;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCIES_DURATION;
@@ -323,7 +322,6 @@ public class PreAggregatedMetricsTest {
     Map<String, String> expectedMap = new HashMap<>();
     expectedMap.put(MS_METRIC_ID, DEPENDENCIES_DURATION);
     expectedMap.put(MS_IS_AUTOCOLLECTED, TRUE);
-    expectedMap.put(MS_PROCESSED_BY_METRIC_EXTRACTORS, TRUE);
     // TODO performance market is updated in HttpClientMetrics
     //    expectedMap.put(PERFORMANCE_BUCKET, "<250ms");
     expectedMap.put(OPERATION_SYNTHETIC, FALSE);
@@ -348,7 +346,6 @@ public class PreAggregatedMetricsTest {
     Map<String, String> expectedMap = new HashMap<>();
     expectedMap.put(MS_METRIC_ID, REQUESTS_DURATION);
     expectedMap.put(MS_IS_AUTOCOLLECTED, TRUE);
-    expectedMap.put(MS_PROCESSED_BY_METRIC_EXTRACTORS, TRUE);
     expectedMap.put(OPERATION_SYNTHETIC, FALSE);
     expectedMap.put(REQUEST_SUCCESS, TRUE);
     if ("http".equals(type)) {
