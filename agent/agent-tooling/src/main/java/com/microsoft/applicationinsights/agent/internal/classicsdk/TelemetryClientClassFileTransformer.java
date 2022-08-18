@@ -159,16 +159,6 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       mv.visitTryCatchBlock(label0, label1, label2, "java/lang/Throwable");
       Label label3 = new Label();
       mv.visitLabel(label3);
-      mv.visitVarInsn(ALOAD, 0);
-      mv.visitMethodInsn(
-          INVOKEVIRTUAL, unshadedPrefix + "/TelemetryClient", "isDisabled", "()Z", false);
-      Label label4 = new Label();
-      mv.visitJumpInsn(IFEQ, label4);
-      Label label5 = new Label();
-      mv.visitLabel(label5);
-      mv.visitInsn(RETURN);
-      mv.visitLabel(label4);
-      mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
       mv.visitVarInsn(ALOAD, 1);
       mv.visitMethodInsn(
           INVOKEINTERFACE,
@@ -176,10 +166,10 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "getTimestamp",
           "()Ljava/util/Date;",
           true);
-      Label label6 = new Label();
-      mv.visitJumpInsn(IFNONNULL, label6);
-      Label label7 = new Label();
-      mv.visitLabel(label7);
+      Label label4 = new Label();
+      mv.visitJumpInsn(IFNONNULL, label4);
+      Label label5 = new Label();
+      mv.visitLabel(label5);
       mv.visitVarInsn(ALOAD, 1);
       mv.visitTypeInsn(NEW, "java/util/Date");
       mv.visitInsn(DUP);
@@ -190,11 +180,11 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "setTimestamp",
           "(Ljava/util/Date;)V",
           true);
-      mv.visitLabel(label6);
+      mv.visitLabel(label4);
       mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
       mv.visitVarInsn(ALOAD, 0);
-      Label label8 = new Label();
-      mv.visitLabel(label8);
+      Label label6 = new Label();
+      mv.visitLabel(label6);
       mv.visitMethodInsn(
           INVOKEVIRTUAL,
           unshadedPrefix + "/TelemetryClient",
@@ -221,19 +211,19 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "()Ljava/util/concurrent/ConcurrentMap;",
           false);
       mv.visitLdcInsn("ai.cloud.");
-      Label label9 = new Label();
-      mv.visitLabel(label9);
+      Label label7 = new Label();
+      mv.visitLabel(label7);
       mv.visitMethodInsn(
           INVOKESTATIC,
           BYTECODE_UTIL_INTERNAL_NAME,
           "copy",
           "(Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V",
           false);
-      Label label10 = new Label();
-      mv.visitLabel(label10);
+      Label label8 = new Label();
+      mv.visitLabel(label8);
       mv.visitVarInsn(ALOAD, 0);
-      Label label11 = new Label();
-      mv.visitLabel(label11);
+      Label label9 = new Label();
+      mv.visitLabel(label9);
       mv.visitMethodInsn(
           INVOKEVIRTUAL,
           unshadedPrefix + "/TelemetryClient",
@@ -260,8 +250,8 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "()Ljava/util/concurrent/ConcurrentMap;",
           false);
       mv.visitInsn(ACONST_NULL);
-      Label label12 = new Label();
-      mv.visitLabel(label12);
+      Label label10 = new Label();
+      mv.visitLabel(label10);
       mv.visitMethodInsn(
           INVOKESTATIC,
           BYTECODE_UTIL_INTERNAL_NAME,
@@ -271,10 +261,10 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       mv.visitLabel(label0);
       mv.visitVarInsn(ALOAD, 1);
       mv.visitTypeInsn(INSTANCEOF, unshadedPrefix + "/telemetry/EventTelemetry");
-      Label label13 = new Label();
-      mv.visitJumpInsn(IFEQ, label13);
-      Label label14 = new Label();
-      mv.visitLabel(label14);
+      Label label11 = new Label();
+      mv.visitJumpInsn(IFEQ, label11);
+      Label label12 = new Label();
+      mv.visitLabel(label12);
       mv.visitVarInsn(ALOAD, 1);
       mv.visitTypeInsn(CHECKCAST, unshadedPrefix + "/telemetry/EventTelemetry");
       mv.visitMethodInsn(
@@ -283,14 +273,14 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "agent$trackEventTelemetry",
           "(L" + unshadedPrefix + "/telemetry/EventTelemetry;)V",
           false);
-      mv.visitLabel(label13);
+      mv.visitLabel(label11);
       mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
       mv.visitVarInsn(ALOAD, 1);
       mv.visitTypeInsn(INSTANCEOF, unshadedPrefix + "/telemetry/MetricTelemetry");
-      Label label15 = new Label();
-      mv.visitJumpInsn(IFEQ, label15);
-      Label label16 = new Label();
-      mv.visitLabel(label16);
+      Label label13 = new Label();
+      mv.visitJumpInsn(IFEQ, label13);
+      Label label14 = new Label();
+      mv.visitLabel(label14);
       mv.visitVarInsn(ALOAD, 1);
       mv.visitTypeInsn(CHECKCAST, unshadedPrefix + "/telemetry/MetricTelemetry");
       mv.visitMethodInsn(
@@ -299,14 +289,14 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "agent$trackMetricTelemetry",
           "(L" + unshadedPrefix + "/telemetry/MetricTelemetry;)V",
           false);
-      mv.visitLabel(label15);
+      mv.visitLabel(label13);
       mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
       mv.visitVarInsn(ALOAD, 1);
       mv.visitTypeInsn(INSTANCEOF, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry");
-      Label label17 = new Label();
-      mv.visitJumpInsn(IFEQ, label17);
-      Label label18 = new Label();
-      mv.visitLabel(label18);
+      Label label15 = new Label();
+      mv.visitJumpInsn(IFEQ, label15);
+      Label label16 = new Label();
+      mv.visitLabel(label16);
       mv.visitVarInsn(ALOAD, 1);
       mv.visitTypeInsn(CHECKCAST, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry");
       mv.visitMethodInsn(
@@ -315,14 +305,14 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "agent$trackRemoteDependencyTelemetry",
           "(L" + unshadedPrefix + "/telemetry/RemoteDependencyTelemetry;)V",
           false);
-      mv.visitLabel(label17);
+      mv.visitLabel(label15);
       mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
       mv.visitVarInsn(ALOAD, 1);
       mv.visitTypeInsn(INSTANCEOF, unshadedPrefix + "/telemetry/PageViewTelemetry");
-      Label label19 = new Label();
-      mv.visitJumpInsn(IFEQ, label19);
-      Label label20 = new Label();
-      mv.visitLabel(label20);
+      Label label17 = new Label();
+      mv.visitJumpInsn(IFEQ, label17);
+      Label label18 = new Label();
+      mv.visitLabel(label18);
       mv.visitVarInsn(ALOAD, 1);
       mv.visitTypeInsn(CHECKCAST, unshadedPrefix + "/telemetry/PageViewTelemetry");
       mv.visitMethodInsn(
@@ -331,14 +321,14 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "agent$trackPageViewTelemetry",
           "(L" + unshadedPrefix + "/telemetry/PageViewTelemetry;)V",
           false);
-      mv.visitLabel(label19);
+      mv.visitLabel(label17);
       mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
       mv.visitVarInsn(ALOAD, 1);
       mv.visitTypeInsn(INSTANCEOF, unshadedPrefix + "/telemetry/TraceTelemetry");
-      Label label21 = new Label();
-      mv.visitJumpInsn(IFEQ, label21);
-      Label label22 = new Label();
-      mv.visitLabel(label22);
+      Label label19 = new Label();
+      mv.visitJumpInsn(IFEQ, label19);
+      Label label20 = new Label();
+      mv.visitLabel(label20);
       mv.visitVarInsn(ALOAD, 1);
       mv.visitTypeInsn(CHECKCAST, unshadedPrefix + "/telemetry/TraceTelemetry");
       mv.visitMethodInsn(
@@ -347,14 +337,14 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "agent$trackTraceTelemetry",
           "(L" + unshadedPrefix + "/telemetry/TraceTelemetry;)V",
           false);
-      mv.visitLabel(label21);
+      mv.visitLabel(label19);
       mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
       mv.visitVarInsn(ALOAD, 1);
       mv.visitTypeInsn(INSTANCEOF, unshadedPrefix + "/telemetry/RequestTelemetry");
-      Label label23 = new Label();
-      mv.visitJumpInsn(IFEQ, label23);
-      Label label24 = new Label();
-      mv.visitLabel(label24);
+      Label label21 = new Label();
+      mv.visitJumpInsn(IFEQ, label21);
+      Label label22 = new Label();
+      mv.visitLabel(label22);
       mv.visitVarInsn(ALOAD, 1);
       mv.visitTypeInsn(CHECKCAST, unshadedPrefix + "/telemetry/RequestTelemetry");
       mv.visitMethodInsn(
@@ -363,13 +353,13 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "agent$trackRequestTelemetry",
           "(L" + unshadedPrefix + "/telemetry/RequestTelemetry;)V",
           false);
-      mv.visitLabel(label23);
+      mv.visitLabel(label21);
       mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
       mv.visitVarInsn(ALOAD, 1);
       mv.visitTypeInsn(INSTANCEOF, unshadedPrefix + "/telemetry/ExceptionTelemetry");
       mv.visitJumpInsn(IFEQ, label1);
-      Label label25 = new Label();
-      mv.visitLabel(label25);
+      Label label23 = new Label();
+      mv.visitLabel(label23);
       mv.visitVarInsn(ALOAD, 1);
       mv.visitTypeInsn(CHECKCAST, unshadedPrefix + "/telemetry/ExceptionTelemetry");
       mv.visitMethodInsn(
@@ -380,13 +370,13 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           false);
       mv.visitLabel(label1);
       mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
-      Label label26 = new Label();
-      mv.visitJumpInsn(GOTO, label26);
+      Label label24 = new Label();
+      mv.visitJumpInsn(GOTO, label24);
       mv.visitLabel(label2);
       mv.visitFrame(Opcodes.F_SAME1, 0, null, 1, new Object[] {"java/lang/Throwable"});
       mv.visitVarInsn(ASTORE, 2);
-      Label label27 = new Label();
-      mv.visitLabel(label27);
+      Label label25 = new Label();
+      mv.visitLabel(label25);
       mv.visitVarInsn(ALOAD, 2);
       mv.visitMethodInsn(
           INVOKESTATIC,
@@ -394,11 +384,11 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "logErrorOnce",
           "(Ljava/lang/Throwable;)V",
           false);
-      mv.visitLabel(label26);
+      mv.visitLabel(label24);
       mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
       mv.visitInsn(RETURN);
-      Label label28 = new Label();
-      mv.visitLabel(label28);
+      Label label26 = new Label();
+      mv.visitLabel(label26);
       mv.visitMaxs(3, 3);
       mv.visitEnd();
     }
@@ -1348,8 +1338,6 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       mv.visitEnd();
     }
 
-    // this cannot be included in the general track() method because the AvailabilityTelemetry class
-    // doesn't exist in 2.x SDK
     private void overwriteTrackAvailabilityMethod(MethodVisitor mv) {
       mv.visitCode();
       Label label0 = new Label();
@@ -1606,6 +1594,26 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       track(new com.microsoft.applicationinsights.telemetry.MetricTelemetry(name, value));
     }
 
+    // need to overwrite trackAvailability which is only available in the 3.x version of classic sdk
+    //
+    // this cannot be included in the general track() method because the AvailabilityTelemetry class
+    // doesn't exist in 2.x SDK
+    public void trackAvailability(
+        com.microsoft.applicationinsights.telemetry.AvailabilityTelemetry t) {
+      com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackAvailability(
+          t.getTimestamp(),
+          t.getId(),
+          t.getName(),
+          agent$toMillis(t.getDuration()),
+          t.getSuccess(),
+          t.getRunLocation(),
+          t.getMessage(),
+          t.getProperties(),
+          t.getContext().getTags(),
+          t.getMetrics(),
+          t.getContext().getInstrumentationKey());
+    }
+
     public void track(com.microsoft.applicationinsights.telemetry.Telemetry telemetry) {
 
       if (telemetry.getTimestamp() == null) {
@@ -1678,7 +1686,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackMetric(
           t.getTimestamp(),
           t.getName(),
-          t.toString(),
+          t.getMetricNamespace(),
           t.getValue(),
           t.getCount(),
           t.getMin(),
@@ -1762,22 +1770,6 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           t.getTimestamp(),
           t.getThrowable(),
           severityLevel,
-          t.getProperties(),
-          t.getContext().getTags(),
-          t.getMetrics(),
-          t.getContext().getInstrumentationKey());
-    }
-
-    private static void agent$trackAvailabilityTelemetry(
-        com.microsoft.applicationinsights.telemetry.AvailabilityTelemetry t) {
-      com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackAvailability(
-          t.getTimestamp(),
-          t.getId(),
-          t.getName(),
-          agent$toMillis(t.getDuration()),
-          t.getSuccess(),
-          t.getRunLocation(),
-          t.getMessage(),
           t.getProperties(),
           t.getContext().getTags(),
           t.getMetrics(),
