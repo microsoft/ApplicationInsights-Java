@@ -34,6 +34,7 @@ import com.microsoft.applicationinsights.agent.internal.sampling.SamplingOverrid
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
@@ -143,6 +144,9 @@ public class AgentLogExporter implements LogExporter {
     return CompletableResultCode.ofSuccess();
   }
 
+  @SuppressFBWarnings(
+      value = "SECPR", // Predictable pseudorandom number generator
+      justification = "Predictable random is ok for sampling decision")
   private static boolean shouldSample(SpanContext spanContext, float percentage) {
     if (percentage == 100) {
       // optimization, no need to calculate score
