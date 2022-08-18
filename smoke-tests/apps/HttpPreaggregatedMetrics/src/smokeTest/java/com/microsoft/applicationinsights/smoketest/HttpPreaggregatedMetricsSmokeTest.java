@@ -76,7 +76,7 @@ abstract class HttpPreaggregatedMetricsSmokeTest {
       throws Exception {
     Telemetry telemetry = testing.getTelemetry(3);
 
-    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
     assertThat(telemetry.rdd1.getData()).isEqualTo(successUrlWithQueryString);
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rdEnvelope.getSampleRate()).isNull();
